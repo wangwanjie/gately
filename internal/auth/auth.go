@@ -236,7 +236,15 @@ func (m *Manager) Login(ip, username, password string, code ...string) (string, 
 		return "", time.Time{}, ErrLocked
 	}
 	ok := false
-	defer func() { m.release(key, ok) }()
+	// pending 表示密码正确但还缺验证码：既不算失败也不算成功，只释放预占名额，不清除已累计的失败次数
+	pending := false
+	defer func() {
+		if pending {
+			m.cancel(key)
+			return
+		}
+		m.release(key, ok)
+	}()
 
 	m.mu.RLock()
 	acc := m.acc
@@ -270,8 +278,9 @@ func (m *Manager) Login(ip, username, password string, code ...string) (string, 
 			c = code[0]
 		}
 		if c == "" {
-			// 密码正确但缺验证码，不计为失败
-			ok = true
+			// 密码正确但缺验证码，不计为失败；也不能算成功，否则攻击者可在每次猜错验证码之间
+			// 插入一次不带验证码的请求来清零失败计数，从而无限次爆破验证码
+			pending = true
 			return "", time.Time{}, ErrTOTPRequired
 		}
 		if !m.consumeTOTP(acc.TOTPSecret, c) {
@@ -522,6 +531,15 @@ func (m *Manager) reserve(key string) bool {
 	}
 	st.inflight++
 	return true
+}
+
+// cancel 结束一次既非成功也非失败的尝试：只释放预占名额，保留已累计的失败次数。
+func (m *Manager) cancel(key string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if st := m.fails[key]; st != nil && st.inflight > 0 {
+		st.inflight--
+	}
 }
 
 // release 结束一次尝试：成功时清除记录，失败时累计并在达到上限后锁定。

@@ -65,3 +65,22 @@ func TestLoginWithTOTP(t *testing.T) {
 		t.Fatal("切换两步验证后旧令牌应失效")
 	}
 }
+
+// 密码正确但不带验证码的请求不能清零失败计数，否则攻击者可在每 4 次猜错之间插入一次来无限爆破验证码。
+func TestTOTPCodelessRequestKeepsFailures(t *testing.T) {
+	m, pass := newTestManager(t)
+	if err := m.SetTOTP(pass, "", NewTOTPSecret()); err != nil {
+		t.Fatal(err)
+	}
+	for round := 0; round < 3; round++ {
+		for i := 0; i < maxFailures-1; i++ {
+			if _, _, err := m.Login("9.9.9.9", "admin", pass, "000000"); errors.Is(err, ErrLocked) {
+				return
+			}
+		}
+		if _, _, err := m.Login("9.9.9.9", "admin", pass); errors.Is(err, ErrLocked) {
+			return
+		}
+	}
+	t.Fatal("交错发送不带验证码的请求后仍未被锁定")
+}

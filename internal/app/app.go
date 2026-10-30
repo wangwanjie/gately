@@ -640,6 +640,11 @@ func (a *App) handleLuckyImport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	opts := luckyimport.Options{DryRun: r.URL.Query().Get("dryRun") == "1", KeepEnabled: r.URL.Query().Get("enable") == "1"}
+	// API 令牌只有 import:write 权限，不能借 enable=1 让导入的 DDNS 命令来源、定时任务等直接生效执行；
+	// 需要启用时由管理员会话导入，或导入后在对应模块里手动启用
+	if strings.HasPrefix(auth.UserFromContext(r.Context()), "api-token:") {
+		opts.KeepEnabled = false
+	}
 	type fileResult struct {
 		File    string                `json:"file"`
 		Error   string                `json:"error,omitempty"`

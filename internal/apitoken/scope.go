@@ -62,6 +62,8 @@ var sensitiveGetSegments = map[string]bool{
 	"config":          true, // compose 配置可能含密钥
 	"preview-archive": true, // 读取压缩包内文件
 	"secrets":         true, // 查看被脱敏的密码、令牌明文
+	"files":           true, // 容器、存储挂载的目录浏览（files/list 等）
+	"sftp":            true, // Web 终端 SFTP 对本机和远程主机的目录浏览（sftp/{key}/list 等）
 }
 
 // sharedFileUserScope 是通过旧接口 /api/<服务>/shared-users 修改文件服务共享用户所需的权限：

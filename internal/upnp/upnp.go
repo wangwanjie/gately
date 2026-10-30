@@ -78,6 +78,11 @@ func Discover(ctx context.Context, gatewayIP string) (*Client, error) {
 			lastErr = err
 			continue
 		}
+		// LOCATION 必须指向应答设备自身，否则局域网内的恶意主机可借此让本机向任意地址发请求
+		if u, perr := url.Parse(loc); perr != nil || u.Hostname() != fromHost(from) {
+			lastErr = errors.New("SSDP 应答的 LOCATION 与应答设备地址不一致，已忽略")
+			continue
+		}
 		c, err := FromDescription(ctx, loc)
 		if err != nil {
 			lastErr = err
@@ -85,6 +90,18 @@ func Discover(ctx context.Context, gatewayIP string) (*Client, error) {
 		}
 		return c, nil
 	}
+}
+
+// fromHost 返回 UDP 应答来源的主机部分（不含端口与 IPv6 区域标识）。
+func fromHost(a net.Addr) string {
+	h, _, err := net.SplitHostPort(a.String())
+	if err != nil {
+		return a.String()
+	}
+	if i := strings.IndexByte(h, '%'); i >= 0 {
+		h = h[:i]
+	}
+	return h
 }
 
 // parseSSDPLocation 从 SSDP 响应中取 LOCATION 头。
@@ -156,7 +173,12 @@ func FromDescription(ctx context.Context, location string) (*Client, error) {
 			if err != nil {
 				continue
 			}
-			c := New(base.ResolveReference(ref).String(), st)
+			ctrl := base.ResolveReference(ref)
+			// 控制地址与描述地址必须是同一主机，防止描述文件里的 URLBase 或绝对 controlURL 指向其他内网服务
+			if lu, perr := url.Parse(location); perr == nil && ctrl.Hostname() != lu.Hostname() {
+				continue
+			}
+			c := New(ctrl.String(), st)
 			c.LocalIP = localIPFor(base.Hostname())
 			return c, nil
 		}
