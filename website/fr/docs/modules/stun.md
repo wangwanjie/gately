@@ -17,9 +17,12 @@ Le port public obtenu via STUN change généralement. Associez-le à :
 - [Services Web](/fr/docs/modules/web) pour fournir un point d'entrée HTTPS.
 - Les sites de redirection des Services Web peuvent référencer l'adresse publique actuelle de la règle avec des variables comme `{STUN_NomRègle_PORT}` et suivent automatiquement le nouveau port quand il change ; voir [Variables de redirection](/fr/docs/modules/web#redirect-vars).
 
-## Limitations
+## Limites et NAT à plusieurs niveaux
 
-Lorsque le port WAN du routeur se trouve derrière un NAT de niveau opérateur (`100.64.0.0/10`), le port de traversée est inaccessible depuis l'extérieur. Cette limitation provient de l'environnement réseau lui-même. Utilisez plutôt [Tailscale, frp ou un tunnel Cloudflare](/fr/docs/modules/tunnels).
+- **NAT de niveau opérateur (CGNAT)** : quand le WAN du routeur reçoit une adresse interne comme `100.64.0.0/10`, la traversée dépend du type de NAT de l'opérateur. Un NAT à cône complet (toute adresse extérieure peut joindre le port mappé) fonctionne ; un NAT à port restreint ou symétrique ne fonctionne pas, utilisez alors [Tailscale, frp ou Cloudflare Tunnel](/fr/docs/modules/tunnels).
+- **UPnP derrière plusieurs NAT** : avec UPnP / NAT-PMP, Gately mappe le port du tunnel vers cet hôte sur le routeur. Si l'adresse externe du routeur diffère de l'adresse publique obtenue par STUN, un autre NAT se trouve à l'extérieur et le port public lui appartient : Gately ne garde que le mappage du port du tunnel et n'ajoute plus de mappage pour le port public.
+- **Fixer le port local et l'autoriser dans le pare-feu** : un port local vide est choisi au hasard à chaque démarrage. Si l'hôte utilise un pare-feu (par exemple le pare-feu système de fnOS), fixez le port local de la règle et autorisez-le dans le pare-feu (vous pouvez réserver une plage de ports aux règles STUN) ; sinon le pare-feu rejette les connexions entrantes et l'adresse de traversée reste injoignable.
+- **TCP et NAT à cône du routeur** : sur certains routeurs, « NAT1 / cône complet » ne s'applique qu'à l'UDP et le port source TCP est réécrit en sortie. Les règles TCP nécessitent UPnP, ou un mappage du port du tunnel vers cet hôte sur le routeur.
 
 ## Conseil de déploiement
 

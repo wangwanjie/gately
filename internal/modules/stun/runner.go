@@ -280,23 +280,39 @@ func (r *runner) runScript(vars map[string]string) {
 // publicMapping 维护 STUN 观察到的公网端口 → 本机通道端口 的映射。
 // 部分路由器出站时不保持源端口（例如通道端口 37701 出站后变成 65453），
 // 仅映射通道端口无法让外部访问公网端口，需要按公网端口再建一条映射；公网端口变化时随之更新。
+// 网关外层还有一层 NAT（如运营商 CGNAT）时，公网端口属于外层 NAT，不在该网关上，不追加映射。
 type publicMapping struct {
 	r     *runner
 	proto string
 	port  int
 	unmap func()
+	// skipped 为已判定处于多层 NAT 而跳过追加映射的公网端口，避免每次复查都重新查询网关
+	skipped int
 }
 
 func (p *publicMapping) update(ctx context.Context, pub netip.AddrPort) {
 	want := int(pub.Port())
 	if !p.r.rule.UPnP && !p.r.rule.NATPMP || want == p.r.port {
 		p.close()
+		p.skipped = 0
 		return
 	}
-	if want == p.port {
+	if want == p.port || want == p.skipped {
 		return
 	}
 	p.close()
+	p.skipped = 0
+	gctx, cancel := context.WithTimeout(ctx, 8*time.Second)
+	gw, err := p.r.gatewayExternalIP(gctx)
+	cancel()
+	if err != nil {
+		// 查不到网关外网地址时无法判断，按单层 NAT 处理
+		p.r.log.Debugf("查询网关外网地址失败，按单层 NAT 处理: %v", err)
+	} else if behindOuterNAT(gw, pub.Addr()) {
+		p.r.log.Infof("网关外网地址 %s 与公网地址 %s 不同（外层还有 NAT），公网端口 %d 不在该网关上，跳过追加映射", gw, pub.Addr(), want)
+		p.skipped = want
+		return
+	}
 	p.r.log.Infof("公网端口 %d 与通道端口 %d 不同，按公网端口追加映射", want, p.r.port)
 	p.port, p.unmap = want, p.r.mapPort(ctx, p.proto, want)
 }
@@ -306,6 +322,51 @@ func (p *publicMapping) close() {
 		p.unmap()
 	}
 	p.port, p.unmap = 0, nil
+}
+
+// behindOuterNAT 判断网关外网地址与 STUN 观察到的公网地址是否不同，不同说明网关外层还有 NAT。
+// 网关返回空地址或 0.0.0.0（例如 WAN 未连接）时无法判断，视为单层。
+func behindOuterNAT(gateway, public netip.Addr) bool {
+	if !gateway.IsValid() || gateway.IsUnspecified() || !public.IsValid() {
+		return false
+	}
+	return gateway.Unmap() != public.Unmap()
+}
+
+// natpmpGateway 返回 NAT-PMP 网关地址，未单独填写时沿用 UPnP 网关。
+func (r *runner) natpmpGateway() string {
+	if r.rule.NATPMPGateway != "" {
+		return r.rule.NATPMPGateway
+	}
+	return r.rule.UPnPGateway
+}
+
+// gatewayExternalIP 查询建立映射所用网关自身的外网地址，规则启用 UPnP 时优先用 UPnP，否则用 NAT-PMP。
+func (r *runner) gatewayExternalIP(ctx context.Context) (netip.Addr, error) {
+	var ip string
+	var err error
+	switch {
+	case r.rule.UPnP:
+		var client *upnp.Client
+		if r.rule.UPnPControlURL != "" {
+			client = upnp.New(r.rule.UPnPControlURL, "")
+		} else if client, err = upnp.Discover(ctx, r.rule.UPnPGateway); err != nil {
+			return netip.Addr{}, err
+		}
+		ip, err = client.ExternalIP(ctx)
+	case r.rule.NATPMP:
+		gw := r.natpmpGateway()
+		if gw == "" {
+			return netip.Addr{}, errors.New("未填写 NAT-PMP 网关地址")
+		}
+		ip, err = upnp.NATPMPExternalIP(ctx, gw)
+	default:
+		return netip.Addr{}, errors.New("未启用 UPnP / NAT-PMP")
+	}
+	if err != nil {
+		return netip.Addr{}, err
+	}
+	return netip.ParseAddr(strings.TrimSpace(ip))
 }
 
 // mapPort 在路由器上建立 外部端口 port → 本机通道端口 的 UPnP / NAT-PMP 映射，返回清理函数。
@@ -354,10 +415,7 @@ func (r *runner) mapPort(ctx context.Context, proto string, port int) func() {
 		return nil
 	}
 	addNATPMP := func() error {
-		gw := r.rule.NATPMPGateway
-		if gw == "" {
-			gw = r.rule.UPnPGateway
-		}
+		gw := r.natpmpGateway()
 		if gw == "" {
 			return errors.New("未填写 NAT-PMP 网关地址")
 		}
@@ -414,11 +472,7 @@ func (r *runner) mapPort(ctx context.Context, proto string, port int) func() {
 			_ = mapped.DeletePortMapping(dctx, proto, port)
 		}
 		if r.rule.NATPMP {
-			gw := r.rule.NATPMPGateway
-			if gw == "" {
-				gw = r.rule.UPnPGateway
-			}
-			if gw != "" {
+			if gw := r.natpmpGateway(); gw != "" {
 				_, _, _ = upnp.NATPMPMap(dctx, gw, proto, intPort, 0, 0)
 			}
 		}

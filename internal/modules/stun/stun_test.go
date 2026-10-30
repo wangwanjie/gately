@@ -387,6 +387,79 @@ func TestUPnPMappingLifecycle(t *testing.T) {
 	}
 }
 
+func TestBehindOuterNAT(t *testing.T) {
+	pub := netip.MustParseAddr("14.19.16.164")
+	cases := []struct {
+		gw   string
+		want bool
+	}{
+		{"100.70.13.98", true},
+		{"14.19.16.164", false},
+		{"::ffff:14.19.16.164", false},
+		{"0.0.0.0", false},
+		{"", false},
+	}
+	for _, c := range cases {
+		var gw netip.Addr
+		if c.gw != "" {
+			gw = netip.MustParseAddr(c.gw)
+		}
+		if got := behindOuterNAT(gw, pub); got != c.want {
+			t.Errorf("behindOuterNAT(%q)=%v want %v", c.gw, got, c.want)
+		}
+	}
+}
+
+// 网关外网地址与公网地址不同（外层还有 CGNAT）时不按公网端口追加映射，相同时照常追加。
+func TestPublicMappingOuterNAT(t *testing.T) {
+	for _, tc := range []struct {
+		gatewayIP string
+		wantAdd   bool
+	}{
+		{"100.70.13.98", false},
+		{"14.19.16.164", true},
+	} {
+		t.Run(tc.gatewayIP, func(t *testing.T) {
+			var mu sync.Mutex
+			var adds, queries int
+			igd := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				mu.Lock()
+				defer mu.Unlock()
+				switch action := r.Header.Get("SOAPAction"); {
+				case strings.Contains(action, "GetExternalIPAddress"):
+					queries++
+					_, _ = w.Write([]byte(`<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Body><u:GetExternalIPAddressResponse xmlns:u="x"><NewExternalIPAddress>` +
+						tc.gatewayIP + `</NewExternalIPAddress></u:GetExternalIPAddressResponse></s:Body></s:Envelope>`))
+				case strings.Contains(action, "AddPortMapping"):
+					adds++
+					_, _ = w.Write([]byte(`<ok/>`))
+				default:
+					_, _ = w.Write([]byte(`<ok/>`))
+				}
+			}))
+			defer igd.Close()
+			rule := Rule{Name: "nat", UPnP: true, UPnPControlURL: igd.URL + "/ctl", UPnPLocalHost: "192.168.1.8"}
+			_, lg := testLogger()
+			r := newRunner(rule, Settings{}, lg)
+			r.port = 34811
+			pm := &publicMapping{r: r, proto: "tcp"}
+			defer pm.close()
+			pub := netip.MustParseAddrPort("14.19.16.164:29847")
+			pm.update(context.Background(), pub)
+			// 复查得到相同地址时不再重复查询网关
+			pm.update(context.Background(), pub)
+			mu.Lock()
+			defer mu.Unlock()
+			if (adds > 0) != tc.wantAdd {
+				t.Fatalf("追加映射次数 %d，期望追加=%v", adds, tc.wantAdd)
+			}
+			if queries != 1 {
+				t.Fatalf("网关外网地址查询 %d 次，期望 1 次", queries)
+			}
+		})
+	}
+}
+
 func TestConvertLucky(t *testing.T) {
 	raw := json.RawMessage(`[
 	 {"Name":"ssh","Enable":true,"StunType":"tcp4","UseGlobalStunServerList":true,"StunServerList":["stun.a.com"],"TcpKeepAliveServerList":["qq.com"],

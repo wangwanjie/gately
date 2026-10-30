@@ -17,9 +17,12 @@ El puerto público obtenido con STUN suele cambiar. Combínalo con:
 - [Servicios web](/es/docs/modules/web) para ofrecer un punto de entrada HTTPS.
 - Los sitios de redirección de los Servicios web pueden referenciar la dirección pública actual de la regla con variables como `{STUN_NombreRegla_PORT}` y seguir el puerto nuevo automáticamente cuando cambia; consulta [Variables de redirección](/es/docs/modules/web#redirect-vars).
 
-## Limitaciones
+## Limitaciones y NAT de varios niveles
 
-Cuando el puerto WAN del router está detrás de un NAT de operador (`100.64.0.0/10`), el puerto traspasado no es accesible desde el exterior. Esta limitación proviene del propio entorno de red. Usa en su lugar [Tailscale, frp o un túnel de Cloudflare](/es/docs/modules/tunnels).
+- **NAT de operador (CGNAT)**: cuando el WAN del router recibe una dirección interna como `100.64.0.0/10`, la traversía depende del tipo de NAT del operador. Con cono completo (cualquier dirección externa llega al puerto mapeado) funciona; con NAT de puerto restringido o simétrico no, y en ese caso usa [Tailscale, frp o Cloudflare Tunnel](/es/docs/modules/tunnels).
+- **UPnP detrás de varios NAT**: con UPnP / NAT-PMP activado, Gately mapea en el router el puerto del túnel a este equipo. Si la dirección externa del router difiere de la dirección pública que obtiene STUN, hay otro NAT por fuera y el puerto público pertenece a ese NAT exterior, así que Gately conserva solo el mapeo del puerto del túnel y deja de añadir un mapeo para el puerto público.
+- **Fija el puerto local y permítelo en el cortafuegos**: si dejas vacío el puerto local, se elige al azar en cada arranque. Si el equipo usa un cortafuegos (por ejemplo el cortafuegos del sistema de fnOS), fija el puerto local de la regla y permítelo en el cortafuegos (puedes reservar un rango de puertos para las reglas STUN); si no, el cortafuegos descarta las conexiones entrantes y la dirección no es accesible.
+- **TCP y el NAT de cono del router**: en algunos routers «NAT1 / cono completo» solo se aplica a UDP y en TCP se reescribe el puerto de origen al salir. Las reglas TCP necesitan UPnP o un mapeo del puerto del túnel a este equipo en el router.
 
 ## Consejo de despliegue
 

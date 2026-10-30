@@ -172,3 +172,36 @@ func TestNATPMP(t *testing.T) {
 		t.Fatalf("映射结果错误: %d %v", ext, life)
 	}
 }
+
+func TestNATPMPExternalIP(t *testing.T) {
+	pc, err := net.ListenPacket("udp4", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer pc.Close()
+	old := NATPMPPort
+	NATPMPPort = pc.LocalAddr().(*net.UDPAddr).Port
+	defer func() { NATPMPPort = old }()
+	go func() {
+		buf := make([]byte, 64)
+		for {
+			n, addr, err := pc.ReadFrom(buf)
+			if err != nil {
+				return
+			}
+			if n != 2 || buf[1] != 0 {
+				continue
+			}
+			// 操作码 0 响应：版本、128、结果码、纪元秒、外网地址
+			resp := make([]byte, 12)
+			resp[1] = 128
+			binary.BigEndian.PutUint32(resp[4:], 1)
+			copy(resp[8:], net.ParseIP("100.70.13.98").To4())
+			_, _ = pc.WriteTo(resp, addr)
+		}
+	}()
+	ip, err := NATPMPExternalIP(context.Background(), "127.0.0.1")
+	if err != nil || ip != "100.70.13.98" {
+		t.Fatalf("外网地址错误: %q %v", ip, err)
+	}
+}

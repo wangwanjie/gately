@@ -17,9 +17,12 @@ A porta pública obtida via STUN costuma mudar. Combine com:
 - [Serviços Web](/pt-BR/docs/modules/web) para oferecer um ponto de entrada HTTPS.
 - Os sites de redirecionamento dos Serviços Web podem referenciar o endereço público atual da regra com variáveis como `{STUN_NomeRegra_PORT}` e seguem a porta nova automaticamente quando ela muda; veja [Variáveis de redirecionamento](/pt-BR/docs/modules/web#redirect-vars).
 
-## Limitações
+## Limitações e NAT em várias camadas
 
-Quando a porta WAN do roteador está atrás de um CGNAT da operadora (`100.64.0.0/10`), a porta de travessia não é acessível de fora. Essa limitação vem do próprio ambiente de rede. Use [Tailscale, frp ou Cloudflare Tunnel](/pt-BR/docs/modules/tunnels).
+- **NAT de operadora (CGNAT)**: quando o WAN do roteador recebe um endereço interno como `100.64.0.0/10`, a travessia depende do tipo de NAT da operadora. Com cone completo (qualquer endereço externo alcança a porta mapeada) funciona; com NAT de porta restrita ou simétrico não, e nesse caso use [Tailscale, frp ou Cloudflare Tunnel](/pt-BR/docs/modules/tunnels).
+- **UPnP atrás de vários NATs**: com UPnP / NAT-PMP ativado, o Gately mapeia no roteador a porta do túnel para este host. Se o endereço externo do roteador for diferente do endereço público obtido pelo STUN, há outro NAT do lado de fora e a porta pública pertence a ele, então o Gately mantém só o mapeamento da porta do túnel e deixa de adicionar um mapeamento para a porta pública.
+- **Fixe a porta local e libere-a no firewall**: uma porta local vazia é escolhida ao acaso a cada início. Se o host usa firewall (por exemplo, o firewall do sistema do fnOS), fixe a porta local da regra e libere-a no firewall (você pode reservar uma faixa de portas para as regras STUN); caso contrário o firewall descarta as conexões de entrada e o endereço fica inacessível.
+- **TCP e o NAT de cone do roteador**: em alguns roteadores, “NAT1 / cone completo” vale só para UDP e a porta de origem TCP é reescrita na saída. Regras TCP precisam de UPnP ou de um mapeamento da porta do túnel para este host no roteador.
 
 ## Dica de implantação
 

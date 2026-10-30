@@ -17,9 +17,12 @@ The public port obtained through STUN usually changes. Combine it with:
 - [Web Services](/en/docs/modules/web) to provide an HTTPS entry point.
 - Redirect sites in Web Services can reference the rule's current public address with variables such as `{STUN_RuleName_PORT}` and follow the new port automatically when it changes; see [Redirect variables](/en/docs/modules/web#redirect-vars).
 
-## Limitations
+## Limitations and multi-layer NAT
 
-When the router's WAN port sits behind carrier-grade NAT (`100.64.0.0/10`), the traversal port is unreachable from outside. This limitation comes from the network environment itself. Use [Tailscale, frp or a Cloudflare Tunnel](/en/docs/modules/tunnels) instead.
+- **Carrier-grade NAT (CGNAT)**: when the router's WAN gets an internal address such as `100.64.0.0/10`, traversal depends on the type of the carrier's NAT. Full cone (any outside address can reach the mapped port) works; port-restricted or symmetric NAT does not, in which case use [Tailscale, frp or Cloudflare Tunnel](/en/docs/modules/tunnels) instead.
+- **UPnP behind multiple NATs**: with UPnP / NAT-PMP on, Gately maps the tunnel port to this host on the router. If the router's external address differs from the public address STUN reports, there is another NAT outside it and the public port belongs to that outer NAT, so Gately keeps only the tunnel port mapping and no longer adds a mapping for the public port.
+- **Fix the local port and open it in the firewall**: an empty local port is picked at random on every start. If the host runs a firewall (for example the fnOS system firewall), give the rule a fixed local port and allow it in the firewall (you can reserve a port range for STUN rules); otherwise the firewall drops inbound connections and the traversal address cannot be reached.
+- **TCP and the router's cone NAT**: on some routers "NAT1 / full cone" only applies to UDP and TCP source ports are rewritten on the way out. TCP rules need UPnP enabled, or a port mapping of the tunnel port to this host on the router.
 
 ## Deployment tip
 
