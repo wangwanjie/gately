@@ -40,3 +40,36 @@ func TestSetLookupDelete(t *testing.T) {
 		t.Fatalf("新名字应可查到: %v %v", got, ok)
 	}
 }
+
+func TestParseVarAndVars(t *testing.T) {
+	cases := map[string][2]string{
+		"STUN_web_PORT":   {"web", "PORT"},
+		"STUN_my_rule_IP": {"my_rule", "IP"},
+		"STUN_a_b_ADDR":   {"a_b", "ADDR"},
+		"STUN_规则名_PORT":   {"规则名", "PORT"},
+	}
+	for name, want := range cases {
+		rule, part, ok := ParseVar(name)
+		if !ok || rule != want[0] || part != want[1] {
+			t.Errorf("ParseVar(%q)=%q %q %v", name, rule, part, ok)
+		}
+	}
+	for _, bad := range []string{"STUN__PORT", "STUN_web", "web_PORT", "ipv4Addr"} {
+		if _, _, ok := ParseVar(bad); ok {
+			t.Errorf("ParseVar(%q) 不应识别为 STUN 变量", bad)
+		}
+	}
+
+	Set("kv", "web", netip.MustParseAddrPort("203.0.113.5:40000"))
+	defer Delete("kv")
+	vals, missing := Vars("{STUN_web_IP}:{STUN_web_PORT}", "{ipv4Addr} {STUN_web_ADDR} {STUN_gone_PORT} {STUN_gone_IP}")
+	if vals["STUN_web_IP"] != "203.0.113.5" || vals["STUN_web_PORT"] != "40000" || vals["STUN_web_ADDR"] != "203.0.113.5:40000" || len(vals) != 3 {
+		t.Fatalf("变量值错误: %v", vals)
+	}
+	if len(missing) != 1 || missing[0] != "gone" {
+		t.Fatalf("缺失规则错误: %v", missing)
+	}
+	if !References("port={STUN_web_PORT}", "web") || References("{STUN_web2_PORT}", "web") {
+		t.Fatal("References 判断错误")
+	}
+}

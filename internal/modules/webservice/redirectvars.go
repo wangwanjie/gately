@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"net/netip"
 	"net/url"
 	"strconv"
 	"strings"
@@ -108,20 +109,6 @@ func expandVars(tmpl string, lookup func(name string) (string, bool, error)) (st
 	return b.String(), nil
 }
 
-// stunVar 解析 STUN_规则名_PORT 这类变量名；规则名中可以含下划线。
-func stunVar(name string) (rule, part string, ok bool) {
-	rest, found := strings.CutPrefix(name, "STUN_")
-	if !found {
-		return "", "", false
-	}
-	for _, p := range []string{"_PORT", "_IP", "_ADDR"} {
-		if r, found := strings.CutSuffix(rest, p); found && r != "" {
-			return r, p[1:], true
-		}
-	}
-	return "", "", false
-}
-
 // partIndex 解析 domainPartN / pathPartN 末尾的序号（从 1 开始）。
 func partIndex(name, prefix string) (int, bool) {
 	rest, found := strings.CutPrefix(name, prefix)
@@ -210,19 +197,13 @@ func (q redirectRequest) lookup(name string) (string, bool, error) {
 	if n, ok := partIndex(name, "pathPart"); ok {
 		return nthPart(r.URL.EscapedPath(), "/", n), true, nil
 	}
-	if rule, part, ok := stunVar(name); ok {
-		addr, found := stunaddr.Lookup(rule)
+	if v, isVar, found := stunaddr.Resolve(name); isVar {
 		if !found {
 			// 规则不存在、未启用或还没有穿透成功
+			rule, _, _ := stunaddr.ParseVar(name)
 			return "", false, fmt.Errorf("STUN 规则“%s”暂无公网地址", rule)
 		}
-		switch part {
-		case "PORT":
-			return strconv.Itoa(int(addr.Port())), true, nil
-		case "IP":
-			return addr.Addr().String(), true, nil
-		}
-		return addr.String(), true, nil
+		return v, true, nil
 	}
 	return "", false, nil
 }
@@ -257,14 +238,8 @@ func sampleVar(name string) (string, bool, error) {
 	if _, ok := partIndex(name, "pathPart"); ok {
 		return "a", true, nil
 	}
-	if _, part, ok := stunVar(name); ok {
-		switch part {
-		case "PORT":
-			return "40000", true, nil
-		case "IP":
-			return "192.0.2.1", true, nil
-		}
-		return "192.0.2.1:40000", true, nil
+	if _, part, ok := stunaddr.ParseVar(name); ok {
+		return stunaddr.Format(netip.MustParseAddrPort("192.0.2.1:40000"), part), true, nil
 	}
 	// 只支持一个通配符，{2} 及以后的序号没有对应的值
 	if n, err := strconv.Atoi(name); err == nil && n > 1 {
