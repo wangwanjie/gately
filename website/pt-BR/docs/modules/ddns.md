@@ -24,6 +24,15 @@ Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun
 
 IPv4 e IPv6 são compatíveis.
 
+## Variáveis no valor do registro {#record-vars}
+
+Os valores de registro podem usar estas variáveis, substituídas pelos valores atuais a cada sincronização:
+
+- `{ipv4Addr}`, `{ipv6Addr}`: os endereços IPv4 e IPv6 obtidos pela tarefa (usados por padrão quando o valor de um registro A ou AAAA fica vazio);
+- `{STUN_nome da regra_PORT}`, `{STUN_nome da regra_IP}`, `{STUN_nome da regra_ADDR}`: porta pública, IP e IP:porta atuais de uma regra STUN; o nome da regra pode conter sublinhados. Por exemplo, um registro TXT `port={STUN_ssh_PORT}` ou um registro A `{STUN_ssh_IP}`.
+
+Quando o endereço público de uma regra STUN muda, as tarefas que a usam sincronizam na hora, sem esperar a próxima verificação. Enquanto a regra estiver desativada ou ainda não tiver atravessado o NAT, o registro é ignorado naquela rodada e o estado dele mostra o motivo. As variáveis STUN também podem ser usadas no Webhook da tarefa.
+
 ## Notificações
 
 Um Webhook pode ser chamado quando o IP muda ou a sincronização falha.

@@ -42,6 +42,7 @@
   "%s %s 无需更新 (%s)": "%s %s sin cambios (%s)",
   "%s %s 监听失败: %v": "%s %s error al escuchar: %v",
   "%s %s 记录值 %q 不是有效地址": "%s %s el valor de registro %q no es una dirección válida",
+  "%s %s 跳过：%s": "%s %s omitido: %s",
   "%s %s%s 后端错误: %v": "%s %s%s error de backend: %v",
   "%s -\u003e %s 已连接": "%s -\u003e %s conectado",
   "%s SNI %q 未命中路由且未设置默认目标，已断开": "%s SNI %q no coincide con ninguna ruta y no hay destino predeterminado, conexión cerrada",

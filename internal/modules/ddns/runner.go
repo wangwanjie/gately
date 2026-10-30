@@ -3,7 +3,7 @@ package ddns
 import (
 	"context"
 	"fmt"
-	"github.com/wangwanjie/gately/internal/events"
+	"maps"
 	"net/http"
 	"net/netip"
 	"strings"
@@ -11,8 +11,10 @@ import (
 	"time"
 
 	"github.com/wangwanjie/gately/internal/dnsprovider"
+	"github.com/wangwanjie/gately/internal/events"
 	"github.com/wangwanjie/gately/internal/ipsource"
 	"github.com/wangwanjie/gately/internal/logbuf"
+	"github.com/wangwanjie/gately/internal/stunaddr"
 	"github.com/wangwanjie/gately/internal/webhook"
 )
 
@@ -224,8 +226,17 @@ func (r *runner) syncOnce(ctx context.Context, force bool) {
 		if !rec.Enable {
 			continue
 		}
-		value := webhook.Render(rec.Value, vars, nil)
 		fqdn := dnsprovider.Record{Zone: rec.Zone, Sub: rec.Sub}.FQDN()
+		// {STUN_规则名_PORT} 等变量取 STUN 穿透规则当前的公网地址；规则还没有地址时本轮跳过
+		stunVals, missing := stunaddr.Vars(rec.Value)
+		if len(missing) > 0 {
+			msg := fmt.Sprintf("STUN 规则“%s”暂无公网地址", strings.Join(missing, "”“"))
+			r.setRecord(rec.Key, func(s *RecordState) { s.LastError = msg; s.LastCheck = time.Now() })
+			r.log.Warnf("%s %s 跳过：%s", rec.Type, fqdn, msg)
+			continue
+		}
+		maps.Copy(vars, stunVals)
+		value := webhook.Render(rec.Value, vars, nil)
 		if strings.Contains(value, VarIPv4) || strings.Contains(value, VarIPv6) {
 			// 对应 IP 获取失败，本轮跳过
 			continue
@@ -303,6 +314,9 @@ func (r *runner) sendWebhook(ctx context.Context, vars map[string]string, succes
 		"taskName":           r.task.Name,
 		"time":               time.Now().Format("2006-01-02 15:04:05"),
 	}
+	// Webhook 中也可以引用 {STUN_规则名_PORT} 等变量
+	stunVals, _ := stunaddr.Vars(webhookTexts(r.task.Webhook)...)
+	maps.Copy(wv, stunVals)
 	_, err := webhook.Send(ctx, r.task.Webhook, wv)
 	r.mu.Lock()
 	r.state.WebhookAt = time.Now()
@@ -313,6 +327,11 @@ func (r *runner) sendWebhook(ctx context.Context, vars map[string]string, succes
 		return
 	}
 	r.log.Infof("Webhook 调用成功")
+}
+
+// webhookTexts 返回 Webhook 中可以引用变量的文本。
+func webhookTexts(c webhook.Config) []string {
+	return append([]string{c.URL, c.Body}, c.Headers...)
 }
 
 func (r *runner) setRecord(key string, f func(*RecordState)) {

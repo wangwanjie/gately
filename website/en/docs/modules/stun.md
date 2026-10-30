@@ -13,7 +13,7 @@ When your ISP does not provide a fixed public port, STUN traversal uses NAT hole
 
 The public port obtained through STUN usually changes. Combine it with:
 
-- [Dynamic DNS](/en/docs/modules/ddns) or a Webhook / script to sync the new address to your DNS records;
+- [Dynamic DNS](/en/docs/modules/ddns) or a Webhook / script to sync the new address to your DNS records; Dynamic DNS record values can also use `{STUN_rule name_PORT}` and similar variables and sync as soon as the rule's address changes, see [Record value variables](/en/docs/modules/ddns#record-vars);
 - [Web Services](/en/docs/modules/web) to provide an HTTPS entry point.
 - Redirect sites in Web Services can reference the rule's current public address with variables such as `{STUN_RuleName_PORT}` and follow the new port automatically when it changes; see [Redirect variables](/en/docs/modules/web#redirect-vars).
 

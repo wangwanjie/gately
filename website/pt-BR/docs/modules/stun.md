@@ -13,7 +13,7 @@ Quando a sua operadora não oferece uma porta pública fixa, a travessia STUN us
 
 A porta pública obtida via STUN costuma mudar. Combine com:
 
-- [DNS dinâmico](/pt-BR/docs/modules/ddns) ou um Webhook / script para sincronizar o novo endereço com os registros DNS;
+- [DNS dinâmico](/pt-BR/docs/modules/ddns) ou um Webhook / script para sincronizar o novo endereço com os registros DNS; os valores de registro do DNS dinâmico também podem usar `{STUN_nome da regra_PORT}` e variáveis semelhantes, sincronizadas assim que o endereço da regra muda, veja [Variáveis no valor do registro](/pt-BR/docs/modules/ddns#record-vars);
 - [Serviços Web](/pt-BR/docs/modules/web) para oferecer um ponto de entrada HTTPS.
 - Os sites de redirecionamento dos Serviços Web podem referenciar o endereço público atual da regra com variáveis como `{STUN_NomeRegra_PORT}` e seguem a porta nova automaticamente quando ela muda; veja [Variáveis de redirecionamento](/pt-BR/docs/modules/web#redirect-vars).
 

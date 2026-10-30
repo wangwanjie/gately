@@ -18,10 +18,12 @@ import (
 	"github.com/wangwanjie/gately/internal/config"
 	"github.com/wangwanjie/gately/internal/crud"
 	"github.com/wangwanjie/gately/internal/dnsprovider"
+	"github.com/wangwanjie/gately/internal/events"
 	"github.com/wangwanjie/gately/internal/ipsource"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/luckyimport"
 	"github.com/wangwanjie/gately/internal/module"
+	"github.com/wangwanjie/gately/internal/stunaddr"
 	"github.com/wangwanjie/gately/internal/webhook"
 )
 
@@ -457,4 +459,78 @@ func TestRenamedRecordResyncs(t *testing.T) {
 	if fp.callCount() != before+1 {
 		t.Fatalf("只应重新同步改名的记录，实际调用 %d 次", fp.callCount()-before)
 	}
+}
+
+// 记录值与 Webhook 可以引用 {STUN_规则名_PORT} 等变量（#47）。
+func TestSTUNVars(t *testing.T) {
+	fp, _ := setupFakes(t)
+	var hookBodies []string
+	var hookMu sync.Mutex
+	hook := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		b, _ := io.ReadAll(r.Body)
+		hookMu.Lock()
+		hookBodies = append(hookBodies, string(b))
+		hookMu.Unlock()
+	}))
+	defer hook.Close()
+
+	task := sampleTask()
+	task.IPv6.Enable = false
+	task.Records = []Record{
+		{Key: "txt", Enable: true, Zone: "example.com", Sub: "_ssh", Type: "TXT", Value: "port={STUN_ssh_PORT} addr={STUN_ssh_ADDR}"},
+		{Key: "a", Enable: true, Zone: "example.com", Sub: "stun", Type: "A", Value: "{STUN_ssh_IP}"},
+	}
+	task.Webhook = webhook.Config{Enable: true, URL: hook.URL, Method: "POST", Body: `{STUN_ssh_PORT}|{successDomains}`}
+	if err := task.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	r := newRunner(task, testLogger(), nil, nil)
+	ctx := context.Background()
+
+	// 规则还没有公网地址：记录跳过并给出原因，不调用服务商
+	r.syncOnce(ctx, false)
+	if fp.callCount() != 0 {
+		t.Fatalf("规则无地址时不应调用服务商，实际 %d", fp.callCount())
+	}
+	if e := r.snapshot().Records["txt"].LastError; !strings.Contains(e, "ssh") {
+		t.Fatalf("应提示 STUN 规则暂无公网地址: %q", e)
+	}
+
+	stunaddr.Set("k-ssh", "ssh", netip.MustParseAddrPort("203.0.113.7:40001"))
+	defer stunaddr.Delete("k-ssh")
+	r.syncOnce(ctx, false)
+	fp.mu.Lock()
+	txt, a := fp.state["TXT _ssh.example.com"], fp.state["A stun.example.com"]
+	fp.mu.Unlock()
+	if txt != "port=40001 addr=203.0.113.7:40001" || a != "203.0.113.7" {
+		t.Fatalf("记录值渲染错误: txt=%q a=%q", txt, a)
+	}
+	hookMu.Lock()
+	if len(hookBodies) != 1 || !strings.HasPrefix(hookBodies[0], "40001|") {
+		t.Fatalf("Webhook 内容错误: %v", hookBodies)
+	}
+	hookMu.Unlock()
+
+	// 端口变化后，模块收到 STUN 地址变化事件立即同步引用它的任务
+	m := newTestModule(t)
+	m.cfg.Tasks = []Task{task}
+	if err := m.Start(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	defer m.Stop()
+	before := fp.callCount()
+	stunaddr.Set("k-ssh", "ssh", netip.MustParseAddrPort("203.0.113.7:40002"))
+	m.onEvent(events.Event{Type: events.STUNChanged, Source: "other"})
+	m.onEvent(events.Event{Type: events.STUNChanged, Source: "ssh"})
+	deadline := time.Now().Add(3 * time.Second)
+	for time.Now().Before(deadline) {
+		fp.mu.Lock()
+		v := fp.state["TXT _ssh.example.com"]
+		fp.mu.Unlock()
+		if v == "port=40002 addr=203.0.113.7:40002" {
+			return
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+	t.Fatalf("STUN 地址变化后未立即同步，服务商调用 %d -> %d", before, fp.callCount())
 }

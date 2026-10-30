@@ -13,7 +13,7 @@ Lorsque votre FAI ne fournit pas de port public fixe, la traversée STUN utilise
 
 Le port public obtenu via STUN change généralement. Associez-le à :
 
-- [DNS dynamique](/fr/docs/modules/ddns) ou à un Webhook / script pour synchroniser la nouvelle adresse avec vos enregistrements DNS ;
+- [DNS dynamique](/fr/docs/modules/ddns) ou à un Webhook / script pour synchroniser la nouvelle adresse avec vos enregistrements DNS ; les valeurs d'enregistrement du DNS dynamique peuvent aussi utiliser `{STUN_nom de règle_PORT}` et des variables similaires, synchronisées dès que l'adresse de la règle change, voir [Variables de la valeur d'enregistrement](/fr/docs/modules/ddns#record-vars) ;
 - [Services Web](/fr/docs/modules/web) pour fournir un point d'entrée HTTPS.
 - Les sites de redirection des Services Web peuvent référencer l'adresse publique actuelle de la règle avec des variables comme `{STUN_NomRègle_PORT}` et suivent automatiquement le nouveau port quand il change ; voir [Variables de redirection](/fr/docs/modules/web#redirect-vars).
 

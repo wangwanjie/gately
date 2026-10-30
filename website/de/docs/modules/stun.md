@@ -13,7 +13,7 @@ Vergibt Ihr Provider keinen festen öffentlichen Port, nutzt das STUN-Traversal 
 
 Der per STUN erhaltene öffentliche Port ändert sich meist. Kombinieren Sie ihn mit:
 
-- [Dynamischem DNS](/de/docs/modules/ddns) oder einem Webhook / Skript, um die neue Adresse in Ihre DNS-Einträge zu übernehmen;
+- [Dynamischem DNS](/de/docs/modules/ddns) oder einem Webhook / Skript, um die neue Adresse in Ihre DNS-Einträge zu übernehmen; Eintragswerte im Dynamischen DNS können auch `{STUN_Name der Regel_PORT}` und ähnliche Variablen verwenden und werden sofort synchronisiert, wenn sich die Adresse der Regel ändert, siehe [Variablen im Eintragswert](/de/docs/modules/ddns#record-vars);
 - [Web-Diensten](/de/docs/modules/web), um einen HTTPS-Einstiegspunkt bereitzustellen.
 - Weiterleitungs-Sites der Web-Dienste können die aktuelle öffentliche Adresse der Regel mit Variablen wie `{STUN_Regelname_PORT}` referenzieren und folgen bei einer Änderung automatisch dem neuen Port; siehe [Weiterleitungsvariablen](/de/docs/modules/web#redirect-vars).
 

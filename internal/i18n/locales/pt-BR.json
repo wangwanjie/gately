@@ -42,6 +42,7 @@
   "%s %s 无需更新 (%s)": "%s %s não precisa de atualização (%s)",
   "%s %s 监听失败: %v": "%s %s falha de escuta: %v",
   "%s %s 记录值 %q 不是有效地址": "%s %s valor do registro %q não é um endereço válido",
+  "%s %s 跳过：%s": "%s %s ignorado: %s",
   "%s %s%s 后端错误: %v": "%s %s%s erro de backend: %v",
   "%s -\u003e %s 已连接": "%s -\u003e %s conectado",
   "%s SNI %q 未命中路由且未设置默认目标，已断开": "%s SNI %q não corresponde a nenhuma rota e não há destino padrão, conexão encerrada",

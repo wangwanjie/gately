@@ -24,6 +24,15 @@
 
 支援 IPv4 與 IPv6。
 
+## 記錄值變數 {#record-vars}
+
+記錄值可以使用以下變數，每輪同步時替換為目前的值：
+
+- `{ipv4Addr}`、`{ipv6Addr}`：本任務取得的 IPv4、IPv6 位址（A、AAAA 記錄留空時預設使用）；
+- `{STUN_規則名_PORT}`、`{STUN_規則名_IP}`、`{STUN_規則名_ADDR}`：STUN 穿透規則目前的公網連接埠、IP、IP:連接埠，規則名中可以含底線。例如 TXT 記錄寫 `port={STUN_ssh_PORT}`，A 記錄寫 `{STUN_ssh_IP}`。
+
+STUN 規則的公網位址變化後，引用它的任務會立即同步，不必等到下個檢查週期；規則未啟用或尚未穿透成功時，該記錄本輪略過，記錄狀態中會顯示原因。STUN 變數同樣可以在本任務的 Webhook 中使用。
+
 ## 通知
 
 IP 變動或同步失敗時可呼叫 Webhook。

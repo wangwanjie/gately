@@ -10,6 +10,7 @@ import (
 	"github.com/wangwanjie/gately/internal/crud"
 	"github.com/wangwanjie/gately/internal/dnsprovider"
 	"github.com/wangwanjie/gately/internal/ipsource"
+	"github.com/wangwanjie/gately/internal/stunaddr"
 	"github.com/wangwanjie/gately/internal/webhook"
 )
 
@@ -37,7 +38,7 @@ type Record struct {
 	// Sub 为主机记录，根域名填 @
 	Sub  string `json:"sub"`
 	Type string `json:"type"`
-	// Value 支持变量 {ipv4Addr} {ipv6Addr}
+	// Value 支持变量 {ipv4Addr} {ipv6Addr}，以及 {STUN_规则名_PORT} {STUN_规则名_IP} {STUN_规则名_ADDR}
 	Value  string `json:"value"`
 	TTL    int    `json:"ttl"`
 	Line   string `json:"line"`
@@ -96,6 +97,24 @@ func (t *Task) needs() (v4, v6 bool) {
 		}
 	}
 	return
+}
+
+// referencesSTUN 判断已启用的记录值或 Webhook 是否引用了指定 STUN 规则的变量。
+func (t *Task) referencesSTUN(rule string) bool {
+	for _, r := range t.Records {
+		if r.Enable && stunaddr.References(r.Value, rule) {
+			return true
+		}
+	}
+	if !t.Webhook.Enable {
+		return false
+	}
+	for _, s := range webhookTexts(t.Webhook) {
+		if stunaddr.References(s, rule) {
+			return true
+		}
+	}
+	return false
 }
 
 // Validate 校验并补全默认值。

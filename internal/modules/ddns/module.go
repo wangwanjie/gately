@@ -10,6 +10,7 @@ import (
 	"github.com/wangwanjie/gately/internal/config"
 	"github.com/wangwanjie/gately/internal/crud"
 	"github.com/wangwanjie/gately/internal/dnsprovider"
+	"github.com/wangwanjie/gately/internal/events"
 	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/ipsource"
 	"github.com/wangwanjie/gately/internal/logbuf"
@@ -30,6 +31,8 @@ type Module struct {
 	cfg     fileConfig
 	ctx     context.Context
 	runners map[string]*runner
+	// unsub 取消对 STUN 地址变化事件的订阅
+	unsub func()
 }
 
 // New 创建模块实例。
@@ -57,6 +60,9 @@ func (m *Module) Start(ctx context.Context) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.ctx = ctx
+	if m.unsub == nil {
+		m.unsub = events.Subscribe(m.onEvent)
+	}
 	if !m.cfg.Settings.Enable {
 		m.logs.Add(logbuf.LevelInfo, "", "动态域名模块已禁用")
 		return nil
@@ -73,10 +79,28 @@ func (m *Module) Start(ctx context.Context) error {
 func (m *Module) Stop() error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	if m.unsub != nil {
+		m.unsub()
+		m.unsub = nil
+	}
 	for key := range m.runners {
 		m.stopLocked(key)
 	}
 	return nil
+}
+
+// onEvent 在 STUN 规则公网地址变化时，让引用了该规则变量的任务立即同步，不必等到下个检查周期。
+func (m *Module) onEvent(e events.Event) {
+	if e.Type != events.STUNChanged {
+		return
+	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	for _, r := range m.runners {
+		if r.task.referencesSTUN(e.Source) {
+			r.requestSync(false)
+		}
+	}
 }
 
 func (m *Module) startLocked(t Task, delay time.Duration) {

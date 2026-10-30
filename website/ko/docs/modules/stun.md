@@ -13,7 +13,7 @@
 
 STUN으로 얻은 공인 포트는 보통 바뀌므로 다음과 함께 쓰기를 권장합니다.
 
-- [동적 DNS](/ko/docs/modules/ddns) 또는 Webhook / 스크립트로 새 주소를 DNS에 동기화
+- [동적 DNS](/ko/docs/modules/ddns) 또는 Webhook / 스크립트로 새 주소를 DNS에 동기화(동적 DNS 레코드 값에 `{STUN_규칙이름_PORT}` 등의 변수를 직접 쓸 수 있으며 규칙 주소가 바뀌면 바로 동기화됩니다. [레코드 값 변수](/ko/docs/modules/ddns#record-vars) 참고)
 - [웹 서비스](/ko/docs/modules/web)로 HTTPS 진입점 제공
 - 웹 서비스의 리다이렉트 사이트에서 `{STUN_규칙이름_PORT}` 등의 변수로 규칙의 현재 공인 주소를 참조할 수 있으며, 포트가 바뀌면 자동으로 새 포트로 이동합니다. [리다이렉트 변수](/ko/docs/modules/web#redirect-vars) 참고.
 

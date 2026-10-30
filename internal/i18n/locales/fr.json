@@ -42,6 +42,7 @@
   "%s %s 无需更新 (%s)": "%s %s aucune mise à jour nécessaire (%s)",
   "%s %s 监听失败: %v": "%s %s échec de l'écoute : %v",
   "%s %s 记录值 %q 不是有效地址": "%s %s la valeur d'enregistrement %q n'est pas une adresse valide",
+  "%s %s 跳过：%s": "%s %s ignoré : %s",
   "%s %s%s 后端错误: %v": "%s %s%s erreur du backend : %v",
   "%s -\u003e %s 已连接": "%s -\u003e %s connecté",
   "%s SNI %q 未命中路由且未设置默认目标，已断开": "%s SNI %q ne correspond à aucune route et aucune cible par défaut n'est définie, connexion fermée",

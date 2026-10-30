@@ -211,6 +211,9 @@
               <i18n-t keypath="ddns.recordValueHelp" tag="span">
                 <template #v4><span class="mono">{ipv4Addr}</span></template>
                 <template #v6><span class="mono">{ipv6Addr}</span></template>
+                <template #stun>
+                  <span class="mono">{{ `{STUN_${t('ddns.stunRuleName')}_PORT} {STUN_${t('ddns.stunRuleName')}_IP} {STUN_${t('ddns.stunRuleName')}_ADDR}` }}</span>
+                </template>
               </i18n-t>
             </div>
           </el-tab-pane>

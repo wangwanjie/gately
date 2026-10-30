@@ -13,7 +13,7 @@
 
 STUN で得られる公開ポートは通常変化するため、次のものとの併用をおすすめします。
 
-- [ダイナミック DNS](/ja/docs/modules/ddns)、または Webhook / スクリプトで、新しいアドレスを DNS に同期する
+- [ダイナミック DNS](/ja/docs/modules/ddns)、または Webhook / スクリプトで、新しいアドレスを DNS に同期する（ダイナミック DNS のレコード値には `{STUN_ルール名_PORT}` などの変数も書け、ルールのアドレスが変わるとすぐ同期します。[レコード値の変数](/ja/docs/modules/ddns#record-vars) を参照）
 - [Web サービス](/ja/docs/modules/web) で HTTPS の入口を提供する
 - Web サービスのリダイレクトサイトでは `{STUN_ルール名_PORT}` などの変数でルールの現在のパブリックアドレスを参照でき、ポートが変わると自動で新しいポートへ転送します。[リダイレクト変数](/ja/docs/modules/web#redirect-vars)を参照。
 

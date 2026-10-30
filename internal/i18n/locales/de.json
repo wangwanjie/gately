@@ -42,6 +42,7 @@
   "%s %s 无需更新 (%s)": "%s %s keine Aktualisierung nötig (%s)",
   "%s %s 监听失败: %v": "%s %s Listener fehlgeschlagen: %v",
   "%s %s 记录值 %q 不是有效地址": "%s %s Datensatzwert %q ist keine gültige Adresse",
+  "%s %s 跳过：%s": "%s %s übersprungen: %s",
   "%s %s%s 后端错误: %v": "%s %s%s Backend-Fehler: %v",
   "%s -\u003e %s 已连接": "%s -\u003e %s verbunden",
   "%s SNI %q 未命中路由且未设置默认目标，已断开": "%s SNI %q passt zu keiner Route und es ist kein Standardziel gesetzt, Verbindung getrennt",

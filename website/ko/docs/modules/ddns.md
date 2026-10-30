@@ -24,6 +24,15 @@ Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun
 
 IPv4와 IPv6를 지원합니다.
 
+## 레코드 값 변수 {#record-vars}
+
+레코드 값에 다음 변수를 사용할 수 있으며, 동기화할 때마다 현재 값으로 바뀝니다.
+
+- `{ipv4Addr}`, `{ipv6Addr}`: 이 작업이 가져온 IPv4, IPv6 주소(A, AAAA 레코드 값을 비워 두면 기본으로 사용)
+- `{STUN_규칙이름_PORT}`, `{STUN_규칙이름_IP}`, `{STUN_규칙이름_ADDR}`: STUN 규칙의 현재 공인 포트, IP, IP:포트이며 규칙 이름에 밑줄을 쓸 수 있습니다. 예: TXT 레코드에 `port={STUN_ssh_PORT}`, A 레코드에 `{STUN_ssh_IP}`
+
+STUN 규칙의 공인 주소가 바뀌면 이를 참조하는 작업은 다음 확인 주기를 기다리지 않고 바로 동기화합니다. 규칙이 비활성화되었거나 아직 관통에 성공하지 않았으면 해당 레코드는 이번 회차를 건너뛰고 레코드 상태에 이유가 표시됩니다. STUN 변수는 작업의 Webhook에서도 사용할 수 있습니다.
+
 ## 알림
 
 IP가 바뀌거나 동기화에 실패하면 Webhook을 호출할 수 있습니다.

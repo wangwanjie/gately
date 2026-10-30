@@ -13,7 +13,7 @@ Cuando tu operador no ofrece un puerto público fijo, el traversal STUN usa la p
 
 El puerto público obtenido con STUN suele cambiar. Combínalo con:
 
-- [DNS dinámico](/es/docs/modules/ddns) o un webhook / script para sincronizar la nueva dirección con tus registros DNS;
+- [DNS dinámico](/es/docs/modules/ddns) o un webhook / script para sincronizar la nueva dirección con tus registros DNS; los valores de registro del DNS dinámico también pueden usar `{STUN_nombre de regla_PORT}` y variables similares, que se sincronizan en cuanto cambia la dirección de la regla, consulta [Variables del valor del registro](/es/docs/modules/ddns#record-vars);
 - [Servicios web](/es/docs/modules/web) para ofrecer un punto de entrada HTTPS.
 - Los sitios de redirección de los Servicios web pueden referenciar la dirección pública actual de la regla con variables como `{STUN_NombreRegla_PORT}` y seguir el puerto nuevo automáticamente cuando cambia; consulta [Variables de redirección](/es/docs/modules/web#redirect-vars).
 

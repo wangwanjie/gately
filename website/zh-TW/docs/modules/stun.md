@@ -13,7 +13,7 @@
 
 STUN 取得的公網連接埠通常會變動，建議搭配：
 
-- [動態網域](/zh-TW/docs/modules/ddns) 或 Webhook / 指令碼，把新位址同步到解析；
+- [動態網域](/zh-TW/docs/modules/ddns) 或 Webhook / 指令碼，把新位址同步到解析；動態網域的記錄值也可以直接寫 `{STUN_規則名_PORT}` 等變數，規則位址變化後立即同步，見 [記錄值變數](/zh-TW/docs/modules/ddns#record-vars)；
 - [Web 服務](/zh-TW/docs/modules/web) 提供 HTTPS 入口。
 - Web 服務的重新導向站台可以用 `{STUN_規則名_PORT}` 等變數引用規則目前的公網位址，連接埠變化後自動跳到新連接埠，見 [重新導向變數](/zh-TW/docs/modules/web#redirect-vars)。
 

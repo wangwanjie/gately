@@ -24,6 +24,15 @@ Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun
 
 IPv4 et IPv6 sont tous deux pris en charge.
 
+## Variables de la valeur d'enregistrement {#record-vars}
+
+Les valeurs d'enregistrement peuvent utiliser ces variables, remplacées par les valeurs actuelles à chaque synchronisation :
+
+- `{ipv4Addr}`, `{ipv6Addr}` : les adresses IPv4 et IPv6 obtenues par la tâche (utilisées par défaut lorsque la valeur d'un enregistrement A ou AAAA est vide) ;
+- `{STUN_nom de règle_PORT}`, `{STUN_nom de règle_IP}`, `{STUN_nom de règle_ADDR}` : port public, IP et IP:port actuels d'une règle STUN ; le nom de règle peut contenir des tirets bas. Par exemple un enregistrement TXT `port={STUN_ssh_PORT}`, ou un enregistrement A `{STUN_ssh_IP}`.
+
+Quand l'adresse publique d'une règle STUN change, les tâches qui y font référence se synchronisent aussitôt, sans attendre la vérification suivante. Tant que la règle est désactivée ou n'a pas encore réussi la traversée, l'enregistrement est ignoré pour ce tour et son état en indique la raison. Les variables STUN sont aussi utilisables dans le Webhook de la tâche.
+
 ## Notifications
 
 Un Webhook peut être appelé lorsque l'IP change ou qu'une synchronisation échoue.

@@ -24,6 +24,15 @@ Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun
 
 Both IPv4 and IPv6 are supported.
 
+## Record value variables {#record-vars}
+
+Record values can use these variables, replaced with current values on every sync:
+
+- `{ipv4Addr}`, `{ipv6Addr}`: the IPv4 and IPv6 addresses this task obtains (used by default when an A or AAAA record value is left empty);
+- `{STUN_rule name_PORT}`, `{STUN_rule name_IP}`, `{STUN_rule name_ADDR}`: a STUN rule's current public port, IP and IP:port; the rule name may contain underscores. For example a TXT record of `port={STUN_ssh_PORT}`, or an A record of `{STUN_ssh_IP}`.
+
+When a STUN rule's public address changes, tasks that reference it sync right away instead of waiting for the next check. While the rule is disabled or has not traversed yet, the record is skipped for that round and the record status shows why. STUN variables can also be used in the task's Webhook.
+
 ## Notifications
 
 A Webhook can be called when the IP changes or a sync fails.

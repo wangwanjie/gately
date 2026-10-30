@@ -24,6 +24,15 @@ Alibaba Cloud、Cloudflare、Tencent Cloud、DNSPod、Huawei Cloud、GoDaddy、P
 
 IPv4 と IPv6 に対応しています。
 
+## レコード値の変数 {#record-vars}
+
+レコード値には次の変数を使用でき、同期のたびに現在の値に置き換えられます。
+
+- `{ipv4Addr}`、`{ipv6Addr}`：このタスクが取得した IPv4・IPv6 アドレス（A・AAAA レコードの値を空にした場合の既定値）
+- `{STUN_ルール名_PORT}`、`{STUN_ルール名_IP}`、`{STUN_ルール名_ADDR}`：STUN ルールの現在のパブリックポート、IP、IP:ポート。ルール名にはアンダースコアを含められます。例：TXT レコードに `port={STUN_ssh_PORT}`、A レコードに `{STUN_ssh_IP}`
+
+STUN ルールのパブリックアドレスが変わると、それを参照するタスクは次のチェック周期を待たずにすぐ同期します。ルールが無効、またはまだ貫通に成功していない場合、そのレコードはその回はスキップされ、レコードの状態に理由が表示されます。STUN 変数はタスクの Webhook でも使用できます。
+
 ## 通知
 
 IP の変化や同期の失敗時に Webhook を呼び出せます。
