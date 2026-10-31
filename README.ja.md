@@ -146,7 +146,7 @@ File Browser モジュールは [FileBrowser Quantum](https://github.com/gtsteff
 
 ### 443 番ポートひとつを全サービスで共有
 
-ポート転送の SNI ルーティングで、複数のサービスをドメインごとに同じポートへ振り分けます。TLS はそのままパススルーし、PROXY プロトコルで実際のクライアントアドレスを渡します。
+プロトコル振り分けで、複数のサービスをドメインやプロトコルごとに同じポートへ振り分けます。TLS はそのままパススルーし、PROXY プロトコルで実際のクライアントアドレスを渡します。
 
 <img src="docs/images/portforward-sni.webp" alt="443 番ポートひとつを全サービスで共有" width="100%">
 
@@ -215,7 +215,8 @@ fail2ban 風のルールがログファイル、journald、コンテナのログ
 | --- | --- |
 | ダイナミック DNS | Alibaba Cloud、Cloudflare、Tencent Cloud、DNSPod、Huawei Cloud、GoDaddy、Porkbun、dynv6、DuckDNS、Amazon Route 53、OVHcloud、Gandi、NS1、Bunny DNS、Namecheap、DynDNS2（No-IP、Dynu など）、カスタムコールバック。URL／ネットワークインターフェース／コマンドによる IP 取得、IPv4/IPv6、Webhook；グループ分け・並べ替え・検索 |
 | STUN 穿孔 | TCP/UDP、キープアライブ、UPnP/NAT-PMP、内蔵フォワーディング、アドレス変更時の Webhook・スクリプト実行 |
-| ポート転送 | TCP/UDP、IPv4/IPv6、ポート範囲、複数ターゲットのフェイルオーバー、接続数制限、トラフィック統計、PROXY プロトコル（v1/v2）、SNI 振り分けで 443 などの 1 つのポートを複数のサービスで共用（ドメインごとの TLS パススルー、デフォルトターゲット、ルートごとの PROXY プロトコル設定）；グループ分け・並べ替え・検索 |
+| ポート転送 | TCP/UDP、IPv4/IPv6、ポート範囲、複数ターゲットのフェイルオーバー、接続数制限、トラフィック統計、PROXY プロトコル（v1/v2）；グループ分け・並べ替え・検索 |
+| プロトコル振り分け | 443 などの 1 つのポートを複数のサービスで共用：接続をプロトコルで判別し、復号せずにそのまま中継。TLS は SNI と ALPN、HTTP は Host、Minecraft はサーバーアドレスで振り分け、SSH、RDP、SOCKS、OpenVPN、RTSP、SIP、XMPP、MQTT、AMQP、PostgreSQL、Redis、SMB、Git、IRC、ADB、BitTorrent も判別し、VNC のようにサーバーが先に送るプロトコルは待機タイムアウトのルートへ；デフォルトターゲット、ルートごとの PROXY プロトコル設定；haproxy の SNI 振り分けと sslh の代わりに使えます |
 | SSL 証明書 | ACME による自動発行・更新（DNS-01 はワイルドカード対応で、委任されたサブドメインの DNS ゾーンを SOA で自動判別、HTTP-01 は DNS プロバイダー不要）、短期証明書とグローバル IP アドレス証明書（Let's Encrypt の shortlived プロファイル）、EAB、アップロード、ファイル読み込み、ディレクトリへのマッピングとスクリプト実行、証明書の更新後に SSH で他のホストへ送ってコマンドを実行、または証明書を使う Docker コンテナを再起動 |
 | Tailscale | tailscaled の管理（ユーザー空間ネットワーク、コンテナ対応）またはシステム既存のデーモンへの接続。認証キー／ログインリンク、Headscale、サブネットルート、出口ノード、ノード一覧と SOCKS5 プロキシ、固定ポート、tailscaled の追加引数と環境変数。Linux ではオンラインでインストール・更新・ロールバック・アンインストール。デフォルト設定に戻すことも可能 |
 | frp | 複数の frpc / frps インスタンスを個別に実行。frpc クライアント（tcp/udp/http/https/stcp/xtcp プロキシ、追加・削除は即時反映）と frps サーバー（ポート許可リスト、サブドメイン、ダッシュボード）。旧形式の ini／新形式の toml 設定をワンクリックでインポート。オンラインでインストール・更新・ロールバック・アンインストール。デフォルト設定に戻すことも可能 |
@@ -256,7 +257,7 @@ Gately は完全なオープンソースで、ユーザーとコミュニティ�
 
 ## パフォーマンス
 
-ポート転送の SNI 振り分けと Web サービスを組み合わせると、よくある haproxy（SNI による TCP 振り分け）+ nginx（TLS とリバースプロキシ）の構成を置き換えられます。下の表は、実際のサーバーに近い設定で、同じマシン上の両者を比較したものです。90 個のドメインを SNI で振り分け、2 つのホップ間は PROXY プロトコル v2、証明書は ECDSA P-256、TLS 1.3 を使用しています。
+SNI によるプロトコル振り分けと Web サービスを組み合わせると、よくある haproxy（SNI による TCP 振り分け）+ nginx（TLS とリバースプロキシ）の構成を置き換えられます。下の表は、実際のサーバーに近い設定で、同じマシン上の両者を比較したものです。90 個のドメインを SNI で振り分け、2 つのホップ間は PROXY プロトコル v2、証明書は ECDSA P-256、TLS 1.3 を使用しています。
 
 | シナリオ | haproxy + nginx | Gately |
 | --- | --- | --- |

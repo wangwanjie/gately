@@ -34,6 +34,10 @@ scrape_configs:
 | `gately_portforward_active_connections{rule}` | gauge | 転送ルールの現在の接続数 |
 | `gately_portforward_connections_total{rule}` | counter | 転送ルールが受け付けた接続数 |
 | `gately_portforward_bytes_total{rule,direction}` | counter | 中継したバイト数（`in` はクライアントから転送先方向） |
+| `gately_protoroute_active_connections{rule}` | gauge | プロトコル振り分けルールの現在の接続数 |
+| `gately_protoroute_connections_total{rule}` | counter | プロトコル振り分けルールが受け付けた累計接続数 |
+| `gately_protoroute_bytes_total{rule,direction}` | counter | プロトコル振り分けルールが中継したバイト数（`in` はクライアントから転送先方向） |
+| `gately_protoroute_route_connections_total{rule,route}` | counter | 各ルートに送られた累計接続数。`route` はルート名（名前がない場合は番号）、デフォルトターゲットは `default` |
 | `gately_site_requests_total{listener,site}` | counter | サイトごとのリクエスト数 |
 | `gately_site_responses_total{listener,site,class}` | counter | ステータスの種類（2xx/3xx/4xx/5xx）ごとのレスポンス数 |
 | `gately_site_response_bytes_total` / `gately_site_errors_total` / `gately_site_active_requests` | counter / counter / gauge | レスポンスのバイト数、バックエンドのエラー数、処理中のリクエスト数 |

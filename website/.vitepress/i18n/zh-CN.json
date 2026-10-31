@@ -32,6 +32,7 @@
       "modules/ddns": "动态域名 DDNS",
       "modules/stun": "STUN 穿透",
       "modules/portforward": "端口转发",
+      "modules/protoroute": "协议分流",
       "modules/ssl": "SSL 证书",
       "modules/web": "Web 服务",
       "modules/oidc": "OIDC 单点登录",

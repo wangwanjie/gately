@@ -9,6 +9,7 @@ Unter „Einstellungen → Module“ können Sie ein ganzes Modul ausschalten. E
 | Dynamisches DNS | 11 DNS-Anbieter, IP per URL / Netzwerkschnittstelle / Befehl, IPv4 / IPv6, Webhook | [Ansehen](/de/docs/modules/ddns) |
 | STUN-Traversal | TCP / UDP, Keep-alive, UPnP / NAT-PMP, integrierte Weiterleitung, Webhook- und Skript-Auslöser bei Änderungen | [Ansehen](/de/docs/modules/stun) |
 | Portweiterleitung | TCP / UDP, IPv4 / IPv6, Portbereiche, Failover über mehrere Ziele, Verbindungslimits, Traffic-Statistiken | [Ansehen](/de/docs/modules/portforward) |
+| Protokoll-Routing | Mehrere Dienste teilen sich einen Port: TLS nach SNI und ALPN, HTTP nach Host, Minecraft nach Serveradresse, außerdem SSH, RDP, SOCKS, OpenVPN, RTSP, SIP, XMPP, MQTT, AMQP, PostgreSQL, Redis, SMB, Git, IRC, ADB, BitTorrent sowie eine Warte-Timeout-Route für VNC und Ähnliches | [Ansehen](/de/docs/modules/protoroute) |
 | SSL-Zertifikate | Automatische ACME-DNS-01-Ausstellung und -Erneuerung, Upload, Zuordnung zu einem Verzeichnis mit Skripten | [Ansehen](/de/docs/modules/ssl) |
 | Web-Dienste | Reverse Proxy, Weiterleitungen, statische Dateien, HTTPS, Authentifizierung, Zugriffskontrolle, Lastverteilung und Health-Checks, Caching und Ratenbegrenzung, Zugriffsstatistiken | [Ansehen](/de/docs/modules/web) |
 | OIDC-Single-Sign-on | Stellt die gemeinsamen Benutzer Gitea, OpenList, Grafana und anderen Apps per OpenID Connect bereit; ersetzt das OIDC von Authelia | [Ansehen](/de/docs/modules/oidc) |

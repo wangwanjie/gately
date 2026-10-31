@@ -34,6 +34,10 @@ scrape_configs:
 | `gately_portforward_active_connections{rule}` | gauge | Открытые соединения правила проброса |
 | `gately_portforward_connections_total{rule}` | counter | Принятые соединения правила проброса |
 | `gately_portforward_bytes_total{rule,direction}` | counter | Переданные байты (`in` = от клиента к цели) |
+| `gately_protoroute_active_connections{rule}` | gauge | Открытые соединения правила маршрутизации по протоколу |
+| `gately_protoroute_connections_total{rule}` | counter | Принятые соединения правила маршрутизации по протоколу |
+| `gately_protoroute_bytes_total{rule,direction}` | counter | Байты, переданные правилом маршрутизации по протоколу (`in` = от клиента к цели) |
+| `gately_protoroute_route_connections_total{rule,route}` | counter | Соединения, отправленные на каждый маршрут; `route` — имя маршрута (номер, если имени нет), `default` — цель по умолчанию |
 | `gately_site_requests_total{listener,site}` | counter | Запросы по сайтам |
 | `gately_site_responses_total{listener,site,class}` | counter | Ответы по классам статуса (2xx/3xx/4xx/5xx) |
 | `gately_site_response_bytes_total` / `gately_site_errors_total` / `gately_site_active_requests` | counter / counter / gauge | Байты ответов, ошибки бэкендов, выполняющиеся запросы |

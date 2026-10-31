@@ -146,7 +146,7 @@ File Browser 模組託管 [FileBrowser Quantum](https://github.com/gtsteffaniak/
 
 ### 一個 443 連接埠，所有服務共用
 
-連接埠轉發的 SNI 分流依網域把多個服務放在同一個連接埠上，TLS 原樣透傳，再用 PROXY 協定保留真實用戶端位址。
+協定分流依網域或協定把多個服務放在同一個連接埠上，TLS 原樣透傳，再用 PROXY 協定保留真實用戶端位址。
 
 <img src="docs/images/portforward-sni.webp" alt="一個 443 連接埠，所有服務共用" width="100%">
 
@@ -215,7 +215,8 @@ Cloudflare、阿里雲、DNSPod、Route 53 等都能用。支援 IPv4 與 IPv6�
 | --- | --- |
 | 動態網域 | Alibaba Cloud、Cloudflare、Tencent Cloud、DNSPod、Huawei Cloud、GoDaddy、Porkbun、dynv6、DuckDNS、Amazon Route 53、OVHcloud、Gandi、NS1、Bunny DNS、Namecheap、DynDNS2（No-IP、Dynu 等）、自訂回呼；以 URL／網路卡／指令取得 IP；IPv4/IPv6；Webhook；分組、排序與搜尋 |
 | STUN 穿透 | TCP/UDP、保活、UPnP/NAT-PMP、內建轉發、位址變更時觸發 Webhook 與腳本 |
-| 連接埠轉發 | TCP/UDP、IPv4/IPv6、連接埠範圍、多目標故障轉移、連線數限制、流量統計、PROXY 協定（v1/v2）；SNI 分流，讓多個服務共用 443 等同一個連接埠（依網域 TLS 透傳、預設目標、每條路由可單獨設定 PROXY 協定）；分組、排序與搜尋 |
+| 連接埠轉發 | TCP/UDP、IPv4/IPv6、連接埠範圍、多目標故障轉移、連線數限制、流量統計、PROXY 協定（v1/v2）；分組、排序與搜尋 |
+| 協定分流 | 多個服務共用 443 等同一個連接埠：依協定辨識連線並透傳、不解密，TLS 依 SNI 與 ALPN、HTTP 依 Host，Minecraft 依伺服器位址，另可辨識 SSH、RDP、SOCKS、OpenVPN、RTSP、SIP、XMPP、MQTT、AMQP、PostgreSQL、Redis、SMB、Git、IRC、ADB、BitTorrent，VNC 等伺服器先發話的協定走等待逾時路由；預設目標、每條路由可單獨設定 PROXY 協定；取代 haproxy SNI 分流與 sslh |
 | SSL 憑證 | ACME 自動簽發與續期，支援 DNS-01（萬用字元；委派子網域依 SOA 自動識別 DNS 區域）與 HTTP-01（無需 DNS 服務商）、短期憑證與公網 IP 位址憑證（Let's Encrypt shortlived 設定檔）、EAB、上傳、讀取檔案、對應到目錄並執行腳本；憑證更新後經 SSH 推送到其他主機並執行指令，或重新啟動使用憑證的 Docker 容器 |
 | Tailscale | 託管 tailscaled（使用者空間網路，容器友善）或接入系統既有的常駐程式；驗證金鑰／登入連結、Headscale、子網路由、出口節點、節點清單與 SOCKS5 代理、固定連接埠、tailscaled 額外參數與環境變數；Linux 上可線上安裝、更新、回滾與解除安裝，可恢復預設設定 |
 | frp | 可同時執行多個 frpc 與 frps 實例；frpc 用戶端（tcp/udp/http/https/stcp/xtcp 代理，新增刪除即時生效）與 frps 伺服器端（連接埠白名單、子網域、主控台），可一鍵匯入舊版 ini／新版 toml 設定；線上安裝、更新、回滾與解除安裝，可恢復預設設定 |
@@ -256,7 +257,7 @@ Gately 完全開源，使用者和社群可以直接檢視原始碼與設定。�
 
 ## 效能
 
-連接埠轉發的 SNI 分流加上 Web 服務，可以取代常見的 haproxy（依 SNI 做 TCP 分流）+ nginx（TLS 與反向代理）組合。下表在同一台機器上，依一台真實伺服器的設定比較兩者：90 個網域依 SNI 分流，兩層之間使用 PROXY 協定 v2，ECDSA P-256 憑證，TLS 1.3。
+依 SNI 的協定分流加上 Web 服務，可以取代常見的 haproxy（依 SNI 做 TCP 分流）+ nginx（TLS 與反向代理）組合。下表在同一台機器上，依一台真實伺服器的設定比較兩者：90 個網域依 SNI 分流，兩層之間使用 PROXY 協定 v2，ECDSA P-256 憑證，TLS 1.3。
 
 | 情境 | haproxy + nginx | Gately |
 | --- | --- | --- |

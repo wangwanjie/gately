@@ -32,6 +32,7 @@
       "modules/ddns": "Динамический DNS (DDNS)",
       "modules/stun": "STUN-обход NAT",
       "modules/portforward": "Проброс портов",
+      "modules/protoroute": "Маршрутизация по протоколу",
       "modules/ssl": "SSL-сертификаты",
       "modules/web": "Веб-службы",
       "modules/oidc": "Единый вход OIDC",

@@ -32,6 +32,7 @@
       "modules/ddns": "DNS dinámico (DDNS)",
       "modules/stun": "Traversal STUN",
       "modules/portforward": "Reenvío de puertos",
+      "modules/protoroute": "Enrutamiento por protocolo",
       "modules/ssl": "Certificados SSL",
       "modules/web": "Servicios web",
       "modules/oidc": "Inicio de sesión único OIDC",

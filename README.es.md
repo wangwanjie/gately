@@ -146,7 +146,7 @@ Proxy inverso, archivos estáticos y redirecciones por dominio, con HTTPS y HTTP
 
 ### Un solo puerto 443 para todos tus servicios
 
-El reenvío de puertos con enrutamiento SNI permite que varios servicios compartan un mismo puerto según el dominio: el TLS pasa tal cual y el protocolo PROXY conserva la dirección real del cliente.
+El enrutamiento por protocolo permite que varios servicios compartan un mismo puerto según el dominio o el protocolo: el TLS pasa tal cual y el protocolo PROXY conserva la dirección real del cliente.
 
 <img src="docs/images/portforward-sni.webp" alt="Un solo puerto 443 para todos tus servicios" width="100%">
 
@@ -215,7 +215,8 @@ Varias instancias de frpc y frps en paralelo, junto a Tailscale y los túneles d
 | --- | --- |
 | DNS dinámico | Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun, dynv6, DuckDNS, Amazon Route 53, OVHcloud, Gandi, NS1, Bunny DNS, Namecheap, DynDNS2 (No-IP, Dynu, …), callback personalizado; obtención de IP por URL/interfaz de red/comando; IPv4/IPv6; Webhook; grupos, orden y búsqueda |
 | Túnel STUN | TCP/UDP, keep-alive, UPnP/NAT-PMP, reenvío integrado, activación de Webhook y scripts al cambiar la dirección |
-| Reenvío de puertos | TCP/UDP, IPv4/IPv6, rangos de puertos, conmutación por error con varios destinos, límite de conexiones, estadísticas de tráfico, protocolo PROXY v1/v2; enrutamiento SNI que permite que varios servicios compartan un mismo puerto como el 443 (TLS de paso según el dominio, un destino predeterminado, protocolo PROXY por ruta); grupos, orden y búsqueda |
+| Reenvío de puertos | TCP/UDP, IPv4/IPv6, rangos de puertos, conmutación por error con varios destinos, límite de conexiones, estadísticas de tráfico, protocolo PROXY v1/v2; grupos, orden y búsqueda |
+| Enrutamiento por protocolo | Varios servicios comparten un mismo puerto como el 443: cada conexión se identifica por protocolo y pasa sin descifrar (TLS por SNI y ALPN, HTTP por Host, Minecraft por dirección del servidor, además de SSH, RDP, SOCKS, OpenVPN, RTSP, SIP, XMPP, MQTT, AMQP, PostgreSQL, Redis, SMB, Git, IRC, ADB, BitTorrent y una ruta de tiempo de espera para protocolos en los que el servidor habla primero, como VNC); un destino predeterminado, protocolo PROXY por ruta; sustituye el enrutamiento SNI de haproxy y sslh |
 | Certificados SSL | Emisión y renovación automáticas con ACME mediante DNS-01 (comodín; zona DNS de subdominios delegados detectada mediante SOA) o HTTP-01 (sin proveedor DNS), certificados de corta duración y para direcciones IP públicas (perfil shortlived de Let's Encrypt), EAB, carga manual, lectura desde archivo, mapeo a un directorio y ejecución de scripts; tras actualizar un certificado, envío por SSH a otros hosts con ejecución de comandos, o reinicio de los contenedores Docker que lo usan |
 | Tailscale | Gestiona tailscaled (red en espacio de usuario, apta para contenedores) o se conecta a un demonio existente del sistema; clave de autenticación/enlace de inicio de sesión, Headscale, rutas de subred, nodo de salida, lista de nodos y proxy SOCKS5, puerto fijo, argumentos adicionales y variables de entorno de tailscaled; instalación, actualización, reversión y desinstalación en línea en Linux; restauración de valores predeterminados |
 | frp | Varias instancias de frpc y frps, cada una por separado: Cliente frpc (proxies tcp/udp/http/https/stcp/xtcp, los cambios se aplican al añadir o eliminar) y servidor frps (lista blanca de puertos, subdominios, panel de control); importación con un clic de configuraciones ini antiguas y toml nuevas; instalación, actualización, reversión y desinstalación en línea; restauración de valores predeterminados |
@@ -256,7 +257,7 @@ Gately es totalmente abierto para que usuarios y comunidad puedan revisar direct
 
 ## Rendimiento
 
-El reenvío de puertos con enrutamiento SNI junto con el servicio web puede sustituir la pareja habitual haproxy (enrutamiento TCP por SNI) + nginx (TLS y proxy inverso). Las cifras siguientes comparan ambas soluciones en la misma máquina con la configuración de un servidor real: 90 dominios enrutados por SNI, protocolo PROXY v2 entre los dos saltos y un certificado ECDSA P-256 con TLS 1.3.
+El enrutamiento por protocolo según SNI junto con el servicio web puede sustituir la pareja habitual haproxy (enrutamiento TCP por SNI) + nginx (TLS y proxy inverso). Las cifras siguientes comparan ambas soluciones en la misma máquina con la configuración de un servidor real: 90 dominios enrutados por SNI, protocolo PROXY v2 entre los dos saltos y un certificado ECDSA P-256 con TLS 1.3.
 
 | Escenario | haproxy + nginx | Gately |
 | --- | --- | --- |

@@ -34,6 +34,10 @@ scrape_configs:
 | `gately_portforward_active_connections{rule}` | gauge | 連接埠轉發目前連線數 |
 | `gately_portforward_connections_total{rule}` | counter | 連接埠轉發累計連線數 |
 | `gately_portforward_bytes_total{rule,direction}` | counter | 連接埠轉發累計流量（`in` 為用戶端到目標） |
+| `gately_protoroute_active_connections{rule}` | gauge | 協定分流目前連線數 |
+| `gately_protoroute_connections_total{rule}` | counter | 協定分流累計連線數 |
+| `gately_protoroute_bytes_total{rule,direction}` | counter | 協定分流累計流量（`in` 為用戶端到目標） |
+| `gately_protoroute_route_connections_total{rule,route}` | counter | 協定分流各路由累計連線數，`route` 為路由名稱（未命名時為序號），預設目標為 `default` |
 | `gately_site_requests_total{listener,site}` | counter | 站台累計請求數 |
 | `gately_site_responses_total{listener,site,class}` | counter | 依狀態類別（2xx/3xx/4xx/5xx）統計的回應數 |
 | `gately_site_response_bytes_total` / `gately_site_errors_total` / `gately_site_active_requests` | counter / counter / gauge | 站台回應位元組數、後端錯誤數、進行中的請求數 |

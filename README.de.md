@@ -146,7 +146,7 @@ Reverse-Proxy, statische Dateien und Weiterleitungen je Domain, mit HTTPS und HT
 
 ### Ein Port 443 für alle Dienste
 
-Mit SNI-Routing in der Portweiterleitung teilen sich mehrere Dienste einen Port nach Domain. TLS wird unverändert durchgereicht, das PROXY-Protokoll bewahrt die echte Client-Adresse.
+Mit dem Protokoll-Routing teilen sich mehrere Dienste einen Port nach Domain oder Protokoll. TLS wird unverändert durchgereicht, das PROXY-Protokoll bewahrt die echte Client-Adresse.
 
 <img src="docs/images/portforward-sni.webp" alt="Ein Port 443 für alle Dienste" width="100%">
 
@@ -215,7 +215,8 @@ Mehrere frpc- und frps-Instanzen laufen parallel, neben Tailscale und cloudflare
 | --- | --- |
 | Dynamisches DNS | Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun, dynv6, DuckDNS, Amazon Route 53, OVHcloud, Gandi, NS1, Bunny DNS, Namecheap, DynDNS2 (No-IP, Dynu, …), benutzerdefinierter Callback; IP per URL/Netzwerkschnittstelle/Befehl ermitteln; IPv4/IPv6; Webhook; Gruppen, Sortierung und Suche |
 | STUN-Traversal | TCP/UDP, Keepalive, UPnP/NAT-PMP, integrierte Weiterleitung, Webhook und Skript bei Adressänderung |
-| Portweiterleitung | TCP/UDP, IPv4/IPv6, Portbereiche, Failover mit mehreren Zielen, Verbindungslimit, Traffic-Statistik, PROXY-Protokoll v1/v2; SNI-Routing, damit sich mehrere Dienste einen Port wie 443 teilen (TLS-Durchleitung nach Domain, Standardziel, PROXY-Protokoll pro Route); Gruppen, Sortierung und Suche |
+| Portweiterleitung | TCP/UDP, IPv4/IPv6, Portbereiche, Failover mit mehreren Zielen, Verbindungslimit, Traffic-Statistik, PROXY-Protokoll v1/v2; Gruppen, Sortierung und Suche |
+| Protokoll-Routing | Mehrere Dienste teilen sich einen Port wie 443: Verbindungen werden am Protokoll erkannt und ohne Entschlüsselung durchgereicht – TLS nach SNI und ALPN, HTTP nach Host, Minecraft nach Serveradresse, außerdem SSH, RDP, SOCKS, OpenVPN, RTSP, SIP, XMPP, MQTT, AMQP, PostgreSQL, Redis, SMB, Git, IRC, ADB, BitTorrent sowie eine Warte-Timeout-Route für Protokolle, bei denen der Server zuerst sendet, etwa VNC; Standardziel, PROXY-Protokoll pro Route; ersetzt SNI-Routing von haproxy und sslh |
 | SSL-Zertifikate | Automatische Ausstellung und Erneuerung per ACME über DNS-01 (Wildcard; DNS-Zone delegierter Subdomains per SOA erkannt) oder HTTP-01 (ohne DNS-Anbieter), kurzlebige Zertifikate und Zertifikate für öffentliche IP-Adressen (Let's-Encrypt-Profil shortlived), EAB, Upload, Dateien einlesen, in ein Verzeichnis abbilden und Skript ausführen; nach einer Aktualisierung per SSH auf andere Hosts übertragen und dort Befehle ausführen oder die Docker-Container neu starten, die das Zertifikat nutzen |
 | Tailscale | Verwaltet tailscaled (Userspace-Netzwerk, container-freundlich) oder nutzt einen vorhandenen System-Daemon; Auth-Key/Login-Link, Headscale, Subnetz-Routen, Exit-Node, Knotenliste und SOCKS5-Proxy, fester Port, zusätzliche tailscaled-Argumente und Umgebungsvariablen; unter Linux online installieren, aktualisieren, zurücksetzen und deinstallieren, Standardeinstellungen wiederherstellbar |
 | frp | Mehrere frpc- und frps-Instanzen, jede unabhängig: frpc-Client (tcp/udp/http/https/stcp/xtcp-Proxys, Änderungen wirken sofort) und frps-Server (Port-Whitelist, Subdomains, Dashboard); Konfigurationen im alten ini- und im neuen toml-Format lassen sich mit einem Klick importieren; online installieren, aktualisieren, zurücksetzen und deinstallieren, Standardeinstellungen wiederherstellbar |
@@ -256,7 +257,7 @@ Gately ist vollständig quelloffen, sodass Nutzer und Community Quellcode und Ko
 
 ## Leistung
 
-Portweiterleitung mit SNI-Routing plus Web-Dienste kann das verbreitete Paar aus haproxy (TCP-Routing nach SNI) und nginx (TLS und Reverse-Proxy) ersetzen. Die folgenden Zahlen vergleichen beide auf demselben Rechner mit der Konfiguration eines echten Servers: 90 per SNI geroutete Domains, PROXY-Protokoll v2 zwischen den beiden Stufen und ein ECDSA-P-256-Zertifikat mit TLS 1.3.
+Protokoll-Routing nach SNI plus Web-Dienste kann das verbreitete Paar aus haproxy (TCP-Routing nach SNI) und nginx (TLS und Reverse-Proxy) ersetzen. Die folgenden Zahlen vergleichen beide auf demselben Rechner mit der Konfiguration eines echten Servers: 90 per SNI geroutete Domains, PROXY-Protokoll v2 zwischen den beiden Stufen und ein ECDSA-P-256-Zertifikat mit TLS 1.3.
 
 | Szenario | haproxy + nginx | Gately |
 | --- | --- | --- |

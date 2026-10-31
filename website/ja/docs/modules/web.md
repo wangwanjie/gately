@@ -428,7 +428,7 @@ curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/webservice/m
 
 ## haproxy と nginx の置き換え
 
-ポート転送と Web サービスを組み合わせると、haproxy + nginx の構成を置き換えられます。よくある構成は、443 番ポートに [SNI 振り分け](/ja/docs/modules/portforward) のルールを 1 つ置き、VPN などの TLS サービスは直接バックエンドへ、それ以外はすべて PROXY プロトコルを受信する Web サービスのリスナーへ送るものです。これに加えて、80 番ポートにリダイレクトサイト（`https://{host}`）を持つ Web サービスのリスナーを置きます。
+ポート転送と Web サービスを組み合わせると、haproxy + nginx の構成を置き換えられます。よくある構成は、443 番ポートに [プロトコル振り分け](/ja/docs/modules/protoroute) のルールを 1 つ置き、VPN などの TLS サービスは直接バックエンドへ、それ以外はすべて PROXY プロトコルを受信する Web サービスのリスナーへ送るものです。これに加えて、80 番ポートにリダイレクトサイト（`https://{host}`）を持つ Web サービスのリスナーを置きます。
 
 nginx の設定の置き換え方：
 

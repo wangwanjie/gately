@@ -9,6 +9,7 @@
 | Динамический DNS | 11 DNS-провайдеров, получение IP по URL / сетевому интерфейсу / команде, IPv4 / IPv6, Webhook | [Открыть](/ru/docs/modules/ddns) |
 | STUN-обход NAT | TCP / UDP, keep-alive, UPnP / NAT-PMP, встроенная переадресация, Webhook и скрипты при изменении | [Открыть](/ru/docs/modules/stun) |
 | Проброс портов | TCP / UDP, IPv4 / IPv6, диапазоны портов, несколько целей с переключением при сбое, лимит соединений, статистика трафика | [Открыть](/ru/docs/modules/portforward) |
+| Маршрутизация по протоколу | Несколько служб делят один порт: TLS по SNI и ALPN, HTTP по Host, Minecraft по адресу сервера, а также SSH, RDP, SOCKS, OpenVPN, RTSP, SIP, XMPP, MQTT, AMQP, PostgreSQL, Redis, SMB, Git, IRC, ADB, BitTorrent и маршрут «Ожидание» для VNC и подобных | [Открыть](/ru/docs/modules/protoroute) |
 | SSL-сертификаты | Автоматический выпуск и продление по ACME DNS-01, загрузка, копирование в каталог и запуск скрипта | [Открыть](/ru/docs/modules/ssl) |
 | Веб-службы | Обратный прокси, редиректы, статические файлы, HTTPS, аутентификация, контроль доступа, балансировка и проверки работоспособности, кэш и ограничение частоты запросов, статистика доступа | [Открыть](/ru/docs/modules/web) |
 | Единый вход OIDC | Предоставляет общих пользователей Gitea, OpenList, Grafana и другим приложениям по OpenID Connect, заменяет OIDC Authelia | [Открыть](/ru/docs/modules/oidc) |

@@ -9,6 +9,7 @@ Gately 的每项能力是一个独立模块，可单独启停、单独配置，�
 | 动态域名 | 11 家 DNS 服务商，URL / 网卡 / 命令取 IP，IPv4 / IPv6，Webhook | [查看](/docs/modules/ddns) |
 | STUN 穿透 | TCP / UDP、保活、UPnP / NAT-PMP、内置转发、变化时触发 Webhook 与脚本 | [查看](/docs/modules/stun) |
 | 端口转发 | TCP / UDP、IPv4 / IPv6、端口段、多目标故障转移、连接数限制、流量统计 | [查看](/docs/modules/portforward) |
+| 协议分流 | 多个服务共用一个端口：TLS 按 SNI 与 ALPN、HTTP 按 Host，Minecraft 按服务器地址，另可识别 SSH、RDP、SOCKS、OpenVPN、RTSP、SIP、XMPP、MQTT、AMQP、PostgreSQL、Redis、SMB、Git、IRC、ADB、BitTorrent，VNC 等走等待超时路由 | [查看](/docs/modules/protoroute) |
 | SSL 证书 | ACME DNS-01 自动签发与续期、上传、映射到目录并执行脚本 | [查看](/docs/modules/ssl) |
 | Web 服务 | 反向代理、重定向、静态文件、HTTPS、认证、访问控制、负载均衡与健康检查、缓存与限流、访问统计 | [查看](/docs/modules/web) |
 | OIDC 单点登录 | 把共享用户以 OpenID Connect 提供给 Gitea、OpenList、Grafana 等应用登录，可替代 Authelia 的 OIDC | [查看](/docs/modules/oidc) |

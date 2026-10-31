@@ -428,7 +428,7 @@ Mit „nginx importieren“ oben auf der Seite lassen sich bestehende nginx-Site
 
 ## haproxy und nginx ersetzen
 
-Portweiterleitung und Web-Dienste zusammen können ein Paar aus haproxy und nginx ersetzen. Ein gängiges Layout: eine Regel mit [SNI-Routing](/de/docs/modules/portforward) auf Port 443, die VPN und andere TLS-Dienste direkt an ihre Backends und alles andere an einen Listener der Web-Dienste schickt, der das PROXY-Protokoll akzeptiert; dazu ein Listener der Web-Dienste auf Port 80 mit einer Weiterleitungs-Site (`https://{host}`).
+Portweiterleitung und Web-Dienste zusammen können ein Paar aus haproxy und nginx ersetzen. Ein gängiges Layout: eine Regel mit [Protokoll-Routing](/de/docs/modules/protoroute) auf Port 443, die VPN und andere TLS-Dienste direkt an ihre Backends und alles andere an einen Listener der Web-Dienste schickt, der das PROXY-Protokoll akzeptiert; dazu ein Listener der Web-Dienste auf Port 80 mit einer Weiterleitungs-Site (`https://{host}`).
 
 nginx-Einstellungen umsetzen:
 

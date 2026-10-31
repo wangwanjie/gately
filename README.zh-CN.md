@@ -146,7 +146,7 @@ File Browser 模块托管 [FileBrowser Quantum](https://github.com/gtsteffaniak/
 
 ### 一个 443 端口，给所有服务用
 
-端口转发的 SNI 分流按域名把多个服务放在同一个端口上，TLS 原样透传，再用 PROXY 协议保留真实客户端地址。
+协议分流按域名或协议把多个服务放在同一个端口上，TLS 原样透传，再用 PROXY 协议保留真实客户端地址。
 
 <img src="docs/images/portforward-sni.webp" alt="一个 443 端口，给所有服务用" width="100%">
 
@@ -215,7 +215,8 @@ Cloudflare、阿里云、DNSPod、Route 53 等都能用。IPv4 与 IPv6，IP 可
 | --- | --- |
 | 动态域名 | 阿里云、Cloudflare、腾讯云、DNSPod、华为云、GoDaddy、Porkbun、dynv6、DuckDNS、Amazon Route 53、OVHcloud、Gandi、NS1、Bunny DNS、Namecheap、DynDNS2（No-IP、Dynu 等）、自定义回调；URL/网卡/命令取 IP；IPv4/IPv6；Webhook；分组、排序与搜索 |
 | STUN 穿透 | TCP/UDP、保活、UPnP/NAT-PMP、内置转发、地址变化时触发 Webhook 与脚本 |
-| 端口转发 | TCP/UDP、IPv4/IPv6、端口段、多目标故障转移、连接数限制、流量统计、PROXY 协议（v1/v2）；SNI 分流，让多个服务共用 443 等同一个端口（按域名 TLS 透传、默认目标、每条路由单独设置 PROXY 协议）；分组、排序与搜索 |
+| 端口转发 | TCP/UDP、IPv4/IPv6、端口段、多目标故障转移、连接数限制、流量统计、PROXY 协议（v1/v2）；分组、排序与搜索 |
+| 协议分流 | 多个服务共用 443 等同一个端口：按协议识别连接并透传、不解密，TLS 按 SNI 与 ALPN、HTTP 按 Host，Minecraft 按服务器地址，另可识别 SSH、RDP、SOCKS、OpenVPN、RTSP、SIP、XMPP、MQTT、AMQP、PostgreSQL、Redis、SMB、Git、IRC、ADB、BitTorrent，VNC 等服务端先发言的协议走等待超时路由；默认目标、每条路由单独设置 PROXY 协议；替代 haproxy SNI 分流与 sslh |
 | SSL 证书 | ACME 自动签发与续期，支持 DNS-01（通配符；委派子域名按 SOA 自动识别 DNS 区域）与 HTTP-01（无需 DNS 服务商）、短期证书与公网 IP 地址证书（Let's Encrypt shortlived 配置）、EAB、上传、读取文件、映射到目录并执行脚本；证书更新后经 SSH 推送到其他主机并执行命令，或重启使用证书的 Docker 容器 |
 | Tailscale | 托管 tailscaled（用户态网络，容器友好）或接入系统已有守护进程；认证密钥/登录链接、Headscale、子网路由、出口节点、节点列表与 SOCKS5 代理、固定端口、tailscaled 额外参数与环境变量；Linux 上可在线安装、更新、回滚与卸载，可恢复默认配置 |
 | frp | 可同时运行多个 frpc 与 frps 实例；frpc 客户端（tcp/udp/http/https/stcp/xtcp 代理，增删即生效）与 frps 服务端（端口白名单、子域名、控制台），可一键导入旧版 ini / 新版 toml 配置；在线安装、更新、回滚与卸载，可恢复默认配置 |
@@ -256,7 +257,7 @@ Gately 完全开源，用户和社区可以直接审阅源码与配置。对于�
 
 ## 性能
 
-端口转发的 SNI 分流加 Web 服务，可以替代常见的 haproxy（按 SNI 做 TCP 分流）+ nginx（TLS 与反向代理）组合。下表在同一台机器上、按一台真实服务器的配置对比两者：90 个域名按 SNI 分流，两跳之间使用 PROXY 协议 v2，ECDSA P-256 证书，TLS 1.3。
+按 SNI 的协议分流加 Web 服务，可以替代常见的 haproxy（按 SNI 做 TCP 分流）+ nginx（TLS 与反向代理）组合。下表在同一台机器上、按一台真实服务器的配置对比两者：90 个域名按 SNI 分流，两跳之间使用 PROXY 协议 v2，ECDSA P-256 证书，TLS 1.3。
 
 | 场景 | haproxy + nginx | Gately |
 | --- | --- | --- |

@@ -51,6 +51,7 @@ export const sidebarGroups: SidebarGroup[] = [
       'modules/ddns',
       'modules/stun',
       'modules/portforward',
+      'modules/protoroute',
       'modules/ssl',
       'modules/web',
       'modules/oidc',

@@ -34,6 +34,10 @@ scrape_configs:
 | `gately_portforward_active_connections{rule}` | gauge | Offene Verbindungen einer Weiterleitungsregel |
 | `gately_portforward_connections_total{rule}` | counter | Angenommene Verbindungen einer Weiterleitungsregel |
 | `gately_portforward_bytes_total{rule,direction}` | counter | Weitergeleitete Bytes (`in` = Client zum Ziel) |
+| `gately_protoroute_active_connections{rule}` | gauge | Offene Verbindungen einer Protokoll-Routing-Regel |
+| `gately_protoroute_connections_total{rule}` | counter | Angenommene Verbindungen einer Protokoll-Routing-Regel |
+| `gately_protoroute_bytes_total{rule,direction}` | counter | Von einer Protokoll-Routing-Regel weitergeleitete Bytes (`in` = Client zum Ziel) |
+| `gately_protoroute_route_connections_total{rule,route}` | counter | An jede Route gesendete Verbindungen; `route` ist der Routenname (bei unbenannten Routen ihre Nummer), `default` steht für das Standardziel |
 | `gately_site_requests_total{listener,site}` | counter | Anfragen pro Site |
 | `gately_site_responses_total{listener,site,class}` | counter | Antworten nach Statusklasse (2xx/3xx/4xx/5xx) |
 | `gately_site_response_bytes_total` / `gately_site_errors_total` / `gately_site_active_requests` | counter / counter / gauge | Antwort-Bytes, Backend-Fehler, laufende Anfragen |

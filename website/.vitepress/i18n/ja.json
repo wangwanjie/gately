@@ -32,6 +32,7 @@
       "modules/ddns": "ダイナミック DNS（DDNS）",
       "modules/stun": "STUN 穿孔",
       "modules/portforward": "ポート転送",
+      "modules/protoroute": "プロトコル振り分け",
       "modules/ssl": "SSL 証明書",
       "modules/web": "Web サービス",
       "modules/oidc": "OIDC シングルサインオン",

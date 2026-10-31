@@ -34,6 +34,10 @@ scrape_configs:
 | `gately_portforward_active_connections{rule}` | gauge | 端口转发当前连接数 |
 | `gately_portforward_connections_total{rule}` | counter | 端口转发累计连接数 |
 | `gately_portforward_bytes_total{rule,direction}` | counter | 端口转发累计流量（`in` 为客户端到目标） |
+| `gately_protoroute_active_connections{rule}` | gauge | 协议分流当前连接数 |
+| `gately_protoroute_connections_total{rule}` | counter | 协议分流累计连接数 |
+| `gately_protoroute_bytes_total{rule,direction}` | counter | 协议分流累计流量（`in` 为客户端到目标） |
+| `gately_protoroute_route_connections_total{rule,route}` | counter | 协议分流各路由累计连接数，`route` 为路由名称（未命名时为序号），默认目标为 `default` |
 | `gately_site_requests_total{listener,site}` | counter | 站点累计请求数 |
 | `gately_site_responses_total{listener,site,class}` | counter | 按状态类别（2xx/3xx/4xx/5xx）的响应数 |
 | `gately_site_response_bytes_total` / `gately_site_errors_total` / `gately_site_active_requests` | counter / counter / gauge | 站点响应字节数、后端错误数、进行中请求数 |

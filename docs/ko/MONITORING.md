@@ -34,6 +34,10 @@ scrape_configs:
 | `gately_portforward_active_connections{rule}` | gauge | 포워딩 규칙의 현재 연결 수 |
 | `gately_portforward_connections_total{rule}` | counter | 포워딩 규칙이 받은 누적 연결 수 |
 | `gately_portforward_bytes_total{rule,direction}` | counter | 중계한 누적 바이트(`in` = 클라이언트에서 대상 방향) |
+| `gately_protoroute_active_connections{rule}` | gauge | 프로토콜 라우팅 규칙의 현재 연결 수 |
+| `gately_protoroute_connections_total{rule}` | counter | 프로토콜 라우팅 규칙이 받은 누적 연결 수 |
+| `gately_protoroute_bytes_total{rule,direction}` | counter | 프로토콜 라우팅 규칙이 중계한 누적 바이트(`in` = 클라이언트에서 대상 방향) |
+| `gately_protoroute_route_connections_total{rule,route}` | counter | 라우트별 누적 연결 수. `route`는 라우트 이름(이름이 없으면 번호), 기본 대상은 `default` |
 | `gately_site_requests_total{listener,site}` | counter | 사이트별 요청 수 |
 | `gately_site_responses_total{listener,site,class}` | counter | 상태 분류(2xx/3xx/4xx/5xx)별 응답 수 |
 | `gately_site_response_bytes_total` / `gately_site_errors_total` / `gately_site_active_requests` | counter / counter / gauge | 응답 바이트, 백엔드 오류, 처리 중인 요청 |

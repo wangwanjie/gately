@@ -34,6 +34,10 @@ scrape_configs:
 | `gately_portforward_active_connections{rule}` | gauge | Conexões abertas de uma regra de redirecionamento |
 | `gately_portforward_connections_total{rule}` | counter | Conexões aceitas de uma regra de redirecionamento |
 | `gately_portforward_bytes_total{rule,direction}` | counter | Bytes repassados (`in` = do cliente para o destino) |
+| `gately_protoroute_active_connections{rule}` | gauge | Conexões abertas de uma regra de roteamento por protocolo |
+| `gately_protoroute_connections_total{rule}` | counter | Conexões aceitas de uma regra de roteamento por protocolo |
+| `gately_protoroute_bytes_total{rule,direction}` | counter | Bytes repassados por uma regra de roteamento por protocolo (`in` = do cliente para o destino) |
+| `gately_protoroute_route_connections_total{rule,route}` | counter | Conexões enviadas a cada rota; `route` é o nome da rota (seu número quando não tem nome), `default` para o destino padrão |
 | `gately_site_requests_total{listener,site}` | counter | Requisições por site |
 | `gately_site_responses_total{listener,site,class}` | counter | Respostas por classe de status (2xx/3xx/4xx/5xx) |
 | `gately_site_response_bytes_total` / `gately_site_errors_total` / `gately_site_active_requests` | counter / counter / gauge | Bytes de resposta, erros de backend, requisições em andamento |

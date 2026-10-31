@@ -9,6 +9,7 @@ Vous pouvez désactiver un module entier dans « Paramètres → Modules ». Un 
 | DNS dynamique | 11 fournisseurs DNS, IP via URL / interface réseau / commande, IPv4 / IPv6, Webhook | [Consulter](/fr/docs/modules/ddns) |
 | Traversée STUN | TCP / UDP, maintien de session, UPnP / NAT-PMP, redirection intégrée, Webhook et scripts déclenchés au changement | [Consulter](/fr/docs/modules/stun) |
 | Redirection de ports | TCP / UDP, IPv4 / IPv6, plages de ports, basculement multi-cibles, limites de connexions, statistiques de trafic | [Consulter](/fr/docs/modules/portforward) |
+| Routage par protocole | Plusieurs services partagent un port : TLS par SNI et ALPN, HTTP par Host, Minecraft par adresse du serveur, plus SSH, RDP, SOCKS, OpenVPN, RTSP, SIP, XMPP, MQTT, AMQP, PostgreSQL, Redis, SMB, Git, IRC, ADB, BitTorrent et une route Délai d'attente pour VNC et similaires | [Consulter](/fr/docs/modules/protoroute) |
 | Certificats SSL | Émission et renouvellement automatiques ACME DNS-01, import, mappage vers un répertoire avec scripts | [Consulter](/fr/docs/modules/ssl) |
 | Services Web | Proxy inverse, redirections, fichiers statiques, HTTPS, authentification, contrôle d'accès, répartition de charge et vérifications d'état, cache et limitation de débit, statistiques d'accès | [Consulter](/fr/docs/modules/web) |
 | Authentification unique OIDC | Propose les utilisateurs partagés à Gitea, OpenList, Grafana et d'autres applications via OpenID Connect ; remplace l'OIDC d'Authelia | [Consulter](/fr/docs/modules/oidc) |

@@ -146,7 +146,7 @@ Reverse proxy, static files and redirects by domain, with HTTPS and HTTP/3. Each
 
 ### One port 443 for every service
 
-Port forwarding with SNI routing lets several services share a single port by domain, passing TLS straight through and keeping the real client address with the PROXY protocol.
+Protocol routing lets several services share a single port by domain or protocol, passing TLS straight through and keeping the real client address with the PROXY protocol.
 
 <img src="docs/images/portforward-sni.webp" alt="One port 443 for every service" width="100%">
 
@@ -215,7 +215,8 @@ Run several frpc and frps instances side by side, next to Tailscale and cloudfla
 | --- | --- |
 | Dynamic DNS | Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun, dynv6, DuckDNS, Amazon Route 53, OVHcloud, Gandi, NS1, Bunny DNS, Namecheap, DynDNS2 (No-IP, Dynu, …), custom callbacks; IP discovery via URL, network interface, or command; IPv4/IPv6; webhooks; groups, sorting and search |
 | STUN traversal | TCP/UDP, keep-alive, UPnP/NAT-PMP, built-in forwarding, webhooks and scripts triggered on address change |
-| Port forwarding | TCP/UDP, IPv4/IPv6, port ranges, multi-target failover, connection limits, traffic statistics, PROXY protocol v1/v2; SNI routing that lets several services share one port such as 443 (TLS passthrough by domain, a default target, PROXY protocol per route); groups, sorting and search |
+| Port forwarding | TCP/UDP, IPv4/IPv6, port ranges, multi-target failover, connection limits, traffic statistics, PROXY protocol v1/v2; groups, sorting and search |
+| Protocol routing | Several services share one port such as 443: connections are identified by protocol and passed through without decryption — TLS by SNI and ALPN, HTTP by Host, Minecraft by server address, plus SSH, RDP, SOCKS, OpenVPN, RTSP, SIP, XMPP, MQTT, AMQP, PostgreSQL, Redis, SMB, Git, IRC, ADB, BitTorrent and a wait-timeout route for server-first protocols such as VNC; a default target, PROXY protocol per route; replaces haproxy SNI routing and sslh |
 | SSL certificates | Automatic ACME issuance and renewal via DNS-01 (wildcard; DNS zone of delegated subdomains detected via SOA) or HTTP-01 (no DNS provider needed), short-lived certificates and certificates for public IP addresses (Let's Encrypt shortlived profile), EAB, upload, read from file, map to a directory and run a script; after renewal, push certificates to other hosts over SSH and run a command, or restart the Docker containers that use them |
 | Tailscale | Managed tailscaled (userspace networking, container-friendly) or attach to an existing system daemon; auth keys / login links, Headscale, subnet routes, exit nodes, peer list and SOCKS5 proxy, fixed port, extra tailscaled arguments and environment variables; online install, update, rollback and uninstall on Linux; restore default settings |
 | frp | Multiple frpc and frps instances, each running on its own: frpc client (tcp/udp/http/https/stcp/xtcp proxies, changes apply instantly) and frps server (port allowlist, subdomains, dashboard); one-click import of legacy ini and new toml configs; online install, update, rollback and uninstall; restore default settings |
@@ -256,7 +257,7 @@ Gately is fully open source, so users and the community can read the source and 
 
 ## Performance
 
-Port forwarding with SNI routing plus Web Services can replace the common haproxy (TCP routing by SNI) + nginx (TLS and reverse proxy) pair. The numbers below compare the two on the same machine with the configuration of a real server: 90 domains routed by SNI, PROXY protocol v2 between the two hops, and an ECDSA P-256 certificate with TLS 1.3.
+Protocol routing by SNI plus Web Services can replace the common haproxy (TCP routing by SNI) + nginx (TLS and reverse proxy) pair. The numbers below compare the two on the same machine with the configuration of a real server: 90 domains routed by SNI, PROXY protocol v2 between the two hops, and an ECDSA P-256 certificate with TLS 1.3.
 
 | Scenario | haproxy + nginx | Gately |
 | --- | --- | --- |

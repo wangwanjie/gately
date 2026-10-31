@@ -32,6 +32,7 @@
       "modules/ddns": "동적 DNS (DDNS)",
       "modules/stun": "STUN 통과",
       "modules/portforward": "포트 포워딩",
+      "modules/protoroute": "프로토콜 라우팅",
       "modules/ssl": "SSL 인증서",
       "modules/web": "웹 서비스",
       "modules/oidc": "OIDC 통합 로그인",
