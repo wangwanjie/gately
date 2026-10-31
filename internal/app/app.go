@@ -198,6 +198,11 @@ func New(opts Options) (*App, error) {
 	if err := fileusers.Default.Init(store); err != nil {
 		return nil, fmt.Errorf("加载文件服务共享用户失败: %w", err)
 	}
+	// 需要迁移配置的模块先迁移，再统一初始化：迁移可能改写其他模块的配置文件
+	inherits, err := a.migrateModules(opts.Modules)
+	if err != nil {
+		return nil, err
+	}
 	seen := map[string]bool{}
 	for _, m := range opts.Modules {
 		if seen[m.ID()] || m.ID() == settingsName || m.ID() == accountName {
@@ -218,6 +223,9 @@ func New(opts Options) (*App, error) {
 	// 已关闭的文件服务不参与共享用户的保存检查
 	fileusers.Default.SetActive(a.moduleEnabled)
 	if err := a.initTokens(); err != nil {
+		return nil, err
+	}
+	if err := a.inheritTokenScopes(inherits); err != nil {
 		return nil, err
 	}
 	a.audit.SetHook(publishAudit)

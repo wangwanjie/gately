@@ -105,6 +105,37 @@ func Open(store *config.Store, domains []string) (*Manager, error) {
 	return m, nil
 }
 
+// InheritScopes 让拥有 from 模块权限的令牌同时获得 to 模块的同级权限（配置从 from 拆分到 to 时使用），
+// 返回被修改的令牌数。"*" 与 "*:<级别>" 已覆盖全部模块，不需要补充。
+func (m *Manager) InheritScopes(from, to string) (int, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	changed := 0
+	for i := range m.data.Tokens {
+		t := &m.data.Tokens[i]
+		var add []string
+		for _, s := range t.Scopes {
+			mod, level, ok := strings.Cut(s, ":")
+			if !ok || mod != from {
+				continue
+			}
+			want := to + ":" + level
+			if !slices.Contains(t.Scopes, want) && !slices.Contains(add, want) {
+				add = append(add, want)
+			}
+		}
+		if len(add) > 0 {
+			t.Scopes = append(t.Scopes, add...)
+			slices.Sort(t.Scopes)
+			changed++
+		}
+	}
+	if changed == 0 {
+		return 0, nil
+	}
+	return changed, m.saveLocked()
+}
+
 // SetDomains 设置有效的权限域。
 func (m *Manager) SetDomains(domains []string) {
 	m.mu.Lock()

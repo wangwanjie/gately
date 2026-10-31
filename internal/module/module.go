@@ -46,6 +46,13 @@ type Module interface {
 	Routes(r Router)
 }
 
+// Migrator 由需要在全部模块初始化之前迁移配置的模块实现，例如从其他模块的配置文件中接收拆分出来的规则。
+// 返回的 from 非空表示本次有配置从模块 from 迁来：已有 from 权限的 API 令牌会同时获得本模块的同级权限，
+// from 被关闭时本模块也一并关闭，保持迁移前的行为。没有需要迁移的内容时返回空串。
+type Migrator interface {
+	Migrate(store *config.Store) (from string, err error)
+}
+
 // SummaryItem 是总览页展示的一项指标。Level 为 ok / warn / error / info，用于着色。
 type SummaryItem struct {
 	Label string `json:"label"`

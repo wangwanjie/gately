@@ -149,3 +149,76 @@ func (a *App) skipDisabledImport(m module.Module, imp luckyimport.Importer, doc 
 	return &luckyimport.Report{Module: m.ID(), Title: m.Title(), Found: rep.Found,
 		Warnings: []string{"该功能模块已关闭，未导入；开启并重启后可重新导入"}}
 }
+
+// moduleInherit 表示模块 to 的配置是从模块 from 迁移来的。
+type moduleInherit struct {
+	from, to string
+}
+
+// migrateModules 在初始化之前依次执行各模块的配置迁移。有配置从其他模块迁来时，来源模块已关闭的，
+// 新模块也写入关闭列表，保持迁移前的行为；返回迁移关系，令牌权限在令牌加载后补充。
+func (a *App) migrateModules(mods []module.Module) ([]moduleInherit, error) {
+	var out []moduleInherit
+	for _, m := range mods {
+		mg, ok := m.(module.Migrator)
+		if !ok {
+			continue
+		}
+		from, err := mg.Migrate(a.store)
+		if err != nil {
+			return nil, fmt.Errorf("模块 %s 迁移配置失败: %w", m.ID(), err)
+		}
+		if from == "" {
+			continue
+		}
+		out = append(out, moduleInherit{from: from, to: m.ID()})
+		fromTitle := from
+		for _, o := range mods {
+			if o.ID() == from {
+				fromTitle = o.Title()
+			}
+		}
+		a.sysLogs.Add(logbuf.LevelInfo, "", fmt.Sprintf("已把「%s」的部分配置迁移到「%s」", fromTitle, m.Title()))
+		s := a.settingsSnapshot()
+		if !slices.Contains(s.DisabledModules, from) || slices.Contains(s.DisabledModules, m.ID()) {
+			continue
+		}
+		if err := a.disableModuleOnDisk(m.ID()); err != nil {
+			return nil, fmt.Errorf("保存模块开关失败: %w", err)
+		}
+	}
+	return out, nil
+}
+
+// disableModuleOnDisk 把模块加入关闭列表并保存设置（启动阶段使用，模块尚未开始运行）。
+func (a *App) disableModuleOnDisk(id string) error {
+	a.settingsMu.Lock()
+	defer a.settingsMu.Unlock()
+	next := a.settings
+	next.DisabledModules = append(slices.Clone(next.DisabledModules), id)
+	next.normalize()
+	saved := next
+	// 命令行 -listen 覆盖时写回配置文件中的原地址
+	if a.opts.Listen != "" {
+		saved.Listen = a.fileListen
+	}
+	if err := a.store.Save(settingsName, saved); err != nil {
+		return err
+	}
+	a.settings = next
+	return nil
+}
+
+// inheritTokenScopes 让拥有来源模块权限的 API 令牌同时获得迁移目标模块的同级权限，迁移前能管理这些配置的令牌迁移后仍然可以。
+func (a *App) inheritTokenScopes(inherits []moduleInherit) error {
+	for _, in := range inherits {
+		n, err := a.tokens.InheritScopes(in.from, in.to)
+		if err != nil {
+			return fmt.Errorf("更新 API 令牌权限失败: %w", err)
+		}
+		if n > 0 {
+			a.sysLogs.Add(logbuf.LevelInfo, "", fmt.Sprintf("已为 %d 个拥有「%s」权限的 API 令牌添加「%s」的同级权限", n, in.from, in.to))
+		}
+	}
+	return nil
+}
