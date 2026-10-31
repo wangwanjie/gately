@@ -106,6 +106,38 @@
                 <StatusBadge v-bind="recordStatus(it.item, rec)" />
                 <span v-if="recordSync(it.item, rec)" class="meta">{{ recordSync(it.item, rec) }}</span>
               </div>
+              <!-- 不进入编辑页直接删除单条记录；任务至少保留一条记录，最后一条时禁用 -->
+              <div class="rec-ops">
+                <el-popconfirm
+                  v-if="rec.key && it.item.records.length > 1"
+                  :title="t('ddns.confirmDeleteRecord', { name: fqdn(rec) })"
+                  width="260"
+                  @confirm="removeRecord(it.item, rec)"
+                >
+                  <template #reference>
+                    <el-button
+                      text
+                      type="danger"
+                      size="small"
+                      class="rec-del"
+                      :icon="Trash2"
+                      :loading="deletingRecord === `${it.item.key}/${rec.key}`"
+                      :aria-label="t('ddns.deleteRecord')"
+                      :title="t('ddns.deleteRecord')"
+                    />
+                  </template>
+                </el-popconfirm>
+                <el-button
+                  v-else
+                  text
+                  size="small"
+                  class="rec-del"
+                  :icon="Trash2"
+                  disabled
+                  :aria-label="t('ddns.deleteRecord')"
+                  :title="t('ddns.lastRecordHint')"
+                />
+              </div>
             </div>
             <div v-if="!it.item.records.length" class="meta">{{ t('ddns.noRecords') }}</div>
           </div>
@@ -569,6 +601,25 @@ async function remove(tk: TaskView) {
   }
 }
 
+// deletingRecord 为正在删除的记录（任务 key/记录 key），用于按钮加载状态并防止重复提交
+const deletingRecord = ref('')
+
+async function removeRecord(tk: TaskView, rec: DNSRecord) {
+  if (!rec.key || deletingRecord.value) {
+    return
+  }
+  deletingRecord.value = `${tk.key}/${rec.key}`
+  try {
+    await api.del(`/api/ddns/tasks/${tk.key}/records/${encodeURIComponent(rec.key)}`)
+    ElMessage.success(t('common.deleted'))
+    await load()
+  } catch (e) {
+    ElMessage.error((e as Error).message)
+  } finally {
+    deletingRecord.value = ''
+  }
+}
+
 async function saveSettings() {
   try {
     await api.put('/api/ddns/settings', settings)
@@ -658,7 +709,7 @@ onMounted(async () => {
 }
 .rec {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr) minmax(0, 1.6fr);
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr) minmax(0, 1.6fr) auto;
   gap: 6px 16px;
   align-items: center;
   padding: 9px 12px;
@@ -694,6 +745,13 @@ onMounted(async () => {
 }
 .rec-status :deep(.status-badge) {
   max-width: 220px;
+}
+.rec-ops {
+  display: flex;
+  justify-content: flex-end;
+}
+.rec-del {
+  margin: 0;
 }
 .doc {
   margin-left: 12px;
@@ -734,9 +792,17 @@ onMounted(async () => {
   .card-list > .is-grouped {
     margin-left: 8px;
   }
+  /* 移动端记录纵向排列，删除按钮固定在右上角 */
   .rec {
     grid-template-columns: 1fr;
     gap: 4px;
+    position: relative;
+    padding-right: 40px;
+  }
+  .rec-ops {
+    position: absolute;
+    top: 6px;
+    right: 6px;
   }
   .w-260 {
     width: 100%;

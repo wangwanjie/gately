@@ -32,6 +32,8 @@
   "line": "Line",
   "default": "Default",
   "deleteRecord": "Delete record",
+  "confirmDeleteRecord": "Delete record {name}? The DNS record at the provider is kept",
+  "lastRecordHint": "A task needs at least one record. To remove all of them, delete the task",
   "noRecordsYet": "No DNS records yet",
   "addV4": "IPv4 record",
   "addV6": "IPv6 record",

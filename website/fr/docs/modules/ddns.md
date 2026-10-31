@@ -41,6 +41,7 @@ Un Webhook peut être appelé lorsque l'IP change ou qu'une synchronisation éch
 
 - Créez chez votre fournisseur DNS une clé de sous-compte limitée à la modification des enregistrements DNS. Évitez d'utiliser la clé du compte principal ;
 - Après avoir créé une tâche, cliquez sur « Forcer la synchronisation » pour vérifier que l'enregistrement a bien été mis à jour ;
+- Pour retirer un enregistrement devenu inutile, cliquez sur l'icône de suppression à droite de cet enregistrement dans la liste, sans ouvrir l'éditeur ; il est seulement retiré de la tâche, l'enregistrement DNS existant chez le fournisseur est conservé et la tâche garde au moins un enregistrement ;
 - L'adresse de consultation de l'IP publique ne dépend plus d'aucun service exploité par le projet, et vous pouvez la modifier à tout moment dans une tâche.
 
 ## Groupes et tri

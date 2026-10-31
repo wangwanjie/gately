@@ -32,6 +32,8 @@
   "line": "线路",
   "default": "默认",
   "deleteRecord": "删除记录",
+  "confirmDeleteRecord": "确定删除记录 {name}？不会删除服务商处的解析",
+  "lastRecordHint": "任务至少保留一条记录，如需全部删除请删除任务",
   "noRecordsYet": "还没有解析记录",
   "addV4": "IPv4 记录",
   "addV6": "IPv6 记录",

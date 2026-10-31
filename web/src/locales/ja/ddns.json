@@ -32,6 +32,8 @@
   "line": "回線",
   "default": "デフォルト",
   "deleteRecord": "レコードを削除",
+  "confirmDeleteRecord": "レコード {name} を削除しますか？プロバイダー側の DNS レコードは削除されません",
+  "lastRecordHint": "タスクには少なくとも 1 件のレコードが必要です。すべて削除する場合はタスクを削除してください",
   "noRecordsYet": "DNS レコードがありません",
   "addV4": "IPv4 レコード",
   "addV6": "IPv6 レコード",

@@ -51,6 +51,7 @@ var apiCatalog = map[string]epDoc{
 	"GET /api/ddns/settings":                             {Summary: "读取 DDNS 全局设置"},
 	"PUT /api/ddns/settings":                             {Summary: "保存 DDNS 全局设置", Body: true},
 	"POST /api/ddns/tasks/{key}/sync":                    {Summary: "立即同步一个 DDNS 任务"},
+	"DELETE /api/ddns/tasks/{key}/records/{rec}":         {Summary: "删除 DDNS 任务中的一条记录", Desc: "`rec` 为记录的 `key`。只从任务配置中移除该记录，DNS 服务商处已有的解析保留；任务只剩一条记录时返回 400，此时请删除整个任务。"},
 	"GET /api/ddns/providers":                            {Summary: "列出支持的 DNS 服务商及其所需参数"},
 	"GET /api/ddns/netinterfaces":                        {Summary: "列出本机网卡及地址"},
 	"POST /api/ddns/iptest":                              {Summary: "测试获取公网 IP", Body: true},

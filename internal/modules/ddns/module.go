@@ -194,6 +194,7 @@ func (m *Module) Routes(r module.Router) {
 	}
 	tasks.Register(r, "/tasks")
 	r.HandleFunc("POST /tasks/{key}/sync", m.handleSync)
+	r.HandleFunc("DELETE /tasks/{key}/records/{rec}", m.handleDeleteRecord)
 	r.HandleFunc("GET /providers", func(w http.ResponseWriter, r *http.Request) {
 		httpx.OK(w, dnsprovider.List())
 	})
@@ -227,6 +228,49 @@ func (m *Module) handleSync(w http.ResponseWriter, r *http.Request) {
 	}
 	run.requestSync(r.URL.Query().Get("force") == "1")
 	httpx.OK(w, map[string]bool{"ok": true})
+}
+
+// handleDeleteRecord 从任务中移除一条记录，供列表页不进入编辑直接删除。
+// 只修改 Gately 的任务配置，DNS 服务商处已有的解析不受影响；任务至少保留一条记录。
+func (m *Module) handleDeleteRecord(w http.ResponseWriter, r *http.Request) {
+	key, rec := r.PathValue("key"), r.PathValue("rec")
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	t := m.findLocked(key)
+	if t == nil {
+		httpx.Error(w, http.StatusNotFound, "条目不存在")
+		return
+	}
+	// 新建切片，避免校验或保存失败时改动原任务的记录
+	records := make([]Record, 0, len(t.Records))
+	for _, it := range t.Records {
+		if it.Key != rec {
+			records = append(records, it)
+		}
+	}
+	if len(records) == len(t.Records) {
+		httpx.Error(w, http.StatusNotFound, "记录不存在")
+		return
+	}
+	if len(records) == 0 {
+		httpx.Error(w, http.StatusBadRequest, "任务至少保留一条记录，如需全部删除请删除任务")
+		return
+	}
+	old := *t
+	updated := *t
+	updated.Records = records
+	if err := updated.Validate(); err != nil {
+		httpx.Error(w, http.StatusBadRequest, "%v", err)
+		return
+	}
+	*t = updated
+	if err := m.saveLocked(); err != nil {
+		*t = old
+		httpx.Error(w, http.StatusInternalServerError, "保存失败: %v", err)
+		return
+	}
+	m.restartLocked(key)
+	httpx.OK(w, m.viewLocked(t))
 }
 
 type ipTestRequest struct {

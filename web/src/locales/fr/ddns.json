@@ -32,6 +32,8 @@
   "line": "Ligne",
   "default": "Par défaut",
   "deleteRecord": "Supprimer l'enregistrement",
+  "confirmDeleteRecord": "Supprimer l'enregistrement {name} ? L'enregistrement DNS chez le fournisseur est conservé",
+  "lastRecordHint": "Une tâche doit garder au moins un enregistrement. Pour tous les retirer, supprimez la tâche",
   "noRecordsYet": "Aucun enregistrement DNS",
   "addV4": "Enregistrement IPv4",
   "addV6": "Enregistrement IPv6",

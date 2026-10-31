@@ -32,6 +32,8 @@
   "line": "線路",
   "default": "預設",
   "deleteRecord": "刪除記錄",
+  "confirmDeleteRecord": "確定刪除記錄 {name}？不會刪除服務商處的解析",
+  "lastRecordHint": "工作至少保留一筆記錄，如需全部刪除請刪除工作",
   "noRecordsYet": "尚無解析記錄",
   "addV4": "IPv4 記錄",
   "addV6": "IPv6 記錄",

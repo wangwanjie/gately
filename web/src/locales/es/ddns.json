@@ -32,6 +32,8 @@
   "line": "Línea",
   "default": "Por defecto",
   "deleteRecord": "Eliminar registro",
+  "confirmDeleteRecord": "¿Eliminar el registro {name}? El registro DNS en el proveedor se conserva",
+  "lastRecordHint": "Una tarea necesita al menos un registro. Para quitarlos todos, elimine la tarea",
   "noRecordsYet": "Aún no hay registros DNS",
   "addV4": "Registro IPv4",
   "addV6": "Registro IPv6",

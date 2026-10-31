@@ -41,6 +41,7 @@ A Webhook can be called when the IP changes or a sync fails.
 
 - Create a sub-account key limited to DNS record editing for your DNS provider. Avoid using the main account key;
 - After creating a task, click "Force sync" to confirm that the record has been updated;
+- To drop a record you no longer need, click the delete icon at the right of that record in the list, without opening the editor; it is only removed from the task, the existing DNS record at the provider is kept, and a task keeps at least one record;
 - The public-IP lookup address no longer depends on any service operated by the project, and you can change it in a task at any time.
 
 ## Groups and sorting

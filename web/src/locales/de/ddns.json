@@ -32,6 +32,8 @@
   "line": "Leitung",
   "default": "Standard",
   "deleteRecord": "Eintrag löschen",
+  "confirmDeleteRecord": "Eintrag {name} löschen? Der DNS-Eintrag beim Anbieter bleibt erhalten",
+  "lastRecordHint": "Eine Aufgabe braucht mindestens einen Eintrag. Um alle zu entfernen, löschen Sie die Aufgabe",
   "noRecordsYet": "Noch keine DNS-Einträge",
   "addV4": "IPv4-Eintrag",
   "addV6": "IPv6-Eintrag",

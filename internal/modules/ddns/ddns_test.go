@@ -534,3 +534,87 @@ func TestSTUNVars(t *testing.T) {
 	}
 	t.Fatalf("STUN 地址变化后未立即同步，服务商调用 %d -> %d", before, fp.callCount())
 }
+
+// TestAPIDeleteRecord 验证列表页直接删除单条记录：只移除指定记录、保留密钥与其他配置，
+// 记录或任务不存在返回 404，最后一条记录不允许删除。
+func TestAPIDeleteRecord(t *testing.T) {
+	setupFakes(t)
+	m := newTestModule(t)
+	mux := http.NewServeMux()
+	m.Routes(testRouter{mux})
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+
+	task := sampleTask()
+	task.Enable = false
+	if err := task.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	m.mu.Lock()
+	m.cfg.Tasks = []Task{task}
+	m.mu.Unlock()
+
+	del := func(path string) (int, TaskView) {
+		t.Helper()
+		req, _ := http.NewRequest(http.MethodDelete, srv.URL+"/api/ddns/tasks/"+path, nil)
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer resp.Body.Close()
+		var v TaskView
+		_ = json.NewDecoder(resp.Body).Decode(&v)
+		return resp.StatusCode, v
+	}
+	keys := func() []string {
+		m.mu.Lock()
+		defer m.mu.Unlock()
+		var out []string
+		for _, r := range m.cfg.Tasks[0].Records {
+			out = append(out, r.Key)
+		}
+		return out
+	}
+
+	code, view := del("t1/records/b")
+	if code != 200 {
+		t.Fatalf("删除记录失败 %d", code)
+	}
+	if got := keys(); strings.Join(got, ",") != "a,c" {
+		t.Fatalf("应只删除记录 b，剩余 %v", got)
+	}
+	if view.Credentials.Secret != crud.SecretMask || len(view.Records) != 2 {
+		t.Fatalf("响应应为脱敏后的最新任务: %+v", view)
+	}
+	m.mu.Lock()
+	got := m.cfg.Tasks[0]
+	m.mu.Unlock()
+	if got.Credentials.Secret != "sk" || got.Name != "home" {
+		t.Fatalf("其他配置应保持不变: %+v", got)
+	}
+
+	// 配置已落盘：重新加载模块后仍是删除后的记录
+	m2 := New()
+	if err := m2.Init(module.Env{Store: m.store, Logs: logbuf.New(10, log.New(io.Discard, "", 0))}); err != nil {
+		t.Fatal(err)
+	}
+	if n := len(m2.cfg.Tasks[0].Records); n != 2 {
+		t.Fatalf("删除结果应已保存，实际 %d 条记录", n)
+	}
+
+	if code, _ := del("t1/records/b"); code != 404 {
+		t.Fatalf("记录不存在应返回 404，实际 %d", code)
+	}
+	if code, _ := del("missing/records/a"); code != 404 {
+		t.Fatalf("任务不存在应返回 404，实际 %d", code)
+	}
+	if code, _ := del("t1/records/c"); code != 200 {
+		t.Fatalf("删除记录 c 失败 %d", code)
+	}
+	if code, _ := del("t1/records/a"); code != 400 {
+		t.Fatalf("最后一条记录不允许删除，应返回 400，实际 %d", code)
+	}
+	if got := keys(); strings.Join(got, ",") != "a" {
+		t.Fatalf("拒绝删除时记录应保持不变，实际 %v", got)
+	}
+}

@@ -41,6 +41,7 @@ Se puede llamar a un webhook cuando cambia la IP o falla una sincronización.
 
 - Crea en tu proveedor DNS una clave de subcuenta limitada a la edición de registros DNS. Evita usar la clave de la cuenta principal;
 - Tras crear una tarea, pulsa «Forzar sincronización» para confirmar que el registro se ha actualizado;
+- Para quitar un registro que ya no necesitas, pulsa el icono de eliminar a la derecha de ese registro en la lista, sin abrir el editor; solo se quita de la tarea, el registro DNS existente en el proveedor se conserva y la tarea mantiene al menos un registro;
 - La dirección de consulta de IP pública ya no depende de ningún servicio operado por el proyecto y puedes cambiarla en una tarea en cualquier momento.
 
 ## Grupos y orden

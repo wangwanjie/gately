@@ -41,6 +41,7 @@ Bei einer IP-Änderung oder einer fehlgeschlagenen Synchronisierung kann ein Web
 
 - Legen Sie beim DNS-Anbieter einen Schlüssel für ein Unterkonto an, der auf das Bearbeiten von DNS-Einträgen beschränkt ist. Vermeiden Sie den Schlüssel des Hauptkontos;
 - Klicken Sie nach dem Anlegen einer Aufgabe auf „Sync erzwingen“, um zu prüfen, ob der Eintrag aktualisiert wurde;
+- Einen nicht mehr benötigten Eintrag entfernen Sie direkt über das Löschsymbol rechts neben dem Eintrag in der Liste, ohne den Editor zu öffnen; er wird nur aus der Aufgabe entfernt, der vorhandene DNS-Eintrag beim Anbieter bleibt erhalten, und eine Aufgabe behält mindestens einen Eintrag;
 - Die Adresse zur Abfrage der öffentlichen IP hängt von keinem vom Projekt betriebenen Dienst ab und lässt sich jederzeit in einer Aufgabe ändern.
 
 ## Gruppen und Sortierung

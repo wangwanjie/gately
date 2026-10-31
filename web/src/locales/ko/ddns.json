@@ -32,6 +32,8 @@
   "line": "라인",
   "default": "기본",
   "deleteRecord": "레코드 삭제",
+  "confirmDeleteRecord": "레코드 {name}을(를) 삭제하시겠습니까? 제공업체의 DNS 레코드는 삭제되지 않습니다",
+  "lastRecordHint": "작업에는 레코드가 하나 이상 있어야 합니다. 모두 삭제하려면 작업을 삭제하세요",
   "noRecordsYet": "DNS 레코드가 아직 없습니다",
   "addV4": "IPv4 레코드",
   "addV6": "IPv6 레코드",
