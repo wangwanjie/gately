@@ -16,6 +16,10 @@
       "title": "Port Forwarding",
       "desc": "TCP / UDP port forwarding and load balancing"
     },
+    "protoroute": {
+      "title": "Protocol Routing",
+      "desc": "Share ports by protocol, SNI and Host, replacing sslh and haproxy SNI routing"
+    },
     "ddns": {
       "title": "Dynamic DNS",
       "desc": "Update DNS records automatically when your public IP changes"

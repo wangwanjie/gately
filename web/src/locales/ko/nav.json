@@ -16,6 +16,10 @@
       "title": "포트 포워딩",
       "desc": "TCP / UDP 포트 포워딩과 로드 밸런싱"
     },
+    "protoroute": {
+      "title": "프로토콜 라우팅",
+      "desc": "프로토콜, SNI, Host로 포트 공유. sslh와 haproxy SNI 라우팅 대체"
+    },
     "ddns": {
       "title": "동적 DNS",
       "desc": "공인 IP가 바뀌면 DNS 레코드를 자동 업데이트"

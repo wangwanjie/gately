@@ -16,6 +16,10 @@
       "title": "Redirecionamento de portas",
       "desc": "Redirecionamento de portas TCP / UDP e balanceamento de carga"
     },
+    "protoroute": {
+      "title": "Roteamento por protocolo",
+      "desc": "Compartilhe portas por protocolo, SNI e Host, no lugar do sslh e do roteamento SNI do haproxy"
+    },
     "ddns": {
       "title": "DNS dinâmico",
       "desc": "Atualiza os registros DNS automaticamente quando seu IP público muda"

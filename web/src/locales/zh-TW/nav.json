@@ -16,6 +16,10 @@
       "title": "連接埠轉發",
       "desc": "TCP / UDP 連接埠轉發與負載平衡"
     },
+    "protoroute": {
+      "title": "協定分流",
+      "desc": "依協定、SNI 與 Host 共用連接埠，取代 sslh 與 haproxy SNI 分流"
+    },
     "ddns": {
       "title": "動態網域",
       "desc": "公網 IP 變動時自動更新解析"

@@ -16,6 +16,10 @@
       "title": "ポート転送",
       "desc": "TCP / UDP のポート転送とロードバランシング"
     },
+    "protoroute": {
+      "title": "プロトコル振り分け",
+      "desc": "プロトコル・SNI・Host でポートを共有。sslh と haproxy の SNI 振り分けの代わりに"
+    },
     "ddns": {
       "title": "ダイナミック DNS",
       "desc": "グローバル IP の変化時に DNS を自動更新"

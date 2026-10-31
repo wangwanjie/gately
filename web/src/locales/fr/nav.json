@@ -16,6 +16,10 @@
       "title": "Redirection de ports",
       "desc": "Redirection de ports TCP / UDP et répartition de charge"
     },
+    "protoroute": {
+      "title": "Routage par protocole",
+      "desc": "Partage de ports par protocole, SNI et Host, à la place de sslh et du routage SNI de haproxy"
+    },
     "ddns": {
       "title": "DNS dynamique",
       "desc": "Met à jour automatiquement les enregistrements DNS quand votre IP publique change"

@@ -16,6 +16,10 @@
       "title": "端口转发",
       "desc": "TCP / UDP 端口转发与负载均衡"
     },
+    "protoroute": {
+      "title": "协议分流",
+      "desc": "按协议、SNI 与 Host 共用端口，替代 sslh 与 haproxy SNI 分流"
+    },
     "ddns": {
       "title": "动态域名",
       "desc": "公网 IP 变化时自动更新解析"

@@ -16,6 +16,10 @@
       "title": "Portweiterleitung",
       "desc": "TCP-/UDP-Portweiterleitung und Lastverteilung"
     },
+    "protoroute": {
+      "title": "Protokoll-Routing",
+      "desc": "Ports nach Protokoll, SNI und Host teilen – Ersatz für sslh und SNI-Routing von haproxy"
+    },
     "ddns": {
       "title": "Dynamisches DNS",
       "desc": "DNS-Einträge automatisch aktualisieren, wenn sich Ihre öffentliche IP ändert"

@@ -28,6 +28,7 @@ import {
   ShieldBan,
   ShieldCheck,
   ShieldHalf,
+  Split,
   SquareTerminal,
   UserCog,
   UsersRound,
@@ -62,6 +63,7 @@ export const navGroups: NavGroup[] = [
     titleKey: 'nav.groups.network',
     items: [
       { path: '/portforward', titleKey: 'nav.items.portforward.title', icon: ArrowLeftRight, moduleId: 'portforward', descKey: 'nav.items.portforward.desc' },
+      { path: '/protoroute', titleKey: 'nav.items.protoroute.title', icon: Split, moduleId: 'protoroute', descKey: 'nav.items.protoroute.desc' },
       { path: '/ddns', titleKey: 'nav.items.ddns.title', icon: Globe, moduleId: 'ddns', descKey: 'nav.items.ddns.desc' },
       { path: '/guard', titleKey: 'nav.items.guard.title', icon: ShieldBan, moduleId: 'guard', descKey: 'nav.items.guard.desc' },
     ],

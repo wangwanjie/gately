@@ -16,6 +16,10 @@
       "title": "Reenvío de puertos",
       "desc": "Reenvío de puertos TCP / UDP y balanceo de carga"
     },
+    "protoroute": {
+      "title": "Enrutamiento por protocolo",
+      "desc": "Comparte puertos por protocolo, SNI y Host, en lugar de sslh y el enrutamiento SNI de haproxy"
+    },
     "ddns": {
       "title": "DNS dinámico",
       "desc": "Actualiza los registros DNS automáticamente cuando cambia tu IP pública"

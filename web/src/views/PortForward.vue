@@ -23,7 +23,6 @@
         <template #title>
           <span>{{ it.item.name || t('portForward.unnamed') }}</span>
           <span class="tags">
-            <el-tag v-if="it.item.mode === 'sni'" size="small" type="success" effect="plain">{{ t('portForward.modeSni') }}</el-tag>
             <el-tag v-for="p in it.item.protocols" :key="p" size="small" effect="plain" class="mono">{{ p.toUpperCase() }}</el-tag>
           </span>
         </template>
@@ -38,27 +37,7 @@
           <StatusBadge v-bind="ruleStatus(it.item)" />
         </template>
         <Field :label="t('portForward.listen')" mono>{{ listenText(it.item) }}</Field>
-        <template v-if="it.item.mode === 'sni'">
-          <Field :label="t('portForward.sniRoutes')">
-            <div v-for="(rt, i) in it.item.sniRoutes" :key="i" class="route-line">
-              <span class="route-name">{{ rt.name || rt.domains[0] }}</span>
-              <span class="mono">→ {{ routeTargetText(it.item, rt) }}</span>
-              <el-tag v-if="rt.proxyProtocol" size="small" effect="plain">{{ rt.proxyProtocol }}</el-tag>
-              <span class="route-meta">{{ t('portForward.routeMeta', { domains: rt.domains.length, hits: it.item.stats.routeConns?.[i] ?? 0 }) }}</span>
-            </div>
-          </Field>
-          <Field :label="t('portForward.defaultTarget')" mono>
-            <template v-if="it.item.targetAddresses?.length">
-              <div v-for="addr in it.item.targetAddresses" :key="addr">
-                {{ addr }}:{{ it.item.targetPorts || it.item.listenPorts }}
-                <el-tag v-if="it.item.proxyProtocol" size="small" effect="plain">{{ it.item.proxyProtocol }}</el-tag>
-              </div>
-              <span class="route-meta">{{ t('portForward.defaultHits', { hits: it.item.stats.defaultConns ?? 0 }) }}</span>
-            </template>
-            <span v-else class="route-meta">{{ t('portForward.defaultTargetNone', { rejected: it.item.stats.sniRejected ?? 0 }) }}</span>
-          </Field>
-        </template>
-        <Field v-else :label="t('portForward.target')" mono>
+        <Field :label="t('portForward.target')" mono>
           <div v-for="addr in it.item.targetAddresses" :key="addr">{{ addr }}:{{ it.item.targetPorts || it.item.listenPorts }}</div>
         </Field>
         <Field :label="t('portForward.connections')">{{ t('portForward.connectionsValue', { active: it.item.stats.activeConns, total: it.item.stats.totalConns }) }}</Field>
@@ -80,22 +59,15 @@
 
     <LogCard url="/api/portforward/logs" clearable />
 
-    <el-dialog v-model="editorVisible" :title="editing.key ? t('portForward.editRule') : t('portForward.addRule')" :width="editing.mode === 'sni' ? '760px' : '600px'" :fullscreen="isMobile">
+    <el-dialog v-model="editorVisible" :title="editing.key ? t('portForward.editRule') : t('portForward.addRule')" width="600px" :fullscreen="isMobile">
       <el-form :model="editing" label-width="110px" :label-position="labelPosition">
         <el-form-item :label="t('common.name')">
           <el-input v-model="editing.name" :placeholder="t('portForward.namePlaceholder')" />
         </el-form-item>
         <GroupInput v-model="editing.group" :groups="gl.groupNames.value" />
-        <el-form-item :label="t('portForward.mode')">
-          <el-radio-group v-model="editing.mode" @change="onModeChange">
-            <el-radio-button value="">{{ t('portForward.modeForward') }}</el-radio-button>
-            <el-radio-button value="sni">{{ t('portForward.modeSni') }}</el-radio-button>
-          </el-radio-group>
-          <div class="form-help">{{ editing.mode === 'sni' ? t('portForward.modeSniHelp') : t('portForward.modeForwardHelp') }}</div>
-        </el-form-item>
         <el-form-item :label="t('portForward.protocol')" required>
           <el-checkbox-group v-model="editing.protocols">
-            <el-checkbox v-for="p in availableProtocols" :key="p.value" :value="p.value">{{ p.label }}</el-checkbox>
+            <el-checkbox v-for="p in protocols" :key="p.value" :value="p.value">{{ p.label }}</el-checkbox>
           </el-checkbox-group>
           <div class="form-help">{{ t('portForward.protocolHelp') }}</div>
         </el-form-item>
@@ -105,56 +77,22 @@
         <el-form-item :label="t('portForward.listenPorts')" required>
           <el-input v-model="editing.listenPorts" :placeholder="t('portForward.portsPlaceholder')" />
         </el-form-item>
-        <template v-if="editing.mode === 'sni'">
-          <el-form-item :label="t('portForward.sniRoutes')" required>
-            <div class="routes">
-              <div v-for="(rt, i) in routeForms" :key="rt.id" class="route-card">
-                <div class="route-head">
-                  <el-input v-model="rt.name" size="small" :placeholder="t('portForward.routeNamePlaceholder')" class="route-title" />
-                  <el-button text size="small" :icon="ArrowUp" :disabled="i === 0" @click="moveRoute(i, -1)" />
-                  <el-button text size="small" :icon="ArrowDown" :disabled="i === routeForms.length - 1" @click="moveRoute(i, 1)" />
-                  <el-button text size="small" type="danger" :icon="Trash2" @click="routeForms.splice(i, 1)" />
-                </div>
-                <el-input v-model="rt.domainsText" type="textarea" :autosize="{ minRows: 2, maxRows: 8 }" :placeholder="t('portForward.routeDomainsPlaceholder')" />
-                <div class="route-row">
-                  <el-input v-model="rt.targetsText" :placeholder="t('portForward.routeTargetsPlaceholder')" class="route-targets" />
-                  <el-input-number v-model="rt.targetPort" :min="0" :max="65535" :controls="false" :placeholder="t('portForward.routePortPlaceholder')" class="route-port" />
-                  <el-select v-model="rt.proxyProtocol" class="route-proxy">
-                    <el-option :label="t('portForward.proxyProtocolOff')" value="" />
-                    <el-option label="PROXY v1" value="v1" />
-                    <el-option label="PROXY v2" value="v2" />
-                  </el-select>
-                </div>
-              </div>
-              <el-button :icon="Plus" size="small" @click="addRoute">{{ t('portForward.addRoute') }}</el-button>
-              <div class="form-help">{{ t('portForward.sniRoutesHelp') }}</div>
-            </div>
-          </el-form-item>
-          <el-form-item :label="t('portForward.defaultTarget')">
-            <el-input v-model="targetsText" type="textarea" :rows="2" :placeholder="t('portForward.defaultTargetPlaceholder')" />
-          </el-form-item>
-          <el-form-item :label="t('portForward.targetPorts')">
-            <el-input v-model="editing.targetPorts" :placeholder="t('portForward.targetPortsPlaceholder')" />
-          </el-form-item>
-        </template>
-        <template v-else>
-          <el-form-item :label="t('portForward.targetAddress')" required>
-            <el-input v-model="targetsText" type="textarea" :rows="2" :placeholder="t('portForward.targetAddressPlaceholder')" />
-          </el-form-item>
-          <el-form-item :label="t('portForward.targetPorts')">
-            <el-input v-model="editing.targetPorts" :placeholder="t('portForward.targetPortsPlaceholder')" />
-          </el-form-item>
-        </template>
+        <el-form-item :label="t('portForward.targetAddress')" required>
+          <el-input v-model="targetsText" type="textarea" :rows="2" :placeholder="t('portForward.targetAddressPlaceholder')" />
+        </el-form-item>
+        <el-form-item :label="t('portForward.targetPorts')">
+          <el-input v-model="editing.targetPorts" :placeholder="t('portForward.targetPortsPlaceholder')" />
+        </el-form-item>
         <el-form-item :label="t('portForward.maxConnections')">
           <el-input-number v-model="editing.maxConnections" :min="0" :max="100000" />
           <span class="help">{{ t('portForward.useGlobalDefault') }}</span>
         </el-form-item>
-        <el-form-item v-if="editing.mode !== 'sni'" :label="t('portForward.udpTimeout')">
+        <el-form-item :label="t('portForward.udpTimeout')">
           <el-input-number v-model="editing.udpSessionTimeout" :min="0" :max="3600" />
           <span class="help">{{ t('portForward.useGlobalDefault') }}</span>
         </el-form-item>
-        <el-form-item :label="editing.mode === 'sni' ? t('portForward.defaultProxyProtocol') : t('portForward.proxyProtocol')">
-          <el-select v-model="editing.proxyProtocol" style="width: 160px">
+        <el-form-item :label="t('portForward.proxyProtocol')">
+          <el-select v-model="editing.proxyProtocol" style="width: 160px" :empty-values="[null, undefined]">
             <el-option :label="t('portForward.proxyProtocolOff')" value="" />
             <el-option label="PROXY v1" value="v1" />
             <el-option label="PROXY v2" value="v2" />
@@ -195,9 +133,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import {
-  ArrowDown,
   ArrowLeftRight,
-  ArrowUp,
   Pencil,
   Plus,
   SlidersHorizontal,
@@ -237,29 +173,7 @@ interface Rule {
   udpSessionTimeout: number
   // 发送给目标的 PROXY 协议版本，空为不发送（仅 TCP）
   proxyProtocol: string
-  // 空为普通转发，sni 为按 TLS SNI 分流；SNI 模式下 targetAddresses 等字段作为默认目标
-  mode: string
-  sniRoutes: SNIRoute[]
   remark: string
-}
-
-interface SNIRoute {
-  name: string
-  domains: string[]
-  targetAddresses: string[]
-  // 0 表示与监听端口相同
-  targetPort: number
-  proxyProtocol: string
-}
-
-// RouteForm 是编辑中的路由，域名与目标以文本形式编辑
-interface RouteForm {
-  id: number
-  name: string
-  domainsText: string
-  targetsText: string
-  targetPort: number | undefined
-  proxyProtocol: string
 }
 
 interface RuleView extends Rule {
@@ -271,10 +185,6 @@ interface RuleView extends Rule {
     totalConns: number
     bytesIn: number
     bytesOut: number
-    // 仅 SNI 规则：各路由累计连接、默认目标累计连接、未命中被断开的连接
-    routeConns?: number[]
-    defaultConns?: number
-    sniRejected?: number
   }
 }
 
@@ -304,8 +214,6 @@ const editorVisible = ref(false)
 const saving = ref(false)
 const editing = ref<Rule>(emptyRule())
 const targetsText = ref('')
-const routeForms = ref<RouteForm[]>([])
-let routeSeq = 0
 const settings = ref<Settings>()
 const settingsForm = ref<Settings>()
 const settingsVisible = ref(false)
@@ -321,13 +229,11 @@ const gl = useGroupedList<RuleView>({
   base: '/api/portforward/rules',
   reload: load,
   matches: (r, q) =>
-    [r.name, r.group ?? '', r.remark, listenText(r), ...(r.targetAddresses ?? []), ...(r.sniRoutes ?? []).flatMap((rt) => [rt.name, ...rt.domains])]
+    [r.name, r.group ?? '', r.remark, listenText(r), ...(r.targetAddresses ?? [])]
       .join('\n')
       .toLowerCase()
       .includes(q),
 })
-// SNI 分流只处理 TCP
-const availableProtocols = computed(() => (editing.value.mode === 'sni' ? protocols.filter((p) => p.value.startsWith('tcp')) : protocols))
 
 function emptyRule(): Rule {
   return {
@@ -342,57 +248,8 @@ function emptyRule(): Rule {
     maxConnections: 0,
     udpSessionTimeout: 0,
     proxyProtocol: '',
-    mode: '',
-    sniRoutes: [],
     remark: '',
   }
-}
-
-// splitList 按换行、逗号、空格拆分文本，用于域名与地址列表
-function splitList(text: string) {
-  return text
-    .split(/[\s,，]+/)
-    .map((s) => s.trim())
-    .filter(Boolean)
-}
-
-function toRouteForm(rt?: SNIRoute): RouteForm {
-  return {
-    id: ++routeSeq,
-    name: rt?.name ?? '',
-    domainsText: (rt?.domains ?? []).join('\n'),
-    targetsText: (rt?.targetAddresses ?? []).join(', '),
-    targetPort: rt?.targetPort || undefined,
-    proxyProtocol: rt?.proxyProtocol ?? '',
-  }
-}
-
-function addRoute() {
-  routeForms.value.push(toRouteForm())
-}
-
-function moveRoute(i: number, delta: number) {
-  const list = routeForms.value
-  const [item] = list.splice(i, 1)
-  list.splice(i + delta, 0, item)
-}
-
-// onModeChange 切到 SNI 时去掉 UDP 协议，并预置一条空路由
-function onModeChange() {
-  if (editing.value.mode === 'sni') {
-    editing.value.protocols = editing.value.protocols.filter((p) => p.startsWith('tcp'))
-    if (!editing.value.protocols.length) {
-      editing.value.protocols = ['tcp']
-    }
-    if (!routeForms.value.length) {
-      addRoute()
-    }
-  }
-}
-
-function routeTargetText(r: Rule, rt: SNIRoute) {
-  const port = rt.targetPort || r.listenPorts
-  return rt.targetAddresses.map((a) => `${a.includes(':') ? `[${a}]` : a}:${port}`).join(' | ')
 }
 
 function listenText(r: Rule) {
@@ -436,9 +293,7 @@ function openEditor(row?: RuleView) {
   } else {
     editing.value = emptyRule()
   }
-  editing.value.mode = editing.value.mode || ''
   targetsText.value = (editing.value.targetAddresses ?? []).join('\n')
-  routeForms.value = (editing.value.sniRoutes ?? []).map(toRouteForm)
   editorVisible.value = true
 }
 
@@ -447,16 +302,6 @@ async function save() {
     .split(/[\n,]/)
     .map((s) => s.trim())
     .filter(Boolean)
-  editing.value.sniRoutes =
-    editing.value.mode === 'sni'
-      ? routeForms.value.map((f) => ({
-          name: f.name.trim(),
-          domains: splitList(f.domainsText),
-          targetAddresses: splitList(f.targetsText),
-          targetPort: f.targetPort || 0,
-          proxyProtocol: f.proxyProtocol,
-        }))
-      : []
   saving.value = true
   try {
     const { key, ...body } = editing.value
@@ -546,49 +391,5 @@ onMounted(() => {
 }
 .detail {
   color: var(--el-color-warning);
-}
-.route-line {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-}
-.route-name {
-  font-weight: 500;
-}
-.route-meta {
-  color: var(--el-text-color-secondary);
-  font-size: 12px;
-}
-.routes {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-}
-.route-card {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 10px;
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: 8px;
-}
-.route-head,
-.route-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.route-title,
-.route-targets {
-  flex: 1;
-  min-width: 0;
-}
-.route-port {
-  width: 110px;
-}
-.route-proxy {
-  width: 120px;
 }
 </style>
