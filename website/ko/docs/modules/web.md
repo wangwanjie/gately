@@ -428,7 +428,7 @@ curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/webservice/m
 
 ## haproxy와 nginx 대체
 
-포트 포워딩과 웹 서비스를 함께 쓰면 haproxy + nginx 조합을 대체할 수 있습니다. 흔한 구성은 443 포트에 [프로토콜 라우팅](/ko/docs/modules/protoroute) 규칙을 하나 두어 VPN 같은 TLS 서비스는 곧바로 백엔드로, 나머지는 모두 PROXY 프로토콜을 받는 웹 서비스 리스너로 보내는 것입니다. 여기에 80 포트에 리다이렉트 사이트(`https://{host}`)를 둔 웹 서비스 리스너를 추가합니다.
+프로토콜 라우팅과 웹 서비스를 함께 쓰면 haproxy + nginx 조합을 대체할 수 있습니다. 흔한 구성은 443 포트에 [프로토콜 라우팅](/ko/docs/modules/protoroute) 규칙을 하나 두어 VPN 같은 TLS 서비스는 곧바로 백엔드로, 나머지는 모두 PROXY 프로토콜을 받는 웹 서비스 리스너로 보내는 것입니다. 여기에 80 포트에 리다이렉트 사이트(`https://{host}`)를 둔 웹 서비스 리스너를 추가합니다.
 
 nginx 설정을 옮기는 방법은 다음과 같습니다.
 

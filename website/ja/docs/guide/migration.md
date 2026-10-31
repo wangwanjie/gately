@@ -12,7 +12,7 @@ Gately は Lucky の `.lkcf` 設定ファイル、または Lucky の「設定�
 
 1. Lucky の設定ディレクトリを確認します。Docker でデプロイしている場合、通常はコンテナの `/app/conf` にマッピングしたホスト側ディレクトリで、`lucky_base.lkcf`、`lucky_ddns.lkcf` などのファイルが入っています。
 2. Gately をデプロイします（README を参照）。次の点をおすすめします。
-   - `--network host` を使い、Lucky と同様にホストのポートを直接待ち受けます。
+   - `--network host` を使い、ホストのポートを直接待ち受けます。
    - 管理ポートのデフォルトは 16680 で、Lucky の 16601 と競合しません。
    - Lucky のスクリプトや証明書のマッピングがコンテナ内のパス（例：`/etc/lucky/custom_scripts`、`/data/nginx/...`）を使っている場合は、Gately のコンテナにも**同じパス**でマウントすると、インポート後の修正が不要になります。
 

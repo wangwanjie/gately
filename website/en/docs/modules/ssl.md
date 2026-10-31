@@ -2,6 +2,8 @@
 
 Issue and renew certificates automatically for use by [Web Services](/en/docs/modules/web), or export them to other software.
 
+When several certificates cover the same domain, the one that expires last is used; the order and groups of the certificate list only affect how it is displayed.
+
 ## Capabilities
 
 - **ACME DNS-01** automatic issuance and renewal, reusing the DNS providers from [Dynamic DNS](/en/docs/modules/ddns), with no need to open ports 80 / 443;
@@ -46,7 +48,7 @@ Enter a public IP address (IPv4 or IPv6, for example `203.0.113.10` or `2001:db8
 - Private addresses, loopback addresses and `100.64.0.0/10` cannot pass validation by a public CA; a custom CA (such as a self-hosted ACME server on your LAN) has none of these restrictions;
 - ZeroSSL and Google Trust Services do not issue IP address certificates over ACME.
 
-When HTTPS is accessed by IP address, the browser sends no domain name (SNI), so Gately picks the IP certificate that matches the local address of the connection; behind NAT or port forwarding, where the local address differs from the public IP in the certificate, the first IP certificate is used.
+When HTTPS is accessed by IP address, the browser sends no domain name (SNI), so Gately picks the IP certificate that matches the local address of the connection; behind NAT or port forwarding, where the local address differs from the public IP in the certificate, the IP certificate that expires last is used.
 
 After you switch the profile of an issued certificate between default and short-lived, it is reissued right away with the new profile. For short-lived certificates, an expiry reminder is sent only when the remaining time drops below half the lead hours, which means renewal has failed several times.
 

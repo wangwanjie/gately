@@ -136,7 +136,7 @@
       },
       {
         "title": "Reenvío de puertos",
-        "text": "TCP / UDP, IPv4 / IPv6, rangos de puertos, conmutación por error entre varios destinos, límites de conexiones y estadísticas de tráfico; puede enviar el protocolo PROXY al siguiente salto para conservar la dirección real del cliente; el enrutamiento SNI permite que varios servicios compartan el puerto 443."
+        "text": "TCP / UDP, IPv4 / IPv6, rangos de puertos, conmutación por error entre varios destinos, límites de conexiones y estadísticas de tráfico; puede enviar el protocolo PROXY al siguiente salto para conservar la dirección real del cliente."
       },
       {
         "title": "Certificados SSL",
@@ -201,6 +201,10 @@
       {
         "title": "Prevención de intrusiones",
         "text": "Reglas de registro al estilo fail2ban, puertos trampa y detección de escaneos, y bloqueo del sondeo de rutas web; los bloqueos se sincronizan con nftables y se descartan en el kernel."
+      },
+      {
+        "title": "Enrutamiento por protocolo",
+        "text": "Identifica el protocolo por los primeros bytes de cada conexión para que HTTPS, SSH, RDP, OpenVPN y hasta 20 protocolos compartan un puerto; TLS se enruta por SNI y ALPN y HTTP por Host, sin descifrar el tráfico; puede enviar el protocolo PROXY a los backends."
       }
     ],
     "moreModules": "Ver todos los módulos →",

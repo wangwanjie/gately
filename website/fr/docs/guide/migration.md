@@ -12,7 +12,7 @@ Ce guide porte sur la migration depuis Lucky. Les sites nginx existants s'import
 
 1. Repérez le dossier de configuration de Lucky : pour un déploiement Docker, c'est généralement le dossier de l'hôte mappé sur `/app/conf` dans le conteneur, qui contient `lucky_base.lkcf`, `lucky_ddns.lkcf`, etc.
 2. Déployez Gately (voir le README). Recommandations :
-   - utilisez `--network host`, comme Lucky, pour écouter directement sur les ports de l'hôte ;
+   - utilisez `--network host` pour écouter directement sur les ports de l'hôte ;
    - le port d'administration par défaut est 16680, sans conflit avec le 16601 de Lucky ;
    - si les scripts ou les exports de certificats de Lucky utilisent des chemins internes au conteneur (par exemple `/etc/lucky/custom_scripts`, `/data/nginx/...`), montez-les dans le conteneur Gately sur le **même chemin** : aucune modification ne sera nécessaire après l'import.
 

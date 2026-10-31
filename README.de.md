@@ -148,7 +148,7 @@ Reverse-Proxy, statische Dateien und Weiterleitungen je Domain, mit HTTPS und HT
 
 Mit dem Protokoll-Routing teilen sich mehrere Dienste einen Port nach Domain oder Protokoll. TLS wird unverändert durchgereicht, das PROXY-Protokoll bewahrt die echte Client-Adresse.
 
-<img src="docs/images/portforward-sni.webp" alt="Ein Port 443 für alle Dienste" width="100%">
+<img src="docs/images/protoroute.webp" alt="Ein Port 443 für alle Dienste" width="100%">
 
 ### Dynamisches DNS für alle großen Anbieter
 

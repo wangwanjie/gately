@@ -148,7 +148,7 @@ File Browser 모듈은 [FileBrowser Quantum](https://github.com/gtsteffaniak/fil
 
 프로토콜 라우팅으로 여러 서비스를 도메인이나 프로토콜별로 같은 포트에 둡니다. TLS는 그대로 통과시키고 PROXY 프로토콜로 실제 클라이언트 주소를 전달합니다.
 
-<img src="docs/images/portforward-sni.webp" alt="443 포트 하나로 모든 서비스를" width="100%">
+<img src="docs/images/protoroute.webp" alt="443 포트 하나로 모든 서비스를" width="100%">
 
 ### 주요 제공업체를 모두 지원하는 동적 도메인
 

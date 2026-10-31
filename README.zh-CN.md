@@ -148,7 +148,7 @@ File Browser 模块托管 [FileBrowser Quantum](https://github.com/gtsteffaniak/
 
 协议分流按域名或协议把多个服务放在同一个端口上，TLS 原样透传，再用 PROXY 协议保留真实客户端地址。
 
-<img src="docs/images/portforward-sni.webp" alt="一个 443 端口，给所有服务用" width="100%">
+<img src="docs/images/protoroute.webp" alt="一个 443 端口，给所有服务用" width="100%">
 
 ### 动态域名，主流服务商都支持
 

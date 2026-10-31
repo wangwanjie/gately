@@ -136,7 +136,7 @@
       },
       {
         "title": "Redirection de ports",
-        "text": "TCP / UDP, IPv4 / IPv6, plages de ports, basculement multi-cibles, limites de connexions et statistiques de trafic ; envoi possible du protocole PROXY en aval pour conserver l'adresse réelle du client ; le routage SNI permet à plusieurs services de partager le port 443."
+        "text": "TCP / UDP, IPv4 / IPv6, plages de ports, basculement multi-cibles, limites de connexions et statistiques de trafic ; envoi possible du protocole PROXY en aval pour conserver l'adresse réelle du client."
       },
       {
         "title": "Certificats SSL",
@@ -201,6 +201,10 @@
       {
         "title": "Prévention d'intrusion",
         "text": "Règles de journaux façon fail2ban, ports pièges et détection de scans, bannissement du sondage de chemins web ; les bannissements sont synchronisés avec nftables et rejetés dans le noyau."
+      },
+      {
+        "title": "Routage par protocole",
+        "text": "Identifie le protocole aux premiers octets de chaque connexion pour que HTTPS, SSH, RDP, OpenVPN et 20 protocoles au total partagent un même port ; TLS est routé selon le SNI et l'ALPN, HTTP selon l'en-tête Host, sans déchiffrer le trafic ; envoi possible du protocole PROXY aux backends."
       }
     ],
     "moreModules": "Voir tous les modules →",

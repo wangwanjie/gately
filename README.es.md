@@ -148,7 +148,7 @@ Proxy inverso, archivos estáticos y redirecciones por dominio, con HTTPS y HTTP
 
 El enrutamiento por protocolo permite que varios servicios compartan un mismo puerto según el dominio o el protocolo: el TLS pasa tal cual y el protocolo PROXY conserva la dirección real del cliente.
 
-<img src="docs/images/portforward-sni.webp" alt="Un solo puerto 443 para todos tus servicios" width="100%">
+<img src="docs/images/protoroute.webp" alt="Un solo puerto 443 para todos tus servicios" width="100%">
 
 ### DNS dinámico con los principales proveedores
 

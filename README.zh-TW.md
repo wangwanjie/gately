@@ -148,7 +148,7 @@ File Browser 模組託管 [FileBrowser Quantum](https://github.com/gtsteffaniak/
 
 協定分流依網域或協定把多個服務放在同一個連接埠上，TLS 原樣透傳，再用 PROXY 協定保留真實用戶端位址。
 
-<img src="docs/images/portforward-sni.webp" alt="一個 443 連接埠，所有服務共用" width="100%">
+<img src="docs/images/protoroute.webp" alt="一個 443 連接埠，所有服務共用" width="100%">
 
 ### 動態網域，主流服務商都支援
 

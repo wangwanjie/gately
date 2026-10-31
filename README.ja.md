@@ -148,7 +148,7 @@ File Browser モジュールは [FileBrowser Quantum](https://github.com/gtsteff
 
 プロトコル振り分けで、複数のサービスをドメインやプロトコルごとに同じポートへ振り分けます。TLS はそのままパススルーし、PROXY プロトコルで実際のクライアントアドレスを渡します。
 
-<img src="docs/images/portforward-sni.webp" alt="443 番ポートひとつを全サービスで共有" width="100%">
+<img src="docs/images/protoroute.webp" alt="443 番ポートひとつを全サービスで共有" width="100%">
 
 ### 主要プロバイダーに対応したダイナミック DNS
 

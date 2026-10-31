@@ -31,7 +31,7 @@ Eintragswerte können diese Variablen verwenden; sie werden bei jeder Synchronis
 - `{ipv4Addr}`, `{ipv6Addr}`: die IPv4- und IPv6-Adresse, die diese Aufgabe ermittelt (Standard, wenn der Wert eines A- oder AAAA-Eintrags leer bleibt);
 - `{STUN_Name der Regel_PORT}`, `{STUN_Name der Regel_IP}`, `{STUN_Name der Regel_ADDR}`: aktueller öffentlicher Port, IP und IP:Port einer STUN-Regel; der Regelname darf Unterstriche enthalten. Zum Beispiel ein TXT-Eintrag `port={STUN_ssh_PORT}` oder ein A-Eintrag `{STUN_ssh_IP}`.
 
-Ändert sich die öffentliche Adresse einer STUN-Regel, synchronisieren Aufgaben, die sie verwenden, sofort, statt auf die nächste Prüfung zu warten. Solange die Regel deaktiviert ist oder noch keine Verbindung hergestellt hat, wird der Eintrag in dieser Runde übersprungen und der Eintragsstatus nennt den Grund. STUN-Variablen lassen sich auch im Webhook der Aufgabe verwenden.
+Ändert sich die öffentliche Adresse einer STUN-Regel, synchronisieren Aufgaben, die sie verwenden, sofort, statt auf die nächste Prüfung zu warten. Solange die Regel deaktiviert ist oder noch keine Verbindung hergestellt hat, wird der Eintrag in dieser Runde übersprungen und der Eintragsstatus nennt den Grund. STUN-Variablen lassen sich auch im Webhook der Aufgabe verwenden. Stehen sie nur im Webhook, wird der Webhook nach einer Adressänderung trotzdem einmal aufgerufen. Statt des Regelnamens kann auch der Regelschlüssel (key) verwendet werden.
 
 ## Benachrichtigungen
 

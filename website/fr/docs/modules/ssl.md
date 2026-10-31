@@ -2,6 +2,8 @@
 
 Émettez et renouvelez automatiquement des certificats pour les [Services Web](/fr/docs/modules/web), ou exportez-les vers d'autres logiciels.
 
+Lorsque plusieurs certificats couvrent le même domaine, celui qui expire le plus tard est utilisé ; l'ordre et les groupes de la liste des certificats n'affectent que l'affichage.
+
 ## Fonctions
 
 - Émission et renouvellement automatiques **ACME DNS-01**, en réutilisant les fournisseurs DNS du module [DNS dynamique](/fr/docs/modules/ddns), sans avoir à ouvrir les ports 80 / 443 ;
@@ -46,7 +48,7 @@ Saisissez une adresse IP publique (IPv4 ou IPv6, par exemple `203.0.113.10` ou `
 - Les adresses privées, les adresses de bouclage et `100.64.0.0/10` ne peuvent pas passer la validation d'une AC publique ; une AC personnalisée (par exemple un serveur ACME auto-hébergé sur le réseau local) n'a pas ces restrictions ;
 - ZeroSSL et Google Trust Services n'émettent pas de certificats d'adresse IP via ACME.
 
-Lors d'un accès HTTPS par adresse IP, le navigateur n'envoie pas de nom de domaine (SNI) : Gately choisit alors le certificat IP correspondant à l'adresse locale de la connexion ; derrière un NAT ou une redirection de port, lorsque l'adresse locale diffère de l'IP publique du certificat, le premier certificat IP est utilisé.
+Lors d'un accès HTTPS par adresse IP, le navigateur n'envoie pas de nom de domaine (SNI) : Gately choisit alors le certificat IP correspondant à l'adresse locale de la connexion ; derrière un NAT ou une redirection de port, lorsque l'adresse locale diffère de l'IP publique du certificat, le certificat IP qui expire le plus tard est utilisé.
 
 Quand le profil d'un certificat déjà émis passe de par défaut à courte durée ou inversement, le certificat est réémis immédiatement avec le nouveau profil. Pour les certificats de courte durée, le rappel d'expiration n'est envoyé que lorsque le temps restant passe sous la moitié des heures d'avance, signe que le renouvellement a échoué plusieurs fois.
 

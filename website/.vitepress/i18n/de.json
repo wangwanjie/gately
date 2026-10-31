@@ -136,7 +136,7 @@
       },
       {
         "title": "Portweiterleitung",
-        "text": "TCP / UDP, IPv4 / IPv6, Portbereiche, Failover über mehrere Ziele, Verbindungslimits und Traffic-Statistiken; optional PROXY-Protokoll an nachgelagerte Dienste, um die echte Client-Adresse zu erhalten; SNI-Routing lässt mehrere Dienste einen Port wie 443 teilen."
+        "text": "TCP / UDP, IPv4 / IPv6, Portbereiche, Failover über mehrere Ziele, Verbindungslimits und Traffic-Statistiken; optional PROXY-Protokoll an nachgelagerte Dienste, um die echte Client-Adresse zu erhalten."
       },
       {
         "title": "SSL-Zertifikate",
@@ -201,6 +201,10 @@
       {
         "title": "Einbruchschutz",
         "text": "Log-Regeln im Stil von fail2ban, Fallen-Ports und Scan-Erkennung sowie Sperren bei Web-Pfadsondierung; Sperren werden mit nftables synchronisiert und im Kernel verworfen."
+      },
+      {
+        "title": "Protokoll-Routing",
+        "text": "Erkennt das Protokoll an den ersten Bytes jeder Verbindung, sodass HTTPS, SSH, RDP, OpenVPN und insgesamt 20 Protokolle einen Port teilen; TLS wird nach SNI und ALPN, HTTP nach Host geroutet, ohne den Verkehr zu entschlüsseln; optional PROXY-Protokoll an die Backends."
       }
     ],
     "moreModules": "Alle Module ansehen →",

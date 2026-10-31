@@ -136,7 +136,7 @@
       },
       {
         "title": "Port Forwarding",
-        "text": "TCP / UDP, IPv4 / IPv6, port ranges, multi-target failover, connection limits and traffic statistics; can send the PROXY protocol downstream to preserve the real client address; SNI routing lets several services share port 443."
+        "text": "TCP / UDP, IPv4 / IPv6, port ranges, multi-target failover, connection limits and traffic statistics; can send the PROXY protocol downstream to preserve the real client address."
       },
       {
         "title": "SSL Certificates",
@@ -201,6 +201,10 @@
       {
         "title": "Intrusion Prevention",
         "text": "fail2ban-style log jails, trap ports and scan detection, and bans for web path probing; bans sync to nftables and are dropped in the kernel."
+      },
+      {
+        "title": "Protocol Routing",
+        "text": "Identifies the protocol from the first bytes of each connection so HTTPS, SSH, RDP, OpenVPN and 20 protocols in total share one port; TLS is routed by SNI and ALPN, HTTP by Host, without decrypting traffic; can send the PROXY protocol to backends."
       }
     ],
     "moreModules": "See all modules →",

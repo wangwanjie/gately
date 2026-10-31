@@ -2,6 +2,8 @@
 
 Emita e renove certificados automaticamente para uso pelos [Serviços Web](/pt-BR/docs/modules/web) ou exporte-os para outros softwares.
 
+Quando vários certificados cobrem o mesmo domínio, é usado o que expira por último; a ordem e os grupos da lista de certificados afetam apenas a exibição.
+
 ## Recursos
 
 - Emissão e renovação automáticas via **ACME DNS-01**, reaproveitando os provedores de DNS do [DNS dinâmico](/pt-BR/docs/modules/ddns), sem precisar abrir as portas 80 / 443;
@@ -46,7 +48,7 @@ Para solicitar um certificado de endereço IP, informe um endereço IP público 
 - Endereços privados, de loopback e `100.64.0.0/10` não passam na validação de uma CA pública; uma CA personalizada (como um servidor ACME próprio na rede local) não tem essas restrições;
 - ZeroSSL e Google Trust Services não emitem certificados de endereço IP via ACME.
 
-Ao acessar HTTPS por endereço IP, o navegador não envia nome de domínio (SNI), então o Gately escolhe o certificado IP correspondente ao endereço local da conexão; atrás de NAT ou redirecionamento de portas, quando o endereço local difere do IP público do certificado, é usado o primeiro certificado IP.
+Ao acessar HTTPS por endereço IP, o navegador não envia nome de domínio (SNI), então o Gately escolhe o certificado IP correspondente ao endereço local da conexão; atrás de NAT ou redirecionamento de portas, quando o endereço local difere do IP público do certificado, é usado o certificado IP que expira por último.
 
 Ao alternar o perfil de um certificado já emitido entre padrão e curta duração, ele é reemitido imediatamente com o novo perfil. Nos certificados de curta duração, o lembrete de vencimento só é enviado quando o tempo restante fica abaixo da metade da antecedência, o que indica que a renovação falhou várias vezes.
 

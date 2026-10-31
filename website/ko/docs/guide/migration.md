@@ -12,7 +12,7 @@ Gately는 Lucky의 `.lkcf` 설정 파일이나 Lucky의 「설정 백업」으�
 
 1. Lucky의 설정 디렉터리를 찾습니다. Docker 배포라면 보통 컨테이너의 `/app/conf`에 매핑된 호스트 디렉터리이며 `lucky_base.lkcf`, `lucky_ddns.lkcf` 등의 파일이 들어 있습니다.
 2. Gately를 배포합니다(README 참고). 다음을 권장합니다.
-   - Lucky와 마찬가지로 호스트 포트를 직접 수신하도록 `--network host`를 사용합니다.
+   - 호스트 포트를 직접 수신하도록 `--network host`를 사용합니다.
    - 관리 포트는 기본 16680으로, Lucky의 16601과 충돌하지 않습니다.
    - Lucky의 스크립트나 인증서 매핑이 컨테이너 내부 경로(예: `/etc/lucky/custom_scripts`, `/data/nginx/...`)를 사용한다면 Gately 컨테이너에도 **같은 경로**로 마운트하세요. 그러면 가져온 뒤 수정할 필요가 없습니다.
 

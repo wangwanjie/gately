@@ -428,7 +428,7 @@ All metrics carry the labels `listener` (listener name#listener key) and `site` 
 
 ## Replacing haproxy and nginx
 
-Port forwarding and Web Services together can replace an haproxy + nginx pair. A common layout is one [Protocol Routing](/en/docs/modules/protoroute) rule on port 443 that sends VPN and other TLS services straight to their backends and everything else to a Web Services listener that accepts the PROXY protocol, plus a Web Services listener on port 80 with a redirect site (`https://{host}`).
+Protocol Routing and Web Services together can replace an haproxy + nginx pair. A common layout is one [Protocol Routing](/en/docs/modules/protoroute) rule on port 443 that sends VPN and other TLS services straight to their backends and everything else to a Web Services listener that accepts the PROXY protocol, plus a Web Services listener on port 80 with a redirect site (`https://{host}`).
 
 Converting nginx settings:
 

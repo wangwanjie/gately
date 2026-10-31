@@ -148,7 +148,7 @@ Proxy reverso, arquivos estáticos e redirecionamentos por domínio, com HTTPS e
 
 O roteamento por protocolo deixa vários serviços compartilharem a mesma porta por domínio ou protocolo: o TLS passa direto e o protocolo PROXY preserva o endereço real do cliente.
 
-<img src="docs/images/portforward-sni.webp" alt="Uma só porta 443 para todos os serviços" width="100%">
+<img src="docs/images/protoroute.webp" alt="Uma só porta 443 para todos os serviços" width="100%">
 
 ### DNS dinâmico com os principais provedores
 

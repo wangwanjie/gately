@@ -136,7 +136,7 @@
       },
       {
         "title": "連接埠轉發",
-        "text": "TCP / UDP、IPv4 / IPv6、連接埠範圍、多目標容錯移轉、連線數限制與流量統計；可向下游傳送 PROXY 協定，保留真實用戶端位址；SNI 分流讓多個服務共用 443 連接埠。"
+        "text": "TCP / UDP、IPv4 / IPv6、連接埠範圍、多目標容錯移轉、連線數限制與流量統計；可向下游傳送 PROXY 協定，保留真實用戶端位址。"
       },
       {
         "title": "SSL 憑證",
@@ -201,6 +201,10 @@
       {
         "title": "入侵防護",
         "text": "類 fail2ban 的日誌規則、誘餌連接埠與掃描偵測、Web 路徑探測封鎖；封鎖同步到 nftables，在核心層直接丟棄封包。"
+      },
+      {
+        "title": "協定分流",
+        "text": "依連線的第一個資料封包識別協定，讓 HTTPS、SSH、RDP、OpenVPN 等 20 種協定共用一個連接埠；TLS 依 SNI 與 ALPN、HTTP 依 Host 分流，不解密流量；可向後端傳送 PROXY 協定。"
       }
     ],
     "moreModules": "查看全部模組 →",

@@ -428,7 +428,7 @@ El botón «Importar nginx» de la parte superior de la página convierte sitios
 
 ## Sustituir haproxy y nginx
 
-El reenvío de puertos y los servicios web juntos pueden sustituir la pareja haproxy + nginx. Una disposición habitual es una regla de [Enrutamiento por protocolo](/es/docs/modules/protoroute) en el puerto 443 que envía la VPN y otros servicios TLS directamente a sus backends y todo lo demás a un listener de servicios web que acepta el protocolo PROXY, más un listener de servicios web en el puerto 80 con un sitio de redirección (`https://{host}`).
+El enrutamiento por protocolo y los servicios web juntos pueden sustituir la pareja haproxy + nginx. Una disposición habitual es una regla de [Enrutamiento por protocolo](/es/docs/modules/protoroute) en el puerto 443 que envía la VPN y otros servicios TLS directamente a sus backends y todo lo demás a un listener de servicios web que acepta el protocolo PROXY, más un listener de servicios web en el puerto 80 con un sitio de redirección (`https://{host}`).
 
 Conversión de ajustes de nginx:
 

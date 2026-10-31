@@ -2,6 +2,8 @@
 
 Stellen Sie Zertifikate automatisch aus und erneuern Sie sie, damit die [Web-Dienste](/de/docs/modules/web) sie nutzen oder Sie sie in andere Software exportieren können.
 
+Decken mehrere Zertifikate dieselbe Domain ab, wird das zuletzt ablaufende verwendet; Reihenfolge und Gruppen der Zertifikatsliste wirken sich nur auf die Anzeige aus.
+
 ## Funktionen
 
 - **ACME DNS-01** mit automatischer Ausstellung und Erneuerung, das die DNS-Anbieter aus [Dynamischem DNS](/de/docs/modules/ddns) wiederverwendet, ohne dass die Ports 80 / 443 geöffnet sein müssen;
@@ -46,7 +48,7 @@ Tragen Sie unter den Domains eine öffentliche IP-Adresse ein (IPv4 oder IPv6, e
 - Private Adressen, Loopback-Adressen und `100.64.0.0/10` können die Validierung einer öffentlichen CA nicht bestehen; für eine eigene CA (etwa einen selbst betriebenen ACME-Server im LAN) gelten diese Einschränkungen nicht;
 - ZeroSSL und Google Trust Services stellen über ACME keine IP-Adress-Zertifikate aus.
 
-Beim HTTPS-Zugriff über eine IP-Adresse sendet der Browser keinen Domainnamen (SNI); Gately wählt dann das IP-Zertifikat, das zur lokalen Adresse der Verbindung passt. Hinter NAT oder Portweiterleitung, wenn die lokale Adresse von der öffentlichen IP im Zertifikat abweicht, wird das erste IP-Zertifikat verwendet.
+Beim HTTPS-Zugriff über eine IP-Adresse sendet der Browser keinen Domainnamen (SNI); Gately wählt dann das IP-Zertifikat, das zur lokalen Adresse der Verbindung passt. Hinter NAT oder Portweiterleitung, wenn die lokale Adresse von der öffentlichen IP im Zertifikat abweicht, wird das IP-Zertifikat verwendet, das zuletzt abläuft.
 
 Wird das Profil eines bereits ausgestellten Zertifikats zwischen Standard und kurzlebig umgestellt, wird es sofort mit dem neuen Profil neu ausgestellt. Bei kurzlebigen Zertifikaten wird eine Ablauferinnerung nur gesendet, wenn die Restlaufzeit unter die Hälfte der Vorlaufstunden fällt, was auf mehrere fehlgeschlagene Erneuerungen hinweist.
 

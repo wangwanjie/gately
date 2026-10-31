@@ -148,7 +148,7 @@ Reverse proxy, static files and redirects by domain, with HTTPS and HTTP/3. Each
 
 Protocol routing lets several services share a single port by domain or protocol, passing TLS straight through and keeping the real client address with the PROXY protocol.
 
-<img src="docs/images/portforward-sni.webp" alt="One port 443 for every service" width="100%">
+<img src="docs/images/protoroute.webp" alt="One port 443 for every service" width="100%">
 
 ### Dynamic DNS for all the major providers
 

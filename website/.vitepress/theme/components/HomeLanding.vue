@@ -8,7 +8,7 @@ import {
   Globe, RadioTower, ArrowLeftRight, ShieldCheck, Waypoints, ShieldAlert, Network, Boxes,
   Terminal, HardDrive, Clock, KeyRound, Copy, Check, Github, Eye,
   Bell, DatabaseBackup, Activity, Bot, UserCheck, ChartLine, AppWindow, LogIn, Server, ArrowRight,
-  Layers, ScrollText, History, Braces, Smartphone, Rocket, CircleCheck, ShieldBan
+  Layers, ScrollText, History, Braces, Smartphone, Rocket, CircleCheck, ShieldBan, Split
 } from 'lucide-vue-next'
 
 // 所有文案来自当前语言包（.vitepress/i18n/<语言>.json 的 home 节点），图标按顺序与条目一一对应
@@ -19,7 +19,7 @@ const link = (path: string) => withBase(`${prefix.value}${path}`)
 
 const featureIcons = [
   Globe, RadioTower, ArrowLeftRight, KeyRound, Waypoints, ShieldAlert, Network, Boxes, Terminal,
-  HardDrive, Clock, ShieldCheck, UserCheck, ChartLine, Bell, DatabaseBackup, Activity, Bot, ShieldBan
+  HardDrive, Clock, ShieldCheck, UserCheck, ChartLine, Bell, DatabaseBackup, Activity, Bot, ShieldBan, Split
 ]
 // 选择理由八项：开源透明、一站整合、层层防护、操作审计、配置回滚、完整 API、移动端友好、开箱即用
 const whyIcons = [Eye, Layers, ShieldCheck, ScrollText, History, Braces, Smartphone, Rocket]
@@ -40,7 +40,7 @@ const shots = [
 const showcase = computed(() => h.value.showcase.map((s: any, i: number) => ({ ...s, shot: shots[i] })))
 
 // 功能按场景分组，数字是 features 数组的下标：网络接入、网站与证书、安全防护、运维工具、监控与自动化
-const groupIndexes = [[0, 1, 2, 6], [4, 3], [5, 18, 12, 11], [7, 8, 9, 10, 16], [13, 14, 15, 17]]
+const groupIndexes = [[0, 1, 2, 19, 6], [4, 3], [5, 18, 12, 11], [7, 8, 9, 10, 16], [13, 14, 15, 17]]
 const activeGroup = ref(0)
 const groupFeatures = computed(() => groupIndexes[activeGroup.value].map((i) => features.value[i]))
 const fnosPoints = computed(() => h.value.fnos.points.map((f: any, i: number) => ({ ...f, icon: fnosIcons[i] })))

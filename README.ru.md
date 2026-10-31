@@ -148,7 +148,7 @@ curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns/tasks
 
 Маршрутизация по протоколу размещает несколько служб на одном порту по домену или протоколу: TLS проходит насквозь без расшифровки, а реальный адрес клиента передаётся по протоколу PROXY.
 
-<img src="docs/images/portforward-sni.webp" alt="Один порт 443 для всех служб" width="100%">
+<img src="docs/images/protoroute.webp" alt="Один порт 443 для всех служб" width="100%">
 
 ### Динамический DNS с ведущими провайдерами
 

@@ -428,7 +428,7 @@ O botão "Importar nginx", no topo da página, converte sites existentes do ngin
 
 ## Substituindo haproxy e nginx
 
-O redirecionamento de portas e os Serviços Web juntos podem substituir a dupla haproxy + nginx. Uma organização comum é uma regra de [Roteamento por protocolo](/pt-BR/docs/modules/protoroute) na porta 443 que envia a VPN e outros serviços TLS diretamente para seus backends e todo o resto para um listener de Serviços Web que aceita o protocolo PROXY, mais um listener de Serviços Web na porta 80 com um site de redirecionamento (`https://{host}`).
+O roteamento por protocolo e os Serviços Web juntos podem substituir a dupla haproxy + nginx. Uma organização comum é uma regra de [Roteamento por protocolo](/pt-BR/docs/modules/protoroute) na porta 443 que envia a VPN e outros serviços TLS diretamente para seus backends e todo o resto para um listener de Serviços Web que aceita o protocolo PROXY, mais um listener de Serviços Web na porta 80 com um site de redirecionamento (`https://{host}`).
 
 Conversão das configurações do nginx:
 

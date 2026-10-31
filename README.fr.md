@@ -148,7 +148,7 @@ Reverse proxy, fichiers statiques et redirections par domaine, avec HTTPS et HTT
 
 Le routage par protocole permet à plusieurs services de partager un même port selon le domaine ou le protocole : le TLS passe tel quel et le protocole PROXY conserve l'adresse réelle du client.
 
-<img src="docs/images/portforward-sni.webp" alt="Un seul port 443 pour tous vos services" width="100%">
+<img src="docs/images/protoroute.webp" alt="Un seul port 443 pour tous vos services" width="100%">
 
 ### DNS dynamique avec les principaux fournisseurs
 

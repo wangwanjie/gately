@@ -136,7 +136,7 @@
       },
       {
         "title": "端口转发",
-        "text": "TCP / UDP、IPv4 / IPv6、端口段、多目标故障转移、连接数限制与流量统计；可向下游发送 PROXY 协议，保留真实客户端地址；SNI 分流让多个服务共用 443 端口。"
+        "text": "TCP / UDP、IPv4 / IPv6、端口段、多目标故障转移、连接数限制与流量统计；可向下游发送 PROXY 协议，保留真实客户端地址。"
       },
       {
         "title": "SSL 证书",
@@ -201,6 +201,10 @@
       {
         "title": "入侵防护",
         "text": "类 fail2ban 的日志规则、诱饵端口与扫描检测、Web 路径探测封禁；封禁同步到 nftables，在内核层直接丢包。"
+      },
+      {
+        "title": "协议分流",
+        "text": "按连接的首个数据包识别协议，让 HTTPS、SSH、RDP、OpenVPN 等 20 种协议共用一个端口；TLS 按 SNI 与 ALPN、HTTP 按 Host 分流，不解密流量；可向后端发送 PROXY 协议。"
       }
     ],
     "moreModules": "查看全部模块 →",

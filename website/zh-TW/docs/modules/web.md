@@ -428,7 +428,7 @@ curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/webservice/m
 
 ## 取代 haproxy 與 nginx
 
-連接埠轉發加上 Web 服務可以取代 haproxy + nginx 的組合。常見配置是：在 443 上放一條[協定分流](/zh-TW/docs/modules/protoroute)規則，把 VPN 等 TLS 服務直接送到各自的後端，其餘網域送到一個接收 PROXY 協定的 Web 服務監聽；再在 80 連接埠放一個 Web 服務監聽，用重新導向站台（`https://{host}`）跳轉到 HTTPS。
+協定分流加上 Web 服務可以取代 haproxy + nginx 的組合。常見配置是：在 443 上放一條[協定分流](/zh-TW/docs/modules/protoroute)規則，把 VPN 等 TLS 服務直接送到各自的後端，其餘網域送到一個接收 PROXY 協定的 Web 服務監聽；再在 80 連接埠放一個 Web 服務監聽，用重新導向站台（`https://{host}`）跳轉到 HTTPS。
 
 nginx 設定的對應關係：
 

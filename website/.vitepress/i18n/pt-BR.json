@@ -136,7 +136,7 @@
       },
       {
         "title": "Redirecionamento de portas",
-        "text": "TCP / UDP, IPv4 / IPv6, intervalos de portas, failover entre vários destinos, limite de conexões e estatísticas de tráfego; pode enviar o protocolo PROXY ao destino para preservar o endereço real do cliente; o roteamento SNI permite que vários serviços compartilhem a porta 443."
+        "text": "TCP / UDP, IPv4 / IPv6, intervalos de portas, failover entre vários destinos, limite de conexões e estatísticas de tráfego; pode enviar o protocolo PROXY ao destino para preservar o endereço real do cliente."
       },
       {
         "title": "Certificados SSL",
@@ -201,6 +201,10 @@
       {
         "title": "Prevenção de intrusão",
         "text": "Regras de log no estilo fail2ban, portas armadilha e detecção de varreduras, e bloqueio de sondagem de caminhos web; os bloqueios são sincronizados com o nftables e descartados no kernel."
+      },
+      {
+        "title": "Roteamento por protocolo",
+        "text": "Identifica o protocolo pelos primeiros bytes de cada conexão para que HTTPS, SSH, RDP, OpenVPN e 20 protocolos no total compartilhem uma porta; TLS é roteado por SNI e ALPN e HTTP por Host, sem descriptografar o tráfego; pode enviar o protocolo PROXY aos backends."
       }
     ],
     "moreModules": "Ver todos os módulos →",

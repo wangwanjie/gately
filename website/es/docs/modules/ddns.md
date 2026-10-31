@@ -31,7 +31,7 @@ Los valores de registro pueden usar estas variables, que se sustituyen por los v
 - `{ipv4Addr}`, `{ipv6Addr}`: las direcciones IPv4 e IPv6 que obtiene la tarea (se usan por defecto si el valor de un registro A o AAAA queda vacío);
 - `{STUN_nombre de regla_PORT}`, `{STUN_nombre de regla_IP}`, `{STUN_nombre de regla_ADDR}`: puerto público, IP e IP:puerto actuales de una regla STUN; el nombre de la regla puede contener guiones bajos. Por ejemplo, un registro TXT `port={STUN_ssh_PORT}` o un registro A `{STUN_ssh_IP}`.
 
-Cuando cambia la dirección pública de una regla STUN, las tareas que la usan se sincronizan al momento, sin esperar a la siguiente comprobación. Mientras la regla esté desactivada o aún no haya atravesado el NAT, el registro se omite en esa ronda y su estado indica el motivo. Las variables STUN también pueden usarse en el Webhook de la tarea.
+Cuando cambia la dirección pública de una regla STUN, las tareas que la usan se sincronizan al momento, sin esperar a la siguiente comprobación. Mientras la regla esté desactivada o aún no haya atravesado el NAT, el registro se omite en esa ronda y su estado indica el motivo. Las variables STUN también pueden usarse en el Webhook de la tarea. Si solo aparecen en el Webhook, este se llama igualmente una vez tras el cambio de dirección. Puede usarse la clave (key) de la regla en lugar de su nombre.
 
 ## Notificaciones
 

@@ -12,7 +12,7 @@ Gately 可以直接读取 Lucky 的 `.lkcf` 配置文件或 Lucky「备份配置
 
 1. 找到 Lucky 的配置目录：Docker 部署通常是映射到容器 `/app/conf` 的宿主机目录，里面有 `lucky_base.lkcf`、`lucky_ddns.lkcf` 等文件。
 2. 部署 Gately（见 README）。建议：
-   - 使用 `--network host`，与 Lucky 一样直接监听宿主机端口；
+   - 使用 `--network host`，直接监听宿主机端口；
    - 管理端口默认 16680，与 Lucky 的 16601 不冲突；
    - 如果 Lucky 的脚本或证书映射用到了容器内路径（例如 `/etc/lucky/custom_scripts`、`/data/nginx/...`），在 Gately 容器中挂载到**相同路径**，导入后无需修改。
 

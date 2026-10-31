@@ -2,6 +2,8 @@
 
 Emite y renueva certificados automáticamente para que los usen los [Servicios web](/es/docs/modules/web), o expórtalos a otro software.
 
+Cuando varios certificados cubren el mismo dominio, se usa el que vence más tarde; el orden y los grupos de la lista de certificados solo afectan a cómo se muestra.
+
 ## Capacidades
 
 - Emisión y renovación automáticas con **ACME DNS-01**, reutilizando los proveedores DNS de [DNS dinámico](/es/docs/modules/ddns), sin necesidad de abrir los puertos 80 / 443;
@@ -46,7 +48,7 @@ Para solicitar un certificado de dirección IP, escribe una dirección IP públi
 - Las direcciones privadas, las de loopback y `100.64.0.0/10` no pueden superar la validación de una CA pública; una CA personalizada (como un servidor ACME propio en la red local) no tiene estas restricciones;
 - ZeroSSL y Google Trust Services no emiten certificados de dirección IP por ACME.
 
-Al acceder por HTTPS mediante una dirección IP, el navegador no envía nombre de dominio (SNI), así que Gately elige el certificado IP que corresponde a la dirección local de la conexión; tras NAT o reenvío de puertos, cuando la dirección local difiere de la IP pública del certificado, se usa el primer certificado IP.
+Al acceder por HTTPS mediante una dirección IP, el navegador no envía nombre de dominio (SNI), así que Gately elige el certificado IP que corresponde a la dirección local de la conexión; tras NAT o reenvío de puertos, cuando la dirección local difiere de la IP pública del certificado, se usa el certificado IP que vence más tarde.
 
 Al cambiar el perfil de un certificado ya emitido entre predeterminado y corta duración, se vuelve a emitir de inmediato con el nuevo perfil. En los certificados de corta duración, el aviso de caducidad solo se envía cuando el tiempo restante baja de la mitad de las horas de antelación, lo que indica que la renovación ha fallado varias veces.
 
