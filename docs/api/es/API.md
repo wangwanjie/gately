@@ -32,6 +32,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Dominio de permisos | Nombre | Permisos disponibles |
 | --- | --- | --- |
 | `portforward` | Reenvío de puertos | `portforward:read`、`portforward:write` |
+| `protoroute` | Enrutamiento por protocolo | `protoroute:read`、`protoroute:write` |
 | `ddns` | DNS dinámico | `ddns:read`、`ddns:write` |
 | `stun` | Traversal STUN | `stun:read`、`stun:write` |
 | `tailscale` | Red Tailscale | `tailscale:read`、`tailscale:write` |
@@ -76,6 +77,22 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | PUT | `/api/portforward/rules-group` | `portforward:write` | Asignar grupo a varios elementos: Regla de reenvío de puertos |
 | GET | `/api/portforward/settings` | `portforward:read` | Leer los ajustes globales de reenvío de puertos |
 | PUT | `/api/portforward/settings` | `portforward:write` | Guardar los ajustes globales de reenvío de puertos |
+
+## Enrutamiento por protocolo
+
+| Método | Ruta | Permiso requerido | Descripción |
+| --- | --- | --- | --- |
+| GET | `/api/protoroute/logs` | `protoroute:read` | Ver los registros de ejecución del módulo |
+| DELETE | `/api/protoroute/logs` | `protoroute:write` | Vaciar los registros de ejecución del módulo |
+| GET | `/api/protoroute/rules` | `protoroute:read` | Listar regla de enrutamiento por protocolo |
+| POST | `/api/protoroute/rules` | `protoroute:write` | Añadir regla de enrutamiento por protocolo |
+| PUT | `/api/protoroute/rules/{key}` | `protoroute:write` | Modificar regla de enrutamiento por protocolo |
+| DELETE | `/api/protoroute/rules/{key}` | `protoroute:write` | Eliminar regla de enrutamiento por protocolo |
+| PUT | `/api/protoroute/rules/{key}/enable` | `protoroute:write` | Activar o desactivar regla de enrutamiento por protocolo |
+| PUT | `/api/protoroute/rules-order` | `protoroute:write` | Reordenar regla de enrutamiento por protocolo |
+| PUT | `/api/protoroute/rules-group` | `protoroute:write` | Asignar grupo a varios elementos: regla de enrutamiento por protocolo |
+| GET | `/api/protoroute/settings` | `protoroute:read` | Leer los ajustes del enrutamiento por protocolo |
+| PUT | `/api/protoroute/settings` | `protoroute:write` | Guardar los ajustes del enrutamiento por protocolo |
 
 ## DNS dinámico
 
@@ -1265,20 +1282,40 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `protocols` | Lista de string |
 | `proxyProtocol` | string |
 | `remark` | string |
-| `sniRoutes` | Lista de `portforward.SNIRoute` |
 | `targetAddresses` | Lista de string |
 | `targetPorts` | string |
 | `udpSessionTimeout` | integer |
 
-### portforward.SNIRoute
+### protoroute.Route
 
 | Campo | Tipo |
 | --- | --- |
+| `alpn` | Lista de string |
 | `domains` | Lista de string |
 | `name` | string |
+| `protocol` | string |
 | `proxyProtocol` | string |
 | `targetAddresses` | Lista de string |
 | `targetPort` | integer |
+
+### protoroute.Rule
+
+| Campo | Tipo |
+| --- | --- |
+| `enable` | boolean |
+| `group` | string |
+| `key` | string |
+| `listenAddress` | string |
+| `listenPorts` | string |
+| `maxConnections` | integer |
+| `name` | string |
+| `protocols` | Lista de string |
+| `proxyProtocol` | string |
+| `remark` | string |
+| `routes` | Lista de `protoroute.Route` |
+| `sniffTimeout` | number |
+| `targetAddresses` | Lista de string |
+| `targetPorts` | string |
 
 ### ssl.ACMEConfig
 

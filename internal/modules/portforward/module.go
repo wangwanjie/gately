@@ -83,6 +83,11 @@ func (m *Module) startRuleLocked(rule Rule) {
 	if m.ctx == nil {
 		return
 	}
+	// 分流规则已由「协议分流」模块在启动前迁走；仍残留时（例如迁移失败）不能按普通转发启动
+	if rule.Mode != "" {
+		m.errors[rule.Key] = "SNI 与协议分流规则已移到「协议分流」模块"
+		return
+	}
 	r := newRunner(rule, m.cfg.Settings, m.logs.Logger(ruleLabel(rule)))
 	if err := r.start(m.ctx); err != nil {
 		m.errors[rule.Key] = err.Error()

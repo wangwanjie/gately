@@ -1320,12 +1320,6 @@
           "remark": {
             "type": "string"
           },
-          "sniRoutes": {
-            "items": {
-              "$ref": "#/components/schemas/portforward.SNIRoute"
-            },
-            "type": "array"
-          },
           "targetAddresses": {
             "items": {
               "type": "string"
@@ -1341,8 +1335,14 @@
         },
         "type": "object"
       },
-      "portforward.SNIRoute": {
+      "protoroute.Route": {
         "properties": {
+          "alpn": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "domains": {
             "items": {
               "type": "string"
@@ -1350,6 +1350,9 @@
             "type": "array"
           },
           "name": {
+            "type": "string"
+          },
+          "protocol": {
             "type": "string"
           },
           "proxyProtocol": {
@@ -1363,6 +1366,62 @@
           },
           "targetPort": {
             "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "protoroute.Rule": {
+        "properties": {
+          "enable": {
+            "type": "boolean"
+          },
+          "group": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "listenAddress": {
+            "type": "string"
+          },
+          "listenPorts": {
+            "type": "string"
+          },
+          "maxConnections": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "protocols": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "proxyProtocol": {
+            "type": "string"
+          },
+          "remark": {
+            "type": "string"
+          },
+          "routes": {
+            "items": {
+              "$ref": "#/components/schemas/protoroute.Route"
+            },
+            "type": "array"
+          },
+          "sniffTimeout": {
+            "type": "number"
+          },
+          "targetAddresses": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "targetPorts": {
+            "type": "string"
           }
         },
         "type": "object"
@@ -20935,6 +20994,765 @@
         "x-token-allowed": true
       }
     },
+    "/api/protoroute/logs": {
+      "delete": {
+        "description": "Permission requise : `protoroute:write`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Vider les journaux d'exécution d'un module",
+        "tags": [
+          "Routage par protocole"
+        ],
+        "x-required-scope": "protoroute:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "Prend en charge la récupération incrémentale avec le paramètre `since`, qui renvoie les journaux dont le numéro de séquence est supérieur à cette valeur ; `before` renvoie les journaux dont le numéro de séquence est inférieur à cette valeur, pour charger les entrées plus anciennes ; `limit` ne renvoie que les entrées les plus récentes et, si la mémoire n’en contient pas assez, recherche aussi dans l’historique conservé dans les fichiers journaux. Paramètres de filtre : `level` niveau minimal, `source` source, `q` mots-clés (séparés par des espaces, tous doivent correspondre ; les guillemets doubles regroupent une expression ; un `-` initial exclut), `ip` adresse du client (adresse complète, CIDR ou partie d’adresse, séparées par des virgules), `host` nom du site ou domaine, `status` code d’état (par exemple `404`, `4xx`, `500-599`), `from` et `to` plage horaire (RFC 3339 ou horodatage en millisecondes). `exclude` liste les termes à exclure : les entrées contenant l’un d’eux ne sont pas renvoyées ; même syntaxe que `q`, le `-` initial est facultatif.\n\nPermission requise : `protoroute:read`.",
+        "parameters": [
+          {
+            "description": "Récupération incrémentale : ne renvoie que les journaux dont le numéro de séquence est supérieur à cette valeur",
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Charger les journaux plus anciens : ne renvoie que les journaux dont le numéro de séquence est inférieur à cette valeur",
+            "in": "query",
+            "name": "before",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Nombre maximal d'entrées renvoyées, en prenant les plus récentes qui correspondent ; 0 ou absent signifie sans limite",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Niveau minimal : debug, info, warn ou error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Étiquette de source, correspondance exacte sans tenir compte de la casse",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Mots-clés : séparés par des espaces, tous doivent correspondre ; les guillemets doubles regroupent une expression ; un - initial exclut",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Mots-clés exclus : séparés par des espaces, les guillemets doubles regroupent une expression ; une entrée contenant l’un d’eux est exclue ; s’applique avec q",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Adresse du client : adresse complète, CIDR ou partie d’adresse, séparées par des virgules",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Partie du nom du site ou du domaine",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Code d’état comme 404, 4xx, 500-599, séparés par des virgules",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Heure de début, RFC 3339 ou horodatage en millisecondes",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Heure de fin, RFC 3339 ou horodatage en millisecondes",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Consulter les journaux d'exécution d'un module",
+        "tags": [
+          "Routage par protocole"
+        ],
+        "x-required-scope": "protoroute:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/protoroute/rules": {
+      "get": {
+        "description": "Permission requise : `protoroute:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/protoroute.Rule"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Lister règle de routage par protocole",
+        "tags": [
+          "Routage par protocole"
+        ],
+        "x-required-scope": "protoroute:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "Permission requise : `protoroute:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/protoroute.Rule"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/protoroute.Rule"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ajouter règle de routage par protocole",
+        "tags": [
+          "Routage par protocole"
+        ],
+        "x-required-scope": "protoroute:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/protoroute/rules-group": {
+      "put": {
+        "description": "Permission requise : `protoroute:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Définir le groupe de plusieurs éléments : règle de routage par protocole",
+        "tags": [
+          "Routage par protocole"
+        ],
+        "x-required-scope": "protoroute:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/protoroute/rules-order": {
+      "put": {
+        "description": "Permission requise : `protoroute:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.orderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Réordonner règle de routage par protocole",
+        "tags": [
+          "Routage par protocole"
+        ],
+        "x-required-scope": "protoroute:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/protoroute/rules/{key}": {
+      "delete": {
+        "description": "Permission requise : `protoroute:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Supprimer règle de routage par protocole",
+        "tags": [
+          "Routage par protocole"
+        ],
+        "x-required-scope": "protoroute:write",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Permission requise : `protoroute:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/protoroute.Rule"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/protoroute.Rule"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Modifier règle de routage par protocole",
+        "tags": [
+          "Routage par protocole"
+        ],
+        "x-required-scope": "protoroute:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/protoroute/rules/{key}/enable": {
+      "put": {
+        "description": "Permission requise : `protoroute:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.enableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Activer ou désactiver règle de routage par protocole",
+        "tags": [
+          "Routage par protocole"
+        ],
+        "x-required-scope": "protoroute:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/protoroute/settings": {
+      "get": {
+        "description": "Permission requise : `protoroute:read`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Lire les paramètres du routage par protocole",
+        "tags": [
+          "Routage par protocole"
+        ],
+        "x-required-scope": "protoroute:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Permission requise : `protoroute:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Enregistrer les paramètres du routage par protocole",
+        "tags": [
+          "Routage par protocole"
+        ],
+        "x-required-scope": "protoroute:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/session": {
       "get": {
         "description": "Renvoie `username`, `role` (`admin` ou `readonly`), `disabledModules` (ID des modules désactivés) et `defaultPassword` (true tant que l'administrateur utilise le mot de passe par défaut `gately.cn` ; l'interface s'en sert pour inviter à le changer).\n\nTout jeton d'API valide peut y accéder, sans permission spécifique.",
@@ -34211,6 +35029,9 @@
       "name": "Redirection de ports"
     },
     {
+      "name": "Routage par protocole"
+    },
+    {
       "name": "DNS dynamique"
     },
     {
@@ -34291,6 +35112,7 @@
   ],
   "x-scope-domains": [
     "portforward",
+    "protoroute",
     "ddns",
     "stun",
     "tailscale",

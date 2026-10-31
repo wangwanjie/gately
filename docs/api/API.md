@@ -32,6 +32,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 权限域 | 名称 | 可用权限 |
 | --- | --- | --- |
 | `portforward` | 端口转发 | `portforward:read`、`portforward:write` |
+| `protoroute` | 协议分流 | `protoroute:read`、`protoroute:write` |
 | `ddns` | 动态域名 | `ddns:read`、`ddns:write` |
 | `stun` | STUN 穿透 | `stun:read`、`stun:write` |
 | `tailscale` | Tailscale 组网 | `tailscale:read`、`tailscale:write` |
@@ -76,6 +77,22 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/portforward/rules-group` | `portforward:write` | 批量设置端口转发规则分组 |
 | GET | `/api/portforward/settings` | `portforward:read` | 读取端口转发全局设置 |
 | PUT | `/api/portforward/settings` | `portforward:write` | 保存端口转发全局设置 |
+
+## 协议分流
+
+| 方法 | 路径 | 所需权限 | 说明 |
+| --- | --- | --- | --- |
+| GET | `/api/protoroute/logs` | `protoroute:read` | 查看模块运行日志 |
+| DELETE | `/api/protoroute/logs` | `protoroute:write` | 清空模块运行日志 |
+| GET | `/api/protoroute/rules` | `protoroute:read` | 获取协议分流规则列表 |
+| POST | `/api/protoroute/rules` | `protoroute:write` | 新增协议分流规则 |
+| PUT | `/api/protoroute/rules/{key}` | `protoroute:write` | 修改协议分流规则 |
+| DELETE | `/api/protoroute/rules/{key}` | `protoroute:write` | 删除协议分流规则 |
+| PUT | `/api/protoroute/rules/{key}/enable` | `protoroute:write` | 启用或停用协议分流规则 |
+| PUT | `/api/protoroute/rules-order` | `protoroute:write` | 调整协议分流规则排序 |
+| PUT | `/api/protoroute/rules-group` | `protoroute:write` | 批量设置协议分流规则分组 |
+| GET | `/api/protoroute/settings` | `protoroute:read` | 读取协议分流全局设置 |
+| PUT | `/api/protoroute/settings` | `protoroute:write` | 保存协议分流全局设置 |
 
 ## 动态域名
 
@@ -1265,20 +1282,40 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `protocols` | 数组 of string |
 | `proxyProtocol` | string |
 | `remark` | string |
-| `sniRoutes` | 数组 of `portforward.SNIRoute` |
 | `targetAddresses` | 数组 of string |
 | `targetPorts` | string |
 | `udpSessionTimeout` | integer |
 
-### portforward.SNIRoute
+### protoroute.Route
 
 | 字段 | 类型 |
 | --- | --- |
+| `alpn` | 数组 of string |
 | `domains` | 数组 of string |
 | `name` | string |
+| `protocol` | string |
 | `proxyProtocol` | string |
 | `targetAddresses` | 数组 of string |
 | `targetPort` | integer |
+
+### protoroute.Rule
+
+| 字段 | 类型 |
+| --- | --- |
+| `enable` | boolean |
+| `group` | string |
+| `key` | string |
+| `listenAddress` | string |
+| `listenPorts` | string |
+| `maxConnections` | integer |
+| `name` | string |
+| `protocols` | 数组 of string |
+| `proxyProtocol` | string |
+| `remark` | string |
+| `routes` | 数组 of `protoroute.Route` |
+| `sniffTimeout` | number |
+| `targetAddresses` | 数组 of string |
+| `targetPorts` | string |
 
 ### ssl.ACMEConfig
 

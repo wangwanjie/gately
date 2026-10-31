@@ -1,19 +1,11 @@
-package portforward
+package protoroute
 
 import (
 	"encoding/binary"
 	"errors"
 	"io"
-	"net"
-	"sort"
-	"strconv"
 	"strings"
-	"sync/atomic"
-	"time"
 )
-
-// sniPeekTimeout 是等待客户端发完 ClientHello 的时长，与 haproxy 常用的 inspect-delay 5s 一致；测试中会调小
-var sniPeekTimeout = 5 * time.Second
 
 const (
 	// maxHelloSize 限制 ClientHello 握手消息的长度。后量子密钥交换的 ClientHello 约 2 KB，64 KB 足够且能防止恶意大包占内存
@@ -31,7 +23,7 @@ var errNotTLS = errors.New("不是 TLS 握手")
 type clientHello struct {
 	// ServerName 为 SNI，已转小写并去掉末尾的点；客户端未携带时为空
 	ServerName string
-	// ALPN 为客户端声明的应用层协议列表，仅用于日志
+	// ALPN 为客户端声明的应用层协议列表，按客户端的偏好排序
 	ALPN []string
 }
 
@@ -209,97 +201,4 @@ func skipVector(b []byte, prefix int) ([]byte, bool) {
 // normalizeSNI 统一域名大小写并去掉末尾的点，与 haproxy 的 req_ssl_sni -i 一样不区分大小写。
 func normalizeSNI(s string) string {
 	return strings.TrimSuffix(strings.ToLower(strings.TrimSpace(s)), ".")
-}
-
-// sniTarget 是一个分流目标（某条 SNI 路由或默认目标）运行时的状态。
-type sniTarget struct {
-	name   string
-	picker *targetPicker
-	// port 为目标端口，0 表示按规则的端口映射（默认目标）或与监听端口相同（路由）
-	port          int
-	proxyProtocol string
-	conns         atomic.Int64
-}
-
-// sniRouter 按 SNI 选择目标：精确匹配优先，其次最长的 *.后缀 通配，最后 *。
-type sniRouter struct {
-	exact    map[string]*sniTarget
-	wildcard []wildcardRoute
-	// any 为域名 "*" 对应的路由，优先级低于所有具体域名但高于默认目标
-	any *sniTarget
-	// fallback 为默认目标，未命中或没有 SNI 时使用；可为 nil
-	fallback *sniTarget
-	targets  []*sniTarget
-}
-
-type wildcardRoute struct {
-	// suffix 为通配去掉 * 后的部分，例如 ".example.com"
-	suffix string
-	target *sniTarget
-}
-
-func newSNIRouter(rule Rule) *sniRouter {
-	rt := &sniRouter{exact: map[string]*sniTarget{}}
-	for _, route := range rule.SNIRoutes {
-		t := &sniTarget{
-			name:          route.Name,
-			picker:        &targetPicker{hosts: route.TargetAddresses},
-			port:          route.TargetPort,
-			proxyProtocol: route.ProxyProtocol,
-		}
-		rt.targets = append(rt.targets, t)
-		for _, d := range route.Domains {
-			switch {
-			case d == "*":
-				rt.any = t
-			case strings.HasPrefix(d, "*."):
-				rt.wildcard = append(rt.wildcard, wildcardRoute{suffix: d[1:], target: t})
-			default:
-				rt.exact[d] = t
-			}
-		}
-	}
-	// 后缀越长越具体，优先匹配
-	sort.SliceStable(rt.wildcard, func(i, j int) bool {
-		return len(rt.wildcard[i].suffix) > len(rt.wildcard[j].suffix)
-	})
-	if len(rule.TargetAddresses) > 0 {
-		rt.fallback = &sniTarget{
-			name:          "",
-			picker:        &targetPicker{hosts: rule.TargetAddresses},
-			proxyProtocol: rule.ProxyProtocol,
-		}
-	}
-	return rt
-}
-
-// match 返回 SNI 对应的目标，未命中任何路由时返回默认目标（可能为 nil）。
-func (rt *sniRouter) match(name string) *sniTarget {
-	if name != "" {
-		if t, ok := rt.exact[name]; ok {
-			return t
-		}
-		for _, w := range rt.wildcard {
-			if strings.HasSuffix(name, w.suffix) {
-				return w.target
-			}
-		}
-		if rt.any != nil {
-			return rt.any
-		}
-	}
-	return rt.fallback
-}
-
-// dialSNITarget 按目标的地址列表轮询拨号，失败时依次尝试下一个地址。
-func dialSNITarget(t *sniTarget, port int, timeout time.Duration) (net.Conn, error) {
-	var lastErr error
-	for _, host := range t.picker.order() {
-		conn, err := net.DialTimeout("tcp", net.JoinHostPort(host, strconv.Itoa(port)), timeout)
-		if err == nil {
-			return conn, nil
-		}
-		lastErr = err
-	}
-	return nil, lastErr
 }

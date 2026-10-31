@@ -17,6 +17,7 @@ const apiIntro = "Gately 管理 API 用于脚本与自动化批量管理。\n\n"
 // crudNouns 把“模块/集合路径”映射到中文名称，用于生成通用增删改查接口的摘要。
 var crudNouns = map[string]string{
 	"portforward/rules":       "端口转发规则",
+	"protoroute/rules":        "协议分流规则",
 	"ddns/tasks":              "DDNS 任务",
 	"stun/rules":              "STUN 规则",
 	"cloudflared/tunnels":     "Cloudflare 隧道",
@@ -50,6 +51,8 @@ var apiCatalog = map[string]epDoc{
 	"DELETE /api/{module}/install/backups/{id}":          {Summary: "删除保存的旧版本"},
 	"GET /api/portforward/settings":                      {Summary: "读取端口转发全局设置"},
 	"PUT /api/portforward/settings":                      {Summary: "保存端口转发全局设置", Body: true},
+	"GET /api/protoroute/settings":                       {Summary: "读取协议分流全局设置"},
+	"PUT /api/protoroute/settings":                       {Summary: "保存协议分流全局设置", Body: true},
 	"GET /api/ddns/settings":                             {Summary: "读取 DDNS 全局设置"},
 	"PUT /api/ddns/settings":                             {Summary: "保存 DDNS 全局设置", Body: true},
 	"POST /api/ddns/tasks/{key}/sync":                    {Summary: "立即同步一个 DDNS 任务"},

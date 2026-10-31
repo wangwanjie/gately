@@ -32,6 +32,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Domaine de permission | Nom | Permissions disponibles |
 | --- | --- | --- |
 | `portforward` | Redirection de ports | `portforward:read`、`portforward:write` |
+| `protoroute` | Routage par protocole | `protoroute:read`、`protoroute:write` |
 | `ddns` | DNS dynamique | `ddns:read`、`ddns:write` |
 | `stun` | Traversée STUN | `stun:read`、`stun:write` |
 | `tailscale` | Réseau Tailscale | `tailscale:read`、`tailscale:write` |
@@ -76,6 +77,22 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | PUT | `/api/portforward/rules-group` | `portforward:write` | Définir le groupe de plusieurs éléments : Règle de redirection de ports |
 | GET | `/api/portforward/settings` | `portforward:read` | Lire les paramètres globaux de redirection de ports |
 | PUT | `/api/portforward/settings` | `portforward:write` | Enregistrer les paramètres globaux de redirection de ports |
+
+## Routage par protocole
+
+| Méthode | Chemin | Permission requise | Description |
+| --- | --- | --- | --- |
+| GET | `/api/protoroute/logs` | `protoroute:read` | Consulter les journaux d'exécution d'un module |
+| DELETE | `/api/protoroute/logs` | `protoroute:write` | Vider les journaux d'exécution d'un module |
+| GET | `/api/protoroute/rules` | `protoroute:read` | Lister règle de routage par protocole |
+| POST | `/api/protoroute/rules` | `protoroute:write` | Ajouter règle de routage par protocole |
+| PUT | `/api/protoroute/rules/{key}` | `protoroute:write` | Modifier règle de routage par protocole |
+| DELETE | `/api/protoroute/rules/{key}` | `protoroute:write` | Supprimer règle de routage par protocole |
+| PUT | `/api/protoroute/rules/{key}/enable` | `protoroute:write` | Activer ou désactiver règle de routage par protocole |
+| PUT | `/api/protoroute/rules-order` | `protoroute:write` | Réordonner règle de routage par protocole |
+| PUT | `/api/protoroute/rules-group` | `protoroute:write` | Définir le groupe de plusieurs éléments : règle de routage par protocole |
+| GET | `/api/protoroute/settings` | `protoroute:read` | Lire les paramètres du routage par protocole |
+| PUT | `/api/protoroute/settings` | `protoroute:write` | Enregistrer les paramètres du routage par protocole |
 
 ## DNS dynamique
 
@@ -1265,20 +1282,40 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `protocols` | Tableau de string |
 | `proxyProtocol` | string |
 | `remark` | string |
-| `sniRoutes` | Tableau de `portforward.SNIRoute` |
 | `targetAddresses` | Tableau de string |
 | `targetPorts` | string |
 | `udpSessionTimeout` | integer |
 
-### portforward.SNIRoute
+### protoroute.Route
 
 | Champ | Type |
 | --- | --- |
+| `alpn` | Tableau de string |
 | `domains` | Tableau de string |
 | `name` | string |
+| `protocol` | string |
 | `proxyProtocol` | string |
 | `targetAddresses` | Tableau de string |
 | `targetPort` | integer |
+
+### protoroute.Rule
+
+| Champ | Type |
+| --- | --- |
+| `enable` | boolean |
+| `group` | string |
+| `key` | string |
+| `listenAddress` | string |
+| `listenPorts` | string |
+| `maxConnections` | integer |
+| `name` | string |
+| `protocols` | Tableau de string |
+| `proxyProtocol` | string |
+| `remark` | string |
+| `routes` | Tableau de `protoroute.Route` |
+| `sniffTimeout` | number |
+| `targetAddresses` | Tableau de string |
+| `targetPorts` | string |
 
 ### ssl.ACMEConfig
 

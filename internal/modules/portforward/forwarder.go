@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"net"
 	"slices"
 	"strconv"
@@ -13,22 +12,11 @@ import (
 	"sync/atomic"
 	"time"
 
-	proxyproto "github.com/pires/go-proxyproto"
-
 	"github.com/wangwanjie/gately/internal/banlist"
+	"github.com/wangwanjie/gately/internal/l4proxy"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/netpipe"
 )
-
-// Stats 是规则的运行统计，所有字段使用原子操作。
-type Stats struct {
-	ActiveConns atomic.Int64
-	TotalConns  atomic.Int64
-	BytesIn     atomic.Int64 // 客户端 -> 目标
-	BytesOut    atomic.Int64 // 目标 -> 客户端
-	// SNIRejected 是 SNI 未命中且没有默认目标而被断开的连接数
-	SNIRejected atomic.Int64
-}
 
 // StatsSnapshot 是统计的快照，用于 API 输出。
 type StatsSnapshot struct {
@@ -36,76 +24,34 @@ type StatsSnapshot struct {
 	TotalConns  int64 `json:"totalConns"`
 	BytesIn     int64 `json:"bytesIn"`
 	BytesOut    int64 `json:"bytesOut"`
-	// 以下仅 SNI 分流规则输出：RouteConns 与规则的 sniRoutes 一一对应，为各路由累计连接数
-	RouteConns   []int64 `json:"routeConns,omitempty"`
-	DefaultConns int64   `json:"defaultConns,omitempty"`
-	SNIRejected  int64   `json:"sniRejected,omitempty"`
 }
 
-func (s *Stats) snapshot() StatsSnapshot {
-	return StatsSnapshot{
-		ActiveConns: s.ActiveConns.Load(),
-		TotalConns:  s.TotalConns.Load(),
-		BytesIn:     s.BytesIn.Load(),
-		BytesOut:    s.BytesOut.Load(),
-		SNIRejected: s.SNIRejected.Load(),
-	}
-}
-
-// snapshot 输出规则统计，SNI 规则附带各路由的命中数。
+// snapshot 输出规则统计。
 func (r *runner) snapshot() StatsSnapshot {
-	snap := r.stats.snapshot()
-	if sni := r.current().sni; sni != nil {
-		snap.RouteConns = make([]int64, len(sni.targets))
-		for i, t := range sni.targets {
-			snap.RouteConns[i] = t.conns.Load()
-		}
-		if sni.fallback != nil {
-			snap.DefaultConns = sni.fallback.conns.Load()
-		}
+	return StatsSnapshot{
+		ActiveConns: r.stats.ActiveConns.Load(),
+		TotalConns:  r.stats.TotalConns.Load(),
+		BytesIn:     r.stats.BytesIn.Load(),
+		BytesOut:    r.stats.BytesOut.Load(),
 	}
-	return snap
 }
 
-// targetPicker 在多个目标地址间轮询，连接失败时依次尝试下一个。
-type targetPicker struct {
-	hosts []string
-	next  atomic.Uint64
-}
-
-// order 返回本次尝试的目标顺序：从轮询位置开始的完整一圈。
-func (p *targetPicker) order() []string {
-	n := len(p.hosts)
-	start := int(p.next.Add(1)-1) % n
-	out := make([]string, n)
-	for i := 0; i < n; i++ {
-		out[i] = p.hosts[(start+i)%n]
-	}
-	return out
-}
-
-// route 是规则运行时可热替换的部分：目标地址、SNI 路由表、PROXY 协议、日志名与全局参数。
+// route 是规则运行时可热替换的部分：目标地址、PROXY 协议、日志名与全局参数。
 // 每个新连接开始时读取一次当前 route，替换后新连接立即使用新配置，已建立的连接不受影响。
 type route struct {
 	rule     Rule
 	settings Settings
 	log      *logbuf.Logger
-	picker   *targetPicker
-	// sni 为 SNI 分流路由表，仅 SNI 模式的规则存在
-	sni *sniRouter
+	picker   *l4proxy.Picker
 }
 
 func newRoute(rule Rule, settings Settings, log *logbuf.Logger) *route {
-	rt := &route{
+	return &route{
 		rule:     rule,
 		settings: settings,
 		log:      log,
-		picker:   &targetPicker{hosts: rule.TargetAddresses},
+		picker:   l4proxy.NewPicker(rule.TargetAddresses),
 	}
-	if rule.Mode == ModeSNI {
-		rt.sni = newSNIRouter(rule)
-	}
-	return rt
 }
 
 // runner 负责一条规则的全部监听器。
@@ -113,19 +59,15 @@ type runner struct {
 	// rule、settings 为启动监听时的配置，决定监听的协议、端口映射与连接上限；运行中只读
 	rule     Rule
 	settings Settings
-	stats    *Stats
+	stats    *l4proxy.Stats
 	routes   atomic.Pointer[route]
-
-	cancel  context.CancelFunc
-	wg      sync.WaitGroup
-	mu      sync.Mutex
-	closers []io.Closer
+	srv      l4proxy.Server
 	// listenErrors 记录启动失败的监听项，供界面展示
 	listenErrors []string
 }
 
 func newRunner(rule Rule, settings Settings, log *logbuf.Logger) *runner {
-	r := &runner{rule: rule, settings: settings, stats: &Stats{}}
+	r := &runner{rule: rule, settings: settings, stats: &l4proxy.Stats{}}
 	r.routes.Store(newRoute(rule, settings, log))
 	return r
 }
@@ -148,7 +90,7 @@ func effectiveLimits(rule Rule, settings Settings) (maxConns int, udpTimeout tim
 	return maxConns, udpTimeout
 }
 
-// canUpdate 判断新配置能否在不重新监听的情况下生效：监听协议、地址、端口映射、转发模式与连接上限都不变，
+// canUpdate 判断新配置能否在不重新监听的情况下生效：监听协议、地址、端口映射与连接上限都不变，
 // 且当前所有端口都在正常监听（有端口监听失败时需要重启以便重试）。
 func (r *runner) canUpdate(rule Rule, settings Settings) bool {
 	if len(r.listenErrors) > 0 {
@@ -156,7 +98,7 @@ func (r *runner) canUpdate(rule Rule, settings Settings) bool {
 	}
 	old := r.rule
 	if !slices.Equal(old.Protocols, rule.Protocols) || old.ListenAddress != rule.ListenAddress ||
-		old.ListenPorts != rule.ListenPorts || old.TargetPorts != rule.TargetPorts || old.Mode != rule.Mode {
+		old.ListenPorts != rule.ListenPorts || old.TargetPorts != rule.TargetPorts {
 		return false
 	}
 	oldMax, oldUDP := effectiveLimits(old, r.settings)
@@ -164,7 +106,7 @@ func (r *runner) canUpdate(rule Rule, settings Settings) bool {
 	return oldMax == newMax && oldUDP == newUDP
 }
 
-// update 热替换目标地址、SNI 路由表等配置，监听器与已建立的连接保持不断。调用前需用 canUpdate 确认。
+// update 热替换目标地址等配置，监听器与已建立的连接保持不断。调用前需用 canUpdate 确认。
 func (r *runner) update(rule Rule, settings Settings, log *logbuf.Logger) {
 	r.routes.Store(newRoute(rule, settings, log))
 	log.Infof("配置已更新，监听未中断")
@@ -172,12 +114,11 @@ func (r *runner) update(rule Rule, settings Settings, log *logbuf.Logger) {
 
 // start 为每个 协议×端口 建立监听。部分端口失败时其余端口照常工作。
 func (r *runner) start(parent context.Context) error {
-	pairs, err := MapPorts(r.rule.ListenPorts, r.rule.TargetPorts)
+	pairs, err := l4proxy.MapPorts(r.rule.ListenPorts, r.rule.TargetPorts)
 	if err != nil {
 		return err
 	}
-	ctx, cancel := context.WithCancel(parent)
-	r.cancel = cancel
+	ctx := r.srv.Context(parent)
 	log := r.current().log
 
 	maxConns, udpTimeout := effectiveLimits(r.rule, r.settings)
@@ -188,7 +129,13 @@ func (r *runner) start(parent context.Context) error {
 			addr := net.JoinHostPort(r.rule.ListenAddress, strconv.Itoa(pair.Listen))
 			var startErr error
 			if strings.HasPrefix(proto, "tcp") {
-				startErr = r.startTCP(ctx, proto, addr, pair, maxConns)
+				targetPort := pair.Target
+				startErr = r.srv.ServeTCP(ctx, proto, addr, maxConns, func(format string, args ...any) {
+					r.current().log.Warnf(format, args...)
+				}, func(conn net.Conn) {
+					// 每个连接固定使用建立时的配置，热更新只影响之后的新连接
+					r.handleTCP(ctx, r.current(), conn, targetPort)
+				})
 			} else {
 				startErr = r.startUDP(ctx, proto, addr, pair.Target, udpTimeout)
 			}
@@ -199,11 +146,7 @@ func (r *runner) start(parent context.Context) error {
 				continue
 			}
 			okCount++
-			if r.rule.Mode == ModeSNI {
-				log.Infof("%s %s 已启动（SNI 分流，%d 条路由）", proto, addr, len(r.rule.SNIRoutes))
-			} else {
-				log.Infof("%s %s -> %s:%d 已启动", proto, addr, strings.Join(r.rule.TargetAddresses, "|"), pair.Target)
-			}
+			log.Infof("%s %s -> %s:%d 已启动", proto, addr, strings.Join(r.rule.TargetAddresses, "|"), pair.Target)
 		}
 	}
 	if okCount == 0 {
@@ -213,85 +156,13 @@ func (r *runner) start(parent context.Context) error {
 	return nil
 }
 
-func (r *runner) track(c io.Closer) {
-	r.mu.Lock()
-	r.closers = append(r.closers, c)
-	r.mu.Unlock()
-}
-
 // stop 关闭全部监听器与连接，并等待协程退出。
 func (r *runner) stop() {
-	if r.cancel != nil {
-		r.cancel()
-	}
-	r.mu.Lock()
-	for _, c := range r.closers {
-		_ = c.Close()
-	}
-	r.closers = nil
-	r.mu.Unlock()
-	r.wg.Wait()
+	r.srv.Stop()
 }
 
 func (rt *route) dialTarget(network string, port int) (net.Conn, error) {
-	timeout := time.Duration(rt.settings.DialTimeout) * time.Second
-	var lastErr error
-	for _, host := range rt.picker.order() {
-		conn, err := net.DialTimeout(network, net.JoinHostPort(host, strconv.Itoa(port)), timeout)
-		if err == nil {
-			return conn, nil
-		}
-		lastErr = err
-	}
-	return nil, lastErr
-}
-
-func (r *runner) startTCP(ctx context.Context, network, addr string, pair PortPair, maxConns int) error {
-	var lc net.ListenConfig
-	ln, err := lc.Listen(ctx, network, addr)
-	if err != nil {
-		return err
-	}
-	// 被封禁地址的连接在 Accept 时直接关闭
-	ln = banlist.Default.Listener(ln)
-	r.track(ln)
-	sem := make(chan struct{}, maxConns)
-	r.wg.Add(1)
-	go func() {
-		defer r.wg.Done()
-		for {
-			conn, err := ln.Accept()
-			if err != nil {
-				if ctx.Err() != nil || errors.Is(err, net.ErrClosed) {
-					return
-				}
-				r.current().log.Warnf("accept 失败: %v", err)
-				// 避免 fd 耗尽等错误下空转
-				time.Sleep(100 * time.Millisecond)
-				continue
-			}
-			select {
-			case sem <- struct{}{}:
-			default:
-				r.current().log.Warnf("%s 超过最大连接数 %d，拒绝 %s", addr, maxConns, conn.RemoteAddr())
-				conn.Close()
-				continue
-			}
-			r.wg.Add(1)
-			go func() {
-				defer r.wg.Done()
-				defer func() { <-sem }()
-				// 每个连接固定使用建立时的配置，热更新只影响之后的新连接
-				rt := r.current()
-				if rt.sni != nil {
-					r.handleSNI(ctx, rt, conn, pair)
-				} else {
-					r.handleTCP(ctx, rt, conn, pair.Target)
-				}
-			}()
-		}
-	}()
-	return nil
+	return rt.picker.Dial(network, port, time.Duration(rt.settings.DialTimeout)*time.Second)
 }
 
 func (r *runner) handleTCP(ctx context.Context, rt *route, client net.Conn, targetPort int) {
@@ -306,7 +177,7 @@ func (r *runner) handleTCP(ctx context.Context, rt *route, client net.Conn, targ
 		return
 	}
 	defer target.Close()
-	if err := writePrefix(target, client, rt.rule.ProxyProtocol, nil); err != nil {
+	if err := l4proxy.WritePrefix(target, client, rt.rule.ProxyProtocol, nil); err != nil {
 		rt.log.Warnf("%s 发送 PROXY 协议头失败: %v", client.RemoteAddr(), err)
 		return
 	}
@@ -314,83 +185,6 @@ func (r *runner) handleTCP(ctx context.Context, rt *route, client net.Conn, targ
 
 	in, out := netpipe.Join(ctx, client, target)
 	r.stats.BytesIn.Add(in)
-	r.stats.BytesOut.Add(out)
-}
-
-// writePrefix 在双向转发开始前写入 PROXY 协议头（version 非空时）与已预读的客户端数据，合并为一次写入以减少小包。
-func writePrefix(target, client net.Conn, version string, peeked []byte) error {
-	var buf []byte
-	if version != "" {
-		// 源地址为真实客户端，目的地址为本规则的监听地址
-		v := byte(2)
-		if version == "v1" {
-			v = 1
-		}
-		header, err := proxyproto.HeaderProxyFromAddrs(v, client.RemoteAddr(), client.LocalAddr()).Format()
-		if err != nil {
-			return err
-		}
-		buf = header
-	}
-	buf = append(buf, peeked...)
-	if len(buf) == 0 {
-		return nil
-	}
-	_, err := target.Write(buf)
-	return err
-}
-
-// handleSNI 预读 ClientHello，按 SNI 选择目标后透传整个连接（TLS 不终止）。
-// 与 haproxy 的 inspect-delay + req_ssl_sni 行为一致：非 TLS、无 SNI、解析失败或超时未收到 ClientHello 时交给默认目标。
-func (r *runner) handleSNI(ctx context.Context, rt *route, client net.Conn, pair PortPair) {
-	defer client.Close()
-	r.stats.ActiveConns.Add(1)
-	r.stats.TotalConns.Add(1)
-	defer r.stats.ActiveConns.Add(-1)
-
-	_ = client.SetReadDeadline(time.Now().Add(sniPeekTimeout))
-	peeked, hello, err := peekClientHello(client)
-	_ = client.SetReadDeadline(time.Time{})
-	var ne net.Error
-	switch {
-	case err == nil:
-	case errors.As(err, &ne) && ne.Timeout():
-		// 客户端迟迟未发送 ClientHello（例如服务端先发言的协议），交给默认目标
-	case errors.As(err, &ne), errors.Is(err, io.EOF), errors.Is(err, io.ErrUnexpectedEOF):
-		// 客户端在发完 ClientHello 前断开
-		return
-	default:
-		rt.log.Debugf("%s 未解析到 SNI: %v", client.RemoteAddr(), err)
-	}
-
-	target := rt.sni.match(hello.ServerName)
-	if target == nil {
-		r.stats.SNIRejected.Add(1)
-		rt.log.Debugf("%s SNI %q 未命中路由且未设置默认目标，已断开", client.RemoteAddr(), hello.ServerName)
-		return
-	}
-	target.conns.Add(1)
-	port := target.port
-	if target == rt.sni.fallback {
-		port = pair.Target
-	} else if port == 0 {
-		port = pair.Listen
-	}
-	conn, err := dialSNITarget(target, port, time.Duration(rt.settings.DialTimeout)*time.Second)
-	if err != nil {
-		rt.log.Warnf("%s SNI %q 连接目标失败: %v", client.RemoteAddr(), hello.ServerName, err)
-		return
-	}
-	defer conn.Close()
-	if err := writePrefix(conn, client, target.proxyProtocol, peeked); err != nil {
-		rt.log.Warnf("%s 写入目标失败: %v", client.RemoteAddr(), err)
-		return
-	}
-	rt.log.Debugf("%s SNI %q ALPN %v -> %s", client.RemoteAddr(), hello.ServerName, hello.ALPN, conn.RemoteAddr())
-
-	// 预读的数据已直接写给目标，这里传入原始连接，Linux 上 io.Copy 可走 splice 零拷贝
-	in, out := netpipe.Join(ctx, client, conn)
-	r.stats.BytesIn.Add(in + int64(len(peeked)))
 	r.stats.BytesOut.Add(out)
 }
 
@@ -406,7 +200,7 @@ func (r *runner) startUDP(ctx context.Context, network, addr string, targetPort 
 	if err != nil {
 		return err
 	}
-	r.track(pc)
+	r.srv.Track(pc)
 
 	var (
 		mu       sync.Mutex
@@ -421,9 +215,7 @@ func (r *runner) startUDP(ctx context.Context, network, addr string, targetPort 
 		mu.Unlock()
 	}
 
-	r.wg.Add(1)
-	go func() {
-		defer r.wg.Done()
+	r.srv.Go(func() {
 		defer closeAll()
 		buf := make([]byte, 64*1024)
 		for {
@@ -468,13 +260,14 @@ func (r *runner) startUDP(ctx context.Context, network, addr string, targetPort 
 				sessions[key] = sess
 				r.stats.ActiveConns.Add(1)
 				r.stats.TotalConns.Add(1)
-				r.wg.Add(1)
-				go r.pumpUDP(pc, clientAddr, sess, idle, func() {
-					mu.Lock()
-					if sessions[key] == sess {
-						delete(sessions, key)
-					}
-					mu.Unlock()
+				r.srv.Go(func() {
+					r.pumpUDP(pc, clientAddr, sess, idle, func() {
+						mu.Lock()
+						if sessions[key] == sess {
+							delete(sessions, key)
+						}
+						mu.Unlock()
+					})
 				})
 			}
 			mu.Unlock()
@@ -484,13 +277,12 @@ func (r *runner) startUDP(ctx context.Context, network, addr string, targetPort 
 				r.stats.BytesIn.Add(int64(n))
 			}
 		}
-	}()
+	})
 	return nil
 }
 
 // pumpUDP 把目标的回包发回客户端，空闲超时后关闭会话。
 func (r *runner) pumpUDP(pc net.PacketConn, client net.Addr, sess *udpSession, idle time.Duration, remove func()) {
-	defer r.wg.Done()
 	defer r.stats.ActiveConns.Add(-1)
 	defer remove()
 	defer sess.conn.Close()

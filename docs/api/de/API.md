@@ -32,6 +32,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Berechtigungsbereich | Name | Verfügbare Berechtigungen |
 | --- | --- | --- |
 | `portforward` | Portweiterleitung | `portforward:read`、`portforward:write` |
+| `protoroute` | Protokoll-Routing | `protoroute:read`、`protoroute:write` |
 | `ddns` | Dynamisches DNS | `ddns:read`、`ddns:write` |
 | `stun` | STUN-Durchleitung | `stun:read`、`stun:write` |
 | `tailscale` | Tailscale-Netzwerk | `tailscale:read`、`tailscale:write` |
@@ -76,6 +77,22 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | PUT | `/api/portforward/rules-group` | `portforward:write` | Gruppe mehrerer Einträge festlegen: Portweiterleitungsregeln |
 | GET | `/api/portforward/settings` | `portforward:read` | Globale Portweiterleitungs-Einstellungen lesen |
 | PUT | `/api/portforward/settings` | `portforward:write` | Globale Portweiterleitungs-Einstellungen speichern |
+
+## Protokoll-Routing
+
+| Methode | Pfad | Erforderliche Berechtigung | Beschreibung |
+| --- | --- | --- | --- |
+| GET | `/api/protoroute/logs` | `protoroute:read` | Laufzeitprotokolle eines Moduls anzeigen |
+| DELETE | `/api/protoroute/logs` | `protoroute:write` | Modulprotokolle leeren |
+| GET | `/api/protoroute/rules` | `protoroute:read` | Protokoll-Routing-Regel auflisten |
+| POST | `/api/protoroute/rules` | `protoroute:write` | Protokoll-Routing-Regel hinzufügen |
+| PUT | `/api/protoroute/rules/{key}` | `protoroute:write` | Protokoll-Routing-Regel ändern |
+| DELETE | `/api/protoroute/rules/{key}` | `protoroute:write` | Protokoll-Routing-Regel löschen |
+| PUT | `/api/protoroute/rules/{key}/enable` | `protoroute:write` | Protokoll-Routing-Regel aktivieren oder deaktivieren |
+| PUT | `/api/protoroute/rules-order` | `protoroute:write` | Protokoll-Routing-Regel neu anordnen |
+| PUT | `/api/protoroute/rules-group` | `protoroute:write` | Gruppe mehrerer Einträge festlegen: Protokoll-Routing-Regel |
+| GET | `/api/protoroute/settings` | `protoroute:read` | Einstellungen für Protokoll-Routing lesen |
+| PUT | `/api/protoroute/settings` | `protoroute:write` | Einstellungen für Protokoll-Routing speichern |
 
 ## Dynamisches DNS
 
@@ -1265,20 +1282,40 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `protocols` | Array von string |
 | `proxyProtocol` | string |
 | `remark` | string |
-| `sniRoutes` | Array von `portforward.SNIRoute` |
 | `targetAddresses` | Array von string |
 | `targetPorts` | string |
 | `udpSessionTimeout` | integer |
 
-### portforward.SNIRoute
+### protoroute.Route
 
 | Feld | Typ |
 | --- | --- |
+| `alpn` | Array von string |
 | `domains` | Array von string |
 | `name` | string |
+| `protocol` | string |
 | `proxyProtocol` | string |
 | `targetAddresses` | Array von string |
 | `targetPort` | integer |
+
+### protoroute.Rule
+
+| Feld | Typ |
+| --- | --- |
+| `enable` | boolean |
+| `group` | string |
+| `key` | string |
+| `listenAddress` | string |
+| `listenPorts` | string |
+| `maxConnections` | integer |
+| `name` | string |
+| `protocols` | Array von string |
+| `proxyProtocol` | string |
+| `remark` | string |
+| `routes` | Array von `protoroute.Route` |
+| `sniffTimeout` | number |
+| `targetAddresses` | Array von string |
+| `targetPorts` | string |
 
 ### ssl.ACMEConfig
 

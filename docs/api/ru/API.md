@@ -32,6 +32,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Область прав | Название | Доступные права |
 | --- | --- | --- |
 | `portforward` | Проброс портов | `portforward:read`、`portforward:write` |
+| `protoroute` | Маршрутизация по протоколу | `protoroute:read`、`protoroute:write` |
 | `ddns` | Динамический DNS | `ddns:read`、`ddns:write` |
 | `stun` | Проброс STUN | `stun:read`、`stun:write` |
 | `tailscale` | Сеть Tailscale | `tailscale:read`、`tailscale:write` |
@@ -76,6 +77,22 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/portforward/rules-group` | `portforward:write` | Задать группу сразу для нескольких: Правило проброса портов |
 | GET | `/api/portforward/settings` | `portforward:read` | Чтение глобальных настроек проброса портов |
 | PUT | `/api/portforward/settings` | `portforward:write` | Сохранить глобальные настройки проброса портов |
+
+## Маршрутизация по протоколу
+
+| Метод | Путь | Необходимое право | Описание |
+| --- | --- | --- | --- |
+| GET | `/api/protoroute/logs` | `protoroute:read` | Просмотр журнала работы модуля |
+| DELETE | `/api/protoroute/logs` | `protoroute:write` | Очистить журнал работы модуля |
+| GET | `/api/protoroute/rules` | `protoroute:read` | Список: правило маршрутизации по протоколу |
+| POST | `/api/protoroute/rules` | `protoroute:write` | Добавить: правило маршрутизации по протоколу |
+| PUT | `/api/protoroute/rules/{key}` | `protoroute:write` | Изменить: правило маршрутизации по протоколу |
+| DELETE | `/api/protoroute/rules/{key}` | `protoroute:write` | Удалить: правило маршрутизации по протоколу |
+| PUT | `/api/protoroute/rules/{key}/enable` | `protoroute:write` | Включить или отключить: правило маршрутизации по протоколу |
+| PUT | `/api/protoroute/rules-order` | `protoroute:write` | Изменить порядок: правило маршрутизации по протоколу |
+| PUT | `/api/protoroute/rules-group` | `protoroute:write` | Задать группу сразу для нескольких: правило маршрутизации по протоколу |
+| GET | `/api/protoroute/settings` | `protoroute:read` | Получить настройки маршрутизации по протоколу |
+| PUT | `/api/protoroute/settings` | `protoroute:write` | Сохранить настройки маршрутизации по протоколу |
 
 ## Динамический DNS
 
@@ -1265,20 +1282,40 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `protocols` | Массив из string |
 | `proxyProtocol` | string |
 | `remark` | string |
-| `sniRoutes` | Массив из `portforward.SNIRoute` |
 | `targetAddresses` | Массив из string |
 | `targetPorts` | string |
 | `udpSessionTimeout` | integer |
 
-### portforward.SNIRoute
+### protoroute.Route
 
 | Поле | Тип |
 | --- | --- |
+| `alpn` | Массив из string |
 | `domains` | Массив из string |
 | `name` | string |
+| `protocol` | string |
 | `proxyProtocol` | string |
 | `targetAddresses` | Массив из string |
 | `targetPort` | integer |
+
+### protoroute.Rule
+
+| Поле | Тип |
+| --- | --- |
+| `enable` | boolean |
+| `group` | string |
+| `key` | string |
+| `listenAddress` | string |
+| `listenPorts` | string |
+| `maxConnections` | integer |
+| `name` | string |
+| `protocols` | Массив из string |
+| `proxyProtocol` | string |
+| `remark` | string |
+| `routes` | Массив из `protoroute.Route` |
+| `sniffTimeout` | number |
+| `targetAddresses` | Массив из string |
+| `targetPorts` | string |
 
 ### ssl.ACMEConfig
 

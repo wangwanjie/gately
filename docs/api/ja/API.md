@@ -32,6 +32,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 権限ドメイン | 名称 | 利用可能な権限 |
 | --- | --- | --- |
 | `portforward` | ポートフォワード | `portforward:read`、`portforward:write` |
+| `protoroute` | プロトコル振り分け | `protoroute:read`、`protoroute:write` |
 | `ddns` | ダイナミック DNS | `ddns:read`、`ddns:write` |
 | `stun` | STUN 穿透 | `stun:read`、`stun:write` |
 | `tailscale` | Tailscale ネットワーク | `tailscale:read`、`tailscale:write` |
@@ -76,6 +77,22 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/portforward/rules-group` | `portforward:write` | ポートフォワードルール のグループを一括設定 |
 | GET | `/api/portforward/settings` | `portforward:read` | ポートフォワードのグローバル設定を読み取り |
 | PUT | `/api/portforward/settings` | `portforward:write` | ポートフォワードのグローバル設定を保存 |
+
+## プロトコル振り分け
+
+| メソッド | パス | 必要な権限 | 説明 |
+| --- | --- | --- | --- |
+| GET | `/api/protoroute/logs` | `protoroute:read` | モジュールの実行ログを表示 |
+| DELETE | `/api/protoroute/logs` | `protoroute:write` | モジュールの実行ログを消去 |
+| GET | `/api/protoroute/rules` | `protoroute:read` | プロトコル振り分けルール の一覧を取得 |
+| POST | `/api/protoroute/rules` | `protoroute:write` | プロトコル振り分けルール を追加 |
+| PUT | `/api/protoroute/rules/{key}` | `protoroute:write` | プロトコル振り分けルール を更新 |
+| DELETE | `/api/protoroute/rules/{key}` | `protoroute:write` | プロトコル振り分けルール を削除 |
+| PUT | `/api/protoroute/rules/{key}/enable` | `protoroute:write` | プロトコル振り分けルール の有効/無効を切り替え |
+| PUT | `/api/protoroute/rules-order` | `protoroute:write` | プロトコル振り分けルール の並び順を変更 |
+| PUT | `/api/protoroute/rules-group` | `protoroute:write` | プロトコル振り分けルール のグループを一括設定 |
+| GET | `/api/protoroute/settings` | `protoroute:read` | プロトコル振り分けの全体設定を取得 |
+| PUT | `/api/protoroute/settings` | `protoroute:write` | プロトコル振り分けの全体設定を保存 |
 
 ## ダイナミック DNS
 
@@ -1265,20 +1282,40 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `protocols` | 配列 of string |
 | `proxyProtocol` | string |
 | `remark` | string |
-| `sniRoutes` | 配列 of `portforward.SNIRoute` |
 | `targetAddresses` | 配列 of string |
 | `targetPorts` | string |
 | `udpSessionTimeout` | integer |
 
-### portforward.SNIRoute
+### protoroute.Route
 
 | フィールド | 型 |
 | --- | --- |
+| `alpn` | 配列 of string |
 | `domains` | 配列 of string |
 | `name` | string |
+| `protocol` | string |
 | `proxyProtocol` | string |
 | `targetAddresses` | 配列 of string |
 | `targetPort` | integer |
+
+### protoroute.Rule
+
+| フィールド | 型 |
+| --- | --- |
+| `enable` | boolean |
+| `group` | string |
+| `key` | string |
+| `listenAddress` | string |
+| `listenPorts` | string |
+| `maxConnections` | integer |
+| `name` | string |
+| `protocols` | 配列 of string |
+| `proxyProtocol` | string |
+| `remark` | string |
+| `routes` | 配列 of `protoroute.Route` |
+| `sniffTimeout` | number |
+| `targetAddresses` | 配列 of string |
+| `targetPorts` | string |
 
 ### ssl.ACMEConfig
 

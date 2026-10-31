@@ -1320,12 +1320,6 @@
           "remark": {
             "type": "string"
           },
-          "sniRoutes": {
-            "items": {
-              "$ref": "#/components/schemas/portforward.SNIRoute"
-            },
-            "type": "array"
-          },
           "targetAddresses": {
             "items": {
               "type": "string"
@@ -1341,8 +1335,14 @@
         },
         "type": "object"
       },
-      "portforward.SNIRoute": {
+      "protoroute.Route": {
         "properties": {
+          "alpn": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "domains": {
             "items": {
               "type": "string"
@@ -1350,6 +1350,9 @@
             "type": "array"
           },
           "name": {
+            "type": "string"
+          },
+          "protocol": {
             "type": "string"
           },
           "proxyProtocol": {
@@ -1363,6 +1366,62 @@
           },
           "targetPort": {
             "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "protoroute.Rule": {
+        "properties": {
+          "enable": {
+            "type": "boolean"
+          },
+          "group": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "listenAddress": {
+            "type": "string"
+          },
+          "listenPorts": {
+            "type": "string"
+          },
+          "maxConnections": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "protocols": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "proxyProtocol": {
+            "type": "string"
+          },
+          "remark": {
+            "type": "string"
+          },
+          "routes": {
+            "items": {
+              "$ref": "#/components/schemas/protoroute.Route"
+            },
+            "type": "array"
+          },
+          "sniffTimeout": {
+            "type": "number"
+          },
+          "targetAddresses": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "targetPorts": {
+            "type": "string"
           }
         },
         "type": "object"
@@ -20935,6 +20994,765 @@
         "x-token-allowed": true
       }
     },
+    "/api/protoroute/logs": {
+      "delete": {
+        "description": "필요한 권한: `protoroute:write`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 실행 로그 비우기",
+        "tags": [
+          "프로토콜 라우팅"
+        ],
+        "x-required-scope": "protoroute:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "`since` 매개변수로 증분 조회하며 시퀀스 번호가 이 값보다 큰 로그를 반환합니다. `before`는 시퀀스 번호가 이 값보다 작은 로그를 반환하여 이전 기록을 불러올 때 사용합니다. `limit`은 그중 최신 항목만 반환하며, 메모리에 부족하면 로그 파일에 보관된 기록도 검색합니다. 필터 매개변수: `level` 최소 수준, `source` 소스, `q` 키워드(공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 `-`는 제외), `ip` 클라이언트 주소(전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분), `host` 사이트 이름 또는 도메인, `status` 상태 코드(`404`, `4xx`, `500-599` 등), `from`·`to` 시간 범위(RFC 3339 또는 밀리초 타임스탬프). `exclude`는 제외어로, 그중 하나라도 포함한 로그는 반환하지 않습니다. 작성법은 `q`와 같고 앞의 `-`는 생략할 수 있습니다.\n\n필요한 권한: `protoroute:read`.",
+        "parameters": [
+          {
+            "description": "증분 조회: 일련번호가 이 값보다 큰 로그만 반환",
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "이전 로그 불러오기: 순번이 이 값보다 작은 로그만 반환",
+            "in": "query",
+            "name": "before",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "반환할 최대 개수로, 조건에 맞는 최신 항목부터 가져옵니다. 0 또는 생략 시 제한 없음",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "최소 수준: debug, info, warn 또는 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "소스 레이블, 대소문자 구분 없이 정확히 일치",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "키워드: 공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 - 는 제외",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "제외 키워드: 공백으로 구분, 큰따옴표로 구문을 묶음, 하나라도 포함하면 제외되며 q와 함께 적용",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "클라이언트 주소: 전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름 또는 도메인의 일부",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "상태 코드(예: 404, 4xx, 500-599), 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "시작 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "종료 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 실행 로그 보기",
+        "tags": [
+          "프로토콜 라우팅"
+        ],
+        "x-required-scope": "protoroute:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/protoroute/rules": {
+      "get": {
+        "description": "필요한 권한: `protoroute:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/protoroute.Rule"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "프로토콜 라우팅 규칙 목록 조회",
+        "tags": [
+          "프로토콜 라우팅"
+        ],
+        "x-required-scope": "protoroute:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "필요한 권한: `protoroute:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/protoroute.Rule"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/protoroute.Rule"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "프로토콜 라우팅 규칙 추가",
+        "tags": [
+          "프로토콜 라우팅"
+        ],
+        "x-required-scope": "protoroute:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/protoroute/rules-group": {
+      "put": {
+        "description": "필요한 권한: `protoroute:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "프로토콜 라우팅 규칙 그룹 일괄 설정",
+        "tags": [
+          "프로토콜 라우팅"
+        ],
+        "x-required-scope": "protoroute:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/protoroute/rules-order": {
+      "put": {
+        "description": "필요한 권한: `protoroute:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.orderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "프로토콜 라우팅 규칙 순서 변경",
+        "tags": [
+          "프로토콜 라우팅"
+        ],
+        "x-required-scope": "protoroute:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/protoroute/rules/{key}": {
+      "delete": {
+        "description": "필요한 권한: `protoroute:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "프로토콜 라우팅 규칙 삭제",
+        "tags": [
+          "프로토콜 라우팅"
+        ],
+        "x-required-scope": "protoroute:write",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "필요한 권한: `protoroute:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/protoroute.Rule"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/protoroute.Rule"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "프로토콜 라우팅 규칙 수정",
+        "tags": [
+          "프로토콜 라우팅"
+        ],
+        "x-required-scope": "protoroute:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/protoroute/rules/{key}/enable": {
+      "put": {
+        "description": "필요한 권한: `protoroute:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.enableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "프로토콜 라우팅 규칙 사용 설정/해제",
+        "tags": [
+          "프로토콜 라우팅"
+        ],
+        "x-required-scope": "protoroute:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/protoroute/settings": {
+      "get": {
+        "description": "필요한 권한: `protoroute:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "프로토콜 라우팅 전역 설정 읽기",
+        "tags": [
+          "프로토콜 라우팅"
+        ],
+        "x-required-scope": "protoroute:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "필요한 권한: `protoroute:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "프로토콜 라우팅 전역 설정 저장",
+        "tags": [
+          "프로토콜 라우팅"
+        ],
+        "x-required-scope": "protoroute:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/session": {
       "get": {
         "description": "`username`, `role`(`admin` 또는 `readonly`), `disabledModules`(꺼진 기능 모듈 ID), `defaultPassword`(관리자가 아직 기본 비밀번호 `gately.cn`를 사용 중이면 true이며, 관리 화면은 이를 보고 변경을 안내합니다)를 반환합니다.\n\n유효한 API 토큰이면 특정 권한 없이 접근할 수 있습니다.",
@@ -34211,6 +35029,9 @@
       "name": "포트 포워딩"
     },
     {
+      "name": "프로토콜 라우팅"
+    },
+    {
       "name": "동적 도메인"
     },
     {
@@ -34291,6 +35112,7 @@
   ],
   "x-scope-domains": [
     "portforward",
+    "protoroute",
     "ddns",
     "stun",
     "tailscale",

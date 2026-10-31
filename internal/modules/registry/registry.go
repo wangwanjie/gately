@@ -17,6 +17,7 @@ import (
 	"github.com/wangwanjie/gately/internal/modules/nettools"
 	"github.com/wangwanjie/gately/internal/modules/notify"
 	"github.com/wangwanjie/gately/internal/modules/portforward"
+	"github.com/wangwanjie/gately/internal/modules/protoroute"
 	"github.com/wangwanjie/gately/internal/modules/smb"
 	"github.com/wangwanjie/gately/internal/modules/ssl"
 	"github.com/wangwanjie/gately/internal/modules/storage"
@@ -58,6 +59,7 @@ func New() (mods []module.Module, certs *ssl.Module) {
 	})
 	mods = []module.Module{
 		portforward.New(),
+		protoroute.New(),
 		ddns.New(),
 		stun.New(),
 		tailscale.New(),

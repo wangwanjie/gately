@@ -32,6 +32,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 권한 영역 | 이름 | 사용 가능 권한 |
 | --- | --- | --- |
 | `portforward` | 포트 포워딩 | `portforward:read`、`portforward:write` |
+| `protoroute` | 프로토콜 라우팅 | `protoroute:read`、`protoroute:write` |
 | `ddns` | 동적 도메인 | `ddns:read`、`ddns:write` |
 | `stun` | STUN 터널링 | `stun:read`、`stun:write` |
 | `tailscale` | Tailscale 네트워킹 | `tailscale:read`、`tailscale:write` |
@@ -76,6 +77,22 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/portforward/rules-group` | `portforward:write` | 포트 포워딩 규칙 그룹 일괄 설정 |
 | GET | `/api/portforward/settings` | `portforward:read` | 포트 포워딩 전역 설정 읽기 |
 | PUT | `/api/portforward/settings` | `portforward:write` | 포트 포워딩 전역 설정 저장 |
+
+## 프로토콜 라우팅
+
+| 메서드 | 경로 | 필요 권한 | 설명 |
+| --- | --- | --- | --- |
+| GET | `/api/protoroute/logs` | `protoroute:read` | 모듈 실행 로그 보기 |
+| DELETE | `/api/protoroute/logs` | `protoroute:write` | 모듈 실행 로그 비우기 |
+| GET | `/api/protoroute/rules` | `protoroute:read` | 프로토콜 라우팅 규칙 목록 조회 |
+| POST | `/api/protoroute/rules` | `protoroute:write` | 프로토콜 라우팅 규칙 추가 |
+| PUT | `/api/protoroute/rules/{key}` | `protoroute:write` | 프로토콜 라우팅 규칙 수정 |
+| DELETE | `/api/protoroute/rules/{key}` | `protoroute:write` | 프로토콜 라우팅 규칙 삭제 |
+| PUT | `/api/protoroute/rules/{key}/enable` | `protoroute:write` | 프로토콜 라우팅 규칙 사용 설정/해제 |
+| PUT | `/api/protoroute/rules-order` | `protoroute:write` | 프로토콜 라우팅 규칙 순서 변경 |
+| PUT | `/api/protoroute/rules-group` | `protoroute:write` | 프로토콜 라우팅 규칙 그룹 일괄 설정 |
+| GET | `/api/protoroute/settings` | `protoroute:read` | 프로토콜 라우팅 전역 설정 읽기 |
+| PUT | `/api/protoroute/settings` | `protoroute:write` | 프로토콜 라우팅 전역 설정 저장 |
 
 ## 동적 도메인
 
@@ -1265,20 +1282,40 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `protocols` | Array of string |
 | `proxyProtocol` | string |
 | `remark` | string |
-| `sniRoutes` | Array of `portforward.SNIRoute` |
 | `targetAddresses` | Array of string |
 | `targetPorts` | string |
 | `udpSessionTimeout` | integer |
 
-### portforward.SNIRoute
+### protoroute.Route
 
 | 필드 | 타입 |
 | --- | --- |
+| `alpn` | Array of string |
 | `domains` | Array of string |
 | `name` | string |
+| `protocol` | string |
 | `proxyProtocol` | string |
 | `targetAddresses` | Array of string |
 | `targetPort` | integer |
+
+### protoroute.Rule
+
+| 필드 | 타입 |
+| --- | --- |
+| `enable` | boolean |
+| `group` | string |
+| `key` | string |
+| `listenAddress` | string |
+| `listenPorts` | string |
+| `maxConnections` | integer |
+| `name` | string |
+| `protocols` | Array of string |
+| `proxyProtocol` | string |
+| `remark` | string |
+| `routes` | Array of `protoroute.Route` |
+| `sniffTimeout` | number |
+| `targetAddresses` | Array of string |
+| `targetPorts` | string |
 
 ### ssl.ACMEConfig
 

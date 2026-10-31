@@ -32,6 +32,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Permission domain | Name | Available permissions |
 | --- | --- | --- |
 | `portforward` | Port forwarding | `portforward:read`、`portforward:write` |
+| `protoroute` | Protocol Routing | `protoroute:read`、`protoroute:write` |
 | `ddns` | Dynamic DNS | `ddns:read`、`ddns:write` |
 | `stun` | STUN traversal | `stun:read`、`stun:write` |
 | `tailscale` | Tailscale networking | `tailscale:read`、`tailscale:write` |
@@ -76,6 +77,22 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | PUT | `/api/portforward/rules-group` | `portforward:write` | Set group in bulk: Port forwarding rule |
 | GET | `/api/portforward/settings` | `portforward:read` | Read port forwarding global settings |
 | PUT | `/api/portforward/settings` | `portforward:write` | Save port forwarding global settings |
+
+## Protocol Routing
+
+| Method | Path | Required permission | Description |
+| --- | --- | --- | --- |
+| GET | `/api/protoroute/logs` | `protoroute:read` | View module runtime logs |
+| DELETE | `/api/protoroute/logs` | `protoroute:write` | Clear module runtime logs |
+| GET | `/api/protoroute/rules` | `protoroute:read` | List protocol routing rule |
+| POST | `/api/protoroute/rules` | `protoroute:write` | Create protocol routing rule |
+| PUT | `/api/protoroute/rules/{key}` | `protoroute:write` | Update protocol routing rule |
+| DELETE | `/api/protoroute/rules/{key}` | `protoroute:write` | Delete protocol routing rule |
+| PUT | `/api/protoroute/rules/{key}/enable` | `protoroute:write` | Enable or disable protocol routing rule |
+| PUT | `/api/protoroute/rules-order` | `protoroute:write` | Reorder protocol routing rule |
+| PUT | `/api/protoroute/rules-group` | `protoroute:write` | Set group in bulk: protocol routing rule |
+| GET | `/api/protoroute/settings` | `protoroute:read` | Get protocol routing settings |
+| PUT | `/api/protoroute/settings` | `protoroute:write` | Save protocol routing settings |
 
 ## Dynamic DNS
 
@@ -1265,20 +1282,40 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `protocols` | Array of string |
 | `proxyProtocol` | string |
 | `remark` | string |
-| `sniRoutes` | Array of `portforward.SNIRoute` |
 | `targetAddresses` | Array of string |
 | `targetPorts` | string |
 | `udpSessionTimeout` | integer |
 
-### portforward.SNIRoute
+### protoroute.Route
 
 | Field | Type |
 | --- | --- |
+| `alpn` | Array of string |
 | `domains` | Array of string |
 | `name` | string |
+| `protocol` | string |
 | `proxyProtocol` | string |
 | `targetAddresses` | Array of string |
 | `targetPort` | integer |
+
+### protoroute.Rule
+
+| Field | Type |
+| --- | --- |
+| `enable` | boolean |
+| `group` | string |
+| `key` | string |
+| `listenAddress` | string |
+| `listenPorts` | string |
+| `maxConnections` | integer |
+| `name` | string |
+| `protocols` | Array of string |
+| `proxyProtocol` | string |
+| `remark` | string |
+| `routes` | Array of `protoroute.Route` |
+| `sniffTimeout` | number |
+| `targetAddresses` | Array of string |
+| `targetPorts` | string |
 
 ### ssl.ACMEConfig
 

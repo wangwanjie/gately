@@ -10,69 +10,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/wangwanjie/gately/internal/l4proxy"
 	"github.com/wangwanjie/gately/internal/logbuf"
 
 	proxyproto "github.com/pires/go-proxyproto"
 )
-
-func TestParsePorts(t *testing.T) {
-	cases := []struct {
-		spec string
-		want []int
-		ok   bool
-	}{
-		{"80", []int{80}, true},
-		{"80,443", []int{80, 443}, true},
-		{"8000-8002, 9000", []int{8000, 8001, 8002, 9000}, true},
-		{"0", nil, false},
-		{"65536", nil, false},
-		{"10-5", nil, false},
-		{"", nil, false},
-		{"1-2000", nil, false},
-	}
-	for _, c := range cases {
-		got, err := ParsePorts(c.spec)
-		if (err == nil) != c.ok {
-			t.Fatalf("%q: err=%v, want ok=%v", c.spec, err, c.ok)
-		}
-		if c.ok && !equalInts(got, c.want) {
-			t.Fatalf("%q: got %v want %v", c.spec, got, c.want)
-		}
-	}
-}
-
-func TestMapPorts(t *testing.T) {
-	pairs, err := MapPorts("8000-8002", "9000-9002")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if pairs[2] != (PortPair{8002, 9002}) {
-		t.Fatalf("一一映射错误: %v", pairs)
-	}
-	pairs, err = MapPorts("80,443", "8080")
-	if err != nil || pairs[1] != (PortPair{443, 8080}) {
-		t.Fatalf("单目标端口映射错误: %v %v", pairs, err)
-	}
-	pairs, err = MapPorts("22", "")
-	if err != nil || pairs[0] != (PortPair{22, 22}) {
-		t.Fatalf("空目标端口应与监听端口相同: %v %v", pairs, err)
-	}
-	if _, err := MapPorts("80,81,82", "90,91"); err == nil {
-		t.Fatal("数量不匹配应报错")
-	}
-}
-
-func equalInts(a, b []int) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-	return true
-}
 
 // freePort 获取一个当前空闲的端口。
 func freePort(t *testing.T, network string) int {
@@ -183,7 +125,7 @@ func TestTCPForward(t *testing.T) {
 	for r.stats.ActiveConns.Load() != 0 && time.Now().Before(deadline) {
 		time.Sleep(20 * time.Millisecond)
 	}
-	s := r.stats.snapshot()
+	s := r.snapshot()
 	if s.TotalConns != 1 || s.BytesIn != int64(len(msg)) || s.BytesOut != int64(len(msg)) || s.ActiveConns != 0 {
 		t.Fatalf("统计错误: %+v", s)
 	}
@@ -204,7 +146,7 @@ func TestTCPFailoverToSecondTarget(t *testing.T) {
 	}
 	r := testRunner(rule)
 	// 直接替换目标列表，让轮询从不可达地址开始
-	r.current().picker.hosts = []string{"192.0.2.1", "127.0.0.1"}
+	r.current().picker = l4proxy.NewPicker([]string{"192.0.2.1", "127.0.0.1"})
 	r.current().settings.DialTimeout = 1
 	if err := r.start(context.Background()); err != nil {
 		t.Fatal(err)

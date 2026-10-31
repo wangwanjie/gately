@@ -32,6 +32,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 權限域 | 名稱 | 可用權限 |
 | --- | --- | --- |
 | `portforward` | 連接埠轉發 | `portforward:read`、`portforward:write` |
+| `protoroute` | 協定分流 | `protoroute:read`、`protoroute:write` |
 | `ddns` | 動態網域 | `ddns:read`、`ddns:write` |
 | `stun` | STUN 穿透 | `stun:read`、`stun:write` |
 | `tailscale` | Tailscale 組網 | `tailscale:read`、`tailscale:write` |
@@ -76,6 +77,22 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/portforward/rules-group` | `portforward:write` | 批次設定連接埠轉發規則分組 |
 | GET | `/api/portforward/settings` | `portforward:read` | 讀取連接埠轉發全域設定 |
 | PUT | `/api/portforward/settings` | `portforward:write` | 儲存連接埠轉發全域設定 |
+
+## 協定分流
+
+| 方法 | 路徑 | 所需權限 | 說明 |
+| --- | --- | --- | --- |
+| GET | `/api/protoroute/logs` | `protoroute:read` | 檢視模組執行日誌 |
+| DELETE | `/api/protoroute/logs` | `protoroute:write` | 清空模組執行日誌 |
+| GET | `/api/protoroute/rules` | `protoroute:read` | 取得協定分流規則清單 |
+| POST | `/api/protoroute/rules` | `protoroute:write` | 新增協定分流規則 |
+| PUT | `/api/protoroute/rules/{key}` | `protoroute:write` | 修改協定分流規則 |
+| DELETE | `/api/protoroute/rules/{key}` | `protoroute:write` | 刪除協定分流規則 |
+| PUT | `/api/protoroute/rules/{key}/enable` | `protoroute:write` | 啟用或停用協定分流規則 |
+| PUT | `/api/protoroute/rules-order` | `protoroute:write` | 調整協定分流規則排序 |
+| PUT | `/api/protoroute/rules-group` | `protoroute:write` | 批次設定協定分流規則分組 |
+| GET | `/api/protoroute/settings` | `protoroute:read` | 讀取協定分流全域設定 |
+| PUT | `/api/protoroute/settings` | `protoroute:write` | 儲存協定分流全域設定 |
 
 ## 動態網域
 
@@ -1265,20 +1282,40 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `protocols` | 陣列 of string |
 | `proxyProtocol` | string |
 | `remark` | string |
-| `sniRoutes` | 陣列 of `portforward.SNIRoute` |
 | `targetAddresses` | 陣列 of string |
 | `targetPorts` | string |
 | `udpSessionTimeout` | integer |
 
-### portforward.SNIRoute
+### protoroute.Route
 
 | 欄位 | 類型 |
 | --- | --- |
+| `alpn` | 陣列 of string |
 | `domains` | 陣列 of string |
 | `name` | string |
+| `protocol` | string |
 | `proxyProtocol` | string |
 | `targetAddresses` | 陣列 of string |
 | `targetPort` | integer |
+
+### protoroute.Rule
+
+| 欄位 | 類型 |
+| --- | --- |
+| `enable` | boolean |
+| `group` | string |
+| `key` | string |
+| `listenAddress` | string |
+| `listenPorts` | string |
+| `maxConnections` | integer |
+| `name` | string |
+| `protocols` | 陣列 of string |
+| `proxyProtocol` | string |
+| `remark` | string |
+| `routes` | 陣列 of `protoroute.Route` |
+| `sniffTimeout` | number |
+| `targetAddresses` | 陣列 of string |
+| `targetPorts` | string |
 
 ### ssl.ACMEConfig
 
