@@ -12,7 +12,7 @@ import (
 
 const sampleListener = `{"key":"l1","sites":[{"host":"a.example.com","users":["bob:hunter2","alice:pw"],
 "shareLinks":[{"id":"s1","token":"abcdef"}],"requestHeaders":["Authorization: Bearer xyz","X-Plain: v"],
-"authSecret":"zzz","selfServicePassword":true,"upstreams":[{"url":"http://u:p@10.0.0.1:80/x?k=1"}]}],"hasPassword":true}`
+"authSecret":"zzz","selfServicePassword":true,"targets":["http://admin:tpw@10.0.0.2:8080/?key=tq"],"remark":"see https://example.com/docs","upstreams":[{"url":"http://u:p@10.0.0.1:80/x?k=1"}]}],"hasPassword":true}`
 
 func TestRedactJSON(t *testing.T) {
 	var v any
@@ -21,13 +21,13 @@ func TestRedactJSON(t *testing.T) {
 	}
 	out, _ := json.Marshal(redactJSON(v))
 	s := string(out)
-	for _, leak := range []string{"hunter2", "alice:pw", "abcdef", "Bearer xyz", "zzz", "u:p@", "k=1"} {
+	for _, leak := range []string{"hunter2", "alice:pw", "abcdef", "Bearer xyz", "zzz", "u:p@", "k=1", "tpw", "key=tq"} {
 		if strings.Contains(s, leak) {
 			t.Errorf("脱敏后仍含明文 %q: %s", leak, s)
 		}
 	}
 	// 名称、布尔值、非敏感头不应被改动
-	for _, keep := range []string{"bob:", "a.example.com", `"selfServicePassword":true`, `"hasPassword":true`, "X-Plain: ********"} {
+	for _, keep := range []string{"bob:", "a.example.com", `"selfServicePassword":true`, `"hasPassword":true`, "X-Plain: ********", "admin:", "https://example.com/docs"} {
 		if !strings.Contains(s, keep) {
 			t.Errorf("脱敏不应改动 %q: %s", keep, s)
 		}

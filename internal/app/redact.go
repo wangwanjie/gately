@@ -29,9 +29,6 @@ var secretKeys = map[string]bool{
 // headerKeys 是值为 "名称: 值" 列表（或名称到值的映射）的字段名（小写），只脱敏值的部分。
 var headerKeys = map[string]bool{"headers": true, "requestheaders": true, "responseheaders": true}
 
-// urlKeys 是值为地址的字段名（小写），地址里常夹带令牌，脱敏用户信息中的密码与查询参数的值。
-var urlKeys = map[string]bool{"url": true, "webhookurl": true, "callbackurl": true}
-
 // redactJSON 递归脱敏解码后的 JSON。
 func redactJSON(v any) any {
 	switch t := v.(type) {
@@ -51,12 +48,6 @@ func redactJSON(v any) any {
 				t[k] = redactHeaders(val)
 			case lk == "users":
 				t[k] = redactUsers(val)
-			case urlKeys[lk]:
-				if s, ok := val.(string); ok {
-					t[k] = redactURL(s)
-					continue
-				}
-				t[k] = redactJSON(val)
 			default:
 				t[k] = redactJSON(val)
 			}
@@ -67,6 +58,11 @@ func redactJSON(v any) any {
 			t[i] = redactJSON(t[i])
 		}
 		return t
+	case string:
+		// 地址里常夹带凭据（后端地址 http://user:pass@…、Webhook 的 ?token=…），任何字段中的地址都脱敏密码与查询参数的值
+		if strings.Contains(t, "://") {
+			return redactURL(t)
+		}
 	}
 	return v
 }
