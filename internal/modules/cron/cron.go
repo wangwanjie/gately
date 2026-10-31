@@ -38,8 +38,10 @@ var parser = robfig.NewParser(robfig.SecondOptional | robfig.Minute | robfig.Hou
 
 // Task 是一个计划任务。
 type Task struct {
-	Key    string `json:"key"`
-	Name   string `json:"name"`
+	Key  string `json:"key"`
+	Name string `json:"name"`
+	// Group 为列表中的分组名称，只影响管理界面的展示，留空为未分组
+	Group  string `json:"group"`
 	Enable bool   `json:"enable"`
 	// Spec 为 cron 表达式，例如 "0 3 * * *"、"*/30 * * * * *"、"@every 10m"
 	Spec    string         `json:"spec"`
@@ -64,6 +66,9 @@ type fileConfig struct {
 
 // Validate 校验任务。
 func (t *Task) Validate() error {
+	if err := crud.NormalizeGroup(&t.Group); err != nil {
+		return err
+	}
 	t.Name = strings.TrimSpace(t.Name)
 	if t.Name == "" {
 		return errors.New("名称不能为空")
@@ -255,6 +260,7 @@ func (m *Module) Routes(r module.Router) {
 		Save:     m.saveLocked,
 		Key:      func(t *Task) *string { return &t.Key },
 		Enabled:  func(t *Task) *bool { return &t.Enable },
+		Group:    func(t *Task) *string { return &t.Group },
 		Validate: func(t *Task) error { return t.Validate() },
 		View:     m.viewLocked,
 		Changed:  m.changedLocked,

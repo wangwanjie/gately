@@ -130,5 +130,6 @@
   "ipCertApply": "一鍵設定",
   "shortLivedTag": "短期",
   "hoursLeft": "剩餘 {hours} 小時",
-  "renewFailedShort": "續簽失敗"
+  "renewFailedShort": "續簽失敗",
+  "filterPlaceholder": "搜尋備註、分組、網域"
 }

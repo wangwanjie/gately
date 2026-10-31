@@ -130,5 +130,6 @@
   "ipCertApply": "Configurar automáticamente",
   "shortLivedTag": "Corta duración",
   "hoursLeft": "Quedan {hours} horas",
-  "renewFailedShort": "renovación fallida"
+  "renewFailedShort": "renovación fallida",
+  "filterPlaceholder": "Buscar nota, grupo, dominio"
 }

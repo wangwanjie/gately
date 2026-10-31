@@ -58,8 +58,10 @@ type Source struct {
 
 // Instance 是一个 File Browser 实例。
 type Instance struct {
-	Key    string `json:"key"`
-	Name   string `json:"name"`
+	Key  string `json:"key"`
+	Name string `json:"name"`
+	// Group 为列表中的分组名称，只影响管理界面的展示，留空为未分组
+	Group  string `json:"group"`
 	Enable bool   `json:"enable"`
 	// ListenIP 为空表示监听全部 IPv4 地址
 	ListenIP string `json:"listenIp"`
@@ -92,6 +94,9 @@ type Instance struct {
 
 // Validate 校验并规范化实例配置。
 func (i *Instance) Validate() error {
+	if err := crud.NormalizeGroup(&i.Group); err != nil {
+		return err
+	}
 	i.Name = strings.TrimSpace(i.Name)
 	if i.Name == "" {
 		return errors.New("实例名称不能为空")

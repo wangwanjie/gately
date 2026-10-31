@@ -133,6 +133,7 @@ func (m *Module) Routes(r module.Router) {
 		Save:    m.saveLocked,
 		Key:     func(r *Rule) *string { return &r.Key },
 		Enabled: func(r *Rule) *bool { return &r.Enable },
+		Group:   func(r *Rule) *string { return &r.Group },
 		Validate: func(r *Rule) error {
 			return r.Validate()
 		},

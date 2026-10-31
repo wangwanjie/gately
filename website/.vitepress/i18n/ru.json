@@ -24,6 +24,7 @@
       "guide/quick-start": "Быстрый старт",
       "guide/install": "Установка",
       "guide/configuration": "Конфигурация и параметры запуска",
+      "guide/lists": "Группы и порядок в списках",
       "guide/cli-mcp": "CLI и MCP",
       "guide/migration": "Руководство по миграции",
       "guide/faq": "FAQ",

@@ -169,6 +169,9 @@
           "enable": {
             "type": "boolean"
           },
+          "group": {
+            "type": "string"
+          },
           "key": {
             "type": "string"
           },
@@ -200,6 +203,9 @@
           },
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "http": {
             "$ref": "#/components/schemas/webhook.Config"
@@ -259,6 +265,9 @@
         "properties": {
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "key": {
             "type": "string"
@@ -337,6 +346,28 @@
         },
         "type": "object"
       },
+      "ddns.recordLayout": {
+        "properties": {
+          "group": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ddns.recordsLayoutRequest": {
+        "properties": {
+          "records": {
+            "items": {
+              "$ref": "#/components/schemas/ddns.recordLayout"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
       "dnsprovider.Credentials": {
         "properties": {
           "extra": {
@@ -393,6 +424,9 @@
           },
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "key": {
             "type": "string"
@@ -462,6 +496,9 @@
         "properties": {
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "key": {
             "type": "string"
@@ -582,6 +619,9 @@
           "enable": {
             "type": "boolean"
           },
+          "group": {
+            "type": "string"
+          },
           "key": {
             "type": "string"
           },
@@ -637,6 +677,9 @@
           },
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "key": {
             "type": "string"
@@ -841,6 +884,9 @@
           },
           "findTime": {
             "type": "integer"
+          },
+          "group": {
+            "type": "string"
           },
           "ignore": {
             "type": "string"
@@ -1132,6 +1178,9 @@
           "from": {
             "type": "string"
           },
+          "group": {
+            "type": "string"
+          },
           "host": {
             "type": "string"
           },
@@ -1214,6 +1263,9 @@
               "type": "string"
             },
             "type": "array"
+          },
+          "group": {
+            "type": "string"
           },
           "key": {
             "type": "string"
@@ -1400,6 +1452,9 @@
           "enable": {
             "type": "boolean"
           },
+          "group": {
+            "type": "string"
+          },
           "issuedProfile": {
             "type": "string"
           },
@@ -1495,6 +1550,9 @@
           "enable": {
             "type": "boolean"
           },
+          "group": {
+            "type": "string"
+          },
           "key": {
             "type": "string"
           },
@@ -1581,6 +1639,9 @@
           },
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "heartbeatInterval": {
             "type": "integer"
@@ -1711,6 +1772,9 @@
           },
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "inboundThreshold": {
             "type": "integer"
@@ -2542,6 +2606,9 @@
           "forwardAuth": {
             "type": "boolean"
           },
+          "group": {
+            "type": "string"
+          },
           "listener": {
             "type": "string"
           },
@@ -2672,6 +2739,9 @@
         "properties": {
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "key": {
             "type": "string"
@@ -2861,6 +2931,9 @@
           },
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "key": {
             "type": "string"
@@ -5518,6 +5591,66 @@
         "x-token-allowed": true
       }
     },
+    "/api/cloudflared/tunnels-group": {
+      "put": {
+        "description": "Erforderliche Berechtigung: `cloudflared:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Gruppe mehrerer Einträge festlegen: Cloudflare-Tunnel",
+        "tags": [
+          "Cloudflare-Tunnel"
+        ],
+        "x-required-scope": "cloudflared:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/cloudflared/tunnels-order": {
       "put": {
         "description": "Erforderliche Berechtigung: `cloudflared:write`.",
@@ -6422,6 +6555,66 @@
           }
         ],
         "summary": "Geplante Aufgaben hinzufügen",
+        "tags": [
+          "Geplante Aufgaben"
+        ],
+        "x-required-scope": "cron:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/cron/tasks-group": {
+      "put": {
+        "description": "Erforderliche Berechtigung: `cron:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Gruppe mehrerer Einträge festlegen: Geplante Aufgaben",
         "tags": [
           "Geplante Aufgaben"
         ],
@@ -7721,6 +7914,145 @@
           }
         ],
         "summary": "DDNS-Aufgaben aktivieren oder deaktivieren",
+        "tags": [
+          "Dynamisches DNS"
+        ],
+        "x-required-scope": "ddns:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ddns/tasks/{key}/records-layout": {
+      "put": {
+        "description": "Erforderliche Berechtigung: `ddns:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ddns.recordsLayoutRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "DNS-Einträge einer Aufgabe neu anordnen und gruppieren",
+        "tags": [
+          "Dynamisches DNS"
+        ],
+        "x-required-scope": "ddns:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ddns/tasks/{key}/records/{rec}": {
+      "delete": {
+        "description": "`rec` ist der `key` des Eintrags. Der Eintrag wird nur aus der Aufgabenkonfiguration entfernt; vorhandene DNS-Einträge beim Anbieter bleiben erhalten. Gibt 400 zurück, wenn die Aufgabe nur noch einen Eintrag hat; löschen Sie dann die ganze Aufgabe.\n\nErforderliche Berechtigung: `ddns:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "rec",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Einen Eintrag einer DDNS-Aufgabe löschen",
         "tags": [
           "Dynamisches DNS"
         ],
@@ -9137,7 +9469,7 @@
     },
     "/api/docker/containers/{id}/files/list": {
       "get": {
-        "description": "Erforderliche Berechtigung: `docker:read`.",
+        "description": "Erforderliche Berechtigung: `docker:write`.",
         "parameters": [
           {
             "in": "path",
@@ -9192,7 +9524,7 @@
         "tags": [
           "Docker-Verwaltung"
         ],
-        "x-required-scope": "docker:read",
+        "x-required-scope": "docker:write",
         "x-token-allowed": true
       }
     },
@@ -12323,6 +12655,66 @@
         "x-token-allowed": true
       }
     },
+    "/api/filebrowser/instances-group": {
+      "put": {
+        "description": "Erforderliche Berechtigung: `filebrowser:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Gruppe mehrerer Einträge festlegen: File-Browser-Instanz",
+        "tags": [
+          "File Browser"
+        ],
+        "x-required-scope": "filebrowser:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/filebrowser/instances-order": {
       "put": {
         "description": "Erforderliche Berechtigung: `filebrowser:write`.",
@@ -13368,6 +13760,66 @@
           }
         ],
         "summary": "frp-Client hinzufügen",
+        "tags": [
+          "frp-Intranet-Durchleitung"
+        ],
+        "x-required-scope": "frp:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/frp/clients-group": {
+      "put": {
+        "description": "Erforderliche Berechtigung: `frp:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Gruppe mehrerer Einträge festlegen: frp-Client",
         "tags": [
           "frp-Intranet-Durchleitung"
         ],
@@ -14443,6 +14895,66 @@
         "x-token-allowed": true
       }
     },
+    "/api/frp/proxies-group": {
+      "put": {
+        "description": "Erforderliche Berechtigung: `frp:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Gruppe mehrerer Einträge festlegen: frp-Proxys",
+        "tags": [
+          "frp-Intranet-Durchleitung"
+        ],
+        "x-required-scope": "frp:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/frp/proxies-order": {
       "put": {
         "description": "Erforderliche Berechtigung: `frp:write`.",
@@ -14950,6 +15462,66 @@
           }
         ],
         "summary": "frp-Server hinzufügen",
+        "tags": [
+          "frp-Intranet-Durchleitung"
+        ],
+        "x-required-scope": "frp:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/frp/servers-group": {
+      "put": {
+        "description": "Erforderliche Berechtigung: `frp:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Gruppe mehrerer Einträge festlegen: frp-Server",
         "tags": [
           "frp-Intranet-Durchleitung"
         ],
@@ -16236,7 +16808,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Einträge auflisten",
+        "summary": "Einbruchschutz-Regel auflisten",
         "tags": [
           "Einbruchschutz"
         ],
@@ -16301,7 +16873,67 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Einträge hinzufügen",
+        "summary": "Einbruchschutz-Regel hinzufügen",
+        "tags": [
+          "Einbruchschutz"
+        ],
+        "x-required-scope": "guard:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/guard/jails-group": {
+      "put": {
+        "description": "Erforderliche Berechtigung: `guard:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Gruppe mehrerer Einträge festlegen: Einbruchschutz-Regel",
         "tags": [
           "Einbruchschutz"
         ],
@@ -16361,7 +16993,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Einträge neu anordnen",
+        "summary": "Einbruchschutz-Regel neu anordnen",
         "tags": [
           "Einbruchschutz"
         ],
@@ -16492,7 +17124,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Einträge löschen",
+        "summary": "Einbruchschutz-Regel löschen",
         "tags": [
           "Einbruchschutz"
         ],
@@ -16567,7 +17199,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Einträge ändern",
+        "summary": "Einbruchschutz-Regel ändern",
         "tags": [
           "Einbruchschutz"
         ],
@@ -16637,7 +17269,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Einträge aktivieren oder deaktivieren",
+        "summary": "Einbruchschutz-Regel aktivieren oder deaktivieren",
         "tags": [
           "Einbruchschutz"
         ],
@@ -18273,6 +18905,66 @@
         "x-token-allowed": true
       }
     },
+    "/api/notify/channels-group": {
+      "put": {
+        "description": "Erforderliche Berechtigung: `notify:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Gruppe mehrerer Einträge festlegen: Benachrichtigungskanäle",
+        "tags": [
+          "Benachrichtigungszentrale"
+        ],
+        "x-required-scope": "notify:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/notify/channels-order": {
       "put": {
         "description": "Erforderliche Berechtigung: `notify:write`.",
@@ -19110,6 +19802,66 @@
           }
         ],
         "summary": "Benachrichtigungsregeln hinzufügen",
+        "tags": [
+          "Benachrichtigungszentrale"
+        ],
+        "x-required-scope": "notify:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/notify/rules-group": {
+      "put": {
+        "description": "Erforderliche Berechtigung: `notify:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Gruppe mehrerer Einträge festlegen: Benachrichtigungsregeln",
         "tags": [
           "Benachrichtigungszentrale"
         ],
@@ -20827,6 +21579,66 @@
         "x-token-allowed": true
       }
     },
+    "/api/ssl/certs-group": {
+      "put": {
+        "description": "Erforderliche Berechtigung: `ssl:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Gruppe mehrerer Einträge festlegen: Zertifikate",
+        "tags": [
+          "SSL-Zertifikate"
+        ],
+        "x-required-scope": "ssl:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/ssl/certs-order": {
       "put": {
         "description": "Erforderliche Berechtigung: `ssl:write`.",
@@ -21931,7 +22743,7 @@
     },
     "/api/storage/files/{key}/list": {
       "get": {
-        "description": "Erforderliche Berechtigung: `storage:read`.",
+        "description": "Erforderliche Berechtigung: `storage:write`.",
         "parameters": [
           {
             "in": "path",
@@ -21986,7 +22798,7 @@
         "tags": [
           "Speicher-Einbindungen"
         ],
-        "x-required-scope": "storage:read",
+        "x-required-scope": "storage:write",
         "x-token-allowed": true
       }
     },
@@ -22442,7 +23254,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Einträge auflisten",
+        "summary": "Speicher-Einbindungen auflisten",
         "tags": [
           "Speicher-Einbindungen"
         ],
@@ -22507,7 +23319,67 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Einträge hinzufügen",
+        "summary": "Speicher-Einbindungen hinzufügen",
+        "tags": [
+          "Speicher-Einbindungen"
+        ],
+        "x-required-scope": "storage:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/storage/mounts-group": {
+      "put": {
+        "description": "Erforderliche Berechtigung: `storage:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Gruppe mehrerer Einträge festlegen: Speicher-Einbindungen",
         "tags": [
           "Speicher-Einbindungen"
         ],
@@ -22567,7 +23439,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Einträge neu anordnen",
+        "summary": "Speicher-Einbindungen neu anordnen",
         "tags": [
           "Speicher-Einbindungen"
         ],
@@ -22628,7 +23500,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Einträge löschen",
+        "summary": "Speicher-Einbindungen löschen",
         "tags": [
           "Speicher-Einbindungen"
         ],
@@ -22703,7 +23575,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Einträge ändern",
+        "summary": "Speicher-Einbindungen ändern",
         "tags": [
           "Speicher-Einbindungen"
         ],
@@ -22773,7 +23645,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Einträge aktivieren oder deaktivieren",
+        "summary": "Speicher-Einbindungen aktivieren oder deaktivieren",
         "tags": [
           "Speicher-Einbindungen"
         ],
@@ -23220,6 +24092,66 @@
           }
         ],
         "summary": "STUN-Regeln hinzufügen",
+        "tags": [
+          "STUN-Durchleitung"
+        ],
+        "x-required-scope": "stun:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/stun/rules-group": {
+      "put": {
+        "description": "Erforderliche Berechtigung: `stun:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Gruppe mehrerer Einträge festlegen: STUN-Regeln",
         "tags": [
           "STUN-Durchleitung"
         ],
@@ -25376,6 +26308,116 @@
         "x-token-allowed": false
       }
     },
+    "/api/tokens/group": {
+      "put": {
+        "description": "Anfragekörper `{\"keys\": [\"Token-ID\", ...], \"group\": \"Gruppe\"}`; ein leeres `group` entfernt sie aus ihrer Gruppe.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "summary": "Gruppe mehrerer API-Tokens festlegen",
+        "tags": [
+          "API-Token"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/tokens/order": {
+      "put": {
+        "description": "Anfragekörper `{\"keys\": [\"Token-ID\", ...]}` mit allen Tokens; danach wird die Liste in dieser Reihenfolge geliefert und neue Tokens stehen am Anfang.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "summary": "API-Tokens neu anordnen",
+        "tags": [
+          "API-Token"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/tokens/scopes": {
       "get": {
         "description": "**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
@@ -25478,7 +26520,7 @@
         "x-token-allowed": false
       },
       "put": {
-        "description": "**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "description": "Ohne `group` bleibt die bisherige Gruppe erhalten.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
         "parameters": [
           {
             "in": "path",
@@ -25533,7 +26575,7 @@
             "description": "Dem Token fehlt die erforderliche Berechtigung"
           }
         },
-        "summary": "Name, Berechtigungen, Ablaufzeit und Aktivierungsstatus eines API-Tokens ändern",
+        "summary": "Name, Gruppe, Berechtigungen, Ablauf und Status eines API-Tokens ändern",
         "tags": [
           "API-Token"
         ],
@@ -25828,6 +26870,66 @@
           }
         ],
         "summary": "WAF-Instanzen hinzufügen",
+        "tags": [
+          "WAF-Firewall"
+        ],
+        "x-required-scope": "waf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/waf/instances-group": {
+      "put": {
+        "description": "Erforderliche Berechtigung: `waf:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Gruppe mehrerer Einträge festlegen: WAF-Instanzen",
         "tags": [
           "WAF-Firewall"
         ],
@@ -28951,6 +30053,66 @@
         "x-token-allowed": true
       }
     },
+    "/api/webterminal/connections-group": {
+      "put": {
+        "description": "Erforderliche Berechtigung: `webterminal:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Gruppe mehrerer Einträge festlegen: Terminalverbindungen",
+        "tags": [
+          "Web-Terminal"
+        ],
+        "x-required-scope": "webterminal:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/webterminal/connections-order": {
       "put": {
         "description": "Erforderliche Berechtigung: `webterminal:write`.",
@@ -31474,7 +32636,7 @@
     },
     "/api/webterminal/sftp/{key}/list": {
       "get": {
-        "description": "Erforderliche Berechtigung: `webterminal:read`.",
+        "description": "Erforderliche Berechtigung: `webterminal:write`.",
         "parameters": [
           {
             "in": "path",
@@ -31529,7 +32691,7 @@
         "tags": [
           "Web-Terminal"
         ],
-        "x-required-scope": "webterminal:read",
+        "x-required-scope": "webterminal:write",
         "x-token-allowed": true
       }
     },
@@ -32394,6 +33556,66 @@
           }
         ],
         "summary": "Gerät aufwecken hinzufügen",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "wol:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/wol/devices-group": {
+      "put": {
+        "description": "Erforderliche Berechtigung: `wol:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Gruppe mehrerer Einträge festlegen: Gerät aufwecken",
         "tags": [
           "Wake-on-LAN"
         ],

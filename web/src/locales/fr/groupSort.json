@@ -23,5 +23,8 @@
   "renamePrompt": "Nouveau nom du groupe. Tous ses éléments suivent et gardent leur ordre ; un nom déjà utilisé fusionne les groupes",
   "nameRequired": "Saisissez un nom de groupe",
   "nameTooLong": "Le nom du groupe ne peut pas dépasser {max} caractères",
-  "mergeConfirm": "Le groupe « {to} » existe déjà. Y fusionner « {from} » ?"
+  "mergeConfirm": "Le groupe « {to} » existe déjà. Y fusionner « {from} » ?",
+  "count": "{count} éléments",
+  "selectItem": "Sélectionner cet élément",
+  "search": "Rechercher nom, groupe, remarque"
 }

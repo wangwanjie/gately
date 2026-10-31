@@ -35,14 +35,31 @@
             <el-input v-model="keyword" clearable :prefix-icon="Search" :placeholder="t('webUsers.sites.search')" class="w-260" />
             <el-button size="small" :disabled="!selectable.length" @click="setVisible(true)">{{ t('webUsers.sites.checkVisible') }}</el-button>
             <el-button size="small" :disabled="!selectable.length" @click="setVisible(false)">{{ t('webUsers.sites.uncheckVisible') }}</el-button>
+            <el-button size="small" :icon="allFolded ? ChevronsUpDown : ChevronsDownUp" @click="foldAll(!allFolded)">
+              {{ allFolded ? t('common.expandAll') : t('common.collapseAll') }}
+            </el-button>
           </div>
           <div v-for="g in groups" :key="g.listener" class="lst">
-            <div class="lst-head">
+            <!-- 监听器标题：点击收起或展开其下的站点；搜索时全部展开 -->
+            <div class="lst-head" @click="fold.setCollapsed(g.listener, !fold.isCollapsed(g.listener))">
+              <ChevronRight :size="14" class="lst-arrow" :class="{ open: !isFolded(g.listener) }" />
               <span class="lst-name">{{ g.name }}</span>
               <el-tag size="small" type="info">{{ g.tls ? 'HTTPS' : 'HTTP' }} :{{ g.port }}</el-tag>
               <el-tag v-if="!g.enable" size="small" type="info">{{ t('webUsers.sites.disabled') }}</el-tag>
+              <span class="lst-count">{{ t('webUsers.sites.groupCount', { on: countOn(g.sites), total: g.sites.length }) }}</span>
             </div>
-            <div v-for="s in g.sites" :key="s.site" class="site-row">
+            <template v-for="sec in isFolded(g.listener) ? [] : g.sections" :key="sec.name">
+              <!-- 站点按 Web 服务中的分组归类，每组可单独收起 -->
+              <GroupHeader
+                v-if="sec.grouped"
+                class="site-group"
+                :name="sec.name"
+                :count-text="t('webUsers.sites.groupCount', { on: countOn(sec.items), total: sec.items.length })"
+                :collapsed="isFolded(`${g.listener}/${sec.name}`)"
+                :renamable="false"
+                @toggle="fold.setCollapsed(`${g.listener}/${sec.name}`, !fold.isCollapsed(`${g.listener}/${sec.name}`))"
+              />
+            <div v-for="s in isFolded(`${g.listener}/${sec.name}`) && sec.grouped ? [] : sec.items" :key="s.site" class="site-row" :class="{ 'is-grouped': sec.grouped }">
               <el-checkbox v-model="checked[keyOf(s)]" :disabled="lockReason(s) !== ''">
                 <span class="site-name">{{ siteName(s) }}</span>
               </el-checkbox>
@@ -60,6 +77,7 @@
               </span>
               <div v-if="lockReason(s)" class="form-help lock">{{ lockReason(s) }}</div>
             </div>
+            </template>
           </div>
           <el-empty v-if="!sites.length" :description="t('webUsers.sites.none')" :image-size="60" />
           <el-empty v-else-if="!groups.length" :description="t('webUsers.sites.noMatch')" :image-size="60" />
@@ -88,9 +106,12 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { onBeforeRouteLeave } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Globe, KeyRound, Search, UserCog, UsersRound } from 'lucide-vue-next'
+import { ChevronRight, ChevronsDownUp, ChevronsUpDown, Globe, KeyRound, Search, UserCog, UsersRound } from 'lucide-vue-next'
 import { api } from '../api'
 import PageHeader from '../components/PageHeader.vue'
+import GroupHeader from '../components/GroupHeader.vue'
+import { useCollapsed } from '../composables/useCollapsed'
+import { buildSections } from '../groupSort'
 import SaveBar from '../components/SaveBar.vue'
 import SharedUsers from '../components/SharedUsers.vue'
 import OIDCProvider from '../components/OIDCProvider.vue'
@@ -113,6 +134,8 @@ interface UserSite {
   site: string
   name: string
   domains: string[] | null
+  // group 为站点在 Web 服务列表中的分组
+  group?: string
   enable: boolean
   default: boolean
   type: string
@@ -191,7 +214,8 @@ const matched = computed(() => {
 // selectable 为筛选结果中可以切换的站点
 const selectable = computed(() => matched.value.filter((s) => lockReason(s) === ''))
 
-// groups 把筛选后的站点按监听器分组，保持后端返回的顺序
+// groups 把筛选后的站点按监听器归类，保持后端返回的顺序；监听器内再按站点在 Web 服务中的分组归类，
+// 分组顺序与 Web 服务页一致，未分组的站点（含默认站点）在最后
 const groups = computed(() => {
   const out: { listener: string; name: string; port: number; tls: boolean; enable: boolean; sites: UserSite[] }[] = []
   for (const s of matched.value) {
@@ -202,8 +226,28 @@ const groups = computed(() => {
     }
     g.sites.push(s)
   }
-  return out
+  return out.map((g) => {
+    const secs = buildSections(g.sites, (s) => (s.default ? '' : (s.group ?? '')))
+    const grouped = secs.some((sec) => sec.name)
+    return { ...g, sections: secs.map((sec) => ({ ...sec, grouped })) }
+  })
 })
+
+// 监听器与站点分组的收起状态，键为 监听器key 与 监听器key/分组名；搜索时全部展开
+const fold = useCollapsed('webUsers.sites')
+function isFolded(id: string) {
+  return !keyword.value.trim() && fold.isCollapsed(id)
+}
+const allFolded = fold.allCollapsed(() => groups.value.map((g) => g.listener))
+// foldAll 收起时收起全部监听器；展开时监听器与站点分组全部展开
+function foldAll(v: boolean) {
+  fold.setAll(groups.value.map((g) => g.listener), v)
+}
+
+// countOn 统计已勾选的站点数
+function countOn(list: UserSite[]) {
+  return list.filter((s) => checked.value[keyOf(s)]).length
+}
 
 function setVisible(on: boolean) {
   for (const s of selectable.value) {
@@ -337,6 +381,27 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', onBeforeUnload)
   gap: 8px;
   padding-bottom: 6px;
   border-bottom: 1px solid var(--g-border);
+  cursor: pointer;
+  user-select: none;
+}
+.lst-arrow {
+  color: var(--el-text-color-secondary);
+  transition: transform 0.15s;
+}
+.lst-arrow.open {
+  transform: rotate(90deg);
+}
+.lst-count {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+}
+.site-group {
+  margin-top: 6px;
+  border-radius: var(--g-radius);
+}
+.site-row.is-grouped {
+  padding-left: 22px;
 }
 .lst-name {
   font-size: 13px;

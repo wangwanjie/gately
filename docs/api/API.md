@@ -92,6 +92,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/ddns/tasks-group` | `ddns:write` | 批量设置DDNS 任务分组 |
 | GET | `/api/ddns/tasks/{key}/secrets` | `ddns:write` | 查看密钥明文 |
 | POST | `/api/ddns/tasks/{key}/sync` | `ddns:write` | 立即同步一个 DDNS 任务 |
+| DELETE | `/api/ddns/tasks/{key}/records/{rec}` | `ddns:write` | 删除 DDNS 任务中的一条记录 |
+| PUT | `/api/ddns/tasks/{key}/records-layout` | `ddns:write` | 调整任务内解析记录的顺序与分组 |
 | GET | `/api/ddns/providers` | `ddns:read` | 列出支持的 DNS 服务商及其所需参数 |
 | GET | `/api/ddns/netinterfaces` | `ddns:read` | 列出本机网卡及地址 |
 | POST | `/api/ddns/iptest` | `ddns:write` | 测试获取公网 IP |
@@ -111,6 +113,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/stun/rules/{key}` | `stun:write` | 删除STUN 规则 |
 | PUT | `/api/stun/rules/{key}/enable` | `stun:write` | 启用或停用STUN 规则 |
 | PUT | `/api/stun/rules-order` | `stun:write` | 调整STUN 规则排序 |
+| PUT | `/api/stun/rules-group` | `stun:write` | 批量设置STUN 规则分组 |
 | POST | `/api/stun/rules/{key}/restart` | `stun:write` | 重启一条 STUN 规则 |
 | GET | `/api/stun/netinterfaces` | `stun:read` | 列出本机网卡及地址 |
 | GET | `/api/stun/settings` | `stun:read` | 读取 STUN 全局设置 |
@@ -147,6 +150,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/frp/clients/{key}` | `frp:write` | 删除frp 客户端 |
 | PUT | `/api/frp/clients/{key}/enable` | `frp:write` | 启用或停用frp 客户端 |
 | PUT | `/api/frp/clients-order` | `frp:write` | 调整frp 客户端排序 |
+| PUT | `/api/frp/clients-group` | `frp:write` | 批量设置frp 客户端分组 |
 | GET | `/api/frp/clients/{key}/secrets` | `frp:write` | 查看密钥明文 |
 | GET | `/api/frp/servers` | `frp:read` | 获取frp 服务端列表 |
 | POST | `/api/frp/servers` | `frp:write` | 新增frp 服务端 |
@@ -154,6 +158,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/frp/servers/{key}` | `frp:write` | 删除frp 服务端 |
 | PUT | `/api/frp/servers/{key}/enable` | `frp:write` | 启用或停用frp 服务端 |
 | PUT | `/api/frp/servers-order` | `frp:write` | 调整frp 服务端排序 |
+| PUT | `/api/frp/servers-group` | `frp:write` | 批量设置frp 服务端分组 |
 | GET | `/api/frp/servers/{key}/secrets` | `frp:write` | 查看密钥明文 |
 | GET | `/api/frp/proxies` | `frp:read` | 获取frp 代理列表 |
 | POST | `/api/frp/proxies` | `frp:write` | 新增frp 代理 |
@@ -161,6 +166,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/frp/proxies/{key}` | `frp:write` | 删除frp 代理 |
 | PUT | `/api/frp/proxies/{key}/enable` | `frp:write` | 启用或停用frp 代理 |
 | PUT | `/api/frp/proxies-order` | `frp:write` | 调整frp 代理排序 |
+| PUT | `/api/frp/proxies-group` | `frp:write` | 批量设置frp 代理分组 |
 | GET | `/api/frp/proxies/{key}/secrets` | `frp:write` | 查看密钥明文 |
 | POST | `/api/frp/import` | `frp:write` | 导入已有的 frpc / frps 配置（支持旧版 ini 与新版 toml）；apply 为 false 时仅预览 |
 | GET | `/api/frp/install` | `frp:read` | 查看托管程序的安装信息与进度 |
@@ -186,6 +192,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/cloudflared/tunnels/{key}` | `cloudflared:write` | 删除Cloudflare 隧道 |
 | PUT | `/api/cloudflared/tunnels/{key}/enable` | `cloudflared:write` | 启用或停用Cloudflare 隧道 |
 | PUT | `/api/cloudflared/tunnels-order` | `cloudflared:write` | 调整Cloudflare 隧道排序 |
+| PUT | `/api/cloudflared/tunnels-group` | `cloudflared:write` | 批量设置Cloudflare 隧道分组 |
 | GET | `/api/cloudflared/tunnels/{key}/secrets` | `cloudflared:write` | 查看密钥明文 |
 | POST | `/api/cloudflared/tunnels/{key}/restart` | `cloudflared:write` | 重启一条 Cloudflare 隧道 |
 | GET | `/api/cloudflared/tunnels/{key}/ingress` | `cloudflared:read` | 读取令牌隧道的路由规则 |
@@ -211,6 +218,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/ssl/certs/{key}` | `ssl:write` | 删除证书 |
 | PUT | `/api/ssl/certs/{key}/enable` | `ssl:write` | 启用或停用证书 |
 | PUT | `/api/ssl/certs-order` | `ssl:write` | 调整证书排序 |
+| PUT | `/api/ssl/certs-group` | `ssl:write` | 批量设置证书分组 |
 | GET | `/api/ssl/certs/{key}/secrets` | `ssl:write` | 查看密钥明文 |
 | POST | `/api/ssl/certs/{key}/renew` | `ssl:write` | 立即签发或续期证书 |
 | GET | `/api/ssl/certs/{key}/download` | `ssl:write` | 下载证书与私钥 |
@@ -232,6 +240,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/waf/instances/{key}` | `waf:write` | 删除WAF 实例 |
 | PUT | `/api/waf/instances/{key}/enable` | `waf:write` | 启用或停用WAF 实例 |
 | PUT | `/api/waf/instances-order` | `waf:write` | 调整WAF 实例排序 |
+| PUT | `/api/waf/instances-group` | `waf:write` | 批量设置WAF 实例分组 |
 | GET | `/api/waf/crs` | `waf:read` | 列出 OWASP CRS 规则文件 |
 | GET | `/api/waf/crs/{file}` | `waf:read` | 读取一个 CRS 规则文件 |
 
@@ -278,12 +287,13 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- | --- | --- |
 | GET | `/api/guard/logs` | `guard:read` | 查看模块运行日志 |
 | DELETE | `/api/guard/logs` | `guard:write` | 清空模块运行日志 |
-| GET | `/api/guard/jails` | `guard:read` | 获取条目列表 |
-| POST | `/api/guard/jails` | `guard:write` | 新增条目 |
-| PUT | `/api/guard/jails/{key}` | `guard:write` | 修改条目 |
-| DELETE | `/api/guard/jails/{key}` | `guard:write` | 删除条目 |
-| PUT | `/api/guard/jails/{key}/enable` | `guard:write` | 启用或停用条目 |
-| PUT | `/api/guard/jails-order` | `guard:write` | 调整条目排序 |
+| GET | `/api/guard/jails` | `guard:read` | 获取入侵防护规则列表 |
+| POST | `/api/guard/jails` | `guard:write` | 新增入侵防护规则 |
+| PUT | `/api/guard/jails/{key}` | `guard:write` | 修改入侵防护规则 |
+| DELETE | `/api/guard/jails/{key}` | `guard:write` | 删除入侵防护规则 |
+| PUT | `/api/guard/jails/{key}/enable` | `guard:write` | 启用或停用入侵防护规则 |
+| PUT | `/api/guard/jails-order` | `guard:write` | 调整入侵防护规则排序 |
+| PUT | `/api/guard/jails-group` | `guard:write` | 批量设置入侵防护规则分组 |
 | GET | `/api/guard/presets` | `guard:read` | 常见服务的规则模板 |
 | POST | `/api/guard/jails/test` | `guard:write` | 用日志样例测试过滤规则 |
 | GET | `/api/guard/status` | `guard:read` | 防火墙同步状态与运行环境 |
@@ -306,6 +316,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/wol/devices/{key}` | `wol:write` | 删除唤醒设备 |
 | PUT | `/api/wol/devices/{key}/enable` | `wol:write` | 启用或停用唤醒设备 |
 | PUT | `/api/wol/devices-order` | `wol:write` | 调整唤醒设备排序 |
+| PUT | `/api/wol/devices-group` | `wol:write` | 批量设置唤醒设备分组 |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | 向设备发送唤醒魔术包 |
 | GET | `/api/wol/status` | `wol:read` | 查看设备在线状态 |
 
@@ -321,6 +332,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/webterminal/connections/{key}` | `webterminal:write` | 删除终端连接 |
 | PUT | `/api/webterminal/connections/{key}/enable` | `webterminal:write` | 启用或停用终端连接 |
 | PUT | `/api/webterminal/connections-order` | `webterminal:write` | 调整终端连接排序 |
+| PUT | `/api/webterminal/connections-group` | `webterminal:write` | 批量设置终端连接分组 |
 | GET | `/api/webterminal/connections/{key}/secrets` | `webterminal:write` | 查看密钥明文 |
 | DELETE | `/api/webterminal/connections/{key}/hostkey` | `webterminal:write` | 清除已记录的主机密钥 |
 | POST | `/api/webterminal/connections/{key}/test` | `webterminal:write` | 测试已保存连接 |
@@ -347,7 +359,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/webterminal/security/2fa/disable` | 仅登录会话 | 关闭终端两步验证 |
 | POST | `/api/webterminal/security/verify2fa` | 仅登录会话 | 校验终端两步验证码 |
 | GET | `/api/webterminal/security/check2fa` | 仅登录会话 | 检查终端两步验证是否已通过 |
-| GET | `/api/webterminal/sftp/{key}/list` | `webterminal:read` | 列出远程目录 |
+| GET | `/api/webterminal/sftp/{key}/list` | `webterminal:write` | 列出远程目录 |
 | GET | `/api/webterminal/sftp/{key}/read` | `webterminal:write` | 读取远程文件 |
 | POST | `/api/webterminal/sftp/{key}/write` | `webterminal:write` | 写入远程文件 |
 | POST | `/api/webterminal/sftp/{key}/upload` | `webterminal:write` | 上传文件到远程主机 |
@@ -381,6 +393,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/cron/tasks/{key}` | `cron:write` | 删除计划任务 |
 | PUT | `/api/cron/tasks/{key}/enable` | `cron:write` | 启用或停用计划任务 |
 | PUT | `/api/cron/tasks-order` | `cron:write` | 调整计划任务排序 |
+| PUT | `/api/cron/tasks-group` | `cron:write` | 批量设置计划任务分组 |
 | POST | `/api/cron/tasks/{key}/run` | `cron:write` | 立即执行一个计划任务 |
 | POST | `/api/cron/parse` | `cron:write` | 解析并预览 Cron 表达式 |
 
@@ -445,7 +458,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/docker/containers/{id}/logs` | `docker:read` | 查看容器日志 |
 | GET | `/api/docker/containers/{id}/stats` | `docker:read` | 查看容器资源占用 |
 | GET | `/api/docker/containers/{id}/processes` | `docker:read` | 查看容器内进程 |
-| GET | `/api/docker/containers/{id}/files/list` | `docker:read` | 列出容器内目录 |
+| GET | `/api/docker/containers/{id}/files/list` | `docker:write` | 列出容器内目录 |
 | GET | `/api/docker/containers/{id}/files/read` | `docker:write` | 读取容器内文件 |
 | GET | `/api/docker/containers/{id}/files/download` | `docker:write` | 下载容器内文件 |
 | POST | `/api/docker/containers/{id}/files/write` | `docker:write` | 写入容器内文件 |
@@ -503,6 +516,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/filebrowser/instances/{key}` | `filebrowser:write` | 删除File Browser 实例 |
 | PUT | `/api/filebrowser/instances/{key}/enable` | `filebrowser:write` | 启用或停用File Browser 实例 |
 | PUT | `/api/filebrowser/instances-order` | `filebrowser:write` | 调整File Browser 实例排序 |
+| PUT | `/api/filebrowser/instances-group` | `filebrowser:write` | 批量设置File Browser 实例分组 |
 | GET | `/api/filebrowser/instances/{key}/secrets` | `filebrowser:write` | 查看密钥明文 |
 | POST | `/api/filebrowser/instances/{key}/restart` | `filebrowser:write` | 重启一个 File Browser 实例 |
 | GET | `/api/filebrowser/settings` | `filebrowser:read` | 读取 File Browser 程序设置 |
@@ -520,14 +534,15 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- | --- | --- |
 | GET | `/api/storage/logs` | `storage:read` | 查看模块运行日志 |
 | DELETE | `/api/storage/logs` | `storage:write` | 清空模块运行日志 |
-| GET | `/api/storage/mounts` | `storage:read` | 获取条目列表 |
-| POST | `/api/storage/mounts` | `storage:write` | 新增条目 |
-| PUT | `/api/storage/mounts/{key}` | `storage:write` | 修改条目 |
-| DELETE | `/api/storage/mounts/{key}` | `storage:write` | 删除条目 |
-| PUT | `/api/storage/mounts/{key}/enable` | `storage:write` | 启用或停用条目 |
-| PUT | `/api/storage/mounts-order` | `storage:write` | 调整条目排序 |
+| GET | `/api/storage/mounts` | `storage:read` | 获取存储挂载列表 |
+| POST | `/api/storage/mounts` | `storage:write` | 新增存储挂载 |
+| PUT | `/api/storage/mounts/{key}` | `storage:write` | 修改存储挂载 |
+| DELETE | `/api/storage/mounts/{key}` | `storage:write` | 删除存储挂载 |
+| PUT | `/api/storage/mounts/{key}/enable` | `storage:write` | 启用或停用存储挂载 |
+| PUT | `/api/storage/mounts-order` | `storage:write` | 调整存储挂载排序 |
+| PUT | `/api/storage/mounts-group` | `storage:write` | 批量设置存储挂载分组 |
 | GET | `/api/storage/mounts/{key}/secrets` | `storage:write` | 查看密钥明文 |
-| GET | `/api/storage/files/{key}/list` | `storage:read` | 列出存储目录 |
+| GET | `/api/storage/files/{key}/list` | `storage:write` | 列出存储目录 |
 | GET | `/api/storage/files/{key}/download` | `storage:write` | 下载存储文件 |
 | POST | `/api/storage/files/{key}/upload` | `storage:write` | 上传文件到存储 |
 | POST | `/api/storage/files/{key}/mkdir` | `storage:write` | 创建存储目录 |
@@ -546,6 +561,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/notify/channels/{key}` | `notify:write` | 删除通知渠道 |
 | PUT | `/api/notify/channels/{key}/enable` | `notify:write` | 启用或停用通知渠道 |
 | PUT | `/api/notify/channels-order` | `notify:write` | 调整通知渠道排序 |
+| PUT | `/api/notify/channels-group` | `notify:write` | 批量设置通知渠道分组 |
 | GET | `/api/notify/channels/{key}/secrets` | `notify:write` | 查看密钥明文 |
 | GET | `/api/notify/rules` | `notify:read` | 获取通知规则列表 |
 | POST | `/api/notify/rules` | `notify:write` | 新增通知规则 |
@@ -553,6 +569,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/notify/rules/{key}` | `notify:write` | 删除通知规则 |
 | PUT | `/api/notify/rules/{key}/enable` | `notify:write` | 启用或停用通知规则 |
 | PUT | `/api/notify/rules-order` | `notify:write` | 调整通知规则排序 |
+| PUT | `/api/notify/rules-group` | `notify:write` | 批量设置通知规则分组 |
 | GET | `/api/notify/event-types` | `notify:read` | 可订阅的事件类型 |
 | GET | `/api/notify/history` | `notify:read` | 最近的投递记录 |
 | POST | `/api/notify/channels/{key}/test` | `notify:write` | 向渠道发送测试通知 |
@@ -643,7 +660,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/tokens` | 仅登录会话 | 列出 API 令牌 |
 | GET | `/api/tokens/scopes` | 仅登录会话 | 列出可授权的权限域 |
 | POST | `/api/tokens` | 仅登录会话 | 创建 API 令牌 |
-| PUT | `/api/tokens/{id}` | 仅登录会话 | 修改 API 令牌的名称、权限、过期时间与启停 |
+| PUT | `/api/tokens/order` | 仅登录会话 | 调整 API 令牌的排序 |
+| PUT | `/api/tokens/group` | 仅登录会话 | 批量设置 API 令牌的分组 |
+| PUT | `/api/tokens/{id}` | 仅登录会话 | 修改 API 令牌的名称、分组、权限、过期时间与启停 |
 | POST | `/api/tokens/{id}/regenerate` | 仅登录会话 | 重新生成令牌明文 |
 | DELETE | `/api/tokens/{id}` | 仅登录会话 | 删除 API 令牌 |
 
@@ -745,6 +764,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `apiToken` | string |
 | `edgeIpVersion` | string |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `mode` | string |
 | `name` | string |
@@ -759,6 +779,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `command` | string |
 | `enable` | boolean |
+| `group` | string |
 | `http` | `webhook.Config` |
 | `key` | string |
 | `name` | string |
@@ -790,6 +811,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 字段 | 类型 |
 | --- | --- |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `line` | string |
 | `remark` | string |
@@ -818,6 +840,19 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `remark` | string |
 | `webhook` | `webhook.Config` |
 
+### ddns.recordLayout
+
+| 字段 | 类型 |
+| --- | --- |
+| `group` | string |
+| `key` | string |
+
+### ddns.recordsLayoutRequest
+
+| 字段 | 类型 |
+| --- | --- |
+| `records` | 数组 of `ddns.recordLayout` |
+
 ### dnsprovider.Credentials
 
 | 字段 | 类型 |
@@ -845,6 +880,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `baseUrl` | string |
 | `disableWebDav` | boolean |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `listenIp` | string |
 | `locale` | string |
@@ -877,6 +913,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 字段 | 类型 |
 | --- | --- |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `name` | string |
 | `protocol` | string |
@@ -927,6 +964,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `client` | string |
 | `customDomains` | 数组 of string |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `localIp` | string |
 | `localPort` | integer |
@@ -949,6 +987,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `dashboardPwd` | string |
 | `dashboardUser` | string |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `name` | string |
 | `proxyBindAddr` | string |
@@ -1036,6 +1075,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `enable` | boolean |
 | `filter` | string |
 | `findTime` | integer |
+| `group` | string |
 | `ignore` | string |
 | `key` | string |
 | `maxRetry` | integer |
@@ -1171,6 +1211,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `enable` | boolean |
 | `from` | string |
+| `group` | string |
 | `host` | string |
 | `key` | string |
 | `kind` | string |
@@ -1203,6 +1244,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `channels` | 数组 of string |
 | `enable` | boolean |
 | `events` | 数组 of string |
+| `group` | string |
 | `key` | string |
 | `minLevel` | string |
 | `name` | string |
@@ -1270,6 +1312,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `certPem` | string |
 | `deploys` | 数组 of `ssl.Deploy` |
 | `enable` | boolean |
+| `group` | string |
 | `issuedProfile` | string |
 | `issuerPem` | string |
 | `key` | string |
@@ -1310,6 +1353,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `domain` | string |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `name` | string |
 | `password` | string |
@@ -1349,6 +1393,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `disableCheck` | boolean |
 | `disableForward` | boolean |
 | `enable` | boolean |
+| `group` | string |
 | `heartbeatInterval` | integer |
 | `keepAliveServers` | 数组 of string |
 | `key` | string |
@@ -1396,6 +1441,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `bodyLimitAction` | string |
 | `bodyLimitMB` | integer |
 | `enable` | boolean |
+| `group` | string |
 | `inboundThreshold` | integer |
 | `key` | string |
 | `mode` | string |
@@ -1717,6 +1763,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `domains` | 数组 of string |
 | `enable` | boolean |
 | `forwardAuth` | boolean |
+| `group` | string |
 | `listener` | string |
 | `listenerEnable` | boolean |
 | `listenerName` | string |
@@ -1780,6 +1827,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 字段 | 类型 |
 | --- | --- |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `local` | `webterminal.LocalConfig` |
 | `name` | string |
@@ -1860,6 +1908,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `broadcastIps` | 数组 of string |
 | `checkAddr` | string |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `macs` | 数组 of string |
 | `name` | string |

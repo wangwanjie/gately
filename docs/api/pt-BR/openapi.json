@@ -169,6 +169,9 @@
           "enable": {
             "type": "boolean"
           },
+          "group": {
+            "type": "string"
+          },
           "key": {
             "type": "string"
           },
@@ -200,6 +203,9 @@
           },
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "http": {
             "$ref": "#/components/schemas/webhook.Config"
@@ -259,6 +265,9 @@
         "properties": {
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "key": {
             "type": "string"
@@ -337,6 +346,28 @@
         },
         "type": "object"
       },
+      "ddns.recordLayout": {
+        "properties": {
+          "group": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ddns.recordsLayoutRequest": {
+        "properties": {
+          "records": {
+            "items": {
+              "$ref": "#/components/schemas/ddns.recordLayout"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
       "dnsprovider.Credentials": {
         "properties": {
           "extra": {
@@ -393,6 +424,9 @@
           },
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "key": {
             "type": "string"
@@ -462,6 +496,9 @@
         "properties": {
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "key": {
             "type": "string"
@@ -582,6 +619,9 @@
           "enable": {
             "type": "boolean"
           },
+          "group": {
+            "type": "string"
+          },
           "key": {
             "type": "string"
           },
@@ -637,6 +677,9 @@
           },
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "key": {
             "type": "string"
@@ -841,6 +884,9 @@
           },
           "findTime": {
             "type": "integer"
+          },
+          "group": {
+            "type": "string"
           },
           "ignore": {
             "type": "string"
@@ -1132,6 +1178,9 @@
           "from": {
             "type": "string"
           },
+          "group": {
+            "type": "string"
+          },
           "host": {
             "type": "string"
           },
@@ -1214,6 +1263,9 @@
               "type": "string"
             },
             "type": "array"
+          },
+          "group": {
+            "type": "string"
           },
           "key": {
             "type": "string"
@@ -1400,6 +1452,9 @@
           "enable": {
             "type": "boolean"
           },
+          "group": {
+            "type": "string"
+          },
           "issuedProfile": {
             "type": "string"
           },
@@ -1495,6 +1550,9 @@
           "enable": {
             "type": "boolean"
           },
+          "group": {
+            "type": "string"
+          },
           "key": {
             "type": "string"
           },
@@ -1581,6 +1639,9 @@
           },
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "heartbeatInterval": {
             "type": "integer"
@@ -1711,6 +1772,9 @@
           },
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "inboundThreshold": {
             "type": "integer"
@@ -2542,6 +2606,9 @@
           "forwardAuth": {
             "type": "boolean"
           },
+          "group": {
+            "type": "string"
+          },
           "listener": {
             "type": "string"
           },
@@ -2672,6 +2739,9 @@
         "properties": {
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "key": {
             "type": "string"
@@ -2861,6 +2931,9 @@
           },
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "key": {
             "type": "string"
@@ -5518,6 +5591,66 @@
         "x-token-allowed": true
       }
     },
+    "/api/cloudflared/tunnels-group": {
+      "put": {
+        "description": "Permissão necessária: `cloudflared:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Definir o grupo de vários itens: Túnel Cloudflare",
+        "tags": [
+          "Túnel Cloudflare"
+        ],
+        "x-required-scope": "cloudflared:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/cloudflared/tunnels-order": {
       "put": {
         "description": "Permissão necessária: `cloudflared:write`.",
@@ -6422,6 +6555,66 @@
           }
         ],
         "summary": "Adicionar Tarefa agendada",
+        "tags": [
+          "Tarefa agendada"
+        ],
+        "x-required-scope": "cron:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/cron/tasks-group": {
+      "put": {
+        "description": "Permissão necessária: `cron:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Definir o grupo de vários itens: Tarefa agendada",
         "tags": [
           "Tarefa agendada"
         ],
@@ -7721,6 +7914,145 @@
           }
         ],
         "summary": "Ativar ou desativar Tarefa DDNS",
+        "tags": [
+          "DNS dinâmico"
+        ],
+        "x-required-scope": "ddns:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ddns/tasks/{key}/records-layout": {
+      "put": {
+        "description": "Permissão necessária: `ddns:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ddns.recordsLayoutRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Reordenar e agrupar os registros DNS de uma tarefa",
+        "tags": [
+          "DNS dinâmico"
+        ],
+        "x-required-scope": "ddns:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ddns/tasks/{key}/records/{rec}": {
+      "delete": {
+        "description": "`rec` é a `key` do registro. Ele é removido apenas da configuração da tarefa; os registros DNS existentes no provedor são mantidos. Retorna 400 quando a tarefa tem apenas um registro; nesse caso, exclua a tarefa inteira.\n\nPermissão necessária: `ddns:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "rec",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Excluir um registro de uma tarefa DDNS",
         "tags": [
           "DNS dinâmico"
         ],
@@ -9137,7 +9469,7 @@
     },
     "/api/docker/containers/{id}/files/list": {
       "get": {
-        "description": "Permissão necessária: `docker:read`.",
+        "description": "Permissão necessária: `docker:write`.",
         "parameters": [
           {
             "in": "path",
@@ -9192,7 +9524,7 @@
         "tags": [
           "Gerenciamento do Docker"
         ],
-        "x-required-scope": "docker:read",
+        "x-required-scope": "docker:write",
         "x-token-allowed": true
       }
     },
@@ -12323,6 +12655,66 @@
         "x-token-allowed": true
       }
     },
+    "/api/filebrowser/instances-group": {
+      "put": {
+        "description": "Permissão necessária: `filebrowser:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Definir o grupo de vários itens: Instância do File Browser",
+        "tags": [
+          "File Browser"
+        ],
+        "x-required-scope": "filebrowser:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/filebrowser/instances-order": {
       "put": {
         "description": "Permissão necessária: `filebrowser:write`.",
@@ -13368,6 +13760,66 @@
           }
         ],
         "summary": "Adicionar Cliente frp",
+        "tags": [
+          "Travessia de rede interna frp"
+        ],
+        "x-required-scope": "frp:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/frp/clients-group": {
+      "put": {
+        "description": "Permissão necessária: `frp:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Definir o grupo de vários itens: Cliente frp",
         "tags": [
           "Travessia de rede interna frp"
         ],
@@ -14443,6 +14895,66 @@
         "x-token-allowed": true
       }
     },
+    "/api/frp/proxies-group": {
+      "put": {
+        "description": "Permissão necessária: `frp:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Definir o grupo de vários itens: proxies do frp",
+        "tags": [
+          "Travessia de rede interna frp"
+        ],
+        "x-required-scope": "frp:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/frp/proxies-order": {
       "put": {
         "description": "Permissão necessária: `frp:write`.",
@@ -14950,6 +15462,66 @@
           }
         ],
         "summary": "Adicionar Servidor frp",
+        "tags": [
+          "Travessia de rede interna frp"
+        ],
+        "x-required-scope": "frp:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/frp/servers-group": {
+      "put": {
+        "description": "Permissão necessária: `frp:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Definir o grupo de vários itens: Servidor frp",
         "tags": [
           "Travessia de rede interna frp"
         ],
@@ -16236,7 +16808,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Listar Entrada",
+        "summary": "Listar regra de prevenção de intrusões",
         "tags": [
           "Prevenção de intrusão"
         ],
@@ -16301,7 +16873,67 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Adicionar Entrada",
+        "summary": "Adicionar regra de prevenção de intrusões",
+        "tags": [
+          "Prevenção de intrusão"
+        ],
+        "x-required-scope": "guard:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/guard/jails-group": {
+      "put": {
+        "description": "Permissão necessária: `guard:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Definir o grupo de vários itens: regra de prevenção de intrusões",
         "tags": [
           "Prevenção de intrusão"
         ],
@@ -16361,7 +16993,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Reordenar Entrada",
+        "summary": "Reordenar regra de prevenção de intrusões",
         "tags": [
           "Prevenção de intrusão"
         ],
@@ -16492,7 +17124,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Excluir Entrada",
+        "summary": "Excluir regra de prevenção de intrusões",
         "tags": [
           "Prevenção de intrusão"
         ],
@@ -16567,7 +17199,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Modificar Entrada",
+        "summary": "Modificar regra de prevenção de intrusões",
         "tags": [
           "Prevenção de intrusão"
         ],
@@ -16637,7 +17269,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Ativar ou desativar Entrada",
+        "summary": "Ativar ou desativar regra de prevenção de intrusões",
         "tags": [
           "Prevenção de intrusão"
         ],
@@ -18273,6 +18905,66 @@
         "x-token-allowed": true
       }
     },
+    "/api/notify/channels-group": {
+      "put": {
+        "description": "Permissão necessária: `notify:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Definir o grupo de vários itens: Canais de notificação",
+        "tags": [
+          "Central de notificações"
+        ],
+        "x-required-scope": "notify:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/notify/channels-order": {
       "put": {
         "description": "Permissão necessária: `notify:write`.",
@@ -19110,6 +19802,66 @@
           }
         ],
         "summary": "Adicionar Regras de notificação",
+        "tags": [
+          "Central de notificações"
+        ],
+        "x-required-scope": "notify:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/notify/rules-group": {
+      "put": {
+        "description": "Permissão necessária: `notify:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Definir o grupo de vários itens: Regras de notificação",
         "tags": [
           "Central de notificações"
         ],
@@ -20827,6 +21579,66 @@
         "x-token-allowed": true
       }
     },
+    "/api/ssl/certs-group": {
+      "put": {
+        "description": "Permissão necessária: `ssl:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Definir o grupo de vários itens: Certificado",
+        "tags": [
+          "Certificado SSL"
+        ],
+        "x-required-scope": "ssl:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/ssl/certs-order": {
       "put": {
         "description": "Permissão necessária: `ssl:write`.",
@@ -21931,7 +22743,7 @@
     },
     "/api/storage/files/{key}/list": {
       "get": {
-        "description": "Permissão necessária: `storage:read`.",
+        "description": "Permissão necessária: `storage:write`.",
         "parameters": [
           {
             "in": "path",
@@ -21986,7 +22798,7 @@
         "tags": [
           "Montagens de armazenamento"
         ],
-        "x-required-scope": "storage:read",
+        "x-required-scope": "storage:write",
         "x-token-allowed": true
       }
     },
@@ -22442,7 +23254,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Listar Entrada",
+        "summary": "Listar Montagens de armazenamento",
         "tags": [
           "Montagens de armazenamento"
         ],
@@ -22507,7 +23319,67 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Adicionar Entrada",
+        "summary": "Adicionar Montagens de armazenamento",
+        "tags": [
+          "Montagens de armazenamento"
+        ],
+        "x-required-scope": "storage:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/storage/mounts-group": {
+      "put": {
+        "description": "Permissão necessária: `storage:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Definir o grupo de vários itens: Montagens de armazenamento",
         "tags": [
           "Montagens de armazenamento"
         ],
@@ -22567,7 +23439,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Reordenar Entrada",
+        "summary": "Reordenar Montagens de armazenamento",
         "tags": [
           "Montagens de armazenamento"
         ],
@@ -22628,7 +23500,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Excluir Entrada",
+        "summary": "Excluir Montagens de armazenamento",
         "tags": [
           "Montagens de armazenamento"
         ],
@@ -22703,7 +23575,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Modificar Entrada",
+        "summary": "Modificar Montagens de armazenamento",
         "tags": [
           "Montagens de armazenamento"
         ],
@@ -22773,7 +23645,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Ativar ou desativar Entrada",
+        "summary": "Ativar ou desativar Montagens de armazenamento",
         "tags": [
           "Montagens de armazenamento"
         ],
@@ -23220,6 +24092,66 @@
           }
         ],
         "summary": "Adicionar Regra STUN",
+        "tags": [
+          "Travessia STUN"
+        ],
+        "x-required-scope": "stun:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/stun/rules-group": {
+      "put": {
+        "description": "Permissão necessária: `stun:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Definir o grupo de vários itens: Regra STUN",
         "tags": [
           "Travessia STUN"
         ],
@@ -25376,6 +26308,116 @@
         "x-token-allowed": false
       }
     },
+    "/api/tokens/group": {
+      "put": {
+        "description": "Corpo `{\"keys\": [\"ID do token\", ...], \"group\": \"grupo\"}`; um `group` vazio os remove do grupo.\n\n**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "summary": "Definir o grupo de vários tokens de API",
+        "tags": [
+          "Token de API"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/tokens/order": {
+      "put": {
+        "description": "Corpo `{\"keys\": [\"ID do token\", ...]}` com todos os tokens; depois a lista é retornada nesta ordem e os tokens novos ficam no início.\n\n**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "summary": "Reordenar tokens de API",
+        "tags": [
+          "Token de API"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/tokens/scopes": {
       "get": {
         "description": "**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
@@ -25478,7 +26520,7 @@
         "x-token-allowed": false
       },
       "put": {
-        "description": "**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
+        "description": "Sem `group`, o grupo atual é mantido.\n\n**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
         "parameters": [
           {
             "in": "path",
@@ -25533,7 +26575,7 @@
             "description": "O token não tem a permissão necessária"
           }
         },
-        "summary": "Modificar nome, permissões, expiração e ativação de um token de API",
+        "summary": "Alterar nome, grupo, permissões, expiração e estado de um token de API",
         "tags": [
           "Token de API"
         ],
@@ -25828,6 +26870,66 @@
           }
         ],
         "summary": "Adicionar Instância WAF",
+        "tags": [
+          "Firewall WAF"
+        ],
+        "x-required-scope": "waf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/waf/instances-group": {
+      "put": {
+        "description": "Permissão necessária: `waf:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Definir o grupo de vários itens: Instância WAF",
         "tags": [
           "Firewall WAF"
         ],
@@ -28951,6 +30053,66 @@
         "x-token-allowed": true
       }
     },
+    "/api/webterminal/connections-group": {
+      "put": {
+        "description": "Permissão necessária: `webterminal:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Definir o grupo de vários itens: Conexão de terminal",
+        "tags": [
+          "Terminal web"
+        ],
+        "x-required-scope": "webterminal:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/webterminal/connections-order": {
       "put": {
         "description": "Permissão necessária: `webterminal:write`.",
@@ -31474,7 +32636,7 @@
     },
     "/api/webterminal/sftp/{key}/list": {
       "get": {
-        "description": "Permissão necessária: `webterminal:read`.",
+        "description": "Permissão necessária: `webterminal:write`.",
         "parameters": [
           {
             "in": "path",
@@ -31529,7 +32691,7 @@
         "tags": [
           "Terminal web"
         ],
-        "x-required-scope": "webterminal:read",
+        "x-required-scope": "webterminal:write",
         "x-token-allowed": true
       }
     },
@@ -32394,6 +33556,66 @@
           }
         ],
         "summary": "Adicionar Despertar dispositivo",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "wol:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/wol/devices-group": {
+      "put": {
+        "description": "Permissão necessária: `wol:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Definir o grupo de vários itens: Despertar dispositivo",
         "tags": [
           "Wake-on-LAN"
         ],

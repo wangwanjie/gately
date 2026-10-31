@@ -12,6 +12,7 @@
   >
     <el-form :model="form" label-width="100px" :label-position="labelPosition">
       <el-form-item :label="t('termConn.editor.name')" required><el-input v-model="form.name" :placeholder="t('termConn.editor.namePlaceholder')" /></el-form-item>
+      <GroupInput v-model="form.group" :groups="groups ?? []" />
       <el-form-item :label="t('termConn.editor.type')">
         <el-radio-group v-model="form.type" :disabled="!!form.key">
           <el-radio-button value="ssh">SSH</el-radio-button>
@@ -141,10 +142,12 @@ import { useFormLayout } from '../../composables/useIsMobile'
 import CredentialManager from './CredentialManager.vue'
 import ProxyForm from './ProxyForm.vue'
 import SecretInput from '../SecretInput.vue'
+import GroupInput from '../GroupInput.vue'
 import { secretOf } from '../../secrets'
 import { emptyConn, normalizeConn, type Conn, type Credential } from './types'
 
-const props = defineProps<{ modelValue: boolean; conn: Conn | null; allowLocalShell: boolean }>()
+// groups 为已有的连接分组，用于分组输入提示
+const props = defineProps<{ modelValue: boolean; conn: Conn | null; allowLocalShell: boolean; groups?: string[] }>()
 const emit = defineEmits<{ 'update:modelValue': [v: boolean]; saved: [] }>()
 
 const { t } = useI18n()

@@ -1,16 +1,27 @@
-// 列表分组、排序模式、多选与拖动的状态，Web 服务站点、DDNS 任务、端口转发规则共用。
+// 列表分组、排序模式、多选与拖动的状态，所有支持分组排序的列表共用。
+// 页面一般只需调用 useGroupedList，再把返回值交给 components/GroupedList.vue 渲染；纯函数在 ../groupSort.ts。
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { api } from '../api'
-import { MAX_GROUP_LEN, buildSections, flatten, moveInto, moveSection, moveStep, type MoveTarget, type Section } from '../groupSort'
+import {
+  MAX_GROUP_LEN,
+  buildSections,
+  displayItems,
+  dropTarget,
+  flatten,
+  groupChanges,
+  moveInto,
+  moveSection,
+  moveStep,
+  renameSection,
+  type DropOver,
+  type Section,
+} from '../groupSort'
 import { useCollapsed } from './useCollapsed'
 
-// DropOver 为拖动时的悬停位置：id 为条目或分组标题，after 为 true 表示插到条目之后
-export interface DropOver {
-  id: string
-  after: boolean
-}
+// 兼容旧的导入位置
+export { displayItems, dropTarget, type DropOver, type GroupItem } from '../groupSort'
 
 // useSortSelect 管理排序模式、选中项与拖动状态。选中多项后拖动其中任一项，所有选中项一起移动。
 export function useSortSelect() {
@@ -158,142 +169,87 @@ export function useGroupRename() {
   }
 }
 
-// GroupItem 是分组列表中依次显示的一项：分组标题或条目
-export type GroupItem<T> =
-  | {
-      kind: 'group'
-      id: string
-      name: string
-      count: number
-      collapsed: boolean
-      index: number
-      canUp: boolean
-      canDown: boolean
-      // 排序模式下分组标题的勾选状态：全部选中或部分选中
-      checked: boolean
-      indeterminate: boolean
-      ids: string[]
-    }
-  | { kind: 'item'; id: string; item: T; grouped: boolean; canUp: boolean; canDown: boolean }
-
-// displayItems 生成依次显示的分组标题与条目。没有任何命名分组时不显示标题；筛选与排序时展开全部分组
-export function displayItems<T>(
-  sections: Section<T>[],
-  idOf: (it: T) => string,
-  opts: {
-    query: string
-    sorting: boolean
-    matches: (it: T, q: string) => boolean
-    isCollapsed: (name: string) => boolean
-    isSelected: (id: string) => boolean
-    // groupIdPrefix 加在分组标题 id 前，同一页面有多个分组列表时区分各列表的分组
-    groupIdPrefix?: string
-  },
-): GroupItem<T>[] {
-  const q = opts.sorting ? '' : opts.query.trim().toLowerCase()
-  const grouped = sections.some((s) => s.name)
-  const namedCount = sections.filter((s) => s.name).length
-  const out: GroupItem<T>[] = []
-  sections.forEach((sec, si) => {
-    const rows = q ? sec.items.filter((it) => opts.matches(it, q)) : sec.items
-    if (!rows.length) {
-      return
-    }
-    const collapsed = grouped && !q && !opts.sorting && opts.isCollapsed(sec.name)
-    if (grouped) {
-      const ids = rows.map(idOf)
-      const n = ids.filter((id) => opts.isSelected(id)).length
-      out.push({
-        kind: 'group',
-        id: `${opts.groupIdPrefix ?? ''}g:${sec.name}`,
-        name: sec.name,
-        count: rows.length,
-        collapsed,
-        index: si,
-        canUp: !!sec.name && si > 0,
-        canDown: !!sec.name && si < namedCount - 1,
-        checked: n > 0 && n === ids.length,
-        indeterminate: n > 0 && n < ids.length,
-        ids,
-      })
-    }
-    if (collapsed) {
-      return
-    }
-    rows.forEach((it, ri) => out.push({ kind: 'item', id: idOf(it), item: it, grouped, canUp: ri > 0, canDown: ri < rows.length - 1 }))
-  })
-  return out
-}
-
-// dropTarget 把悬停位置换算为移动目标：放在分组标题上时移到该分组末尾
-export function dropTarget<T>(sections: Section<T>[], idOf: (it: T) => string, over: DropOver, groupIdPrefix = ''): MoveTarget | null {
-  const g = `${groupIdPrefix}g:`
-  if (over.id.startsWith(g)) {
-    return { group: over.id.slice(g.length) }
-  }
-  const sec = sections.find((s) => s.items.some((it) => idOf(it) === over.id))
-  if (!sec) {
-    return null
-  }
-  return over.after ? { group: sec.name, afterId: over.id } : { group: sec.name, beforeId: over.id }
-}
-
-// useGroupedList 为通过通用 CRUD 接口管理的条目列表（DDNS 任务、端口转发规则）提供分组、排序与批量操作。
-// 顺序用 <base>-order 保存，分组用 <base>-group 批量保存，都不会重启运行中的实例。
-export function useGroupedList<T extends { key?: string; group?: string }>(opts: {
+// GroupedListOptions 为 useGroupedList 的参数。保存方式二选一：
+//   - base：通用 CRUD 接口路径（如 /api/stun/rules），分组用 <base>-group 批量保存，顺序用 <base>-order 保存，都不会重启运行中的实例；
+//   - save：自定义保存函数，收到调整后的完整分组列表，用于嵌套列表（如 DDNS 任务内的解析记录）或对话框内的本地排序。
+export interface GroupedListOptions<T> {
   // storageKey 为分组收起状态的存储键
   storageKey: string
   items: () => T[]
-  base: string
-  reload: () => Promise<void>
+  // idOf / groupOf 取条目 id 与分组名称，默认为 key 与 group 字段
+  idOf?: (it: T) => string
+  groupOf?: (it: T) => string
+  // matches 判断条目是否符合搜索内容，q 已转为小写
   matches: (it: T, q: string) => boolean
-}) {
+  // visible 为搜索之外的额外筛选（如按 frpc 实例筛选代理），排序模式下不生效
+  visible?: (it: T) => boolean
+  base?: string
+  save?: (next: Section<T>[]) => Promise<void>
+  // reload 在保存后重新加载列表；本地排序时可为空函数
+  reload: () => Promise<void>
+}
+
+// fieldOf 读取条目的字符串字段，缺省为空字符串
+function fieldOf(it: unknown, name: string) {
+  const v = (it as Record<string, unknown>)[name]
+  return typeof v === 'string' ? v : ''
+}
+
+// useGroupedList 为条目列表提供搜索、分组、排序与批量操作，返回值交给 GroupedList 组件渲染
+export function useGroupedList<T>(opts: GroupedListOptions<T>) {
   const sel = useSortSelect()
   const filterText = ref('')
   const fold = useCollapsed(opts.storageKey)
-  const idOf = (it: T) => it.key ?? ''
-  const sections = computed(() => buildSections(opts.items(), (it) => it.group ?? ''))
+  const idOf = opts.idOf ?? ((it: T) => fieldOf(it, 'key'))
+  const groupOf = opts.groupOf ?? ((it: T) => fieldOf(it, 'group'))
+  const sections = computed(() => buildSections(opts.items(), groupOf))
   const groupNames = computed(() => sections.value.map((s) => s.name).filter(Boolean))
   const items = computed(() =>
     displayItems(sections.value, idOf, {
       query: filterText.value,
       sorting: sel.sortMode.value,
       matches: opts.matches,
+      visible: opts.visible,
       isCollapsed: (name) => fold.isCollapsed(name),
       isSelected: sel.isSelected,
     }),
   )
   const orderedIds = computed(() => flatten(sections.value).map(idOf))
+  const total = computed(() => orderedIds.value.length)
   const busy = ref(false)
 
-  // persist 保存新的分组与顺序：先按目标分组批量修改分组，再保存整体顺序
-  async function persist(next: Section<T>[] | null) {
-    if (!next || busy.value) {
-      return
-    }
-    const changes = new Map<string, string[]>()
-    for (const s of next) {
-      for (const it of s.items) {
-        if ((it.group ?? '') !== s.name) {
-          changes.set(s.name, [...(changes.get(s.name) ?? []), idOf(it)])
-        }
-      }
+  // saveCrud 通过通用 CRUD 接口保存：先按目标分组批量修改分组，再保存整体顺序
+  async function saveCrud(next: Section<T>[]) {
+    for (const [group, keys] of groupChanges(next, idOf, groupOf)) {
+      await api.put(`${opts.base}-group`, { keys, group })
     }
     const order = flatten(next).map(idOf)
+    if (order.join('\n') !== orderedIds.value.join('\n')) {
+      await api.put(`${opts.base}-order`, { keys: order })
+    }
+  }
+
+  // persist 保存新的分组与顺序，然后重新加载列表；next 为 null 表示没有变化
+  async function persist(next: Section<T>[] | null) {
+    if (!next || busy.value) {
+      return false
+    }
     busy.value = true
+    let ok = true
     try {
-      for (const [group, keys] of changes) {
-        await api.put(`${opts.base}-group`, { keys, group })
-      }
-      if (order.join('\n') !== orderedIds.value.join('\n')) {
-        await api.put(`${opts.base}-order`, { keys: order })
+      if (opts.save) {
+        await opts.save(next)
+      } else {
+        await saveCrud(next)
       }
     } catch (e) {
+      ok = false
       ElMessage.error((e as Error).message)
     } finally {
       busy.value = false
     }
     await opts.reload()
+    return ok
   }
 
   function toggleGroup(name: string) {
@@ -301,16 +257,16 @@ export function useGroupedList<T extends { key?: string; group?: string }>(opts:
   }
 
   function moveItem(id: string, d: number) {
-    persist(moveStep(sections.value, idOf, id, d))
+    return persist(moveStep(sections.value, idOf, id, d))
   }
 
   function moveGroup(index: number, d: number) {
-    persist(moveSection(sections.value, index, d))
+    return persist(moveSection(sections.value, index, d))
   }
 
   // setGroup 把选中项移到指定分组末尾，留空为移出分组
-  async function setGroup(name: string) {
-    await persist(moveInto(sections.value, idOf, new Set(sel.selected.value), { group: name.trim() }))
+  function setGroup(name: string) {
+    return persist(moveInto(sections.value, idOf, new Set(sel.selected.value), { group: name.trim() }))
   }
 
   function dragStart(id: string, e: DragEvent) {
@@ -335,26 +291,36 @@ export function useGroupedList<T extends { key?: string; group?: string }>(opts:
   // renameGroup 重命名分组：组内条目一起改为新名称，位置与顺序不变；新名称已存在时并入该分组，收起状态随名称保留
   const askName = useGroupRename()
   async function renameGroup(name: string) {
-    const sec = sections.value.find((s) => s.name === name)
-    if (!sec) {
-      return
-    }
     const to = await askName(name, groupNames.value)
     if (to === null) {
       return
     }
-    busy.value = true
-    try {
-      await api.put(`${opts.base}-group`, { keys: sec.items.map(idOf), group: to })
-      fold.setCollapsed(to, fold.isCollapsed(name) || fold.isCollapsed(to))
+    const wasCollapsed = fold.isCollapsed(name)
+    if (await persist(renameSection(sections.value, name, to))) {
+      fold.setCollapsed(to, wasCollapsed || fold.isCollapsed(to))
       fold.setCollapsed(name, false)
-    } catch (e) {
-      ElMessage.error((e as Error).message)
-    } finally {
-      busy.value = false
     }
-    await opts.reload()
   }
 
-  return { ...sel, filterText, sections, groupNames, items, orderedIds, busy, toggleGroup, moveItem, moveGroup, setGroup, dragStart, drop, selectAll, renameGroup }
+  return {
+    ...sel,
+    filterText,
+    sections,
+    groupNames,
+    items,
+    orderedIds,
+    total,
+    busy,
+    toggleGroup,
+    moveItem,
+    moveGroup,
+    setGroup,
+    dragStart,
+    drop,
+    selectAll,
+    renameGroup,
+  }
 }
+
+// GroupedListState 为 useGroupedList 的返回值类型，供 GroupedList 等组件声明属性
+export type GroupedListState<T> = ReturnType<typeof useGroupedList<T>>

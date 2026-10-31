@@ -97,5 +97,6 @@
   "instanceName": "实例名称",
   "importNameClientPlaceholder": "留空使用服务端地址",
   "pastePlaceholderServer": "粘贴 frps.ini / frps.toml 的内容",
-  "owner": "所属实例"
+  "owner": "所属实例",
+  "proxyFilterPlaceholder": "搜索名称、分组、端口、域名"
 }

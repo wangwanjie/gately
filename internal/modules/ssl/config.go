@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/wangwanjie/gately/internal/crud"
 	"github.com/wangwanjie/gately/internal/dnsprovider"
 )
 
@@ -99,6 +100,8 @@ type Mapping struct {
 type Cert struct {
 	Key    string `json:"key"`
 	Remark string `json:"remark"`
+	// Group 为列表中的分组名称，只影响管理界面的展示，留空为未分组
+	Group  string `json:"group"`
 	Enable bool   `json:"enable"`
 	Source string `json:"source"`
 
@@ -188,6 +191,9 @@ func (a *ACMEConfig) directoryURL() string {
 
 // Validate 校验配置。上传来源要求证书与私钥匹配。
 func (c *Cert) Validate(settings Settings) error {
+	if err := crud.NormalizeGroup(&c.Group); err != nil {
+		return err
+	}
 	c.Remark = strings.TrimSpace(c.Remark)
 	if c.Mapping.Enable {
 		if c.Remark == "" {

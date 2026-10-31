@@ -2,6 +2,7 @@
   <div>
     <PageHeader :title="t('stun.title')" :desc="t('stun.desc')" :icon="Radar">
       <CompactToggle v-model="compact" />
+      <ListTools :gl="gl" :placeholder="t('groupSort.search')" />
       <el-button :icon="SlidersHorizontal" @click="openSettings">{{ t('stun.globalSettings') }}</el-button>
       <el-button type="primary" :icon="Plus" @click="openEditor()">{{ t('stun.addRule') }}</el-button>
     </PageHeader>
@@ -12,52 +13,57 @@
       {{ t('stun.intro') }}
     </el-alert>
 
-    <div v-loading="loading" class="card-list" :class="{ 'is-compact': compact }">
-      <el-empty v-if="!loading && !rules.length" :description="t('stun.empty')" />
-      <EntityCard v-for="r in rules" :key="r.key" :off="!r.enable || moduleOff" :compact="compact">
-        <template #lead>
-          <el-switch :model-value="r.enable" @change="(v: string | number | boolean) => toggle(r, Boolean(v))" />
-        </template>
-        <template #title>
-          <span>{{ r.name }}</span>
-          <span class="tags">
-            <el-tag size="small" effect="plain">{{ r.protocol === 'udp4' ? 'UDP' : 'TCP' }}</el-tag>
-            <el-tag v-if="r.upnp" size="small" type="info">UPnP</el-tag>
-            <el-tag v-if="r.natpmp" size="small" type="info">NAT-PMP</el-tag>
-          </span>
-        </template>
-        <template v-if="r.remark" #sub>{{ r.remark }}</template>
-        <template #status>
-          <StatusBadge v-bind="ruleStatus(r)" />
-        </template>
-        <Field :label="t('stun.publicAddr')" mono>
-          <template v-if="r.enable && !moduleOff && r.state.publicAddr">
-            <span class="copyable" :title="t('stun.clickToCopy')" @click="copy(r.state.publicAddr, $event)">{{ r.state.publicAddr }}</span>
-            <div v-if="r.state.since" class="meta">{{ t('stun.since', { time: fmtTime(r.state.since) }) }}</div>
+    <GroupedList :gl="gl" :loading="loading" :compact="compact" :empty-text="t('stun.empty')">
+      <template #item="{ it, item: r, sorting, bind }">
+        <EntityCard v-bind="bind" :off="!r.enable || moduleOff" :compact="compact || sorting">
+          <template #lead>
+            <SortCheck v-if="sorting" :gl="gl" :id="it.id" />
+            <el-switch v-else :model-value="r.enable" @change="(v: string | number | boolean) => toggle(r, Boolean(v))" />
           </template>
-          <span v-else class="muted">-</span>
-        </Field>
-        <Field :label="t('stun.tabChannel')" mono>{{ r.state.localAddr || (r.localPort ? ':' + r.localPort : t('stun.randomPort')) }}</Field>
-        <Field :label="t('stun.target')" mono>{{ r.disableForward ? t('stun.routerForward') : `${(r.targetAddresses ?? []).join(' | ')}:${r.targetPort}` }}</Field>
-        <Field :label="t('stun.connTraffic')">
-          {{ t('stun.connStats', { active: r.state.stats.activeConns, total: r.state.stats.totalConns }) }}
-          <div class="meta">↑ {{ formatBytes(r.state.stats.bytesIn) }} · ↓ {{ formatBytes(r.state.stats.bytesOut) }}</div>
-        </Field>
-        <template v-if="r.enable && !moduleOff && (r.state.error || r.state.mapping)" #extra>
-          <div v-if="r.state.error" class="err-line">{{ r.state.error }}</div>
-          <div v-if="r.state.mapping" class="meta">{{ r.state.mapping }}</div>
-        </template>
-        <template #actions>
-          <el-button text size="small" :icon="RotateCw" :disabled="!r.enable || moduleOff" @click="restart(r)">{{ t('stun.reconnect') }}</el-button>
-          <el-button text size="small" :icon="Pencil" @click="openEditor(r)">{{ t('common.edit') }}</el-button>
-          <el-popconfirm :title="t('stun.confirmDelete')" @confirm="remove(r)">
-            <template #reference>
-              <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
+          <template #title>
+            <span>{{ r.name }}</span>
+            <span class="tags">
+              <el-tag size="small" effect="plain">{{ r.protocol === 'udp4' ? 'UDP' : 'TCP' }}</el-tag>
+              <el-tag v-if="r.upnp" size="small" type="info">UPnP</el-tag>
+              <el-tag v-if="r.natpmp" size="small" type="info">NAT-PMP</el-tag>
+            </span>
+          </template>
+          <template v-if="r.remark" #sub>{{ r.remark }}</template>
+          <template #status>
+            <StatusBadge v-bind="ruleStatus(r)" />
+          </template>
+          <Field :label="t('stun.publicAddr')" mono>
+            <template v-if="r.enable && !moduleOff && r.state.publicAddr">
+              <span class="copyable" :title="t('stun.clickToCopy')" @click="copy(r.state.publicAddr, $event)">{{ r.state.publicAddr }}</span>
+              <div v-if="r.state.since" class="meta">{{ t('stun.since', { time: fmtTime(r.state.since) }) }}</div>
             </template>
-          </el-popconfirm>
-        </template>
-      </EntityCard>
-    </div>
+            <span v-else class="muted">-</span>
+          </Field>
+          <Field :label="t('stun.tabChannel')" mono>{{ r.state.localAddr || (r.localPort ? ':' + r.localPort : t('stun.randomPort')) }}</Field>
+          <Field :label="t('stun.target')" mono>{{ r.disableForward ? t('stun.routerForward') : `${(r.targetAddresses ?? []).join(' | ')}:${r.targetPort}` }}</Field>
+          <Field :label="t('stun.connTraffic')">
+            {{ t('stun.connStats', { active: r.state.stats.activeConns, total: r.state.stats.totalConns }) }}
+            <div class="meta">↑ {{ formatBytes(r.state.stats.bytesIn) }} · ↓ {{ formatBytes(r.state.stats.bytesOut) }}</div>
+          </Field>
+          <template v-if="!sorting && (r.enable && !moduleOff && (r.state.error || r.state.mapping))" #extra>
+            <div v-if="r.state.error" class="err-line">{{ r.state.error }}</div>
+            <div v-if="r.state.mapping" class="meta">{{ r.state.mapping }}</div>
+          </template>
+          <template v-if="sorting" #actions>
+            <SortMoves :gl="gl" :it="it" />
+          </template>
+          <template v-else #actions>
+            <el-button text size="small" :icon="RotateCw" :disabled="!r.enable || moduleOff" @click="restart(r)">{{ t('stun.reconnect') }}</el-button>
+            <el-button text size="small" :icon="Pencil" @click="openEditor(r)">{{ t('common.edit') }}</el-button>
+            <el-popconfirm :title="t('stun.confirmDelete')" @confirm="remove(r)">
+              <template #reference>
+                <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
+              </template>
+            </el-popconfirm>
+          </template>
+        </EntityCard>
+      </template>
+    </GroupedList>
 
     <LogCard url="/api/stun/logs" clearable />
 
@@ -66,6 +72,7 @@
         <el-tabs v-model="tab">
           <el-tab-pane :label="t('stun.tabBasic')" name="basic">
             <el-form-item :label="t('stun.ruleName')" required><el-input v-model="editing.name" :placeholder="t('stun.ruleNamePlaceholder')" /></el-form-item>
+            <GroupInput v-model="editing.group" :groups="gl.groupNames.value" />
             <el-form-item :label="t('stun.protocolType')">
               <el-radio-group v-model="editing.protocol">
                 <el-radio-button value="tcp4">TCP</el-radio-button>
@@ -208,6 +215,12 @@ import PageHeader from '../components/PageHeader.vue'
 import ModuleBanner from '../components/ModuleBanner.vue'
 import CompactToggle from '../components/CompactToggle.vue'
 import EntityCard from '../components/EntityCard.vue'
+import GroupedList from '../components/GroupedList.vue'
+import GroupInput from '../components/GroupInput.vue'
+import ListTools from '../components/ListTools.vue'
+import SortCheck from '../components/SortCheck.vue'
+import SortMoves from '../components/SortMoves.vue'
+import { useGroupedList } from '../composables/useGroupSort'
 import { useCompactView } from '../composables/useCompactView'
 import Field from '../components/Field.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
@@ -223,6 +236,8 @@ interface Rule {
   key?: string
   name: string
   enable: boolean
+  // group 为列表中的分组名称，只影响展示，留空为未分组
+  group?: string
   protocol: string
   bind: { mode: string; ip: string; interface: string; regex: string }
   localPort: number
@@ -286,6 +301,15 @@ const rules = ref<RuleView[]>([])
 const interfaces = ref<NetInterface[]>([])
 const loading = ref(true)
 const compact = useCompactView('stun')
+// 列表的搜索、分组与排序；顺序与分组的修改不会重启规则
+const gl = useGroupedList<RuleView>({
+  storageKey: 'stun.groups',
+  items: () => rules.value,
+  base: '/api/stun/rules',
+  reload: load,
+  matches: (r, q) =>
+    [r.name, r.group ?? '', r.remark, r.state.publicAddr ?? '', ...(r.targetAddresses ?? [])].join('\n').toLowerCase().includes(q),
+})
 const editorVisible = ref(false)
 const saving = ref(false)
 const tab = ref('basic')

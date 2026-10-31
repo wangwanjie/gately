@@ -81,6 +81,8 @@
         <div class="toolbar">
           <span class="help">{{ t('guard.jail.intro') }}</span>
           <div class="toolbar-actions">
+            <ListTools :gl="gl" :placeholder="t('groupSort.search')" />
+            <CompactToggle v-model="compact" />
             <el-dropdown trigger="click" @command="addFromPreset">
               <el-button :icon="LayoutTemplate">{{ t('guard.jail.fromPreset') }}</el-button>
               <template #dropdown>
@@ -97,42 +99,47 @@
             <el-button type="primary" :icon="Plus" @click="openJail()">{{ t('guard.jail.add') }}</el-button>
           </div>
         </div>
-        <el-empty v-if="!jails.length" :description="t('guard.jail.empty')" />
-        <div class="card-grid">
-          <EntityCard v-for="j in jails" :key="j.key" :off="!j.enable">
-            <template #lead>
-              <el-switch :model-value="j.enable" @change="(v: string | number | boolean) => toggleJail(j, Boolean(v))" />
-            </template>
-            <template #title>
-              <span>{{ j.name }}</span>
-              <el-tag size="small" type="info" effect="plain">{{ t(`guard.source.${j.source}`) }}</el-tag>
-            </template>
-            <template v-if="j.remark" #sub>{{ j.remark }}</template>
-            <template #status><StatusBadge v-bind="jailBadge(j)" /></template>
-            <Field :label="sourceLabel(j.source)" mono wide>
-              <div v-for="line in targetLines(j)" :key="line" class="target-line">{{ line }}</div>
-            </Field>
-            <Field v-if="j.source === 'web'" :label="t('guard.jail.paths')" mono wide>
-              <div v-for="line in pathLines(j)" :key="line" class="target-line">{{ line }}</div>
-            </Field>
-            <Field v-if="j.source === 'web'" :label="t('guard.jail.webCount')">{{ webScopeText(j) }}</Field>
-            <Field :label="t('guard.jail.condition')">{{ t('guard.jail.conditionValue', { window: humanDuration(j.findTime), count: j.maxRetry }) }}</Field>
-            <Field :label="t('guard.jail.banTime')">{{ banTimeText(j.banTime) }}</Field>
-            <Field :label="t('guard.jail.matches')">{{ j.matches }}</Field>
-            <Field :label="t('guard.jail.bans')">{{ t('guard.jail.bansValue', { total: j.bans, active: j.active }) }}</Field>
-            <template v-if="j.error && j.enable" #extra>
-              <div class="err-line">{{ j.error }}</div>
-            </template>
-            <template #actions>
-              <el-button text size="small" :icon="Pencil" @click="openJail(j)">{{ t('common.edit') }}</el-button>
-              <el-popconfirm :title="t('guard.jail.deleteConfirm')" width="240" @confirm="removeJail(j)">
-                <template #reference>
-                  <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
-                </template>
-              </el-popconfirm>
-            </template>
-          </EntityCard>
-        </div>
+        <GroupedList :gl="gl" :compact="compact" grid :empty-text="t('guard.jail.empty')">
+          <template #item="{ it, item: j, sorting, bind }">
+            <EntityCard v-bind="bind" :off="!j.enable" :compact="compact || sorting">
+              <template #lead>
+                <SortCheck v-if="sorting" :gl="gl" :id="it.id" />
+                <el-switch v-else :model-value="j.enable" @change="(v: string | number | boolean) => toggleJail(j, Boolean(v))" />
+              </template>
+              <template #title>
+                <span>{{ j.name }}</span>
+                <el-tag size="small" type="info" effect="plain">{{ t(`guard.source.${j.source}`) }}</el-tag>
+              </template>
+              <template v-if="j.remark" #sub>{{ j.remark }}</template>
+              <template #status><StatusBadge v-bind="jailBadge(j)" /></template>
+              <Field :label="sourceLabel(j.source)" mono wide>
+                <div v-for="line in targetLines(j)" :key="line" class="target-line">{{ line }}</div>
+              </Field>
+              <Field v-if="j.source === 'web'" :label="t('guard.jail.paths')" mono wide>
+                <div v-for="line in pathLines(j)" :key="line" class="target-line">{{ line }}</div>
+              </Field>
+              <Field v-if="j.source === 'web'" :label="t('guard.jail.webCount')">{{ webScopeText(j) }}</Field>
+              <Field :label="t('guard.jail.condition')">{{ t('guard.jail.conditionValue', { window: humanDuration(j.findTime), count: j.maxRetry }) }}</Field>
+              <Field :label="t('guard.jail.banTime')">{{ banTimeText(j.banTime) }}</Field>
+              <Field :label="t('guard.jail.matches')">{{ j.matches }}</Field>
+              <Field :label="t('guard.jail.bans')">{{ t('guard.jail.bansValue', { total: j.bans, active: j.active }) }}</Field>
+              <template v-if="!sorting && (j.error && j.enable)" #extra>
+                <div class="err-line">{{ j.error }}</div>
+              </template>
+              <template v-if="sorting" #actions>
+                <SortMoves :gl="gl" :it="it" />
+              </template>
+              <template v-else #actions>
+                <el-button text size="small" :icon="Pencil" @click="openJail(j)">{{ t('common.edit') }}</el-button>
+                <el-popconfirm :title="t('guard.jail.deleteConfirm')" width="240" @confirm="removeJail(j)">
+                  <template #reference>
+                    <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
+                  </template>
+                </el-popconfirm>
+              </template>
+            </EntityCard>
+          </template>
+        </GroupedList>
       </el-tab-pane>
 
       <!-- 诱饵端口与扫描检测 -->
@@ -256,6 +263,7 @@
     <el-dialog v-model="jailVisible" :title="editing.key ? t('guard.jail.edit') : t('guard.jail.add')" width="760px" top="5vh" :fullscreen="isMobile">
       <el-form :model="editing" label-width="120px" :label-position="labelPosition">
         <el-form-item :label="t('common.name')"><el-input v-model="editing.name" /></el-form-item>
+        <GroupInput v-model="editing.group" :groups="gl.groupNames.value" />
         <el-form-item :label="t('guard.jail.source')">
           <el-radio-group :model-value="editing.source" @update:model-value="setSource">
             <el-radio-button v-for="s in sources" :key="s" :value="s">{{ t(`guard.source.${s}`) }}</el-radio-button>
@@ -369,6 +377,14 @@ import { Ban, Crosshair, FileCode, Flame, FlaskConical, LayoutTemplate, Pencil, 
 import { api } from '../api'
 import PageHeader from '../components/PageHeader.vue'
 import EntityCard from '../components/EntityCard.vue'
+import GroupedList from '../components/GroupedList.vue'
+import GroupInput from '../components/GroupInput.vue'
+import ListTools from '../components/ListTools.vue'
+import SortCheck from '../components/SortCheck.vue'
+import SortMoves from '../components/SortMoves.vue'
+import { useGroupedList } from '../composables/useGroupSort'
+import CompactToggle from '../components/CompactToggle.vue'
+import { useCompactView } from '../composables/useCompactView'
 import Field from '../components/Field.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
@@ -422,6 +438,8 @@ interface BanEntry {
 interface Jail {
   key?: string
   name: string
+  // group 为列表中的分组名称，只影响展示，留空为未分组
+  group?: string
   enable: boolean
   source: string
   target: string
@@ -473,6 +491,15 @@ const status = ref<GuardStatus>()
 const settings = ref<Settings>()
 const bans = ref<BanEntry[]>([])
 const jails = ref<JailView[]>([])
+const compact = useCompactView('guard.jails')
+// 规则列表的搜索、分组与排序；顺序与分组的修改不会重启规则
+const gl = useGroupedList<JailView>({
+  storageKey: 'guard.jails.groups',
+  items: () => jails.value,
+  base: '/api/guard/jails',
+  reload: loadJails,
+  matches: (j, q) => [j.name, j.group ?? '', j.remark, ...targetLines(j)].join('\n').toLowerCase().includes(q),
+})
 const presets = ref<Jail[]>([])
 // listeners 为 Web 服务的监听，供路径探测规则选择
 const listeners = ref<WebListener[]>([])
@@ -950,6 +977,8 @@ onMounted(async () => {
 }
 .toolbar-actions {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
 }
 .search {

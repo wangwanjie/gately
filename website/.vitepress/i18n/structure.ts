@@ -38,6 +38,7 @@ export const sidebarGroups: SidebarGroup[] = [
       'guide/quick-start',
       'guide/install',
       'guide/configuration',
+      'guide/lists',
       'guide/cli-mcp',
       'guide/migration',
       'guide/faq'

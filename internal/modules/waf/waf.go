@@ -85,8 +85,10 @@ type RuleSet struct {
 
 // Instance 是一个 WAF 实例。
 type Instance struct {
-	Key    string `json:"key"`
-	Name   string `json:"name"`
+	Key  string `json:"key"`
+	Name string `json:"name"`
+	// Group 为列表中的分组名称，只影响管理界面的展示，留空为未分组
+	Group  string `json:"group"`
 	Enable bool   `json:"enable"`
 	Mode   string `json:"mode"`
 	// Paranoia 为 CRS 偏执等级 1~4，越高越严格、误报越多
@@ -123,6 +125,9 @@ func CRSFiles() []string {
 
 // Validate 校验实例并补全默认值。
 func (in *Instance) Validate() error {
+	if err := crud.NormalizeGroup(&in.Group); err != nil {
+		return err
+	}
 	in.Name = strings.TrimSpace(in.Name)
 	if in.Name == "" {
 		return errors.New("名称不能为空")
@@ -511,6 +516,7 @@ func (m *Module) Routes(r module.Router) {
 		Save:     m.saveLocked,
 		Key:      func(in *Instance) *string { return &in.Key },
 		Enabled:  func(in *Instance) *bool { return &in.Enable },
+		Group:    func(in *Instance) *string { return &in.Group },
 		Validate: func(in *Instance) error { return in.Validate() },
 		View:     m.viewLocked,
 		Changed:  m.buildLocked,

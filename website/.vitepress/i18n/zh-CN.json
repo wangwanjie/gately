@@ -24,6 +24,7 @@
       "guide/quick-start": "快速开始",
       "guide/install": "安装部署",
       "guide/configuration": "配置与运行参数",
+      "guide/lists": "列表分组与排序",
       "guide/cli-mcp": "命令行与 MCP",
       "guide/migration": "迁移指南",
       "guide/faq": "常见问题",

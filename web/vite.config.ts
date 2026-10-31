@@ -58,7 +58,8 @@ export default defineConfig({
   server: {
     proxy: {
       // 保留浏览器的 Host：后端按 Origin 与 Host 是否一致拒绝跨源写请求，改写 Host 会让开发环境无法登录；ws 供终端等 WebSocket 使用
-      '/api': { target: 'http://127.0.0.1:16680', changeOrigin: false, ws: true },
+      // 后端地址可用环境变量 GATELY_API 覆盖，便于同时调试多个实例
+      '/api': { target: process.env.GATELY_API || 'http://127.0.0.1:16680', changeOrigin: false, ws: true },
     },
   },
 })

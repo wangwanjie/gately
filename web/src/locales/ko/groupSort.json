@@ -23,5 +23,8 @@
   "renamePrompt": "새 그룹 이름입니다. 그룹의 항목도 함께 바뀌며 순서는 그대로입니다. 기존 그룹과 이름이 같으면 합쳐집니다",
   "nameRequired": "그룹 이름을 입력하세요",
   "nameTooLong": "그룹 이름은 {max}자를 넘을 수 없습니다",
-  "mergeConfirm": "\"{to}\" 그룹이 이미 있습니다. \"{from}\"을(를) 합칠까요?"
+  "mergeConfirm": "\"{to}\" 그룹이 이미 있습니다. \"{from}\"을(를) 합칠까요?",
+  "count": "{count}개",
+  "selectItem": "이 항목 선택",
+  "search": "이름, 그룹, 메모 검색"
 }

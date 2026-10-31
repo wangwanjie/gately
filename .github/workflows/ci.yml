@@ -24,6 +24,8 @@ jobs:
           go-version-file: go.mod
       - name: 前端构建与类型检查
         run: cd web && pnpm install --frozen-lockfile && pnpm build
+      - name: 前端单元测试
+        run: cd web && pnpm test
       - name: 格式检查
         run: test -z "$(gofmt -l .)"
       - name: go vet

@@ -10,30 +10,41 @@
         <div class="g-card">
           <div class="g-card-head">
             <div class="g-card-title"><Plug :size="16" />{{ t('frp.clientInstances') }} <span v-if="settings?.frpc.version" class="g-card-desc">{{ settings.frpc.version }}</span></div>
-            <el-button type="primary" size="small" :icon="Plus" @click="openClient()">{{ t('frp.addClient') }}</el-button>
+            <div class="head-actions">
+              <ListTools :gl="glClients" size="small" />
+              <CompactToggle v-model="compactClients" size="small" />
+              <el-button type="primary" size="small" :icon="Plus" @click="openClient()">{{ t('frp.addClient') }}</el-button>
+            </div>
           </div>
           <div class="g-card-body">
-            <el-empty v-if="!clients.length" :description="t('frp.noClients')" :image-size="60" />
-            <div class="card-grid">
-              <EntityCard v-for="c in clients" :key="c.key" :off="!c.enable">
-                <template #title>{{ c.name }}</template>
-                <template #sub><span class="mono">{{ hostPort(c.serverAddr || t('frp.notFilled'), c.serverPort) }}</span><template v-if="c.remark"> · {{ c.remark }}</template></template>
-                <template #status><StatusBadge v-bind="instanceBadge(c)" /></template>
-                <Field :label="t('frp.protocol')" mono>{{ c.protocol || 'tcp' }}</Field>
-                <Field v-if="c.user" :label="t('frp.user')" mono>{{ c.user }}</Field>
-                <Field :label="t('frp.proxies')" mono>{{ proxyStats(c.key) }}</Field>
-                <template #actions>
-                  <el-switch :model-value="c.enable" size="small" @change="(v: boolean | string | number) => toggleInstance('clients', c.key, Boolean(v))" />
-                  <el-button text size="small" :icon="RefreshCw" :disabled="!c.enable" @click="restart('clients', c.key)">{{ t('common.restart') }}</el-button>
-                  <el-button text size="small" :icon="Pencil" @click="openClient(c)">{{ t('common.edit') }}</el-button>
-                  <el-popconfirm :title="proxiesOf(c.key).length ? t('frp.confirmDeleteClientProxies', { count: proxiesOf(c.key).length }) : t('frp.confirmDeleteClient')" width="260" @confirm="removeInstance('clients', c.key)">
-                    <template #reference>
-                      <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
-                    </template>
-                  </el-popconfirm>
-                </template>
-              </EntityCard>
-            </div>
+            <GroupedList :gl="glClients" :compact="compactClients" grid :empty-text="t('frp.noClients')" :empty-image-size="60">
+              <template #item="{ it, item: c, sorting, bind }">
+                <EntityCard v-bind="bind" :off="!c.enable" :compact="compactClients || sorting">
+                  <template v-if="sorting" #lead>
+                    <SortCheck :gl="glClients" :id="it.id" />
+                  </template>
+                  <template #title>{{ c.name }}</template>
+                  <template #sub><span class="mono">{{ hostPort(c.serverAddr || t('frp.notFilled'), c.serverPort) }}</span><template v-if="c.remark"> · {{ c.remark }}</template></template>
+                  <template #status><StatusBadge v-bind="instanceBadge(c)" /></template>
+                  <Field :label="t('frp.protocol')" mono>{{ c.protocol || 'tcp' }}</Field>
+                  <Field v-if="c.user" :label="t('frp.user')" mono>{{ c.user }}</Field>
+                  <Field :label="t('frp.proxies')" mono>{{ proxyStats(c.key) }}</Field>
+                  <template v-if="sorting" #actions>
+                    <SortMoves :gl="glClients" :it="it" />
+                  </template>
+                  <template v-else #actions>
+                    <el-switch :model-value="c.enable" size="small" @change="(v: boolean | string | number) => toggleInstance('clients', c.key, Boolean(v))" />
+                    <el-button text size="small" :icon="RefreshCw" :disabled="!c.enable" @click="restart('clients', c.key)">{{ t('common.restart') }}</el-button>
+                    <el-button text size="small" :icon="Pencil" @click="openClient(c)">{{ t('common.edit') }}</el-button>
+                    <el-popconfirm :title="proxiesOf(c.key).length ? t('frp.confirmDeleteClientProxies', { count: proxiesOf(c.key).length }) : t('frp.confirmDeleteClient')" width="260" @confirm="removeInstance('clients', c.key)">
+                      <template #reference>
+                        <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
+                      </template>
+                    </el-popconfirm>
+                  </template>
+                </EntityCard>
+              </template>
+            </GroupedList>
           </div>
         </div>
 
@@ -41,42 +52,51 @@
           <div class="g-card-head">
             <div class="g-card-title"><ArrowRightLeft :size="16" />{{ t('frp.proxies') }} <span class="g-card-desc">{{ t('frp.proxiesDesc') }}</span></div>
             <div class="head-actions">
-              <el-select v-if="clients.length > 1" v-model="proxyFilter" size="small" class="w-160" :empty-values="[null, undefined]">
+              <ListTools :gl="glProxies" size="small" :placeholder="t('frp.proxyFilterPlaceholder')" />
+              <el-select v-if="clients.length > 1" v-model="proxyFilter" size="small" class="w-160" :disabled="glProxies.sortMode.value" :empty-values="[null, undefined]">
                 <el-option :label="t('frp.allClients')" value="" />
                 <el-option v-for="c in clients" :key="c.key" :label="c.name" :value="c.key" />
               </el-select>
+              <CompactToggle v-model="compactProxies" size="small" />
               <el-tooltip :content="t('frp.needClient')" :disabled="clients.length > 0" placement="top">
                 <span><el-button size="small" :icon="Plus" :disabled="!clients.length" @click="openProxy()">{{ t('frp.addProxy') }}</el-button></span>
               </el-tooltip>
             </div>
           </div>
           <div class="g-card-body">
-            <el-empty v-if="!shownProxies.length" :description="t('frp.noProxies')" :image-size="60" />
-            <div class="card-grid">
-              <EntityCard v-for="p in shownProxies" :key="p.key" :off="!p.enable || !clientOf(p)?.enable">
-                <template #title>{{ p.name }}</template>
-                <template v-if="p.remark" #sub>{{ p.remark }}</template>
-                <template #status>
-                  <el-tag v-if="clients.length > 1" size="small" effect="plain">{{ clientOf(p)?.name ?? '—' }}</el-tag>
-                  <el-tag size="small" type="info">{{ p.type }}</el-tag>
-                </template>
-                <Field :label="t('frp.local')" mono>{{ p.localIp }}:{{ p.localPort }}</Field>
-                <Field v-if="p.type === 'tcp' || p.type === 'udp'" :label="t('frp.remotePort')" mono>{{ p.remotePort }}</Field>
-                <Field v-else-if="p.type === 'http' || p.type === 'https'" :label="t('frp.domain')" mono>
-                  <div v-for="d in p.customDomains" :key="d">{{ d }}</div>
-                  <div v-if="p.subdomain">{{ t('frp.subdomainSuffix', { sub: p.subdomain }) }}</div>
-                </Field>
-                <template #actions>
-                  <el-switch :model-value="p.enable" size="small" @change="(v: boolean | string | number) => toggleProxy(p, Boolean(v))" />
-                  <el-button text size="small" :icon="Pencil" @click="openProxy(p)">{{ t('common.edit') }}</el-button>
-                  <el-popconfirm :title="t('frp.confirmDeleteProxy')" @confirm="removeProxy(p)">
-                    <template #reference>
-                      <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
-                    </template>
-                  </el-popconfirm>
-                </template>
-              </EntityCard>
-            </div>
+            <GroupedList :gl="glProxies" :compact="compactProxies" grid :empty-text="t('frp.noProxies')" :empty-image-size="60">
+              <template #item="{ it, item: p, sorting, bind }">
+                <EntityCard v-bind="bind" :off="!p.enable || !clientOf(p)?.enable" :compact="compactProxies || sorting">
+                  <template v-if="sorting" #lead>
+                    <SortCheck :gl="glProxies" :id="it.id" />
+                  </template>
+                  <template #title>{{ p.name }}</template>
+                  <template v-if="p.remark" #sub>{{ p.remark }}</template>
+                  <template #status>
+                    <el-tag v-if="clients.length > 1" size="small" effect="plain">{{ clientOf(p)?.name ?? '—' }}</el-tag>
+                    <el-tag size="small" type="info">{{ p.type }}</el-tag>
+                  </template>
+                  <Field :label="t('frp.local')" mono>{{ p.localIp }}:{{ p.localPort }}</Field>
+                  <Field v-if="p.type === 'tcp' || p.type === 'udp'" :label="t('frp.remotePort')" mono>{{ p.remotePort }}</Field>
+                  <Field v-else-if="p.type === 'http' || p.type === 'https'" :label="t('frp.domain')" mono>
+                    <div v-for="d in p.customDomains" :key="d">{{ d }}</div>
+                    <div v-if="p.subdomain">{{ t('frp.subdomainSuffix', { sub: p.subdomain }) }}</div>
+                  </Field>
+                  <template v-if="sorting" #actions>
+                    <SortMoves :gl="glProxies" :it="it" />
+                  </template>
+                  <template v-else #actions>
+                    <el-switch :model-value="p.enable" size="small" @change="(v: boolean | string | number) => toggleProxy(p, Boolean(v))" />
+                    <el-button text size="small" :icon="Pencil" @click="openProxy(p)">{{ t('common.edit') }}</el-button>
+                    <el-popconfirm :title="t('frp.confirmDeleteProxy')" @confirm="removeProxy(p)">
+                      <template #reference>
+                        <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
+                      </template>
+                    </el-popconfirm>
+                  </template>
+                </EntityCard>
+              </template>
+            </GroupedList>
           </div>
         </div>
       </el-tab-pane>
@@ -85,32 +105,43 @@
         <div class="g-card">
           <div class="g-card-head">
             <div class="g-card-title"><Server :size="16" />{{ t('frp.serverInstances') }} <span v-if="settings?.frps.version" class="g-card-desc">{{ settings.frps.version }}</span></div>
-            <el-button type="primary" size="small" :icon="Plus" @click="openServer()">{{ t('frp.addServer') }}</el-button>
+            <div class="head-actions">
+              <ListTools :gl="glServers" size="small" />
+              <CompactToggle v-model="compactServers" size="small" />
+              <el-button type="primary" size="small" :icon="Plus" @click="openServer()">{{ t('frp.addServer') }}</el-button>
+            </div>
           </div>
           <div class="g-card-body">
-            <el-empty v-if="!servers.length" :description="t('frp.noServers')" :image-size="60" />
-            <div class="card-grid">
-              <EntityCard v-for="s in servers" :key="s.key" :off="!s.enable">
-                <template #title>{{ s.name }}</template>
-                <template #sub><span class="mono">{{ hostPort(s.bindAddr, s.bindPort) }}</span><template v-if="s.remark"> · {{ s.remark }}</template></template>
-                <template #status><StatusBadge v-bind="instanceBadge(s)" /></template>
-                <Field v-if="s.vhostHttpPort" :label="t('frp.httpPort')" mono>{{ s.vhostHttpPort }}</Field>
-                <Field v-if="s.vhostHttpsPort" :label="t('frp.httpsPort')" mono>{{ s.vhostHttpsPort }}</Field>
-                <Field v-if="s.subdomainHost" :label="t('frp.subdomainHost')" mono>{{ s.subdomainHost }}</Field>
-                <Field v-if="s.allowPorts" :label="t('frp.allowPorts')" mono>{{ s.allowPorts }}</Field>
-                <Field v-if="s.dashboardPort" :label="t('frp.dashboard')" mono>{{ hostPort(s.dashboardAddr, s.dashboardPort) }}</Field>
-                <template #actions>
-                  <el-switch :model-value="s.enable" size="small" @change="(v: boolean | string | number) => toggleInstance('servers', s.key, Boolean(v))" />
-                  <el-button text size="small" :icon="RefreshCw" :disabled="!s.enable" @click="restart('servers', s.key)">{{ t('common.restart') }}</el-button>
-                  <el-button text size="small" :icon="Pencil" @click="openServer(s)">{{ t('common.edit') }}</el-button>
-                  <el-popconfirm :title="t('frp.confirmDeleteServer')" @confirm="removeInstance('servers', s.key)">
-                    <template #reference>
-                      <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
-                    </template>
-                  </el-popconfirm>
-                </template>
-              </EntityCard>
-            </div>
+            <GroupedList :gl="glServers" :compact="compactServers" grid :empty-text="t('frp.noServers')" :empty-image-size="60">
+              <template #item="{ it, item: s, sorting, bind }">
+                <EntityCard v-bind="bind" :off="!s.enable" :compact="compactServers || sorting">
+                  <template v-if="sorting" #lead>
+                    <SortCheck :gl="glServers" :id="it.id" />
+                  </template>
+                  <template #title>{{ s.name }}</template>
+                  <template #sub><span class="mono">{{ hostPort(s.bindAddr, s.bindPort) }}</span><template v-if="s.remark"> · {{ s.remark }}</template></template>
+                  <template #status><StatusBadge v-bind="instanceBadge(s)" /></template>
+                  <Field v-if="s.vhostHttpPort" :label="t('frp.httpPort')" mono>{{ s.vhostHttpPort }}</Field>
+                  <Field v-if="s.vhostHttpsPort" :label="t('frp.httpsPort')" mono>{{ s.vhostHttpsPort }}</Field>
+                  <Field v-if="s.subdomainHost" :label="t('frp.subdomainHost')" mono>{{ s.subdomainHost }}</Field>
+                  <Field v-if="s.allowPorts" :label="t('frp.allowPorts')" mono>{{ s.allowPorts }}</Field>
+                  <Field v-if="s.dashboardPort" :label="t('frp.dashboard')" mono>{{ hostPort(s.dashboardAddr, s.dashboardPort) }}</Field>
+                  <template v-if="sorting" #actions>
+                    <SortMoves :gl="glServers" :it="it" />
+                  </template>
+                  <template v-else #actions>
+                    <el-switch :model-value="s.enable" size="small" @change="(v: boolean | string | number) => toggleInstance('servers', s.key, Boolean(v))" />
+                    <el-button text size="small" :icon="RefreshCw" :disabled="!s.enable" @click="restart('servers', s.key)">{{ t('common.restart') }}</el-button>
+                    <el-button text size="small" :icon="Pencil" @click="openServer(s)">{{ t('common.edit') }}</el-button>
+                    <el-popconfirm :title="t('frp.confirmDeleteServer')" @confirm="removeInstance('servers', s.key)">
+                      <template #reference>
+                        <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
+                      </template>
+                    </el-popconfirm>
+                  </template>
+                </EntityCard>
+              </template>
+            </GroupedList>
             <div class="form-help">{{ t('frp.firewallHelp') }}</div>
           </div>
         </div>
@@ -144,6 +175,7 @@
     <el-dialog v-model="clientVisible" :title="editingClient.key ? t('frp.editClient') : t('frp.addClient')" width="560px" :fullscreen="isMobile">
       <el-form :model="editingClient" label-width="110px" :label-position="labelPosition">
         <el-form-item :label="t('common.name')"><el-input v-model="editingClient.name" :placeholder="t('frp.clientNamePlaceholder')" /></el-form-item>
+        <GroupInput v-model="editingClient.group" :groups="glClients.groupNames.value" />
         <el-form-item :label="t('common.enable')"><el-switch v-model="editingClient.enable" /></el-form-item>
         <el-form-item :label="t('frp.serverAddr')"><el-input v-model="editingClient.serverAddr" :placeholder="t('frp.serverAddrPlaceholder')" /></el-form-item>
         <el-form-item :label="t('frp.serverPort')"><el-input-number v-model="editingClient.serverPort" :min="1" :max="65535" /></el-form-item>
@@ -172,6 +204,7 @@
     <el-dialog v-model="serverVisible" :title="editingServer.key ? t('frp.editServer') : t('frp.addServer')" width="640px" :fullscreen="isMobile">
       <el-form :model="editingServer" label-width="130px" :label-position="labelPosition">
         <el-form-item :label="t('common.name')"><el-input v-model="editingServer.name" /></el-form-item>
+        <GroupInput v-model="editingServer.group" :groups="glServers.groupNames.value" />
         <el-form-item :label="t('common.enable')"><el-switch v-model="editingServer.enable" /></el-form-item>
         <el-form-item :label="t('frp.bindAddr')">
           <el-input v-model="editingServer.bindAddr" :placeholder="t('frp.allAddrs')" class="w-200 mono" />
@@ -269,6 +302,7 @@
           </el-select>
         </el-form-item>
         <el-form-item :label="t('common.name')"><el-input v-model="editingProxy.name" /></el-form-item>
+        <GroupInput v-model="editingProxy.group" :groups="glProxies.groupNames.value" />
         <el-form-item :label="t('frp.type')">
           <el-select v-model="editingProxy.type">
             <el-option label="tcp" value="tcp" />
@@ -311,6 +345,14 @@ import { api } from '../api'
 import { secretOf } from '../secrets'
 import PageHeader from '../components/PageHeader.vue'
 import EntityCard from '../components/EntityCard.vue'
+import GroupedList from '../components/GroupedList.vue'
+import GroupInput from '../components/GroupInput.vue'
+import ListTools from '../components/ListTools.vue'
+import SortCheck from '../components/SortCheck.vue'
+import SortMoves from '../components/SortMoves.vue'
+import { useGroupedList } from '../composables/useGroupSort'
+import CompactToggle from '../components/CompactToggle.vue'
+import { useCompactView } from '../composables/useCompactView'
 import Field from '../components/Field.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
@@ -346,12 +388,16 @@ interface ServerSettings {
 interface Client extends ClientSettings {
   key?: string
   name: string
+  // group 为列表中的分组名称，只影响展示，留空为未分组
+  group?: string
   enable: boolean
   remark: string
 }
 interface Server extends ServerSettings {
   key?: string
   name: string
+  // group 为列表中的分组名称，只影响展示，留空为未分组
+  group?: string
   enable: boolean
   remark: string
 }
@@ -375,6 +421,8 @@ interface Proxy {
   key?: string
   client: string
   name: string
+  // group 为列表中的分组名称，只影响展示，留空为未分组
+  group?: string
   type: string
   enable: boolean
   localIp: string
@@ -411,7 +459,37 @@ const proxyFilter = ref('')
 // 定时刷新，标签页在后台时暂停
 const polling = usePolling(refresh, 5000)
 
-const shownProxies = computed(() => (proxyFilter.value ? proxies.value.filter((p) => p.client === proxyFilter.value) : proxies.value))
+// 三个列表各自的视图、搜索、分组与排序；顺序与分组的修改不会重启实例
+const compactClients = useCompactView('frp.clients')
+const compactServers = useCompactView('frp.servers')
+const compactProxies = useCompactView('frp.proxies')
+const glClients = useGroupedList<ClientView>({
+  storageKey: 'frp.clients.groups',
+  items: () => clients.value,
+  base: '/api/frp/clients',
+  reload: load,
+  matches: (c, q) => [c.name, c.group ?? '', c.remark, c.serverAddr].join('\n').toLowerCase().includes(q),
+})
+const glServers = useGroupedList<ServerView>({
+  storageKey: 'frp.servers.groups',
+  items: () => servers.value,
+  base: '/api/frp/servers',
+  reload: load,
+  matches: (sv, q) => [sv.name, sv.group ?? '', sv.remark, sv.bindAddr].join('\n').toLowerCase().includes(q),
+})
+// 代理可按 frpc 实例筛选；排序模式下显示全部代理，保证调整的是完整顺序
+const glProxies = useGroupedList<Proxy>({
+  storageKey: 'frp.proxies.groups',
+  items: () => proxies.value,
+  base: '/api/frp/proxies',
+  reload: load,
+  visible: (p) => !proxyFilter.value || p.client === proxyFilter.value,
+  matches: (p, q) =>
+    [p.name, p.group ?? '', p.remark, p.type, `${p.localIp}:${p.localPort}`, String(p.remotePort || ''), ...(p.customDomains ?? []), p.subdomain ?? '', clientOf(p)?.name ?? '']
+      .join('\n')
+      .toLowerCase()
+      .includes(q),
+})
 
 function proxiesOf(key: string): Proxy[] {
   return proxies.value.filter((p) => p.client === key)
@@ -495,12 +573,13 @@ const serverVisible = ref(false)
 const editingServer = ref<Server>(emptyServer())
 
 function emptyClient(): Client {
-  return { name: '', enable: true, serverAddr: '', serverPort: 7000, token: '', user: '', protocol: '', remark: '' }
+  return { name: '', group: '', enable: true, serverAddr: '', serverPort: 7000, token: '', user: '', protocol: '', remark: '' }
 }
 
 function emptyServer(): Server {
   return {
     name: 'frps',
+    group: '',
     enable: true,
     bindAddr: '',
     bindPort: 7000,
@@ -520,8 +599,8 @@ function emptyServer(): Server {
 
 // pickClient 只取实例字段，去掉运行状态
 function pickClient(v: Client): Client {
-  const { key, name, enable, serverAddr, serverPort, token, user, protocol, remark } = v
-  return { key, name, enable, serverAddr, serverPort, token, user, protocol, remark }
+  const { key, name, group, enable, serverAddr, serverPort, token, user, protocol, remark } = v
+  return { key, name, group, enable, serverAddr, serverPort, token, user, protocol, remark }
 }
 
 function pickServer(v: Server): Server {
@@ -751,8 +830,9 @@ onMounted(() => {
 }
 .head-actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: 8px 10px;
 }
 .svc-form {
   max-width: 640px;

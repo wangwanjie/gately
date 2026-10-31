@@ -61,5 +61,8 @@
   "triggered": "실행을 요청했습니다",
   "recordsCollapsed": "레코드 {count}개 숨김, 클릭하여 펼치기",
   "filterPlaceholder": "이름, 그룹, 도메인 또는 제공업체 검색",
-  "groupCount": "작업 {count}개"
+  "groupCount": "작업 {count}개",
+  "recordCount": "레코드 {count}개",
+  "sortRecords": "레코드 정렬",
+  "sortRecordsTitle": "“{name}” 레코드 순서와 그룹"
 }

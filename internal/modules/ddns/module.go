@@ -195,6 +195,8 @@ func (m *Module) Routes(r module.Router) {
 	tasks.Register(r, "/tasks")
 	r.HandleFunc("POST /tasks/{key}/sync", m.handleSync)
 	r.HandleFunc("DELETE /tasks/{key}/records/{rec}", m.handleDeleteRecord)
+	r.HandleFunc("PUT /tasks/{key}/records-layout", m.handleRecordsLayout)
+	module.DocOf(r, "PUT /tasks/{key}/records-layout", module.Doc{Summary: "调整任务内解析记录的顺序与分组", Req: &recordsLayoutRequest{}})
 	r.HandleFunc("GET /providers", func(w http.ResponseWriter, r *http.Request) {
 		httpx.OK(w, dnsprovider.List())
 	})

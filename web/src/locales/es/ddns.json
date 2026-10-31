@@ -61,5 +61,8 @@
   "triggered": "Activada",
   "recordsCollapsed": "{count} registros ocultos, haz clic para expandir",
   "filterPlaceholder": "Buscar nombre, grupo, dominio o proveedor",
-  "groupCount": "{count} tareas"
+  "groupCount": "{count} tareas",
+  "recordCount": "{count} registros",
+  "sortRecords": "Ordenar registros",
+  "sortRecordsTitle": "Orden y grupos de los registros de «{name}»"
 }

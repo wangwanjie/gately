@@ -97,5 +97,6 @@
   "instanceName": "인스턴스 이름",
   "importNameClientPlaceholder": "비우면 서버 주소 사용",
   "pastePlaceholderServer": "frps.ini / frps.toml 내용 붙여넣기",
-  "owner": "인스턴스"
+  "owner": "인스턴스",
+  "proxyFilterPlaceholder": "이름, 그룹, 포트, 도메인 검색"
 }

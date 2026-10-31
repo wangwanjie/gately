@@ -92,6 +92,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | PUT | `/api/ddns/tasks-group` | `ddns:write` | Set group in bulk: DDNS task |
 | GET | `/api/ddns/tasks/{key}/secrets` | `ddns:write` | View secrets in plain text |
 | POST | `/api/ddns/tasks/{key}/sync` | `ddns:write` | Sync a DDNS task immediately |
+| DELETE | `/api/ddns/tasks/{key}/records/{rec}` | `ddns:write` | Delete one record from a DDNS task |
+| PUT | `/api/ddns/tasks/{key}/records-layout` | `ddns:write` | Reorder and group a task's DNS records |
 | GET | `/api/ddns/providers` | `ddns:read` | List supported DNS providers and their required parameters |
 | GET | `/api/ddns/netinterfaces` | `ddns:read` | List network interfaces and addresses on this machine |
 | POST | `/api/ddns/iptest` | `ddns:write` | Test public IP lookup |
@@ -111,6 +113,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | DELETE | `/api/stun/rules/{key}` | `stun:write` | Delete STUN rule |
 | PUT | `/api/stun/rules/{key}/enable` | `stun:write` | Enable or disable STUN rule |
 | PUT | `/api/stun/rules-order` | `stun:write` | Reorder STUN rule |
+| PUT | `/api/stun/rules-group` | `stun:write` | Set group in bulk: STUN rule |
 | POST | `/api/stun/rules/{key}/restart` | `stun:write` | Restart a STUN rule |
 | GET | `/api/stun/netinterfaces` | `stun:read` | List network interfaces and addresses on this machine |
 | GET | `/api/stun/settings` | `stun:read` | Read STUN global settings |
@@ -147,6 +150,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | DELETE | `/api/frp/clients/{key}` | `frp:write` | Delete frp client |
 | PUT | `/api/frp/clients/{key}/enable` | `frp:write` | Enable or disable frp client |
 | PUT | `/api/frp/clients-order` | `frp:write` | Reorder frp client |
+| PUT | `/api/frp/clients-group` | `frp:write` | Set group in bulk: frp client |
 | GET | `/api/frp/clients/{key}/secrets` | `frp:write` | View secrets in plain text |
 | GET | `/api/frp/servers` | `frp:read` | List frp server |
 | POST | `/api/frp/servers` | `frp:write` | Create frp server |
@@ -154,6 +158,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | DELETE | `/api/frp/servers/{key}` | `frp:write` | Delete frp server |
 | PUT | `/api/frp/servers/{key}/enable` | `frp:write` | Enable or disable frp server |
 | PUT | `/api/frp/servers-order` | `frp:write` | Reorder frp server |
+| PUT | `/api/frp/servers-group` | `frp:write` | Set group in bulk: frp server |
 | GET | `/api/frp/servers/{key}/secrets` | `frp:write` | View secrets in plain text |
 | GET | `/api/frp/proxies` | `frp:read` | List frp proxies |
 | POST | `/api/frp/proxies` | `frp:write` | Create frp proxies |
@@ -161,6 +166,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | DELETE | `/api/frp/proxies/{key}` | `frp:write` | Delete frp proxies |
 | PUT | `/api/frp/proxies/{key}/enable` | `frp:write` | Enable or disable frp proxies |
 | PUT | `/api/frp/proxies-order` | `frp:write` | Reorder frp proxies |
+| PUT | `/api/frp/proxies-group` | `frp:write` | Set group in bulk: frp proxies |
 | GET | `/api/frp/proxies/{key}/secrets` | `frp:write` | View secrets in plain text |
 | POST | `/api/frp/import` | `frp:write` | Import an existing frpc / frps configuration (legacy ini and new toml are supported); preview only when apply is false |
 | GET | `/api/frp/install` | `frp:read` | View the install info and progress of a managed program |
@@ -186,6 +192,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | DELETE | `/api/cloudflared/tunnels/{key}` | `cloudflared:write` | Delete Cloudflare Tunnel |
 | PUT | `/api/cloudflared/tunnels/{key}/enable` | `cloudflared:write` | Enable or disable Cloudflare Tunnel |
 | PUT | `/api/cloudflared/tunnels-order` | `cloudflared:write` | Reorder Cloudflare Tunnel |
+| PUT | `/api/cloudflared/tunnels-group` | `cloudflared:write` | Set group in bulk: Cloudflare Tunnel |
 | GET | `/api/cloudflared/tunnels/{key}/secrets` | `cloudflared:write` | View secrets in plain text |
 | POST | `/api/cloudflared/tunnels/{key}/restart` | `cloudflared:write` | Restart a Cloudflare Tunnel |
 | GET | `/api/cloudflared/tunnels/{key}/ingress` | `cloudflared:read` | Read the routes of a token tunnel |
@@ -211,6 +218,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | DELETE | `/api/ssl/certs/{key}` | `ssl:write` | Delete Certificate |
 | PUT | `/api/ssl/certs/{key}/enable` | `ssl:write` | Enable or disable Certificate |
 | PUT | `/api/ssl/certs-order` | `ssl:write` | Reorder Certificate |
+| PUT | `/api/ssl/certs-group` | `ssl:write` | Set group in bulk: Certificate |
 | GET | `/api/ssl/certs/{key}/secrets` | `ssl:write` | View secrets in plain text |
 | POST | `/api/ssl/certs/{key}/renew` | `ssl:write` | Issue or renew a certificate immediately |
 | GET | `/api/ssl/certs/{key}/download` | `ssl:write` | Download certificate and private key |
@@ -232,6 +240,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | DELETE | `/api/waf/instances/{key}` | `waf:write` | Delete WAF instance |
 | PUT | `/api/waf/instances/{key}/enable` | `waf:write` | Enable or disable WAF instance |
 | PUT | `/api/waf/instances-order` | `waf:write` | Reorder WAF instance |
+| PUT | `/api/waf/instances-group` | `waf:write` | Set group in bulk: WAF instance |
 | GET | `/api/waf/crs` | `waf:read` | List OWASP CRS rule files |
 | GET | `/api/waf/crs/{file}` | `waf:read` | Read a CRS rule file |
 
@@ -278,12 +287,13 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | --- | --- | --- | --- |
 | GET | `/api/guard/logs` | `guard:read` | View module runtime logs |
 | DELETE | `/api/guard/logs` | `guard:write` | Clear module runtime logs |
-| GET | `/api/guard/jails` | `guard:read` | List Entry |
-| POST | `/api/guard/jails` | `guard:write` | Create Entry |
-| PUT | `/api/guard/jails/{key}` | `guard:write` | Update Entry |
-| DELETE | `/api/guard/jails/{key}` | `guard:write` | Delete Entry |
-| PUT | `/api/guard/jails/{key}/enable` | `guard:write` | Enable or disable Entry |
-| PUT | `/api/guard/jails-order` | `guard:write` | Reorder Entry |
+| GET | `/api/guard/jails` | `guard:read` | List intrusion prevention rule |
+| POST | `/api/guard/jails` | `guard:write` | Create intrusion prevention rule |
+| PUT | `/api/guard/jails/{key}` | `guard:write` | Update intrusion prevention rule |
+| DELETE | `/api/guard/jails/{key}` | `guard:write` | Delete intrusion prevention rule |
+| PUT | `/api/guard/jails/{key}/enable` | `guard:write` | Enable or disable intrusion prevention rule |
+| PUT | `/api/guard/jails-order` | `guard:write` | Reorder intrusion prevention rule |
+| PUT | `/api/guard/jails-group` | `guard:write` | Set group in bulk: intrusion prevention rule |
 | GET | `/api/guard/presets` | `guard:read` | Jail templates for common services |
 | POST | `/api/guard/jails/test` | `guard:write` | Test filters against sample log lines |
 | GET | `/api/guard/status` | `guard:read` | Firewall sync status and environment |
@@ -306,6 +316,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | DELETE | `/api/wol/devices/{key}` | `wol:write` | Delete Wake a device |
 | PUT | `/api/wol/devices/{key}/enable` | `wol:write` | Enable or disable Wake a device |
 | PUT | `/api/wol/devices-order` | `wol:write` | Reorder Wake a device |
+| PUT | `/api/wol/devices-group` | `wol:write` | Set group in bulk: Wake a device |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | Send a Wake-on-LAN magic packet to a device |
 | GET | `/api/wol/status` | `wol:read` | View device online status |
 
@@ -321,6 +332,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | DELETE | `/api/webterminal/connections/{key}` | `webterminal:write` | Delete Terminal connection |
 | PUT | `/api/webterminal/connections/{key}/enable` | `webterminal:write` | Enable or disable Terminal connection |
 | PUT | `/api/webterminal/connections-order` | `webterminal:write` | Reorder Terminal connection |
+| PUT | `/api/webterminal/connections-group` | `webterminal:write` | Set group in bulk: Terminal connection |
 | GET | `/api/webterminal/connections/{key}/secrets` | `webterminal:write` | View secrets in plain text |
 | DELETE | `/api/webterminal/connections/{key}/hostkey` | `webterminal:write` | Clear the recorded host key |
 | POST | `/api/webterminal/connections/{key}/test` | `webterminal:write` | Test a saved connection |
@@ -347,7 +359,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | POST | `/api/webterminal/security/2fa/disable` | Login sessions only | Disable terminal two-factor authentication |
 | POST | `/api/webterminal/security/verify2fa` | Login sessions only | Verify a terminal two-factor code |
 | GET | `/api/webterminal/security/check2fa` | Login sessions only | Check whether terminal two-factor verification has passed |
-| GET | `/api/webterminal/sftp/{key}/list` | `webterminal:read` | List a remote directory |
+| GET | `/api/webterminal/sftp/{key}/list` | `webterminal:write` | List a remote directory |
 | GET | `/api/webterminal/sftp/{key}/read` | `webterminal:write` | Read a remote file |
 | POST | `/api/webterminal/sftp/{key}/write` | `webterminal:write` | Write a remote file |
 | POST | `/api/webterminal/sftp/{key}/upload` | `webterminal:write` | Upload a file to a remote host |
@@ -381,6 +393,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | DELETE | `/api/cron/tasks/{key}` | `cron:write` | Delete Scheduled task |
 | PUT | `/api/cron/tasks/{key}/enable` | `cron:write` | Enable or disable Scheduled task |
 | PUT | `/api/cron/tasks-order` | `cron:write` | Reorder Scheduled task |
+| PUT | `/api/cron/tasks-group` | `cron:write` | Set group in bulk: Scheduled task |
 | POST | `/api/cron/tasks/{key}/run` | `cron:write` | Run a scheduled task immediately |
 | POST | `/api/cron/parse` | `cron:write` | Parse and preview a Cron expression |
 
@@ -445,7 +458,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | GET | `/api/docker/containers/{id}/logs` | `docker:read` | View container logs |
 | GET | `/api/docker/containers/{id}/stats` | `docker:read` | View container resource usage |
 | GET | `/api/docker/containers/{id}/processes` | `docker:read` | View processes inside a container |
-| GET | `/api/docker/containers/{id}/files/list` | `docker:read` | List a directory inside a container |
+| GET | `/api/docker/containers/{id}/files/list` | `docker:write` | List a directory inside a container |
 | GET | `/api/docker/containers/{id}/files/read` | `docker:write` | Read a file inside a container |
 | GET | `/api/docker/containers/{id}/files/download` | `docker:write` | Download a file from a container |
 | POST | `/api/docker/containers/{id}/files/write` | `docker:write` | Write a file inside a container |
@@ -503,6 +516,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | DELETE | `/api/filebrowser/instances/{key}` | `filebrowser:write` | Delete File Browser instance |
 | PUT | `/api/filebrowser/instances/{key}/enable` | `filebrowser:write` | Enable or disable File Browser instance |
 | PUT | `/api/filebrowser/instances-order` | `filebrowser:write` | Reorder File Browser instance |
+| PUT | `/api/filebrowser/instances-group` | `filebrowser:write` | Set group in bulk: File Browser instance |
 | GET | `/api/filebrowser/instances/{key}/secrets` | `filebrowser:write` | View secrets in plain text |
 | POST | `/api/filebrowser/instances/{key}/restart` | `filebrowser:write` | Restart a File Browser instance |
 | GET | `/api/filebrowser/settings` | `filebrowser:read` | Read File Browser program settings |
@@ -520,14 +534,15 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | --- | --- | --- | --- |
 | GET | `/api/storage/logs` | `storage:read` | View module runtime logs |
 | DELETE | `/api/storage/logs` | `storage:write` | Clear module runtime logs |
-| GET | `/api/storage/mounts` | `storage:read` | List Entry |
-| POST | `/api/storage/mounts` | `storage:write` | Create Entry |
-| PUT | `/api/storage/mounts/{key}` | `storage:write` | Update Entry |
-| DELETE | `/api/storage/mounts/{key}` | `storage:write` | Delete Entry |
-| PUT | `/api/storage/mounts/{key}/enable` | `storage:write` | Enable or disable Entry |
-| PUT | `/api/storage/mounts-order` | `storage:write` | Reorder Entry |
+| GET | `/api/storage/mounts` | `storage:read` | List Storage Mounts |
+| POST | `/api/storage/mounts` | `storage:write` | Create Storage Mounts |
+| PUT | `/api/storage/mounts/{key}` | `storage:write` | Update Storage Mounts |
+| DELETE | `/api/storage/mounts/{key}` | `storage:write` | Delete Storage Mounts |
+| PUT | `/api/storage/mounts/{key}/enable` | `storage:write` | Enable or disable Storage Mounts |
+| PUT | `/api/storage/mounts-order` | `storage:write` | Reorder Storage Mounts |
+| PUT | `/api/storage/mounts-group` | `storage:write` | Set group in bulk: Storage Mounts |
 | GET | `/api/storage/mounts/{key}/secrets` | `storage:write` | View secrets in plain text |
-| GET | `/api/storage/files/{key}/list` | `storage:read` | List a storage directory |
+| GET | `/api/storage/files/{key}/list` | `storage:write` | List a storage directory |
 | GET | `/api/storage/files/{key}/download` | `storage:write` | Download a storage file |
 | POST | `/api/storage/files/{key}/upload` | `storage:write` | Upload a file to storage |
 | POST | `/api/storage/files/{key}/mkdir` | `storage:write` | Create a storage directory |
@@ -546,6 +561,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | DELETE | `/api/notify/channels/{key}` | `notify:write` | Delete Notification channel |
 | PUT | `/api/notify/channels/{key}/enable` | `notify:write` | Enable or disable Notification channel |
 | PUT | `/api/notify/channels-order` | `notify:write` | Reorder Notification channel |
+| PUT | `/api/notify/channels-group` | `notify:write` | Set group in bulk: Notification channel |
 | GET | `/api/notify/channels/{key}/secrets` | `notify:write` | View secrets in plain text |
 | GET | `/api/notify/rules` | `notify:read` | List Notification rule |
 | POST | `/api/notify/rules` | `notify:write` | Create Notification rule |
@@ -553,6 +569,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | DELETE | `/api/notify/rules/{key}` | `notify:write` | Delete Notification rule |
 | PUT | `/api/notify/rules/{key}/enable` | `notify:write` | Enable or disable Notification rule |
 | PUT | `/api/notify/rules-order` | `notify:write` | Reorder Notification rule |
+| PUT | `/api/notify/rules-group` | `notify:write` | Set group in bulk: Notification rule |
 | GET | `/api/notify/event-types` | `notify:read` | Event types that can be subscribed to |
 | GET | `/api/notify/history` | `notify:read` | Recent delivery records |
 | POST | `/api/notify/channels/{key}/test` | `notify:write` | Send a test notification to a channel |
@@ -643,7 +660,9 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | GET | `/api/tokens` | Login sessions only | List API tokens |
 | GET | `/api/tokens/scopes` | Login sessions only | List the permission domains that can be granted |
 | POST | `/api/tokens` | Login sessions only | Create an API token |
-| PUT | `/api/tokens/{id}` | Login sessions only | Modify an API token's name, permissions, expiry and enabled state |
+| PUT | `/api/tokens/order` | Login sessions only | Reorder API tokens |
+| PUT | `/api/tokens/group` | Login sessions only | Set the group of several API tokens |
+| PUT | `/api/tokens/{id}` | Login sessions only | Update an API token's name, group, scopes, expiry and enabled state |
 | POST | `/api/tokens/{id}/regenerate` | Login sessions only | Regenerate token plaintext |
 | DELETE | `/api/tokens/{id}` | Login sessions only | Delete an API token |
 
@@ -745,6 +764,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `apiToken` | string |
 | `edgeIpVersion` | string |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `mode` | string |
 | `name` | string |
@@ -759,6 +779,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | --- | --- |
 | `command` | string |
 | `enable` | boolean |
+| `group` | string |
 | `http` | `webhook.Config` |
 | `key` | string |
 | `name` | string |
@@ -790,6 +811,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Field | Type |
 | --- | --- |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `line` | string |
 | `remark` | string |
@@ -818,6 +840,19 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `remark` | string |
 | `webhook` | `webhook.Config` |
 
+### ddns.recordLayout
+
+| Field | Type |
+| --- | --- |
+| `group` | string |
+| `key` | string |
+
+### ddns.recordsLayoutRequest
+
+| Field | Type |
+| --- | --- |
+| `records` | Array of `ddns.recordLayout` |
+
 ### dnsprovider.Credentials
 
 | Field | Type |
@@ -845,6 +880,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `baseUrl` | string |
 | `disableWebDav` | boolean |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `listenIp` | string |
 | `locale` | string |
@@ -877,6 +913,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Field | Type |
 | --- | --- |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `name` | string |
 | `protocol` | string |
@@ -927,6 +964,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `client` | string |
 | `customDomains` | Array of string |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `localIp` | string |
 | `localPort` | integer |
@@ -949,6 +987,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `dashboardPwd` | string |
 | `dashboardUser` | string |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `name` | string |
 | `proxyBindAddr` | string |
@@ -1036,6 +1075,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `enable` | boolean |
 | `filter` | string |
 | `findTime` | integer |
+| `group` | string |
 | `ignore` | string |
 | `key` | string |
 | `maxRetry` | integer |
@@ -1171,6 +1211,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | --- | --- |
 | `enable` | boolean |
 | `from` | string |
+| `group` | string |
 | `host` | string |
 | `key` | string |
 | `kind` | string |
@@ -1203,6 +1244,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `channels` | Array of string |
 | `enable` | boolean |
 | `events` | Array of string |
+| `group` | string |
 | `key` | string |
 | `minLevel` | string |
 | `name` | string |
@@ -1270,6 +1312,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `certPem` | string |
 | `deploys` | Array of `ssl.Deploy` |
 | `enable` | boolean |
+| `group` | string |
 | `issuedProfile` | string |
 | `issuerPem` | string |
 | `key` | string |
@@ -1310,6 +1353,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | --- | --- |
 | `domain` | string |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `name` | string |
 | `password` | string |
@@ -1349,6 +1393,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `disableCheck` | boolean |
 | `disableForward` | boolean |
 | `enable` | boolean |
+| `group` | string |
 | `heartbeatInterval` | integer |
 | `keepAliveServers` | Array of string |
 | `key` | string |
@@ -1396,6 +1441,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `bodyLimitAction` | string |
 | `bodyLimitMB` | integer |
 | `enable` | boolean |
+| `group` | string |
 | `inboundThreshold` | integer |
 | `key` | string |
 | `mode` | string |
@@ -1717,6 +1763,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `domains` | Array of string |
 | `enable` | boolean |
 | `forwardAuth` | boolean |
+| `group` | string |
 | `listener` | string |
 | `listenerEnable` | boolean |
 | `listenerName` | string |
@@ -1780,6 +1827,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Field | Type |
 | --- | --- |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `local` | `webterminal.LocalConfig` |
 | `name` | string |
@@ -1860,6 +1908,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `broadcastIps` | Array of string |
 | `checkAddr` | string |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `macs` | Array of string |
 | `name` | string |

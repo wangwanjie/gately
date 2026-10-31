@@ -97,5 +97,6 @@
   "instanceName": "Имя экземпляра",
   "importNameClientPlaceholder": "Пусто — адрес сервера",
   "pastePlaceholderServer": "Вставьте содержимое frps.ini / frps.toml",
-  "owner": "Экземпляр"
+  "owner": "Экземпляр",
+  "proxyFilterPlaceholder": "Поиск по имени, группе, порту, домену"
 }

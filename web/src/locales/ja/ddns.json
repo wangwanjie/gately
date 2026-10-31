@@ -61,5 +61,8 @@
   "triggered": "実行しました",
   "recordsCollapsed": "{count} 件のレコードを非表示中（クリックで展開）",
   "filterPlaceholder": "名前・グループ・ドメイン・プロバイダで検索",
-  "groupCount": "{count} 件のタスク"
+  "groupCount": "{count} 件のタスク",
+  "recordCount": "{count} 件のレコード",
+  "sortRecords": "レコードの並べ替え",
+  "sortRecordsTitle": "「{name}」のレコードの順序とグループ"
 }

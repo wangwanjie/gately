@@ -242,16 +242,7 @@
               <el-input v-model="domainsText" type="textarea" :rows="2" class="mono" :placeholder="t('web.domainsPlaceholder')" />
             </el-form-item>
             <el-form-item :label="t('common.name')"><el-input v-model="site.name" /></el-form-item>
-            <el-form-item v-if="!siteIsDefault" :label="t('groupSort.group')">
-              <el-autocomplete
-                v-model="site.group"
-                class="w-260"
-                clearable
-                :maxlength="64"
-                :fetch-suggestions="(q: string, cb: (v: { value: string }[]) => void) => cb(groupSuggestions(allGroupNames, q))"
-                :placeholder="t('groupSort.groupPlaceholder')"
-              />
-            </el-form-item>
+            <GroupInput v-if="!siteIsDefault" v-model="site.group" :groups="allGroupNames" />
             <el-form-item :label="t('web.type')">
               <el-radio-group v-model="site.type">
                 <el-radio-button value="proxy">{{ t('web.typeProxy') }}</el-radio-button>
@@ -500,8 +491,9 @@ import {
 import { api, type OAuthProvider } from '../api'
 import GroupHeader from '../components/GroupHeader.vue'
 import SortToolbar from '../components/SortToolbar.vue'
-import { displayItems as displayGroupItems, dropTarget, useGroupRename, useSortSelect, type GroupItem } from '../composables/useGroupSort'
-import { buildSections, flatten, groupSuggestions, moveInto, moveSection, moveStep, type Section } from '../groupSort'
+import GroupInput from '../components/GroupInput.vue'
+import { useGroupRename, useSortSelect } from '../composables/useGroupSort'
+import { buildSections, displayItems as displayGroupItems, dropTarget, flatten, moveInto, moveSection, moveStep, renameSection, type GroupItem, type Section } from '../groupSort'
 import PageHeader from '../components/PageHeader.vue'
 import ModuleBanner from '../components/ModuleBanner.vue'
 import CompactToggle from '../components/CompactToggle.vue'
@@ -962,17 +954,8 @@ async function renameGroup(l: ListenerView, name: string) {
   if (to === null) {
     return
   }
-  const sections = siteSections(l).map((sec) => (sec.name === name ? { ...sec, name: to } : sec))
   // 合并到已有分组时两个分组的站点按原位置合在一起：先出现的分组位置保留
-  const merged: Section<SiteRow>[] = []
-  for (const sec of sections) {
-    const hit = merged.find((m) => m.name === sec.name)
-    if (hit) {
-      hit.items.push(...sec.items)
-    } else {
-      merged.push({ name: sec.name, items: [...sec.items] })
-    }
-  }
+  const merged = renameSection(siteSections(l), name, to)
   const wasCollapsed = groupCollapsed(l, name)
   await saveSiteOrder(l, merged)
   groupFold.setCollapsed(`${l.key}/${to}`, wasCollapsed || groupCollapsed(l, to))

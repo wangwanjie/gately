@@ -61,5 +61,8 @@
   "triggered": "Déclenchée",
   "recordsCollapsed": "{count} enregistrements masqués, cliquez pour développer",
   "filterPlaceholder": "Rechercher nom, groupe, domaine ou fournisseur",
-  "groupCount": "{count} tâche(s)"
+  "groupCount": "{count} tâche(s)",
+  "recordCount": "{count} enregistrements",
+  "sortRecords": "Trier les enregistrements",
+  "sortRecordsTitle": "Ordre et groupes des enregistrements de « {name} »"
 }

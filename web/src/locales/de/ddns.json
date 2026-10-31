@@ -61,5 +61,8 @@
   "triggered": "Ausgelöst",
   "recordsCollapsed": "{count} Einträge ausgeblendet, zum Ausklappen klicken",
   "filterPlaceholder": "Name, Gruppe, Domain oder Anbieter suchen",
-  "groupCount": "{count} Aufgaben"
+  "groupCount": "{count} Aufgaben",
+  "recordCount": "{count} Einträge",
+  "sortRecords": "Einträge sortieren",
+  "sortRecordsTitle": "Reihenfolge und Gruppen der Einträge von „{name}“"
 }

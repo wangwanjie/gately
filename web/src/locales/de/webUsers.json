@@ -19,7 +19,8 @@
     "lockForward": "Sites mit Forward-Auth können keine gemeinsamen Benutzer verwenden",
     "lockOnly": "Diese Site authentifiziert nur über gemeinsame Benutzer und wäre nach dem Abwählen öffentlich; um sie öffentlich zu machen, schalten Sie die Authentifizierung in den Site-Einstellungen aus",
     "none": "Noch keine Sites, die Authentifizierung nutzen können",
-    "noMatch": "Keine passenden Sites"
+    "noMatch": "Keine passenden Sites",
+    "groupCount": "{on} / {total} ausgewählt"
   },
   "leaveTitle": "Ungespeicherte Änderungen",
   "leaveConfirm": "Diese Seite hat ungespeicherte Änderungen, die beim Verlassen verloren gehen.",

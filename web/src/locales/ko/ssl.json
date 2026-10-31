@@ -130,5 +130,6 @@
   "ipCertApply": "자동 설정",
   "shortLivedTag": "단기",
   "hoursLeft": "{hours}시간 남음",
-  "renewFailedShort": "갱신 실패"
+  "renewFailedShort": "갱신 실패",
+  "filterPlaceholder": "메모, 그룹, 도메인 검색"
 }

@@ -42,8 +42,10 @@ const historySize = 200
 //	serverchan / pushplus  Secret=SendKey / token，URL 可选
 //	smtp      Host/Port/Security/User/Secret=密码/From，Target=收件人（逗号分隔）
 type Channel struct {
-	Key    string `json:"key"`
-	Name   string `json:"name"`
+	Key  string `json:"key"`
+	Name string `json:"name"`
+	// Group 为列表中的分组名称，只影响管理界面的展示，留空为未分组
+	Group  string `json:"group"`
 	Enable bool   `json:"enable"`
 	Kind   string `json:"kind"`
 
@@ -61,8 +63,10 @@ type Channel struct {
 
 // Rule 把一组事件路由到若干渠道。
 type Rule struct {
-	Key    string `json:"key"`
-	Name   string `json:"name"`
+	Key  string `json:"key"`
+	Name string `json:"name"`
+	// Group 为列表中的分组名称，只影响管理界面的展示，留空为未分组
+	Group  string `json:"group"`
 	Enable bool   `json:"enable"`
 	// Events 为事件类型，支持 path.Match 通配（如 ddns.*），"*" 匹配全部
 	Events []string `json:"events"`
@@ -99,6 +103,9 @@ type channelView struct {
 
 // Validate 校验并规范化渠道配置。
 func (c *Channel) Validate() error {
+	if err := crud.NormalizeGroup(&c.Group); err != nil {
+		return err
+	}
 	c.Name = strings.TrimSpace(c.Name)
 	if c.Name == "" {
 		return errors.New("渠道名称不能为空")
@@ -189,6 +196,9 @@ func validateOptionalURL(s string) error {
 
 // Validate 校验并规范化规则。
 func (r *Rule) Validate() error {
+	if err := crud.NormalizeGroup(&r.Group); err != nil {
+		return err
+	}
 	r.Name = strings.TrimSpace(r.Name)
 	if r.Name == "" {
 		return errors.New("规则名称不能为空")
@@ -384,6 +394,7 @@ func (m *Module) Routes(r module.Router) {
 		Save:     m.saveLocked,
 		Key:      func(c *Channel) *string { return &c.Key },
 		Enabled:  func(c *Channel) *bool { return &c.Enable },
+		Group:    func(c *Channel) *string { return &c.Group },
 		Validate: func(c *Channel) error { return c.Validate() },
 		// 密钥留空表示保持原值
 		Merge: func(old, updated *Channel) {
@@ -403,6 +414,7 @@ func (m *Module) Routes(r module.Router) {
 		Save:     m.saveLocked,
 		Key:      func(x *Rule) *string { return &x.Key },
 		Enabled:  func(x *Rule) *bool { return &x.Enable },
+		Group:    func(x *Rule) *string { return &x.Group },
 		Validate: func(x *Rule) error { return x.Validate() },
 	}
 	rules.Register(r, "/rules")

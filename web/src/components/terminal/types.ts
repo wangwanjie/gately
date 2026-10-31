@@ -63,6 +63,8 @@ export type ConnType = 'ssh' | 'telnet' | 'local'
 export interface Conn {
   key: string
   name: string
+  // group 为连接列表中的分组名称，只影响展示，留空为未分组
+  group?: string
   type: ConnType
   remark: string
   enable: boolean
@@ -173,6 +175,7 @@ export function emptyConn(): Conn {
   return {
     key: '',
     name: '',
+    group: '',
     type: 'ssh',
     remark: '',
     enable: true,

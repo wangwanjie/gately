@@ -24,9 +24,11 @@ const ID = "wol"
 
 // Device 是一台可唤醒的设备。
 type Device struct {
-	Key  string   `json:"key"`
-	Name string   `json:"name"`
-	MACs []string `json:"macs"`
+	Key  string `json:"key"`
+	Name string `json:"name"`
+	// Group 为列表中的分组名称，只影响管理界面的展示，留空为未分组
+	Group string   `json:"group"`
+	MACs  []string `json:"macs"`
 	// BroadcastIPs 为空时向 255.255.255.255 及各网卡广播地址发送
 	BroadcastIPs []string `json:"broadcastIps"`
 	Port         int      `json:"port"`
@@ -60,6 +62,9 @@ func MagicPacket(mac string) ([]byte, error) {
 
 // Validate 校验设备配置。
 func (d *Device) Validate() error {
+	if err := crud.NormalizeGroup(&d.Group); err != nil {
+		return err
+	}
 	d.Name = strings.TrimSpace(d.Name)
 	if d.Name == "" {
 		return errors.New("设备名称不能为空")
@@ -221,6 +226,7 @@ func (m *Module) Routes(r module.Router) {
 		Save:     m.saveLocked,
 		Key:      func(d *Device) *string { return &d.Key },
 		Enabled:  func(d *Device) *bool { return &d.Enable },
+		Group:    func(d *Device) *string { return &d.Group },
 		Validate: func(d *Device) error { return d.Validate() },
 	}
 	devices.Register(r, "/devices")

@@ -34,6 +34,8 @@ var crudNouns = map[string]string{
 	"notify/channels":         "通知渠道",
 	"notify/rules":            "通知规则",
 	"backup/targets":          "备份目的地",
+	"guard/jails":             "入侵防护规则",
+	"storage/mounts":          "存储挂载",
 }
 
 // apiCatalog 以“方法 路径”为键，补充非通用接口的说明。
@@ -243,7 +245,9 @@ var apiCatalog = map[string]epDoc{
 	"GET /api/tokens":                                    {Summary: "列出 API 令牌", Desc: "不返回令牌明文。"},
 	"GET /api/tokens/scopes":                             {Summary: "列出可授权的权限域"},
 	"POST /api/tokens":                                   {Summary: "创建 API 令牌", Desc: "明文仅在响应中出现一次。", Body: true},
-	"PUT /api/tokens/{id}":                               {Summary: "修改 API 令牌的名称、权限、过期时间与启停", Body: true},
+	"PUT /api/tokens/{id}":                               {Summary: "修改 API 令牌的名称、分组、权限、过期时间与启停", Desc: "不提供 `group` 时保持原分组。", Body: true},
+	"PUT /api/tokens/order":                              {Summary: "调整 API 令牌的排序", Desc: "请求体 `{\"keys\": [\"令牌 ID\", ...]}`，须包含全部令牌；调整后列表按此顺序返回，新令牌排在最前。", Body: true},
+	"PUT /api/tokens/group":                              {Summary: "批量设置 API 令牌的分组", Desc: "请求体 `{\"keys\": [\"令牌 ID\", ...], \"group\": \"分组\"}`，`group` 留空表示移出分组。", Body: true},
 	"POST /api/tokens/{id}/regenerate":                   {Summary: "重新生成令牌明文", Desc: "旧明文立即失效。"},
 	"DELETE /api/tokens/{id}":                            {Summary: "删除 API 令牌"},
 	"PUT /api/account":                                   {Summary: "修改管理员用户名与密码", Body: true},

@@ -1,74 +1,23 @@
 <template>
   <div>
     <PageHeader :title="t('portForward.title')" :desc="t('portForward.desc')" :icon="ArrowLeftRight">
-      <el-input
-        v-if="rules.length"
-        v-model="gl.filterText.value"
-        class="list-filter"
-        clearable
-        :disabled="gl.sortMode.value"
-        :prefix-icon="Search"
-        :placeholder="t('portForward.filterPlaceholder')"
-      />
       <CompactToggle v-model="compact" />
-      <el-button v-if="rules.length > 1" :type="gl.sortMode.value ? 'primary' : 'default'" :icon="ArrowUpDown" @click="gl.toggleSortMode()">
-        {{ gl.sortMode.value ? t('groupSort.sortDone') : t('groupSort.sort') }}
-      </el-button>
+      <ListTools :gl="gl" :placeholder="t('portForward.filterPlaceholder')" />
       <el-button :icon="SlidersHorizontal" @click="openSettings">{{ t('portForward.globalSettings') }}</el-button>
       <el-button type="primary" :icon="Plus" @click="openEditor()">{{ t('portForward.addRule') }}</el-button>
     </PageHeader>
 
     <ModuleBanner v-if="settings && !settings.enable" :title="t('portForward.moduleOffTitle')" :loading="enabling" @enable="enableModule" />
 
-    <SortToolbar
-      v-if="gl.sortMode.value"
-      :selected-count="gl.selected.value.size"
-      :total="rules.length"
-      :groups="gl.groupNames.value"
-      :busy="gl.busy.value"
-      @select-all="gl.selectAll()"
-      @clear="gl.clearSelection()"
-      @set-group="gl.setGroup"
-    />
-
-    <div v-loading="loading" class="card-list" :class="{ 'is-compact': compact || gl.sortMode.value, 'is-sorting': gl.sortMode.value }">
-      <el-empty v-if="!loading && !rules.length" :description="t('portForward.empty')" />
-      <el-empty v-else-if="!loading && !gl.items.value.length" :description="t('groupSort.noMatched')" :image-size="60" />
-      <template v-for="it in gl.items.value" :key="it.id">
-      <GroupHeader
-        v-if="it.kind === 'group'"
-        :name="it.name"
-        :count-text="t('portForward.groupCount', { count: it.count })"
-        :collapsed="it.collapsed"
-        :sorting="gl.sortMode.value"
-        :can-up="it.canUp"
-        :can-down="it.canDown"
-        :checked="it.checked"
-        :indeterminate="it.indeterminate"
-        :class="gl.dropClass(it.id)"
-        @toggle="gl.toggleGroup(it.name)"
-        @rename="gl.renameGroup(it.name)"
-        @up="gl.moveGroup(it.index, -1)"
-        @down="gl.moveGroup(it.index, 1)"
-        @check="(v: boolean) => gl.setSelected(it.ids, v)"
-        @dragover.prevent="gl.dragOver(it.id, $event, false)"
-        @dragleave="gl.dragLeave(it.id)"
-        @drop.prevent="gl.drop()"
-      />
+    <GroupedList :gl="gl" :loading="loading" :compact="compact" :empty-text="t('portForward.empty')" :count-text="(n: number) => t('portForward.groupCount', { count: n })">
+      <template #item="{ it, sorting, bind }">
       <EntityCard
-        v-else
-        :compact="compact || gl.sortMode.value"
+        v-bind="bind"
+        :compact="compact || sorting"
         :off="!it.item.enable || moduleOff"
-        :class="[gl.dropClass(it.id), { 'is-grouped': it.grouped }]"
-        :draggable="gl.sortMode.value && !isMobile"
-        @dragstart="gl.dragStart(it.id, $event)"
-        @dragover.prevent="gl.dragOver(it.id, $event)"
-        @dragleave="gl.dragLeave(it.id)"
-        @drop.prevent="gl.drop()"
-        @dragend="gl.resetDrag()"
       >
         <template #lead>
-          <el-checkbox v-if="gl.sortMode.value" :model-value="gl.isSelected(it.id)" @change="(v: string | number | boolean) => gl.setSelected([it.id], Boolean(v))" />
+          <SortCheck v-if="sorting" :gl="gl" :id="it.id" />
           <el-switch v-else :model-value="it.item.enable" @change="(v: string | number | boolean) => toggle(it.item, Boolean(v))" />
         </template>
         <template #title>
@@ -114,10 +63,8 @@
         </Field>
         <Field :label="t('portForward.connections')">{{ t('portForward.connectionsValue', { active: it.item.stats.activeConns, total: it.item.stats.totalConns }) }}</Field>
         <Field :label="t('portForward.traffic')">↑ {{ formatBytes(it.item.stats.bytesIn) }} · ↓ {{ formatBytes(it.item.stats.bytesOut) }}</Field>
-        <template v-if="gl.sortMode.value" #actions>
-          <GripVertical v-if="!isMobile" :size="16" class="grip" />
-          <el-button text size="small" :icon="ChevronUp" :disabled="!it.canUp" :aria-label="t('groupSort.moveUp')" :title="t('groupSort.moveUp')" @click="gl.moveItem(it.id, -1)" />
-          <el-button text size="small" :icon="ChevronDown" :disabled="!it.canDown" :aria-label="t('groupSort.moveDown')" :title="t('groupSort.moveDown')" @click="gl.moveItem(it.id, 1)" />
+        <template v-if="sorting" #actions>
+          <SortMoves :gl="gl" :it="it" />
         </template>
         <template v-else #actions>
           <el-button text size="small" :icon="Pencil" @click="openEditor(it.item)">{{ t('common.edit') }}</el-button>
@@ -129,7 +76,7 @@
         </template>
       </EntityCard>
       </template>
-    </div>
+    </GroupedList>
 
     <LogCard url="/api/portforward/logs" clearable />
 
@@ -138,16 +85,7 @@
         <el-form-item :label="t('common.name')">
           <el-input v-model="editing.name" :placeholder="t('portForward.namePlaceholder')" />
         </el-form-item>
-        <el-form-item :label="t('groupSort.group')">
-          <el-autocomplete
-            v-model="editing.group"
-            class="w-260"
-            clearable
-            :maxlength="64"
-            :fetch-suggestions="(q: string, cb: (v: { value: string }[]) => void) => cb(groupSuggestions(gl.groupNames.value, q))"
-            :placeholder="t('groupSort.groupPlaceholder')"
-          />
-        </el-form-item>
+        <GroupInput v-model="editing.group" :groups="gl.groupNames.value" />
         <el-form-item :label="t('portForward.mode')">
           <el-radio-group v-model="editing.mode" @change="onModeChange">
             <el-radio-button value="">{{ t('portForward.modeForward') }}</el-radio-button>
@@ -260,22 +198,19 @@ import {
   ArrowDown,
   ArrowLeftRight,
   ArrowUp,
-  ArrowUpDown,
-  ChevronDown,
-  ChevronUp,
-  GripVertical,
   Pencil,
   Plus,
-  Search,
   SlidersHorizontal,
   Trash2,
   TriangleAlert,
 } from 'lucide-vue-next'
 import { api, formatBytes } from '../api'
-import GroupHeader from '../components/GroupHeader.vue'
-import SortToolbar from '../components/SortToolbar.vue'
+import GroupedList from '../components/GroupedList.vue'
+import GroupInput from '../components/GroupInput.vue'
+import ListTools from '../components/ListTools.vue'
+import SortCheck from '../components/SortCheck.vue'
+import SortMoves from '../components/SortMoves.vue'
 import { useGroupedList } from '../composables/useGroupSort'
-import { groupSuggestions } from '../groupSort'
 import PageHeader from '../components/PageHeader.vue'
 import ModuleBanner from '../components/ModuleBanner.vue'
 import CompactToggle from '../components/CompactToggle.vue'
@@ -601,41 +536,10 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.list-filter {
-  width: 220px;
-}
-.card-list > .group-header {
-  border-radius: var(--g-radius);
-}
-.card-list > .is-grouped {
-  margin-left: 16px;
-}
-.card-list.is-sorting > .entity[draggable='true'] {
-  cursor: grab;
-}
-.card-list > .entity.dragging {
-  opacity: 0.4;
-}
-.card-list > .drop-before {
-  box-shadow: 0 -3px 0 var(--el-color-primary);
-}
-.card-list > .drop-after {
-  box-shadow: 0 3px 0 var(--el-color-primary);
-}
-.grip {
-  color: var(--el-text-color-secondary);
-  cursor: grab;
-}
 .w-260 {
   width: 260px;
 }
 @media (max-width: 767.98px) {
-  .list-filter {
-    width: 160px;
-  }
-  .card-list > .is-grouped {
-    margin-left: 8px;
-  }
   .w-260 {
     width: 100%;
   }

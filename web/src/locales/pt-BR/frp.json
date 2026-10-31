@@ -97,5 +97,6 @@
   "instanceName": "Nome da instância",
   "importNameClientPlaceholder": "Vazio usa o endereço do servidor",
   "pastePlaceholderServer": "Cole o conteúdo de frps.ini / frps.toml",
-  "owner": "Instância"
+  "owner": "Instância",
+  "proxyFilterPlaceholder": "Buscar nome, grupo, porta, domínio"
 }

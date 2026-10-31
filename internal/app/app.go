@@ -304,6 +304,8 @@ func (a *App) Handler() http.Handler {
 	rec.add("GET /api/tokens", a.handleTokenList, "")
 	rec.add("GET /api/tokens/scopes", a.handleTokenScopes, "")
 	rec.add("POST /api/tokens", a.handleTokenCreate, "")
+	rec.add("PUT /api/tokens/order", a.handleTokenOrder, "")
+	rec.add("PUT /api/tokens/group", a.handleTokenGroup, "")
 	rec.add("PUT /api/tokens/{id}", a.handleTokenUpdate, "")
 	rec.add("POST /api/tokens/{id}/regenerate", a.handleTokenRegenerate, "")
 	rec.add("DELETE /api/tokens/{id}", a.handleTokenDelete, "")

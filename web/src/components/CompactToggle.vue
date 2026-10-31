@@ -1,6 +1,6 @@
 <template>
   <!-- 卡片 / 紧凑 视图切换；窄屏下紧凑视图不生效，因此隐藏 -->
-  <el-radio-group v-if="!isMobile" v-model="model" class="compact-toggle">
+  <el-radio-group v-if="!isMobile" v-model="model" class="compact-toggle" :class="{ 'is-small': size === 'small' }" :size="size">
     <el-tooltip :content="t('common.viewCard')" placement="top">
       <el-radio-button :value="false"><LayoutGrid :size="15" /></el-radio-button>
     </el-tooltip>
@@ -15,6 +15,8 @@ import { useI18n } from 'vue-i18n'
 import { LayoutGrid, Rows3 } from 'lucide-vue-next'
 import { useIsMobile } from '../composables/useIsMobile'
 
+// size 为 small 时用于卡片标题栏
+defineProps<{ size?: 'default' | 'small' }>()
 const { t } = useI18n()
 const isMobile = useIsMobile()
 // true 表示紧凑视图
@@ -26,5 +28,8 @@ const model = defineModel<boolean>({ default: false })
   display: inline-flex;
   align-items: center;
   padding: 8px 11px;
+}
+.compact-toggle.is-small :deep(.el-radio-button__inner) {
+  padding: 5px 9px;
 }
 </style>

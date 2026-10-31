@@ -169,6 +169,9 @@
           "enable": {
             "type": "boolean"
           },
+          "group": {
+            "type": "string"
+          },
           "key": {
             "type": "string"
           },
@@ -200,6 +203,9 @@
           },
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "http": {
             "$ref": "#/components/schemas/webhook.Config"
@@ -259,6 +265,9 @@
         "properties": {
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "key": {
             "type": "string"
@@ -337,6 +346,28 @@
         },
         "type": "object"
       },
+      "ddns.recordLayout": {
+        "properties": {
+          "group": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ddns.recordsLayoutRequest": {
+        "properties": {
+          "records": {
+            "items": {
+              "$ref": "#/components/schemas/ddns.recordLayout"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
       "dnsprovider.Credentials": {
         "properties": {
           "extra": {
@@ -393,6 +424,9 @@
           },
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "key": {
             "type": "string"
@@ -462,6 +496,9 @@
         "properties": {
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "key": {
             "type": "string"
@@ -582,6 +619,9 @@
           "enable": {
             "type": "boolean"
           },
+          "group": {
+            "type": "string"
+          },
           "key": {
             "type": "string"
           },
@@ -637,6 +677,9 @@
           },
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "key": {
             "type": "string"
@@ -841,6 +884,9 @@
           },
           "findTime": {
             "type": "integer"
+          },
+          "group": {
+            "type": "string"
           },
           "ignore": {
             "type": "string"
@@ -1132,6 +1178,9 @@
           "from": {
             "type": "string"
           },
+          "group": {
+            "type": "string"
+          },
           "host": {
             "type": "string"
           },
@@ -1214,6 +1263,9 @@
               "type": "string"
             },
             "type": "array"
+          },
+          "group": {
+            "type": "string"
           },
           "key": {
             "type": "string"
@@ -1400,6 +1452,9 @@
           "enable": {
             "type": "boolean"
           },
+          "group": {
+            "type": "string"
+          },
           "issuedProfile": {
             "type": "string"
           },
@@ -1495,6 +1550,9 @@
           "enable": {
             "type": "boolean"
           },
+          "group": {
+            "type": "string"
+          },
           "key": {
             "type": "string"
           },
@@ -1581,6 +1639,9 @@
           },
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "heartbeatInterval": {
             "type": "integer"
@@ -1711,6 +1772,9 @@
           },
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "inboundThreshold": {
             "type": "integer"
@@ -2542,6 +2606,9 @@
           "forwardAuth": {
             "type": "boolean"
           },
+          "group": {
+            "type": "string"
+          },
           "listener": {
             "type": "string"
           },
@@ -2672,6 +2739,9 @@
         "properties": {
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "key": {
             "type": "string"
@@ -2861,6 +2931,9 @@
           },
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "key": {
             "type": "string"
@@ -5518,6 +5591,66 @@
         "x-token-allowed": true
       }
     },
+    "/api/cloudflared/tunnels-group": {
+      "put": {
+        "description": "Требуемое разрешение: `cloudflared:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Задать группу сразу для нескольких: Туннель Cloudflare",
+        "tags": [
+          "Туннель Cloudflare"
+        ],
+        "x-required-scope": "cloudflared:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/cloudflared/tunnels-order": {
       "put": {
         "description": "Требуемое разрешение: `cloudflared:write`.",
@@ -6422,6 +6555,66 @@
           }
         ],
         "summary": "Добавить: Запланированная задача",
+        "tags": [
+          "Запланированная задача"
+        ],
+        "x-required-scope": "cron:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/cron/tasks-group": {
+      "put": {
+        "description": "Требуемое разрешение: `cron:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Задать группу сразу для нескольких: Запланированная задача",
         "tags": [
           "Запланированная задача"
         ],
@@ -7721,6 +7914,145 @@
           }
         ],
         "summary": "Включить или отключить: Задача DDNS",
+        "tags": [
+          "Динамический DNS"
+        ],
+        "x-required-scope": "ddns:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ddns/tasks/{key}/records-layout": {
+      "put": {
+        "description": "Требуемое разрешение: `ddns:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ddns.recordsLayoutRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Изменить порядок и группы DNS-записей задачи",
+        "tags": [
+          "Динамический DNS"
+        ],
+        "x-required-scope": "ddns:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ddns/tasks/{key}/records/{rec}": {
+      "delete": {
+        "description": "`rec` — это `key` записи. Запись удаляется только из конфигурации задачи; существующие DNS-записи у провайдера сохраняются. Возвращает 400, если в задаче осталась одна запись; в этом случае удалите задачу целиком.\n\nТребуемое разрешение: `ddns:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "rec",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Удалить одну запись из задачи DDNS",
         "tags": [
           "Динамический DNS"
         ],
@@ -9137,7 +9469,7 @@
     },
     "/api/docker/containers/{id}/files/list": {
       "get": {
-        "description": "Требуемое разрешение: `docker:read`.",
+        "description": "Требуемое разрешение: `docker:write`.",
         "parameters": [
           {
             "in": "path",
@@ -9192,7 +9524,7 @@
         "tags": [
           "Управление Docker"
         ],
-        "x-required-scope": "docker:read",
+        "x-required-scope": "docker:write",
         "x-token-allowed": true
       }
     },
@@ -12323,6 +12655,66 @@
         "x-token-allowed": true
       }
     },
+    "/api/filebrowser/instances-group": {
+      "put": {
+        "description": "Требуемое разрешение: `filebrowser:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Задать группу сразу для нескольких: Экземпляр File Browser",
+        "tags": [
+          "File Browser"
+        ],
+        "x-required-scope": "filebrowser:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/filebrowser/instances-order": {
       "put": {
         "description": "Требуемое разрешение: `filebrowser:write`.",
@@ -13368,6 +13760,66 @@
           }
         ],
         "summary": "Добавить: Клиент frp",
+        "tags": [
+          "Проброс внутренней сети frp"
+        ],
+        "x-required-scope": "frp:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/frp/clients-group": {
+      "put": {
+        "description": "Требуемое разрешение: `frp:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Задать группу сразу для нескольких: Клиент frp",
         "tags": [
           "Проброс внутренней сети frp"
         ],
@@ -14443,6 +14895,66 @@
         "x-token-allowed": true
       }
     },
+    "/api/frp/proxies-group": {
+      "put": {
+        "description": "Требуемое разрешение: `frp:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Задать группу сразу для нескольких: прокси frp",
+        "tags": [
+          "Проброс внутренней сети frp"
+        ],
+        "x-required-scope": "frp:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/frp/proxies-order": {
       "put": {
         "description": "Требуемое разрешение: `frp:write`.",
@@ -14950,6 +15462,66 @@
           }
         ],
         "summary": "Добавить: Сервер frp",
+        "tags": [
+          "Проброс внутренней сети frp"
+        ],
+        "x-required-scope": "frp:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/frp/servers-group": {
+      "put": {
+        "description": "Требуемое разрешение: `frp:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Задать группу сразу для нескольких: Сервер frp",
         "tags": [
           "Проброс внутренней сети frp"
         ],
@@ -16236,7 +16808,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Список: Элемент",
+        "summary": "Список: правило защиты от вторжений",
         "tags": [
           "Защита от вторжений"
         ],
@@ -16301,7 +16873,67 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Добавить: Элемент",
+        "summary": "Добавить: правило защиты от вторжений",
+        "tags": [
+          "Защита от вторжений"
+        ],
+        "x-required-scope": "guard:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/guard/jails-group": {
+      "put": {
+        "description": "Требуемое разрешение: `guard:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Задать группу сразу для нескольких: правило защиты от вторжений",
         "tags": [
           "Защита от вторжений"
         ],
@@ -16361,7 +16993,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Изменить порядок: Элемент",
+        "summary": "Изменить порядок: правило защиты от вторжений",
         "tags": [
           "Защита от вторжений"
         ],
@@ -16492,7 +17124,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Удалить: Элемент",
+        "summary": "Удалить: правило защиты от вторжений",
         "tags": [
           "Защита от вторжений"
         ],
@@ -16567,7 +17199,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Изменить: Элемент",
+        "summary": "Изменить: правило защиты от вторжений",
         "tags": [
           "Защита от вторжений"
         ],
@@ -16637,7 +17269,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Включить или отключить: Элемент",
+        "summary": "Включить или отключить: правило защиты от вторжений",
         "tags": [
           "Защита от вторжений"
         ],
@@ -18273,6 +18905,66 @@
         "x-token-allowed": true
       }
     },
+    "/api/notify/channels-group": {
+      "put": {
+        "description": "Требуемое разрешение: `notify:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Задать группу сразу для нескольких: Каналы уведомлений",
+        "tags": [
+          "Центр уведомлений"
+        ],
+        "x-required-scope": "notify:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/notify/channels-order": {
       "put": {
         "description": "Требуемое разрешение: `notify:write`.",
@@ -19110,6 +19802,66 @@
           }
         ],
         "summary": "Добавить: Правила уведомлений",
+        "tags": [
+          "Центр уведомлений"
+        ],
+        "x-required-scope": "notify:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/notify/rules-group": {
+      "put": {
+        "description": "Требуемое разрешение: `notify:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Задать группу сразу для нескольких: Правила уведомлений",
         "tags": [
           "Центр уведомлений"
         ],
@@ -20827,6 +21579,66 @@
         "x-token-allowed": true
       }
     },
+    "/api/ssl/certs-group": {
+      "put": {
+        "description": "Требуемое разрешение: `ssl:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Задать группу сразу для нескольких: Сертификат",
+        "tags": [
+          "SSL-сертификат"
+        ],
+        "x-required-scope": "ssl:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/ssl/certs-order": {
       "put": {
         "description": "Требуемое разрешение: `ssl:write`.",
@@ -21931,7 +22743,7 @@
     },
     "/api/storage/files/{key}/list": {
       "get": {
-        "description": "Требуемое разрешение: `storage:read`.",
+        "description": "Требуемое разрешение: `storage:write`.",
         "parameters": [
           {
             "in": "path",
@@ -21986,7 +22798,7 @@
         "tags": [
           "Монтирование хранилищ"
         ],
-        "x-required-scope": "storage:read",
+        "x-required-scope": "storage:write",
         "x-token-allowed": true
       }
     },
@@ -22442,7 +23254,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Список: Элемент",
+        "summary": "Список: Монтирование хранилищ",
         "tags": [
           "Монтирование хранилищ"
         ],
@@ -22507,7 +23319,67 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Добавить: Элемент",
+        "summary": "Добавить: Монтирование хранилищ",
+        "tags": [
+          "Монтирование хранилищ"
+        ],
+        "x-required-scope": "storage:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/storage/mounts-group": {
+      "put": {
+        "description": "Требуемое разрешение: `storage:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Задать группу сразу для нескольких: Монтирование хранилищ",
         "tags": [
           "Монтирование хранилищ"
         ],
@@ -22567,7 +23439,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Изменить порядок: Элемент",
+        "summary": "Изменить порядок: Монтирование хранилищ",
         "tags": [
           "Монтирование хранилищ"
         ],
@@ -22628,7 +23500,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Удалить: Элемент",
+        "summary": "Удалить: Монтирование хранилищ",
         "tags": [
           "Монтирование хранилищ"
         ],
@@ -22703,7 +23575,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Изменить: Элемент",
+        "summary": "Изменить: Монтирование хранилищ",
         "tags": [
           "Монтирование хранилищ"
         ],
@@ -22773,7 +23645,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Включить или отключить: Элемент",
+        "summary": "Включить или отключить: Монтирование хранилищ",
         "tags": [
           "Монтирование хранилищ"
         ],
@@ -23220,6 +24092,66 @@
           }
         ],
         "summary": "Добавить: Правило STUN",
+        "tags": [
+          "Проброс STUN"
+        ],
+        "x-required-scope": "stun:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/stun/rules-group": {
+      "put": {
+        "description": "Требуемое разрешение: `stun:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Задать группу сразу для нескольких: Правило STUN",
         "tags": [
           "Проброс STUN"
         ],
@@ -25376,6 +26308,116 @@
         "x-token-allowed": false
       }
     },
+    "/api/tokens/group": {
+      "put": {
+        "description": "Тело запроса `{\"keys\": [\"ID токена\", ...], \"group\": \"группа\"}`; пустой `group` убирает токены из группы.\n\n**Доступно только для сессий входа; API-токены не имеют доступа к этому эндпоинту.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "summary": "Задать группу нескольким API-токенам",
+        "tags": [
+          "API-токен"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/tokens/order": {
+      "put": {
+        "description": "Тело запроса `{\"keys\": [\"ID токена\", ...]}` со всеми токенами; после этого список возвращается в этом порядке, а новые токены добавляются в начало.\n\n**Доступно только для сессий входа; API-токены не имеют доступа к этому эндпоинту.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "summary": "Изменить порядок API-токенов",
+        "tags": [
+          "API-токен"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/tokens/scopes": {
       "get": {
         "description": "**Доступно только для сессий входа; API-токены не имеют доступа к этому эндпоинту.**",
@@ -25478,7 +26520,7 @@
         "x-token-allowed": false
       },
       "put": {
-        "description": "**Доступно только для сессий входа; API-токены не имеют доступа к этому эндпоинту.**",
+        "description": "Если `group` не указан, текущая группа сохраняется.\n\n**Доступно только для сессий входа; API-токены не имеют доступа к этому эндпоинту.**",
         "parameters": [
           {
             "in": "path",
@@ -25533,7 +26575,7 @@
             "description": "У токена нет необходимого права"
           }
         },
-        "summary": "Изменить имя, права, срок действия и состояние API-токена",
+        "summary": "Изменить имя, группу, права, срок действия и состояние API-токена",
         "tags": [
           "API-токен"
         ],
@@ -25828,6 +26870,66 @@
           }
         ],
         "summary": "Добавить: Экземпляр WAF",
+        "tags": [
+          "Брандмауэр WAF"
+        ],
+        "x-required-scope": "waf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/waf/instances-group": {
+      "put": {
+        "description": "Требуемое разрешение: `waf:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Задать группу сразу для нескольких: Экземпляр WAF",
         "tags": [
           "Брандмауэр WAF"
         ],
@@ -28951,6 +30053,66 @@
         "x-token-allowed": true
       }
     },
+    "/api/webterminal/connections-group": {
+      "put": {
+        "description": "Требуемое разрешение: `webterminal:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Задать группу сразу для нескольких: Подключение терминала",
+        "tags": [
+          "Веб-терминал"
+        ],
+        "x-required-scope": "webterminal:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/webterminal/connections-order": {
       "put": {
         "description": "Требуемое разрешение: `webterminal:write`.",
@@ -31474,7 +32636,7 @@
     },
     "/api/webterminal/sftp/{key}/list": {
       "get": {
-        "description": "Требуемое разрешение: `webterminal:read`.",
+        "description": "Требуемое разрешение: `webterminal:write`.",
         "parameters": [
           {
             "in": "path",
@@ -31529,7 +32691,7 @@
         "tags": [
           "Веб-терминал"
         ],
-        "x-required-scope": "webterminal:read",
+        "x-required-scope": "webterminal:write",
         "x-token-allowed": true
       }
     },
@@ -32394,6 +33556,66 @@
           }
         ],
         "summary": "Добавить: Разбудить устройство",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "wol:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/wol/devices-group": {
+      "put": {
+        "description": "Требуемое разрешение: `wol:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Задать группу сразу для нескольких: Разбудить устройство",
         "tags": [
           "Wake-on-LAN"
         ],

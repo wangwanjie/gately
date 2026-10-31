@@ -1,35 +1,42 @@
 <template>
   <div>
     <PageHeader :title="t('storage.title')" :desc="t('storage.desc')" :icon="HardDrive">
+      <CompactToggle v-model="compact" />
+      <ListTools :gl="gl" :placeholder="t('groupSort.search')" />
       <el-button type="primary" :icon="Plus" @click="openEditor()">{{ t('storage.addMount') }}</el-button>
     </PageHeader>
 
-    <div class="card-grid">
-      <el-empty v-if="!mounts.length" :description="t('storage.empty')" class="empty" />
-      <EntityCard v-for="m in mounts" :key="m.key" :class="{ active: m.key === current?.key }">
-        <template #lead>
-          <div class="mt-icon"><component :is="m.type === 'local' ? Folder : m.type === 'smb' ? Server : Cloud" :size="18" /></div>
-        </template>
-        <template #title>{{ m.name }}</template>
-        <template v-if="m.remark" #sub>{{ m.remark }}</template>
-        <template #status>
-          <StatusBadge v-if="!m.enable" type="off" :text="t('common.disabled')" />
-          <StatusBadge v-else-if="m.readOnly" type="info" :text="t('storage.readOnly')" />
-          <StatusBadge v-else type="running" :text="t('storage.readWrite')" />
-        </template>
-        <Field :label="m.type === 'local' ? t('storage.localDir') : m.type === 'smb' ? 'SMB' : 'WebDAV'" mono>{{ m.type === 'local' ? m.path : m.url }}</Field>
-        <template #actions>
-          <el-switch :model-value="m.enable" size="small" @change="(v: boolean) => toggle(m, v)" />
-          <el-button text size="small" :icon="Pencil" @click="openEditor(m)">{{ t('common.edit') }}</el-button>
-          <el-popconfirm :title="t('storage.confirmRemove')" @confirm="remove(m)">
-            <template #reference>
-              <el-button text size="small" type="danger" :icon="Trash2">{{ t('storage.remove') }}</el-button>
-            </template>
-          </el-popconfirm>
-          <el-button type="primary" size="small" :icon="FolderOpen" :disabled="!m.enable" @click="browse(m)">{{ t('storage.browse') }}</el-button>
-        </template>
-      </EntityCard>
-    </div>
+    <GroupedList :gl="gl" :compact="compact" grid :empty-text="t('storage.empty')">
+      <template #item="{ it, item: m, sorting, bind }">
+        <EntityCard v-bind="bind" :class="{ active: m.key === current?.key }" :compact="compact || sorting">
+          <template #lead>
+            <SortCheck v-if="sorting" :gl="gl" :id="it.id" />
+            <div v-else class="mt-icon"><component :is="m.type === 'local' ? Folder : m.type === 'smb' ? Server : Cloud" :size="18" /></div>
+          </template>
+          <template #title>{{ m.name }}</template>
+          <template v-if="m.remark" #sub>{{ m.remark }}</template>
+          <template #status>
+            <StatusBadge v-if="!m.enable" type="off" :text="t('common.disabled')" />
+            <StatusBadge v-else-if="m.readOnly" type="info" :text="t('storage.readOnly')" />
+            <StatusBadge v-else type="running" :text="t('storage.readWrite')" />
+          </template>
+          <Field :label="m.type === 'local' ? t('storage.localDir') : m.type === 'smb' ? 'SMB' : 'WebDAV'" mono>{{ m.type === 'local' ? m.path : m.url }}</Field>
+          <template v-if="sorting" #actions>
+            <SortMoves :gl="gl" :it="it" />
+          </template>
+          <template v-else #actions>
+            <el-switch :model-value="m.enable" size="small" @change="(v: boolean) => toggle(m, v)" />
+            <el-button text size="small" :icon="Pencil" @click="openEditor(m)">{{ t('common.edit') }}</el-button>
+            <el-popconfirm :title="t('storage.confirmRemove')" @confirm="remove(m)">
+              <template #reference>
+                <el-button text size="small" type="danger" :icon="Trash2">{{ t('storage.remove') }}</el-button>
+              </template>
+            </el-popconfirm>
+            <el-button type="primary" size="small" :icon="FolderOpen" :disabled="!m.enable" @click="browse(m)">{{ t('storage.browse') }}</el-button>
+          </template>
+        </EntityCard>
+      </template>
+    </GroupedList>
 
     <div v-if="current" class="g-card">
       <div class="g-card-head">
@@ -84,6 +91,7 @@
     <el-dialog v-model="editorVisible" :title="editing.key ? t('storage.editMount') : t('storage.addMount')" width="540px" :fullscreen="isMobile">
       <el-form :model="editing" label-width="110px" :label-position="labelPosition">
         <el-form-item :label="t('common.name')"><el-input v-model="editing.name" /></el-form-item>
+        <GroupInput v-model="editing.group" :groups="gl.groupNames.value" />
         <el-form-item :label="t('storage.type')">
           <el-radio-group v-model="editing.type">
             <el-radio-button value="local">{{ t('storage.localDir') }}</el-radio-button>
@@ -132,6 +140,14 @@ import SecretInput from '../components/SecretInput.vue'
 import { secretOf } from '../secrets'
 import PageHeader from '../components/PageHeader.vue'
 import EntityCard from '../components/EntityCard.vue'
+import GroupedList from '../components/GroupedList.vue'
+import GroupInput from '../components/GroupInput.vue'
+import ListTools from '../components/ListTools.vue'
+import SortCheck from '../components/SortCheck.vue'
+import SortMoves from '../components/SortMoves.vue'
+import { useGroupedList } from '../composables/useGroupSort'
+import CompactToggle from '../components/CompactToggle.vue'
+import { useCompactView } from '../composables/useCompactView'
 import Field from '../components/Field.vue'
 import StatusBadge from '../components/StatusBadge.vue'
 import { useFormLayout } from '../composables/useIsMobile'
@@ -139,6 +155,8 @@ import { useFormLayout } from '../composables/useIsMobile'
 interface Mount {
   key?: string
   name: string
+  // group 为列表中的分组名称，只影响展示，留空为未分组
+  group?: string
   type: 'local' | 'webdav' | 'smb'
   remark: string
   enable: boolean
@@ -161,6 +179,15 @@ interface Entry {
 const { t } = useI18n()
 const { isMobile, labelPosition } = useFormLayout()
 const mounts = ref<Mount[]>([])
+const compact = useCompactView('storage')
+// 挂载列表的搜索、分组与排序
+const gl = useGroupedList<Mount>({
+  storageKey: 'storage.groups',
+  items: () => mounts.value,
+  base: '/api/storage/mounts',
+  reload: load,
+  matches: (m, q) => [m.name, m.group ?? '', m.remark, m.path, m.url].join('\n').toLowerCase().includes(q),
+})
 const editorVisible = ref(false)
 const editing = ref<Mount>(empty())
 
@@ -366,9 +393,6 @@ onMounted(load)
 
 <style scoped>
 /* 空状态占满整行网格，才能在页面中水平居中 */
-.empty {
-  grid-column: 1 / -1;
-}
 .toolbar {
   display: flex;
   gap: 8px;

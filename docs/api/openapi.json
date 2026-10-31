@@ -169,6 +169,9 @@
           "enable": {
             "type": "boolean"
           },
+          "group": {
+            "type": "string"
+          },
           "key": {
             "type": "string"
           },
@@ -200,6 +203,9 @@
           },
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "http": {
             "$ref": "#/components/schemas/webhook.Config"
@@ -259,6 +265,9 @@
         "properties": {
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "key": {
             "type": "string"
@@ -337,6 +346,28 @@
         },
         "type": "object"
       },
+      "ddns.recordLayout": {
+        "properties": {
+          "group": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ddns.recordsLayoutRequest": {
+        "properties": {
+          "records": {
+            "items": {
+              "$ref": "#/components/schemas/ddns.recordLayout"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
       "dnsprovider.Credentials": {
         "properties": {
           "extra": {
@@ -393,6 +424,9 @@
           },
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "key": {
             "type": "string"
@@ -462,6 +496,9 @@
         "properties": {
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "key": {
             "type": "string"
@@ -582,6 +619,9 @@
           "enable": {
             "type": "boolean"
           },
+          "group": {
+            "type": "string"
+          },
           "key": {
             "type": "string"
           },
@@ -637,6 +677,9 @@
           },
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "key": {
             "type": "string"
@@ -841,6 +884,9 @@
           },
           "findTime": {
             "type": "integer"
+          },
+          "group": {
+            "type": "string"
           },
           "ignore": {
             "type": "string"
@@ -1132,6 +1178,9 @@
           "from": {
             "type": "string"
           },
+          "group": {
+            "type": "string"
+          },
           "host": {
             "type": "string"
           },
@@ -1214,6 +1263,9 @@
               "type": "string"
             },
             "type": "array"
+          },
+          "group": {
+            "type": "string"
           },
           "key": {
             "type": "string"
@@ -1400,6 +1452,9 @@
           "enable": {
             "type": "boolean"
           },
+          "group": {
+            "type": "string"
+          },
           "issuedProfile": {
             "type": "string"
           },
@@ -1495,6 +1550,9 @@
           "enable": {
             "type": "boolean"
           },
+          "group": {
+            "type": "string"
+          },
           "key": {
             "type": "string"
           },
@@ -1581,6 +1639,9 @@
           },
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "heartbeatInterval": {
             "type": "integer"
@@ -1711,6 +1772,9 @@
           },
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "inboundThreshold": {
             "type": "integer"
@@ -2542,6 +2606,9 @@
           "forwardAuth": {
             "type": "boolean"
           },
+          "group": {
+            "type": "string"
+          },
           "listener": {
             "type": "string"
           },
@@ -2672,6 +2739,9 @@
         "properties": {
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "key": {
             "type": "string"
@@ -2861,6 +2931,9 @@
           },
           "enable": {
             "type": "boolean"
+          },
+          "group": {
+            "type": "string"
           },
           "key": {
             "type": "string"
@@ -5518,6 +5591,66 @@
         "x-token-allowed": true
       }
     },
+    "/api/cloudflared/tunnels-group": {
+      "put": {
+        "description": "所需权限：`cloudflared:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "批量设置Cloudflare 隧道分组",
+        "tags": [
+          "Cloudflare 隧道"
+        ],
+        "x-required-scope": "cloudflared:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/cloudflared/tunnels-order": {
       "put": {
         "description": "所需权限：`cloudflared:write`。",
@@ -6422,6 +6555,66 @@
           }
         ],
         "summary": "新增计划任务",
+        "tags": [
+          "计划任务"
+        ],
+        "x-required-scope": "cron:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/cron/tasks-group": {
+      "put": {
+        "description": "所需权限：`cron:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "批量设置计划任务分组",
         "tags": [
           "计划任务"
         ],
@@ -7721,6 +7914,145 @@
           }
         ],
         "summary": "启用或停用DDNS 任务",
+        "tags": [
+          "动态域名"
+        ],
+        "x-required-scope": "ddns:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ddns/tasks/{key}/records-layout": {
+      "put": {
+        "description": "所需权限：`ddns:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ddns.recordsLayoutRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "调整任务内解析记录的顺序与分组",
+        "tags": [
+          "动态域名"
+        ],
+        "x-required-scope": "ddns:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ddns/tasks/{key}/records/{rec}": {
+      "delete": {
+        "description": "`rec` 为记录的 `key`。只从任务配置中移除该记录，DNS 服务商处已有的解析保留；任务只剩一条记录时返回 400，此时请删除整个任务。\n\n所需权限：`ddns:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "rec",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "删除 DDNS 任务中的一条记录",
         "tags": [
           "动态域名"
         ],
@@ -9137,7 +9469,7 @@
     },
     "/api/docker/containers/{id}/files/list": {
       "get": {
-        "description": "所需权限：`docker:read`。",
+        "description": "所需权限：`docker:write`。",
         "parameters": [
           {
             "in": "path",
@@ -9192,7 +9524,7 @@
         "tags": [
           "Docker 管理"
         ],
-        "x-required-scope": "docker:read",
+        "x-required-scope": "docker:write",
         "x-token-allowed": true
       }
     },
@@ -12323,6 +12655,66 @@
         "x-token-allowed": true
       }
     },
+    "/api/filebrowser/instances-group": {
+      "put": {
+        "description": "所需权限：`filebrowser:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "批量设置File Browser 实例分组",
+        "tags": [
+          "File Browser"
+        ],
+        "x-required-scope": "filebrowser:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/filebrowser/instances-order": {
       "put": {
         "description": "所需权限：`filebrowser:write`。",
@@ -13368,6 +13760,66 @@
           }
         ],
         "summary": "新增frp 客户端",
+        "tags": [
+          "frp 内网穿透"
+        ],
+        "x-required-scope": "frp:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/frp/clients-group": {
+      "put": {
+        "description": "所需权限：`frp:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "批量设置frp 客户端分组",
         "tags": [
           "frp 内网穿透"
         ],
@@ -14443,6 +14895,66 @@
         "x-token-allowed": true
       }
     },
+    "/api/frp/proxies-group": {
+      "put": {
+        "description": "所需权限：`frp:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "批量设置frp 代理分组",
+        "tags": [
+          "frp 内网穿透"
+        ],
+        "x-required-scope": "frp:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/frp/proxies-order": {
       "put": {
         "description": "所需权限：`frp:write`。",
@@ -14950,6 +15462,66 @@
           }
         ],
         "summary": "新增frp 服务端",
+        "tags": [
+          "frp 内网穿透"
+        ],
+        "x-required-scope": "frp:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/frp/servers-group": {
+      "put": {
+        "description": "所需权限：`frp:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "批量设置frp 服务端分组",
         "tags": [
           "frp 内网穿透"
         ],
@@ -16236,7 +16808,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "获取条目列表",
+        "summary": "获取入侵防护规则列表",
         "tags": [
           "入侵防护"
         ],
@@ -16301,7 +16873,67 @@
             "bearerAuth": []
           }
         ],
-        "summary": "新增条目",
+        "summary": "新增入侵防护规则",
+        "tags": [
+          "入侵防护"
+        ],
+        "x-required-scope": "guard:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/guard/jails-group": {
+      "put": {
+        "description": "所需权限：`guard:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "批量设置入侵防护规则分组",
         "tags": [
           "入侵防护"
         ],
@@ -16361,7 +16993,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "调整条目排序",
+        "summary": "调整入侵防护规则排序",
         "tags": [
           "入侵防护"
         ],
@@ -16492,7 +17124,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "删除条目",
+        "summary": "删除入侵防护规则",
         "tags": [
           "入侵防护"
         ],
@@ -16567,7 +17199,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "修改条目",
+        "summary": "修改入侵防护规则",
         "tags": [
           "入侵防护"
         ],
@@ -16637,7 +17269,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "启用或停用条目",
+        "summary": "启用或停用入侵防护规则",
         "tags": [
           "入侵防护"
         ],
@@ -18273,6 +18905,66 @@
         "x-token-allowed": true
       }
     },
+    "/api/notify/channels-group": {
+      "put": {
+        "description": "所需权限：`notify:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "批量设置通知渠道分组",
+        "tags": [
+          "通知中心"
+        ],
+        "x-required-scope": "notify:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/notify/channels-order": {
       "put": {
         "description": "所需权限：`notify:write`。",
@@ -19110,6 +19802,66 @@
           }
         ],
         "summary": "新增通知规则",
+        "tags": [
+          "通知中心"
+        ],
+        "x-required-scope": "notify:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/notify/rules-group": {
+      "put": {
+        "description": "所需权限：`notify:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "批量设置通知规则分组",
         "tags": [
           "通知中心"
         ],
@@ -20827,6 +21579,66 @@
         "x-token-allowed": true
       }
     },
+    "/api/ssl/certs-group": {
+      "put": {
+        "description": "所需权限：`ssl:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "批量设置证书分组",
+        "tags": [
+          "SSL 证书"
+        ],
+        "x-required-scope": "ssl:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/ssl/certs-order": {
       "put": {
         "description": "所需权限：`ssl:write`。",
@@ -21931,7 +22743,7 @@
     },
     "/api/storage/files/{key}/list": {
       "get": {
-        "description": "所需权限：`storage:read`。",
+        "description": "所需权限：`storage:write`。",
         "parameters": [
           {
             "in": "path",
@@ -21986,7 +22798,7 @@
         "tags": [
           "存储挂载"
         ],
-        "x-required-scope": "storage:read",
+        "x-required-scope": "storage:write",
         "x-token-allowed": true
       }
     },
@@ -22442,7 +23254,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "获取条目列表",
+        "summary": "获取存储挂载列表",
         "tags": [
           "存储挂载"
         ],
@@ -22507,7 +23319,67 @@
             "bearerAuth": []
           }
         ],
-        "summary": "新增条目",
+        "summary": "新增存储挂载",
+        "tags": [
+          "存储挂载"
+        ],
+        "x-required-scope": "storage:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/storage/mounts-group": {
+      "put": {
+        "description": "所需权限：`storage:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "批量设置存储挂载分组",
         "tags": [
           "存储挂载"
         ],
@@ -22567,7 +23439,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "调整条目排序",
+        "summary": "调整存储挂载排序",
         "tags": [
           "存储挂载"
         ],
@@ -22628,7 +23500,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "删除条目",
+        "summary": "删除存储挂载",
         "tags": [
           "存储挂载"
         ],
@@ -22703,7 +23575,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "修改条目",
+        "summary": "修改存储挂载",
         "tags": [
           "存储挂载"
         ],
@@ -22773,7 +23645,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "启用或停用条目",
+        "summary": "启用或停用存储挂载",
         "tags": [
           "存储挂载"
         ],
@@ -23220,6 +24092,66 @@
           }
         ],
         "summary": "新增STUN 规则",
+        "tags": [
+          "STUN 穿透"
+        ],
+        "x-required-scope": "stun:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/stun/rules-group": {
+      "put": {
+        "description": "所需权限：`stun:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "批量设置STUN 规则分组",
         "tags": [
           "STUN 穿透"
         ],
@@ -25376,6 +26308,116 @@
         "x-token-allowed": false
       }
     },
+    "/api/tokens/group": {
+      "put": {
+        "description": "请求体 `{\"keys\": [\"令牌 ID\", ...], \"group\": \"分组\"}`，`group` 留空表示移出分组。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "summary": "批量设置 API 令牌的分组",
+        "tags": [
+          "API 令牌"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/tokens/order": {
+      "put": {
+        "description": "请求体 `{\"keys\": [\"令牌 ID\", ...]}`，须包含全部令牌；调整后列表按此顺序返回，新令牌排在最前。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "summary": "调整 API 令牌的排序",
+        "tags": [
+          "API 令牌"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/tokens/scopes": {
       "get": {
         "description": "**仅登录会话可用，API 令牌无法访问此接口。**",
@@ -25478,7 +26520,7 @@
         "x-token-allowed": false
       },
       "put": {
-        "description": "**仅登录会话可用，API 令牌无法访问此接口。**",
+        "description": "不提供 `group` 时保持原分组。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
         "parameters": [
           {
             "in": "path",
@@ -25533,7 +26575,7 @@
             "description": "令牌缺少所需权限"
           }
         },
-        "summary": "修改 API 令牌的名称、权限、过期时间与启停",
+        "summary": "修改 API 令牌的名称、分组、权限、过期时间与启停",
         "tags": [
           "API 令牌"
         ],
@@ -25828,6 +26870,66 @@
           }
         ],
         "summary": "新增WAF 实例",
+        "tags": [
+          "WAF 防火墙"
+        ],
+        "x-required-scope": "waf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/waf/instances-group": {
+      "put": {
+        "description": "所需权限：`waf:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "批量设置WAF 实例分组",
         "tags": [
           "WAF 防火墙"
         ],
@@ -28951,6 +30053,66 @@
         "x-token-allowed": true
       }
     },
+    "/api/webterminal/connections-group": {
+      "put": {
+        "description": "所需权限：`webterminal:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "批量设置终端连接分组",
+        "tags": [
+          "Web 终端"
+        ],
+        "x-required-scope": "webterminal:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/webterminal/connections-order": {
       "put": {
         "description": "所需权限：`webterminal:write`。",
@@ -31474,7 +32636,7 @@
     },
     "/api/webterminal/sftp/{key}/list": {
       "get": {
-        "description": "所需权限：`webterminal:read`。",
+        "description": "所需权限：`webterminal:write`。",
         "parameters": [
           {
             "in": "path",
@@ -31529,7 +32691,7 @@
         "tags": [
           "Web 终端"
         ],
-        "x-required-scope": "webterminal:read",
+        "x-required-scope": "webterminal:write",
         "x-token-allowed": true
       }
     },
@@ -32394,6 +33556,66 @@
           }
         ],
         "summary": "新增唤醒设备",
+        "tags": [
+          "网络唤醒"
+        ],
+        "x-required-scope": "wol:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/wol/devices-group": {
+      "put": {
+        "description": "所需权限：`wol:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "批量设置唤醒设备分组",
         "tags": [
           "网络唤醒"
         ],

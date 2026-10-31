@@ -97,5 +97,6 @@
   "instanceName": "インスタンス名",
   "importNameClientPlaceholder": "空欄ならサーバーアドレスを使用",
   "pastePlaceholderServer": "frps.ini / frps.toml の内容を貼り付け",
-  "owner": "インスタンス"
+  "owner": "インスタンス",
+  "proxyFilterPlaceholder": "名前・グループ・ポート・ドメインで検索"
 }

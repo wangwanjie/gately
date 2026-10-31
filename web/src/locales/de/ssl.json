@@ -130,5 +130,6 @@
   "ipCertApply": "Automatisch einrichten",
   "shortLivedTag": "Kurzlebig",
   "hoursLeft": "Noch {hours} Stunden",
-  "renewFailedShort": "Erneuerung fehlgeschlagen"
+  "renewFailedShort": "Erneuerung fehlgeschlagen",
+  "filterPlaceholder": "Notiz, Gruppe, Domain suchen"
 }

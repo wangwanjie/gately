@@ -23,5 +23,8 @@
   "renamePrompt": "Neuer Gruppenname. Alle Einträge der Gruppe werden mit umbenannt und behalten ihre Reihenfolge; ein bereits verwendeter Name führt die Gruppen zusammen",
   "nameRequired": "Geben Sie einen Gruppennamen ein",
   "nameTooLong": "Der Gruppenname darf höchstens {max} Zeichen lang sein",
-  "mergeConfirm": "Die Gruppe „{to}“ existiert bereits. „{from}“ damit zusammenführen?"
+  "mergeConfirm": "Die Gruppe „{to}“ existiert bereits. „{from}“ damit zusammenführen?",
+  "count": "{count} Einträge",
+  "selectItem": "Diesen Eintrag auswählen",
+  "search": "Name, Gruppe, Notiz suchen"
 }

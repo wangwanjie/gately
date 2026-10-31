@@ -97,5 +97,6 @@
   "instanceName": "Nom de l'instance",
   "importNameClientPlaceholder": "Vide : adresse du serveur",
   "pastePlaceholderServer": "Collez le contenu de frps.ini / frps.toml",
-  "owner": "Instance"
+  "owner": "Instance",
+  "proxyFilterPlaceholder": "Rechercher nom, groupe, port, domaine"
 }

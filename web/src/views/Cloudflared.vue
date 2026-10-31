@@ -1,6 +1,8 @@
 <template>
   <div>
     <PageHeader :title="t('cloudflared.title')" :desc="t('cloudflared.desc')" :icon="Cloud">
+      <CompactToggle v-model="compact" />
+      <ListTools :gl="gl" :placeholder="t('groupSort.search')" />
       <ResetConfigButton base="/api/cloudflared" :desc="t('components.resetConfig.cloudflared')" @done="onReset" />
       <el-button type="primary" :icon="Plus" @click="openEditor()">{{ t('cloudflared.addTunnel') }}</el-button>
     </PageHeader>
@@ -9,33 +11,40 @@
       <el-button size="small" type="primary" :icon="Download" @click="installer?.install()">{{ t('components.programInstall.install') }}</el-button>
     </el-alert>
 
-    <div class="card-grid">
-      <el-empty v-if="!tunnels.length" :description="t('cloudflared.empty')" class="empty" />
-      <EntityCard v-for="tn in tunnels" :key="tn.key" :off="!tn.enable">
-        <template #title>{{ tn.name }}</template>
-        <template #sub>{{ tn.mode === 'token' ? t('cloudflared.modeToken') : t('cloudflared.modeQuick') }}<template v-if="tn.remark"> · {{ tn.remark }}</template></template>
-        <template #status><StatusBadge v-bind="tunnelBadge(tn)" /></template>
-        <Field v-if="tn.mode === 'quick'" :label="t('cloudflared.localService')" mono>{{ tn.service }}</Field>
-        <Field v-if="tn.mode === 'quick'" :label="t('cloudflared.publicAddr')" mono wide>
-          <a v-if="tn.url" :href="tn.url" target="_blank" rel="noopener">{{ tn.url }}</a>
-          <span v-else class="muted">{{ tn.state.running ? t('cloudflared.requesting') : '—' }}</span>
-        </Field>
-        <Field v-if="tn.mode === 'token'" :label="t('cloudflared.edgeConnections')" mono>{{ tn.connections }}</Field>
-        <Field v-if="tn.tunnelId" :label="t('cloudflared.tunnelId')" mono wide>{{ tn.tunnelId }}</Field>
-        <Field :label="t('cloudflared.protocol')" mono>{{ tn.protocol || 'auto' }}</Field>
-        <template #actions>
-          <el-switch :model-value="tn.enable" size="small" @change="(v: boolean | string | number) => toggle(tn, Boolean(v))" />
-          <el-button text size="small" :icon="RefreshCw" :disabled="!tn.enable" @click="restart(tn)">{{ t('common.restart') }}</el-button>
-          <el-button v-if="tn.mode === 'token'" text size="small" :icon="Route" :title="tn.apiToken ? '' : t('cloudflared.ingressNeedsApi')" @click="ingress?.open(tn.key!, tn.name)">{{ t('cloudflared.ingressButton') }}</el-button>
-          <el-button text size="small" :icon="Pencil" @click="openEditor(tn)">{{ t('common.edit') }}</el-button>
-          <el-popconfirm :title="t('cloudflared.confirmDelete')" @confirm="remove(tn)">
-            <template #reference>
-              <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
-            </template>
-          </el-popconfirm>
-        </template>
-      </EntityCard>
-    </div>
+    <GroupedList :gl="gl" :compact="compact" grid :empty-text="t('cloudflared.empty')">
+      <template #item="{ it, item: tn, sorting, bind }">
+        <EntityCard v-bind="bind" :off="!tn.enable" :compact="compact || sorting">
+          <template v-if="sorting" #lead>
+            <SortCheck :gl="gl" :id="it.id" />
+          </template>
+          <template #title>{{ tn.name }}</template>
+          <template #sub>{{ tn.mode === 'token' ? t('cloudflared.modeToken') : t('cloudflared.modeQuick') }}<template v-if="tn.remark"> · {{ tn.remark }}</template></template>
+          <template #status><StatusBadge v-bind="tunnelBadge(tn)" /></template>
+          <Field v-if="tn.mode === 'quick'" :label="t('cloudflared.localService')" mono>{{ tn.service }}</Field>
+          <Field v-if="tn.mode === 'quick'" :label="t('cloudflared.publicAddr')" mono wide>
+            <a v-if="tn.url" :href="tn.url" target="_blank" rel="noopener">{{ tn.url }}</a>
+            <span v-else class="muted">{{ tn.state.running ? t('cloudflared.requesting') : '—' }}</span>
+          </Field>
+          <Field v-if="tn.mode === 'token'" :label="t('cloudflared.edgeConnections')" mono>{{ tn.connections }}</Field>
+          <Field v-if="tn.tunnelId" :label="t('cloudflared.tunnelId')" mono wide>{{ tn.tunnelId }}</Field>
+          <Field :label="t('cloudflared.protocol')" mono>{{ tn.protocol || 'auto' }}</Field>
+          <template v-if="sorting" #actions>
+            <SortMoves :gl="gl" :it="it" />
+          </template>
+          <template v-else #actions>
+            <el-switch :model-value="tn.enable" size="small" @change="(v: boolean | string | number) => toggle(tn, Boolean(v))" />
+            <el-button text size="small" :icon="RefreshCw" :disabled="!tn.enable" @click="restart(tn)">{{ t('common.restart') }}</el-button>
+            <el-button v-if="tn.mode === 'token'" text size="small" :icon="Route" :title="tn.apiToken ? '' : t('cloudflared.ingressNeedsApi')" @click="ingress?.open(tn.key!, tn.name)">{{ t('cloudflared.ingressButton') }}</el-button>
+            <el-button text size="small" :icon="Pencil" @click="openEditor(tn)">{{ t('common.edit') }}</el-button>
+            <el-popconfirm :title="t('cloudflared.confirmDelete')" @confirm="remove(tn)">
+              <template #reference>
+                <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
+              </template>
+            </el-popconfirm>
+          </template>
+        </EntityCard>
+      </template>
+    </GroupedList>
 
     <div class="g-card">
       <div class="g-card-head">
@@ -60,6 +69,7 @@
     <el-dialog v-model="editorVisible" :title="editing.key ? t('cloudflared.editTunnel') : t('cloudflared.addTunnel')" width="540px" :fullscreen="isMobile">
       <el-form :model="editing" label-width="100px" :label-position="labelPosition">
         <el-form-item :label="t('common.name')"><el-input v-model="editing.name" /></el-form-item>
+        <GroupInput v-model="editing.group" :groups="gl.groupNames.value" />
         <el-form-item :label="t('cloudflared.mode')">
           <el-radio-group v-model="editing.mode">
             <el-radio-button value="token">{{ t('cloudflared.modeToken') }}</el-radio-button>
@@ -113,6 +123,14 @@ import SecretInput from '../components/SecretInput.vue'
 import { secretOf } from '../secrets'
 import PageHeader from '../components/PageHeader.vue'
 import EntityCard from '../components/EntityCard.vue'
+import GroupedList from '../components/GroupedList.vue'
+import GroupInput from '../components/GroupInput.vue'
+import ListTools from '../components/ListTools.vue'
+import SortCheck from '../components/SortCheck.vue'
+import SortMoves from '../components/SortMoves.vue'
+import { useGroupedList } from '../composables/useGroupSort'
+import CompactToggle from '../components/CompactToggle.vue'
+import { useCompactView } from '../composables/useCompactView'
 import Field from '../components/Field.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
@@ -125,6 +143,8 @@ import { usePolling } from '../composables/usePolling'
 interface Tunnel {
   key?: string
   name: string
+  // group 为列表中的分组名称，只影响展示，留空为未分组
+  group?: string
   enable: boolean
   mode: string
   token: string
@@ -146,6 +166,15 @@ interface TunnelView extends Tunnel {
 const { t } = useI18n()
 const { isMobile, labelPosition } = useFormLayout()
 const tunnels = ref<TunnelView[]>([])
+const compact = useCompactView('cloudflared')
+// 列表的搜索、分组与排序；顺序与分组的修改不会重启隧道
+const gl = useGroupedList<TunnelView>({
+  storageKey: 'cloudflared.groups',
+  items: () => tunnels.value,
+  base: '/api/cloudflared/tunnels',
+  reload: loadTunnels,
+  matches: (tn, q) => [tn.name, tn.group ?? '', tn.remark, tn.service, tn.url ?? '', tn.tunnelId ?? ''].join('\n').toLowerCase().includes(q),
+})
 const binPath = ref('')
 const binary = ref('')
 const version = ref('')
@@ -291,9 +320,6 @@ onMounted(() => {
 }
 .muted {
   color: var(--el-text-color-secondary);
-}
-.empty {
-  grid-column: 1 / -1;
 }
 .card-grid + .g-card {
   margin-top: 16px;

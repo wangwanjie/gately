@@ -23,5 +23,8 @@
   "renamePrompt": "新的分組名稱，組內條目會一起改名，順序不變；與已有分組同名時會合併",
   "nameRequired": "請輸入分組名稱",
   "nameTooLong": "分組名稱不能超過 {max} 個字元",
-  "mergeConfirm": "分組「{to}」已存在，確定把「{from}」合併進去嗎？"
+  "mergeConfirm": "分組「{to}」已存在，確定把「{from}」合併進去嗎？",
+  "count": "{count} 項",
+  "selectItem": "選擇此項",
+  "search": "搜尋名稱、分組、備註"
 }

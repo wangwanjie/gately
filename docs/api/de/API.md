@@ -92,6 +92,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | PUT | `/api/ddns/tasks-group` | `ddns:write` | Gruppe mehrerer Einträge festlegen: DDNS-Aufgaben |
 | GET | `/api/ddns/tasks/{key}/secrets` | `ddns:write` | Geheimnisse im Klartext anzeigen |
 | POST | `/api/ddns/tasks/{key}/sync` | `ddns:write` | Eine DDNS-Aufgabe sofort synchronisieren |
+| DELETE | `/api/ddns/tasks/{key}/records/{rec}` | `ddns:write` | Einen Eintrag einer DDNS-Aufgabe löschen |
+| PUT | `/api/ddns/tasks/{key}/records-layout` | `ddns:write` | DNS-Einträge einer Aufgabe neu anordnen und gruppieren |
 | GET | `/api/ddns/providers` | `ddns:read` | Unterstützte DNS-Anbieter und ihre erforderlichen Parameter auflisten |
 | GET | `/api/ddns/netinterfaces` | `ddns:read` | Netzwerkschnittstellen und Adressen dieses Rechners auflisten |
 | POST | `/api/ddns/iptest` | `ddns:write` | Ermittlung der öffentlichen IP testen |
@@ -111,6 +113,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/stun/rules/{key}` | `stun:write` | STUN-Regeln löschen |
 | PUT | `/api/stun/rules/{key}/enable` | `stun:write` | STUN-Regeln aktivieren oder deaktivieren |
 | PUT | `/api/stun/rules-order` | `stun:write` | STUN-Regeln neu anordnen |
+| PUT | `/api/stun/rules-group` | `stun:write` | Gruppe mehrerer Einträge festlegen: STUN-Regeln |
 | POST | `/api/stun/rules/{key}/restart` | `stun:write` | Eine STUN-Regel neu starten |
 | GET | `/api/stun/netinterfaces` | `stun:read` | Netzwerkschnittstellen und Adressen dieses Rechners auflisten |
 | GET | `/api/stun/settings` | `stun:read` | Globale STUN-Einstellungen lesen |
@@ -147,6 +150,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/frp/clients/{key}` | `frp:write` | frp-Client löschen |
 | PUT | `/api/frp/clients/{key}/enable` | `frp:write` | frp-Client aktivieren oder deaktivieren |
 | PUT | `/api/frp/clients-order` | `frp:write` | frp-Client neu anordnen |
+| PUT | `/api/frp/clients-group` | `frp:write` | Gruppe mehrerer Einträge festlegen: frp-Client |
 | GET | `/api/frp/clients/{key}/secrets` | `frp:write` | Geheimnisse im Klartext anzeigen |
 | GET | `/api/frp/servers` | `frp:read` | frp-Server auflisten |
 | POST | `/api/frp/servers` | `frp:write` | frp-Server hinzufügen |
@@ -154,6 +158,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/frp/servers/{key}` | `frp:write` | frp-Server löschen |
 | PUT | `/api/frp/servers/{key}/enable` | `frp:write` | frp-Server aktivieren oder deaktivieren |
 | PUT | `/api/frp/servers-order` | `frp:write` | frp-Server neu anordnen |
+| PUT | `/api/frp/servers-group` | `frp:write` | Gruppe mehrerer Einträge festlegen: frp-Server |
 | GET | `/api/frp/servers/{key}/secrets` | `frp:write` | Geheimnisse im Klartext anzeigen |
 | GET | `/api/frp/proxies` | `frp:read` | frp-Proxys auflisten |
 | POST | `/api/frp/proxies` | `frp:write` | frp-Proxys hinzufügen |
@@ -161,6 +166,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/frp/proxies/{key}` | `frp:write` | frp-Proxys löschen |
 | PUT | `/api/frp/proxies/{key}/enable` | `frp:write` | frp-Proxys aktivieren oder deaktivieren |
 | PUT | `/api/frp/proxies-order` | `frp:write` | frp-Proxys neu anordnen |
+| PUT | `/api/frp/proxies-group` | `frp:write` | Gruppe mehrerer Einträge festlegen: frp-Proxys |
 | GET | `/api/frp/proxies/{key}/secrets` | `frp:write` | Geheimnisse im Klartext anzeigen |
 | POST | `/api/frp/import` | `frp:write` | Vorhandene frpc-/frps-Konfiguration importieren (unterstützt altes ini und neues toml); bei apply false nur Vorschau |
 | GET | `/api/frp/install` | `frp:read` | Installationsinfo und Fortschritt eines verwalteten Programms anzeigen |
@@ -186,6 +192,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/cloudflared/tunnels/{key}` | `cloudflared:write` | Cloudflare-Tunnel löschen |
 | PUT | `/api/cloudflared/tunnels/{key}/enable` | `cloudflared:write` | Cloudflare-Tunnel aktivieren oder deaktivieren |
 | PUT | `/api/cloudflared/tunnels-order` | `cloudflared:write` | Cloudflare-Tunnel neu anordnen |
+| PUT | `/api/cloudflared/tunnels-group` | `cloudflared:write` | Gruppe mehrerer Einträge festlegen: Cloudflare-Tunnel |
 | GET | `/api/cloudflared/tunnels/{key}/secrets` | `cloudflared:write` | Geheimnisse im Klartext anzeigen |
 | POST | `/api/cloudflared/tunnels/{key}/restart` | `cloudflared:write` | Einen Cloudflare-Tunnel neu starten |
 | GET | `/api/cloudflared/tunnels/{key}/ingress` | `cloudflared:read` | Routen eines Token-Tunnels lesen |
@@ -211,6 +218,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/ssl/certs/{key}` | `ssl:write` | Zertifikate löschen |
 | PUT | `/api/ssl/certs/{key}/enable` | `ssl:write` | Zertifikate aktivieren oder deaktivieren |
 | PUT | `/api/ssl/certs-order` | `ssl:write` | Zertifikate neu anordnen |
+| PUT | `/api/ssl/certs-group` | `ssl:write` | Gruppe mehrerer Einträge festlegen: Zertifikate |
 | GET | `/api/ssl/certs/{key}/secrets` | `ssl:write` | Geheimnisse im Klartext anzeigen |
 | POST | `/api/ssl/certs/{key}/renew` | `ssl:write` | Zertifikat sofort ausstellen oder erneuern |
 | GET | `/api/ssl/certs/{key}/download` | `ssl:write` | Zertifikat und privaten Schlüssel herunterladen |
@@ -232,6 +240,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/waf/instances/{key}` | `waf:write` | WAF-Instanzen löschen |
 | PUT | `/api/waf/instances/{key}/enable` | `waf:write` | WAF-Instanzen aktivieren oder deaktivieren |
 | PUT | `/api/waf/instances-order` | `waf:write` | WAF-Instanzen neu anordnen |
+| PUT | `/api/waf/instances-group` | `waf:write` | Gruppe mehrerer Einträge festlegen: WAF-Instanzen |
 | GET | `/api/waf/crs` | `waf:read` | OWASP-CRS-Regeldateien auflisten |
 | GET | `/api/waf/crs/{file}` | `waf:read` | Eine CRS-Regeldatei lesen |
 
@@ -278,12 +287,13 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | --- | --- | --- | --- |
 | GET | `/api/guard/logs` | `guard:read` | Laufzeitprotokolle eines Moduls anzeigen |
 | DELETE | `/api/guard/logs` | `guard:write` | Modulprotokolle leeren |
-| GET | `/api/guard/jails` | `guard:read` | Einträge auflisten |
-| POST | `/api/guard/jails` | `guard:write` | Einträge hinzufügen |
-| PUT | `/api/guard/jails/{key}` | `guard:write` | Einträge ändern |
-| DELETE | `/api/guard/jails/{key}` | `guard:write` | Einträge löschen |
-| PUT | `/api/guard/jails/{key}/enable` | `guard:write` | Einträge aktivieren oder deaktivieren |
-| PUT | `/api/guard/jails-order` | `guard:write` | Einträge neu anordnen |
+| GET | `/api/guard/jails` | `guard:read` | Einbruchschutz-Regel auflisten |
+| POST | `/api/guard/jails` | `guard:write` | Einbruchschutz-Regel hinzufügen |
+| PUT | `/api/guard/jails/{key}` | `guard:write` | Einbruchschutz-Regel ändern |
+| DELETE | `/api/guard/jails/{key}` | `guard:write` | Einbruchschutz-Regel löschen |
+| PUT | `/api/guard/jails/{key}/enable` | `guard:write` | Einbruchschutz-Regel aktivieren oder deaktivieren |
+| PUT | `/api/guard/jails-order` | `guard:write` | Einbruchschutz-Regel neu anordnen |
+| PUT | `/api/guard/jails-group` | `guard:write` | Gruppe mehrerer Einträge festlegen: Einbruchschutz-Regel |
 | GET | `/api/guard/presets` | `guard:read` | Regelvorlagen für gängige Dienste |
 | POST | `/api/guard/jails/test` | `guard:write` | Filter mit Beispielzeilen testen |
 | GET | `/api/guard/status` | `guard:read` | Status der Firewall-Synchronisierung und Umgebung |
@@ -306,6 +316,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/wol/devices/{key}` | `wol:write` | Gerät aufwecken löschen |
 | PUT | `/api/wol/devices/{key}/enable` | `wol:write` | Gerät aufwecken aktivieren oder deaktivieren |
 | PUT | `/api/wol/devices-order` | `wol:write` | Gerät aufwecken neu anordnen |
+| PUT | `/api/wol/devices-group` | `wol:write` | Gruppe mehrerer Einträge festlegen: Gerät aufwecken |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | Wake-on-LAN-Magic-Packet an ein Gerät senden |
 | GET | `/api/wol/status` | `wol:read` | Online-Status eines Geräts anzeigen |
 
@@ -321,6 +332,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/webterminal/connections/{key}` | `webterminal:write` | Terminalverbindungen löschen |
 | PUT | `/api/webterminal/connections/{key}/enable` | `webterminal:write` | Terminalverbindungen aktivieren oder deaktivieren |
 | PUT | `/api/webterminal/connections-order` | `webterminal:write` | Terminalverbindungen neu anordnen |
+| PUT | `/api/webterminal/connections-group` | `webterminal:write` | Gruppe mehrerer Einträge festlegen: Terminalverbindungen |
 | GET | `/api/webterminal/connections/{key}/secrets` | `webterminal:write` | Geheimnisse im Klartext anzeigen |
 | DELETE | `/api/webterminal/connections/{key}/hostkey` | `webterminal:write` | Gespeicherten Host-Schlüssel löschen |
 | POST | `/api/webterminal/connections/{key}/test` | `webterminal:write` | Gespeicherte Verbindung testen |
@@ -347,7 +359,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | POST | `/api/webterminal/security/2fa/disable` | Nur Anmeldesitzung | Zwei-Faktor-Authentifizierung des Terminals deaktivieren |
 | POST | `/api/webterminal/security/verify2fa` | Nur Anmeldesitzung | Code der Zwei-Faktor-Authentifizierung des Terminals prüfen |
 | GET | `/api/webterminal/security/check2fa` | Nur Anmeldesitzung | Prüfen, ob die Zwei-Faktor-Authentifizierung des Terminals bestanden wurde |
-| GET | `/api/webterminal/sftp/{key}/list` | `webterminal:read` | Remote-Verzeichnis auflisten |
+| GET | `/api/webterminal/sftp/{key}/list` | `webterminal:write` | Remote-Verzeichnis auflisten |
 | GET | `/api/webterminal/sftp/{key}/read` | `webterminal:write` | Remote-Datei lesen |
 | POST | `/api/webterminal/sftp/{key}/write` | `webterminal:write` | Remote-Datei schreiben |
 | POST | `/api/webterminal/sftp/{key}/upload` | `webterminal:write` | Datei auf den Remote-Host hochladen |
@@ -381,6 +393,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/cron/tasks/{key}` | `cron:write` | Geplante Aufgaben löschen |
 | PUT | `/api/cron/tasks/{key}/enable` | `cron:write` | Geplante Aufgaben aktivieren oder deaktivieren |
 | PUT | `/api/cron/tasks-order` | `cron:write` | Geplante Aufgaben neu anordnen |
+| PUT | `/api/cron/tasks-group` | `cron:write` | Gruppe mehrerer Einträge festlegen: Geplante Aufgaben |
 | POST | `/api/cron/tasks/{key}/run` | `cron:write` | Eine geplante Aufgabe sofort ausführen |
 | POST | `/api/cron/parse` | `cron:write` | Cron-Ausdruck parsen und Vorschau anzeigen |
 
@@ -445,7 +458,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | GET | `/api/docker/containers/{id}/logs` | `docker:read` | Container-Protokolle anzeigen |
 | GET | `/api/docker/containers/{id}/stats` | `docker:read` | Ressourcenverbrauch des Containers anzeigen |
 | GET | `/api/docker/containers/{id}/processes` | `docker:read` | Prozesse im Container anzeigen |
-| GET | `/api/docker/containers/{id}/files/list` | `docker:read` | Verzeichnis im Container auflisten |
+| GET | `/api/docker/containers/{id}/files/list` | `docker:write` | Verzeichnis im Container auflisten |
 | GET | `/api/docker/containers/{id}/files/read` | `docker:write` | Datei im Container lesen |
 | GET | `/api/docker/containers/{id}/files/download` | `docker:write` | Datei aus dem Container herunterladen |
 | POST | `/api/docker/containers/{id}/files/write` | `docker:write` | Datei im Container schreiben |
@@ -503,6 +516,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/filebrowser/instances/{key}` | `filebrowser:write` | File-Browser-Instanz löschen |
 | PUT | `/api/filebrowser/instances/{key}/enable` | `filebrowser:write` | File-Browser-Instanz aktivieren oder deaktivieren |
 | PUT | `/api/filebrowser/instances-order` | `filebrowser:write` | File-Browser-Instanz neu anordnen |
+| PUT | `/api/filebrowser/instances-group` | `filebrowser:write` | Gruppe mehrerer Einträge festlegen: File-Browser-Instanz |
 | GET | `/api/filebrowser/instances/{key}/secrets` | `filebrowser:write` | Geheimnisse im Klartext anzeigen |
 | POST | `/api/filebrowser/instances/{key}/restart` | `filebrowser:write` | Eine File-Browser-Instanz neu starten |
 | GET | `/api/filebrowser/settings` | `filebrowser:read` | File-Browser-Programmeinstellungen lesen |
@@ -520,14 +534,15 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | --- | --- | --- | --- |
 | GET | `/api/storage/logs` | `storage:read` | Laufzeitprotokolle eines Moduls anzeigen |
 | DELETE | `/api/storage/logs` | `storage:write` | Modulprotokolle leeren |
-| GET | `/api/storage/mounts` | `storage:read` | Einträge auflisten |
-| POST | `/api/storage/mounts` | `storage:write` | Einträge hinzufügen |
-| PUT | `/api/storage/mounts/{key}` | `storage:write` | Einträge ändern |
-| DELETE | `/api/storage/mounts/{key}` | `storage:write` | Einträge löschen |
-| PUT | `/api/storage/mounts/{key}/enable` | `storage:write` | Einträge aktivieren oder deaktivieren |
-| PUT | `/api/storage/mounts-order` | `storage:write` | Einträge neu anordnen |
+| GET | `/api/storage/mounts` | `storage:read` | Speicher-Einbindungen auflisten |
+| POST | `/api/storage/mounts` | `storage:write` | Speicher-Einbindungen hinzufügen |
+| PUT | `/api/storage/mounts/{key}` | `storage:write` | Speicher-Einbindungen ändern |
+| DELETE | `/api/storage/mounts/{key}` | `storage:write` | Speicher-Einbindungen löschen |
+| PUT | `/api/storage/mounts/{key}/enable` | `storage:write` | Speicher-Einbindungen aktivieren oder deaktivieren |
+| PUT | `/api/storage/mounts-order` | `storage:write` | Speicher-Einbindungen neu anordnen |
+| PUT | `/api/storage/mounts-group` | `storage:write` | Gruppe mehrerer Einträge festlegen: Speicher-Einbindungen |
 | GET | `/api/storage/mounts/{key}/secrets` | `storage:write` | Geheimnisse im Klartext anzeigen |
-| GET | `/api/storage/files/{key}/list` | `storage:read` | Speicherverzeichnis auflisten |
+| GET | `/api/storage/files/{key}/list` | `storage:write` | Speicherverzeichnis auflisten |
 | GET | `/api/storage/files/{key}/download` | `storage:write` | Speicherdatei herunterladen |
 | POST | `/api/storage/files/{key}/upload` | `storage:write` | Datei in den Speicher hochladen |
 | POST | `/api/storage/files/{key}/mkdir` | `storage:write` | Speicherverzeichnis erstellen |
@@ -546,6 +561,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/notify/channels/{key}` | `notify:write` | Benachrichtigungskanäle löschen |
 | PUT | `/api/notify/channels/{key}/enable` | `notify:write` | Benachrichtigungskanäle aktivieren oder deaktivieren |
 | PUT | `/api/notify/channels-order` | `notify:write` | Benachrichtigungskanäle neu anordnen |
+| PUT | `/api/notify/channels-group` | `notify:write` | Gruppe mehrerer Einträge festlegen: Benachrichtigungskanäle |
 | GET | `/api/notify/channels/{key}/secrets` | `notify:write` | Geheimnisse im Klartext anzeigen |
 | GET | `/api/notify/rules` | `notify:read` | Benachrichtigungsregeln auflisten |
 | POST | `/api/notify/rules` | `notify:write` | Benachrichtigungsregeln hinzufügen |
@@ -553,6 +569,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/notify/rules/{key}` | `notify:write` | Benachrichtigungsregeln löschen |
 | PUT | `/api/notify/rules/{key}/enable` | `notify:write` | Benachrichtigungsregeln aktivieren oder deaktivieren |
 | PUT | `/api/notify/rules-order` | `notify:write` | Benachrichtigungsregeln neu anordnen |
+| PUT | `/api/notify/rules-group` | `notify:write` | Gruppe mehrerer Einträge festlegen: Benachrichtigungsregeln |
 | GET | `/api/notify/event-types` | `notify:read` | Abonnierbare Ereignistypen |
 | GET | `/api/notify/history` | `notify:read` | Letzte Zustellungsprotokolle |
 | POST | `/api/notify/channels/{key}/test` | `notify:write` | Testbenachrichtigung an einen Kanal senden |
@@ -643,7 +660,9 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | GET | `/api/tokens` | Nur Anmeldesitzung | API-Tokens auflisten |
 | GET | `/api/tokens/scopes` | Nur Anmeldesitzung | Autorisierbare Berechtigungsbereiche auflisten |
 | POST | `/api/tokens` | Nur Anmeldesitzung | API-Token erstellen |
-| PUT | `/api/tokens/{id}` | Nur Anmeldesitzung | Name, Berechtigungen, Ablaufzeit und Aktivierungsstatus eines API-Tokens ändern |
+| PUT | `/api/tokens/order` | Nur Anmeldesitzung | API-Tokens neu anordnen |
+| PUT | `/api/tokens/group` | Nur Anmeldesitzung | Gruppe mehrerer API-Tokens festlegen |
+| PUT | `/api/tokens/{id}` | Nur Anmeldesitzung | Name, Gruppe, Berechtigungen, Ablauf und Status eines API-Tokens ändern |
 | POST | `/api/tokens/{id}/regenerate` | Nur Anmeldesitzung | Token-Klartext neu generieren |
 | DELETE | `/api/tokens/{id}` | Nur Anmeldesitzung | API-Token löschen |
 
@@ -745,6 +764,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `apiToken` | string |
 | `edgeIpVersion` | string |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `mode` | string |
 | `name` | string |
@@ -759,6 +779,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | --- | --- |
 | `command` | string |
 | `enable` | boolean |
+| `group` | string |
 | `http` | `webhook.Config` |
 | `key` | string |
 | `name` | string |
@@ -790,6 +811,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Feld | Typ |
 | --- | --- |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `line` | string |
 | `remark` | string |
@@ -818,6 +840,19 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `remark` | string |
 | `webhook` | `webhook.Config` |
 
+### ddns.recordLayout
+
+| Feld | Typ |
+| --- | --- |
+| `group` | string |
+| `key` | string |
+
+### ddns.recordsLayoutRequest
+
+| Feld | Typ |
+| --- | --- |
+| `records` | Array von `ddns.recordLayout` |
+
 ### dnsprovider.Credentials
 
 | Feld | Typ |
@@ -845,6 +880,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `baseUrl` | string |
 | `disableWebDav` | boolean |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `listenIp` | string |
 | `locale` | string |
@@ -877,6 +913,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Feld | Typ |
 | --- | --- |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `name` | string |
 | `protocol` | string |
@@ -927,6 +964,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `client` | string |
 | `customDomains` | Array von string |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `localIp` | string |
 | `localPort` | integer |
@@ -949,6 +987,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `dashboardPwd` | string |
 | `dashboardUser` | string |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `name` | string |
 | `proxyBindAddr` | string |
@@ -1036,6 +1075,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `enable` | boolean |
 | `filter` | string |
 | `findTime` | integer |
+| `group` | string |
 | `ignore` | string |
 | `key` | string |
 | `maxRetry` | integer |
@@ -1171,6 +1211,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | --- | --- |
 | `enable` | boolean |
 | `from` | string |
+| `group` | string |
 | `host` | string |
 | `key` | string |
 | `kind` | string |
@@ -1203,6 +1244,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `channels` | Array von string |
 | `enable` | boolean |
 | `events` | Array von string |
+| `group` | string |
 | `key` | string |
 | `minLevel` | string |
 | `name` | string |
@@ -1270,6 +1312,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `certPem` | string |
 | `deploys` | Array von `ssl.Deploy` |
 | `enable` | boolean |
+| `group` | string |
 | `issuedProfile` | string |
 | `issuerPem` | string |
 | `key` | string |
@@ -1310,6 +1353,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | --- | --- |
 | `domain` | string |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `name` | string |
 | `password` | string |
@@ -1349,6 +1393,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `disableCheck` | boolean |
 | `disableForward` | boolean |
 | `enable` | boolean |
+| `group` | string |
 | `heartbeatInterval` | integer |
 | `keepAliveServers` | Array von string |
 | `key` | string |
@@ -1396,6 +1441,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `bodyLimitAction` | string |
 | `bodyLimitMB` | integer |
 | `enable` | boolean |
+| `group` | string |
 | `inboundThreshold` | integer |
 | `key` | string |
 | `mode` | string |
@@ -1717,6 +1763,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `domains` | Array von string |
 | `enable` | boolean |
 | `forwardAuth` | boolean |
+| `group` | string |
 | `listener` | string |
 | `listenerEnable` | boolean |
 | `listenerName` | string |
@@ -1780,6 +1827,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Feld | Typ |
 | --- | --- |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `local` | `webterminal.LocalConfig` |
 | `name` | string |
@@ -1860,6 +1908,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `broadcastIps` | Array von string |
 | `checkAddr` | string |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `macs` | Array von string |
 | `name` | string |

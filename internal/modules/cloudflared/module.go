@@ -40,8 +40,10 @@ type Settings struct {
 
 // Tunnel 是一条隧道。
 type Tunnel struct {
-	Key    string `json:"key"`
-	Name   string `json:"name"`
+	Key  string `json:"key"`
+	Name string `json:"name"`
+	// Group 为列表中的分组名称，只影响管理界面的展示，留空为未分组
+	Group  string `json:"group"`
 	Enable bool   `json:"enable"`
 	Mode   string `json:"mode"`
 	// Token 为 ModeToken 的隧道令牌
@@ -67,6 +69,9 @@ type fileConfig struct {
 
 // Validate 校验并规范化隧道配置。
 func (t *Tunnel) Validate() error {
+	if err := crud.NormalizeGroup(&t.Group); err != nil {
+		return err
+	}
 	t.Name = strings.TrimSpace(t.Name)
 	t.Token = strings.TrimSpace(t.Token)
 	t.APIToken = strings.TrimSpace(t.APIToken)
@@ -308,6 +313,7 @@ func (m *Module) Routes(r module.Router) {
 		Save:     m.saveLocked,
 		Key:      func(t *Tunnel) *string { return &t.Key },
 		Enabled:  func(t *Tunnel) *bool { return &t.Enable },
+		Group:    func(t *Tunnel) *string { return &t.Group },
 		Validate: func(t *Tunnel) error { return t.Validate() },
 		Merge: func(old, updated *Tunnel) {
 			crud.KeepSecret(old.Token, &updated.Token)

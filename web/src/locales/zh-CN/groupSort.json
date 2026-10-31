@@ -23,5 +23,8 @@
   "renamePrompt": "新的分组名称，组内条目会一起改名，顺序不变；与已有分组同名时会合并",
   "nameRequired": "请输入分组名称",
   "nameTooLong": "分组名称不能超过 {max} 个字符",
-  "mergeConfirm": "分组「{to}」已存在，确定把「{from}」合并进去吗？"
+  "mergeConfirm": "分组「{to}」已存在，确定把「{from}」合并进去吗？",
+  "count": "{count} 项",
+  "selectItem": "选择此项",
+  "search": "搜索名称、分组、备注"
 }

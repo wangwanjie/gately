@@ -61,5 +61,8 @@
   "triggered": "已触发",
   "recordsCollapsed": "已收起 {count} 条解析记录，点击展开",
   "filterPlaceholder": "搜索名称、分组、域名或服务商",
-  "groupCount": "{count} 个任务"
+  "groupCount": "{count} 个任务",
+  "recordCount": "{count} 条记录",
+  "sortRecords": "记录排序",
+  "sortRecordsTitle": "调整「{name}」的记录顺序与分组"
 }

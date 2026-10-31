@@ -130,5 +130,6 @@
   "ipCertApply": "一键设置",
   "shortLivedTag": "短期",
   "hoursLeft": "剩余 {hours} 小时",
-  "renewFailedShort": "续签失败"
+  "renewFailedShort": "续签失败",
+  "filterPlaceholder": "搜索备注、分组、域名"
 }

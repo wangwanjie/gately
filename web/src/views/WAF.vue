@@ -2,54 +2,61 @@
   <div>
     <PageHeader :title="t('waf.title')" :desc="t('waf.desc')" :icon="ShieldHalf">
       <CompactToggle v-model="compact" />
+      <ListTools :gl="gl" :placeholder="t('groupSort.search')" />
       <el-button type="primary" :icon="Plus" @click="openEditor()">{{ t('waf.addInstance') }}</el-button>
     </PageHeader>
 
-    <div class="card-list" :class="{ 'is-compact': compact }">
-      <el-empty v-if="!instances.length" :description="t('waf.empty')" />
-      <EntityCard :compact="compact" v-for="w in instances" :key="w.key" :off="!w.enable">
-        <template #lead>
-          <el-switch :model-value="w.enable" @change="(v: string | number | boolean) => toggle(w, Boolean(v))" />
-        </template>
-        <template #title>
-          <span>{{ w.name }}</span>
-          <el-tag :type="w.mode === 'block' ? 'danger' : 'warning'" size="small" effect="plain">{{ w.mode === 'block' ? t('waf.modeBlockShort') : t('waf.modeDetectShort') }}</el-tag>
-        </template>
-        <template #sub><span class="mono">{{ w.key }}</span><span v-if="w.remark"> · {{ w.remark }}</span></template>
-        <template #status>
-          <StatusBadge v-bind="instStatus(w)" />
-        </template>
-        <Field :label="t('waf.ruleSets')" wide>
-          <div v-for="(r, i) in w.ruleSets ?? []" :key="i" class="ruleset-line" :class="{ off: !r.enable }">
-            <span class="dot" />
-            {{ r.type === 'crs' ? 'OWASP CRS' : t('waf.custom') }}{{ r.remark ? t('waf.remarkSuffix', { remark: r.remark }) : '' }}
-            <span v-if="r.type === 'crs'" class="meta">{{ r.param ? t('waf.ruleFiles', { count: r.param.split('\n').filter(Boolean).length }) : t('waf.allRules') }}</span>
-          </div>
-          <span v-if="!(w.ruleSets ?? []).length" class="muted">{{ t('common.none') }}</span>
-        </Field>
-        <Field :label="t('waf.thresholdParanoia')">{{ t('waf.thresholdValue', { inbound: w.inboundThreshold, outbound: w.outboundThreshold, level: w.paranoia }) }}</Field>
-        <Field :label="t('waf.bodyCheck')">{{ bodySummary(w) }}</Field>
-        <Field :label="t('waf.blocked')"><span :class="{ 'text-danger': w.blocked > 0 }">{{ w.blocked }}</span></Field>
-        <Field :label="t('waf.matched')">{{ w.matched }}</Field>
-        <template v-if="w.error && w.enable" #extra>
-          <div class="err-line">{{ w.error }}</div>
-        </template>
-        <template #actions>
-          <el-button text size="small" :icon="Pencil" @click="openEditor(w)">{{ t('common.edit') }}</el-button>
-          <el-popconfirm :title="t('waf.deleteConfirm')" width="240" @confirm="remove(w)">
-            <template #reference>
-              <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
-            </template>
-          </el-popconfirm>
-        </template>
-      </EntityCard>
-    </div>
+    <GroupedList :gl="gl" :compact="compact" :empty-text="t('waf.empty')">
+      <template #item="{ it, item: w, sorting, bind }">
+        <EntityCard v-bind="bind" :off="!w.enable" :compact="compact || sorting">
+          <template #lead>
+            <SortCheck v-if="sorting" :gl="gl" :id="it.id" />
+            <el-switch v-else :model-value="w.enable" @change="(v: string | number | boolean) => toggle(w, Boolean(v))" />
+          </template>
+          <template #title>
+            <span>{{ w.name }}</span>
+            <el-tag :type="w.mode === 'block' ? 'danger' : 'warning'" size="small" effect="plain">{{ w.mode === 'block' ? t('waf.modeBlockShort') : t('waf.modeDetectShort') }}</el-tag>
+          </template>
+          <template #sub><span class="mono">{{ w.key }}</span><span v-if="w.remark"> · {{ w.remark }}</span></template>
+          <template #status>
+            <StatusBadge v-bind="instStatus(w)" />
+          </template>
+          <Field :label="t('waf.ruleSets')" wide>
+            <div v-for="(r, i) in w.ruleSets ?? []" :key="i" class="ruleset-line" :class="{ off: !r.enable }">
+              <span class="dot" />
+              {{ r.type === 'crs' ? 'OWASP CRS' : t('waf.custom') }}{{ r.remark ? t('waf.remarkSuffix', { remark: r.remark }) : '' }}
+              <span v-if="r.type === 'crs'" class="meta">{{ r.param ? t('waf.ruleFiles', { count: r.param.split('\n').filter(Boolean).length }) : t('waf.allRules') }}</span>
+            </div>
+            <span v-if="!(w.ruleSets ?? []).length" class="muted">{{ t('common.none') }}</span>
+          </Field>
+          <Field :label="t('waf.thresholdParanoia')">{{ t('waf.thresholdValue', { inbound: w.inboundThreshold, outbound: w.outboundThreshold, level: w.paranoia }) }}</Field>
+          <Field :label="t('waf.bodyCheck')">{{ bodySummary(w) }}</Field>
+          <Field :label="t('waf.blocked')"><span :class="{ 'text-danger': w.blocked > 0 }">{{ w.blocked }}</span></Field>
+          <Field :label="t('waf.matched')">{{ w.matched }}</Field>
+          <template v-if="!sorting && (w.error && w.enable)" #extra>
+            <div class="err-line">{{ w.error }}</div>
+          </template>
+          <template v-if="sorting" #actions>
+            <SortMoves :gl="gl" :it="it" />
+          </template>
+          <template v-else #actions>
+            <el-button text size="small" :icon="Pencil" @click="openEditor(w)">{{ t('common.edit') }}</el-button>
+            <el-popconfirm :title="t('waf.deleteConfirm')" width="240" @confirm="remove(w)">
+              <template #reference>
+                <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
+              </template>
+            </el-popconfirm>
+          </template>
+        </EntityCard>
+      </template>
+    </GroupedList>
 
     <LogCard url="/api/waf/logs" :title="t('waf.logTitle')" clearable />
 
     <el-dialog v-model="editorVisible" :title="editing.key ? t('waf.editInstance') : t('waf.addInstance')" width="760px" top="5vh" :fullscreen="isMobile">
       <el-form :model="editing" label-width="120px" :label-position="labelPosition">
         <el-form-item :label="t('common.name')"><el-input v-model="editing.name" /></el-form-item>
+        <GroupInput v-model="editing.group" :groups="gl.groupNames.value" />
         <el-form-item :label="t('waf.mode')">
           <el-radio-group v-model="editing.mode">
             <el-radio-button value="block">{{ t('waf.modeBlock') }}</el-radio-button>
@@ -135,6 +142,12 @@ import { api } from '../api'
 import PageHeader from '../components/PageHeader.vue'
 import CompactToggle from '../components/CompactToggle.vue'
 import EntityCard from '../components/EntityCard.vue'
+import GroupedList from '../components/GroupedList.vue'
+import GroupInput from '../components/GroupInput.vue'
+import ListTools from '../components/ListTools.vue'
+import SortCheck from '../components/SortCheck.vue'
+import SortMoves from '../components/SortMoves.vue'
+import { useGroupedList } from '../composables/useGroupSort'
 import { useCompactView } from '../composables/useCompactView'
 import Field from '../components/Field.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
@@ -153,6 +166,8 @@ interface Instance {
   key?: string
   name: string
   enable: boolean
+  // group 为列表中的分组名称，只影响展示，留空为未分组
+  group?: string
   mode: string
   paranoia: number
   inboundThreshold: number
@@ -176,6 +191,14 @@ const { t } = useI18n()
 const compact = useCompactView('waf')
 const { isMobile, labelPosition } = useFormLayout()
 const instances = ref<InstanceView[]>([])
+// 列表的搜索、分组与排序；顺序与分组的修改不会重新加载规则
+const gl = useGroupedList<InstanceView>({
+  storageKey: 'waf.groups',
+  items: () => instances.value,
+  base: '/api/waf/instances',
+  reload: load,
+  matches: (w, q) => [w.name, w.group ?? '', w.remark, w.key].join('\n').toLowerCase().includes(q),
+})
 const crsFiles = ref<string[]>([])
 const editorVisible = ref(false)
 const saving = ref(false)

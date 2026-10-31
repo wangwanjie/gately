@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/wangwanjie/gately/internal/config"
+	"github.com/wangwanjie/gately/internal/crud"
 )
 
 // StoreName 是令牌在配置目录中的文件名（tokens.json）。
@@ -42,6 +43,8 @@ type Token struct {
 	ID string `json:"id"`
 	// Name 是用户给令牌起的用途名称
 	Name string `json:"name"`
+	// Group 为列表中的分组名称，只影响管理界面的展示，留空为未分组
+	Group string `json:"group,omitempty"`
 	// Hash 为令牌明文的 SHA-256（十六进制）
 	Hash string `json:"hash"`
 	// Hint 为明文的前几位与末尾几位，只用于在列表中辨认
@@ -61,6 +64,7 @@ type Token struct {
 type View struct {
 	ID         string     `json:"id"`
 	Name       string     `json:"name"`
+	Group      string     `json:"group"`
 	Hint       string     `json:"hint"`
 	Scopes     []string   `json:"scopes"`
 	Legacy     bool       `json:"legacy"`
@@ -74,6 +78,8 @@ type View struct {
 
 type fileData struct {
 	Tokens []Token `json:"tokens"`
+	// Ordered 为 true 表示用户手动调整过顺序，列表按保存顺序返回；否则按创建时间从新到旧
+	Ordered bool `json:"ordered,omitempty"`
 }
 
 // Manager 管理令牌的增删改查与认证。
@@ -141,13 +147,13 @@ func (m *Manager) saveLocked() error {
 
 func (m *Manager) view(t Token) View {
 	return View{
-		ID: t.ID, Name: t.Name, Hint: t.Hint, Scopes: slices.Clone(t.Scopes), Legacy: t.Legacy, Disabled: t.Disabled,
+		ID: t.ID, Name: t.Name, Group: t.Group, Hint: t.Hint, Scopes: slices.Clone(t.Scopes), Legacy: t.Legacy, Disabled: t.Disabled,
 		Expired:   t.ExpiresAt != nil && !m.now().Before(*t.ExpiresAt),
 		CreatedAt: t.CreatedAt, ExpiresAt: t.ExpiresAt, LastUsedAt: t.LastUsedAt, LastUsedIP: t.LastUsedIP,
 	}
 }
 
-// List 返回全部令牌，按创建时间从新到旧。
+// List 返回全部令牌：手动调整过顺序时按保存顺序，否则按创建时间从新到旧。
 func (m *Manager) List() []View {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -155,7 +161,9 @@ func (m *Manager) List() []View {
 	for _, t := range m.data.Tokens {
 		out = append(out, m.view(t))
 	}
-	slices.SortStableFunc(out, func(a, b View) int { return b.CreatedAt.Compare(a.CreatedAt) })
+	if !m.data.Ordered {
+		slices.SortStableFunc(out, func(a, b View) int { return b.CreatedAt.Compare(a.CreatedAt) })
+	}
 	return out
 }
 
@@ -166,6 +174,8 @@ type Input struct {
 	// ExpiresAt 为空表示永不过期
 	ExpiresAt *time.Time `json:"expiresAt"`
 	Disabled  bool       `json:"disabled"`
+	// Group 为分组名称；修改时不提供表示保持原分组
+	Group *string `json:"group,omitempty"`
 }
 
 // normalize 校验并规范化输入；checkExpiry 为 false 时不要求过期时间晚于当前（保留已过期令牌的原过期时间）。
@@ -194,6 +204,11 @@ func (m *Manager) normalize(in *Input, checkExpiry bool) error {
 	}
 	slices.Sort(scopes)
 	in.Scopes = scopes
+	if in.Group != nil {
+		if err := crud.NormalizeGroup(in.Group); err != nil {
+			return err
+		}
+	}
 	if checkExpiry && in.ExpiresAt != nil && !in.ExpiresAt.After(m.now()) {
 		return errors.New("过期时间必须晚于当前时间")
 	}
@@ -213,9 +228,18 @@ func (m *Manager) Create(in Input) (View, string, error) {
 	raw := generate()
 	t := Token{ID: newID(), Name: in.Name, Hash: hashOf(raw), Hint: hintOf(raw), Scopes: in.Scopes,
 		Disabled: in.Disabled, CreatedAt: m.now(), ExpiresAt: in.ExpiresAt}
-	m.data.Tokens = append(m.data.Tokens, t)
+	if in.Group != nil {
+		t.Group = *in.Group
+	}
+	old := m.data.Tokens
+	if m.data.Ordered {
+		// 手动排序后新令牌放在最前，与按创建时间排序时的位置一致
+		m.data.Tokens = append([]Token{t}, old...)
+	} else {
+		m.data.Tokens = append(slices.Clone(old), t)
+	}
 	if err := m.saveLocked(); err != nil {
-		m.data.Tokens = m.data.Tokens[:len(m.data.Tokens)-1]
+		m.data.Tokens = old
 		return View{}, "", err
 	}
 	return m.view(t), raw, nil
@@ -241,12 +265,70 @@ func (m *Manager) Update(id string, in Input) (View, error) {
 	}
 	next := old
 	next.Name, next.Scopes, next.ExpiresAt, next.Disabled = in.Name, in.Scopes, in.ExpiresAt, in.Disabled
+	if in.Group != nil {
+		next.Group = *in.Group
+	}
 	m.data.Tokens[i] = next
 	if err := m.saveLocked(); err != nil {
 		m.data.Tokens[i] = old
 		return View{}, err
 	}
 	return m.view(next), nil
+}
+
+// Order 按 ids 的顺序重排全部令牌，之后列表按此顺序返回；ids 必须恰好包含全部令牌。
+func (m *Manager) Order(ids []string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if len(ids) != len(m.data.Tokens) {
+		return errors.New("排序列表与条目数量不一致")
+	}
+	next := make([]Token, 0, len(ids))
+	seen := map[string]bool{}
+	for _, id := range ids {
+		i := m.index(id)
+		if i < 0 || seen[id] {
+			return fmt.Errorf("排序列表包含未知或重复条目 %s", id)
+		}
+		seen[id] = true
+		next = append(next, m.data.Tokens[i])
+	}
+	old, oldOrdered := m.data.Tokens, m.data.Ordered
+	m.data.Tokens, m.data.Ordered = next, true
+	if err := m.saveLocked(); err != nil {
+		m.data.Tokens, m.data.Ordered = old, oldOrdered
+		return err
+	}
+	return nil
+}
+
+// SetGroup 把多个令牌移到同一分组，留空表示移出分组；顺序不变。
+func (m *Manager) SetGroup(ids []string, group string) error {
+	if len(ids) == 0 {
+		return errors.New("请选择要设置分组的条目")
+	}
+	if err := crud.NormalizeGroup(&group); err != nil {
+		return err
+	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	idx := make([]int, 0, len(ids))
+	for _, id := range ids {
+		i := m.index(id)
+		if i < 0 {
+			return ErrNotFound
+		}
+		idx = append(idx, i)
+	}
+	old := slices.Clone(m.data.Tokens)
+	for _, i := range idx {
+		m.data.Tokens[i].Group = group
+	}
+	if err := m.saveLocked(); err != nil {
+		m.data.Tokens = old
+		return err
+	}
+	return nil
 }
 
 // Regenerate 为令牌生成新的明文，旧明文立即失效。

@@ -309,6 +309,7 @@ func (m *Module) Routes(r module.Router) {
 		Save:     m.saveLocked,
 		Key:      func(i *Instance) *string { return &i.Key },
 		Enabled:  func(i *Instance) *bool { return &i.Enable },
+		Group:    func(i *Instance) *string { return &i.Group },
 		Validate: func(i *Instance) error { return i.Validate() },
 		Merge:    func(old, updated *Instance) { crud.KeepSecret(old.AdminPassword, &updated.AdminPassword) },
 		View:     func(i *Instance) any { return m.viewLocked(i) },

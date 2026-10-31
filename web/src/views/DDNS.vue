@@ -4,19 +4,8 @@
       <el-button v-if="tasks.length" :icon="allTasksCollapsed ? ChevronsUpDown : ChevronsDownUp" @click="setAll(tasks.map((tk) => tk.key), !allTasksCollapsed)">
         {{ allTasksCollapsed ? t('common.expandAll') : t('common.collapseAll') }}
       </el-button>
-      <el-input
-        v-if="tasks.length"
-        v-model="gl.filterText.value"
-        class="list-filter"
-        clearable
-        :disabled="gl.sortMode.value"
-        :prefix-icon="Search"
-        :placeholder="t('ddns.filterPlaceholder')"
-      />
       <CompactToggle v-model="compact" />
-      <el-button v-if="tasks.length > 1" :type="gl.sortMode.value ? 'primary' : 'default'" :icon="ArrowUpDown" @click="gl.toggleSortMode()">
-        {{ gl.sortMode.value ? t('groupSort.sortDone') : t('groupSort.sort') }}
-      </el-button>
+      <ListTools :gl="gl" :placeholder="t('ddns.filterPlaceholder')" />
       <div class="module-toggle">
         <span class="meta">{{ t('ddns.module') }}</span>
         <el-switch v-model="settings.enable" inline-prompt :active-text="t('ddns.switchOn')" :inactive-text="t('ddns.switchOff')" @change="saveSettings" />
@@ -26,140 +15,115 @@
 
     <ModuleBanner v-if="moduleOff" :title="t('ddns.moduleOffTitle')" :desc="t('ddns.moduleOffDesc')" :loading="enabling" @enable="enableModule" />
 
-    <SortToolbar
-      v-if="gl.sortMode.value"
-      :selected-count="gl.selected.value.size"
-      :total="tasks.length"
-      :groups="gl.groupNames.value"
-      :busy="gl.busy.value"
-      @select-all="gl.selectAll()"
-      @clear="gl.clearSelection()"
-      @set-group="gl.setGroup"
-    />
-
-    <div v-loading="loading" class="card-list" :class="{ 'is-compact': compact || gl.sortMode.value, 'is-sorting': gl.sortMode.value }">
-      <el-empty v-if="!loading && !tasks.length" :description="t('ddns.empty')" />
-      <el-empty v-else-if="!loading && !gl.items.value.length" :description="t('groupSort.noMatched')" :image-size="60" />
-      <template v-for="it in gl.items.value" :key="it.id">
-      <GroupHeader
-        v-if="it.kind === 'group'"
-        :name="it.name"
-        :count-text="t('ddns.groupCount', { count: it.count })"
-        :collapsed="it.collapsed"
-        :sorting="gl.sortMode.value"
-        :can-up="it.canUp"
-        :can-down="it.canDown"
-        :checked="it.checked"
-        :indeterminate="it.indeterminate"
-        :class="gl.dropClass(it.id)"
-        @toggle="gl.toggleGroup(it.name)"
-        @rename="gl.renameGroup(it.name)"
-        @up="gl.moveGroup(it.index, -1)"
-        @down="gl.moveGroup(it.index, 1)"
-        @check="(v: boolean) => gl.setSelected(it.ids, v)"
-        @dragover.prevent="gl.dragOver(it.id, $event, false)"
-        @dragleave="gl.dragLeave(it.id)"
-        @drop.prevent="gl.drop()"
-      />
-      <EntityCard
-        v-else
-        :compact="compact || gl.sortMode.value"
-        :off="!it.item.enable || moduleOff"
-        :collapsible="!gl.sortMode.value"
-        :collapsed="isCollapsed(it.item.key)"
-        :collapsed-hint="t('ddns.recordsCollapsed', { count: it.item.records.length })"
-        :class="[gl.dropClass(it.id), { 'is-grouped': it.grouped }]"
-        :draggable="gl.sortMode.value && !isMobile"
-        @update:collapsed="(v: boolean) => setCollapsed(it.item.key, v)"
-        @dragstart="gl.dragStart(it.id, $event)"
-        @dragover.prevent="gl.dragOver(it.id, $event)"
-        @dragleave="gl.dragLeave(it.id)"
-        @drop.prevent="gl.drop()"
-        @dragend="gl.resetDrag()"
-      >
-        <template #lead>
-          <el-checkbox v-if="gl.sortMode.value" :model-value="gl.isSelected(it.id)" @change="(v: string | number | boolean) => gl.setSelected([it.id], Boolean(v))" />
-          <el-switch v-else :model-value="it.item.enable" @change="(v: string | number | boolean) => toggle(it.item, Boolean(v))" />
-        </template>
-        <template #title>
-          <span>{{ it.item.name || t('ddns.unnamedTask') }}</span>
-          <el-tag size="small" effect="plain">{{ providerTitle(it.item.provider) }}</el-tag>
-        </template>
-        <template v-if="it.item.remark" #sub>{{ it.item.remark }}</template>
-        <template #status>
-          <StatusBadge v-bind="taskStatus(it.item)" />
-        </template>
-        <Field label="IPv4" mono>{{ it.item.ipv4.enable ? it.item.state.ipv4 || (taskActive(it.item) ? t('ddns.fetching') : '-') : t('ddns.notEnabled') }}</Field>
-        <Field label="IPv6" mono>{{ it.item.ipv6.enable ? it.item.state.ipv6 || (taskActive(it.item) ? t('ddns.fetching') : '-') : t('ddns.notEnabled') }}</Field>
-        <Field :label="t('ddns.lastCheck')">{{ it.item.state.lastRun ? fmtTime(it.item.state.lastRun) : '-' }}</Field>
-        <Field :label="t('ddns.nextCheck')">{{ taskActive(it.item) && it.item.state.nextRun ? fmtTime(it.item.state.nextRun) : '-' }}</Field>
-        <template v-if="!gl.sortMode.value" #extra>
-          <el-alert v-if="it.item.state.ipError && taskActive(it.item)" type="error" :title="it.item.state.ipError" :closable="false" show-icon class="ip-error" />
-          <div class="records">
-            <div v-for="rec in it.item.records" :key="rec.key" class="rec" :class="{ 'is-off': !rec.enable }">
-              <div class="rec-name">
-                <span class="mono rec-domain">{{ fqdn(rec) }}</span>
-                <el-tag size="small" type="info" class="mono">{{ rec.type }}</el-tag>
-              </div>
-              <div class="rec-value mono">{{ (rec.key && it.item.state.records?.[rec.key]?.value) || '-' }}</div>
-              <div class="rec-status">
-                <StatusBadge v-bind="recordStatus(it.item, rec)" />
-                <span v-if="recordSync(it.item, rec)" class="meta">{{ recordSync(it.item, rec) }}</span>
-              </div>
-              <!-- 不进入编辑页直接删除单条记录；任务至少保留一条记录，最后一条时禁用 -->
-              <div class="rec-ops">
-                <el-popconfirm
-                  v-if="rec.key && it.item.records.length > 1"
-                  :title="t('ddns.confirmDeleteRecord', { name: fqdn(rec) })"
-                  width="260"
-                  @confirm="removeRecord(it.item, rec)"
-                >
-                  <template #reference>
-                    <el-button
-                      text
-                      type="danger"
-                      size="small"
-                      class="rec-del"
-                      :icon="Trash2"
-                      :loading="deletingRecord === `${it.item.key}/${rec.key}`"
-                      :aria-label="t('ddns.deleteRecord')"
-                      :title="t('ddns.deleteRecord')"
-                    />
-                  </template>
-                </el-popconfirm>
-                <el-button
-                  v-else
-                  text
-                  size="small"
-                  class="rec-del"
-                  :icon="Trash2"
-                  disabled
-                  :aria-label="t('ddns.deleteRecord')"
-                  :title="t('ddns.lastRecordHint')"
+    <GroupedList :gl="gl" :loading="loading" :compact="compact" :empty-text="t('ddns.empty')" :empty-image-size="120" :count-text="(n: number) => t('ddns.groupCount', { count: n })">
+      <template #item="{ it, item: tk, sorting, bind }">
+        <EntityCard
+          v-bind="bind"
+          :compact="compact || sorting"
+          :off="!tk.enable || moduleOff"
+          :collapsible="!sorting"
+          :collapsed="isCollapsed(tk.key)"
+          :collapsed-hint="t('ddns.recordsCollapsed', { count: tk.records.length })"
+          @update:collapsed="(v: boolean) => setCollapsed(tk.key, v)"
+        >
+          <template #lead>
+            <SortCheck v-if="sorting" :gl="gl" :id="it.id" />
+            <el-switch v-else :model-value="tk.enable" @change="(v: string | number | boolean) => toggle(tk, Boolean(v))" />
+          </template>
+          <template #title>
+            <span>{{ tk.name || t('ddns.unnamedTask') }}</span>
+            <el-tag size="small" effect="plain">{{ providerTitle(tk.provider) }}</el-tag>
+          </template>
+          <template v-if="tk.remark" #sub>{{ tk.remark }}</template>
+          <template #status>
+            <StatusBadge v-bind="taskStatus(tk)" />
+          </template>
+          <Field label="IPv4" mono>{{ tk.ipv4.enable ? tk.state.ipv4 || (taskActive(tk) ? t('ddns.fetching') : '-') : t('ddns.notEnabled') }}</Field>
+          <Field label="IPv6" mono>{{ tk.ipv6.enable ? tk.state.ipv6 || (taskActive(tk) ? t('ddns.fetching') : '-') : t('ddns.notEnabled') }}</Field>
+          <Field :label="t('ddns.lastCheck')">{{ tk.state.lastRun ? fmtTime(tk.state.lastRun) : '-' }}</Field>
+          <Field :label="t('ddns.nextCheck')">{{ taskActive(tk) && tk.state.nextRun ? fmtTime(tk.state.nextRun) : '-' }}</Field>
+          <template v-if="!sorting" #extra>
+            <el-alert v-if="tk.state.ipError && taskActive(tk)" type="error" :title="tk.state.ipError" :closable="false" show-icon class="ip-error" />
+            <div class="records">
+              <template v-for="sec in recordSections(tk)" :key="sec.name">
+                <!-- 记录有分组时按分组显示，每组可单独收起；没有分组时直接列出 -->
+                <GroupHeader
+                  v-if="sec.grouped"
+                  class="rec-group"
+                  :name="sec.name"
+                  :count-text="t('ddns.recordCount', { count: sec.items.length })"
+                  :collapsed="recordGroupCollapsed(tk, sec.name)"
+                  @toggle="toggleRecordGroup(tk, sec.name)"
+                  @rename="renameRecordGroup(tk, sec.name)"
                 />
-              </div>
+                <template v-if="!sec.grouped || !recordGroupCollapsed(tk, sec.name)">
+                  <div v-for="rec in sec.items" :key="rec.key" class="rec" :class="{ 'is-off': !rec.enable, 'is-grouped': sec.grouped }">
+                    <div class="rec-name">
+                      <span class="mono rec-domain">{{ fqdn(rec) }}</span>
+                      <el-tag size="small" type="info" class="mono">{{ rec.type }}</el-tag>
+                    </div>
+                    <div class="rec-value mono">{{ (rec.key && tk.state.records?.[rec.key]?.value) || '-' }}</div>
+                    <div class="rec-status">
+                      <StatusBadge v-bind="recordStatus(tk, rec)" />
+                      <span v-if="recordSync(tk, rec)" class="meta">{{ recordSync(tk, rec) }}</span>
+                    </div>
+                    <!-- 不进入编辑页直接删除单条记录；任务至少保留一条记录，最后一条时禁用 -->
+                    <div class="rec-ops">
+                      <el-popconfirm
+                        v-if="rec.key && tk.records.length > 1"
+                        :title="t('ddns.confirmDeleteRecord', { name: fqdn(rec) })"
+                        width="260"
+                        @confirm="removeRecord(tk, rec)"
+                      >
+                        <template #reference>
+                          <el-button
+                            text
+                            type="danger"
+                            size="small"
+                            class="rec-del"
+                            :icon="Trash2"
+                            :loading="deletingRecord === `${tk.key}/${rec.key}`"
+                            :aria-label="t('ddns.deleteRecord')"
+                            :title="t('ddns.deleteRecord')"
+                          />
+                        </template>
+                      </el-popconfirm>
+                      <el-button
+                        v-else
+                        text
+                        size="small"
+                        class="rec-del"
+                        :icon="Trash2"
+                        disabled
+                        :aria-label="t('ddns.deleteRecord')"
+                        :title="t('ddns.lastRecordHint')"
+                      />
+                    </div>
+                  </div>
+                </template>
+              </template>
+              <div v-if="!tk.records.length" class="meta">{{ t('ddns.noRecords') }}</div>
             </div>
-            <div v-if="!it.item.records.length" class="meta">{{ t('ddns.noRecords') }}</div>
-          </div>
-        </template>
-        <template v-if="gl.sortMode.value" #actions>
-          <GripVertical v-if="!isMobile" :size="16" class="grip" />
-          <el-button text size="small" :icon="ChevronUp" :disabled="!it.canUp" :aria-label="t('groupSort.moveUp')" :title="t('groupSort.moveUp')" @click="gl.moveItem(it.id, -1)" />
-          <el-button text size="small" :icon="ChevronDown" :disabled="!it.canDown" :aria-label="t('groupSort.moveDown')" :title="t('groupSort.moveDown')" @click="gl.moveItem(it.id, 1)" />
-        </template>
-        <template v-else #actions>
-          <el-button text size="small" :icon="RefreshCw" :disabled="!taskActive(it.item) || !it.item.state.running" @click="sync(it.item, false)">{{ t('ddns.check') }}</el-button>
-          <el-button text size="small" :icon="Zap" :disabled="!taskActive(it.item) || !it.item.state.running" @click="sync(it.item, true)">{{ t('ddns.forceSync') }}</el-button>
-          <el-button text size="small" :icon="Pencil" @click="openEditor(it.item)">{{ t('common.edit') }}</el-button>
-          <el-popconfirm :title="t('ddns.confirmDelete')" width="240" @confirm="remove(it.item)">
-            <template #reference>
-              <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
-            </template>
-          </el-popconfirm>
-        </template>
-      </EntityCard>
+          </template>
+          <template v-if="sorting" #actions>
+            <SortMoves :gl="gl" :it="it" />
+          </template>
+          <template v-else #actions>
+            <el-button text size="small" :icon="RefreshCw" :disabled="!taskActive(tk) || !tk.state.running" @click="sync(tk, false)">{{ t('ddns.check') }}</el-button>
+            <el-button text size="small" :icon="Zap" :disabled="!taskActive(tk) || !tk.state.running" @click="sync(tk, true)">{{ t('ddns.forceSync') }}</el-button>
+            <el-button v-if="tk.records.length > 1" text size="small" :icon="ArrowUpDown" @click="openRecordSort(tk)">{{ t('ddns.sortRecords') }}</el-button>
+            <el-button text size="small" :icon="Pencil" @click="openEditor(tk)">{{ t('common.edit') }}</el-button>
+            <el-popconfirm :title="t('ddns.confirmDelete')" width="240" @confirm="remove(tk)">
+              <template #reference>
+                <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
+              </template>
+            </el-popconfirm>
+          </template>
+        </EntityCard>
       </template>
-    </div>
+    </GroupedList>
+
+    <SortDialog v-model="recordSort.visible" :title="recordSort.title" :entries="recordSort.entries" :save="recordSort.save" mono />
 
     <LogCard url="/api/ddns/logs" clearable />
 
@@ -168,16 +132,7 @@
         <el-tabs v-model="tab">
           <el-tab-pane :label="t('ddns.tabBasic')" name="basic">
             <el-form-item :label="t('ddns.taskName')"><el-input v-model="editing.name" /></el-form-item>
-            <el-form-item :label="t('groupSort.group')">
-              <el-autocomplete
-                v-model="editing.group"
-                class="w-260"
-                clearable
-                :maxlength="64"
-                :fetch-suggestions="(q: string, cb: (v: { value: string }[]) => void) => cb(groupSuggestions(gl.groupNames.value, q))"
-                :placeholder="t('groupSort.groupPlaceholder')"
-              />
-            </el-form-item>
+            <GroupInput v-model="editing.group" :groups="gl.groupNames.value" />
             <el-form-item :label="t('ddns.dnsProvider')">
               <el-select v-model="editing.provider" filterable class="w-260" @change="onProviderChange">
                 <el-option v-for="p in providers" :key="p.name" :label="p.title" :value="p.name" />
@@ -238,6 +193,7 @@
             <div class="records-ops">
               <el-button size="small" :icon="Plus" @click="addRecord('A')">{{ t('ddns.addV4') }}</el-button>
               <el-button size="small" :icon="Plus" @click="addRecord('AAAA')">{{ t('ddns.addV6') }}</el-button>
+              <el-button v-if="editing.records.length > 1" size="small" :icon="ArrowUpDown" @click="openEditingRecordSort">{{ t('ddns.sortRecords') }}</el-button>
             </div>
             <div class="form-help">
               <i18n-t keypath="ddns.recordValueHelp" tag="span">
@@ -276,12 +232,17 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
-import { ArrowUpDown, ChevronDown, ChevronsDownUp, ChevronsUpDown, ChevronUp, Globe, GripVertical, Pencil, Plus, RefreshCw, Search, Trash2, Zap } from 'lucide-vue-next'
+import { ArrowUpDown, ChevronsDownUp, ChevronsUpDown, Globe, Pencil, Plus, RefreshCw, Trash2, Zap } from 'lucide-vue-next'
 import { api } from '../api'
 import GroupHeader from '../components/GroupHeader.vue'
-import SortToolbar from '../components/SortToolbar.vue'
-import { useGroupedList } from '../composables/useGroupSort'
-import { groupSuggestions } from '../groupSort'
+import GroupedList from '../components/GroupedList.vue'
+import GroupInput from '../components/GroupInput.vue'
+import ListTools from '../components/ListTools.vue'
+import SortCheck from '../components/SortCheck.vue'
+import SortDialog from '../components/SortDialog.vue'
+import SortMoves from '../components/SortMoves.vue'
+import { useGroupRename, useGroupedList } from '../composables/useGroupSort'
+import { buildSections, renameSection, type SortEntry } from '../groupSort'
 import SecretInput from '../components/SecretInput.vue'
 import { secretOf } from '../secrets'
 import PageHeader from '../components/PageHeader.vue'
@@ -318,6 +279,8 @@ interface DNSRecord {
   ttl: number
   line: string
   remark: string
+  // group 为任务内记录列表中的分组名称，只影响展示
+  group?: string
 }
 
 interface Task {
@@ -391,6 +354,87 @@ const gl = useGroupedList<TaskView>({
   matches: (tk, q) =>
     [tk.name, tk.group ?? '', tk.remark, providerTitle(tk.provider), ...tk.records.map(fqdn)].join('\n').toLowerCase().includes(q),
 })
+
+// 任务内解析记录的分组：分组的收起状态按 任务key/分组名 持久化
+const recordFold = useCollapsed('ddns.records')
+const askRecordGroup = useGroupRename()
+// recordSort 为记录排序对话框的状态，卡片上与编辑对话框中共用
+const recordSort = reactive<{ visible: boolean; title: string; entries: SortEntry[]; save: (entries: SortEntry[]) => Promise<void> | void }>({
+  visible: false,
+  title: '',
+  entries: [],
+  save: () => {},
+})
+
+// recordSections 把任务的记录按分组归类；没有任何分组时只有一节且不显示标题
+function recordSections(tk: Task) {
+  const secs = buildSections(tk.records, (r) => r.group ?? '')
+  const grouped = secs.some((s) => s.name)
+  return secs.map((s) => ({ ...s, grouped }))
+}
+
+function recordGroupCollapsed(tk: TaskView, name: string) {
+  return recordFold.isCollapsed(`${tk.key}/${name}`)
+}
+
+function toggleRecordGroup(tk: TaskView, name: string) {
+  recordFold.setCollapsed(`${tk.key}/${name}`, !recordGroupCollapsed(tk, name))
+}
+
+// saveRecordLayout 保存记录的新顺序与分组，只改配置，不重启任务
+async function saveRecordLayout(tk: TaskView, records: { key: string; group: string }[]) {
+  await api.put(`/api/ddns/tasks/${tk.key}/records-layout`, { records })
+  await load()
+}
+
+// renameRecordGroup 重命名任务内的记录分组，位置与顺序不变；与已有分组同名时合并
+async function renameRecordGroup(tk: TaskView, name: string) {
+  const secs = buildSections(tk.records, (r) => r.group ?? '')
+  const to = await askRecordGroup(
+    name,
+    secs.map((s) => s.name).filter(Boolean),
+  )
+  if (to === null) {
+    return
+  }
+  const next = renameSection(secs, name, to)
+  if (!next) {
+    return
+  }
+  try {
+    await saveRecordLayout(tk, next.flatMap((sec) => sec.items.map((r) => ({ key: r.key ?? '', group: sec.name }))))
+    recordFold.setCollapsed(`${tk.key}/${to}`, recordGroupCollapsed(tk, name) || recordGroupCollapsed(tk, to))
+    recordFold.setCollapsed(`${tk.key}/${name}`, false)
+  } catch (e) {
+    ElMessage.error((e as Error).message)
+  }
+}
+
+// recordEntry 把记录转换为排序对话框中的一项
+function recordEntry(r: DNSRecord, id: string): SortEntry {
+  return { id, label: fqdn(r) || '-', sub: `${r.type} · ${r.value}`, group: r.group ?? '', off: !r.enable }
+}
+
+// openRecordSort 在卡片上调整已保存任务的记录顺序与分组，保存后立即生效
+function openRecordSort(tk: TaskView) {
+  recordSort.title = t('ddns.sortRecordsTitle', { name: tk.name || t('ddns.unnamedTask') })
+  recordSort.entries = tk.records.map((r) => recordEntry(r, r.key ?? ''))
+  recordSort.save = (entries) => saveRecordLayout(tk, entries.map((e) => ({ key: e.id, group: e.group })))
+  recordSort.visible = true
+}
+
+// openEditingRecordSort 在编辑对话框中调整记录顺序与分组，随任务一起保存；新记录还没有 key，用位置标识
+function openEditingRecordSort() {
+  const rows = editing.value.records
+  const ids = rows.map((r, i) => r.key || `#${i}`)
+  recordSort.title = t('ddns.sortRecordsTitle', { name: editing.value.name || t('ddns.unnamedTask') })
+  recordSort.entries = rows.map((r, i) => recordEntry(r, ids[i]))
+  recordSort.save = (entries) => {
+    const byId = new Map(rows.map((r, i) => [ids[i], r]))
+    editing.value.records = entries.map((e) => ({ ...byId.get(e.id)!, group: e.group }))
+  }
+  recordSort.visible = true
+}
 
 const currentProvider = computed(() => providers.value.find((p) => p.name === editing.value.provider))
 const moduleOff = computed(() => settingsLoaded.value && !settings.enable)
@@ -661,31 +705,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.list-filter {
-  width: 220px;
-}
-.card-list > .group-header {
-  border-radius: var(--g-radius);
-}
-.card-list > .is-grouped {
-  margin-left: 16px;
-}
-.card-list.is-sorting > .entity[draggable='true'] {
-  cursor: grab;
-}
-.card-list > .entity.dragging {
-  opacity: 0.4;
-}
-.card-list > .drop-before {
-  box-shadow: 0 -3px 0 var(--el-color-primary);
-}
-.card-list > .drop-after {
-  box-shadow: 0 3px 0 var(--el-color-primary);
-}
-.grip {
-  color: var(--el-text-color-secondary);
-  cursor: grab;
-}
 .module-toggle {
   display: inline-flex;
   align-items: center;
@@ -715,8 +734,11 @@ onMounted(async () => {
   padding: 9px 12px;
   font-size: 13px;
 }
-.rec + .rec {
+.records > * + * {
   border-top: 1px solid var(--g-border);
+}
+.rec.is-grouped {
+  padding-left: 32px;
 }
 .rec.is-off .rec-name,
 .rec.is-off .rec-value {
@@ -786,12 +808,6 @@ onMounted(async () => {
   margin-top: 12px;
 }
 @media (max-width: 767.98px) {
-  .list-filter {
-    width: 160px;
-  }
-  .card-list > .is-grouped {
-    margin-left: 8px;
-  }
   /* 移动端记录纵向排列，删除按钮固定在右上角 */
   .rec {
     grid-template-columns: 1fr;

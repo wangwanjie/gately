@@ -184,6 +184,39 @@ func (a *App) handleTokenUpdate(w http.ResponseWriter, r *http.Request) {
 	httpx.OK(w, v)
 }
 
+// tokenKeysRequest 是令牌排序与批量分组的请求体，字段名与通用列表接口一致。
+type tokenKeysRequest struct {
+	Keys []string `json:"keys"`
+	// Group 为目标分组，仅批量分组使用，留空表示移出分组
+	Group string `json:"group"`
+}
+
+func (a *App) handleTokenOrder(w http.ResponseWriter, r *http.Request) {
+	var req tokenKeysRequest
+	if err := httpx.ReadJSON(r, &req); err != nil {
+		httpx.Error(w, http.StatusBadRequest, "%v", err)
+		return
+	}
+	if err := a.tokens.Order(req.Keys); err != nil {
+		a.tokenError(w, err)
+		return
+	}
+	httpx.OK(w, map[string]bool{"ok": true})
+}
+
+func (a *App) handleTokenGroup(w http.ResponseWriter, r *http.Request) {
+	var req tokenKeysRequest
+	if err := httpx.ReadJSON(r, &req); err != nil {
+		httpx.Error(w, http.StatusBadRequest, "%v", err)
+		return
+	}
+	if err := a.tokens.SetGroup(req.Keys, req.Group); err != nil {
+		a.tokenError(w, err)
+		return
+	}
+	httpx.OK(w, map[string]bool{"ok": true})
+}
+
 func (a *App) handleTokenRegenerate(w http.ResponseWriter, r *http.Request) {
 	v, secret, err := a.tokens.Regenerate(r.PathValue("id"))
 	if err != nil {

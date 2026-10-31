@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/wangwanjie/gately/internal/banlist"
+	"github.com/wangwanjie/gately/internal/crud"
 	"github.com/wangwanjie/gately/internal/events"
 	"github.com/wangwanjie/gately/internal/logbuf"
 )
@@ -49,8 +50,10 @@ const hostPattern = `\[?(?P<host>[0-9]{1,3}(?:\.[0-9]{1,3}){3}|[0-9A-Fa-f]{0,4}:
 
 // Jail 是一条检测规则：在日志中按正则找出失败记录，同一来源在 FindTime 内达到 MaxRetry 次即被封禁。
 type Jail struct {
-	Key    string `json:"key"`
-	Name   string `json:"name"`
+	Key  string `json:"key"`
+	Name string `json:"name"`
+	// Group 为列表中的分组名称，只影响管理界面的展示，留空为未分组
+	Group  string `json:"group"`
 	Enable bool   `json:"enable"`
 	// Source 为日志来源，见 Source* 常量
 	Source string `json:"source"`
@@ -105,6 +108,9 @@ func compileFilters(text string, needHost bool) ([]*regexp.Regexp, error) {
 
 // Validate 校验规则并补全默认值。
 func (j *Jail) Validate() error {
+	if err := crud.NormalizeGroup(&j.Group); err != nil {
+		return err
+	}
 	j.Name = strings.TrimSpace(j.Name)
 	if j.Name == "" {
 		return errors.New("名称不能为空")

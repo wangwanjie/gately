@@ -19,7 +19,8 @@
     "lockForward": "Sites using forward auth cannot use shared users",
     "lockOnly": "This site authenticates only with shared users and would become public if cleared; to make it public, turn off authentication in the site settings",
     "none": "No sites that can use authentication yet",
-    "noMatch": "No matching sites"
+    "noMatch": "No matching sites",
+    "groupCount": "{on} / {total} selected"
   },
   "leaveTitle": "Unsaved changes",
   "leaveConfirm": "This page has unsaved changes that will be lost if you leave.",

@@ -78,6 +78,7 @@ func (m *Module) Routes(r module.Router) {
 		Save:     m.saveLocked,
 		Key:      func(j *Jail) *string { return &j.Key },
 		Enabled:  func(j *Jail) *bool { return &j.Enable },
+		Group:    func(j *Jail) *string { return &j.Group },
 		Validate: func(j *Jail) error { return j.Validate() },
 		View:     m.jailViewLocked,
 		Changed:  m.jailChangedLocked,

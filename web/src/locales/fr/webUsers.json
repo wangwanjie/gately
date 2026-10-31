@@ -19,7 +19,8 @@
     "lockForward": "Les sites en authentification déléguée ne peuvent pas utiliser les utilisateurs partagés",
     "lockOnly": "Ce site ne s'authentifie qu'avec les utilisateurs partagés et deviendrait public si vous le désélectionnez ; pour le rendre public, désactivez l'authentification dans les paramètres du site",
     "none": "Aucun site pouvant utiliser l'authentification pour l'instant",
-    "noMatch": "Aucun site correspondant"
+    "noMatch": "Aucun site correspondant",
+    "groupCount": "{on} / {total} sélectionnés"
   },
   "leaveTitle": "Modifications non enregistrées",
   "leaveConfirm": "Cette page contient des modifications non enregistrées qui seront perdues si vous la quittez.",

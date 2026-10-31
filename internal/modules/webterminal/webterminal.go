@@ -44,8 +44,10 @@ type LocalConfig struct {
 
 // Connection 是一个终端连接配置。
 type Connection struct {
-	Key    string       `json:"key"`
-	Name   string       `json:"name"`
+	Key  string `json:"key"`
+	Name string `json:"name"`
+	// Group 为列表中的分组名称，只影响管理界面的展示，留空为未分组
+	Group  string       `json:"group"`
 	Type   string       `json:"type"`
 	SSH    SSHConfig    `json:"ssh"`
 	Telnet TelnetConfig `json:"telnet"`
@@ -148,6 +150,9 @@ func cleanDirs(dirs []string) []string {
 
 // Validate 校验连接配置并补全默认值。
 func (c *Connection) Validate() error {
+	if err := crud.NormalizeGroup(&c.Group); err != nil {
+		return err
+	}
 	c.Name = strings.TrimSpace(c.Name)
 	if c.Name == "" {
 		return errors.New("名称不能为空")
@@ -363,6 +368,7 @@ func (m *Module) Routes(r module.Router) {
 		Save:     m.saveLocked,
 		Key:      func(c *Connection) *string { return &c.Key },
 		Enabled:  func(c *Connection) *bool { return &c.Enable },
+		Group:    func(c *Connection) *string { return &c.Group },
 		Validate: func(c *Connection) error { return c.Validate() },
 		Merge:    mergeSecrets,
 		View:     m.viewLocked,

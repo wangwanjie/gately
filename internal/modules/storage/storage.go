@@ -35,8 +35,10 @@ const (
 
 // Mount 是一个存储挂载点。
 type Mount struct {
-	Key    string `json:"key"`
-	Name   string `json:"name"`
+	Key  string `json:"key"`
+	Name string `json:"name"`
+	// Group 为列表中的分组名称，只影响管理界面的展示，留空为未分组
+	Group  string `json:"group"`
 	Type   string `json:"type"`
 	Remark string `json:"remark"`
 	Enable bool   `json:"enable"`
@@ -62,6 +64,9 @@ type fileConfig struct {
 
 // Validate 校验并规范化挂载点。
 func (mt *Mount) Validate() error {
+	if err := crud.NormalizeGroup(&mt.Group); err != nil {
+		return err
+	}
 	mt.Name = strings.TrimSpace(mt.Name)
 	if mt.Name == "" {
 		return errors.New("名称不能为空")
@@ -154,6 +159,7 @@ func (m *Module) Init(env module.Env) error {
 		Save:     func() error { return m.store.Save(ID, m.cfg) },
 		Key:      func(mt *Mount) *string { return &mt.Key },
 		Enabled:  func(mt *Mount) *bool { return &mt.Enable },
+		Group:    func(mt *Mount) *string { return &mt.Group },
 		Validate: func(mt *Mount) error { return mt.Validate() },
 		Merge:    func(old, updated *Mount) { crud.KeepSecret(old.Password, &updated.Password) },
 		View:     func(mt *Mount) any { return mt.view() },

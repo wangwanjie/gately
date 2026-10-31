@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/wangwanjie/gately/internal/binstall"
+	"github.com/wangwanjie/gately/internal/crud"
 )
 
 // 代理类型。
@@ -60,8 +61,10 @@ type ServerSettings struct {
 
 // Client 是一个 frpc 实例：连接一台 frps，运行一个独立的 frpc 进程，代理通过 Proxy.Client 归属到实例。
 type Client struct {
-	Key    string `json:"key"`
-	Name   string `json:"name"`
+	Key  string `json:"key"`
+	Name string `json:"name"`
+	// Group 为列表中的分组名称，只影响管理界面的展示，留空为未分组
+	Group  string `json:"group"`
 	Enable bool   `json:"enable"`
 	ClientSettings
 	Remark string `json:"remark"`
@@ -69,8 +72,10 @@ type Client struct {
 
 // Server 是一个 frps 实例，运行一个独立的 frps 进程。
 type Server struct {
-	Key    string `json:"key"`
-	Name   string `json:"name"`
+	Key  string `json:"key"`
+	Name string `json:"name"`
+	// Group 为列表中的分组名称，只影响管理界面的展示，留空为未分组
+	Group  string `json:"group"`
 	Enable bool   `json:"enable"`
 	ServerSettings
 	Remark string `json:"remark"`
@@ -85,8 +90,10 @@ type Settings struct {
 
 // Proxy 是一条 frpc 代理，把本地服务暴露到 frps。
 type Proxy struct {
-	Key       string `json:"key"`
-	Name      string `json:"name"`
+	Key  string `json:"key"`
+	Name string `json:"name"`
+	// Group 为列表中的分组名称，只影响管理界面的展示，留空为未分组
+	Group     string `json:"group"`
 	Type      string `json:"type"`
 	Enable    bool   `json:"enable"`
 	LocalIP   string `json:"localIp"`
@@ -149,6 +156,9 @@ func (c *ClientSettings) Validate() error {
 
 // Validate 校验并规范化 frpc 实例。
 func (c *Client) Validate() error {
+	if err := crud.NormalizeGroup(&c.Group); err != nil {
+		return err
+	}
 	c.Name = strings.TrimSpace(c.Name)
 	if c.Name == "" {
 		return errors.New("名称不能为空")
@@ -164,6 +174,9 @@ func (c *Client) Validate() error {
 
 // Validate 校验并规范化 frps 实例。
 func (s *Server) Validate() error {
+	if err := crud.NormalizeGroup(&s.Group); err != nil {
+		return err
+	}
 	s.Name = strings.TrimSpace(s.Name)
 	if s.Name == "" {
 		return errors.New("名称不能为空")
@@ -238,6 +251,9 @@ func ParseAllowPorts(s string) ([]PortRange, error) {
 
 // Validate 校验并规范化代理配置。
 func (p *Proxy) Validate() error {
+	if err := crud.NormalizeGroup(&p.Group); err != nil {
+		return err
+	}
 	p.Name = strings.TrimSpace(p.Name)
 	p.LocalIP = strings.TrimSpace(p.LocalIP)
 	p.Subdomain = strings.TrimSpace(p.Subdomain)

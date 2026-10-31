@@ -92,6 +92,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | PUT | `/api/ddns/tasks-group` | `ddns:write` | Asignar grupo a varios elementos: Tarea DDNS |
 | GET | `/api/ddns/tasks/{key}/secrets` | `ddns:write` | Ver secretos en texto plano |
 | POST | `/api/ddns/tasks/{key}/sync` | `ddns:write` | Sincronizar ahora una tarea DDNS |
+| DELETE | `/api/ddns/tasks/{key}/records/{rec}` | `ddns:write` | Eliminar un registro de una tarea DDNS |
+| PUT | `/api/ddns/tasks/{key}/records-layout` | `ddns:write` | Reordenar y agrupar los registros DNS de una tarea |
 | GET | `/api/ddns/providers` | `ddns:read` | Listar los proveedores DNS compatibles y los parámetros que requieren |
 | GET | `/api/ddns/netinterfaces` | `ddns:read` | Listar las tarjetas de red de este equipo y sus direcciones |
 | POST | `/api/ddns/iptest` | `ddns:write` | Probar la obtención de la IP pública |
@@ -111,6 +113,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/stun/rules/{key}` | `stun:write` | Eliminar Regla STUN |
 | PUT | `/api/stun/rules/{key}/enable` | `stun:write` | Activar o desactivar Regla STUN |
 | PUT | `/api/stun/rules-order` | `stun:write` | Reordenar Regla STUN |
+| PUT | `/api/stun/rules-group` | `stun:write` | Asignar grupo a varios elementos: Regla STUN |
 | POST | `/api/stun/rules/{key}/restart` | `stun:write` | Reiniciar una regla STUN |
 | GET | `/api/stun/netinterfaces` | `stun:read` | Listar las tarjetas de red de este equipo y sus direcciones |
 | GET | `/api/stun/settings` | `stun:read` | Leer los ajustes globales de STUN |
@@ -147,6 +150,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/frp/clients/{key}` | `frp:write` | Eliminar Cliente frp |
 | PUT | `/api/frp/clients/{key}/enable` | `frp:write` | Activar o desactivar Cliente frp |
 | PUT | `/api/frp/clients-order` | `frp:write` | Reordenar Cliente frp |
+| PUT | `/api/frp/clients-group` | `frp:write` | Asignar grupo a varios elementos: Cliente frp |
 | GET | `/api/frp/clients/{key}/secrets` | `frp:write` | Ver secretos en texto plano |
 | GET | `/api/frp/servers` | `frp:read` | Listar Servidor frp |
 | POST | `/api/frp/servers` | `frp:write` | Añadir Servidor frp |
@@ -154,6 +158,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/frp/servers/{key}` | `frp:write` | Eliminar Servidor frp |
 | PUT | `/api/frp/servers/{key}/enable` | `frp:write` | Activar o desactivar Servidor frp |
 | PUT | `/api/frp/servers-order` | `frp:write` | Reordenar Servidor frp |
+| PUT | `/api/frp/servers-group` | `frp:write` | Asignar grupo a varios elementos: Servidor frp |
 | GET | `/api/frp/servers/{key}/secrets` | `frp:write` | Ver secretos en texto plano |
 | GET | `/api/frp/proxies` | `frp:read` | Listar proxies de frp |
 | POST | `/api/frp/proxies` | `frp:write` | Añadir proxies de frp |
@@ -161,6 +166,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/frp/proxies/{key}` | `frp:write` | Eliminar proxies de frp |
 | PUT | `/api/frp/proxies/{key}/enable` | `frp:write` | Activar o desactivar proxies de frp |
 | PUT | `/api/frp/proxies-order` | `frp:write` | Reordenar proxies de frp |
+| PUT | `/api/frp/proxies-group` | `frp:write` | Asignar grupo a varios elementos: proxies de frp |
 | GET | `/api/frp/proxies/{key}/secrets` | `frp:write` | Ver secretos en texto plano |
 | POST | `/api/frp/import` | `frp:write` | Importar configuraciones existentes de frpc / frps (admite ini antiguo y toml nuevo); con apply en false solo se muestra una vista previa |
 | GET | `/api/frp/install` | `frp:read` | Ver la información de instalación y el progreso de un programa gestionado |
@@ -186,6 +192,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/cloudflared/tunnels/{key}` | `cloudflared:write` | Eliminar Túnel de Cloudflare |
 | PUT | `/api/cloudflared/tunnels/{key}/enable` | `cloudflared:write` | Activar o desactivar Túnel de Cloudflare |
 | PUT | `/api/cloudflared/tunnels-order` | `cloudflared:write` | Reordenar Túnel de Cloudflare |
+| PUT | `/api/cloudflared/tunnels-group` | `cloudflared:write` | Asignar grupo a varios elementos: Túnel de Cloudflare |
 | GET | `/api/cloudflared/tunnels/{key}/secrets` | `cloudflared:write` | Ver secretos en texto plano |
 | POST | `/api/cloudflared/tunnels/{key}/restart` | `cloudflared:write` | Reiniciar un túnel de Cloudflare |
 | GET | `/api/cloudflared/tunnels/{key}/ingress` | `cloudflared:read` | Leer las rutas de un túnel con token |
@@ -211,6 +218,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/ssl/certs/{key}` | `ssl:write` | Eliminar Certificado |
 | PUT | `/api/ssl/certs/{key}/enable` | `ssl:write` | Activar o desactivar Certificado |
 | PUT | `/api/ssl/certs-order` | `ssl:write` | Reordenar Certificado |
+| PUT | `/api/ssl/certs-group` | `ssl:write` | Asignar grupo a varios elementos: Certificado |
 | GET | `/api/ssl/certs/{key}/secrets` | `ssl:write` | Ver secretos en texto plano |
 | POST | `/api/ssl/certs/{key}/renew` | `ssl:write` | Emitir o renovar un certificado ahora |
 | GET | `/api/ssl/certs/{key}/download` | `ssl:write` | Descargar certificado y clave privada |
@@ -232,6 +240,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/waf/instances/{key}` | `waf:write` | Eliminar Instancia WAF |
 | PUT | `/api/waf/instances/{key}/enable` | `waf:write` | Activar o desactivar Instancia WAF |
 | PUT | `/api/waf/instances-order` | `waf:write` | Reordenar Instancia WAF |
+| PUT | `/api/waf/instances-group` | `waf:write` | Asignar grupo a varios elementos: Instancia WAF |
 | GET | `/api/waf/crs` | `waf:read` | Listar archivos de reglas OWASP CRS |
 | GET | `/api/waf/crs/{file}` | `waf:read` | Leer un archivo de reglas CRS |
 
@@ -278,12 +287,13 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | --- | --- | --- | --- |
 | GET | `/api/guard/logs` | `guard:read` | Ver los registros de ejecución del módulo |
 | DELETE | `/api/guard/logs` | `guard:write` | Vaciar los registros de ejecución del módulo |
-| GET | `/api/guard/jails` | `guard:read` | Listar Entrada |
-| POST | `/api/guard/jails` | `guard:write` | Añadir Entrada |
-| PUT | `/api/guard/jails/{key}` | `guard:write` | Modificar Entrada |
-| DELETE | `/api/guard/jails/{key}` | `guard:write` | Eliminar Entrada |
-| PUT | `/api/guard/jails/{key}/enable` | `guard:write` | Activar o desactivar Entrada |
-| PUT | `/api/guard/jails-order` | `guard:write` | Reordenar Entrada |
+| GET | `/api/guard/jails` | `guard:read` | Listar regla de prevención de intrusiones |
+| POST | `/api/guard/jails` | `guard:write` | Añadir regla de prevención de intrusiones |
+| PUT | `/api/guard/jails/{key}` | `guard:write` | Modificar regla de prevención de intrusiones |
+| DELETE | `/api/guard/jails/{key}` | `guard:write` | Eliminar regla de prevención de intrusiones |
+| PUT | `/api/guard/jails/{key}/enable` | `guard:write` | Activar o desactivar regla de prevención de intrusiones |
+| PUT | `/api/guard/jails-order` | `guard:write` | Reordenar regla de prevención de intrusiones |
+| PUT | `/api/guard/jails-group` | `guard:write` | Asignar grupo a varios elementos: regla de prevención de intrusiones |
 | GET | `/api/guard/presets` | `guard:read` | Plantillas de reglas para servicios habituales |
 | POST | `/api/guard/jails/test` | `guard:write` | Probar filtros con líneas de registro de ejemplo |
 | GET | `/api/guard/status` | `guard:read` | Estado de sincronización del cortafuegos y entorno |
@@ -306,6 +316,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/wol/devices/{key}` | `wol:write` | Eliminar Activar un dispositivo |
 | PUT | `/api/wol/devices/{key}/enable` | `wol:write` | Activar o desactivar Activar un dispositivo |
 | PUT | `/api/wol/devices-order` | `wol:write` | Reordenar Activar un dispositivo |
+| PUT | `/api/wol/devices-group` | `wol:write` | Asignar grupo a varios elementos: Activar un dispositivo |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | Enviar un paquete mágico de activación al dispositivo |
 | GET | `/api/wol/status` | `wol:read` | Ver el estado en línea del dispositivo |
 
@@ -321,6 +332,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/webterminal/connections/{key}` | `webterminal:write` | Eliminar Conexión de terminal |
 | PUT | `/api/webterminal/connections/{key}/enable` | `webterminal:write` | Activar o desactivar Conexión de terminal |
 | PUT | `/api/webterminal/connections-order` | `webterminal:write` | Reordenar Conexión de terminal |
+| PUT | `/api/webterminal/connections-group` | `webterminal:write` | Asignar grupo a varios elementos: Conexión de terminal |
 | GET | `/api/webterminal/connections/{key}/secrets` | `webterminal:write` | Ver secretos en texto plano |
 | DELETE | `/api/webterminal/connections/{key}/hostkey` | `webterminal:write` | Borrar la clave de host registrada |
 | POST | `/api/webterminal/connections/{key}/test` | `webterminal:write` | Probar una conexión guardada |
@@ -347,7 +359,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | POST | `/api/webterminal/security/2fa/disable` | Solo sesión iniciada | Desactivar la verificación en dos pasos del terminal |
 | POST | `/api/webterminal/security/verify2fa` | Solo sesión iniciada | Verificar el código de verificación en dos pasos del terminal |
 | GET | `/api/webterminal/security/check2fa` | Solo sesión iniciada | Comprobar si se superó la verificación en dos pasos del terminal |
-| GET | `/api/webterminal/sftp/{key}/list` | `webterminal:read` | Listar el directorio remoto |
+| GET | `/api/webterminal/sftp/{key}/list` | `webterminal:write` | Listar el directorio remoto |
 | GET | `/api/webterminal/sftp/{key}/read` | `webterminal:write` | Leer un archivo remoto |
 | POST | `/api/webterminal/sftp/{key}/write` | `webterminal:write` | Escribir un archivo remoto |
 | POST | `/api/webterminal/sftp/{key}/upload` | `webterminal:write` | Subir un archivo al host remoto |
@@ -381,6 +393,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/cron/tasks/{key}` | `cron:write` | Eliminar Tarea programada |
 | PUT | `/api/cron/tasks/{key}/enable` | `cron:write` | Activar o desactivar Tarea programada |
 | PUT | `/api/cron/tasks-order` | `cron:write` | Reordenar Tarea programada |
+| PUT | `/api/cron/tasks-group` | `cron:write` | Asignar grupo a varios elementos: Tarea programada |
 | POST | `/api/cron/tasks/{key}/run` | `cron:write` | Ejecutar ahora una tarea programada |
 | POST | `/api/cron/parse` | `cron:write` | Analizar y previsualizar una expresión Cron |
 
@@ -445,7 +458,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | GET | `/api/docker/containers/{id}/logs` | `docker:read` | Ver los registros del contenedor |
 | GET | `/api/docker/containers/{id}/stats` | `docker:read` | Ver el uso de recursos del contenedor |
 | GET | `/api/docker/containers/{id}/processes` | `docker:read` | Ver los procesos dentro del contenedor |
-| GET | `/api/docker/containers/{id}/files/list` | `docker:read` | Listar el directorio dentro del contenedor |
+| GET | `/api/docker/containers/{id}/files/list` | `docker:write` | Listar el directorio dentro del contenedor |
 | GET | `/api/docker/containers/{id}/files/read` | `docker:write` | Leer un archivo dentro del contenedor |
 | GET | `/api/docker/containers/{id}/files/download` | `docker:write` | Descargar un archivo dentro del contenedor |
 | POST | `/api/docker/containers/{id}/files/write` | `docker:write` | Escribir un archivo dentro del contenedor |
@@ -503,6 +516,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/filebrowser/instances/{key}` | `filebrowser:write` | Eliminar Instancia de File Browser |
 | PUT | `/api/filebrowser/instances/{key}/enable` | `filebrowser:write` | Activar o desactivar Instancia de File Browser |
 | PUT | `/api/filebrowser/instances-order` | `filebrowser:write` | Reordenar Instancia de File Browser |
+| PUT | `/api/filebrowser/instances-group` | `filebrowser:write` | Asignar grupo a varios elementos: Instancia de File Browser |
 | GET | `/api/filebrowser/instances/{key}/secrets` | `filebrowser:write` | Ver secretos en texto plano |
 | POST | `/api/filebrowser/instances/{key}/restart` | `filebrowser:write` | Reiniciar una instancia de File Browser |
 | GET | `/api/filebrowser/settings` | `filebrowser:read` | Leer los ajustes del programa File Browser |
@@ -520,14 +534,15 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | --- | --- | --- | --- |
 | GET | `/api/storage/logs` | `storage:read` | Ver los registros de ejecución del módulo |
 | DELETE | `/api/storage/logs` | `storage:write` | Vaciar los registros de ejecución del módulo |
-| GET | `/api/storage/mounts` | `storage:read` | Listar Entrada |
-| POST | `/api/storage/mounts` | `storage:write` | Añadir Entrada |
-| PUT | `/api/storage/mounts/{key}` | `storage:write` | Modificar Entrada |
-| DELETE | `/api/storage/mounts/{key}` | `storage:write` | Eliminar Entrada |
-| PUT | `/api/storage/mounts/{key}/enable` | `storage:write` | Activar o desactivar Entrada |
-| PUT | `/api/storage/mounts-order` | `storage:write` | Reordenar Entrada |
+| GET | `/api/storage/mounts` | `storage:read` | Listar Montajes de almacenamiento |
+| POST | `/api/storage/mounts` | `storage:write` | Añadir Montajes de almacenamiento |
+| PUT | `/api/storage/mounts/{key}` | `storage:write` | Modificar Montajes de almacenamiento |
+| DELETE | `/api/storage/mounts/{key}` | `storage:write` | Eliminar Montajes de almacenamiento |
+| PUT | `/api/storage/mounts/{key}/enable` | `storage:write` | Activar o desactivar Montajes de almacenamiento |
+| PUT | `/api/storage/mounts-order` | `storage:write` | Reordenar Montajes de almacenamiento |
+| PUT | `/api/storage/mounts-group` | `storage:write` | Asignar grupo a varios elementos: Montajes de almacenamiento |
 | GET | `/api/storage/mounts/{key}/secrets` | `storage:write` | Ver secretos en texto plano |
-| GET | `/api/storage/files/{key}/list` | `storage:read` | Listar el directorio de almacenamiento |
+| GET | `/api/storage/files/{key}/list` | `storage:write` | Listar el directorio de almacenamiento |
 | GET | `/api/storage/files/{key}/download` | `storage:write` | Descargar un archivo del almacenamiento |
 | POST | `/api/storage/files/{key}/upload` | `storage:write` | Subir un archivo al almacenamiento |
 | POST | `/api/storage/files/{key}/mkdir` | `storage:write` | Crear un directorio de almacenamiento |
@@ -546,6 +561,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/notify/channels/{key}` | `notify:write` | Eliminar Canal de notificaciones |
 | PUT | `/api/notify/channels/{key}/enable` | `notify:write` | Activar o desactivar Canal de notificaciones |
 | PUT | `/api/notify/channels-order` | `notify:write` | Reordenar Canal de notificaciones |
+| PUT | `/api/notify/channels-group` | `notify:write` | Asignar grupo a varios elementos: Canal de notificaciones |
 | GET | `/api/notify/channels/{key}/secrets` | `notify:write` | Ver secretos en texto plano |
 | GET | `/api/notify/rules` | `notify:read` | Listar Regla de notificación |
 | POST | `/api/notify/rules` | `notify:write` | Añadir Regla de notificación |
@@ -553,6 +569,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/notify/rules/{key}` | `notify:write` | Eliminar Regla de notificación |
 | PUT | `/api/notify/rules/{key}/enable` | `notify:write` | Activar o desactivar Regla de notificación |
 | PUT | `/api/notify/rules-order` | `notify:write` | Reordenar Regla de notificación |
+| PUT | `/api/notify/rules-group` | `notify:write` | Asignar grupo a varios elementos: Regla de notificación |
 | GET | `/api/notify/event-types` | `notify:read` | Tipos de evento a los que se puede suscribir |
 | GET | `/api/notify/history` | `notify:read` | Registros de entrega recientes |
 | POST | `/api/notify/channels/{key}/test` | `notify:write` | Enviar una notificación de prueba al canal |
@@ -643,7 +660,9 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | GET | `/api/tokens` | Solo sesión iniciada | Listar tokens de API |
 | GET | `/api/tokens/scopes` | Solo sesión iniciada | Listar los dominios de permisos que se pueden conceder |
 | POST | `/api/tokens` | Solo sesión iniciada | Crear un token de API |
-| PUT | `/api/tokens/{id}` | Solo sesión iniciada | Modificar el nombre, los permisos, la caducidad y el estado de un token de API |
+| PUT | `/api/tokens/order` | Solo sesión iniciada | Reordenar tokens de API |
+| PUT | `/api/tokens/group` | Solo sesión iniciada | Asignar el grupo de varios tokens de API |
+| PUT | `/api/tokens/{id}` | Solo sesión iniciada | Modificar el nombre, grupo, permisos, caducidad y estado de un token de API |
 | POST | `/api/tokens/{id}/regenerate` | Solo sesión iniciada | Regenerar el texto plano del token |
 | DELETE | `/api/tokens/{id}` | Solo sesión iniciada | Eliminar un token de API |
 
@@ -745,6 +764,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `apiToken` | string |
 | `edgeIpVersion` | string |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `mode` | string |
 | `name` | string |
@@ -759,6 +779,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | --- | --- |
 | `command` | string |
 | `enable` | boolean |
+| `group` | string |
 | `http` | `webhook.Config` |
 | `key` | string |
 | `name` | string |
@@ -790,6 +811,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Campo | Tipo |
 | --- | --- |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `line` | string |
 | `remark` | string |
@@ -818,6 +840,19 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `remark` | string |
 | `webhook` | `webhook.Config` |
 
+### ddns.recordLayout
+
+| Campo | Tipo |
+| --- | --- |
+| `group` | string |
+| `key` | string |
+
+### ddns.recordsLayoutRequest
+
+| Campo | Tipo |
+| --- | --- |
+| `records` | Lista de `ddns.recordLayout` |
+
 ### dnsprovider.Credentials
 
 | Campo | Tipo |
@@ -845,6 +880,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `baseUrl` | string |
 | `disableWebDav` | boolean |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `listenIp` | string |
 | `locale` | string |
@@ -877,6 +913,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Campo | Tipo |
 | --- | --- |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `name` | string |
 | `protocol` | string |
@@ -927,6 +964,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `client` | string |
 | `customDomains` | Lista de string |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `localIp` | string |
 | `localPort` | integer |
@@ -949,6 +987,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `dashboardPwd` | string |
 | `dashboardUser` | string |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `name` | string |
 | `proxyBindAddr` | string |
@@ -1036,6 +1075,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `enable` | boolean |
 | `filter` | string |
 | `findTime` | integer |
+| `group` | string |
 | `ignore` | string |
 | `key` | string |
 | `maxRetry` | integer |
@@ -1171,6 +1211,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | --- | --- |
 | `enable` | boolean |
 | `from` | string |
+| `group` | string |
 | `host` | string |
 | `key` | string |
 | `kind` | string |
@@ -1203,6 +1244,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `channels` | Lista de string |
 | `enable` | boolean |
 | `events` | Lista de string |
+| `group` | string |
 | `key` | string |
 | `minLevel` | string |
 | `name` | string |
@@ -1270,6 +1312,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `certPem` | string |
 | `deploys` | Lista de `ssl.Deploy` |
 | `enable` | boolean |
+| `group` | string |
 | `issuedProfile` | string |
 | `issuerPem` | string |
 | `key` | string |
@@ -1310,6 +1353,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | --- | --- |
 | `domain` | string |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `name` | string |
 | `password` | string |
@@ -1349,6 +1393,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `disableCheck` | boolean |
 | `disableForward` | boolean |
 | `enable` | boolean |
+| `group` | string |
 | `heartbeatInterval` | integer |
 | `keepAliveServers` | Lista de string |
 | `key` | string |
@@ -1396,6 +1441,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `bodyLimitAction` | string |
 | `bodyLimitMB` | integer |
 | `enable` | boolean |
+| `group` | string |
 | `inboundThreshold` | integer |
 | `key` | string |
 | `mode` | string |
@@ -1717,6 +1763,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `domains` | Lista de string |
 | `enable` | boolean |
 | `forwardAuth` | boolean |
+| `group` | string |
 | `listener` | string |
 | `listenerEnable` | boolean |
 | `listenerName` | string |
@@ -1780,6 +1827,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Campo | Tipo |
 | --- | --- |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `local` | `webterminal.LocalConfig` |
 | `name` | string |
@@ -1860,6 +1908,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `broadcastIps` | Lista de string |
 | `checkAddr` | string |
 | `enable` | boolean |
+| `group` | string |
 | `key` | string |
 | `macs` | Lista de string |
 | `name` | string |

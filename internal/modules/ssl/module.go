@@ -679,6 +679,7 @@ func (m *Module) Routes(r module.Router) {
 		Save:    m.saveLocked,
 		Key:     func(c *Cert) *string { return &c.Key },
 		Enabled: func(c *Cert) *bool { return &c.Enable },
+		Group:   func(c *Cert) *string { return &c.Group },
 		Validate: func(c *Cert) error {
 			return c.Validate(m.cfg.Settings)
 		},

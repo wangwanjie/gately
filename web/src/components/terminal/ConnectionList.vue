@@ -3,78 +3,64 @@
     <div class="g-card-head">
       <div class="g-card-title"><Cable :size="16" />{{ t('termConn.list.title') }} <span class="meta">{{ t('termConn.list.count', { count: conns.length }) }}</span></div>
       <div class="head-ops">
-        <CompactToggle v-model="compact" />
-        <el-button v-if="conns.length > 1" size="small" :type="sortMode ? 'primary' : 'default'" :icon="ArrowUpDown" @click="sortMode = !sortMode">
-          {{ sortMode ? t('termConn.list.done') : t('termConn.list.sort') }}
-        </el-button>
+        <CompactToggle v-model="compact" size="small" />
+        <ListTools :gl="gl" size="small" />
       </div>
     </div>
-    <el-empty v-if="!conns.length" :description="t('termConn.list.empty')" :image-size="60" />
-    <div class="list" :class="{ 'is-compact': compact }">
-      <div
-        v-for="(c, i) in conns"
-        :key="c.key"
-        class="conn"
-        :class="{ disabled: !c.enable, dragging: dragKey === c.key, over: overKey === c.key && dragKey !== c.key }"
-        :title="compact ? c.remark : undefined"
-        :draggable="sortMode && !isMobile"
-        @click="onTap(c)"
-        @dblclick="onDblClick(c)"
-        @dragstart="onDragStart(c, $event)"
-        @dragover.prevent="overKey = c.key"
-        @dragleave="overKey === c.key && (overKey = '')"
-        @drop.prevent="onDrop(c)"
-        @dragend="dragKey = ''; overKey = ''"
-      >
-        <div class="conn-icon" :class="c.type"><component :is="iconOf(c)" :size="18" /></div>
-        <div class="conn-main">
-          <div class="conn-name">
-            <span class="ellipsis">{{ c.name }}</span>
-            <el-tag class="tag-type" size="small" effect="plain">{{ t(`termConn.type.${c.type}`) }}</el-tag>
-            <el-tag v-if="!c.enable" class="tag-off" size="small" type="info">{{ t('termConn.list.disabledTag') }}</el-tag>
-            <span v-if="openCount(c.key)" class="open-dot" :title="t('termConn.list.openSessions', { count: openCount(c.key) })">{{ openCount(c.key) }}</span>
+    <GroupedList :gl="gl" flush :compact="compact" :empty-text="t('termConn.list.empty')" :empty-image-size="60" class="list">
+      <template #item="{ it, item: c, sorting, bind }">
+        <div v-bind="bind" class="conn" :class="{ disabled: !c.enable }" :title="compact ? c.remark : undefined" @click="onTap(c)" @dblclick="onDblClick(c)">
+          <SortCheck v-if="sorting" :gl="gl" :id="it.id" />
+          <div class="conn-icon" :class="c.type"><component :is="iconOf(c)" :size="18" /></div>
+          <div class="conn-main">
+            <div class="conn-name">
+              <span class="ellipsis">{{ c.name }}</span>
+              <el-tag class="tag-type" size="small" effect="plain">{{ t(`termConn.type.${c.type}`) }}</el-tag>
+              <el-tag v-if="!c.enable" class="tag-off" size="small" type="info">{{ t('termConn.list.disabledTag') }}</el-tag>
+              <span v-if="openCount(c.key)" class="open-dot" :title="t('termConn.list.openSessions', { count: openCount(c.key) })">{{ openCount(c.key) }}</span>
+            </div>
+            <div class="conn-addr mono">{{ connAddr(c) }}</div>
+            <div v-if="c.remark" class="conn-remark">{{ c.remark }}</div>
           </div>
-          <div class="conn-addr mono">{{ connAddr(c) }}</div>
-          <div v-if="c.remark" class="conn-remark">{{ c.remark }}</div>
+          <div class="conn-ops" @click.stop>
+            <SortMoves v-if="sorting" :gl="gl" :it="it" />
+            <template v-else>
+              <el-button v-if="!isMobile" size="small" type="primary" plain :icon="Play" :disabled="!c.enable" @click="$emit('connect', c)"><span class="btn-text">{{ t('termConn.list.connect') }}</span></el-button>
+              <el-dropdown trigger="click" @command="(cmd: string) => onCommand(c, cmd)">
+                <el-button class="op" text :icon="Ellipsis" :aria-label="t('termConn.list.more')" />
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item command="edit" :icon="Pencil">{{ t('termConn.list.edit') }}</el-dropdown-item>
+                    <el-dropdown-item command="duplicate" :icon="Copy">{{ t('termConn.list.duplicate') }}</el-dropdown-item>
+                    <el-dropdown-item v-if="c.type !== 'telnet'" command="sftp" :icon="FolderOpen">{{ t('termConn.list.sftp') }}</el-dropdown-item>
+                    <el-dropdown-item v-if="c.type !== 'telnet'" command="quick" :icon="Star">{{ t('termConn.list.quick') }}</el-dropdown-item>
+                    <el-dropdown-item v-if="c.type !== 'local'" command="test" :icon="Plug">{{ t('termConn.list.test') }}</el-dropdown-item>
+                    <el-dropdown-item v-if="c.type === 'ssh'" command="resetkey" :icon="KeyRound">{{ t('termConn.list.resetKey') }}</el-dropdown-item>
+                    <el-dropdown-item command="delete" :icon="Trash2" divided>{{ t('common.delete') }}</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </template>
+          </div>
         </div>
-        <div class="conn-ops" @click.stop>
-          <template v-if="sortMode">
-            <GripVertical v-if="!isMobile" :size="16" class="grip" />
-            <el-button class="op" text :icon="ChevronUp" :disabled="i === 0" :aria-label="t('termConn.list.moveUp')" @click="move(i, -1)" />
-            <el-button class="op" text :icon="ChevronDown" :disabled="i === conns.length - 1" :aria-label="t('termConn.list.moveDown')" @click="move(i, 1)" />
-          </template>
-          <template v-else>
-            <el-button v-if="!isMobile" size="small" type="primary" plain :icon="Play" :disabled="!c.enable" @click="$emit('connect', c)"><span class="btn-text">{{ t('termConn.list.connect') }}</span></el-button>
-            <el-dropdown trigger="click" @command="(cmd: string) => onCommand(c, cmd)">
-              <el-button class="op" text :icon="Ellipsis" :aria-label="t('termConn.list.more')" />
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item command="edit" :icon="Pencil">{{ t('termConn.list.edit') }}</el-dropdown-item>
-                  <el-dropdown-item command="duplicate" :icon="Copy">{{ t('termConn.list.duplicate') }}</el-dropdown-item>
-                  <el-dropdown-item v-if="c.type !== 'telnet'" command="sftp" :icon="FolderOpen">{{ t('termConn.list.sftp') }}</el-dropdown-item>
-                  <el-dropdown-item v-if="c.type !== 'telnet'" command="quick" :icon="Star">{{ t('termConn.list.quick') }}</el-dropdown-item>
-                  <el-dropdown-item v-if="c.type !== 'local'" command="test" :icon="Plug">{{ t('termConn.list.test') }}</el-dropdown-item>
-                  <el-dropdown-item v-if="c.type === 'ssh'" command="resetkey" :icon="KeyRound">{{ t('termConn.list.resetKey') }}</el-dropdown-item>
-                  <el-dropdown-item command="delete" :icon="Trash2" divided>{{ t('common.delete') }}</el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
-          </template>
-        </div>
-      </div>
-    </div>
+      </template>
+    </GroupedList>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
-  ArrowUpDown, Cable, ChevronDown, ChevronUp, Copy, Ellipsis, FolderOpen, GripVertical, KeyRound, Network, Pencil, Play, Plug, Server, Star, Terminal as TerminalIcon, Trash2,
+  Cable, Copy, Ellipsis, FolderOpen, KeyRound, Network, Pencil, Play, Plug, Server, Star, Terminal as TerminalIcon, Trash2,
 } from 'lucide-vue-next'
 import { api } from '../../api'
 import CompactToggle from '../CompactToggle.vue'
+import GroupedList from '../GroupedList.vue'
+import ListTools from '../ListTools.vue'
+import SortCheck from '../SortCheck.vue'
+import SortMoves from '../SortMoves.vue'
+import { useGroupedList } from '../../composables/useGroupSort'
 import { useCompactView } from '../../composables/useCompactView'
 import { MASK, connAddr, normalizeConn, type Conn } from './types'
 
@@ -88,10 +74,15 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const sortMode = ref(false)
 const compact = useCompactView('terminal.connections')
-const dragKey = ref('')
-const overKey = ref('')
+// 连接列表的分组与排序；顺序与分组的修改不影响已打开的会话
+const gl = useGroupedList<Conn>({
+  storageKey: 'terminal.connections.groups',
+  items: () => props.conns,
+  base: '/api/webterminal/connections',
+  reload: async () => emit('reload'),
+  matches: (c, q) => [c.name, c.group ?? '', c.remark, connAddr(c)].join('\n').toLowerCase().includes(q),
+})
 
 function iconOf(c: Conn) {
   if (c.type === 'local') {
@@ -106,7 +97,7 @@ function openCount(key: string): number {
 
 // 点击卡片即连接（排序模式下不触发）
 function onTap(c: Conn) {
-  if (sortMode.value || !c.enable) {
+  if (gl.sortMode.value || !c.enable) {
     return
   }
   if (props.isMobile) {
@@ -116,48 +107,10 @@ function onTap(c: Conn) {
 
 // 桌面端双击卡片连接
 function onDblClick(c: Conn) {
-  if (sortMode.value || !c.enable || props.isMobile) {
+  if (gl.sortMode.value || !c.enable || props.isMobile) {
     return
   }
   emit('connect', c)
-}
-
-async function saveOrder(keys: string[]) {
-  try {
-    await api.put('/api/webterminal/connections-order', { keys })
-  } catch (e) {
-    ElMessage.error((e as Error).message)
-  }
-  emit('reload')
-}
-
-function move(i: number, d: number) {
-  const keys = props.conns.map((c) => c.key)
-  const j = i + d
-  if (j < 0 || j >= keys.length) {
-    return
-  }
-  const tmp = keys[i]
-  keys[i] = keys[j]
-  keys[j] = tmp
-  saveOrder(keys)
-}
-
-function onDragStart(c: Conn, e: DragEvent) {
-  dragKey.value = c.key
-  e.dataTransfer?.setData('text/plain', c.key)
-}
-
-function onDrop(target: Conn) {
-  const from = dragKey.value
-  dragKey.value = ''
-  overKey.value = ''
-  if (!from || from === target.key) {
-    return
-  }
-  const keys = props.conns.map((c) => c.key).filter((k) => k !== from)
-  keys.splice(keys.indexOf(target.key), 0, from)
-  saveOrder(keys)
 }
 
 // 复制连接：脱敏的密文不能原样提交，需要清空后让用户重新填写。
@@ -229,17 +182,11 @@ async function onCommand(c: Conn, cmd: string) {
   border-bottom: 1px solid var(--g-border);
   cursor: default;
 }
-.conn:last-child {
+.list :deep(.gl-block:last-child .gl-item:last-child) {
   border-bottom: none;
 }
 .conn.disabled {
   opacity: 0.55;
-}
-.conn.dragging {
-  opacity: 0.4;
-}
-.conn.over {
-  box-shadow: inset 0 2px 0 var(--el-color-primary);
 }
 .conn-icon {
   width: 36px;
@@ -301,10 +248,6 @@ async function onCommand(c: Conn, cmd: string) {
   display: flex;
   gap: 2px;
   align-items: center;
-}
-.grip {
-  color: var(--el-text-color-placeholder);
-  cursor: grab;
 }
 .op {
   padding: 8px;

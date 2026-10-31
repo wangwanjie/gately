@@ -1,42 +1,50 @@
 <template>
   <div>
     <PageHeader :title="t('wol.title')" :desc="t('wol.desc')" :icon="Power">
+      <CompactToggle v-model="compact" />
+      <ListTools :gl="gl" :placeholder="t('groupSort.search')" />
       <el-button type="primary" :icon="Plus" @click="openEditor()">{{ t('wol.addDevice') }}</el-button>
     </PageHeader>
 
-    <div class="card-grid">
-      <el-empty v-if="!devices.length" :description="t('wol.empty')" class="empty" />
-      <EntityCard v-for="d in devices" :key="d.key">
-        <template #lead>
-          <div class="dev-icon" :class="{ online: status[d.key ?? ''] === 'online' }"><Monitor :size="18" /></div>
-        </template>
-        <template #title>{{ d.name }}</template>
-        <template v-if="d.remark" #sub>{{ d.remark }}</template>
-        <template #status>
-          <StatusBadge v-bind="devStatus(d)" />
-        </template>
-        <Field :label="t('wol.macAddress')" mono>
-          <div v-for="m in d.macs" :key="m">{{ m }}</div>
-        </Field>
-        <Field :label="t('wol.broadcast')" mono>{{ (d.broadcastIps ?? []).length ? (d.broadcastIps ?? []).join(', ') : t('wol.auto') }}:{{ d.port }} ×{{ d.repeat }}</Field>
-        <Field v-if="d.checkAddr" :label="t('wol.onlineCheck')" mono>{{ d.checkAddr }}</Field>
-        <template #actions>
-          <el-button text size="small" :icon="Pencil" @click="openEditor(d)">{{ t('common.edit') }}</el-button>
-          <el-popconfirm :title="t('wol.confirmDelete')" @confirm="remove(d)">
-            <template #reference>
-              <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
-            </template>
-          </el-popconfirm>
-          <el-button type="primary" size="small" :icon="Zap" :loading="waking[d.key ?? '']" class="wake" @click="wake(d)">{{ t('wol.wake') }}</el-button>
-        </template>
-      </EntityCard>
-    </div>
+    <GroupedList :gl="gl" :compact="compact" grid :empty-text="t('wol.empty')">
+      <template #item="{ it, item: d, sorting, bind }">
+        <EntityCard v-bind="bind" :compact="compact || sorting">
+          <template #lead>
+            <SortCheck v-if="sorting" :gl="gl" :id="it.id" />
+            <div v-else class="dev-icon" :class="{ online: status[d.key ?? ''] === 'online' }"><Monitor :size="18" /></div>
+          </template>
+          <template #title>{{ d.name }}</template>
+          <template v-if="d.remark" #sub>{{ d.remark }}</template>
+          <template #status>
+            <StatusBadge v-bind="devStatus(d)" />
+          </template>
+          <Field :label="t('wol.macAddress')" mono>
+            <div v-for="m in d.macs" :key="m">{{ m }}</div>
+          </Field>
+          <Field :label="t('wol.broadcast')" mono>{{ (d.broadcastIps ?? []).length ? (d.broadcastIps ?? []).join(', ') : t('wol.auto') }}:{{ d.port }} ×{{ d.repeat }}</Field>
+          <Field v-if="d.checkAddr" :label="t('wol.onlineCheck')" mono>{{ d.checkAddr }}</Field>
+          <template v-if="sorting" #actions>
+            <SortMoves :gl="gl" :it="it" />
+          </template>
+          <template v-else #actions>
+            <el-button text size="small" :icon="Pencil" @click="openEditor(d)">{{ t('common.edit') }}</el-button>
+            <el-popconfirm :title="t('wol.confirmDelete')" @confirm="remove(d)">
+              <template #reference>
+                <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
+              </template>
+            </el-popconfirm>
+            <el-button type="primary" size="small" :icon="Zap" :loading="waking[d.key ?? '']" class="wake" @click="wake(d)">{{ t('wol.wake') }}</el-button>
+          </template>
+        </EntityCard>
+      </template>
+    </GroupedList>
 
     <LogCard url="/api/wol/logs" clearable />
 
     <el-dialog v-model="editorVisible" :title="editing.key ? t('wol.editDevice') : t('wol.addDevice')" width="540px" :fullscreen="isMobile">
       <el-form :model="editing" label-width="110px" :label-position="labelPosition">
         <el-form-item :label="t('common.name')"><el-input v-model="editing.name" /></el-form-item>
+        <GroupInput v-model="editing.group" :groups="gl.groupNames.value" />
         <el-form-item :label="t('wol.macAddress')"><el-input v-model="macsText" type="textarea" :rows="2" class="mono" :placeholder="t('wol.macPlaceholder')" /></el-form-item>
         <el-form-item :label="t('wol.broadcastAddress')"><el-input v-model="bcText" :placeholder="t('wol.broadcastPlaceholder')" /></el-form-item>
         <el-form-item :label="t('wol.port')"><el-input-number v-model="editing.port" :min="1" :max="65535" /></el-form-item>
@@ -63,6 +71,14 @@ import { Monitor, Pencil, Plus, Power, Trash2, Zap } from 'lucide-vue-next'
 import { api } from '../api'
 import PageHeader from '../components/PageHeader.vue'
 import EntityCard from '../components/EntityCard.vue'
+import GroupedList from '../components/GroupedList.vue'
+import GroupInput from '../components/GroupInput.vue'
+import ListTools from '../components/ListTools.vue'
+import SortCheck from '../components/SortCheck.vue'
+import SortMoves from '../components/SortMoves.vue'
+import { useGroupedList } from '../composables/useGroupSort'
+import CompactToggle from '../components/CompactToggle.vue'
+import { useCompactView } from '../composables/useCompactView'
 import Field from '../components/Field.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
@@ -73,6 +89,8 @@ import { usePolling } from '../composables/usePolling'
 interface Device {
   key?: string
   name: string
+  // group 为列表中的分组名称，只影响展示，留空为未分组
+  group?: string
   macs: string[]
   broadcastIps: string[] | null
   port: number
@@ -85,6 +103,15 @@ interface Device {
 const { t } = useI18n()
 const { isMobile, labelPosition } = useFormLayout()
 const devices = ref<Device[]>([])
+const compact = useCompactView('wol')
+// 列表的搜索、分组与排序
+const gl = useGroupedList<Device>({
+  storageKey: 'wol.groups',
+  items: () => devices.value,
+  base: '/api/wol/devices',
+  reload: load,
+  matches: (d, q) => [d.name, d.group ?? '', d.remark, ...d.macs, d.checkAddr].join('\n').toLowerCase().includes(q),
+})
 const status = ref<Record<string, string>>({})
 const waking = reactive<Record<string, boolean>>({})
 const editorVisible = ref(false)
@@ -188,8 +215,5 @@ onMounted(() => {
 }
 .wake {
   margin-left: 6px !important;
-}
-.empty {
-  grid-column: 1 / -1;
 }
 </style>

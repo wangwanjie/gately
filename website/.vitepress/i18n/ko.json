@@ -24,6 +24,7 @@
       "guide/quick-start": "빠른 시작",
       "guide/install": "설치 및 배포",
       "guide/configuration": "설정 및 실행 옵션",
+      "guide/lists": "목록 그룹화와 정렬",
       "guide/cli-mcp": "명령줄 및 MCP",
       "guide/migration": "마이그레이션 가이드",
       "guide/faq": "자주 묻는 질문",

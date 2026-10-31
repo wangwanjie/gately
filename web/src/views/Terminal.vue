@@ -149,7 +149,7 @@
       </div>
     </div>
 
-    <ConnectionEditor v-model="editorVisible" :conn="editingConn" :allow-local-shell="!!settings?.allowLocalShell" @saved="loadConns" />
+    <ConnectionEditor v-model="editorVisible" :conn="editingConn" :allow-local-shell="!!settings?.allowLocalShell" :groups="connGroups" @saved="loadConns" />
     <QuickAccessDialog v-model="quickVisible" :conn="quickConn" @saved="loadConns" />
     <SettingsDialog v-model="settingsVisible" @saved="onSettingsSaved" />
     <ShortcutManager v-model="shortcutVisible" :shortcuts="shortcuts" @saved="(l: Shortcut[]) => (shortcuts = l)" />
@@ -206,6 +206,8 @@ const vv = useVisualViewport()
 const { fontSize, themeName, keybarPinned, setFont, incFont, decFont } = useTermPrefs()
 
 const conns = ref<Conn[]>([])
+// 已有的连接分组，供编辑连接时选择
+const connGroups = computed(() => [...new Set(conns.value.map((c) => c.group ?? '').filter(Boolean))])
 const settings = ref<TermSettings>()
 const shortcuts = ref<Shortcut[]>([])
 const tabs = ref<TermTab[]>([])

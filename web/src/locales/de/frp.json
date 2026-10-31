@@ -97,5 +97,6 @@
   "instanceName": "Instanzname",
   "importNameClientPlaceholder": "Leer: Serveradresse",
   "pastePlaceholderServer": "Inhalt von frps.ini / frps.toml einfügen",
-  "owner": "Instanz"
+  "owner": "Instanz",
+  "proxyFilterPlaceholder": "Name, Gruppe, Port, Domain suchen"
 }

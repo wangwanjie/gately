@@ -23,5 +23,8 @@
   "renamePrompt": "New group name. Every item in the group is renamed with it and keeps its order; a name already in use merges the groups",
   "nameRequired": "Enter a group name",
   "nameTooLong": "The group name cannot exceed {max} characters",
-  "mergeConfirm": "Group \"{to}\" already exists. Merge \"{from}\" into it?"
+  "mergeConfirm": "Group \"{to}\" already exists. Merge \"{from}\" into it?",
+  "count": "{count} items",
+  "selectItem": "Select this item",
+  "search": "Search name, group, remark"
 }

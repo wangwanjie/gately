@@ -1,6 +1,8 @@
 <template>
   <div>
     <PageHeader :title="t('filebrowser.title')" :desc="t('filebrowser.desc')" :icon="FolderOpen">
+      <CompactToggle v-model="compact" />
+      <ListTools :gl="gl" :placeholder="t('groupSort.search')" />
       <ResetConfigButton base="/api/filebrowser" :desc="t('components.resetConfig.filebrowser')" @done="onReset" />
       <el-button type="primary" :icon="Plus" @click="openEditor()">{{ t('filebrowser.addInstance') }}</el-button>
     </PageHeader>
@@ -9,35 +11,42 @@
       <el-button size="small" type="primary" :icon="Download" @click="installer?.install()">{{ t('components.programInstall.install') }}</el-button>
     </el-alert>
 
-    <div class="card-grid">
-      <el-empty v-if="!instances.length" :description="t('filebrowser.empty')" class="empty" />
-      <EntityCard v-for="it in instances" :key="it.key" :off="!it.enable">
-        <template #title>{{ it.name }}</template>
-        <template #sub>{{ authLabel(it.authMethod) }}<template v-if="it.remark"> · {{ it.remark }}</template></template>
-        <template #status><StatusBadge v-bind="badge(it)" /></template>
-        <Field :label="t('filebrowser.accessUrl')" mono wide>
-          <div class="url-list">
-            <a v-for="u in accessUrls(it)" :key="u" :href="u" target="_blank" rel="noopener">{{ u }}</a>
-          </div>
-        </Field>
-        <Field :label="t('filebrowser.sources')" wide>
-          <span v-for="s in it.sources" :key="s.name" class="src-tag" :title="s.path">
-            {{ s.name }}<span v-if="s.readOnly" class="muted"> · {{ t('filebrowser.readOnly') }}</span>
-          </span>
-        </Field>
-        <Field v-if="it.authMethod !== 'noauth'" :label="t('filebrowser.adminUser')" mono>{{ it.adminUser }}</Field>
-        <template #actions>
-          <el-switch :model-value="it.enable" size="small" @change="(v: boolean | string | number) => toggle(it, Boolean(v))" />
-          <el-button text size="small" :icon="RefreshCw" :disabled="!it.enable" @click="restart(it)">{{ t('common.restart') }}</el-button>
-          <el-button text size="small" :icon="Pencil" @click="openEditor(it)">{{ t('common.edit') }}</el-button>
-          <el-popconfirm :title="t('filebrowser.confirmDelete')" width="260" @confirm="remove(it)">
-            <template #reference>
-              <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
-            </template>
-          </el-popconfirm>
-        </template>
-      </EntityCard>
-    </div>
+    <GroupedList :gl="gl" :compact="compact" grid :empty-text="t('filebrowser.empty')">
+      <template #item="{ it: row, item: it, sorting, bind }">
+        <EntityCard v-bind="bind" :off="!it.enable" :compact="compact || sorting">
+          <template v-if="sorting" #lead>
+            <SortCheck :gl="gl" :id="row.id" />
+          </template>
+          <template #title>{{ it.name }}</template>
+          <template #sub>{{ authLabel(it.authMethod) }}<template v-if="it.remark"> · {{ it.remark }}</template></template>
+          <template #status><StatusBadge v-bind="badge(it)" /></template>
+          <Field :label="t('filebrowser.accessUrl')" mono wide>
+            <div class="url-list">
+              <a v-for="u in accessUrls(it)" :key="u" :href="u" target="_blank" rel="noopener">{{ u }}</a>
+            </div>
+          </Field>
+          <Field :label="t('filebrowser.sources')" wide>
+            <span v-for="s in it.sources" :key="s.name" class="src-tag" :title="s.path">
+              {{ s.name }}<span v-if="s.readOnly" class="muted"> · {{ t('filebrowser.readOnly') }}</span>
+            </span>
+          </Field>
+          <Field v-if="it.authMethod !== 'noauth'" :label="t('filebrowser.adminUser')" mono>{{ it.adminUser }}</Field>
+          <template v-if="sorting" #actions>
+            <SortMoves :gl="gl" :it="row" />
+          </template>
+          <template v-else #actions>
+            <el-switch :model-value="it.enable" size="small" @change="(v: boolean | string | number) => toggle(it, Boolean(v))" />
+            <el-button text size="small" :icon="RefreshCw" :disabled="!it.enable" @click="restart(it)">{{ t('common.restart') }}</el-button>
+            <el-button text size="small" :icon="Pencil" @click="openEditor(it)">{{ t('common.edit') }}</el-button>
+            <el-popconfirm :title="t('filebrowser.confirmDelete')" width="260" @confirm="remove(it)">
+              <template #reference>
+                <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
+              </template>
+            </el-popconfirm>
+          </template>
+        </EntityCard>
+      </template>
+    </GroupedList>
 
     <div class="g-card">
       <div class="g-card-head">
@@ -61,6 +70,7 @@
     <el-dialog v-model="editorVisible" :title="editing.key ? t('filebrowser.editInstance') : t('filebrowser.addInstance')" width="640px" :fullscreen="isMobile">
       <el-form :model="editing" label-width="120px" :label-position="labelPosition">
         <el-form-item :label="t('common.name')"><el-input v-model="editing.name" /></el-form-item>
+        <GroupInput v-model="editing.group" :groups="gl.groupNames.value" />
         <el-form-item :label="t('filebrowser.listen')">
           <div class="listen-row">
             <el-input v-model="editing.listenIp" :placeholder="t('filebrowser.listenPlaceholder')" class="mono" />
@@ -152,6 +162,14 @@ import SecretInput from '../components/SecretInput.vue'
 import { secretOf } from '../secrets'
 import PageHeader from '../components/PageHeader.vue'
 import EntityCard from '../components/EntityCard.vue'
+import GroupedList from '../components/GroupedList.vue'
+import GroupInput from '../components/GroupInput.vue'
+import ListTools from '../components/ListTools.vue'
+import SortCheck from '../components/SortCheck.vue'
+import SortMoves from '../components/SortMoves.vue'
+import { useGroupedList } from '../composables/useGroupSort'
+import CompactToggle from '../components/CompactToggle.vue'
+import { useCompactView } from '../composables/useCompactView'
 import Field from '../components/Field.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
@@ -168,6 +186,8 @@ interface Source {
 interface Instance {
   key?: string
   name: string
+  // group 为列表中的分组名称，只影响展示，留空为未分组
+  group?: string
   enable: boolean
   listenIp: string
   port: number
@@ -208,6 +228,15 @@ const fbLocales = [
 const { t, locale } = useI18n()
 const { isMobile, labelPosition } = useFormLayout()
 const instances = ref<InstanceView[]>([])
+const compact = useCompactView('filebrowser')
+// 列表的搜索、分组与排序；顺序与分组的修改不会重启实例
+const gl = useGroupedList<InstanceView>({
+  storageKey: 'filebrowser.groups',
+  items: () => instances.value,
+  base: '/api/filebrowser/instances',
+  reload: loadInstances,
+  matches: (it, q) => [it.name, it.group ?? '', it.remark, ...accessUrls(it), ...it.sources.map((s) => s.name)].join('\n').toLowerCase().includes(q),
+})
 const binPath = ref('')
 const binary = ref('')
 const version = ref('')
@@ -419,9 +448,6 @@ onMounted(() => {
 }
 .muted {
   color: var(--el-text-color-secondary);
-}
-.empty {
-  grid-column: 1 / -1;
 }
 .card-grid + .g-card {
   margin-top: 16px;

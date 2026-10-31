@@ -303,6 +303,8 @@ export function formatDuration(sec: number): string {
 export interface TokenView {
   id: string
   name: string
+  // group 为列表中的分组名称，只影响展示
+  group?: string
   // 令牌明文的前缀提示，便于识别
   hint: string
   scopes: string[]
@@ -336,6 +338,8 @@ export interface TokenInput {
   scopes: string[]
   expiresAt: string | null
   disabled?: boolean
+  // group 不提供时保持原分组
+  group?: string
 }
 
 // TokenSecret 是创建/重新生成令牌的响应，secret 明文只返回这一次。

@@ -130,5 +130,6 @@
   "ipCertApply": "自動設定",
   "shortLivedTag": "短期",
   "hoursLeft": "残り {hours} 時間",
-  "renewFailedShort": "更新失敗"
+  "renewFailedShort": "更新失敗",
+  "filterPlaceholder": "備考・グループ・ドメインで検索"
 }

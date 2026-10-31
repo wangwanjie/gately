@@ -61,5 +61,8 @@
   "triggered": "Запущено",
   "recordsCollapsed": "Скрыто записей: {count}, нажмите, чтобы развернуть",
   "filterPlaceholder": "Поиск по имени, группе, домену или провайдеру",
-  "groupCount": "Задач: {count}"
+  "groupCount": "Задач: {count}",
+  "recordCount": "Записей: {count}",
+  "sortRecords": "Порядок записей",
+  "sortRecordsTitle": "Порядок и группы записей «{name}»"
 }

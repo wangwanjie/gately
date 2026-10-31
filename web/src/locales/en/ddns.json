@@ -61,5 +61,8 @@
   "triggered": "Triggered",
   "recordsCollapsed": "{count} records hidden, click to expand",
   "filterPlaceholder": "Search name, group, domain or provider",
-  "groupCount": "{count} tasks"
+  "groupCount": "{count} tasks",
+  "recordCount": "{count} records",
+  "sortRecords": "Sort records",
+  "sortRecordsTitle": "Order and group records of “{name}”"
 }

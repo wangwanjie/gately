@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/wangwanjie/gately/internal/crud"
 	"github.com/wangwanjie/gately/internal/webhook"
 )
 
@@ -35,8 +36,10 @@ type Bind struct {
 
 // Rule 是一条 STUN 穿透规则。
 type Rule struct {
-	Key      string `json:"key"`
-	Name     string `json:"name"`
+	Key  string `json:"key"`
+	Name string `json:"name"`
+	// Group 为列表中的分组名称，只影响管理界面的展示，留空为未分组
+	Group    string `json:"group"`
 	Enable   bool   `json:"enable"`
 	Protocol string `json:"protocol"`
 	Bind     Bind   `json:"bind"`
@@ -156,6 +159,9 @@ func withDefaultPort(addr, port string) string {
 
 // Validate 校验并补全默认值。
 func (r *Rule) Validate() error {
+	if err := crud.NormalizeGroup(&r.Group); err != nil {
+		return err
+	}
 	r.Name = strings.TrimSpace(r.Name)
 	if r.Name == "" {
 		return errors.New("规则名称不能为空")

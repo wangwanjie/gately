@@ -61,5 +61,8 @@
   "triggered": "已觸發",
   "recordsCollapsed": "已收合 {count} 筆解析記錄，點擊展開",
   "filterPlaceholder": "搜尋名稱、分組、網域或服務商",
-  "groupCount": "{count} 個任務"
+  "groupCount": "{count} 個任務",
+  "recordCount": "{count} 筆記錄",
+  "sortRecords": "記錄排序",
+  "sortRecordsTitle": "調整「{name}」的記錄順序與分組"
 }

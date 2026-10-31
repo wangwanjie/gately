@@ -130,5 +130,6 @@
   "ipCertApply": "Настроить автоматически",
   "shortLivedTag": "Краткосрочный",
   "hoursLeft": "Осталось {hours} ч",
-  "renewFailedShort": "продление не удалось"
+  "renewFailedShort": "продление не удалось",
+  "filterPlaceholder": "Поиск по заметке, группе, домену"
 }

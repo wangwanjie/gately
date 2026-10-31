@@ -2,53 +2,60 @@
   <div>
     <PageHeader :title="t('cron.title')" :desc="t('cron.desc')" :icon="CalendarClock">
       <CompactToggle v-model="compact" />
+      <ListTools :gl="gl" :placeholder="t('groupSort.search')" />
       <el-button type="primary" :icon="Plus" @click="openEditor()">{{ t('cron.addTask') }}</el-button>
     </PageHeader>
 
-    <div class="card-list" :class="{ 'is-compact': compact }">
-      <el-empty v-if="!tasks.length" :description="t('cron.empty')" />
-      <EntityCard :compact="compact" v-for="tk in tasks" :key="tk.key" :off="!tk.enable">
-        <template #lead>
-          <el-switch :model-value="tk.enable" @change="(v: string | number | boolean) => toggle(tk, Boolean(v))" />
-        </template>
-        <template #title>
-          <span>{{ tk.name }}</span>
-          <el-tag size="small" effect="plain">{{ tk.type === 'http' ? t('cron.typeHttp') : t('cron.typeCommand') }}</el-tag>
-        </template>
-        <template v-if="tk.remark" #sub>{{ tk.remark }}</template>
-        <template #status>
-          <StatusBadge v-bind="taskStatus(tk)" />
-        </template>
-        <Field :label="t('cron.schedule')" mono>{{ tk.spec }}</Field>
-        <Field :label="t('cron.nextRun')">{{ tk.enable && tk.nextRun ? new Date(tk.nextRun).toLocaleString() : '-' }}</Field>
-        <Field :label="t('cron.lastRun')">
-          <template v-if="last(tk)">
-            <span :class="last(tk)!.ok ? 'text-ok' : 'text-danger'">{{ last(tk)!.ok ? t('cron.success') : t('cron.failure') }}</span>
-            <span class="meta"> · {{ new Date(last(tk)!.start).toLocaleString() }} · {{ last(tk)!.durationMs }}ms</span>
+    <GroupedList :gl="gl" :compact="compact" :empty-text="t('cron.empty')">
+      <template #item="{ it, item: tk, sorting, bind }">
+        <EntityCard v-bind="bind" :off="!tk.enable" :compact="compact || sorting">
+          <template #lead>
+            <SortCheck v-if="sorting" :gl="gl" :id="it.id" />
+            <el-switch v-else :model-value="tk.enable" @change="(v: string | number | boolean) => toggle(tk, Boolean(v))" />
           </template>
-          <span v-else class="muted">{{ t('cron.neverRun') }}</span>
-        </Field>
-        <Field :label="tk.type === 'http' ? t('cron.request') : t('cron.typeCommand')" mono>
-          <span class="ellipsis-2">{{ tk.type === 'http' ? `${tk.http.method} ${tk.http.url}` : tk.command }}</span>
-        </Field>
-        <template #actions>
-          <el-button text size="small" :icon="Play" :disabled="tk.running" @click="runNow(tk)">{{ t('cron.runNow') }}</el-button>
-          <el-button text size="small" :icon="History" @click="showHistory(tk)">{{ t('cron.history') }}</el-button>
-          <el-button text size="small" :icon="Pencil" @click="openEditor(tk)">{{ t('common.edit') }}</el-button>
-          <el-popconfirm :title="t('cron.confirmDelete')" @confirm="remove(tk)">
-            <template #reference>
-              <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
+          <template #title>
+            <span>{{ tk.name }}</span>
+            <el-tag size="small" effect="plain">{{ tk.type === 'http' ? t('cron.typeHttp') : t('cron.typeCommand') }}</el-tag>
+          </template>
+          <template v-if="tk.remark" #sub>{{ tk.remark }}</template>
+          <template #status>
+            <StatusBadge v-bind="taskStatus(tk)" />
+          </template>
+          <Field :label="t('cron.schedule')" mono>{{ tk.spec }}</Field>
+          <Field :label="t('cron.nextRun')">{{ tk.enable && tk.nextRun ? new Date(tk.nextRun).toLocaleString() : '-' }}</Field>
+          <Field :label="t('cron.lastRun')">
+            <template v-if="last(tk)">
+              <span :class="last(tk)!.ok ? 'text-ok' : 'text-danger'">{{ last(tk)!.ok ? t('cron.success') : t('cron.failure') }}</span>
+              <span class="meta"> · {{ new Date(last(tk)!.start).toLocaleString() }} · {{ last(tk)!.durationMs }}ms</span>
             </template>
-          </el-popconfirm>
-        </template>
-      </EntityCard>
-    </div>
+            <span v-else class="muted">{{ t('cron.neverRun') }}</span>
+          </Field>
+          <Field :label="tk.type === 'http' ? t('cron.request') : t('cron.typeCommand')" mono>
+            <span class="ellipsis-2">{{ tk.type === 'http' ? `${tk.http.method} ${tk.http.url}` : tk.command }}</span>
+          </Field>
+          <template v-if="sorting" #actions>
+            <SortMoves :gl="gl" :it="it" />
+          </template>
+          <template v-else #actions>
+            <el-button text size="small" :icon="Play" :disabled="tk.running" @click="runNow(tk)">{{ t('cron.runNow') }}</el-button>
+            <el-button text size="small" :icon="History" @click="showHistory(tk)">{{ t('cron.history') }}</el-button>
+            <el-button text size="small" :icon="Pencil" @click="openEditor(tk)">{{ t('common.edit') }}</el-button>
+            <el-popconfirm :title="t('cron.confirmDelete')" @confirm="remove(tk)">
+              <template #reference>
+                <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
+              </template>
+            </el-popconfirm>
+          </template>
+        </EntityCard>
+      </template>
+    </GroupedList>
 
     <LogCard url="/api/cron/logs" clearable />
 
     <el-dialog v-model="editorVisible" :title="editing.key ? t('cron.editTask') : t('cron.addTask')" width="680px" :fullscreen="isMobile">
       <el-form :model="editing" label-width="110px" :label-position="labelPosition">
         <el-form-item :label="t('common.name')"><el-input v-model="editing.name" /></el-form-item>
+        <GroupInput v-model="editing.group" :groups="gl.groupNames.value" />
         <el-form-item :label="t('cron.schedule')">
           <el-input v-model="editing.spec" class="mono" :placeholder="t('cron.specPlaceholder')" @blur="preview" />
           <div v-if="nextRuns.length" class="form-help">{{ t('cron.nextRuns', { list: nextRuns.map((d) => new Date(d).toLocaleString()).join('；') }) }}</div>
@@ -98,6 +105,12 @@ import { api } from '../api'
 import PageHeader from '../components/PageHeader.vue'
 import CompactToggle from '../components/CompactToggle.vue'
 import EntityCard from '../components/EntityCard.vue'
+import GroupedList from '../components/GroupedList.vue'
+import GroupInput from '../components/GroupInput.vue'
+import ListTools from '../components/ListTools.vue'
+import SortCheck from '../components/SortCheck.vue'
+import SortMoves from '../components/SortMoves.vue'
+import { useGroupedList } from '../composables/useGroupSort'
 import { useCompactView } from '../composables/useCompactView'
 import Field from '../components/Field.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
@@ -118,6 +131,8 @@ interface Task {
   key?: string
   name: string
   enable: boolean
+  // group 为列表中的分组名称，只影响展示，留空为未分组
+  group?: string
   spec: string
   type: string
   command: string
@@ -136,6 +151,14 @@ const { t } = useI18n()
 const compact = useCompactView('cron')
 const { isMobile, labelPosition } = useFormLayout()
 const tasks = ref<TaskView[]>([])
+// 列表的搜索、分组与排序；顺序与分组的修改不影响任务的调度
+const gl = useGroupedList<TaskView>({
+  storageKey: 'cron.groups',
+  items: () => tasks.value,
+  base: '/api/cron/tasks',
+  reload: load,
+  matches: (tk, q) => [tk.name, tk.group ?? '', tk.remark, tk.spec, tk.command, tk.http.url].join('\n').toLowerCase().includes(q),
+})
 const editorVisible = ref(false)
 const editing = ref<Task>(empty())
 const nextRuns = ref<string[]>([])

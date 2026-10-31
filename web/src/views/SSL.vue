@@ -2,6 +2,7 @@
   <div>
     <PageHeader :title="t('ssl.title')" :desc="t('ssl.desc')" :icon="ShieldCheck">
       <CompactToggle v-model="compact" />
+      <ListTools :gl="gl" :placeholder="t('ssl.filterPlaceholder')" />
       <el-button :icon="SlidersHorizontal" @click="openSettings">{{ t('ssl.settingsTitle') }}</el-button>
       <el-button type="primary" :icon="Plus" @click="openEditor()">{{ t('ssl.addCert') }}</el-button>
     </PageHeader>
@@ -15,56 +16,61 @@
       @enable="enableRenew"
     />
 
-    <div v-loading="loading" class="card-list" :class="{ 'is-compact': compact }">
-      <el-empty v-if="!loading && !certs.length" :description="t('ssl.empty')" />
-      <EntityCard v-for="c in certs" :key="c.key" :off="!c.enable" :compact="compact">
-        <template #lead>
-          <el-switch :model-value="c.enable" @change="(v: string | number | boolean) => toggle(c, Boolean(v))" />
-        </template>
-        <template #title>
-          <span>{{ c.remark || t('ssl.unnamed') }}</span>
-          <el-tag size="small" effect="plain">{{ sourceText(c.source) }}</el-tag>
-          <el-tag v-if="isShortLived(c)" size="small" effect="plain" type="warning">{{ t('ssl.shortLivedTag') }}</el-tag>
-        </template>
-        <template #status>
-          <StatusBadge v-bind="certStatus(c)" />
-        </template>
-        <Field :label="t('ssl.domain')" mono wide>{{ domainsOf(c).join(', ') || '-' }}</Field>
-        <Field :label="t('ssl.validUntil')">{{ validUntil(c) }}</Field>
-        <Field :label="t('ssl.issuer')">{{ c.info?.issuer || '-' }}</Field>
-        <Field :label="t('ssl.updatedAt')">{{ c.updatedAt ? new Date(c.updatedAt).toLocaleString() : '-' }}</Field>
-        <template v-if="c.enable && (c.state.lastError || c.state.mappingNote || c.state.nextRetry || enabledDeploys(c).length)" #extra>
-          <div v-if="c.state.lastError" class="err-line">{{ c.state.lastError }}</div>
-          <div v-if="c.state.nextRetry" class="meta">{{ t('ssl.nextRetry', { time: new Date(c.state.nextRetry).toLocaleString() }) }}</div>
-          <div v-if="c.state.mappingNote" class="meta">{{ c.state.mappingNote }}</div>
-          <div v-for="d in enabledDeploys(c)" :key="d.index" class="deploy-line" :class="deployLine(c, d.index).cls">
-            <span class="dot" />
-            <span class="deploy-name">{{ deployTitle(d.deploy) }}</span>
-            <span class="meta">{{ deployLine(c, d.index).text }}</span>
-          </div>
-        </template>
-        <template #actions>
-          <el-button v-if="c.source === 'acme'" text size="small" :icon="RotateCw" :disabled="c.state.obtaining || !c.enable" @click="renew(c)">{{ t('ssl.renew') }}</el-button>
-          <el-button v-if="c.info && enabledDeploys(c).length" text size="small" :icon="Send" :loading="deploying === c.key" :disabled="!c.enable" @click="deployNow(c)">{{ t('ssl.deployNow') }}</el-button>
-          <el-dropdown v-if="c.info" trigger="click" @command="(cmd: string) => download(c, cmd)">
-            <el-button text size="small" :icon="Download">{{ t('common.download') }}</el-button>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item command="crt">{{ t('ssl.dlCrt') }}</el-dropdown-item>
-                <el-dropdown-item command="key">{{ t('ssl.dlKey') }}</el-dropdown-item>
-                <el-dropdown-item command="issuer" :disabled="!c.issuerPem">{{ t('ssl.dlIssuer') }}</el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
-          <el-button text size="small" :icon="Pencil" @click="openEditor(c)">{{ t('common.edit') }}</el-button>
-          <el-popconfirm :title="t('ssl.confirmDelete')" width="240" @confirm="remove(c)">
-            <template #reference>
-              <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
-            </template>
-          </el-popconfirm>
-        </template>
-      </EntityCard>
-    </div>
+    <GroupedList :gl="gl" :loading="loading" :compact="compact" :empty-text="t('ssl.empty')">
+      <template #item="{ it, item: c, sorting, bind }">
+        <EntityCard v-bind="bind" :off="!c.enable" :compact="compact || sorting">
+          <template #lead>
+            <SortCheck v-if="sorting" :gl="gl" :id="it.id" />
+            <el-switch v-else :model-value="c.enable" @change="(v: string | number | boolean) => toggle(c, Boolean(v))" />
+          </template>
+          <template #title>
+            <span>{{ c.remark || t('ssl.unnamed') }}</span>
+            <el-tag size="small" effect="plain">{{ sourceText(c.source) }}</el-tag>
+            <el-tag v-if="isShortLived(c)" size="small" effect="plain" type="warning">{{ t('ssl.shortLivedTag') }}</el-tag>
+          </template>
+          <template #status>
+            <StatusBadge v-bind="certStatus(c)" />
+          </template>
+          <Field :label="t('ssl.domain')" mono wide>{{ domainsOf(c).join(', ') || '-' }}</Field>
+          <Field :label="t('ssl.validUntil')">{{ validUntil(c) }}</Field>
+          <Field :label="t('ssl.issuer')">{{ c.info?.issuer || '-' }}</Field>
+          <Field :label="t('ssl.updatedAt')">{{ c.updatedAt ? new Date(c.updatedAt).toLocaleString() : '-' }}</Field>
+          <template v-if="!sorting && (c.enable && (c.state.lastError || c.state.mappingNote || c.state.nextRetry || enabledDeploys(c).length))" #extra>
+            <div v-if="c.state.lastError" class="err-line">{{ c.state.lastError }}</div>
+            <div v-if="c.state.nextRetry" class="meta">{{ t('ssl.nextRetry', { time: new Date(c.state.nextRetry).toLocaleString() }) }}</div>
+            <div v-if="c.state.mappingNote" class="meta">{{ c.state.mappingNote }}</div>
+            <div v-for="d in enabledDeploys(c)" :key="d.index" class="deploy-line" :class="deployLine(c, d.index).cls">
+              <span class="dot" />
+              <span class="deploy-name">{{ deployTitle(d.deploy) }}</span>
+              <span class="meta">{{ deployLine(c, d.index).text }}</span>
+            </div>
+          </template>
+          <template v-if="sorting" #actions>
+            <SortMoves :gl="gl" :it="it" />
+          </template>
+          <template v-else #actions>
+            <el-button v-if="c.source === 'acme'" text size="small" :icon="RotateCw" :disabled="c.state.obtaining || !c.enable" @click="renew(c)">{{ t('ssl.renew') }}</el-button>
+            <el-button v-if="c.info && enabledDeploys(c).length" text size="small" :icon="Send" :loading="deploying === c.key" :disabled="!c.enable" @click="deployNow(c)">{{ t('ssl.deployNow') }}</el-button>
+            <el-dropdown v-if="c.info" trigger="click" @command="(cmd: string) => download(c, cmd)">
+              <el-button text size="small" :icon="Download">{{ t('common.download') }}</el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="crt">{{ t('ssl.dlCrt') }}</el-dropdown-item>
+                  <el-dropdown-item command="key">{{ t('ssl.dlKey') }}</el-dropdown-item>
+                  <el-dropdown-item command="issuer" :disabled="!c.issuerPem">{{ t('ssl.dlIssuer') }}</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+            <el-button text size="small" :icon="Pencil" @click="openEditor(c)">{{ t('common.edit') }}</el-button>
+            <el-popconfirm :title="t('ssl.confirmDelete')" width="240" @confirm="remove(c)">
+              <template #reference>
+                <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
+              </template>
+            </el-popconfirm>
+          </template>
+        </EntityCard>
+      </template>
+    </GroupedList>
 
     <LogCard url="/api/ssl/logs" clearable />
 
@@ -73,6 +79,7 @@
         <el-form-item :label="t('common.remark')">
           <el-input v-model="editing.remark" :placeholder="t('ssl.remarkPlaceholder')" />
         </el-form-item>
+        <GroupInput v-model="editing.group" :groups="gl.groupNames.value" />
         <el-form-item :label="t('ssl.source')">
           <el-radio-group v-model="editing.source" :disabled="!!editing.key">
             <el-radio-button value="acme">{{ t('ssl.sourceAcme') }}</el-radio-button>
@@ -278,6 +285,12 @@ import PageHeader from '../components/PageHeader.vue'
 import ModuleBanner from '../components/ModuleBanner.vue'
 import CompactToggle from '../components/CompactToggle.vue'
 import EntityCard from '../components/EntityCard.vue'
+import GroupedList from '../components/GroupedList.vue'
+import GroupInput from '../components/GroupInput.vue'
+import ListTools from '../components/ListTools.vue'
+import SortCheck from '../components/SortCheck.vue'
+import SortMoves from '../components/SortMoves.vue'
+import { useGroupedList } from '../composables/useGroupSort'
 import { useCompactView } from '../composables/useCompactView'
 import Field from '../components/Field.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
@@ -298,6 +311,8 @@ interface Cert {
   key?: string
   remark: string
   enable: boolean
+  // group 为列表中的分组名称，只影响展示，留空为未分组
+  group?: string
   source: string
   acme: {
     domains: string[] | null
@@ -372,6 +387,14 @@ const certs = ref<CertView[]>([])
 const providers = ref<ProviderMeta[]>([])
 const loading = ref(true)
 const compact = useCompactView('ssl')
+// 列表的搜索、分组与排序；顺序与分组的修改不会重新申请或部署证书
+const gl = useGroupedList<CertView>({
+  storageKey: 'ssl.groups',
+  items: () => certs.value,
+  base: '/api/ssl/certs',
+  reload: load,
+  matches: (c, q) => [c.remark, c.group ?? '', sourceText(c.source), ...domainsOf(c)].join('\n').toLowerCase().includes(q),
+})
 const editorVisible = ref(false)
 const saving = ref(false)
 const editing = ref<Cert>(emptyCert())

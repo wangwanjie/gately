@@ -34,9 +34,11 @@ type UserSite struct {
 	Site    string   `json:"site"`
 	Name    string   `json:"name"`
 	Domains []string `json:"domains"`
-	Enable  bool     `json:"enable"`
-	Default bool     `json:"default"`
-	Type    string   `json:"type"`
+	// Group 为站点在 Web 服务列表中的分组，认证用户页按它归类显示
+	Group   string `json:"group"`
+	Enable  bool   `json:"enable"`
+	Default bool   `json:"default"`
+	Type    string `json:"type"`
 
 	BasicAuth   bool `json:"basicAuth"`
 	WebAuth     bool `json:"webAuth"`
@@ -103,6 +105,7 @@ func (m *Module) usersViewLocked() UsersView {
 				Site:           st.Key,
 				Name:           st.Name,
 				Domains:        st.Domains,
+				Group:          st.Group,
 				Enable:         st.Enable,
 				Default:        deflt,
 				Type:           st.Type,

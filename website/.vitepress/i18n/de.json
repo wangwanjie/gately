@@ -24,6 +24,7 @@
       "guide/quick-start": "Schnellstart",
       "guide/install": "Installation",
       "guide/configuration": "Konfiguration & Laufzeitoptionen",
+      "guide/lists": "Listen gruppieren und sortieren",
       "guide/cli-mcp": "CLI & MCP",
       "guide/migration": "Migrationsanleitung",
       "guide/faq": "FAQ",

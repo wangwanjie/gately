@@ -43,6 +43,8 @@ type Record struct {
 	TTL    int    `json:"ttl"`
 	Line   string `json:"line"`
 	Remark string `json:"remark"`
+	// Group 为任务内记录列表中的分组名称，只影响管理界面的展示，留空为未分组
+	Group string `json:"group"`
 }
 
 // Task 是一个 DDNS 任务：一组记录共用 IP 来源与服务商凭据。
@@ -181,6 +183,9 @@ func (t *Task) Validate() error {
 }
 
 func (r *Record) validate() error {
+	if err := crud.NormalizeGroup(&r.Group); err != nil {
+		return err
+	}
 	r.Zone = strings.ToLower(strings.Trim(strings.TrimSpace(r.Zone), "."))
 	r.Sub = strings.TrimSpace(r.Sub)
 	r.Type = strings.ToUpper(strings.TrimSpace(r.Type))

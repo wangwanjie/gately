@@ -16,87 +16,55 @@
     <div class="g-card">
       <div class="g-card-head">
         <div class="g-card-title"><ShieldCheck :size="16" />{{ t('apiTokens.listTitle') }} <span class="g-card-desc">{{ t('apiTokens.total', { count: tokens.length }) }}</span></div>
+        <div class="head-actions">
+          <ListTools :gl="gl" size="small" :placeholder="t('groupSort.search')" />
+          <CompactToggle v-model="compact" size="small" />
+        </div>
       </div>
-
-      <!-- 桌面端：表格 -->
-      <div v-if="!isMobile" class="g-card-body table-body">
-        <el-table v-loading="loading" :data="tokens" :empty-text="t('apiTokens.emptyDesktop')">
-          <el-table-column :label="t('common.name')" min-width="170">
-            <template #default="{ row }">
-              <div class="t-name">
-                <span class="t-name-text">{{ row.name }}</span>
-                <el-tooltip v-if="row.legacy" :content="t('apiTokens.legacyTip')" placement="top">
+      <div class="g-card-body">
+        <!-- 桌面与移动端共用卡片列表，支持分组与排序 -->
+        <GroupedList :gl="gl" :loading="loading" :compact="compact" grid :empty-text="isMobile ? t('apiTokens.emptyMobile') : t('apiTokens.emptyDesktop')" :empty-image-size="60">
+          <template #item="{ it, item: tk, sorting, bind }">
+            <EntityCard v-bind="bind" :off="tk.disabled || tk.expired" :compact="compact || sorting">
+              <template #lead>
+                <SortCheck v-if="sorting" :gl="gl" :id="it.id" />
+                <el-switch v-else :model-value="!tk.disabled" :loading="busyId === tk.id" @change="(v: string | number | boolean) => toggle(tk, Boolean(v))" />
+              </template>
+              <template #title>
+                <span>{{ tk.name }}</span>
+                <el-tooltip v-if="tk.legacy" :content="t('apiTokens.legacyTip')" placement="top">
                   <el-tag size="small" type="warning" effect="light">{{ t('apiTokens.legacy') }}</el-tag>
                 </el-tooltip>
-                <el-tag v-if="row.expired" size="small" type="danger" effect="light">{{ t('apiTokens.expired') }}</el-tag>
-              </div>
-              <div class="meta mono">{{ row.hint }}</div>
-            </template>
-          </el-table-column>
-          <el-table-column :label="t('apiTokens.scopes')" min-width="230">
-            <template #default="{ row }">
-              <ScopeTags :scopes="row.scopes" :titles="domainTitles" />
-            </template>
-          </el-table-column>
-          <el-table-column :label="t('apiTokens.expiresAt')" width="170">
-            <template #default="{ row }">
-              <span v-if="!row.expiresAt" class="muted">{{ t('apiTokens.never') }}</span>
-              <span v-else :class="{ 'text-danger': row.expired }">{{ fmtTime(row.expiresAt) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column :label="t('apiTokens.lastUsed')" width="190">
-            <template #default="{ row }">
-              <template v-if="row.lastUsedAt">
-                <div>{{ fmtTime(row.lastUsedAt) }}</div>
-                <div v-if="row.lastUsedIP" class="meta mono">{{ row.lastUsedIP }}</div>
+                <el-tag v-if="tk.expired" size="small" type="danger" effect="light">{{ t('apiTokens.expired') }}</el-tag>
               </template>
-              <span v-else class="muted">{{ t('apiTokens.neverUsed') }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column :label="t('common.enable')" width="70" align="center">
-            <template #default="{ row }">
-              <el-switch :model-value="!row.disabled" :loading="busyId === row.id" @change="(v: string | number | boolean) => toggle(row, Boolean(v))" />
-            </template>
-          </el-table-column>
-          <el-table-column :label="t('common.actions')" width="150" align="right" fixed="right">
-            <template #default="{ row }">
-              <el-tooltip :content="t('common.edit')" placement="top"><el-button text :icon="Pencil" :aria-label="t('common.edit')" @click="openEdit(row)" /></el-tooltip>
-              <el-tooltip :content="t('apiTokens.regenerate')" placement="top"><el-button text :icon="RefreshCw" :aria-label="t('apiTokens.regenerate')" @click="regenerate(row)" /></el-tooltip>
-              <el-tooltip :content="t('common.delete')" placement="top"><el-button text type="danger" :icon="Trash2" :aria-label="t('common.delete')" @click="remove(row)" /></el-tooltip>
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
-
-      <!-- 移动端：卡片 -->
-      <div v-else class="g-card-body">
-        <div v-for="tk in tokens" :key="tk.id" class="m-card">
-          <div class="m-head">
-            <div class="t-name">
-              <span class="t-name-text">{{ tk.name }}</span>
-              <el-tag v-if="tk.legacy" size="small" type="warning" effect="light">{{ t('apiTokens.legacy') }}</el-tag>
-              <el-tag v-if="tk.expired" size="small" type="danger" effect="light">{{ t('apiTokens.expired') }}</el-tag>
-            </div>
-            <el-switch :model-value="!tk.disabled" :loading="busyId === tk.id" @change="(v: string | number | boolean) => toggle(tk, Boolean(v))" />
-          </div>
-          <div class="meta mono">{{ tk.hint }}</div>
-          <p v-if="tk.legacy" class="legacy-tip">{{ t('apiTokens.legacyShort') }}</p>
-          <ScopeTags :scopes="tk.scopes" :titles="domainTitles" class="m-scopes" />
-          <div class="m-info">
-            <span class="muted">{{ t('apiTokens.expiry') }}</span>
-            <span v-if="!tk.expiresAt" class="muted">{{ t('apiTokens.never') }}</span>
-            <span v-else :class="{ 'text-danger': tk.expired }">{{ fmtTime(tk.expiresAt) }}</span>
-            <span class="muted">{{ t('apiTokens.lastUsed') }}</span>
-            <span v-if="tk.lastUsedAt">{{ fmtTime(tk.lastUsedAt) }}<template v-if="tk.lastUsedIP"> · <span class="mono">{{ tk.lastUsedIP }}</span></template></span>
-            <span v-else class="muted">{{ t('apiTokens.neverUsed') }}</span>
-          </div>
-          <div class="m-ops">
-            <el-button size="small" :icon="Pencil" @click="openEdit(tk)">{{ t('common.edit') }}</el-button>
-            <el-button size="small" :icon="RefreshCw" @click="regenerate(tk)">{{ t('apiTokens.regenerate') }}</el-button>
-            <el-button size="small" type="danger" plain :icon="Trash2" @click="remove(tk)">{{ t('common.delete') }}</el-button>
-          </div>
-        </div>
-        <el-empty v-if="!tokens.length && !loading" :description="t('apiTokens.emptyMobile')" :image-size="60" />
+              <template #sub><span class="mono">{{ tk.hint }}</span></template>
+              <Field :label="t('apiTokens.scopes')" wide>
+                <ScopeTags :scopes="tk.scopes" :titles="domainTitles" />
+              </Field>
+              <Field :label="t('apiTokens.expiresAt')">
+                <span v-if="!tk.expiresAt" class="muted">{{ t('apiTokens.never') }}</span>
+                <span v-else :class="{ 'text-danger': tk.expired }">{{ fmtTime(tk.expiresAt) }}</span>
+              </Field>
+              <Field :label="t('apiTokens.lastUsed')">
+                <template v-if="tk.lastUsedAt">
+                  {{ fmtTime(tk.lastUsedAt) }}<span v-if="tk.lastUsedIP" class="meta mono"> · {{ tk.lastUsedIP }}</span>
+                </template>
+                <span v-else class="muted">{{ t('apiTokens.neverUsed') }}</span>
+              </Field>
+              <template v-if="tk.legacy && !sorting" #extra>
+                <p class="legacy-tip">{{ t('apiTokens.legacyShort') }}</p>
+              </template>
+              <template v-if="sorting" #actions>
+                <SortMoves :gl="gl" :it="it" />
+              </template>
+              <template v-else #actions>
+                <el-button text size="small" :icon="Pencil" @click="openEdit(tk)">{{ t('common.edit') }}</el-button>
+                <el-button text size="small" :icon="RefreshCw" @click="regenerate(tk)">{{ t('apiTokens.regenerate') }}</el-button>
+                <el-button text size="small" type="danger" :icon="Trash2" @click="remove(tk)">{{ t('common.delete') }}</el-button>
+              </template>
+            </EntityCard>
+          </template>
+        </GroupedList>
       </div>
     </div>
 
@@ -106,6 +74,7 @@
         <el-form-item :label="t('common.name')" required>
           <el-input v-model="form.name" maxlength="64" :placeholder="t('apiTokens.namePlaceholder')" />
         </el-form-item>
+        <GroupInput v-model="form.group" :groups="gl.groupNames.value" />
         <el-form-item :label="t('apiTokens.expiresAt')">
           <div class="exp-row">
             <el-select v-model="form.expiry" class="exp-select">
@@ -201,6 +170,17 @@ import { api, type ScopeDomain, type TokenInput, type TokenSecret, type TokenVie
 import { apiOrigin } from '../basePath'
 import PageHeader from '../components/PageHeader.vue'
 import ScopeTags from '../components/ScopeTags.vue'
+import EntityCard from '../components/EntityCard.vue'
+import Field from '../components/Field.vue'
+import CompactToggle from '../components/CompactToggle.vue'
+import GroupedList from '../components/GroupedList.vue'
+import GroupInput from '../components/GroupInput.vue'
+import ListTools from '../components/ListTools.vue'
+import SortCheck from '../components/SortCheck.vue'
+import SortMoves from '../components/SortMoves.vue'
+import { useCompactView } from '../composables/useCompactView'
+import { useGroupedList } from '../composables/useGroupSort'
+import { flatten, groupChanges } from '../groupSort'
 import { useFormLayout } from '../composables/useIsMobile'
 import { copyText, selectNode } from '../composables/useClipboard'
 
@@ -214,6 +194,24 @@ const tokens = ref<TokenView[]>([])
 const domains = ref<ScopeDomain[]>([])
 const loading = ref(false)
 const busyId = ref('')
+const compact = useCompactView('apiTokens')
+// 令牌列表的搜索、分组与排序：未手动排序前按创建时间从新到旧，调整后按保存的顺序
+const gl = useGroupedList<TokenView>({
+  storageKey: 'apiTokens.groups',
+  items: () => tokens.value,
+  idOf: (tk) => tk.id,
+  reload: load,
+  matches: (tk, q) => [tk.name, tk.group ?? '', tk.hint, ...tk.scopes].join('\n').toLowerCase().includes(q),
+  save: async (next) => {
+    for (const [group, keys] of groupChanges(next, (tk) => tk.id, (tk) => tk.group ?? '')) {
+      await api.put('/api/tokens/group', { keys, group })
+    }
+    const order = flatten(next).map((tk) => tk.id)
+    if (order.join('\n') !== tokens.value.map((tk) => tk.id).join('\n')) {
+      await api.put('/api/tokens/order', { keys: order })
+    }
+  },
+})
 
 // 权限域 ID -> 中文标题，供列表摘要使用
 const domainTitles = computed(() => {
@@ -364,6 +362,7 @@ const editingId = ref('')
 const saving = ref(false)
 const form = reactive({
   name: '',
+  group: '',
   expiry: 'never',
   customDate: null as Date | null,
   enabled: true,
@@ -379,6 +378,7 @@ function disablePast(d: Date): boolean {
 function openCreate() {
   editingId.value = ''
   form.name = ''
+  form.group = ''
   form.expiry = '30'
   form.customDate = null
   form.enabled = true
@@ -390,6 +390,7 @@ function openCreate() {
 function openEdit(tk: TokenView) {
   editingId.value = tk.id
   form.name = tk.name
+  form.group = tk.group ?? ''
   form.enabled = !tk.disabled
   if (tk.expiresAt) {
     form.expiry = 'custom'
@@ -437,7 +438,7 @@ async function submit() {
     ElMessage.warning(t('apiTokens.expiryFuture'))
     return
   }
-  const body: TokenInput = { name, scopes, expiresAt }
+  const body: TokenInput = { name, scopes, expiresAt, group: form.group.trim() }
   saving.value = true
   try {
     if (editingId.value) {
@@ -545,6 +546,12 @@ onMounted(load)
 </script>
 
 <style scoped>
+.head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
 .exec-warn {
   margin-top: 8px;
 }
@@ -558,60 +565,13 @@ onMounted(load)
   font-size: 12px;
   word-break: break-all;
 }
-.table-body {
-  padding: 0 8px 8px;
-}
-.t-name {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  min-width: 0;
-}
-.t-name-text {
-  font-weight: 600;
-  word-break: break-all;
-}
 
 /* 移动端卡片 */
-.m-card {
-  border: 1px solid var(--g-border);
-  border-radius: 8px;
-  padding: 12px;
-}
-.m-card + .m-card {
-  margin-top: 10px;
-}
-.m-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
 .legacy-tip {
   margin: 6px 0 0;
   font-size: 12px;
   color: var(--el-color-warning);
   line-height: 1.5;
-}
-.m-scopes {
-  margin-top: 8px;
-}
-.m-info {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 4px 12px;
-  margin-top: 10px;
-  font-size: 12px;
-}
-.m-ops {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 12px;
-}
-.m-ops .el-button + .el-button {
-  margin-left: 0;
 }
 
 /* 表单 */

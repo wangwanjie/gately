@@ -130,5 +130,6 @@
   "ipCertApply": "Configurer automatiquement",
   "shortLivedTag": "Courte durée",
   "hoursLeft": "{hours} heures restantes",
-  "renewFailedShort": "échec du renouvellement"
+  "renewFailedShort": "échec du renouvellement",
+  "filterPlaceholder": "Rechercher remarque, groupe, domaine"
 }

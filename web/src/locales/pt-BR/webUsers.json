@@ -19,7 +19,8 @@
     "lockForward": "Sites com autenticação delegada não podem usar usuários compartilhados",
     "lockOnly": "Este site autentica apenas com usuários compartilhados e ficaria público ao desmarcar; para torná-lo público, desative a autenticação nas configurações do site",
     "none": "Ainda não há sites que possam usar autenticação",
-    "noMatch": "Nenhum site corresponde"
+    "noMatch": "Nenhum site corresponde",
+    "groupCount": "{on} / {total} selecionados"
   },
   "leaveTitle": "Alterações não salvas",
   "leaveConfirm": "Esta página tem alterações não salvas que serão perdidas se você sair.",

@@ -537,6 +537,7 @@ func (m *Module) Routes(r module.Router) {
 		Save:     m.saveClientsLocked,
 		Key:      func(c *Client) *string { return &c.Key },
 		Enabled:  func(c *Client) *bool { return &c.Enable },
+		Group:    func(c *Client) *string { return &c.Group },
 		Validate: func(c *Client) error { return c.Validate() },
 		Merge:    func(old, updated *Client) { crud.KeepSecret(old.Token, &updated.Token) },
 		View:     func(c *Client) any { return m.clientView(c) },
@@ -551,6 +552,7 @@ func (m *Module) Routes(r module.Router) {
 		Save:     m.saveLocked,
 		Key:      func(s *Server) *string { return &s.Key },
 		Enabled:  func(s *Server) *bool { return &s.Enable },
+		Group:    func(s *Server) *string { return &s.Group },
 		Validate: func(s *Server) error { return s.Validate() },
 		Merge: func(old, updated *Server) {
 			crud.KeepSecret(old.Token, &updated.Token)
@@ -570,6 +572,7 @@ func (m *Module) Routes(r module.Router) {
 		Save:     m.saveLocked,
 		Key:      func(p *Proxy) *string { return &p.Key },
 		Enabled:  func(p *Proxy) *bool { return &p.Enable },
+		Group:    func(p *Proxy) *string { return &p.Group },
 		Validate: func(p *Proxy) error { return p.Validate() },
 		Check: func(p *Proxy) error {
 			if m.findClient(p.Client) == nil {
