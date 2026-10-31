@@ -78,14 +78,14 @@
     "aiNotice": "此頁面由 AI 翻譯，內容可能有疏漏。歡迎到 GitHub 協助改進。"
   },
   "home": {
-    "pill": "開源 · 可稽核 · 單檔部署",
+    "pill": "開源免費 · Apache-2.0",
     "announce": {
-      "text": "v0.6.1 發布：安全修復、憑證 IPv4/IPv6 簽發與通知語言 →",
-      "link": "/zh-TW/news/v0.6.1"
+      "text": "v0.6.1.1 發布：Web 路徑探測封鎖、認證使用者頁面、共用使用者自助改密碼 →",
+      "link": "/zh-TW/news/v0.6.1.1"
     },
-    "titleLine1": "看得見的",
-    "titleLine2": "網路閘道工具集",
-    "lead": "DDNS、STUN 穿透、連接埠轉發、反向代理、憑證、WAF、Tailscale、frp，整合在一個約 32 MB 的單一檔案裡。家用網路、NAS、雲端主機與各類伺服器都能使用。",
+    "titleLine1": "一站式網路閘道",
+    "titleLine2": "開源透明，開箱即用",
+    "lead": "從網域解析、內網穿透，到反向代理、HTTPS 憑證；從 WAF、入侵防護，到統一登入與檔案分享，家用網路和伺服器入口需要的能力，Gately 都整合在同一個後台。裝在 NAS、軟路由或雲端主機上，打開瀏覽器就能設定和維運。",
     "ctaStart": "快速開始",
     "ctaDownload": "下載",
     "mockTitle": "gately · 總覽",
@@ -121,30 +121,12 @@
         "warn"
       ]
     ],
-    "stats": [
-      {
-        "value": "~32 MB",
-        "label": "單一檔案，內嵌管理介面"
-      },
-      {
-        "value": "0",
-        "label": "預設連線專案方伺服器的次數"
-      },
-      {
-        "value": "全平台",
-        "label": "Linux / macOS / Windows / FreeBSD，含 ARM、MIPS、RISC-V"
-      },
-      {
-        "value": "Apache-2.0",
-        "label": "開源授權，原始碼可稽核"
-      }
-    ],
-    "featuresTitle": "常用網路能力，一處管理",
-    "featuresDesc": "涵蓋家用網路與伺服器維運最常用的功能，每個模組都可單獨啟停。",
+    "featuresTitle": "常用的網路功能，都已備好",
+    "featuresDesc": "從幫家裡設定一個網域，到守好一整排網站，都在同一個介面裡完成。",
     "features": [
       {
         "title": "動態網域",
-        "text": "阿里雲、Cloudflare、騰訊雲、DNSPod、華為雲、Route 53、OVH、Gandi、Namecheap 等 18 家服務商；透過 URL / 網卡 / 命令取得 IP，支援 IPv4 與 IPv6，並有 Webhook 通知。"
+        "text": "阿里雲、Cloudflare、騰訊雲、DNSPod、華為雲、Route 53、OVH、Gandi、Namecheap 等主流服務商；透過 URL / 網卡 / 命令取得 IP，支援 IPv4 與 IPv6，並有 Webhook 通知。"
       },
       {
         "title": "STUN 穿透",
@@ -213,56 +195,41 @@
       {
         "title": "API、命令列與 MCP",
         "text": "多權杖依模組授權，自動產生 OpenAPI 文件；gately ctl 呼叫實例，gately mcp 接入 AI 助理。"
+      },
+      {
+        "title": "入侵防護",
+        "text": "類 fail2ban 的日誌規則、誘餌連接埠與掃描偵測、Web 路徑探測封鎖；封鎖同步到 nftables，在核心層直接丟棄封包。"
       }
     ],
     "moreModules": "查看全部模組 →",
     "fnos": {
       "tag": "飛牛 fnOS 原生應用",
-      "title": "裝進飛牛，點開就用",
-      "desc": "Gately 提供飛牛 fnOS 離線安裝包（x86 / ARM），在應用中心手動安裝即可。它接入飛牛統一閘道，與飛牛共用同一個存取入口，並能沿用飛牛管理員的登入狀態。",
+      "title": "飛牛使用者，裝上就能用",
+      "desc": "提供 x86 與 ARM 兩種離線安裝包，在應用中心手動安裝。裝好後從飛牛桌面點開，走飛牛統一閘道，已登入飛牛的管理員可以直接進入。",
       "cta": "飛牛安裝說明",
       "points": [
         {
-          "title": "支援飛牛統一閘道",
+          "title": "走飛牛統一閘道",
           "text": "點擊飛牛桌面圖示，管理介面在 /app/gately/ 下開啟。區域網路位址與遠端存取飛牛的網域都能直接使用，無需額外開放或對應連接埠，存取控制由飛牛負責。"
         },
         {
-          "title": "飛牛管理員登入狀態直接登入",
+          "title": "飛牛管理員免登入",
           "text": "開啟「飛牛登入狀態自動登入」後，已登入飛牛的管理員直接進入 Gately，無需再輸入密碼與兩步驟驗證碼；一般飛牛使用者仍需登入。預設關閉。"
         },
         {
-          "title": "完整功能，原生執行",
+          "title": "功能完整，原生執行",
           "text": "以 root 執行，可監聽 80/443、管理 Docker、使用 Web 終端機；設定在解除安裝時預設保留，升級時安裝新版 .fpk 即可。"
         }
       ]
     },
-    "promisesTitle": "執行在網路邊界的軟體，應該讓你看得清楚",
-    "promisesDesc": "它掌握 DNS 金鑰與憑證私鑰，所以每一個行為都應該能被檢視。",
-    "promises": [
-      {
-        "title": "透明",
-        "text": "預設不連線任何專案方伺服器，不回報裝置資訊。公網 IP 查詢、STUN 伺服器等所有對外位址都看得見、改得了、關得掉。"
-      },
-      {
-        "title": "可稽核",
-        "text": "設定是純文字 JSON，權限 0600，可直接納入 git 做 diff 與回復。敏感欄位在 API 輸出中會遮蔽。"
-      },
-      {
-        "title": "自主可控",
-        "text": "第三方登入使用你自己申請的 OAuth 應用程式，不經過任何中轉；只在管理員點擊時線上升級（Linux 執行檔部署），不在背景自動更新。"
-      },
-      {
-        "title": "單一檔案部署",
-        "text": "一個靜態執行檔內嵌前端，支援 Docker、systemd、OpenWrt，涵蓋 NAS、軟路由與雲端主機。"
-      }
-    ],
-    "installTitle": "一分鐘跑起來",
+    "installTitle": "一分鐘裝好",
     "installDesc": "映像支援 amd64、arm64、arm/v7。啟動後造訪 <code>http://裝置IP:16680</code>，以預設帳號 <code>admin</code> 與預設密碼 <code>gately.cn</code> 登入，登入後請立即修改密碼。",
     "installTabBinary": "執行檔",
     "installDocker": "docker run -d --name gately --network host \\\n  -v ./gately-data:/etc/gately \\\n  -v /var/run/docker.sock:/var/run/docker.sock \\\n  ghcr.io/wangwanjie/gately:latest",
     "installBinary": "# 從 Releases 下載對應平台的壓縮檔並解壓縮\n./gately -c /etc/gately\n\n# 管理介面預設監聽 :16680\n# 預設帳號 admin，預設密碼 gately.cn",
     "installTabFnos": "飛牛 fnOS",
     "installFnos": "# 1. 從 Releases 下載 gately_<版本>_fnos_x86.fpk（ARM 裝置選 _arm.fpk）\n# 2. 飛牛「應用中心 → 手動安裝」，選擇檔案並完成精靈\n# 3. 點擊飛牛桌面上的 Gately 圖示，經統一閘道開啟管理介面\n\n# 預設帳號 admin，預設密碼 gately.cn",
+    "installOpenwrt": "# 1. 查看裝置架構，再從 Releases 下載對應的 OpenWrt 安裝包\ngrep DISTRIB_ARCH /etc/openwrt_release\n\n# 2. 安裝（以 x86_64 為例）\ncd /tmp\n# OpenWrt 24.10 / iStoreOS\nopkg install ./gately_<版本>_openwrt_amd64.ipk\n# OpenWrt 25.12\napk add --allow-untrusted ./gately_<版本>_openwrt_amd64.apk\n\n# 安裝後自動啟動，管理介面在 http://路由器位址:16680\n# 選用：再裝 luci-app-gately，在 LuCI「服務 → Gately」中管理\n# 預設帳號 admin，預設密碼 gately.cn",
     "copy": "複製",
     "copied": "已複製",
     "fullInstall": "完整安裝文件 →",
@@ -286,10 +253,113 @@
       }
     ],
     "moreFaq": "更多問題 →",
-    "finalTitle": "把網路邊界的控制權拿回來",
-    "finalDesc": "開源、透明、單一檔案。現在就部署一個 Gately。",
+    "finalTitle": "今天就裝起來試試",
+    "finalDesc": "免費開源，裝好就能用。遇到問題，來 Telegram 群組找我們。",
     "starOnGithub": "在 GitHub 點亮 Star",
-    "telegramScan": "用手機掃碼加入 Telegram 群組"
+    "telegramScan": "用手機掃碼加入 Telegram 群組",
+    "worksWith": "執行平台與整合",
+    "flow": {
+      "in": "公網存取",
+      "out": "你的服務",
+      "blocked": "已攔截"
+    },
+    "why": {
+      "title": "選擇 Gately 的理由",
+      "desc": "每一條都對應著已經可以用的功能。",
+      "items": [
+        {
+          "title": "開源透明",
+          "text": "以 Apache-2.0 開源，預設不連線專案方伺服器，不蒐集、不回報任何資料。"
+        },
+        {
+          "title": "一站整合",
+          "text": "DDNS、穿透、反向代理、憑證、WAF、組網、Docker、檔案服務，在同一個後台管理。"
+        },
+        {
+          "title": "層層防護",
+          "text": "WAF、入侵封鎖、IP 與地區規則、單一登入和兩步驟驗證，依站台分別設定。"
+        },
+        {
+          "title": "操作稽核",
+          "text": "登入、設定修改與敏感內容檢視都有紀錄，誰在什麼時候做了什麼，一查便知。"
+        },
+        {
+          "title": "設定回復",
+          "text": "每次修改都保留歷史版本，可以比對差異，改錯了一鍵還原。"
+        },
+        {
+          "title": "完整 API",
+          "text": "管理介面建立在同一套 REST 介面上，權杖依模組授權，附帶 OpenAPI 文件、命令列與 MCP。"
+        },
+        {
+          "title": "行動裝置友善",
+          "text": "管理介面為手機螢幕另外調整版面，出門在外也能看狀態、改設定。"
+        },
+        {
+          "title": "開箱即用",
+          "text": "一行命令或一個安裝套件就能跑起來，所有設定都在瀏覽器裡完成。"
+        }
+      ]
+    },
+    "showcase": [
+      {
+        "tag": "一站整合",
+        "title": "一個後台，看清整個網路入口",
+        "text": "總覽頁集中顯示主機資源、網卡與公網位址，以及每個模組的執行狀態。哪裡需要處理，打開就知道。",
+        "points": [
+          "連接埠轉發、DDNS、憑證、Web 服務等狀態一頁彙整",
+          "一鍵網路自檢：公網 IP、CGNAT、連接埠、解析與憑證",
+          "Prometheus 指標與現成的 Grafana 儀表板"
+        ]
+      },
+      {
+        "tag": "層層防護",
+        "title": "從站台到核心，一層層把關",
+        "text": "每個站台可以個別啟用 WAF、IP 規則和登入驗證；入侵防護依日誌規則自動封鎖，並同步到系統防火牆。",
+        "points": [
+          "Coraza + OWASP CRS v4，攔截或僅偵測",
+          "類 fail2ban 封鎖，透過 nftables 在核心丟棄封包",
+          "共用使用者、兩步驟驗證與 OIDC 單一登入"
+        ]
+      },
+      {
+        "tag": "操作稽核 · 設定回復",
+        "title": "每一次變更，都有據可查",
+        "text": "登入、設定修改和敏感內容檢視都記入稽核日誌；被覆寫的設定檔保留歷史版本，可以比對差異、一鍵回復。",
+        "points": [
+          "稽核日誌不記錄請求內文和金鑰",
+          "設定是純文字 JSON，可以納入 git 管理",
+          "支援 -apply 宣告式設定目錄"
+        ]
+      },
+      {
+        "tag": "完整 API",
+        "title": "介面能做的，API 也能做",
+        "text": "管理介面本身就建立在 REST API 上。權杖依模組授予唯讀或讀寫權限，內建 OpenAPI 文件，寫指令碼批次操作很方便。",
+        "points": [
+          "可建立多個權杖，分別設定權限與有效期限",
+          "gately ctl 在命令列操作執行中的實例",
+          "gately mcp 接入 AI 助理，預設唯讀"
+        ]
+      },
+      {
+        "tag": "行動裝置友善",
+        "title": "用手機也能順手管理",
+        "text": "導覽、清單和表單都針對手機螢幕重新排版。用手機瀏覽器開啟同一個位址，就能查看狀態、修改設定。",
+        "points": [
+          "手機瀏覽器直接開啟，不用裝 App",
+          "淺色、深色與多套主題配色",
+          "多語言介面，跟隨瀏覽器語言"
+        ]
+      }
+    ],
+    "featureGroups": [
+      "網路接入",
+      "網站與憑證",
+      "安全防護",
+      "維運工具",
+      "監控與自動化"
+    ]
   },
   "download": {
     "other": "其他",

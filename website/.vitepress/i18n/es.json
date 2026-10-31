@@ -78,14 +78,14 @@
     "aiNotice": "Esta página se tradujo con IA y puede contener imprecisiones. Ayuda a mejorarla en GitHub."
   },
   "home": {
-    "pill": "Código abierto · Auditable · Binario único",
+    "pill": "Gratis y de código abierto · Apache-2.0",
     "announce": {
-      "text": "v0.6.1: corrección de seguridad, emisión de certificados por IPv4/IPv6 e idioma de las notificaciones →",
-      "link": "/es/news/v0.6.1"
+      "text": "v0.6.1.1 ya disponible: bloqueo del sondeo de rutas web, página Usuarios de autenticación y cambio de contraseña por el propio usuario →",
+      "link": "/es/news/v0.6.1.1"
     },
-    "titleLine1": "Una pasarela de red",
-    "titleLine2": "que puedes ver por dentro",
-    "lead": "DDNS, traversal NAT con STUN, reenvío de puertos, proxy inverso, certificados, WAF, Tailscale y frp, todo en un único binario de unos 32 MB. Funciona en redes domésticas, NAS, servidores en la nube y servidores de todo tipo.",
+    "titleLine1": "La pasarela de red todo en uno",
+    "titleLine2": "Código abierto y lista para usar",
+    "lead": "DNS y traversal de NAT, proxy inverso y certificados HTTPS, WAF y prevención de intrusiones, inicio de sesión único y archivos compartidos: todo lo que tu red doméstica y tus servidores necesitan en la entrada, en un solo panel. Instálalo en un NAS, un router por software o un servidor en la nube y configúralo todo desde el navegador.",
     "ctaStart": "Inicio rápido",
     "ctaDownload": "Descargar",
     "mockTitle": "gately · Resumen",
@@ -121,30 +121,12 @@
         "warn"
       ]
     ],
-    "stats": [
-      {
-        "value": "~32 MB",
-        "label": "Un solo binario con la interfaz de administración integrada"
-      },
-      {
-        "value": "0",
-        "label": "Conexiones a servidores del proyecto por defecto"
-      },
-      {
-        "value": "Multiplataforma",
-        "label": "Linux / macOS / Windows / FreeBSD, incluidos ARM, MIPS y RISC-V"
-      },
-      {
-        "value": "Apache-2.0",
-        "label": "Licencia de código abierto y código fuente auditable"
-      }
-    ],
-    "featuresTitle": "La caja de herramientas de red de todos los días, gestionada en un solo lugar",
-    "featuresDesc": "Cubre las funciones en las que más se apoyan las redes domésticas y la administración de servidores. Cada módulo se puede activar o desactivar por separado.",
+    "featuresTitle": "Las herramientas de red de siempre, listas para usar",
+    "featuresDesc": "Desde apuntar un dominio a tu casa hasta proteger una fila entera de sitios web, todo se hace en la misma interfaz.",
     "features": [
       {
         "title": "DNS dinámico",
-        "text": "18 proveedores, entre ellos Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, Route 53, OVH, Gandi y Namecheap; detecta tu IP por URL, interfaz de red o comando, con IPv4 e IPv6 y avisos por webhook."
+        "text": "Los principales proveedores, entre ellos Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, Route 53, OVH, Gandi y Namecheap; detecta tu IP por URL, interfaz de red o comando, con IPv4 e IPv6 y avisos por webhook."
       },
       {
         "title": "Traversal STUN",
@@ -213,21 +195,25 @@
       {
         "title": "API, CLI y MCP",
         "text": "Varios tokens con permisos por módulo y documentación OpenAPI generada automáticamente; usa gately ctl para controlar una instancia y gately mcp para conectar asistentes de IA."
+      },
+      {
+        "title": "Prevención de intrusiones",
+        "text": "Reglas de registro al estilo fail2ban, puertos trampa y detección de escaneos, y bloqueo del sondeo de rutas web; los bloqueos se sincronizan con nftables y se descartan en el kernel."
       }
     ],
     "moreModules": "Ver todos los módulos →",
     "fnos": {
       "tag": "Aplicación nativa para fnOS",
-      "title": "Instálalo en fnOS y ábrelo desde el escritorio",
-      "desc": "Gately ofrece paquetes sin conexión para fnOS (x86 / ARM) que se instalan manualmente desde el Centro de aplicaciones. Se integra en la pasarela unificada de fnOS, comparte el punto de entrada que ya usas para fnOS y puede reutilizar la sesión del administrador de fnOS.",
+      "title": "¿Usas fnOS? Instálalo y ábrelo",
+      "desc": "Paquetes sin conexión para x86 y ARM que se instalan manualmente desde el Centro de aplicaciones. Ábrelo desde el escritorio de fnOS a través de la pasarela unificada de fnOS; los administradores que ya han iniciado sesión en fnOS entran directamente.",
       "cta": "Guía de instalación en fnOS",
       "points": [
         {
-          "title": "Funciona con la pasarela unificada de fnOS",
+          "title": "A través de la pasarela unificada de fnOS",
           "text": "Haz clic en el icono del escritorio de fnOS y la interfaz de administración se abre en /app/gately/. Funcionan tanto la dirección de la red local como tu dominio remoto de fnOS, sin abrir ni redirigir puertos adicionales, y fnOS se encarga del control de acceso."
         },
         {
-          "title": "Inicia sesión con tu sesión de administrador de fnOS",
+          "title": "Sin segundo inicio de sesión para administradores de fnOS",
           "text": "Activa Iniciar sesión con fnOS y los administradores que ya tengan la sesión iniciada en fnOS entran directamente en Gately, sin contraseña ni código de verificación en dos pasos. Los usuarios normales de fnOS siguen iniciando sesión. Desactivado por defecto."
         },
         {
@@ -236,26 +222,6 @@
         }
       ]
     },
-    "promisesTitle": "El software en el borde de tu red debe poder verse por dentro",
-    "promisesDesc": "Guarda tus claves DNS y las claves privadas de tus certificados, así que cada comportamiento debe poder inspeccionarse.",
-    "promises": [
-      {
-        "title": "Transparente",
-        "text": "Sin conexiones a servidores del proyecto ni envío de datos del dispositivo por defecto. Cada dirección saliente, como la consulta de IP pública y los servidores STUN, es visible, editable y se puede desactivar."
-      },
-      {
-        "title": "Auditable",
-        "text": "La configuración es JSON plano con permisos 0600, lista para diferencias y reversiones con git. Los campos sensibles se enmascaran en las respuestas de la API."
-      },
-      {
-        "title": "Bajo tu control",
-        "text": "El inicio de sesión de terceros usa aplicaciones OAuth que registras tú mismo, sin intermediarios. La actualización en línea solo se ejecuta cuando un administrador hace clic (instalaciones binarias en Linux); nada se actualiza en segundo plano."
-      },
-      {
-        "title": "Despliegue en un solo archivo",
-        "text": "Un binario estático con el frontend integrado. Funciona con Docker, systemd y OpenWrt, y cubre NAS, routers software y servidores en la nube."
-      }
-    ],
     "installTitle": "En marcha en un minuto",
     "installDesc": "Hay imágenes para amd64, arm64 y arm/v7. Tras arrancar, abre <code>http://IP_DEL_DISPOSITIVO:16680</code> e inicia sesión con la cuenta predeterminada <code>admin</code> y la contraseña predeterminada <code>gately.cn</code>; cámbiala enseguida.",
     "installTabBinary": "Binario",
@@ -263,6 +229,7 @@
     "installBinary": "# Descarga desde Releases el archivo para tu plataforma y descomprímelo\n./gately -c /etc/gately\n\n# La interfaz de administración escucha por defecto en :16680\n# Cuenta predeterminada admin, contraseña predeterminada gately.cn",
     "installTabFnos": "fnOS",
     "installFnos": "# 1. Descarga desde Releases gately_<version>_fnos_x86.fpk (_arm.fpk para dispositivos ARM)\n# 2. En fnOS, abre Centro de aplicaciones → Instalación manual, elige el archivo y completa el asistente\n# 3. Haz clic en el icono de Gately del escritorio de fnOS para abrirlo a través de la pasarela unificada\n\n# Cuenta predeterminada admin, contraseña predeterminada gately.cn",
+    "installOpenwrt": "# 1. Comprueba la arquitectura del dispositivo y descarga el paquete de OpenWrt correspondiente desde Releases\ngrep DISTRIB_ARCH /etc/openwrt_release\n\n# 2. Instala (x86_64 como ejemplo)\ncd /tmp\n# OpenWrt 24.10 / iStoreOS\nopkg install ./gately_<version>_openwrt_amd64.ipk\n# OpenWrt 25.12\napk add --allow-untrusted ./gately_<version>_openwrt_amd64.apk\n\n# Gately arranca al instalarse; la interfaz está en http://IP_DEL_ROUTER:16680\n# Opcional: instala luci-app-gately para gestionarlo en Servicios → Gately de LuCI\n# Cuenta predeterminada admin, contraseña predeterminada gately.cn",
     "copy": "Copiar",
     "copied": "Copiado",
     "fullInstall": "Guía de instalación completa →",
@@ -286,10 +253,113 @@
       }
     ],
     "moreFaq": "Más preguntas →",
-    "finalTitle": "Recupera el control del borde de tu red",
-    "finalDesc": "Abierto, transparente y en un solo archivo. Despliega Gately hoy mismo.",
+    "finalTitle": "Pruébalo hoy",
+    "finalDesc": "Gratis, de código abierto y listo nada más instalarlo. ¿Dudas? Encuéntranos en el grupo de Telegram.",
     "starOnGithub": "Dar una estrella en GitHub",
-    "telegramScan": "Escanea con el móvil para unirte al grupo de Telegram"
+    "telegramScan": "Escanea con el móvil para unirte al grupo de Telegram",
+    "worksWith": "Plataformas e integraciones",
+    "flow": {
+      "in": "Internet",
+      "out": "Tus servicios",
+      "blocked": "Bloqueado"
+    },
+    "why": {
+      "title": "Por qué Gately",
+      "desc": "Cada punto corresponde a una función que ya puedes usar.",
+      "items": [
+        {
+          "title": "Abierto y transparente",
+          "text": "Código abierto con licencia Apache-2.0. Por defecto no se conecta a servidores del proyecto y no recoge ni envía ningún dato."
+        },
+        {
+          "title": "Todo en uno",
+          "text": "DDNS, traversal de NAT, proxy inverso, certificados, WAF, redes privadas, Docker y servicios de archivos en un solo panel."
+        },
+        {
+          "title": "Seguridad por capas",
+          "text": "WAF, bloqueo de intrusiones, reglas por IP y país, inicio de sesión único y verificación en dos pasos, configurables por sitio."
+        },
+        {
+          "title": "Registro de auditoría",
+          "text": "Se registran los inicios de sesión, los cambios de configuración y el acceso a contenido sensible: quién hizo qué y cuándo."
+        },
+        {
+          "title": "Reversión de configuración",
+          "text": "Cada cambio conserva la versión anterior. Compara las diferencias y restaura con un clic si algo sale mal."
+        },
+        {
+          "title": "API completa",
+          "text": "El panel de administración usa la misma API REST. Los tokens se autorizan por módulo, con documentación OpenAPI, CLI y MCP."
+        },
+        {
+          "title": "Pensado para móvil",
+          "text": "El panel tiene un diseño propio para pantallas de móvil, así que puedes ver el estado y cambiar ajustes desde cualquier sitio."
+        },
+        {
+          "title": "Lista para usar",
+          "text": "Un comando o un paquete basta para ponerla en marcha, y todo se configura desde el navegador."
+        }
+      ]
+    },
+    "showcase": [
+      {
+        "tag": "Todo en uno",
+        "title": "Toda la entrada de tu red en un solo panel",
+        "text": "El resumen muestra los recursos del host, las interfaces de red y las direcciones públicas, junto con el estado de cada módulo. Lo que necesita atención salta a la vista.",
+        "points": [
+          "Reenvío de puertos, DDNS, certificados y servicios web en una sola pantalla",
+          "Autodiagnóstico de red en un clic: IP pública, CGNAT, puertos, DNS y certificados",
+          "Métricas de Prometheus y un panel de Grafana listo para usar"
+        ]
+      },
+      {
+        "tag": "Seguridad por capas",
+        "title": "Controles en cada capa, del sitio al kernel",
+        "text": "Cada sitio puede activar su propio WAF, reglas de IP e inicio de sesión. La prevención de intrusiones bloquea automáticamente según reglas de registro y lo sincroniza con el cortafuegos del sistema.",
+        "points": [
+          "Coraza + OWASP CRS v4, en modo bloqueo o solo detección",
+          "Bloqueos al estilo fail2ban, descartados en el kernel con nftables",
+          "Usuarios compartidos, verificación en dos pasos e inicio de sesión único OIDC"
+        ]
+      },
+      {
+        "tag": "Auditoría · Reversión",
+        "title": "Cada cambio deja rastro",
+        "text": "Los inicios de sesión, los cambios de configuración y el acceso a contenido sensible quedan en el registro de auditoría. Los archivos de configuración sobrescritos conservan sus versiones anteriores, con diferencias y reversión en un clic.",
+        "points": [
+          "El registro de auditoría nunca guarda cuerpos de solicitud ni secretos",
+          "Configuración en JSON plano que puedes gestionar con git",
+          "Directorio de configuración declarativa con -apply"
+        ]
+      },
+      {
+        "tag": "API completa",
+        "title": "Lo que hace el panel, también lo hace la API",
+        "text": "El propio panel de administración está construido sobre la API REST. Los tokens reciben acceso de solo lectura o de lectura y escritura por módulo, y la documentación OpenAPI integrada facilita automatizar tareas con scripts.",
+        "points": [
+          "Varios tokens, cada uno con sus permisos y su caducidad",
+          "gately ctl controla una instancia en ejecución desde la línea de comandos",
+          "gately mcp conecta asistentes de IA, en solo lectura por defecto"
+        ]
+      },
+      {
+        "tag": "Pensado para móvil",
+        "title": "Cómoda de gestionar desde el móvil",
+        "text": "La navegación, las listas y los formularios se reorganizan para pantallas pequeñas. Abre la misma dirección en el navegador del móvil para ver el estado y cambiar ajustes.",
+        "points": [
+          "Funciona en el navegador del móvil, sin instalar ninguna App",
+          "Tema claro, oscuro y varias paletas de color",
+          "Interfaz multilingüe que sigue el idioma del navegador"
+        ]
+      }
+    ],
+    "featureGroups": [
+      "Acceso a la red",
+      "Sitios y certificados",
+      "Seguridad",
+      "Operaciones",
+      "Monitorización y automatización"
+    ]
   },
   "download": {
     "other": "Otros",

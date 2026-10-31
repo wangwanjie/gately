@@ -78,14 +78,14 @@
     "aiNotice": "This page was translated with AI and may contain inaccuracies. Help improve it on GitHub."
   },
   "home": {
-    "pill": "Open source · Auditable · Single binary",
+    "pill": "Free and open source · Apache-2.0",
     "announce": {
-      "text": "v0.6.1 is out: security fix, IPv4/IPv6 certificate issuance and notification language →",
-      "link": "/en/news/v0.6.1"
+      "text": "v0.6.1.1 is out: web path probing bans, Auth users page, self-service password change →",
+      "link": "/en/news/v0.6.1.1"
     },
-    "titleLine1": "A network gateway toolkit",
-    "titleLine2": "you can see through",
-    "lead": "DDNS, STUN NAT traversal, port forwarding, reverse proxy, certificates, WAF, Tailscale and frp, all in a single ~32 MB binary. Runs on home networks, NAS boxes, cloud hosts and servers of every kind.",
+    "titleLine1": "The all-in-one network gateway",
+    "titleLine2": "Open source, ready out of the box",
+    "lead": "DNS and NAT traversal, reverse proxy and HTTPS certificates, WAF and intrusion prevention, single sign-on and file sharing: everything your home network and servers need at the edge, managed from one console. Run it on a NAS, a soft router or a cloud server and set it all up in your browser.",
     "ctaStart": "Quick Start",
     "ctaDownload": "Download",
     "mockTitle": "gately · Overview",
@@ -121,30 +121,12 @@
         "warn"
       ]
     ],
-    "stats": [
-      {
-        "value": "~32 MB",
-        "label": "Single binary with the admin UI embedded"
-      },
-      {
-        "value": "0",
-        "label": "Connections to project servers by default"
-      },
-      {
-        "value": "Cross-platform",
-        "label": "Linux / macOS / Windows / FreeBSD, including ARM, MIPS and RISC-V"
-      },
-      {
-        "value": "Apache-2.0",
-        "label": "Open-source license, auditable source"
-      }
-    ],
-    "featuresTitle": "The everyday network toolbox, managed in one place",
-    "featuresDesc": "Covers the features home networks and server ops rely on most. Every module can be enabled or disabled on its own.",
+    "featuresTitle": "Everyday network tools, ready to go",
+    "featuresDesc": "From pointing a domain at your home to guarding a whole row of websites, it all happens in one interface.",
     "features": [
       {
         "title": "Dynamic DNS",
-        "text": "18 providers including Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, Route 53, OVH, Gandi and Namecheap; detect your IP by URL, network interface or command, IPv4 and IPv6, webhook notifications."
+        "text": "Major providers including Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, Route 53, OVH, Gandi and Namecheap; detect your IP by URL, network interface or command, IPv4 and IPv6, webhook notifications."
       },
       {
         "title": "STUN Traversal",
@@ -213,21 +195,25 @@
       {
         "title": "API, CLI & MCP",
         "text": "Multiple tokens with per-module permissions and auto-generated OpenAPI docs; use gately ctl to drive an instance and gately mcp to connect AI assistants."
+      },
+      {
+        "title": "Intrusion Prevention",
+        "text": "fail2ban-style log jails, trap ports and scan detection, and bans for web path probing; bans sync to nftables and are dropped in the kernel."
       }
     ],
     "moreModules": "See all modules →",
     "fnos": {
       "tag": "Native fnOS app",
-      "title": "Install on fnOS, open from the desktop",
-      "desc": "Gately ships offline packages for fnOS (x86 / ARM) that you install manually from the App Center. It plugs into the fnOS unified gateway, shares the entry point you already use for fnOS, and can reuse the fnOS administrator's session.",
+      "title": "On fnOS? Install and open",
+      "desc": "Offline packages for x86 and ARM, installed manually from the App Center. Open it from the fnOS desktop through the fnOS unified gateway, and administrators already signed in to fnOS go straight in.",
       "cta": "fnOS install guide",
       "points": [
         {
-          "title": "Works with the fnOS unified gateway",
+          "title": "Through the fnOS unified gateway",
           "text": "Click the icon on the fnOS desktop and the admin UI opens under /app/gately/. Both the LAN address and your remote fnOS domain work, with no extra port to open or forward, and fnOS handles access control."
         },
         {
-          "title": "Sign in with your fnOS admin session",
+          "title": "No second sign-in for fnOS admins",
           "text": "Turn on Sign in with fnOS and administrators already signed in to fnOS go straight into Gately, without a password or two-step code. Regular fnOS users still sign in. Off by default."
         },
         {
@@ -236,33 +222,14 @@
         }
       ]
     },
-    "promisesTitle": "Software on your network edge should be easy to see through",
-    "promisesDesc": "It holds your DNS keys and certificate private keys, so every behavior should be open to inspection.",
-    "promises": [
-      {
-        "title": "Transparent",
-        "text": "No connections to project servers and no device reporting by default. Every outbound address, such as public IP lookup and STUN servers, is visible, editable and can be turned off."
-      },
-      {
-        "title": "Auditable",
-        "text": "Configuration is plain JSON with 0600 permissions, ready for git diffs and rollbacks. Sensitive fields are masked in API output."
-      },
-      {
-        "title": "In your control",
-        "text": "Third-party sign-in uses OAuth apps you register yourself, with no relay in between. Online upgrades run only when an admin clicks (Linux binary installs); nothing updates in the background."
-      },
-      {
-        "title": "Single-file deployment",
-        "text": "One static binary with the frontend embedded. Runs under Docker, systemd and OpenWrt, covering NAS, soft routers and cloud hosts."
-      }
-    ],
-    "installTitle": "Up and running in a minute",
+    "installTitle": "Running in a minute",
     "installDesc": "Images are available for amd64, arm64 and arm/v7. After starting, open <code>http://DEVICE_IP:16680</code> and sign in with the default account <code>admin</code> and default password <code>gately.cn</code>, then change the password right away.",
     "installTabBinary": "Binary",
     "installDocker": "docker run -d --name gately --network host \\\n  -v ./gately-data:/etc/gately \\\n  -v /var/run/docker.sock:/var/run/docker.sock \\\n  ghcr.io/wangwanjie/gately:latest",
     "installBinary": "# Download the archive for your platform from Releases and extract it\n./gately -c /etc/gately\n\n# The admin UI listens on :16680 by default\n# Default account admin, default password gately.cn",
     "installTabFnos": "fnOS",
     "installFnos": "# 1. Download gately_<version>_fnos_x86.fpk from Releases (_arm.fpk for ARM devices)\n# 2. In fnOS, open App Center → Manual install, pick the file and finish the wizard\n# 3. Click the Gately icon on the fnOS desktop to open it through the unified gateway\n\n# Default account admin, default password gately.cn",
+    "installOpenwrt": "# 1. Check the device architecture, then download the matching OpenWrt package from Releases\ngrep DISTRIB_ARCH /etc/openwrt_release\n\n# 2. Install (x86_64 as an example)\ncd /tmp\n# OpenWrt 24.10 / iStoreOS\nopkg install ./gately_<version>_openwrt_amd64.ipk\n# OpenWrt 25.12\napk add --allow-untrusted ./gately_<version>_openwrt_amd64.apk\n\n# Gately starts right away; the admin UI is at http://ROUTER_IP:16680\n# Optional: add luci-app-gately to manage it under Services → Gately in LuCI\n# Default account admin, default password gately.cn",
     "copy": "Copy",
     "copied": "Copied",
     "fullInstall": "Full installation guide →",
@@ -286,10 +253,113 @@
       }
     ],
     "moreFaq": "More questions →",
-    "finalTitle": "Take back control of your network edge",
-    "finalDesc": "Open, transparent, single-file. Deploy Gately today.",
+    "finalTitle": "Try it today",
+    "finalDesc": "Free, open source and ready once installed. Questions? Find us in the Telegram group.",
     "starOnGithub": "Star on GitHub",
-    "telegramScan": "Scan with your phone to join the Telegram group"
+    "telegramScan": "Scan with your phone to join the Telegram group",
+    "worksWith": "Platforms and integrations",
+    "flow": {
+      "in": "Internet",
+      "out": "Your services",
+      "blocked": "Blocked"
+    },
+    "why": {
+      "title": "Why Gately",
+      "desc": "Every point below is a feature you can use today.",
+      "items": [
+        {
+          "title": "Open and transparent",
+          "text": "Apache-2.0 licensed. No connections to project servers by default, and nothing is collected or reported."
+        },
+        {
+          "title": "All in one",
+          "text": "DDNS, traversal, reverse proxy, certificates, WAF, networking, Docker and file services in one console."
+        },
+        {
+          "title": "Layered security",
+          "text": "WAF, intrusion bans, IP and country rules, single sign-on and two-factor auth, configured per site."
+        },
+        {
+          "title": "Audit log",
+          "text": "Sign-ins, config changes and access to sensitive content are recorded, so you can see who did what and when."
+        },
+        {
+          "title": "Config rollback",
+          "text": "Every change keeps the previous version. Compare the diff and restore it in one click."
+        },
+        {
+          "title": "Complete API",
+          "text": "The admin UI runs on the same REST API. Tokens are scoped per module, with OpenAPI docs, a CLI and MCP."
+        },
+        {
+          "title": "Mobile friendly",
+          "text": "The admin UI has a dedicated phone layout, so you can check status and change settings on the go."
+        },
+        {
+          "title": "Ready out of the box",
+          "text": "One command or one package gets it running, and everything is set up in the browser."
+        }
+      ]
+    },
+    "showcase": [
+      {
+        "tag": "All in one",
+        "title": "See your whole network edge in one place",
+        "text": "The overview shows host resources, network interfaces and public addresses, plus the state of every module, so you know at once what needs attention.",
+        "points": [
+          "Port forwarding, DDNS, certificates and web services on one screen",
+          "One-click network self-check: public IP, CGNAT, ports, DNS and certificates",
+          "Prometheus metrics and a ready-made Grafana dashboard"
+        ]
+      },
+      {
+        "tag": "Layered security",
+        "title": "Checks at every layer, from site to kernel",
+        "text": "Each site can enable its own WAF, IP rules and sign-in. Intrusion prevention bans offenders from log rules and syncs them to the system firewall.",
+        "points": [
+          "Coraza + OWASP CRS v4, blocking or detection only",
+          "fail2ban-style bans dropped in the kernel through nftables",
+          "Shared users, two-factor auth and OIDC single sign-on"
+        ]
+      },
+      {
+        "tag": "Audit log · Config rollback",
+        "title": "Every change leaves a trail",
+        "text": "Sign-ins, config changes and access to sensitive content go into the audit log. Overwritten config files keep their previous versions, with a diff and one-click rollback.",
+        "points": [
+          "The audit log never records request bodies or secrets",
+          "Plain JSON config you can keep in git",
+          "Declarative config directory with -apply"
+        ]
+      },
+      {
+        "tag": "Complete API",
+        "title": "Anything the UI does, the API does too",
+        "text": "The admin UI itself is built on the REST API. Tokens get read-only or read-write access per module, and the built-in OpenAPI docs make scripting easy.",
+        "points": [
+          "Multiple tokens, each with its own permissions and expiry",
+          "gately ctl drives a running instance from the command line",
+          "gately mcp connects AI assistants, read-only by default"
+        ]
+      },
+      {
+        "tag": "Mobile friendly",
+        "title": "Comfortable to manage from your phone",
+        "text": "Navigation, lists and forms are laid out again for small screens. Open the same address in your phone's browser to check status and change settings.",
+        "points": [
+          "Works in the phone browser, no app to install",
+          "Light, dark and several color themes",
+          "Multilingual UI that follows your browser language"
+        ]
+      }
+    ],
+    "featureGroups": [
+      "Network access",
+      "Sites and certificates",
+      "Security",
+      "Operations",
+      "Monitoring and automation"
+    ]
   },
   "download": {
     "other": "Other",

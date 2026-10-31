@@ -78,14 +78,14 @@
     "aiNotice": "Cette page a été traduite par IA et peut contenir des inexactitudes. Aidez-nous à l'améliorer sur GitHub."
   },
   "home": {
-    "pill": "Open source · Auditable · Binaire unique",
+    "pill": "Gratuit et open source · Apache-2.0",
     "announce": {
-      "text": "v0.6.1 : correctif de sécurité, émission de certificats en IPv4/IPv6 et langue des notifications →",
-      "link": "/fr/news/v0.6.1"
+      "text": "v0.6.1.1 est disponible : bannissement du sondage de chemins web, page Utilisateurs d'auth, changement de mot de passe en libre-service →",
+      "link": "/fr/news/v0.6.1.1"
     },
-    "titleLine1": "Une boîte à outils de passerelle réseau",
-    "titleLine2": "où tout est visible",
-    "lead": "DDNS, traversée NAT STUN, redirection de ports, proxy inverse, certificats, WAF, Tailscale et frp, réunis dans un seul binaire d'environ 32 Mo. Pour les réseaux domestiques, les NAS, les serveurs cloud et tous types de serveurs.",
+    "titleLine1": "La passerelle réseau tout-en-un",
+    "titleLine2": "Open source, prête à l'emploi",
+    "lead": "DNS et traversée de NAT, reverse proxy et certificats HTTPS, WAF et prévention des intrusions, authentification unique et partage de fichiers : tout ce dont votre réseau domestique et vos serveurs ont besoin en frontal, réuni dans une seule console. Installez-le sur un NAS, un routeur logiciel ou un serveur cloud, et configurez tout depuis votre navigateur.",
     "ctaStart": "Démarrage rapide",
     "ctaDownload": "Télécharger",
     "mockTitle": "gately · Vue d'ensemble",
@@ -121,30 +121,12 @@
         "warn"
       ]
     ],
-    "stats": [
-      {
-        "value": "~32 Mo",
-        "label": "Un seul binaire, interface d'administration intégrée"
-      },
-      {
-        "value": "0",
-        "label": "Connexion aux serveurs du projet par défaut"
-      },
-      {
-        "value": "Multiplateforme",
-        "label": "Linux / macOS / Windows / FreeBSD, y compris ARM, MIPS et RISC-V"
-      },
-      {
-        "value": "Apache-2.0",
-        "label": "Licence open source, code source auditable"
-      }
-    ],
-    "featuresTitle": "Les outils réseau du quotidien, gérés au même endroit",
-    "featuresDesc": "Les fonctions les plus utiles pour les réseaux domestiques et l'exploitation de serveurs. Chaque module peut être activé ou désactivé séparément.",
+    "featuresTitle": "Les outils réseau du quotidien, prêts à l'emploi",
+    "featuresDesc": "Du nom de domaine qui pointe vers chez vous à la protection de toute une série de sites, tout se passe dans la même interface.",
     "features": [
       {
         "title": "DNS dynamique",
-        "text": "18 fournisseurs dont Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, Route 53, OVH, Gandi et Namecheap ; détection de l'IP par URL, interface réseau ou commande, IPv4 et IPv6, notifications par webhook."
+        "text": "Les principaux fournisseurs, dont Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, Route 53, OVH, Gandi et Namecheap ; détection de l'IP par URL, interface réseau ou commande, IPv4 et IPv6, notifications par webhook."
       },
       {
         "title": "Traversée STUN",
@@ -213,21 +195,25 @@
       {
         "title": "API, CLI et MCP",
         "text": "Plusieurs jetons avec autorisations par module et documentation OpenAPI générée automatiquement ; gately ctl pour piloter une instance et gately mcp pour connecter des assistants IA."
+      },
+      {
+        "title": "Prévention d'intrusion",
+        "text": "Règles de journaux façon fail2ban, ports pièges et détection de scans, bannissement du sondage de chemins web ; les bannissements sont synchronisés avec nftables et rejetés dans le noyau."
       }
     ],
     "moreModules": "Voir tous les modules →",
     "fnos": {
       "tag": "Application native fnOS",
-      "title": "Installez-le sur fnOS, ouvrez-le depuis le bureau",
-      "desc": "Gately fournit des paquets hors ligne pour fnOS (x86 / ARM), à installer manuellement depuis le Centre d'applications. Il s'intègre à la passerelle unifiée fnOS, partage le point d'entrée que vous utilisez déjà pour fnOS et peut réutiliser la session de l'administrateur fnOS.",
+      "title": "Sur fnOS ? Installez, c'est prêt",
+      "desc": "Paquets hors ligne pour x86 et ARM, à installer manuellement depuis le Centre d'applications. Ouvrez-le depuis le bureau fnOS via la passerelle unifiée fnOS : les administrateurs déjà connectés à fnOS entrent directement.",
       "cta": "Guide d'installation fnOS",
       "points": [
         {
-          "title": "Intégré à la passerelle unifiée fnOS",
+          "title": "Via la passerelle unifiée fnOS",
           "text": "Cliquez sur l'icône du bureau fnOS et l'interface d'administration s'ouvre sous /app/gately/. L'adresse du réseau local comme votre domaine fnOS distant fonctionnent, sans port supplémentaire à ouvrir ni rediriger, et fnOS gère le contrôle d'accès."
         },
         {
-          "title": "Connexion avec votre session d'administrateur fnOS",
+          "title": "Pas de seconde connexion pour les admins fnOS",
           "text": "Activez Connexion via fnOS et les administrateurs déjà connectés à fnOS entrent directement dans Gately, sans mot de passe ni code à deux facteurs. Les utilisateurs fnOS ordinaires doivent toujours se connecter. Désactivé par défaut."
         },
         {
@@ -236,26 +222,6 @@
         }
       ]
     },
-    "promisesTitle": "Un logiciel placé à la frontière de votre réseau doit être transparent",
-    "promisesDesc": "Il détient vos clés DNS et les clés privées de vos certificats : chaque comportement doit pouvoir être inspecté.",
-    "promises": [
-      {
-        "title": "Transparent",
-        "text": "Aucune connexion aux serveurs du projet et aucune remontée d'informations par défaut. Chaque adresse externe, comme la recherche de l'IP publique ou les serveurs STUN, est visible, modifiable et désactivable."
-      },
-      {
-        "title": "Auditable",
-        "text": "La configuration est du JSON en clair avec les droits 0600, prête pour les diff et les retours arrière avec git. Les champs sensibles sont masqués dans les réponses de l'API."
-      },
-      {
-        "title": "Sous votre contrôle",
-        "text": "La connexion via des tiers utilise vos propres applications OAuth, sans aucun relais. La mise à niveau en ligne ne s’exécute que sur clic d’un administrateur (installations binaires Linux) ; rien ne se met à jour en arrière-plan."
-      },
-      {
-        "title": "Déploiement en un fichier",
-        "text": "Un binaire statique avec l'interface intégrée. Fonctionne avec Docker, systemd et OpenWrt, sur NAS, routeurs logiciels et serveurs cloud."
-      }
-    ],
     "installTitle": "Opérationnel en une minute",
     "installDesc": "Images disponibles pour amd64, arm64 et arm/v7. Après le démarrage, ouvrez <code>http://IP_DE_L_APPAREIL:16680</code> et connectez-vous avec le compte par défaut <code>admin</code> et le mot de passe par défaut <code>gately.cn</code>, puis changez-le immédiatement.",
     "installTabBinary": "Binaire",
@@ -263,6 +229,7 @@
     "installBinary": "# Téléchargez l'archive de votre plateforme depuis Releases et extrayez-la\n./gately -c /etc/gately\n\n# L'interface d'administration écoute par défaut sur :16680\n# Compte par défaut admin, mot de passe par défaut gately.cn",
     "installTabFnos": "fnOS",
     "installFnos": "# 1. Téléchargez gately_<version>_fnos_x86.fpk depuis Releases (_arm.fpk pour les appareils ARM)\n# 2. Dans fnOS, ouvrez Centre d'applications → Installation manuelle, sélectionnez le fichier et terminez l'assistant\n# 3. Cliquez sur l'icône Gately du bureau fnOS pour l'ouvrir via la passerelle unifiée\n\n# Compte par défaut admin, mot de passe par défaut gately.cn",
+    "installOpenwrt": "# 1. Vérifiez l'architecture de l'appareil, puis téléchargez le paquet OpenWrt correspondant depuis Releases\ngrep DISTRIB_ARCH /etc/openwrt_release\n\n# 2. Installez (exemple pour x86_64)\ncd /tmp\n# OpenWrt 24.10 / iStoreOS\nopkg install ./gately_<version>_openwrt_amd64.ipk\n# OpenWrt 25.12\napk add --allow-untrusted ./gately_<version>_openwrt_amd64.apk\n\n# Gately démarre dès l'installation ; l'interface est sur http://IP_DU_ROUTEUR:16680\n# Facultatif : ajoutez luci-app-gately pour le gérer dans Services → Gately de LuCI\n# Compte par défaut admin, mot de passe par défaut gately.cn",
     "copy": "Copier",
     "copied": "Copié",
     "fullInstall": "Guide d'installation complet →",
@@ -286,10 +253,113 @@
       }
     ],
     "moreFaq": "Plus de questions →",
-    "finalTitle": "Reprenez le contrôle de la frontière de votre réseau",
-    "finalDesc": "Ouvert, transparent, en un seul fichier. Déployez Gately dès aujourd'hui.",
+    "finalTitle": "Essayez-le dès aujourd'hui",
+    "finalDesc": "Gratuit, open source et prêt dès l'installation. Une question ? Retrouvez-nous dans le groupe Telegram.",
     "starOnGithub": "Mettre une étoile sur GitHub",
-    "telegramScan": "Scannez avec votre téléphone pour rejoindre le groupe Telegram"
+    "telegramScan": "Scannez avec votre téléphone pour rejoindre le groupe Telegram",
+    "worksWith": "Plateformes et intégrations",
+    "flow": {
+      "in": "Internet",
+      "out": "Vos services",
+      "blocked": "Bloqué"
+    },
+    "why": {
+      "title": "Pourquoi Gately",
+      "desc": "Chaque point correspond à une fonction déjà disponible.",
+      "items": [
+        {
+          "title": "Ouvert et transparent",
+          "text": "Open source sous licence Apache-2.0. Par défaut, aucune connexion aux serveurs du projet, aucune donnée collectée ni remontée."
+        },
+        {
+          "title": "Tout-en-un",
+          "text": "DDNS, traversée de NAT, reverse proxy, certificats, WAF, réseau privé, Docker et services de fichiers dans une seule console."
+        },
+        {
+          "title": "Sécurité en couches",
+          "text": "WAF, bannissement des intrusions, règles par IP et par pays, authentification unique et double authentification, réglables site par site."
+        },
+        {
+          "title": "Journal d'audit",
+          "text": "Connexions, modifications de configuration et consultation de contenus sensibles sont journalisées : qui a fait quoi, et quand."
+        },
+        {
+          "title": "Retour arrière",
+          "text": "Chaque modification conserve la version précédente. Comparez les différences et restaurez-la en un clic."
+        },
+        {
+          "title": "API complète",
+          "text": "L'interface d'administration repose sur la même API REST. Les jetons sont autorisés module par module, avec documentation OpenAPI, CLI et MCP."
+        },
+        {
+          "title": "Adaptée au mobile",
+          "text": "L'interface d'administration dispose d'une mise en page dédiée aux téléphones : vérifiez l'état et modifiez les réglages où que vous soyez."
+        },
+        {
+          "title": "Prête à l'emploi",
+          "text": "Une commande ou un paquet suffit pour la lancer, et tout se configure dans le navigateur."
+        }
+      ]
+    },
+    "showcase": [
+      {
+        "tag": "Tout-en-un",
+        "title": "Toute l'entrée de votre réseau, d'un coup d'œil",
+        "text": "La vue d'ensemble affiche les ressources de l'hôte, les interfaces réseau et les adresses publiques, ainsi que l'état de chaque module. Ce qui demande votre attention se voit tout de suite.",
+        "points": [
+          "Redirection de ports, DDNS, certificats et services Web sur un seul écran",
+          "Auto-diagnostic réseau en un clic : IP publique, CGNAT, ports, DNS et certificats",
+          "Métriques Prometheus et tableau de bord Grafana prêt à l'emploi"
+        ]
+      },
+      {
+        "tag": "Sécurité en couches",
+        "title": "Des contrôles à chaque couche, du site au noyau",
+        "text": "Chaque site peut activer son propre WAF, ses règles IP et son authentification. La prévention d'intrusion bannit automatiquement d'après des règles sur les journaux et synchronise le pare-feu du système.",
+        "points": [
+          "Coraza + OWASP CRS v4, en blocage ou en détection seule",
+          "Bannissements façon fail2ban, paquets rejetés dans le noyau via nftables",
+          "Utilisateurs partagés, double authentification et authentification unique OIDC"
+        ]
+      },
+      {
+        "tag": "Audit · Retour arrière",
+        "title": "Chaque modification laisse une trace",
+        "text": "Connexions, modifications de configuration et consultation de contenus sensibles sont consignées dans le journal d'audit. Les fichiers de configuration écrasés conservent leurs versions précédentes, avec comparaison et retour arrière en un clic.",
+        "points": [
+          "Le journal d'audit n'enregistre jamais les corps de requête ni les secrets",
+          "Configuration en JSON clair, que vous pouvez versionner avec git",
+          "Répertoire de configuration déclarative avec -apply"
+        ]
+      },
+      {
+        "tag": "API complète",
+        "title": "Tout ce que fait l'interface, l'API le fait aussi",
+        "text": "L'interface d'administration est elle-même construite sur l'API REST. Les jetons reçoivent un accès en lecture seule ou en lecture-écriture par module, et la documentation OpenAPI intégrée facilite l'écriture de scripts.",
+        "points": [
+          "Plusieurs jetons, chacun avec ses autorisations et sa date d'expiration",
+          "gately ctl pilote une instance en cours d'exécution en ligne de commande",
+          "gately mcp connecte des assistants IA, en lecture seule par défaut"
+        ]
+      },
+      {
+        "tag": "Adaptée au mobile",
+        "title": "Facile à gérer depuis votre téléphone",
+        "text": "Navigation, listes et formulaires sont réorganisés pour les petits écrans. Ouvrez la même adresse dans le navigateur de votre téléphone pour consulter l'état et modifier les réglages.",
+        "points": [
+          "S'ouvre dans le navigateur du téléphone, aucune App à installer",
+          "Thème clair, sombre et plusieurs jeux de couleurs",
+          "Interface multilingue qui suit la langue du navigateur"
+        ]
+      }
+    ],
+    "featureGroups": [
+      "Accès réseau",
+      "Sites et certificats",
+      "Sécurité",
+      "Exploitation",
+      "Supervision et automatisation"
+    ]
   },
   "download": {
     "other": "Autres",

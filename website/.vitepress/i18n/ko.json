@@ -78,14 +78,14 @@
     "aiNotice": "이 페이지는 AI로 번역되어 부정확한 내용이 있을 수 있습니다. GitHub에서 개선에 참여해 주세요."
   },
   "home": {
-    "pill": "오픈소스 · 감사 가능 · 단일 파일",
+    "pill": "무료 오픈소스 · Apache-2.0",
     "announce": {
-      "text": "v0.6.1 출시: 보안 수정, 인증서 IPv4/IPv6 발급, 알림 언어 →",
-      "link": "/ko/news/v0.6.1"
+      "text": "v0.6.1.1 출시: 웹 경로 탐색 차단, 인증 사용자 페이지, 공유 사용자 비밀번호 직접 변경 →",
+      "link": "/ko/news/v0.6.1.1"
     },
-    "titleLine1": "속까지 들여다볼 수 있는",
-    "titleLine2": "네트워크 게이트웨이 도구 모음",
-    "lead": "DDNS, STUN NAT 통과, 포트 포워딩, 리버스 프록시, 인증서, WAF, Tailscale, frp를 약 32 MB 단일 파일 하나에 담았습니다. 가정 네트워크, NAS, 클라우드 호스트 등 어떤 서버에서도 동작합니다.",
+    "titleLine1": "올인원 네트워크 게이트웨이",
+    "titleLine2": "오픈소스, 설치 즉시 사용",
+    "lead": "도메인 DNS와 NAT 통과부터 리버스 프록시, HTTPS 인증서, WAF, 침입 방지, 통합 로그인, 파일 공유까지. 홈 네트워크와 서버 입구에 필요한 기능을 Gately가 관리 화면 하나에 모았습니다. NAS, 소프트 라우터, 클라우드 서버에 설치하면 설정과 운영을 브라우저에서 모두 처리할 수 있습니다.",
     "ctaStart": "빠른 시작",
     "ctaDownload": "다운로드",
     "mockTitle": "gately · 개요",
@@ -121,30 +121,12 @@
         "warn"
       ]
     ],
-    "stats": [
-      {
-        "value": "~32 MB",
-        "label": "관리 UI를 내장한 단일 파일"
-      },
-      {
-        "value": "0",
-        "label": "기본적으로 프로젝트 서버로의 연결 수"
-      },
-      {
-        "value": "전 플랫폼",
-        "label": "Linux / macOS / Windows / FreeBSD, ARM·MIPS·RISC-V 포함"
-      },
-      {
-        "value": "Apache-2.0",
-        "label": "오픈소스 라이선스, 소스 코드 감사 가능"
-      }
-    ],
-    "featuresTitle": "자주 쓰는 네트워크 도구를 한곳에서 관리합니다",
-    "featuresDesc": "가정 네트워크와 서버 운영에 가장 많이 쓰이는 기능을 갖췄습니다. 모든 모듈을 개별적으로 켜고 끌 수 있습니다.",
+    "featuresTitle": "자주 쓰는 네트워크 기능을 모두 갖췄습니다",
+    "featuresDesc": "집에 도메인 하나 연결하는 일부터 여러 웹사이트를 지키는 일까지, 한 화면에서 끝납니다.",
     "features": [
       {
         "title": "동적 DNS",
-        "text": "Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, Route 53, OVH, Gandi, Namecheap 등 18개 제공자를 지원합니다. URL, 네트워크 인터페이스, 명령어로 IP를 감지하고 IPv4·IPv6와 웹훅 알림을 지원합니다."
+        "text": "Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, Route 53, OVH, Gandi, Namecheap 등 주요 제공자를 지원합니다. URL, 네트워크 인터페이스, 명령어로 IP를 감지하고 IPv4·IPv6와 웹훅 알림을 지원합니다."
       },
       {
         "title": "STUN 통과",
@@ -213,13 +195,17 @@
       {
         "title": "API, CLI 및 MCP",
         "text": "모듈별 권한을 가진 여러 토큰과 자동 생성되는 OpenAPI 문서를 제공합니다. gately ctl로 인스턴스를 제어하고 gately mcp로 AI 어시스턴트를 연결할 수 있습니다."
+      },
+      {
+        "title": "침입 방지",
+        "text": "fail2ban 방식의 로그 규칙, 미끼 포트와 스캔 탐지, 웹 경로 탐색 차단. 차단 목록은 nftables에 동기화되어 커널에서 바로 폐기됩니다."
       }
     ],
     "moreModules": "전체 모듈 보기 →",
     "fnos": {
       "tag": "fnOS 네이티브 앱",
-      "title": "fnOS에 설치하고 바탕 화면에서 열기",
-      "desc": "Gately는 fnOS용 오프라인 패키지(x86 / ARM)를 제공하며 앱 센터에서 수동으로 설치합니다. fnOS 통합 게이트웨이에 연결되어 fnOS에 이미 사용하는 진입점을 함께 쓰고, fnOS 관리자의 로그인 상태를 그대로 활용할 수 있습니다.",
+      "title": "fnOS라면 설치하고 바로 쓰세요",
+      "desc": "x86과 ARM용 오프라인 패키지를 제공하며 앱 센터에서 수동으로 설치합니다. fnOS 바탕 화면에서 열면 fnOS 통합 게이트웨이를 거치고, fnOS에 로그인한 관리자는 바로 들어갈 수 있습니다.",
       "cta": "fnOS 설치 가이드",
       "points": [
         {
@@ -227,42 +213,23 @@
           "text": "fnOS 바탕 화면의 아이콘을 클릭하면 /app/gately/ 아래에서 관리 UI가 열립니다. 내부망 주소와 fnOS 원격 도메인 모두 사용할 수 있고 포트를 따로 열거나 포워딩할 필요가 없으며, 접근 제어는 fnOS가 맡습니다."
         },
         {
-          "title": "fnOS 관리자 로그인 상태로 로그인",
+          "title": "fnOS 관리자는 다시 로그인할 필요 없음",
           "text": "「fnOS 로그인 상태로 자동 로그인」을 켜면 fnOS에 이미 로그인한 관리자는 비밀번호나 2단계 인증 코드 없이 바로 Gately에 들어갑니다. 일반 fnOS 사용자는 여전히 로그인해야 합니다. 기본적으로 꺼져 있습니다."
         },
         {
-          "title": "네이티브로 실행되는 모든 기능",
+          "title": "모든 기능을 네이티브로 실행",
           "text": "root로 실행되므로 80/443을 수신하고 Docker를 관리하며 웹 터미널을 열 수 있습니다. 제거해도 설정이 유지되며, 업그레이드는 새 버전의 .fpk를 설치하면 됩니다."
         }
       ]
     },
-    "promisesTitle": "네트워크 가장자리에서 동작하는 소프트웨어는 속이 훤히 보여야 합니다",
-    "promisesDesc": "DNS 키와 인증서 개인 키를 다루는 만큼 모든 동작을 직접 확인할 수 있어야 합니다.",
-    "promises": [
-      {
-        "title": "투명함",
-        "text": "기본적으로 프로젝트 서버에 연결하지 않고 기기 정보도 보고하지 않습니다. 공인 IP 조회와 STUN 서버 같은 모든 외부 주소는 확인하고 수정하고 끌 수 있습니다."
-      },
-      {
-        "title": "감사 가능",
-        "text": "설정은 0600 권한의 일반 JSON이라 git diff와 롤백에 바로 활용할 수 있습니다. API 출력에서 민감한 필드는 마스킹됩니다."
-      },
-      {
-        "title": "직접 통제",
-        "text": "서드파티 로그인은 직접 등록한 OAuth 앱을 사용하며 중간 릴레이를 거치지 않습니다. 온라인 업그레이드는 관리자가 클릭할 때만 실행되며(Linux 바이너리 설치), 백그라운드에서 자동으로 업데이트되지 않습니다."
-      },
-      {
-        "title": "단일 파일 배포",
-        "text": "프런트엔드를 내장한 정적 바이너리 하나로 구성됩니다. Docker, systemd, OpenWrt에서 동작하며 NAS, 소프트 라우터, 클라우드 호스트를 모두 지원합니다."
-      }
-    ],
-    "installTitle": "1분이면 실행할 수 있습니다",
+    "installTitle": "1분이면 설치 끝",
     "installDesc": "이미지는 amd64, arm64, arm/v7을 지원합니다. 시작한 뒤 <code>http://장치IP:16680</code>에 접속해 기본 계정 <code>admin</code>과 기본 비밀번호 <code>gately.cn</code>으로 로그인하고, 바로 비밀번호를 변경하세요.",
     "installTabBinary": "바이너리",
     "installDocker": "# 컨테이너를 실행합니다\ndocker run -d --name gately --network host \\\n  -v ./gately-data:/etc/gately \\\n  -v /var/run/docker.sock:/var/run/docker.sock \\\n  ghcr.io/wangwanjie/gately:latest\n# 로그에서 초기 비밀번호를 확인합니다",
     "installBinary": "# Releases에서 사용하는 플랫폼용 압축 파일을 내려받아 압축을 풉니다\n./gately -c /etc/gately\n\n# 관리 UI는 기본적으로 :16680에서 대기합니다\n# 기본 계정 admin, 기본 비밀번호 gately.cn",
     "installTabFnos": "fnOS",
     "installFnos": "# 1. Releases에서 gately_<version>_fnos_x86.fpk를 내려받습니다(ARM 장치는 _arm.fpk)\n# 2. fnOS에서 앱 센터 → 수동 설치를 열고 파일을 선택한 뒤 마법사를 완료합니다\n# 3. fnOS 바탕 화면의 Gately 아이콘을 클릭하면 통합 게이트웨이를 통해 열립니다\n\n# 기본 계정 admin, 기본 비밀번호 gately.cn",
+    "installOpenwrt": "# 1. 장치 아키텍처를 확인한 뒤 Releases에서 맞는 OpenWrt 패키지를 내려받습니다\ngrep DISTRIB_ARCH /etc/openwrt_release\n\n# 2. 설치(x86_64 기준)\ncd /tmp\n# OpenWrt 24.10 / iStoreOS\nopkg install ./gately_<version>_openwrt_amd64.ipk\n# OpenWrt 25.12\napk add --allow-untrusted ./gately_<version>_openwrt_amd64.apk\n\n# 설치하면 바로 시작되며 관리 화면은 http://라우터IP:16680 입니다\n# 선택: luci-app-gately를 설치하면 LuCI의 서비스 → Gately에서 관리할 수 있습니다\n# 기본 계정 admin, 기본 비밀번호 gately.cn",
     "copy": "복사",
     "copied": "복사됨",
     "fullInstall": "전체 설치 가이드 →",
@@ -286,10 +253,113 @@
       }
     ],
     "moreFaq": "더 많은 질문 →",
-    "finalTitle": "네트워크 가장자리의 주도권을 되찾으세요",
-    "finalDesc": "공개적이고 투명한 단일 파일. 지금 Gately를 배포해 보세요.",
+    "finalTitle": "오늘 바로 설치해 보세요",
+    "finalDesc": "무료 오픈소스이고, 설치하면 바로 쓸 수 있습니다. 궁금한 점은 Telegram 그룹에서 물어보세요.",
     "starOnGithub": "GitHub에서 Star 주기",
-    "telegramScan": "휴대폰으로 스캔해 Telegram 그룹에 참여"
+    "telegramScan": "휴대폰으로 스캔해 Telegram 그룹에 참여",
+    "worksWith": "지원 플랫폼과 연동",
+    "flow": {
+      "in": "인터넷",
+      "out": "내 서비스",
+      "blocked": "차단됨"
+    },
+    "why": {
+      "title": "Gately를 선택하는 이유",
+      "desc": "모두 지금 바로 쓸 수 있는 기능입니다.",
+      "items": [
+        {
+          "title": "투명한 오픈소스",
+          "text": "Apache-2.0 오픈소스입니다. 기본적으로 프로젝트 서버에 연결하지 않으며 어떤 데이터도 수집하거나 보내지 않습니다."
+        },
+        {
+          "title": "하나로 통합",
+          "text": "DDNS, NAT 통과, 리버스 프록시, 인증서, WAF, 네트워킹, Docker, 파일 서비스를 관리 화면 하나에서 다룹니다."
+        },
+        {
+          "title": "다층 보안",
+          "text": "WAF, 침입 차단, IP·국가 규칙, 싱글 사인온과 2단계 인증을 사이트별로 설정합니다."
+        },
+        {
+          "title": "작업 감사",
+          "text": "로그인, 설정 변경, 민감한 내용 열람을 기록하므로 누가 언제 무엇을 했는지 바로 확인할 수 있습니다."
+        },
+        {
+          "title": "설정 롤백",
+          "text": "변경할 때마다 이전 버전을 남깁니다. 차이를 비교하고 잘못 바꿨다면 클릭 한 번으로 되돌립니다."
+        },
+        {
+          "title": "완전한 API",
+          "text": "관리 화면도 같은 REST API로 동작합니다. 토큰은 모듈별로 권한을 주며 OpenAPI 문서, CLI, MCP를 함께 제공합니다."
+        },
+        {
+          "title": "모바일 지원",
+          "text": "관리 화면에 휴대폰 전용 레이아웃이 있어 밖에서도 상태를 보고 설정을 바꿀 수 있습니다."
+        },
+        {
+          "title": "설치 즉시 사용",
+          "text": "명령어 한 줄이나 설치 패키지 하나로 실행되고, 모든 설정은 브라우저에서 합니다."
+        }
+      ]
+    },
+    "showcase": [
+      {
+        "tag": "하나로 통합",
+        "title": "관리 화면 하나로 네트워크 입구 전체를",
+        "text": "개요 페이지에 호스트 자원, 네트워크 인터페이스와 공인 주소, 모듈별 실행 상태를 모아 보여 줍니다. 손볼 곳이 있으면 열자마자 알 수 있습니다.",
+        "points": [
+          "포트 포워딩, DDNS, 인증서, 웹 서비스 상태를 한 화면에",
+          "원클릭 네트워크 자가 진단: 공인 IP, CGNAT, 포트, DNS, 인증서",
+          "Prometheus 지표와 바로 쓰는 Grafana 대시보드"
+        ]
+      },
+      {
+        "tag": "다층 보안",
+        "title": "사이트부터 커널까지, 겹겹이 지킵니다",
+        "text": "사이트마다 WAF, IP 규칙, 로그인 인증을 따로 켤 수 있습니다. 침입 방지는 로그 규칙에 따라 자동으로 차단하고 시스템 방화벽에 반영합니다.",
+        "points": [
+          "Coraza + OWASP CRS v4, 차단 또는 탐지 전용",
+          "fail2ban 방식 차단, nftables로 커널에서 패킷 폐기",
+          "공유 사용자, 2단계 인증, OIDC 싱글 사인온"
+        ]
+      },
+      {
+        "tag": "작업 감사 · 설정 롤백",
+        "title": "모든 변경에 기록이 남습니다",
+        "text": "로그인, 설정 변경, 민감한 내용 열람은 감사 로그에 남습니다. 덮어쓴 설정 파일은 이전 버전이 보관되어 차이를 비교하고 클릭 한 번으로 롤백할 수 있습니다.",
+        "points": [
+          "감사 로그에는 요청 본문과 비밀 키를 남기지 않습니다",
+          "설정은 일반 JSON이라 git으로 관리할 수 있습니다",
+          "-apply 선언형 설정 디렉터리 지원"
+        ]
+      },
+      {
+        "tag": "완전한 API",
+        "title": "화면에서 되는 일은 API로도 됩니다",
+        "text": "관리 화면 자체가 REST API 위에 만들어졌습니다. 토큰에 모듈별로 읽기 전용 또는 읽기·쓰기 권한을 주고, 내장 OpenAPI 문서를 보며 스크립트로 일괄 작업하기 편합니다.",
+        "points": [
+          "토큰을 여러 개 만들어 권한과 만료일을 각각 설정",
+          "gately ctl로 실행 중인 인스턴스를 명령줄에서 조작",
+          "gately mcp로 AI 어시스턴트 연결, 기본은 읽기 전용"
+        ]
+      },
+      {
+        "tag": "모바일 지원",
+        "title": "휴대폰에서도 편하게 관리",
+        "text": "내비게이션, 목록, 양식을 휴대폰 화면에 맞게 다시 배치했습니다. 휴대폰 브라우저로 같은 주소를 열면 상태를 확인하고 설정을 바꿀 수 있습니다.",
+        "points": [
+          "휴대폰 브라우저에서 바로 열고, App 설치는 필요 없습니다",
+          "라이트, 다크와 여러 테마 색상",
+          "다국어 UI, 브라우저 언어를 따릅니다"
+        ]
+      }
+    ],
+    "featureGroups": [
+      "네트워크 접속",
+      "사이트와 인증서",
+      "보안",
+      "운영 도구",
+      "모니터링과 자동화"
+    ]
   },
   "download": {
     "other": "기타",
