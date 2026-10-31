@@ -468,6 +468,8 @@ interface JailView extends Jail {
   bans: number
   active: number
   error?: string
+  // 最近一次命中时间，规则命中过才有
+  lastSeen?: string
 }
 
 interface TestResult {
@@ -819,7 +821,8 @@ async function unban(key: string) {
 
 function openJail(j?: JailView) {
   if (j) {
-    const { running: _r, matches: _m, bans: _b, active: _a, error: _e, ...jail } = j
+    // 去掉只读的运行状态字段，后端拒绝未知字段
+    const { running: _r, matches: _m, bans: _b, active: _a, error: _e, lastSeen: _l, ...jail } = j
     editing.value = JSON.parse(JSON.stringify(jail))
   } else {
     editing.value = emptyJail()

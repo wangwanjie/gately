@@ -34,6 +34,28 @@ func TestRedactJSON(t *testing.T) {
 	}
 }
 
+// 路径中的令牌与夹在文本中的地址也要脱敏，普通路径保持原样
+func TestRedactURLInText(t *testing.T) {
+	in := map[string]any{
+		"url":    "https://discord.com/api/webhooks/123456789012345678/AbCdEfGhIjKlMnOpQrStUvWxYz0123456789",
+		"feishu": "https://open.feishu.cn/open-apis/bot/v2/hook/0f1e2d3c-4b5a-6978-8a9b-0c1d2e3f4a5b",
+		"error":  `Post "https://hook.example.com/notify?token=abc123secret": dial tcp: i/o timeout`,
+		"target": "http://10.0.0.2:8080/api/v1/status",
+	}
+	out, _ := json.Marshal(redactJSON(in))
+	s := string(out)
+	for _, leak := range []string{"AbCdEfGhIjKlMnOpQrStUvWxYz0123456789", "0f1e2d3c-4b5a-6978-8a9b-0c1d2e3f4a5b", "abc123secret"} {
+		if strings.Contains(s, leak) {
+			t.Errorf("脱敏后仍含明文 %q: %s", leak, s)
+		}
+	}
+	for _, keep := range []string{"https://discord.com/api/webhooks/123456789012345678/********", "open-apis/bot/v2/hook/", "dial tcp: i/o timeout", `"http://10.0.0.2:8080/api/v1/status"`} {
+		if !strings.Contains(s, keep) {
+			t.Errorf("脱敏不应改动 %q: %s", keep, s)
+		}
+	}
+}
+
 func serveAs(t *testing.T, a *App, write bool, path string) *httptest.ResponseRecorder {
 	t.Helper()
 	h := a.redactReadOnly(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

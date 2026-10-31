@@ -229,7 +229,7 @@ func (r *runner) publish(ctx context.Context, addr netip.AddrPort) {
 		r.log.Infof("公网地址: %s", s)
 		events.Publish(events.Event{Type: events.STUNChanged, Source: r.rule.Name, Level: events.LevelInfo,
 			Title: "STUN 公网地址变化：" + r.rule.Name, Message: "当前公网地址 " + s,
-			Fields: map[string]string{"ipAddr": s, "ip": addr.Addr().String()}})
+			Fields: map[string]string{"ipAddr": s, "ip": addr.Addr().String(), "ruleKey": r.rule.Key}})
 	}
 	if !changed && r.rule.WebhookOnlyOnChange {
 		return
@@ -262,7 +262,7 @@ func (r *runner) publish(ctx context.Context, addr netip.AddrPort) {
 	}()
 }
 
-// runScript 执行用户脚本，变量通过环境变量传入（兼容 Lucky 脚本中的 ${port} 写法）。
+// runScript 执行用户脚本，变量通过环境变量传入（脚本中可用 ${port} 等写法）。
 func (r *runner) runScript(vars map[string]string) {
 	out, err := script.Run(r.rule.Script, vars)
 	text := script.Summarize(out, 2000)
@@ -286,22 +286,23 @@ type publicMapping struct {
 	proto string
 	port  int
 	unmap func()
-	// skipped 为已判定处于多层 NAT 而跳过追加映射的公网端口，避免每次复查都重新查询网关
-	skipped int
+	// skipped 为已判定处于多层 NAT 而跳过追加映射的公网地址（IP 与端口），避免每次复查都重新查询网关；
+	// 公网 IP 变化（如运营商改发公网地址）时重新判断
+	skipped netip.AddrPort
 }
 
 func (p *publicMapping) update(ctx context.Context, pub netip.AddrPort) {
 	want := int(pub.Port())
 	if !p.r.rule.UPnP && !p.r.rule.NATPMP || want == p.r.port {
 		p.close()
-		p.skipped = 0
+		p.skipped = netip.AddrPort{}
 		return
 	}
-	if want == p.port || want == p.skipped {
+	if want == p.port || pub == p.skipped {
 		return
 	}
 	p.close()
-	p.skipped = 0
+	p.skipped = netip.AddrPort{}
 	gctx, cancel := context.WithTimeout(ctx, 8*time.Second)
 	gw, err := p.r.gatewayExternalIP(gctx)
 	cancel()
@@ -310,7 +311,7 @@ func (p *publicMapping) update(ctx context.Context, pub netip.AddrPort) {
 		p.r.log.Debugf("查询网关外网地址失败，按单层 NAT 处理: %v", err)
 	} else if behindOuterNAT(gw, pub.Addr()) {
 		p.r.log.Infof("网关外网地址 %s 与公网地址 %s 不同（外层还有 NAT），公网端口 %d 不在该网关上，跳过追加映射", gw, pub.Addr(), want)
-		p.skipped = want
+		p.skipped = pub
 		return
 	}
 	p.r.log.Infof("公网端口 %d 与通道端口 %d 不同，按公网端口追加映射", want, p.r.port)

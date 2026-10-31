@@ -1,6 +1,7 @@
 package l4proxy
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"strconv"
@@ -43,13 +44,22 @@ func (p *Picker) Order() []string {
 
 // Dial 按轮询顺序依次连接各目标地址的 port 端口，返回第一个连接成功的连接。
 func (p *Picker) Dial(network string, port int, timeout time.Duration) (net.Conn, error) {
+	return p.DialContext(context.Background(), network, port, timeout)
+}
+
+// DialContext 与 Dial 相同，ctx 取消（如规则停止）时立即放弃，不再尝试后面的目标。
+func (p *Picker) DialContext(ctx context.Context, network string, port int, timeout time.Duration) (net.Conn, error) {
 	lastErr := fmt.Errorf("没有目标地址")
+	d := net.Dialer{Timeout: timeout}
 	for _, host := range p.Order() {
-		conn, err := net.DialTimeout(network, net.JoinHostPort(host, strconv.Itoa(port)), timeout)
+		conn, err := d.DialContext(ctx, network, net.JoinHostPort(host, strconv.Itoa(port)))
 		if err == nil {
 			return conn, nil
 		}
 		lastErr = err
+		if ctx.Err() != nil {
+			break
+		}
 	}
 	return nil, lastErr
 }

@@ -168,6 +168,9 @@ func (r *runner) stop() {
 // 超时未收到任何数据的连接交给「等待超时」路由，没有该路由时同样交给默认目标。
 func (r *runner) handle(ctx context.Context, rt *runtime, client net.Conn, pair l4proxy.PortPair) {
 	defer client.Close()
+	// 规则停止时立即关闭仍在识别或连接目标的客户端，不必等识别超时（最长 60 秒），停止与重启不会被拖住
+	stopClose := context.AfterFunc(ctx, func() { _ = client.Close() })
+	defer stopClose()
 	r.stats.ActiveConns.Add(1)
 	r.stats.TotalConns.Add(1)
 	defer r.stats.ActiveConns.Add(-1)
@@ -191,7 +194,7 @@ func (r *runner) handle(ctx context.Context, rt *runtime, client net.Conn, pair 
 	} else if port == 0 {
 		port = pair.Listen
 	}
-	conn, err := t.picker.Dial("tcp", port, time.Duration(rt.settings.DialTimeout)*time.Second)
+	conn, err := t.picker.DialContext(ctx, "tcp", port, time.Duration(rt.settings.DialTimeout)*time.Second)
 	if err != nil {
 		rt.log.Warnf("%s %s 连接目标失败: %v", client.RemoteAddr(), describeSniff(res), err)
 		return

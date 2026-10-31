@@ -8,6 +8,7 @@ import (
 	"net/netip"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/wangwanjie/gately/internal/dnsprovider"
@@ -54,6 +55,8 @@ type runner struct {
 	done   chan struct{}
 	// trigger 用于手动立即同步，true 表示强制
 	trigger chan bool
+	// stunWebhook 在 Webhook 引用的 STUN 规则地址变化时置位，下次同步即使记录没有变化也调用 Webhook
+	stunWebhook atomic.Bool
 
 	mu    sync.Mutex
 	state TaskState
@@ -292,13 +295,14 @@ func (r *runner) syncOnce(ctx context.Context, force bool) {
 		}
 	}
 
-	if t.Webhook.Enable && (len(success) > 0 || len(failed) > 0) {
+	stunChanged := r.stunWebhook.Swap(false)
+	if t.Webhook.Enable && (len(success) > 0 || len(failed) > 0 || stunChanged) {
 		r.sendWebhook(ctx, vars, success, failed)
 	}
 }
 
 func (r *runner) sendWebhook(ctx context.Context, vars map[string]string, success, failed []string) {
-	// ipAddr 兼容 Lucky：优先 IPv4，仅有 IPv6 时为 IPv6
+	// ipAddr 优先取 IPv4，仅有 IPv6 时为 IPv6
 	ipAddr := vars["ipv4Addr"]
 	if ipAddr == "" {
 		ipAddr = vars["ipv6Addr"]

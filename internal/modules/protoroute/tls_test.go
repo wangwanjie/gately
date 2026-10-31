@@ -90,3 +90,18 @@ func TestPeekClientHelloNotTLS(t *testing.T) {
 		_, _, _ = peekClientHello(bytes.NewReader(bad))
 	}
 }
+
+// ClientHello 只收到一部分就出错（如识别超时）时，返回的必须恰好是已读到的字节，
+// 这些字节会原样转发给目标，多出未填充的 0 会破坏后续的 TLS 流
+func TestPeekClientHelloPartialRead(t *testing.T) {
+	raw := captureClientHello(t, &tls.Config{ServerName: "x.example.com", InsecureSkipVerify: true})
+	for _, n := range []int{1, 3, tlsRecordHeaderLen, tlsRecordHeaderLen + 10, len(raw) - 1} {
+		got, _, err := peekClientHello(bytes.NewReader(raw[:n]))
+		if err == nil {
+			t.Fatalf("截断到 %d 字节应返回错误", n)
+		}
+		if !bytes.Equal(got, raw[:n]) {
+			t.Fatalf("截断到 %d 字节时应只返回已读字节，实际 %d 字节", n, len(got))
+		}
+	}
+}

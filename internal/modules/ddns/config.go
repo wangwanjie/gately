@@ -101,22 +101,31 @@ func (t *Task) needs() (v4, v6 bool) {
 	return
 }
 
-// referencesSTUN 判断已启用的记录值或 Webhook 是否引用了指定 STUN 规则的变量。
-func (t *Task) referencesSTUN(rule string) bool {
-	for _, r := range t.Records {
-		if r.Enable && stunaddr.References(r.Value, rule) {
-			return true
+// stunRefs 判断已启用的记录值、Webhook 是否引用了指定 STUN 规则（按规则名或 key）的变量。
+func (t *Task) stunRefs(rules ...string) (inRecords, inWebhook bool) {
+	refs := func(s string) bool {
+		for _, rule := range rules {
+			if rule != "" && stunaddr.References(s, rule) {
+				return true
+			}
 		}
-	}
-	if !t.Webhook.Enable {
 		return false
 	}
-	for _, s := range webhookTexts(t.Webhook) {
-		if stunaddr.References(s, rule) {
-			return true
+	for _, r := range t.Records {
+		if r.Enable && refs(r.Value) {
+			inRecords = true
+			break
 		}
 	}
-	return false
+	if t.Webhook.Enable {
+		for _, s := range webhookTexts(t.Webhook) {
+			if refs(s) {
+				inWebhook = true
+				break
+			}
+		}
+	}
+	return
 }
 
 // Validate 校验并补全默认值。

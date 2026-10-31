@@ -13,6 +13,7 @@ import (
 	"github.com/wangwanjie/gately/internal/module"
 	"github.com/wangwanjie/gately/internal/modules/portforward"
 	"github.com/wangwanjie/gately/internal/modules/protoroute"
+	"github.com/wangwanjie/gately/internal/modules/wol"
 )
 
 // 升级后首次启动：端口转发中的 SNI 分流规则迁到协议分流模块，端口转发被关闭时协议分流也关闭，
@@ -70,6 +71,59 @@ func TestMigrateSNIRulesOnStart(t *testing.T) {
 	data, _ := os.ReadFile(filepath.Join(dir, "protoroute.json"))
 	if err := json.Unmarshal(data, &cfg); err != nil || len(cfg.Rules) != 1 || cfg.Rules[0].Routes[0].Domains[0] != "vpn.example.com" {
 		t.Fatalf("协议分流配置: %s %v", data, err)
+	}
+}
+
+// 迁移后、补齐令牌权限前启动失败（其他模块配置损坏）：修好后再次启动仍补齐模块开关与令牌权限
+func TestMigrateResumesAfterFailedStart(t *testing.T) {
+	dir := t.TempDir()
+	a, err := New(Options{ConfigDir: dir, Modules: []module.Module{portforward.New()}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err := a.tokens.Create(apitoken.Input{Name: "pf", Scopes: []string{"portforward:read"}}); err != nil {
+		t.Fatal(err)
+	}
+	s := a.settingsSnapshot()
+	s.DisabledModules = []string{portforward.ID}
+	if err := a.store.Save(settingsName, s); err != nil {
+		t.Fatal(err)
+	}
+	legacy := `{"rules": [{"key": "sni1", "name": "443", "enable": true, "protocols": ["tcp"], "listenPorts": "443",
+	  "targetAddresses": ["127.0.0.1"], "mode": "sni", "sniRoutes": [{"domains": ["a.example.com"], "targetAddresses": ["127.0.0.1"], "targetPort": 4443}]}]}`
+	if err := os.WriteFile(filepath.Join(dir, "portforward.json"), []byte(legacy), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	broken := filepath.Join(dir, "wol.json")
+	if err := os.WriteFile(broken, []byte("{"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	mods := func() []module.Module { return []module.Module{portforward.New(), protoroute.New(), wol.New()} }
+	if _, err := New(Options{ConfigDir: dir, Modules: mods()}); err == nil {
+		t.Fatal("wol 配置损坏时启动应失败")
+	}
+	// 规则已经搬走，下次启动 Migrate 不会再报告这次迁移
+	if data, _ := os.ReadFile(filepath.Join(dir, "portforward.json")); json.Valid(data) && string(data) == legacy {
+		t.Fatal("首次启动应已改写端口转发配置")
+	}
+	if err := os.Remove(broken); err != nil {
+		t.Fatal(err)
+	}
+	a, err = New(Options{ConfigDir: dir, Modules: mods()})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Contains(a.settingsSnapshot().DisabledModules, protoroute.ID) {
+		t.Fatalf("协议分流应随端口转发关闭: %v", a.settingsSnapshot().DisabledModules)
+	}
+	for _, v := range a.tokens.List() {
+		if v.Name == "pf" && !slices.Contains(v.Scopes, "protoroute:read") {
+			t.Fatalf("令牌应补上协议分流权限: %v", v.Scopes)
+		}
+	}
+	var mf migrationsFile
+	if _, err := a.store.Load(migrationsName, &mf); err != nil || len(mf.Pending) != 0 {
+		t.Fatalf("补齐后迁移记录应清空: %+v %v", mf, err)
 	}
 }
 

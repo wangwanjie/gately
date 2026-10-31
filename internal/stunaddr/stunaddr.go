@@ -104,16 +104,20 @@ func Vars(texts ...string) (vals map[string]string, missing []string) {
 	seen := map[string]bool{}
 	for _, s := range texts {
 		for {
-			start := strings.IndexByte(s, '{')
-			if start < 0 {
-				break
-			}
-			end := strings.IndexByte(s[start:], '}')
+			// 每个 } 与它前面最近的 { 配对，JSON 正文（如 {"port":"{STUN_a_PORT}"}）里的变量也能取到
+			end := strings.IndexByte(s, '}')
 			if end < 0 {
 				break
 			}
-			name := s[start+1 : start+end]
-			s = s[start+end+1:]
+			start := strings.LastIndexByte(s[:end], '{')
+			name := ""
+			if start >= 0 {
+				name = s[start+1 : end]
+			}
+			s = s[end+1:]
+			if start < 0 {
+				continue
+			}
 			v, isVar, found := Resolve(name)
 			if !isVar {
 				continue

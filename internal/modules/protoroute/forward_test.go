@@ -560,3 +560,37 @@ func testRunner(rule Rule) *runner {
 	s.DialTimeout = 1
 	return newRunner(rule, s, logbuf.New(100, log.New(io.Discard, "", 0)).Logger("test"))
 }
+
+// 规则停止时，仍在等待识别的连接立即关闭，停止不必等到识别超时
+func TestStopDoesNotWaitForSniff(t *testing.T) {
+	old := defaultSniffTimeout
+	defaultSniffTimeout = 30 * time.Second
+	defer func() { defaultSniffTimeout = old }()
+
+	listenPort := freePort(t)
+	rule := Rule{Protocols: []string{"tcp4"}, ListenAddress: "127.0.0.1", ListenPorts: strconv.Itoa(listenPort),
+		TargetAddresses: []string{"127.0.0.1"}, TargetPorts: "1",
+		Routes: []Route{{Domains: []string{"a.example.com"}, TargetAddresses: []string{"127.0.0.1"}, TargetPort: 1}}}
+	if err := rule.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	r := testRunner(rule)
+	if err := r.start(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	// 客户端连上后什么都不发，连接停在识别阶段
+	conn, err := net.Dial("tcp4", net.JoinHostPort("127.0.0.1", strconv.Itoa(listenPort)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conn.Close()
+	deadline := time.Now().Add(2 * time.Second)
+	for r.stats.ActiveConns.Load() == 0 && time.Now().Before(deadline) {
+		time.Sleep(10 * time.Millisecond)
+	}
+	start := time.Now()
+	r.stop()
+	if d := time.Since(start); d > 2*time.Second {
+		t.Fatalf("停止规则等待了 %v，应立即关闭识别中的连接", d)
+	}
+}

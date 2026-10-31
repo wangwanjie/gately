@@ -25,7 +25,7 @@ import (
 	"github.com/wangwanjie/gately/internal/webpage"
 )
 
-// Settings 是全局设置（settings.json）。字段对齐 Lucky 的基础设置中对 Gately 有意义的部分。
+// Settings 是全局设置（settings.json）。
 type Settings struct {
 	// Listen 为管理界面 HTTP 监听地址，例如 :16680
 	Listen string `json:"listen"`

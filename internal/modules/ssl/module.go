@@ -530,10 +530,20 @@ func writeFileAtomic(path string, data []byte, mode os.FileMode) error {
 }
 
 // rebuildTLSLocked 根据启用的证书重建 SNI 索引。
+// 多张证书覆盖同一域名时选用到期时间最晚的一张（到期时间相同取列表中靠前的），
+// 这样列表排序与分组只影响展示，不会改变实际使用的证书。
 func (m *Module) rebuildTLSLocked() {
-	exact := map[string]*tls.Certificate{}
-	wild := map[string]*tls.Certificate{}
-	var ipDefault *tls.Certificate
+	type candidate struct {
+		cert     *tls.Certificate
+		notAfter time.Time
+	}
+	exact := map[string]candidate{}
+	wild := map[string]candidate{}
+	var ipDefault candidate
+	// better 判断新证书是否应替换已选中的证书
+	better := func(cur candidate, notAfter time.Time) bool {
+		return cur.cert == nil || notAfter.After(cur.notAfter)
+	}
 	for i := range m.cfg.Certs {
 		c := &m.cfg.Certs[i]
 		if !c.Enable || c.CertPEM == "" || c.KeyPEM == "" {
@@ -551,23 +561,31 @@ func (m *Module) rebuildTLSLocked() {
 		if time.Now().After(info.NotAfter) {
 			continue
 		}
-		cert := pair
+		cand := candidate{cert: &pair, notAfter: info.NotAfter}
 		for _, d := range info.Domains {
 			d = strings.ToLower(d)
-			if _, ok := parseIPIdentifier(d); ok && ipDefault == nil {
-				ipDefault = &cert
+			if _, ok := parseIPIdentifier(d); ok && better(ipDefault, info.NotAfter) {
+				ipDefault = cand
 			}
 			if strings.HasPrefix(d, "*.") {
-				if _, ok := wild[d[2:]]; !ok {
-					wild[d[2:]] = &cert
+				if better(wild[d[2:]], info.NotAfter) {
+					wild[d[2:]] = cand
 				}
-			} else if _, ok := exact[d]; !ok {
-				exact[d] = &cert
+			} else if better(exact[d], info.NotAfter) {
+				exact[d] = cand
 			}
 		}
 	}
+	exactIdx := make(map[string]*tls.Certificate, len(exact))
+	for d, c := range exact {
+		exactIdx[d] = c.cert
+	}
+	wildIdx := make(map[string]*tls.Certificate, len(wild))
+	for d, c := range wild {
+		wildIdx[d] = c.cert
+	}
 	m.tlsMu.Lock()
-	m.tlsIndex, m.wildcard, m.ipDefault = exact, wild, ipDefault
+	m.tlsIndex, m.wildcard, m.ipDefault = exactIdx, wildIdx, ipDefault.cert
 	m.tlsMu.Unlock()
 }
 

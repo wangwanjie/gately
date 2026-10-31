@@ -73,3 +73,20 @@ func TestParseVarAndVars(t *testing.T) {
 		t.Fatal("References 判断错误")
 	}
 }
+
+// JSON 正文里的变量与字面量花括号相邻时也要能取到
+func TestVarsInJSONBody(t *testing.T) {
+	Set("kj", "web", netip.MustParseAddrPort("203.0.113.6:40001"))
+	defer Delete("kj")
+	vals, missing := Vars(`{"port":"{STUN_web_PORT}","addr":"{STUN_web_ADDR}","x":{"y":"{STUN_none_IP}"}}`)
+	if vals["STUN_web_PORT"] != "40001" || vals["STUN_web_ADDR"] != "203.0.113.6:40001" || len(vals) != 2 {
+		t.Fatalf("JSON 正文中的变量值错误: %v", vals)
+	}
+	if len(missing) != 1 || missing[0] != "none" {
+		t.Fatalf("JSON 正文中的缺失规则错误: %v", missing)
+	}
+	// 只有 } 或只有 { 的文本不应出错
+	if vals, missing := Vars("}{", "{", "}"); len(vals) != 0 || len(missing) != 0 {
+		t.Fatalf("不成对的花括号不应取到变量: %v %v", vals, missing)
+	}
+}

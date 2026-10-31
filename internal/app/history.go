@@ -14,7 +14,7 @@ import (
 // 每个配置文件保留的历史版本数，以及不记录历史的配置（账号凭据、频繁写入的令牌使用记录）。
 const historyKeep = 30
 
-var historySkip = []string{accountName, "tokens"}
+var historySkip = []string{accountName, "tokens", migrationsName}
 
 type historyFile struct {
 	Name string `json:"name"`

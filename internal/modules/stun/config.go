@@ -30,7 +30,7 @@ type Bind struct {
 	// IP 为空表示所有地址
 	IP        string `json:"ip"`
 	Interface string `json:"interface"`
-	// Regex 选择网卡上的地址，兼容 Lucky 写法：留空取第 1 个、数字 n 取第 n 个、24* 前缀、*24 后缀，其余按正则
+	// Regex 选择网卡上的地址：留空取第 1 个、数字 n 取第 n 个、24* 前缀、*24 后缀，其余按正则
 	Regex string `json:"regex"`
 }
 

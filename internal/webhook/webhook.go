@@ -80,7 +80,7 @@ func Render(s string, vars map[string]string, escape func(string) string) string
 		name := s[start+1 : end]
 		v, ok := vars[name]
 		prefix := s[:start]
-		// 兼容 Lucky 的 #{name} 写法
+		// 同时支持 #{name} 写法（导入的配置常用）
 		if ok && strings.HasSuffix(prefix, "#") {
 			prefix = prefix[:len(prefix)-1]
 		}

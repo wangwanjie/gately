@@ -169,6 +169,30 @@ func TestGetCertificate(t *testing.T) {
 	}
 }
 
+// 多张证书覆盖同一域名时选用到期最晚的一张，与列表顺序无关（排序、分组不改变实际使用的证书）
+func TestGetCertificateIgnoresOrder(t *testing.T) {
+	now := time.Now()
+	shortC, shortK := selfSigned(t, []string{"*.example.com", "nas.example.com"}, now, now.Add(24*time.Hour))
+	longC, longK := selfSigned(t, []string{"*.example.com", "nas.example.com"}, now, now.Add(72*time.Hour))
+	short := Cert{Key: "short", Enable: true, Source: SourceUpload, CertPEM: shortC, KeyPEM: shortK}
+	long := Cert{Key: "long", Enable: true, Source: SourceUpload, CertPEM: longC, KeyPEM: longK}
+	for _, order := range [][]Cert{{short, long}, {long, short}} {
+		m := newTestModule(t)
+		m.cfg.Certs = order
+		m.rebuildTLSLocked()
+		for _, host := range []string{"nas.example.com", "a.example.com"} {
+			c, err := m.GetCertificate(&tls.ClientHelloInfo{ServerName: host})
+			if err != nil {
+				t.Fatalf("%s 没有选到证书: %v", host, err)
+			}
+			leaf, _ := x509.ParseCertificate(c.Certificate[0])
+			if !leaf.NotAfter.After(now.Add(48 * time.Hour)) {
+				t.Errorf("顺序 %s,%s 下 %s 应选用到期最晚的证书，实际到期 %v", order[0].Key, order[1].Key, host, leaf.NotAfter)
+			}
+		}
+	}
+}
+
 func TestMappingAndScript(t *testing.T) {
 	m := newTestModule(t)
 	m.ctx = context.Background()

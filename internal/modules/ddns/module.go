@@ -97,7 +97,13 @@ func (m *Module) onEvent(e events.Event) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	for _, r := range m.runners {
-		if r.task.referencesSTUN(e.Source) {
+		// 变量既可以写规则名，也可以写规则 key
+		inRecords, inWebhook := r.task.stunRefs(e.Source, e.Fields["ruleKey"])
+		if inWebhook {
+			// 只在 Webhook 中引用时记录值不会变化，标记后本次同步照样调用 Webhook
+			r.stunWebhook.Store(true)
+		}
+		if inRecords || inWebhook {
 			r.requestSync(false)
 		}
 	}

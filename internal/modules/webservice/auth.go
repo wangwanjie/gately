@@ -88,7 +88,7 @@ func newAuthenticator(secret string) *authenticator {
 		bans: banlist.Default, shareUses: map[string]int{}, files: fileusers.Default}
 }
 
-// verifyUser 校验用户名密码，密码支持明文（兼容 Lucky）与 bcrypt 哈希。
+// verifyUser 校验用户名密码，密码支持明文（导入的配置）与 bcrypt 哈希。
 func verifyUser(users []string, name, pass string) bool {
 	ok := false
 	for _, u := range users {

@@ -17,6 +17,16 @@ func TestDefaultPasswordLocksSecurityConfig(t *testing.T) {
 	if code, _ := doJSON(t, c, "PUT", srv.URL+"/api/system/settings", map[string]any{}); code != http.StatusForbidden {
 		t.Fatalf("默认密码下修改系统设置应被拒绝，实际 %d", code)
 	}
+	// 从备份恢复、回滚系统设置的历史版本同样会改写安全配置
+	if code, _ := doJSON(t, c, "POST", srv.URL+"/api/system/restore", map[string]any{}); code != http.StatusForbidden {
+		t.Fatalf("默认密码下从备份恢复应被拒绝，实际 %d", code)
+	}
+	if code, _ := doJSON(t, c, "POST", srv.URL+"/api/history/gately/20260101T000000Z/restore", nil); code != http.StatusForbidden {
+		t.Fatalf("默认密码下回滚系统设置应被拒绝，实际 %d", code)
+	}
+	if !isSecurityConfigWrite("POST", "/api/history/webterminal/x/restore") || isSecurityConfigWrite("POST", "/api/history/ddns/x/restore") {
+		t.Fatal("只有安全相关配置的历史回滚受限")
+	}
 	// 读取与改密本身不受限
 	if code, _ := doJSON(t, c, "GET", srv.URL+"/api/tokens", nil); code != 200 {
 		t.Fatalf("读取令牌列表不应受限: %d", code)

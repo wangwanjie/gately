@@ -535,6 +535,61 @@ func TestSTUNVars(t *testing.T) {
 	t.Fatalf("STUN 地址变化后未立即同步，服务商调用 %d -> %d", before, fp.callCount())
 }
 
+// 只在 Webhook 里引用 STUN 变量（按规则 key 引用）时，地址变化也要调用 Webhook，即使记录值没有变化。
+func TestSTUNWebhookOnlyByKey(t *testing.T) {
+	setupFakes(t)
+	hookCh := make(chan string, 4)
+	hook := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		b, _ := io.ReadAll(r.Body)
+		hookCh <- string(b)
+	}))
+	defer hook.Close()
+
+	task := sampleTask()
+	task.IPv6.Enable = false
+	task.Records = []Record{{Key: "a", Enable: true, Zone: "example.com", Sub: "@", Type: "A", Value: VarIPv4}}
+	task.Webhook = webhook.Config{Enable: true, URL: hook.URL, Method: "POST", Body: `{"port":"{STUN_k-hook_PORT}"}`}
+	if err := task.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	stunaddr.Set("k-hook", "hook-rule", netip.MustParseAddrPort("203.0.113.8:40001"))
+	defer stunaddr.Delete("k-hook")
+
+	m := newTestModule(t)
+	m.cfg.Tasks = []Task{task}
+	if err := m.Start(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	defer m.Stop()
+	// 先直接同步一次，让记录创建完成（此时会调用一次 Webhook），之后记录值不再变化
+	m.mu.Lock()
+	r := m.runners[task.Key]
+	m.mu.Unlock()
+	r.syncOnce(context.Background(), false)
+	r.syncOnce(context.Background(), false)
+	for len(hookCh) > 0 {
+		<-hookCh
+	}
+
+	stunaddr.Set("k-hook", "hook-rule", netip.MustParseAddrPort("203.0.113.8:40002"))
+	m.onEvent(events.Event{Type: events.STUNChanged, Source: "hook-rule", Fields: map[string]string{"ruleKey": "k-hook"}})
+	select {
+	case body := <-hookCh:
+		if body != `{"port":"40002"}` {
+			t.Fatalf("Webhook 内容错误: %q", body)
+		}
+	case <-time.After(3 * time.Second):
+		t.Fatal("STUN 地址变化后应调用只引用它的 Webhook")
+	}
+	// 与该规则无关的事件不触发 Webhook
+	m.onEvent(events.Event{Type: events.STUNChanged, Source: "other", Fields: map[string]string{"ruleKey": "k-other"}})
+	select {
+	case body := <-hookCh:
+		t.Fatalf("无关规则不应触发 Webhook: %q", body)
+	case <-time.After(300 * time.Millisecond):
+	}
+}
+
 // TestAPIDeleteRecord 验证列表页直接删除单条记录：只移除指定记录、保留密钥与其他配置，
 // 记录或任务不存在返回 404，最后一条记录不允许删除。
 func TestAPIDeleteRecord(t *testing.T) {

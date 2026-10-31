@@ -44,8 +44,9 @@ func peekClientHello(r io.Reader) (raw []byte, hello clientHello, err error) {
 		if header[0] != 0x16 {
 			return raw, hello, errNotTLS
 		}
-		if _, err := io.ReadFull(r, header[1:]); err != nil {
-			return append(raw, header[1:]...), hello, err
+		// 读取中途出错（如识别超时）时只返回实际读到的字节，不能把缓冲区里未填充的 0 当作数据转发
+		if m, err := io.ReadFull(r, header[1:]); err != nil {
+			return append(raw, header[1:1+m]...), hello, err
 		}
 		raw = append(raw, header[1:]...)
 		// 记录层版本主版本号固定为 3（SSL 3.0 及之后的各 TLS 版本）
@@ -58,8 +59,8 @@ func peekClientHello(r io.Reader) (raw []byte, hello clientHello, err error) {
 		}
 		start := len(raw)
 		raw = append(raw, make([]byte, n)...)
-		if _, err := io.ReadFull(r, raw[start:]); err != nil {
-			return raw, hello, err
+		if m, err := io.ReadFull(r, raw[start:]); err != nil {
+			return raw[:start+m], hello, err
 		}
 		msg = append(msg, raw[start:]...)
 		if need < 0 && len(msg) >= 4 {

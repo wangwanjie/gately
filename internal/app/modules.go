@@ -150,15 +150,30 @@ func (a *App) skipDisabledImport(m module.Module, imp luckyimport.Importer, doc 
 		Warnings: []string{"该功能模块已关闭，未导入；开启并重启后可重新导入"}}
 }
 
-// moduleInherit 表示模块 to 的配置是从模块 from 迁移来的。
+// moduleInherit 表示模块 To 的配置是从模块 From 迁移来的；Disable 表示迁移时来源模块已关闭，To 也要关闭。
 type moduleInherit struct {
-	from, to string
+	From    string `json:"from"`
+	To      string `json:"to"`
+	Disable bool   `json:"disable,omitempty"`
+}
+
+// migrationsName 保存已迁移、但还没有补齐模块开关与令牌权限的迁移记录。
+// 迁移会改写来源模块的配置文件，下次启动 Migrate 不会再报告这次迁移；
+// 若本次启动在补齐之前失败（如其他模块初始化出错），下次启动从这里继续补齐。
+const migrationsName = "migrations"
+
+type migrationsFile struct {
+	Pending []moduleInherit `json:"pending"`
 }
 
 // migrateModules 在初始化之前依次执行各模块的配置迁移。有配置从其他模块迁来时，来源模块已关闭的，
-// 新模块也写入关闭列表，保持迁移前的行为；返回迁移关系，令牌权限在令牌加载后补充。
+// 新模块也写入关闭列表，保持迁移前的行为；返回待补令牌权限的迁移关系（含上次启动未补齐的），令牌加载后补充。
 func (a *App) migrateModules(mods []module.Module) ([]moduleInherit, error) {
-	var out []moduleInherit
+	var mf migrationsFile
+	if _, err := a.store.Load(migrationsName, &mf); err != nil {
+		return nil, fmt.Errorf("读取迁移记录失败: %w", err)
+	}
+	pending := mf.Pending
 	for _, m := range mods {
 		mg, ok := m.(module.Migrator)
 		if !ok {
@@ -171,7 +186,6 @@ func (a *App) migrateModules(mods []module.Module) ([]moduleInherit, error) {
 		if from == "" {
 			continue
 		}
-		out = append(out, moduleInherit{from: from, to: m.ID()})
 		fromTitle := from
 		for _, o := range mods {
 			if o.ID() == from {
@@ -180,14 +194,24 @@ func (a *App) migrateModules(mods []module.Module) ([]moduleInherit, error) {
 		}
 		a.sysLogs.Add(logbuf.LevelInfo, "", fmt.Sprintf("已把「%s」的部分配置迁移到「%s」", fromTitle, m.Title()))
 		s := a.settingsSnapshot()
-		if !slices.Contains(s.DisabledModules, from) || slices.Contains(s.DisabledModules, m.ID()) {
+		in := moduleInherit{From: from, To: m.ID(), Disable: slices.Contains(s.DisabledModules, from)}
+		if !slices.Contains(pending, in) {
+			pending = append(pending, in)
+		}
+		// 立即记下迁移关系，后面任何一步失败，下次启动仍能补齐
+		if err := a.store.Save(migrationsName, migrationsFile{Pending: pending}); err != nil {
+			return nil, fmt.Errorf("保存迁移记录失败: %w", err)
+		}
+	}
+	for _, in := range pending {
+		if !in.Disable || slices.Contains(a.settingsSnapshot().DisabledModules, in.To) {
 			continue
 		}
-		if err := a.disableModuleOnDisk(m.ID()); err != nil {
+		if err := a.disableModuleOnDisk(in.To); err != nil {
 			return nil, fmt.Errorf("保存模块开关失败: %w", err)
 		}
 	}
-	return out, nil
+	return pending, nil
 }
 
 // disableModuleOnDisk 把模块加入关闭列表并保存设置（启动阶段使用，模块尚未开始运行）。
@@ -211,14 +235,21 @@ func (a *App) disableModuleOnDisk(id string) error {
 
 // inheritTokenScopes 让拥有来源模块权限的 API 令牌同时获得迁移目标模块的同级权限，迁移前能管理这些配置的令牌迁移后仍然可以。
 func (a *App) inheritTokenScopes(inherits []moduleInherit) error {
+	if len(inherits) == 0 {
+		return nil
+	}
 	for _, in := range inherits {
-		n, err := a.tokens.InheritScopes(in.from, in.to)
+		n, err := a.tokens.InheritScopes(in.From, in.To)
 		if err != nil {
 			return fmt.Errorf("更新 API 令牌权限失败: %w", err)
 		}
 		if n > 0 {
-			a.sysLogs.Add(logbuf.LevelInfo, "", fmt.Sprintf("已为 %d 个拥有「%s」权限的 API 令牌添加「%s」的同级权限", n, in.from, in.to))
+			a.sysLogs.Add(logbuf.LevelInfo, "", fmt.Sprintf("已为 %d 个拥有「%s」权限的 API 令牌添加「%s」的同级权限", n, in.From, in.To))
 		}
+	}
+	// 全部补齐后清空迁移记录；InheritScopes 可重复执行，清空失败只会在下次启动再补一次
+	if err := a.store.Save(migrationsName, migrationsFile{Pending: []moduleInherit{}}); err != nil {
+		a.sysLogs.Add(logbuf.LevelWarn, "", fmt.Sprintf("清空迁移记录失败: %v", err))
 	}
 	return nil
 }

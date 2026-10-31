@@ -449,12 +449,24 @@ func TestPublicMappingOuterNAT(t *testing.T) {
 			// 复查得到相同地址时不再重复查询网关
 			pm.update(context.Background(), pub)
 			mu.Lock()
-			defer mu.Unlock()
 			if (adds > 0) != tc.wantAdd {
+				mu.Unlock()
 				t.Fatalf("追加映射次数 %d，期望追加=%v", adds, tc.wantAdd)
 			}
 			if queries != 1 {
+				mu.Unlock()
 				t.Fatalf("网关外网地址查询 %d 次，期望 1 次", queries)
+			}
+			mu.Unlock()
+			if tc.wantAdd {
+				return
+			}
+			// 跳过追加映射后公网 IP 变了（端口不变），要重新查询网关再判断
+			pm.update(context.Background(), netip.MustParseAddrPort("14.19.16.165:29847"))
+			mu.Lock()
+			defer mu.Unlock()
+			if queries != 2 {
+				t.Fatalf("公网 IP 变化后应重新查询网关，实际共查询 %d 次", queries)
 			}
 		})
 	}

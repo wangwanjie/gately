@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -59,12 +60,34 @@ func redactJSON(v any) any {
 		}
 		return t
 	case string:
-		// 地址里常夹带凭据（后端地址 http://user:pass@…、Webhook 的 ?token=…），任何字段中的地址都脱敏密码与查询参数的值
+		// 地址里常夹带凭据（后端地址 http://user:pass@…、Webhook 的 ?token=… 或路径中的令牌），
+		// 任何字段中的地址都脱敏，包括夹在日志、错误信息等文本中间的地址
 		if strings.Contains(t, "://") {
-			return redactURL(t)
+			return urlPattern.ReplaceAllStringFunc(t, redactURL)
 		}
 	}
 	return v
+}
+
+// urlPattern 匹配文本中的地址，到空白、引号或尖括号为止。
+var urlPattern = regexp.MustCompile(`[A-Za-z][A-Za-z0-9+.-]*://[^\s"'<>]+`)
+
+// tokenLike 判断路径中的一段是否像令牌：至少 16 个字符且同时含字母与数字，
+// 如 Discord、Slack、飞书等 Webhook 地址路径里的密钥，Bark 的设备 Key。
+func tokenLike(seg string) bool {
+	if len(seg) < 16 {
+		return false
+	}
+	letter, digit := false, false
+	for _, c := range seg {
+		switch {
+		case c >= '0' && c <= '9':
+			digit = true
+		case c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z':
+			letter = true
+		}
+	}
+	return letter && digit
 }
 
 // redactHeaders 脱敏请求头列表（"名称: 值"）或映射，保留名称。
@@ -112,7 +135,7 @@ func redactUsers(v any) any {
 	return arr
 }
 
-// redactURL 脱敏地址中的密码和查询参数值；没有这些内容的地址原样返回。
+// redactURL 脱敏地址中的密码、像令牌的路径段和查询参数值；没有这些内容的地址原样返回。
 func redactURL(s string) string {
 	u, err := url.Parse(s)
 	if err != nil || u.Scheme == "" {
@@ -123,6 +146,22 @@ func redactURL(s string) string {
 		if _, has := u.User.Password(); has {
 			u.User = url.UserPassword(u.User.Username(), crud.SecretMask)
 			changed = true
+		}
+	}
+	// 按转义后的路径逐段判断，替换后保留原有转义，掩码中的 * 不会被转义成 %2A
+	if segs := strings.Split(u.EscapedPath(), "/"); len(segs) > 1 {
+		masked := false
+		for i, seg := range segs {
+			if tokenLike(seg) {
+				segs[i] = crud.SecretMask
+				masked = true
+			}
+		}
+		if raw := strings.Join(segs, "/"); masked {
+			if p, err := url.PathUnescape(raw); err == nil {
+				u.Path, u.RawPath = p, raw
+				changed = true
+			}
 		}
 	}
 	if q := u.Query(); len(q) > 0 {
