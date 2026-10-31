@@ -49,6 +49,7 @@
     "shortcuts": "Kurzbefehle",
     "noShortcuts": "Noch keine Kurzbefehle",
     "manageShortcuts": "Kurzbefehle verwalten",
+    "keybarPinned": "Tastenleiste immer anzeigen",
     "splitting": "Teilung aktiv",
     "split": "Teilen",
     "splitH": "Nebeneinander",
@@ -94,7 +95,8 @@
   },
   "keybar": {
     "shortcuts": "Kurzbefehle",
-    "showKeyboard": "Tastatur anzeigen"
+    "showKeyboard": "Tastatur anzeigen",
+    "hideKeyboard": "Tastatur ausblenden"
   },
   "shortcut": {
     "title": "Globale Kurzbefehle",

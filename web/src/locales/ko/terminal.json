@@ -49,6 +49,7 @@
     "shortcuts": "단축 명령",
     "noShortcuts": "단축 명령이 없습니다",
     "manageShortcuts": "단축 명령 관리",
+    "keybarPinned": "키 바 항상 표시",
     "splitting": "분할 중",
     "split": "분할",
     "splitH": "좌우 분할",
@@ -94,7 +95,8 @@
   },
   "keybar": {
     "shortcuts": "단축 명령",
-    "showKeyboard": "키보드 열기"
+    "showKeyboard": "키보드 열기",
+    "hideKeyboard": "키보드 닫기"
   },
   "shortcut": {
     "title": "전역 단축 명령",

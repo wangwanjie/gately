@@ -78,7 +78,7 @@ The "Split" menu in the toolbar offers side-by-side, stacked and grid layouts, w
 
 - On narrow screens, the connection list and the terminal are separate views, and the back button at the top left of the terminal view returns to the list;
 - The terminal area follows the visual viewport and shrinks when the soft keyboard appears;
-- The virtual key bar at the bottom provides `Esc`, `Tab`, `Ctrl`, `Alt` (sticky), arrow keys (hold to repeat), common symbols, a shortcuts entry and a button to bring up the keyboard.
+- The virtual key bar is a single row you can swipe sideways. It provides `Esc`, `Tab`, `Ctrl`, `Alt` (sticky), arrow keys (hold to repeat), common symbols and a shortcuts entry, with a keyboard button pinned on the right that shows or hides the keyboard. By default the bar appears and disappears with the on-screen keyboard; while the keyboard is closed, a floating button in the bottom-right corner brings it back. To use arrow keys, paging and other keys without the keyboard, turn on **Always show key bar** in the **More** menu.
 
 ## Security
 

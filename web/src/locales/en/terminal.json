@@ -49,6 +49,7 @@
     "shortcuts": "Shortcuts",
     "noShortcuts": "No shortcuts yet",
     "manageShortcuts": "Manage shortcuts",
+    "keybarPinned": "Always show key bar",
     "splitting": "Split on",
     "split": "Split",
     "splitH": "Side by side",
@@ -94,7 +95,8 @@
   },
   "keybar": {
     "shortcuts": "Shortcuts",
-    "showKeyboard": "Show keyboard"
+    "showKeyboard": "Show keyboard",
+    "hideKeyboard": "Hide keyboard"
   },
   "shortcut": {
     "title": "Global shortcuts",

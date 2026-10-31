@@ -49,6 +49,7 @@
     "shortcuts": "クイックコマンド",
     "noShortcuts": "クイックコマンドがありません",
     "manageShortcuts": "クイックコマンドを管理",
+    "keybarPinned": "キーバーを常に表示",
     "splitting": "分割中",
     "split": "分割",
     "splitH": "左右に分割",
@@ -94,7 +95,8 @@
   },
   "keybar": {
     "shortcuts": "クイックコマンド",
-    "showKeyboard": "キーボードを表示"
+    "showKeyboard": "キーボードを表示",
+    "hideKeyboard": "キーボードを閉じる"
   },
   "shortcut": {
     "title": "共通クイックコマンド",

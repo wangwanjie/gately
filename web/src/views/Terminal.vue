@@ -28,8 +28,10 @@
     <div
       v-show="!isMobile || inWorkspace"
       class="workspace g-card"
-      :class="{ full: fullscreen && !isMobile, 'm-full': isMobile, empty: !tabs.length }"
+      :class="{ full: fullscreen && !isMobile, 'm-full': isMobile, empty: !tabs.length, 'no-keybar': !keybarShown }"
       :style="wsStyle"
+      @focusin="onFocusChange"
+      @focusout="onFocusChange"
     >
       <template v-if="tabs.length">
         <div class="ws-head">
@@ -56,6 +58,7 @@
             :shortcuts="shortcuts"
             :split-mode="splitMode"
             :fullscreen="fullscreen"
+            :keybar-pinned="keybarPinned"
             @action="onAction"
             @shortcut="sendShortcut"
           />
@@ -113,18 +116,30 @@
             <el-button class="sb" text :icon="ChevronDown" :aria-label="t('terminal.page.next')" @click="doSearch(true)" />
             <el-button class="sb" text :icon="X" :aria-label="t('terminal.page.closeSearch')" @click="closeSearch" />
           </div>
+
+          <!-- 按键栏隐藏时留一个悬浮按钮呼出软键盘，按键栏随键盘一起出现 -->
+          <button
+            v-if="isMobile && !keybarShown"
+            class="kb-fab"
+            :aria-label="t('terminal.keybar.showKeyboard')"
+            @mousedown.prevent
+            @click="showKeyboard"
+          >
+            <Keyboard :size="20" />
+          </button>
         </div>
 
         <MobileKeybar
-          v-if="isMobile"
+          v-if="isMobile && keybarShown"
           :ctrl="mods.ctrl"
           :alt="mods.alt"
+          :keyboard-open="keyboardOpen"
           @key="(k: KeyName) => activePane()?.sendKey(k)"
           @text="(s: string) => activePane()?.sendText(s)"
           @toggle-ctrl="mods.ctrl = !mods.ctrl"
           @toggle-alt="mods.alt = !mods.alt"
           @shortcuts="shortcutSheet = true"
-          @focus="activePane()?.focus()"
+          @keyboard="toggleKeyboard"
         />
       </template>
       <div v-else class="placeholder">
@@ -155,7 +170,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import { ArrowLeft, ChevronDown, ChevronRight, ChevronUp, ListTree, Plus, SlidersHorizontal, SquareTerminal, X, Zap } from 'lucide-vue-next'
+import { ArrowLeft, ChevronDown, ChevronRight, ChevronUp, Keyboard, ListTree, Plus, SlidersHorizontal, SquareTerminal, X, Zap } from 'lucide-vue-next'
 import { api } from '../api'
 import PageHeader from '../components/PageHeader.vue'
 import { useIsMobile } from '../composables/useIsMobile'
@@ -188,7 +203,7 @@ const MAX_SPLIT = 4
 const { t } = useI18n()
 const isMobile = useIsMobile()
 const vv = useVisualViewport()
-const { fontSize, themeName, setFont, incFont, decFont } = useTermPrefs()
+const { fontSize, themeName, keybarPinned, setFont, incFont, decFont } = useTermPrefs()
 
 const conns = ref<Conn[]>([])
 const settings = ref<TermSettings>()
@@ -232,6 +247,48 @@ const openCounts = computed(() => {
   }
   return m
 })
+
+// ---- 移动端按键栏：默认跟随软键盘显隐，可在「更多」菜单设为常驻 ----
+// 终端输入框（xterm 的隐藏 textarea）是否持有焦点
+const termFocused = ref(false)
+// 不支持 visualViewport 时无法判断键盘，退化为按终端输入框焦点判断
+const keyboardOpen = computed(() => (vv.supported ? vv.keyboardOpen.value : termFocused.value))
+const keybarWanted = computed(() => keybarPinned.value || (termFocused.value && keyboardOpen.value))
+const keybarShown = ref(keybarWanted.value)
+let keybarTimer: ReturnType<typeof setTimeout> | undefined
+
+// 键盘弹出/收起和焦点切换时会短暂抖动，稳定 150ms 后再切换，避免按键栏闪烁
+watch(keybarWanted, (v) => {
+  if (keybarTimer) {
+    clearTimeout(keybarTimer)
+  }
+  keybarTimer = setTimeout(() => {
+    keybarTimer = undefined
+    keybarShown.value = v
+  }, 150)
+})
+
+// focusin 看获得焦点的元素，focusout 看焦点将要去往的元素（relatedTarget，失焦到空白处时为 null）
+function onFocusChange(e: FocusEvent) {
+  const el = e.type === 'focusin' ? e.target : e.relatedTarget
+  termFocused.value = el instanceof HTMLElement && el.classList.contains('xterm-helper-textarea')
+}
+
+// 呼出软键盘。Android 用返回键收起键盘后输入框仍持有焦点，再次 focus 不会弹出键盘，
+// 所以先失焦再聚焦。需在点击等用户手势中调用，否则 iOS 不弹键盘。
+function showKeyboard() {
+  ;(document.activeElement as HTMLElement | null)?.blur()
+  activePane()?.focus()
+}
+
+// 按键栏上的键盘按钮：键盘已弹出则收起，否则呼出键盘
+function toggleKeyboard() {
+  if (keyboardOpen.value && termFocused.value) {
+    ;(document.activeElement as HTMLElement | null)?.blur()
+  } else {
+    showKeyboard()
+  }
+}
 
 // 移动端终端区域跟随可视视口，软键盘弹出时自动缩小
 const wsStyle = computed(() => {
@@ -548,6 +605,9 @@ async function onAction(name: string) {
     case 'split-off':
       exitSplit()
       break
+    case 'keybar-pin':
+      keybarPinned.value = !keybarPinned.value
+      break
   }
 }
 
@@ -763,6 +823,9 @@ onBeforeUnmount(() => {
   if (layoutTimer) {
     clearTimeout(layoutTimer)
   }
+  if (keybarTimer) {
+    clearTimeout(keybarTimer)
+  }
 })
 </script>
 
@@ -976,6 +1039,32 @@ onBeforeUnmount(() => {
   }
   .search-bar {
     right: 8px;
+  }
+  /* 按键栏隐藏时由工作区自己让出底部安全区 */
+  .workspace.m-full.no-keybar {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .kb-fab {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    z-index: 5;
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--g-border);
+    border-radius: 50%;
+    background: var(--el-bg-color);
+    color: var(--el-text-color-primary);
+    opacity: 0.75;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .kb-fab:active {
+    opacity: 1;
   }
   .search-bar .el-input {
     width: 140px;

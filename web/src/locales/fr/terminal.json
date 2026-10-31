@@ -49,6 +49,7 @@
     "shortcuts": "Raccourcis",
     "noShortcuts": "Aucun raccourci",
     "manageShortcuts": "Gérer les raccourcis",
+    "keybarPinned": "Toujours afficher la barre de touches",
     "splitting": "Fractionnement actif",
     "split": "Fractionner",
     "splitH": "Côte à côte",
@@ -94,7 +95,8 @@
   },
   "keybar": {
     "shortcuts": "Raccourcis",
-    "showKeyboard": "Afficher le clavier"
+    "showKeyboard": "Afficher le clavier",
+    "hideKeyboard": "Masquer le clavier"
   },
   "shortcut": {
     "title": "Raccourcis globaux",

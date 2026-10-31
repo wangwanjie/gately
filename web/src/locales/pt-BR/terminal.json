@@ -49,6 +49,7 @@
     "shortcuts": "Atalhos",
     "noShortcuts": "Nenhum atalho ainda",
     "manageShortcuts": "Gerenciar atalhos",
+    "keybarPinned": "Sempre mostrar a barra de teclas",
     "splitting": "Divisão ativa",
     "split": "Dividir",
     "splitH": "Lado a lado",
@@ -94,7 +95,8 @@
   },
   "keybar": {
     "shortcuts": "Atalhos",
-    "showKeyboard": "Mostrar teclado"
+    "showKeyboard": "Mostrar teclado",
+    "hideKeyboard": "Ocultar teclado"
   },
   "shortcut": {
     "title": "Atalhos globais",

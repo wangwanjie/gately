@@ -65,6 +65,7 @@
             <el-dropdown-item command="clear" :icon="Eraser">{{ t('terminal.toolbar.clear') }}</el-dropdown-item>
             <el-dropdown-item command="sessions" :icon="ListTree">{{ t('terminal.toolbar.sessions') }}</el-dropdown-item>
             <el-dropdown-item command="shortcuts-manage" :icon="Settings2">{{ t('terminal.toolbar.manageShortcuts') }}</el-dropdown-item>
+            <el-dropdown-item command="keybar-pin" :icon="keybarPinned ? SquareCheck : Square">{{ t('terminal.toolbar.keybarPinned') }}</el-dropdown-item>
             <el-dropdown-item
               v-for="th in termThemes"
               :key="th.name"
@@ -83,7 +84,7 @@
 
 <script setup lang="ts">
 import {
-  ClipboardPaste, Columns2, Copy, Ellipsis, Eraser, FolderOpen, LayoutGrid, ListTree, Maximize2, Minimize2, Minus, Palette, Plus, Rows2, Search, Settings2, Square, Zap,
+  ClipboardPaste, Columns2, Copy, Ellipsis, Eraser, FolderOpen, LayoutGrid, ListTree, Maximize2, Minimize2, Minus, Palette, Plus, Rows2, Search, Settings2, Square, SquareCheck, Zap,
 } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import { termThemes, themeLabel } from './themes'
@@ -99,6 +100,7 @@ defineProps<{
   shortcuts: Shortcut[]
   splitMode: boolean
   fullscreen: boolean
+  keybarPinned?: boolean
 }>()
 const emit = defineEmits<{
   action: [name: string]

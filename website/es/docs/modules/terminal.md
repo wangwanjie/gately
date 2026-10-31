@@ -78,7 +78,7 @@ El menú «Dividir» de la barra de herramientas ofrece disposiciones en paralel
 
 - En pantallas estrechas, la lista de conexiones y el terminal son vistas separadas, y el botón de volver, arriba a la izquierda de la vista del terminal, regresa a la lista;
 - El área del terminal sigue el viewport visual y se reduce cuando aparece el teclado en pantalla;
-- La barra de teclas virtuales de la parte inferior ofrece `Esc`, `Tab`, `Ctrl`, `Alt` (persistentes), teclas de flecha (mantén pulsado para repetir), símbolos habituales, un acceso a los atajos y un botón para mostrar el teclado.
+- La barra de teclas virtuales es una sola fila que se desliza lateralmente. Ofrece `Esc`, `Tab`, `Ctrl`, `Alt` (persistentes), teclas de flecha (mantén pulsado para repetir), símbolos habituales y un acceso a los atajos, con un botón de teclado fijo a la derecha que muestra u oculta el teclado. Por defecto la barra aparece y desaparece con el teclado en pantalla; con el teclado cerrado, un botón flotante en la esquina inferior derecha lo vuelve a mostrar. Para usar flechas, paginación y otras teclas sin el teclado, activa **Mostrar siempre la barra de teclas** en el menú **Más**.
 
 ## Seguridad
 

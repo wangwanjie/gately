@@ -78,7 +78,7 @@ O menu "Dividir" na barra de ferramentas oferece layouts lado a lado, empilhado 
 
 - Em telas estreitas, a lista de conexões e o terminal são visualizações separadas, e o botão voltar no canto superior esquerdo da visualização do terminal retorna à lista;
 - A área do terminal acompanha o viewport visual e diminui quando o teclado virtual aparece;
-- A barra de teclas virtuais na parte inferior oferece `Esc`, `Tab`, `Ctrl`, `Alt` (fixas), teclas de seta (segure para repetir), símbolos comuns, um acesso aos atalhos e um botão para abrir o teclado.
+- A barra de teclas virtuais é uma única linha que pode ser deslizada para os lados. Ela oferece `Esc`, `Tab`, `Ctrl`, `Alt` (fixas), teclas de seta (segure para repetir), símbolos comuns e um acesso aos atalhos, com um botão de teclado fixo à direita que mostra ou oculta o teclado. Por padrão, a barra aparece e some junto com o teclado virtual; com o teclado fechado, um botão flutuante no canto inferior direito o abre de novo. Para usar setas, paginação e outras teclas sem o teclado, ative **Sempre mostrar a barra de teclas** no menu **Mais**.
 
 ## Segurança
 

@@ -78,7 +78,7 @@ Le menu « Scinder » de la barre d'outils propose les dispositions côte à cô
 
 - Sur les écrans étroits, la liste des connexions et le terminal sont des vues distinctes, et le bouton retour en haut à gauche de la vue du terminal ramène à la liste ;
 - La zone du terminal suit le viewport visuel et se réduit lorsque le clavier virtuel apparaît ;
-- La barre de touches virtuelles en bas fournit `Esc`, `Tab`, `Ctrl`, `Alt` (persistantes), les flèches (maintenir pour répéter), les symboles courants, un accès aux raccourcis et un bouton pour afficher le clavier.
+- La barre de touches virtuelles tient sur une seule ligne que l'on fait défiler latéralement. Elle fournit `Esc`, `Tab`, `Ctrl`, `Alt` (persistantes), les flèches (maintenir pour répéter), les symboles courants et un accès aux raccourcis, avec un bouton clavier fixé à droite qui affiche ou masque le clavier. Par défaut, la barre apparaît et disparaît avec le clavier virtuel ; clavier fermé, un bouton flottant en bas à droite le rouvre. Pour utiliser les flèches, la pagination et d'autres touches sans clavier, activez **Toujours afficher la barre de touches** dans le menu **Plus**.
 
 ## Sécurité
 

@@ -78,7 +78,7 @@ Das Menü „Teilen“ in der Werkzeugleiste bietet nebeneinander, untereinander
 
 - Auf schmalen Bildschirmen sind Verbindungsliste und Terminal getrennte Ansichten, und die Zurück-Schaltfläche oben links in der Terminalansicht führt zur Liste zurück;
 - Der Terminalbereich folgt dem sichtbaren Viewport und wird kleiner, wenn die Bildschirmtastatur erscheint;
-- Die virtuelle Tastenleiste am unteren Rand bietet `Esc`, `Tab`, `Ctrl`, `Alt` (einrastend), Pfeiltasten (gedrückt halten wiederholt), gängige Sonderzeichen, einen Zugang zu den Kurzbefehlen und eine Schaltfläche zum Einblenden der Tastatur.
+- Die virtuelle Tastenleiste ist eine einzelne, seitlich wischbare Zeile. Sie bietet `Esc`, `Tab`, `Ctrl`, `Alt` (einrastend), Pfeiltasten (gedrückt halten wiederholt), gängige Sonderzeichen und einen Zugang zu den Kurzbefehlen; rechts ist eine Tastatur-Schaltfläche fixiert, die die Tastatur ein- oder ausblendet. Standardmäßig erscheint und verschwindet die Leiste mit der Bildschirmtastatur; ist die Tastatur geschlossen, holt eine schwebende Schaltfläche unten rechts sie zurück. Wer Pfeiltasten, Blättern und andere Tasten ohne Tastatur nutzen möchte, aktiviert im Menü **Mehr** die Option **Tastenleiste immer anzeigen**.
 
 ## Sicherheit
 

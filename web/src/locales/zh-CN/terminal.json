@@ -49,6 +49,7 @@
     "shortcuts": "快捷命令",
     "noShortcuts": "暂无快捷命令",
     "manageShortcuts": "管理快捷命令",
+    "keybarPinned": "始终显示按键栏",
     "splitting": "分屏中",
     "split": "分屏",
     "splitH": "左右分屏",
@@ -94,7 +95,8 @@
   },
   "keybar": {
     "shortcuts": "快捷命令",
-    "showKeyboard": "呼出键盘"
+    "showKeyboard": "呼出键盘",
+    "hideKeyboard": "收起键盘"
   },
   "shortcut": {
     "title": "全局快捷命令",
