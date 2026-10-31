@@ -310,7 +310,7 @@ func (a *App) Handler() http.Handler {
 	rec.add("GET /api/openapi.json", a.handleOpenAPI, "")
 	a.routes = rec.routes
 	a.routeDocs = rec.docs
-	mux.Handle("/api/", a.requireAuth(a.roleGuard(a.audit.Middleware(protected))))
+	mux.Handle("/api/", a.requireAuth(a.roleGuard(a.defaultPasswordGuard(a.redactReadOnly(a.audit.Middleware(protected))))))
 	mux.Handle("/", a.staticHandler())
 	// 压缩放在翻译之外，压缩的是翻译后的最终内容；已预压缩的静态资源自带 Content-Encoding，不会重复压缩
 	return securityHeaders(httpcompress.Handler(i18n.Middleware(a.accessControl(httpx.SameOrigin(mux)))))

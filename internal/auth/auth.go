@@ -332,6 +332,9 @@ func (m *Manager) ChangeCredentials(oldPassword, newUsername, newPassword string
 	if len(newPassword) < 8 {
 		return errors.New("新密码至少 8 位")
 	}
+	if newPassword == DefaultPassword {
+		return errors.New("新密码不能使用默认密码")
+	}
 	if err := m.verifyAccountPassword(oldPassword); err != nil {
 		return err
 	}
@@ -350,8 +353,8 @@ func (m *Manager) ChangeCredentials(oldPassword, newUsername, newPassword string
 	next.Username = newUsername
 	next.PasswordHash = string(hash)
 	next.SessionSecret = randomString(32)
-	// 改回默认密码时继续提醒
-	next.UsingDefaultPassword = newPassword == DefaultPassword
+	// 新密码不可能是默认密码（上面已拒绝），清除默认密码标记
+	next.UsingDefaultPassword = false
 	if err := m.save(next); err != nil {
 		return err
 	}
