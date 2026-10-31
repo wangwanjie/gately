@@ -56,9 +56,10 @@ curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/status
 
 - 路径 `/api/<模块>/...` 需要 `<模块>` 域的权限，GET 与 HEAD 要求 `read`，其余方法要求 `write`。
 - 模块日志 `GET /api/<模块>/logs` 属于只读，清空日志（DELETE）属于写操作。
-- 下列 GET 接口会返回敏感内容或建立交互通道，按 `write` 处理：路径中含有 `ws`（WebSocket 终端）、`exec`、`download`、`export`、`read`、`config`、`preview-archive`、`secrets` 段的接口，例如证书下载、容器内执行命令与文件读取。被脱敏的密码、密钥可通过对应资源的 `.../secrets` 接口取回明文，需要写权限，只读账号和只读令牌调用时返回 403。容器详情 `/api/docker/containers/{id}` 只需 `docker:read`，其中的环境变量值与启动命令在没有 `docker:write` 时脱敏，明文通过 `/api/docker/containers/{id}/secrets` 获取。
+- 下列 GET 接口会返回敏感内容或建立交互通道，按 `write` 处理：路径中含有 `ws`（WebSocket 终端）、`exec`、`download`、`export`、`read`、`config`、`preview-archive`、`files`、`sftp`、`secrets` 段的接口，例如证书下载、容器内执行命令与文件读取。被脱敏的密码、密钥可通过对应资源的 `.../secrets` 接口取回明文，需要写权限，只读账号和只读令牌调用时返回 403。容器详情 `/api/docker/containers/{id}` 只需 `docker:read`，其中的环境变量值与启动命令在没有 `docker:write` 时脱敏，明文通过 `/api/docker/containers/{id}/secrets` 获取。
 - 旧接口 `PUT /api/webdav/shared-users`、`PUT /api/ftp/shared-users`、`PUT /api/smb/shared-users` 修改的是三个服务共用的同一份共享用户，需要同时具备 `webdav:write`、`ftp:write`、`smb:write`；新接口 `/api/fileusers` 使用 `fileusers` 域的权限。
 - `GET /api/session` 与 `GET /api/openapi.json` 接受任意有效令牌。
+- 以下模块的写权限可以在服务器上执行命令，等同于 Gately 进程用户的命令执行权限：`ddns`（命令取 IP）、`cron`（定时任务）、`guard`（命令日志源）、`stun`（规则脚本）、`ssl`（映射脚本与本机部署命令）、`webterminal`、`docker`（容器内执行与 Compose）、`frp`、`filebrowser`、`cloudflared`（可指定程序路径）。新建令牌时这些模块带有「可执行命令」标记，只授予完全信任的脚本。令牌调用 Lucky 导入（`import:write`）时条目一律导入为停用状态，`enable=1` 只对登录会话生效。
 
 ### 令牌禁止的操作
 

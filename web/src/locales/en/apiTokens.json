@@ -46,5 +46,9 @@
   "regenerateConfirm": "After regenerating \"{name}\", the old token value stops working immediately and scripts using it must switch to the new value. Continue?",
   "regenerateTitle": "Regenerate Token",
   "deleteConfirm": "After deleting \"{name}\", the token stops working immediately and cannot be recovered. Scripts using it will receive 401. Continue?",
-  "deleteTitle": "Delete Token"
+  "deleteTitle": "Delete Token",
+  "execTag": "Runs commands",
+  "execTip": "Write access to this module can run commands on the server (commands, scripts or program paths). It equals command execution as the Gately process user, so grant it only to scripts you fully trust.",
+  "execWarn": "Whoever holds this token can run commands on the server through write access to: {modules}. Grant this only to scripts you fully trust.",
+  "listSep": ", "
 }

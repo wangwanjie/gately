@@ -32,12 +32,23 @@ type scopeDomain struct {
 	WriteOnly bool `json:"writeOnly,omitempty"`
 	// ReadOnly 表示该域没有写接口，界面只提供读权限
 	ReadOnly bool `json:"readOnly,omitempty"`
+	// CanExec 表示该域的写权限可以在服务器上执行命令（命令、脚本或程序路径），界面据此提示风险
+	CanExec bool `json:"canExec,omitempty"`
+}
+
+// execDomains 是写权限可以在服务器上执行命令的模块：DDNS 命令取 IP、定时任务、入侵防护命令日志源、
+// STUN 规则脚本、证书映射脚本与本机部署命令、Web 终端、Docker 容器内执行与 Compose、
+// 以及可指定程序路径的 frp、File Browser、Cloudflare Tunnel。
+// 这些模块的写权限等同于 Gately 进程用户的命令执行权限，只应授予完全信任的脚本。
+var execDomains = map[string]bool{
+	"ddns": true, "cron": true, "guard": true, "stun": true, "ssl": true, "webterminal": true,
+	"docker": true, "frp": true, "filebrowser": true, "cloudflared": true,
 }
 
 func (a *App) scopeDomains() []scopeDomain {
 	out := make([]scopeDomain, 0, len(a.modules)+len(builtinDomains))
 	for _, e := range a.modules {
-		out = append(out, scopeDomain{ID: e.mod.ID(), Title: e.mod.Title()})
+		out = append(out, scopeDomain{ID: e.mod.ID(), Title: e.mod.Title(), CanExec: execDomains[e.mod.ID()]})
 	}
 	return append(out, builtinDomains...)
 }

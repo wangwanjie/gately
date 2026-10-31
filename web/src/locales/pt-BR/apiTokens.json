@@ -46,5 +46,9 @@
   "regenerateConfirm": "Depois de gerar novamente \"{name}\", o valor antigo do token deixa de funcionar imediatamente e os scripts que o usam precisam passar para o novo valor. Continuar?",
   "regenerateTitle": "Gerar token novamente",
   "deleteConfirm": "Depois de excluir \"{name}\", o token deixa de funcionar imediatamente e não pode ser recuperado. Os scripts que o usam receberão 401. Continuar?",
-  "deleteTitle": "Excluir token"
+  "deleteTitle": "Excluir token",
+  "execTag": "Executa comandos",
+  "execTip": "O acesso de escrita a este módulo pode executar comandos no servidor (comandos, scripts ou caminhos de programa). Isso equivale a executar comandos como o usuário do processo do Gately, então conceda apenas a scripts de total confiança.",
+  "execWarn": "Quem tiver este token pode executar comandos no servidor pelo acesso de escrita a: {modules}. Conceda apenas a scripts de total confiança.",
+  "listSep": ", "
 }

@@ -136,6 +136,9 @@
                 <div class="perm-name">
                   <span>{{ d.title }}</span>
                   <span class="perm-id mono">{{ d.id }}</span>
+                  <el-tooltip v-if="d.canExec" :content="t('apiTokens.execTip')" placement="top">
+                    <el-tag size="small" type="warning" effect="light">{{ t('apiTokens.execTag') }}</el-tag>
+                  </el-tooltip>
                 </div>
                 <el-radio-group v-model="levels[d.id]" size="small" class="perm-radio">
                   <el-radio-button value="none">{{ t('common.none') }}</el-radio-button>
@@ -144,6 +147,9 @@
                 </el-radio-group>
               </div>
             </div>
+            <el-alert v-if="execGranted.length" type="warning" :closable="false" show-icon class="exec-warn">
+              {{ t('apiTokens.execWarn', { modules: execGranted.join(t('apiTokens.listSep')) }) }}
+            </el-alert>
             <div class="form-help">{{ t('apiTokens.permHelp') }}</div>
           </div>
         </el-form-item>
@@ -262,6 +268,9 @@ function maxLevel(d: ScopeDomain): Level {
 }
 
 const levels = reactive<Record<string, Level>>({})
+
+// 已授予写权限、且写权限可以执行命令的模块标题
+const execGranted = computed(() => domains.value.filter((d) => d.canExec && levels[d.id] === 'write').map((d) => d.title))
 
 const grantedCount = computed(() => domains.value.filter((d) => (levels[d.id] ?? 'none') !== 'none').length)
 
@@ -536,6 +545,9 @@ onMounted(load)
 </script>
 
 <style scoped>
+.exec-warn {
+  margin-top: 8px;
+}
 .block-gap {
   margin-bottom: 16px;
 }

@@ -56,9 +56,10 @@ curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/status
 
 - 경로 `/api/<모듈>/...`에는 `<모듈>` 도메인의 권한이 필요하며 GET과 HEAD에는 `read`, 그 외 메서드에는 `write`가 필요합니다.
 - 모듈 로그 `GET /api/<모듈>/logs`는 읽기 전용이고 로그 비우기(DELETE)는 쓰기 작업입니다.
-- 다음 GET 엔드포인트는 민감한 내용을 반환하거나 상호작용 채널을 만들기 때문에 `write`로 처리합니다. 경로에 `ws`(WebSocket 터미널), `exec`, `download`, `export`, `read`, `config`, `preview-archive`, `secrets` 세그먼트가 포함된 엔드포인트이며 예를 들어 인증서 다운로드, 컨테이너 안 명령 실행과 파일 읽기가 있습니다. 마스킹된 비밀번호와 키는 해당 리소스의 `.../secrets` 엔드포인트로 평문을 가져올 수 있습니다. 쓰기 권한이 필요하며 읽기 전용 계정과 읽기 전용 토큰으로 호출하면 403을 반환합니다. 컨테이너 상세 `/api/docker/containers/{id}`는 `docker:read`만 필요하며, `docker:write`가 없으면 그 안의 환경 변수 값과 시작 명령이 마스킹됩니다. 평문은 `/api/docker/containers/{id}/secrets`에서 가져옵니다.
+- 다음 GET 엔드포인트는 민감한 내용을 반환하거나 상호작용 채널을 만들기 때문에 `write`로 처리합니다. 경로에 `ws`(WebSocket 터미널), `exec`, `download`, `export`, `read`, `config`, `preview-archive`, `files`, `sftp`, `secrets` 세그먼트가 포함된 엔드포인트이며 예를 들어 인증서 다운로드, 컨테이너 안 명령 실행과 파일 읽기가 있습니다. 마스킹된 비밀번호와 키는 해당 리소스의 `.../secrets` 엔드포인트로 평문을 가져올 수 있습니다. 쓰기 권한이 필요하며 읽기 전용 계정과 읽기 전용 토큰으로 호출하면 403을 반환합니다. 컨테이너 상세 `/api/docker/containers/{id}`는 `docker:read`만 필요하며, `docker:write`가 없으면 그 안의 환경 변수 값과 시작 명령이 마스킹됩니다. 평문은 `/api/docker/containers/{id}/secrets`에서 가져옵니다.
 - 기존 엔드포인트 `PUT /api/webdav/shared-users`, `PUT /api/ftp/shared-users`, `PUT /api/smb/shared-users`는 세 서비스가 함께 쓰는 하나의 공유 사용자 목록을 수정하므로 `webdav:write`, `ftp:write`, `smb:write`가 모두 필요합니다. 새 엔드포인트 `/api/fileusers`는 `fileusers` 도메인의 권한을 사용합니다.
 - `GET /api/session`과 `GET /api/openapi.json`은 유효한 토큰이면 무엇이든 받아들입니다.
+- 다음 모듈의 쓰기 권한으로 서버에서 명령을 실행할 수 있으며, Gately 프로세스 사용자로 명령을 실행하는 것과 같습니다: `ddns`(명령으로 IP 가져오기), `cron`(예약 작업), `guard`(명령 로그 소스), `stun`(규칙 스크립트), `ssl`(매핑 스크립트와 로컬 배포 명령), `webterminal`, `docker`(컨테이너 내 실행과 Compose), `frp`, `filebrowser`, `cloudflared`(프로그램 경로 지정 가능). 토큰을 만들 때 이 모듈에는 「명령 실행 가능」 표시가 붙습니다. 완전히 신뢰하는 스크립트에만 부여하세요. 토큰으로 Lucky 가져오기(`import:write`)를 호출하면 항목은 항상 비활성 상태로 가져오며, `enable=1`은 로그인 세션에서만 적용됩니다.
 
 ### 토큰으로 할 수 없는 작업
 

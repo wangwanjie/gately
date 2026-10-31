@@ -56,9 +56,10 @@ API に必要な権限は、パスとメソッドで決まります。
 
 - パス `/api/<モジュール>/...` には `<モジュール>` スコープの権限が必要で、GET と HEAD は `read`、それ以外のメソッドは `write` が必要です。
 - モジュールログの `GET /api/<モジュール>/logs` は読み取り専用で、ログの消去（DELETE）は書き込み操作です。
-- 次の GET API は、機密性の高い内容を返すか、対話的なチャネルを確立するため、`write` として扱われます。パスに `ws`（WebSocket ターミナル）、`exec`、`download`、`export`、`read`、`config`、`preview-archive`、`secrets` のセグメントを含む API で、たとえば証明書のダウンロード、コンテナ内でのコマンド実行、ファイルの読み取りが該当します。マスクされたパスワードやキーは、対応するリソースの `.../secrets` API で平文を取得できます。これには書き込み権限が必要で、読み取り専用アカウントと読み取り専用トークンでは 403 が返ります。コンテナ詳細 `/api/docker/containers/{id}` は `docker:read` だけで取得できますが、`docker:write` がない場合は環境変数の値と起動コマンドがマスクされ、平文は `/api/docker/containers/{id}/secrets` で取得します。
+- 次の GET API は、機密性の高い内容を返すか、対話的なチャネルを確立するため、`write` として扱われます。パスに `ws`（WebSocket ターミナル）、`exec`、`download`、`export`、`read`、`config`、`preview-archive`、`files`、`sftp`、`secrets` のセグメントを含む API で、たとえば証明書のダウンロード、コンテナ内でのコマンド実行、ファイルの読み取りが該当します。マスクされたパスワードやキーは、対応するリソースの `.../secrets` API で平文を取得できます。これには書き込み権限が必要で、読み取り専用アカウントと読み取り専用トークンでは 403 が返ります。コンテナ詳細 `/api/docker/containers/{id}` は `docker:read` だけで取得できますが、`docker:write` がない場合は環境変数の値と起動コマンドがマスクされ、平文は `/api/docker/containers/{id}/secrets` で取得します。
 - 旧 API の `PUT /api/webdav/shared-users`、`PUT /api/ftp/shared-users`、`PUT /api/smb/shared-users` は 3 つのサービスで共通の共有ユーザーを変更するため、`webdav:write`、`ftp:write`、`smb:write` をすべて必要とします。新しい `/api/fileusers` は `fileusers` スコープの権限を使います。
 - `GET /api/session` と `GET /api/openapi.json` は、有効なトークンであれば何でも受け付けます。
+- 次のモジュールの書き込み権限ではサーバー上でコマンドを実行でき、Gately プロセスのユーザーとしてのコマンド実行権限と同等です：`ddns`（コマンドによる IP 取得）、`cron`（定期タスク）、`guard`（コマンドのログソース）、`stun`（ルールのスクリプト）、`ssl`（マッピングスクリプトとローカルデプロイコマンド）、`webterminal`、`docker`（コンテナ内実行と Compose）、`frp`、`filebrowser`、`cloudflared`（プログラムのパスを指定可能）。トークン作成時にこれらのモジュールには「コマンド実行可」の印が付きます。完全に信頼できるスクリプトにだけ付与してください。トークンで Lucky インポート（`import:write`）を呼び出した場合、項目は常に無効の状態でインポートされ、`enable=1` はログインセッションでのみ有効です。
 
 ### トークンでは許可されない操作
 

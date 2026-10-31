@@ -46,5 +46,9 @@
   "regenerateConfirm": "Après la régénération de « {name} », l'ancienne valeur du jeton cesse immédiatement de fonctionner et les scripts qui l'utilisent doivent passer à la nouvelle valeur. Continuer ?",
   "regenerateTitle": "Régénérer le jeton",
   "deleteConfirm": "Après la suppression de « {name} », le jeton cesse immédiatement de fonctionner et reste irrécupérable. Les scripts qui l'utilisent recevront une erreur 401. Continuer ?",
-  "deleteTitle": "Supprimer le jeton"
+  "deleteTitle": "Supprimer le jeton",
+  "execTag": "Exécute des commandes",
+  "execTip": "L'accès en écriture à ce module permet d'exécuter des commandes sur le serveur (commandes, scripts ou chemins de programme). Il équivaut à exécuter des commandes en tant qu'utilisateur du processus Gately : ne l'accordez qu'aux scripts en qui vous avez entièrement confiance.",
+  "execWarn": "Le détenteur de ce jeton peut exécuter des commandes sur le serveur via l'accès en écriture à : {modules}. Ne l'accordez qu'aux scripts en qui vous avez entièrement confiance.",
+  "listSep": ", "
 }

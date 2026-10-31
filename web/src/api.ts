@@ -326,6 +326,8 @@ export interface ScopeDomain {
   writeOnly?: boolean
   // 仅有读权限
   readOnly?: boolean
+  // 写权限可以在服务器上执行命令
+  canExec?: boolean
 }
 
 // TokenInput 是创建/编辑令牌的请求体。

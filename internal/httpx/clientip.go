@@ -63,19 +63,52 @@ func PeerIP(r *http.Request) string {
 	return strings.Trim(host, "[]")
 }
 
-// ClientIP 返回请求的客户端地址。对端为可信代理时，依次从 X-Real-IP、X-Forwarded-For（自右向左跳过可信代理）中取得真实地址；
+// ClientIP 返回请求的客户端地址。对端为可信代理时，从 X-Forwarded-For（自右向左跳过可信代理）与 X-Real-IP 中取得真实地址；
 // 否则返回对端地址。
+//
+// 两个请求头只有一个时直接使用。两个都有且不一致时，说明其中一个是客户端伪造后被代理原样转发的：
+// 只追加 X-Forwarded-For 的代理（haproxy option forwardfor、Caddy 等）会原样转发客户端自带的 X-Real-IP，
+// 只写 X-Real-IP 的代理（只配置了 proxy_set_header X-Real-IP 的 nginx）会原样转发客户端自带的 X-Forwarded-For。
+// 单看一次请求无法分辨是哪一种，因此：
+//   - 一个是内网地址、另一个是公网地址时取公网地址，伪造内网地址无法绕过“仅内网访问”；
+//   - 其余情况以 X-Forwarded-For 为准，它的最右一项由最近的代理追加，客户端无法改写。
 func ClientIP(r *http.Request) string {
 	peer := PeerIP(r)
 	t := trust.Load()
 	if !t.enable || !trustedProxy(peer, t) {
 		return peer
 	}
+	realIP := ""
 	if v := strings.TrimSpace(r.Header.Get("X-Real-IP")); v != "" {
-		if a, err := netip.ParseAddr(v); err == nil {
-			return a.Unmap().String()
+		if a, err := netip.ParseAddr(strings.Trim(v, "[]")); err == nil {
+			realIP = a.Unmap().String()
 		}
 	}
+	fwd, ok := forwardedClient(r, t)
+	if !ok {
+		// X-Forwarded-For 格式异常时不再采信它，有合法的 X-Real-IP 就用，否则保守地返回对端地址
+		if realIP != "" {
+			return realIP
+		}
+		return peer
+	}
+	switch {
+	case fwd == "" && realIP == "":
+		return peer
+	case fwd == "":
+		return realIP
+	case realIP == "" || realIP == fwd:
+		return fwd
+	case isInternal(fwd) && !isInternal(realIP):
+		// X-Forwarded-For 给出内网地址而 X-Real-IP 是公网地址：按伪造内网地址处理，取公网地址
+		return realIP
+	}
+	return fwd
+}
+
+// forwardedClient 从 X-Forwarded-For 自右向左跳过可信代理，返回第一个不可信的地址；
+// 没有该请求头或全部是可信代理时返回空串，格式异常时 ok 为 false。
+func forwardedClient(r *http.Request, t *proxyTrust) (ip string, ok bool) {
 	// X-Forwarded-For 最右侧由最近的代理追加；继续向左只跳过同样可信的代理，第一个不可信的地址即客户端
 	var hops []string
 	for _, h := range r.Header.Values("X-Forwarded-For") {
@@ -88,16 +121,30 @@ func ClientIP(r *http.Request) string {
 	for i := len(hops) - 1; i >= 0; i-- {
 		a, err := netip.ParseAddr(strings.Trim(hops[i], "[]"))
 		if err != nil {
-			// 格式异常时不再向左信任，保守地返回对端地址
-			return peer
+			return "", false
 		}
-		ip := a.Unmap().String()
-		if !trustedProxy(ip, t) {
-			return ip
+		s := a.Unmap().String()
+		if !trustedProxy(s, t) {
+			return s, true
 		}
 	}
-	return peer
+	return "", true
 }
+
+// isInternal 判断地址是否为内网地址（回环、私有、链路本地、CGNAT 与 IPv6 ULA），与“仅内网访问”的判定一致。
+func isInternal(ip string) bool {
+	a, err := netip.ParseAddr(ip)
+	if err != nil {
+		return false
+	}
+	a = a.Unmap()
+	if a.IsLoopback() || a.IsPrivate() || a.IsLinkLocalUnicast() {
+		return true
+	}
+	return cgnat.Contains(a)
+}
+
+var cgnat = netip.MustParsePrefix("100.64.0.0/10")
 
 // trustedProxy 判断地址是否为可信代理：回环地址、本机网卡地址或额外配置的地址段。
 func trustedProxy(ip string, t *proxyTrust) bool {

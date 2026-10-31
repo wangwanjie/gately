@@ -46,5 +46,9 @@
   "regenerateConfirm": "Nach dem Neugenerieren von „{name}“ funktioniert der alte Token-Wert sofort nicht mehr, und Skripte, die ihn verwenden, müssen auf den neuen Wert umgestellt werden. Fortfahren?",
   "regenerateTitle": "Token neu generieren",
   "deleteConfirm": "Nach dem Löschen von „{name}“ funktioniert das Token sofort nicht mehr und kann nicht wiederhergestellt werden. Skripte, die es verwenden, erhalten 401. Fortfahren?",
-  "deleteTitle": "Token löschen"
+  "deleteTitle": "Token löschen",
+  "execTag": "Führt Befehle aus",
+  "execTip": "Schreibzugriff auf dieses Modul kann Befehle auf dem Server ausführen (Befehle, Skripte oder Programmpfade). Das entspricht der Befehlsausführung als Benutzer des Gately-Prozesses – vergeben Sie ihn nur an Skripte, denen Sie voll vertrauen.",
+  "execWarn": "Wer dieses Token besitzt, kann über den Schreibzugriff auf folgende Module Befehle auf dem Server ausführen: {modules}. Vergeben Sie das nur an Skripte, denen Sie voll vertrauen.",
+  "listSep": ", "
 }

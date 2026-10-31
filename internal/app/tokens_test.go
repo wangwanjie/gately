@@ -190,3 +190,22 @@ func newHandlerServer(t *testing.T, a *App) string {
 	t.Cleanup(srv.Close)
 	return srv.URL
 }
+
+// 可执行命令的权限域都必须是真实存在的模块，防止模块改名后提示失效。
+func TestExecDomainsAreModules(t *testing.T) {
+	a := newDocApp(t)
+	got := map[string]bool{}
+	for _, d := range a.scopeDomains() {
+		if d.CanExec {
+			got[d.ID] = true
+		}
+	}
+	for id := range execDomains {
+		if !got[id] {
+			t.Errorf("execDomains 中的 %s 不是已注册的模块", id)
+		}
+	}
+	if !got["ddns"] || !got["cron"] || got["portforward"] {
+		t.Fatalf("可执行命令标记不正确: %v", got)
+	}
+}
