@@ -82,8 +82,8 @@
   "home": {
     "pill": "Gratuito e de código aberto · Apache-2.0",
     "announce": {
-      "text": "v0.6.1.1 chegou: bloqueio de sondagem de caminhos web, página Usuários de autenticação e troca de senha pelo próprio usuário →",
-      "link": "/pt-BR/news/v0.6.1.1"
+      "text": "v0.6.2 chegou: roteamento por protocolo, grupos e ordenação de listas e endereços STUN no DNS dinâmico →",
+      "link": "/pt-BR/news/v0.6.2"
     },
     "titleLine1": "O gateway de rede tudo em um",
     "titleLine2": "Código aberto e pronto para usar",

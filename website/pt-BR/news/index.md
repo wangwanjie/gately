@@ -7,6 +7,10 @@ description: Anúncios e notas de cada versão do Gately.
 
 Abaixo estão os anúncios das versões principais. Veja as [GitHub Releases](https://github.com/wangwanjie/gately/releases) para as mudanças completas e os downloads de cada versão.
 
+## [v0.6.2](/pt-BR/news/v0.6.2)
+
+31 de outubro de 2026 · O novo módulo Roteamento por protocolo permite que HTTPS, SSH, RDP, OpenVPN e outros compartilhem uma única porta; todas as listas longas podem ser agrupadas e ordenadas; o DNS dinâmico pode usar endereços públicos do STUN; o STUN funciona atrás de vários NATs; várias melhorias de segurança.
+
 ## [v0.6.1.1](/pt-BR/news/v0.6.1.1)
 
 30 de outubro de 2026 · A prevenção de intrusão bloqueia a sondagem de caminhos web; uma nova página Usuários de autenticação gerencia os usuários compartilhados e o OIDC; usuários compartilhados podem trocar a própria senha; sites podem fechar a conexão ao negar acesso; as rotas de túneis Cloudflare com token podem ser editadas no Gately; os logs ganham um filtro Excluir.

@@ -82,8 +82,8 @@
   "home": {
     "pill": "開源免費 · Apache-2.0",
     "announce": {
-      "text": "v0.6.1.1 發布：Web 路徑探測封鎖、認證使用者頁面、共用使用者自助改密碼 →",
-      "link": "/zh-TW/news/v0.6.1.1"
+      "text": "v0.6.2 發布：協定分流、列表分組與排序、動態網域引用 STUN 位址 →",
+      "link": "/zh-TW/news/v0.6.2"
     },
     "titleLine1": "一站式網路閘道",
     "titleLine2": "開源透明，開箱即用",

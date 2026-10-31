@@ -82,8 +82,8 @@
   "home": {
     "pill": "开源免费 · Apache-2.0",
     "announce": {
-      "text": "v0.6.1.1 发布：Web 路径探测封禁、认证用户页、共享用户自助改密 →",
-      "link": "/news/v0.6.1.1"
+      "text": "v0.6.2 发布：协议分流、列表分组与排序、DDNS 引用 STUN 地址 →",
+      "link": "/news/v0.6.2"
     },
     "titleLine1": "一站式网络网关",
     "titleLine2": "开源透明，开箱即用",

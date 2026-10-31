@@ -82,8 +82,8 @@
   "home": {
     "pill": "Free and open source · Apache-2.0",
     "announce": {
-      "text": "v0.6.1.1 is out: web path probing bans, Auth users page, self-service password change →",
-      "link": "/en/news/v0.6.1.1"
+      "text": "v0.6.2 is out: Protocol Routing, list grouping & sorting, STUN addresses in DDNS →",
+      "link": "/en/news/v0.6.2"
     },
     "titleLine1": "The all-in-one network gateway",
     "titleLine2": "Open source, ready out of the box",

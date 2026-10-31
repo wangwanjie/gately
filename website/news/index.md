@@ -7,6 +7,10 @@ description: Gately 各版本的发布公告与更新说明。
 
 重要版本的发布公告如下，每个版本的完整变更与下载文件见 [GitHub Releases](https://github.com/wangwanjie/gately/releases)。
 
+## [v0.6.2](/news/v0.6.2)
+
+2026 年 10 月 31 日 · 新增「协议分流」模块，HTTPS、SSH、RDP、OpenVPN 等协议可以共用一个端口；所有长列表支持分组与排序；动态域名可引用 STUN 穿透的公网地址；STUN 适配多层 NAT；多项安全加固。
+
 ## [v0.6.1.1](/news/v0.6.1.1)
 
 2026 年 10 月 30 日 · 入侵防护新增 Web 路径探测封禁；新增「认证用户」页面集中管理共享用户与 OIDC；共享用户可自助修改密码；站点被拒绝时可直接断开连接；Cloudflare 令牌隧道可在 Gately 中编辑路由规则；日志新增「不包含」筛选。

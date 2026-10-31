@@ -82,8 +82,8 @@
   "home": {
     "pill": "Gratuit et open source · Apache-2.0",
     "announce": {
-      "text": "v0.6.1.1 est disponible : bannissement du sondage de chemins web, page Utilisateurs d'auth, changement de mot de passe en libre-service →",
-      "link": "/fr/news/v0.6.1.1"
+      "text": "v0.6.2 est disponible : routage par protocole, groupes et tri des listes, adresses STUN dans le DNS dynamique →",
+      "link": "/fr/news/v0.6.2"
     },
     "titleLine1": "La passerelle réseau tout-en-un",
     "titleLine2": "Open source, prête à l'emploi",

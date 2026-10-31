@@ -82,8 +82,8 @@
   "home": {
     "pill": "Gratis y de código abierto · Apache-2.0",
     "announce": {
-      "text": "v0.6.1.1 ya disponible: bloqueo del sondeo de rutas web, página Usuarios de autenticación y cambio de contraseña por el propio usuario →",
-      "link": "/es/news/v0.6.1.1"
+      "text": "v0.6.2 ya disponible: enrutamiento por protocolo, grupos y orden en las listas y direcciones STUN en el DNS dinámico →",
+      "link": "/es/news/v0.6.2"
     },
     "titleLine1": "La pasarela de red todo en uno",
     "titleLine2": "Código abierto y lista para usar",

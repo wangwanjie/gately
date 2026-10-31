@@ -82,8 +82,8 @@
   "home": {
     "pill": "Kostenlos und Open Source · Apache-2.0",
     "announce": {
-      "text": "v0.6.1.1 ist da: Sperre bei Web-Pfadsondierung, Seite Auth-Benutzer, Passwort selbst ändern →",
-      "link": "/de/news/v0.6.1.1"
+      "text": "v0.6.2 ist da: Protokoll-Routing, Gruppen und Sortierung in Listen, STUN-Adressen in Dynamisches DNS →",
+      "link": "/de/news/v0.6.2"
     },
     "titleLine1": "Das All-in-one-Netzwerk-Gateway",
     "titleLine2": "Open Source, sofort einsatzbereit",
