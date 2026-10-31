@@ -1,43 +1,215 @@
-# Gately
+<p align="center">
+  <a href="https://gately.cn/es/"><img src="docs/images/banner.svg" alt="Gately — La pasarela de red todo en uno: Código abierto y lista para usar" width="100%"></a>
+</p>
 
-[English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | **Español** | [Français](README.fr.md) | [Deutsch](README.de.md) | [Русский](README.ru.md) | [Português (Brasil)](README.pt-BR.md)
+<p align="center">
+  <a href="https://github.com/wangwanjie/gately/releases/latest"><img src="https://img.shields.io/github/v/release/wangwanjie/gately?style=flat-square&color=0e7c66&label=release" alt="Release"></a>
+  <a href="https://github.com/wangwanjie/gately/pkgs/container/gately"><img src="https://img.shields.io/badge/docker-ghcr.io%2Fwangwanjie%2Fgately-0e7c66?style=flat-square&logo=docker&logoColor=white" alt="Docker"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/wangwanjie/gately?style=flat-square&color=0e7c66" alt="License"></a>
+  <a href="https://github.com/wangwanjie/gately/stargazers"><img src="https://img.shields.io/github/stars/wangwanjie/gately?style=flat-square&color=0e7c66" alt="Stars"></a>
+  <a href="https://gately.cn/es/"><img src="https://img.shields.io/badge/Sitio%20web-gately.cn-0e7c66?style=flat-square&logo=googlechrome&logoColor=white" alt="gately.cn"></a>
+  <a href="https://t.me/gately_chat"><img src="https://img.shields.io/badge/Telegram-gately__chat-26A5E4?style=flat-square&logo=telegram&logoColor=white" alt="Telegram"></a>
+</p>
 
-Conjunto de herramientas de puerta de enlace de red, de código abierto y auditable, para redes domésticas, NAS, hosts en la nube y todo tipo de servidores. DDNS, túneles STUN, reenvío de puertos, proxy inverso, certificados, WAF y otras funciones habituales se integran en un único archivo de unos 32 MB.
+<p align="center">
+  <a href="https://gately.cn/es/"><b>Sitio web</b></a> &nbsp;·&nbsp; <a href="https://gately.cn/es/docs/guide/quick-start"><b>Inicio rápido</b></a> &nbsp;·&nbsp; <a href="https://gately.cn/es/docs/guide/install"><b>Guía de instalación</b></a> &nbsp;·&nbsp; <a href="https://gately.cn/es/docs/guide/introduction"><b>Documentación</b></a> &nbsp;·&nbsp; <a href="https://github.com/wangwanjie/gately/releases/latest"><b>Descargas</b></a> &nbsp;·&nbsp; <a href="https://gately.cn/es/news/"><b>Registro de cambios</b></a>
+</p>
 
-> **Usuarios de fnOS:** Gately se distribuye como aplicación nativa de fnOS. Se integra en la **pasarela unificada de fnOS**, de modo que se abre desde el icono del escritorio de fnOS y funciona en la misma dirección que usas para fnOS, incluido tu dominio remoto, sin abrir ningún puerto adicional. Si lo activas, **los administradores de fnOS pueden iniciar sesión directamente con su sesión de fnOS**, sin contraseña de Gately ni código de verificación en dos pasos. Consulta [Aplicación nativa para fnOS](#aplicación-nativa-para-fnos).
+<p align="center">
+  <a href="https://gately.cn/es/sponsor"><img src="https://img.shields.io/badge/Inv%C3%ADtame%20a%20un%20caf%C3%A9-Gately-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black" alt="Invítame a un café" height="34"></a>
+</p>
 
-![Resumen de Gately](docs/images/overview.webp)
+<p align="center">
+  <a href="README.md">English</a> | <a href="README.zh-CN.md">简体中文</a> | <a href="README.zh-TW.md">繁體中文</a> | <a href="README.ja.md">日本語</a> | <a href="README.ko.md">한국어</a> | <b>Español</b> | <a href="README.fr.md">Français</a> | <a href="README.de.md">Deutsch</a> | <a href="README.ru.md">Русский</a> | <a href="README.pt-BR.md">Português (Brasil)</a>
+</p>
 
-![Servicios web: proxy inverso, archivos estáticos y redirecciones por dominio, con WAF, reglas de IP e inicio de sesión por sitio](docs/images/web.webp)
+DNS y traversal de NAT, proxy inverso y certificados HTTPS, WAF y prevención de intrusiones, inicio de sesión único y archivos compartidos: todo lo que tu red doméstica y tus servidores necesitan en la entrada, en un solo panel. Instálalo en un NAS, un router por software o un servidor en la nube y configúralo todo desde el navegador. Es de código abierto bajo Apache-2.0; tu configuración y tus datos se quedan en tu dispositivo, y no se recopila ni se envía nada.
 
-![Estadísticas por sitio: solicitudes, errores, estado de los backends y principales IP y países de origen](docs/images/site-stats.webp)
+> **Usuarios de fnOS:** Gately se distribuye como aplicación nativa de fnOS. Se integra en la **pasarela unificada de fnOS**, de modo que se abre desde el icono del escritorio de fnOS y funciona en la misma dirección que usas para fnOS, incluido tu dominio remoto, sin abrir ningún puerto adicional. Si lo activas, **los administradores de fnOS pueden iniciar sesión directamente con su sesión de fnOS**, sin contraseña de Gately ni código de verificación en dos pasos. Consulta [Aplicación nativa para fnOS](https://gately.cn/es/docs/guide/install#fnos).
 
-![Reenvío de puertos con enrutamiento SNI: un único puerto 443 compartido por varios servicios](docs/images/portforward-sni.webp)
+## Inicio rápido
 
-![DNS dinámico](docs/images/ddns.webp)
+Tres pasos: arranca el contenedor, abre `http://<IP del dispositivo>:16680` e inicia sesión con `admin` / `gately.cn`. Las demás plataformas están más abajo, y la [guía de instalación](https://gately.cn/es/docs/guide/install) recoge todas las opciones.
 
-![Protección contra intrusiones: bloqueos al estilo de fail2ban sincronizados con nftables](docs/images/guard.webp)
+### Docker
 
-![Docker](docs/images/docker.webp)
+La imagen es compatible con amd64, arm64 y arm/v7:
 
-![frp: varias instancias de frpc y frps, con los proxies agrupados por cliente](docs/images/frp.webp)
+```bash
+docker run -d --name gately --network host --cap-add NET_ADMIN \
+  -v ./gately-data:/etc/gately \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  ghcr.io/wangwanjie/gately:latest
+```
 
-![Terminal web: SSH, Telnet y la shell local en el navegador](docs/images/terminal.webp)
+Abre `http://<IP del dispositivo>:16680`, inicia sesión con el usuario predeterminado `admin` y la contraseña predeterminada `gately.cn`, y después cambia la contraseña y activa la verificación en dos pasos en «Ajustes». Encontrarás un ejemplo completo de Compose en [deploy/docker-compose.yml](deploy/docker-compose.yml).
 
-![Historial de configuración con comparación de diferencias y reversión con un clic](docs/images/config-history.webp)
+Si olvidas la contraseña o pierdes el autenticador, ejecuta `gately reset-password` o `gately reset-totp` en el servidor (con Docker, `docker exec -it gately gately reset-password`); el cambio se aplica en cuanto lo confirmas. Consulta [Restablecer la contraseña y la verificación en dos pasos](https://gately.cn/es/docs/guide/install#reset).
 
-![Documentación de la API integrada](docs/images/api-docs.webp)
+El reenvío de puertos, STUN y el servicio web necesitan escuchar puertos del host, por lo que se recomienda `--network host`. Si no necesitas la gestión de Docker, puedes quitar el montaje de `docker.sock`. `--cap-add NET_ADMIN` permite que Prevención de intrusiones escriba los bloqueos en el cortafuegos nftables del host; sin él, los bloqueos siguen aplicándose a los servicios de Gately.
 
-## Por qué Gately
+¿Prefieres otra forma de instalarlo? Elige una aquí abajo.
 
-Gately es totalmente abierto para que usuarios y comunidad puedan revisar directamente el código fuente y la configuración. Un software que se ejecuta en el borde de la red y maneja claves DNS y claves privadas de certificados debe permitir que los usuarios vean lo que hace. Los compromisos de Gately:
+<details>
+<summary><b>Binario</b></summary>
 
-- El código fuente es abierto bajo Apache-2.0 y acepta la revisión de la comunidad
-- Por defecto no se conecta a ningún servidor del proyecto ni reporta información del dispositivo; el inicio de sesión de terceros usa tu propia aplicación OAuth, sin intermediarios
-- Todas las direcciones externas (consulta de IP pública, servidores STUN, etc.) son visibles, editables y se pueden desactivar
-- La configuración es JSON en texto plano, que puedes versionar en git para auditoría y reversión
+Descarga el paquete de tu plataforma desde [Releases](https://github.com/wangwanjie/gately/releases) (Linux amd64/arm64/arm/mips/mipsle/riscv64, macOS, Windows, FreeBSD), descomprímelo y ejecuta:
+
+```bash
+./gately -c /etc/gately
+```
+
+Parámetros: `-c` directorio de configuración (también se puede usar la variable de entorno `GATELY_CONFIG_DIR`), `-listen` sobrescribe la dirección de escucha de la interfaz de administración, `-apply` aplica en cada arranque los archivos `<nombre>.json` de un directorio al directorio de configuración (`GATELY_APPLY_DIR`, útil para GitOps y Kubernetes; los archivos de cuentas y tokens no se pueden sobrescribir), `-version` muestra la versión. En instalaciones desatendidas, define `GATELY_INITIAL_PASSWORD` para elegir la contraseña inicial del administrador en lugar de la contraseña predeterminada `gately.cn`.
+
+Plantillas de servicio: [systemd](deploy/systemd/gately.service) y [OpenWrt procd](deploy/openwrt/gately.init). Para verificar los archivos e imágenes descargados (firmas cosign, procedencia de compilación, SBOM), consulta [Verificar los artefactos publicados](docs/es/VERIFY.md).
+
+</details>
+
+<details>
+<summary><b>Aplicación nativa para fnOS</b></summary>
+
+Cada versión (Release) incluye paquetes `.fpk` sin conexión para fnOS: `gately_<version>_fnos_x86.fpk` (Intel/AMD) y `gately_<version>_fnos_arm.fpk` (ARM). No están en el Centro de aplicaciones oficial, así que debes instalarlos manualmente: abre **Centro de aplicaciones → Instalación manual** (el botón de la esquina inferior izquierda), elige el archivo y completa el asistente.
+
+- **Funciona con la pasarela unificada de fnOS**: haz clic en el icono de Gately en el escritorio de fnOS y la interfaz de administración se abre a través de la pasarela unificada de fnOS en `/app/gately/`, compartiendo el punto de entrada que ya usas para fnOS. Funcionan tanto la dirección de la red interna como tu dominio remoto de fnOS, sin necesidad de abrir ni redirigir el puerto 16680. El acceso a través de la pasarela lo controla fnOS (solo los administradores de fnOS pueden abrirla), por lo que la entrada de seguridad y el acceso solo desde la red interna se aplican únicamente al acceso directo por el puerto 16680.
+- **Inicia la sesión de los administradores de fnOS con su sesión de fnOS**: activa **Ajustes → Control de acceso → Iniciar sesión con fnOS** y los administradores de fnOS que tengan la sesión iniciada en fnOS entrarán en Gately desde el icono del escritorio sin contraseña ni código de verificación en dos pasos; los usuarios normales de fnOS siguen iniciando sesión. Tras cerrar la sesión, la página de inicio de sesión muestra el botón «Iniciar sesión como usuario de fnOS &lt;nombre&gt;» y espera a que lo pulses para volver a entrar. Este ajuste está desactivado por defecto y solo aparece en el paquete de fnOS.
+- En la red interna, la interfaz de administración también está disponible en `http://<dirección del NAS>:16680`. El usuario predeterminado es `admin` y la contraseña predeterminada, `gately.cn`.
+- La aplicación se ejecuta como `root`, de modo que puede escuchar en 80/443, gestionar Docker mediante `docker.sock` y abrir un terminal web real. Instálala solo en un NAS que controles.
+- La configuración se guarda en el directorio `var` de la aplicación y se conserva al desinstalar, salvo que elijas «Eliminar todo» en el asistente de desinstalación. Para actualizar, instala manualmente el `.fpk` más reciente.
+- El paquete también añade el comando `gately` (`/usr/local/bin/gately`) para `gately ctl` y `gately mcp`.
+- El puerto 16680 se comparte con la imagen de Docker. Detén el contenedor `gately` antes de iniciar la aplicación nativa.
+- Verifica la descarga como se describe en [Verificar los artefactos publicados](docs/es/VERIFY.md); los archivos `.fpk` figuran en `checksums.txt`.
+
+</details>
+
+<details>
+<summary><b>OpenWrt</b></summary>
+
+Cada versión (Release) incluye paquetes para OpenWrt: `gately_<version>_openwrt_<arch>.ipk` para OpenWrt 24.10 y anteriores (incluido iStoreOS), que se instala con `opkg install`, y `.apk` para OpenWrt 25.12 y posteriores, que se instala con `apk add --allow-untrusted`. Hay paquetes para amd64 / arm64 / arm / mipsle / mips / riscv64; elige uno según `DISTRIB_ARCH` en `/etc/openwrt_release` (consulta la tabla de la [guía de instalación](https://gately.cn/es/docs/guide/install#openwrt)).
+
+- El servicio se activa en el arranque y se inicia al instalar; la interfaz de administración está en `http://<dirección del router>:16680`, con el usuario predeterminado `admin` y la contraseña predeterminada `gately.cn`.
+- La configuración se guarda en `/etc/gately` y se conserva al actualizar, al desinstalar y al actualizar el firmware (sysupgrade). Para actualizar, instala el paquete más reciente; la actualización en línea de la página Acerca de te remite al gestor de paquetes.
+- El binario ocupa unos 32 MB, así que los paquetes son adecuados para routers software x86, equipos ARM64 y otros dispositivos con almacenamiento amplio; el paquete arm requiere ARMv7 con coma flotante por hardware.
+- Una aplicación LuCI independiente de la arquitectura, `luci-app-gately_<versión>_openwrt_all.ipk` / `.apk`, añade **Servicios → Gately** a LuCI: estado del servicio, iniciar / detener, inicio automático, puerto de administración y un enlace directo a la interfaz.
+
+</details>
+
+<details>
+<summary><b>Monitorización</b></summary>
+
+Crea un token de API con solo el permiso `metrics:read` y apunta Prometheus a `/api/metrics`. Las métricas, los ejemplos de alertas y el panel de Grafana se describen en [Monitorización](docs/es/MONITORING.md).
+
+</details>
+
+<details>
+<summary><b>Uso de la API</b></summary>
+
+Crea un token en la página «Tokens de API» del panel de administración (puedes crear varios, conceder solo lectura o lectura y escritura por módulo, definir una fecha de caducidad; el texto del token se muestra una sola vez tras crearlo) y tus scripts podrán llamar en lote a la API de administración:
+
+```bash
+curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns/tasks
+```
+
+Las API de cuenta, verificación en dos pasos y gestión de tokens, así como las de copia de seguridad, restauración, reinicio y ajustes del sistema, solo admiten sesiones iniciadas. Todas las API, los permisos necesarios y las estructuras de datos están en la página «Documentación de la API» del panel de administración; también puedes exportarlos con `make api-docs` a [docs/api](docs/api/es) (`openapi.json` y `API.md`), que el sitio web https://gately.cn referencia directamente al publicarse.
+
+Al actualizar desde una versión anterior, el token de API global original se convierte automáticamente en un «token heredado» (el valor no cambia y conserva todos los permisos de módulo). Se recomienda restringir sus permisos o sustituirlo por un token nuevo en la página de tokens de API.
+
+</details>
+
+<details>
+<summary><b>Tailscale, frp, cloudflared</b></summary>
+
+Estos tres módulos gestionan programas externos oficiales (reinicio automático, registros agregados en la interfaz). Gately no los incluye. La tarjeta «Instalación en línea» de cada página de módulo descarga del proyecto original la última versión estable o una versión concreta, verifica su SHA-256, la instala en `bin/` dentro del directorio de configuración y reinicia los procesos que la usan; cada programa puede tener su propio proxy de descarga y, si se deja vacío, se usa el proxy de actualización de los ajustes. Se conservan las 3 últimas versiones sustituidas, para revertir con un clic si la nueva falla, y el programa se puede desinstalar cuando ya no se necesita. El botón «Restaurar valores predeterminados» de la cabecera es independiente de la desinstalación: detiene los procesos, borra los ajustes del módulo y elimina los archivos que Gately generó para él (archivos de configuración de frp, datos de las instancias de File Browser, estado de sesión de Tailscale); la configuración anterior se puede recuperar en el historial de configuración. Tailscale solo publica paquetes listos para ejecutar en Linux; en otros sistemas usa el instalador oficial e indica la ruta. Los programas se buscan en este orden: la ruta indicada en la configuración del módulo, `bin/` en el directorio de configuración y `PATH`. También puedes colocar el binario tú mismo en el directorio de configuración, en Docker por ejemplo `./gately-data/bin/frpc`; Tailscale requiere proporcionar tanto `tailscale` como `tailscaled`. Los tokens y claves de los archivos de configuración se guardan con permisos 0600, y el token de cloudflared se pasa mediante una variable de entorno, por lo que no aparece en la lista de procesos.
+
+El módulo File Browser aloja [FileBrowser Quantum](https://github.com/gtsteffaniak/filebrowser) (el filebrowser original está archivado y ya no recibe correcciones de seguridad) con el mismo orden de búsqueda y la misma instalación, actualización y reversión en línea; se instala en `bin/filebrowser`. La contraseña del administrador se pasa mediante una variable de entorno y nunca se escribe en el archivo de configuración.
+
+</details>
 
 ## Funciones
+
+Un recorrido rápido por la interfaz de administración. La lista completa de módulos está al final de esta sección.
+
+### Todo de un vistazo
+
+El resumen muestra CPU, memoria, disco y tráfico, las interfaces de red con su IPv4 e IPv6 públicas y el estado de cada módulo, para que veas en segundos si algo requiere atención.
+
+<img src="docs/images/overview.webp" alt="Todo de un vistazo" width="100%">
+
+### Servicios web que pueden sustituir a nginx
+
+Proxy inverso, archivos estáticos y redirecciones por dominio, con HTTPS y HTTP/3. Cada sitio tiene su propio WAF, reglas de IP e inicio de sesión, y los cambios se aplican sin cortar conexiones.
+
+<img src="docs/images/web.webp" alt="Servicios web que pueden sustituir a nginx" width="100%">
+
+<p><b>Estadísticas por sitio</b> — solicitudes, errores, estado de los backends y principales IP y países de origen, minuto a minuto.</p>
+
+<img src="docs/images/site-stats.webp" alt="Estadísticas por sitio" width="100%">
+
+### Un solo puerto 443 para todos tus servicios
+
+El reenvío de puertos con enrutamiento SNI permite que varios servicios compartan un mismo puerto según el dominio: el TLS pasa tal cual y el protocolo PROXY conserva la dirección real del cliente.
+
+<img src="docs/images/portforward-sni.webp" alt="Un solo puerto 443 para todos tus servicios" width="100%">
+
+### DNS dinámico con los principales proveedores
+
+Cloudflare, Alibaba Cloud, DNSPod, Route 53 y más. IPv4 e IPv6, direcciones obtenidas de una URL, una interfaz de red o un comando, y un aviso cada vez que algo cambia.
+
+<img src="docs/images/ddns.webp" alt="DNS dinámico con los principales proveedores" width="100%">
+
+### Prevención de intrusiones
+
+Reglas al estilo de fail2ban leen registros de archivos, journald y contenedores, mientras los puertos trampa y la detección de escaneos atrapan los sondeos. Los bloqueos se sincronizan con nftables y el kernel descarta el tráfico.
+
+<img src="docs/images/guard.webp" alt="Prevención de intrusiones" width="100%">
+
+### frp, Tailscale y túneles de Cloudflare
+
+Varias instancias de frpc y frps en paralelo, junto a Tailscale y los túneles de cloudflared. Gately instala, actualiza y revierte estos programas por ti.
+
+<img src="docs/images/frp.webp" alt="frp, Tailscale y túneles de Cloudflare" width="100%">
+
+### Y además
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+**Docker**<br>Contenedores, Compose, registros y terminales, con actualización de imágenes en un clic y reversión automática si falla.
+
+<img src="docs/images/docker.webp" alt="Docker" width="100%">
+
+</td>
+<td width="50%" valign="top">
+
+**Terminal web**<br>SSH, Telnet y la shell local en el navegador, con SFTP y paneles divididos.
+
+<img src="docs/images/terminal.webp" alt="Terminal web" width="100%">
+
+</td>
+</tr>
+</table>
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+**Historial de configuración**<br>Cada cambio conserva la versión anterior, con comparación de diferencias y reversión en un clic.
+
+<img src="docs/images/config-history.webp" alt="Historial de configuración" width="100%">
+
+</td>
+<td width="50%" valign="top">
+
+**API, línea de comandos y MCP**<br>Tokens de API por módulo, documentación OpenAPI integrada, `gately ctl` y un servidor MCP para asistentes de IA.
+
+<img src="docs/images/api-docs.webp" alt="API, línea de comandos y MCP" width="100%">
+
+</td>
+</tr>
+</table>
+
+<details>
+<summary><b>Lista completa de funciones</b></summary>
 
 | Módulo | Capacidades |
 | --- | --- |
@@ -70,6 +242,17 @@ Gately es totalmente abierto para que usuarios y comunidad puedan revisar direct
 | Monitorización y autodiagnóstico | Endpoint global de Prometheus `/api/metrics` (certificados, DDNS, STUN, reenvío de puertos, servicios web) con un panel de Grafana listo para usar; autodiagnóstico de red con un clic (IP pública, CGNAT, reloj, puertos 80/443, resolución DDNS, vencimiento de certificados, sitios HTTPS sin certificado, conflictos de proxies frp) |
 | Migración | Importación de configuración de nginx (admite la salida de `nginx -T`): proxy inverso y upstream, directorios estáticos, redirecciones, backends por ruta, control de acceso, con `auth_request` convertido en autenticación delegada |
 
+</details>
+
+## Por qué Gately
+
+Gately es totalmente abierto para que usuarios y comunidad puedan revisar directamente el código fuente y la configuración. Un software que se ejecuta en el borde de la red y maneja claves DNS y claves privadas de certificados debe permitir que los usuarios vean lo que hace. Los compromisos de Gately:
+
+- El código fuente es abierto bajo Apache-2.0 y acepta la revisión de la comunidad
+- Por defecto no se conecta a ningún servidor del proyecto ni reporta información del dispositivo; el inicio de sesión de terceros usa tu propia aplicación OAuth, sin intermediarios
+- Todas las direcciones externas (consulta de IP pública, servidores STUN, etc.) son visibles, editables y se pueden desactivar
+- La configuración es JSON en texto plano, que puedes versionar en git para auditoría y reversión
+
 ## Rendimiento
 
 El reenvío de puertos con enrutamiento SNI junto con el servicio web puede sustituir la pareja habitual haproxy (enrutamiento TCP por SNI) + nginx (TLS y proxy inverso). Las cifras siguientes comparan ambas soluciones en la misma máquina con la configuración de un servidor real: 90 dominios enrutados por SNI, protocolo PROXY v2 entre los dos saltos y un certificado ECDSA P-256 con TLS 1.3.
@@ -84,7 +267,8 @@ El reenvío de puertos con enrutamiento SNI junto con el servicio web puede sust
 | Paso directo SNI, conexiones nuevas por segundo, 64 a la vez | 6.334 /s | 6.266 /s (a la par) |
 | Memoria bajo carga | haproxy ≈ 21 MB + nginx ≈ 21 MB | ≈ 110 MB (un único proceso con todos los módulos) |
 
-Cómo se midió:
+<details>
+<summary><b>Cómo se midió</b></summary>
 
 - Equipo: Intel Core i5-13500T. Cada pila se limitó a 2 núcleos de CPU (haproxy y nginx en Docker con `--cpuset-cpus`, Gately fijado con `taskset`) para equipararse a un servidor en la nube pequeño. Los backends y el generador de carga se ejecutaron en otros núcleos.
 - haproxy usó `mode tcp` con reglas `req_ssl_sni` y `send-proxy-v2`. nginx usó `worker_processes 2` y los ajustes de proxy del sitio de producción, que envían `Connection: upgrade` y por tanto abren una conexión nueva al backend por cada petición; un nginx optimizado con keep-alive hacia el upstream reduciría la diferencia en respuestas pequeñas.
@@ -92,80 +276,7 @@ Cómo se midió:
 - Cada caso se ejecutó durante 10 segundos, y los casos repetidos coincidieron con una diferencia de hasta el 3 %. En un servidor en la nube real de 2 vCPU, el sitio estático sirvió 5,5k req/s frente a 3,4k req/s. Las conexiones TLS nuevas quedaron a la par (unas 480–550 por segundo en ambos) cuando el cliente usaba X25519; con el intercambio de claves híbrido poscuántico que ofrecen los clientes Go y los navegadores recientes, Gately completó en esa prueba un 13 % menos de handshakes.
 - Los resultados dependen del hardware, la configuración y el tráfico. Tómalos como una comprobación de que Gately sigue el ritmo de haproxy y nginx, y mide con tu propia carga de trabajo.
 
-## Inicio rápido
-
-### Docker
-
-La imagen es compatible con amd64, arm64 y arm/v7:
-
-```bash
-docker run -d --name gately --network host --cap-add NET_ADMIN \
-  -v ./gately-data:/etc/gately \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  ghcr.io/wangwanjie/gately:latest
-```
-
-Abre `http://<IP del dispositivo>:16680`, inicia sesión con el usuario predeterminado `admin` y la contraseña predeterminada `gately.cn`, y después cambia la contraseña y activa la verificación en dos pasos en «Ajustes». Encontrarás un ejemplo completo de Compose en [deploy/docker-compose.yml](deploy/docker-compose.yml).
-
-Si olvidas la contraseña o pierdes el autenticador, ejecuta `gately reset-password` o `gately reset-totp` en el servidor (con Docker, `docker exec -it gately gately reset-password`); el cambio se aplica en cuanto lo confirmas. Consulta [Restablecer la contraseña y la verificación en dos pasos](https://gately.cn/es/docs/guide/install#reset).
-
-El reenvío de puertos, STUN y el servicio web necesitan escuchar puertos del host, por lo que se recomienda `--network host`. Si no necesitas la gestión de Docker, puedes quitar el montaje de `docker.sock`. `--cap-add NET_ADMIN` permite que Prevención de intrusiones escriba los bloqueos en el cortafuegos nftables del host; sin él, los bloqueos siguen aplicándose a los servicios de Gately.
-
-### Binario
-
-Descarga el paquete de tu plataforma desde [Releases](https://github.com/wangwanjie/gately/releases) (Linux amd64/arm64/arm/mips/mipsle/riscv64, macOS, Windows, FreeBSD), descomprímelo y ejecuta:
-
-```bash
-./gately -c /etc/gately
-```
-
-Parámetros: `-c` directorio de configuración (también se puede usar la variable de entorno `GATELY_CONFIG_DIR`), `-listen` sobrescribe la dirección de escucha de la interfaz de administración, `-apply` aplica en cada arranque los archivos `<nombre>.json` de un directorio al directorio de configuración (`GATELY_APPLY_DIR`, útil para GitOps y Kubernetes; los archivos de cuentas y tokens no se pueden sobrescribir), `-version` muestra la versión. En instalaciones desatendidas, define `GATELY_INITIAL_PASSWORD` para elegir la contraseña inicial del administrador en lugar de la contraseña predeterminada `gately.cn`.
-
-Plantillas de servicio: [systemd](deploy/systemd/gately.service) y [OpenWrt procd](deploy/openwrt/gately.init). Para verificar los archivos e imágenes descargados (firmas cosign, procedencia de compilación, SBOM), consulta [Verificar los artefactos publicados](docs/es/VERIFY.md).
-
-### Aplicación nativa para fnOS
-
-Cada versión (Release) incluye paquetes `.fpk` sin conexión para fnOS: `gately_<version>_fnos_x86.fpk` (Intel/AMD) y `gately_<version>_fnos_arm.fpk` (ARM). No están en el Centro de aplicaciones oficial, así que debes instalarlos manualmente: abre **Centro de aplicaciones → Instalación manual** (el botón de la esquina inferior izquierda), elige el archivo y completa el asistente.
-
-- **Funciona con la pasarela unificada de fnOS**: haz clic en el icono de Gately en el escritorio de fnOS y la interfaz de administración se abre a través de la pasarela unificada de fnOS en `/app/gately/`, compartiendo el punto de entrada que ya usas para fnOS. Funcionan tanto la dirección de la red interna como tu dominio remoto de fnOS, sin necesidad de abrir ni redirigir el puerto 16680. El acceso a través de la pasarela lo controla fnOS (solo los administradores de fnOS pueden abrirla), por lo que la entrada de seguridad y el acceso solo desde la red interna se aplican únicamente al acceso directo por el puerto 16680.
-- **Inicia la sesión de los administradores de fnOS con su sesión de fnOS**: activa **Ajustes → Control de acceso → Iniciar sesión con fnOS** y los administradores de fnOS que tengan la sesión iniciada en fnOS entrarán en Gately desde el icono del escritorio sin contraseña ni código de verificación en dos pasos; los usuarios normales de fnOS siguen iniciando sesión. Tras cerrar la sesión, la página de inicio de sesión muestra el botón «Iniciar sesión como usuario de fnOS &lt;nombre&gt;» y espera a que lo pulses para volver a entrar. Este ajuste está desactivado por defecto y solo aparece en el paquete de fnOS.
-- En la red interna, la interfaz de administración también está disponible en `http://<dirección del NAS>:16680`. El usuario predeterminado es `admin` y la contraseña predeterminada, `gately.cn`.
-- La aplicación se ejecuta como `root`, de modo que puede escuchar en 80/443, gestionar Docker mediante `docker.sock` y abrir un terminal web real. Instálala solo en un NAS que controles.
-- La configuración se guarda en el directorio `var` de la aplicación y se conserva al desinstalar, salvo que elijas «Eliminar todo» en el asistente de desinstalación. Para actualizar, instala manualmente el `.fpk` más reciente.
-- El paquete también añade el comando `gately` (`/usr/local/bin/gately`) para `gately ctl` y `gately mcp`.
-- El puerto 16680 se comparte con la imagen de Docker. Detén el contenedor `gately` antes de iniciar la aplicación nativa.
-- Verifica la descarga como se describe en [Verificar los artefactos publicados](docs/es/VERIFY.md); los archivos `.fpk` figuran en `checksums.txt`.
-
-### OpenWrt
-
-Cada versión (Release) incluye paquetes para OpenWrt: `gately_<version>_openwrt_<arch>.ipk` para OpenWrt 24.10 y anteriores (incluido iStoreOS), que se instala con `opkg install`, y `.apk` para OpenWrt 25.12 y posteriores, que se instala con `apk add --allow-untrusted`. Hay paquetes para amd64 / arm64 / arm / mipsle / mips / riscv64; elige uno según `DISTRIB_ARCH` en `/etc/openwrt_release` (consulta la tabla de la [guía de instalación](https://gately.cn/es/docs/guide/install#openwrt)).
-
-- El servicio se activa en el arranque y se inicia al instalar; la interfaz de administración está en `http://<dirección del router>:16680`, con el usuario predeterminado `admin` y la contraseña predeterminada `gately.cn`.
-- La configuración se guarda en `/etc/gately` y se conserva al actualizar, al desinstalar y al actualizar el firmware (sysupgrade). Para actualizar, instala el paquete más reciente; la actualización en línea de la página Acerca de te remite al gestor de paquetes.
-- El binario ocupa unos 32 MB, así que los paquetes son adecuados para routers software x86, equipos ARM64 y otros dispositivos con almacenamiento amplio; el paquete arm requiere ARMv7 con coma flotante por hardware.
-- Una aplicación LuCI independiente de la arquitectura, `luci-app-gately_<versión>_openwrt_all.ipk` / `.apk`, añade **Servicios → Gately** a LuCI: estado del servicio, iniciar / detener, inicio automático, puerto de administración y un enlace directo a la interfaz.
-
-### Monitorización
-
-Crea un token de API con solo el permiso `metrics:read` y apunta Prometheus a `/api/metrics`. Las métricas, los ejemplos de alertas y el panel de Grafana se describen en [Monitorización](docs/es/MONITORING.md).
-
-### Uso de la API
-
-Crea un token en la página «Tokens de API» del panel de administración (puedes crear varios, conceder solo lectura o lectura y escritura por módulo, definir una fecha de caducidad; el texto del token se muestra una sola vez tras crearlo) y tus scripts podrán llamar en lote a la API de administración:
-
-```bash
-curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns/tasks
-```
-
-Las API de cuenta, verificación en dos pasos y gestión de tokens, así como las de copia de seguridad, restauración, reinicio y ajustes del sistema, solo admiten sesiones iniciadas. Todas las API, los permisos necesarios y las estructuras de datos están en la página «Documentación de la API» del panel de administración; también puedes exportarlos con `make api-docs` a [docs/api](docs/api/es) (`openapi.json` y `API.md`), que el sitio web https://gately.cn referencia directamente al publicarse.
-
-Al actualizar desde una versión anterior, el token de API global original se convierte automáticamente en un «token heredado» (el valor no cambia y conserva todos los permisos de módulo). Se recomienda restringir sus permisos o sustituirlo por un token nuevo en la página de tokens de API.
-
-### Tailscale, frp, cloudflared
-
-Estos tres módulos gestionan programas externos oficiales (reinicio automático, registros agregados en la interfaz). Gately no los incluye. La tarjeta «Instalación en línea» de cada página de módulo descarga del proyecto original la última versión estable o una versión concreta, verifica su SHA-256, la instala en `bin/` dentro del directorio de configuración y reinicia los procesos que la usan; cada programa puede tener su propio proxy de descarga y, si se deja vacío, se usa el proxy de actualización de los ajustes. Se conservan las 3 últimas versiones sustituidas, para revertir con un clic si la nueva falla, y el programa se puede desinstalar cuando ya no se necesita. El botón «Restaurar valores predeterminados» de la cabecera es independiente de la desinstalación: detiene los procesos, borra los ajustes del módulo y elimina los archivos que Gately generó para él (archivos de configuración de frp, datos de las instancias de File Browser, estado de sesión de Tailscale); la configuración anterior se puede recuperar en el historial de configuración. Tailscale solo publica paquetes listos para ejecutar en Linux; en otros sistemas usa el instalador oficial e indica la ruta. Los programas se buscan en este orden: la ruta indicada en la configuración del módulo, `bin/` en el directorio de configuración y `PATH`. También puedes colocar el binario tú mismo en el directorio de configuración, en Docker por ejemplo `./gately-data/bin/frpc`; Tailscale requiere proporcionar tanto `tailscale` como `tailscaled`. Los tokens y claves de los archivos de configuración se guardan con permisos 0600, y el token de cloudflared se pasa mediante una variable de entorno, por lo que no aparece en la lista de procesos.
-
-El módulo File Browser aloja [FileBrowser Quantum](https://github.com/gtsteffaniak/filebrowser) (el filebrowser original está archivado y ya no recibe correcciones de seguridad) con el mismo orden de búsqueda y la misma instalación, actualización y reversión en línea; se instala en `bin/filebrowser`. La contraseña del administrador se pasa mediante una variable de entorno y nunca se escribe en el archivo de configuración.
+</details>
 
 ## Desarrollo
 

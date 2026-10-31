@@ -1,43 +1,215 @@
-# Gately
+<p align="center">
+  <a href="https://gately.cn/ko/"><img src="docs/images/banner.svg" alt="Gately — 올인원 네트워크 게이트웨이: 오픈소스, 설치 즉시 사용" width="100%"></a>
+</p>
 
-[English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | **한국어** | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [Русский](README.ru.md) | [Português (Brasil)](README.pt-BR.md)
+<p align="center">
+  <a href="https://github.com/wangwanjie/gately/releases/latest"><img src="https://img.shields.io/github/v/release/wangwanjie/gately?style=flat-square&color=0e7c66&label=release" alt="Release"></a>
+  <a href="https://github.com/wangwanjie/gately/pkgs/container/gately"><img src="https://img.shields.io/badge/docker-ghcr.io%2Fwangwanjie%2Fgately-0e7c66?style=flat-square&logo=docker&logoColor=white" alt="Docker"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/wangwanjie/gately?style=flat-square&color=0e7c66" alt="License"></a>
+  <a href="https://github.com/wangwanjie/gately/stargazers"><img src="https://img.shields.io/github/stars/wangwanjie/gately?style=flat-square&color=0e7c66" alt="Stars"></a>
+  <a href="https://gately.cn/ko/"><img src="https://img.shields.io/badge/%EA%B3%B5%EC%8B%9D%20%EC%82%AC%EC%9D%B4%ED%8A%B8-gately.cn-0e7c66?style=flat-square&logo=googlechrome&logoColor=white" alt="gately.cn"></a>
+  <a href="https://t.me/gately_chat"><img src="https://img.shields.io/badge/Telegram-gately__chat-26A5E4?style=flat-square&logo=telegram&logoColor=white" alt="Telegram"></a>
+</p>
 
-가정 네트워크, NAS, 클라우드 호스트, 각종 서버에서 사용할 수 있는 오픈소스 · 감사 가능한 네트워크 게이트웨이 도구 모음입니다. DDNS, STUN 터널링, 포트 포워딩, 리버스 프록시, 인증서, WAF 등 자주 쓰는 기능을 약 32 MB의 단일 파일에 담았습니다.
+<p align="center">
+  <a href="https://gately.cn/ko/"><b>공식 사이트</b></a> &nbsp;·&nbsp; <a href="https://gately.cn/ko/docs/guide/quick-start"><b>빠른 시작</b></a> &nbsp;·&nbsp; <a href="https://gately.cn/ko/docs/guide/install"><b>설치 가이드</b></a> &nbsp;·&nbsp; <a href="https://gately.cn/ko/docs/guide/introduction"><b>문서</b></a> &nbsp;·&nbsp; <a href="https://github.com/wangwanjie/gately/releases/latest"><b>다운로드</b></a> &nbsp;·&nbsp; <a href="https://gately.cn/ko/news/"><b>변경 내역</b></a>
+</p>
 
-> **fnOS 사용자:** Gately는 fnOS 네이티브 앱으로도 제공됩니다. **fnOS 통합 게이트웨이**에 연결되므로 fnOS 바탕 화면 아이콘으로 열 수 있고, 원격 도메인을 포함해 fnOS에 접속하는 주소 그대로 사용할 수 있으며 포트를 따로 열 필요가 없습니다. 기능을 켜면 **fnOS 관리자는 fnOS 로그인 상태로 바로 로그인**할 수 있어 Gately 비밀번호나 2단계 인증 코드가 필요 없습니다. 자세한 내용은 [fnOS 네이티브 앱](#fnos-네이티브-앱)을 참고하세요.
+<p align="center">
+  <a href="https://gately.cn/ko/sponsor"><img src="https://img.shields.io/badge/%EC%BB%A4%ED%94%BC%20%ED%95%9C%20%EC%9E%94%20%ED%9B%84%EC%9B%90%ED%95%98%EA%B8%B0-Gately-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black" alt="커피 한 잔 후원하기" height="34"></a>
+</p>
 
-![Gately 개요](docs/images/overview.webp)
+<p align="center">
+  <a href="README.md">English</a> | <a href="README.zh-CN.md">简体中文</a> | <a href="README.zh-TW.md">繁體中文</a> | <a href="README.ja.md">日本語</a> | <b>한국어</b> | <a href="README.es.md">Español</a> | <a href="README.fr.md">Français</a> | <a href="README.de.md">Deutsch</a> | <a href="README.ru.md">Русский</a> | <a href="README.pt-BR.md">Português (Brasil)</a>
+</p>
 
-![웹 서비스: 도메인별 리버스 프록시, 정적 파일, 리디렉션. 사이트마다 WAF, IP 규칙, 로그인 인증 설정 가능](docs/images/web.webp)
+도메인 DNS와 NAT 통과부터 리버스 프록시, HTTPS 인증서, WAF, 침입 방지, 통합 로그인, 파일 공유까지. 홈 네트워크와 서버 입구에 필요한 기능을 Gately가 관리 화면 하나에 모았습니다. NAS, 소프트 라우터, 클라우드 서버에 설치하면 설정과 운영을 브라우저에서 모두 처리할 수 있습니다. 소스 코드는 Apache-2.0으로 공개되어 있으며, 설정과 데이터는 내 기기에만 남고 수집하거나 전송하지 않습니다.
 
-![사이트 통계: 요청 수, 오류, 백엔드 상태, 접속 IP와 국가 순위](docs/images/site-stats.webp)
+> **fnOS 사용자:** Gately는 fnOS 네이티브 앱으로도 제공됩니다. **fnOS 통합 게이트웨이**에 연결되므로 fnOS 바탕 화면 아이콘으로 열 수 있고, 원격 도메인을 포함해 fnOS에 접속하는 주소 그대로 사용할 수 있으며 포트를 따로 열 필요가 없습니다. 기능을 켜면 **fnOS 관리자는 fnOS 로그인 상태로 바로 로그인**할 수 있어 Gately 비밀번호나 2단계 인증 코드가 필요 없습니다. 자세한 내용은 [fnOS 네이티브 앱](https://gately.cn/ko/docs/guide/install#fnos)을 참고하세요.
 
-![SNI 라우팅을 적용한 포트 포워딩: 여러 서비스가 443 포트를 함께 사용](docs/images/portforward-sni.webp)
+## 빠른 시작
 
-![동적 DNS](docs/images/ddns.webp)
+세 단계면 됩니다. 컨테이너를 시작하고 `http://<기기 IP>:16680`을 연 다음 `admin` / `gately.cn`으로 로그인하세요. 다른 플랫폼용 설치 방법은 아래에 있고, 모든 방법은 [설치 가이드](https://gately.cn/ko/docs/guide/install)에서 확인할 수 있습니다.
 
-![침입 방지: fail2ban 방식의 자동 차단을 nftables 방화벽에 동기화](docs/images/guard.webp)
+### Docker
 
-![Docker](docs/images/docker.webp)
+이미지는 amd64, arm64, arm/v7을 지원합니다.
 
-![frp: 여러 frpc·frps 인스턴스, 프록시는 클라이언트별로 관리](docs/images/frp.webp)
+```bash
+docker run -d --name gately --network host --cap-add NET_ADMIN \
+  -v ./gately-data:/etc/gately \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  ghcr.io/wangwanjie/gately:latest
+```
 
-![웹 터미널: 브라우저에서 SSH, Telnet, 로컬 셸 사용](docs/images/terminal.webp)
+`http://<기기 IP>:16680`을 열고 기본 계정 `admin`과 기본 비밀번호 `gately.cn`으로 로그인한 뒤, "설정"에서 비밀번호를 변경하고 2단계 인증을 켜세요. 전체 Compose 예시는 [deploy/docker-compose.yml](deploy/docker-compose.yml)을 참고하세요.
 
-![설정 기록: 차이 비교와 원클릭 롤백](docs/images/config-history.webp)
+비밀번호를 잊었거나 2단계 인증기를 잃어버렸다면 서버에서 `gately reset-password` 또는 `gately reset-totp`를 실행하세요(Docker는 `docker exec -it gately gately reset-password`). 확인하면 바로 적용됩니다. 자세한 내용은 [비밀번호와 2단계 인증 재설정](https://gately.cn/ko/docs/guide/install#reset)을 참고하세요.
 
-![내장 API 문서](docs/images/api-docs.webp)
+포트 포워딩, STUN, 웹 서비스는 호스트 포트를 수신해야 하므로 `--network host`를 권장합니다. Docker 관리가 필요 없다면 `docker.sock` 마운트를 제거해도 됩니다. `--cap-add NET_ADMIN`은 침입 방지가 차단을 호스트의 nftables 방화벽에 기록하는 데 쓰이며, 빼더라도 차단은 Gately 자체 서비스에 적용됩니다.
 
-## Gately를 만든 이유
+다른 방법으로 설치하고 싶다면 아래에서 고르세요.
 
-Gately는 완전한 오픈소스로, 사용자와 커뮤니티가 소스 코드와 설정을 직접 검토할 수 있습니다. 네트워크 경계에서 동작하며 DNS 키와 인증서 개인 키를 다루는 소프트웨어라면, 오픈소스를 통해 사용자가 그 동작을 직접 확인할 수 있어야 합니다. Gately의 약속은 다음과 같습니다.
+<details>
+<summary><b>바이너리</b></summary>
 
-- 소스 코드는 Apache-2.0으로 공개되며 커뮤니티의 검토를 받습니다
-- 기본적으로 프로젝트 측 서버에 연결하지 않고 기기 정보도 전송하지 않습니다. 서드파티 로그인은 직접 만든 OAuth 앱을 사용하며 중계 서버를 거치지 않습니다
-- 모든 외부 주소(공인 IP 조회, STUN 서버 등)를 확인하고 변경하고 끌 수 있습니다
-- 설정은 평문 JSON이므로 git에 넣어 감사와 롤백에 활용할 수 있습니다
+[Releases](https://github.com/wangwanjie/gately/releases)에서 플랫폼에 맞는 압축 파일(Linux amd64/arm64/arm/mips/mipsle/riscv64, macOS, Windows, FreeBSD)을 내려받아 압축을 풀고 실행합니다.
+
+```bash
+./gately -c /etc/gately
+```
+
+인수: `-c` 설정 디렉터리(환경 변수 `GATELY_CONFIG_DIR`로도 지정 가능), `-listen` 관리 UI 수신 주소 덮어쓰기, `-apply` 시작할 때마다 디렉터리의 `<name>.json` 파일을 설정 디렉터리에 적용(`GATELY_APPLY_DIR`, GitOps와 Kubernetes에 유용. 계정 및 토큰 파일은 덮어쓸 수 없음), `-version` 버전 출력. 무인 설치 시 `GATELY_INITIAL_PASSWORD`를 설정하면 기본 비밀번호 `gately.cn` 대신 사용할 관리자 초기 비밀번호를 지정할 수 있습니다.
+
+서비스 템플릿: [systemd](deploy/systemd/gately.service), [OpenWrt procd](deploy/openwrt/gately.init). 다운로드한 압축 파일과 이미지 검증(cosign 서명, 빌드 출처 증명, SBOM)은 [릴리스 산출물 검증](docs/ko/VERIFY.md)을 참고하세요.
+
+</details>
+
+<details>
+<summary><b>fnOS 네이티브 앱</b></summary>
+
+각 Release에는 fnOS용 오프라인 `.fpk` 패키지 `gately_<version>_fnos_x86.fpk`(Intel/AMD)와 `gately_<version>_fnos_arm.fpk`(ARM)가 포함됩니다. 공식 앱 센터에는 등록되어 있지 않으므로 직접 설치해야 합니다. **앱 센터 → 수동 설치**(왼쪽 아래 버튼)를 열고 파일을 선택한 뒤 마법사를 완료하세요.
+
+- **fnOS 통합 게이트웨이 연동**: fnOS 바탕 화면의 Gately 아이콘을 클릭하면 fnOS 통합 게이트웨이를 거쳐 `/app/gately/` 아래에서 관리 UI가 열리며, fnOS에 이미 사용하는 진입점을 함께 씁니다. 내부망 주소와 fnOS 원격 도메인 모두 사용할 수 있고 16680 포트를 열거나 포워딩할 필요가 없습니다. 게이트웨이를 통한 접근은 fnOS가 제어하므로(fnOS 관리자만 열 수 있음) 보안 진입 경로와 내부망 전용 접근 설정은 16680 포트로 직접 접속할 때만 적용됩니다.
+- **fnOS 로그인 상태로 관리자 자동 로그인**: **설정 → 접근 제어 → fnOS 로그인 상태로 자동 로그인**을 켜면 fnOS에 로그인한 fnOS 관리자는 바탕 화면 아이콘에서 비밀번호나 2단계 인증 코드 없이 Gately에 들어갑니다. 일반 fnOS 사용자는 여전히 로그인해야 합니다. 로그아웃한 뒤에는 조용히 다시 로그인시키지 않고 로그인 페이지에 "fnOS 계정 &lt;이름&gt;(으)로 로그인" 버튼을 표시합니다. 이 설정은 기본적으로 꺼져 있으며 fnOS 패키지에서만 표시됩니다.
+- 내부망에서는 `http://<NAS 주소>:16680`으로도 관리 UI에 접속할 수 있습니다. 기본 계정은 `admin`, 기본 비밀번호는 `gately.cn`입니다.
+- 앱은 `root`로 실행되므로 80/443을 수신하고 `docker.sock`으로 Docker를 관리하며 실제 웹 터미널을 열 수 있습니다. 직접 관리하는 NAS에만 설치하세요.
+- 설정은 앱의 `var` 디렉터리에 저장되며, 제거 마법사에서 "모두 삭제"를 선택하지 않는 한 제거해도 유지됩니다. 업그레이드는 새 버전의 `.fpk`를 다시 수동 설치하면 됩니다.
+- 패키지는 `gately ctl`과 `gately mcp`용 `gately` 명령(`/usr/local/bin/gately`)도 추가합니다.
+- 16680 포트는 Docker 이미지와 같습니다. 네이티브 앱을 시작하기 전에 `gately` 컨테이너를 중지하세요.
+- 내려받은 파일은 [릴리스 산출물 검증](docs/ko/VERIFY.md)에 따라 검증하세요. `.fpk` 파일도 `checksums.txt`에 포함되어 있습니다.
+
+</details>
+
+<details>
+<summary><b>OpenWrt</b></summary>
+
+각 Release에는 OpenWrt 패키지가 포함됩니다. `gately_<version>_openwrt_<arch>.ipk`는 OpenWrt 24.10 이하(iStoreOS 포함)용으로 `opkg install`로 설치하고, `.apk`는 OpenWrt 25.12 이상용으로 `apk add --allow-untrusted`로 설치합니다. 아키텍처는 amd64 / arm64 / arm / mipsle / mips / riscv64를 제공하며 `/etc/openwrt_release`의 `DISTRIB_ARCH`에 따라 고릅니다([설치 문서](https://gately.cn/ko/docs/guide/install#openwrt)의 표 참고).
+
+- 설치하면 부팅 시 자동 시작이 활성화되고 서비스가 시작됩니다. 관리 UI는 `http://<라우터 주소>:16680`이며 기본 계정은 `admin`, 기본 비밀번호는 `gately.cn`입니다.
+- 설정은 `/etc/gately`에 저장되며 업그레이드, 제거, 펌웨어 업그레이드(sysupgrade) 시에도 유지됩니다. 업그레이드하려면 새 버전 패키지를 설치하면 됩니다. 정보 페이지의 온라인 업그레이드는 패키지 관리자를 사용하도록 안내합니다.
+- 바이너리는 약 32 MB이므로 x86 소프트 라우터, ARM64 박스 등 저장 공간이 넉넉한 장치에 적합합니다. arm 패키지는 하드웨어 부동소수점을 지원하는 ARMv7이 필요합니다.
+- 아키텍처와 무관한 LuCI 앱 `luci-app-gately_<버전>_openwrt_all.ipk` / `.apk` 도 제공합니다. LuCI 「서비스 → Gately」에서 실행 상태 확인, 시작·중지, 부팅 시 자동 시작과 관리 화면 포트 설정, 관리 화면 바로 열기가 가능합니다.
+
+</details>
+
+<details>
+<summary><b>모니터링</b></summary>
+
+`metrics:read` 권한만 있는 API 토큰을 만들고 Prometheus가 `/api/metrics`를 수집하도록 설정하세요. 메트릭, 알림 예시, Grafana 대시보드는 [모니터링](docs/ko/MONITORING.md)에서 설명합니다.
+
+</details>
+
+<details>
+<summary><b>API 호출</b></summary>
+
+관리 콘솔의 "API 토큰" 페이지에서 토큰을 만들면(여러 개 생성 가능, 모듈별로 읽기 전용 또는 읽기/쓰기 권한 부여, 만료 시간 설정 가능, 평문은 생성 직후 한 번만 표시됨) 스크립트로 관리 API를 일괄 호출할 수 있습니다.
+
+```bash
+curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns/tasks
+```
+
+계정, 2단계 인증, 토큰 관리, 그리고 백업, 복원, 재시작, 시스템 설정 API는 로그인 세션으로만 사용할 수 있습니다. 전체 API, 필요한 권한, 데이터 구조는 관리 콘솔의 "API 문서" 페이지에서 확인할 수 있으며, `make api-docs`로 [docs/api](docs/api/ko)(`openapi.json`과 `API.md`)에 내보낼 수도 있습니다. 공식 사이트 https://gately.cn 에서도 이 파일을 그대로 참조합니다.
+
+이전 버전에서 업그레이드하면 기존 전역 API 토큰은 자동으로 "레거시 토큰"이 됩니다(값은 그대로이며 모든 모듈 권한을 가짐). API 토큰 페이지에서 권한을 줄이거나 새 토큰으로 교체하는 것을 권장합니다.
+
+</details>
+
+<details>
+<summary><b>Tailscale, frp, cloudflared</b></summary>
+
+이 세 모듈은 공식 외부 프로그램을 관리합니다(자동 재시작, 로그를 UI에 집계). Gately 본체에는 포함되어 있지 않습니다. 각 모듈 페이지의 「온라인 설치」 카드는 업스트림에서 최신 안정 버전이나 지정한 버전을 내려받아 SHA-256을 검증한 뒤 설정 디렉터리의 `bin/`에 설치하고, 해당 프로그램을 사용하는 프로세스를 다시 시작합니다. 프로그램마다 다운로드 프록시를 따로 지정할 수 있으며, 비워 두면 설정의 업데이트 프록시를 사용합니다. 교체된 버전은 최근 3개까지 보관되어 새 버전에 문제가 있으면 클릭 한 번으로 롤백할 수 있고, 더 이상 필요 없으면 프로그램을 제거할 수 있습니다. 페이지 상단의 「기본 설정 복원」은 제거와 별개로 동작하며, 프로세스를 중지하고 모듈 설정을 초기화한 뒤 Gately가 생성한 파일(frp 설정 파일, File Browser 인스턴스 데이터, Tailscale 로그인 상태)을 삭제합니다. 이전 설정은 설정 기록에서 복원할 수 있습니다. Tailscale은 Linux용으로만 바로 실행 가능한 공식 패키지를 제공하므로, 다른 시스템에서는 공식 설치 프로그램을 사용하고 경로를 입력하세요. 프로그램은 다음 순서로 찾습니다. 모듈 설정에 입력한 경로, 설정 디렉터리의 `bin/`, `PATH`. 바이너리를 설정 디렉터리에 직접 넣을 수도 있으며, Docker 배포에서는 예를 들어 `./gately-data/bin/frpc`입니다. Tailscale은 `tailscale`과 `tailscaled`를 모두 제공해야 합니다. 설정 파일의 토큰과 키는 0600 권한으로 저장되며, cloudflared 토큰은 환경 변수로 전달되어 프로세스 목록에 나타나지 않습니다.
+
+File Browser 모듈은 [FileBrowser Quantum](https://github.com/gtsteffaniak/filebrowser)을 호스팅합니다(원본 filebrowser는 보관 처리되어 보안 수정이 없습니다). 찾는 순서와 온라인 설치, 업데이트, 롤백은 위와 같으며 설치 위치는 `bin/filebrowser`입니다. 관리자 비밀번호는 환경 변수로 전달되어 설정 파일에 기록되지 않습니다.
+
+</details>
 
 ## 기능
+
+먼저 관리 UI 스크린숏 몇 장을 보세요. 전체 기능 목록은 이 섹션 끝에 있습니다.
+
+### 한눈에 보는 전체 상황
+
+개요 화면에서 CPU, 메모리, 디스크, 트래픽과 네트워크 인터페이스별 공인 IPv4 / IPv6, 모든 모듈의 상태를 한 번에 보여 주므로 손봐야 할 곳을 바로 알 수 있습니다.
+
+<img src="docs/images/overview.webp" alt="한눈에 보는 전체 상황" width="100%">
+
+### nginx를 대신하는 웹 서비스
+
+도메인별 리버스 프록시, 정적 파일, 리디렉션을 HTTPS와 HTTP/3로 제공합니다. 사이트마다 WAF, IP 규칙, 로그인 인증을 따로 켤 수 있고, 설정을 바꿔도 기존 연결이 끊기지 않습니다.
+
+<img src="docs/images/web.webp" alt="nginx를 대신하는 웹 서비스" width="100%">
+
+<p><b>사이트 통계</b> — 요청 수, 오류, 백엔드 상태, 접속 IP와 국가 순위를 분 단위로 집계합니다.</p>
+
+<img src="docs/images/site-stats.webp" alt="사이트 통계" width="100%">
+
+### 443 포트 하나로 모든 서비스를
+
+포트 포워딩의 SNI 분기로 여러 서비스를 도메인별로 같은 포트에 둡니다. TLS는 그대로 통과시키고 PROXY 프로토콜로 실제 클라이언트 주소를 전달합니다.
+
+<img src="docs/images/portforward-sni.webp" alt="443 포트 하나로 모든 서비스를" width="100%">
+
+### 주요 제공업체를 모두 지원하는 동적 도메인
+
+Cloudflare, Alibaba Cloud, DNSPod, Route 53 등을 지원합니다. IPv4와 IPv6 모두 다루고, IP는 URL, 네트워크 인터페이스, 명령으로 가져오며, 주소가 바뀌면 바로 알림을 보냅니다.
+
+<img src="docs/images/ddns.webp" alt="주요 제공업체를 모두 지원하는 동적 도메인" width="100%">
+
+### 침입 방지
+
+fail2ban 방식 규칙이 로그 파일, journald, 컨테이너 로그를 읽고, 미끼 포트와 스캔 탐지가 탐색 행위를 잡아냅니다. 차단 목록은 nftables에 동기화되어 커널에서 바로 패킷을 버립니다.
+
+<img src="docs/images/guard.webp" alt="침입 방지" width="100%">
+
+### frp, Tailscale, Cloudflare 터널
+
+여러 frpc·frps 인스턴스를 나란히 실행하고 Tailscale, cloudflared 터널과 함께 관리합니다. 이 프로그램들의 설치, 업데이트, 롤백은 Gately가 맡습니다.
+
+<img src="docs/images/frp.webp" alt="frp, Tailscale, Cloudflare 터널" width="100%">
+
+### 그 밖에도
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+**Docker**<br>컨테이너, Compose, 로그, 터미널. 이미지는 클릭 한 번으로 업그레이드하고, 실패하면 자동으로 롤백합니다.
+
+<img src="docs/images/docker.webp" alt="Docker" width="100%">
+
+</td>
+<td width="50%" valign="top">
+
+**웹 터미널**<br>브라우저에서 SSH, Telnet, 로컬 셸을 쓰고 SFTP와 화면 분할도 지원합니다.
+
+<img src="docs/images/terminal.webp" alt="웹 터미널" width="100%">
+
+</td>
+</tr>
+</table>
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+**설정 이력**<br>변경할 때마다 이전 버전을 남겨 두어 차이를 비교하고 클릭 한 번으로 되돌릴 수 있습니다.
+
+<img src="docs/images/config-history.webp" alt="설정 이력" width="100%">
+
+</td>
+<td width="50%" valign="top">
+
+**API, CLI, MCP**<br>모듈별 권한을 주는 API 토큰, 내장 OpenAPI 문서, `gately ctl`, AI 어시스턴트가 연결하는 MCP 서버.
+
+<img src="docs/images/api-docs.webp" alt="API, CLI, MCP" width="100%">
+
+</td>
+</tr>
+</table>
+
+<details>
+<summary><b>전체 기능 목록</b></summary>
 
 | 모듈 | 기능 |
 | --- | --- |
@@ -70,6 +242,17 @@ Gately는 완전한 오픈소스로, 사용자와 커뮤니티가 소스 코드�
 | 모니터링 및 자가 점검 | 전역 Prometheus 엔드포인트 `/api/metrics`(인증서, DDNS, STUN, 포트 포워딩, 웹 서비스)와 바로 쓸 수 있는 Grafana 대시보드. 원클릭 네트워크 자가 점검(공인 IP, CGNAT, 시스템 시간, 80/443 포트, DDNS 해석, 인증서 만료, 인증서가 없는 HTTPS 사이트, frp 프록시 충돌) |
 | 마이그레이션 | nginx 설정 가져오기(`nginx -T` 출력 지원): 리버스 프록시와 upstream, 정적 디렉터리, 리디렉션, 경로별 백엔드, 접근 제어, `auth_request`는 포워드 인증으로 변환 |
 
+</details>
+
+## Gately를 만든 이유
+
+Gately는 완전한 오픈소스로, 사용자와 커뮤니티가 소스 코드와 설정을 직접 검토할 수 있습니다. 네트워크 경계에서 동작하며 DNS 키와 인증서 개인 키를 다루는 소프트웨어라면, 오픈소스를 통해 사용자가 그 동작을 직접 확인할 수 있어야 합니다. Gately의 약속은 다음과 같습니다.
+
+- 소스 코드는 Apache-2.0으로 공개되며 커뮤니티의 검토를 받습니다
+- 기본적으로 프로젝트 측 서버에 연결하지 않고 기기 정보도 전송하지 않습니다. 서드파티 로그인은 직접 만든 OAuth 앱을 사용하며 중계 서버를 거치지 않습니다
+- 모든 외부 주소(공인 IP 조회, STUN 서버 등)를 확인하고 변경하고 끌 수 있습니다
+- 설정은 평문 JSON이므로 git에 넣어 감사와 롤백에 활용할 수 있습니다
+
 ## 성능
 
 포트 포워딩의 SNI 라우팅과 웹 서비스를 함께 쓰면 흔히 쓰는 haproxy(SNI 기반 TCP 라우팅) + nginx(TLS와 리버스 프록시) 조합을 대체할 수 있습니다. 아래 표는 실제 서버의 설정에 맞춰 같은 머신에서 둘을 비교한 결과입니다. 도메인 90개를 SNI로 라우팅하고, 두 홉 사이에는 PROXY 프로토콜 v2를 사용했으며, 인증서는 ECDSA P-256, TLS는 1.3입니다.
@@ -84,7 +267,8 @@ Gately는 완전한 오픈소스로, 사용자와 커뮤니티가 소스 코드�
 | SNI 패스스루, 초당 신규 연결 수, 동시 64개 | 6,334 /s | 6,266 /s (비슷함) |
 | 부하 시 메모리 | haproxy ≈ 21 MB + nginx ≈ 21 MB | ≈ 110 MB (모든 모듈을 포함한 단일 프로세스) |
 
-측정 방법:
+<details>
+<summary><b>측정 방법</b></summary>
 
 - 호스트: Intel Core i5-13500T. 소형 클라우드 서버에 맞추기 위해 각 구성을 CPU 코어 2개로 제한했습니다(haproxy와 nginx는 Docker의 `--cpuset-cpus`, Gately는 `taskset`으로 고정). 백엔드와 부하 생성기는 다른 코어에서 실행했습니다.
 - haproxy는 `mode tcp`, `req_ssl_sni` 규칙, `send-proxy-v2`를 사용했습니다. nginx는 `worker_processes 2`와 운영 사이트의 프록시 설정을 사용했으며, 이 설정은 `Connection: upgrade`를 보내므로 요청마다 백엔드 연결을 새로 엽니다. 업스트림 keep-alive를 켠 튜닝된 nginx라면 작은 응답에서의 차이가 줄어듭니다.
@@ -92,80 +276,7 @@ Gately는 완전한 오픈소스로, 사용자와 커뮤니티가 소스 코드�
 - 각 케이스는 10초간 실행했고, 반복한 케이스의 결과는 3% 이내로 일치했습니다. 실제 2 vCPU 클라우드 호스트에서 정적 사이트는 5.5k req/s 대 3.4k req/s였습니다. 클라이언트가 X25519를 사용하면 새 TLS 연결은 비슷했고(양쪽 모두 초당 약 480~550개), Go 클라이언트와 최신 브라우저가 제공하는 포스트 양자 하이브리드 키 교환을 사용하면 이번 측정에서 Gately가 완료한 핸드셰이크가 약 13% 적었습니다.
 - 결과는 하드웨어, 설정, 트래픽에 따라 달라집니다. Gately가 haproxy와 nginx를 따라가는지 확인하는 참고 자료로 보고, 실제 워크로드로 직접 측정하세요.
 
-## 빠른 시작
-
-### Docker
-
-이미지는 amd64, arm64, arm/v7을 지원합니다.
-
-```bash
-docker run -d --name gately --network host --cap-add NET_ADMIN \
-  -v ./gately-data:/etc/gately \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  ghcr.io/wangwanjie/gately:latest
-```
-
-`http://<기기 IP>:16680`을 열고 기본 계정 `admin`과 기본 비밀번호 `gately.cn`으로 로그인한 뒤, "설정"에서 비밀번호를 변경하고 2단계 인증을 켜세요. 전체 Compose 예시는 [deploy/docker-compose.yml](deploy/docker-compose.yml)을 참고하세요.
-
-비밀번호를 잊었거나 2단계 인증기를 잃어버렸다면 서버에서 `gately reset-password` 또는 `gately reset-totp`를 실행하세요(Docker는 `docker exec -it gately gately reset-password`). 확인하면 바로 적용됩니다. 자세한 내용은 [비밀번호와 2단계 인증 재설정](https://gately.cn/ko/docs/guide/install#reset)을 참고하세요.
-
-포트 포워딩, STUN, 웹 서비스는 호스트 포트를 수신해야 하므로 `--network host`를 권장합니다. Docker 관리가 필요 없다면 `docker.sock` 마운트를 제거해도 됩니다. `--cap-add NET_ADMIN`은 침입 방지가 차단을 호스트의 nftables 방화벽에 기록하는 데 쓰이며, 빼더라도 차단은 Gately 자체 서비스에 적용됩니다.
-
-### 바이너리
-
-[Releases](https://github.com/wangwanjie/gately/releases)에서 플랫폼에 맞는 압축 파일(Linux amd64/arm64/arm/mips/mipsle/riscv64, macOS, Windows, FreeBSD)을 내려받아 압축을 풀고 실행합니다.
-
-```bash
-./gately -c /etc/gately
-```
-
-인수: `-c` 설정 디렉터리(환경 변수 `GATELY_CONFIG_DIR`로도 지정 가능), `-listen` 관리 UI 수신 주소 덮어쓰기, `-apply` 시작할 때마다 디렉터리의 `<name>.json` 파일을 설정 디렉터리에 적용(`GATELY_APPLY_DIR`, GitOps와 Kubernetes에 유용. 계정 및 토큰 파일은 덮어쓸 수 없음), `-version` 버전 출력. 무인 설치 시 `GATELY_INITIAL_PASSWORD`를 설정하면 기본 비밀번호 `gately.cn` 대신 사용할 관리자 초기 비밀번호를 지정할 수 있습니다.
-
-서비스 템플릿: [systemd](deploy/systemd/gately.service), [OpenWrt procd](deploy/openwrt/gately.init). 다운로드한 압축 파일과 이미지 검증(cosign 서명, 빌드 출처 증명, SBOM)은 [릴리스 산출물 검증](docs/ko/VERIFY.md)을 참고하세요.
-
-### fnOS 네이티브 앱
-
-각 Release에는 fnOS용 오프라인 `.fpk` 패키지 `gately_<version>_fnos_x86.fpk`(Intel/AMD)와 `gately_<version>_fnos_arm.fpk`(ARM)가 포함됩니다. 공식 앱 센터에는 등록되어 있지 않으므로 직접 설치해야 합니다. **앱 센터 → 수동 설치**(왼쪽 아래 버튼)를 열고 파일을 선택한 뒤 마법사를 완료하세요.
-
-- **fnOS 통합 게이트웨이 연동**: fnOS 바탕 화면의 Gately 아이콘을 클릭하면 fnOS 통합 게이트웨이를 거쳐 `/app/gately/` 아래에서 관리 UI가 열리며, fnOS에 이미 사용하는 진입점을 함께 씁니다. 내부망 주소와 fnOS 원격 도메인 모두 사용할 수 있고 16680 포트를 열거나 포워딩할 필요가 없습니다. 게이트웨이를 통한 접근은 fnOS가 제어하므로(fnOS 관리자만 열 수 있음) 보안 진입 경로와 내부망 전용 접근 설정은 16680 포트로 직접 접속할 때만 적용됩니다.
-- **fnOS 로그인 상태로 관리자 자동 로그인**: **설정 → 접근 제어 → fnOS 로그인 상태로 자동 로그인**을 켜면 fnOS에 로그인한 fnOS 관리자는 바탕 화면 아이콘에서 비밀번호나 2단계 인증 코드 없이 Gately에 들어갑니다. 일반 fnOS 사용자는 여전히 로그인해야 합니다. 로그아웃한 뒤에는 조용히 다시 로그인시키지 않고 로그인 페이지에 "fnOS 계정 &lt;이름&gt;(으)로 로그인" 버튼을 표시합니다. 이 설정은 기본적으로 꺼져 있으며 fnOS 패키지에서만 표시됩니다.
-- 내부망에서는 `http://<NAS 주소>:16680`으로도 관리 UI에 접속할 수 있습니다. 기본 계정은 `admin`, 기본 비밀번호는 `gately.cn`입니다.
-- 앱은 `root`로 실행되므로 80/443을 수신하고 `docker.sock`으로 Docker를 관리하며 실제 웹 터미널을 열 수 있습니다. 직접 관리하는 NAS에만 설치하세요.
-- 설정은 앱의 `var` 디렉터리에 저장되며, 제거 마법사에서 "모두 삭제"를 선택하지 않는 한 제거해도 유지됩니다. 업그레이드는 새 버전의 `.fpk`를 다시 수동 설치하면 됩니다.
-- 패키지는 `gately ctl`과 `gately mcp`용 `gately` 명령(`/usr/local/bin/gately`)도 추가합니다.
-- 16680 포트는 Docker 이미지와 같습니다. 네이티브 앱을 시작하기 전에 `gately` 컨테이너를 중지하세요.
-- 내려받은 파일은 [릴리스 산출물 검증](docs/ko/VERIFY.md)에 따라 검증하세요. `.fpk` 파일도 `checksums.txt`에 포함되어 있습니다.
-
-### OpenWrt
-
-각 Release에는 OpenWrt 패키지가 포함됩니다. `gately_<version>_openwrt_<arch>.ipk`는 OpenWrt 24.10 이하(iStoreOS 포함)용으로 `opkg install`로 설치하고, `.apk`는 OpenWrt 25.12 이상용으로 `apk add --allow-untrusted`로 설치합니다. 아키텍처는 amd64 / arm64 / arm / mipsle / mips / riscv64를 제공하며 `/etc/openwrt_release`의 `DISTRIB_ARCH`에 따라 고릅니다([설치 문서](https://gately.cn/ko/docs/guide/install#openwrt)의 표 참고).
-
-- 설치하면 부팅 시 자동 시작이 활성화되고 서비스가 시작됩니다. 관리 UI는 `http://<라우터 주소>:16680`이며 기본 계정은 `admin`, 기본 비밀번호는 `gately.cn`입니다.
-- 설정은 `/etc/gately`에 저장되며 업그레이드, 제거, 펌웨어 업그레이드(sysupgrade) 시에도 유지됩니다. 업그레이드하려면 새 버전 패키지를 설치하면 됩니다. 정보 페이지의 온라인 업그레이드는 패키지 관리자를 사용하도록 안내합니다.
-- 바이너리는 약 32 MB이므로 x86 소프트 라우터, ARM64 박스 등 저장 공간이 넉넉한 장치에 적합합니다. arm 패키지는 하드웨어 부동소수점을 지원하는 ARMv7이 필요합니다.
-- 아키텍처와 무관한 LuCI 앱 `luci-app-gately_<버전>_openwrt_all.ipk` / `.apk` 도 제공합니다. LuCI 「서비스 → Gately」에서 실행 상태 확인, 시작·중지, 부팅 시 자동 시작과 관리 화면 포트 설정, 관리 화면 바로 열기가 가능합니다.
-
-### 모니터링
-
-`metrics:read` 권한만 있는 API 토큰을 만들고 Prometheus가 `/api/metrics`를 수집하도록 설정하세요. 메트릭, 알림 예시, Grafana 대시보드는 [모니터링](docs/ko/MONITORING.md)에서 설명합니다.
-
-### API 호출
-
-관리 콘솔의 "API 토큰" 페이지에서 토큰을 만들면(여러 개 생성 가능, 모듈별로 읽기 전용 또는 읽기/쓰기 권한 부여, 만료 시간 설정 가능, 평문은 생성 직후 한 번만 표시됨) 스크립트로 관리 API를 일괄 호출할 수 있습니다.
-
-```bash
-curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns/tasks
-```
-
-계정, 2단계 인증, 토큰 관리, 그리고 백업, 복원, 재시작, 시스템 설정 API는 로그인 세션으로만 사용할 수 있습니다. 전체 API, 필요한 권한, 데이터 구조는 관리 콘솔의 "API 문서" 페이지에서 확인할 수 있으며, `make api-docs`로 [docs/api](docs/api/ko)(`openapi.json`과 `API.md`)에 내보낼 수도 있습니다. 공식 사이트 https://gately.cn 에서도 이 파일을 그대로 참조합니다.
-
-이전 버전에서 업그레이드하면 기존 전역 API 토큰은 자동으로 "레거시 토큰"이 됩니다(값은 그대로이며 모든 모듈 권한을 가짐). API 토큰 페이지에서 권한을 줄이거나 새 토큰으로 교체하는 것을 권장합니다.
-
-### Tailscale, frp, cloudflared
-
-이 세 모듈은 공식 외부 프로그램을 관리합니다(자동 재시작, 로그를 UI에 집계). Gately 본체에는 포함되어 있지 않습니다. 각 모듈 페이지의 「온라인 설치」 카드는 업스트림에서 최신 안정 버전이나 지정한 버전을 내려받아 SHA-256을 검증한 뒤 설정 디렉터리의 `bin/`에 설치하고, 해당 프로그램을 사용하는 프로세스를 다시 시작합니다. 프로그램마다 다운로드 프록시를 따로 지정할 수 있으며, 비워 두면 설정의 업데이트 프록시를 사용합니다. 교체된 버전은 최근 3개까지 보관되어 새 버전에 문제가 있으면 클릭 한 번으로 롤백할 수 있고, 더 이상 필요 없으면 프로그램을 제거할 수 있습니다. 페이지 상단의 「기본 설정 복원」은 제거와 별개로 동작하며, 프로세스를 중지하고 모듈 설정을 초기화한 뒤 Gately가 생성한 파일(frp 설정 파일, File Browser 인스턴스 데이터, Tailscale 로그인 상태)을 삭제합니다. 이전 설정은 설정 기록에서 복원할 수 있습니다. Tailscale은 Linux용으로만 바로 실행 가능한 공식 패키지를 제공하므로, 다른 시스템에서는 공식 설치 프로그램을 사용하고 경로를 입력하세요. 프로그램은 다음 순서로 찾습니다. 모듈 설정에 입력한 경로, 설정 디렉터리의 `bin/`, `PATH`. 바이너리를 설정 디렉터리에 직접 넣을 수도 있으며, Docker 배포에서는 예를 들어 `./gately-data/bin/frpc`입니다. Tailscale은 `tailscale`과 `tailscaled`를 모두 제공해야 합니다. 설정 파일의 토큰과 키는 0600 권한으로 저장되며, cloudflared 토큰은 환경 변수로 전달되어 프로세스 목록에 나타나지 않습니다.
-
-File Browser 모듈은 [FileBrowser Quantum](https://github.com/gtsteffaniak/filebrowser)을 호스팅합니다(원본 filebrowser는 보관 처리되어 보안 수정이 없습니다). 찾는 순서와 온라인 설치, 업데이트, 롤백은 위와 같으며 설치 위치는 `bin/filebrowser`입니다. 관리자 비밀번호는 환경 변수로 전달되어 설정 파일에 기록되지 않습니다.
+</details>
 
 ## 개발
 

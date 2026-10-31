@@ -1,43 +1,215 @@
-# Gately
+<p align="center">
+  <a href="https://gately.cn/ja/"><img src="docs/images/banner.svg" alt="Gately — オールインワンのネットワークゲートウェイ: オープンソースで、すぐに使える" width="100%"></a>
+</p>
 
-[English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | **日本語** | [한국어](README.ko.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [Русский](README.ru.md) | [Português (Brasil)](README.pt-BR.md)
+<p align="center">
+  <a href="https://github.com/wangwanjie/gately/releases/latest"><img src="https://img.shields.io/github/v/release/wangwanjie/gately?style=flat-square&color=0e7c66&label=release" alt="Release"></a>
+  <a href="https://github.com/wangwanjie/gately/pkgs/container/gately"><img src="https://img.shields.io/badge/docker-ghcr.io%2Fwangwanjie%2Fgately-0e7c66?style=flat-square&logo=docker&logoColor=white" alt="Docker"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/wangwanjie/gately?style=flat-square&color=0e7c66" alt="License"></a>
+  <a href="https://github.com/wangwanjie/gately/stargazers"><img src="https://img.shields.io/github/stars/wangwanjie/gately?style=flat-square&color=0e7c66" alt="Stars"></a>
+  <a href="https://gately.cn/ja/"><img src="https://img.shields.io/badge/%E5%85%AC%E5%BC%8F%E3%82%B5%E3%82%A4%E3%83%88-gately.cn-0e7c66?style=flat-square&logo=googlechrome&logoColor=white" alt="gately.cn"></a>
+  <a href="https://t.me/gately_chat"><img src="https://img.shields.io/badge/Telegram-gately__chat-26A5E4?style=flat-square&logo=telegram&logoColor=white" alt="Telegram"></a>
+</p>
 
-オープンソースで監査可能なネットワークゲートウェイツールセットです。家庭内ネットワーク、NAS、クラウドホスト、各種サーバーで利用できます。DDNS、STUN 穿孔、ポート転送、リバースプロキシ、証明書、WAF など、よく使う機能を約 32 MB の単一ファイルにまとめています。
+<p align="center">
+  <a href="https://gately.cn/ja/"><b>公式サイト</b></a> &nbsp;·&nbsp; <a href="https://gately.cn/ja/docs/guide/quick-start"><b>クイックスタート</b></a> &nbsp;·&nbsp; <a href="https://gately.cn/ja/docs/guide/install"><b>インストールガイド</b></a> &nbsp;·&nbsp; <a href="https://gately.cn/ja/docs/guide/introduction"><b>ドキュメント</b></a> &nbsp;·&nbsp; <a href="https://github.com/wangwanjie/gately/releases/latest"><b>ダウンロード</b></a> &nbsp;·&nbsp; <a href="https://gately.cn/ja/news/"><b>更新履歴</b></a>
+</p>
 
-> **fnOS ユーザーの方へ**：Gately は fnOS のネイティブアプリとして提供されています。**fnOS 統一ゲートウェイ**に統合されており、fnOS デスクトップのアイコンから開けます。リモートアクセス用のドメインを含め、fnOS と同じアドレスでそのまま使えるため、ポートを追加で開放する必要はありません。有効にすると、**fnOS 管理者は fnOS のログイン状態のままログイン**でき、Gately のパスワードや 2 段階認証コードの入力は不要です。詳しくは [fnOS ネイティブアプリ](#fnos-ネイティブアプリ) を参照してください。
+<p align="center">
+  <a href="https://gately.cn/ja/sponsor"><img src="https://img.shields.io/badge/%E3%82%B3%E3%83%BC%E3%83%92%E3%83%BC%E3%82%92%E3%81%8A%E3%81%94%E3%82%8B-Gately-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black" alt="コーヒーをおごる" height="34"></a>
+</p>
 
-![Gately 概要](docs/images/overview.webp)
+<p align="center">
+  <a href="README.md">English</a> | <a href="README.zh-CN.md">简体中文</a> | <a href="README.zh-TW.md">繁體中文</a> | <b>日本語</b> | <a href="README.ko.md">한국어</a> | <a href="README.es.md">Español</a> | <a href="README.fr.md">Français</a> | <a href="README.de.md">Deutsch</a> | <a href="README.ru.md">Русский</a> | <a href="README.pt-BR.md">Português (Brasil)</a>
+</p>
 
-![Web サービス：ドメインごとのリバースプロキシ、静的ファイル、リダイレクト。サイトごとに WAF、IP ルール、ログイン認証を設定可能](docs/images/web.webp)
+ドメイン解決や NAT 越えから、リバースプロキシ、HTTPS 証明書、WAF、侵入防御、シングルサインオン、ファイル共有まで。自宅ネットワークとサーバーの入口に必要な機能を、Gately はひとつの管理画面にまとめました。NAS、ソフトルーター、クラウドサーバーに入れれば、設定も運用もブラウザーで完結します。ソースコードは Apache-2.0 で公開しており、設定とデータはあなたのデバイスにだけ残り、収集も送信もしません。
 
-![サイト統計：リクエスト数、エラー、バックエンドの稼働状態、アクセス元 IP と国のランキング](docs/images/site-stats.webp)
+> **fnOS ユーザーの方へ**：Gately は fnOS のネイティブアプリとして提供されています。**fnOS 統一ゲートウェイ**に統合されており、fnOS デスクトップのアイコンから開けます。リモートアクセス用のドメインを含め、fnOS と同じアドレスでそのまま使えるため、ポートを追加で開放する必要はありません。有効にすると、**fnOS 管理者は fnOS のログイン状態のままログイン**でき、Gately のパスワードや 2 段階認証コードの入力は不要です。詳しくは [fnOS ネイティブアプリ](https://gately.cn/ja/docs/guide/install#fnos) を参照してください。
 
-![SNI 振り分けによるポート転送：複数のサービスで 443 番ポートを共用](docs/images/portforward-sni.webp)
+## クイックスタート
 
-![ダイナミック DNS](docs/images/ddns.webp)
+使い始めるまで 3 ステップ。コンテナを起動し、`http://<デバイスのIP>:16680` を開いて `admin` / `gately.cn` でログインするだけです。ほかのプラットフォームは下にまとめてあり、すべての方法は[インストールガイド](https://gately.cn/ja/docs/guide/install)で解説しています。
 
-![侵入防御：fail2ban 風の自動ブロックを nftables ファイアウォールに同期](docs/images/guard.webp)
+### Docker
 
-![Docker](docs/images/docker.webp)
+イメージは amd64、arm64、arm/v7 に対応しています。
 
-![frp：複数の frpc / frps インスタンス、プロキシはクライアントごとに管理](docs/images/frp.webp)
+```bash
+docker run -d --name gately --network host --cap-add NET_ADMIN \
+  -v ./gately-data:/etc/gately \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  ghcr.io/wangwanjie/gately:latest
+```
 
-![Web ターミナル：ブラウザーで SSH、Telnet、ローカルシェルを利用](docs/images/terminal.webp)
+`http://<デバイスのIP>:16680` を開き、デフォルトのアカウント `admin` とデフォルトのパスワード `gately.cn` でログインします。その後「設定」でパスワードを変更し、2 段階認証を有効にしてください。完全な Compose の例は [deploy/docker-compose.yml](deploy/docker-compose.yml) を参照してください。
 
-![設定履歴：差分表示とワンクリックロールバック](docs/images/config-history.webp)
+パスワードを忘れたときや 2 段階認証アプリを紛失したときは、サーバー上で `gately reset-password` または `gately reset-totp` を実行します（Docker では `docker exec -it gately gately reset-password`）。確認するとすぐに反映されます。詳しくは[パスワードと 2 段階認証のリセット](https://gately.cn/ja/docs/guide/install#reset)を参照してください。
 
-![組み込みの API ドキュメント](docs/images/api-docs.webp)
+ポート転送、STUN、Web サービスはホストのポートで待ち受けるため、`--network host` を推奨します。Docker 管理が不要な場合は `docker.sock` のマウントを外せます。`--cap-add NET_ADMIN` は侵入防御がブロックをホストの nftables ファイアウォールに書き込むためのもので、付けない場合もブロックは Gately 自身のサービスに適用されます。
 
-## なぜ Gately なのか
+別の方法でインストールしたい場合は、下から選んでください。
 
-Gately は完全なオープンソースで、ユーザーとコミュニティがソースコードと設定を直接確認できます。ネットワークの境界で動作し、DNS の鍵や証明書の秘密鍵を扱うソフトウェアだからこそ、オープンソースであることで何をしているかを自分の目で確かめられます。Gately の約束:
+<details>
+<summary><b>バイナリ</b></summary>
 
-- ソースコードは Apache-2.0 で公開し、コミュニティによるレビューを歓迎します
-- 既定ではプロジェクト側のサーバーに一切接続せず、デバイス情報も送信しません。サードパーティログインにはご自身の OAuth アプリを使用し、中継は経由しません
-- 外部へのアドレス（パブリック IP 取得、STUN サーバーなど）はすべて確認・変更・無効化できます
-- 設定はプレーンテキストの JSON なので、そのまま git に入れて監査やロールバックができます
+[Releases](https://github.com/wangwanjie/gately/releases) からお使いのプラットフォーム向けのアーカイブ（Linux amd64/arm64/arm/mips/mipsle/riscv64、macOS、Windows、FreeBSD）をダウンロードし、展開して実行します。
+
+```bash
+./gately -c /etc/gately
+```
+
+オプション: `-c` は設定ディレクトリ（環境変数 `GATELY_CONFIG_DIR` でも指定可能）、`-listen` は管理画面の待ち受けアドレスの上書き、`-apply` は起動のたびにディレクトリ内の `<name>.json` を設定ディレクトリに適用（`GATELY_APPLY_DIR`、GitOps や Kubernetes に便利。アカウントとトークンのファイルは上書き不可）、`-version` はバージョン表示です。無人インストールでは `GATELY_INITIAL_PASSWORD` を設定すると、デフォルトのパスワード `gately.cn` の代わりに管理者の初期パスワードを指定できます。
+
+サービステンプレート: [systemd](deploy/systemd/gately.service)、[OpenWrt procd](deploy/openwrt/gately.init)。ダウンロードしたアーカイブやイメージの検証（cosign 署名、ビルド来歴、SBOM）は[リリース成果物の検証](docs/ja/VERIFY.md)を参照してください。
+
+</details>
+
+<details>
+<summary><b>fnOS ネイティブアプリ</b></summary>
+
+各 Release には fnOS 向けのオフラインパッケージ `gately_<version>_fnos_x86.fpk`（Intel/AMD）と `gately_<version>_fnos_arm.fpk`（ARM）が含まれます。公式のアプリセンターには掲載されていないため、手動でインストールします。**アプリセンター → 手動インストール**（左下のボタン）を開き、ファイルを選んでウィザードを完了してください。
+
+- **fnOS 統一ゲートウェイに対応**：fnOS デスクトップの Gately アイコンをクリックすると、管理画面が fnOS 統一ゲートウェイ経由で `/app/gately/` 配下に開き、fnOS と同じアクセス入口を共用します。LAN のアドレスでも fnOS のリモートドメインでもそのまま使え、16680 ポートを開放・転送する必要はありません。ゲートウェイ経由のアクセスは fnOS が制御する（fnOS 管理者だけが開けます）ため、セキュアエントリーと「LAN 内からのみ許可」は 16680 ポートへの直接アクセスにのみ適用されます。
+- **fnOS 管理者は fnOS のログイン状態でそのままログイン**：**設定 → アクセス制御 → fnOS のログイン状態で自動ログイン** を有効にすると、fnOS にログイン済みの管理者はデスクトップのアイコンからパスワードや 2 段階認証コードなしで Gately に入れます。一般の fnOS ユーザーは引き続きログインが必要です。ログアウトした後は、自動で再ログインせず、ログイン画面に「fnOS アカウント &lt;ユーザー名&gt; でログイン」ボタンが表示されます。この設定は既定で無効で、fnOS パッケージでのみ表示されます。
+- LAN 内では `http://<NAS のアドレス>:16680` でも管理画面にアクセスできます。デフォルトのアカウントは `admin`、パスワードは `gately.cn` です。
+- アプリは `root` で動作するため、80/443 の待ち受け、`docker.sock` を通じた Docker の管理、実際の Web ターミナルが利用できます。自分で管理している NAS にのみインストールしてください。
+- 設定はアプリの `var` ディレクトリに保存され、アンインストール時も保持されます。アンインストールウィザードで「すべて削除」を選んだ場合のみ消去されます。アップグレードは新しい `.fpk` を再度手動インストールするだけです。
+- パッケージには `gately` コマンド（`/usr/local/bin/gately`）も含まれ、`gately ctl` と `gately mcp` を使えます。
+- 16680 ポートは Docker イメージと共通です。ネイティブアプリを起動する前に `gately` コンテナを停止してください。
+- ダウンロードしたファイルは [リリース成果物の検証](docs/ja/VERIFY.md) の手順で検証できます。`.fpk` ファイルも `checksums.txt` に記載されています。
+
+</details>
+
+<details>
+<summary><b>OpenWrt</b></summary>
+
+各 Release には OpenWrt 向けパッケージが含まれます。`gately_<version>_openwrt_<arch>.ipk` は OpenWrt 24.10 以前（iStoreOS を含む）向けで `opkg install` で、`.apk` は OpenWrt 25.12 以降向けで `apk add --allow-untrusted` でインストールします。アーキテクチャは amd64 / arm64 / arm / mipsle / mips / riscv64 で、`/etc/openwrt_release` の `DISTRIB_ARCH` に合わせて選びます（対応表は[インストールガイド](https://gately.cn/ja/docs/guide/install#openwrt)を参照）。
+
+- インストール時に自動起動が有効になり、サービスが起動します。管理画面は `http://<ルーターのアドレス>:16680` で、デフォルトのアカウントは `admin`、パスワードは `gately.cn` です。
+- 設定は `/etc/gately` に保存され、アップグレード、アンインストール、ファームウェアの更新（sysupgrade）でも保持されます。アップグレードは新しいパッケージをインストールするだけです。「バージョン情報」ページのオンラインアップグレードでは、パッケージマネージャーを使うよう案内されます。
+- バイナリは約 32 MB のため、x86 のソフトルーターや ARM64 ボックスなどストレージに余裕のあるデバイス向けです。arm パッケージにはハードウェア浮動小数点に対応した ARMv7 が必要です。
+- アーキテクチャに依存しない LuCI アプリ `luci-app-gately_<バージョン>_openwrt_all.ipk` / `.apk` も用意しています。LuCI の「サービス → Gately」で実行状態の確認、開始・停止、自動起動と管理画面ポートの設定、管理画面へのワンクリック移動ができます。
+
+</details>
+
+<details>
+<summary><b>監視</b></summary>
+
+`metrics:read` 権限だけを持つ API トークンを作成し、Prometheus から `/api/metrics` をスクレイプします。メトリクス、アラート例、Grafana ダッシュボードは[監視](docs/ja/MONITORING.md)で説明しています。
+
+</details>
+
+<details>
+<summary><b>API の利用</b></summary>
+
+管理コンソールの「API トークン」ページでトークンを作成します（複数作成可能で、モジュールごとに読み取り専用または読み書きを付与でき、有効期限も設定できます。平文は作成直後に一度だけ表示されます）。スクリプトから管理 API を一括で呼び出せます。
+
+```bash
+curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns/tasks
+```
+
+アカウント、2 段階認証、トークン管理、およびバックアップ、復元、再起動、システム設定の API はログインセッションでのみ利用できます。すべての API、必要な権限、データ構造は管理コンソールの「API ドキュメント」ページで確認できます。`make api-docs` で [docs/api](docs/api/ja)（`openapi.json` と `API.md`）にエクスポートすることもでき、公式サイト https://gately.cn の公開時にそのまま参照されます。
+
+旧バージョンからアップグレードすると、従来のグローバル API トークンは自動的に「レガシートークン」になります（値は同じで、全モジュールの権限を持ちます）。API トークンページで権限を絞るか、新しいトークンに切り替えることを推奨します。
+
+</details>
+
+<details>
+<summary><b>Tailscale、frp、cloudflared</b></summary>
+
+この 3 つのモジュールは公式の外部プログラムを管理します（自動再起動、ログは画面に集約）。Gately 本体には同梱していません。各モジュールページの「オンラインインストール」カードは上流から最新の安定版または指定バージョンをダウンロードし、SHA-256 を検証して設定ディレクトリの `bin/` にインストールし、それを使うプロセスを再起動します。プログラムごとにダウンロードプロキシを設定でき、空欄の場合は「設定」の更新プロキシを使います。置き換えられたバージョンは直近 3 個まで保持され、新バージョンに問題があればワンクリックでロールバックできます。不要になったプログラムはアンインストールできます。ページヘッダーの「デフォルト設定に戻す」はアンインストールとは別の操作で、プロセスを停止し、モジュール設定をリセットし、Gately が生成したファイル（frp の設定ファイル、File Browser のインスタンスデータ、Tailscale のログイン状態）を削除します。以前の設定は設定履歴から復元できます。Tailscale がそのまま実行できるパッケージを公式に提供しているのは Linux のみのため、他のシステムでは公式インストーラーを使ってパスを入力してください。プログラムは次の順に探索されます: モジュール設定で指定したパス、設定ディレクトリ配下の `bin/`、`PATH`。バイナリを自分で設定ディレクトリに置くこともできます（Docker 環境の例: `./gately-data/bin/frpc`）。Tailscale には `tailscale` と `tailscaled` の両方が必要です。設定ファイル内のトークンとキーは 0600 のパーミッションで保存され、cloudflared のトークンは環境変数で渡されるため、プロセス一覧には現れません。
+
+File Browser モジュールは [FileBrowser Quantum](https://github.com/gtsteffaniak/filebrowser) をホストします（元の filebrowser はアーカイブされ、セキュリティ修正が行われません）。探索順とオンラインでのインストール・更新・ロールバックは上記と同じで、インストール先は `bin/filebrowser` です。管理者パスワードは環境変数で渡され、設定ファイルには書き込まれません。
+
+</details>
 
 ## 機能
+
+まずは管理画面のスクリーンショットをいくつか。全機能の一覧はこのセクションの最後にあります。
+
+### 全体をひと目で
+
+概要ページには CPU、メモリー、ディスク、トラフィック、各ネットワークインターフェースとそのパブリック IPv4 / IPv6、全モジュールの稼働状態が並びます。対応が必要な箇所はすぐにわかります。
+
+<img src="docs/images/overview.webp" alt="全体をひと目で" width="100%">
+
+### nginx の代わりになる Web サービス
+
+ドメインごとにリバースプロキシ、静的ファイル、リダイレクトを設定でき、HTTPS と HTTP/3 に対応。サイトごとに WAF、IP ルール、ログイン認証を有効にでき、設定を変えても既存の接続は切れません。
+
+<img src="docs/images/web.webp" alt="nginx の代わりになる Web サービス" width="100%">
+
+<p><b>サイト統計</b> — リクエスト数、エラー、バックエンドの状態、アクセス元 IP と国のランキングを分単位で集計します。</p>
+
+<img src="docs/images/site-stats.webp" alt="サイト統計" width="100%">
+
+### 443 番ポートひとつを全サービスで共有
+
+ポート転送の SNI ルーティングで、複数のサービスをドメインごとに同じポートへ振り分けます。TLS はそのままパススルーし、PROXY プロトコルで実際のクライアントアドレスを渡します。
+
+<img src="docs/images/portforward-sni.webp" alt="443 番ポートひとつを全サービスで共有" width="100%">
+
+### 主要プロバイダーに対応したダイナミック DNS
+
+Cloudflare、Alibaba Cloud、DNSPod、Route 53 などに対応。IPv4 と IPv6 の両方を扱い、IP は URL、ネットワークインターフェース、コマンドから取得できます。アドレスが変わればすぐに通知します。
+
+<img src="docs/images/ddns.webp" alt="主要プロバイダーに対応したダイナミック DNS" width="100%">
+
+### 侵入防御
+
+fail2ban 風のルールがログファイル、journald、コンテナのログを読み取り、トラップポートとスキャン検知で探索行為を捕まえます。ブロックは nftables に同期され、カーネルでパケットを破棄します。
+
+<img src="docs/images/guard.webp" alt="侵入防御" width="100%">
+
+### frp、Tailscale、Cloudflare トンネル
+
+複数の frpc・frps インスタンスを並行して動かし、Tailscale や cloudflared のトンネルと同じ画面で管理できます。これらのプログラムのインストール、更新、ロールバックは Gately が引き受けます。
+
+<img src="docs/images/frp.webp" alt="frp、Tailscale、Cloudflare トンネル" width="100%">
+
+### ほかにも
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+**Docker**<br>コンテナ、Compose、ログ、ターミナル。イメージはワンクリックで更新でき、失敗すれば自動でロールバックします。
+
+<img src="docs/images/docker.webp" alt="Docker" width="100%">
+
+</td>
+<td width="50%" valign="top">
+
+**Web ターミナル**<br>ブラウザーで SSH、Telnet、ローカルシェルを使えます。SFTP と画面分割にも対応。
+
+<img src="docs/images/terminal.webp" alt="Web ターミナル" width="100%">
+
+</td>
+</tr>
+</table>
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+**設定履歴**<br>変更のたびに以前のバージョンを保存。差分を確認して、ワンクリックで戻せます。
+
+<img src="docs/images/config-history.webp" alt="設定履歴" width="100%">
+
+</td>
+<td width="50%" valign="top">
+
+**API、CLI、MCP**<br>モジュール単位で権限を付けられる API トークン、組み込みの OpenAPI ドキュメント、`gately ctl`、AI アシスタントから使える MCP サーバー。
+
+<img src="docs/images/api-docs.webp" alt="API、CLI、MCP" width="100%">
+
+</td>
+</tr>
+</table>
+
+<details>
+<summary><b>全機能一覧</b></summary>
 
 | モジュール | 機能 |
 | --- | --- |
@@ -70,6 +242,17 @@ Gately は完全なオープンソースで、ユーザーとコミュニティ�
 | 監視とセルフチェック | グローバルな Prometheus エンドポイント `/api/metrics`（証明書、DDNS、STUN、ポート転送、Web サービス）とすぐに使える Grafana ダッシュボード。ワンクリックのネットワークセルフチェック（グローバル IP、CGNAT、時刻、80/443 ポート、DDNS の名前解決、証明書の期限、HTTPS サイトの証明書不足、frp プロキシの競合） |
 | 移行 | nginx 設定のインポート（`nginx -T` の出力に対応）: リバースプロキシと upstream、静的ディレクトリ、リダイレクト、パスごとのバックエンド、アクセス制御、`auth_request` はフォワード認証に変換 |
 
+</details>
+
+## なぜ Gately なのか
+
+Gately は完全なオープンソースで、ユーザーとコミュニティがソースコードと設定を直接確認できます。ネットワークの境界で動作し、DNS の鍵や証明書の秘密鍵を扱うソフトウェアだからこそ、オープンソースであることで何をしているかを自分の目で確かめられます。Gately の約束:
+
+- ソースコードは Apache-2.0 で公開し、コミュニティによるレビューを歓迎します
+- 既定ではプロジェクト側のサーバーに一切接続せず、デバイス情報も送信しません。サードパーティログインにはご自身の OAuth アプリを使用し、中継は経由しません
+- 外部へのアドレス（パブリック IP 取得、STUN サーバーなど）はすべて確認・変更・無効化できます
+- 設定はプレーンテキストの JSON なので、そのまま git に入れて監査やロールバックができます
+
 ## パフォーマンス
 
 ポート転送の SNI 振り分けと Web サービスを組み合わせると、よくある haproxy（SNI による TCP 振り分け）+ nginx（TLS とリバースプロキシ）の構成を置き換えられます。下の表は、実際のサーバーに近い設定で、同じマシン上の両者を比較したものです。90 個のドメインを SNI で振り分け、2 つのホップ間は PROXY プロトコル v2、証明書は ECDSA P-256、TLS 1.3 を使用しています。
@@ -84,7 +267,8 @@ Gately は完全なオープンソースで、ユーザーとコミュニティ�
 | SNI パススルー、1 秒あたりの新規接続数、64 並列 | 6,334 /s | 6,266 /s（ほぼ同等） |
 | 負荷時のメモリ | haproxy ≈ 21 MB + nginx ≈ 21 MB | ≈ 110 MB（全モジュールを含む単一プロセス） |
 
-測定方法：
+<details>
+<summary><b>測定方法</b></summary>
 
 - ホスト：Intel Core i5-13500T。小規模なクラウドサーバーに合わせて、各構成を CPU 2 コアに制限しました（haproxy と nginx は Docker の `--cpuset-cpus`、Gately は `taskset` で固定）。バックエンドと負荷生成ツールは別のコアで動かしました。
 - haproxy は `mode tcp`、`req_ssl_sni` ルール、`send-proxy-v2` を使用しました。nginx は `worker_processes 2` と本番サイトのプロキシ設定を使用しており、この設定では `Connection: upgrade` を送るため、リクエストごとにバックエンドへの新しい接続が作られます。アップストリームの Keep-Alive を有効にしてチューニングした nginx であれば、小さなレスポンスでの差は縮まります。
@@ -92,80 +276,7 @@ Gately は完全なオープンソースで、ユーザーとコミュニティ�
 - 各ケースは 10 秒間実行し、繰り返したケースの結果は 3% 以内で一致しました。実際の 2 vCPU のクラウドホストでは、静的サイトは 5.5k req/s 対 3.4k req/s でした。クライアントが X25519 を使うと、新規 TLS 接続は同等（どちらも毎秒約 480〜550）でした。Go のクライアントや最近のブラウザが提供するポスト量子ハイブリッド鍵交換を使うと、この測定では Gately のハンドシェイク完了数は約 13% 少なくなりました。
 - 結果はハードウェア、設定、トラフィックによって変わります。Gately が haproxy と nginx に引けを取らないことの目安として捉え、実際のワークロードで測定してください。
 
-## クイックスタート
-
-### Docker
-
-イメージは amd64、arm64、arm/v7 に対応しています。
-
-```bash
-docker run -d --name gately --network host --cap-add NET_ADMIN \
-  -v ./gately-data:/etc/gately \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  ghcr.io/wangwanjie/gately:latest
-```
-
-`http://<デバイスのIP>:16680` を開き、デフォルトのアカウント `admin` とデフォルトのパスワード `gately.cn` でログインします。その後「設定」でパスワードを変更し、2 段階認証を有効にしてください。完全な Compose の例は [deploy/docker-compose.yml](deploy/docker-compose.yml) を参照してください。
-
-パスワードを忘れたときや 2 段階認証アプリを紛失したときは、サーバー上で `gately reset-password` または `gately reset-totp` を実行します（Docker では `docker exec -it gately gately reset-password`）。確認するとすぐに反映されます。詳しくは[パスワードと 2 段階認証のリセット](https://gately.cn/ja/docs/guide/install#reset)を参照してください。
-
-ポート転送、STUN、Web サービスはホストのポートで待ち受けるため、`--network host` を推奨します。Docker 管理が不要な場合は `docker.sock` のマウントを外せます。`--cap-add NET_ADMIN` は侵入防御がブロックをホストの nftables ファイアウォールに書き込むためのもので、付けない場合もブロックは Gately 自身のサービスに適用されます。
-
-### バイナリ
-
-[Releases](https://github.com/wangwanjie/gately/releases) からお使いのプラットフォーム向けのアーカイブ（Linux amd64/arm64/arm/mips/mipsle/riscv64、macOS、Windows、FreeBSD）をダウンロードし、展開して実行します。
-
-```bash
-./gately -c /etc/gately
-```
-
-オプション: `-c` は設定ディレクトリ（環境変数 `GATELY_CONFIG_DIR` でも指定可能）、`-listen` は管理画面の待ち受けアドレスの上書き、`-apply` は起動のたびにディレクトリ内の `<name>.json` を設定ディレクトリに適用（`GATELY_APPLY_DIR`、GitOps や Kubernetes に便利。アカウントとトークンのファイルは上書き不可）、`-version` はバージョン表示です。無人インストールでは `GATELY_INITIAL_PASSWORD` を設定すると、デフォルトのパスワード `gately.cn` の代わりに管理者の初期パスワードを指定できます。
-
-サービステンプレート: [systemd](deploy/systemd/gately.service)、[OpenWrt procd](deploy/openwrt/gately.init)。ダウンロードしたアーカイブやイメージの検証（cosign 署名、ビルド来歴、SBOM）は[リリース成果物の検証](docs/ja/VERIFY.md)を参照してください。
-
-### fnOS ネイティブアプリ
-
-各 Release には fnOS 向けのオフラインパッケージ `gately_<version>_fnos_x86.fpk`（Intel/AMD）と `gately_<version>_fnos_arm.fpk`（ARM）が含まれます。公式のアプリセンターには掲載されていないため、手動でインストールします。**アプリセンター → 手動インストール**（左下のボタン）を開き、ファイルを選んでウィザードを完了してください。
-
-- **fnOS 統一ゲートウェイに対応**：fnOS デスクトップの Gately アイコンをクリックすると、管理画面が fnOS 統一ゲートウェイ経由で `/app/gately/` 配下に開き、fnOS と同じアクセス入口を共用します。LAN のアドレスでも fnOS のリモートドメインでもそのまま使え、16680 ポートを開放・転送する必要はありません。ゲートウェイ経由のアクセスは fnOS が制御する（fnOS 管理者だけが開けます）ため、セキュアエントリーと「LAN 内からのみ許可」は 16680 ポートへの直接アクセスにのみ適用されます。
-- **fnOS 管理者は fnOS のログイン状態でそのままログイン**：**設定 → アクセス制御 → fnOS のログイン状態で自動ログイン** を有効にすると、fnOS にログイン済みの管理者はデスクトップのアイコンからパスワードや 2 段階認証コードなしで Gately に入れます。一般の fnOS ユーザーは引き続きログインが必要です。ログアウトした後は、自動で再ログインせず、ログイン画面に「fnOS アカウント &lt;ユーザー名&gt; でログイン」ボタンが表示されます。この設定は既定で無効で、fnOS パッケージでのみ表示されます。
-- LAN 内では `http://<NAS のアドレス>:16680` でも管理画面にアクセスできます。デフォルトのアカウントは `admin`、パスワードは `gately.cn` です。
-- アプリは `root` で動作するため、80/443 の待ち受け、`docker.sock` を通じた Docker の管理、実際の Web ターミナルが利用できます。自分で管理している NAS にのみインストールしてください。
-- 設定はアプリの `var` ディレクトリに保存され、アンインストール時も保持されます。アンインストールウィザードで「すべて削除」を選んだ場合のみ消去されます。アップグレードは新しい `.fpk` を再度手動インストールするだけです。
-- パッケージには `gately` コマンド（`/usr/local/bin/gately`）も含まれ、`gately ctl` と `gately mcp` を使えます。
-- 16680 ポートは Docker イメージと共通です。ネイティブアプリを起動する前に `gately` コンテナを停止してください。
-- ダウンロードしたファイルは [リリース成果物の検証](docs/ja/VERIFY.md) の手順で検証できます。`.fpk` ファイルも `checksums.txt` に記載されています。
-
-### OpenWrt
-
-各 Release には OpenWrt 向けパッケージが含まれます。`gately_<version>_openwrt_<arch>.ipk` は OpenWrt 24.10 以前（iStoreOS を含む）向けで `opkg install` で、`.apk` は OpenWrt 25.12 以降向けで `apk add --allow-untrusted` でインストールします。アーキテクチャは amd64 / arm64 / arm / mipsle / mips / riscv64 で、`/etc/openwrt_release` の `DISTRIB_ARCH` に合わせて選びます（対応表は[インストールガイド](https://gately.cn/ja/docs/guide/install#openwrt)を参照）。
-
-- インストール時に自動起動が有効になり、サービスが起動します。管理画面は `http://<ルーターのアドレス>:16680` で、デフォルトのアカウントは `admin`、パスワードは `gately.cn` です。
-- 設定は `/etc/gately` に保存され、アップグレード、アンインストール、ファームウェアの更新（sysupgrade）でも保持されます。アップグレードは新しいパッケージをインストールするだけです。「バージョン情報」ページのオンラインアップグレードでは、パッケージマネージャーを使うよう案内されます。
-- バイナリは約 32 MB のため、x86 のソフトルーターや ARM64 ボックスなどストレージに余裕のあるデバイス向けです。arm パッケージにはハードウェア浮動小数点に対応した ARMv7 が必要です。
-- アーキテクチャに依存しない LuCI アプリ `luci-app-gately_<バージョン>_openwrt_all.ipk` / `.apk` も用意しています。LuCI の「サービス → Gately」で実行状態の確認、開始・停止、自動起動と管理画面ポートの設定、管理画面へのワンクリック移動ができます。
-
-### 監視
-
-`metrics:read` 権限だけを持つ API トークンを作成し、Prometheus から `/api/metrics` をスクレイプします。メトリクス、アラート例、Grafana ダッシュボードは[監視](docs/ja/MONITORING.md)で説明しています。
-
-### API の利用
-
-管理コンソールの「API トークン」ページでトークンを作成します（複数作成可能で、モジュールごとに読み取り専用または読み書きを付与でき、有効期限も設定できます。平文は作成直後に一度だけ表示されます）。スクリプトから管理 API を一括で呼び出せます。
-
-```bash
-curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns/tasks
-```
-
-アカウント、2 段階認証、トークン管理、およびバックアップ、復元、再起動、システム設定の API はログインセッションでのみ利用できます。すべての API、必要な権限、データ構造は管理コンソールの「API ドキュメント」ページで確認できます。`make api-docs` で [docs/api](docs/api/ja)（`openapi.json` と `API.md`）にエクスポートすることもでき、公式サイト https://gately.cn の公開時にそのまま参照されます。
-
-旧バージョンからアップグレードすると、従来のグローバル API トークンは自動的に「レガシートークン」になります（値は同じで、全モジュールの権限を持ちます）。API トークンページで権限を絞るか、新しいトークンに切り替えることを推奨します。
-
-### Tailscale、frp、cloudflared
-
-この 3 つのモジュールは公式の外部プログラムを管理します（自動再起動、ログは画面に集約）。Gately 本体には同梱していません。各モジュールページの「オンラインインストール」カードは上流から最新の安定版または指定バージョンをダウンロードし、SHA-256 を検証して設定ディレクトリの `bin/` にインストールし、それを使うプロセスを再起動します。プログラムごとにダウンロードプロキシを設定でき、空欄の場合は「設定」の更新プロキシを使います。置き換えられたバージョンは直近 3 個まで保持され、新バージョンに問題があればワンクリックでロールバックできます。不要になったプログラムはアンインストールできます。ページヘッダーの「デフォルト設定に戻す」はアンインストールとは別の操作で、プロセスを停止し、モジュール設定をリセットし、Gately が生成したファイル（frp の設定ファイル、File Browser のインスタンスデータ、Tailscale のログイン状態）を削除します。以前の設定は設定履歴から復元できます。Tailscale がそのまま実行できるパッケージを公式に提供しているのは Linux のみのため、他のシステムでは公式インストーラーを使ってパスを入力してください。プログラムは次の順に探索されます: モジュール設定で指定したパス、設定ディレクトリ配下の `bin/`、`PATH`。バイナリを自分で設定ディレクトリに置くこともできます（Docker 環境の例: `./gately-data/bin/frpc`）。Tailscale には `tailscale` と `tailscaled` の両方が必要です。設定ファイル内のトークンとキーは 0600 のパーミッションで保存され、cloudflared のトークンは環境変数で渡されるため、プロセス一覧には現れません。
-
-File Browser モジュールは [FileBrowser Quantum](https://github.com/gtsteffaniak/filebrowser) をホストします（元の filebrowser はアーカイブされ、セキュリティ修正が行われません）。探索順とオンラインでのインストール・更新・ロールバックは上記と同じで、インストール先は `bin/filebrowser` です。管理者パスワードは環境変数で渡され、設定ファイルには書き込まれません。
+</details>
 
 ## 開発
 
