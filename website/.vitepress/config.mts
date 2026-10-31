@@ -132,7 +132,13 @@ export default defineConfig({
   lastUpdated: true,
   sitemap: { hostname: SITE },
   head: [
+    // 图标由 web/scripts/gen-icons.mjs 生成；Android Chrome 添加到主屏幕读取 manifest 的 PNG 图标，iOS 读取 apple-touch-icon
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
+    ['link', { rel: 'icon', href: '/favicon.ico', sizes: '16x16 32x32 48x48' }],
+    ['link', { rel: 'icon', type: 'image/png', sizes: '192x192', href: '/icon-192.png' }],
+    ['link', { rel: 'manifest', href: '/manifest.webmanifest' }],
+    ['link', { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' }],
+    ['meta', { name: 'apple-mobile-web-app-title', content: 'Gately' }],
     ['meta', { name: 'theme-color', content: '#0e7c66' }],
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:url', content: SITE }],

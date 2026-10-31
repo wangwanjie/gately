@@ -15,6 +15,12 @@ import (
 	"time"
 )
 
+func init() {
+	// Go 内置的 MIME 表没有 .webmanifest，精简容器里通常也没有 /etc/mime.types，这里显式登记，
+	// 否则前端的 manifest.webmanifest 会被按内容猜测成 text/plain
+	_ = mime.AddExtensionType(".webmanifest", "application/manifest+json")
+}
+
 // servePrecompressed 在客户端接受 gzip 且构建时生成了同名 .gz 文件时直接返回压缩版本，省去每次请求的实时压缩。
 // 返回 false 表示没有可用的预压缩文件，由调用方按原文件处理。
 func (a *App) servePrecompressed(w http.ResponseWriter, r *http.Request, name string) bool {

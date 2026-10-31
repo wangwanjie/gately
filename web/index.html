@@ -4,10 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gately</title>
-    <!-- 网站图标：现代浏览器用 SVG，旧浏览器回退 ico，iOS 主屏幕用 apple-touch-icon -->
+    <!-- 网站图标：现代浏览器用 SVG，旧浏览器回退 ico；图片由 scripts/gen-icons.mjs 生成 -->
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="icon" href="/favicon.ico" sizes="48x48" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
+    <link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192" />
+    <!-- 添加到主屏幕：Android Chrome 读取 manifest 中的 PNG 图标（SVG/data URI 图标不会用作桌面图标）；
+         经飞牛统一网关访问时静态资源需要登录态，manifest 请求带上 Cookie -->
+    <link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials" />
+    <!-- iOS 主屏幕（Web Clip）：方形不透明图标，系统自行裁圆角 -->
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+    <meta name="apple-mobile-web-app-title" content="Gately" />
+    <meta name="application-name" content="Gately" />
     <meta name="theme-color" content="#0e7c66" />
   </head>
   <body>
