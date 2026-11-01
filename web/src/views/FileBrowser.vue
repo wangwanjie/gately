@@ -22,7 +22,7 @@
           <template #status><StatusBadge v-bind="badge(it)" /></template>
           <Field :label="t('filebrowser.accessUrl')" mono wide>
             <div class="url-list">
-              <a v-for="u in accessUrls(it)" :key="u" :href="u" target="_blank" rel="noopener">{{ u }}</a>
+              <UrlLink v-for="u in accessUrls(it)" :key="u" :href="u" />
             </div>
           </Field>
           <Field :label="t('filebrowser.sources')" wide>
@@ -158,6 +158,7 @@ import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { Download, FolderOpen, FolderPlus, Pencil, Plus, RefreshCw, Save, Terminal, Trash2, X } from 'lucide-vue-next'
 import { api } from '../api'
+import UrlLink from '../components/UrlLink.vue'
 import SecretInput from '../components/SecretInput.vue'
 import { secretOf } from '../secrets'
 import PageHeader from '../components/PageHeader.vue'
@@ -457,9 +458,6 @@ onMounted(() => {
   flex-direction: column;
   gap: 2px;
   min-width: 0;
-}
-.url-list a {
-  overflow-wrap: anywhere;
 }
 .src-tag {
   display: inline-block;

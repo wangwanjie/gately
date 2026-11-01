@@ -8,7 +8,8 @@
 
     <el-alert v-if="status?.error" type="error" :title="status.error" :closable="false" show-icon class="block-gap" />
     <el-alert v-if="status?.authUrl" type="warning" :closable="false" show-icon class="block-gap" :title="t('tailscale.needLogin')">
-      <a :href="status.authUrl" target="_blank" rel="noopener" class="auth-link">{{ t('tailscale.authLink') }}</a>
+      <!-- 复制按钮复制登录地址本身，便于在其他设备上打开完成登录 -->
+      <UrlLink :href="status.authUrl" :text="t('tailscale.authLink')" class="auth-link" />
     </el-alert>
 
     <div class="g-card">
@@ -139,6 +140,7 @@ import { api } from '../api'
 import SecretInput from '../components/SecretInput.vue'
 import { secretOf } from '../secrets'
 import PageHeader from '../components/PageHeader.vue'
+import UrlLink from '../components/UrlLink.vue'
 import Field from '../components/Field.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
@@ -315,7 +317,6 @@ onMounted(() => {
   margin-bottom: 16px;
 }
 .auth-link {
-  color: var(--el-color-primary);
   font-weight: 500;
 }
 .svc-form {

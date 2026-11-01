@@ -156,5 +156,9 @@
   "secretInput": {
     "show": "显示",
     "hide": "隐藏"
+  },
+  "urlLink": {
+    "copy": "复制地址",
+    "copied": "已复制地址"
   }
 }

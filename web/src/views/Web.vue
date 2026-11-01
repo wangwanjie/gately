@@ -56,6 +56,7 @@
             <el-tag size="small" type="info">{{ networkText(l.network) }}</el-tag>
             <el-tag v-if="l.tls && l.plainHttp" size="small" type="info">{{ plainHttpText(l.plainHttp) }}</el-tag>
             <el-tag v-if="l.acceptProxyProtocol" size="small" type="info">{{ t('web.acceptProxyTag') }}</el-tag>
+            <el-tag v-if="l.accessScheme || l.accessPort" size="small" type="info" class="mono" :title="t('web.accessAddr')">{{ t('web.accessAddrTag', { scheme: accessScheme(l), port: accessPort(l) }) }}</el-tag>
           </span>
         </template>
         <template v-if="l.remark" #sub>{{ l.remark }}</template>
@@ -106,7 +107,13 @@
               </div>
               <div class="site-main">
                 <div v-if="item.item.isDefault" class="site-domains"><el-tag size="small" type="warning">{{ t('web.defaultSite') }}</el-tag> <span class="meta">{{ t('web.unmatchedDomains') }}</span></div>
-                <div v-else class="site-domains mono">{{ item.item.site.domains.join(', ') }}</div>
+                <!-- 具体域名可点击打开、悬停显示并可复制带协议与端口的完整地址；通配域名与排序模式（需要拖拽）显示纯文本 -->
+                <div v-else class="site-domains domain-list mono">
+                  <template v-for="d in domainLinks(l, item.item.site)" :key="d.domain">
+                    <UrlLink v-if="d.link && !sortMode" :href="d.link.href" :text="d.domain" :copy-value="d.link.text" :title="d.link.text" />
+                    <span v-else>{{ d.domain }}</span>
+                  </template>
+                </div>
                 <div v-if="item.item.site.name" class="meta">{{ item.item.site.name }}</div>
               </div>
               <div class="site-target">
@@ -202,6 +209,18 @@
         <el-form-item label="HTTPS">
           <el-switch v-model="editingListener.tls" />
           <span class="help">{{ t('web.tlsHelp') }}</span>
+        </el-form-item>
+        <!-- 仅用于生成站点链接：经协议分流、端口映射或 CDN 访问时，对外的协议与端口可能与监听不同 -->
+        <el-form-item :label="t('web.accessAddr')">
+          <div class="access-row">
+            <el-select v-model="editingListener.accessScheme" class="w-120">
+              <el-option :label="t('web.accessSchemeAuto', { scheme: editingListener.tls ? 'https' : 'http' })" value="" />
+              <el-option label="http" value="http" />
+              <el-option label="https" value="https" />
+            </el-select>
+            <el-input-number v-model="accessPortInput" :min="1" :max="65535" :placeholder="String(editingListener.port || '')" controls-position="right" class="w-160" />
+          </div>
+          <div class="form-help">{{ t('web.accessAddrHelp', { example: accessExample }) }}</div>
         </el-form-item>
         <el-form-item v-if="editingListener.tls" :label="t('web.minTls')">
           <el-select v-model="editingListener.minTls" class="w-120">
@@ -533,6 +552,8 @@ import SiteStats from '../components/SiteStats.vue'
 import SiteAccess, { type PathRule, type ShareLink } from '../components/SiteAccess.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
+import UrlLink from '../components/UrlLink.vue'
+import { accessPort, accessScheme, siteLink, type SiteLink } from '../siteUrl'
 import { useFormLayout } from '../composables/useIsMobile'
 import { useListText, splitLines } from '../composables/useListText'
 import ListInput from '../components/ListInput.vue'
@@ -630,6 +651,9 @@ interface Listener {
   // 开启 HTTPS 后同端口收到明文 HTTP 的处理方式：'' 不接受，redirect 跳转到 HTTPS，serve 直接服务
   plainHttp?: '' | 'redirect' | 'serve'
   acceptProxyProtocol: boolean
+  // 浏览器访问站点用的协议与端口，只用于生成站点链接；'' 按 tls 推算，0 使用监听端口
+  accessScheme?: '' | 'http' | 'https'
+  accessPort?: number
   sites: Site[] | null
   default: Site
   remark: string
@@ -829,11 +853,29 @@ function emptyListener(): Listener {
     http3: false,
     plainHttp: '',
     acceptProxyProtocol: false,
+    accessScheme: '',
+    accessPort: 0,
     sites: [],
     default: { ...emptySite(), enable: false },
     remark: '',
   }
 }
+
+// domainLinks 返回站点各域名及其访问地址，不能拼成具体地址的域名（如 *.example.com）link 为 null
+function domainLinks(l: Listener, s: Site): { domain: string; link: SiteLink | null }[] {
+  return (s.domains ?? []).map((domain) => ({ domain, link: siteLink(domain, l) }))
+}
+
+// accessPortInput 把 0（使用监听端口）映射为输入框的空值
+const accessPortInput = computed<number | undefined>({
+  get: () => editingListener.value.accessPort || undefined,
+  set: (v) => {
+    editingListener.value.accessPort = v ?? 0
+  },
+})
+
+// accessExample 为表单说明里展示的示例地址，随所选协议与端口变化
+const accessExample = computed(() => siteLink('example.com', editingListener.value)?.text ?? `${accessScheme(editingListener.value)}://example.com:${accessPort(editingListener.value)}`)
 
 function plainHttpText(v: string) {
   return v === 'redirect' ? t('web.plainHttpRedirectTag') : t('web.plainHttpServeTag')
@@ -1395,6 +1437,11 @@ onMounted(async () => {
 .site-domains {
   word-break: break-all;
 }
+.domain-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 8px;
+}
 .target {
   margin-left: 6px;
   font-size: 12px;
@@ -1437,6 +1484,14 @@ onMounted(async () => {
 .w-260 {
   width: 260px;
 }
+.w-160 {
+  width: 160px;
+}
+.access-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 .el-checkbox {
   white-space: normal;
   height: auto;
@@ -1469,6 +1524,9 @@ onMounted(async () => {
   }
   .sites.is-compact .site-main .site-domains {
     flex: 0 1 auto;
+  }
+  .sites.is-compact .domain-list {
+    flex-wrap: nowrap;
   }
   .sites.is-compact .site-main .meta {
     flex: 1 1 0;

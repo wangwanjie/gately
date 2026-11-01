@@ -1588,6 +1588,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Поле | Тип |
 | --- | --- |
 | `acceptProxyProtocol` | boolean |
+| `accessPort` | integer |
+| `accessScheme` | string |
 | `default` | `webservice.Site` |
 | `enable` | boolean |
 | `http3` | boolean |

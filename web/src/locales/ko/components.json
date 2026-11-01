@@ -156,5 +156,9 @@
   "secretInput": {
     "show": "표시",
     "hide": "숨기기"
+  },
+  "urlLink": {
+    "copy": "주소 복사",
+    "copied": "주소를 복사했습니다"
   }
 }

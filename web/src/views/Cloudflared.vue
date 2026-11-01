@@ -22,7 +22,7 @@
           <template #status><StatusBadge v-bind="tunnelBadge(tn)" /></template>
           <Field v-if="tn.mode === 'quick'" :label="t('cloudflared.localService')" mono>{{ tn.service }}</Field>
           <Field v-if="tn.mode === 'quick'" :label="t('cloudflared.publicAddr')" mono wide>
-            <a v-if="tn.url" :href="tn.url" target="_blank" rel="noopener">{{ tn.url }}</a>
+            <UrlLink v-if="tn.url" :href="tn.url" />
             <span v-else class="muted">{{ tn.state.running ? t('cloudflared.requesting') : '—' }}</span>
           </Field>
           <Field v-if="tn.mode === 'token'" :label="t('cloudflared.edgeConnections')" mono>{{ tn.connections }}</Field>
@@ -134,6 +134,7 @@ import { useCompactView } from '../composables/useCompactView'
 import Field from '../components/Field.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
+import UrlLink from '../components/UrlLink.vue'
 import ProgramInstall from '../components/ProgramInstall.vue'
 import ResetConfigButton from '../components/ResetConfigButton.vue'
 import CloudflaredIngress from '../components/CloudflaredIngress.vue'

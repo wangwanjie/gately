@@ -156,5 +156,9 @@
   "secretInput": {
     "show": "表示",
     "hide": "非表示"
+  },
+  "urlLink": {
+    "copy": "URL をコピー",
+    "copied": "URL をコピーしました"
   }
 }

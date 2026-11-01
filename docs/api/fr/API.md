@@ -1588,6 +1588,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Champ | Type |
 | --- | --- |
 | `acceptProxyProtocol` | boolean |
+| `accessPort` | integer |
+| `accessScheme` | string |
 | `default` | `webservice.Site` |
 | `enable` | boolean |
 | `http3` | boolean |

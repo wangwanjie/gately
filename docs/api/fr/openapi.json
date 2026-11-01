@@ -2101,6 +2101,12 @@
           "acceptProxyProtocol": {
             "type": "boolean"
           },
+          "accessPort": {
+            "type": "integer"
+          },
+          "accessScheme": {
+            "type": "string"
+          },
           "default": {
             "$ref": "#/components/schemas/webservice.Site"
           },

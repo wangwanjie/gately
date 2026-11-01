@@ -92,11 +92,38 @@ func TestValidate(t *testing.T) {
 		{Port: 80, Sites: []Site{{Domains: []string{"a.com"}, Type: TypeStatic, Root: "rel"}}},
 		{Port: 80, Sites: []Site{{Domains: []string{"a.com"}, Targets: []string{"http://x"}, BasicAuth: true}}},
 		{Port: 80, Sites: []Site{{Domains: []string{"a.com"}, Targets: []string{"http://x"}, IPMode: IPModeWhitelist, IPList: []string{"bad"}}}},
+		{Port: 80, AccessScheme: "ftp"},
+		{Port: 80, AccessScheme: "javascript"},
+		{Port: 80, AccessPort: -1},
+		{Port: 80, AccessPort: 65536},
 	}
 	for i, l := range bad {
 		if err := l.Validate(); err == nil {
 			t.Errorf("第 %d 个非法配置未报错", i)
 		}
+	}
+}
+
+// TestValidateAccessAddr 校验仅用于生成站点链接的访问协议与端口。
+func TestValidateAccessAddr(t *testing.T) {
+	l := Listener{Port: 8443, TLS: true, AccessScheme: " HTTPS ", AccessPort: 443}
+	if err := l.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	if l.AccessScheme != "https" || l.AccessPort != 443 {
+		t.Fatalf("访问协议应规范化为小写: %+v", l)
+	}
+	// 留空表示按监听推算
+	empty := Listener{Port: 8080}
+	if err := empty.Validate(); err != nil || empty.AccessScheme != "" || empty.AccessPort != 0 {
+		t.Fatalf("留空应合法且保持为空: %v %+v", err, empty)
+	}
+	// 修改访问协议与端口不涉及监听套接字，应热替换站点表而不重启监听
+	a := Listener{Port: 8443, TLS: true}
+	b := a
+	b.AccessScheme, b.AccessPort = "https", 443
+	if !sameSocket(a, b) {
+		t.Fatal("访问协议与端口不应导致重启监听")
 	}
 }
 

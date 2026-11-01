@@ -156,5 +156,9 @@
   "secretInput": {
     "show": "顯示",
     "hide": "隱藏"
+  },
+  "urlLink": {
+    "copy": "複製位址",
+    "copied": "已複製位址"
   }
 }

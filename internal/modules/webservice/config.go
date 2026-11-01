@@ -177,8 +177,13 @@ type Listener struct {
 	// 空为不接受（与普通 HTTPS 端口相同），redirect 跳转到同端口的 https 地址，serve 直接按 HTTP 提供站点
 	PlainHTTP string `json:"plainHttp"`
 	// AcceptProxyProtocol 接收上游（如 haproxy、frp）发送的 PROXY 协议头，仅信任全局设置中的来源
-	AcceptProxyProtocol bool   `json:"acceptProxyProtocol"`
-	Sites               []Site `json:"sites"`
+	AcceptProxyProtocol bool `json:"acceptProxyProtocol"`
+	// AccessScheme 与 AccessPort 为浏览器访问站点时使用的协议与端口，仅用于管理界面生成站点链接，不影响监听与转发。
+	// 经协议分流、路由器端口映射、frp 或 CDN 访问时，对外的协议和端口可能与监听不同。
+	// AccessScheme 为空时按是否开启 HTTPS 推算，AccessPort 为 0 时使用监听端口
+	AccessScheme string `json:"accessScheme"`
+	AccessPort   int    `json:"accessPort"`
+	Sites        []Site `json:"sites"`
 	// Default 在没有站点匹配时使用；未启用时返回 404
 	Default Site   `json:"default"`
 	Remark  string `json:"remark"`
@@ -280,6 +285,15 @@ func (l *Listener) Validate() error {
 	case "", "1.0", "1.1", "1.2", "1.3":
 	default:
 		return fmt.Errorf("不支持的 TLS 版本 %q", l.MinTLS)
+	}
+	l.AccessScheme = strings.ToLower(strings.TrimSpace(l.AccessScheme))
+	switch l.AccessScheme {
+	case "", "http", "https":
+	default:
+		return fmt.Errorf("不支持的访问协议 %q", l.AccessScheme)
+	}
+	if l.AccessPort < 0 || l.AccessPort > 65535 {
+		return errors.New("访问端口无效")
 	}
 	keys := map[string]bool{}
 	for i := range l.Sites {
