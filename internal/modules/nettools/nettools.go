@@ -290,13 +290,20 @@ func (m *Module) start(req Request) (*Task, error) {
 func title(r Request) string {
 	names := map[string]string{ToolPing: "Ping", ToolTraceroute: "路由追踪", ToolTCP: "端口探测", ToolDNS: "DNS 查询", ToolSpeed: "测速", ToolScan: "局域网扫描"}
 	t := names[r.Tool]
-	switch {
-	case r.Target != "":
-		return t + " " + r.Target
-	case r.CIDR != "":
-		return t + " " + r.CIDR
+	// 前端会把整个表单一起提交，只取当前工具实际使用的字段，避免测速、扫描标题带上其他页填写的目标
+	var arg string
+	switch r.Tool {
+	case ToolSpeed:
+		arg = speedHost(r.URL)
+	case ToolScan:
+		arg = strings.TrimSpace(r.CIDR)
+	default:
+		arg = strings.TrimSpace(r.Target)
 	}
-	return t
+	if arg == "" {
+		return t
+	}
+	return t + " " + arg
 }
 
 // pruneLocked 只保留最近 maxTasks 个任务，运行中的任务不会被清理。

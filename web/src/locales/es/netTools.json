@@ -16,7 +16,15 @@
   "dnsServer": "Servidor DNS",
   "dnsServerPlaceholder": "Déjalo vacío para usar el resolutor del sistema; p. ej. 223.5.5.5 o https://dns.alidns.com/dns-query",
   "downloadUrl": "URL de descarga",
-  "downloadUrlPlaceholder": "Déjalo vacío para usar un nodo de prueba de velocidad de Cloudflare",
+  "downloadUrlPlaceholder": "Vacío usa Cloudflare; elige un nodo o una URL",
+  "speedNodes": {
+    "anycast": "Más cercano",
+    "tokyo": "Tokio",
+    "singapore": "Singapur",
+    "losAngeles": "Los Ángeles",
+    "germany": "Alemania",
+    "france": "Francia"
+  },
   "duration": "Duración (s)",
   "cidr": "Subred",
   "cidrPlaceholder": "Por defecto, la subred local",

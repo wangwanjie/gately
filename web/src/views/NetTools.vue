@@ -33,7 +33,15 @@
           </el-form-item>
         </template>
         <template v-if="tool === 'speed'">
-          <el-form-item :label="t('netTools.downloadUrl')"><el-input v-model="form.url" :placeholder="t('netTools.downloadUrlPlaceholder')" class="w-360" clearable /></el-form-item>
+          <el-form-item :label="t('netTools.downloadUrl')">
+            <!-- 可选常用公开测速节点，也可直接输入任意下载地址；留空由后端使用 Cloudflare -->
+            <el-select v-model="form.url" filterable allow-create default-first-option clearable :placeholder="t('netTools.downloadUrlPlaceholder')" class="w-360">
+              <el-option v-for="n in speedNodes" :key="n.url" :label="`${n.provider} · ${t(`netTools.speedNodes.${n.place}`)}`" :value="n.url">
+                <span>{{ n.provider }} · {{ t(`netTools.speedNodes.${n.place}`) }}</span>
+                <span class="opt-host mono">{{ n.host }}</span>
+              </el-option>
+            </el-select>
+          </el-form-item>
           <el-form-item :label="t('netTools.duration')"><el-input-number v-model="form.seconds" :min="2" :max="30" /></el-form-item>
         </template>
         <el-form-item v-if="tool === 'scan'" :label="t('netTools.cidr')">
@@ -118,6 +126,18 @@ interface Task {
   result?: unknown
   started: string
 }
+
+// 常用公开测速文件：都能直接返回 200（后端不跟随重定向），单个文件下完后会重复下载直到时长结束。
+// Cloudflare 的 bytes 需小于 1 亿，否则返回 403。
+const speedNodes = [
+  { provider: 'Cloudflare', place: 'anycast', url: 'https://speed.cloudflare.com/__down?bytes=50000000' },
+  { provider: 'Vultr', place: 'tokyo', url: 'https://hnd-jp-ping.vultr.com/vultr.com.1000MB.bin' },
+  { provider: 'Vultr', place: 'singapore', url: 'https://sgp-ping.vultr.com/vultr.com.1000MB.bin' },
+  { provider: 'Vultr', place: 'losAngeles', url: 'https://lax-ca-us-ping.vultr.com/vultr.com.1000MB.bin' },
+  { provider: 'Hetzner', place: 'singapore', url: 'https://sin-speed.hetzner.com/1GB.bin' },
+  { provider: 'Hetzner', place: 'germany', url: 'https://fsn1-speed.hetzner.com/1GB.bin' },
+  { provider: 'OVH', place: 'france', url: 'https://proof.ovh.net/files/1Gb.dat' },
+].map((n) => ({ ...n, host: new URL(n.url).host }))
 
 const { t } = useI18n()
 const { isMobile } = useFormLayout()
@@ -252,6 +272,12 @@ onBeforeUnmount(() => window.clearInterval(timer))
 .w-360 {
   width: 360px;
   max-width: 100%;
+}
+.opt-host {
+  float: right;
+  margin-left: 16px;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
 }
 .w-110 {
   width: 110px;

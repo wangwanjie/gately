@@ -389,7 +389,22 @@ func dnsTool(ctx context.Context, m *Module, req Request, out output) error {
 
 // ---- 测速 ----
 
-const defaultSpeedURL = "https://speed.cloudflare.com/__down?bytes=200000000"
+// defaultSpeedURL 为默认测速地址。Cloudflare 的 __down 要求 bytes 小于 1 亿，超过会返回 403；
+// 单次下载完后会重新请求，所以单次大小只影响请求次数，不限制测速时长。
+const defaultSpeedURL = "https://speed.cloudflare.com/__down?bytes=50000000"
+
+// speedHost 返回测速地址的主机名，用于任务标题；留空时为默认测速节点。
+func speedHost(raw string) string {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		raw = defaultSpeedURL
+	}
+	u, err := url.Parse(raw)
+	if err != nil || u.Host == "" {
+		return raw
+	}
+	return u.Host
+}
 
 func speedTool(ctx context.Context, m *Module, req Request, out output) error {
 	target := strings.TrimSpace(req.URL)

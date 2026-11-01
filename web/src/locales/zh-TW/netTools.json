@@ -16,7 +16,15 @@
   "dnsServer": "DNS 伺服器",
   "dnsServerPlaceholder": "留空使用系統設定；如 223.5.5.5 或 https://dns.alidns.com/dns-query",
   "downloadUrl": "下載網址",
-  "downloadUrlPlaceholder": "留空使用 Cloudflare 測速節點",
+  "downloadUrlPlaceholder": "留空用 Cloudflare，可選節點或輸入網址",
+  "speedNodes": {
+    "anycast": "全球就近",
+    "tokyo": "東京",
+    "singapore": "新加坡",
+    "losAngeles": "洛杉磯",
+    "germany": "德國",
+    "france": "法國"
+  },
   "duration": "時長(秒)",
   "cidr": "網段",
   "cidrPlaceholder": "預設為本機網段",

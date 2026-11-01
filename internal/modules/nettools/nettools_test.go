@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/netip"
+	"net/url"
 	"strconv"
 	"strings"
 	"testing"
@@ -184,6 +185,38 @@ func TestSpeedTool(t *testing.T) {
 	task, _ = m.start(Request{Tool: ToolSpeed, URL: "ftp://x"})
 	if done := waitTask(t, m, task.ID); done.Status != "error" {
 		t.Fatal("非 http 地址应报错")
+	}
+}
+
+// 前端会提交整个表单，标题只能取当前工具使用的字段
+func TestTaskTitle(t *testing.T) {
+	cases := []struct {
+		req  Request
+		want string
+	}{
+		{Request{Tool: ToolSpeed, Target: "192.168.18.1"}, "测速 speed.cloudflare.com"},
+		{Request{Tool: ToolSpeed, Target: "192.168.18.1", URL: "https://sgp-ping.vultr.com/vultr.com.1000MB.bin"}, "测速 sgp-ping.vultr.com"},
+		{Request{Tool: ToolScan, Target: "192.168.18.1"}, "局域网扫描"},
+		{Request{Tool: ToolScan, Target: "192.168.18.1", CIDR: "10.0.0.0/24"}, "局域网扫描 10.0.0.0/24"},
+		{Request{Tool: ToolPing, Target: " 1.1.1.1 ", CIDR: "10.0.0.0/24"}, "Ping 1.1.1.1"},
+		{Request{Tool: ToolDNS}, "DNS 查询"},
+	}
+	for _, c := range cases {
+		if got := title(c.req); got != c.want {
+			t.Errorf("title(%+v) = %q，期望 %q", c.req, got, c.want)
+		}
+	}
+}
+
+// Cloudflare 的 __down 在 bytes 达到 1 亿时返回 403，默认地址必须低于该值
+func TestDefaultSpeedURLBytes(t *testing.T) {
+	u, err := url.Parse(defaultSpeedURL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	n, err := strconv.Atoi(u.Query().Get("bytes"))
+	if err != nil || n <= 0 || n >= 100_000_000 {
+		t.Fatalf("默认测速地址 bytes 应在 (0, 1e8) 内: %s", defaultSpeedURL)
 	}
 }
 

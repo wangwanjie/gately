@@ -16,7 +16,15 @@
   "dnsServer": "DNS-Server",
   "dnsServerPlaceholder": "Leer lassen für den System-Resolver; z. B. 223.5.5.5 oder https://dns.alidns.com/dns-query",
   "downloadUrl": "Download-URL",
-  "downloadUrlPlaceholder": "Leer lassen, um einen Cloudflare-Speedtest-Knoten zu verwenden",
+  "downloadUrlPlaceholder": "Leer = Cloudflare; Knoten wählen oder URL eingeben",
+  "speedNodes": {
+    "anycast": "Nächstgelegen",
+    "tokyo": "Tokio",
+    "singapore": "Singapur",
+    "losAngeles": "Los Angeles",
+    "germany": "Deutschland",
+    "france": "Frankreich"
+  },
   "duration": "Dauer (s)",
   "cidr": "Subnetz",
   "cidrPlaceholder": "Standardmäßig das lokale Subnetz",

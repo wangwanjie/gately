@@ -60,7 +60,7 @@ Ein Download-Geschwindigkeitstest mit 4 parallelen Streams. Er gibt jede Sekunde
 
 | Parameter | Beschreibung |
 | --- | --- |
-| Download-URL | Eine vollständige `http(s)://`-URL. Leer lassen, um den Geschwindigkeitstest-Endpunkt von Cloudflare zu nutzen (`https://speed.cloudflare.com/__down?bytes=200000000`) |
+| Download-URL | Eine vollständige `http(s)://`-URL. Leer lassen, um den Geschwindigkeitstest-Endpunkt von Cloudflare zu nutzen (`https://speed.cloudflare.com/__down?bytes=50000000`). Die Auswahlliste bietet gängige öffentliche Testdateien von Cloudflare, Vultr (Tokio, Singapur, Los Angeles), Hetzner (Singapur, Deutschland) und OVH (Frankreich); jede andere URL kann eingegeben werden. Eine fertig geladene Datei wird bis zum Ende der Dauer erneut angefordert |
 | Dauer | In Sekunden, in der Oberfläche 2 bis 30, Standard 8 |
 
 Geschwindigkeitstest-Anfragen folgen keinen Weiterleitungen und lassen sich daher nicht auf Adressen umlenken, für die das Prüfen gesperrt ist.

@@ -16,7 +16,15 @@
   "dnsServer": "DNS サーバー",
   "dnsServerPlaceholder": "空欄でシステム設定を使用。例: 223.5.5.5 または https://dns.alidns.com/dns-query",
   "downloadUrl": "ダウンロード URL",
-  "downloadUrlPlaceholder": "空欄で Cloudflare の速度測定ノードを使用",
+  "downloadUrlPlaceholder": "空欄で Cloudflare。ノード選択か URL 入力",
+  "speedNodes": {
+    "anycast": "最寄り",
+    "tokyo": "東京",
+    "singapore": "シンガポール",
+    "losAngeles": "ロサンゼルス",
+    "germany": "ドイツ",
+    "france": "フランス"
+  },
   "duration": "時間(秒)",
   "cidr": "ネットワークセグメント",
   "cidrPlaceholder": "デフォルトは本機のセグメント",

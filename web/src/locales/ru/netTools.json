@@ -16,7 +16,15 @@
   "dnsServer": "DNS-сервер",
   "dnsServerPlaceholder": "Оставьте пустым, чтобы использовать системный резолвер; например 223.5.5.5 или https://dns.alidns.com/dns-query",
   "downloadUrl": "URL для скачивания",
-  "downloadUrlPlaceholder": "Оставьте пустым, чтобы использовать узел теста скорости Cloudflare",
+  "downloadUrlPlaceholder": "Пусто — Cloudflare; выберите узел или URL",
+  "speedNodes": {
+    "anycast": "Ближайший",
+    "tokyo": "Токио",
+    "singapore": "Сингапур",
+    "losAngeles": "Лос-Анджелес",
+    "germany": "Германия",
+    "france": "Франция"
+  },
   "duration": "Длительность (с)",
   "cidr": "Подсеть",
   "cidrPlaceholder": "По умолчанию — локальная подсеть",

@@ -60,7 +60,7 @@ Un test de débit en téléchargement avec 4 flux simultanés. Il affiche le dé
 
 | Paramètre | Description |
 | --- | --- |
-| URL de téléchargement | Une URL `http(s)://` complète. Laissez vide pour utiliser le point de terminaison de test de débit de Cloudflare (`https://speed.cloudflare.com/__down?bytes=200000000`) |
+| URL de téléchargement | Une URL `http(s)://` complète. Laissez vide pour utiliser le point de terminaison de test de débit de Cloudflare (`https://speed.cloudflare.com/__down?bytes=50000000`). La liste déroulante propose des fichiers de test publics courants de Cloudflare, Vultr (Tokyo, Singapour, Los Angeles), Hetzner (Singapour, Allemagne) et OVH (France), et toute autre URL peut être saisie. Un fichier entièrement téléchargé est redemandé jusqu'à la fin de la durée |
 | Durée | En secondes, de 2 à 30 dans l'interface, 8 par défaut |
 
 Les requêtes du test de débit ne suivent pas les redirections, elles ne peuvent donc pas être détournées vers des adresses interdites au sondage.

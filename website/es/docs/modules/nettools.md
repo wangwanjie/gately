@@ -60,7 +60,7 @@ Una prueba de velocidad de descarga con 4 flujos simultáneos. Imprime la veloci
 
 | Parámetro | Descripción |
 | --- | --- |
-| URL de descarga | Una URL `http(s)://` completa. Déjala vacía para usar el endpoint de prueba de velocidad de Cloudflare (`https://speed.cloudflare.com/__down?bytes=200000000`) |
+| URL de descarga | Una URL `http(s)://` completa. Déjala vacía para usar el endpoint de prueba de velocidad de Cloudflare (`https://speed.cloudflare.com/__down?bytes=50000000`). La lista desplegable ofrece archivos de prueba públicos habituales de Cloudflare, Vultr (Tokio, Singapur, Los Ángeles), Hetzner (Singapur, Alemania) y OVH (Francia), y se puede escribir cualquier otra URL. Cuando un archivo termina de descargarse se vuelve a pedir hasta que acaba la duración |
 | Duración | En segundos, de 2 a 30 en la interfaz, por defecto 8 |
 
 Las peticiones de la prueba de velocidad no siguen redirecciones, por lo que no se pueden dirigir a direcciones cuyo sondeo está bloqueado.

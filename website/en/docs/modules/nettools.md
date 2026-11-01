@@ -60,7 +60,7 @@ A download speed test with 4 concurrent streams. It prints the current rate (Mbp
 
 | Parameter | Description |
 | --- | --- |
-| Download URL | A full `http(s)://` URL. Leave empty to use the Cloudflare speed test endpoint (`https://speed.cloudflare.com/__down?bytes=200000000`) |
+| Download URL | A full `http(s)://` URL. Leave empty to use the Cloudflare speed test endpoint (`https://speed.cloudflare.com/__down?bytes=50000000`). The dropdown lists common public test files from Cloudflare, Vultr (Tokyo, Singapore, Los Angeles), Hetzner (Singapore, Germany) and OVH (France); any other URL can be typed in. A file that finishes downloading is requested again until the duration ends |
 | Duration | In seconds, 2 to 30 in the UI, default 8 |
 
 Speed test requests do not follow redirects, so they cannot be steered to addresses that probing is blocked from.

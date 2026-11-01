@@ -60,7 +60,7 @@ Um teste de velocidade de download com 4 fluxos simultâneos. Ele imprime a taxa
 
 | Parâmetro | Descrição |
 | --- | --- |
-| URL de download | Uma URL completa `http(s)://`. Deixe em branco para usar o endpoint de teste de velocidade da Cloudflare (`https://speed.cloudflare.com/__down?bytes=200000000`) |
+| URL de download | Uma URL completa `http(s)://`. Deixe em branco para usar o endpoint de teste de velocidade da Cloudflare (`https://speed.cloudflare.com/__down?bytes=50000000`). A lista suspensa oferece arquivos de teste públicos comuns da Cloudflare, Vultr (Tóquio, Singapura, Los Angeles), Hetzner (Singapura, Alemanha) e OVH (França), e qualquer outra URL pode ser digitada. Um arquivo baixado por completo é pedido de novo até o fim da duração |
 | Duração | Em segundos, de 2 a 30 na interface, padrão 8 |
 
 As requisições do teste de velocidade não seguem redirecionamentos, então não podem ser desviadas para endereços cuja sondagem está bloqueada.

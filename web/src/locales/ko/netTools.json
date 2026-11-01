@@ -16,7 +16,15 @@
   "dnsServer": "DNS 서버",
   "dnsServerPlaceholder": "비워 두면 시스템 설정 사용. 예: 223.5.5.5 또는 https://dns.alidns.com/dns-query",
   "downloadUrl": "다운로드 주소",
-  "downloadUrlPlaceholder": "비워 두면 Cloudflare 속도 측정 노드 사용",
+  "downloadUrlPlaceholder": "비우면 Cloudflare, 노드 선택 또는 주소 입력",
+  "speedNodes": {
+    "anycast": "가장 가까운 곳",
+    "tokyo": "도쿄",
+    "singapore": "싱가포르",
+    "losAngeles": "로스앤젤레스",
+    "germany": "독일",
+    "france": "프랑스"
+  },
   "duration": "시간(초)",
   "cidr": "네트워크 대역",
   "cidrPlaceholder": "기본값은 이 기기의 네트워크 대역",

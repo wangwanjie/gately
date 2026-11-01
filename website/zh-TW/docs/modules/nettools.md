@@ -60,7 +60,7 @@
 
 | 參數 | 說明 |
 | --- | --- |
-| 下載位址 | 完整的 `http(s)://` URL，留空使用 Cloudflare 測速節點（`https://speed.cloudflare.com/__down?bytes=200000000`） |
+| 下載位址 | 完整的 `http(s)://` URL，留空使用 Cloudflare 測速節點（`https://speed.cloudflare.com/__down?bytes=50000000`）；下拉選單提供 Cloudflare、Vultr（東京、新加坡、洛杉磯）、Hetzner（新加坡、德國）、OVH（法國）等常用公開測速檔案，也可直接輸入其他位址。單個檔案下載完會重新請求，直到時長結束 |
 | 時長 | 秒，介面範圍 2 至 30，預設 8 |
 
 測速請求不跟隨重新導向，避免被引導到禁止探測的位址。
