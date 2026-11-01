@@ -378,6 +378,10 @@ func (a *App) accessControl(next http.Handler) http.Handler {
 			}
 			c, err := r.Cookie(entryCookie)
 			passed := err == nil && hmac.Equal([]byte(c.Value), []byte(a.entryValue(s.SafePath)))
+			// 主屏幕图标请求不带 Cookie，凭页面中签过名的地址放行（见 webclip.go）
+			if !passed && a.iconKeyValid(r, s.SafePath) {
+				passed = true
+			}
 			if !passed && !a.tokenPeek(r) {
 				// 已登录的会话（例如修改安全入口之前登录）仍可访问
 				if _, ok := a.auth.Verify(auth.TokenFromRequest(r)); !ok {

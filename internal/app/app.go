@@ -856,6 +856,10 @@ func (a *App) staticHandler() http.Handler {
 		name := strings.TrimPrefix(r.URL.Path, "/")
 		if name != "" {
 			if _, err := fs.Stat(web, name); err == nil {
+				// 凭签名读取 manifest 时，图标地址同样要带上签名，否则安装时取图标仍被安全入口拦截
+				if name == "manifest.webmanifest" && a.serveSignedManifest(w, r, web) {
+					return
+				}
 				// 带哈希的构建产物可长期缓存
 				if strings.HasPrefix(name, "assets/") {
 					w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
@@ -878,6 +882,9 @@ func (a *App) staticHandler() http.Handler {
 		index = absolutizeAssets(index, prefix)
 		if prefix != "" {
 			index = injectBase(index, prefix)
+		} else if safePath := a.settingsSnapshot().SafePath; safePath != "" {
+			// 开启安全入口时给图标地址签名，iOS 添加到主屏幕时不带 Cookie 也能取到图标；经网关访问时不经过安全入口，无需签名
+			index = signIconLinks(index, prefix, a.iconKey(safePath))
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.Header().Set("Cache-Control", "no-cache")
