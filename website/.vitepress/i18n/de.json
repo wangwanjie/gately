@@ -205,6 +205,10 @@
       {
         "title": "Protokoll-Routing",
         "text": "Erkennt das Protokoll an den ersten Bytes jeder Verbindung, sodass HTTPS, SSH, RDP, OpenVPN und insgesamt 20 Protokolle einen Port teilen; TLS wird nach SNI und ALPN, HTTP nach Host geroutet, ohne den Verkehr zu entschlüsseln; optional PROXY-Protokoll an die Backends."
+      },
+      {
+        "title": "Netzwerktopologie",
+        "text": "Eine Live-Karte von den Besuchern über Listener und Sites bis zu den Backends, mit sieben Layouts, IP-Filter und Maskierung für Screenshots per Klick."
       }
     ],
     "moreModules": "Alle Module ansehen →",
@@ -316,6 +320,16 @@
           "Portweiterleitung, DDNS, Zertifikate und Web-Dienste auf einer Seite",
           "Netzwerk-Selbsttest per Klick: öffentliche IP, CGNAT, Ports, DNS und Zertifikate",
           "Prometheus-Metriken und ein fertiges Grafana-Dashboard"
+        ]
+      },
+      {
+        "tag": "Netzwerktopologie",
+        "title": "Den Datenverkehr fließen sehen",
+        "text": "Eine Live-Karte, wie Anfragen aus dem Internet über Listener und Sites zu den Backends gelangen, mit QPS, Fehlern und aktiven Besuchern an jedem Knoten.",
+        "points": [
+          "Sieben Layouts: Baum, vertikal, radial, Sankey, Sunburst, Treemap und Blasen",
+          "Nach Besucher-IP filtern, stark belastete Listener einklappen, auf Desktop und Smartphone verschieben und zoomen",
+          "Besucher-IPs, Backend-Adressen und Domains vor dem Teilen eines Screenshots mit einem Klick maskieren"
         ]
       },
       {

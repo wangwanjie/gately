@@ -205,6 +205,10 @@
       {
         "title": "Routage par protocole",
         "text": "Identifie le protocole aux premiers octets de chaque connexion pour que HTTPS, SSH, RDP, OpenVPN et 20 protocoles au total partagent un même port ; TLS est routé selon le SNI et l'ALPN, HTTP selon l'en-tête Host, sans déchiffrer le trafic ; envoi possible du protocole PROXY aux backends."
+      },
+      {
+        "title": "Topologie réseau",
+        "text": "Une carte en direct des visiteurs aux backends en passant par les écoutes et les sites, avec sept dispositions, un filtre par IP et un masquage en un clic pour les captures."
       }
     ],
     "moreModules": "Voir tous les modules →",
@@ -316,6 +320,16 @@
           "Redirection de ports, DDNS, certificats et services Web sur un seul écran",
           "Auto-diagnostic réseau en un clic : IP publique, CGNAT, ports, DNS et certificats",
           "Métriques Prometheus et tableau de bord Grafana prêt à l'emploi"
+        ]
+      },
+      {
+        "tag": "Topologie réseau",
+        "title": "Voyez circuler le trafic",
+        "text": "Une carte en direct du chemin des requêtes depuis Internet, via les écoutes et les sites, jusqu'aux backends, avec le QPS, les erreurs et les visiteurs actifs sur chaque nœud.",
+        "points": [
+          "Sept dispositions : arbre, vertical, radial, Sankey, sunburst, treemap et bulles",
+          "Filtrage par IP de visiteur, écoutes chargées repliables, zoom et déplacement sur ordinateur et mobile",
+          "Masquez les IP des visiteurs, les adresses des backends et les domaines avant de partager une capture"
         ]
       },
       {

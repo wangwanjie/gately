@@ -205,6 +205,10 @@
       {
         "title": "Roteamento por protocolo",
         "text": "Identifica o protocolo pelos primeiros bytes de cada conexão para que HTTPS, SSH, RDP, OpenVPN e 20 protocolos no total compartilhem uma porta; TLS é roteado por SNI e ALPN e HTTP por Host, sem descriptografar o tráfego; pode enviar o protocolo PROXY aos backends."
+      },
+      {
+        "title": "Topologia de rede",
+        "text": "Um mapa em tempo real dos visitantes aos backends, passando por listeners e sites, com sete layouts, filtro por IP e ocultação de dados com um clique para capturas de tela."
       }
     ],
     "moreModules": "Ver todos os módulos →",
@@ -316,6 +320,16 @@
           "Redirecionamento de portas, DDNS, certificados e serviços web em uma só tela",
           "Autodiagnóstico de rede em um clique: IP público, CGNAT, portas, DNS e certificados",
           "Métricas do Prometheus e um painel do Grafana pronto"
+        ]
+      },
+      {
+        "tag": "Topologia de rede",
+        "title": "Veja o tráfego em movimento",
+        "text": "Um mapa em tempo real de como as requisições vão da internet, passando por listeners e sites, até os backends, com QPS, erros e visitantes ativos em cada nó.",
+        "points": [
+          "Sete layouts: árvore, vertical, radial, Sankey, sunburst, treemap e bolhas",
+          "Filtre por IP de visitante, recolha listeners movimentados e use zoom e arrastar no computador e no celular",
+          "Oculte IPs de visitantes, endereços de backend e domínios com um clique antes de compartilhar uma captura"
         ]
       },
       {

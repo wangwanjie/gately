@@ -205,6 +205,10 @@
       {
         "title": "Enrutamiento por protocolo",
         "text": "Identifica el protocolo por los primeros bytes de cada conexión para que HTTPS, SSH, RDP, OpenVPN y hasta 20 protocolos compartan un puerto; TLS se enruta por SNI y ALPN y HTTP por Host, sin descifrar el tráfico; puede enviar el protocolo PROXY a los backends."
+      },
+      {
+        "title": "Topología de red",
+        "text": "Un mapa en directo desde los visitantes hasta los backends pasando por listeners y sitios, con siete diseños, filtro por IP y ocultación de datos con un clic para capturas."
       }
     ],
     "moreModules": "Ver todos los módulos →",
@@ -316,6 +320,16 @@
           "Reenvío de puertos, DDNS, certificados y servicios web en una sola pantalla",
           "Autodiagnóstico de red en un clic: IP pública, CGNAT, puertos, DNS y certificados",
           "Métricas de Prometheus y un panel de Grafana listo para usar"
+        ]
+      },
+      {
+        "tag": "Topología de red",
+        "title": "Ve cómo circula el tráfico",
+        "text": "Un mapa en directo de cómo viajan las peticiones desde Internet, pasando por listeners y sitios, hasta los backends, con QPS, errores y visitantes activos en cada nodo.",
+        "points": [
+          "Siete diseños: árbol, vertical, radial, Sankey, sunburst, treemap y burbujas",
+          "Filtra por IP de visitante, pliega los listeners más activos y haz zoom y desplázate en ordenador y móvil",
+          "Oculta IP de visitantes, direcciones de backend y dominios antes de compartir una captura"
         ]
       },
       {

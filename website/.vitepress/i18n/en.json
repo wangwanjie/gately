@@ -205,6 +205,10 @@
       {
         "title": "Protocol Routing",
         "text": "Identifies the protocol from the first bytes of each connection so HTTPS, SSH, RDP, OpenVPN and 20 protocols in total share one port; TLS is routed by SNI and ALPN, HTTP by Host, without decrypting traffic; can send the PROXY protocol to backends."
+      },
+      {
+        "title": "Network topology",
+        "text": "A live map from visitors through listeners and sites to backends, with seven layouts, IP filtering and one-click masking for screenshots."
       }
     ],
     "moreModules": "See all modules →",
@@ -316,6 +320,16 @@
           "Port forwarding, DDNS, certificates and web services on one screen",
           "One-click network self-check: public IP, CGNAT, ports, DNS and certificates",
           "Prometheus metrics and a ready-made Grafana dashboard"
+        ]
+      },
+      {
+        "tag": "Network topology",
+        "title": "Watch traffic flow from visitor to backend",
+        "text": "A live map of how requests travel from the Internet through listeners and sites to backends, with QPS, errors and active visitors on every node.",
+        "points": [
+          "Seven layouts: tree, vertical, radial, Sankey, sunburst, treemap and bubbles",
+          "Filter by visitor IP, fold busy listeners, pan and zoom on desktop and phone",
+          "Mask visitor IPs, backend addresses and domains before sharing a screenshot"
         ]
       },
       {
