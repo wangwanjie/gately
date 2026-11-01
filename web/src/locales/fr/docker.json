@@ -93,7 +93,7 @@
       "checkUpdate": "Rechercher les mises à jour",
       "upgrade": "Mettre à niveau",
       "selfHint": "Ce conteneur exécute Gately et ne peut pas être arrêté",
-      "selfRebuildHint": "Le conteneur qui exécute Gately ne peut pas être mis à jour ni modifié ici. Exécutez docker pull sur l'hôte puis recréez le conteneur"
+      "selfRebuildHint": "Le conteneur qui exécute Gately ne peut pas être modifié ici. Modifiez sa configuration sur l'hôte puis recréez le conteneur"
     },
     "detail": {
       "overview": "Vue d'ensemble",
@@ -279,8 +279,12 @@
       "upgradeConfirm": "La dernière image sera téléchargée et {name} sera recréé avec sa configuration d'origine. Le service est brièvement interrompu ; si le nouveau conteneur ne démarre pas, l'ancien est restauré automatiquement.",
       "upgradeTitle": "Mettre à niveau le conteneur",
       "upgradeDone": "Mise à niveau terminée",
+      "selfUpgradeConfirm": "Récupère la dernière image de {name}. S'il existe une nouvelle version, un conteneur auxiliaire temporaire recrée Gately avec sa configuration actuelle : l'interface d'administration et les services fournis par Gately sont interrompus quelques secondes ; l'ancien conteneur est restauré si le nouveau ne démarre pas. Le résultat est consigné dans le journal Docker.",
+      "selfUpgradeRestarting": "Gately recrée son conteneur et redémarre…",
+      "selfUpToDate": "L'image de Gately est déjà à jour",
       "checkAllTask": "Rechercher les mises à jour de tous les conteneurs",
       "batchConfirm": "Les {count} conteneurs sélectionnés seront mis à niveau un par un (seuls ceux disposant d'une version plus récente sont réellement recréés). Les services associés sont brièvement interrompus.",
+      "batchSelfNote": "La sélection inclut Gately lui-même. Il est mis à jour en dernier, une fois les autres conteneurs mis à jour avec succès, puis Gately redémarre.",
       "batchTitle": "Mise à niveau groupée",
       "batchTask": "Mise à niveau groupée des conteneurs"
     }

@@ -93,7 +93,7 @@
       "checkUpdate": "检查更新",
       "upgrade": "升级",
       "selfHint": "这是 Gately 自身所在的容器，无法停止",
-      "selfRebuildHint": "Gately 自身所在的容器不能在这里升级或编辑，请在宿主机上执行 docker pull 后重建容器"
+      "selfRebuildHint": "Gately 自身所在的容器不能在这里编辑，请在宿主机上修改配置后重建容器"
     },
     "detail": {
       "overview": "概览",
@@ -279,8 +279,12 @@
       "upgradeConfirm": "将拉取最新镜像并按原配置重建 {name}，期间服务会短暂中断；新容器启动失败时自动恢复旧容器。",
       "upgradeTitle": "升级容器",
       "upgradeDone": "升级完成",
+      "selfUpgradeConfirm": "将拉取 {name} 的最新镜像，有新版本时由一个临时辅助容器按原配置重建 Gately，期间管理界面与 Gately 提供的服务会中断几十秒；新容器启动失败时自动恢复旧容器。升级结果记录在 Docker 管理的日志中。",
+      "selfUpgradeRestarting": "Gately 正在重建容器并重启…",
+      "selfUpToDate": "Gately 镜像已是最新，无需升级",
       "checkAllTask": "检查全部容器更新",
       "batchConfirm": "将依次升级选中的 {count} 个容器（仅升级有新版本的会实际重建），期间相关服务会短暂中断。",
+      "batchSelfNote": "选中项包含 Gately 自身，它会在其它容器升级成功后最后升级，随后 Gately 重启。",
       "batchTitle": "批量升级",
       "batchTask": "批量升级容器"
     }

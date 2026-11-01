@@ -39,7 +39,7 @@ Long-running operations (pulling/pushing/building images, compose up, and so on)
 | POST | `/containers/{id}/check` `/upgrade` | Existing; unchanged |
 | POST | `/containers/upgrade-batch` | `{ids:string[]}` upgrades them in sequence (a task); returns `{task}` |
 
-`{id}` can be a full ID, an ID prefix or a container name; the server resolves it to the full ID first. While a container is being upgraded or recreated by an edit, start, stop, delete, `edit` and `upgrade` requests for it return 409. For the container Gately itself runs in, stop, kill, pause, delete, `edit` and `upgrade` are rejected, and `upgrade-batch` skips it; for the Compose project Gately itself belongs to, stop, pause, `down`, `up` and delete are rejected.
+`{id}` can be a full ID, an ID prefix or a container name; the server resolves it to the full ID first. While a container is being upgraded or recreated by an edit, start, stop, delete, `edit` and `upgrade` requests for it return 409. For the container Gately itself runs in, stop, kill, pause, delete and `edit` are rejected; `upgrade` pulls the new image first and, only when there is a new version, hands the recreation to a temporary helper container, returning `{id, self: true, upToDate}` (when `upToDate` is false Gately restarts shortly afterwards); `upgrade-batch` handles it last and leaves it alone when another container failed; for the Compose project Gately itself belongs to, stop, pause, `down`, `up` and delete are rejected.
 
 ### Container files
 

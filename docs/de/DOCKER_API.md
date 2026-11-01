@@ -39,7 +39,7 @@ Lang laufende Vorgänge (Images ziehen/pushen/bauen, compose up usw.) liefern `{
 | POST | `/containers/{id}/check` `/upgrade` | Bestehend; unverändert |
 | POST | `/containers/upgrade-batch` | `{ids:string[]}` aktualisiert sie nacheinander (eine Aufgabe); liefert `{task}` |
 
-`{id}` kann eine vollständige ID, ein ID-Präfix oder ein Containername sein; der Server löst ihn zuerst in die vollständige ID auf. Während ein Container aktualisiert oder nach einer Bearbeitung neu erstellt wird, liefern Starten, Stoppen, Löschen, `edit` und `upgrade` für ihn 409. Für den Container, in dem Gately selbst läuft, werden stop, kill, pause, Löschen, `edit` und `upgrade` abgelehnt, und `upgrade-batch` überspringt ihn; für das Compose-Projekt, zu dem Gately selbst gehört, werden stop, pause, `down`, `up` und Löschen abgelehnt.
+`{id}` kann eine vollständige ID, ein ID-Präfix oder ein Containername sein; der Server löst ihn zuerst in die vollständige ID auf. Während ein Container aktualisiert oder nach einer Bearbeitung neu erstellt wird, liefern Starten, Stoppen, Löschen, `edit` und `upgrade` für ihn 409. Für den Container, in dem Gately selbst läuft, werden stop, kill, pause, Löschen und `edit` abgelehnt; `upgrade` lädt zuerst das neue Image und übergibt die Neuerstellung nur bei einer neuen Version an einen temporären Hilfscontainer, Antwort `{id, self: true, upToDate}` (ist `upToDate` false, startet Gately kurz danach neu); `upgrade-batch` behandelt ihn zuletzt und lässt ihn aus, wenn ein anderer Container fehlgeschlagen ist; für das Compose-Projekt, zu dem Gately selbst gehört, werden stop, pause, `down`, `up` und Löschen abgelehnt.
 
 ### Container-Dateien
 

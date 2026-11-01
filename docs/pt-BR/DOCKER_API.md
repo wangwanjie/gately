@@ -39,7 +39,7 @@ Operações demoradas (baixar/enviar/compilar imagens, compose up etc.) retornam
 | POST | `/containers/{id}/check` `/upgrade` | Já existentes; sem alterações |
 | POST | `/containers/upgrade-batch` | `{ids:string[]}` atualiza os contêineres em sequência (uma tarefa); retorna `{task}` |
 
-`{id}` pode ser um ID completo, um prefixo de ID ou o nome do contêiner; o servidor primeiro o resolve para o ID completo. Enquanto um contêiner está sendo atualizado ou recriado por edição, iniciar, parar, excluir, `edit` e `upgrade` nele retornam 409. No contêiner em que o próprio Gately roda, stop, kill, pause, exclusão, `edit` e `upgrade` são rejeitados, e o `upgrade-batch` o ignora; no projeto Compose ao qual o Gately pertence, stop, pause, `down`, `up` e exclusão são rejeitados.
+`{id}` pode ser um ID completo, um prefixo de ID ou o nome do contêiner; o servidor primeiro o resolve para o ID completo. Enquanto um contêiner está sendo atualizado ou recriado por edição, iniciar, parar, excluir, `edit` e `upgrade` nele retornam 409. No contêiner em que o próprio Gately roda, stop, kill, pause, exclusão e `edit` são rejeitados; `upgrade` baixa primeiro a nova imagem e, só quando há uma nova versão, entrega a recriação a um contêiner auxiliar temporário, retornando `{id, self: true, upToDate}` (com `upToDate` false, o Gately reinicia logo depois); o `upgrade-batch` o processa por último e não o atualiza se outro contêiner falhou; no projeto Compose ao qual o Gately pertence, stop, pause, `down`, `up` e exclusão são rejeitados.
 
 ### Arquivos do contêiner
 

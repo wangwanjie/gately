@@ -725,11 +725,6 @@ func (m *Module) handleUpgrade(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	// 升级会先停止旧容器，对自身执行会让 Gately 中途退出、无法创建新容器，也无法恢复旧容器
-	if isSelfContainer(id) {
-		httpx.Error(w, http.StatusBadRequest, selfRebuildError)
-		return
-	}
 	release, ok := m.acquire(id)
 	if !ok {
 		httpx.Error(w, http.StatusConflict, "正在升级")
@@ -738,6 +733,21 @@ func (m *Module) handleUpgrade(w http.ResponseWriter, r *http.Request) {
 	defer release()
 	ctx, cancel := context.WithTimeout(context.Background(), waitTimeout)
 	defer cancel()
+	// 升级会先停止旧容器，自身所在的容器交给辅助容器重建，Gately 随后重启
+	if isSelfContainer(id) {
+		res, err := m.startSelfUpgrade(ctx, c, id)
+		if err != nil {
+			httpx.Error(w, http.StatusBadGateway, "%v", err)
+			return
+		}
+		if res.UpToDate {
+			m.mu.Lock()
+			m.updates[id] = UpdateInfo{Checked: time.Now()}
+			m.mu.Unlock()
+		}
+		httpx.OK(w, map[string]any{"id": id, "self": true, "upToDate": res.UpToDate})
+		return
+	}
 	newID, err := m.upgrade(ctx, c, id)
 	if err != nil {
 		httpx.Error(w, http.StatusBadGateway, "%v", err)
@@ -815,6 +825,8 @@ func (m *Module) handleUpgradeBatch(w http.ResponseWriter, r *http.Request) {
 	ids := append([]string{}, req.IDs...)
 	id := m.startTask("upgrade", fmt.Sprintf("批量升级 %d 个容器", len(ids)), func(ctx context.Context, progress func(string)) error {
 		failed := 0
+		// 自身所在的容器放到最后升级：辅助容器重建时 Gately 会重启，任务随之结束
+		var self, selfLabel string
 		for _, cid := range ids {
 			if ctx.Err() != nil {
 				return ctx.Err()
@@ -832,10 +844,8 @@ func (m *Module) handleUpgradeBatch(w http.ResponseWriter, r *http.Request) {
 					cid = full
 				}
 			}
-			// 自身所在的容器跳过并计为失败，其余容器照常升级
 			if isSelfContainer(cid) {
-				failed++
-				progress(fmt.Sprintf("%s: Gately 自身所在的容器不能在 Gately 内升级，已跳过，请在宿主机上更新", label))
+				self, selfLabel = cid, label
 				continue
 			}
 			release, ok := m.acquire(cid)
@@ -856,6 +866,29 @@ func (m *Module) handleUpgradeBatch(w http.ResponseWriter, r *http.Request) {
 			delete(m.updates, cid)
 			m.mu.Unlock()
 			progress(fmt.Sprintf("%s: 升级完成，新容器 %s", label, shortID(newID)))
+		}
+		if self != "" && ctx.Err() == nil {
+			if failed > 0 {
+				// 其它容器有失败时先保留 Gately，便于查看任务结果
+				failed++
+				progress(fmt.Sprintf("%s: 其它容器升级失败，Gately 自身暂不升级，请处理后单独升级", selfLabel))
+			} else if release, ok := m.acquire(self); !ok {
+				failed++
+				progress(fmt.Sprintf("%s: 正在被其它操作占用，已跳过", selfLabel))
+			} else {
+				progress(fmt.Sprintf("%s: 开始升级 Gately 自身", selfLabel))
+				res, err := m.startSelfUpgrade(ctx, c, self)
+				release()
+				switch {
+				case err != nil:
+					failed++
+					progress(fmt.Sprintf("%s: 升级失败 %v", selfLabel, err))
+				case res.UpToDate:
+					progress(fmt.Sprintf("%s: 已是最新", selfLabel))
+				default:
+					progress(fmt.Sprintf("%s: 已交由辅助容器重建，Gately 即将重启", selfLabel))
+				}
+			}
 		}
 		if failed > 0 {
 			return fmt.Errorf("%d 个容器升级失败", failed)

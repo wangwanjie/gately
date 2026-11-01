@@ -49,7 +49,8 @@ func fakeSelf(t *testing.T, id string) {
 	})
 }
 
-// 升级、按新配置重建自身所在的容器会先停止自己，必须在停止之前拒绝（issue #38）
+// 按新配置重建自身所在的容器会先停止自己，必须在停止之前拒绝（issue #38）；
+// 升级自身改由辅助容器完成（见 selfupgrade_test.go），批量升级时放到最后且其它容器失败时暂不升级
 func TestSelfContainerRebuildRejected(t *testing.T) {
 	info := ctrSampleInfo(t)
 	var id string
@@ -61,23 +62,19 @@ func TestSelfContainerRebuildRejected(t *testing.T) {
 	_, api := ctrAPI(t, host)
 	fakeSelf(t, id)
 
-	rec := api("POST", "/containers/"+id+"/upgrade", "", nil)
-	if rec.Code != 400 || !strings.Contains(rec.Body.String(), "宿主机") {
-		t.Fatalf("升级自身应拒绝并提示在宿主机更新: %d %s", rec.Code, rec.Body)
-	}
-	rec = api("POST", "/containers/"+id+"/edit", "application/json", jsonBody(specFromInspect(info, nil)))
+	rec := api("POST", "/containers/"+id+"/edit", "application/json", jsonBody(specFromInspect(info, nil)))
 	if rec.Code != 400 || !strings.Contains(rec.Body.String(), "宿主机") {
 		t.Fatalf("重建自身应拒绝: %d %s", rec.Code, rec.Body)
 	}
 
-	// 批量升级跳过自身，其余容器照常处理（这里 other 不存在，同样记为失败）
+	// 批量升级先处理其余容器（这里 other 不存在，记为失败），有失败时自身暂不升级
 	rec = api("POST", "/containers/upgrade-batch", "application/json", jsonBody(map[string]any{"ids": []string{id, other}}))
 	var out map[string]string
 	_ = json.Unmarshal(rec.Body.Bytes(), &out)
 	task := ctrWaitTask(t, out["task"])
 	joined := strings.Join(task.Lines, "\n")
-	if task.Status != "error" || !strings.Contains(task.Error, "2 个容器升级失败") || !strings.Contains(joined, "已跳过") {
-		t.Fatalf("批量升级应跳过自身: %+v", task)
+	if task.Status != "error" || !strings.Contains(task.Error, "2 个容器升级失败") || !strings.Contains(joined, "暂不升级") {
+		t.Fatalf("其它容器失败时自身应暂不升级: %+v", task)
 	}
 	if f.called("GET /containers/"+other+"/json") == 0 {
 		t.Errorf("跳过自身后应继续处理其余容器: %v", f.calls)
@@ -126,7 +123,6 @@ func TestSelfContainerGuardByName(t *testing.T) {
 		{"POST", "/containers/web/kill"},
 		{"POST", "/containers/web/pause"},
 		{"DELETE", "/containers/web"},
-		{"POST", "/containers/web/upgrade"},
 	} {
 		if rec := api(c.method, c.path, "", nil); rec.Code != 400 {
 			t.Errorf("%s %s 按名称调用也应拒绝操作自身: %d %s", c.method, c.path, rec.Code, rec.Body)

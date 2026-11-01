@@ -99,6 +99,8 @@ func (m *Module) Start(ctx context.Context) error {
 	m.stopWatch = cancel
 	m.autoMu.Unlock()
 	go m.runEventWatch(wctx)
+	// 读取上次升级自身留下的辅助容器结果
+	go m.collectSelfUpgrades(wctx)
 	return nil
 }
 
@@ -232,9 +234,16 @@ func (m *Module) upgrade(ctx context.Context, c *Client, id string) (string, err
 	return m.rebuild(c, id, info, name, name, body, extraNets, log)
 }
 
+// rebuildLogger 是重建过程的日志输出：模块内为 *logbuf.Logger，升级自身的辅助容器内输出到标准输出。
+type rebuildLogger interface {
+	Infof(format string, args ...any)
+	Warnf(format string, args ...any)
+	Errorf(format string, args ...any)
+}
+
 // rebuild 用 body 重建容器：停止旧容器 -> 改名备份 -> 创建新容器 -> 连接其余网络 -> 启动，任一步失败都恢复旧容器。
 // 旧容器原本在运行才会启动新容器。停止旧容器之后的每一步使用独立超时，保证恢复流程不因调用方取消而中断。
-func (m *Module) rebuild(c *Client, id string, info map[string]json.RawMessage, name, newName string, body map[string]any, extraNets []networkAttach, log *logbuf.Logger) (string, error) {
+func (m *Module) rebuild(c *Client, id string, info map[string]json.RawMessage, name, newName string, body map[string]any, extraNets []networkAttach, log rebuildLogger) (string, error) {
 	var state struct {
 		Running bool `json:"Running"`
 	}

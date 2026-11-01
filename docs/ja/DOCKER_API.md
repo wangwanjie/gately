@@ -39,7 +39,7 @@
 | POST | `/containers/{id}/check` `/upgrade` | 既存。変更なし |
 | POST | `/containers/upgrade-batch` | `{ids:string[]}` を順にアップグレードします（タスク）。`{task}` を返します |
 
-`{id}` には完全な ID、ID の接頭辞、コンテナ名のいずれも指定でき、サーバー側で先に完全な ID に解決します。コンテナのアップグレード中または編集による再作成中は、そのコンテナに対する起動・停止、削除、`edit`、`upgrade` は 409 を返します。Gately 自身が動いているコンテナでは stop、kill、pause、削除、`edit`、`upgrade` を拒否し、`upgrade-batch` ではスキップします。自身が属する Compose プロジェクトでは stop、pause、`down`、`up`、削除を拒否します。
+`{id}` には完全な ID、ID の接頭辞、コンテナ名のいずれも指定でき、サーバー側で先に完全な ID に解決します。コンテナのアップグレード中または編集による再作成中は、そのコンテナに対する起動・停止、削除、`edit`、`upgrade` は 409 を返します。Gately 自身が動いているコンテナでは stop、kill、pause、削除、`edit` を拒否します。`upgrade` は先に新しいイメージを取得し、新しいバージョンがある場合のみ一時的なヘルパーコンテナに再作成を任せ、`{id, self: true, upToDate}` を返します（`upToDate` が false のときは直後に Gately が再起動します）。`upgrade-batch` ではこのコンテナを最後に処理し、他のコンテナが失敗した場合は更新しません。自身が属する Compose プロジェクトでは stop、pause、`down`、`up`、削除を拒否します。
 
 ### コンテナ内のファイル
 

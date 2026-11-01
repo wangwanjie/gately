@@ -93,7 +93,7 @@
       "checkUpdate": "Nach Updates suchen",
       "upgrade": "Aktualisieren",
       "selfHint": "Dies ist der Container, in dem Gately läuft, und kann nicht gestoppt werden",
-      "selfRebuildHint": "Der Container, in dem Gately läuft, kann hier nicht aktualisiert oder bearbeitet werden. Führen Sie docker pull auf dem Host aus und erstellen Sie den Container neu"
+      "selfRebuildHint": "Der Container, in dem Gately läuft, kann hier nicht bearbeitet werden. Ändern Sie die Konfiguration auf dem Host und erstellen Sie den Container neu"
     },
     "detail": {
       "overview": "Übersicht",
@@ -279,8 +279,12 @@
       "upgradeConfirm": "Das neueste Image wird abgerufen und {name} mit der ursprünglichen Konfiguration neu erstellt. Der Dienst wird kurz unterbrochen; startet der neue Container nicht, wird der alte automatisch wiederhergestellt.",
       "upgradeTitle": "Container aktualisieren",
       "upgradeDone": "Aktualisierung abgeschlossen",
+      "selfUpgradeConfirm": "Lädt das neueste Image von {name}. Gibt es eine neue Version, erstellt ein temporärer Hilfscontainer Gately mit der aktuellen Konfiguration neu; Verwaltungsoberfläche und die von Gately bereitgestellten Dienste sind dabei einige Sekunden unterbrochen. Startet der neue Container nicht, wird der alte wiederhergestellt. Das Ergebnis wird im Docker-Log festgehalten.",
+      "selfUpgradeRestarting": "Gately erstellt seinen Container neu und startet neu…",
+      "selfUpToDate": "Das Gately-Image ist bereits aktuell",
       "checkAllTask": "Alle Container auf Updates prüfen",
       "batchConfirm": "Die {count} ausgewählten Container werden nacheinander aktualisiert (nur solche mit neuerer Version werden tatsächlich neu erstellt). Zugehörige Dienste werden kurz unterbrochen.",
+      "batchSelfNote": "Die Auswahl enthält Gately selbst. Es wird zuletzt aktualisiert, nachdem die anderen Container erfolgreich aktualisiert wurden; danach startet Gately neu.",
       "batchTitle": "Sammelaktualisierung",
       "batchTask": "Container gesammelt aktualisieren"
     }

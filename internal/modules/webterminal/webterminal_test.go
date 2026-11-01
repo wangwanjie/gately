@@ -1250,3 +1250,44 @@ func TestImportLuckyFull(t *testing.T) {
 		t.Fatalf("重复导入应去重: %v %d %d", err, len(m.cfg.Connections), len(m.cfg.Shortcuts))
 	}
 }
+
+// 本机 Shell 运行在容器内时先提示不要在这里重建本容器，不在容器内时不提示
+func TestLocalShellContainerNotice(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("本机 Shell 仅支持 Unix")
+	}
+	marker := filepath.Join(t.TempDir(), ".dockerenv")
+	old := containerMarkers
+	t.Cleanup(func() { containerMarkers = old })
+	m, srv := newModule(t)
+	m.cfg.Settings.AllowLocalShell = true
+	m.cfg.Connections = []Connection{{Key: "l", Name: "local", Type: TypeLocal, Local: LocalConfig{Shell: "/bin/sh"}}}
+	for _, inside := range []bool{false, true} {
+		containerMarkers = []string{marker}
+		if inside {
+			_ = os.WriteFile(marker, nil, 0o644)
+		}
+		ws, ctx, _ := dialWS(t, srv, "/connections/l/ws")
+		var notes []string
+		for {
+			typ, b, err := ws.Read(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var msg map[string]string
+			_ = json.Unmarshal(b, &msg)
+			if typ == websocket.MessageText && msg["t"] == "n" {
+				notes = append(notes, msg["d"])
+			}
+			// 会话编号在提示之后发送
+			if typ == websocket.MessageText && msg["t"] == "s" {
+				break
+			}
+		}
+		got := strings.Contains(strings.Join(notes, "\n"), "docker compose up -d")
+		if got != inside {
+			t.Fatalf("容器内=%v 时提示=%v: %q", inside, got, notes)
+		}
+		ws.CloseNow()
+	}
+}

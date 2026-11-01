@@ -93,7 +93,7 @@
       "checkUpdate": "Buscar actualizaciones",
       "upgrade": "Actualizar",
       "selfHint": "Este es el contenedor donde se ejecuta Gately y no se puede detener",
-      "selfRebuildHint": "El contenedor que ejecuta Gately no se puede actualizar ni editar aquí. Ejecute docker pull en el host y vuelva a crear el contenedor"
+      "selfRebuildHint": "El contenedor que ejecuta Gately no se puede editar aquí. Cambia su configuración en el host y vuelve a crear el contenedor"
     },
     "detail": {
       "overview": "Resumen",
@@ -279,8 +279,12 @@
       "upgradeConfirm": "Se descargará la última imagen y {name} se recreará con su configuración original. El servicio se interrumpe brevemente; si el nuevo contenedor no arranca, se restaura automáticamente el anterior.",
       "upgradeTitle": "Actualizar contenedor",
       "upgradeDone": "Actualización completada",
+      "selfUpgradeConfirm": "Descarga la última imagen de {name}. Si hay una versión nueva, un contenedor auxiliar temporal vuelve a crear Gately con su configuración actual, por lo que la interfaz de administración y los servicios de Gately se interrumpen durante unos segundos; si el nuevo contenedor no arranca, se restaura el anterior. El resultado se registra en el log de Docker.",
+      "selfUpgradeRestarting": "Gately está recreando su contenedor y reiniciándose…",
+      "selfUpToDate": "La imagen de Gately ya está actualizada",
       "checkAllTask": "Buscar actualizaciones de todos los contenedores",
       "batchConfirm": "Los {count} contenedores seleccionados se actualizarán uno a uno (solo se recrean los que tienen una versión más reciente). Los servicios relacionados se interrumpen brevemente.",
+      "batchSelfNote": "La selección incluye el propio Gately. Se actualiza al final, cuando los demás contenedores se han actualizado correctamente, y después Gately se reinicia.",
       "batchTitle": "Actualización por lotes",
       "batchTask": "Actualizar contenedores por lotes"
     }

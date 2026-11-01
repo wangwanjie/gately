@@ -39,7 +39,7 @@
 | POST | `/containers/{id}/check` `/upgrade` | 既有，保持不變 |
 | POST | `/containers/upgrade-batch` | `{ids:string[]}` 依序升級（任務），回傳 `{task}` |
 
-`{id}` 可以是完整 ID、ID 前綴或容器名稱，伺服器端會先解析為完整 ID。容器正在升級或編輯重建時，對它的啟停、刪除、`edit` 與 `upgrade` 會回傳 409。Gately 自身所在的容器拒絕 stop、kill、pause、刪除、`edit` 與 `upgrade`，`upgrade-batch` 會略過它；自身所在的 Compose 專案拒絕 stop、pause、`down`、`up` 與刪除。
+`{id}` 可以是完整 ID、ID 前綴或容器名稱，伺服器端會先解析為完整 ID。容器正在升級或編輯重建時，對它的啟停、刪除、`edit` 與 `upgrade` 會回傳 409。Gately 自身所在的容器拒絕 stop、kill、pause、刪除與 `edit`；對它執行 `upgrade` 時先拉取新映像，有新版本才交給臨時輔助容器重建，回傳 `{id, self: true, upToDate}`，`upToDate` 為 false 時 Gately 隨後重新啟動；`upgrade-batch` 把它放在最後，其他容器有失敗時不升級它；自身所在的 Compose 專案拒絕 stop、pause、`down`、`up` 與刪除。
 
 ### 容器檔案
 

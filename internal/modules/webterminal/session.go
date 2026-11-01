@@ -17,6 +17,7 @@ import (
 	"github.com/coder/websocket"
 
 	"github.com/wangwanjie/gately/internal/httpx"
+	"github.com/wangwanjie/gately/internal/i18n"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
 )
@@ -531,6 +532,10 @@ func (m *Module) handleWS(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		sess, err = startLocal(conn.Local, cols, rows)
+		// 本机 Shell 运行在 Gately 容器内时，在这里停止或重建本容器的命令会随 Gately 一起被终止
+		if err == nil && inContainer() {
+			notice(i18n.Tr(i18n.RequestLang(r), containerShellNotice))
+		}
 	case TypeTelnet:
 		sess, err = startTelnet(ctx, &conn, cols, rows)
 	default:

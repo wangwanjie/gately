@@ -46,7 +46,7 @@
             <el-dropdown-item command="commit" :icon="GitCommitHorizontal">{{ t('docker.container.card.commit') }}</el-dropdown-item>
             <el-dropdown-item command="check" :icon="SearchCheck" divided>{{ t('docker.container.card.checkUpdate') }}</el-dropdown-item>
             <!-- 升级、编辑都会先停止旧容器，自身所在的容器只能在宿主机上更新 -->
-            <el-dropdown-item v-if="c.update?.hasUpdate" command="upgrade" :icon="ArrowUpCircle" :disabled="c.self" :title="c.self ? t('docker.container.card.selfRebuildHint') : ''">{{ t('docker.container.card.upgrade') }}</el-dropdown-item>
+            <el-dropdown-item v-if="c.update?.hasUpdate" command="upgrade" :icon="ArrowUpCircle">{{ t('docker.container.card.upgrade') }}</el-dropdown-item>
             <el-dropdown-item v-if="!c.self" command="delete" :icon="Trash2" divided>{{ t('common.delete') }}</el-dropdown-item>
           </el-dropdown-menu>
         </template>

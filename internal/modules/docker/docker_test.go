@@ -30,6 +30,9 @@ type fakeDocker struct {
 	created    map[string]any
 	connected  []string
 	next       int
+	// extraList 追加到容器列表中（如升级辅助容器），logText 非空时作为日志的 stdout 输出
+	extraList []map[string]any
+	logText   string
 }
 
 func (f *fakeDocker) handler(w http.ResponseWriter, r *http.Request) {
@@ -49,6 +52,7 @@ func (f *fakeDocker) handler(w http.ResponseWriter, r *http.Request) {
 				"State": "running", "Status": "Up", "Labels": map[string]string{"com.docker.compose.project": "web"},
 				"Ports": []map[string]any{{"PrivatePort": 80, "PublicPort": 8080, "Type": "tcp"}, {"PrivatePort": 80, "PublicPort": 8080, "Type": "tcp"}}})
 		}
+		list = append(list, f.extraList...)
 		_ = json.NewEncoder(w).Encode(list)
 	case len(parts) == 3 && parts[0] == "containers" && parts[2] == "json":
 		c, ok := f.containers[parts[1]]
@@ -65,6 +69,20 @@ func (f *fakeDocker) handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		w.WriteHeader(204)
+	case len(parts) == 3 && parts[2] == "logs" && f.logText != "":
+		text := f.logText
+		if r.URL.Query().Get("timestamps") == "1" {
+			// 与 Docker 一致，带时间戳时每行行首加上时间
+			lines := strings.SplitAfter(strings.TrimSuffix(text, "\n"), "\n")
+			for i := range lines {
+				lines[i] = "2026-11-01T08:09:09.671620459Z " + lines[i]
+			}
+			text = strings.Join(lines, "") + "\n"
+		}
+		h := make([]byte, 8)
+		h[0] = 1
+		binary.BigEndian.PutUint32(h[4:], uint32(len(text)))
+		_, _ = w.Write(append(h, text...))
 	case len(parts) == 3 && parts[2] == "logs":
 		// 多路复用格式：stdout 一帧、stderr 一帧
 		for i, s := range []string{"hello stdout\n", "oops stderr\n"} {

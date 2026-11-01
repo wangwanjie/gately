@@ -93,7 +93,7 @@
       "checkUpdate": "Verificar atualizações",
       "upgrade": "Atualizar",
       "selfHint": "Este é o contêiner em que o Gately está rodando e não pode ser parado",
-      "selfRebuildHint": "O contêiner que executa o Gately não pode ser atualizado nem editado aqui. Execute docker pull no host e recrie o contêiner"
+      "selfRebuildHint": "O contêiner que executa o Gately não pode ser editado aqui. Altere a configuração no host e recrie o contêiner"
     },
     "detail": {
       "overview": "Visão geral",
@@ -279,8 +279,12 @@
       "upgradeConfirm": "A imagem mais recente será baixada e {name} será recriado com a configuração original. O serviço é interrompido brevemente; se o novo contêiner falhar ao iniciar, o antigo é restaurado automaticamente.",
       "upgradeTitle": "Atualizar contêiner",
       "upgradeDone": "Atualização concluída",
+      "selfUpgradeConfirm": "Baixa a imagem mais recente de {name}. Se houver uma nova versão, um contêiner auxiliar temporário recria o Gately com a configuração atual, então a interface de administração e os serviços do Gately ficam indisponíveis por alguns segundos; se o novo contêiner não iniciar, o antigo é restaurado. O resultado é registrado no log do Docker.",
+      "selfUpgradeRestarting": "O Gately está recriando o contêiner e reiniciando…",
+      "selfUpToDate": "A imagem do Gately já está atualizada",
       "checkAllTask": "Verificar atualizações de todos os contêineres",
       "batchConfirm": "Os {count} contêineres selecionados serão atualizados um a um (somente os que têm versão mais nova são realmente recriados). Os serviços relacionados são interrompidos brevemente.",
+      "batchSelfNote": "A seleção inclui o próprio Gately. Ele é atualizado por último, depois que os outros contêineres forem atualizados com sucesso, e então o Gately reinicia.",
       "batchTitle": "Atualização em lote",
       "batchTask": "Atualização em lote de contêineres"
     }

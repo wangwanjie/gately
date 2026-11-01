@@ -93,7 +93,7 @@
       "checkUpdate": "Check for updates",
       "upgrade": "Upgrade",
       "selfHint": "This is the container running Gately and cannot be stopped",
-      "selfRebuildHint": "The container running Gately cannot be upgraded or edited here. Run docker pull on the host and recreate the container"
+      "selfRebuildHint": "The container running Gately cannot be edited here. Change its configuration on the host and recreate the container"
     },
     "detail": {
       "overview": "Overview",
@@ -279,8 +279,12 @@
       "upgradeConfirm": "The latest image will be pulled and {name} will be recreated with its original configuration. The service is briefly interrupted; if the new container fails to start, the old one is restored automatically.",
       "upgradeTitle": "Upgrade container",
       "upgradeDone": "Upgrade completed",
+      "selfUpgradeConfirm": "Pulls the latest image of {name}. If there is a new version, a temporary helper container recreates Gately with its current configuration, so the admin UI and the services Gately provides are interrupted for some seconds; the old container is restored if the new one fails to start. The result is written to the Docker log.",
+      "selfUpgradeRestarting": "Gately is recreating its container and restarting…",
+      "selfUpToDate": "The Gately image is already up to date",
       "checkAllTask": "Check all containers for updates",
       "batchConfirm": "The {count} selected containers will be upgraded one by one (only those with a newer version are actually recreated). Related services are briefly interrupted.",
+      "batchSelfNote": "The selection includes Gately itself. It is upgraded last, after the other containers succeed, and Gately then restarts.",
       "batchTitle": "Batch upgrade",
       "batchTask": "Batch upgrade containers"
     }

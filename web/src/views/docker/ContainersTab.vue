@@ -57,6 +57,7 @@
         <el-button type="primary" :loading="commitBusy" @click="doCommit">{{ t('docker.container.list.commit') }}</el-button>
       </template>
     </el-dialog>
+    <RestartOverlay ref="overlay" />
   </div>
 </template>
 
@@ -69,6 +70,7 @@ import { api } from '../../api'
 import { useFormLayout } from '../../composables/useIsMobile'
 import CompactToggle from '../../components/CompactToggle.vue'
 import { useCompactView } from '../../composables/useCompactView'
+import RestartOverlay from '../../components/RestartOverlay.vue'
 import ContainerCard from './ContainerCard.vue'
 import ContainerDetail from './ContainerDetail.vue'
 import ContainerForm from './ContainerForm.vue'
@@ -308,11 +310,25 @@ async function check(c: ContainerView) {
   }
 }
 
+// overlay 是升级 Gately 自身后的重启等待层
+const overlay = ref<InstanceType<typeof RestartOverlay>>()
+
 async function upgrade(c: ContainerView) {
-  await confirmThen(t('docker.container.list.upgradeConfirm', { name: c.name }), t('docker.container.list.upgradeTitle'), async () => {
+  const msg = c.self ? t('docker.container.list.selfUpgradeConfirm', { name: c.name }) : t('docker.container.list.upgradeConfirm', { name: c.name })
+  await confirmThen(msg, t('docker.container.list.upgradeTitle'), async () => {
     c.busy = true
     try {
-      await api.post(`/api/docker/containers/${c.id}/upgrade`)
+      const r = await api.post<{ self?: boolean; upToDate?: boolean }>(`/api/docker/containers/${c.id}/upgrade`)
+      if (r?.self) {
+        // 自身由辅助容器重建：已是最新时不会重启，否则等待 Gately 重启后刷新页面
+        if (r.upToDate) {
+          ElMessage.info(t('docker.container.list.selfUpToDate'))
+          await load()
+        } else {
+          overlay.value?.start(t('docker.container.list.selfUpgradeRestarting'))
+        }
+        return
+      }
       ElMessage.success(t('docker.container.list.upgradeDone'))
       await load()
     } catch (e) {
@@ -338,10 +354,22 @@ async function checkAll() {
 }
 
 async function upgradeSelected() {
-  await confirmThen(t('docker.container.list.batchConfirm', { count: selected.value.length }), t('docker.container.list.batchTitle'), async () => {
+  const withSelf = containers.value.some((c) => c.self && selectedIds.value.has(c.id))
+  let msg = t('docker.container.list.batchConfirm', { count: selected.value.length })
+  if (withSelf) {
+    msg += ' ' + t('docker.container.list.batchSelfNote')
+  }
+  await confirmThen(msg, t('docker.container.list.batchTitle'), async () => {
     try {
       const r = await api.post<{ task: string }>('/api/docker/containers/upgrade-batch', { ids: selected.value })
-      trackTask(r.task, t('docker.container.list.batchTask'), () => load())
+      trackTask(r.task, t('docker.container.list.batchTask'), (task) => {
+        // 包含自身且任务成功时 Gately 会随后重启（自身已是最新时等待层几秒后直接刷新）
+        if (withSelf && task.status === 'done') {
+          overlay.value?.start(t('docker.container.list.selfUpgradeRestarting'))
+          return
+        }
+        load()
+      })
     } catch (e) {
       ElMessage.error((e as Error).message)
     }

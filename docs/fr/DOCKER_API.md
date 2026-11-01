@@ -39,7 +39,7 @@ Les opérations longues (récupération/envoi/construction d'images, compose up,
 | POST | `/containers/{id}/check` `/upgrade` | Existants ; inchangés |
 | POST | `/containers/upgrade-batch` | `{ids:string[]}` les met à niveau l'un après l'autre (une tâche) ; renvoie `{task}` |
 
-`{id}` peut être un ID complet, un préfixe d'ID ou un nom de conteneur ; le serveur le résout d'abord en ID complet. Pendant qu'un conteneur est en cours de mise à niveau ou de recréation après modification, le démarrage, l'arrêt, la suppression, `edit` et `upgrade` sur ce conteneur renvoient 409. Pour le conteneur dans lequel Gately s'exécute, stop, kill, pause, la suppression, `edit` et `upgrade` sont refusés, et `upgrade-batch` l'ignore ; pour le projet Compose auquel Gately appartient, stop, pause, `down`, `up` et la suppression sont refusés.
+`{id}` peut être un ID complet, un préfixe d'ID ou un nom de conteneur ; le serveur le résout d'abord en ID complet. Pendant qu'un conteneur est en cours de mise à niveau ou de recréation après modification, le démarrage, l'arrêt, la suppression, `edit` et `upgrade` sur ce conteneur renvoient 409. Pour le conteneur dans lequel Gately s'exécute, stop, kill, pause, la suppression et `edit` sont refusés ; `upgrade` récupère d'abord la nouvelle image et, seulement s'il existe une nouvelle version, confie la recréation à un conteneur auxiliaire temporaire, puis renvoie `{id, self: true, upToDate}` (si `upToDate` vaut false, Gately redémarre peu après) ; `upgrade-batch` le traite en dernier et ne le met pas à jour si un autre conteneur a échoué ; pour le projet Compose auquel Gately appartient, stop, pause, `down`, `up` et la suppression sont refusés.
 
 ### Fichiers des conteneurs
 

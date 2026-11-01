@@ -39,7 +39,7 @@
 | POST | `/containers/{id}/check` `/upgrade` | 기존과 동일 |
 | POST | `/containers/upgrade-batch` | `{ids:string[]}`를 순서대로 업그레이드합니다(작업). `{task}`를 반환합니다 |
 
-`{id}`에는 전체 ID, ID 접두사, 컨테이너 이름을 모두 쓸 수 있으며 서버가 먼저 전체 ID로 변환합니다. 컨테이너가 업그레이드 중이거나 편집으로 재생성 중이면 해당 컨테이너에 대한 시작·중지, 삭제, `edit`, `upgrade`는 409를 반환합니다. Gately 자신이 실행 중인 컨테이너는 stop, kill, pause, 삭제, `edit`, `upgrade`를 거부하고 `upgrade-batch`에서는 건너뜁니다. 자신이 속한 Compose 프로젝트는 stop, pause, `down`, `up`, 삭제를 거부합니다.
+`{id}`에는 전체 ID, ID 접두사, 컨테이너 이름을 모두 쓸 수 있으며 서버가 먼저 전체 ID로 변환합니다. 컨테이너가 업그레이드 중이거나 편집으로 재생성 중이면 해당 컨테이너에 대한 시작·중지, 삭제, `edit`, `upgrade`는 409를 반환합니다. Gately 자신이 실행 중인 컨테이너는 stop, kill, pause, 삭제, `edit`를 거부합니다. `upgrade`는 먼저 새 이미지를 가져오고 새 버전이 있을 때만 임시 도우미 컨테이너에 재생성을 맡기며 `{id, self: true, upToDate}`를 반환합니다(`upToDate`가 false이면 곧이어 Gately가 재시작됩니다). `upgrade-batch`는 이 컨테이너를 마지막에 처리하고 다른 컨테이너가 실패하면 업그레이드하지 않습니다. 자신이 속한 Compose 프로젝트는 stop, pause, `down`, `up`, 삭제를 거부합니다.
 
 ### 컨테이너 파일
 
