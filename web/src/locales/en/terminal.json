@@ -36,7 +36,10 @@
     "openSessionFirst": "Open a terminal session first",
     "noMatch": "No matches found",
     "splitHint": "Open another connection to join the split automatically, or click another tab to add it",
-    "splitMax": "Split view holds at most {max} panes. The current pane was replaced."
+    "splitMax": "Split view holds at most {max} panes. The current pane was replaced.",
+    "multilineTitle": "Paste multiple lines",
+    "multilineConfirm": "The text has {count} lines and the current program will run them line by line. Paste it?",
+    "multilinePaste": "Paste"
   },
   "toolbar": {
     "sftp": "File manager (SFTP)",
@@ -62,9 +65,10 @@
     "fullscreen": "Fullscreen",
     "fileManage": "File manager",
     "more": "More",
-    "copyMobile": "Copy (selection or current screen)",
+    "copyMobile": "Select and copy",
     "fontIncWithSize": "Increase font size ({size})",
-    "themeItem": "Color scheme: {name}"
+    "themeItem": "Color scheme: {name}",
+    "clips": "Clipboard history"
   },
   "tabs": {
     "menu": "Tab menu",
@@ -96,7 +100,8 @@
   "keybar": {
     "shortcuts": "Shortcuts",
     "showKeyboard": "Show keyboard",
-    "hideKeyboard": "Hide keyboard"
+    "hideKeyboard": "Hide keyboard",
+    "paste": "Paste"
   },
   "shortcut": {
     "title": "Global shortcuts",
@@ -196,5 +201,22 @@
     "follow": "Follow UI theme",
     "default": "Default dark",
     "githubLight": "Light (GitHub)"
+  },
+  "select": {
+    "copy": "Copy",
+    "all": "Select all",
+    "paste": "Paste",
+    "exit": "Exit selection",
+    "empty": "Select some text to copy first"
+  },
+  "paste": {
+    "title": "Paste",
+    "placeholder": "Type or paste what to send",
+    "send": "Send to terminal",
+    "recent": "Recently copied",
+    "clear": "Clear",
+    "lines": "{count} lines",
+    "remove": "Remove",
+    "empty": "Text copied or pasted in the terminal shows up here, kept in this browser tab only"
   }
 }

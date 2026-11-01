@@ -36,7 +36,10 @@
     "openSessionFirst": "请先打开一个终端会话",
     "noMatch": "没有找到匹配内容",
     "splitHint": "再打开一个连接即可自动加入分屏，也可点击其他标签加入",
-    "splitMax": "分屏最多 {max} 个窗格，已替换当前窗格"
+    "splitMax": "分屏最多 {max} 个窗格，已替换当前窗格",
+    "multilineTitle": "粘贴多行内容",
+    "multilineConfirm": "要粘贴的内容有 {count} 行，当前程序会逐行执行。确定粘贴？",
+    "multilinePaste": "粘贴"
   },
   "toolbar": {
     "sftp": "文件管理（SFTP）",
@@ -62,9 +65,10 @@
     "fullscreen": "全屏",
     "fileManage": "文件管理",
     "more": "更多",
-    "copyMobile": "复制（选区或当前屏幕）",
+    "copyMobile": "选择并复制",
     "fontIncWithSize": "增大字号（{size}）",
-    "themeItem": "配色：{name}"
+    "themeItem": "配色：{name}",
+    "clips": "剪贴板记录"
   },
   "tabs": {
     "menu": "标签菜单",
@@ -96,7 +100,8 @@
   "keybar": {
     "shortcuts": "快捷命令",
     "showKeyboard": "呼出键盘",
-    "hideKeyboard": "收起键盘"
+    "hideKeyboard": "收起键盘",
+    "paste": "粘贴"
   },
   "shortcut": {
     "title": "全局快捷命令",
@@ -196,5 +201,22 @@
     "follow": "跟随界面主题",
     "default": "默认深色",
     "githubLight": "浅色（GitHub）"
+  },
+  "select": {
+    "copy": "复制",
+    "all": "全选",
+    "paste": "粘贴",
+    "exit": "退出选择",
+    "empty": "请先选择要复制的文字"
+  },
+  "paste": {
+    "title": "粘贴",
+    "placeholder": "输入或粘贴要发送的内容",
+    "send": "发送到终端",
+    "recent": "最近复制",
+    "clear": "清空",
+    "lines": "{count} 行",
+    "remove": "删除",
+    "empty": "在终端里复制或粘贴过的内容会显示在这里，仅保存在当前标签页"
   }
 }

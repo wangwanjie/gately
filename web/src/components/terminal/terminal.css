@@ -27,7 +27,8 @@
   .term-dialog input,
   .term-dialog textarea,
   .el-message-box input,
-  .el-message-box textarea {
+  .el-message-box textarea,
+  .sheet textarea {
     font-size: 16px !important;
   }
   .term-dialog .el-dialog__headerbtn {

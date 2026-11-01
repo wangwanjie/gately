@@ -36,7 +36,10 @@
     "openSessionFirst": "먼저 터미널 세션을 여세요",
     "noMatch": "일치하는 내용이 없습니다",
     "splitHint": "연결을 하나 더 열면 자동으로 분할 화면에 추가되며, 다른 탭을 눌러 추가할 수도 있습니다",
-    "splitMax": "분할 화면은 최대 {max}개 창까지 지원하여 현재 창을 교체했습니다"
+    "splitMax": "분할 화면은 최대 {max}개 창까지 지원하여 현재 창을 교체했습니다",
+    "multilineTitle": "여러 줄 붙여넣기",
+    "multilineConfirm": "붙여넣을 내용이 {count}줄이며 현재 프로그램이 한 줄씩 실행합니다. 붙여넣을까요?",
+    "multilinePaste": "붙여넣기"
   },
   "toolbar": {
     "sftp": "파일 관리 (SFTP)",
@@ -62,9 +65,10 @@
     "fullscreen": "전체 화면",
     "fileManage": "파일 관리",
     "more": "더보기",
-    "copyMobile": "복사 (선택 영역 또는 현재 화면)",
+    "copyMobile": "선택 후 복사",
     "fontIncWithSize": "글꼴 크기 늘리기 ({size})",
-    "themeItem": "색상: {name}"
+    "themeItem": "색상: {name}",
+    "clips": "클립보드 기록"
   },
   "tabs": {
     "menu": "탭 메뉴",
@@ -96,7 +100,8 @@
   "keybar": {
     "shortcuts": "단축 명령",
     "showKeyboard": "키보드 열기",
-    "hideKeyboard": "키보드 닫기"
+    "hideKeyboard": "키보드 닫기",
+    "paste": "붙여넣기"
   },
   "shortcut": {
     "title": "전역 단축 명령",
@@ -196,5 +201,22 @@
     "follow": "UI 테마 따르기",
     "default": "기본 다크",
     "githubLight": "라이트 (GitHub)"
+  },
+  "select": {
+    "copy": "복사",
+    "all": "모두 선택",
+    "paste": "붙여넣기",
+    "exit": "선택 종료",
+    "empty": "복사할 텍스트를 먼저 선택하세요"
+  },
+  "paste": {
+    "title": "붙여넣기",
+    "placeholder": "보낼 내용을 입력하거나 붙여넣기",
+    "send": "터미널로 보내기",
+    "recent": "최근 복사",
+    "clear": "비우기",
+    "lines": "{count}줄",
+    "remove": "삭제",
+    "empty": "터미널에서 복사하거나 붙여넣은 내용이 여기에 표시되며 현재 탭에만 저장됩니다"
   }
 }

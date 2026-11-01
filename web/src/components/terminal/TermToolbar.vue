@@ -60,6 +60,7 @@
           <el-dropdown-menu>
             <el-dropdown-item command="copy" :icon="Copy">{{ t('terminal.toolbar.copyMobile') }}</el-dropdown-item>
             <el-dropdown-item command="paste" :icon="ClipboardPaste">{{ t('terminal.toolbar.paste') }}</el-dropdown-item>
+            <el-dropdown-item command="clips" :icon="ClipboardList">{{ t('terminal.toolbar.clips') }}</el-dropdown-item>
             <el-dropdown-item command="font-inc" :icon="Plus">{{ t('terminal.toolbar.fontIncWithSize', { size: fontSize }) }}</el-dropdown-item>
             <el-dropdown-item command="font-dec" :icon="Minus">{{ t('terminal.toolbar.fontDec') }}</el-dropdown-item>
             <el-dropdown-item command="clear" :icon="Eraser">{{ t('terminal.toolbar.clear') }}</el-dropdown-item>
@@ -84,7 +85,7 @@
 
 <script setup lang="ts">
 import {
-  ClipboardPaste, Columns2, Copy, Ellipsis, Eraser, FolderOpen, LayoutGrid, ListTree, Maximize2, Minimize2, Minus, Palette, Plus, Rows2, Search, Settings2, Square, SquareCheck, Zap,
+  ClipboardList, ClipboardPaste, Columns2, Copy, Ellipsis, Eraser, FolderOpen, LayoutGrid, ListTree, Maximize2, Minimize2, Minus, Palette, Plus, Rows2, Search, Settings2, Square, SquareCheck, Zap,
 } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import { termThemes, themeLabel } from './themes'

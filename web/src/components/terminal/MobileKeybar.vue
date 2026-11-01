@@ -17,7 +17,10 @@
         <Zap :size="14" />{{ t('terminal.keybar.shortcuts') }}
       </button>
     </div>
-    <!-- 固定在右侧：键盘弹出时收起键盘，常驻且键盘收起时呼出键盘 -->
+    <!-- 固定在右侧：粘贴一键可达；键盘弹出时收起键盘，常驻且键盘收起时呼出键盘 -->
+    <button class="kb fixed" v-bind="bind({ label: t('terminal.keybar.paste'), action: 'paste' })">
+      <ClipboardPaste :size="16" />
+    </button>
     <button
       class="kb fixed"
       v-bind="bind({ label: keyboardOpen ? t('terminal.keybar.hideKeyboard') : t('terminal.keybar.showKeyboard'), action: 'keyboard' })"
@@ -32,7 +35,7 @@
 import { onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { Component } from 'vue'
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Keyboard, KeyboardOff, Zap } from 'lucide-vue-next'
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ClipboardPaste, Keyboard, KeyboardOff, Zap } from 'lucide-vue-next'
 import type { KeyName } from './terminalKeys'
 
 const { t } = useI18n()
@@ -45,6 +48,7 @@ const emit = defineEmits<{
   'toggle-alt': []
   shortcuts: []
   keyboard: []
+  paste: []
 }>()
 
 interface Key {
@@ -53,7 +57,7 @@ interface Key {
   key?: KeyName
   text?: string
   sticky?: 'ctrl' | 'alt'
-  action?: 'shortcuts' | 'keyboard'
+  action?: 'shortcuts' | 'keyboard' | 'paste'
   repeat?: boolean
 }
 
@@ -97,6 +101,8 @@ function fire(k: Key) {
     emit('shortcuts')
   } else if (k.action === 'keyboard') {
     emit('keyboard')
+  } else if (k.action === 'paste') {
+    emit('paste')
   } else if (k.key) {
     emit('key', k.key)
   } else if (k.text) {

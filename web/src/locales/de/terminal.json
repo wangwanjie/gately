@@ -36,7 +36,10 @@
     "openSessionFirst": "Öffnen Sie zuerst eine Terminalsitzung",
     "noMatch": "Keine Treffer gefunden",
     "splitHint": "Öffnen Sie eine weitere Verbindung, um automatisch der Teilung beizutreten, oder klicken Sie auf einen anderen Tab, um ihn hinzuzufügen",
-    "splitMax": "Die geteilte Ansicht fasst höchstens {max} Bereiche. Der aktuelle Bereich wurde ersetzt."
+    "splitMax": "Die geteilte Ansicht fasst höchstens {max} Bereiche. Der aktuelle Bereich wurde ersetzt.",
+    "multilineTitle": "Mehrere Zeilen einfügen",
+    "multilineConfirm": "Der Text hat {count} Zeilen, die das aktuelle Programm Zeile für Zeile ausführt. Einfügen?",
+    "multilinePaste": "Einfügen"
   },
   "toolbar": {
     "sftp": "Dateimanager (SFTP)",
@@ -62,9 +65,10 @@
     "fullscreen": "Vollbild",
     "fileManage": "Dateimanager",
     "more": "Mehr",
-    "copyMobile": "Kopieren (Auswahl oder aktueller Bildschirm)",
+    "copyMobile": "Auswählen und kopieren",
     "fontIncWithSize": "Schrift vergrößern ({size})",
-    "themeItem": "Farbschema: {name}"
+    "themeItem": "Farbschema: {name}",
+    "clips": "Zwischenablage-Verlauf"
   },
   "tabs": {
     "menu": "Tab-Menü",
@@ -96,7 +100,8 @@
   "keybar": {
     "shortcuts": "Kurzbefehle",
     "showKeyboard": "Tastatur anzeigen",
-    "hideKeyboard": "Tastatur ausblenden"
+    "hideKeyboard": "Tastatur ausblenden",
+    "paste": "Einfügen"
   },
   "shortcut": {
     "title": "Globale Kurzbefehle",
@@ -196,5 +201,22 @@
     "follow": "UI-Design folgen",
     "default": "Standard dunkel",
     "githubLight": "Hell (GitHub)"
+  },
+  "select": {
+    "copy": "Kopieren",
+    "all": "Alles auswählen",
+    "paste": "Einfügen",
+    "exit": "Auswahl beenden",
+    "empty": "Zuerst den zu kopierenden Text auswählen"
+  },
+  "paste": {
+    "title": "Einfügen",
+    "placeholder": "Zu sendenden Text eingeben oder einfügen",
+    "send": "An Terminal senden",
+    "recent": "Zuletzt kopiert",
+    "clear": "Leeren",
+    "lines": "{count} Zeilen",
+    "remove": "Entfernen",
+    "empty": "Im Terminal kopierter oder eingefügter Text erscheint hier und wird nur in diesem Tab gespeichert"
   }
 }

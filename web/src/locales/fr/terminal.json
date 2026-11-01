@@ -36,7 +36,10 @@
     "openSessionFirst": "Ouvrez d'abord une session de terminal",
     "noMatch": "Aucun résultat",
     "splitHint": "Ouvrez une autre connexion pour la joindre automatiquement à la vue fractionnée, ou cliquez sur un autre onglet pour l'ajouter",
-    "splitMax": "La vue fractionnée contient au maximum {max} volets. Le volet actuel a été remplacé."
+    "splitMax": "La vue fractionnée contient au maximum {max} volets. Le volet actuel a été remplacé.",
+    "multilineTitle": "Coller plusieurs lignes",
+    "multilineConfirm": "Le texte compte {count} lignes que le programme actuel exécutera une par une. Le coller ?",
+    "multilinePaste": "Coller"
   },
   "toolbar": {
     "sftp": "Gestionnaire de fichiers (SFTP)",
@@ -62,9 +65,10 @@
     "fullscreen": "Plein écran",
     "fileManage": "Gestionnaire de fichiers",
     "more": "Plus",
-    "copyMobile": "Copier (sélection ou écran actuel)",
+    "copyMobile": "Sélectionner et copier",
     "fontIncWithSize": "Augmenter la taille de police ({size})",
-    "themeItem": "Jeu de couleurs : {name}"
+    "themeItem": "Jeu de couleurs : {name}",
+    "clips": "Historique du presse-papiers"
   },
   "tabs": {
     "menu": "Menu de l'onglet",
@@ -96,7 +100,8 @@
   "keybar": {
     "shortcuts": "Raccourcis",
     "showKeyboard": "Afficher le clavier",
-    "hideKeyboard": "Masquer le clavier"
+    "hideKeyboard": "Masquer le clavier",
+    "paste": "Coller"
   },
   "shortcut": {
     "title": "Raccourcis globaux",
@@ -196,5 +201,22 @@
     "follow": "Suivre le thème de l'interface",
     "default": "Sombre par défaut",
     "githubLight": "Clair (GitHub)"
+  },
+  "select": {
+    "copy": "Copier",
+    "all": "Tout sélectionner",
+    "paste": "Coller",
+    "exit": "Quitter la sélection",
+    "empty": "Sélectionnez d’abord le texte à copier"
+  },
+  "paste": {
+    "title": "Coller",
+    "placeholder": "Saisissez ou collez le texte à envoyer",
+    "send": "Envoyer au terminal",
+    "recent": "Copiés récemment",
+    "clear": "Vider",
+    "lines": "{count} lignes",
+    "remove": "Supprimer",
+    "empty": "Le texte copié ou collé dans le terminal apparaît ici, conservé uniquement dans cet onglet"
   }
 }

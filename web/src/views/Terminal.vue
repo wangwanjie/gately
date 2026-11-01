@@ -106,6 +106,7 @@
                 @update:ctrl="(v: boolean) => (mods.ctrl = v)"
                 @update:alt="(v: boolean) => (mods.alt = v)"
                 @zoom="setFont"
+                @paste="pasteToTerminal"
               />
             </div>
           </div>
@@ -140,6 +141,7 @@
           @toggle-alt="mods.alt = !mods.alt"
           @shortcuts="shortcutSheet = true"
           @keyboard="toggleKeyboard"
+          @paste="pasteToTerminal"
         />
       </template>
       <div v-else class="placeholder">
@@ -153,6 +155,7 @@
     <QuickAccessDialog v-model="quickVisible" :conn="quickConn" @saved="loadConns" />
     <SettingsDialog v-model="settingsVisible" @saved="onSettingsSaved" />
     <ShortcutManager v-model="shortcutVisible" :shortcuts="shortcuts" @saved="(l: Shortcut[]) => (shortcuts = l)" />
+    <PasteSheet v-model="pasteSheet" :is-mobile="isMobile" :manual="pasteManual" @send="sendPaste" />
     <ShortcutSheet v-model="shortcutSheet" :shortcuts="shortcuts" @send="sendShortcut" @manage="manageFromSheet" />
     <SessionList
       v-model="sessionsVisible"
@@ -177,6 +180,7 @@ import { useIsMobile } from '../composables/useIsMobile'
 import ConnectionEditor from '../components/terminal/ConnectionEditor.vue'
 import ConnectionList from '../components/terminal/ConnectionList.vue'
 import MobileKeybar from '../components/terminal/MobileKeybar.vue'
+import PasteSheet from '../components/terminal/PasteSheet.vue'
 import QuickAccessDialog from '../components/terminal/QuickAccessDialog.vue'
 import SecurityGate from '../components/terminal/SecurityGate.vue'
 import SessionList from '../components/terminal/SessionList.vue'
@@ -187,7 +191,7 @@ import ShortcutSheet from '../components/terminal/ShortcutSheet.vue'
 import TermPane from '../components/terminal/TermPane.vue'
 import TermTabs from '../components/terminal/TermTabs.vue'
 import TermToolbar from '../components/terminal/TermToolbar.vue'
-import { copyText, readClipboardText } from '../components/terminal/clipboard'
+import { copyText, readClipboardText, recordClip } from '../components/terminal/clipboard'
 import { useTermPrefs } from '../components/terminal/prefs'
 import type { KeyName } from '../components/terminal/terminalKeys'
 import { normalizeConn, type Conn, type PaneStatus, type SessionInfo, type Shortcut, type SplitLayout, type SplitMode, type TermSettings, type TermTab } from '../components/terminal/types'
@@ -229,6 +233,9 @@ const quickConn = ref<Conn | null>(null)
 const settingsVisible = ref(false)
 const shortcutVisible = ref(false)
 const shortcutSheet = ref(false)
+const pasteSheet = ref(false)
+// 粘贴面板是否因读不到系统剪贴板而打开（显示手动粘贴提示并聚焦输入框）
+const pasteManual = ref(false)
 const sessionsVisible = ref(false)
 const sftpVisible = ref(false)
 const sftpConn = ref<Conn | null>(null)
@@ -556,6 +563,11 @@ async function onAction(name: string) {
       }
       break
     case 'copy': {
+      // 移动端无法在终端上直接选择文字，进入选择模式并预先选中当前屏幕，可再拖动手柄调整
+      if (isMobile.value) {
+        p?.selectScreen()
+        break
+      }
       let text = p?.getSelection() ?? ''
       let tip = t('common.copied')
       if (!text) {
@@ -567,6 +579,7 @@ async function onAction(name: string) {
         break
       }
       if (await copyText(text)) {
+        recordClip(text)
         ElMessage.success(tip)
       } else {
         ElMessage.error(t('terminal.msg.copyFailed'))
@@ -575,6 +588,10 @@ async function onAction(name: string) {
     }
     case 'paste':
       await pasteToTerminal()
+      break
+    case 'clips':
+      pasteManual.value = false
+      pasteSheet.value = true
       break
     case 'font-inc':
       incFont()
@@ -613,25 +630,43 @@ async function onAction(name: string) {
   }
 }
 
+// pasteToTerminal 读取系统剪贴板粘贴到终端；浏览器不允许读取（非 HTTPS 或被拒绝）或剪贴板为空时打开粘贴面板。
 async function pasteToTerminal() {
+  if (!activePane()) {
+    return
+  }
+  const text = await readClipboardText()
+  if (text) {
+    await sendPaste(text)
+    return
+  }
+  pasteManual.value = text === null
+  pasteSheet.value = true
+}
+
+// sendPaste 把文本粘贴到活动终端。多行内容且远端程序没有开启括号粘贴时，每一行都会被当作命令执行，先确认一次。
+async function sendPaste(text: string) {
   const p = activePane()
   if (!p) {
     return
   }
-  let text = await readClipboardText()
-  if (text === null) {
-    // 浏览器不允许读取剪贴板（非 HTTPS 或被拒绝）时，改为手动粘贴
+  // 末尾单个换行只是执行这一条命令，不算多行
+  const body = text.replace(/\r?\n$/, '')
+  if (/[\r\n]/.test(body) && !p.bracketedPaste()) {
     try {
-      const r = await ElMessageBox.prompt(t('terminal.msg.pasteManual'), t('terminal.msg.pasteTitle'), { inputType: 'textarea' })
-      text = r.value
+      await ElMessageBox.confirm(
+        t('terminal.msg.multilineConfirm', { count: body.split(/\r\n|\r|\n/).length }),
+        t('terminal.msg.multilineTitle'),
+        { type: 'warning', confirmButtonText: t('terminal.msg.multilinePaste') },
+      )
     } catch {
       return
     }
   }
-  if (text) {
-    p.paste(text)
-    p.focus()
-  }
+  recordClip(text)
+  pasteSheet.value = false
+  p.paste(text)
+  p.focus()
 }
 
 function sendShortcut(s: Shortcut) {

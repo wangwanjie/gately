@@ -36,7 +36,10 @@
     "openSessionFirst": "先にターミナルセッションを開いてください",
     "noMatch": "一致する内容が見つかりません",
     "splitHint": "別の接続を開くと自動で分割に追加されます。他のタブをクリックして追加することもできます",
-    "splitMax": "分割は最大 {max} ペインです。現在のペインを置き換えました"
+    "splitMax": "分割は最大 {max} ペインです。現在のペインを置き換えました",
+    "multilineTitle": "複数行の貼り付け",
+    "multilineConfirm": "貼り付ける内容は {count} 行あり、現在のプログラムが 1 行ずつ実行します。貼り付けますか？",
+    "multilinePaste": "貼り付け"
   },
   "toolbar": {
     "sftp": "ファイル管理（SFTP）",
@@ -62,9 +65,10 @@
     "fullscreen": "全画面",
     "fileManage": "ファイル管理",
     "more": "その他",
-    "copyMobile": "コピー（選択範囲または現在の画面）",
+    "copyMobile": "選択してコピー",
     "fontIncWithSize": "文字を大きく（{size}）",
-    "themeItem": "配色: {name}"
+    "themeItem": "配色: {name}",
+    "clips": "クリップボード履歴"
   },
   "tabs": {
     "menu": "タブメニュー",
@@ -96,7 +100,8 @@
   "keybar": {
     "shortcuts": "クイックコマンド",
     "showKeyboard": "キーボードを表示",
-    "hideKeyboard": "キーボードを閉じる"
+    "hideKeyboard": "キーボードを閉じる",
+    "paste": "貼り付け"
   },
   "shortcut": {
     "title": "共通クイックコマンド",
@@ -196,5 +201,22 @@
     "follow": "UI テーマに合わせる",
     "default": "デフォルト（ダーク）",
     "githubLight": "ライト（GitHub）"
+  },
+  "select": {
+    "copy": "コピー",
+    "all": "すべて選択",
+    "paste": "貼り付け",
+    "exit": "選択を終了",
+    "empty": "コピーするテキストを選択してください"
+  },
+  "paste": {
+    "title": "貼り付け",
+    "placeholder": "送信する内容を入力または貼り付け",
+    "send": "ターミナルに送信",
+    "recent": "最近のコピー",
+    "clear": "クリア",
+    "lines": "{count} 行",
+    "remove": "削除",
+    "empty": "ターミナルでコピー・貼り付けした内容がここに表示されます（このタブ内のみ保存）"
   }
 }

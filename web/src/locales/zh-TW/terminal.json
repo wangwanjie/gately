@@ -36,7 +36,10 @@
     "openSessionFirst": "請先開啟一個終端機工作階段",
     "noMatch": "找不到符合的內容",
     "splitHint": "再開啟一個連線即可自動加入分割畫面，也可點擊其他標籤加入",
-    "splitMax": "分割畫面最多 {max} 個窗格，已取代目前窗格"
+    "splitMax": "分割畫面最多 {max} 個窗格，已取代目前窗格",
+    "multilineTitle": "貼上多行內容",
+    "multilineConfirm": "要貼上的內容有 {count} 行，目前程式會逐行執行。確定貼上？",
+    "multilinePaste": "貼上"
   },
   "toolbar": {
     "sftp": "檔案管理（SFTP）",
@@ -62,9 +65,10 @@
     "fullscreen": "全螢幕",
     "fileManage": "檔案管理",
     "more": "更多",
-    "copyMobile": "複製（選取範圍或目前畫面）",
+    "copyMobile": "選取並複製",
     "fontIncWithSize": "放大字型（{size}）",
-    "themeItem": "配色：{name}"
+    "themeItem": "配色：{name}",
+    "clips": "剪貼簿記錄"
   },
   "tabs": {
     "menu": "標籤選單",
@@ -96,7 +100,8 @@
   "keybar": {
     "shortcuts": "快捷命令",
     "showKeyboard": "叫出鍵盤",
-    "hideKeyboard": "收起鍵盤"
+    "hideKeyboard": "收起鍵盤",
+    "paste": "貼上"
   },
   "shortcut": {
     "title": "全域快捷命令",
@@ -196,5 +201,22 @@
     "follow": "跟隨介面主題",
     "default": "預設深色",
     "githubLight": "淺色（GitHub）"
+  },
+  "select": {
+    "copy": "複製",
+    "all": "全選",
+    "paste": "貼上",
+    "exit": "結束選取",
+    "empty": "請先選取要複製的文字"
+  },
+  "paste": {
+    "title": "貼上",
+    "placeholder": "輸入或貼上要傳送的內容",
+    "send": "傳送到終端機",
+    "recent": "最近複製",
+    "clear": "清空",
+    "lines": "{count} 行",
+    "remove": "刪除",
+    "empty": "在終端機中複製或貼上過的內容會顯示在這裡，僅保存在目前分頁"
   }
 }

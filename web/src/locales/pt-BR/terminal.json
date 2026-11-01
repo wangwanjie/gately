@@ -36,7 +36,10 @@
     "openSessionFirst": "Abra primeiro uma sessão de terminal",
     "noMatch": "Nenhuma correspondência encontrada",
     "splitHint": "Abra outra conexão para entrar automaticamente na divisão, ou clique em outra aba para adicioná-la",
-    "splitMax": "A divisão comporta no máximo {max} painéis. O painel atual foi substituído."
+    "splitMax": "A divisão comporta no máximo {max} painéis. O painel atual foi substituído.",
+    "multilineTitle": "Colar várias linhas",
+    "multilineConfirm": "O texto tem {count} linhas e o programa atual vai executá-las uma a uma. Colar?",
+    "multilinePaste": "Colar"
   },
   "toolbar": {
     "sftp": "Gerenciador de arquivos (SFTP)",
@@ -62,9 +65,10 @@
     "fullscreen": "Tela cheia",
     "fileManage": "Gerenciador de arquivos",
     "more": "Mais",
-    "copyMobile": "Copiar (seleção ou tela atual)",
+    "copyMobile": "Selecionar e copiar",
     "fontIncWithSize": "Aumentar tamanho da fonte ({size})",
-    "themeItem": "Esquema de cores: {name}"
+    "themeItem": "Esquema de cores: {name}",
+    "clips": "Histórico da área de transferência"
   },
   "tabs": {
     "menu": "Menu da aba",
@@ -96,7 +100,8 @@
   "keybar": {
     "shortcuts": "Atalhos",
     "showKeyboard": "Mostrar teclado",
-    "hideKeyboard": "Ocultar teclado"
+    "hideKeyboard": "Ocultar teclado",
+    "paste": "Colar"
   },
   "shortcut": {
     "title": "Atalhos globais",
@@ -196,5 +201,22 @@
     "follow": "Seguir o tema da interface",
     "default": "Escuro padrão",
     "githubLight": "Claro (GitHub)"
+  },
+  "select": {
+    "copy": "Copiar",
+    "all": "Selecionar tudo",
+    "paste": "Colar",
+    "exit": "Sair da seleção",
+    "empty": "Selecione primeiro o texto a copiar"
+  },
+  "paste": {
+    "title": "Colar",
+    "placeholder": "Digite ou cole o que enviar",
+    "send": "Enviar ao terminal",
+    "recent": "Copiados recentemente",
+    "clear": "Limpar",
+    "lines": "{count} linhas",
+    "remove": "Remover",
+    "empty": "O texto copiado ou colado no terminal aparece aqui e fica salvo apenas nesta aba"
   }
 }

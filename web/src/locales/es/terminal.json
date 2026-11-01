@@ -36,7 +36,10 @@
     "openSessionFirst": "Abre primero una sesión de terminal",
     "noMatch": "No se encontraron coincidencias",
     "splitHint": "Abre otra conexión para unirla automáticamente a la vista dividida, o haz clic en otra pestaña para añadirla",
-    "splitMax": "La vista dividida admite como máximo {max} paneles. Se reemplazó el panel actual."
+    "splitMax": "La vista dividida admite como máximo {max} paneles. Se reemplazó el panel actual.",
+    "multilineTitle": "Pegar varias líneas",
+    "multilineConfirm": "El texto tiene {count} líneas y el programa actual las ejecutará una a una. ¿Pegarlo?",
+    "multilinePaste": "Pegar"
   },
   "toolbar": {
     "sftp": "Gestor de archivos (SFTP)",
@@ -62,9 +65,10 @@
     "fullscreen": "Pantalla completa",
     "fileManage": "Gestor de archivos",
     "more": "Más",
-    "copyMobile": "Copiar (selección o pantalla actual)",
+    "copyMobile": "Seleccionar y copiar",
     "fontIncWithSize": "Aumentar tamaño de fuente ({size})",
-    "themeItem": "Esquema de colores: {name}"
+    "themeItem": "Esquema de colores: {name}",
+    "clips": "Historial del portapapeles"
   },
   "tabs": {
     "menu": "Menú de la pestaña",
@@ -96,7 +100,8 @@
   "keybar": {
     "shortcuts": "Atajos",
     "showKeyboard": "Mostrar teclado",
-    "hideKeyboard": "Ocultar teclado"
+    "hideKeyboard": "Ocultar teclado",
+    "paste": "Pegar"
   },
   "shortcut": {
     "title": "Atajos globales",
@@ -196,5 +201,22 @@
     "follow": "Seguir el tema de la interfaz",
     "default": "Oscuro por defecto",
     "githubLight": "Claro (GitHub)"
+  },
+  "select": {
+    "copy": "Copiar",
+    "all": "Seleccionar todo",
+    "paste": "Pegar",
+    "exit": "Salir de la selección",
+    "empty": "Selecciona primero el texto que quieres copiar"
+  },
+  "paste": {
+    "title": "Pegar",
+    "placeholder": "Escribe o pega lo que quieres enviar",
+    "send": "Enviar a la terminal",
+    "recent": "Copiado recientemente",
+    "clear": "Vaciar",
+    "lines": "{count} líneas",
+    "remove": "Quitar",
+    "empty": "Aquí aparece el texto copiado o pegado en la terminal; solo se guarda en esta pestaña"
   }
 }
