@@ -74,7 +74,14 @@ type activeReq struct {
 	mu   sync.Mutex
 	conn net.Conn
 	done bool
+	// upstream 为反向代理为这个请求选中的后端（非代理站点为 nil），拓扑视图据此把访客地址归到具体后端
+	upstream atomic.Pointer[upstream]
+	// inner 表示请求已通过 WAF 进入跨域、认证与站点处理环节，只在处理请求的 goroutine 中读写
+	inner bool
 }
+
+// ctxKeyActiveReq 为请求上下文中登记项的键。
+type ctxKeyActiveReq struct{}
 
 // close 断开请求：取消请求上下文（反向代理随之结束后端请求、关闭已升级的后端连接），
 // 并关闭已接管的连接。后续写出的响应会被丢弃，处理结束后由 ServeHTTP 中断连接或请求流。
@@ -191,7 +198,7 @@ func (t *connTracker) begin(w http.ResponseWriter, r *http.Request, client netip
 	s.mu.Lock()
 	s.m[a.id] = a
 	s.mu.Unlock()
-	return r.WithContext(ctx), a
+	return r.WithContext(context.WithValue(ctx, ctxKeyActiveReq{}, a)), a
 }
 
 // end 注销请求；持续时间达到阈值或被断开的请求写入历史记录。
@@ -345,6 +352,8 @@ func (b *trackedBody) Read(p []byte) (int, error) {
 type trackedConn struct {
 	net.Conn
 	req *activeReq
+	// rate 为站点的秒级速率，发给访客的字节同样计入
+	rate *rateRing
 }
 
 func (c *trackedConn) Read(p []byte) (int, error) {
@@ -356,6 +365,9 @@ func (c *trackedConn) Read(p []byte) (int, error) {
 func (c *trackedConn) Write(p []byte) (int, error) {
 	n, err := c.Conn.Write(p)
 	c.req.down.Add(int64(n))
+	if c.rate != nil && n > 0 {
+		c.rate.add(time.Now().Unix(), 0, int64(n))
+	}
 	return n, err
 }
 
@@ -365,7 +377,7 @@ func (s *statusRecorder) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	if err != nil || s.req == nil {
 		return c, brw, err
 	}
-	tc := &trackedConn{Conn: c, req: s.req}
+	tc := &trackedConn{Conn: c, req: s.req, rate: s.rate}
 	s.req.attach(tc)
 	return tc, brw, nil
 }

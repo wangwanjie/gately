@@ -1326,6 +1326,7 @@
   "拒绝 %s 访问 %s（国家过滤：%s）": "Denied %s access to %s (country filter: %s)",
   "拒绝 %s 访问 %s（访问控制）": "Denied %s access to %s (access control)",
   "拒绝跨源请求": "Cross-origin request denied",
+  "拓扑视图快照：监听、站点、后端与监听级动作的实时速率、计数与活动 IP（?focus=节点编号\u0026ip=地址）": "Topology snapshot: live rates, counters and active IPs of listeners, sites, backends and listener-level actions (?focus=node ID\u0026ip=address)",
   "挂载 %s 的目录需为绝对路径": "The directory of mount %s must be an absolute path",
   "挂载 %s:%s 的路径不能包含冒号": "The path of mount %s:%s cannot contain a colon",
   "挂载名称 %q 无效": "Invalid mount name %q",

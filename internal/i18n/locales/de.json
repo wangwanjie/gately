@@ -1326,6 +1326,7 @@
   "拒绝 %s 访问 %s（国家过滤：%s）": "Zugriff von %s auf %s abgelehnt (Länderfilter: %s)",
   "拒绝 %s 访问 %s（访问控制）": "Zugriff von %s auf %s abgelehnt (Zugriffskontrolle)",
   "拒绝跨源请求": "Cross-Origin-Anfrage abgelehnt",
+  "拓扑视图快照：监听、站点、后端与监听级动作的实时速率、计数与活动 IP（?focus=节点编号\u0026ip=地址）": "Topologie-Momentaufnahme: Live-Raten, Zähler und aktive IPs von Listenern, Sites, Backends und Listener-Aktionen (?focus=Knoten-ID\u0026ip=Adresse)",
   "挂载 %s 的目录需为绝对路径": "Das Verzeichnis des Mounts %s muss ein absoluter Pfad sein",
   "挂载 %s:%s 的路径不能包含冒号": "Der Pfad des Mounts %s:%s darf keinen Doppelpunkt enthalten",
   "挂载名称 %q 无效": "Mount-Name %q ungültig",

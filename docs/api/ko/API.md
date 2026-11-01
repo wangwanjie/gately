@@ -291,6 +291,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/webservice/settings` | `webservice:write` | Web 서비스 전역 설정 저장 |
 | GET | `/api/webservice/stats` | `webservice:read` | 사이트 분 단위 통계 (?listener=&site=&minutes=) |
 | GET | `/api/webservice/metrics` | `webservice:read` | Prometheus 텍스트 형식 지표 |
+| GET | `/api/webservice/topology` | `webservice:read` | 토폴로지 스냅샷: 리스너, 사이트, 백엔드, 리스너 단위 동작의 실시간 속도, 카운터, 활성 IP(?focus=노드 ID&ip=주소) |
 | GET | `/api/webservice/connections` | `webservice:read` | 사이트의 진행 중인 요청과 최근 종료된 장시간 요청 (?listener=&site=&q=) |
 | POST | `/api/webservice/connections/close` | `webservice:write` | 사이트의 진행 중인 요청 하나를 끊고, 출발지 주소를 함께 차단할 수 있습니다 |
 | GET | `/api/webservice/bans` | `webservice:read` | 현재 차단된 IP |
@@ -1722,6 +1723,14 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `s5xx` | integer |
 | `t` | integer |
 
+### webservice.Rate
+
+| 필드 | 타입 |
+| --- | --- |
+| `bps` | number |
+| `qps` | number |
+| `qps60` | number |
+
 ### webservice.RateLimit
 
 | 필드 | 타입 |
@@ -1730,6 +1739,14 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `enable` | boolean |
 | `maxConns` | integer |
 | `rate` | number |
+
+### webservice.RatePoint
+
+| 필드 | 타입 |
+| --- | --- |
+| `bytes` | integer |
+| `requests` | integer |
+| `t` | integer |
 
 ### webservice.Rewrite
 
@@ -1840,6 +1857,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | 필드 | 타입 |
 | --- | --- |
+| `blocked` | Map of integer |
 | `bytesOut` | integer |
 | `series` | Array of `webservice.Point` |
 | `status` | Map of integer |
@@ -1854,13 +1872,116 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `count` | integer |
 | `key` | string |
 
+### webservice.TopoAction
+
+| 필드 | 타입 |
+| --- | --- |
+| `id` | string |
+| `kind` | string |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+
+### webservice.TopoIP
+
+| 필드 | 타입 |
+| --- | --- |
+| `active` | integer |
+| `activeAt` | Map of integer |
+| `ip` | string |
+| `last` | integer |
+| `nodes` | Array of string |
+
+### webservice.TopoListener
+
+| 필드 | 타입 |
+| --- | --- |
+| `actions` | Array of `webservice.TopoAction` |
+| `active` | integer |
+| `enable` | boolean |
+| `error` | string |
+| `http3` | boolean |
+| `id` | string |
+| `key` | string |
+| `listenIp` | string |
+| `name` | string |
+| `network` | string |
+| `plainHttp` | string |
+| `port` | integer |
+| `proxyProtocol` | boolean |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+| `running` | boolean |
+| `sites` | Array of `webservice.TopoSite` |
+| `tls` | boolean |
+
+### webservice.TopoSite
+
+| 필드 | 타입 |
+| --- | --- |
+| `active` | integer |
+| `blocked` | Map of integer |
+| `closed` | integer |
+| `default` | boolean |
+| `domains` | Array of string |
+| `enable` | boolean |
+| `errors` | integer |
+| `group` | string |
+| `guards` | Array of string |
+| `id` | string |
+| `key` | string |
+| `name` | string |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+| `running` | boolean |
+| `status` | Map of integer |
+| `target` | string |
+| `type` | string |
+| `upstreams` | Array of `webservice.TopoUpstream` |
+
+### webservice.TopoUpstream
+
+| 필드 | 타입 |
+| --- | --- |
+| `backup` | boolean |
+| `bytes` | integer |
+| `conns` | integer |
+| `healthy` | boolean |
+| `id` | string |
+| `match` | string |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+| `scope` | string |
+| `url` | string |
+| `weight` | integer |
+
+### webservice.TopologyView
+
+| 필드 | 타입 |
+| --- | --- |
+| `active` | integer |
+| `enabled` | boolean |
+| `focus` | string |
+| `ipTotal` | integer |
+| `ipTruncated` | boolean |
+| `ips` | Array of `webservice.TopoIP` |
+| `listeners` | Array of `webservice.TopoListener` |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+| `series` | Array of `webservice.RatePoint` |
+| `time` | integer |
+| `window` | integer |
+
 ### webservice.UpstreamStatus
 
 | 필드 | 타입 |
 | --- | --- |
 | `backup` | boolean |
+| `bytes` | integer |
 | `conns` | integer |
 | `healthy` | boolean |
+| `match` | string |
+| `requests` | integer |
+| `scope` | string |
 | `url` | string |
 | `weight` | integer |
 

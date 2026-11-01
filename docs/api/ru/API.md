@@ -291,6 +291,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/webservice/settings` | `webservice:write` | Сохранить глобальные настройки веб-службы |
 | GET | `/api/webservice/stats` | `webservice:read` | Поминутная статистика сайта (?listener=&site=&minutes=) |
 | GET | `/api/webservice/metrics` | `webservice:read` | Метрики в текстовом формате Prometheus |
+| GET | `/api/webservice/topology` | `webservice:read` | Снимок топологии: текущие скорости, счётчики и активные IP прослушивателей, сайтов, бэкендов и действий уровня прослушивателя (?focus=ID узла&ip=адрес) |
 | GET | `/api/webservice/connections` | `webservice:read` | Выполняющиеся и недавно завершённые длительные запросы сайта (?listener=&site=&q=) |
 | POST | `/api/webservice/connections/close` | `webservice:write` | Разорвать выполняющийся запрос сайта, при необходимости заблокировав адрес источника |
 | GET | `/api/webservice/bans` | `webservice:read` | Заблокированные в данный момент IP |
@@ -1722,6 +1723,14 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `s5xx` | integer |
 | `t` | integer |
 
+### webservice.Rate
+
+| Поле | Тип |
+| --- | --- |
+| `bps` | number |
+| `qps` | number |
+| `qps60` | number |
+
 ### webservice.RateLimit
 
 | Поле | Тип |
@@ -1730,6 +1739,14 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `enable` | boolean |
 | `maxConns` | integer |
 | `rate` | number |
+
+### webservice.RatePoint
+
+| Поле | Тип |
+| --- | --- |
+| `bytes` | integer |
+| `requests` | integer |
+| `t` | integer |
 
 ### webservice.Rewrite
 
@@ -1840,6 +1857,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | Поле | Тип |
 | --- | --- |
+| `blocked` | Словарь из integer |
 | `bytesOut` | integer |
 | `series` | Массив из `webservice.Point` |
 | `status` | Словарь из integer |
@@ -1854,13 +1872,116 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `count` | integer |
 | `key` | string |
 
+### webservice.TopoAction
+
+| Поле | Тип |
+| --- | --- |
+| `id` | string |
+| `kind` | string |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+
+### webservice.TopoIP
+
+| Поле | Тип |
+| --- | --- |
+| `active` | integer |
+| `activeAt` | Словарь из integer |
+| `ip` | string |
+| `last` | integer |
+| `nodes` | Массив из string |
+
+### webservice.TopoListener
+
+| Поле | Тип |
+| --- | --- |
+| `actions` | Массив из `webservice.TopoAction` |
+| `active` | integer |
+| `enable` | boolean |
+| `error` | string |
+| `http3` | boolean |
+| `id` | string |
+| `key` | string |
+| `listenIp` | string |
+| `name` | string |
+| `network` | string |
+| `plainHttp` | string |
+| `port` | integer |
+| `proxyProtocol` | boolean |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+| `running` | boolean |
+| `sites` | Массив из `webservice.TopoSite` |
+| `tls` | boolean |
+
+### webservice.TopoSite
+
+| Поле | Тип |
+| --- | --- |
+| `active` | integer |
+| `blocked` | Словарь из integer |
+| `closed` | integer |
+| `default` | boolean |
+| `domains` | Массив из string |
+| `enable` | boolean |
+| `errors` | integer |
+| `group` | string |
+| `guards` | Массив из string |
+| `id` | string |
+| `key` | string |
+| `name` | string |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+| `running` | boolean |
+| `status` | Словарь из integer |
+| `target` | string |
+| `type` | string |
+| `upstreams` | Массив из `webservice.TopoUpstream` |
+
+### webservice.TopoUpstream
+
+| Поле | Тип |
+| --- | --- |
+| `backup` | boolean |
+| `bytes` | integer |
+| `conns` | integer |
+| `healthy` | boolean |
+| `id` | string |
+| `match` | string |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+| `scope` | string |
+| `url` | string |
+| `weight` | integer |
+
+### webservice.TopologyView
+
+| Поле | Тип |
+| --- | --- |
+| `active` | integer |
+| `enabled` | boolean |
+| `focus` | string |
+| `ipTotal` | integer |
+| `ipTruncated` | boolean |
+| `ips` | Массив из `webservice.TopoIP` |
+| `listeners` | Массив из `webservice.TopoListener` |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+| `series` | Массив из `webservice.RatePoint` |
+| `time` | integer |
+| `window` | integer |
+
 ### webservice.UpstreamStatus
 
 | Поле | Тип |
 | --- | --- |
 | `backup` | boolean |
+| `bytes` | integer |
 | `conns` | integer |
 | `healthy` | boolean |
+| `match` | string |
+| `requests` | integer |
+| `scope` | string |
 | `url` | string |
 | `weight` | integer |
 

@@ -291,6 +291,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/webservice/settings` | `webservice:write` | 儲存 Web 服務全域設定 |
 | GET | `/api/webservice/stats` | `webservice:read` | 站點分鐘級統計（?listener=&site=&minutes=） |
 | GET | `/api/webservice/metrics` | `webservice:read` | Prometheus 文字格式指標 |
+| GET | `/api/webservice/topology` | `webservice:read` | 拓撲視圖快照：監聽、站點、後端與監聽層級動作的即時速率、計數與活動 IP（?focus=節點編號&ip=位址） |
 | GET | `/api/webservice/connections` | `webservice:read` | 站點進行中的請求與最近結束的長請求（?listener=&site=&q=） |
 | POST | `/api/webservice/connections/close` | `webservice:write` | 中斷站點的一個進行中請求，可同時封鎖其來源位址 |
 | GET | `/api/webservice/bans` | `webservice:read` | 目前被封鎖的 IP |
@@ -1722,6 +1723,14 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `s5xx` | integer |
 | `t` | integer |
 
+### webservice.Rate
+
+| 欄位 | 類型 |
+| --- | --- |
+| `bps` | number |
+| `qps` | number |
+| `qps60` | number |
+
 ### webservice.RateLimit
 
 | 欄位 | 類型 |
@@ -1730,6 +1739,14 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `enable` | boolean |
 | `maxConns` | integer |
 | `rate` | number |
+
+### webservice.RatePoint
+
+| 欄位 | 類型 |
+| --- | --- |
+| `bytes` | integer |
+| `requests` | integer |
+| `t` | integer |
 
 ### webservice.Rewrite
 
@@ -1840,6 +1857,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | 欄位 | 類型 |
 | --- | --- |
+| `blocked` | 對應 of integer |
 | `bytesOut` | integer |
 | `series` | 陣列 of `webservice.Point` |
 | `status` | 對應 of integer |
@@ -1854,13 +1872,116 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `count` | integer |
 | `key` | string |
 
+### webservice.TopoAction
+
+| 欄位 | 類型 |
+| --- | --- |
+| `id` | string |
+| `kind` | string |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+
+### webservice.TopoIP
+
+| 欄位 | 類型 |
+| --- | --- |
+| `active` | integer |
+| `activeAt` | 對應 of integer |
+| `ip` | string |
+| `last` | integer |
+| `nodes` | 陣列 of string |
+
+### webservice.TopoListener
+
+| 欄位 | 類型 |
+| --- | --- |
+| `actions` | 陣列 of `webservice.TopoAction` |
+| `active` | integer |
+| `enable` | boolean |
+| `error` | string |
+| `http3` | boolean |
+| `id` | string |
+| `key` | string |
+| `listenIp` | string |
+| `name` | string |
+| `network` | string |
+| `plainHttp` | string |
+| `port` | integer |
+| `proxyProtocol` | boolean |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+| `running` | boolean |
+| `sites` | 陣列 of `webservice.TopoSite` |
+| `tls` | boolean |
+
+### webservice.TopoSite
+
+| 欄位 | 類型 |
+| --- | --- |
+| `active` | integer |
+| `blocked` | 對應 of integer |
+| `closed` | integer |
+| `default` | boolean |
+| `domains` | 陣列 of string |
+| `enable` | boolean |
+| `errors` | integer |
+| `group` | string |
+| `guards` | 陣列 of string |
+| `id` | string |
+| `key` | string |
+| `name` | string |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+| `running` | boolean |
+| `status` | 對應 of integer |
+| `target` | string |
+| `type` | string |
+| `upstreams` | 陣列 of `webservice.TopoUpstream` |
+
+### webservice.TopoUpstream
+
+| 欄位 | 類型 |
+| --- | --- |
+| `backup` | boolean |
+| `bytes` | integer |
+| `conns` | integer |
+| `healthy` | boolean |
+| `id` | string |
+| `match` | string |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+| `scope` | string |
+| `url` | string |
+| `weight` | integer |
+
+### webservice.TopologyView
+
+| 欄位 | 類型 |
+| --- | --- |
+| `active` | integer |
+| `enabled` | boolean |
+| `focus` | string |
+| `ipTotal` | integer |
+| `ipTruncated` | boolean |
+| `ips` | 陣列 of `webservice.TopoIP` |
+| `listeners` | 陣列 of `webservice.TopoListener` |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+| `series` | 陣列 of `webservice.RatePoint` |
+| `time` | integer |
+| `window` | integer |
+
 ### webservice.UpstreamStatus
 
 | 欄位 | 類型 |
 | --- | --- |
 | `backup` | boolean |
+| `bytes` | integer |
 | `conns` | integer |
 | `healthy` | boolean |
+| `match` | string |
+| `requests` | integer |
+| `scope` | string |
 | `url` | string |
 | `weight` | integer |
 

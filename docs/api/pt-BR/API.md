@@ -291,6 +291,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | PUT | `/api/webservice/settings` | `webservice:write` | Salvar configurações globais do serviço web |
 | GET | `/api/webservice/stats` | `webservice:read` | Estatísticas por minuto do site (?listener=&site=&minutes=) |
 | GET | `/api/webservice/metrics` | `webservice:read` | Métricas em formato de texto do Prometheus |
+| GET | `/api/webservice/topology` | `webservice:read` | Instantâneo da topologia: taxas ao vivo, contadores e IPs ativos de escutas, sites, backends e ações da escuta (?focus=ID do nó&ip=endereço) |
 | GET | `/api/webservice/connections` | `webservice:read` | Requisições em andamento e requisições longas encerradas recentemente de um site (?listener=&site=&q=) |
 | POST | `/api/webservice/connections/close` | `webservice:write` | Encerrar uma requisição em andamento de um site, podendo bloquear o endereço de origem |
 | GET | `/api/webservice/bans` | `webservice:read` | IPs atualmente bloqueados |
@@ -1722,6 +1723,14 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `s5xx` | integer |
 | `t` | integer |
 
+### webservice.Rate
+
+| Campo | Tipo |
+| --- | --- |
+| `bps` | number |
+| `qps` | number |
+| `qps60` | number |
+
 ### webservice.RateLimit
 
 | Campo | Tipo |
@@ -1730,6 +1739,14 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `enable` | boolean |
 | `maxConns` | integer |
 | `rate` | number |
+
+### webservice.RatePoint
+
+| Campo | Tipo |
+| --- | --- |
+| `bytes` | integer |
+| `requests` | integer |
+| `t` | integer |
 
 ### webservice.Rewrite
 
@@ -1840,6 +1857,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 
 | Campo | Tipo |
 | --- | --- |
+| `blocked` | Mapa de integer |
 | `bytesOut` | integer |
 | `series` | Array de `webservice.Point` |
 | `status` | Mapa de integer |
@@ -1854,13 +1872,116 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `count` | integer |
 | `key` | string |
 
+### webservice.TopoAction
+
+| Campo | Tipo |
+| --- | --- |
+| `id` | string |
+| `kind` | string |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+
+### webservice.TopoIP
+
+| Campo | Tipo |
+| --- | --- |
+| `active` | integer |
+| `activeAt` | Mapa de integer |
+| `ip` | string |
+| `last` | integer |
+| `nodes` | Array de string |
+
+### webservice.TopoListener
+
+| Campo | Tipo |
+| --- | --- |
+| `actions` | Array de `webservice.TopoAction` |
+| `active` | integer |
+| `enable` | boolean |
+| `error` | string |
+| `http3` | boolean |
+| `id` | string |
+| `key` | string |
+| `listenIp` | string |
+| `name` | string |
+| `network` | string |
+| `plainHttp` | string |
+| `port` | integer |
+| `proxyProtocol` | boolean |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+| `running` | boolean |
+| `sites` | Array de `webservice.TopoSite` |
+| `tls` | boolean |
+
+### webservice.TopoSite
+
+| Campo | Tipo |
+| --- | --- |
+| `active` | integer |
+| `blocked` | Mapa de integer |
+| `closed` | integer |
+| `default` | boolean |
+| `domains` | Array de string |
+| `enable` | boolean |
+| `errors` | integer |
+| `group` | string |
+| `guards` | Array de string |
+| `id` | string |
+| `key` | string |
+| `name` | string |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+| `running` | boolean |
+| `status` | Mapa de integer |
+| `target` | string |
+| `type` | string |
+| `upstreams` | Array de `webservice.TopoUpstream` |
+
+### webservice.TopoUpstream
+
+| Campo | Tipo |
+| --- | --- |
+| `backup` | boolean |
+| `bytes` | integer |
+| `conns` | integer |
+| `healthy` | boolean |
+| `id` | string |
+| `match` | string |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+| `scope` | string |
+| `url` | string |
+| `weight` | integer |
+
+### webservice.TopologyView
+
+| Campo | Tipo |
+| --- | --- |
+| `active` | integer |
+| `enabled` | boolean |
+| `focus` | string |
+| `ipTotal` | integer |
+| `ipTruncated` | boolean |
+| `ips` | Array de `webservice.TopoIP` |
+| `listeners` | Array de `webservice.TopoListener` |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+| `series` | Array de `webservice.RatePoint` |
+| `time` | integer |
+| `window` | integer |
+
 ### webservice.UpstreamStatus
 
 | Campo | Tipo |
 | --- | --- |
 | `backup` | boolean |
+| `bytes` | integer |
 | `conns` | integer |
 | `healthy` | boolean |
+| `match` | string |
+| `requests` | integer |
+| `scope` | string |
 | `url` | string |
 | `weight` | integer |
 

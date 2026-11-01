@@ -291,6 +291,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/webservice/settings` | `webservice:write` | 保存 Web 服务全局设置 |
 | GET | `/api/webservice/stats` | `webservice:read` | 站点分钟级统计（?listener=&site=&minutes=） |
 | GET | `/api/webservice/metrics` | `webservice:read` | Prometheus 文本格式指标 |
+| GET | `/api/webservice/topology` | `webservice:read` | 拓扑视图快照：监听、站点、后端与监听级动作的实时速率、计数与活动 IP（?focus=节点编号&ip=地址） |
 | GET | `/api/webservice/connections` | `webservice:read` | 站点进行中的请求与最近结束的长请求（?listener=&site=&q=） |
 | POST | `/api/webservice/connections/close` | `webservice:write` | 断开站点的一个进行中请求，可同时封禁其来源地址 |
 | GET | `/api/webservice/bans` | `webservice:read` | 当前被封禁的 IP |
@@ -1722,6 +1723,14 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `s5xx` | integer |
 | `t` | integer |
 
+### webservice.Rate
+
+| 字段 | 类型 |
+| --- | --- |
+| `bps` | number |
+| `qps` | number |
+| `qps60` | number |
+
 ### webservice.RateLimit
 
 | 字段 | 类型 |
@@ -1730,6 +1739,14 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `enable` | boolean |
 | `maxConns` | integer |
 | `rate` | number |
+
+### webservice.RatePoint
+
+| 字段 | 类型 |
+| --- | --- |
+| `bytes` | integer |
+| `requests` | integer |
+| `t` | integer |
 
 ### webservice.Rewrite
 
@@ -1840,6 +1857,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | 字段 | 类型 |
 | --- | --- |
+| `blocked` | 映射 of integer |
 | `bytesOut` | integer |
 | `series` | 数组 of `webservice.Point` |
 | `status` | 映射 of integer |
@@ -1854,13 +1872,116 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `count` | integer |
 | `key` | string |
 
+### webservice.TopoAction
+
+| 字段 | 类型 |
+| --- | --- |
+| `id` | string |
+| `kind` | string |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+
+### webservice.TopoIP
+
+| 字段 | 类型 |
+| --- | --- |
+| `active` | integer |
+| `activeAt` | 映射 of integer |
+| `ip` | string |
+| `last` | integer |
+| `nodes` | 数组 of string |
+
+### webservice.TopoListener
+
+| 字段 | 类型 |
+| --- | --- |
+| `actions` | 数组 of `webservice.TopoAction` |
+| `active` | integer |
+| `enable` | boolean |
+| `error` | string |
+| `http3` | boolean |
+| `id` | string |
+| `key` | string |
+| `listenIp` | string |
+| `name` | string |
+| `network` | string |
+| `plainHttp` | string |
+| `port` | integer |
+| `proxyProtocol` | boolean |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+| `running` | boolean |
+| `sites` | 数组 of `webservice.TopoSite` |
+| `tls` | boolean |
+
+### webservice.TopoSite
+
+| 字段 | 类型 |
+| --- | --- |
+| `active` | integer |
+| `blocked` | 映射 of integer |
+| `closed` | integer |
+| `default` | boolean |
+| `domains` | 数组 of string |
+| `enable` | boolean |
+| `errors` | integer |
+| `group` | string |
+| `guards` | 数组 of string |
+| `id` | string |
+| `key` | string |
+| `name` | string |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+| `running` | boolean |
+| `status` | 映射 of integer |
+| `target` | string |
+| `type` | string |
+| `upstreams` | 数组 of `webservice.TopoUpstream` |
+
+### webservice.TopoUpstream
+
+| 字段 | 类型 |
+| --- | --- |
+| `backup` | boolean |
+| `bytes` | integer |
+| `conns` | integer |
+| `healthy` | boolean |
+| `id` | string |
+| `match` | string |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+| `scope` | string |
+| `url` | string |
+| `weight` | integer |
+
+### webservice.TopologyView
+
+| 字段 | 类型 |
+| --- | --- |
+| `active` | integer |
+| `enabled` | boolean |
+| `focus` | string |
+| `ipTotal` | integer |
+| `ipTruncated` | boolean |
+| `ips` | 数组 of `webservice.TopoIP` |
+| `listeners` | 数组 of `webservice.TopoListener` |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+| `series` | 数组 of `webservice.RatePoint` |
+| `time` | integer |
+| `window` | integer |
+
 ### webservice.UpstreamStatus
 
 | 字段 | 类型 |
 | --- | --- |
 | `backup` | boolean |
+| `bytes` | integer |
 | `conns` | integer |
 | `healthy` | boolean |
+| `match` | string |
+| `requests` | integer |
+| `scope` | string |
 | `url` | string |
 | `weight` | integer |
 

@@ -34,10 +34,13 @@ type siteMetrics struct {
 	countries map[string]int64
 	bytesOut  int64
 	status    [6]int64
+	// rate 为秒级速率（自带锁，不受 mu 保护），recent 为近期活动的访客地址
+	rate   rateRing
+	recent *recentIPs
 }
 
 func newSiteMetrics() *siteMetrics {
-	return &siteMetrics{ips: map[string]int64{}, countries: map[string]int64{}}
+	return &siteMetrics{ips: map[string]int64{}, countries: map[string]int64{}, recent: newRecentIPs()}
 }
 
 // record 登记一次请求。
@@ -103,6 +106,8 @@ type SiteStatsView struct {
 	TopIPs       []TopItem        `json:"topIps"`
 	TopCountries []TopItem        `json:"topCountries"`
 	Upstreams    []UpstreamStatus `json:"upstreams,omitempty"`
+	// Blocked 为按原因分的累计拦截次数：ban（已封禁）、ip（IP 名单）、country（国家过滤）、rateLimit（限流）、waf
+	Blocked map[string]int64 `json:"blocked"`
 }
 
 func top(m map[string]int64, n int) []TopItem {
@@ -186,6 +191,7 @@ func (m *Module) handleStats(w http.ResponseWriter, r *http.Request) {
 	}
 	v := h.metrics.view(minutes, time.Now())
 	v.Upstreams = h.upstreamStatus()
+	v.Blocked = h.stats.blocked()
 	httpx.OK(w, v)
 }
 
@@ -196,13 +202,21 @@ func (m *Module) Metrics() []module.Sample {
 		h      *siteHandler
 	}
 	var rows []row
+	// acts 为各监听的监听级处理计数
+	type actRow struct {
+		label string
+		run   *listenerRunner
+	}
+	var acts []actRow
 	m.mu.Lock()
 	for lk, run := range m.runners {
+		acts = append(acts, actRow{run.cfg.Name + "#" + lk, run})
 		for _, s := range run.current().all() {
 			rows = append(rows, row{map[string]string{"listener": run.cfg.Name + "#" + lk, "site": siteLabel(s.site)}, s})
 		}
 	}
 	m.mu.Unlock()
+	sort.Slice(acts, func(i, j int) bool { return acts[i].label < acts[j].label })
 	sort.Slice(rows, func(i, j int) bool {
 		if rows[i].labels["listener"] != rows[j].labels["listener"] {
 			return rows[i].labels["listener"] < rows[j].labels["listener"]
@@ -241,13 +255,47 @@ func (m *Module) Metrics() []module.Sample {
 		}
 	}
 	for _, r := range rows {
+		bl := r.h.stats.blocked()
+		for _, name := range blockNames {
+			add("gately_site_blocked_total", "Requests blocked by the site by reason", module.MetricCounter, with(r.labels, "reason", name), float64(bl[name]))
+		}
+	}
+	// 后端标签：站点后端只有 upstream；分路径与按用户分流的后端另加 route（路径前缀，或 @用户列表），
+	// 同一地址出现在多个分流中时序列不会重复
+	upLabels := func(base map[string]string, u UpstreamStatus) map[string]string {
+		l := with(base, "upstream", u.URL)
+		switch u.Scope {
+		case scopeLocation:
+			l["route"] = u.Match
+		case scopeUser:
+			l["route"] = "@" + u.Match
+		}
+		return l
+	}
+	for _, r := range rows {
 		for _, u := range r.h.upstreamStatus() {
 			v := 0.0
 			if u.Healthy {
 				v = 1
 			}
-			add("gately_upstream_up", "Whether the upstream is healthy (1) or down (0)", module.MetricGauge, with(r.labels, "upstream", u.URL), v)
+			add("gately_upstream_up", "Whether the upstream is healthy (1) or down (0)", module.MetricGauge, upLabels(r.labels, u), v)
 		}
+	}
+	for _, r := range rows {
+		for _, u := range r.h.upstreamStatus() {
+			add("gately_upstream_requests_total", "Requests forwarded to the upstream", module.MetricCounter, upLabels(r.labels, u), float64(u.Requests))
+		}
+	}
+	for _, r := range rows {
+		for _, u := range r.h.upstreamStatus() {
+			add("gately_upstream_response_bytes_total", "Response body bytes received from the upstream", module.MetricCounter, upLabels(r.labels, u), float64(u.Bytes))
+		}
+	}
+	for _, l := range acts {
+		add("gately_listener_requests_total", "Requests handled by the listener itself without a site", module.MetricCounter,
+			map[string]string{"listener": l.label, "action": "https_redirect"}, float64(l.run.acts.redirect.total.Load()))
+		add("gately_listener_requests_total", "Requests handled by the listener itself without a site", module.MetricCounter,
+			map[string]string{"listener": l.label, "action": "not_found"}, float64(l.run.acts.notFound.total.Load()))
 	}
 	return out
 }

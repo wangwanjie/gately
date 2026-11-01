@@ -105,6 +105,7 @@ func (h *siteHandler) buildUserRoutes() error {
 			return err
 		}
 		p.site = siteLabel(h.site) + " @" + strings.Join(ur.Users, ",")
+		p.scope, p.match = scopeUser, strings.Join(ur.Users, ",")
 		handler := h.newProxy(s, p)
 		if len(h.locations) > 0 {
 			locs := make([]*locationHandler, 0, len(h.locations))

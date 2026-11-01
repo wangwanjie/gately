@@ -291,6 +291,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | PUT | `/api/webservice/settings` | `webservice:write` | Enregistrer les paramètres globaux du service Web |
 | GET | `/api/webservice/stats` | `webservice:read` | Statistiques par minute du site (?listener=&site=&minutes=) |
 | GET | `/api/webservice/metrics` | `webservice:read` | Métriques au format texte Prometheus |
+| GET | `/api/webservice/topology` | `webservice:read` | Instantané de topologie : débits en direct, compteurs et IP actives des écoutes, sites, backends et actions au niveau de l’écoute (?focus=ID de nœud&ip=adresse) |
 | GET | `/api/webservice/connections` | `webservice:read` | Requêtes en cours et longues requêtes récemment terminées d’un site (?listener=&site=&q=) |
 | POST | `/api/webservice/connections/close` | `webservice:write` | Fermer une requête en cours sur un site, avec bannissement facultatif de son adresse source |
 | GET | `/api/webservice/bans` | `webservice:read` | IP actuellement bannies |
@@ -1722,6 +1723,14 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `s5xx` | integer |
 | `t` | integer |
 
+### webservice.Rate
+
+| Champ | Type |
+| --- | --- |
+| `bps` | number |
+| `qps` | number |
+| `qps60` | number |
+
 ### webservice.RateLimit
 
 | Champ | Type |
@@ -1730,6 +1739,14 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `enable` | boolean |
 | `maxConns` | integer |
 | `rate` | number |
+
+### webservice.RatePoint
+
+| Champ | Type |
+| --- | --- |
+| `bytes` | integer |
+| `requests` | integer |
+| `t` | integer |
 
 ### webservice.Rewrite
 
@@ -1840,6 +1857,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 
 | Champ | Type |
 | --- | --- |
+| `blocked` | Table de correspondance de integer |
 | `bytesOut` | integer |
 | `series` | Tableau de `webservice.Point` |
 | `status` | Table de correspondance de integer |
@@ -1854,13 +1872,116 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `count` | integer |
 | `key` | string |
 
+### webservice.TopoAction
+
+| Champ | Type |
+| --- | --- |
+| `id` | string |
+| `kind` | string |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+
+### webservice.TopoIP
+
+| Champ | Type |
+| --- | --- |
+| `active` | integer |
+| `activeAt` | Table de correspondance de integer |
+| `ip` | string |
+| `last` | integer |
+| `nodes` | Tableau de string |
+
+### webservice.TopoListener
+
+| Champ | Type |
+| --- | --- |
+| `actions` | Tableau de `webservice.TopoAction` |
+| `active` | integer |
+| `enable` | boolean |
+| `error` | string |
+| `http3` | boolean |
+| `id` | string |
+| `key` | string |
+| `listenIp` | string |
+| `name` | string |
+| `network` | string |
+| `plainHttp` | string |
+| `port` | integer |
+| `proxyProtocol` | boolean |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+| `running` | boolean |
+| `sites` | Tableau de `webservice.TopoSite` |
+| `tls` | boolean |
+
+### webservice.TopoSite
+
+| Champ | Type |
+| --- | --- |
+| `active` | integer |
+| `blocked` | Table de correspondance de integer |
+| `closed` | integer |
+| `default` | boolean |
+| `domains` | Tableau de string |
+| `enable` | boolean |
+| `errors` | integer |
+| `group` | string |
+| `guards` | Tableau de string |
+| `id` | string |
+| `key` | string |
+| `name` | string |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+| `running` | boolean |
+| `status` | Table de correspondance de integer |
+| `target` | string |
+| `type` | string |
+| `upstreams` | Tableau de `webservice.TopoUpstream` |
+
+### webservice.TopoUpstream
+
+| Champ | Type |
+| --- | --- |
+| `backup` | boolean |
+| `bytes` | integer |
+| `conns` | integer |
+| `healthy` | boolean |
+| `id` | string |
+| `match` | string |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+| `scope` | string |
+| `url` | string |
+| `weight` | integer |
+
+### webservice.TopologyView
+
+| Champ | Type |
+| --- | --- |
+| `active` | integer |
+| `enabled` | boolean |
+| `focus` | string |
+| `ipTotal` | integer |
+| `ipTruncated` | boolean |
+| `ips` | Tableau de `webservice.TopoIP` |
+| `listeners` | Tableau de `webservice.TopoListener` |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+| `series` | Tableau de `webservice.RatePoint` |
+| `time` | integer |
+| `window` | integer |
+
 ### webservice.UpstreamStatus
 
 | Champ | Type |
 | --- | --- |
 | `backup` | boolean |
+| `bytes` | integer |
 | `conns` | integer |
 | `healthy` | boolean |
+| `match` | string |
+| `requests` | integer |
+| `scope` | string |
 | `url` | string |
 | `weight` | integer |
 

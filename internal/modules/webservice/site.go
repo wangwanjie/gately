@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -27,11 +28,40 @@ import (
 	"github.com/wangwanjie/gately/internal/webprobe"
 )
 
+// 访问被拦截的原因，按原因分别计数。
+const (
+	// blockBan 为来源地址已被封禁（认证失败自动封禁、入侵防护、手动封禁）
+	blockBan = iota
+	// blockIP 为 IP 名单（含路径规则的名单与引用的 IP 列表）拒绝
+	blockIP
+	// blockCountry 为国家过滤拒绝
+	blockCountry
+	// blockRateLimit 为限流拒绝（429）
+	blockRateLimit
+	// blockWAF 为 WAF 拦截
+	blockWAF
+	blockKinds
+)
+
+// blockNames 为各拦截原因在接口与 Prometheus 指标中的名称。
+var blockNames = [blockKinds]string{"ban", "ip", "country", "rateLimit", "waf"}
+
 // SiteStats 是站点的请求统计。
 type SiteStats struct {
 	Requests atomic.Int64
 	Active   atomic.Int64
 	Errors   atomic.Int64
+	// Blocked 为按原因分的拦截次数
+	Blocked [blockKinds]atomic.Int64
+}
+
+// blocked 返回按原因分的拦截次数。
+func (s *SiteStats) blocked() map[string]int64 {
+	out := make(map[string]int64, blockKinds)
+	for i := range s.Blocked {
+		out[blockNames[i]] = s.Blocked[i].Load()
+	}
+	return out
 }
 
 // WAFProvider 提供按实例检查请求的中间件（由 WAF 模块实现）。
@@ -190,12 +220,45 @@ func newSiteHandler(s Site, log *logbuf.Logger, auth *authenticator, waf WAFProv
 
 type ctxKeyUpstream struct{}
 
-// upstreamStatus 返回后端状态，非代理站点为空。
-func (h *siteHandler) upstreamStatus() []UpstreamStatus {
-	if h.pool == nil {
-		return nil
+// upstreamBody 统计后端响应体的字节数。
+type upstreamBody struct {
+	io.ReadCloser
+	st *upstreamStats
+}
+
+func (b *upstreamBody) Read(p []byte) (int, error) {
+	n, err := b.ReadCloser.Read(p)
+	if n > 0 {
+		b.st.bytes.Add(int64(n))
+		b.st.rate.add(time.Now().Unix(), 0, int64(n))
 	}
-	return h.pool.status()
+	return n, err
+}
+
+// pools 返回站点的全部后端组：站点后端、自带后端的分路径规则、按用户分流规则，顺序固定，同一组只出现一次。
+func (h *siteHandler) pools() []*pool {
+	var out []*pool
+	if h.pool != nil {
+		out = append(out, h.pool)
+	}
+	for _, l := range h.locations {
+		if l.pool != nil {
+			out = append(out, l.pool)
+		}
+	}
+	for _, u := range h.userRoutes {
+		out = append(out, u.pool)
+	}
+	return out
+}
+
+// upstreamStatus 返回站点全部后端组的状态（含分路径与按用户分流的后端），非代理站点为空。
+func (h *siteHandler) upstreamStatus() []UpstreamStatus {
+	var out []UpstreamStatus
+	for _, p := range h.pools() {
+		out = append(out, p.status()...)
+	}
+	return out
 }
 
 // startBackground 启动站点的后台任务（主动健康检查）。
@@ -226,6 +289,20 @@ func (h *siteHandler) inherit(old *siteHandler) {
 	h.metrics = old.metrics
 	// 进行中的请求仍由旧处理器服务，沿用登记表才能继续列出并断开它们
 	h.conns = old.conns
+	// 同一分流下地址相同的后端沿用转发统计，修改其他设置后累计数与速率不清零
+	prev := map[string]*upstreamStats{}
+	for _, p := range old.pools() {
+		for _, u := range p.ups {
+			prev[p.scope+"\x00"+p.match+"\x00"+u.url.String()] = u.stats
+		}
+	}
+	for _, p := range h.pools() {
+		for _, u := range p.ups {
+			if st := prev[p.scope+"\x00"+p.match+"\x00"+u.url.String()]; st != nil {
+				u.stats = st
+			}
+		}
+	}
 }
 
 // proxyBufferPool 复用反向代理的拷贝缓冲区，避免每个请求分配 32 KB 带来的 GC 压力。
@@ -352,6 +429,10 @@ func (h *siteHandler) newProxy(s Site, p *pool) http.Handler {
 			applyHeaders(resp.Header, s.ResponseHeaders)
 			if up, _ := resp.Request.Context().Value(ctxKeyUpstream{}).(*upstream); up != nil {
 				p.ok(up)
+				// 统计后端返回的响应体字节数。101 协议升级时 ReverseProxy 要求响应体是可读写的连接，包装会破坏升级，不统计
+				if resp.StatusCode != http.StatusSwitchingProtocols && resp.Body != nil && resp.Body != http.NoBody {
+					resp.Body = &upstreamBody{ReadCloser: resp.Body, st: up.stats}
+				}
 			}
 			return nil
 		},
@@ -376,6 +457,14 @@ func (h *siteHandler) newProxy(s Site, p *pool) http.Handler {
 		up := p.pick(client.Addr())
 		up.conns.Add(1)
 		defer up.conns.Add(-1)
+		now := time.Now().Unix()
+		up.stats.requests.Add(1)
+		up.stats.rate.add(now, 1, 0)
+		up.stats.recent.touch(client.Addr(), now)
+		// 记下选中的后端，拓扑视图按访客地址筛选时据此高亮到具体后端
+		if a, ok := r.Context().Value(ctxKeyActiveReq{}).(*activeReq); ok {
+			a.upstream.Store(up)
+		}
 		ctx := context.WithValue(r.Context(), ctxKeyClientAddr{}, client)
 		ctx = context.WithValue(ctx, ctxKeyUpstream{}, up)
 		rp.ServeHTTP(w, r.WithContext(ctx))
@@ -458,6 +547,8 @@ type statusRecorder struct {
 	req *activeReq
 	// wroteHeader 表示已写出响应头
 	wroteHeader bool
+	// rate 为站点的秒级速率，写出时登记字节数（大文件下载的吞吐随写出实时体现）
+	rate *rateRing
 }
 
 func (s *statusRecorder) Write(p []byte) (int, error) {
@@ -470,6 +561,9 @@ func (s *statusRecorder) Write(p []byte) (int, error) {
 	s.bytes += int64(n)
 	if s.req != nil {
 		s.req.down.Add(int64(n))
+	}
+	if s.rate != nil && n > 0 {
+		s.rate.add(time.Now().Unix(), 0, int64(n))
 	}
 	return n, err
 }
@@ -527,7 +621,10 @@ func (h *siteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer h.stats.Active.Add(-1)
 	start := time.Now()
 	client := clientAddr(r)
-	rec := &statusRecorder{ResponseWriter: w, status: http.StatusOK}
+	// 秒级速率按到达计数，近期活动 IP 在到达时记录（WebSocket 等长请求进行中也能看到）
+	h.metrics.rate.add(start.Unix(), 1, 0)
+	h.metrics.recent.touch(client.Addr(), start.Unix())
+	rec := &statusRecorder{ResponseWriter: w, status: http.StatusOK, rate: &h.metrics.rate}
 	// 重写规则会原地改写 r.URL，访问日志与路径探测要用访客实际请求的路径
 	origPath, origURI := r.URL.Path, r.URL.RequestURI()
 
@@ -599,6 +696,10 @@ func (h *siteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	defer release()
 	h.pipeline.ServeHTTP(rec, r)
+	// WAF 拦截时不会进入 serveInner 并返回 403；进入过 serveInner 的 403 来自认证、后端等，不算 WAF 拦截
+	if h.site.WAF != "" && !ar.inner && rec.status == http.StatusForbidden && !ar.killed.Load() {
+		h.stats.Blocked[blockWAF].Add(1)
+	}
 }
 
 // accessCheck 执行站点的访问控制：封禁、IP 名单、国家过滤与限流。不通过时已写出 403 或 429（开启拒绝时断开连接则直接断开）并返回 false；
@@ -607,15 +708,18 @@ func (h *siteHandler) accessCheck(w http.ResponseWriter, r *http.Request) (relea
 	client := clientAddr(r)
 	noop := func() {}
 	if h.auth.banned(client.Addr()) {
+		h.stats.Blocked[blockBan].Add(1)
 		h.deny(w)
 		return noop, false
 	}
 	if !h.allowedIP(client.Addr(), h.matchRule(r.URL.Path)) {
+		h.stats.Blocked[blockIP].Add(1)
 		h.reqLog(r).Warnf("拒绝 %s 访问 %s（访问控制）", client.Addr(), r.Host)
 		h.deny(w)
 		return noop, false
 	}
 	if !h.countryAllowed(client.Addr()) {
+		h.stats.Blocked[blockCountry].Add(1)
 		h.reqLog(r).Warnf("拒绝 %s 访问 %s（国家过滤：%s）", client.Addr(), r.Host, geoip.Default.Country(client.Addr()))
 		h.deny(w)
 		return noop, false
@@ -623,6 +727,7 @@ func (h *siteHandler) accessCheck(w http.ResponseWriter, r *http.Request) (relea
 	if h.limiter != nil {
 		rel, retry, ok := h.limiter.acquire(limitKeyAddr(client.Addr()))
 		if !ok {
+			h.stats.Blocked[blockRateLimit].Add(1)
 			w.Header().Set("Retry-After", retryAfterSeconds(retry))
 			http.Error(w, "429 Too Many Requests", http.StatusTooManyRequests)
 			return noop, false
@@ -649,6 +754,10 @@ func (h *siteHandler) deny(w http.ResponseWriter) {
 
 // serveInner 处理跨域、认证并交给站点处理器。
 func (h *siteHandler) serveInner(rec http.ResponseWriter, r *http.Request) {
+	// 标记请求已通过 WAF，供 ServeHTTP 区分 WAF 拦截与后续环节返回的 403
+	if a, ok := r.Context().Value(ctxKeyActiveReq{}).(*activeReq); ok {
+		a.inner = true
+	}
 	if h.site.CORS {
 		if origin := r.Header.Get("Origin"); origin != "" && h.corsAllowed(origin) {
 			rec.Header().Set("Access-Control-Allow-Origin", origin)

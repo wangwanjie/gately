@@ -57,6 +57,30 @@ type listenerRunner struct {
 	err     string
 	// realIP 为模块共享的可信代理真实 IP 设置，可为 nil（不启用）
 	realIP *realIPSource
+	// acts 为在监听层处理、不属于任何站点的请求的统计
+	acts listenerActs
+}
+
+// listenerAct 是一种监听级处理的计数、秒级速率与近期访客地址。
+type listenerAct struct {
+	total  atomic.Int64
+	rate   rateRing
+	recent *recentIPs
+}
+
+// listenerActs 统计在监听层直接处理的请求：HTTPS 端口收到明文请求时跳转到 HTTPS，
+// 以及没有站点匹配又没有启用默认站点时返回的 404。它们不经过任何站点，站点统计里看不到。
+type listenerActs struct {
+	redirect listenerAct
+	notFound listenerAct
+}
+
+// hit 登记一次监听级处理。
+func (act *listenerAct) hit(r *http.Request) {
+	now := time.Now().Unix()
+	act.total.Add(1)
+	act.rate.add(now, 1, 0)
+	act.recent.touch(clientAddr(r).Addr(), now)
 }
 
 // siteTable 是一个监听器在某一时刻的全部站点。
@@ -127,6 +151,7 @@ func (l *listenerRunner) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// HTTPS 端口收到的明文请求按设置跳转到同端口的 https 地址（ACME 验证已在上面应答）；
 	// 可信反向代理已终止 TLS 并以 X-Forwarded-Proto: https 转来的请求不再跳转，否则会循环跳转
 	if l.plainHTTP == PlainHTTPRedirect && !requestIsHTTPS(r) {
+		l.acts.redirect.hit(r)
 		redirectToHTTPS(w, r)
 		return
 	}
@@ -155,6 +180,7 @@ func (l *listenerRunner) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	s := l.route(r.Host)
 	if s == nil {
+		l.acts.notFound.hit(r)
 		writeNotFound(w, r, "站点不存在", "这个域名没有配置对应的站点，请检查访问地址是否正确。")
 		// 未知域名且没有默认站点时，同样交给路径探测规则计数
 		webprobe.Report(webprobe.Hit{Addr: clientAddr(r).Addr(), Listener: l.key, Unknown: true,
@@ -166,6 +192,8 @@ func (l *listenerRunner) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func newListenerRunner(cfg Listener, log *logbuf.Logger, auth *authenticator, waf WAFProvider) (*listenerRunner, error) {
 	l := &listenerRunner{cfg: cfg, key: cfg.Key, plainHTTP: cfg.PlainHTTP, log: log, auth: auth}
+	l.acts.redirect.recent = newRecentIPs()
+	l.acts.notFound.recent = newRecentIPs()
 	t, err := buildSiteTable(cfg, log, auth, waf, nil)
 	if err != nil {
 		return nil, err

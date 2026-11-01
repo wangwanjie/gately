@@ -39,6 +39,28 @@ type upstream struct {
 	conns        atomic.Int64
 	// 主动检查的连续计数，仅检查协程访问
 	checkFails, checkPasses int
+	// stats 为转发到该后端的请求与响应字节统计，站点热更新时同一后端沿用（见 siteHandler.inherit）
+	stats *upstreamStats
+}
+
+// upstreamStats 是一个后端的转发统计。
+type upstreamStats struct {
+	requests atomic.Int64
+	// bytes 为后端返回的响应体字节数（不含已升级的 WebSocket 连接上的数据）
+	bytes atomic.Int64
+	rate  rateRing
+	// recent 为近期经该后端转发的访客地址，拓扑视图按地址筛选时据此精确到后端
+	recent *recentIPs
+}
+
+// displayURL 返回用于展示、日志与事件的后端地址，去掉地址中的用户名与密码。
+func (u *upstream) displayURL() string {
+	if u.url.User == nil {
+		return u.url.String()
+	}
+	c := *u.url
+	c.User = nil
+	return c.String()
 }
 
 // UpstreamStatus 是后端状态快照。
@@ -48,7 +70,19 @@ type UpstreamStatus struct {
 	Backup  bool   `json:"backup"`
 	Healthy bool   `json:"healthy"`
 	Conns   int64  `json:"conns"`
+	// Scope 为后端所属的分流：空为站点后端，location 为分路径后端，user 为按用户分流的后端；Match 为对应的路径前缀或用户列表
+	Scope string `json:"scope,omitempty"`
+	Match string `json:"match,omitempty"`
+	// Requests 为转发到该后端的累计请求数，Bytes 为后端返回的累计响应体字节数
+	Requests int64 `json:"requests"`
+	Bytes    int64 `json:"bytes"`
 }
+
+// 后端所属分流的取值。
+const (
+	scopeLocation = "location"
+	scopeUser     = "user"
+)
 
 // pool 管理站点的后端集合、选择策略与健康状态。
 type pool struct {
@@ -62,6 +96,8 @@ type pool struct {
 	proxyProto bool
 	log        *logbuf.Logger
 	started    sync.Once
+	// scope、match 为该组后端所属的分流（见 UpstreamStatus），站点后端为空
+	scope, match string
 }
 
 func newPool(s Site, log *logbuf.Logger) (*pool, error) {
@@ -71,7 +107,7 @@ func newPool(s Site, log *logbuf.Logger) (*pool, error) {
 		if err != nil {
 			return nil, err
 		}
-		p.ups = append(p.ups, &upstream{url: spec.URL, weight: spec.Weight, backup: spec.Backup})
+		p.ups = append(p.ups, &upstream{url: spec.URL, weight: spec.Weight, backup: spec.Backup, stats: &upstreamStats{recent: newRecentIPs()}})
 	}
 	return p, nil
 }
@@ -173,15 +209,15 @@ func (p *pool) setDown(u *upstream, down bool, reason string) {
 	if down {
 		p.log.Warnf("后端 %s 不可用：%s", u.url.Host, reason)
 		events.Publish(events.Event{Type: events.UpstreamDown, Source: p.site, Level: events.LevelError,
-			Title: "上游不可用：" + u.url.Host, Message: p.site + " 的后端 " + u.url.String() + " 不可用：" + reason,
-			Fields: map[string]string{"upstream": u.url.String()}})
+			Title: "上游不可用：" + u.url.Host, Message: p.site + " 的后端 " + u.displayURL() + " 不可用：" + reason,
+			Fields: map[string]string{"upstream": u.displayURL()}})
 		return
 	}
 	u.retryAt.Store(0)
 	p.log.Infof("后端 %s 已恢复", u.url.Host)
 	events.Publish(events.Event{Type: events.UpstreamUp, Source: p.site, Level: events.LevelInfo,
-		Title: "上游已恢复：" + u.url.Host, Message: p.site + " 的后端 " + u.url.String() + " 已恢复",
-		Fields: map[string]string{"upstream": u.url.String()}})
+		Title: "上游已恢复：" + u.url.Host, Message: p.site + " 的后端 " + u.displayURL() + " 已恢复",
+		Fields: map[string]string{"upstream": u.displayURL()}})
 }
 
 // fail 记录一次代理失败（被动检查）。
@@ -220,7 +256,8 @@ func (p *pool) ok(u *upstream) {
 func (p *pool) status() []UpstreamStatus {
 	out := make([]UpstreamStatus, 0, len(p.ups))
 	for _, u := range p.ups {
-		out = append(out, UpstreamStatus{URL: u.url.String(), Weight: u.weight, Backup: u.backup, Healthy: !u.down.Load(), Conns: u.conns.Load()})
+		out = append(out, UpstreamStatus{URL: u.displayURL(), Weight: u.weight, Backup: u.backup, Healthy: !u.down.Load(), Conns: u.conns.Load(),
+			Scope: p.scope, Match: p.match, Requests: u.stats.requests.Load(), Bytes: u.stats.bytes.Load()})
 	}
 	return out
 }

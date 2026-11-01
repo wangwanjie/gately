@@ -309,6 +309,8 @@ func (m *Module) Routes(r module.Router) {
 	r.HandleFunc("GET /metrics", m.handleMetrics)
 	module.DocOf(r, "GET /stats", module.Doc{Summary: "站点分钟级统计（?listener=&site=&minutes=）", Resp: &SiteStatsView{}})
 	module.DocOf(r, "GET /metrics", module.Doc{Summary: "Prometheus 文本格式指标"})
+	r.HandleFunc("GET /topology", m.handleTopology)
+	module.DocOf(r, "GET /topology", module.Doc{Summary: "拓扑视图快照：监听、站点、后端与监听级动作的实时速率、计数与活动 IP（?focus=节点编号&ip=地址）", Resp: &TopologyView{}})
 	r.HandleFunc("GET /connections", m.handleConns)
 	r.HandleFunc("POST /connections/close", m.handleCloseConn)
 	module.DocOf(r, "GET /connections", module.Doc{Summary: "站点进行中的请求与最近结束的长请求（?listener=&site=&q=）", Resp: &ConnsView{}})

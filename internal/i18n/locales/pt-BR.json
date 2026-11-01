@@ -1326,6 +1326,7 @@
   "拒绝 %s 访问 %s（国家过滤：%s）": "Acesso de %s a %s recusado (filtro de país: %s)",
   "拒绝 %s 访问 %s（访问控制）": "Acesso de %s a %s recusado (controle de acesso)",
   "拒绝跨源请求": "Requisição de origem cruzada recusada",
+  "拓扑视图快照：监听、站点、后端与监听级动作的实时速率、计数与活动 IP（?focus=节点编号\u0026ip=地址）": "Instantâneo da topologia: taxas ao vivo, contadores e IPs ativos de escutas, sites, backends e ações da escuta (?focus=ID do nó\u0026ip=endereço)",
   "挂载 %s 的目录需为绝对路径": "O diretório da montagem %s deve ser um caminho absoluto",
   "挂载 %s:%s 的路径不能包含冒号": "O caminho da montagem %s:%s não pode conter dois-pontos",
   "挂载名称 %q 无效": "Nome de montagem %q inválido",

@@ -1326,6 +1326,7 @@
   "拒绝 %s 访问 %s（国家过滤：%s）": "Se denegó a %s el acceso a %s (filtro por país: %s)",
   "拒绝 %s 访问 %s（访问控制）": "Se denegó a %s el acceso a %s (control de acceso)",
   "拒绝跨源请求": "Solicitud de origen cruzado rechazada",
+  "拓扑视图快照：监听、站点、后端与监听级动作的实时速率、计数与活动 IP（?focus=节点编号\u0026ip=地址）": "Instantánea de topología: tasas en vivo, contadores e IP activas de escuchas, sitios, backends y acciones de escucha (?focus=ID de nodo\u0026ip=dirección)",
   "挂载 %s 的目录需为绝对路径": "El directorio del montaje %s debe ser una ruta absoluta",
   "挂载 %s:%s 的路径不能包含冒号": "La ruta del montaje %s:%s no puede contener dos puntos",
   "挂载名称 %q 无效": "Nombre de montaje %q no válido",

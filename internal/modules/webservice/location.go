@@ -79,6 +79,7 @@ func (h *siteHandler) buildLocations() error {
 				return err
 			}
 			p.site = siteLabel(h.site) + " " + loc.Prefix
+			p.scope, p.match = scopeLocation, loc.Prefix
 		}
 		lh := &locationHandler{prefix: loc.Prefix, headers: loc.RequestHeaders, handler: h.newProxy(s, p)}
 		if p != h.pool {

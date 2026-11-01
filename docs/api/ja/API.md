@@ -291,6 +291,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/webservice/settings` | `webservice:write` | Web サービスのグローバル設定を保存 |
 | GET | `/api/webservice/stats` | `webservice:read` | サイトの分単位統計（?listener=&site=&minutes=） |
 | GET | `/api/webservice/metrics` | `webservice:read` | Prometheus テキスト形式のメトリクス |
+| GET | `/api/webservice/topology` | `webservice:read` | トポロジースナップショット：リスナー、サイト、バックエンド、リスナー単位のアクションのリアルタイムレート・カウンター・アクティブ IP（?focus=ノード ID&ip=アドレス） |
 | GET | `/api/webservice/connections` | `webservice:read` | サイトの進行中リクエストと最近終了した長時間リクエスト（?listener=&site=&q=） |
 | POST | `/api/webservice/connections/close` | `webservice:write` | サイトの進行中リクエストを 1 件切断し、送信元アドレスを同時にブロックすることもできます |
 | GET | `/api/webservice/bans` | `webservice:read` | 現在ブロックされている IP |
@@ -1722,6 +1723,14 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `s5xx` | integer |
 | `t` | integer |
 
+### webservice.Rate
+
+| フィールド | 型 |
+| --- | --- |
+| `bps` | number |
+| `qps` | number |
+| `qps60` | number |
+
 ### webservice.RateLimit
 
 | フィールド | 型 |
@@ -1730,6 +1739,14 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `enable` | boolean |
 | `maxConns` | integer |
 | `rate` | number |
+
+### webservice.RatePoint
+
+| フィールド | 型 |
+| --- | --- |
+| `bytes` | integer |
+| `requests` | integer |
+| `t` | integer |
 
 ### webservice.Rewrite
 
@@ -1840,6 +1857,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | フィールド | 型 |
 | --- | --- |
+| `blocked` | マップ of integer |
 | `bytesOut` | integer |
 | `series` | 配列 of `webservice.Point` |
 | `status` | マップ of integer |
@@ -1854,13 +1872,116 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `count` | integer |
 | `key` | string |
 
+### webservice.TopoAction
+
+| フィールド | 型 |
+| --- | --- |
+| `id` | string |
+| `kind` | string |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+
+### webservice.TopoIP
+
+| フィールド | 型 |
+| --- | --- |
+| `active` | integer |
+| `activeAt` | マップ of integer |
+| `ip` | string |
+| `last` | integer |
+| `nodes` | 配列 of string |
+
+### webservice.TopoListener
+
+| フィールド | 型 |
+| --- | --- |
+| `actions` | 配列 of `webservice.TopoAction` |
+| `active` | integer |
+| `enable` | boolean |
+| `error` | string |
+| `http3` | boolean |
+| `id` | string |
+| `key` | string |
+| `listenIp` | string |
+| `name` | string |
+| `network` | string |
+| `plainHttp` | string |
+| `port` | integer |
+| `proxyProtocol` | boolean |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+| `running` | boolean |
+| `sites` | 配列 of `webservice.TopoSite` |
+| `tls` | boolean |
+
+### webservice.TopoSite
+
+| フィールド | 型 |
+| --- | --- |
+| `active` | integer |
+| `blocked` | マップ of integer |
+| `closed` | integer |
+| `default` | boolean |
+| `domains` | 配列 of string |
+| `enable` | boolean |
+| `errors` | integer |
+| `group` | string |
+| `guards` | 配列 of string |
+| `id` | string |
+| `key` | string |
+| `name` | string |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+| `running` | boolean |
+| `status` | マップ of integer |
+| `target` | string |
+| `type` | string |
+| `upstreams` | 配列 of `webservice.TopoUpstream` |
+
+### webservice.TopoUpstream
+
+| フィールド | 型 |
+| --- | --- |
+| `backup` | boolean |
+| `bytes` | integer |
+| `conns` | integer |
+| `healthy` | boolean |
+| `id` | string |
+| `match` | string |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+| `scope` | string |
+| `url` | string |
+| `weight` | integer |
+
+### webservice.TopologyView
+
+| フィールド | 型 |
+| --- | --- |
+| `active` | integer |
+| `enabled` | boolean |
+| `focus` | string |
+| `ipTotal` | integer |
+| `ipTruncated` | boolean |
+| `ips` | 配列 of `webservice.TopoIP` |
+| `listeners` | 配列 of `webservice.TopoListener` |
+| `rate` | `webservice.Rate` |
+| `requests` | integer |
+| `series` | 配列 of `webservice.RatePoint` |
+| `time` | integer |
+| `window` | integer |
+
 ### webservice.UpstreamStatus
 
 | フィールド | 型 |
 | --- | --- |
 | `backup` | boolean |
+| `bytes` | integer |
 | `conns` | integer |
 | `healthy` | boolean |
+| `match` | string |
+| `requests` | integer |
+| `scope` | string |
 | `url` | string |
 | `weight` | integer |
 
