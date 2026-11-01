@@ -86,5 +86,6 @@
   "reconnected": "再接続しました",
   "moduleEnabled": "STUN 穿孔モジュールを有効にしました",
   "settingsSaved": "保存しました。ルールを再起動しました",
-  "scriptPlaceholder": "例: /data/scripts/notify.sh --rule \"${'{'}ruleName{'}'}\" --port \"${'{'}port{'}'}\""
+  "scriptPlaceholder": "例: /data/scripts/notify.sh --rule \"${'{'}ruleName{'}'}\" --port \"${'{'}port{'}'}\"",
+  "ipAccessNote": "内蔵転送にのみ適用され、STUN 問い合わせとチャネル検査には影響しません。リストを編集しても再トラバーサルは行わず、公開ポートは変わりません。UDP はパケットごとに判定します。"
 }

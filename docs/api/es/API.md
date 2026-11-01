@@ -1279,6 +1279,9 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | --- | --- |
 | `enable` | boolean |
 | `group` | string |
+| `ipList` | Lista de string |
+| `ipMode` | string |
+| `ipSets` | Lista de string |
 | `key` | string |
 | `listenAddress` | string |
 | `listenPorts` | string |
@@ -1310,6 +1313,9 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | --- | --- |
 | `enable` | boolean |
 | `group` | string |
+| `ipList` | Lista de string |
+| `ipMode` | string |
+| `ipSets` | Lista de string |
 | `key` | string |
 | `listenAddress` | string |
 | `listenPorts` | string |
@@ -1438,6 +1444,9 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `enable` | boolean |
 | `group` | string |
 | `heartbeatInterval` | integer |
+| `ipList` | Lista de string |
+| `ipMode` | string |
+| `ipSets` | Lista de string |
 | `keepAliveServers` | Lista de string |
 | `key` | string |
 | `localPort` | integer |

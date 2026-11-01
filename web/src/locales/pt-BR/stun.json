@@ -86,5 +86,6 @@
   "reconnected": "Reconectado",
   "moduleEnabled": "Módulo de travessia STUN ativado",
   "settingsSaved": "Salvo; regras reiniciadas",
-  "scriptPlaceholder": "ex.: /data/scripts/notify.sh --rule \"${'{'}ruleName{'}'}\" --port \"${'{'}port{'}'}\""
+  "scriptPlaceholder": "ex.: /data/scripts/notify.sh --rule \"${'{'}ruleName{'}'}\" --port \"${'{'}port{'}'}\"",
+  "ipAccessNote": "Vale só para o encaminhamento integrado; consultas STUN e a verificação do canal não são afetadas. Editar a lista não refaz a travessia, então a porta pública continua a mesma; o UDP é verificado por pacote."
 }

@@ -1,7 +1,7 @@
 {
   "title": "Listes d'IP abonnées",
   "lists": "Listes",
-  "help": "Téléchargez depuis une URL des plages d'IP par région, opérateur ou liste noire, actualisées périodiquement, puis utilisez-les dans le contrôle d'accès IP et les règles de chemin du site. Une IP, un CIDR ou une plage début-fin par ligne",
+  "help": "Téléchargez depuis une URL des plages d'IP par région, opérateur ou liste noire, actualisées périodiquement, puis utilisez-les dans le contrôle d'accès IP et les règles de chemin du site. Une IP, un CIDR ou une plage début-fin par ligne. Les instances frps et le contrôle d'accès IP des règles de redirection de ports, de routage par protocole et STUN peuvent aussi les utiliser",
   "empty": "Aucune liste d'IP abonnée",
   "refresh": "Actualiser",
   "deleteConfirm": "Supprimer cette liste d'IP ?",

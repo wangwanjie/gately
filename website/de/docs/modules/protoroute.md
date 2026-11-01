@@ -54,6 +54,7 @@ Diese Verbindungen gehen an das Standardziel: Keine Route passt; die Daten gehö
 - Jede Verbindung wird einmal erkannt, spätere Anfragen auf derselben HTTP-Keep-alive-Verbindung gehen also an das zuerst gewählte Backend;
 - Die Regelkarte zeigt, wie viele Verbindungen jede Route und das Standardziel erhalten haben; Debug-Einträge im Laufzeit-Log halten für jede Verbindung das erkannte Protokoll, SNI, ALPN oder den Host fest;
 - Änderungen an Routen, Standardziel und Erkennungs-Timeout gelten sofort, ohne den Listener anzuhalten, und offene Verbindungen bleiben bestehen.
+- Jede Regel kann eine Quell-IP-Zulassungs- oder Sperrliste nutzen (auch mit abonnierten IP-Listen der Webdienste), geprüft vor der Protokollerkennung: Eine durchgefallene Verbindung wird geschlossen, ohne Daten zu lesen, und zählt nicht als Routentreffer; Sperren des Einbruchschutzes haben Vorrang. Das Bearbeiten der Liste unterbricht das Lauschen nicht, die Regelkarte zeigt die Zahl der Abweisungen. Die Bedienung entspricht der [Portweiterleitung](/de/docs/modules/portforward#quell-ip-zugriffskontrolle).
 
 ## Beispiel: haproxy ersetzen
 

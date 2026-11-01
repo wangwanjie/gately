@@ -26,9 +26,9 @@ Fichiers pris en charge :
 
 | Fichier | Importé dans | Remarques |
 | --- | --- | --- |
-| lucky_portforward.lkcf | Redirection de ports | TLS/chiffrement de flux et limitation de débit ne sont pas encore pris en charge, un avertissement s'affiche |
+| lucky_portforward.lkcf | Redirection de ports | TLS/chiffrement de flux et limitation de débit ne sont pas encore pris en charge, un avertissement s'affiche ; le mode sécurisé devient un contrôle d'accès par IP source (envoyez `lucky_ipfilter.lkcf` dans la même importation) |
 | lucky_ddns.lkcf | DNS dynamique | 11 fournisseurs pris en charge ; les adresses officielles de recherche d'IP de Lucky sont retirées |
-| lucky_stun.lkcf | Traversée STUN | Inclut la liste globale des serveurs STUN et le webhook global |
+| lucky_stun.lkcf | Traversée STUN | Inclut la liste globale des serveurs STUN et le webhook global ; le mode sécurisé du relais intégré devient aussi un contrôle d'accès par IP source |
 | lucky_ssl.lkcf | Certificats SSL | Les certificats déjà émis sont importés tels quels, sans nouvelle demande avant leur expiration |
 | lucky_reverseproxy.lkcf | Services Web | Sites, authentification, références WAF (si le WAF d'une sous-règle vaut main, l'instance de la règle d'écoute est reprise) ; les variables des sous-règles de redirection comme `{host}{path}{args}`, `{port}`, `{1}` et `{STUN_NomRègle_PORT}` continuent de fonctionner |
 | lucky_coraza.lkcf | Pare-feu WAF | Reprend les clés d'instance, les références des sites restent valides |

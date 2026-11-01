@@ -716,6 +716,8 @@ func (a *App) handleLuckyImport(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	opts.ResolveStore = a.luckyStoreResolver(docs)
+	// 端口转发与 STUN 规则的安全模式引用 IP 过滤中的名单，同样先汇总
+	opts.IPFilter = luckyimport.IPFilterLists(docs, time.Now())
 	for i, pe := range parsed {
 		res := fileResult{File: pe.name, Reports: []*luckyimport.Report{}}
 		doc, err := pe.doc, pe.err

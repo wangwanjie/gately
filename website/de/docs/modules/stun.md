@@ -8,6 +8,7 @@ Vergibt Ihr Provider keinen festen öffentlichen Port, nutzt das STUN-Traversal 
 - UPnP / NAT-PMP legt Portzuordnungen automatisch am Router an;
 - Die integrierte Weiterleitung schickt den per Traversal erhaltenen öffentlichen Port direkt an ein Ziel im LAN;
 - Webhooks und Skripte werden ausgelöst, wenn sich die öffentliche Adresse oder der Port ändert, etwa um DNS zu aktualisieren, Clients zu benachrichtigen und mehr.
+- Quell-IP-Zugriffskontrolle (Zulassungs- / Sperrliste) für die eingebaute Weiterleitung.
 
 ## Zusammenspiel mit anderen Modulen
 
@@ -23,6 +24,10 @@ Der per STUN erhaltene öffentliche Port ändert sich meist. Kombinieren Sie ihn
 - **UPnP hinter mehreren NAT-Stufen**: Mit UPnP / NAT-PMP ordnet Gately den Tunnelport am Router diesem Host zu. Weicht die externe Adresse des Routers von der per STUN ermittelten öffentlichen Adresse ab, liegt außen noch ein NAT und der öffentliche Port gehört zu diesem äußeren NAT; Gately behält dann nur die Zuordnung des Tunnelports und legt keine zusätzliche Zuordnung für den öffentlichen Port an.
 - **Lokalen Port festlegen und in der Firewall freigeben**: Ein leerer lokaler Port wird bei jedem Start zufällig gewählt. Läuft auf dem Host eine Firewall (zum Beispiel die Systemfirewall von fnOS), legen Sie für die Regel einen festen lokalen Port fest und geben ihn in der Firewall frei (Sie können einen Portbereich für STUN-Regeln reservieren); sonst verwirft die Firewall eingehende Verbindungen und die Adresse ist nicht erreichbar.
 - **TCP und Cone-NAT des Routers**: Bei manchen Routern gilt „NAT1 / Full Cone“ nur für UDP, und bei TCP wird der Quellport beim Verlassen umgeschrieben. TCP-Regeln brauchen UPnP oder eine Portzuordnung des Tunnelports auf diesen Host am Router.
+
+## Quell-IP-Zugriffskontrolle
+
+Mit der eingebauten Weiterleitung kann jede Regel eine Zulassungs- oder Sperrliste nutzen, die anhand der Quell-IP entscheidet, ob zum Ziel weitergeleitet wird. Listen und abonnierte IP-Listen funktionieren wie bei der [Portweiterleitung](/de/docs/modules/portforward#quell-ip-zugriffskontrolle), Sperren des Einbruchschutzes haben auch hier Vorrang. Die Liste gilt nur für die Weiterleitung; STUN-Abfragen und die Kanalprüfung bleiben unberührt. Das Bearbeiten der Liste startet keine neue Durchdringung, der öffentliche Port bleibt gleich. UDP wird pro Paket geprüft. Ohne eingebaute Weiterleitung laufen externe Verbindungen nicht über Gately, die Liste wirkt dann nicht.
 
 ## Hinweis zur Bereitstellung
 

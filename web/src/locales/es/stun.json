@@ -86,5 +86,6 @@
   "reconnected": "Reconectado",
   "moduleEnabled": "Módulo de traversal STUN activado",
   "settingsSaved": "Guardado; reglas reiniciadas",
-  "scriptPlaceholder": "p. ej. /data/scripts/notify.sh --rule \"${'{'}ruleName{'}'}\" --port \"${'{'}port{'}'}\""
+  "scriptPlaceholder": "p. ej. /data/scripts/notify.sh --rule \"${'{'}ruleName{'}'}\" --port \"${'{'}port{'}'}\"",
+  "ipAccessNote": "Solo afecta al reenvío integrado; las consultas STUN y la comprobación del canal no cambian. Editar la lista no repite la travesía, así que el puerto público se mantiene; UDP se comprueba por paquete."
 }

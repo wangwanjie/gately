@@ -151,6 +151,9 @@ type Options struct {
 	// ResolveStore 把 Lucky 存储管理中的存储 Key 解析为本地目录，供 FTP / WebDAV 的挂载使用；
 	// 无法解析时 why 为原因。为 nil 时引用存储的挂载会被跳过
 	ResolveStore func(key string) (dir, why string)
+	// IPFilter 为本次上传的 Lucky IP 过滤配置中的名单（见 IPFilterLists），供端口转发与 STUN 规则导入安全模式；
+	// 未上传 IP 过滤配置时为 nil
+	IPFilter map[string]IPFilterList
 }
 
 // Importer 由支持从 Lucky 迁移的模块实现。

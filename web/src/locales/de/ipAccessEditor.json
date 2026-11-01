@@ -1,0 +1,16 @@
+{
+  "title": "IP-Zugriffskontrolle",
+  "off": "Aus",
+  "whitelist": "Zulassungsliste",
+  "blacklist": "Sperrliste",
+  "help": "Entscheidet anhand der Quell-IP, ob ein Client sich verbinden darf; geprüft, bevor das Ziel verbunden wird. Vom Einbruchschutz gesperrte Adressen werden immer abgewiesen, auch wenn sie auf der Zulassungsliste stehen. Steht ein Reverse Proxy oder eine andere Weiterleitung vor der Regel, ist die sichtbare Quelle deren Adresse.",
+  "range": "IPs / Subnetze",
+  "rangePlaceholder": "Eine pro Zeile, z. B. 192.168.1.0/24",
+  "sets": "Abonnierte Listen",
+  "setsPlaceholder": "Abonnierte IP-Listen wählen (optional)",
+  "setsEmpty": "Noch keine abonnierten Listen; fügen Sie sie in den globalen Einstellungen der Webdienste hinzu",
+  "setNotLoaded": "nicht geladen",
+  "setsHelp": "Wird zusammen mit den Bereichen oben geprüft; ein Treffer in einem davon gilt als auf der Liste. Eine aktualisierte Liste wirkt sofort, die Regel muss nicht neu starten",
+  "setsWhitelistHelp": "Wird zusammen mit den Bereichen oben geprüft; ein Treffer in einem davon erlaubt die Verbindung. Eine aktualisierte Liste wirkt sofort, die Regel muss nicht neu starten. Die Listen lädt das Webdienste-Modul regelmäßig herunter; bis zum ersten erfolgreichen Download gelten sie als leer",
+  "denied": "Abgewiesen"
+}

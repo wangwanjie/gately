@@ -1,7 +1,7 @@
 {
   "title": "Abonnierte IP-Listen",
   "lists": "Listen",
-  "help": "IP-Bereiche nach Region, Provider oder Sperrliste von einer URL laden, regelmäßig aktualisieren und in der IP-Zugriffskontrolle und den Pfadregeln einer Site verwenden. Eine IP, ein CIDR oder ein Bereich Start-Ende pro Zeile",
+  "help": "IP-Bereiche nach Region, Provider oder Sperrliste von einer URL laden, regelmäßig aktualisieren und in der IP-Zugriffskontrolle und den Pfadregeln einer Site verwenden. Eine IP, ein CIDR oder ein Bereich Start-Ende pro Zeile. Auch frps-Instanzen und die IP-Zugriffskontrolle von Portweiterleitungs-, Protokoll-Routing- und STUN-Regeln können sie verwenden",
   "empty": "Keine abonnierten IP-Listen",
   "refresh": "Aktualisieren",
   "deleteConfirm": "Diese IP-Liste löschen?",

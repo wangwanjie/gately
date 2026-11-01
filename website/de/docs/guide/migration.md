@@ -26,9 +26,9 @@ Unterstützte Dateien:
 
 | Datei | Import nach | Hinweis |
 | --- | --- | --- |
-| lucky_portforward.lkcf | Portweiterleitung | TLS-/Stream-Verschlüsselung und Ratenbegrenzung werden noch nicht unterstützt, dazu erscheint ein Hinweis |
+| lucky_portforward.lkcf | Portweiterleitung | TLS-/Stream-Verschlüsselung und Ratenbegrenzung werden noch nicht unterstützt, dazu erscheint ein Hinweis; der Sicherheitsmodus wird zur Quell-IP-Zugriffskontrolle (im selben Import `lucky_ipfilter.lkcf` hochladen) |
 | lucky_ddns.lkcf | Dynamisches DNS | Unterstützt 11 Anbieter; die offiziellen IP-Abfrageadressen von Lucky werden entfernt |
-| lucky_stun.lkcf | STUN-Traversal | Enthält die globale STUN-Serverliste und den globalen Webhook |
+| lucky_stun.lkcf | STUN-Traversal | Enthält die globale STUN-Serverliste und den globalen Webhook; auch der Sicherheitsmodus der eingebauten Weiterleitung wird zur Quell-IP-Zugriffskontrolle |
 | lucky_ssl.lkcf | SSL-Zertifikate | Bereits ausgestellte Zertifikate werden unverändert importiert und vor Ablauf nicht neu beantragt |
 | lucky_reverseproxy.lkcf | Web-Dienste | Sites, Authentifizierung, WAF-Verweise (ist die WAF einer Unterregel auf main gesetzt, wird die Instanz der Listen-Regel übernommen); Variablen in Weiterleitungs-Unterregeln wie `{host}{path}{args}`, `{port}`, `{1}` und `{STUN_Regelname_PORT}` funktionieren weiter |
 | lucky_coraza.lkcf | WAF-Firewall | Der Instanz-Schlüssel bleibt erhalten, Site-Verweise bleiben gültig |

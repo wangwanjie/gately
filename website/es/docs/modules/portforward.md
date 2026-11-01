@@ -11,6 +11,7 @@ Reenvía un puerto en el que escucha Gately a otro dispositivo o servicio.
 - Límites de conexiones;
 - Estadísticas de tráfico y registros de ejecución;
 - Envío del protocolo PROXY (v1 / v2) al destino, para entregar la dirección real del cliente al siguiente salto;
+- Control de acceso por IP de origen (lista de permitidos / de bloqueo), que puede usar las listas de IP suscritas de Servicios web;
 - Para que varios servicios compartan un puerto como el 443 por dominio o protocolo, usa [Enrutamiento por protocolo](/es/docs/modules/protoroute).
 
 ## Protocolo PROXY
@@ -24,6 +25,18 @@ El destino debe tener activada la opción de recepción correspondiente; de lo c
 - Servicio web de Gately: activa «Aceptar protocolo PROXY» en el listener y añade el origen a los orígenes PROXY de confianza.
 
 Esta opción solo afecta a TCP; el reenvío UDP no cambia.
+
+## Control de acceso por IP de origen
+
+Cada regla puede usar una lista de permitidos o de bloqueo que decide por IP de origen si se reenvía el tráfico. La lista se compone de IP / subredes escritas a mano y de las listas de IP suscritas de Servicios web; coincidir con cualquiera cuenta como estar en la lista. El módulo Servicios web descarga las listas suscritas periódicamente, una actualización se aplica al instante y una lista cuenta como vacía hasta su primera descarga correcta.
+
+- La comprobación se hace antes de conectar con el destino: una conexión TCP que no la supera se cierra, y UDP se comprueba por paquete, así que los paquetes que no la superan se descartan y los paquetes de subida de sesiones existentes siguen al instante la lista modificada;
+- Los bloqueos de Prevención de intrusiones tienen prioridad: una dirección bloqueada se rechaza aunque esté dentro de una subred permitida;
+- Editar la lista no interrumpe la escucha y las conexiones TCP establecidas no se ven afectadas;
+- La tarjeta de la regla muestra cuántas veces se rechazó un origen desde que arrancó Gately (conexiones en TCP, paquetes en UDP), y el nivel de depuración del registro anota cada rechazo;
+- Si hay un proxy inverso u otro reenvío delante de la regla, el origen que ve Gately es su dirección.
+
+Al importar desde Lucky también se convierte el modo seguro de la regla: el modo de lista de permitidos toma las IP / subredes de la «lista blanca» del filtro IP de Lucky, y el modo de bloqueo toma la «lista negra» y la «lista negra global». Suba `lucky_ipfilter.lkcf` (o una copia completa) en la misma importación; las entradas de base de datos IP, registro automático o rango de direcciones no se pueden importar y el resultado lo indica.
 
 ## Escenarios típicos
 

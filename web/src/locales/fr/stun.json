@@ -86,5 +86,6 @@
   "reconnected": "Reconnecté",
   "moduleEnabled": "Module de traversée STUN activé",
   "settingsSaved": "Enregistré ; règles redémarrées",
-  "scriptPlaceholder": "p. ex. /data/scripts/notify.sh --rule \"${'{'}ruleName{'}'}\" --port \"${'{'}port{'}'}\""
+  "scriptPlaceholder": "p. ex. /data/scripts/notify.sh --rule \"${'{'}ruleName{'}'}\" --port \"${'{'}port{'}'}\"",
+  "ipAccessNote": "S'applique uniquement au relais intégré ; les requêtes STUN et la vérification du canal ne sont pas affectées. Modifier la liste ne refait pas la traversée, le port public reste le même ; UDP est vérifié par paquet."
 }

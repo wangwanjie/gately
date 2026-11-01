@@ -95,5 +95,6 @@
     "adb": "adb connect の平文接続。Android 11 以降のワイヤレスデバッグは TLS を使います",
     "irc": "平文の IRC クライアント（最初に CAP・PASS・NICK・USER を送ります）。TLS を使う IRC には TLS ルートを使います"
   },
-  "routeMinecraftPlaceholder": "サーバーアドレス（1 行に 1 つ）：mc.example.com、*.example.com または *。空にするとすべての Minecraft 接続に一致します"
+  "routeMinecraftPlaceholder": "サーバーアドレス（1 行に 1 つ）：mc.example.com、*.example.com または *。空にするとすべての Minecraft 接続に一致します",
+  "ipAccessNote": "プロトコル判別の前に判定し、拒否した接続はデータを読み取らず、ルートのヒット数にも数えません。リストを編集しても待ち受けは中断しません。"
 }

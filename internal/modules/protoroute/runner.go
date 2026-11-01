@@ -10,6 +10,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/wangwanjie/gately/internal/iplist"
 	"github.com/wangwanjie/gately/internal/l4proxy"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/netpipe"
@@ -26,19 +27,23 @@ type StatsSnapshot struct {
 	DefaultConns int64   `json:"defaultConns"`
 	// Rejected 是未命中路由且没有默认目标而被断开的连接数
 	Rejected int64 `json:"rejected"`
+	// Denied 是不满足来源 IP 访问控制而被断开的连接数
+	Denied int64 `json:"denied"`
 }
 
-// runtime 是规则运行时可热替换的部分：路由表、默认目标、识别超时、日志名与全局参数。
+// runtime 是规则运行时可热替换的部分：路由表、默认目标、识别超时、来源 IP 访问控制、日志名与全局参数。
 // 每个新连接开始时读取一次当前 runtime，替换后新连接立即使用新配置，已建立的连接不受影响。
 type runtime struct {
 	rule     Rule
 	settings Settings
 	log      *logbuf.Logger
 	router   *router
+	// filter 为编译后的来源 IP 访问控制，nil 表示不限制
+	filter *iplist.Filter
 }
 
 func newRuntime(rule Rule, settings Settings, log *logbuf.Logger) *runtime {
-	return &runtime{rule: rule, settings: settings, log: log, router: newRouter(rule)}
+	return &runtime{rule: rule, settings: settings, log: log, router: newRouter(rule), filter: rule.Access.Compile()}
 }
 
 // sniffTimeout 返回规则的识别超时，未设置时使用默认值。
@@ -56,8 +61,10 @@ type runner struct {
 	settings Settings
 	stats    l4proxy.Stats
 	rejected atomic.Int64
-	cur      atomic.Pointer[runtime]
-	srv      l4proxy.Server
+	// denied 为不满足来源 IP 访问控制而被断开的连接数
+	denied atomic.Int64
+	cur    atomic.Pointer[runtime]
+	srv    l4proxy.Server
 	// listenErrors 记录启动失败的监听项，供界面展示
 	listenErrors []string
 }
@@ -83,6 +90,7 @@ func (r *runner) snapshot() StatsSnapshot {
 		BytesOut:    r.stats.BytesOut.Load(),
 		RouteConns:  make([]int64, len(rt.targets)),
 		Rejected:    r.rejected.Load(),
+		Denied:      r.denied.Load(),
 	}
 	for i, t := range rt.targets {
 		snap.RouteConns[i] = t.conns.Load()
@@ -168,6 +176,12 @@ func (r *runner) stop() {
 // 超时未收到任何数据的连接交给「等待超时」路由，没有该路由时同样交给默认目标。
 func (r *runner) handle(ctx context.Context, rt *runtime, client net.Conn, pair l4proxy.PortPair) {
 	defer client.Close()
+	// 封禁地址已在 Accept 时拒绝，这里再按名单判断：不命中时不预读数据、不连接任何目标
+	if !rt.filter.Allows(client.RemoteAddr()) {
+		r.denied.Add(1)
+		rt.log.Debugf("%s 不满足来源 IP 访问控制，已断开", client.RemoteAddr())
+		return
+	}
 	// 规则停止时立即关闭仍在识别或连接目标的客户端，不必等识别超时（最长 60 秒），停止与重启不会被拖住
 	stopClose := context.AfterFunc(ctx, func() { _ = client.Close() })
 	defer stopClose()

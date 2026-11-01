@@ -86,5 +86,6 @@
   "reconnected": "已重新連線",
   "moduleEnabled": "STUN 穿透模組已啟用",
   "settingsSaved": "已儲存，規則已重新啟動",
-  "scriptPlaceholder": "例如 /data/scripts/notify.sh --rule \"${'{'}ruleName{'}'}\" --port \"${'{'}port{'}'}\""
+  "scriptPlaceholder": "例如 /data/scripts/notify.sh --rule \"${'{'}ruleName{'}'}\" --port \"${'{'}port{'}'}\"",
+  "ipAccessNote": "只作用於內建轉發，STUN 查詢與通道檢測不受影響。修改名單不會重新打洞，公網連接埠保持不變；UDP 依封包判斷。"
 }

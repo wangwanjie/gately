@@ -42,6 +42,8 @@
         </Field>
         <Field :label="t('portForward.connections')">{{ t('portForward.connectionsValue', { active: it.item.stats.activeConns, total: it.item.stats.totalConns }) }}</Field>
         <Field :label="t('portForward.traffic')">↑ {{ formatBytes(it.item.stats.bytesIn) }} · ↓ {{ formatBytes(it.item.stats.bytesOut) }}</Field>
+        <Field v-if="it.item.ipMode" :label="t('ipAccessEditor.title')">{{ it.item.ipMode === 'whitelist' ? t('ipAccessEditor.whitelist') : t('ipAccessEditor.blacklist') }}</Field>
+        <Field v-if="it.item.stats.denied" :label="t('ipAccessEditor.denied')" mono>{{ it.item.stats.denied }}</Field>
         <template v-if="sorting" #actions>
           <SortMoves :gl="gl" :it="it" />
         </template>
@@ -99,6 +101,7 @@
           </el-select>
           <div class="help">{{ t('portForward.proxyProtocolHelp') }}</div>
         </el-form-item>
+        <IPAccessEditor v-model:mode="editing.ipMode" v-model:list="editing.ipList" v-model:sets="editing.ipSets" :note="t('portForward.ipAccessNote')" />
         <el-form-item :label="t('common.remark')">
           <el-input v-model="editing.remark" />
         </el-form-item>
@@ -143,6 +146,7 @@ import {
 import { api, formatBytes } from '../api'
 import GroupedList from '../components/GroupedList.vue'
 import GroupInput from '../components/GroupInput.vue'
+import IPAccessEditor from '../components/IPAccessEditor.vue'
 import ListTools from '../components/ListTools.vue'
 import SortCheck from '../components/SortCheck.vue'
 import SortMoves from '../components/SortMoves.vue'
@@ -173,6 +177,10 @@ interface Rule {
   udpSessionTimeout: number
   // 发送给目标的 PROXY 协议版本，空为不发送（仅 TCP）
   proxyProtocol: string
+  // 来源 IP 访问控制：ipMode 为 ''（关闭）、whitelist、blacklist；ipSets 为引用的订阅 IP 列表 key
+  ipMode: string
+  ipList: string[]
+  ipSets: string[]
   remark: string
 }
 
@@ -185,6 +193,8 @@ interface RuleView extends Rule {
     totalConns: number
     bytesIn: number
     bytesOut: number
+    // denied 为不满足来源 IP 访问控制而被拒绝的次数（TCP 按连接、UDP 按数据包）
+    denied?: number
   }
 }
 
@@ -248,6 +258,9 @@ function emptyRule(): Rule {
     maxConnections: 0,
     udpSessionTimeout: 0,
     proxyProtocol: '',
+    ipMode: '',
+    ipList: [],
+    ipSets: [],
     remark: '',
   }
 }
@@ -290,6 +303,10 @@ function openEditor(row?: RuleView) {
   if (row) {
     const { running: _r, error: _e, details: _d, stats: _s, ...rule } = row
     editing.value = JSON.parse(JSON.stringify(rule))
+    // 后端空名单返回 null，编辑时统一为数组
+    editing.value.ipMode = editing.value.ipMode ?? ''
+    editing.value.ipList = editing.value.ipList ?? []
+    editing.value.ipSets = editing.value.ipSets ?? []
   } else {
     editing.value = emptyRule()
   }

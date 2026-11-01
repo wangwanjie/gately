@@ -26,9 +26,9 @@ Supported files:
 
 | File | Imported into | Notes |
 | --- | --- | --- |
-| lucky_portforward.lkcf | Port Forwarding | TLS/stream encryption and rate-limit options are not supported yet; a notice is shown |
+| lucky_portforward.lkcf | Port Forwarding | TLS/stream encryption and rate-limit options are not supported yet; a notice is shown; the safe mode becomes source IP access control (upload `lucky_ipfilter.lkcf` in the same import) |
 | lucky_ddns.lkcf | Dynamic DNS | 11 providers supported; Lucky's official IP lookup URLs are removed |
-| lucky_stun.lkcf | STUN Traversal | Includes the global STUN server list and the global webhook |
+| lucky_stun.lkcf | STUN Traversal | Includes the global STUN server list and the global webhook; the safe mode of the built-in forwarding becomes source IP access control too |
 | lucky_ssl.lkcf | SSL Certificates | Already-issued certificates are imported as-is and are not re-requested before they expire |
 | lucky_reverseproxy.lkcf | Web Services | Sites, authentication, and WAF references (when a sub-rule's WAF is `main`, the listener rule's instance is reused); variables in redirect sub-rules such as `{host}{path}{args}`, `{port}`, `{1}` and `{STUN_RuleName_PORT}` keep working |
 | lucky_coraza.lkcf | WAF Firewall | Instance keys are preserved, so site references remain valid |

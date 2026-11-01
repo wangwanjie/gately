@@ -8,6 +8,7 @@ Lorsque votre FAI ne fournit pas de port public fixe, la traversée STUN utilise
 - UPnP / NAT-PMP crée automatiquement les mappages de ports sur le routeur ;
 - La redirection intégrée envoie directement le port public obtenu par la traversée vers une cible du réseau local ;
 - Des Webhooks et des scripts se déclenchent quand l'adresse ou le port public change, ce qui permet de mettre à jour le DNS, de notifier des clients, etc.
+- Contrôle d'accès par IP source (liste d'autorisation / de blocage) pour le relais intégré.
 
 ## Utilisation avec d'autres modules
 
@@ -23,6 +24,10 @@ Le port public obtenu via STUN change généralement. Associez-le à :
 - **UPnP derrière plusieurs NAT** : avec UPnP / NAT-PMP, Gately mappe le port du tunnel vers cet hôte sur le routeur. Si l'adresse externe du routeur diffère de l'adresse publique obtenue par STUN, un autre NAT se trouve à l'extérieur et le port public lui appartient : Gately ne garde que le mappage du port du tunnel et n'ajoute plus de mappage pour le port public.
 - **Fixer le port local et l'autoriser dans le pare-feu** : un port local vide est choisi au hasard à chaque démarrage. Si l'hôte utilise un pare-feu (par exemple le pare-feu système de fnOS), fixez le port local de la règle et autorisez-le dans le pare-feu (vous pouvez réserver une plage de ports aux règles STUN) ; sinon le pare-feu rejette les connexions entrantes et l'adresse de traversée reste injoignable.
 - **TCP et NAT à cône du routeur** : sur certains routeurs, « NAT1 / cône complet » ne s'applique qu'à l'UDP et le port source TCP est réécrit en sortie. Les règles TCP nécessitent UPnP, ou un mappage du port du tunnel vers cet hôte sur le routeur.
+
+## Contrôle d'accès par IP source
+
+Avec le relais intégré, chaque règle peut utiliser une liste d'autorisation ou de blocage qui décide d'après l'IP source si le trafic est relayé vers la cible. Les listes et les listes d'IP abonnées fonctionnent comme pour la [Redirection de ports](/fr/docs/modules/portforward#controle-d-acces-par-ip-source), et les bannissements de la Prévention des intrusions passent aussi en premier. La liste ne s'applique qu'au relais ; les requêtes STUN et la vérification du canal ne sont pas affectées. Modifier la liste ne refait pas la traversée, le port public reste le même. UDP est vérifié par paquet. Sans le relais intégré, les connexions externes ne passent pas par Gately et la liste est sans effet.
 
 ## Conseil de déploiement
 

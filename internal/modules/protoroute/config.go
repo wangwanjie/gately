@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/wangwanjie/gately/internal/crud"
+	"github.com/wangwanjie/gately/internal/iplist"
 	"github.com/wangwanjie/gately/internal/l4proxy"
 )
 
@@ -40,8 +41,10 @@ type Rule struct {
 	// 客户端先发送数据的协议通常在握手后几毫秒内就发出首包，有等待超时路由时可调到 0.3～1 秒
 	SniffTimeout float64 `json:"sniffTimeout"`
 	// MaxConnections 是该规则每个端口的最大并发连接数，0 表示使用全局默认值
-	MaxConnections int    `json:"maxConnections"`
-	Remark         string `json:"remark"`
+	MaxConnections int `json:"maxConnections"`
+	// Access 为来源 IP 访问控制（白名单 / 黑名单），在识别协议之前判断；封禁表中的地址无论何种模式都会被拒绝
+	iplist.Access
+	Remark string `json:"remark"`
 }
 
 // Route 是分流规则中的一条路由，作用相当于 haproxy 的一个 backend。
@@ -128,6 +131,9 @@ func (r *Rule) Validate() error {
 	}
 	if len(r.Routes) == 0 && len(r.TargetAddresses) == 0 {
 		return fmt.Errorf("至少添加一条路由或填写默认目标")
+	}
+	if err := r.Access.Normalize(); err != nil {
+		return err
 	}
 	return r.validateRoutes()
 }

@@ -54,6 +54,7 @@ These connections go to the default target: no route matches; the data belongs t
 - Each connection is detected once, so later requests on the same HTTP keep-alive connection go to the backend chosen first;
 - The rule card shows how many connections each route and the default target have received; debug entries in the run log record the detected protocol, SNI, ALPN or Host of each connection;
 - Changes to routes, the default target and the detection timeout take effect immediately without stopping the listener, and open connections are not affected.
+- Each rule can use a source IP allowlist or blocklist (which can reference the subscribed IP lists of Web Services), checked before the protocol is detected: a connection that fails it is closed without reading any data and does not count as a route hit; Intrusion Prevention bans come first. Editing the list does not interrupt listening, and the rule card shows the refusal count. It works the same as in [Port Forwarding](/en/docs/modules/portforward#source-ip-access-control).
 
 ## Example: replacing haproxy
 

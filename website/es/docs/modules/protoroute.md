@@ -54,6 +54,7 @@ Estas conexiones van al destino predeterminado: ninguna ruta coincide; los datos
 - Cada conexión se detecta una sola vez, así que las solicitudes posteriores en la misma conexión HTTP keep-alive van al backend elegido la primera vez;
 - La tarjeta de la regla muestra cuántas conexiones ha recibido cada ruta y el destino predeterminado; las entradas de depuración del registro de ejecución anotan el protocolo, el SNI, el ALPN o el Host detectado en cada conexión;
 - Los cambios en las rutas, el destino predeterminado y el tiempo de detección se aplican de inmediato sin detener la escucha, y las conexiones abiertas se mantienen.
+- Cada regla puede usar una lista de permitidos o de bloqueo por IP de origen (que puede usar las listas de IP suscritas de Servicios web), comprobada antes de detectar el protocolo: una conexión que no la supera se cierra sin leer datos y no cuenta como acierto de ruta; los bloqueos de Prevención de intrusiones tienen prioridad. Editar la lista no interrumpe la escucha y la tarjeta de la regla muestra el número de rechazos. Funciona igual que en [Reenvío de puertos](/es/docs/modules/portforward#control-de-acceso-por-ip-de-origen).
 
 ## Ejemplo: sustituir haproxy
 

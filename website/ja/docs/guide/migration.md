@@ -26,9 +26,9 @@ Gately の「設定 → バックアップと移行」を開き、すべての `
 
 | ファイル | インポート先 | 説明 |
 | --- | --- | --- |
-| lucky_portforward.lkcf | ポート転送 | TLS / ストリーム暗号化、速度制限のオプションは未対応で、通知が表示されます |
+| lucky_portforward.lkcf | ポート転送 | TLS / ストリーム暗号化、速度制限のオプションは未対応で、通知が表示されます。セーフモードは送信元 IP アクセス制御に変換されます（同じインポートで `lucky_ipfilter.lkcf` をアップロード） |
 | lucky_ddns.lkcf | ダイナミック DNS | 11 のプロバイダーに対応。Lucky 公式の IP 照会アドレスは削除されます |
-| lucky_stun.lkcf | STUN 穿孔 | グローバルな STUN サーバー一覧とグローバル Webhook を含みます |
+| lucky_stun.lkcf | STUN 穿孔 | グローバルな STUN サーバー一覧とグローバル Webhook を含みます。内蔵転送のセーフモードも送信元 IP アクセス制御に変換されます |
 | lucky_ssl.lkcf | SSL 証明書 | 発行済みの証明書はそのままインポートされ、有効期限が切れるまで再取得しません |
 | lucky_reverseproxy.lkcf | Web サービス | サイト、認証、WAF 参照（サブルールの WAF が main の場合は待ち受けルールのインスタンスを引き継ぎます）。リダイレクトのサブルールにある `{host}{path}{args}`、`{port}`、`{1}`、`{STUN_ルール名_PORT}` などの変数もそのまま動作します |
 | lucky_coraza.lkcf | WAF ファイアウォール | インスタンスキーを引き継ぐため、サイトからの参照は有効なままです |

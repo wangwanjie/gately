@@ -26,9 +26,9 @@ Gately 可以直接讀取 Lucky 的 `.lkcf` 設定檔，或 Lucky「備份設定
 
 | 檔案 | 匯入到 | 說明 |
 | --- | --- | --- |
-| lucky_portforward.lkcf | 連接埠轉發 | TLS/串流加密、限速選項暫不支援，會提示 |
+| lucky_portforward.lkcf | 連接埠轉發 | TLS/串流加密、限速選項暫不支援，會提示；安全模式轉換為來源 IP 存取控制（需同時上傳 `lucky_ipfilter.lkcf`） |
 | lucky_ddns.lkcf | 動態網域 | 支援 11 家服務商；Lucky 官方 IP 查詢位址會被移除 |
-| lucky_stun.lkcf | STUN 穿透 | 含全域 STUN 伺服器清單與全域 Webhook |
+| lucky_stun.lkcf | STUN 穿透 | 含全域 STUN 伺服器清單與全域 Webhook；內建轉發的安全模式同樣轉換為來源 IP 存取控制 |
 | lucky_ssl.lkcf | SSL 憑證 | 已簽發的憑證原樣匯入，到期前不會重新申請 |
 | lucky_reverseproxy.lkcf | Web 服務 | 站台、驗證、WAF 引用（子規則 WAF 為 main 時沿用監聽規則的實例）；重新導向子規則中的 `{host}{path}{args}`、`{port}`、`{1}`、`{STUN_規則名_PORT}` 等變數照常生效 |
 | lucky_coraza.lkcf | WAF 防火牆 | 沿用實例 key，站台引用保持有效 |

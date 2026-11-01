@@ -32,7 +32,8 @@ type luckyRule struct {
 }
 
 // convertLuckyRules 把 Lucky 规则转换为 Gately 规则，并列出无法迁移的选项。
-func convertLuckyRules(raw json.RawMessage) ([]Rule, []string, error) {
+// ipFilter 为本次导入的 Lucky IP 过滤名单（可为 nil），用于转换规则的安全模式。
+func convertLuckyRules(raw json.RawMessage, ipFilter map[string]luckyimport.IPFilterList) ([]Rule, []string, error) {
 	var src []luckyRule
 	if err := json.Unmarshal(raw, &src); err != nil {
 		return nil, nil, err
@@ -67,8 +68,11 @@ func convertLuckyRules(raw json.RawMessage) ([]Rule, []string, error) {
 		if o.SinglePortSpeedLimit || o.RuleSpeedLimit {
 			warnings = append(warnings, label+": 限速选项暂不支持，已忽略")
 		}
-		if o.SafeMode == "whitelist" {
-			warnings = append(warnings, label+": 原规则启用了白名单模式，IP 过滤将在后续版本支持，请注意暴露面")
+		// 安全模式转换为来源 IP 访问控制：白名单取 Lucky IP 过滤中的白名单，黑名单取黑名单与全局黑名单
+		access, warns := luckyimport.SafeModeAccess(o.SafeMode, ipFilter)
+		rule.Access = access
+		for _, w := range warns {
+			warnings = append(warnings, label+": "+w)
 		}
 		if err := rule.Validate(); err != nil {
 			warnings = append(warnings, label+": 跳过，"+err.Error())
@@ -85,7 +89,7 @@ func (m *Module) ImportLucky(doc luckyimport.Document, opts luckyimport.Options)
 	if !ok {
 		return nil, nil
 	}
-	rules, warnings, err := convertLuckyRules(raw)
+	rules, warnings, err := convertLuckyRules(raw, opts.IPFilter)
 	if err != nil {
 		return nil, err
 	}

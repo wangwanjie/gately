@@ -86,5 +86,6 @@
   "reconnected": "Reconnected",
   "moduleEnabled": "STUN traversal module enabled",
   "settingsSaved": "Saved; rules restarted",
-  "scriptPlaceholder": "e.g. /data/scripts/notify.sh --rule \"${'{'}ruleName{'}'}\" --port \"${'{'}port{'}'}\""
+  "scriptPlaceholder": "e.g. /data/scripts/notify.sh --rule \"${'{'}ruleName{'}'}\" --port \"${'{'}port{'}'}\"",
+  "ipAccessNote": "Applies to the built-in forwarding only; STUN queries and the channel check are unaffected. Editing the list does not redo the traversal, so the public port stays the same; UDP is checked per packet."
 }

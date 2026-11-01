@@ -86,5 +86,6 @@
   "reconnected": "다시 연결했습니다",
   "moduleEnabled": "STUN 홀 펀칭 모듈을 사용합니다",
   "settingsSaved": "저장되었으며 규칙을 다시 시작했습니다",
-  "scriptPlaceholder": "예: /data/scripts/notify.sh --rule \"${'{'}ruleName{'}'}\" --port \"${'{'}port{'}'}\""
+  "scriptPlaceholder": "예: /data/scripts/notify.sh --rule \"${'{'}ruleName{'}'}\" --port \"${'{'}port{'}'}\"",
+  "ipAccessNote": "내장 전달에만 적용되며 STUN 조회와 채널 검사에는 영향이 없습니다. 목록을 수정해도 다시 터널링하지 않아 공인 포트가 그대로 유지됩니다. UDP는 패킷마다 판단합니다."
 }

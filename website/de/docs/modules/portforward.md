@@ -11,6 +11,7 @@ Leiten Sie einen Port, auf dem Gately lauscht, an ein anderes Gerät oder einen 
 - Verbindungslimits;
 - Traffic-Statistiken und Laufzeit-Logs;
 - Senden des PROXY-Protokolls (v1 / v2) an das Ziel, damit nachgelagerte Dienste die echte Client-Adresse erhalten;
+- Quell-IP-Zugriffskontrolle (Zulassungs- / Sperrliste), die auch abonnierte IP-Listen der Webdienste nutzen kann;
 - Um einen Port wie 443 nach Domain oder Protokoll zwischen mehreren Diensten zu teilen, verwenden Sie das [Protokoll-Routing](/de/docs/modules/protoroute).
 
 ## PROXY-Protokoll
@@ -24,6 +25,18 @@ Das Ziel muss die passende Empfangsoption aktiviert haben, sonst wird die Verbin
 - Gately-Web-Dienst: im Listener „PROXY-Protokoll akzeptieren“ aktivieren und die Quelle zu den vertrauenswürdigen PROXY-Quellen hinzufügen.
 
 Die Option wirkt nur auf TCP; UDP-Weiterleitungen sind nicht betroffen.
+
+## Quell-IP-Zugriffskontrolle
+
+Jede Regel kann eine Zulassungs- oder Sperrliste nutzen, die anhand der Quell-IP entscheidet, ob weitergeleitet wird. Die Liste besteht aus von Hand eingetragenen IPs / Subnetzen und den abonnierten IP-Listen der Webdienste; ein Treffer in einem davon gilt als auf der Liste. Abonnierte Listen lädt das Webdienste-Modul regelmäßig herunter, eine Aktualisierung wirkt sofort, und bis zum ersten erfolgreichen Download gilt eine Liste als leer.
+
+- Die Prüfung erfolgt, bevor das Ziel verbunden wird: Eine TCP-Verbindung, die durchfällt, wird geschlossen; UDP wird pro Paket geprüft, durchgefallene Pakete werden verworfen, und die ausgehenden Pakete bestehender Sitzungen folgen einer geänderten Liste sofort;
+- Sperren des Einbruchschutzes haben Vorrang: Eine gesperrte Adresse wird auch innerhalb eines zugelassenen Subnetzes abgewiesen;
+- Das Bearbeiten der Liste unterbricht das Lauschen nicht, bestehende TCP-Verbindungen bleiben unberührt;
+- Die Regelkarte zeigt, wie oft Quellen seit dem Start von Gately abgewiesen wurden (Verbindungen bei TCP, Pakete bei UDP), und die Debug-Stufe des Laufprotokolls vermerkt jede Abweisung;
+- Steht ein Reverse Proxy oder eine andere Weiterleitung vor der Regel, sieht Gately deren Adresse als Quelle.
+
+Beim Import aus Lucky wird auch der Sicherheitsmodus der Regel übernommen: Der Zulassungslistenmodus übernimmt die IPs / Subnetze der „Whitelist“ des Lucky-IP-Filters, der Sperrlistenmodus die „Blacklist“ und die „globale Blacklist“. Laden Sie im selben Import `lucky_ipfilter.lkcf` (oder eine vollständige Sicherung) hoch; Einträge aus der IP-Datenbank, automatisch erfasste Einträge und Adressbereiche lassen sich nicht importieren, das Importergebnis weist darauf hin.
 
 ## Typische Szenarien
 

@@ -60,6 +60,7 @@ type luckyRule struct {
 		TCPStreamEncryptionAccept    bool
 		SinglePortSpeedLimit         bool
 		RuleSpeedLimit               bool
+		SafeMode                     string
 	}
 }
 
@@ -84,7 +85,8 @@ func luckyWebhook(enable bool, url, method string, headers []string, body string
 }
 
 // convertLuckyRules 转换 Lucky STUN 规则。导入后默认停用，避免与仍在运行的 Lucky 抢占端口与 UPnP 映射。
-func convertLuckyRules(raw json.RawMessage) ([]Rule, []string, int, error) {
+// ipFilter 为本次导入的 Lucky IP 过滤名单（可为 nil），用于转换规则的安全模式。
+func convertLuckyRules(raw json.RawMessage, ipFilter map[string]luckyimport.IPFilterList) ([]Rule, []string, int, error) {
 	var src []luckyRule
 	if err := json.Unmarshal(raw, &src); err != nil {
 		return nil, nil, 0, err
@@ -153,6 +155,14 @@ func convertLuckyRules(raw json.RawMessage) ([]Rule, []string, int, error) {
 		if o.SinglePortSpeedLimit || o.RuleSpeedLimit {
 			warn("限速选项暂不支持，已忽略")
 		}
+		// 安全模式转换为内置转发的来源 IP 访问控制；不使用内置转发时外部连接不经过 Gately，无需转换
+		if !r.DisableForward {
+			access, accessWarns := luckyimport.SafeModeAccess(o.SafeMode, ipFilter)
+			r.Access = access
+			for _, w := range accessWarns {
+				warn(w)
+			}
+		}
 		if r.ScriptEnable && strings.Contains(r.Script, "/etc/lucky/") {
 			luckyPathRules = append(luckyPathRules, label)
 		}
@@ -175,7 +185,7 @@ func (m *Module) ImportLucky(doc luckyimport.Document, opts luckyimport.Options)
 	if !ok {
 		return nil, nil
 	}
-	rules, warns, found, err := convertLuckyRules(raw)
+	rules, warns, found, err := convertLuckyRules(raw, opts.IPFilter)
 	if err != nil {
 		return nil, err
 	}
@@ -233,6 +243,7 @@ func (m *Module) ImportLucky(doc luckyimport.Document, opts luckyimport.Options)
 		m.cfg.Rules, m.cfg.Settings = oldRules, oldSettings
 		return nil, err
 	}
+	m.publishIPSetUsersLocked()
 	// 模块开关变化时重启全部规则，否则只启动新导入的规则
 	restart := m.cfg.Rules[len(oldRules):]
 	if oldSettings.Enable != m.cfg.Settings.Enable {

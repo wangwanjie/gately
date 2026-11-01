@@ -1279,6 +1279,9 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | --- | --- |
 | `enable` | boolean |
 | `group` | string |
+| `ipList` | Array de string |
+| `ipMode` | string |
+| `ipSets` | Array de string |
 | `key` | string |
 | `listenAddress` | string |
 | `listenPorts` | string |
@@ -1310,6 +1313,9 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | --- | --- |
 | `enable` | boolean |
 | `group` | string |
+| `ipList` | Array de string |
+| `ipMode` | string |
+| `ipSets` | Array de string |
 | `key` | string |
 | `listenAddress` | string |
 | `listenPorts` | string |
@@ -1438,6 +1444,9 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `enable` | boolean |
 | `group` | string |
 | `heartbeatInterval` | integer |
+| `ipList` | Array de string |
+| `ipMode` | string |
+| `ipSets` | Array de string |
 | `keepAliveServers` | Array de string |
 | `key` | string |
 | `localPort` | integer |

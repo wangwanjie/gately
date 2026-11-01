@@ -45,6 +45,8 @@
           </Field>
           <Field :label="t('protoRoute.connections')">{{ t('protoRoute.connectionsValue', { active: it.item.stats.activeConns, total: it.item.stats.totalConns }) }}</Field>
           <Field :label="t('protoRoute.traffic')">↑ {{ formatBytes(it.item.stats.bytesIn) }} · ↓ {{ formatBytes(it.item.stats.bytesOut) }}</Field>
+          <Field v-if="it.item.ipMode" :label="t('ipAccessEditor.title')">{{ it.item.ipMode === 'whitelist' ? t('ipAccessEditor.whitelist') : t('ipAccessEditor.blacklist') }}</Field>
+          <Field v-if="it.item.stats.denied" :label="t('ipAccessEditor.denied')" mono>{{ it.item.stats.denied }}</Field>
           <Field :label="t('protoRoute.routes')" wide>
             <div v-for="(rt, i) in it.item.routes" :key="i" class="route-line">
               <el-tag size="small" type="info" effect="plain">{{ protoShort(rt.protocol) }}</el-tag>
@@ -153,6 +155,7 @@
           <el-input-number v-model="editing.maxConnections" :min="0" :max="100000" />
           <span class="help">{{ t('protoRoute.useGlobalDefault') }}</span>
         </el-form-item>
+        <IPAccessEditor v-model:mode="editing.ipMode" v-model:list="editing.ipList" v-model:sets="editing.ipSets" :note="t('protoRoute.ipAccessNote')" />
         <el-form-item :label="t('common.remark')">
           <el-input v-model="editing.remark" />
         </el-form-item>
@@ -188,6 +191,7 @@ import { ArrowDown, ArrowUp, Pencil, Plus, SlidersHorizontal, Split, Trash2, Tri
 import { api, formatBytes } from '../api'
 import GroupedList from '../components/GroupedList.vue'
 import GroupInput from '../components/GroupInput.vue'
+import IPAccessEditor from '../components/IPAccessEditor.vue'
 import ListTools from '../components/ListTools.vue'
 import SortCheck from '../components/SortCheck.vue'
 import SortMoves from '../components/SortMoves.vue'
@@ -220,6 +224,10 @@ interface Rule {
   // 等待客户端发来可识别数据的秒数，可带一位小数，0 为默认 5 秒
   sniffTimeout: number
   maxConnections: number
+  // 来源 IP 访问控制：ipMode 为 ''（关闭）、whitelist、blacklist；ipSets 为引用的订阅 IP 列表 key
+  ipMode: string
+  ipList: string[]
+  ipSets: string[]
   remark: string
 }
 
@@ -262,6 +270,8 @@ interface RuleView extends Rule {
     routeConns?: number[]
     defaultConns?: number
     rejected?: number
+    // 不满足来源 IP 访问控制而被断开的连接
+    denied?: number
   }
 }
 
@@ -355,6 +365,9 @@ function emptyRule(): Rule {
     proxyProtocol: '',
     sniffTimeout: 0,
     maxConnections: 0,
+    ipMode: '',
+    ipList: [],
+    ipSets: [],
     remark: '',
   }
 }
@@ -495,6 +508,10 @@ function openEditor(row?: RuleView) {
     editing.value = emptyRule()
   }
   editing.value.sniffTimeout = editing.value.sniffTimeout || 0
+  // 后端空名单返回 null，编辑时统一为数组
+  editing.value.ipMode = editing.value.ipMode ?? ''
+  editing.value.ipList = editing.value.ipList ?? []
+  editing.value.ipSets = editing.value.ipSets ?? []
   targetsText.value = (editing.value.targetAddresses ?? []).join('\n')
   routeForms.value = (editing.value.routes ?? []).map(toRouteForm)
   // 新规则预置一条空路由

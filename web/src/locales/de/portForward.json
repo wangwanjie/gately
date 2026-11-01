@@ -42,5 +42,6 @@
   "proxyProtocolOff": "Nicht senden",
   "proxyProtocolHelp": "Nur TCP. Sendet nach dem Verbindungsaufbau einen PROXY-Header, damit nachgelagerte Dienste die echte Client-Adresse kennen (haproxy accept-proxy, nginx proxy_protocol oder „PROXY-Protokoll annehmen“ im Gately-Webdienst). Unterstützt das Ziel es nicht, schlägt die Verbindung fehl.",
   "filterPlaceholder": "Name, Gruppe, Port oder Ziel suchen",
-  "groupCount": "{count} Regeln"
+  "groupCount": "{count} Regeln",
+  "ipAccessNote": "UDP wird pro Paket geprüft, Pakete bestehender Sitzungen folgen einer geänderten Liste also sofort. Das Bearbeiten der Liste unterbricht das Lauschen nicht."
 }

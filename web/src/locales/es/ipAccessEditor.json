@@ -1,0 +1,16 @@
+{
+  "title": "Control de acceso por IP",
+  "off": "Desactivado",
+  "whitelist": "Lista de permitidos",
+  "blacklist": "Lista de bloqueo",
+  "help": "Decide por IP de origen si un cliente puede conectarse; se comprueba antes de conectar con el destino. Las direcciones bloqueadas por Prevención de intrusiones se rechazan siempre, aunque estén en la lista de permitidos. Si hay un proxy inverso u otro reenvío delante de la regla, el origen visto es su dirección.",
+  "range": "IP / subredes",
+  "rangePlaceholder": "Una por línea, p. ej. 192.168.1.0/24",
+  "sets": "Listas suscritas",
+  "setsPlaceholder": "Elija listas de IP suscritas (opcional)",
+  "setsEmpty": "Aún no hay listas suscritas; añádalas en la configuración global de Servicios web",
+  "setNotLoaded": "sin cargar",
+  "setsHelp": "Se comprueban junto con los rangos de arriba; coincidir con cualquiera cuenta como estar en la lista. Una suscripción actualizada se aplica al instante, sin reiniciar la regla",
+  "setsWhitelistHelp": "Se comprueban junto con los rangos de arriba; coincidir con cualquiera permite la conexión. Una suscripción actualizada se aplica al instante, sin reiniciar la regla. El módulo Servicios web descarga las listas periódicamente; hasta la primera descarga correcta cuentan como vacías",
+  "denied": "Rechazados"
+}

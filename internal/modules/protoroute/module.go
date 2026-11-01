@@ -15,6 +15,7 @@ import (
 	"github.com/wangwanjie/gately/internal/config"
 	"github.com/wangwanjie/gately/internal/crud"
 	"github.com/wangwanjie/gately/internal/httpx"
+	"github.com/wangwanjie/gately/internal/iplist"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
 )
@@ -69,6 +70,8 @@ func (m *Module) Init(env module.Env) error {
 		return err
 	}
 	m.cfg.Settings.normalize()
+	// 模块启动前先登记一次，Web 服务的 IP 列表页也能看到引用
+	m.publishIPSetUsersLocked()
 	if m.migrated > 0 {
 		m.logs.Add(logbuf.LevelInfo, "", fmt.Sprintf("已从端口转发迁移 %d 条 SNI 分流规则", m.migrated))
 	}
@@ -154,6 +157,14 @@ func (m *Module) saveLocked() error {
 	return m.store.Save(ID, m.cfg)
 }
 
+// publishIPSetUsersLocked 向 IP 列表注册表登记各规则对订阅列表的引用，Web 服务据此展示引用方并阻止删除仍被引用的列表。
+// 调用方持有 mu（或处于 Init）。
+func (m *Module) publishIPSetUsersLocked() {
+	iplist.PublishUsers(ID, m.cfg.Rules, func(r *Rule) (*iplist.Access, string) {
+		return &r.Access, ID + " / " + ruleLabel(*r)
+	})
+}
+
 func ruleLabel(r Rule) string {
 	if r.Name != "" {
 		return r.Name
@@ -190,9 +201,16 @@ func (m *Module) Routes(r module.Router) {
 		Enabled:  func(r *Rule) *bool { return &r.Enable },
 		Group:    func(r *Rule) *string { return &r.Group },
 		Validate: func(r *Rule) error { return r.Validate() },
+		Check:    func(r *Rule) error { return r.Access.CheckSets() },
 		View:     func(r *Rule) any { return m.viewLocked(*r) },
-		Changed:  m.restartLocked,
-		Removed:  m.stopRuleLocked,
+		Changed: func(key string) {
+			m.publishIPSetUsersLocked()
+			m.restartLocked(key)
+		},
+		Removed: func(key string) {
+			m.publishIPSetUsersLocked()
+			m.stopRuleLocked(key)
+		},
 	}
 	rules.Register(r, "/rules")
 	r.HandleFunc("GET /settings", m.handleGetSettings)

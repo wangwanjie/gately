@@ -11,6 +11,7 @@ Forward a port that Gately listens on to another device or service.
 - Connection limits;
 - Traffic statistics and runtime logs;
 - Sending the PROXY protocol (v1 / v2) to targets, passing the real client address downstream;
+- Source IP access control (allowlist / blocklist), which can reference the subscribed IP lists of Web Services;
 - To share one port such as 443 between services by domain or protocol, use [Protocol Routing](/en/docs/modules/protoroute).
 
 ## PROXY protocol
@@ -24,6 +25,18 @@ The target must enable the matching receive option, otherwise the connection is 
 - Gately Web Services: enable "Accept PROXY protocol" on the listener, and add the source to the trusted PROXY sources.
 
 This option applies to TCP only; UDP forwarding is unaffected.
+
+## Source IP access control
+
+Each rule can use an allowlist or a blocklist that decides by source IP whether traffic is forwarded. The list is built from IPs / subnets typed in by hand and the subscribed IP lists of Web Services; matching any of them counts as being on the list. Subscribed lists are downloaded on schedule by the Web Services module, a refresh takes effect at once, and a list counts as empty until its first download succeeds.
+
+- The check runs before the target is dialed: a TCP connection that fails it is closed, and UDP is checked per packet, so packets that fail are dropped and the upstream packets of existing sessions follow a changed list at once;
+- Intrusion Prevention bans come first: a banned address is refused even inside an allowlisted subnet;
+- Editing the list does not interrupt listening, and established TCP connections are unaffected;
+- The rule card shows how many times sources were refused since Gately started (connections for TCP, packets for UDP), and the debug level of the run log records each refusal;
+- When a reverse proxy or another forwarder sits in front of the rule, the source Gately sees is its address.
+
+When importing from Lucky, the rule's safe mode is converted as well: allowlist mode takes the IPs / subnets of the "whitelist" in Lucky's IP filter, and blocklist mode takes the "blacklist" and the "global blacklist". Upload `lucky_ipfilter.lkcf` (or a full backup) in the same import; IP database, auto-recorded and address range entries cannot be imported, and the import result says so.
 
 ## Typical scenarios
 

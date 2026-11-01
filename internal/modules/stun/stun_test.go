@@ -483,7 +483,7 @@ func TestConvertLucky(t *testing.T) {
 	 {"Name":"nic","StunType":"udp4","UseGlobalStunServerList":true,"StunListenType":"networkInterface","SpecifyNetworkInterface":"eth1","NetworkInterfaceReg":"2",
 	  "TargetAddressList":["10.0.0.2"],"TargetPort":53,"Options":{"TCPListenTLS":true}}
 	]`)
-	rules, warns, found, err := convertLuckyRules(raw)
+	rules, warns, found, err := convertLuckyRules(raw, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

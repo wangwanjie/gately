@@ -1320,6 +1320,21 @@
           "group": {
             "type": "string"
           },
+          "ipList": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ipMode": {
+            "type": "string"
+          },
+          "ipSets": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "key": {
             "type": "string"
           },
@@ -1407,6 +1422,21 @@
           },
           "group": {
             "type": "string"
+          },
+          "ipList": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ipMode": {
+            "type": "string"
+          },
+          "ipSets": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           },
           "key": {
             "type": "string"
@@ -1734,6 +1764,21 @@
           },
           "heartbeatInterval": {
             "type": "integer"
+          },
+          "ipList": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ipMode": {
+            "type": "string"
+          },
+          "ipSets": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           },
           "keepAliveServers": {
             "items": {

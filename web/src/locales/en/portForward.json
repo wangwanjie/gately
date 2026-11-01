@@ -42,5 +42,6 @@
   "proxyProtocolOff": "Off",
   "proxyProtocolHelp": "TCP only. Sends a PROXY protocol header after connecting to the target so the downstream learns the real client address (haproxy accept-proxy, nginx proxy_protocol, or \"Accept PROXY protocol\" in Gately Web Services). Connections fail if the target does not support it.",
   "filterPlaceholder": "Search name, group, port or target",
-  "groupCount": "{count} rules"
+  "groupCount": "{count} rules",
+  "ipAccessNote": "UDP is checked per packet, so packets of existing sessions follow a changed list at once. Editing the list does not interrupt listening."
 }

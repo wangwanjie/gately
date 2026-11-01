@@ -1279,6 +1279,9 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | --- | --- |
 | `enable` | boolean |
 | `group` | string |
+| `ipList` | Array von string |
+| `ipMode` | string |
+| `ipSets` | Array von string |
 | `key` | string |
 | `listenAddress` | string |
 | `listenPorts` | string |
@@ -1310,6 +1313,9 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | --- | --- |
 | `enable` | boolean |
 | `group` | string |
+| `ipList` | Array von string |
+| `ipMode` | string |
+| `ipSets` | Array von string |
 | `key` | string |
 | `listenAddress` | string |
 | `listenPorts` | string |
@@ -1438,6 +1444,9 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `enable` | boolean |
 | `group` | string |
 | `heartbeatInterval` | integer |
+| `ipList` | Array von string |
+| `ipMode` | string |
+| `ipSets` | Array von string |
 | `keepAliveServers` | Array von string |
 | `key` | string |
 | `localPort` | integer |

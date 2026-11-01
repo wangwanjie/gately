@@ -95,5 +95,6 @@
     "adb": "adb connect 的明文连接；Android 11 起的无线调试使用 TLS",
     "irc": "明文 IRC 客户端（先发送 CAP、PASS、NICK 或 USER）；使用 TLS 的 IRC 请用 TLS 路由"
   },
-  "routeMinecraftPlaceholder": "服务器地址，每行一个：mc.example.com、*.example.com 或 *；留空匹配全部 Minecraft 连接"
+  "routeMinecraftPlaceholder": "服务器地址，每行一个：mc.example.com、*.example.com 或 *；留空匹配全部 Minecraft 连接",
+  "ipAccessNote": "在识别协议之前判断，被拒绝的连接不会读取数据，也不计入路由命中。修改名单不会中断监听。"
 }

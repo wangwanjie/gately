@@ -23,7 +23,7 @@
           <div class="meta mono url">{{ l.url }}</div>
           <div class="meta">
             {{ l.updatedAt ? t('ipLists.updated', { count: l.count, time: new Date(l.updatedAt).toLocaleString(), hours: l.refreshHours }) : t('ipLists.neverUpdated') }}
-            <span v-if="l.usedBy?.length"> · {{ t('ipLists.usedBy', { sites: l.usedBy.join('、') }) }}</span>
+            <span v-if="l.usedBy?.length"> · {{ t('ipLists.usedBy', { sites: l.usedBy.map(usedByLabel).join('、') }) }}</span>
           </div>
           <div v-if="l.lastError" class="err">{{ l.lastError }}</div>
         </div>
@@ -94,6 +94,16 @@ const refreshing = ref('')
 const editing = ref<IPList>(empty())
 // 定时刷新，标签页在后台时暂停
 const polling = usePolling(load, 5000)
+
+// 其它模块登记的引用方形如“portforward / 规则名”，把模块 ID 换成界面语言的模块名
+const moduleRefs = ['portforward', 'protoroute', 'stun']
+function usedByLabel(s: string) {
+  const [id, ...rest] = s.split(' / ')
+  if (rest.length && moduleRefs.includes(id)) {
+    return [t(`nav.items.${id}.title`), ...rest].join(' / ')
+  }
+  return s
+}
 
 function empty(): IPList {
   return { name: '', enable: true, url: '', refreshHours: 24, remark: '' }

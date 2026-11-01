@@ -42,5 +42,6 @@
   "proxyProtocolOff": "No enviar",
   "proxyProtocolHelp": "Solo TCP. Envía una cabecera PROXY tras conectar con el destino para que el siguiente salto conozca la dirección real del cliente (accept-proxy de haproxy, proxy_protocol de nginx o \"Aceptar protocolo PROXY\" en el servicio web de Gately). La conexión falla si el destino no lo admite.",
   "filterPlaceholder": "Buscar nombre, grupo, puerto o destino",
-  "groupCount": "{count} reglas"
+  "groupCount": "{count} reglas",
+  "ipAccessNote": "UDP se comprueba por paquete, así que los paquetes de sesiones existentes siguen al instante la lista modificada. Editar la lista no interrumpe la escucha."
 }

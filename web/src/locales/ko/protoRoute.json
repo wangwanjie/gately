@@ -95,5 +95,6 @@
     "adb": "adb connect의 평문 연결입니다. Android 11부터의 무선 디버깅은 TLS를 씁니다",
     "irc": "평문 IRC 클라이언트(먼저 CAP, PASS, NICK, USER를 보냄)입니다. TLS를 쓰는 IRC는 TLS 라우트를 사용하세요"
   },
-  "routeMinecraftPlaceholder": "서버 주소, 한 줄에 하나: mc.example.com, *.example.com 또는 *. 비우면 모든 Minecraft 연결과 일치합니다"
+  "routeMinecraftPlaceholder": "서버 주소, 한 줄에 하나: mc.example.com, *.example.com 또는 *. 비우면 모든 Minecraft 연결과 일치합니다",
+  "ipAccessNote": "프로토콜을 식별하기 전에 판단하며, 거부된 연결은 데이터를 읽지 않고 경로 적중에도 포함하지 않습니다. 목록을 수정해도 수신 대기는 중단되지 않습니다."
 }

@@ -95,5 +95,6 @@
     "adb": "Sessões do adb connect em texto claro; a depuração sem fio desde o Android 11 usa TLS",
     "irc": "Clientes IRC em texto claro (enviam primeiro CAP, PASS, NICK ou USER); use uma rota TLS para IRC sobre TLS"
   },
-  "routeMinecraftPlaceholder": "Endereços do servidor, um por linha: mc.example.com, *.example.com ou *. Vazio corresponde a todas as conexões Minecraft"
+  "routeMinecraftPlaceholder": "Endereços do servidor, um por linha: mc.example.com, *.example.com ou *. Vazio corresponde a todas as conexões Minecraft",
+  "ipAccessNote": "Verificado antes de identificar o protocolo; conexões recusadas não são lidas nem contam como acertos de rota. Editar a lista não interrompe a escuta."
 }

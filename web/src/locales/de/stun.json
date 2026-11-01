@@ -86,5 +86,6 @@
   "reconnected": "Neu verbunden",
   "moduleEnabled": "Modul STUN-Traversal aktiviert",
   "settingsSaved": "Gespeichert; Regeln neu gestartet",
-  "scriptPlaceholder": "z. B. /data/scripts/notify.sh --rule \"${'{'}ruleName{'}'}\" --port \"${'{'}port{'}'}\""
+  "scriptPlaceholder": "z. B. /data/scripts/notify.sh --rule \"${'{'}ruleName{'}'}\" --port \"${'{'}port{'}'}\"",
+  "ipAccessNote": "Gilt nur für die eingebaute Weiterleitung; STUN-Abfragen und die Kanalprüfung bleiben unberührt. Das Bearbeiten der Liste startet keine neue Durchdringung, der öffentliche Port bleibt gleich; UDP wird pro Paket geprüft."
 }

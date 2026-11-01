@@ -269,6 +269,12 @@ func (r *runner) acceptLoop(ctx context.Context, ln net.Listener) {
 			c.Close()
 			continue
 		}
+		// 封禁优先，再按来源 IP 名单判断，不命中时不连接目标
+		if !r.allows(c.RemoteAddr()) {
+			r.log.Debugf("%s 不满足来源 IP 访问控制，已断开", c.RemoteAddr())
+			c.Close()
+			continue
+		}
 		select {
 		case sem <- struct{}{}:
 		default:

@@ -1,7 +1,7 @@
 {
   "title": "Subscribed IP lists",
   "lists": "Lists",
-  "help": "Download province, carrier or blocklist IP ranges from a URL and refresh them on a schedule, then reference them in a site's IP access control and path rules. One IP, CIDR or start-end range per line",
+  "help": "Download province, carrier or blocklist IP ranges from a URL and refresh them on a schedule, then reference them in a site's IP access control and path rules. One IP, CIDR or start-end range per line. frps instances and the IP access control of port forwarding, protocol routing and STUN rules can reference them too",
   "empty": "No subscribed IP lists",
   "refresh": "Refresh",
   "deleteConfirm": "Delete this IP list?",

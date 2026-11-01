@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/wangwanjie/gately/internal/config"
+	"github.com/wangwanjie/gately/internal/iplist"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/luckyimport"
 	"github.com/wangwanjie/gately/internal/module"
@@ -24,7 +25,7 @@ func TestConvertLuckyRules(t *testing.T) {
 	   "Options":{"TCPListenTLS":true,"RuleSpeedLimit":true}},
 	  {"Name":"bad","Enable":true,"ForwardTypes":["sctp"],"ListenPorts":"1","TargetAddressList":["x"],"Options":{}}
 	]`)
-	rules, warnings, err := convertLuckyRules(raw)
+	rules, warnings, err := convertLuckyRules(raw, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -82,5 +83,31 @@ func TestImportRealSample(t *testing.T) {
 	}
 	if rep.Imported != rep.Found {
 		t.Fatalf("有规则未能导入")
+	}
+}
+
+func TestConvertLuckySafeMode(t *testing.T) {
+	raw := json.RawMessage(`[
+	  {"Name":"wl","Enable":true,"ForwardTypes":["tcp"],"ListenPorts":"6024","TargetAddressList":["192.168.1.8"],"TargetPorts":"22",
+	   "Options":{"SafeMode":"whitelist"}},
+	  {"Name":"bl","Enable":true,"ForwardTypes":["tcp"],"ListenPorts":"6025","TargetAddressList":["192.168.1.8"],"TargetPorts":"22",
+	   "Options":{"SafeMode":"blacklist"}}
+	]`)
+	lists := map[string]luckyimport.IPFilterList{
+		"whitelist": {Entries: []string{"192.168.1.0/24"}},
+		"blacklist": {Entries: []string{"192.0.2.66"}},
+	}
+	rules, _, err := convertLuckyRules(raw, lists)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rules) != 2 || rules[0].IPMode != iplist.ModeWhitelist || rules[0].IPList[0] != "192.168.1.0/24" ||
+		rules[1].IPMode != iplist.ModeBlacklist || rules[1].IPList[0] != "192.0.2.66" {
+		t.Fatalf("安全模式转换错误: %+v", rules)
+	}
+	// 没有上传 IP 过滤配置时白名单规则照常导入并提示
+	rules, warnings, _ := convertLuckyRules(raw, nil)
+	if len(rules) != 2 || rules[0].IPMode != "" || !strings.Contains(strings.Join(warnings, "\n"), "wl: 原规则启用了白名单模式") {
+		t.Fatalf("缺少 IP 过滤配置时的结果错误: %+v %v", rules, warnings)
 	}
 }

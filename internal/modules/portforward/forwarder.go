@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/wangwanjie/gately/internal/banlist"
+	"github.com/wangwanjie/gately/internal/iplist"
 	"github.com/wangwanjie/gately/internal/l4proxy"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/netpipe"
@@ -24,6 +25,8 @@ type StatsSnapshot struct {
 	TotalConns  int64 `json:"totalConns"`
 	BytesIn     int64 `json:"bytesIn"`
 	BytesOut    int64 `json:"bytesOut"`
+	// Denied 为不满足来源 IP 访问控制而被拒绝的次数：TCP 按连接、UDP 按数据包计数
+	Denied int64 `json:"denied"`
 }
 
 // snapshot 输出规则统计。
@@ -33,16 +36,19 @@ func (r *runner) snapshot() StatsSnapshot {
 		TotalConns:  r.stats.TotalConns.Load(),
 		BytesIn:     r.stats.BytesIn.Load(),
 		BytesOut:    r.stats.BytesOut.Load(),
+		Denied:      r.denied.Load(),
 	}
 }
 
-// route 是规则运行时可热替换的部分：目标地址、PROXY 协议、日志名与全局参数。
+// route 是规则运行时可热替换的部分：目标地址、PROXY 协议、来源 IP 访问控制、日志名与全局参数。
 // 每个新连接开始时读取一次当前 route，替换后新连接立即使用新配置，已建立的连接不受影响。
 type route struct {
 	rule     Rule
 	settings Settings
 	log      *logbuf.Logger
 	picker   *l4proxy.Picker
+	// filter 为编译后的来源 IP 访问控制，nil 表示不限制
+	filter *iplist.Filter
 }
 
 func newRoute(rule Rule, settings Settings, log *logbuf.Logger) *route {
@@ -51,6 +57,7 @@ func newRoute(rule Rule, settings Settings, log *logbuf.Logger) *route {
 		settings: settings,
 		log:      log,
 		picker:   l4proxy.NewPicker(rule.TargetAddresses),
+		filter:   rule.Access.Compile(),
 	}
 }
 
@@ -60,8 +67,10 @@ type runner struct {
 	rule     Rule
 	settings Settings
 	stats    *l4proxy.Stats
-	routes   atomic.Pointer[route]
-	srv      l4proxy.Server
+	// denied 为不满足来源 IP 访问控制而被拒绝的次数
+	denied atomic.Int64
+	routes atomic.Pointer[route]
+	srv    l4proxy.Server
 	// listenErrors 记录启动失败的监听项，供界面展示
 	listenErrors []string
 }
@@ -167,6 +176,12 @@ func (rt *route) dialTarget(network string, port int) (net.Conn, error) {
 
 func (r *runner) handleTCP(ctx context.Context, rt *route, client net.Conn, targetPort int) {
 	defer client.Close()
+	// 封禁地址已在 Accept 时拒绝，这里再按名单判断，不命中时不连接目标
+	if !rt.filter.Allows(client.RemoteAddr()) {
+		r.denied.Add(1)
+		rt.log.Debugf("%s 不满足来源 IP 访问控制，已断开", client.RemoteAddr())
+		return
+	}
 	r.stats.ActiveConns.Add(1)
 	r.stats.TotalConns.Add(1)
 	defer r.stats.ActiveConns.Add(-1)
@@ -231,9 +246,14 @@ func (r *runner) startUDP(ctx context.Context, network, addr string, targetPort 
 			if banlist.Default.BannedAddr(clientAddr) {
 				continue
 			}
-			key := clientAddr.String()
 			// 新会话使用当前配置的目标与上限，已有会话保持原目标
 			rt := r.current()
+			// 封禁优先，再按来源 IP 名单判断；每个数据包都判断，名单变化后已有会话的上行也立即被拦下
+			if !rt.filter.Allows(clientAddr) {
+				r.denied.Add(1)
+				continue
+			}
+			key := clientAddr.String()
 			mu.Lock()
 			sess := sessions[key]
 			if sess == nil {

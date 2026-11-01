@@ -42,5 +42,6 @@
   "proxyProtocolOff": "보내지 않음",
   "proxyProtocolHelp": "TCP 전용. 대상에 연결한 뒤 PROXY 프로토콜 헤더를 먼저 보내 실제 클라이언트 주소를 하위 단계에 알립니다(haproxy accept-proxy, nginx proxy_protocol, Gately 웹 서비스의 \"PROXY 프로토콜 수신\"). 대상이 지원하지 않으면 연결이 실패합니다.",
   "filterPlaceholder": "이름, 그룹, 포트 또는 대상 검색",
-  "groupCount": "규칙 {count}개"
+  "groupCount": "규칙 {count}개",
+  "ipAccessNote": "UDP는 패킷마다 판단하므로 목록이 바뀌면 기존 세션의 패킷에도 즉시 적용됩니다. 목록을 수정해도 수신 대기는 중단되지 않습니다."
 }

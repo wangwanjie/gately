@@ -8,6 +8,7 @@ Quando a sua operadora não oferece uma porta pública fixa, a travessia STUN us
 - UPnP / NAT-PMP cria mapeamentos de porta no roteador automaticamente;
 - O encaminhamento embutido envia a porta pública obtida pela travessia diretamente para um destino da rede local;
 - Webhooks e scripts são disparados quando o endereço ou a porta pública muda, e podem ser usados para atualizar o DNS, avisar clientes e mais.
+- Controle de acesso por IP de origem (lista de permissões / de bloqueio) para o encaminhamento integrado.
 
 ## Uso combinado com outros módulos
 
@@ -23,6 +24,10 @@ A porta pública obtida via STUN costuma mudar. Combine com:
 - **UPnP atrás de vários NATs**: com UPnP / NAT-PMP ativado, o Gately mapeia no roteador a porta do túnel para este host. Se o endereço externo do roteador for diferente do endereço público obtido pelo STUN, há outro NAT do lado de fora e a porta pública pertence a ele, então o Gately mantém só o mapeamento da porta do túnel e deixa de adicionar um mapeamento para a porta pública.
 - **Fixe a porta local e libere-a no firewall**: uma porta local vazia é escolhida ao acaso a cada início. Se o host usa firewall (por exemplo, o firewall do sistema do fnOS), fixe a porta local da regra e libere-a no firewall (você pode reservar uma faixa de portas para as regras STUN); caso contrário o firewall descarta as conexões de entrada e o endereço fica inacessível.
 - **TCP e o NAT de cone do roteador**: em alguns roteadores, “NAT1 / cone completo” vale só para UDP e a porta de origem TCP é reescrita na saída. Regras TCP precisam de UPnP ou de um mapeamento da porta do túnel para este host no roteador.
+
+## Controle de acesso por IP de origem
+
+Com o encaminhamento integrado, cada regra pode usar uma lista de permissões ou de bloqueio que decide pelo IP de origem se o tráfego é encaminhado ao destino. As listas e as listas de IP assinadas funcionam como no [Redirecionamento de portas](/pt-BR/docs/modules/portforward#controle-de-acesso-por-ip-de-origem), e os banimentos da Prevenção de intrusão também têm prioridade. A lista vale só para o encaminhamento; consultas STUN e a verificação do canal não são afetadas. Editar a lista não refaz a travessia, então a porta pública continua a mesma. O UDP é verificado por pacote. Sem o encaminhamento integrado, as conexões externas não passam pelo Gately e a lista não tem efeito.
 
 ## Dica de implantação
 

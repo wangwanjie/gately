@@ -42,5 +42,6 @@
   "proxyProtocolOff": "送信しない",
   "proxyProtocolHelp": "TCP のみ。転送先に接続した直後に PROXY プロトコルヘッダーを送り、実際のクライアントアドレスを下流に伝えます（haproxy の accept-proxy、nginx の proxy_protocol、Gately Web サービスの「PROXY プロトコルを受信」）。転送先が対応していないと接続に失敗します。",
   "filterPlaceholder": "名前・グループ・ポート・転送先で検索",
-  "groupCount": "{count} 件のルール"
+  "groupCount": "{count} 件のルール",
+  "ipAccessNote": "UDP はパケットごとに判定するため、リスト変更後は既存セッションのパケットにも即座に反映されます。リストを編集しても待ち受けは中断しません。"
 }

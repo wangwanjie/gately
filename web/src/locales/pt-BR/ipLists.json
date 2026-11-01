@@ -1,7 +1,7 @@
 {
   "title": "Listas de IP assinadas",
   "lists": "Listas",
-  "help": "Baixe de uma URL faixas de IP por região, operadora ou lista de bloqueio, atualize periodicamente e use-as no controle de acesso por IP e nas regras de caminho do site. Um IP, CIDR ou intervalo início-fim por linha",
+  "help": "Baixe de uma URL faixas de IP por região, operadora ou lista de bloqueio, atualize periodicamente e use-as no controle de acesso por IP e nas regras de caminho do site. Um IP, CIDR ou intervalo início-fim por linha. Instâncias frps e o controle de acesso por IP das regras de encaminhamento de portas, roteamento por protocolo e STUN também podem usá-las",
   "empty": "Nenhuma lista de IP assinada",
   "refresh": "Atualizar",
   "deleteConfirm": "Excluir esta lista de IP?",

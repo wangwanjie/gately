@@ -45,6 +45,8 @@
             {{ t('stun.connStats', { active: r.state.stats.activeConns, total: r.state.stats.totalConns }) }}
             <div class="meta">↑ {{ formatBytes(r.state.stats.bytesIn) }} · ↓ {{ formatBytes(r.state.stats.bytesOut) }}</div>
           </Field>
+          <Field v-if="r.ipMode && !r.disableForward" :label="t('ipAccessEditor.title')">{{ r.ipMode === 'whitelist' ? t('ipAccessEditor.whitelist') : t('ipAccessEditor.blacklist') }}</Field>
+          <Field v-if="r.state.stats.denied" :label="t('ipAccessEditor.denied')" mono>{{ r.state.stats.denied }}</Field>
           <template v-if="!sorting && (r.enable && !moduleOff && (r.state.error || r.state.mapping))" #extra>
             <div v-if="r.state.error" class="err-line">{{ r.state.error }}</div>
             <div v-if="r.state.mapping" class="meta">{{ r.state.mapping }}</div>
@@ -94,6 +96,7 @@
               <el-form-item :label="t('stun.targetPort')" required>
                 <el-input-number v-model="editing.targetPort" :min="1" :max="65535" />
               </el-form-item>
+              <IPAccessEditor v-model:mode="editing.ipMode" v-model:list="editing.ipList" v-model:sets="editing.ipSets" :note="t('stun.ipAccessNote')" />
             </template>
             <el-form-item :label="t('common.remark')"><el-input v-model="editing.remark" /></el-form-item>
             <el-form-item :label="t('common.enable')"><el-switch v-model="editing.enable" /></el-form-item>
@@ -217,6 +220,7 @@ import CompactToggle from '../components/CompactToggle.vue'
 import EntityCard from '../components/EntityCard.vue'
 import GroupedList from '../components/GroupedList.vue'
 import GroupInput from '../components/GroupInput.vue'
+import IPAccessEditor from '../components/IPAccessEditor.vue'
 import ListTools from '../components/ListTools.vue'
 import SortCheck from '../components/SortCheck.vue'
 import SortMoves from '../components/SortMoves.vue'
@@ -266,6 +270,10 @@ interface Rule {
   script: string
   maxConnections: number
   udpSessionTimeout: number
+  // 内置转发的来源 IP 访问控制：ipMode 为 ''（关闭）、whitelist、blacklist；ipSets 为引用的订阅 IP 列表 key
+  ipMode: string
+  ipList: string[]
+  ipSets: string[]
   remark: string
 }
 
@@ -278,7 +286,8 @@ interface RuleView extends Rule {
     since?: string
     error?: string
     mapping?: string
-    stats: { activeConns: number; totalConns: number; bytesIn: number; bytesOut: number }
+    // denied 为不满足来源 IP 访问控制而被拒绝的次数（TCP 按连接、UDP 按数据包）
+    stats: { activeConns: number; totalConns: number; bytesIn: number; bytesOut: number; denied?: number }
   }
 }
 
@@ -375,6 +384,9 @@ function emptyRule(): Rule {
     script: '',
     maxConnections: 0,
     udpSessionTimeout: 0,
+    ipMode: '',
+    ipList: [],
+    ipSets: [],
     remark: '',
   }
 }
@@ -418,6 +430,10 @@ function openEditor(row?: RuleView) {
   if (row) {
     const { state: _s, ...rule } = row
     editing.value = JSON.parse(JSON.stringify(rule))
+    // 后端空名单返回 null，编辑时统一为数组
+    editing.value.ipMode = editing.value.ipMode ?? ''
+    editing.value.ipList = editing.value.ipList ?? []
+    editing.value.ipSets = editing.value.ipSets ?? []
   } else {
     editing.value = emptyRule()
   }

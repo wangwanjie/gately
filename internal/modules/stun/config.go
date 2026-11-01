@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/wangwanjie/gately/internal/crud"
+	"github.com/wangwanjie/gately/internal/iplist"
 	"github.com/wangwanjie/gately/internal/webhook"
 )
 
@@ -83,9 +84,12 @@ type Rule struct {
 	// Script 以 sh -c 执行，变量通过环境变量传入：ruleName time ip port ipAddr
 	Script string `json:"script"`
 
-	MaxConnections    int    `json:"maxConnections"`
-	UDPSessionTimeout int    `json:"udpSessionTimeout"`
-	Remark            string `json:"remark"`
+	MaxConnections    int `json:"maxConnections"`
+	UDPSessionTimeout int `json:"udpSessionTimeout"`
+	// Access 为内置转发的来源 IP 访问控制（白名单 / 黑名单），在连接目标之前判断；封禁表中的地址无论何种模式都会被拒绝。
+	// 修改名单时不重启穿透，公网端口保持不变
+	iplist.Access
+	Remark string `json:"remark"`
 }
 
 // Settings 是模块级配置。
@@ -231,6 +235,9 @@ func (r *Rule) Validate() error {
 	}
 	if r.ScriptEnable && strings.TrimSpace(r.Script) == "" {
 		return errors.New("已启用脚本但脚本内容为空")
+	}
+	if err := r.Access.Normalize(); err != nil {
+		return err
 	}
 	return r.Webhook.Validate()
 }

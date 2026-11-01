@@ -95,5 +95,6 @@
     "adb": "Klartext-Sitzungen von adb connect; drahtloses Debugging ab Android 11 nutzt TLS",
     "irc": "Klartext-IRC-Clients (sie senden zuerst CAP, PASS, NICK oder USER); für IRC über TLS eine TLS-Route verwenden"
   },
-  "routeMinecraftPlaceholder": "Serveradressen, eine pro Zeile: mc.example.com, *.example.com oder *. Leer = alle Minecraft-Verbindungen"
+  "routeMinecraftPlaceholder": "Serveradressen, eine pro Zeile: mc.example.com, *.example.com oder *. Leer = alle Minecraft-Verbindungen",
+  "ipAccessNote": "Wird vor der Protokollerkennung geprüft; abgewiesene Verbindungen werden nicht gelesen und nicht als Routentreffer gezählt. Das Bearbeiten der Liste unterbricht das Lauschen nicht."
 }

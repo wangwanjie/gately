@@ -1,7 +1,7 @@
 {
   "title": "Listas de IP suscritas",
   "lists": "Listas",
-  "help": "Descarga rangos de IP por provincia, operador o lista negra desde una URL, los actualiza periódicamente y permite usarlos en el control de acceso por IP y las reglas de ruta del sitio. Una IP, CIDR o rango inicio-fin por línea",
+  "help": "Descarga rangos de IP por provincia, operador o lista negra desde una URL, los actualiza periódicamente y permite usarlos en el control de acceso por IP y las reglas de ruta del sitio. Una IP, CIDR o rango inicio-fin por línea. Las instancias frps y el control de acceso por IP de las reglas de reenvío de puertos, enrutamiento por protocolo y STUN también pueden usarlas",
   "empty": "No hay listas de IP suscritas",
   "refresh": "Actualizar",
   "deleteConfirm": "¿Eliminar esta lista de IP?",

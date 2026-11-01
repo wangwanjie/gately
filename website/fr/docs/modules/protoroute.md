@@ -54,6 +54,7 @@ Ces connexions vont vers la cible par défaut : aucune route ne correspond ; les
 - Chaque connexion est analysée une seule fois : les requêtes suivantes sur la même connexion HTTP keep-alive vont au backend choisi la première fois ;
 - La carte de la règle indique combien de connexions chaque route et la cible par défaut ont reçues ; les entrées de débogage du journal d'exécution consignent le protocole, le SNI, l'ALPN ou le Host détecté pour chaque connexion ;
 - Les modifications des routes, de la cible par défaut et du délai de détection s'appliquent immédiatement sans arrêter l'écoute, et les connexions ouvertes sont conservées.
+- Chaque règle peut utiliser une liste d'autorisation ou de blocage par IP source (pouvant utiliser les listes d'IP abonnées des Services Web), vérifiée avant la détection du protocole : une connexion qui échoue est fermée sans lire de données et ne compte pas comme une correspondance de route ; les bannissements de la Prévention des intrusions passent en premier. Modifier la liste n'interrompt pas l'écoute et la carte de la règle affiche le nombre de refus. Le fonctionnement est le même que pour la [Redirection de ports](/fr/docs/modules/portforward#controle-d-acces-par-ip-source).
 
 ## Exemple : remplacer haproxy
 

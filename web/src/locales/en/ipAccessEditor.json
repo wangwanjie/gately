@@ -1,0 +1,16 @@
+{
+  "title": "IP access control",
+  "off": "Off",
+  "whitelist": "Allowlist",
+  "blacklist": "Blocklist",
+  "help": "Decides by source IP whether a client may connect, checked before the target is dialed. Addresses banned by Intrusion Prevention are always refused, even when they are on the allowlist. When a reverse proxy or another forwarder sits in front of the rule, the source seen is its address.",
+  "range": "IPs / subnets",
+  "rangePlaceholder": "One per line, e.g. 192.168.1.0/24",
+  "sets": "Subscribed lists",
+  "setsPlaceholder": "Pick subscribed IP lists (optional)",
+  "setsEmpty": "No subscribed lists yet; add them in the global settings of Web Services",
+  "setNotLoaded": "not loaded",
+  "setsHelp": "Checked together with the ranges above; matching any of them counts as being on the list. A refreshed subscription takes effect at once, the rule keeps running",
+  "setsWhitelistHelp": "Checked together with the ranges above; matching any of them allows the connection. A refreshed subscription takes effect at once, the rule keeps running. Lists are downloaded on schedule by the Web Services module and count as empty until the first download succeeds",
+  "denied": "Refused"
+}

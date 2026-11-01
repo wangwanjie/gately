@@ -95,5 +95,6 @@
     "adb": "Sessions adb connect en clair ; le débogage sans fil depuis Android 11 utilise TLS",
     "irc": "Clients IRC en clair (ils envoient d’abord CAP, PASS, NICK ou USER) ; utilisez une route TLS pour l’IRC sur TLS"
   },
-  "routeMinecraftPlaceholder": "Adresses du serveur, une par ligne : mc.example.com, *.example.com ou *. Laisser vide pour toutes les connexions Minecraft"
+  "routeMinecraftPlaceholder": "Adresses du serveur, une par ligne : mc.example.com, *.example.com ou *. Laisser vide pour toutes les connexions Minecraft",
+  "ipAccessNote": "Vérifié avant la détection du protocole ; les connexions refusées ne sont pas lues et ne comptent pas comme des correspondances de route. Modifier la liste n'interrompt pas l'écoute."
 }

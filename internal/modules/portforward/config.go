@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/wangwanjie/gately/internal/crud"
+	"github.com/wangwanjie/gately/internal/iplist"
 	"github.com/wangwanjie/gately/internal/l4proxy"
 )
 
@@ -35,7 +36,9 @@ type Rule struct {
 	// （haproxy accept-proxy、nginx proxy_protocol、Gately Web 服务"接收 PROXY 协议"）。目标必须支持，否则连接会被拒绝。
 	ProxyProtocol string `json:"proxyProtocol"`
 	// Mode 只用于拒绝旧版接口提交的分流规则：SNI 与协议分流已移到独立的「协议分流」模块，这里必须为空
-	Mode   string `json:"mode,omitempty"`
+	Mode string `json:"mode,omitempty"`
+	// Access 为来源 IP 访问控制（白名单 / 黑名单），在连接目标之前判断；封禁表中的地址无论何种模式都会被拒绝
+	iplist.Access
 	Remark string `json:"remark"`
 }
 
@@ -121,5 +124,5 @@ func (r *Rule) Validate() error {
 	if r.MaxConnections < 0 || r.UDPSessionTimeout < 0 {
 		return fmt.Errorf("连接数与超时不能为负数")
 	}
-	return nil
+	return r.Access.Normalize()
 }

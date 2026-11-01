@@ -1279,6 +1279,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `enable` | boolean |
 | `group` | string |
+| `ipList` | Массив из string |
+| `ipMode` | string |
+| `ipSets` | Массив из string |
 | `key` | string |
 | `listenAddress` | string |
 | `listenPorts` | string |
@@ -1310,6 +1313,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `enable` | boolean |
 | `group` | string |
+| `ipList` | Массив из string |
+| `ipMode` | string |
+| `ipSets` | Массив из string |
 | `key` | string |
 | `listenAddress` | string |
 | `listenPorts` | string |
@@ -1438,6 +1444,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `enable` | boolean |
 | `group` | string |
 | `heartbeatInterval` | integer |
+| `ipList` | Массив из string |
+| `ipMode` | string |
+| `ipSets` | Массив из string |
 | `keepAliveServers` | Массив из string |
 | `key` | string |
 | `localPort` | integer |

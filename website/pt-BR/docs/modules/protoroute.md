@@ -54,6 +54,7 @@ Estas conexões vão para o destino padrão: nenhuma rota corresponde; os dados 
 - Cada conexão é detectada uma única vez, então as requisições seguintes na mesma conexão HTTP keep-alive vão para o backend escolhido na primeira vez;
 - O cartão da regra mostra quantas conexões cada rota e o destino padrão receberam; as entradas de depuração do log de execução registram o protocolo, o SNI, o ALPN ou o Host detectado em cada conexão;
 - Alterações em rotas, destino padrão e tempo de detecção valem na hora, sem parar a escuta, e as conexões abertas continuam.
+- Cada regra pode usar uma lista de permissões ou de bloqueio por IP de origem (que pode usar as listas de IP assinadas dos Serviços Web), verificada antes de identificar o protocolo: uma conexão reprovada é fechada sem ler dados e não conta como acerto de rota; os banimentos da Prevenção de intrusão têm prioridade. Editar a lista não interrompe a escuta, e o cartão da regra mostra o número de recusas. Funciona como no [Redirecionamento de portas](/pt-BR/docs/modules/portforward#controle-de-acesso-por-ip-de-origem).
 
 ## Exemplo: substituindo o haproxy
 

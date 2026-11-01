@@ -42,5 +42,6 @@
   "proxyProtocolOff": "不傳送",
   "proxyProtocolHelp": "僅 TCP。連線到目標後先傳送 PROXY 協定標頭，把真實用戶端位址告訴下游（haproxy 的 accept-proxy、nginx 的 proxy_protocol、Gately Web 服務的「接收 PROXY 協定」）。目標不支援時連線會失敗。",
   "filterPlaceholder": "搜尋名稱、分組、連接埠或目標",
-  "groupCount": "{count} 條規則"
+  "groupCount": "{count} 條規則",
+  "ipAccessNote": "UDP 依封包判斷，名單變更後既有工作階段的封包也立即依新名單處理。修改名單不會中斷監聽。"
 }

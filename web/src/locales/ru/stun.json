@@ -86,5 +86,6 @@
   "reconnected": "Переподключено",
   "moduleEnabled": "Модуль STUN-обхода включён",
   "settingsSaved": "Сохранено; правила перезапущены",
-  "scriptPlaceholder": "например /data/scripts/notify.sh --rule \"${'{'}ruleName{'}'}\" --port \"${'{'}port{'}'}\""
+  "scriptPlaceholder": "например /data/scripts/notify.sh --rule \"${'{'}ruleName{'}'}\" --port \"${'{'}port{'}'}\"",
+  "ipAccessNote": "Действует только на встроенную переадресацию; STUN-запросы и проверка канала не затрагиваются. Правка списка не запускает проброс заново, публичный порт сохраняется; UDP проверяется для каждого пакета."
 }

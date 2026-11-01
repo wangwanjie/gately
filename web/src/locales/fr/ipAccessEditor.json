@@ -1,0 +1,16 @@
+{
+  "title": "Contrôle d'accès IP",
+  "off": "Désactivé",
+  "whitelist": "Liste d'autorisation",
+  "blacklist": "Liste de blocage",
+  "help": "Décide d'après l'IP source si un client peut se connecter, vérifié avant la connexion à la cible. Les adresses bannies par la Prévention des intrusions sont toujours refusées, même si elles figurent dans la liste d'autorisation. Si un proxy inverse ou un autre relais se trouve devant la règle, la source vue est son adresse.",
+  "range": "IP / sous-réseaux",
+  "rangePlaceholder": "Une par ligne, par ex. 192.168.1.0/24",
+  "sets": "Listes abonnées",
+  "setsPlaceholder": "Choisir des listes d'IP abonnées (facultatif)",
+  "setsEmpty": "Aucune liste abonnée pour l'instant ; ajoutez-en dans les paramètres globaux des Services Web",
+  "setNotLoaded": "non chargée",
+  "setsHelp": "Vérifiées avec les plages ci-dessus ; correspondre à l'une d'elles revient à figurer dans la liste. Une liste actualisée s'applique immédiatement, sans redémarrer la règle",
+  "setsWhitelistHelp": "Vérifiées avec les plages ci-dessus ; correspondre à l'une d'elles autorise la connexion. Une liste actualisée s'applique immédiatement, sans redémarrer la règle. Les listes sont téléchargées périodiquement par le module Services Web et comptent comme vides jusqu'au premier téléchargement réussi",
+  "denied": "Refusés"
+}

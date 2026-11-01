@@ -226,6 +226,10 @@ func (d *udpDispatcher) readLoop(ctx context.Context) {
 		if d.r.rule.DisableForward || banlist.Default.BannedAddr(from) {
 			continue
 		}
+		// 再按来源 IP 名单判断；每个数据包都判断，名单变化后已有会话的上行也立即被拦下
+		if !d.r.allows(from) {
+			continue
+		}
 		d.forward(ctx, from, pkt)
 	}
 }

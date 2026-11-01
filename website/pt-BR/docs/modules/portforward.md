@@ -11,6 +11,7 @@ Encaminhe uma porta em que o Gately escuta para outro dispositivo ou serviço.
 - Limite de conexões;
 - Estatísticas de tráfego e logs de execução;
 - Envio do protocolo PROXY (v1 / v2) ao destino, entregando ao serviço seguinte o endereço real do cliente;
+- Controle de acesso por IP de origem (lista de permissões / de bloqueio), que pode usar as listas de IP assinadas dos Serviços Web;
 - Para que vários serviços compartilhem uma porta como a 443 por domínio ou protocolo, use o [Roteamento por protocolo](/pt-BR/docs/modules/protoroute).
 
 ## Protocolo PROXY
@@ -24,6 +25,18 @@ O destino precisa ter a opção de recebimento correspondente ativada, caso cont
 - Serviço Web do Gately: ative "Aceitar protocolo PROXY" no listener e adicione a origem às origens PROXY confiáveis.
 
 A opção vale apenas para TCP; os redirecionamentos UDP não são afetados.
+
+## Controle de acesso por IP de origem
+
+Cada regra pode usar uma lista de permissões ou de bloqueio que decide pelo IP de origem se o tráfego é encaminhado. A lista é formada por IPs / sub-redes digitados à mão e pelas listas de IP assinadas dos Serviços Web; corresponder a qualquer um conta como estar na lista. O módulo Serviços Web baixa as listas assinadas periodicamente, uma atualização vale na hora e a lista conta como vazia até o primeiro download bem-sucedido.
+
+- A verificação acontece antes de conectar ao destino: uma conexão TCP reprovada é fechada, e o UDP é verificado por pacote, então pacotes reprovados são descartados e os pacotes de envio de sessões existentes seguem a lista alterada na hora;
+- Os banimentos da Prevenção de intrusão têm prioridade: um endereço banido é recusado mesmo dentro de uma sub-rede permitida;
+- Editar a lista não interrompe a escuta, e conexões TCP estabelecidas não são afetadas;
+- O cartão da regra mostra quantas vezes origens foram recusadas desde que o Gately iniciou (conexões no TCP, pacotes no UDP), e o nível de depuração do log registra cada recusa;
+- Quando há um proxy reverso ou outro encaminhamento antes da regra, a origem vista pelo Gately é o endereço dele.
+
+Ao importar do Lucky, o modo de segurança da regra também é convertido: o modo lista de permissões usa os IPs / sub-redes da "lista branca" do filtro de IP do Lucky, e o modo de bloqueio usa a "lista negra" e a "lista negra global". Envie `lucky_ipfilter.lkcf` (ou um backup completo) na mesma importação; entradas de banco de IPs, registro automático e faixas de endereços não podem ser importadas, e o resultado da importação avisa.
 
 ## Cenários típicos
 

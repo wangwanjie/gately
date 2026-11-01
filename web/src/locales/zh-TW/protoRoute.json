@@ -95,5 +95,6 @@
     "adb": "adb connect 的明文連線；Android 11 起的無線偵錯使用 TLS",
     "irc": "明文 IRC 用戶端（先送出 CAP、PASS、NICK 或 USER）；使用 TLS 的 IRC 請用 TLS 路由"
   },
-  "routeMinecraftPlaceholder": "伺服器位址，每行一個：mc.example.com、*.example.com 或 *；留空比對全部 Minecraft 連線"
+  "routeMinecraftPlaceholder": "伺服器位址，每行一個：mc.example.com、*.example.com 或 *；留空比對全部 Minecraft 連線",
+  "ipAccessNote": "在識別協定之前判斷，被拒絕的連線不會讀取資料，也不計入路由命中。修改名單不會中斷監聽。"
 }

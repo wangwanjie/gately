@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/wangwanjie/gately/internal/events"
+	"github.com/wangwanjie/gately/internal/iplist"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/script"
 	"github.com/wangwanjie/gately/internal/stunaddr"
@@ -41,6 +42,8 @@ type Stats struct {
 	TotalConns  int64 `json:"totalConns"`
 	BytesIn     int64 `json:"bytesIn"`
 	BytesOut    int64 `json:"bytesOut"`
+	// Denied 为不满足来源 IP 访问控制而被拒绝的次数：TCP 按连接、UDP 按数据包计数
+	Denied int64 `json:"denied"`
 }
 
 // RuleState 是规则运行状态。
@@ -57,7 +60,7 @@ type RuleState struct {
 }
 
 type counters struct {
-	active, total, in, out atomic.Int64
+	active, total, in, out, denied atomic.Int64
 }
 
 // runner 管理一条规则的穿透会话，失败后按配置重试。
@@ -68,6 +71,8 @@ type runner struct {
 	cancel   context.CancelFunc
 	done     chan struct{}
 	stats    counters
+	// filter 为内置转发的来源 IP 访问控制，修改名单时原地替换（见 setAccess），nil 表示不限制
+	filter atomic.Pointer[iplist.Filter]
 
 	mu    sync.Mutex
 	state RuleState
@@ -80,7 +85,25 @@ type runner struct {
 }
 
 func newRunner(rule Rule, settings Settings, log *logbuf.Logger) *runner {
-	return &runner{rule: rule, settings: settings, log: log, port: rule.LocalPort, state: RuleState{Status: StatusStopped}}
+	r := &runner{rule: rule, settings: settings, log: log, port: rule.LocalPort, state: RuleState{Status: StatusStopped}}
+	r.filter.Store(rule.Access.Compile())
+	return r
+}
+
+// setAccess 替换来源 IP 访问控制，新连接与之后的 UDP 数据包立即按新名单判断，穿透会话不中断。
+// 只更新 filter：rule 由转发协程无锁读取，运行中不能修改，rule.Access 保留启动时的值，由调用方用配置中的规则比较。
+func (r *runner) setAccess(a iplist.Access) {
+	r.filter.Store(a.Compile())
+	r.log.Infof("来源 IP 访问控制已更新，穿透未中断")
+}
+
+// allows 判断来源能否使用内置转发。
+func (r *runner) allows(addr net.Addr) bool {
+	if r.filter.Load().Allows(addr) {
+		return true
+	}
+	r.stats.denied.Add(1)
+	return false
 }
 
 func (r *runner) start(parent context.Context) {
@@ -110,6 +133,7 @@ func (r *runner) snapshot() RuleState {
 		TotalConns:  r.stats.total.Load(),
 		BytesIn:     r.stats.in.Load(),
 		BytesOut:    r.stats.out.Load(),
+		Denied:      r.stats.denied.Load(),
 	}
 	return s
 }

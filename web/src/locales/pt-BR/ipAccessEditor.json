@@ -1,0 +1,16 @@
+{
+  "title": "Controle de acesso por IP",
+  "off": "Desligado",
+  "whitelist": "Lista de permissões",
+  "blacklist": "Lista de bloqueio",
+  "help": "Decide pelo IP de origem se um cliente pode se conectar, verificado antes de conectar ao destino. Endereços banidos pela Prevenção de intrusão são sempre recusados, mesmo na lista de permissões. Quando há um proxy reverso ou outro encaminhamento antes da regra, a origem vista é o endereço dele.",
+  "range": "IPs / sub-redes",
+  "rangePlaceholder": "Um por linha, ex.: 192.168.1.0/24",
+  "sets": "Listas assinadas",
+  "setsPlaceholder": "Escolha listas de IP assinadas (opcional)",
+  "setsEmpty": "Ainda não há listas assinadas; adicione-as nas configurações globais dos Serviços Web",
+  "setNotLoaded": "não carregada",
+  "setsHelp": "Verificadas junto com as faixas acima; corresponder a qualquer uma conta como estar na lista. Uma assinatura atualizada vale na hora, sem reiniciar a regra",
+  "setsWhitelistHelp": "Verificadas junto com as faixas acima; corresponder a qualquer uma permite a conexão. Uma assinatura atualizada vale na hora, sem reiniciar a regra. As listas são baixadas periodicamente pelo módulo Serviços Web e contam como vazias até o primeiro download bem-sucedido",
+  "denied": "Recusados"
+}
