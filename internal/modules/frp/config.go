@@ -4,11 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"slices"
 	"strconv"
 	"strings"
 
 	"github.com/wangwanjie/gately/internal/binstall"
 	"github.com/wangwanjie/gately/internal/crud"
+	"github.com/wangwanjie/gately/internal/iplist"
 )
 
 // 代理类型。
@@ -57,6 +59,13 @@ type ServerSettings struct {
 	DashboardAddr string `json:"dashboardAddr"`
 	DashboardUser string `json:"dashboardUser"`
 	DashboardPwd  string `json:"dashboardPwd"`
+
+	// IPMode 为 frpc 登录（连接绑定端口）的来源 IP 访问控制：""（关闭）、whitelist、blacklist；
+	// 由 Gately 作为 frps 的登录插件判断，封禁表中的地址无论何种模式都会被拒绝
+	IPMode string   `json:"ipMode"`
+	IPList []string `json:"ipList"`
+	// IPSets 为引用的订阅 IP 列表 key（在 Web 服务的 IP 列表中维护），与 IPList 一起参与判断
+	IPSets []string `json:"ipSets"`
 }
 
 // Client 是一个 frpc 实例：连接一台 frps，运行一个独立的 frpc 进程，代理通过 Proxy.Client 归属到实例。
@@ -220,6 +229,34 @@ func (s *ServerSettings) Validate() error {
 	}
 	if s.DashboardPort != 0 && (s.DashboardUser == "" || s.DashboardPwd == "") {
 		return errors.New("启用控制台时需要填写用户名和密码")
+	}
+	return s.validateAccess()
+}
+
+// validateAccess 校验并规范化来源 IP 访问控制。
+func (s *ServerSettings) validateAccess() error {
+	if !iplist.ValidMode(s.IPMode) {
+		return fmt.Errorf("未知的访问控制模式 %q", s.IPMode)
+	}
+	var list []string
+	for _, x := range s.IPList {
+		if x = strings.TrimSpace(x); x != "" {
+			list = append(list, x)
+		}
+	}
+	s.IPList = list
+	if _, err := iplist.ParsePrefixes(s.IPList); err != nil {
+		return err
+	}
+	var sets []string
+	for _, k := range s.IPSets {
+		if k = strings.TrimSpace(k); k != "" && !slices.Contains(sets, k) {
+			sets = append(sets, k)
+		}
+	}
+	s.IPSets = sets
+	if s.IPMode == iplist.ModeWhitelist && len(s.IPList) == 0 && len(s.IPSets) == 0 {
+		return errors.New("白名单模式需要填写 IP / 网段或选择订阅列表")
 	}
 	return nil
 }

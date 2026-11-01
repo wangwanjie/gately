@@ -20,7 +20,7 @@ fail2ban のような侵入防御です。ログからブルートフォース�
 | Linux（root または `CAP_NET_ADMIN`、nftables をインストール済み） | SSH、他のプログラム、Docker コンテナや LAN 機器へ転送される通信も含め、すべてカーネルで破棄 | カーネルで処理し、SYN だけのスキャンも検出 | 利用可 |
 | Docker（host ネットワーク + `cap_add: NET_ADMIN`） | 同上。ルールはホストに書き込まれます | 同上 | 利用可 |
 | fnOS パッケージ、OpenWrt 22.03 以降 | 同上（root で動作し、nftables は標準搭載） | 同上 | 利用可 |
-| その他（Windows、macOS、FreeBSD、nftables や権限のない Linux） | Gately 自身のサービス（ポート転送、Web サービス、STUN、WebDAV、FTP、SMB、管理画面）にのみ適用 | Gately が待ち受け、ハンドシェイクを完了した接続のみ検出 | 利用不可 |
+| その他（Windows、macOS、FreeBSD、nftables や権限のない Linux） | Gately 自身のサービス（ポート転送、Web サービス、STUN、WebDAV、FTP、SMB、frps ログイン、管理画面）にのみ適用 | Gately が待ち受け、ハンドシェイクを完了した接続のみ検出 | 利用不可 |
 
 ページ上部にファイアウォール同期の状態が表示され、利用できない場合は原因と対処方法が表示されます。
 

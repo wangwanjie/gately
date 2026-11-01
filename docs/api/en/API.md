@@ -1005,6 +1005,9 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `dashboardUser` | string |
 | `enable` | boolean |
 | `group` | string |
+| `ipList` | Array of string |
+| `ipMode` | string |
+| `ipSets` | Array of string |
 | `key` | string |
 | `name` | string |
 | `proxyBindAddr` | string |
@@ -1025,6 +1028,9 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `dashboardPort` | integer |
 | `dashboardPwd` | string |
 | `dashboardUser` | string |
+| `ipList` | Array of string |
+| `ipMode` | string |
+| `ipSets` | Array of string |
 | `proxyBindAddr` | string |
 | `subdomainHost` | string |
 | `token` | string |

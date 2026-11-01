@@ -103,11 +103,21 @@ func (m *Module) ipListStateLocked(key string) *ipListState {
 	return st
 }
 
-// loadIPListsLocked 启动时载入缓存的列表内容。
+// loadIPListsLocked 启动时载入缓存的列表内容，并发布列表目录。
 func (m *Module) loadIPListsLocked() {
 	for _, l := range m.cfg.IPLists {
 		m.loadIPListLocked(l)
 	}
+	m.publishIPListCatalogLocked()
+}
+
+// publishIPListCatalogLocked 把列表目录发布到注册表，供 frp 等其它模块校验引用。
+func (m *Module) publishIPListCatalogLocked() {
+	list := make([]iplist.Info, 0, len(m.cfg.IPLists))
+	for _, l := range m.cfg.IPLists {
+		list = append(list, iplist.Info{Key: l.Key, Name: l.Name})
+	}
+	iplist.Default.SetCatalog(list)
 }
 
 // loadIPListLocked 从缓存文件载入单个列表；停用的列表从注册表移除，引用它的规则按空列表处理。
@@ -244,7 +254,7 @@ func (m *Module) downloadIPList(ctx context.Context, l IPList) (*iplist.Set, int
 	return set, set.Len(), nil
 }
 
-// ipListUsersLocked 返回引用列表的站点名称。
+// ipListUsersLocked 返回引用列表的站点名称，以及其它模块登记的引用方（如 frps 实例）。
 func (m *Module) ipListUsersLocked(key string) []string {
 	var out []string
 	for _, l := range m.cfg.Listeners {
@@ -258,7 +268,7 @@ func (m *Module) ipListUsersLocked(key string) []string {
 			}
 		}
 	}
-	return out
+	return append(out, iplist.Default.Users(key)...)
 }
 
 // listenerSiteLabel 返回“监听名 / 站点名”形式的站点描述。
@@ -313,6 +323,7 @@ func (m *Module) registerIPLists(r module.Router) {
 		},
 		View: m.viewIPListLocked,
 		Changed: func(key string) {
+			m.publishIPListCatalogLocked()
 			l := m.findIPListLocked(key)
 			if l == nil {
 				return
@@ -330,11 +341,12 @@ func (m *Module) registerIPLists(r module.Router) {
 		},
 		BeforeRemove: func(l *IPList) error {
 			if users := m.ipListUsersLocked(l.Key); len(users) > 0 {
-				return fmt.Errorf("IP 列表仍被站点 %s 引用，请先在站点中移除", strings.Join(users, "、"))
+				return fmt.Errorf("IP 列表仍被 %s 引用，请先移除引用", strings.Join(users, "、"))
 			}
 			return nil
 		},
 		Removed: func(key string) {
+			m.publishIPListCatalogLocked()
 			iplist.Default.Store(key, nil)
 			delete(m.ipListStates, key)
 			_ = os.Remove(m.ipListPath(key))

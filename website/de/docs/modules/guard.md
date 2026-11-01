@@ -20,7 +20,7 @@ Einbruchschutz im Stil von fail2ban: Gately erkennt Brute-Force-Versuche in Prot
 | Linux (root oder `CAP_NET_ADMIN`, nftables installiert) | Der gesamte Verkehr wird im Kernel verworfen, auch SSH, andere Programme und an Docker-Container und LAN-Geräte weitergeleiteter Verkehr | Vom Kernel behandelt, erkennt auch reine SYN-Scans | Verfügbar |
 | Docker (Host-Netzwerk + `cap_add: NET_ADMIN`) | Wie oben, die Regeln werden auf dem Host angelegt | Wie oben | Verfügbar |
 | fnOS-Paket, OpenWrt ab 22.03 | Wie oben (läuft als root, nftables ist enthalten) | Wie oben | Verfügbar |
-| Alle anderen Fälle (Windows, macOS, FreeBSD, Linux ohne nftables oder Berechtigung) | Nur Gatelys eigene Dienste: Portweiterleitung, Webdienst, STUN, WebDAV, FTP, SMB und Verwaltungsoberfläche | Gately lauscht selbst, erkennt nur Verbindungen mit abgeschlossenem Handshake | Nicht verfügbar |
+| Alle anderen Fälle (Windows, macOS, FreeBSD, Linux ohne nftables oder Berechtigung) | Nur Gatelys eigene Dienste: Portweiterleitung, Webdienst, STUN, WebDAV, FTP, SMB, frps-Anmeldungen und Verwaltungsoberfläche | Gately lauscht selbst, erkennt nur Verbindungen mit abgeschlossenem Handshake | Nicht verfügbar |
 
 Oben auf der Seite stehen der Status der Firewall-Synchronisierung und, falls sie nicht verfügbar ist, Grund und Abhilfe.
 

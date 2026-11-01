@@ -2,6 +2,7 @@ package frp
 
 import (
 	"errors"
+	"reflect"
 	"slices"
 	"strings"
 	"testing"
@@ -178,7 +179,7 @@ func TestImportRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if *sres.Server != s {
+	if !reflect.DeepEqual(*sres.Server, s) {
 		t.Errorf("服务端设置不一致: %+v", *sres.Server)
 	}
 }
@@ -216,7 +217,7 @@ func TestImportServerBindAddr(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if *res.Server != s {
+		if !reflect.DeepEqual(*res.Server, s) {
 			t.Errorf("回导不一致: %+v -> %+v", s, *res.Server)
 		}
 	}

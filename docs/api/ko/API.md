@@ -1005,6 +1005,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `dashboardUser` | string |
 | `enable` | boolean |
 | `group` | string |
+| `ipList` | Array of string |
+| `ipMode` | string |
+| `ipSets` | Array of string |
 | `key` | string |
 | `name` | string |
 | `proxyBindAddr` | string |
@@ -1025,6 +1028,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `dashboardPort` | integer |
 | `dashboardPwd` | string |
 | `dashboardUser` | string |
+| `ipList` | Array of string |
+| `ipMode` | string |
+| `ipSets` | Array of string |
 | `proxyBindAddr` | string |
 | `subdomainHost` | string |
 | `token` | string |

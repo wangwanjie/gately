@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"sync"
 
@@ -16,6 +17,7 @@ import (
 	"github.com/wangwanjie/gately/internal/crud"
 	"github.com/wangwanjie/gately/internal/fsperm"
 	"github.com/wangwanjie/gately/internal/httpx"
+	"github.com/wangwanjie/gately/internal/iplist"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
 	"github.com/wangwanjie/gately/internal/proc"
@@ -57,6 +59,8 @@ type Module struct {
 	// httpClient 返回下载程序使用的 HTTP 客户端，由框架按“更新代理”设置注入
 	httpClient func() *http.Client
 	install    *binstall.Installer
+	// accessState 为 frps 登录的来源 IP 访问控制（插件端点、规则快照与拒绝计数）
+	accessState
 }
 
 // New 创建模块。
@@ -103,6 +107,8 @@ func (m *Module) Init(env module.Env) error {
 		m.logs.Logger("frp").Warnf("已忽略 %d 个所属 frpc 实例不存在的代理", n)
 	}
 	m.cfg.fillDefaults()
+	// 先发布一次，Web 服务的 IP 列表页在模块启动前也能看到 frps 的引用
+	m.publishAccessLocked()
 	return nil
 }
 
@@ -165,7 +171,8 @@ func (c *fileConfig) migrateLegacy() bool {
 		if cur.DashboardAddr == "" {
 			cur.DashboardAddr = def.DashboardAddr
 		}
-		if len(c.Servers) == 0 && (ls.Enable || cur != def) {
+		// 旧版配置没有访问控制字段，切片均为 nil，可直接按值比较
+		if len(c.Servers) == 0 && (ls.Enable || !reflect.DeepEqual(cur, def)) {
 			c.Servers = append(c.Servers, Server{Key: crud.NewKey(), Name: binServer, Enable: ls.Enable, ServerSettings: cur})
 		}
 		c.LegacyServer = nil
@@ -197,6 +204,15 @@ func (m *Module) Start(context.Context) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.started = true
+	if m.gate == nil {
+		g, err := startLoginGate(m)
+		if err != nil {
+			m.gateErr = err.Error()
+			m.logs.Logger("frp").Errorf("启动 frps 登录检查端点失败: %v", err)
+		} else {
+			m.gate, m.gateErr = g, ""
+		}
+	}
 	m.syncLocked(true)
 	m.cleanupConfigFilesLocked()
 	return nil
@@ -214,9 +230,15 @@ func (m *Module) Stop() error {
 		runs = append(runs, rt)
 	}
 	m.clients, m.servers = map[string]*instRuntime{}, map[string]*instRuntime{}
+	gate := m.gate
+	m.gate = nil
 	m.mu.Unlock()
 	for _, rt := range runs {
 		rt.sup.Stop()
+	}
+	// frps 全部停止后再关闭登录检查端点
+	if gate != nil {
+		gate.close()
 	}
 	return nil
 }
@@ -325,11 +347,30 @@ func (m *Module) clientContent(c *Client) string {
 }
 
 // serverContent 返回 frps 实例应运行的配置内容，停用或模块未启动时为空。
-func (m *Module) serverContent(s *Server) string {
+// 配置末尾追加 Gately 的登录插件，让 frpc 登录遵守封禁表与实例的来源 IP 访问控制。
+// 登录检查端点不可用时，设置了访问控制的实例不启动并返回错误，避免名单失效后放行所有来源。
+func (m *Module) serverContent(s *Server) (string, error) {
 	if !m.started || !s.Enable {
-		return ""
+		return "", nil
 	}
-	return ServerTOML(s.ServerSettings)
+	content := ServerTOML(s.ServerSettings)
+	if m.gate == nil {
+		if s.IPMode != iplist.ModeOff {
+			return "", fmt.Errorf("登录检查端点未启动，无法应用 IP 访问控制: %s", m.gateErr)
+		}
+		return content, nil
+	}
+	return content + m.gate.pluginTOML(s.Key), nil
+}
+
+// runServerLocked 按配置启停 frps 实例，内容无法生成时停止实例并记录原因。调用方持有 mu。
+func (m *Module) runServerLocked(s *Server, force bool) {
+	content, err := m.serverContent(s)
+	m.runInstance(m.servers, binServer, s.Key, s.Name, content, force)
+	if err != nil {
+		m.servers[s.Key].err = err.Error()
+		m.logs.Logger(logSource(binServer, s.Name)).Errorf("%v", err)
+	}
 }
 
 // applyClientLocked 重启指定 frpc 实例；实例已删除时停止并清理。调用方持有 mu。
@@ -345,12 +386,13 @@ func (m *Module) applyClientLocked(key string) {
 
 // applyServerLocked 重启指定 frps 实例；实例已删除时停止并清理。调用方持有 mu。
 func (m *Module) applyServerLocked(key string) {
+	m.publishAccessLocked()
 	s := m.findServer(key)
 	if s == nil {
 		m.dropLocked(m.servers, binServer, key)
 		return
 	}
-	m.runInstance(m.servers, binServer, key, s.Name, m.serverContent(s), true)
+	m.runServerLocked(s, true)
 }
 
 // syncLocked 让全部实例与配置一致：force 为 true 时全部重启，否则只重启配置内容有变化的实例，
@@ -371,11 +413,12 @@ func (m *Module) syncLocked(force bool) {
 			m.dropLocked(m.clients, binClient, key)
 		}
 	}
+	m.publishAccessLocked()
 	keep = map[string]bool{}
 	for i := range m.cfg.Servers {
 		s := &m.cfg.Servers[i]
 		keep[s.Key] = true
-		m.runInstance(m.servers, binServer, s.Key, s.Name, m.serverContent(s), force)
+		m.runServerLocked(s, force)
 	}
 	for key := range m.servers {
 		if !keep[key] {
@@ -471,6 +514,8 @@ type ClientView struct {
 type ServerView struct {
 	Server
 	InstanceState
+	// Rejected 为 Gately 启动以来被拒绝的 frpc 登录次数（封禁或不满足来源 IP 访问控制）
+	Rejected uint64 `json:"rejected"`
 }
 
 func stateOf(runs map[string]*instRuntime, key string) InstanceState {
@@ -492,7 +537,7 @@ func (m *Module) clientView(c *Client) ClientView {
 }
 
 func (m *Module) serverView(s *Server) ServerView {
-	v := ServerView{Server: *s, InstanceState: stateOf(m.servers, s.Key)}
+	v := ServerView{Server: *s, InstanceState: stateOf(m.servers, s.Key), Rejected: m.rejectedCount(s.Key)}
 	v.Token, v.DashboardPwd = crud.Mask(v.Token), crud.Mask(v.DashboardPwd)
 	return v
 }
@@ -554,6 +599,7 @@ func (m *Module) Routes(r module.Router) {
 		Enabled:  func(s *Server) *bool { return &s.Enable },
 		Group:    func(s *Server) *string { return &s.Group },
 		Validate: func(s *Server) error { return s.Validate() },
+		Check:    checkIPSets,
 		Merge: func(old, updated *Server) {
 			crud.KeepSecret(old.Token, &updated.Token)
 			crud.KeepSecret(old.DashboardPwd, &updated.DashboardPwd)
@@ -563,7 +609,10 @@ func (m *Module) Routes(r module.Router) {
 			return map[string]string{"token": s.Token, "dashboardPwd": s.DashboardPwd}
 		},
 		Changed: m.applyServerLocked,
-		Removed: func(key string) { m.dropLocked(m.servers, binServer, key) },
+		Removed: func(key string) {
+			m.publishAccessLocked()
+			m.dropLocked(m.servers, binServer, key)
+		},
 	}
 	servers.Register(r, "/servers")
 	proxies := &crud.Collection[Proxy]{

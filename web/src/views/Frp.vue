@@ -125,6 +125,8 @@
                   <Field v-if="s.vhostHttpsPort" :label="t('frp.httpsPort')" mono>{{ s.vhostHttpsPort }}</Field>
                   <Field v-if="s.subdomainHost" :label="t('frp.subdomainHost')" mono>{{ s.subdomainHost }}</Field>
                   <Field v-if="s.allowPorts" :label="t('frp.allowPorts')" mono>{{ s.allowPorts }}</Field>
+                  <Field v-if="s.ipMode" :label="t('frp.ipAccess')">{{ s.ipMode === 'whitelist' ? t('frp.ipWhitelist') : t('frp.ipBlacklist') }}</Field>
+                  <Field v-if="s.rejected" :label="t('frp.loginRejected')" mono>{{ s.rejected }}</Field>
                   <Field v-if="s.dashboardPort" :label="t('frp.dashboard')" mono>{{ hostPort(s.dashboardAddr, s.dashboardPort) }}</Field>
                   <template v-if="sorting" #actions>
                     <SortMoves :gl="glServers" :it="it" />
@@ -224,6 +226,28 @@
         <el-form-item :label="t('frp.allowPorts')">
           <el-input v-model="editingServer.allowPorts" :placeholder="t('frp.allowPortsPlaceholder')" class="mono" />
         </el-form-item>
+        <el-form-item :label="t('frp.ipAccess')">
+          <el-radio-group v-model="editingServer.ipMode">
+            <el-radio-button value="">{{ t('frp.ipOff') }}</el-radio-button>
+            <el-radio-button value="whitelist">{{ t('frp.ipWhitelist') }}</el-radio-button>
+            <el-radio-button value="blacklist">{{ t('frp.ipBlacklist') }}</el-radio-button>
+          </el-radio-group>
+          <div class="form-help">{{ t('frp.ipAccessHelp') }}</div>
+        </el-form-item>
+        <template v-if="editingServer.ipMode">
+          <el-form-item :label="t('frp.ipRange')">
+            <el-input v-model="ipText" type="textarea" :rows="3" class="mono" :placeholder="t('frp.ipRangePlaceholder')" />
+          </el-form-item>
+          <el-form-item :label="t('frp.ipSets')">
+            <el-select v-model="editingServer.ipSets" multiple filterable :placeholder="t('frp.ipSetsPlaceholder')" :no-data-text="t('frp.ipSetsEmpty')" class="w-full">
+              <el-option v-for="o in ipLists" :key="o.key" :label="o.name" :value="o.key">
+                <span>{{ o.name }}</span>
+                <span v-if="!o.loaded" class="opt-warn">{{ t('frp.ipSetNotLoaded') }}</span>
+              </el-option>
+            </el-select>
+            <div class="form-help">{{ editingServer.ipMode === 'whitelist' ? t('frp.ipSetsWhitelistHelp') : t('frp.ipSetsHelp') }}</div>
+          </el-form-item>
+        </template>
         <el-form-item :label="t('frp.dashboardPort')"><el-input-number v-model="editingServer.dashboardPort" :min="0" :max="65535" /><span class="help">{{ t('frp.dashboardPortHelp') }}</span></el-form-item>
         <template v-if="editingServer.dashboardPort">
           <el-form-item :label="t('frp.dashboardAddr')"><el-input v-model="editingServer.dashboardAddr" placeholder="127.0.0.1" class="w-200" /></el-form-item>
@@ -360,7 +384,7 @@ import ProgramInstall from '../components/ProgramInstall.vue'
 import ResetConfigButton from '../components/ResetConfigButton.vue'
 import SecretInput from '../components/SecretInput.vue'
 import { useFormLayout } from '../composables/useIsMobile'
-import { useListText, splitCommasOrSpaces } from '../composables/useListText'
+import { useListText, splitCommasOrSpaces, splitLines } from '../composables/useListText'
 import { usePolling } from '../composables/usePolling'
 
 interface ClientSettings {
@@ -383,6 +407,11 @@ interface ServerSettings {
   dashboardAddr: string
   dashboardUser: string
   dashboardPwd: string
+  // ipMode 为 frpc 登录的来源 IP 访问控制：''（关闭）、whitelist、blacklist
+  ipMode: string
+  ipList: string[] | null
+  // ipSets 为引用的订阅 IP 列表 key（在 Web 服务中维护）
+  ipSets: string[] | null
 }
 // Client、Server 与后端实例字段一致；保存时只提交这些字段（后端拒绝未知字段）
 interface Client extends ClientSettings {
@@ -406,7 +435,8 @@ interface InstanceState {
   error: string
 }
 type ClientView = Client & InstanceState & { key: string }
-type ServerView = Server & InstanceState & { key: string }
+// rejected 为 Gately 启动以来被拒绝的 frpc 登录次数
+type ServerView = Server & InstanceState & { key: string; rejected?: number }
 interface BinaryView {
   binary: string
   version: string
@@ -593,6 +623,9 @@ function emptyServer(): Server {
     dashboardAddr: '127.0.0.1',
     dashboardUser: '',
     dashboardPwd: '',
+    ipMode: '',
+    ipList: [],
+    ipSets: [],
     remark: '',
   }
 }
@@ -609,6 +642,9 @@ function pickServer(v: Server): Server {
   for (const k of Object.keys(base) as (keyof Server)[]) {
     ;(out as unknown as Record<string, unknown>)[k] = v[k]
   }
+  // 后端空名单返回 null，编辑时统一为数组
+  out.ipList = out.ipList ?? []
+  out.ipSets = out.ipSets ?? []
   return out
 }
 
@@ -620,6 +656,21 @@ function openClient(c?: ClientView) {
 function openServer(s?: ServerView) {
   editingServer.value = s ? pickServer(s) : emptyServer()
   serverVisible.value = true
+  loadIPLists()
+}
+
+// ipLists 为 Web 服务中订阅的 IP 列表，供 frps 的来源 IP 访问控制引用
+const ipLists = ref<{ key: string; name: string; loaded: boolean }[]>([])
+// 输入框保留原始文本，回车可正常换行（见 useListText）
+const ipText = useListText(() => editingServer.value.ipList, (v) => (editingServer.value.ipList = v), { split: splitLines })
+
+// loadIPLists 读取订阅 IP 列表；读取失败（如令牌没有 Web 服务权限）时只是不显示可选项
+async function loadIPLists() {
+  try {
+    ipLists.value = await api.get('/api/webservice/iplists')
+  } catch {
+    ipLists.value = []
+  }
 }
 
 async function saveClient() {
@@ -885,5 +936,13 @@ onMounted(() => {
 }
 .w-260 {
   width: 260px;
+}
+.w-full {
+  width: 100%;
+}
+.opt-warn {
+  margin-left: 8px;
+  font-size: 12px;
+  color: var(--el-color-warning);
 }
 </style>

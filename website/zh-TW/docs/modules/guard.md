@@ -20,7 +20,7 @@
 | Linux（root 或 `CAP_NET_ADMIN`，已安裝 nftables） | 核心層丟棄全部流量，包括 SSH、其他程式與轉發給 Docker 容器、內網裝置的流量 | 由核心處理，能發現只發 SYN 的掃描 | 可用 |
 | Docker（host 網路 + `cap_add: NET_ADMIN`） | 同上，規則寫入主機 | 同上 | 可用 |
 | 飛牛 fnOS 安裝包、OpenWrt 22.03 以上 | 同上（以 root 執行，系統內建 nftables） | 同上 | 可用 |
-| 其他情況（Windows、macOS、FreeBSD、沒有 nftables 或權限的 Linux） | 只對 Gately 自身的服務生效：連接埠轉發、Web 服務、STUN、WebDAV、FTP、SMB、管理後台 | 由 Gately 監聽，只能發現完成交握的連線 | 無法使用 |
+| 其他情況（Windows、macOS、FreeBSD、沒有 nftables 或權限的 Linux） | 只對 Gately 自身的服務生效：連接埠轉發、Web 服務、STUN、WebDAV、FTP、SMB、frps 登入、管理後台 | 由 Gately 監聽，只能發現完成交握的連線 | 無法使用 |
 
 頁面頂部會顯示防火牆同步狀態，無法使用時列出原因與處理方式。
 

@@ -436,28 +436,7 @@ func (h *siteHandler) allowedIP(a netip.Addr, rule *compiledRule) bool {
 	if rule != nil && rule.ipMode != IPModeOff {
 		mode, list, sets = rule.ipMode, rule.ipList, rule.ipSets
 	}
-	if mode == IPModeOff {
-		return true
-	}
-	in := false
-	for _, p := range list {
-		if p.Contains(a) {
-			in = true
-			break
-		}
-	}
-	for _, key := range sets {
-		if in {
-			break
-		}
-		if set, ok := iplist.Default.Get(key); ok {
-			in = set.Contains(a)
-		}
-	}
-	if mode == IPModeWhitelist {
-		return in
-	}
-	return !in
+	return iplist.Default.Allowed(mode, a, list, sets)
 }
 
 // statusRecorder 记录响应状态码，用于访问日志。

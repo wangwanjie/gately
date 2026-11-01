@@ -1005,6 +1005,9 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `dashboardUser` | string |
 | `enable` | boolean |
 | `group` | string |
+| `ipList` | Tableau de string |
+| `ipMode` | string |
+| `ipSets` | Tableau de string |
 | `key` | string |
 | `name` | string |
 | `proxyBindAddr` | string |
@@ -1025,6 +1028,9 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `dashboardPort` | integer |
 | `dashboardPwd` | string |
 | `dashboardUser` | string |
+| `ipList` | Tableau de string |
+| `ipMode` | string |
+| `ipSets` | Tableau de string |
 | `proxyBindAddr` | string |
 | `subdomainHost` | string |
 | `token` | string |

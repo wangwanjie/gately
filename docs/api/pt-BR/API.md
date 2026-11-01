@@ -1005,6 +1005,9 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `dashboardUser` | string |
 | `enable` | boolean |
 | `group` | string |
+| `ipList` | Array de string |
+| `ipMode` | string |
+| `ipSets` | Array de string |
 | `key` | string |
 | `name` | string |
 | `proxyBindAddr` | string |
@@ -1025,6 +1028,9 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `dashboardPort` | integer |
 | `dashboardPwd` | string |
 | `dashboardUser` | string |
+| `ipList` | Array de string |
+| `ipMode` | string |
+| `ipSets` | Array de string |
 | `proxyBindAddr` | string |
 | `subdomainHost` | string |
 | `token` | string |

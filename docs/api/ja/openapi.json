@@ -681,6 +681,21 @@
           "group": {
             "type": "string"
           },
+          "ipList": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ipMode": {
+            "type": "string"
+          },
+          "ipSets": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "key": {
             "type": "string"
           },
@@ -730,6 +745,21 @@
           },
           "dashboardUser": {
             "type": "string"
+          },
+          "ipList": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ipMode": {
+            "type": "string"
+          },
+          "ipSets": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           },
           "proxyBindAddr": {
             "type": "string"

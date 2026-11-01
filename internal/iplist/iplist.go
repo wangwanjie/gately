@@ -1,5 +1,5 @@
 // Package iplist 解析 IP 列表文本（每行一个 IP、CIDR 或地址范围），合并为有序区间后按二分查找判断地址是否在列表中，
-// 供 Web 服务的访问控制引用订阅的省市、运营商或黑名单 IP 列表。
+// 供 Web 服务站点与 frps 实例的访问控制引用订阅的省市、运营商或黑名单 IP 列表。
 package iplist
 
 import (
@@ -160,6 +160,11 @@ func merge(list []span) []span {
 // Registry 保存按 key 索引的已加载列表，查询时无锁读取。
 type Registry struct {
 	sets sync.Map // key -> *Set
+
+	mu sync.RWMutex
+	// catalog 为订阅列表目录（key -> 名称），users 为 模块 -> 列表 key -> 引用方描述
+	catalog map[string]string
+	users   map[string]map[string][]string
 }
 
 // Default 是进程内共享的列表注册表。

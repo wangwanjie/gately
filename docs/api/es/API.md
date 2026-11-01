@@ -1005,6 +1005,9 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `dashboardUser` | string |
 | `enable` | boolean |
 | `group` | string |
+| `ipList` | Lista de string |
+| `ipMode` | string |
+| `ipSets` | Lista de string |
 | `key` | string |
 | `name` | string |
 | `proxyBindAddr` | string |
@@ -1025,6 +1028,9 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `dashboardPort` | integer |
 | `dashboardPwd` | string |
 | `dashboardUser` | string |
+| `ipList` | Lista de string |
+| `ipMode` | string |
+| `ipSets` | Lista de string |
 | `proxyBindAddr` | string |
 | `subdomainHost` | string |
 | `token` | string |

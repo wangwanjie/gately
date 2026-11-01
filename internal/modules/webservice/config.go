@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/wangwanjie/gately/internal/crud"
+	"github.com/wangwanjie/gately/internal/iplist"
 	"github.com/wangwanjie/gately/internal/thirdauth"
 	"golang.org/x/net/http/httpguts"
 )
@@ -243,27 +244,7 @@ func uniqueList(in []string) []string {
 
 // parsePrefixes 解析 IP 或 CIDR 列表。
 func parsePrefixes(list []string) ([]netip.Prefix, error) {
-	var out []netip.Prefix
-	for _, s := range list {
-		s = strings.TrimSpace(s)
-		if s == "" {
-			continue
-		}
-		if strings.Contains(s, "/") {
-			p, err := netip.ParsePrefix(s)
-			if err != nil {
-				return nil, fmt.Errorf("无效的网段 %q", s)
-			}
-			out = append(out, p.Masked())
-			continue
-		}
-		a, err := netip.ParseAddr(s)
-		if err != nil {
-			return nil, fmt.Errorf("无效的 IP %q", s)
-		}
-		out = append(out, netip.PrefixFrom(a, a.BitLen()))
-	}
-	return out, nil
+	return iplist.ParsePrefixes(list)
 }
 
 // Validate 校验监听器及其站点。

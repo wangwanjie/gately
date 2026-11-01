@@ -20,7 +20,7 @@ Prévention d'intrusion à la fail2ban : Gately repère les attaques par force b
 | Linux (root ou `CAP_NET_ADMIN`, nftables installé) | Tout le trafic est rejeté dans le noyau, y compris SSH, les autres programmes et le trafic redirigé vers des conteneurs Docker et des appareils du LAN | Gérés par le noyau, repèrent les scans qui n'envoient que des SYN | Disponible |
 | Docker (réseau host + `cap_add: NET_ADMIN`) | Comme ci-dessus, les règles sont écrites sur l'hôte | Idem | Disponible |
 | Paquet fnOS, OpenWrt 22.03 et versions ultérieures | Comme ci-dessus (exécution en root, nftables inclus) | Idem | Disponible |
-| Autres cas (Windows, macOS, FreeBSD, Linux sans nftables ou sans autorisation) | Uniquement les services de Gately : redirection de ports, service web, STUN, WebDAV, FTP, SMB et console d'administration | Gately écoute lui-même, ne repère que les connexions qui terminent la poignée de main | Indisponible |
+| Autres cas (Windows, macOS, FreeBSD, Linux sans nftables ou sans autorisation) | Uniquement les services de Gately : redirection de ports, service web, STUN, WebDAV, FTP, SMB, connexions frps et console d'administration | Gately écoute lui-même, ne repère que les connexions qui terminent la poignée de main | Indisponible |
 
 Le haut de la page affiche l'état de la synchronisation du pare-feu et, si elle est indisponible, la raison et la marche à suivre.
 

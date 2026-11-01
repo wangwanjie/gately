@@ -20,7 +20,7 @@ fail2ban-style intrusion prevention: Gately finds brute-force attempts in logs, 
 | Linux (root or `CAP_NET_ADMIN`, nftables installed) | All traffic is dropped in the kernel, including SSH, other programs and traffic forwarded to Docker containers and LAN devices | Handled by the kernel, catches SYN-only scans | Available |
 | Docker (host network + `cap_add: NET_ADMIN`) | Same as above, rules are written to the host | Same | Available |
 | fnOS package, OpenWrt 22.03 and later | Same as above (runs as root, nftables is built in) | Same | Available |
-| Everything else (Windows, macOS, FreeBSD, Linux without nftables or permission) | Only Gately's own services: port forwarding, web service, STUN, WebDAV, FTP, SMB and the admin console | Served by Gately, only catches connections that complete the handshake | Not available |
+| Everything else (Windows, macOS, FreeBSD, Linux without nftables or permission) | Only Gately's own services: port forwarding, web service, STUN, WebDAV, FTP, SMB, frps logins and the admin console | Served by Gately, only catches connections that complete the handshake | Not available |
 
 The top of the page shows the firewall sync status and, when it is not available, the reason and how to fix it.
 

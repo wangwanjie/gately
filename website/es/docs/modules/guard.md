@@ -20,7 +20,7 @@ Prevención de intrusiones al estilo de fail2ban: Gately detecta ataques de fuer
 | Linux (root o `CAP_NET_ADMIN`, nftables instalado) | Se descarta en el kernel todo el tráfico, incluido SSH, otros programas y el tráfico reenviado a contenedores Docker y dispositivos de la LAN | Los gestiona el kernel y detectan escaneos que solo envían SYN | Disponible |
 | Docker (red host + `cap_add: NET_ADMIN`) | Igual que arriba; las reglas se escriben en el anfitrión | Igual | Disponible |
 | Paquete de fnOS, OpenWrt 22.03 y posteriores | Igual que arriba (se ejecuta como root y nftables viene incluido) | Igual | Disponible |
-| Resto de casos (Windows, macOS, FreeBSD, Linux sin nftables o sin permisos) | Solo los servicios de Gately: reenvío de puertos, servicio web, STUN, WebDAV, FTP, SMB y el panel | Escucha Gately; solo detecta conexiones que completan el saludo TCP | No disponible |
+| Resto de casos (Windows, macOS, FreeBSD, Linux sin nftables o sin permisos) | Solo los servicios de Gately: reenvío de puertos, servicio web, STUN, WebDAV, FTP, SMB, el inicio de sesión de frps y el panel | Escucha Gately; solo detecta conexiones que completan el saludo TCP | No disponible |
 
 La parte superior de la página muestra el estado de la sincronización con el cortafuegos y, si no está disponible, el motivo y cómo solucionarlo.
 

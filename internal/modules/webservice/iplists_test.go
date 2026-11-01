@@ -100,4 +100,14 @@ func TestIPListSubscription(t *testing.T) {
 	if set, ok := iplist.Default.Get(key); !ok || set.Len() != 1 {
 		t.Fatal("重启后应从缓存载入列表")
 	}
+
+	// 载入时发布列表目录，供 frp 等模块校验引用；其它模块登记的引用方计入列表的使用者
+	if name, ok := iplist.Default.Name(key); !ok || name != "local" {
+		t.Fatalf("应发布列表目录: %q %v", name, ok)
+	}
+	iplist.Default.SetUsers("frp", map[string][]string{key: {"frps / 家里"}})
+	t.Cleanup(func() { iplist.Default.SetUsers("frp", nil) })
+	if users := m2.ipListUsersLocked(key); len(users) != 1 || users[0] != "frps / 家里" {
+		t.Fatalf("应包含其它模块的引用方: %v", users)
+	}
 }
