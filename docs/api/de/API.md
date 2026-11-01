@@ -291,6 +291,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | PUT | `/api/webservice/settings` | `webservice:write` | Globale Web-Dienst-Einstellungen speichern |
 | GET | `/api/webservice/stats` | `webservice:read` | Minutenstatistik einer Site (?listener=&site=&minutes=) |
 | GET | `/api/webservice/metrics` | `webservice:read` | Metriken im Prometheus-Textformat |
+| GET | `/api/webservice/connections` | `webservice:read` | Laufende und kürzlich beendete lange Anfragen einer Site (?listener=&site=&q=) |
+| POST | `/api/webservice/connections/close` | `webservice:write` | Eine laufende Anfrage einer Site trennen und optional ihre Quelladresse sperren |
 | GET | `/api/webservice/bans` | `webservice:read` | Aktuell gesperrte IPs |
 | POST | `/api/webservice/bans` | `webservice:write` | IP manuell sperren |
 | DELETE | `/api/webservice/bans` | `webservice:write` | Sperre aufheben (body ist {"key": Adresse}) |
@@ -1586,6 +1588,36 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `maxMb` | integer |
 | `ttl` | integer |
 
+### webservice.ConnView
+
+| Feld | Typ |
+| --- | --- |
+| `down` | integer |
+| `durationMs` | integer |
+| `end` | Zeit (RFC 3339) |
+| `host` | string |
+| `id` | string |
+| `ip` | string |
+| `method` | string |
+| `path` | string |
+| `peer` | string |
+| `port` | integer |
+| `proto` | string |
+| `result` | string |
+| `start` | Zeit (RFC 3339) |
+| `up` | integer |
+| `websocket` | boolean |
+
+### webservice.ConnsView
+
+| Feld | Typ |
+| --- | --- |
+| `active` | Array von `webservice.ConnView` |
+| `closed` | integer |
+| `history` | Array von `webservice.ConnView` |
+| `matched` | integer |
+| `total` | integer |
+
 ### webservice.ForwardAuth
 
 | Feld | Typ |
@@ -1886,6 +1918,22 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | --- | --- |
 | `key` | string |
 | `seconds` | integer |
+
+### webservice.closeConnRequest
+
+| Feld | Typ |
+| --- | --- |
+| `banSeconds` | integer |
+| `id` | string |
+| `listener` | string |
+| `site` | string |
+
+### webservice.closeConnResult
+
+| Feld | Typ |
+| --- | --- |
+| `banKey` | string |
+| `closed` | integer |
 
 ### webservice.geoipDownload
 

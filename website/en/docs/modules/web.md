@@ -409,6 +409,19 @@ For a running listener, click "Stats" on a site row to open the statistics windo
 
 Statistics are kept in memory and start counting again after a restart or after the listener's own settings change. Editing a site keeps its counters. The rankings track at most 5000 distinct sources.
 
+### Live connections {#connections}
+
+For a running listener, each site row (including the default site) shows "N active" after its statistics: the number of requests the site is handling right now, updated as the page refreshes. Click **Connections** to open the connections window. It refreshes every 2 seconds and can be searched by IP:
+
+- **Live**: source address and port, protocol (h1 / h2 / h3, WebSocket marked WS), request (method, host and path, without the query string), start time, duration so far and traffic (download; upload too when there is a request body or WebSocket). Sorted from longest-running, up to 500 rows. With [trusted proxies](#real-ip) configured the source is the real visitor address, with the proxy it came through noted.
+- **History**: recently ended connections with start and end time, duration, traffic and result (completed / closed). Only connections that lasted at least 1 second or were closed manually are kept, the latest 200 per site, cleared on restart; see the access log for short requests.
+
+The list counts requests in progress: an HTTP/1.1 keep-alive connection belongs to no site between requests, and one HTTP/2 or HTTP/3 connection can carry several requests at once, so requests are the unit that maps exactly to a site. An upgraded WebSocket stays listed until the connection closes.
+
+**Close** on a row ends that request right after you confirm: HTTP/1.x closes the whole connection, HTTP/2 and HTTP/3 reset only that request and other requests on the same connection continue, and an upgraded WebSocket is closed together with its backend connection. It also takes effect at once when the visitor stops reading and sending is blocked. A closed request is logged as 444 in the access log (or keeps its status code if the response had started) and does not count as a backend error or toward path probing. The visitor can reconnect right away; to keep them out use **Close and ban**, which adds the source address (its /64 range for IPv6) to the [ban list](#ban-list) and closes its requests in progress on every listener and site.
+
+Read-only accounts and read-only tokens can view the list; closing and banning need write permission and are recorded in the audit log.
+
 ### Prometheus metrics
 
 The global metrics endpoint `GET /api/metrics` aggregates metrics from all modules; see [Monitoring](/en/docs/reference/monitoring). The module endpoint below covers Web Services metrics only.

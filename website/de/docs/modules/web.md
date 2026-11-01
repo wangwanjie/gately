@@ -409,6 +409,19 @@ Klicken Sie bei einem laufenden Listener in der Site-Zeile auf „Statistik“, 
 
 Die Statistiken liegen im Arbeitsspeicher und beginnen nach einem Neustart oder nach einer Änderung der eigenen Einstellungen des Listeners von vorn. Das Bearbeiten einer Site behält ihre Zähler. Die Ranglisten verfolgen höchstens 5000 verschiedene Quellen.
 
+### Live-Verbindungen {#connections}
+
+Bei einem laufenden Listener zeigt jede Site-Zeile (auch die Standard-Site) nach ihrer Statistik „N aktiv“: die Anzahl der Anfragen, die die Site gerade bearbeitet, aktualisiert beim Neuladen der Seite. Ein Klick auf **Verbindungen** öffnet das Verbindungsfenster; es aktualisiert sich alle 2 Sekunden und lässt sich nach IP durchsuchen:
+
+- **Live**: Quelladresse und Port, Protokoll (h1 / h2 / h3, WebSocket als WS markiert), Anfrage (Methode, Host und Pfad, ohne Query-String), Startzeit, bisherige Dauer und Datenvolumen (Download; Upload ebenfalls bei Anfrage-Body oder WebSocket). Sortiert nach Laufzeit, höchstens 500 Zeilen. Mit konfigurierten [vertrauenswürdigen Proxys](#real-ip) ist die Quelle die echte Besucheradresse, der durchlaufene Proxy wird angegeben.
+- **Verlauf**: kürzlich beendete Verbindungen mit Start- und Endzeit, Dauer, Datenvolumen und Ergebnis (abgeschlossen / getrennt). Nur Verbindungen, die mindestens 1 Sekunde dauerten oder manuell getrennt wurden, bleiben erhalten, die letzten 200 je Site, beim Neustart geleert; kurze Anfragen stehen im Zugriffsprotokoll.
+
+Die Liste zählt laufende Anfragen: Eine HTTP/1.1-Keep-Alive-Verbindung gehört zwischen zwei Anfragen zu keiner Site, und eine HTTP/2- oder HTTP/3-Verbindung kann mehrere Anfragen gleichzeitig tragen; daher ist die Anfrage die Einheit, die sich genau einer Site zuordnen lässt. Ein umgestelltes WebSocket bleibt aufgeführt, bis die Verbindung geschlossen wird.
+
+**Trennen** in einer Zeile beendet diese Anfrage sofort nach der Bestätigung: Unter HTTP/1.x wird die ganze Verbindung geschlossen; unter HTTP/2 und HTTP/3 wird nur diese Anfrage zurückgesetzt, andere Anfragen derselben Verbindung laufen weiter; ein umgestelltes WebSocket wird samt Backend-Verbindung geschlossen. Das greift auch sofort, wenn der Besucher nicht mehr liest und das Senden blockiert. Eine getrennte Anfrage wird im Zugriffsprotokoll als 444 erfasst (bzw. behält ihren Statuscode, wenn die Antwort schon begonnen hatte) und zählt weder als Backend-Fehler noch für die Pfaderkennung. Der Besucher kann sich sofort neu verbinden; um ihn fernzuhalten, nutzen Sie **Trennen und sperren**: Die Quelladresse (bei IPv6 ihr /64-Bereich) kommt auf die [Sperrliste](#sperrliste), und ihre laufenden Anfragen auf allen Listenern und Sites werden getrennt.
+
+Schreibgeschützte Konten und Token können die Liste ansehen; Trennen und Sperren erfordern Schreibrechte und werden im Audit-Protokoll erfasst.
+
 ### Prometheus-Metriken
 
 Der globale Metriken-Endpunkt `GET /api/metrics` fasst die Metriken aller Module zusammen, siehe [Monitoring](/de/docs/reference/monitoring). Der folgende Modul-Endpunkt enthält nur die Metriken der Web-Dienste.

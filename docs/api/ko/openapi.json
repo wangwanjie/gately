@@ -2119,6 +2119,84 @@
         },
         "type": "object"
       },
+      "webservice.ConnView": {
+        "properties": {
+          "down": {
+            "type": "integer"
+          },
+          "durationMs": {
+            "type": "integer"
+          },
+          "end": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "host": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "ip": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "peer": {
+            "type": "string"
+          },
+          "port": {
+            "type": "integer"
+          },
+          "proto": {
+            "type": "string"
+          },
+          "result": {
+            "type": "string"
+          },
+          "start": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "up": {
+            "type": "integer"
+          },
+          "websocket": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.ConnsView": {
+        "properties": {
+          "active": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.ConnView"
+            },
+            "type": "array"
+          },
+          "closed": {
+            "type": "integer"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.ConnView"
+            },
+            "type": "array"
+          },
+          "matched": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "webservice.ForwardAuth": {
         "properties": {
           "copyHeaders": {
@@ -2909,6 +2987,34 @@
             "type": "string"
           },
           "seconds": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.closeConnRequest": {
+        "properties": {
+          "banSeconds": {
+            "type": "integer"
+          },
+          "id": {
+            "type": "string"
+          },
+          "listener": {
+            "type": "string"
+          },
+          "site": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.closeConnResult": {
+        "properties": {
+          "banKey": {
+            "type": "string"
+          },
+          "closed": {
             "type": "integer"
           }
         },
@@ -29093,6 +29199,131 @@
           }
         ],
         "summary": "IP 수동 차단",
+        "tags": [
+          "Web 서비스"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/connections": {
+      "get": {
+        "description": "필요한 권한: `webservice:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.ConnsView"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "사이트의 진행 중인 요청과 최근 종료된 장시간 요청 (?listener=\u0026site=\u0026q=)",
+        "tags": [
+          "Web 서비스"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/connections/close": {
+      "post": {
+        "description": "필요한 권한: `webservice:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/webservice.closeConnRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.closeConnResult"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "사이트의 진행 중인 요청 하나를 끊고, 출발지 주소를 함께 차단할 수 있습니다",
         "tags": [
           "Web 서비스"
         ],

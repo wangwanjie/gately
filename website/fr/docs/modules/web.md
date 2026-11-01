@@ -409,6 +409,19 @@ Pour un écouteur en cours d'exécution, cliquez sur « Statistiques » sur la l
 
 Les statistiques sont conservées en mémoire et repartent de zéro après un redémarrage ou après la modification des paramètres de l'écouteur lui-même. Modifier un site conserve ses compteurs. Les classements suivent au plus 5000 sources distinctes.
 
+### Connexions en direct {#connections}
+
+Pour un listener en cours d’exécution, chaque ligne de site (y compris le site par défaut) affiche « N actives » après ses statistiques : le nombre de requêtes que le site traite en ce moment, mis à jour au rafraîchissement de la page. Cliquez sur **Connexions** pour ouvrir la fenêtre des connexions ; elle s’actualise toutes les 2 secondes et permet de rechercher par IP :
+
+- **En direct** : adresse et port source, protocole (h1 / h2 / h3, WebSocket marqué WS), requête (méthode, hôte et chemin, sans la chaîne de requête), heure de début, durée écoulée et trafic (descendant ; montant aussi en cas de corps de requête ou de WebSocket). Triées de la plus longue à la plus courte, 500 lignes au maximum. Avec des [proxys de confiance](#real-ip) configurés, la source est l’adresse réelle du visiteur et le proxy traversé est indiqué.
+- **Historique** : connexions récemment terminées avec heures de début et de fin, durée, trafic et résultat (terminée / fermée). Seules les connexions ayant duré au moins 1 seconde ou fermées manuellement sont conservées, les 200 plus récentes par site, vidées au redémarrage ; consultez le journal d’accès pour les requêtes courtes.
+
+La liste compte les requêtes en cours : une connexion HTTP/1.1 persistante n’appartient à aucun site entre deux requêtes, et une connexion HTTP/2 ou HTTP/3 peut porter plusieurs requêtes à la fois ; la requête est donc l’unité qui correspond exactement à un site. Un WebSocket mis à niveau reste listé jusqu’à la fermeture de la connexion.
+
+**Fermer** sur une ligne termine cette requête dès confirmation : en HTTP/1.x toute la connexion est fermée ; en HTTP/2 et HTTP/3 seule cette requête est réinitialisée et les autres requêtes de la même connexion continuent ; un WebSocket mis à niveau est fermé avec sa connexion au backend. Cela prend aussi effet immédiatement quand le visiteur ne lit plus et que l’envoi est bloqué. Une requête fermée est journalisée en 444 (ou garde son code si la réponse avait commencé) et ne compte ni comme erreur du backend ni pour la détection de chemins. Le visiteur peut se reconnecter aussitôt ; pour l’en empêcher, utilisez **Fermer et bannir**, qui ajoute l’adresse source (sa plage /64 en IPv6) à la [liste de bannissement](#liste-de-bannissement) et ferme ses requêtes en cours sur tous les listeners et tous les sites.
+
+Les comptes et jetons en lecture seule peuvent consulter la liste ; fermer et bannir exigent l’accès en écriture et sont consignés dans le journal d’audit.
+
 ### Métriques Prometheus
 
 Le point de terminaison global `GET /api/metrics` regroupe les métriques de tous les modules ; voir [Métriques de supervision](/fr/docs/reference/monitoring). Le point de terminaison du module décrit ci-dessous ne contient que les métriques des services Web.

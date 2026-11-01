@@ -291,6 +291,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/webservice/settings` | `webservice:write` | Сохранить глобальные настройки веб-службы |
 | GET | `/api/webservice/stats` | `webservice:read` | Поминутная статистика сайта (?listener=&site=&minutes=) |
 | GET | `/api/webservice/metrics` | `webservice:read` | Метрики в текстовом формате Prometheus |
+| GET | `/api/webservice/connections` | `webservice:read` | Выполняющиеся и недавно завершённые длительные запросы сайта (?listener=&site=&q=) |
+| POST | `/api/webservice/connections/close` | `webservice:write` | Разорвать выполняющийся запрос сайта, при необходимости заблокировав адрес источника |
 | GET | `/api/webservice/bans` | `webservice:read` | Заблокированные в данный момент IP |
 | POST | `/api/webservice/bans` | `webservice:write` | Заблокировать IP вручную |
 | DELETE | `/api/webservice/bans` | `webservice:write` | Снять блокировку (body: {"key": адрес}) |
@@ -1586,6 +1588,36 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `maxMb` | integer |
 | `ttl` | integer |
 
+### webservice.ConnView
+
+| Поле | Тип |
+| --- | --- |
+| `down` | integer |
+| `durationMs` | integer |
+| `end` | Время (RFC 3339) |
+| `host` | string |
+| `id` | string |
+| `ip` | string |
+| `method` | string |
+| `path` | string |
+| `peer` | string |
+| `port` | integer |
+| `proto` | string |
+| `result` | string |
+| `start` | Время (RFC 3339) |
+| `up` | integer |
+| `websocket` | boolean |
+
+### webservice.ConnsView
+
+| Поле | Тип |
+| --- | --- |
+| `active` | Массив из `webservice.ConnView` |
+| `closed` | integer |
+| `history` | Массив из `webservice.ConnView` |
+| `matched` | integer |
+| `total` | integer |
+
 ### webservice.ForwardAuth
 
 | Поле | Тип |
@@ -1886,6 +1918,22 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `key` | string |
 | `seconds` | integer |
+
+### webservice.closeConnRequest
+
+| Поле | Тип |
+| --- | --- |
+| `banSeconds` | integer |
+| `id` | string |
+| `listener` | string |
+| `site` | string |
+
+### webservice.closeConnResult
+
+| Поле | Тип |
+| --- | --- |
+| `banKey` | string |
+| `closed` | integer |
 
 ### webservice.geoipDownload
 

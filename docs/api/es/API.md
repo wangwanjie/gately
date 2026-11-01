@@ -291,6 +291,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | PUT | `/api/webservice/settings` | `webservice:write` | Guardar los ajustes globales del servicio web |
 | GET | `/api/webservice/stats` | `webservice:read` | Estadísticas por minuto del sitio (?listener=&site=&minutes=) |
 | GET | `/api/webservice/metrics` | `webservice:read` | Métricas en formato de texto de Prometheus |
+| GET | `/api/webservice/connections` | `webservice:read` | Solicitudes en curso y solicitudes largas terminadas recientemente de un sitio (?listener=&site=&q=) |
+| POST | `/api/webservice/connections/close` | `webservice:write` | Cerrar una solicitud en curso de un sitio y, opcionalmente, bloquear su dirección de origen |
 | GET | `/api/webservice/bans` | `webservice:read` | IP bloqueadas actualmente |
 | POST | `/api/webservice/bans` | `webservice:write` | Bloquear IP manualmente |
 | DELETE | `/api/webservice/bans` | `webservice:write` | Quitar un bloqueo (el body es {"key": dirección}) |
@@ -1586,6 +1588,36 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `maxMb` | integer |
 | `ttl` | integer |
 
+### webservice.ConnView
+
+| Campo | Tipo |
+| --- | --- |
+| `down` | integer |
+| `durationMs` | integer |
+| `end` | Hora (RFC 3339) |
+| `host` | string |
+| `id` | string |
+| `ip` | string |
+| `method` | string |
+| `path` | string |
+| `peer` | string |
+| `port` | integer |
+| `proto` | string |
+| `result` | string |
+| `start` | Hora (RFC 3339) |
+| `up` | integer |
+| `websocket` | boolean |
+
+### webservice.ConnsView
+
+| Campo | Tipo |
+| --- | --- |
+| `active` | Lista de `webservice.ConnView` |
+| `closed` | integer |
+| `history` | Lista de `webservice.ConnView` |
+| `matched` | integer |
+| `total` | integer |
+
 ### webservice.ForwardAuth
 
 | Campo | Tipo |
@@ -1886,6 +1918,22 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | --- | --- |
 | `key` | string |
 | `seconds` | integer |
+
+### webservice.closeConnRequest
+
+| Campo | Tipo |
+| --- | --- |
+| `banSeconds` | integer |
+| `id` | string |
+| `listener` | string |
+| `site` | string |
+
+### webservice.closeConnResult
+
+| Campo | Tipo |
+| --- | --- |
+| `banKey` | string |
+| `closed` | integer |
 
 ### webservice.geoipDownload
 

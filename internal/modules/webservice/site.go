@@ -68,6 +68,8 @@ type siteHandler struct {
 	// listener 为所属监听的 key，deflt 表示这是监听的默认站点（处理未匹配任何站点域名的请求），供路径探测上报
 	listener string
 	deflt    bool
+	// conns 记录进行中的请求与最近结束的长请求，供实时连接列表与断开使用
+	conns *connTracker
 }
 
 type ctxKeyClientAddr struct{}
@@ -95,7 +97,7 @@ func (h *siteHandler) reqLog(r *http.Request) *logbuf.Logger {
 }
 
 func newSiteHandler(s Site, log *logbuf.Logger, auth *authenticator, waf WAFProvider) (*siteHandler, error) {
-	h := &siteHandler{site: s, stats: &SiteStats{}, log: log, auth: auth, metrics: newSiteMetrics()}
+	h := &siteHandler{site: s, stats: &SiteStats{}, log: log, auth: auth, metrics: newSiteMetrics(), conns: newConnTracker()}
 	// 断开连接的站点在 ServeHTTP 中直接断开，其余设置都不生效（保存时也不校验），不再编译重写、名单等规则；
 	// 保留一个只会断开的处理器，以防其他调用路径意外写出响应
 	if s.Type == TypeClose {
@@ -222,6 +224,8 @@ func (h *siteHandler) closeIdle() {
 func (h *siteHandler) inherit(old *siteHandler) {
 	h.stats = old.stats
 	h.metrics = old.metrics
+	// 进行中的请求仍由旧处理器服务，沿用登记表才能继续列出并断开它们
+	h.conns = old.conns
 }
 
 // proxyBufferPool 复用反向代理的拷贝缓冲区，避免每个请求分配 32 KB 带来的 GC 压力。
@@ -352,6 +356,10 @@ func (h *siteHandler) newProxy(s Site, p *pool) http.Handler {
 			return nil
 		},
 		ErrorHandler: func(w http.ResponseWriter, r *http.Request, err error) {
+			// 管理员在实时连接中断开的请求不算后端错误，也不写出响应（写出会被丢弃）
+			if errors.Is(context.Cause(r.Context()), errConnClosed) {
+				return
+			}
 			h.stats.Errors.Add(1)
 			// 客户端中途断开不是后端的错
 			if up, _ := r.Context().Value(ctxKeyUpstream{}).(*upstream); up != nil && r.Context().Err() == nil {
@@ -446,16 +454,35 @@ type statusRecorder struct {
 	bytes  int64
 	// denied 表示请求被访问控制拒绝并断开连接（记为 444）
 	denied bool
+	// req 为该请求在实时连接列表中的登记项，可为 nil
+	req *activeReq
+	// wroteHeader 表示已写出响应头
+	wroteHeader bool
 }
 
 func (s *statusRecorder) Write(p []byte) (int, error) {
+	// 被管理员断开后不再写出任何内容，让正在拷贝响应体的处理器（静态文件、反向代理）尽快结束
+	if s.req != nil && s.req.killed.Load() {
+		return 0, errConnClosed
+	}
+	s.wroteHeader = true
 	n, err := s.ResponseWriter.Write(p)
 	s.bytes += int64(n)
+	if s.req != nil {
+		s.req.down.Add(int64(n))
+	}
 	return n, err
 }
 
 func (s *statusRecorder) WriteHeader(code int) {
+	if s.req != nil && s.req.killed.Load() {
+		return
+	}
 	s.status = code
+	// 1xx 是中间响应，之后还会写出最终的响应头
+	if code >= 200 || code == http.StatusSwitchingProtocols {
+		s.wroteHeader = true
+	}
 	s.ResponseWriter.WriteHeader(code)
 }
 
@@ -522,6 +549,10 @@ func (h *siteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// 与未开启“拒绝时断开连接”时一致：它们是被名单或国家过滤挡下的访客，不是在探测不存在的路径。
 		// 默认站点例外，仍按 444 上报：访问未知域名的名单外访客与「断开连接」类型默认站点处理的请求是同一类，
 		// 默认站点改用“反向代理 + 白名单 + 拒绝时断开连接”放行自家 IP 后，未知域名扫描仍能被统计
+		// 管理员手动断开的请求不是访客行为，不计入路径探测
+		if rec.req != nil && rec.req.killed.Load() {
+			return
+		}
 		status := rec.status
 		if rec.denied && !h.deflt {
 			status = http.StatusForbidden
@@ -537,6 +568,30 @@ func (h *siteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		rec.status = statusClosed
 		panic(http.ErrAbortHandler)
 	}
+
+	// 登记到实时连接列表：断开时取消请求上下文，后续写出被丢弃，处理结束后在这里中断连接（HTTP/2、HTTP/3 重置请求流）。
+	// 注销放在最后注册的 defer 中，先于访问日志执行，历史记录与计数及时回落
+	r, ar := h.conns.begin(w, r, client)
+	defer h.conns.end(ar)
+	rec.req = ar
+	if r.Body != nil && r.Body != http.NoBody {
+		r.Body = &trackedBody{ReadCloser: r.Body, req: ar}
+	}
+	defer func() {
+		// 已接管的连接由 close 直接关闭，无需再中断
+		if !ar.killed.Load() || ar.upgraded.Load() {
+			return
+		}
+		// 处理过程中的其他 panic 原样向上传递
+		if p := recover(); p != nil {
+			panic(p)
+		}
+		// 还没写出响应头时，访问日志与统计按 444 记录（与断开连接站点一致）
+		if !rec.wroteHeader {
+			rec.status = statusClosed
+		}
+		panic(http.ErrAbortHandler)
+	}()
 
 	release, ok := h.accessCheck(rec, r)
 	if !ok {

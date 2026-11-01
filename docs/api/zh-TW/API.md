@@ -291,6 +291,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/webservice/settings` | `webservice:write` | 儲存 Web 服務全域設定 |
 | GET | `/api/webservice/stats` | `webservice:read` | 站點分鐘級統計（?listener=&site=&minutes=） |
 | GET | `/api/webservice/metrics` | `webservice:read` | Prometheus 文字格式指標 |
+| GET | `/api/webservice/connections` | `webservice:read` | 站點進行中的請求與最近結束的長請求（?listener=&site=&q=） |
+| POST | `/api/webservice/connections/close` | `webservice:write` | 中斷站點的一個進行中請求，可同時封鎖其來源位址 |
 | GET | `/api/webservice/bans` | `webservice:read` | 目前被封鎖的 IP |
 | POST | `/api/webservice/bans` | `webservice:write` | 手動封鎖 IP |
 | DELETE | `/api/webservice/bans` | `webservice:write` | 解除封鎖（body 為 {"key": 位址}） |
@@ -1586,6 +1588,36 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `maxMb` | integer |
 | `ttl` | integer |
 
+### webservice.ConnView
+
+| 欄位 | 類型 |
+| --- | --- |
+| `down` | integer |
+| `durationMs` | integer |
+| `end` | 時間 (RFC 3339) |
+| `host` | string |
+| `id` | string |
+| `ip` | string |
+| `method` | string |
+| `path` | string |
+| `peer` | string |
+| `port` | integer |
+| `proto` | string |
+| `result` | string |
+| `start` | 時間 (RFC 3339) |
+| `up` | integer |
+| `websocket` | boolean |
+
+### webservice.ConnsView
+
+| 欄位 | 類型 |
+| --- | --- |
+| `active` | 陣列 of `webservice.ConnView` |
+| `closed` | integer |
+| `history` | 陣列 of `webservice.ConnView` |
+| `matched` | integer |
+| `total` | integer |
+
 ### webservice.ForwardAuth
 
 | 欄位 | 類型 |
@@ -1886,6 +1918,22 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `key` | string |
 | `seconds` | integer |
+
+### webservice.closeConnRequest
+
+| 欄位 | 類型 |
+| --- | --- |
+| `banSeconds` | integer |
+| `id` | string |
+| `listener` | string |
+| `site` | string |
+
+### webservice.closeConnResult
+
+| 欄位 | 類型 |
+| --- | --- |
+| `banKey` | string |
+| `closed` | integer |
 
 ### webservice.geoipDownload
 

@@ -291,6 +291,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/webservice/settings` | `webservice:write` | Web 서비스 전역 설정 저장 |
 | GET | `/api/webservice/stats` | `webservice:read` | 사이트 분 단위 통계 (?listener=&site=&minutes=) |
 | GET | `/api/webservice/metrics` | `webservice:read` | Prometheus 텍스트 형식 지표 |
+| GET | `/api/webservice/connections` | `webservice:read` | 사이트의 진행 중인 요청과 최근 종료된 장시간 요청 (?listener=&site=&q=) |
+| POST | `/api/webservice/connections/close` | `webservice:write` | 사이트의 진행 중인 요청 하나를 끊고, 출발지 주소를 함께 차단할 수 있습니다 |
 | GET | `/api/webservice/bans` | `webservice:read` | 현재 차단된 IP |
 | POST | `/api/webservice/bans` | `webservice:write` | IP 수동 차단 |
 | DELETE | `/api/webservice/bans` | `webservice:write` | 차단 해제 (body는 {"key": 주소}) |
@@ -1586,6 +1588,36 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `maxMb` | integer |
 | `ttl` | integer |
 
+### webservice.ConnView
+
+| 필드 | 타입 |
+| --- | --- |
+| `down` | integer |
+| `durationMs` | integer |
+| `end` | 시간 (RFC 3339) |
+| `host` | string |
+| `id` | string |
+| `ip` | string |
+| `method` | string |
+| `path` | string |
+| `peer` | string |
+| `port` | integer |
+| `proto` | string |
+| `result` | string |
+| `start` | 시간 (RFC 3339) |
+| `up` | integer |
+| `websocket` | boolean |
+
+### webservice.ConnsView
+
+| 필드 | 타입 |
+| --- | --- |
+| `active` | Array of `webservice.ConnView` |
+| `closed` | integer |
+| `history` | Array of `webservice.ConnView` |
+| `matched` | integer |
+| `total` | integer |
+
 ### webservice.ForwardAuth
 
 | 필드 | 타입 |
@@ -1886,6 +1918,22 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `key` | string |
 | `seconds` | integer |
+
+### webservice.closeConnRequest
+
+| 필드 | 타입 |
+| --- | --- |
+| `banSeconds` | integer |
+| `id` | string |
+| `listener` | string |
+| `site` | string |
+
+### webservice.closeConnResult
+
+| 필드 | 타입 |
+| --- | --- |
+| `banKey` | string |
+| `closed` | integer |
 
 ### webservice.geoipDownload
 

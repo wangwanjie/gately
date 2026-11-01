@@ -409,6 +409,19 @@ Para um listener em execução, clique em "Estatísticas" na linha de um site pa
 
 As estatísticas ficam em memória e voltam a contar do zero depois de uma reinicialização ou de uma alteração nas configurações do próprio listener. Editar um site mantém os contadores dele. Os rankings acompanham no máximo 5000 origens distintas.
 
+### Conexões ao vivo {#connections}
+
+Em um listener em execução, cada linha de site (incluindo o site padrão) mostra «N ativas» após as estatísticas: quantas requisições o site está atendendo agora, atualizado junto com a página. Clique em **Conexões** para abrir a janela de conexões; ela atualiza a cada 2 segundos e permite buscar por IP:
+
+- **Ao vivo**: endereço e porta de origem, protocolo (h1 / h2 / h3, WebSocket marcado como WS), requisição (método, host e caminho, sem a query string), hora de início, duração até agora e tráfego (download; upload também quando há corpo da requisição ou WebSocket). Ordenadas da mais longa para a mais curta, até 500 linhas. Com [proxies confiáveis](#real-ip) configurados, a origem é o endereço real do visitante e o proxy pelo qual chegou é indicado.
+- **Histórico**: conexões encerradas recentemente com hora de início e fim, duração, tráfego e resultado (concluída / encerrada). Só ficam as que duraram pelo menos 1 segundo ou foram encerradas manualmente, as 200 mais recentes por site, e o histórico é limpo ao reiniciar; veja o log de acesso para requisições curtas.
+
+A lista conta requisições em andamento: uma conexão HTTP/1.1 persistente não pertence a nenhum site entre requisições, e uma conexão HTTP/2 ou HTTP/3 pode levar várias requisições ao mesmo tempo; por isso a requisição é a unidade que corresponde exatamente a um site. Um WebSocket após o upgrade continua na lista até a conexão fechar.
+
+**Encerrar** em uma linha termina a requisição assim que você confirma: no HTTP/1.x a conexão inteira é fechada; no HTTP/2 e HTTP/3 só essa requisição é reiniciada e as demais da mesma conexão continuam; um WebSocket após o upgrade é fechado junto com a conexão ao backend. Também vale na hora quando o visitante para de ler e o envio fica bloqueado. A requisição encerrada fica registrada como 444 no log de acesso (ou mantém o código se a resposta já tinha começado) e não conta como erro do backend nem para a detecção de varredura de caminhos. O visitante pode se reconectar na hora; para impedir, use **Encerrar e bloquear**, que adiciona o endereço de origem (a faixa /64 no IPv6) à [lista de banimentos](#lista-de-banimentos) e encerra suas requisições em andamento em todos os listeners e sites.
+
+Contas e tokens somente leitura podem ver a lista; encerrar e bloquear exigem permissão de escrita e ficam registrados no log de auditoria.
+
 ### Métricas Prometheus
 
 O endpoint global de métricas `GET /api/metrics` reúne as métricas de todos os módulos; veja [Monitoramento](/pt-BR/docs/reference/monitoring). O endpoint do módulo abaixo contém apenas as métricas dos Serviços Web.

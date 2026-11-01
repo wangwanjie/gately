@@ -291,6 +291,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/webservice/settings` | `webservice:write` | Web サービスのグローバル設定を保存 |
 | GET | `/api/webservice/stats` | `webservice:read` | サイトの分単位統計（?listener=&site=&minutes=） |
 | GET | `/api/webservice/metrics` | `webservice:read` | Prometheus テキスト形式のメトリクス |
+| GET | `/api/webservice/connections` | `webservice:read` | サイトの進行中リクエストと最近終了した長時間リクエスト（?listener=&site=&q=） |
+| POST | `/api/webservice/connections/close` | `webservice:write` | サイトの進行中リクエストを 1 件切断し、送信元アドレスを同時にブロックすることもできます |
 | GET | `/api/webservice/bans` | `webservice:read` | 現在ブロックされている IP |
 | POST | `/api/webservice/bans` | `webservice:write` | IP を手動でブロック |
 | DELETE | `/api/webservice/bans` | `webservice:write` | ブロックを解除（body は {"key": アドレス}） |
@@ -1586,6 +1588,36 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `maxMb` | integer |
 | `ttl` | integer |
 
+### webservice.ConnView
+
+| フィールド | 型 |
+| --- | --- |
+| `down` | integer |
+| `durationMs` | integer |
+| `end` | 時刻 (RFC 3339) |
+| `host` | string |
+| `id` | string |
+| `ip` | string |
+| `method` | string |
+| `path` | string |
+| `peer` | string |
+| `port` | integer |
+| `proto` | string |
+| `result` | string |
+| `start` | 時刻 (RFC 3339) |
+| `up` | integer |
+| `websocket` | boolean |
+
+### webservice.ConnsView
+
+| フィールド | 型 |
+| --- | --- |
+| `active` | 配列 of `webservice.ConnView` |
+| `closed` | integer |
+| `history` | 配列 of `webservice.ConnView` |
+| `matched` | integer |
+| `total` | integer |
+
 ### webservice.ForwardAuth
 
 | フィールド | 型 |
@@ -1886,6 +1918,22 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `key` | string |
 | `seconds` | integer |
+
+### webservice.closeConnRequest
+
+| フィールド | 型 |
+| --- | --- |
+| `banSeconds` | integer |
+| `id` | string |
+| `listener` | string |
+| `site` | string |
+
+### webservice.closeConnResult
+
+| フィールド | 型 |
+| --- | --- |
+| `banKey` | string |
+| `closed` | integer |
 
 ### webservice.geoipDownload
 

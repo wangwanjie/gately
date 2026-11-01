@@ -39,6 +39,9 @@ func TestRequiredAndMatch(t *testing.T) {
 		{"GET", "/api/webterminal/connections/abc/ws", "webterminal:write"},
 		{"GET", "/api/docker/containers/abc/files/read", "docker:write"},
 		{"GET", "/api/docker/containers/abc/logs", "docker:read"},
+		// Web 服务实时连接：查看为读权限，断开（及封禁）为写权限
+		{"GET", "/api/webservice/connections", "webservice:read"},
+		{"POST", "/api/webservice/connections/close", "webservice:write"},
 		// 目录浏览会暴露宿主机、容器与远程主机的文件结构，按写权限处理
 		{"GET", "/api/docker/containers/abc/files/list", "docker:write"},
 		{"GET", "/api/storage/files/k/list", "storage:write"},

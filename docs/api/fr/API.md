@@ -291,6 +291,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | PUT | `/api/webservice/settings` | `webservice:write` | Enregistrer les paramètres globaux du service Web |
 | GET | `/api/webservice/stats` | `webservice:read` | Statistiques par minute du site (?listener=&site=&minutes=) |
 | GET | `/api/webservice/metrics` | `webservice:read` | Métriques au format texte Prometheus |
+| GET | `/api/webservice/connections` | `webservice:read` | Requêtes en cours et longues requêtes récemment terminées d’un site (?listener=&site=&q=) |
+| POST | `/api/webservice/connections/close` | `webservice:write` | Fermer une requête en cours sur un site, avec bannissement facultatif de son adresse source |
 | GET | `/api/webservice/bans` | `webservice:read` | IP actuellement bannies |
 | POST | `/api/webservice/bans` | `webservice:write` | Bannir une IP manuellement |
 | DELETE | `/api/webservice/bans` | `webservice:write` | Lever un bannissement (le body est {"key": adresse}) |
@@ -1586,6 +1588,36 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `maxMb` | integer |
 | `ttl` | integer |
 
+### webservice.ConnView
+
+| Champ | Type |
+| --- | --- |
+| `down` | integer |
+| `durationMs` | integer |
+| `end` | Heure (RFC 3339) |
+| `host` | string |
+| `id` | string |
+| `ip` | string |
+| `method` | string |
+| `path` | string |
+| `peer` | string |
+| `port` | integer |
+| `proto` | string |
+| `result` | string |
+| `start` | Heure (RFC 3339) |
+| `up` | integer |
+| `websocket` | boolean |
+
+### webservice.ConnsView
+
+| Champ | Type |
+| --- | --- |
+| `active` | Tableau de `webservice.ConnView` |
+| `closed` | integer |
+| `history` | Tableau de `webservice.ConnView` |
+| `matched` | integer |
+| `total` | integer |
+
 ### webservice.ForwardAuth
 
 | Champ | Type |
@@ -1886,6 +1918,22 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | --- | --- |
 | `key` | string |
 | `seconds` | integer |
+
+### webservice.closeConnRequest
+
+| Champ | Type |
+| --- | --- |
+| `banSeconds` | integer |
+| `id` | string |
+| `listener` | string |
+| `site` | string |
+
+### webservice.closeConnResult
+
+| Champ | Type |
+| --- | --- |
+| `banKey` | string |
+| `closed` | integer |
 
 ### webservice.geoipDownload
 

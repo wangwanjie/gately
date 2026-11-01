@@ -409,6 +409,19 @@ En un listener en ejecución, pulsa «Estadísticas» en la fila de un sitio par
 
 Las estadísticas se guardan en memoria y vuelven a empezar a contarse tras un reinicio o tras cambiar los ajustes propios del listener. Editar un sitio conserva sus contadores. Las clasificaciones siguen como máximo 5000 orígenes distintos.
 
+### Conexiones en vivo {#connections}
+
+En un listener en ejecución, cada fila de sitio (incluido el sitio predeterminado) muestra «N activas» tras sus estadísticas: las solicitudes que el sitio atiende en este momento, actualizadas al refrescar la página. Haz clic en **Conexiones** para abrir la ventana de conexiones; se actualiza cada 2 segundos y permite buscar por IP:
+
+- **En vivo**: dirección y puerto de origen, protocolo (h1 / h2 / h3, WebSocket marcado como WS), solicitud (método, host y ruta, sin la cadena de consulta), hora de inicio, duración hasta ahora y tráfico (descarga; también subida si hay cuerpo de solicitud o WebSocket). Ordenadas de mayor a menor duración, hasta 500 filas. Con [proxies de confianza](#real-ip) configurados el origen es la dirección real del visitante y se indica el proxy por el que llegó.
+- **Historial**: conexiones terminadas recientemente con hora de inicio y fin, duración, tráfico y resultado (completada / cerrada). Solo se guardan las que duraron al menos 1 segundo o se cerraron manualmente, las 200 más recientes por sitio, y se vacía al reiniciar; consulta el registro de acceso para solicitudes cortas.
+
+La lista cuenta solicitudes en curso: una conexión HTTP/1.1 persistente no pertenece a ningún sitio entre solicitudes, y una conexión HTTP/2 o HTTP/3 puede llevar varias solicitudes a la vez, así que la solicitud es la unidad que corresponde exactamente a un sitio. Un WebSocket actualizado sigue en la lista hasta que se cierra la conexión.
+
+**Cerrar** en una fila termina esa solicitud en cuanto confirmas: en HTTP/1.x se cierra toda la conexión; en HTTP/2 y HTTP/3 solo se reinicia esa solicitud y las demás de la misma conexión continúan; un WebSocket actualizado se cierra junto con su conexión al backend. También surte efecto de inmediato cuando el visitante deja de leer y el envío queda bloqueado. Una solicitud cerrada se registra como 444 en el registro de acceso (o conserva su código si la respuesta ya había empezado) y no cuenta como error del backend ni para la detección de rutas. El visitante puede reconectarse al instante; para impedirlo usa **Cerrar y bloquear**, que añade la dirección de origen (su rango /64 en IPv6) a la [lista de bloqueos](#lista-de-bloqueos) y cierra sus solicitudes en curso en todos los listeners y sitios.
+
+Las cuentas y tokens de solo lectura pueden ver la lista; cerrar y bloquear requieren permiso de escritura y quedan en el registro de auditoría.
+
 ### Métricas de Prometheus
 
 El endpoint global `GET /api/metrics` reúne las métricas de todos los módulos; consulta [Métricas de monitorización](/es/docs/reference/monitoring). El endpoint del módulo que se describe a continuación solo incluye las métricas de los servicios web.

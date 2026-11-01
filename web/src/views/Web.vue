@@ -136,9 +136,10 @@
                 </el-tag>
               </div>
               <div class="site-stats">
-                <template v-if="item.item.site.key && l.stats?.[item.item.site.key]">
-                  <span>{{ t('web.requestsCount', { count: l.stats[item.item.site.key].requests }) }}</span>
-                  <span v-if="l.stats[item.item.site.key].errors" class="text-danger"> · {{ t('web.errorsCount', { count: l.stats[item.item.site.key].errors }) }}</span>
+                <template v-if="siteStat(l, item.item)">
+                  <span>{{ t('web.requestsCount', { count: siteStat(l, item.item)!.requests }) }}</span>
+                  <span v-if="siteStat(l, item.item)!.errors" class="text-danger"> · {{ t('web.errorsCount', { count: siteStat(l, item.item)!.errors }) }}</span>
+                  <span v-if="siteStat(l, item.item)!.active" class="text-active"> · {{ t('web.activeCount', { count: siteStat(l, item.item)!.active }) }}</span>
                 </template>
                 <span v-else class="muted">-</span>
               </div>
@@ -151,8 +152,9 @@
                 <span v-else class="meta">{{ t('web.defaultSiteLast') }}</span>
               </div>
               <div v-else class="site-actions">
-                <el-button v-if="l.running" text size="small" :icon="BarChart3" @click="openStats(l, item.item)">{{ t('web.stats') }}</el-button>
-                <el-button text size="small" :icon="Pencil" @click="openSite(l, item.item)">{{ t('common.edit') }}</el-button>
+                <el-button v-if="l.running" text size="small" :icon="BarChart3" :title="t('web.stats')" @click="openStats(l, item.item)">{{ t('web.stats') }}</el-button>
+                <el-button v-if="l.running" text size="small" :icon="Cable" :title="t('web.connections')" @click="openConns(l, item.item)">{{ t('web.connections') }}</el-button>
+                <el-button text size="small" :icon="Pencil" :title="t('common.edit')" @click="openSite(l, item.item)">{{ t('common.edit') }}</el-button>
                 <el-popconfirm v-if="item.item.isDefault" :title="t('web.resetDefaultConfirm')" width="260" @confirm="resetDefaultSite(l)">
                   <template #reference>
                     <el-button text size="small" type="danger" :icon="Trash2" :aria-label="t('common.reset')" />
@@ -192,6 +194,7 @@
 
     <LogCard url="/api/webservice/logs" clearable />
     <SiteStats ref="statsDialog" />
+    <SiteConns ref="connsDialog" @changed="load" />
 
     <el-dialog v-model="listenerVisible" :title="editingListener.key ? t('web.editListener') : t('web.addListener')" width="560px" :fullscreen="isMobile">
       <el-alert v-if="!editingListener.key" :title="t('web.newListenerHint')" type="info" :closable="false" show-icon class="listener-hint" />
@@ -516,6 +519,7 @@ import { ElMessage } from 'element-plus'
 import {
   ArrowUpDown,
   BarChart3,
+  Cable,
   ChevronDown,
   ChevronsDownUp,
   ChevronsUpDown,
@@ -551,6 +555,7 @@ import IPListsManager from '../components/IPListsManager.vue'
 import NginxImport from '../components/NginxImport.vue'
 import SiteTraffic, { type Rewrite } from '../components/SiteTraffic.vue'
 import SiteStats from '../components/SiteStats.vue'
+import SiteConns from '../components/SiteConns.vue'
 import SiteAccess, { type PathRule, type ShareLink } from '../components/SiteAccess.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
@@ -1151,8 +1156,28 @@ async function removeListener(l: ListenerView) {
 
 const statsDialog = ref<InstanceType<typeof SiteStats>>()
 
+// statKey 返回站点在监听统计中的键：默认站点固定为 default
+function statKey(row: SiteRow) {
+  return row.isDefault ? 'default' : (row.site.key ?? '')
+}
+
+// siteStat 返回站点的请求统计，监听未运行或站点未生效时为 undefined
+function siteStat(l: ListenerView, row: SiteRow) {
+  const k = statKey(row)
+  return k ? l.stats?.[k] : undefined
+}
+
+function siteTitle(row: SiteRow) {
+  return row.site.name || row.site.domains?.[0] || t('web.defaultSite')
+}
+
 function openStats(l: ListenerView, row: SiteRow) {
-  statsDialog.value?.open(l.key ?? '', row.isDefault ? 'default' : (row.site.key ?? ''), row.site.name || row.site.domains?.[0] || t('web.defaultSite'))
+  statsDialog.value?.open(l.key ?? '', statKey(row), siteTitle(row))
+}
+
+const connsDialog = ref<InstanceType<typeof SiteConns>>()
+function openConns(l: ListenerView, row: SiteRow) {
+  connsDialog.value?.open(l.key ?? '', statKey(row), siteTitle(row))
 }
 
 // downCount 统计站点中不可用的后端数量
@@ -1410,6 +1435,9 @@ onMounted(async () => {
 .site-filter {
   width: 220px;
 }
+.text-active {
+  color: var(--el-color-primary);
+}
 .grip {
   color: var(--el-text-color-secondary);
   cursor: grab;
@@ -1563,6 +1591,10 @@ onMounted(async () => {
   .site-actions {
     grid-row: 1;
     grid-column: 3;
+  }
+  /* 窄屏下操作按钮只显示图标（悬停有标题），避免挤压域名列 */
+  .site-actions :deep(.el-button > span:not(.el-icon)) {
+    display: none;
   }
   .site-target,
   .site-opts,

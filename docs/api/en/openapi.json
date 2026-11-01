@@ -2119,6 +2119,84 @@
         },
         "type": "object"
       },
+      "webservice.ConnView": {
+        "properties": {
+          "down": {
+            "type": "integer"
+          },
+          "durationMs": {
+            "type": "integer"
+          },
+          "end": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "host": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "ip": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "peer": {
+            "type": "string"
+          },
+          "port": {
+            "type": "integer"
+          },
+          "proto": {
+            "type": "string"
+          },
+          "result": {
+            "type": "string"
+          },
+          "start": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "up": {
+            "type": "integer"
+          },
+          "websocket": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.ConnsView": {
+        "properties": {
+          "active": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.ConnView"
+            },
+            "type": "array"
+          },
+          "closed": {
+            "type": "integer"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.ConnView"
+            },
+            "type": "array"
+          },
+          "matched": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "webservice.ForwardAuth": {
         "properties": {
           "copyHeaders": {
@@ -2909,6 +2987,34 @@
             "type": "string"
           },
           "seconds": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.closeConnRequest": {
+        "properties": {
+          "banSeconds": {
+            "type": "integer"
+          },
+          "id": {
+            "type": "string"
+          },
+          "listener": {
+            "type": "string"
+          },
+          "site": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.closeConnResult": {
+        "properties": {
+          "banKey": {
+            "type": "string"
+          },
+          "closed": {
             "type": "integer"
           }
         },
@@ -29093,6 +29199,131 @@
           }
         ],
         "summary": "Manually ban an IP",
+        "tags": [
+          "Web service"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/connections": {
+      "get": {
+        "description": "Required permission: `webservice:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.ConnsView"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Requests in progress and recently ended long requests of a site (?listener=\u0026site=\u0026q=)",
+        "tags": [
+          "Web service"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/connections/close": {
+      "post": {
+        "description": "Required permission: `webservice:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/webservice.closeConnRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.closeConnResult"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Close a request in progress on a site, optionally banning its source address",
         "tags": [
           "Web service"
         ],
