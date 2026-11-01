@@ -32,10 +32,14 @@ var tlsVersions = map[string]uint16{
 
 // listenerRunner 运行一个监听器。
 type listenerRunner struct {
-	cfg  Listener
-	auth *authenticator
-	log  *logbuf.Logger
-	srv  *http.Server
+	// cfg 为当前配置，热更新站点时整体替换（持有模块锁），处理请求的 goroutine 不能读取它；
+	// 请求路径用到的设置放在下面创建后不再变化的字段中
+	cfg Listener
+	// key、plainHTTP 在监听存续期间不变（PlainHTTP 变化时会重启监听，见 sameSocket）
+	key, plainHTTP string
+	auth           *authenticator
+	log            *logbuf.Logger
+	srv            *http.Server
 	// ln 为交给 srv 的监听（含各层包装），停止时由 stop 同步关闭，见 stop 中的说明
 	ln net.Listener
 	// h3 为 HTTP/3（QUIC）服务，仅在监听器开启 HTTP3 时存在；h3pc 为它的 UDP 监听
@@ -122,7 +126,7 @@ func (l *listenerRunner) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	// HTTPS 端口收到的明文请求按设置跳转到同端口的 https 地址（ACME 验证已在上面应答）；
 	// 可信反向代理已终止 TLS 并以 X-Forwarded-Proto: https 转来的请求不再跳转，否则会循环跳转
-	if l.cfg.PlainHTTP == PlainHTTPRedirect && !requestIsHTTPS(r) {
+	if l.plainHTTP == PlainHTTPRedirect && !requestIsHTTPS(r) {
 		redirectToHTTPS(w, r)
 		return
 	}
@@ -153,7 +157,7 @@ func (l *listenerRunner) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if s == nil {
 		writeNotFound(w, r, "站点不存在", "这个域名没有配置对应的站点，请检查访问地址是否正确。")
 		// 未知域名且没有默认站点时，同样交给路径探测规则计数
-		webprobe.Report(webprobe.Hit{Addr: clientAddr(r).Addr(), Listener: l.cfg.Key, Unknown: true,
+		webprobe.Report(webprobe.Hit{Addr: clientAddr(r).Addr(), Listener: l.key, Unknown: true,
 			Method: r.Method, Host: r.Host, Path: r.URL.Path, Status: http.StatusNotFound})
 		return
 	}
@@ -161,7 +165,7 @@ func (l *listenerRunner) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func newListenerRunner(cfg Listener, log *logbuf.Logger, auth *authenticator, waf WAFProvider) (*listenerRunner, error) {
-	l := &listenerRunner{cfg: cfg, log: log, auth: auth}
+	l := &listenerRunner{cfg: cfg, key: cfg.Key, plainHTTP: cfg.PlainHTTP, log: log, auth: auth}
 	t, err := buildSiteTable(cfg, log, auth, waf, nil)
 	if err != nil {
 		return nil, err

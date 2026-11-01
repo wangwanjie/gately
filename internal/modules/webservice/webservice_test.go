@@ -861,3 +861,40 @@ func TestListenerImmediateRestart(t *testing.T) {
 		}
 	}
 }
+
+// TestReloadWhileServing 在持续请求（含未匹配站点的请求）的同时反复热更新站点，配合 -race 检查：
+// 热更新会整体替换监听配置，处理请求的 goroutine 不能读取它。
+func TestReloadWhileServing(t *testing.T) {
+	m, addr := newConnsModule(t, []Site{{Enable: true, Key: "a", Domains: []string{"a.test"}, Type: TypeText, Text: "ok", StatusCode: 200}}, Site{})
+	stop := make(chan struct{})
+	var wg sync.WaitGroup
+	for i := 0; i < 4; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			hosts := []string{"a.test", "unknown.test"}
+			for n := 0; ; n++ {
+				select {
+				case <-stop:
+					return
+				default:
+				}
+				req, _ := http.NewRequest("GET", "http://"+addr+"/", nil)
+				req.Host = hosts[(n+i)%2]
+				if resp, err := http.DefaultClient.Do(req); err == nil {
+					_, _ = io.ReadAll(resp.Body)
+					resp.Body.Close()
+				}
+			}
+		}(i)
+	}
+	deadline := time.Now().Add(300 * time.Millisecond)
+	for n := 0; time.Now().Before(deadline); n++ {
+		m.mu.Lock()
+		m.cfg.Listeners[0].Sites[0].Remark = fmt.Sprint(n)
+		m.restartLocked("l1")
+		m.mu.Unlock()
+	}
+	close(stop)
+	wg.Wait()
+}
