@@ -291,7 +291,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | PUT | `/api/webservice/settings` | `webservice:write` | Guardar los ajustes globales del servicio web |
 | GET | `/api/webservice/stats` | `webservice:read` | Estadísticas por minuto del sitio (?listener=&site=&minutes=) |
 | GET | `/api/webservice/metrics` | `webservice:read` | Métricas en formato de texto de Prometheus |
-| GET | `/api/webservice/topology` | `webservice:read` | Instantánea de topología: tasas en vivo, contadores e IP activas de escuchas, sitios, backends y acciones de escucha (?focus=ID de nodo&ip=dirección) |
+| GET | `/api/webservice/topology` | `webservice:read` | Instantánea de la topología de Servicios web |
 | GET | `/api/webservice/connections` | `webservice:read` | Solicitudes en curso y solicitudes largas terminadas recientemente de un sitio (?listener=&site=&q=) |
 | POST | `/api/webservice/connections/close` | `webservice:write` | Cerrar una solicitud en curso de un sitio y, opcionalmente, bloquear su dirección de origen |
 | GET | `/api/webservice/bans` | `webservice:read` | IP bloqueadas actualmente |

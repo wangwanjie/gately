@@ -13,8 +13,11 @@
           clearable
           :placeholder="t('webTopology.filterPlaceholder')"
           :no-data-text="t('webTopology.ipNone')"
+          :filter-method="(q: string) => (ipQuery = q)"
           @change="onIpChange"
+          @visible-change="(v: boolean) => !v && (ipQuery = '')"
         >
+          <template #label="{ value }">{{ showIP(String(value)) }}</template>
           <el-option v-for="ip in ipOptions" :key="ip.ip" :value="ip.ip" :label="showIP(ip.ip)">
             <span class="mono">{{ showIP(ip.ip) }}</span>
             <span class="opt-meta">{{ ip.active ? t('webTopology.ipActive', { n: ip.active }) : ago(ip.last) }}</span>
@@ -198,6 +201,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch, type Component } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { ElMessage } from 'element-plus'
 import {
   AppWindow,
   ArrowRightLeft,
@@ -236,8 +240,10 @@ import {
   formatCount,
   formatQps,
   ipPath,
+  isValidIP,
   maskHost,
   maskIP,
+  maskText,
   maskURL,
   nodeCovers,
   pathOf,
@@ -301,7 +307,16 @@ const colTitles = computed(() => [t('webTopology.colInternet'), 'Gately', t('web
 
 // 活动 IP
 const ipInfo = computed(() => data.value?.ips.find((i) => i.ip === ipFilter.value))
-const ipOptions = computed(() => data.value?.ips ?? [])
+// ipQuery 为下拉框中输入的搜索词：同时按原始地址与打码后的文字匹配，打码时输入完整地址也能搜到
+const ipQuery = ref('')
+const ipOptions = computed(() => {
+  const list = data.value?.ips ?? []
+  const q = ipQuery.value.trim().toLowerCase()
+  if (!q) {
+    return list
+  }
+  return list.filter((i) => i.ip.toLowerCase().includes(q) || showIP(i.ip).toLowerCase().includes(q))
+})
 
 // litSet 为需要高亮的节点集合，null 表示全部正常显示：悬停优先，其次 IP 筛选，最后选中的节点
 const litSet = computed<Set<string> | null>(() => {
@@ -309,10 +324,12 @@ const litSet = computed<Set<string> | null>(() => {
   if (!l) {
     return null
   }
-  if (hover.value) {
+  // 悬停的节点可能已在刷新中被移除（此时浏览器通常不触发 mouseleave），跳过它
+  if (hover.value && l.byId.has(hover.value)) {
     return pathOf(l, hover.value)
   }
-  if (ipFilter.value) {
+  // 筛选的 IP 已不活跃时不再整图变暗，顶部文案会说明它已不活跃
+  if (ipFilter.value && ipInfo.value) {
     return ipPath(l, ipInfo.value)
   }
   return pathOf(l, selected.value)
@@ -462,7 +479,12 @@ function siteName(s: NonNullable<LayoutNode['site']>) {
   if (s.default) {
     return t('web.defaultSite')
   }
-  return s.name || s.domains[0] || s.key
+  return s.name || (s.domains[0] ? showHost(s.domains[0]) : '') || s.key
+}
+
+// showHost 在打码时隐藏以 IP 作为域名的站点地址
+function showHost(h: string) {
+  return masked.value ? maskHost(h) : h
 }
 
 const typeKeys: Record<string, string> = {
@@ -532,7 +554,8 @@ function terminalTitle(s: NonNullable<LayoutNode['site']>) {
     case 'close':
       return t('webTopology.terminalClose')
     case 'redirect':
-      return s.target || t('web.typeRedirect')
+      // 跳转目标可能是内网地址，打码时一并隐藏
+      return s.target ? (masked.value ? maskURL(s.target) : s.target) : t('web.typeRedirect')
     case 'static':
       return s.target || t('web.typeStatic')
     default:
@@ -671,7 +694,8 @@ const detail = computed<Detail | undefined>(() => {
       const l = n.listener!
       d.title = l.name || listenerAddr(l)
       d.sub = [listenerAddr(l), l.tls ? 'HTTPS' : 'HTTP', l.http3 ? 'HTTP/3' : ''].filter(Boolean).join(' · ')
-      d.error = l.error
+      // 错误信息里常带监听地址（如 listen tcp 192.168.1.5:443: bind: ...）
+      d.error = masked.value && l.error ? maskText(l.error) : l.error
       d.tags.push(l.running ? { text: t('webTopology.running'), type: 'success' } : { text: l.enable ? t('webTopology.notRunning') : t('webTopology.disabled'), type: 'info' })
       if (l.tls && l.plainHttp === 'redirect') {
         d.tags.push({ text: t('webTopology.plainRedirect') })
@@ -719,7 +743,7 @@ const detail = computed<Detail | undefined>(() => {
         d.rows.push({ label: t('webTopology.closed'), value: formatCount(s.closed) })
       }
       if (s.domains.length && !s.default) {
-        d.rows.push({ label: t('webTopology.domains'), value: s.domains.join(', ') })
+        d.rows.push({ label: t('webTopology.domains'), value: s.domains.map(showHost).join(', ') })
       }
       if (s.running) {
         d.actions.push({ key: 'stats', label: t('webTopology.openStats'), icon: BarChart3, run: () => emit('stats', lk, s.key) })
@@ -790,12 +814,8 @@ const panelIps = computed<(TopoIP & { n: number })[]>(() => {
 // ---- 交互 ----
 
 function select(id: string) {
-  if (selected.value === id) {
-    return
-  }
+  // 曲线所属的节点变化后由下方对 detailFocus 的监听立即刷新
   selected.value = id
-  // 立即刷新以取得新节点的曲线
-  reload()
 }
 
 function setIp(ip: string) {
@@ -806,6 +826,12 @@ function setIp(ip: string) {
 
 function onIpChange(v: string) {
   const s = (v ?? '').trim()
+  // 手动输入的不完整地址（如 1.2.3）不交给后端，否则每次刷新都会报错、画布停在旧数据
+  if (s && !isValidIP(s)) {
+    ElMessage.warning(t('webTopology.ipInvalid'))
+    ipModel.value = ipFilter.value
+    return
+  }
   ipFilter.value = s
   reload()
 }
@@ -827,8 +853,8 @@ async function load() {
   const focus = detailFocus.value
   try {
     const q = new URLSearchParams({ focus })
-    // 只把格式像地址的筛选值交给后端（后端会校验），手动输入未完成时不报错
-    if (ipFilter.value && /^[0-9a-fA-F:.]+$/.test(ipFilter.value)) {
+    // 筛选值在选择时已校验为完整地址
+    if (ipFilter.value && isValidIP(ipFilter.value)) {
       q.set('ip', ipFilter.value)
     }
     const v = await api.get<TopologyView>('/api/webservice/topology?' + q.toString())
@@ -892,10 +918,11 @@ onBeforeUnmount(() => {
   document.removeEventListener('visibilitychange', onVisibility)
 })
 
-// 选中的节点因折叠或搜索消失时回到 Gately
-watch(layout, (l) => {
-  if (l && !l.byId.has(selected.value)) {
-    selected.value = 'gately'
+// 选中的节点因折叠或搜索暂时消失时，详情面板回落到 Gately（见 selectedNode），节点重新出现后恢复选中；
+// 曲线所属节点变化时立即刷新，避免最多 2 秒没有曲线
+watch(detailFocus, (v, old) => {
+  if (v !== old) {
+    reload()
   }
 })
 

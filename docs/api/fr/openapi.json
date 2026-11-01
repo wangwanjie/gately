@@ -3607,7 +3607,7 @@
     "url": "https://gately.cn"
   },
   "info": {
-    "description": "API d'administration de Gately 用于脚本与自动化批量管理。\n\n认证：在Interface d'administration的“Jeton API”页创建令牌，请求头携带 `Authorization: Bearer gtl_xxxx`。\n\n权限：每个令牌只拥有创建时勾选的权限，格式为 `\u003c模块\u003e:read` 或 `\u003c模块\u003e:write`，写权限包含读权限。账号、Authentification à deux facteurs、令牌管理以及备份、恢复、重启、系统设置接口只能使用登录会话。\n\n请求体使用 `Content-Type: application/json`，错误统一返回 `{\"error\": \"说明\"}`。\n\nLes modules désactivés dans « Paramètres → Modules » n’exposent aucune API : leurs points de terminaison renvoient 403 et n’apparaissent plus dans la documentation de l’API de l’instance en cours d’exécution.",
+    "description": "L'API d'administration de Gately permet la gestion en masse par scripts et automatisation.\n\nAuthentification : créez un jeton dans la page « Jetons API » de l'interface d'administration et ajoutez l'en-tête de requête `Authorization: Bearer gtl_xxxx`.\n\nPermissions : chaque jeton ne possède que les permissions cochées à sa création, au format `\u003cmodule\u003e:read` ou `\u003cmodule\u003e:write` ; l'écriture inclut la lecture. Les interfaces de compte, d'authentification à deux facteurs, de gestion des jetons, de sauvegarde, de restauration, de redémarrage et de paramètres système exigent une session connectée.\n\nLe corps de la requête utilise `Content-Type: application/json` ; les erreurs sont renvoyées au format `{\"error\": \"description\"}`.\n\nLes modules désactivés dans « Paramètres → Modules » n’exposent aucune API : leurs points de terminaison renvoient 403 et n’apparaissent plus dans la documentation de l’API de l’instance en cours d’exécution.",
     "title": "API d'administration de Gately",
     "version": "dev"
   },
@@ -31337,7 +31337,7 @@
     },
     "/api/webservice/topology": {
       "get": {
-        "description": "Permission requise : `webservice:read`.",
+        "description": "Lecture seule ; toutes les données proviennent de compteurs en mémoire, adapté à une interrogation toutes les 2 secondes. Dans `rate`, `qps` et `bps` sont les moyennes des `window` dernières secondes complètes et `qps60` la moyenne sur 60 secondes. Identifiants de nœud : écouteur `l:\u003cclé de l'écouteur\u003e`, site `s:\u003cclé de l'écouteur\u003e/\u003cclé du site\u003e`, les backends commencent par `u:` et les actions de l'écouteur sont `a:\u003cclé de l'écouteur\u003e/redirect` ou `a:\u003cclé de l'écouteur\u003e/notfound` ; quand `focus` est un identifiant de nœud (ou internet / gately pour toute l'instance), `series` renvoie les requêtes et octets par seconde de ce nœud sur les 60 dernières secondes. Quand `ip` est une adresse de visiteur, elle figure toujours dans `ips` ; une adresse invalide renvoie 400. `blocked` d'un site compte les blocages par motif, avec les clés ban, ip, country, rateLimit et waf. `ips` liste les adresses de visiteurs vues dans les 60 dernières secondes ou ayant des requêtes en cours, 500 au plus ; `ipTotal` est le total et `ipTruncated` vaut true si la liste a été tronquée.\n\nPermission requise : `webservice:read`.",
         "responses": {
           "200": {
             "content": {
@@ -31385,7 +31385,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Instantané de topologie : débits en direct, compteurs et IP actives des écoutes, sites, backends et actions au niveau de l’écoute (?focus=ID de nœud\u0026ip=adresse)",
+        "summary": "Instantané de la topologie des services Web",
         "tags": [
           "Service Web"
         ],

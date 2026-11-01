@@ -90,6 +90,7 @@ var apiCatalog = map[string]epDoc{
 	"PUT /api/ssl/settings":                              {Summary: "保存证书全局设置", Body: true},
 	"GET /api/waf/crs":                                   {Summary: "列出 OWASP CRS 规则文件"},
 	"GET /api/waf/crs/{file}":                            {Summary: "读取一个 CRS 规则文件"},
+	"GET /api/webservice/topology":                       {Summary: "Web 服务拓扑视图快照", Desc: "只读，数据全部来自内存计数，适合每 2 秒轮询。`rate` 中 `qps`、`bps` 为最近 `window` 个完整秒的均值，`qps60` 为 60 秒均值。节点编号：监听 `l:<监听 key>`，站点 `s:<监听 key>/<站点 key>`，后端 `u:` 开头，监听级动作 `a:<监听 key>/redirect` 或 `a:<监听 key>/notfound`；`focus` 为节点编号（或 internet、gately 表示整个实例）时在 `series` 中返回该节点近 60 秒每秒的请求数与字节数。`ip` 为访客地址时保证它出现在 `ips` 中，地址无效返回 400。站点的 `blocked` 按原因统计拦截次数，键为 ban、ip、country、rateLimit、waf。`ips` 为近 60 秒出现过或仍有进行中请求的访客地址，最多 500 个，`ipTotal` 为总数，超出时 `ipTruncated` 为 true。"},
 	"GET /api/webservice/settings":                       {Summary: "读取 Web 服务全局设置"},
 	"PUT /api/webservice/settings":                       {Summary: "保存 Web 服务全局设置", Body: true},
 	"GET /api/webservice/users":                          {Summary: "读取共享用户与 OIDC 身份提供方", Desc: "返回共享用户（密码与 TOTP 密钥脱敏）、`ssoDomain`、`selfServicePassword`、OIDC 身份提供方设置（客户端密钥脱敏），以及可以使用共享用户的站点列表 `sites`：`listener`、`site` 标识站点，`sharedUsers` 为是否使用共享用户，`otherAuth` 表示站点还有本地用户或第三方登录身份，`forwardAuth` 表示站点使用转发认证。断开连接的站点与停用的默认站点不列出。"},

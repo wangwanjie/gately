@@ -291,7 +291,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | PUT | `/api/webservice/settings` | `webservice:write` | Salvar configurações globais do serviço web |
 | GET | `/api/webservice/stats` | `webservice:read` | Estatísticas por minuto do site (?listener=&site=&minutes=) |
 | GET | `/api/webservice/metrics` | `webservice:read` | Métricas em formato de texto do Prometheus |
-| GET | `/api/webservice/topology` | `webservice:read` | Instantâneo da topologia: taxas ao vivo, contadores e IPs ativos de escutas, sites, backends e ações da escuta (?focus=ID do nó&ip=endereço) |
+| GET | `/api/webservice/topology` | `webservice:read` | Instantâneo da topologia dos Serviços Web |
 | GET | `/api/webservice/connections` | `webservice:read` | Requisições em andamento e requisições longas encerradas recentemente de um site (?listener=&site=&q=) |
 | POST | `/api/webservice/connections/close` | `webservice:write` | Encerrar uma requisição em andamento de um site, podendo bloquear o endereço de origem |
 | GET | `/api/webservice/bans` | `webservice:read` | IPs atualmente bloqueados |

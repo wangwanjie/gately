@@ -352,6 +352,11 @@ func trDocDeep(lang string, v any) any {
 		}
 		parts := strings.Split(x, "\n\n")
 		for i := range parts {
+			// 由多个字符串常量拼成的说明（如 apiIntro），译文表的键是各常量原文，带结尾的空行
+			if out := i18n.TrExact(lang, parts[i]+"\n\n"); out != parts[i]+"\n\n" {
+				parts[i] = strings.TrimSuffix(out, "\n\n")
+				continue
+			}
 			parts[i] = i18n.Tr(lang, parts[i])
 		}
 		return strings.Join(parts, "\n\n")

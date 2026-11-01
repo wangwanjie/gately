@@ -3607,7 +3607,7 @@
     "url": "https://gately.cn"
   },
   "info": {
-    "description": "Gately 관리 API 用于脚本与自动化批量管理。\n\n认证：在관리 콘솔的“API 토큰”页创建令牌，请求头携带 `Authorization: Bearer gtl_xxxx`。\n\n权限：每个令牌只拥有创建时勾选的权限，格式为 `\u003c模块\u003e:read` 或 `\u003c模块\u003e:write`，写权限包含读权限。账号、2단계 인증、令牌管理以及备份、恢复、重启、系统设置接口只能使用登录会话。\n\n请求体使用 `Content-Type: application/json`，错误统一返回 `{\"error\": \"说明\"}`。\n\n「설정 → 기능 모듈」에서 끈 모듈은 API를 제공하지 않으며, 해당 엔드포인트는 403을 반환하고 실행 중인 인스턴스의 API 문서에도 더 이상 표시되지 않습니다.",
+    "description": "Gately 관리 API는 스크립트와 자동화를 통한 일괄 관리에 사용합니다.\n\n인증: 관리 콘솔의 \"API 토큰\" 페이지에서 토큰을 생성하고 요청 헤더에 `Authorization: Bearer gtl_xxxx`를 포함하세요.\n\n권한: 각 토큰은 생성 시 선택한 권한만 가지며 형식은 `\u003c모듈\u003e:read` 또는 `\u003c모듈\u003e:write`입니다. 쓰기 권한은 읽기 권한을 포함합니다. 계정, 2단계 인증, 토큰 관리, 백업, 복원, 재시작, 시스템 설정 인터페이스는 로그인 세션으로만 사용할 수 있습니다.\n\n요청 본문은 `Content-Type: application/json`을 사용하며, 오류는 `{\"error\": \"설명\"}` 형식으로 반환됩니다.\n\n「설정 → 기능 모듈」에서 끈 모듈은 API를 제공하지 않으며, 해당 엔드포인트는 403을 반환하고 실행 중인 인스턴스의 API 문서에도 더 이상 표시되지 않습니다.",
     "title": "Gately 관리 API",
     "version": "dev"
   },
@@ -31337,7 +31337,7 @@
     },
     "/api/webservice/topology": {
       "get": {
-        "description": "필요한 권한: `webservice:read`.",
+        "description": "읽기 전용이며 모든 데이터는 메모리 카운터에서 가져오므로 2초마다 폴링하기에 적합합니다. `rate` 의 `qps`, `bps` 는 최근 `window` 개의 완전한 초 평균이고 `qps60` 은 60초 평균입니다. 노드 ID: 리스너 `l:\u003c리스너 key\u003e`, 사이트 `s:\u003c리스너 key\u003e/\u003c사이트 key\u003e`, 백엔드는 `u:` 로 시작하고 리스너 수준 동작은 `a:\u003c리스너 key\u003e/redirect` 또는 `a:\u003c리스너 key\u003e/notfound` 입니다. `focus` 가 노드 ID(인스턴스 전체는 internet 또는 gately)이면 `series` 에 해당 노드의 최근 60초 초당 요청 수와 바이트 수를 반환합니다. `ip` 가 방문자 주소이면 반드시 `ips` 에 포함하며, 주소가 잘못되면 400을 반환합니다. 사이트의 `blocked` 는 사유별 차단 횟수로 키는 ban, ip, country, rateLimit, waf 입니다. `ips` 는 최근 60초에 나타났거나 진행 중인 요청이 있는 방문자 주소로 최대 500개이며, `ipTotal` 은 전체 수, 잘렸으면 `ipTruncated` 가 true 입니다.\n\n필요한 권한: `webservice:read`.",
         "responses": {
           "200": {
             "content": {
@@ -31385,7 +31385,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "토폴로지 스냅샷: 리스너, 사이트, 백엔드, 리스너 단위 동작의 실시간 속도, 카운터, 활성 IP(?focus=노드 ID\u0026ip=주소)",
+        "summary": "Web 서비스 토폴로지 스냅숏",
         "tags": [
           "Web 서비스"
         ],

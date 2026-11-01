@@ -51,6 +51,7 @@
   "activeIpsHelp": "Adresses ayant envoyé des requêtes ces 60 dernières secondes, plus celles ayant encore des requêtes en cours ; ce n’est pas un historique",
   "ipTruncated": "Trop d’adresses sources, seule une partie est listée",
   "ipNone": "Aucun visiteur ces 60 dernières secondes",
+  "ipInvalid": "Saisissez une adresse IP complète",
   "ipActive": "{n} en cours",
   "ipAgo": "il y a {s} s",
   "ipNow": "à l’instant",

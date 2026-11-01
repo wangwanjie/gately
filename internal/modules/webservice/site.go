@@ -289,16 +289,24 @@ func (h *siteHandler) inherit(old *siteHandler) {
 	h.metrics = old.metrics
 	// 进行中的请求仍由旧处理器服务，沿用登记表才能继续列出并断开它们
 	h.conns = old.conns
-	// 同一分流下地址相同的后端沿用转发统计，修改其他设置后累计数与速率不清零
+	// 同一分流下地址相同的后端沿用转发统计，修改其他设置后累计数与速率不清零。
+	// 同一组里同一地址写了多次（如一条普通、一条备用）时按出现顺序一一对应，不合并成一份统计
+	key := func(p *pool, u *upstream, seen map[string]int) string {
+		k := p.scope + "\x00" + p.match + "\x00" + u.url.String()
+		seen[k]++
+		return k + "\x00" + strconv.Itoa(seen[k])
+	}
 	prev := map[string]*upstreamStats{}
+	seen := map[string]int{}
 	for _, p := range old.pools() {
 		for _, u := range p.ups {
-			prev[p.scope+"\x00"+p.match+"\x00"+u.url.String()] = u.stats
+			prev[key(p, u, seen)] = u.stats
 		}
 	}
+	seen = map[string]int{}
 	for _, p := range h.pools() {
 		for _, u := range p.ups {
-			if st := prev[p.scope+"\x00"+p.match+"\x00"+u.url.String()]; st != nil {
+			if st := prev[key(p, u, seen)]; st != nil {
 				u.stats = st
 			}
 		}

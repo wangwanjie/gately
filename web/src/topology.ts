@@ -367,7 +367,8 @@ export function activeAt(ip: TopoIP, id: string): number {
 
 // maskIP 把 IPv4 末段、IPv6 后 64 位（接口标识）替换为 *，用于截图分享时隐藏访客与内网地址。
 export function maskIP(ip: string): string {
-  if (!ip) {
+  // 空值与通配地址（监听全部地址）不含任何信息，原样显示
+  if (!ip || ip === '0.0.0.0' || ip === '::') {
     return ip
   }
   if (ip.includes(':')) {
@@ -394,6 +395,30 @@ const ipv4Re = /^\d{1,3}(\.\d{1,3}){3}$/
 export function isIPLiteral(host: string): boolean {
   const h = host.replace(/^\[|\]$/g, '')
   return ipv4Re.test(h) || (h.includes(':') && /^[0-9a-fA-F:.]+$/.test(h))
+}
+
+// isValidIP 严格校验 IP 地址（IPv4 每段 0–255，IPv6 交给 URL 解析），用于判断筛选框输入是否已完整。
+export function isValidIP(s: string): boolean {
+  if (ipv4Re.test(s)) {
+    return s.split('.').every((p) => Number(p) <= 255)
+  }
+  if (!s.includes(':') || !/^[0-9a-fA-F:.]+$/.test(s)) {
+    return false
+  }
+  try {
+    new URL(`http://[${s}]/`)
+    return true
+  } catch {
+    return false
+  }
+}
+
+// maskText 打码自由文本（如监听的错误信息 listen tcp 192.168.1.5:443: bind: ...）中出现的 IP 地址。
+export function maskText(text: string): string {
+  return text
+    .replace(/\[([0-9a-fA-F:.]+)\]/g, (m, ip: string) => (ip.includes(':') ? '[' + maskIP(ip) + ']' : m))
+    .replace(/(?<![\w.:])\d{1,3}(?:\.\d{1,3}){3}(?![\w.])/g, (ip) => maskIP(ip))
+    .replace(/(?<![\w:[])(?:[0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}(?![\w:\]])/g, (ip) => (isValidIP(ip) ? maskIP(ip) : ip))
 }
 
 // maskHost 打码地址中的 IP（主机名不变）。

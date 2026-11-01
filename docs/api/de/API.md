@@ -291,7 +291,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | PUT | `/api/webservice/settings` | `webservice:write` | Globale Web-Dienst-Einstellungen speichern |
 | GET | `/api/webservice/stats` | `webservice:read` | Minutenstatistik einer Site (?listener=&site=&minutes=) |
 | GET | `/api/webservice/metrics` | `webservice:read` | Metriken im Prometheus-Textformat |
-| GET | `/api/webservice/topology` | `webservice:read` | Topologie-Momentaufnahme: Live-Raten, Zähler und aktive IPs von Listenern, Sites, Backends und Listener-Aktionen (?focus=Knoten-ID&ip=Adresse) |
+| GET | `/api/webservice/topology` | `webservice:read` | Topologie-Snapshot der Webdienste |
 | GET | `/api/webservice/connections` | `webservice:read` | Laufende und kürzlich beendete lange Anfragen einer Site (?listener=&site=&q=) |
 | POST | `/api/webservice/connections/close` | `webservice:write` | Eine laufende Anfrage einer Site trennen und optional ihre Quelladresse sperren |
 | GET | `/api/webservice/bans` | `webservice:read` | Aktuell gesperrte IPs |

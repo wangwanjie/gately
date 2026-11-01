@@ -31337,7 +31337,7 @@
     },
     "/api/webservice/topology": {
       "get": {
-        "description": "所需权限：`webservice:read`。",
+        "description": "只读，数据全部来自内存计数，适合每 2 秒轮询。`rate` 中 `qps`、`bps` 为最近 `window` 个完整秒的均值，`qps60` 为 60 秒均值。节点编号：监听 `l:\u003c监听 key\u003e`，站点 `s:\u003c监听 key\u003e/\u003c站点 key\u003e`，后端 `u:` 开头，监听级动作 `a:\u003c监听 key\u003e/redirect` 或 `a:\u003c监听 key\u003e/notfound`；`focus` 为节点编号（或 internet、gately 表示整个实例）时在 `series` 中返回该节点近 60 秒每秒的请求数与字节数。`ip` 为访客地址时保证它出现在 `ips` 中，地址无效返回 400。站点的 `blocked` 按原因统计拦截次数，键为 ban、ip、country、rateLimit、waf。`ips` 为近 60 秒出现过或仍有进行中请求的访客地址，最多 500 个，`ipTotal` 为总数，超出时 `ipTruncated` 为 true。\n\n所需权限：`webservice:read`。",
         "responses": {
           "200": {
             "content": {
@@ -31385,7 +31385,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "拓扑视图快照：监听、站点、后端与监听级动作的实时速率、计数与活动 IP（?focus=节点编号\u0026ip=地址）",
+        "summary": "Web 服务拓扑视图快照",
         "tags": [
           "Web 服务"
         ],

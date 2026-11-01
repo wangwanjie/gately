@@ -29,6 +29,11 @@ const (
 	topoMaxDomains = 50
 )
 
+// topoMaxAggIPs 为汇总活动 IP 时最多处理的地址数（测试可调小）。每个节点各自最多记 1024 个近期地址，
+// 大量不同来源（如逐个换用一个 IPv6 /64 内的地址）时节点数 × 1024 的汇总、排序会让每次轮询耗时上百毫秒。
+// 超出后只再收录有进行中请求的地址与正在筛选的地址，并标记 ipTruncated
+var topoMaxAggIPs = 5000
+
 // TopologyView 是拓扑接口的输出。
 type TopologyView struct {
 	// Time 为快照时刻（Unix 秒），Window 为 qps / bps 取均值的秒数
@@ -339,9 +344,14 @@ func (m *Module) topology(now int64, focus string, wantIP netip.Addr) TopologyVi
 		last     int64
 	}
 	ips := map[netip.Addr]*ipAgg{}
-	agg := func(a netip.Addr) *ipAgg {
+	// agg 返回地址的汇总项；达到 topoMaxAggIPs 后，除非 force（有进行中请求）或是正在筛选的地址，否则返回 nil 不再收录
+	agg := func(a netip.Addr, force bool) *ipAgg {
 		x := ips[a]
 		if x == nil {
+			if len(ips) >= topoMaxAggIPs && !force && a != wantIP {
+				v.IPTruncated = true
+				return nil
+			}
 			x = &ipAgg{nodes: map[string]bool{}}
 			ips[a] = x
 		}
@@ -375,13 +385,18 @@ func (m *Module) topology(now int64, focus string, wantIP netip.Addr) TopologyVi
 				v.Series = addSeries(v.Series, u.stats.rate.series(now, rateSeriesSeconds))
 			}
 			if u.stats.recent.each(now, func(a netip.Addr, last int64) {
-				agg(a).nodes[id] = true
+				if x := agg(a, false); x != nil {
+					x.nodes[id] = true
+				}
 			}) {
 				v.IPTruncated = true
 			}
 		}
 		if h.metrics.recent.each(now, func(a netip.Addr, last int64) {
-			x := agg(a)
+			x := agg(a, false)
+			if x == nil {
+				return
+			}
 			x.nodes[ts.ID] = true
 			if last > x.last {
 				x.last = last
@@ -390,7 +405,11 @@ func (m *Module) topology(now int64, focus string, wantIP netip.Addr) TopologyVi
 			v.IPTruncated = true
 		}
 		for _, a := range h.conns.active() {
-			x := agg(a.client.Addr())
+			// 经 unix socket 等进来的请求没有有效的客户端地址
+			if !a.client.Addr().IsValid() {
+				continue
+			}
+			x := agg(a.client.Addr(), true)
 			if x.activeAt == nil {
 				x.activeAt = map[string]int{}
 			}
@@ -423,7 +442,10 @@ func (m *Module) topology(now int64, focus string, wantIP netip.Addr) TopologyVi
 			ta.Rate = act.rate.rate(now)
 			addFocus(ta.ID, tl.Key, &act.rate)
 			if act.recent.each(now, func(a netip.Addr, last int64) {
-				x := agg(a)
+				x := agg(a, false)
+				if x == nil {
+					return
+				}
 				x.nodes[ta.ID] = true
 				if last > x.last {
 					x.last = last

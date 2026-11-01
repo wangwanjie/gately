@@ -529,6 +529,63 @@ func TestTopologyAPI(t *testing.T) {
 	if !big.IPTruncated || big.IPTotal < topoMaxIPs+20 || len(big.IPs) != topoMaxIPs+1 || big.IPs[len(big.IPs)-1].IP != last.String() {
 		t.Fatalf("截断或保留筛选地址错误: truncated=%v total=%d len=%d", big.IPTruncated, big.IPTotal, len(big.IPs))
 	}
+
+	// 汇总上限：大量不同来源时只汇总前 topoMaxAggIPs 个地址，正在筛选的地址仍保留
+	oldAgg := topoMaxAggIPs
+	topoMaxAggIPs = 100
+	t.Cleanup(func() { topoMaxAggIPs = oldAgg })
+	capped := m.topology(now, "", last)
+	if !capped.IPTruncated || capped.IPTotal > 101 {
+		t.Fatalf("汇总应在上限处停止: truncated=%v total=%d", capped.IPTruncated, capped.IPTotal)
+	}
+	found := false
+	for _, ip := range capped.IPs {
+		found = found || ip.IP == last.String()
+	}
+	if !found {
+		t.Fatal("超出汇总上限时正在筛选的地址也应保留")
+	}
+}
+
+// 同一组里同一后端地址写了两次时，热更新后两者各自沿用自己的统计，不合并成一份。
+func TestInheritDuplicateUpstreams(t *testing.T) {
+	site := Site{Enable: true, Key: "s", Domains: []string{"a.test"}, Targets: []string{"http://10.0.0.1:80", "http://10.0.0.1:80 backup"}}
+	if err := site.validate(false); err != nil {
+		t.Fatal(err)
+	}
+	mk := func() *siteHandler {
+		h, err := newSiteHandler(site, testLogs().Logger("t"), newAuthenticator("x"), nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return h
+	}
+	old, cur := mk(), mk()
+	old.pool.ups[0].stats.requests.Store(5)
+	old.pool.ups[1].stats.requests.Store(7)
+	cur.inherit(old)
+	if cur.pool.ups[0].stats.requests.Load() != 5 || cur.pool.ups[1].stats.requests.Load() != 7 || cur.pool.ups[0].stats == cur.pool.ups[1].stats {
+		t.Fatalf("重复地址的统计应按顺序一一沿用: %d %d", cur.pool.ups[0].stats.requests.Load(), cur.pool.ups[1].stats.requests.Load())
+	}
+}
+
+// 后端展示地址（含监控指标标签）去掉用户名、密码与查询串。
+func TestUpstreamDisplayURL(t *testing.T) {
+	for in, want := range map[string]string{
+		"http://10.0.0.1:80":                   "http://10.0.0.1:80",
+		"http://u:pw@10.0.0.1:80/api":          "http://10.0.0.1:80/api",
+		"https://h.example/p?token=secret&x=1": "https://h.example/p",
+		"http://u@h.example:8080/?k=v":         "http://h.example:8080/",
+	} {
+		spec, err := parseUpstream(in)
+		if err != nil {
+			t.Fatal(err)
+		}
+		u := &upstream{url: spec.URL}
+		if got := u.displayURL(); got != want {
+			t.Errorf("%s → %s，应为 %s", in, got, want)
+		}
+	}
 }
 
 // TestTopologyListenerActions 验证开启 HTTPS 跳转、没有默认站点的监听列出两类监听级动作，并计入监听汇总与活动 IP。

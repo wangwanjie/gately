@@ -291,7 +291,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/webservice/settings` | `webservice:write` | 儲存 Web 服務全域設定 |
 | GET | `/api/webservice/stats` | `webservice:read` | 站點分鐘級統計（?listener=&site=&minutes=） |
 | GET | `/api/webservice/metrics` | `webservice:read` | Prometheus 文字格式指標 |
-| GET | `/api/webservice/topology` | `webservice:read` | 拓撲視圖快照：監聽、站點、後端與監聽層級動作的即時速率、計數與活動 IP（?focus=節點編號&ip=位址） |
+| GET | `/api/webservice/topology` | `webservice:read` | Web 服務拓撲視圖快照 |
 | GET | `/api/webservice/connections` | `webservice:read` | 站點進行中的請求與最近結束的長請求（?listener=&site=&q=） |
 | POST | `/api/webservice/connections/close` | `webservice:write` | 中斷站點的一個進行中請求，可同時封鎖其來源位址 |
 | GET | `/api/webservice/bans` | `webservice:read` | 目前被封鎖的 IP |

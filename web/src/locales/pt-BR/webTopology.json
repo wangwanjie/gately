@@ -51,6 +51,7 @@
   "activeIpsHelp": "Endereços com requisições nos últimos 60 segundos e endereços com requisições em andamento; não é um histórico",
   "ipTruncated": "Endereços de origem demais, apenas parte é listada",
   "ipNone": "Nenhum visitante nos últimos 60 segundos",
+  "ipInvalid": "Digite um endereço IP completo",
   "ipActive": "{n} em andamento",
   "ipAgo": "há {s} s",
   "ipNow": "agora mesmo",

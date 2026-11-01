@@ -53,13 +53,16 @@ type upstreamStats struct {
 	recent *recentIPs
 }
 
-// displayURL 返回用于展示、日志与事件的后端地址，去掉地址中的用户名与密码。
+// displayURL 返回用于展示、日志、事件与监控指标的后端地址，去掉地址中的用户名、密码与查询串：
+// 监控指标以纯文本返回、不经过只读脱敏，查询串里常带令牌。
 func (u *upstream) displayURL() string {
-	if u.url.User == nil {
+	if u.url.User == nil && u.url.RawQuery == "" && !u.url.ForceQuery {
 		return u.url.String()
 	}
 	c := *u.url
 	c.User = nil
+	c.RawQuery = ""
+	c.ForceQuery = false
 	return c.String()
 }
 

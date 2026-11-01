@@ -3607,7 +3607,7 @@
     "url": "https://gately.cn"
   },
   "info": {
-    "description": "Gately Admin API 用于脚本与自动化批量管理。\n\n认证：在Admin console的“API token”页创建令牌，请求头携带 `Authorization: Bearer gtl_xxxx`。\n\n权限：每个令牌只拥有创建时勾选的权限，格式为 `\u003c模块\u003e:read` 或 `\u003c模块\u003e:write`，写权限包含读权限。账号、Two-factor authentication、令牌管理以及备份、恢复、重启、系统设置接口只能使用登录会话。\n\n请求体使用 `Content-Type: application/json`，错误统一返回 `{\"error\": \"说明\"}`。\n\nModules turned off under \"Settings → Modules\" serve no API: their endpoints return 403 and no longer appear in the API docs of the running instance.",
+    "description": "The Gately Admin API supports scripting and bulk automation.\n\nAuthentication: create a token on the \"API Tokens\" page of the admin console and send the header `Authorization: Bearer gtl_xxxx`.\n\nPermissions: each token has only the permissions selected at creation, in the form `\u003cmodule\u003e:read` or `\u003cmodule\u003e:write`; write permission includes read. Account, two-factor authentication and token management endpoints, as well as backup, restore, restart and system settings endpoints, can be used by login sessions only.\n\nSend the request body with `Content-Type: application/json`; errors are returned uniformly as `{\"error\": \"message\"}`.\n\nModules turned off under \"Settings → Modules\" serve no API: their endpoints return 403 and no longer appear in the API docs of the running instance.",
     "title": "Gately Admin API",
     "version": "dev"
   },
@@ -31337,7 +31337,7 @@
     },
     "/api/webservice/topology": {
       "get": {
-        "description": "Required permission: `webservice:read`.",
+        "description": "Read-only; all data comes from in-memory counters, suitable for polling every 2 seconds. In `rate`, `qps` and `bps` are averages over the last `window` complete seconds and `qps60` is the 60-second average. Node IDs: listener `l:\u003clistener key\u003e`, site `s:\u003clistener key\u003e/\u003csite key\u003e`, backends start with `u:`, listener-level actions `a:\u003clistener key\u003e/redirect` or `a:\u003clistener key\u003e/notfound`; when `focus` is a node ID (or internet / gately for the whole instance), `series` returns that node's requests and bytes per second for the last 60 seconds. When `ip` is a visitor address it is guaranteed to appear in `ips`; an invalid address returns 400. A site's `blocked` counts blocked requests by reason, with keys ban, ip, country, rateLimit and waf. `ips` lists visitor addresses seen in the last 60 seconds or with requests still in progress, at most 500; `ipTotal` is the total and `ipTruncated` is true when the list was cut.\n\nRequired permission: `webservice:read`.",
         "responses": {
           "200": {
             "content": {
@@ -31385,7 +31385,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Topology snapshot: live rates, counters and active IPs of listeners, sites, backends and listener-level actions (?focus=node ID\u0026ip=address)",
+        "summary": "Web Services topology snapshot",
         "tags": [
           "Web service"
         ],

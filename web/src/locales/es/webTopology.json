@@ -51,6 +51,7 @@
   "activeIpsHelp": "Direcciones con solicitudes en los últimos 60 segundos y direcciones con solicitudes aún en curso; no es un historial",
   "ipTruncated": "Demasiadas direcciones de origen, solo se muestra una parte",
   "ipNone": "Sin visitantes en los últimos 60 segundos",
+  "ipInvalid": "Introduzca una dirección IP completa",
   "ipActive": "{n} en curso",
   "ipAgo": "hace {s} s",
   "ipNow": "ahora mismo",

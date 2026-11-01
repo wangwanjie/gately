@@ -1,7 +1,7 @@
 // 拓扑视图纯函数的单元测试：node --test tests/（Node 22.18+ 可直接加载 .ts）
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { ROW, PAD_Y, activeAt, buildLayout, edgeWidth, flowLevel, formatCount, formatQps, ipPath, maskIP, maskURL, nodeCovers, pathOf, siteMatches, terminalId } from '../src/topology.ts'
+import { ROW, PAD_Y, activeAt, buildLayout, edgeWidth, flowLevel, formatCount, formatQps, ipPath, isValidIP, maskIP, maskText, maskURL, nodeCovers, pathOf, siteMatches, terminalId } from '../src/topology.ts'
 
 const rate = (qps = 0, bps = 0) => ({ qps, bps, qps60: qps })
 const up = (id, url, healthy = true) => ({ id, url, weight: 1, healthy, conns: 0, requests: 0, bytes: 0, rate: rate(1, 10) })
@@ -204,4 +204,21 @@ test('activeAt 按节点层级统计进行中请求', () => {
   assert.equal(activeAt(ip, 'u:a/app/1'), 0)
   assert.equal(activeAt(ip, 't:b/nas'), 1)
   assert.equal(activeAt({ ip: 'y', nodes: [], active: 0, last: 0 }, 's:a/app'), 0)
+})
+
+test('isValidIP 只接受完整的地址', () => {
+  for (const ok of ['1.2.3.4', '255.255.255.255', '::1', '2001:db8::1', '::ffff:1.2.3.4']) {
+    assert.equal(isValidIP(ok), true, ok)
+  }
+  for (const bad of ['', '1.2.3', '1.2.3.', '256.1.1.1', 'cafe', '2001:db8::zz', ':::', '1.2.3.4/24', 'example.com']) {
+    assert.equal(isValidIP(bad), false, bad)
+  }
+})
+
+test('maskText 打码错误信息里的地址，通配地址与时间不变', () => {
+  assert.equal(maskText('listen tcp 192.168.1.5:443: bind: address already in use'), 'listen tcp 192.168.1.*:443: bind: address already in use')
+  assert.equal(maskText('listen tcp [2001:db8:1:2::5]:443: bind'), 'listen tcp [2001:db8:1:2:*]:443: bind')
+  assert.equal(maskText('dial 10.0.0.1 and 2001:db8:1:2::9 failed at 12:30:45'), 'dial 10.0.0.* and 2001:db8:1:2:* failed at 12:30:45')
+  assert.equal(maskText('listen tcp 0.0.0.0:80: bind'), 'listen tcp 0.0.0.0:80: bind')
+  assert.equal(maskIP('::'), '::')
 })

@@ -291,7 +291,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | PUT | `/api/webservice/settings` | `webservice:write` | Enregistrer les paramètres globaux du service Web |
 | GET | `/api/webservice/stats` | `webservice:read` | Statistiques par minute du site (?listener=&site=&minutes=) |
 | GET | `/api/webservice/metrics` | `webservice:read` | Métriques au format texte Prometheus |
-| GET | `/api/webservice/topology` | `webservice:read` | Instantané de topologie : débits en direct, compteurs et IP actives des écoutes, sites, backends et actions au niveau de l’écoute (?focus=ID de nœud&ip=adresse) |
+| GET | `/api/webservice/topology` | `webservice:read` | Instantané de la topologie des services Web |
 | GET | `/api/webservice/connections` | `webservice:read` | Requêtes en cours et longues requêtes récemment terminées d’un site (?listener=&site=&q=) |
 | POST | `/api/webservice/connections/close` | `webservice:write` | Fermer une requête en cours sur un site, avec bannissement facultatif de son adresse source |
 | GET | `/api/webservice/bans` | `webservice:read` | IP actuellement bannies |

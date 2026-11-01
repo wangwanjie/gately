@@ -51,6 +51,7 @@
   "activeIpsHelp": "最近 60 秒内有请求的访客地址，以及仍有进行中请求的地址；不是历史累计",
   "ipTruncated": "访客来源过多，列表只包含一部分",
   "ipNone": "最近 60 秒没有访客",
+  "ipInvalid": "请输入完整的 IP 地址",
   "ipActive": "{n} 个进行中",
   "ipAgo": "{s} 秒前",
   "ipNow": "刚刚",

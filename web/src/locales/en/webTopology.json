@@ -51,6 +51,7 @@
   "activeIpsHelp": "Visitor addresses with requests in the last 60 seconds, plus addresses with requests still in flight; not a history",
   "ipTruncated": "Too many visitor addresses, only part of them are listed",
   "ipNone": "No visitors in the last 60 seconds",
+  "ipInvalid": "Enter a complete IP address",
   "ipActive": "{n} in flight",
   "ipAgo": "{s}s ago",
   "ipNow": "just now",

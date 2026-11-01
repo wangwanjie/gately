@@ -3607,7 +3607,7 @@
     "url": "https://gately.cn"
   },
   "info": {
-    "description": "API de administración de Gately 用于脚本与自动化批量管理。\n\n认证：在Panel de administración的“Token de API”页创建令牌，请求头携带 `Authorization: Bearer gtl_xxxx`。\n\n权限：每个令牌只拥有创建时勾选的权限，格式为 `\u003c模块\u003e:read` 或 `\u003c模块\u003e:write`，写权限包含读权限。账号、Verificación en dos pasos、令牌管理以及备份、恢复、重启、系统设置接口只能使用登录会话。\n\n请求体使用 `Content-Type: application/json`，错误统一返回 `{\"error\": \"说明\"}`。\n\nLos módulos desactivados en «Ajustes → Módulos» no ofrecen API: sus endpoints devuelven 403 y dejan de aparecer en la documentación de la API de la instancia en ejecución.",
+    "description": "La API de administración de Gately permite la gestión por lotes mediante scripts y automatización.\n\nAutenticación: cree un token en la página «Tokens de API» del panel de administración e incluya en la cabecera de la solicitud `Authorization: Bearer gtl_xxxx`.\n\nPermisos: cada token solo tiene los permisos marcados al crearlo, con el formato `\u003cmódulo\u003e:read` o `\u003cmódulo\u003e:write`; el permiso de escritura incluye el de lectura. Los endpoints de cuenta, verificación en dos pasos, administración de tokens, y los de copia de seguridad, restauración, reinicio y ajustes del sistema solo pueden usarse con una sesión iniciada.\n\nEl cuerpo de la solicitud usa `Content-Type: application/json`; los errores se devuelven siempre como `{\"error\": \"descripción\"}`.\n\nLos módulos desactivados en «Ajustes → Módulos» no ofrecen API: sus endpoints devuelven 403 y dejan de aparecer en la documentación de la API de la instancia en ejecución.",
     "title": "API de administración de Gately",
     "version": "dev"
   },
@@ -31337,7 +31337,7 @@
     },
     "/api/webservice/topology": {
       "get": {
-        "description": "Permiso necesario: `webservice:read`.",
+        "description": "Solo lectura; todos los datos salen de contadores en memoria, apto para sondear cada 2 segundos. En `rate`, `qps` y `bps` son la media de los últimos `window` segundos completos y `qps60` la media de 60 segundos. ID de nodo: listener `l:\u003ckey del listener\u003e`, sitio `s:\u003ckey del listener\u003e/\u003ckey del sitio\u003e`, los backends empiezan por `u:` y las acciones del listener son `a:\u003ckey del listener\u003e/redirect` o `a:\u003ckey del listener\u003e/notfound`; cuando `focus` es un ID de nodo (o internet / gately para toda la instancia), `series` devuelve las solicitudes y bytes por segundo de ese nodo en los últimos 60 segundos. Si `ip` es una dirección de visitante, se garantiza que aparece en `ips`; una dirección no válida devuelve 400. `blocked` de un sitio cuenta los bloqueos por motivo, con las claves ban, ip, country, rateLimit y waf. `ips` lista las direcciones de visitantes vistas en los últimos 60 segundos o con solicitudes en curso, como máximo 500; `ipTotal` es el total e `ipTruncated` es true si la lista se recortó.\n\nPermiso necesario: `webservice:read`.",
         "responses": {
           "200": {
             "content": {
@@ -31385,7 +31385,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Instantánea de topología: tasas en vivo, contadores e IP activas de escuchas, sitios, backends y acciones de escucha (?focus=ID de nodo\u0026ip=dirección)",
+        "summary": "Instantánea de la topología de Servicios web",
         "tags": [
           "Servicio web"
         ],

@@ -40,3 +40,20 @@ func TestAPIDocsMarkdownSafe(t *testing.T) {
 		}
 	}
 }
+
+// 多段说明按段落翻译时，由多个字符串常量拼成的 apiIntro 也要完整翻译，不能留下中文段落。
+func TestTrDocDeepTranslatesIntro(t *testing.T) {
+	han := regexp.MustCompile(`\p{Han}`)
+	for _, lang := range []string{"en", "de", "ja"} {
+		out, _ := trDocDeep(lang, apiIntro).(string)
+		if lang != "ja" && han.MatchString(out) {
+			t.Errorf("%s 译文仍含中文: %s", lang, out)
+		}
+		if lang == "ja" && strings.Contains(out, "用于脚本与自动化") {
+			t.Errorf("ja 译文仍含中文原文: %s", out)
+		}
+		if strings.Count(out, "\n\n") != strings.Count(apiIntro, "\n\n") {
+			t.Errorf("%s 段落数改变: %q", lang, out)
+		}
+	}
+}

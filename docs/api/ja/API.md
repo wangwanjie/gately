@@ -291,7 +291,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/webservice/settings` | `webservice:write` | Web サービスのグローバル設定を保存 |
 | GET | `/api/webservice/stats` | `webservice:read` | サイトの分単位統計（?listener=&site=&minutes=） |
 | GET | `/api/webservice/metrics` | `webservice:read` | Prometheus テキスト形式のメトリクス |
-| GET | `/api/webservice/topology` | `webservice:read` | トポロジースナップショット：リスナー、サイト、バックエンド、リスナー単位のアクションのリアルタイムレート・カウンター・アクティブ IP（?focus=ノード ID&ip=アドレス） |
+| GET | `/api/webservice/topology` | `webservice:read` | Web サービスのトポロジースナップショット |
 | GET | `/api/webservice/connections` | `webservice:read` | サイトの進行中リクエストと最近終了した長時間リクエスト（?listener=&site=&q=） |
 | POST | `/api/webservice/connections/close` | `webservice:write` | サイトの進行中リクエストを 1 件切断し、送信元アドレスを同時にブロックすることもできます |
 | GET | `/api/webservice/bans` | `webservice:read` | 現在ブロックされている IP |
