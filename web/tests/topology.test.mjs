@@ -1,7 +1,7 @@
 // 拓扑视图纯函数的单元测试：node --test tests/（Node 22.18+ 可直接加载 .ts）
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { ROW, PAD_Y, activeAt, buildLayout, edgeWidth, flowLevel, formatCount, formatQps, ipPath, isValidIP, maskIP, maskText, maskURL, nodeCovers, pathOf, siteMatches, terminalId } from '../src/topology.ts'
+import { ROW, PAD_Y, activeAt, buildLayout, resolveId, isColumnar, maskDomain, maskDomainText, edgeWidth, flowLevel, formatCount, formatQps, ipPath, isValidIP, maskIP, maskText, maskURL, nodeCovers, pathOf, siteMatches, terminalId } from '../src/topology.ts'
 
 const rate = (qps = 0, bps = 0) => ({ qps, bps, qps60: qps })
 const up = (id, url, healthy = true) => ({ id, url, weight: 1, healthy, conns: 0, requests: 0, bytes: 0, rate: rate(1, 10) })
@@ -221,4 +221,161 @@ test('maskText 打码错误信息里的地址，通配地址与时间不变', ()
   assert.equal(maskText('dial 10.0.0.1 and 2001:db8:1:2::9 failed at 12:30:45'), 'dial 10.0.0.* and 2001:db8:1:2:* failed at 12:30:45')
   assert.equal(maskText('listen tcp 0.0.0.0:80: bind'), 'listen tcp 0.0.0.0:80: bind')
   assert.equal(maskIP('::'), '::')
+})
+
+test('buildLayout 子节点超过上限时收进汇总节点，展开后在末尾提供收起入口', () => {
+  const v = view()
+  const l0 = v.listeners[0]
+  const many = Array.from({ length: 12 }, (_, i) => site(`s:a/x${i}`, { active: 1, upstreams: [up(`u:a/x${i}/0`, 'http://10.0.1.' + i)] }))
+  l0.sites = many
+  const l = buildLayout(v, new Set(), '', { limit: 8 })
+  const m = l.byId.get('m:l:a')
+  assert.equal(m.kind, 'more')
+  assert.equal(m.more.count, 4)
+  assert.equal(m.more.expanded, false)
+  assert.equal(m.more.childKind, 'site')
+  assert.equal(m.more.active, 4)
+  assert.equal(m.more.rate.qps, 8)
+  assert.equal(l.byId.has('s:a/x8'), false)
+  // 监听级动作不收起，排在汇总节点之后
+  assert.deepEqual(l.children.get('l:a').slice(-2), ['m:l:a', 'a:a/redirect'])
+  // 被收起的站点与其后端都映射到汇总节点，IP 链路高亮汇总节点
+  assert.equal(resolveId(l, 'u:a/x9/0'), 'm:l:a')
+  const p = ipPath(l, { ip: '1.2.3.4', nodes: ['s:a/x9', 'u:a/x9/0'], active: 1, last: 1 })
+  assert.deepEqual([...p].sort(), ['gately', 'internet', 'l:a', 'm:l:a'])
+  const ip = { ip: 'x', nodes: ['s:a/x10'], active: 1, activeAt: { 's:a/x10': 1 }, last: 0 }
+  assert.ok(nodeCovers(ip, 'm:l:a', m.more.ids))
+  assert.equal(activeAt(ip, 'm:l:a', m.more.ids), 1)
+
+  // 展开后显示全部，汇总节点作为收起入口留在末尾
+  const e = buildLayout(v, new Set(), '', { limit: 8, expanded: new Set(['l:a']) })
+  assert.equal(e.byId.has('s:a/x11'), true)
+  assert.equal(e.byId.get('m:l:a').more.expanded, true)
+  assert.equal(e.alias.size, 0)
+  // 只多出一个时直接显示
+  l0.sites = many.slice(0, 9)
+  assert.equal(buildLayout(v, new Set(), '', { limit: 8 }).byId.has('m:l:a'), false)
+})
+
+test('buildLayout 站点后端过多时收起，嵌套收起沿映射找到显示的节点', () => {
+  const v = view()
+  const s = v.listeners[0].sites[0]
+  s.upstreams = Array.from({ length: 10 }, (_, i) => up(`u:a/app/${i}`, 'http://10.0.0.' + i))
+  const l = buildLayout(v, new Set(), '', { upstreamLimit: 6 })
+  assert.equal(l.byId.get('m:s:a/app').more.childKind, 'upstream')
+  assert.equal(l.byId.get('m:s:a/app').more.count, 4)
+  assert.equal(resolveId(l, 'u:a/app/9'), 'm:s:a/app')
+  // 有具体后端但被收起时高亮汇总节点
+  const p = ipPath(l, { ip: '1.2.3.4', nodes: ['s:a/app', 'u:a/app/9'], active: 1, last: 1 })
+  assert.ok(p.has('m:s:a/app') && !p.has('u:a/app/0'))
+  assert.equal(resolveId(l, 'u:none'), '')
+})
+
+test('buildLayout 径向布局以 Gately 为圆心，各层节点在同心圆上', () => {
+  const l = buildLayout(view(), new Set(), '', { mode: 'radial' })
+  assert.equal(l.mode, 'radial')
+  assert.equal(l.width, l.height)
+  const c = l.width / 2
+  const g = l.byId.get('gately')
+  assert.equal(g.x + g.w / 2, c)
+  const dist = (id) => {
+    const n = l.byId.get(id)
+    return Math.round(Math.hypot(n.x + n.w / 2 - c, n.y + n.h / 2 - c))
+  }
+  assert.equal(dist('l:a'), dist('l:b'))
+  assert.equal(dist('s:a/app'), dist('a:a/redirect'))
+  assert.equal(dist('u:a/app/0'), dist('t:a/default'))
+  assert.ok(dist('l:a') < dist('s:a/app') && dist('s:a/app') < dist('u:a/app/0'))
+  // 叶子文字朝外，父节点位于子节点角度的中间
+  assert.equal(l.byId.get('u:a/app/0').leaf, true)
+  assert.equal(l.byId.get('s:a/app').leaf, false)
+  const a = (id) => l.byId.get(id).angle
+  assert.ok(Math.abs(a('s:a/app') - (a('u:a/app/0') + a('u:a/app/1')) / 2) < 1e-9)
+  assert.equal(l.edges.length, l.nodes.length - 1)
+  // 叶子很多时放大圆环，外圈节点不至于重叠
+  const v = view()
+  v.listeners[0].sites = Array.from({ length: 300 }, (_, i) => site(`s:a/y${i}`, { upstreams: [up(`u:a/y${i}/0`, 'http://h' + i)] }))
+  const big = buildLayout(v, new Set(), '', { mode: 'radial', limit: 1000 })
+  assert.ok(big.width > l.width)
+})
+
+test('buildLayout 桑基图按行排版，连线带按子节点 QPS 切分父节点竖条', () => {
+  const l = buildLayout(view(), new Set(), '', { mode: 'sankey' })
+  assert.equal(l.mode, 'sankey')
+  assert.ok(isColumnar('sankey') && !isColumnar('sunburst'))
+  const bands = l.edges.filter((e) => e.from === 'l:a')
+  assert.ok(bands.length > 0 && bands.every((e) => e.band && e.flow))
+  // 同一父节点切出的各段首尾相接，合计等于父节点竖条高度
+  const parent = l.byId.get('s:a/app')
+  const seg = l.edges.filter((e) => e.from === 's:a/app').map((e) => e.d.match(/^M[\d.]+,([\d.]+)/)[1] * 1)
+  assert.equal(seg[0], parent.y)
+  assert.ok(seg[1] > seg[0] && seg[1] < parent.y + parent.h)
+  // 竖条至少 6px，流量大的节点更高
+  const h = (id) => l.byId.get(id).h
+  assert.ok(l.nodes.every((n) => n.h >= 6))
+  assert.ok(h('gately') >= h('l:a'))
+  assert.equal(l.edges.length, l.nodes.length - 1)
+})
+
+test('buildLayout 旭日图：父扇区覆盖子扇区角度，没有连线与互联网节点', () => {
+  const l = buildLayout(view(), new Set(), '', { mode: 'sunburst' })
+  assert.equal(l.edges.length, 0)
+  assert.equal(l.byId.has('internet'), false)
+  assert.ok(l.byId.get('gately'))
+  const s = l.byId.get('s:a/app')
+  assert.ok(s.shape.startsWith('M') && s.label)
+  const a = (id) => l.byId.get(id).angle
+  assert.ok(Math.abs(a('s:a/app') - (a('u:a/app/0') + a('u:a/app/1')) / 2) < 1e-9)
+  // 高亮链路仍按父子关系
+  assert.ok(pathOf(l, 'u:a/app/1').has('l:a'))
+})
+
+test('maskDomain 与 maskDomainText 打码域名', () => {
+  assert.equal(maskDomain('nas.home.example.com'), 'nas.***.com')
+  assert.equal(maskDomain('example.com'), 'e***.com')
+  assert.equal(maskDomain('*.apps.example.test'), '*.apps.***.test')
+  assert.equal(maskDomain('localhost'), 'localhost')
+  assert.equal(maskDomain('10.0.0.1'), '10.0.0.1')
+  assert.equal(maskDomainText('kg_nexterm.stun.vanjay.cn 主站 v1.2'), 'kg_nexterm.***.cn 主站 v1.2')
+  assert.equal(maskURL('http://nas.lan:5000/x', true), 'http://n***.lan:5000/x')
+  assert.equal(maskURL('http://nas.lan:5000/x'), 'http://nas.lan:5000/x')
+})
+
+test('buildLayout 竖向树：各层在固定高度，父节点位于子节点水平中点', () => {
+  const l = buildLayout(view(), new Set(), '', { mode: 'vertical' })
+  const n = (id) => l.byId.get(id)
+  assert.equal(n('l:a').y, n('l:b').y)
+  assert.ok(n('l:a').y < n('s:a/app').y && n('s:a/app').y < n('u:a/app/0').y)
+  const cx = (id) => n(id).x + n(id).w / 2
+  assert.equal(cx('s:a/app'), (cx('u:a/app/0') + cx('u:a/app/1')) / 2)
+  assert.equal(cx('internet'), cx('gately'))
+  assert.equal(l.edges.length, l.nodes.length - 1)
+})
+
+test('buildLayout 矩形树图与气泡图：Gately 为最外层容器，子节点在父节点范围内，没有连线', () => {
+  for (const mode of ['treemap', 'pack']) {
+    const l = buildLayout(view(), new Set(), '', { mode })
+    assert.equal(l.edges.length, 0, mode)
+    assert.equal(l.byId.has('internet'), false, mode)
+    // 先父后子：父节点在数组中排在子节点之前，绘制时子节点在上层
+    const idx = (id) => l.nodes.findIndex((x) => x.id === id)
+    assert.ok(idx('gately') < idx('l:a') && idx('l:a') < idx('s:a/app') && idx('s:a/app') < idx('u:a/app/0'), mode)
+    const inside = (c, p) => {
+      const a = l.byId.get(c)
+      const b = l.byId.get(p)
+      return a.x >= b.x - 0.01 && a.y >= b.y - 0.01 && a.x + a.w <= b.x + b.w + 0.01 && a.y + a.h <= b.y + b.h + 0.01
+    }
+    assert.ok(inside('u:a/app/0', 's:a/app') && inside('s:a/app', 'l:a') && inside('l:a', 'gately'), mode)
+    assert.equal(l.byId.get('u:a/app/0').leaf, true)
+    // 叶子面积相同
+    if (mode === 'pack') {
+      assert.ok(Math.abs(l.byId.get('u:a/app/0').w - l.byId.get('u:b/nas/0').w) < 0.01)
+    }
+  }
+})
+
+test('buildLayout 矩形树图父节点顶部留出名称的高度', () => {
+  const l = buildLayout(view(), new Set(), '', { mode: 'treemap' })
+  assert.ok(l.byId.get('l:a').y - l.byId.get('gately').y >= 20)
+  assert.ok(l.byId.get('u:a/app/0').y - l.byId.get('s:a/app').y >= 18)
 })

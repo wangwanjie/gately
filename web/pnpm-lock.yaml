@@ -178,6 +178,9 @@ importers:
       '@xterm/xterm':
         specifier: ^6.0.0
         version: 6.0.0
+      d3-hierarchy:
+        specifier: ^3.1.2
+        version: 3.1.2
       element-plus:
         specifier: ^2.14.7
         version: 2.14.7(vue@3.5.44(typescript@5.9.3))
@@ -200,6 +203,9 @@ importers:
       '@intlify/message-compiler':
         specifier: ^11.4.14
         version: 11.4.14
+      '@types/d3-hierarchy':
+        specifier: ^3.1.7
+        version: 3.1.7
       '@types/node':
         specifier: ^26.6.5
         version: 26.6.5
@@ -410,6 +416,9 @@ packages:
   '@sxzz/popperjs-es@2.11.8':
     resolution: {integrity: sha512-wOwESXvvED3S8xBmcPWHs2dUuzrE4XiZeFu7e1hROIJkm02a49N120pmOXxY33sBb6hArItm5W5tcg1cBtV+HQ==}
 
+  '@types/d3-hierarchy@3.1.7':
+    resolution: {integrity: sha512-tJFtNoYBtRtkNysX1Xq4sxtjK8YgoWUNpIiUee0/jHGRwqvzYxkq0hGVbbOGSz+JgFxxRu4K8nb3YpG3CMARtg==}
+
   '@types/estree@1.0.9':
     resolution: {integrity: sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg==}
 
@@ -588,6 +597,10 @@ packages:
 
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
+
+  d3-hierarchy@3.1.2:
+    resolution: {integrity: sha512-FX/9frcub54beBdugHjDCdikxThEqjnR93Qt7PvQTOHxyiNCAlvMrHhclk3cD5VeAaq9fxmfRp+CnWw9rEMBuA==}
+    engines: {node: '>=12'}
 
   dayjs@1.11.23:
     resolution: {integrity: sha512-QDTCU0M0MxR3hQfnlDJfwekQiaanm1ubOD231u73WBckQ/fsamwRLiE2GBz6D3a/xF1NgfiDLJjXBa1hYOYTtQ==}
@@ -1168,6 +1181,8 @@ snapshots:
 
   '@sxzz/popperjs-es@2.11.8': {}
 
+  '@types/d3-hierarchy@3.1.7': {}
+
   '@types/estree@1.0.9': {}
 
   '@types/lodash-es@4.17.12':
@@ -1370,6 +1385,8 @@ snapshots:
   confbox@0.3.1: {}
 
   csstype@3.2.3: {}
+
+  d3-hierarchy@3.1.2: {}
 
   dayjs@1.11.23: {}
 
