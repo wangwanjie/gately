@@ -27,6 +27,11 @@
 
 > **fnOS 사용자:** Gately는 fnOS 네이티브 앱으로도 제공됩니다. **fnOS 통합 게이트웨이**에 연결되므로 fnOS 바탕 화면 아이콘으로 열 수 있고, 원격 도메인을 포함해 fnOS에 접속하는 주소 그대로 사용할 수 있으며 포트를 따로 열 필요가 없습니다. 기능을 켜면 **fnOS 관리자는 fnOS 로그인 상태로 바로 로그인**할 수 있어 Gately 비밀번호나 2단계 인증 코드가 필요 없습니다. 자세한 내용은 [fnOS 네이티브 앱](https://gately.cn/ko/docs/guide/install#fnos)을 참고하세요.
 
+<p align="center">
+  <a href="https://gately.cn/videos/gately-tour.en.mp4"><img src="docs/images/tour-poster.en.webp" alt="2분 기능 투어 보기" width="100%"></a><br>
+  <sub><a href="https://gately.cn/videos/gately-tour.en.mp4"><b>▶ 2분 기능 투어 보기</b></a></sub>
+</p>
+
 ## 빠른 시작
 
 세 단계면 됩니다. 컨테이너를 시작하고 `http://<기기 IP>:16680`을 연 다음 `admin` / `gately.cn`으로 로그인하세요. 다른 플랫폼용 설치 방법은 아래에 있고, 모든 방법은 [설치 가이드](https://gately.cn/ko/docs/guide/install)에서 확인할 수 있습니다.
@@ -132,41 +137,47 @@ File Browser 모듈은 [FileBrowser Quantum](https://github.com/gtsteffaniak/fil
 
 개요 화면에서 CPU, 메모리, 디스크, 트래픽과 네트워크 인터페이스별 공인 IPv4 / IPv6, 모든 모듈의 상태를 한 번에 보여 주므로 손봐야 할 곳을 바로 알 수 있습니다.
 
-<img src="docs/images/overview.webp" alt="한눈에 보는 전체 상황" width="100%">
+<img src="docs/images/ko/overview.webp" alt="한눈에 보는 전체 상황" width="100%">
 
 ### nginx를 대신하는 웹 서비스
 
 도메인별 리버스 프록시, 정적 파일, 리디렉션을 HTTPS와 HTTP/3로 제공합니다. 사이트마다 WAF, IP 규칙, 로그인 인증을 따로 켤 수 있고, 설정을 바꿔도 기존 연결이 끊기지 않습니다.
 
-<img src="docs/images/web.webp" alt="nginx를 대신하는 웹 서비스" width="100%">
+<img src="docs/images/ko/web.webp" alt="nginx를 대신하는 웹 서비스" width="100%">
 
 <p><b>사이트 통계</b> — 요청 수, 오류, 백엔드 상태, 접속 IP와 국가 순위를 분 단위로 집계합니다.</p>
 
-<img src="docs/images/site-stats.webp" alt="사이트 통계" width="100%">
+<img src="docs/images/ko/site-stats.webp" alt="사이트 통계" width="100%">
+
+### 네트워크 토폴로지
+
+방문자에서 리스너, 사이트, 백엔드로 이어지는 트래픽 흐름을 실시간으로 확인합니다. 노드를 선택하면 QPS, 트래픽, 활성 IP를 볼 수 있고, 방문자 IP로 필터링하고 7가지 레이아웃을 전환하며, 스크린샷을 공유하기 전에 주소를 가릴 수 있습니다.
+
+<img src="docs/images/ko/topology.webp" alt="네트워크 토폴로지" width="100%">
 
 ### 443 포트 하나로 모든 서비스를
 
 프로토콜 라우팅으로 여러 서비스를 도메인이나 프로토콜별로 같은 포트에 둡니다. TLS는 그대로 통과시키고 PROXY 프로토콜로 실제 클라이언트 주소를 전달합니다.
 
-<img src="docs/images/protoroute.webp" alt="443 포트 하나로 모든 서비스를" width="100%">
+<img src="docs/images/ko/protoroute.webp" alt="443 포트 하나로 모든 서비스를" width="100%">
 
 ### 주요 제공업체를 모두 지원하는 동적 도메인
 
 Cloudflare, Alibaba Cloud, DNSPod, Route 53 등을 지원합니다. IPv4와 IPv6 모두 다루고, IP는 URL, 네트워크 인터페이스, 명령으로 가져오며, 주소가 바뀌면 바로 알림을 보냅니다.
 
-<img src="docs/images/ddns.webp" alt="주요 제공업체를 모두 지원하는 동적 도메인" width="100%">
+<img src="docs/images/ko/ddns.webp" alt="주요 제공업체를 모두 지원하는 동적 도메인" width="100%">
 
 ### 침입 방지
 
 fail2ban 방식 규칙이 로그 파일, journald, 컨테이너 로그를 읽고, 미끼 포트와 스캔 탐지가 탐색 행위를 잡아냅니다. 차단 목록은 nftables에 동기화되어 커널에서 바로 패킷을 버립니다.
 
-<img src="docs/images/guard.webp" alt="침입 방지" width="100%">
+<img src="docs/images/ko/guard.webp" alt="침입 방지" width="100%">
 
 ### frp, Tailscale, Cloudflare 터널
 
 여러 frpc·frps 인스턴스를 나란히 실행하고 Tailscale, cloudflared 터널과 함께 관리합니다. 이 프로그램들의 설치, 업데이트, 롤백은 Gately가 맡습니다.
 
-<img src="docs/images/frp.webp" alt="frp, Tailscale, Cloudflare 터널" width="100%">
+<img src="docs/images/ko/frp.webp" alt="frp, Tailscale, Cloudflare 터널" width="100%">
 
 ### 그 밖에도
 
@@ -176,14 +187,14 @@ fail2ban 방식 규칙이 로그 파일, journald, 컨테이너 로그를 읽고
 
 **Docker**<br>컨테이너, Compose, 로그, 터미널. 이미지는 클릭 한 번으로 업그레이드하고, 실패하면 자동으로 롤백합니다.
 
-<img src="docs/images/docker.webp" alt="Docker" width="100%">
+<img src="docs/images/ko/docker.webp" alt="Docker" width="100%">
 
 </td>
 <td width="50%" valign="top">
 
 **웹 터미널**<br>브라우저에서 SSH, Telnet, 로컬 셸을 쓰고 SFTP와 화면 분할도 지원합니다.
 
-<img src="docs/images/terminal.webp" alt="웹 터미널" width="100%">
+<img src="docs/images/ko/terminal.webp" alt="웹 터미널" width="100%">
 
 </td>
 </tr>
@@ -195,14 +206,14 @@ fail2ban 방식 규칙이 로그 파일, journald, 컨테이너 로그를 읽고
 
 **설정 이력**<br>변경할 때마다 이전 버전을 남겨 두어 차이를 비교하고 클릭 한 번으로 되돌릴 수 있습니다.
 
-<img src="docs/images/config-history.webp" alt="설정 이력" width="100%">
+<img src="docs/images/ko/config-history.webp" alt="설정 이력" width="100%">
 
 </td>
 <td width="50%" valign="top">
 
 **API, CLI, MCP**<br>모듈별 권한을 주는 API 토큰, 내장 OpenAPI 문서, `gately ctl`, AI 어시스턴트가 연결하는 MCP 서버.
 
-<img src="docs/images/api-docs.webp" alt="API, CLI, MCP" width="100%">
+<img src="docs/images/ko/api-docs.webp" alt="API, CLI, MCP" width="100%">
 
 </td>
 </tr>

@@ -27,6 +27,11 @@ DNS et traversée de NAT, reverse proxy et certificats HTTPS, WAF et prévention
 
 > **Utilisateurs de fnOS :** Gately est disponible en application native fnOS. Elle s'intègre à la **passerelle unifiée fnOS** : elle s'ouvre depuis l'icône du bureau fnOS et fonctionne sur la même adresse que fnOS, y compris votre domaine distant, sans port supplémentaire à ouvrir. Une fois l'option activée, **les administrateurs fnOS se connectent directement avec leur session fnOS**, sans mot de passe Gately ni code à deux facteurs. Voir [Application native fnOS](https://gately.cn/fr/docs/guide/install#fnos).
 
+<p align="center">
+  <a href="https://gately.cn/videos/gately-tour.en.mp4"><img src="docs/images/tour-poster.en.webp" alt="Voir la visite en 2 minutes" width="100%"></a><br>
+  <sub><a href="https://gately.cn/videos/gately-tour.en.mp4"><b>▶ Voir la visite en 2 minutes</b></a></sub>
+</p>
+
 ## Démarrage rapide
 
 Trois étapes : lancez le conteneur, ouvrez `http://<IP de l'appareil>:16680`, connectez-vous avec `admin` / `gately.cn`. Les autres plateformes sont plus bas, et le [guide d'installation](https://gately.cn/fr/docs/guide/install) détaille toutes les options.
@@ -132,41 +137,47 @@ Un aperçu rapide de l'interface d'administration. La liste complète des module
 
 La vue d'ensemble affiche CPU, mémoire, disque et trafic, les interfaces réseau avec leurs IPv4 et IPv6 publiques, et l'état de chaque module : en quelques secondes, vous voyez si quelque chose demande votre attention.
 
-<img src="docs/images/overview.webp" alt="Tout en un coup d'œil" width="100%">
+<img src="docs/images/fr/overview.webp" alt="Tout en un coup d'œil" width="100%">
 
 ### Des services web capables de remplacer nginx
 
 Reverse proxy, fichiers statiques et redirections par domaine, avec HTTPS et HTTP/3. Chaque site a son propre WAF, ses règles d'IP et sa connexion, et les modifications s'appliquent sans couper les connexions.
 
-<img src="docs/images/web.webp" alt="Des services web capables de remplacer nginx" width="100%">
+<img src="docs/images/fr/web.webp" alt="Des services web capables de remplacer nginx" width="100%">
 
 <p><b>Statistiques par site</b> — requêtes, erreurs, santé des backends, principales IP et pays d'origine, minute par minute.</p>
 
-<img src="docs/images/site-stats.webp" alt="Statistiques par site" width="100%">
+<img src="docs/images/fr/site-stats.webp" alt="Statistiques par site" width="100%">
+
+### Topologie réseau
+
+Suivez en direct le trafic des visiteurs vers les backends, en passant par les écoutes et les sites. Sélectionnez un nœud pour voir le QPS, le trafic et les IP actives, filtrez par IP de visiteur, passez d'une disposition à l'autre parmi sept et masquez les adresses avant de partager une capture.
+
+<img src="docs/images/fr/topology.webp" alt="Topologie réseau" width="100%">
 
 ### Un seul port 443 pour tous vos services
 
 Le routage par protocole permet à plusieurs services de partager un même port selon le domaine ou le protocole : le TLS passe tel quel et le protocole PROXY conserve l'adresse réelle du client.
 
-<img src="docs/images/protoroute.webp" alt="Un seul port 443 pour tous vos services" width="100%">
+<img src="docs/images/fr/protoroute.webp" alt="Un seul port 443 pour tous vos services" width="100%">
 
 ### DNS dynamique avec les principaux fournisseurs
 
 Cloudflare, Alibaba Cloud, DNSPod, Route 53 et d'autres. IPv4 et IPv6, adresse obtenue depuis une URL, une interface réseau ou une commande, et une notification à chaque changement.
 
-<img src="docs/images/ddns.webp" alt="DNS dynamique avec les principaux fournisseurs" width="100%">
+<img src="docs/images/fr/ddns.webp" alt="DNS dynamique avec les principaux fournisseurs" width="100%">
 
 ### Prévention d'intrusion
 
 Des règles à la fail2ban lisent les journaux de fichiers, de journald et des conteneurs, tandis que les ports pièges et la détection de scans repèrent les sondages. Les bannissements sont synchronisés avec nftables et le trafic est rejeté dans le noyau.
 
-<img src="docs/images/guard.webp" alt="Prévention d'intrusion" width="100%">
+<img src="docs/images/fr/guard.webp" alt="Prévention d'intrusion" width="100%">
 
 ### frp, Tailscale et tunnels Cloudflare
 
 Plusieurs instances frpc et frps côte à côte, à côté de Tailscale et des tunnels cloudflared. Gately installe, met à jour et restaure ces programmes pour vous.
 
-<img src="docs/images/frp.webp" alt="frp, Tailscale et tunnels Cloudflare" width="100%">
+<img src="docs/images/fr/frp.webp" alt="frp, Tailscale et tunnels Cloudflare" width="100%">
 
 ### Et aussi
 
@@ -176,14 +187,14 @@ Plusieurs instances frpc et frps côte à côte, à côté de Tailscale et des t
 
 **Docker**<br>Conteneurs, Compose, journaux et terminaux, avec mise à niveau des images en un clic et retour arrière automatique en cas d'échec.
 
-<img src="docs/images/docker.webp" alt="Docker" width="100%">
+<img src="docs/images/fr/docker.webp" alt="Docker" width="100%">
 
 </td>
 <td width="50%" valign="top">
 
 **Terminal web**<br>SSH, Telnet et shell local dans le navigateur, avec SFTP et écran partagé.
 
-<img src="docs/images/terminal.webp" alt="Terminal web" width="100%">
+<img src="docs/images/fr/terminal.webp" alt="Terminal web" width="100%">
 
 </td>
 </tr>
@@ -195,14 +206,14 @@ Plusieurs instances frpc et frps côte à côte, à côté de Tailscale et des t
 
 **Historique de configuration**<br>Chaque modification conserve la version précédente, avec comparaison des différences et retour arrière en un clic.
 
-<img src="docs/images/config-history.webp" alt="Historique de configuration" width="100%">
+<img src="docs/images/fr/config-history.webp" alt="Historique de configuration" width="100%">
 
 </td>
 <td width="50%" valign="top">
 
 **API, ligne de commande et MCP**<br>Jetons d'API par module, documentation OpenAPI intégrée, `gately ctl` et un serveur MCP pour les assistants IA.
 
-<img src="docs/images/api-docs.webp" alt="API, ligne de commande et MCP" width="100%">
+<img src="docs/images/fr/api-docs.webp" alt="API, ligne de commande et MCP" width="100%">
 
 </td>
 </tr>

@@ -27,6 +27,11 @@ DNS и обход NAT, обратный прокси и HTTPS-сертифика
 
 > **Пользователям fnOS:** Gately поставляется как нативное приложение для fnOS. Оно подключается к **единому шлюзу fnOS**, поэтому открывается значком на рабочем столе fnOS и работает по тому же адресу, что и сама fnOS, включая удалённый домен, без открытия дополнительных портов. После включения **администраторы fnOS могут входить напрямую по своему сеансу fnOS**, без пароля Gately и кода двухэтапной проверки. Подробнее — в разделе [Нативное приложение для fnOS](https://gately.cn/ru/docs/guide/install#fnos).
 
+<p align="center">
+  <a href="https://gately.cn/videos/gately-tour.en.mp4"><img src="docs/images/tour-poster.en.webp" alt="Смотреть обзор за 2 минуты" width="100%"></a><br>
+  <sub><a href="https://gately.cn/videos/gately-tour.en.mp4"><b>▶ Смотреть обзор за 2 минуты</b></a></sub>
+</p>
+
 ## Быстрый старт
 
 Три шага: запустите контейнер, откройте `http://<IP устройства>:16680` и войдите как `admin` / `gately.cn`. Другие платформы — ниже, все способы описаны в [руководстве по установке](https://gately.cn/ru/docs/guide/install).
@@ -132,41 +137,47 @@ curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns/tasks
 
 Обзор показывает загрузку CPU, памяти, дисков и трафик, сетевые интерфейсы с их публичными IPv4 и IPv6 и состояние каждого модуля — сразу видно, где нужно вмешаться.
 
-<img src="docs/images/overview.webp" alt="Всё на одном экране" width="100%">
+<img src="docs/images/ru/overview.webp" alt="Всё на одном экране" width="100%">
 
 ### Веб-службы вместо nginx
 
 Обратный прокси, статические файлы и перенаправления по доменам, с HTTPS и HTTP/3. Для каждого сайта — свой WAF, IP-правила и вход, а изменения применяются без разрыва соединений.
 
-<img src="docs/images/web.webp" alt="Веб-службы вместо nginx" width="100%">
+<img src="docs/images/ru/web.webp" alt="Веб-службы вместо nginx" width="100%">
 
 <p><b>Статистика по сайтам</b> — запросы, ошибки, состояние бэкендов, основные IP-адреса и страны клиентов — поминутно.</p>
 
-<img src="docs/images/site-stats.webp" alt="Статистика по сайтам" width="100%">
+<img src="docs/images/ru/site-stats.webp" alt="Статистика по сайтам" width="100%">
+
+### Топология сети
+
+Смотрите в реальном времени, как трафик идёт от посетителей через слушатели и сайты к бэкендам. Выберите узел, чтобы увидеть QPS, трафик и активные IP, отфильтруйте по IP посетителя, переключайтесь между семью раскладками и скрывайте адреса перед публикацией скриншота.
+
+<img src="docs/images/ru/topology.webp" alt="Топология сети" width="100%">
 
 ### Один порт 443 для всех служб
 
 Маршрутизация по протоколу размещает несколько служб на одном порту по домену или протоколу: TLS проходит насквозь без расшифровки, а реальный адрес клиента передаётся по протоколу PROXY.
 
-<img src="docs/images/protoroute.webp" alt="Один порт 443 для всех служб" width="100%">
+<img src="docs/images/ru/protoroute.webp" alt="Один порт 443 для всех служб" width="100%">
 
 ### Динамический DNS с ведущими провайдерами
 
 Cloudflare, Alibaba Cloud, DNSPod, Route 53 и другие. IPv4 и IPv6, адрес берётся из URL, с сетевого интерфейса или из вывода команды, а при каждом изменении приходит уведомление.
 
-<img src="docs/images/ddns.webp" alt="Динамический DNS с ведущими провайдерами" width="100%">
+<img src="docs/images/ru/ddns.webp" alt="Динамический DNS с ведущими провайдерами" width="100%">
 
 ### Защита от вторжений
 
 Правила в духе fail2ban читают журналы из файлов, journald и контейнеров, а порты-ловушки и обнаружение сканирования ловят разведку. Блокировки синхронизируются в nftables, и пакеты отбрасываются прямо в ядре.
 
-<img src="docs/images/guard.webp" alt="Защита от вторжений" width="100%">
+<img src="docs/images/ru/guard.webp" alt="Защита от вторжений" width="100%">
 
 ### frp, Tailscale и Cloudflare Tunnel
 
 Несколько экземпляров frpc и frps работают одновременно рядом с туннелями Tailscale и cloudflared. Установку, обновление и откат этих программ Gately берёт на себя.
 
-<img src="docs/images/frp.webp" alt="frp, Tailscale и Cloudflare Tunnel" width="100%">
+<img src="docs/images/ru/frp.webp" alt="frp, Tailscale и Cloudflare Tunnel" width="100%">
 
 ### И ещё
 
@@ -176,14 +187,14 @@ Cloudflare, Alibaba Cloud, DNSPod, Route 53 и другие. IPv4 и IPv6, ад�
 
 **Docker**<br>Контейнеры, Compose, журналы и терминал; обновление образа в один клик с автоматическим откатом при сбое.
 
-<img src="docs/images/docker.webp" alt="Docker" width="100%">
+<img src="docs/images/ru/docker.webp" alt="Docker" width="100%">
 
 </td>
 <td width="50%" valign="top">
 
 **Веб-терминал**<br>SSH, Telnet и локальная оболочка в браузере, с SFTP и разделением экрана.
 
-<img src="docs/images/terminal.webp" alt="Веб-терминал" width="100%">
+<img src="docs/images/ru/terminal.webp" alt="Веб-терминал" width="100%">
 
 </td>
 </tr>
@@ -195,14 +206,14 @@ Cloudflare, Alibaba Cloud, DNSPod, Route 53 и другие. IPv4 и IPv6, ад�
 
 **История конфигурации**<br>Каждое изменение сохраняет предыдущую версию: можно сравнить различия и откатиться в один клик.
 
-<img src="docs/images/config-history.webp" alt="История конфигурации" width="100%">
+<img src="docs/images/ru/config-history.webp" alt="История конфигурации" width="100%">
 
 </td>
 <td width="50%" valign="top">
 
 **API, CLI и MCP**<br>API-токены с правами по модулям, встроенная документация OpenAPI, `gately ctl` и MCP-сервер для ИИ-ассистентов.
 
-<img src="docs/images/api-docs.webp" alt="API, CLI и MCP" width="100%">
+<img src="docs/images/ru/api-docs.webp" alt="API, CLI и MCP" width="100%">
 
 </td>
 </tr>

@@ -1,0 +1,79 @@
+数据盘|Data disk
+本机 WebDAV|Local WebDAV
+临时分享|Quick share
+临时给朋友看主页|Show the home page to a friend
+主隧道|Main tunnel
+公网 IP 失效时启用|Enable when the public IP is gone
+健康检查推送|Health check push
+同步照片到备份盘|Sync photos to backup disk
+每月重启路由器|Reboot router monthly
+清理 Docker 悬空镜像|Prune dangling Docker images
+Cloudflare 主域名|Cloudflare main domain
+DuckDNS 备用|DuckDNS backup
+家宽双栈|Home dual-stack
+阿里云 实验室|Alibaba Cloud lab
+家庭网盘|Family drive
+影视|Movies
+文档|Documents
+照片（只读）|Photos (read-only)
+照片|Photos
+云服务器 frps|Cloud server frps
+公司备用线路|Office backup line
+家里 NAS|Home NAS
+SSH 暴力破解|SSH brute force
+Vaultwarden 登录|Vaultwarden login
+WAF 拦截|WAF blocks
+Web 扫描器|Web scanner
+管理后台登录|Admin login
+300 秒内失败 3 次|3 failures within 300 s
+Tor 出口节点|Tor exit node
+Telegram 机器人|Telegram bot
+企业微信 Webhook|WeCom webhook
+备份结果|Backup results
+安全告警|Security alerts
+服务掉线|Service down
+证书与 DDNS|Certificates and DDNS
+邮件|Email
+Minecraft 三个世界|Minecraft worlds
+Redis（仅本机）|Redis (local only)
+游戏服务器|Game servers
+远程桌面|Remote desktop
+需要时再开|Open when needed
+SNI 分流 8443|SNI routing 8443
+一个端口承载多个 HTTPS 服务|One port for several HTTPS services
+下载站|Downloads
+公司 VPN|Office VPN
+更新后重启 Gitea|Restart Gitea after renewal
+群晖共享|Synology share
+CI 部署证书|CI deploy certificates
+Home Assistant 集成|Home Assistant integration
+监控只读|Read-only monitoring
+严格模式（观察）|Strict mode (observe)
+主防护|Main protection
+兼容 WebDAV 与大文件上传|WebDAV and large uploads
+只记录不拦截|Log only
+文件服务|File services
+HTTP 跳转|HTTP redirect
+HTTPS 主入口|HTTPS main entry
+SNI 后端（PROXY 协议）|SNI backend (PROXY protocol)
+中国大陆 IP|Mainland China IPs
+仅内网|LAN only
+公司 VPN 门户|Office VPN portal
+公开下载|Public downloads
+只允许国内访问的站点使用|For sites open to mainland China only
+导航主页|Home page
+服务迁移中，请稍后访问|Moving to a new server, please come back later
+短链跳转|Short links
+维护公告|Maintenance notice
+设备维修中|Under maintenance
+访客|Guest
+负载均衡演示|Load balancing demo
+云服务器（香港）|Cloud server (Hong Kong)
+交换机 Console|Switch console
+本机 Shell|Local shell
+软路由|Soft router
+运维密钥|Ops key
+台式机|Desktop
+备份 NAS|Backup NAS
+每周日凌晨唤醒备份|Wake up for backup every Sunday
+游戏主机|Game console

@@ -27,6 +27,11 @@
 
 > **飛牛 fnOS 使用者**：Gately 提供飛牛原生應用。它接入**飛牛統一閘道**，點擊飛牛桌面圖示即可開啟，遠端存取飛牛的網域同樣可用，無需額外開放連接埠；開啟後還支援**飛牛管理員登入狀態直接登入**，無需再輸入 Gately 密碼與兩步驟驗證碼。詳見[飛牛原生應用](https://gately.cn/zh-TW/docs/guide/install#fnos)。
 
+<p align="center">
+  <a href="https://gately.cn/videos/gately-tour.zh.mp4"><img src="docs/images/tour-poster.zh.webp" alt="觀看 2 分鐘功能巡覽" width="100%"></a><br>
+  <sub><a href="https://gately.cn/videos/gately-tour.zh.mp4"><b>▶ 觀看 2 分鐘功能巡覽</b></a></sub>
+</p>
+
 ## 快速開始
 
 三步就能用：啟動容器，開啟 `http://<裝置IP>:16680`，用 `admin` / `gately.cn` 登入。其他平台的裝法見下方，完整說明見[安裝指南](https://gately.cn/zh-TW/docs/guide/install)。
@@ -132,41 +137,47 @@ File Browser 模組託管 [FileBrowser Quantum](https://github.com/gtsteffaniak/
 
 概覽頁集中顯示 CPU、記憶體、磁碟與流量，網路卡及其公網 IPv4 / IPv6，以及每個模組的執行狀態，哪裡需要處理一目了然。
 
-<img src="docs/images/overview.webp" alt="一眼看清全局" width="100%">
+<img src="docs/images/zh-TW/overview.webp" alt="一眼看清全局" width="100%">
 
 ### 能取代 nginx 的 Web 服務
 
 依網域做反向代理、靜態檔案和重新導向，支援 HTTPS 與 HTTP/3。每個站點可以單獨啟用 WAF、IP 規則和登入驗證，改設定不會中斷現有連線。
 
-<img src="docs/images/web.webp" alt="能取代 nginx 的 Web 服務" width="100%">
+<img src="docs/images/zh-TW/web.webp" alt="能取代 nginx 的 Web 服務" width="100%">
 
 <p><b>站點統計</b> — 按分鐘統計請求數、錯誤、後端健康狀態，以及來源 IP 與國家排行。</p>
 
-<img src="docs/images/site-stats.webp" alt="站點統計" width="100%">
+<img src="docs/images/zh-TW/site-stats.webp" alt="站點統計" width="100%">
+
+### 網路拓撲
+
+即時查看流量從訪客經監聽、站點到後端的走向。點選節點可看 QPS、流量與活躍 IP，依訪客 IP 篩選，七種版面任意切換，分享截圖前還能一鍵遮蔽。
+
+<img src="docs/images/zh-TW/topology.webp" alt="網路拓撲" width="100%">
 
 ### 一個 443 連接埠，所有服務共用
 
 協定分流依網域或協定把多個服務放在同一個連接埠上，TLS 原樣透傳，再用 PROXY 協定保留真實用戶端位址。
 
-<img src="docs/images/protoroute.webp" alt="一個 443 連接埠，所有服務共用" width="100%">
+<img src="docs/images/zh-TW/protoroute.webp" alt="一個 443 連接埠，所有服務共用" width="100%">
 
 ### 動態網域，主流服務商都支援
 
 Cloudflare、阿里雲、DNSPod、Route 53 等都能用。支援 IPv4 與 IPv6，IP 可以從 URL、網路卡或指令取得，位址一變就發通知。
 
-<img src="docs/images/ddns.webp" alt="動態網域，主流服務商都支援" width="100%">
+<img src="docs/images/zh-TW/ddns.webp" alt="動態網域，主流服務商都支援" width="100%">
 
 ### 入侵防護
 
 類 fail2ban 的規則讀取日誌檔案、journald 和容器日誌，誘餌連接埠與掃描偵測揪出探測行為。封鎖同步到 nftables，直接在核心裡丟棄封包。
 
-<img src="docs/images/guard.webp" alt="入侵防護" width="100%">
+<img src="docs/images/zh-TW/guard.webp" alt="入侵防護" width="100%">
 
 ### frp、Tailscale 與 Cloudflare 通道
 
 多個 frpc、frps 實例同時執行，和 Tailscale、cloudflared 通道放在一起管理。這些程式的安裝、更新與回滾都交給 Gately 處理。
 
-<img src="docs/images/frp.webp" alt="frp、Tailscale 與 Cloudflare 通道" width="100%">
+<img src="docs/images/zh-TW/frp.webp" alt="frp、Tailscale 與 Cloudflare 通道" width="100%">
 
 ### 還有這些
 
@@ -176,14 +187,14 @@ Cloudflare、阿里雲、DNSPod、Route 53 等都能用。支援 IPv4 與 IPv6�
 
 **Docker**<br>容器、Compose、日誌與終端機，映像檔一鍵升級，失敗自動回滾。
 
-<img src="docs/images/docker.webp" alt="Docker" width="100%">
+<img src="docs/images/zh-TW/docker.webp" alt="Docker" width="100%">
 
 </td>
 <td width="50%" valign="top">
 
 **Web 終端機**<br>在瀏覽器裡使用 SSH、Telnet 和本機 Shell，支援 SFTP 與分割視窗。
 
-<img src="docs/images/terminal.webp" alt="Web 終端機" width="100%">
+<img src="docs/images/zh-TW/terminal.webp" alt="Web 終端機" width="100%">
 
 </td>
 </tr>
@@ -195,14 +206,14 @@ Cloudflare、阿里雲、DNSPod、Route 53 等都能用。支援 IPv4 與 IPv6�
 
 **設定歷史**<br>每次修改都保留舊版本，可以比對差異、一鍵回滾。
 
-<img src="docs/images/config-history.webp" alt="設定歷史" width="100%">
+<img src="docs/images/zh-TW/config-history.webp" alt="設定歷史" width="100%">
 
 </td>
 <td width="50%" valign="top">
 
 **API、命令列與 MCP**<br>依模組授權的 API 權杖、內建 OpenAPI 文件、`gately ctl`，以及供 AI 助理接入的 MCP 服務。
 
-<img src="docs/images/api-docs.webp" alt="API、命令列與 MCP" width="100%">
+<img src="docs/images/zh-TW/api-docs.webp" alt="API、命令列與 MCP" width="100%">
 
 </td>
 </tr>

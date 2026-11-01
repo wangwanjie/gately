@@ -1,0 +1,9 @@
+{
+  "name": "gately-readme-media",
+  "private": true,
+  "type": "module",
+  "description": "生成 README 多语言截图、拓扑动图与功能巡览视频的脚本（本机 Chrome + playwright-core）",
+  "dependencies": {
+    "playwright-core": "^1.50.0"
+  }
+}

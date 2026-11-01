@@ -27,6 +27,11 @@ DNS and NAT traversal, reverse proxy and HTTPS certificates, WAF and intrusion p
 
 > **fnOS users:** Gately ships as a native fnOS app. It plugs into the **fnOS unified gateway**, so it opens from the fnOS desktop icon and works over the same address you use for fnOS, including your remote domain, with no extra port to open. Once enabled, **fnOS administrators can sign in directly with their fnOS session**, without a Gately password or two-step code. See [fnOS native app](https://gately.cn/en/docs/guide/install#fnos).
 
+<p align="center">
+  <a href="https://gately.cn/videos/gately-tour.en.mp4"><img src="docs/images/tour-poster.en.webp" alt="Watch the 2-minute tour" width="100%"></a><br>
+  <sub><a href="https://gately.cn/videos/gately-tour.en.mp4"><b>▶ Watch the 2-minute tour</b></a></sub>
+</p>
+
 ## Quick Start
 
 Three steps: start the container, open `http://<device-ip>:16680`, sign in with `admin` / `gately.cn`. Other platforms are below, and the [install guide](https://gately.cn/en/docs/guide/install) covers every option.
@@ -132,41 +137,47 @@ A quick tour of the admin UI. The full list of modules is at the end of this sec
 
 The overview shows CPU, memory, disk and traffic, network interfaces with their public IPv4 and IPv6, and the state of every module, so you can tell in seconds whether anything needs attention.
 
-<img src="docs/images/overview.webp" alt="Everything at a glance" width="100%">
+<img src="docs/images/en/overview.webp" alt="Everything at a glance" width="100%">
 
 ### Web services that can replace nginx
 
 Reverse proxy, static files and redirects by domain, with HTTPS and HTTP/3. Each site gets its own WAF, IP rules and sign-in, and changes apply without dropping connections.
 
-<img src="docs/images/web.webp" alt="Web services that can replace nginx" width="100%">
+<img src="docs/images/en/web.webp" alt="Web services that can replace nginx" width="100%">
 
 <p><b>Per-site statistics</b> — requests, errors, backend health, top client IPs and countries, minute by minute.</p>
 
-<img src="docs/images/site-stats.webp" alt="Per-site statistics" width="100%">
+<img src="docs/images/en/site-stats.webp" alt="Per-site statistics" width="100%">
+
+### Network topology
+
+See how traffic flows from visitors through listeners and sites to backends, live. Pick a node for QPS, traffic and active IPs, filter by visitor IP, switch between seven layouts, and mask addresses before you share a screenshot.
+
+<img src="docs/images/en/topology.webp" alt="Network topology" width="100%">
 
 ### One port 443 for every service
 
 Protocol routing lets several services share a single port by domain or protocol, passing TLS straight through and keeping the real client address with the PROXY protocol.
 
-<img src="docs/images/protoroute.webp" alt="One port 443 for every service" width="100%">
+<img src="docs/images/en/protoroute.webp" alt="One port 443 for every service" width="100%">
 
 ### Dynamic DNS for all the major providers
 
 Cloudflare, Alibaba Cloud, DNSPod, Route 53 and more. IPv4 and IPv6, addresses from a URL, an interface or a command, and a notification when anything changes.
 
-<img src="docs/images/ddns.webp" alt="Dynamic DNS for all the major providers" width="100%">
+<img src="docs/images/en/ddns.webp" alt="Dynamic DNS for all the major providers" width="100%">
 
 ### Intrusion prevention
 
 fail2ban-style jails read logs from files, journald and containers, while trap ports and scan detection catch probing. Bans sync to nftables and are dropped in the kernel.
 
-<img src="docs/images/guard.webp" alt="Intrusion prevention" width="100%">
+<img src="docs/images/en/guard.webp" alt="Intrusion prevention" width="100%">
 
 ### frp, Tailscale and Cloudflare Tunnel
 
 Run several frpc and frps instances side by side, next to Tailscale and cloudflared tunnels. Gately installs, updates and rolls back these programs for you.
 
-<img src="docs/images/frp.webp" alt="frp, Tailscale and Cloudflare Tunnel" width="100%">
+<img src="docs/images/en/frp.webp" alt="frp, Tailscale and Cloudflare Tunnel" width="100%">
 
 ### And more
 
@@ -176,14 +187,14 @@ Run several frpc and frps instances side by side, next to Tailscale and cloudfla
 
 **Docker**<br>Containers, Compose, logs and terminals, with one-click image upgrades that roll back on failure.
 
-<img src="docs/images/docker.webp" alt="Docker" width="100%">
+<img src="docs/images/en/docker.webp" alt="Docker" width="100%">
 
 </td>
 <td width="50%" valign="top">
 
 **Web terminal**<br>SSH, Telnet and the local shell in the browser, with SFTP and split panes.
 
-<img src="docs/images/terminal.webp" alt="Web terminal" width="100%">
+<img src="docs/images/en/terminal.webp" alt="Web terminal" width="100%">
 
 </td>
 </tr>
@@ -195,14 +206,14 @@ Run several frpc and frps instances side by side, next to Tailscale and cloudfla
 
 **Config history**<br>Every change keeps the previous version, with a diff and one-click rollback.
 
-<img src="docs/images/config-history.webp" alt="Config history" width="100%">
+<img src="docs/images/en/config-history.webp" alt="Config history" width="100%">
 
 </td>
 <td width="50%" valign="top">
 
 **API, CLI and MCP**<br>Per-module API tokens, built-in OpenAPI docs, `gately ctl` and an MCP server for AI assistants.
 
-<img src="docs/images/api-docs.webp" alt="API, CLI and MCP" width="100%">
+<img src="docs/images/en/api-docs.webp" alt="API, CLI and MCP" width="100%">
 
 </td>
 </tr>

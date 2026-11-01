@@ -27,6 +27,11 @@
 
 > **fnOS ユーザーの方へ**：Gately は fnOS のネイティブアプリとして提供されています。**fnOS 統一ゲートウェイ**に統合されており、fnOS デスクトップのアイコンから開けます。リモートアクセス用のドメインを含め、fnOS と同じアドレスでそのまま使えるため、ポートを追加で開放する必要はありません。有効にすると、**fnOS 管理者は fnOS のログイン状態のままログイン**でき、Gately のパスワードや 2 段階認証コードの入力は不要です。詳しくは [fnOS ネイティブアプリ](https://gately.cn/ja/docs/guide/install#fnos) を参照してください。
 
+<p align="center">
+  <a href="https://gately.cn/videos/gately-tour.en.mp4"><img src="docs/images/tour-poster.en.webp" alt="2 分でわかる機能ツアーを見る" width="100%"></a><br>
+  <sub><a href="https://gately.cn/videos/gately-tour.en.mp4"><b>▶ 2 分でわかる機能ツアーを見る</b></a></sub>
+</p>
+
 ## クイックスタート
 
 使い始めるまで 3 ステップ。コンテナを起動し、`http://<デバイスのIP>:16680` を開いて `admin` / `gately.cn` でログインするだけです。ほかのプラットフォームは下にまとめてあり、すべての方法は[インストールガイド](https://gately.cn/ja/docs/guide/install)で解説しています。
@@ -132,41 +137,47 @@ File Browser モジュールは [FileBrowser Quantum](https://github.com/gtsteff
 
 概要ページには CPU、メモリー、ディスク、トラフィック、各ネットワークインターフェースとそのパブリック IPv4 / IPv6、全モジュールの稼働状態が並びます。対応が必要な箇所はすぐにわかります。
 
-<img src="docs/images/overview.webp" alt="全体をひと目で" width="100%">
+<img src="docs/images/ja/overview.webp" alt="全体をひと目で" width="100%">
 
 ### nginx の代わりになる Web サービス
 
 ドメインごとにリバースプロキシ、静的ファイル、リダイレクトを設定でき、HTTPS と HTTP/3 に対応。サイトごとに WAF、IP ルール、ログイン認証を有効にでき、設定を変えても既存の接続は切れません。
 
-<img src="docs/images/web.webp" alt="nginx の代わりになる Web サービス" width="100%">
+<img src="docs/images/ja/web.webp" alt="nginx の代わりになる Web サービス" width="100%">
 
 <p><b>サイト統計</b> — リクエスト数、エラー、バックエンドの状態、アクセス元 IP と国のランキングを分単位で集計します。</p>
 
-<img src="docs/images/site-stats.webp" alt="サイト統計" width="100%">
+<img src="docs/images/ja/site-stats.webp" alt="サイト統計" width="100%">
+
+### ネットワークトポロジー
+
+訪問者からリスナー、サイト、バックエンドへ流れるトラフィックをリアルタイムで確認できます。ノードを選ぶと QPS、通信量、アクティブ IP が表示され、訪問者 IP での絞り込み、7 種類のレイアウトの切り替え、スクリーンショットを共有する前のアドレスのマスキングにも対応します。
+
+<img src="docs/images/ja/topology.webp" alt="ネットワークトポロジー" width="100%">
 
 ### 443 番ポートひとつを全サービスで共有
 
 プロトコル振り分けで、複数のサービスをドメインやプロトコルごとに同じポートへ振り分けます。TLS はそのままパススルーし、PROXY プロトコルで実際のクライアントアドレスを渡します。
 
-<img src="docs/images/protoroute.webp" alt="443 番ポートひとつを全サービスで共有" width="100%">
+<img src="docs/images/ja/protoroute.webp" alt="443 番ポートひとつを全サービスで共有" width="100%">
 
 ### 主要プロバイダーに対応したダイナミック DNS
 
 Cloudflare、Alibaba Cloud、DNSPod、Route 53 などに対応。IPv4 と IPv6 の両方を扱い、IP は URL、ネットワークインターフェース、コマンドから取得できます。アドレスが変わればすぐに通知します。
 
-<img src="docs/images/ddns.webp" alt="主要プロバイダーに対応したダイナミック DNS" width="100%">
+<img src="docs/images/ja/ddns.webp" alt="主要プロバイダーに対応したダイナミック DNS" width="100%">
 
 ### 侵入防御
 
 fail2ban 風のルールがログファイル、journald、コンテナのログを読み取り、トラップポートとスキャン検知で探索行為を捕まえます。ブロックは nftables に同期され、カーネルでパケットを破棄します。
 
-<img src="docs/images/guard.webp" alt="侵入防御" width="100%">
+<img src="docs/images/ja/guard.webp" alt="侵入防御" width="100%">
 
 ### frp、Tailscale、Cloudflare トンネル
 
 複数の frpc・frps インスタンスを並行して動かし、Tailscale や cloudflared のトンネルと同じ画面で管理できます。これらのプログラムのインストール、更新、ロールバックは Gately が引き受けます。
 
-<img src="docs/images/frp.webp" alt="frp、Tailscale、Cloudflare トンネル" width="100%">
+<img src="docs/images/ja/frp.webp" alt="frp、Tailscale、Cloudflare トンネル" width="100%">
 
 ### ほかにも
 
@@ -176,14 +187,14 @@ fail2ban 風のルールがログファイル、journald、コンテナのログ
 
 **Docker**<br>コンテナ、Compose、ログ、ターミナル。イメージはワンクリックで更新でき、失敗すれば自動でロールバックします。
 
-<img src="docs/images/docker.webp" alt="Docker" width="100%">
+<img src="docs/images/ja/docker.webp" alt="Docker" width="100%">
 
 </td>
 <td width="50%" valign="top">
 
 **Web ターミナル**<br>ブラウザーで SSH、Telnet、ローカルシェルを使えます。SFTP と画面分割にも対応。
 
-<img src="docs/images/terminal.webp" alt="Web ターミナル" width="100%">
+<img src="docs/images/ja/terminal.webp" alt="Web ターミナル" width="100%">
 
 </td>
 </tr>
@@ -195,14 +206,14 @@ fail2ban 風のルールがログファイル、journald、コンテナのログ
 
 **設定履歴**<br>変更のたびに以前のバージョンを保存。差分を確認して、ワンクリックで戻せます。
 
-<img src="docs/images/config-history.webp" alt="設定履歴" width="100%">
+<img src="docs/images/ja/config-history.webp" alt="設定履歴" width="100%">
 
 </td>
 <td width="50%" valign="top">
 
 **API、CLI、MCP**<br>モジュール単位で権限を付けられる API トークン、組み込みの OpenAPI ドキュメント、`gately ctl`、AI アシスタントから使える MCP サーバー。
 
-<img src="docs/images/api-docs.webp" alt="API、CLI、MCP" width="100%">
+<img src="docs/images/ja/api-docs.webp" alt="API、CLI、MCP" width="100%">
 
 </td>
 </tr>

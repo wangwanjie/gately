@@ -12,3 +12,7 @@ coverage.out
 # 维护者本地笔记（不入库）
 .local/
 /gately
+
+# 功能巡览视频体积较大，只随官网部署，不进仓库
+website/public/videos/
+tools/readme-media/node_modules/
