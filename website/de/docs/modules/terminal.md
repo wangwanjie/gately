@@ -86,6 +86,7 @@ Das Menü „Teilen“ in der Werkzeugleiste bietet nebeneinander, untereinander
 Ein Terminal entspricht der Ausführung beliebiger Befehle auf dem Zielhost, daher setzt Gately standardmäßig diese Einschränkungen:
 
 - **Die lokale Shell ist standardmäßig aus** und muss in den Einstellungen ausdrücklich aktiviert werden;
+- **Lokale Shell im Container**: Bei einer Docker-Bereitstellung läuft die lokale Shell im Gately-Container; diesen Container von dort aus zu stoppen oder neu zu erstellen bricht mittendrin ab und hinterlässt einen halb fertigen Zustand. Zum Aktualisieren von Gately die Aktualisierungsaktion in der Containerliste der [Docker-Verwaltung](/de/docs/modules/docker#container) verwenden;
 - **Zustimmung zur Nutzungsvereinbarung**: Beim ersten Aktivieren der lokalen Shell, Erstellen einer Sitzung, Anbinden an eine Sitzung oder Nutzen des Dateimanagers erscheint eine Nutzungsvereinbarung, der Sie zustimmen müssen, um fortzufahren;
 - **Zwei-Faktor-Authentifizierung (2FA)**: Nachdem Sie in den Sicherheitseinstellungen per QR-Code eine TOTP-Authenticator-App gekoppelt haben, verlangen die genannten Aktionen einen 6-stelligen Code. Nach erfolgreicher Prüfung muss das aktuelle Anmeldetoken 30 Minuten lang nicht erneut verifiziert werden; nach 5 aufeinanderfolgenden falschen Codes wird dieses Anmeldetoken für 1 Minute gesperrt;
 - Verbindungspasswörter, private Schlüssel und Proxy-Passwörter werden in der API-Ausgabe maskiert.

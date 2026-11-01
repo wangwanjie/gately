@@ -48,8 +48,10 @@ Providers that receive remarks: Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod
 When you delete a record (the delete icon at the right of a record in the list, or removing a saved record in the editor and saving) or a task, a confirmation dialog lets you tick "Also delete from the DNS provider":
 
 - When ticked, the DNS records at the provider are deleted first, and the Gately configuration is deleted only if all of them succeed; if any fails, the reason is shown and the Gately configuration stays unchanged, so you can retry or untick the option;
-- Only the record synced by Gately is deleted: if there is a single record with the same name and type (and line), it is deleted; if there are several, only those whose value matches the last sync are deleted, and nothing is deleted when it cannot be determined;
+- Only the record synced by Gately is deleted: the one with the same name and type (and line) whose value matches Gately's last sync;
+- Nothing is deleted, and the reason is shown, when Gately has not synced the record yet (its value is unknown), when the value at the provider differs from the last sync (for example after an edit in the provider's console), or when a provider that manages record sets (Huawei Cloud, Route 53, Gandi, NS1, GoDaddy) still has other values in the set; sync once first or handle it in the provider's console;
 - A record that no longer exists at the provider counts as success;
+- When you remove a record while editing a task and tick the option, the configuration about to be saved is validated first, and the records at the provider are not deleted if validation fails;
 - DuckDNS, Namecheap, DynDNS2 and the custom callback have no delete API, so the option is not shown and the record at the provider has to be deleted by hand.
 
 The default state of the checkbox is set in Global settings.

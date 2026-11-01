@@ -86,6 +86,7 @@ The "Split" menu in the toolbar offers side-by-side, stacked and grid layouts, w
 A terminal is equivalent to running arbitrary commands on the target host, so Gately applies these restrictions by default:
 
 - **The local shell is off by default** and must be turned on explicitly in the settings;
+- **Local shell inside the container**: with a Docker deployment the local shell runs inside the Gately container, so stopping or recreating that container from there breaks off halfway and leaves it half-done; to upgrade Gately, use the upgrade action in the container list of [Docker management](/en/docs/modules/docker#containers);
 - **Agreement confirmation**: the first time you enable the local shell, create a session, attach to a session or use the file manager, a user agreement appears and you must tick it to continue;
 - **Two-factor authentication (2FA)**: after you bind a TOTP authenticator by scanning the QR code in the security settings, the actions above require a 6-digit code. After verification, the current login token does not need to verify again for 30 minutes; after 5 consecutive wrong codes, that login token is locked for 1 minute;
 - Connection passwords, private keys and proxy passwords are masked in API output.

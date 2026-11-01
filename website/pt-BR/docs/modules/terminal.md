@@ -86,6 +86,7 @@ O menu "Dividir" na barra de ferramentas oferece layouts lado a lado, empilhado 
 Um terminal equivale a executar comandos arbitrários no host de destino, por isso o Gately aplica estas restrições por padrão:
 
 - **O shell local fica desativado por padrão** e precisa ser ativado explicitamente nas configurações;
+- **Shell local dentro do contêiner**: numa implantação com Docker, o shell local roda dentro do contêiner do Gately; parar ou recriar esse contêiner a partir dele é interrompido no meio e deixa tudo pela metade. Para atualizar o Gately, use a ação de atualizar na lista de contêineres do [Gerenciamento do Docker](/pt-BR/docs/modules/docker#conteineres);
 - **Confirmação do termo de uso**: na primeira vez que você ativa o shell local, cria uma sessão, se conecta a uma sessão ou usa o gerenciador de arquivos, um termo de uso aparece e você precisa marcá-lo para continuar;
 - **Autenticação em dois fatores (2FA)**: depois de vincular um autenticador TOTP escaneando o QR code nas configurações de segurança, as ações acima exigem um código de 6 dígitos. Após a verificação, o token de login atual não precisa verificar de novo por 30 minutos; após 5 códigos incorretos consecutivos, esse token de login fica bloqueado por 1 minuto;
 - Senhas de conexão, chaves privadas e senhas de proxy são mascaradas na saída da API.

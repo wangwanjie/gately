@@ -48,8 +48,10 @@ Provedores que recebem observações: Alibaba Cloud, Cloudflare, Tencent Cloud, 
 Ao excluir um registro (o ícone de excluir à direita do registro na lista, ou removendo um registro salvo no editor e salvando) ou uma tarefa, uma caixa de confirmação permite marcar "Excluir também no provedor DNS":
 
 - Se marcada, os registros no provedor são excluídos primeiro, e a configuração do Gately só é excluída se todos derem certo; se algum falhar, o motivo é exibido e a configuração do Gately não muda, então você pode tentar de novo ou desmarcar a opção;
-- Só o registro sincronizado pelo Gately é excluído: se houver um único com o mesmo nome e tipo (e linha), ele é excluído; se houver vários, só os com o valor da última sincronização, e nada é excluído quando não dá para determinar;
+- Só o registro sincronizado pelo Gately é excluído: o que tem o mesmo nome e tipo (e linha) e o valor da última sincronização do Gately;
+- Nada é excluído, e o motivo é exibido, quando o Gately ainda não sincronizou o registro (valor desconhecido), quando o valor no provedor difere da última sincronização (por exemplo, após uma alteração no console) ou quando um provedor que gerencia conjuntos de registros (Huawei Cloud, Route 53, Gandi, NS1, GoDaddy) ainda tem outros valores no conjunto; sincronize uma vez antes ou resolva no console do provedor;
 - Um registro que já não existe no provedor conta como sucesso;
+- Ao remover um registro editando uma tarefa com a opção marcada, a configuração a ser salva é validada antes, e os registros no provedor não são excluídos se a validação falhar;
 - DuckDNS, Namecheap, DynDNS2 e o callback personalizado não têm API de exclusão, então a opção não aparece e o registro no provedor precisa ser excluído manualmente.
 
 O estado padrão da caixa é definido nas Configurações globais.

@@ -86,6 +86,7 @@ Le menu « Scinder » de la barre d'outils propose les dispositions côte à cô
 Un terminal équivaut à exécuter des commandes arbitraires sur l'hôte cible ; Gately applique donc ces restrictions par défaut :
 
 - **Le shell local est désactivé par défaut** et doit être activé explicitement dans les paramètres ;
+- **Shell local dans le conteneur** : en déploiement Docker, le shell local s'exécute dans le conteneur de Gately ; arrêter ou recréer ce conteneur depuis ce shell s'interrompt en cours de route et laisse une opération à moitié faite. Pour mettre à jour Gately, utilisez l'action de mise à jour de la liste des conteneurs de la [gestion de Docker](/fr/docs/modules/docker#conteneurs) ;
 - **Confirmation du contrat** : la première fois que vous activez le shell local, créez une session, vous rattachez à une session ou utilisez le gestionnaire de fichiers, un contrat d'utilisation s'affiche et vous devez le cocher pour continuer ;
 - **Authentification à deux facteurs (2FA)** : après avoir lié une application d'authentification TOTP en scannant le QR code dans les paramètres de sécurité, les actions ci-dessus exigent un code à 6 chiffres. Une fois vérifié, le jeton de connexion courant n'a pas besoin d'être vérifié à nouveau pendant 30 minutes ; après 5 codes erronés consécutifs, ce jeton de connexion est verrouillé pendant 1 minute ;
 - Les mots de passe de connexion, clés privées et mots de passe de proxy sont masqués dans les sorties de l'API.

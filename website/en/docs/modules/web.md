@@ -115,6 +115,7 @@ When a site sits behind an HTTP proxy such as Cloudflare, Alibaba Cloud CDN or T
 - Headers are read only when the original peer is a trusted proxy. The original peer is the address after PROXY protocol handling: the address in the PROXY header for connections from a trusted PROXY source, otherwise the TCP peer. Headers sent by clients connecting directly are always ignored;
 - Headers are checked in the chosen order and the first one that yields a valid address wins; `X-Forwarded-For` is used when none is chosen. Multi-value headers such as `X-Forwarded-For` are read right to left, skipping trusted proxies, and the first untrusted address is used, so values forged on the left by the client are never taken;
 - Pick only headers your proxy overwrites. Cloudflare overwrites `CF-Connecting-IP`, for example, while other proxies usually pass through a client-supplied header of the same name; `X-Forwarded-For` is the safer choice there;
+- With Cloudflare, set the real IP header to `CF-Connecting-IP`: Cloudflare writes the visitor address into it directly. `X-Forwarded-For` is read right to left skipping trusted proxies, so when the trusted proxies include Cloudflare's whole ranges, a request sent through Cloudflare's own egress (such as Workers) can carry a forged address on the left;
 - `0.0.0.0/0` and `::/0` are rejected on save;
 - When Protocol Routing hands connections to Web Services over loopback, enable sending the PROXY header in Protocol Routing and accepting it on the listener instead of adding `127.0.0.1` to the trusted proxies; otherwise visitors connecting straight to Protocol Routing could forge the headers. Passthrough routes in Protocol Routing remain plain TCP forwarding and are not affected;
 - Requests from a trusted proxy carrying `X-Forwarded-Proto: https` are treated as HTTPS;
@@ -213,7 +214,8 @@ Add lists under "Global settings → Subscribed IP lists": enter the URL and ref
 - Allowlists and blocklists of sites and path rules can reference several lists, checked together with the manually entered ranges; matching any of them counts as being on the list;
 - If downloaded content cannot be parsed (for example an error page was returned), the previous list is kept, the reason is shown on the list, and the download is retried an hour later;
 - Until a list has downloaded successfully it counts as empty: an allowlist therefore denies access, and a blocklist blocks nothing extra;
-- A list still referenced by a site cannot be deleted.
+- Disabling a list that is still referenced makes the allowlists using it deny every source and the blocklists using it block nothing;
+- Deleting a referenced list is refused.
 
 ### Path rules
 
@@ -418,7 +420,7 @@ For a running listener, each site row (including the default site) shows "N acti
 
 The list counts requests in progress: an HTTP/1.1 keep-alive connection belongs to no site between requests, and one HTTP/2 or HTTP/3 connection can carry several requests at once, so requests are the unit that maps exactly to a site. An upgraded WebSocket stays listed until the connection closes.
 
-**Close** on a row ends that request right after you confirm: HTTP/1.x closes the whole connection, HTTP/2 and HTTP/3 reset only that request and other requests on the same connection continue, and an upgraded WebSocket is closed together with its backend connection. It also takes effect at once when the visitor stops reading and sending is blocked. A closed request is logged as 444 in the access log (or keeps its status code if the response had started) and does not count as a backend error or toward path probing. The visitor can reconnect right away; to keep them out use **Close and ban**, which adds the source address (its /64 range for IPv6) to the [ban list](#ban-list) and closes its requests in progress on every listener and site.
+**Close** on a row ends that request right after you confirm: HTTP/1.x closes the whole connection, HTTP/2 and HTTP/3 reset only that request and other requests on the same connection continue, and an upgraded WebSocket is closed together with its backend connection. It also takes effect at once when the visitor stops reading and sending is blocked. A closed request is logged as 444 in the access log (or keeps its status code if the response had started) and does not count as a backend error or toward path probing. The visitor can reconnect right away; to keep them out use **Close and ban**, which adds the source address (its /64 range for IPv6) to the [ban list](#ban-list) and closes its requests in progress on every listener and site. Loopback addresses (requests coming in through frp or a local forward without PROXY protocol all show the loopback address) and addresses within the trusted proxies (IPv6 checked by /64) cannot be banned, since banning them would block a large number of unrelated visitors; closing without banning has no such limit.
 
 Read-only accounts and read-only tokens can view the list; closing and banning need write permission and are recorded in the audit log.
 

@@ -213,19 +213,19 @@ Cloudflare、阿里雲、DNSPod、Route 53 等都能用。支援 IPv4 與 IPv6�
 
 | 模組 | 功能 |
 | --- | --- |
-| 動態網域 | Alibaba Cloud、Cloudflare、Tencent Cloud、DNSPod、Huawei Cloud、GoDaddy、Porkbun、dynv6、DuckDNS、Amazon Route 53、OVHcloud、Gandi、NS1、Bunny DNS、Namecheap、DynDNS2（No-IP、Dynu 等）、自訂回呼；以 URL／網路卡／指令取得 IP；IPv4/IPv6；Webhook；分組、排序與搜尋 |
-| STUN 穿透 | TCP/UDP、保活、UPnP/NAT-PMP、內建轉發、位址變更時觸發 Webhook 與腳本 |
-| 連接埠轉發 | TCP/UDP、IPv4/IPv6、連接埠範圍、多目標故障轉移、連線數限制、流量統計、PROXY 協定（v1/v2）；分組、排序與搜尋 |
-| 協定分流 | 多個服務共用 443 等同一個連接埠：依協定辨識連線並透傳、不解密，TLS 依 SNI 與 ALPN、HTTP 依 Host，Minecraft 依伺服器位址，另可辨識 SSH、RDP、SOCKS、OpenVPN、RTSP、SIP、XMPP、MQTT、AMQP、PostgreSQL、Redis、SMB、Git、IRC、ADB、BitTorrent，VNC 等伺服器先發話的協定走等待逾時路由；預設目標、每條路由可單獨設定 PROXY 協定；取代 haproxy SNI 分流與 sslh |
+| 動態網域 | Alibaba Cloud、Cloudflare、Tencent Cloud、DNSPod、Huawei Cloud、GoDaddy、Porkbun、dynv6、DuckDNS、Amazon Route 53、OVHcloud、Gandi、NS1、Bunny DNS、Namecheap、DynDNS2（No-IP、Dynu 等）、自訂回呼；以 URL／網路卡／指令取得 IP；IPv4/IPv6；Webhook；分組、排序與搜尋；備註寫入服務商；刪除時可同時刪除服務商處的解析 |
+| STUN 穿透 | TCP/UDP、保活、UPnP/NAT-PMP、內建轉發、位址變更時觸發 Webhook 與腳本；來源 IP 白名單／黑名單（可引用訂閱 IP 清單） |
+| 連接埠轉發 | TCP/UDP、IPv4/IPv6、連接埠範圍、多目標故障轉移、連線數限制、流量統計、PROXY 協定（v1/v2）；分組、排序與搜尋；來源 IP 白名單／黑名單（可引用訂閱 IP 清單） |
+| 協定分流 | 多個服務共用 443 等同一個連接埠：依協定辨識連線並透傳、不解密，TLS 依 SNI 與 ALPN、HTTP 依 Host，Minecraft 依伺服器位址，另可辨識 SSH、RDP、SOCKS、OpenVPN、RTSP、SIP、XMPP、MQTT、AMQP、PostgreSQL、Redis、SMB、Git、IRC、ADB、BitTorrent，VNC 等伺服器先發話的協定走等待逾時路由；預設目標、每條路由可單獨設定 PROXY 協定；取代 haproxy SNI 分流與 sslh；來源 IP 白名單／黑名單（可引用訂閱 IP 清單） |
 | SSL 憑證 | ACME 自動簽發與續期，支援 DNS-01（萬用字元；委派子網域依 SOA 自動識別 DNS 區域）與 HTTP-01（無需 DNS 服務商）、短期憑證與公網 IP 位址憑證（Let's Encrypt shortlived 設定檔）、EAB、上傳、讀取檔案、對應到目錄並執行腳本；憑證更新後經 SSH 推送到其他主機並執行指令，或重新啟動使用憑證的 Docker 容器 |
 | Tailscale | 託管 tailscaled（使用者空間網路，容器友善）或接入系統既有的常駐程式；驗證金鑰／登入連結、Headscale、子網路由、出口節點、節點清單與 SOCKS5 代理、固定連接埠、tailscaled 額外參數與環境變數；Linux 上可線上安裝、更新、回滾與解除安裝，可恢復預設設定 |
-| frp | 可同時執行多個 frpc 與 frps 實例；frpc 用戶端（tcp/udp/http/https/stcp/xtcp 代理，新增刪除即時生效）與 frps 伺服器端（連接埠白名單、子網域、主控台），可一鍵匯入舊版 ini／新版 toml 設定；線上安裝、更新、回滾與解除安裝，可恢復預設設定 |
+| frp | 可同時執行多個 frpc 與 frps 實例；frpc 用戶端（tcp/udp/http/https/stcp/xtcp 代理，新增刪除即時生效）與 frps 伺服器端（連接埠白名單、子網域、主控台），可一鍵匯入舊版 ini／新版 toml 設定；線上安裝、更新、回滾與解除安裝，可恢復預設設定；frps 依來源 IP 限制 frpc 登入；frpc 代理存取位址（可點擊、複製） |
 | Cloudflare 通道 | cloudflared 權杖通道與 trycloudflare 臨時通道，多通道、自動重啟、公開位址顯示；線上安裝、更新、回滾與解除安裝，可恢復預設設定；權杖通道可透過 Cloudflare API 編輯路由規則並建立 DNS 記錄 |
-| Web 服務 | 依網域反向代理／重新導向／靜態檔案／固定文字／中斷連線（相當於 nginx return 444）；HTTPS 與 HTTP/3（QUIC）、HTTP 與 HTTPS 共用同一埠（跳轉或直接服務）；WebSocket；PROXY 協定收發；基本驗證、網頁驗證、GitHub/Google/QQ/OIDC 登入、支援 TOTP 二次驗證並可跨子網域單一登入的共用使用者、內建 OIDC 身分提供者（讓 Gitea、Grafana 等應用程式以共用使用者登入）、轉發認證到 Authelia 等外部服務、公網 Gately 可把登入 Cookie 轉發給內網 Gately；IP 黑白名單與定時重新整理的訂閱 IP 清單（如省市 IP 段）、路徑規則、臨時分享連結、驗證失敗自動封鎖、GeoIP 國家過濾；依路徑分流後端、依登入使用者分流到不同後端（類似 nginx map $remote_user）、HTTPS 後端依造訪網域傳送 SNI、後端權重／備援／負載平衡策略、主動與被動健康檢查、壓縮、限流、回應快取、路徑改寫；靜態站台支援無副檔名網址與自訂 404 頁面；修改站台不會中斷既有連線；站台分組、排序與搜尋；分鐘級存取統計與 Prometheus 指標；共用使用者可自助修改密碼；存取被拒絕時站點可直接中斷連線，不回傳 403 |
+| Web 服務 | 依網域反向代理／重新導向／靜態檔案／固定文字／中斷連線（相當於 nginx return 444）；HTTPS 與 HTTP/3（QUIC）、HTTP 與 HTTPS 共用同一埠（跳轉或直接服務）；WebSocket；PROXY 協定收發；基本驗證、網頁驗證、GitHub/Google/QQ/OIDC 登入、支援 TOTP 二次驗證並可跨子網域單一登入的共用使用者、內建 OIDC 身分提供者（讓 Gitea、Grafana 等應用程式以共用使用者登入）、轉發認證到 Authelia 等外部服務、公網 Gately 可把登入 Cookie 轉發給內網 Gately；IP 黑白名單與定時重新整理的訂閱 IP 清單（如省市 IP 段）、路徑規則、臨時分享連結、驗證失敗自動封鎖、GeoIP 國家過濾；依路徑分流後端、依登入使用者分流到不同後端（類似 nginx map $remote_user）、HTTPS 後端依造訪網域傳送 SNI、後端權重／備援／負載平衡策略、主動與被動健康檢查、壓縮、限流、回應快取、路徑改寫；靜態站台支援無副檔名網址與自訂 404 頁面；修改站台不會中斷既有連線；站台分組、排序與搜尋；分鐘級存取統計與 Prometheus 指標；共用使用者可自助修改密碼；存取被拒絕時站點可直接中斷連線，不回傳 403；從可信代理（CDN、WAF）的請求標頭取得訪客真實 IP；依站點查看即時連線，可中斷或封鎖；網域可點擊、複製完整網址 |
 | WAF 防火牆 | Coraza + OWASP CRS v4，可依檔案啟用規則、自訂 SecLang、攔截／僅偵測；請求內容檢查上限可調，超過上限時只檢查前段或依路徑略過，網盤、WebDAV 等上傳站台也能掛上 WAF |
 | 入侵防護 | 類 fail2ban 的日誌規則（日誌檔案、systemd 日誌、命令輸出、Docker 容器日誌、管理後台登入失敗、WAF 攔截），內建 SSH、Nginx、Vaultwarden 等範本；誘餌連接埠與連接埠掃描偵測；統一封鎖清單，支援手動網段與永久封鎖、遞增時長與白名單；封鎖同步到系統防火牆（nftables）在核心層丟棄，沒有 nftables 的平台對 Gately 自身的服務生效；Web 路徑探測封鎖：按監聽統計誘餌路徑（/.env、/.git 等）、未知網域掃描與連續 404 |
-| Docker 管理 | 容器建立與編輯、日誌與終端機、Compose、映像檔更新檢查與一鍵升級（失敗自動還原）、網路與磁碟區 |
-| Web 終端機 | SSH（主機金鑰首次信任）、Telnet、本機 Shell（預設關閉）；代理、持久工作階段、SFTP 檔案管理、2FA 與協定確認、快捷指令、分割畫面 |
+| Docker 管理 | 容器建立與編輯、日誌與終端機、Compose、映像檔更新檢查與一鍵升級（失敗自動還原）、網路與磁碟區；升級 Gately 自身所在的容器（臨時輔助容器，失敗時還原舊容器） |
+| Web 終端機 | SSH（主機金鑰首次信任）、Telnet、本機 Shell（預設關閉）；代理、持久工作階段、SFTP 檔案管理、2FA 與協定確認、快捷指令、分割畫面；手機上長按選取複製、貼上面板與剪貼簿記錄 |
 | 網路診斷 | Ping、路由追蹤、連接埠探測、DNS 查詢、測速、區域網路掃描 |
 | 通知中心 | Webhook、Telegram、Bark、ntfy、Gotify、Pushover、Discord、Slack、Server酱、PushPlus、WeCom、DingTalk、Feishu、電子郵件；等級、萬用字元與靜音去重規則；內建規則範本（關鍵故障、憑證到期、位址變更、登入、設定變更） |
 | 設定備份 | 加密備份（scrypt + AES-GCM）、保留策略、定時備份到本機目錄或儲存掛載點 |

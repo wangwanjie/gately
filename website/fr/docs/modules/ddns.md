@@ -48,8 +48,10 @@ Fournisseurs qui reçoivent les notes : Alibaba Cloud, Cloudflare, Tencent Cloud
 Quand vous supprimez un enregistrement (l’icône de suppression à droite de l’enregistrement dans la liste, ou en retirant un enregistrement enregistré dans l’éditeur puis en enregistrant) ou une tâche, une boîte de confirmation permet de cocher « Supprimer aussi chez le fournisseur DNS » :
 
 - Si la case est cochée, les enregistrements chez le fournisseur sont supprimés d’abord, et la configuration Gately n’est supprimée que s’ils le sont tous ; en cas d’échec, la raison s’affiche et la configuration Gately reste inchangée, vous pouvez réessayer ou décocher l’option ;
-- Seul l’enregistrement synchronisé par Gately est supprimé : s’il n’y en a qu’un avec le même nom et le même type (et la même ligne), il est supprimé ; s’il y en a plusieurs, seuls ceux dont la valeur correspond à la dernière synchronisation le sont, et rien n’est supprimé si on ne peut pas trancher ;
+- Seul l’enregistrement synchronisé par Gately est supprimé : celui qui a le même nom et le même type (et la même ligne) et dont la valeur correspond à la dernière synchronisation de Gately ;
+- Rien n’est supprimé, et la raison est affichée, si Gately n’a pas encore synchronisé l’enregistrement (sa valeur est inconnue), si la valeur chez le fournisseur diffère de la dernière synchronisation (par exemple après une modification dans la console) ou si un fournisseur qui gère des jeux d’enregistrements (Huawei Cloud, Route 53, Gandi, NS1, GoDaddy) a encore d’autres valeurs dans le jeu ; synchronisez d’abord une fois ou réglez-le dans la console du fournisseur ;
 - Un enregistrement qui n’existe plus chez le fournisseur compte comme un succès ;
+- Si vous retirez un enregistrement en modifiant une tâche et cochez l’option, la configuration à enregistrer est d’abord validée, et les enregistrements chez le fournisseur ne sont pas supprimés si la validation échoue ;
 - DuckDNS, Namecheap, DynDNS2 et le rappel personnalisé n’ont pas d’API de suppression : l’option n’est pas proposée et l’enregistrement chez le fournisseur doit être supprimé à la main.
 
 L’état par défaut de la case se règle dans les Paramètres globaux.

@@ -48,8 +48,10 @@ Anbieter, die Notizen erhalten: Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod
 Beim Löschen eines Eintrags (Löschsymbol rechts neben dem Eintrag in der Liste oder einen gespeicherten Eintrag im Editor entfernen und speichern) oder einer Aufgabe erscheint ein Bestätigungsdialog, in dem Sie „Auch beim DNS-Anbieter löschen“ ankreuzen können:
 
 - Ist es angekreuzt, werden zuerst die Einträge beim Anbieter gelöscht, und die Gately-Konfiguration wird nur gelöscht, wenn das für alle gelingt; schlägt einer fehl, wird der Grund angezeigt und die Gately-Konfiguration bleibt unverändert, sodass Sie es erneut versuchen oder das Kästchen abwählen können;
-- Gelöscht wird nur der von Gately synchronisierte Eintrag: Gibt es genau einen mit gleichem Namen und Typ (und gleicher Leitung), wird er gelöscht; bei mehreren nur die, deren Wert der letzten Synchronisierung entspricht. Lässt es sich nicht bestimmen, wird nichts gelöscht;
+- Gelöscht wird nur der von Gately synchronisierte Eintrag: der mit gleichem Namen und Typ (und gleicher Leitung), dessen Wert der letzten Synchronisierung durch Gately entspricht;
+- Nicht gelöscht wird, mit Angabe des Grundes, wenn Gately den Eintrag noch nie synchronisiert hat (Wert unbekannt), wenn der Wert beim Anbieter vom zuletzt synchronisierten abweicht (etwa nach einer Änderung in der Konsole) oder wenn bei Anbietern, die Datensatzgruppen verwalten (Huawei Cloud, Route 53, Gandi, NS1, GoDaddy), die Gruppe noch weitere Werte enthält; synchronisieren Sie dann zuerst einmal oder bereinigen Sie es in der Konsole des Anbieters;
 - Existiert der Eintrag beim Anbieter nicht mehr, gilt das als Erfolg;
+- Entfernen Sie beim Bearbeiten einer Aufgabe einen Eintrag und setzen das Häkchen, wird die zu speichernde Konfiguration zuerst geprüft; schlägt die Prüfung fehl, bleiben die Einträge beim Anbieter erhalten;
 - DuckDNS, Namecheap, DynDNS2 und der benutzerdefinierte Callback haben keine Lösch-API, daher wird die Option nicht angezeigt und der Eintrag beim Anbieter muss von Hand gelöscht werden.
 
 Die Voreinstellung des Kästchens legen Sie in den Globalen Einstellungen fest.

@@ -86,6 +86,7 @@ El menú «Dividir» de la barra de herramientas ofrece disposiciones en paralel
 Un terminal equivale a ejecutar comandos arbitrarios en el host de destino, por lo que Gately aplica estas restricciones por defecto:
 
 - **El shell local está desactivado por defecto** y debe activarse explícitamente en los ajustes;
+- **Shell local dentro del contenedor**: en un despliegue con Docker, el shell local se ejecuta dentro del contenedor de Gately, así que detener o recrear ese contenedor desde ahí se interrumpe a mitad y lo deja a medio hacer; para actualizar Gately usa la acción de actualizar en la lista de contenedores de [Gestión de Docker](/es/docs/modules/docker#contenedores);
 - **Confirmación del acuerdo**: la primera vez que activas el shell local, creas una sesión, te conectas a una sesión o usas el gestor de archivos, aparece un acuerdo de usuario que debes marcar para continuar;
 - **Autenticación de dos factores (2FA)**: tras vincular un autenticador TOTP escaneando el código QR en los ajustes de seguridad, las acciones anteriores requieren un código de 6 dígitos. Tras la verificación, el token de inicio de sesión actual no necesita volver a verificarse durante 30 minutos; tras 5 códigos erróneos consecutivos, ese token de inicio de sesión se bloquea durante 1 minuto;
 - Las contraseñas de conexión, las claves privadas y las contraseñas de proxy se enmascaran en las respuestas de la API.

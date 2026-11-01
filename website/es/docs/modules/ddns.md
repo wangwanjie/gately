@@ -48,8 +48,10 @@ Proveedores que reciben notas: Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod 
 Al eliminar un registro (el icono de eliminar a la derecha del registro en la lista, o quitar un registro guardado en el editor y guardar) o una tarea, un diálogo de confirmación permite marcar «Eliminar también en el proveedor DNS»:
 
 - Si se marca, primero se eliminan los registros en el proveedor y la configuración de Gately solo se borra si todos tienen éxito; si alguno falla se muestra el motivo y la configuración de Gately no cambia, así que puedes reintentar o desmarcar la opción;
-- Solo se elimina el registro que sincroniza Gately: si hay uno con el mismo nombre y tipo (y línea), se elimina; si hay varios, solo los que tengan el valor de la última sincronización, y si no se puede determinar no se elimina nada;
+- Solo se elimina el registro que sincroniza Gately: el que tiene el mismo nombre y tipo (y línea) y el valor de la última sincronización de Gately;
+- No se elimina nada, y se indica el motivo, cuando Gately todavía no ha sincronizado el registro (su valor es desconocido), cuando el valor en el proveedor difiere de la última sincronización (por ejemplo, tras cambiarlo en la consola) o cuando un proveedor que gestiona conjuntos de registros (Huawei Cloud, Route 53, Gandi, NS1, GoDaddy) aún tiene otros valores en el conjunto; sincroniza una vez antes o resuélvelo en la consola del proveedor;
 - Un registro que ya no existe en el proveedor cuenta como éxito;
+- Si quitas un registro al editar una tarea y marcas la opción, primero se valida la configuración que se va a guardar, y si la validación falla no se eliminan los registros en el proveedor;
 - DuckDNS, Namecheap, DynDNS2 y la devolución de llamada personalizada no tienen API de eliminación, así que la opción no aparece y el registro del proveedor se borra a mano.
 
 El estado predeterminado de la casilla se define en Ajustes globales.
