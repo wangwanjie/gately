@@ -571,8 +571,6 @@ import ContentTypeInput from '../components/ContentTypeInput.vue'
 import ProxyOptionsHelp from '../components/ProxyOptionsHelp.vue'
 import { usePolling } from '../composables/usePolling'
 
-// 拓扑视图只在切换到拓扑时加载，列表视图不受影响
-
 interface Site {
   key?: string
   name: string

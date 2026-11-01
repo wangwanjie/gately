@@ -7,6 +7,10 @@ description: Anúncios e notas de cada versão do Gately.
 
 Abaixo estão os anúncios das versões principais. Veja as [GitHub Releases](https://github.com/wangwanjie/gately/releases) para as mudanças completas e os downloads de cada versão.
 
+## [v0.6.2.3](/pt-BR/news/v0.6.2.3)
+
+2 de novembro de 2026 · A topologia de rede ganha página própria com sete layouts, zoom e modo de janela inteira, e categorias de ocultação à escolha; a página inicial e os README mostram capturas em cada idioma, com um vídeo de apresentação de 2 minutos.
+
 ## [v0.6.2.2](/pt-BR/news/v0.6.2.2)
 
 1 de novembro de 2026 · Os Serviços Web ganham uma visão de topologia, podem obter o IP real do visitante de proxies confiáveis e mostram as conexões ao vivo de cada site, com opções de fechar e banir; Redirecionamento de portas, Roteamento por protocolo, STUN e frps ganham listas de permissões e de bloqueio por IP de origem; o DNS dinâmico grava os comentários no provedor e pode excluir registros lá; o Gately pode atualizar o próprio contêiner pela página Docker; o Terminal Web permite seleção com toque longo no celular.
