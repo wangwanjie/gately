@@ -518,10 +518,12 @@ func (h *siteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				Infof("%s %s %s%s %d %dms %q %q", client.Addr(), r.Method, r.Host, clip(uri, maxLogURI), rec.status, time.Since(start).Milliseconds(),
 					orDash(clip(r.Referer(), maxLogHeader)), orDash(clip(r.UserAgent(), maxLogHeader)))
 		}
-		// 交给入侵防护的路径探测规则计数（444 断开连接同样经过这里）。访问控制拒绝后断开的请求按 403 上报，
-		// 与未开启“拒绝时断开连接”时一致：它们是被名单或国家过滤挡下的访客，不是在探测不存在的路径
+		// 交给入侵防护的路径探测规则计数（444 断开连接同样经过这里）。普通站点上访问控制拒绝后断开的请求按 403 上报，
+		// 与未开启“拒绝时断开连接”时一致：它们是被名单或国家过滤挡下的访客，不是在探测不存在的路径。
+		// 默认站点例外，仍按 444 上报：访问未知域名的名单外访客与「断开连接」类型默认站点处理的请求是同一类，
+		// 默认站点改用“反向代理 + 白名单 + 拒绝时断开连接”放行自家 IP 后，未知域名扫描仍能被统计
 		status := rec.status
-		if rec.denied {
+		if rec.denied && !h.deflt {
 			status = http.StatusForbidden
 		}
 		webprobe.Report(webprobe.Hit{Addr: client.Addr(), Listener: h.listener, Site: h.site.Key, Unknown: h.deflt,

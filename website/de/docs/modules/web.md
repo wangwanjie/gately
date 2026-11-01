@@ -196,6 +196,8 @@ Aktivieren Sie auf der Seite Auth-Benutzer die Option Passwort selbst ändern, d
 
 **Bei Ablehnung** im Tab Sicherheit der Site legt fest, wie Anfragen behandelt werden, die durch eine Sperre, die IP-Zugriffskontrolle (einschließlich Pfadregeln) oder den Länderfilter abgelehnt werden: standardmäßig **403 zurückgeben**; **Verbindung schließen** sendet nichts und bricht die Anfrage ab, protokolliert als 444, wie bei einer Site vom Typ Verbindung schließen. Zusammen mit einer Allowlist kommen eigene IPs durch, alle anderen werden abgewiesen. Ratenbegrenzung (429) und WAF-Blockaden bleiben unverändert.
 
+Die Standardseite lässt sich genauso einrichten: Typ **Reverse-Proxy** mit Backend wählen, unter IP-Zugriffskontrolle eine Zulassungs- oder Sperrliste festlegen (die unten beschriebenen abonnierten IP-Listen sind möglich) und **Bei Ablehnung** auf **Verbindung schließen** setzen. Anfragen, die in der Zulassungsliste stehen bzw. nicht in der Sperrliste, gehen an das Backend, alle anderen werden abgebrochen; eine aktualisierte abonnierte Liste wirkt sofort. Der Seitentyp „Verbindung schließen“ hat kein Backend und bricht jede Anfrage ab.
+
 Das Schließen der Verbindung, ob als Site-Typ oder als Ablehnungsaktion, hält nur die HTTP-Antwort zurück und verbirgt nicht, dass der Dienst läuft:
 
 - der TCP-Handshake ist abgeschlossen, der Client weiß also, dass der Port lauscht;

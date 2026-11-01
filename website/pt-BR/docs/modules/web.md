@@ -196,6 +196,8 @@ O "Controle de acesso por IP" na página "Segurança" do site pode ficar desativ
 
 **Ao negar**, na aba Segurança do site, define o que acontece com requisições rejeitadas por um banimento, pelo controle de acesso por IP (incluindo regras de caminho) ou pelo filtro de países: por padrão **Retornar 403**; **Fechar conexão** não envia nada e derruba a requisição, registrada como 444, igual a um site Fechar conexão. Com uma lista de permitidos, seus próprios IPs passam e o restante é derrubado. Limite de taxa (429) e bloqueios do WAF não mudam.
 
+O site padrão pode ser configurado do mesmo jeito: escolha o tipo **Proxy reverso** com um backend, uma lista de permitidos ou de bloqueados em Controle de acesso por IP (as listas de IP assinadas descritas abaixo podem ser usadas) e defina **Ao negar** como **Fechar conexão**. Requisições que estão na lista de permitidos, ou fora da de bloqueados, vão para o backend e o restante é derrubado; uma lista assinada atualizada vale na hora. O tipo de site Fechar conexão não tem backend e derruba todas as requisições.
+
 Fechar a conexão, como tipo de site ou como ação ao negar, apenas omite a resposta HTTP e não esconde que o serviço está no ar:
 
 - o handshake TCP já foi concluído, então o cliente sabe que a porta está escutando;

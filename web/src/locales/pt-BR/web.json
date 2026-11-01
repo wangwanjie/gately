@@ -62,6 +62,7 @@
   "typeClose": "Fechar conexão",
   "typeCloseHelp": "Não envia nada e fecha a conexão (como o return 444 do nginx). Útil no site padrão para que requisições que varrem domínios desconhecidos não recebam resposta; o log de acesso as registra como 444.",
   "typeCloseLimit": "Fechar apenas omite a resposta HTTP: os handshakes TCP e TLS já foram concluídos, então o cliente ainda sabe que a porta está escutando; no HTTP/2 e no HTTP/3 só a requisição é redefinida e a conexão continua aberta; requisições HTTPS que chegam aqui já receberam o certificado. Para que scanners vejam apenas tempo esgotado depois, bana os endereços deles na Prevenção de intrusão.",
+  "typeCloseAllow": "Fechar conexão derruba todas as requisições. Para liberar os IPs de uma lista e derrubar o restante, mude o tipo para Proxy reverso, escolha Lista de permitidos ou Lista de bloqueados em Controle de acesso por IP na aba Segurança (listas de IP assinadas podem ser usadas) e defina Ao negar como Fechar conexão. Isso vale também para o site padrão.",
   "targets": "Endereços de backend",
   "targetsPlaceholder": "http://192.168.1.10:8080; vários backends são usados em round robin",
   "options": "Opções",

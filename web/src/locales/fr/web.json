@@ -62,6 +62,7 @@
   "typeClose": "Fermer la connexion",
   "typeCloseHelp": "N'envoie rien et ferme la connexion (comme return 444 de nginx). Utile pour le site par défaut afin que les requêtes qui sondent des domaines inconnus ne reçoivent aucune réponse ; le journal d'accès les enregistre avec le code 444.",
   "typeCloseLimit": "Fermer ne fait que retenir la réponse HTTP : les poignées de main TCP et TLS sont déjà terminées, le client sait donc toujours que le port écoute ; en HTTP/2 et HTTP/3 seule la requête est réinitialisée et la connexion reste ouverte ; les requêtes HTTPS qui arrivent ici ont déjà reçu le certificat. Pour que les scanners ne voient ensuite que des délais d'attente, bannissez leurs adresses dans Prévention d'intrusion.",
+  "typeCloseAllow": "Fermer la connexion coupe toutes les requêtes. Pour laisser passer les IP d’une liste et couper les autres, choisissez le type Proxy inverse, sélectionnez une liste d’autorisation ou de blocage dans Contrôle d’accès par IP de l’onglet Sécurité (les listes d’IP abonnées sont utilisables) et réglez En cas de refus sur Fermer la connexion. Cela vaut aussi pour le site par défaut.",
   "targets": "Adresses backend",
   "targetsPlaceholder": "http://192.168.1.10:8080 ; plusieurs backends sont utilisés en tourniquet",
   "options": "Options",

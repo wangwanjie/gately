@@ -62,6 +62,7 @@
   "typeClose": "Close connection",
   "typeCloseHelp": "Sends nothing and closes the connection (like nginx return 444). Useful for the default site so requests scanning unknown domains get no response; the access log records them as 444.",
   "typeCloseLimit": "Closing only withholds the HTTP response: the TCP and TLS handshakes have already completed, so the client can still tell the port is listening; over HTTP/2 and HTTP/3 only the request is reset and the connection stays open; HTTPS requests that get here have already received the certificate. To make scanners see only timeouts afterwards, ban their addresses in Intrusion Prevention.",
+  "typeCloseAllow": "Close connection drops every request. To let listed IPs in and drop everyone else, set the type to Reverse proxy, choose Allowlist or Blocklist under IP access control on the Security tab (subscribed IP lists can be used), and set When denied to Close connection. This works for the default site too.",
   "targets": "Backend addresses",
   "targetsPlaceholder": "http://192.168.1.10:8080; multiple backends are used round-robin",
   "options": "Options",

@@ -73,6 +73,7 @@ With the source set to "Web path probing", the jail counts requests handled by t
 - **Paths**: one per line; leave empty for all paths. `*` matches any characters (including `/`), the whole path must match, case-insensitive. For example `*/.env` matches `/.env` and `/api/.env`. Lines starting with `~` are Go regular expressions. Variants such as `//.env` or `/a/../.env` also match through the normalized path;
 - **Excluded paths**: same syntax; matching requests are not counted;
 - **What counts**: by default only 404 and 444 (missing content, or a connection closed by a "Close connection" site), so requests for pages that exist do not count. With "Any status code" every response counts, which suits decoy paths because single-page apps return 200 for any path. "Any status code" needs path rules or "Unknown domains only", otherwise saving is rejected;
+- **Access control denials**: when a site's When denied is set to Close connection, requests rejected by a ban, IP access control or the country filter count as 403 on regular sites, so legitimate visitors outside the list are not banned, and as 444 on the default site, the same as a Close connection default site; a default site that uses a reverse proxy with an allowlist for your own IPs still has unknown domain scans counted;
 - **Unknown domains only**: counts only requests whose domain matches no site, that is, requests handled by the default site, or answered with 404 by the listener when there is no default site.
 
 Three templates are included:

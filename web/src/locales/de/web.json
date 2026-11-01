@@ -62,6 +62,7 @@
   "typeClose": "Verbindung schließen",
   "typeCloseHelp": "Sendet nichts und schließt die Verbindung (wie nginx return 444). Geeignet für die Standardseite, damit Anfragen, die unbekannte Domains abtasten, keine Antwort erhalten; im Zugriffsprotokoll erscheinen sie als 444.",
   "typeCloseLimit": "Schließen hält nur die HTTP-Antwort zurück: TCP- und TLS-Handshake sind bereits abgeschlossen, der Client erkennt also weiterhin, dass der Port lauscht; bei HTTP/2 und HTTP/3 wird nur die Anfrage zurückgesetzt, die Verbindung bleibt bestehen; HTTPS-Anfragen, die hier ankommen, haben das Zertifikat bereits erhalten. Damit Scanner danach nur noch Zeitüberschreitungen sehen, sperren Sie ihre Adressen im Einbruchschutz.",
+  "typeCloseAllow": "Verbindung schließen bricht jede Anfrage ab. Um gelistete IPs durchzulassen und alle anderen abzuweisen, stellen Sie den Typ auf Reverse-Proxy, wählen auf der Registerkarte Sicherheit unter IP-Zugriffskontrolle eine Zulassungs- oder Sperrliste (abonnierte IP-Listen sind möglich) und setzen Bei Ablehnung auf Verbindung schließen. Das gilt auch für die Standardseite.",
   "targets": "Backend-Adressen",
   "targetsPlaceholder": "http://192.168.1.10:8080; mehrere Backends werden reihum verwendet",
   "options": "Optionen",

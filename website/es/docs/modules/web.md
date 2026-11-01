@@ -196,6 +196,8 @@ El «Control de acceso por IP» de la página «Seguridad» del sitio puede esta
 
 **Al denegar**, en la pestaña Seguridad del sitio, decide qué pasa con las solicitudes rechazadas por un bloqueo, el control de acceso por IP (incluidas las reglas de ruta) o el filtro de países: por defecto **Devolver 403**; **Cerrar conexión** no envía nada y corta la solicitud, registrada como 444, igual que un sitio Cerrar conexión. Con una lista de permitidos deja pasar tus propias IP y corta al resto. La limitación de tasa (429) y los bloqueos del WAF no cambian.
 
+El sitio predeterminado se configura igual: elige el tipo **Proxy inverso** con un backend, una lista de permitidos o de bloqueados en Control de acceso por IP (se pueden usar las listas de IP suscritas descritas más abajo) y pon **Al denegar** en **Cerrar conexión**. Las solicitudes que coinciden con la lista de permitidos, o no coinciden con la de bloqueados, se envían al backend y el resto se corta; una lista suscrita actualizada surte efecto al instante. El tipo de sitio Cerrar conexión no tiene backend y corta todas las solicitudes.
+
 Cerrar la conexión, como tipo de sitio o como acción al denegar, solo evita la respuesta HTTP y no oculta que el servicio está activo:
 
 - el handshake TCP ya se completó, así que el cliente sabe que el puerto escucha;

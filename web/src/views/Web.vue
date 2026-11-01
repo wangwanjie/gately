@@ -272,6 +272,8 @@
               </el-radio-group>
               <div v-if="site.type === 'close'" class="form-help">{{ t('web.typeCloseHelp') }}</div>
               <div v-if="site.type === 'close'" class="form-help">{{ t('web.typeCloseLimit') }}</div>
+              <!-- 断开连接类型没有安全页，“名单内放行、其余断开”需改用反向代理 + IP 访问控制 + 拒绝时断开连接（#53） -->
+              <div v-if="site.type === 'close'" class="form-help">{{ t('web.typeCloseAllow') }}</div>
             </el-form-item>
             <template v-if="site.type === 'proxy'">
               <el-form-item :label="t('web.targets')" required>

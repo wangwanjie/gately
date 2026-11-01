@@ -196,6 +196,8 @@ Turn on Self-service password change on the Auth users page and shared users can
 
 **When denied** on the site's Security tab decides how requests rejected by a ban, IP access control (including path rules) or the country filter are handled: **Return 403** by default; **Close connection** sends nothing and drops the request, logged as 444, the same as a Close connection site. Combined with an allowlist this lets your own IPs in and drops everyone else. Rate limiting (429) and WAF blocks are not affected.
 
+The default site can be set up the same way: set the type to **Reverse proxy** with a backend, choose an allowlist or blocklist under IP access control (subscribed IP lists below can be used), and set **When denied** to **Close connection**. Requests that match the allowlist, or miss the blocklist, are proxied to the backend and the rest are dropped; a refreshed subscription list takes effect at once. The Close connection site type has no backend and drops every request.
+
 Closing the connection, as a site type or as the deny action, only withholds the HTTP response and cannot hide that the service is up:
 
 - the TCP handshake has completed, so the client knows the port is listening;

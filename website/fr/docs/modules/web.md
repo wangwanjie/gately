@@ -196,6 +196,8 @@ Le « Contrôle d'accès par IP » de la page « Sécurité » du site peut êtr
 
 **En cas de refus**, dans l'onglet Sécurité du site, détermine le traitement des requêtes rejetées par un bannissement, le contrôle d'accès par IP (règles de chemin comprises) ou le filtre par pays : **Renvoyer 403** par défaut ; **Fermer la connexion** n'envoie rien et coupe la requête, journalisée en 444, comme un site Fermer la connexion. Associé à une liste d'autorisation, cela laisse passer vos propres IP et coupe toutes les autres. La limitation de débit (429) et les blocages du WAF ne changent pas.
 
+Le site par défaut se configure de la même façon : type **Proxy inverse** avec un backend, liste d’autorisation ou de blocage dans Contrôle d’accès par IP (les listes d’IP abonnées décrites plus bas sont utilisables) et **En cas de refus** sur **Fermer la connexion**. Les requêtes présentes dans la liste d’autorisation, ou absentes de la liste de blocage, sont transmises au backend et les autres coupées ; une liste abonnée rafraîchie s’applique immédiatement. Le type de site Fermer la connexion n’a pas de backend et coupe toutes les requêtes.
+
 Fermer la connexion, comme type de site ou comme action de refus, retient seulement la réponse HTTP et ne masque pas que le service fonctionne :
 
 - la poignée de main TCP est terminée, le client sait donc que le port écoute ;
