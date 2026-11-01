@@ -38,7 +38,7 @@ Cada regra tem:
 
 ## Correspondência
 
-Rotas TLS, HTTP e Minecraft correspondem por domínio (o Minecraft usa o endereço do servidor digitado pelo cliente, lido do handshake; os dados acrescentados por Forge, BungeeCord ou TCPShield são ignorados): primeiro os domínios exatos (`vpn.example.com`), depois o curinga mais longo (`*.example.com`, em qualquer profundidade), depois `*` (qualquer conexão que traga um domínio) e, por fim, as rotas sem domínio (todas as conexões daquele protocolo, incluindo as sem SNI ou Host). Os domínios não diferenciam maiúsculas de minúsculas.
+Rotas TLS, HTTP e Minecraft correspondem por domínio (o Minecraft usa o endereço do servidor digitado pelo cliente, lido do handshake; os dados acrescentados por Forge, BungeeCord ou TCPShield são ignorados): primeiro os domínios exatos (`vpn.example.com`), depois o curinga mais longo (`*.example.com`, em qualquer profundidade), depois `*` (qualquer conexão que traga um domínio) e, por fim, as rotas sem domínio (todas as conexões daquele protocolo, incluindo as sem SNI ou Host). Os domínios não diferenciam maiúsculas de minúsculas. Ao salvar, os domínios ficam em minúsculas e os internacionalizados são convertidos para punycode; valores com porta, caminho ou `@` são recusados.
 
 Rotas TLS também podem listar valores ALPN: a rota só corresponde quando o cliente oferece um deles. No mesmo domínio, rotas com ALPN têm prioridade e, quando o ALPN não corresponde, a busca segue para domínios mais amplos. Por exemplo, envie `acme-tls/1` ao programa que responde à validação de certificado TLS-ALPN-01, ou `postgresql` às conexões TLS diretas do PostgreSQL 17. Dentro de um protocolo, um domínio (com um dado ALPN) só pode pertencer a uma rota; os demais protocolos admitem uma rota cada.
 

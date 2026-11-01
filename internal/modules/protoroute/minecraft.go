@@ -1,6 +1,11 @@
 package protoroute
 
-import "strings"
+import (
+	"strings"
+	"unicode/utf8"
+
+	"golang.org/x/net/idna"
+)
 
 // Minecraft Java 版客户端连接后先发送握手包：
 //
@@ -89,5 +94,20 @@ func normalizeMinecraftHost(h string) string {
 	if i := strings.Index(h, "///"); i >= 0 {
 		h = h[:i]
 	}
+	// 客户端按输入原样发送服务器地址，国际化域名转为 punycode 才能与配置中的域名比较
+	if !isASCII(h) {
+		if a, err := idna.ToASCII(h); err == nil {
+			h = a
+		}
+	}
 	return normalizeSNI(h)
+}
+
+func isASCII(s string) bool {
+	for i := 0; i < len(s); i++ {
+		if s[i] >= utf8.RuneSelf {
+			return false
+		}
+	}
+	return true
 }

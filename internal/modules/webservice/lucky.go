@@ -218,6 +218,15 @@ func convertLuckyListeners(raw json.RawMessage, opts luckyimport.Options) ([]Lis
 				name = fmt.Sprintf("站点 %d", j+1)
 			}
 			skip := false
+			var bad []string
+			site.Domains, bad = splitDomains(site.Domains)
+			if len(bad) > 0 {
+				warns = append(warns, fmt.Sprintf("%s/%s: 域名 %s 格式不正确，已忽略", label, name, strings.Join(bad, "、")))
+				if len(site.Domains) == 0 {
+					warns = append(warns, fmt.Sprintf("%s/%s: 没有可用的域名，已跳过", label, name))
+					skip = true
+				}
+			}
 			for _, n := range notes {
 				if strings.HasPrefix(n, "站点类型") {
 					warns = append(warns, label+"/"+name+": "+n+"，已跳过")

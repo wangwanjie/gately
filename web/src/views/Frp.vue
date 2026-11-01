@@ -29,6 +29,7 @@
                   <Field :label="t('frp.protocol')" mono>{{ c.protocol || 'tcp' }}</Field>
                   <Field v-if="c.user" :label="t('frp.user')" mono>{{ c.user }}</Field>
                   <Field :label="t('frp.proxies')" mono>{{ proxyStats(c.key) }}</Field>
+                  <Field v-if="accessSummary(c)" :label="t('frp.accessAddr')" mono>{{ accessSummary(c) }}</Field>
                   <template v-if="sorting" #actions>
                     <SortMoves :gl="glClients" :it="it" />
                   </template>
@@ -79,8 +80,12 @@
                   <Field :label="t('frp.local')" mono>{{ p.localIp }}:{{ p.localPort }}</Field>
                   <Field v-if="p.type === 'tcp' || p.type === 'udp'" :label="t('frp.remotePort')" mono>{{ p.remotePort }}</Field>
                   <Field v-else-if="p.type === 'http' || p.type === 'https'" :label="t('frp.domain')" mono>
-                    <div v-for="d in p.customDomains" :key="d">{{ d }}</div>
-                    <div v-if="p.subdomain">{{ t('frp.subdomainSuffix', { sub: p.subdomain }) }}</div>
+                    <!-- 实例填写了访问端口时域名可点击打开、复制完整地址；通配域名、排序模式与未填写端口时显示纯文本 -->
+                    <div v-for="d in proxyDomains(p)" :key="d.domain">
+                      <UrlLink v-if="d.link && !sorting" :href="d.link.href" :text="d.domain" :copy-value="d.link.text" :title="d.link.text" />
+                      <template v-else>{{ d.domain }}</template>
+                    </div>
+                    <div v-if="p.subdomain && !clientOf(p)?.access?.subdomainHost">{{ t('frp.subdomainSuffix', { sub: p.subdomain }) }}</div>
                   </Field>
                   <template v-if="sorting" #actions>
                     <SortMoves :gl="glProxies" :it="it" />
@@ -193,6 +198,33 @@
             <el-option label="websocket" value="websocket" />
             <el-option label="wss" value="wss" />
           </el-select>
+        </el-form-item>
+        <!-- 只用于生成代理链接：frpc 不知道 frps 的 vhost 端口与子域名根域名，按 frps 一侧填写 -->
+        <el-divider content-position="left">{{ t('frp.accessAddr') }}</el-divider>
+        <el-form-item :label="t('frp.accessHttp')">
+          <div class="access-row">
+            <el-select v-model="editingClient.access.httpScheme" class="w-120" :empty-values="[null, undefined]">
+              <el-option label="http" value="" />
+              <el-option label="https" value="https" />
+            </el-select>
+            <el-input-number v-model="accessHttpPort" :min="1" :max="65535" :placeholder="t('frp.accessPortPlaceholder')" controls-position="right" class="w-160" />
+          </div>
+        </el-form-item>
+        <el-form-item :label="t('frp.accessHttps')">
+          <el-input-number v-model="accessHttpsPort" :min="1" :max="65535" :placeholder="t('frp.accessPortPlaceholder')" controls-position="right" class="w-160" />
+        </el-form-item>
+        <el-form-item :label="t('frp.subdomainHost')">
+          <el-input v-model="editingClient.access.subdomainHost" :placeholder="t('frp.subdomainHostPlaceholder')" class="mono" />
+          <div class="form-help">{{ t('frp.accessHelp') }}</div>
+          <!-- 本机也管理着 frps 时可一键填入其 vhost 端口与子域名根域名 -->
+          <el-dropdown v-if="servers.length" trigger="click" @command="fillAccessFrom">
+            <el-button link type="primary" size="small">{{ t('frp.accessFillFromServer') }}</el-button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item v-for="sv in servers" :key="sv.key" :command="sv.key">{{ sv.name }}</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
         </el-form-item>
         <el-form-item :label="t('common.remark')"><el-input v-model="editingClient.remark" /></el-form-item>
       </el-form>
@@ -380,6 +412,8 @@ import { useCompactView } from '../composables/useCompactView'
 import Field from '../components/Field.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
+import UrlLink from '../components/UrlLink.vue'
+import { siteLink, type SiteLink } from '../siteUrl'
 import ProgramInstall from '../components/ProgramInstall.vue'
 import ResetConfigButton from '../components/ResetConfigButton.vue'
 import SecretInput from '../components/SecretInput.vue'
@@ -414,12 +448,22 @@ interface ServerSettings {
   ipSets: string[] | null
 }
 // Client、Server 与后端实例字段一致；保存时只提交这些字段（后端拒绝未知字段）
+// ClientAccess 为浏览器访问该实例 http / https 代理的协议、端口与子域名根域名，只用于生成代理链接
+interface ClientAccess {
+  // httpScheme 为 http 代理对外的协议，'' 为 http；frps 前有终止 TLS 的反向代理或 CDN 时为 https
+  httpScheme: string
+  // httpPort、httpsPort 为 0 时不生成链接
+  httpPort: number
+  httpsPort: number
+  subdomainHost: string
+}
 interface Client extends ClientSettings {
   key?: string
   name: string
   // group 为列表中的分组名称，只影响展示，留空为未分组
   group?: string
   enable: boolean
+  access: ClientAccess
   remark: string
 }
 interface Server extends ServerSettings {
@@ -602,8 +646,12 @@ const editingClient = ref<Client>(emptyClient())
 const serverVisible = ref(false)
 const editingServer = ref<Server>(emptyServer())
 
+function emptyAccess(): ClientAccess {
+  return { httpScheme: '', httpPort: 0, httpsPort: 0, subdomainHost: '' }
+}
+
 function emptyClient(): Client {
-  return { name: '', group: '', enable: true, serverAddr: '', serverPort: 7000, token: '', user: '', protocol: '', remark: '' }
+  return { name: '', group: '', enable: true, serverAddr: '', serverPort: 7000, token: '', user: '', protocol: '', access: emptyAccess(), remark: '' }
 }
 
 function emptyServer(): Server {
@@ -633,7 +681,64 @@ function emptyServer(): Server {
 // pickClient 只取实例字段，去掉运行状态
 function pickClient(v: Client): Client {
   const { key, name, group, enable, serverAddr, serverPort, token, user, protocol, remark } = v
-  return { key, name, group, enable, serverAddr, serverPort, token, user, protocol, remark }
+  // 旧版本返回的数据没有 access，补齐默认值
+  return { key, name, group, enable, serverAddr, serverPort, token, user, protocol, access: { ...emptyAccess(), ...v.access }, remark }
+}
+
+// accessPortModel 把访问端口的 0（不生成链接）映射为输入框的空值
+function accessPortModel(field: 'httpPort' | 'httpsPort') {
+  return computed<number | undefined>({
+    get: () => editingClient.value.access[field] || undefined,
+    set: (v) => {
+      editingClient.value.access[field] = v ?? 0
+    },
+  })
+}
+const accessHttpPort = accessPortModel('httpPort')
+const accessHttpsPort = accessPortModel('httpsPort')
+
+// fillAccessFrom 用本机 frps 实例的 vhost 端口与子域名根域名填写访问地址
+function fillAccessFrom(key: string) {
+  const sv = servers.value.find((x) => x.key === key)
+  if (!sv) {
+    return
+  }
+  const a = editingClient.value.access
+  a.httpPort = sv.vhostHttpPort || 0
+  a.httpsPort = sv.vhostHttpsPort || 0
+  a.subdomainHost = sv.subdomainHost || ''
+}
+
+// proxyDomains 返回 http / https 代理的域名（含子域名拼出的完整域名）及其访问地址；
+// 所属实例未填写对应端口或域名为通配时 link 为 null
+function proxyDomains(p: Proxy): { domain: string; link: SiteLink | null }[] {
+  const a = clientOf(p)?.access
+  const domains = [...(p.customDomains ?? [])]
+  if (p.subdomain && a?.subdomainHost) {
+    domains.push(`${p.subdomain}.${a.subdomainHost}`)
+  }
+  const scheme = p.type === 'https' ? 'https' : a?.httpScheme === 'https' ? 'https' : 'http'
+  const port = (p.type === 'https' ? a?.httpsPort : a?.httpPort) ?? 0
+  return domains.map((domain) => ({ domain, link: port ? siteLink(domain, { port, tls: scheme === 'https' }) : null }))
+}
+
+// accessSummary 返回实例卡片上的访问地址摘要，未填写时为空
+function accessSummary(c: Client): string {
+  const a = c.access
+  if (!a) {
+    return ''
+  }
+  const parts: string[] = []
+  if (a.httpPort) {
+    parts.push(`http → ${a.httpScheme || 'http'}:${a.httpPort}`)
+  }
+  if (a.httpsPort) {
+    parts.push(`https → https:${a.httpsPort}`)
+  }
+  if (a.subdomainHost) {
+    parts.push(`*.${a.subdomainHost}`)
+  }
+  return parts.join(' · ')
 }
 
 function pickServer(v: Server): Server {
@@ -927,6 +1032,14 @@ onMounted(() => {
 }
 .preview-warn {
   margin-top: 6px;
+}
+.w-120 {
+  width: 120px;
+}
+.access-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 .w-160 {
   width: 160px;

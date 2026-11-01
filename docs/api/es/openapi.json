@@ -494,6 +494,9 @@
       },
       "frp.Client": {
         "properties": {
+          "access": {
+            "$ref": "#/components/schemas/frp.ClientAccess"
+          },
           "enable": {
             "type": "boolean"
           },
@@ -522,6 +525,23 @@
             "type": "string"
           },
           "user": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "frp.ClientAccess": {
+        "properties": {
+          "httpPort": {
+            "type": "integer"
+          },
+          "httpScheme": {
+            "type": "string"
+          },
+          "httpsPort": {
+            "type": "integer"
+          },
+          "subdomainHost": {
             "type": "string"
           }
         },

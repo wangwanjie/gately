@@ -929,6 +929,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 
 | Feld | Typ |
 | --- | --- |
+| `access` | `frp.ClientAccess` |
 | `enable` | boolean |
 | `group` | string |
 | `key` | string |
@@ -939,6 +940,15 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `serverPort` | integer |
 | `token` | string |
 | `user` | string |
+
+### frp.ClientAccess
+
+| Feld | Typ |
+| --- | --- |
+| `httpPort` | integer |
+| `httpScheme` | string |
+| `httpsPort` | integer |
+| `subdomainHost` | string |
 
 ### frp.ClientSettings
 

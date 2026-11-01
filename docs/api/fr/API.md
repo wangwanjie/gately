@@ -929,6 +929,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 
 | Champ | Type |
 | --- | --- |
+| `access` | `frp.ClientAccess` |
 | `enable` | boolean |
 | `group` | string |
 | `key` | string |
@@ -939,6 +940,15 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `serverPort` | integer |
 | `token` | string |
 | `user` | string |
+
+### frp.ClientAccess
+
+| Champ | Type |
+| --- | --- |
+| `httpPort` | integer |
+| `httpScheme` | string |
+| `httpsPort` | integer |
+| `subdomainHost` | string |
 
 ### frp.ClientSettings
 

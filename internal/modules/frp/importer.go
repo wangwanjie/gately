@@ -475,6 +475,11 @@ func importProxies(secs []*section, legacy bool, res *ImportResult) {
 			// 旧版 frp 省略 type 时默认为 tcp
 			p.Type = TypeTCP
 		}
+		// 只去掉写错的自定义域名，代理的其他域名照常导入
+		if domains, bad := splitCustomDomains(p.CustomDomains); len(bad) > 0 {
+			p.CustomDomains = domains
+			res.Warnings = append(res.Warnings, fmt.Sprintf("代理 %s 的自定义域名 %s 格式不正确，已忽略", name, strings.Join(bad, "、")))
+		}
 		if err := p.Validate(); err != nil {
 			res.Warnings = append(res.Warnings, fmt.Sprintf("已跳过代理 %s：%v", name, err))
 			continue

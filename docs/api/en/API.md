@@ -929,6 +929,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 
 | Field | Type |
 | --- | --- |
+| `access` | `frp.ClientAccess` |
 | `enable` | boolean |
 | `group` | string |
 | `key` | string |
@@ -939,6 +940,15 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `serverPort` | integer |
 | `token` | string |
 | `user` | string |
+
+### frp.ClientAccess
+
+| Field | Type |
+| --- | --- |
+| `httpPort` | integer |
+| `httpScheme` | string |
+| `httpsPort` | integer |
+| `subdomainHost` | string |
 
 ### frp.ClientSettings
 

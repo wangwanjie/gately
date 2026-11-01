@@ -10,6 +10,7 @@ import (
 
 	"github.com/wangwanjie/gately/internal/binstall"
 	"github.com/wangwanjie/gately/internal/crud"
+	"github.com/wangwanjie/gately/internal/hostname"
 	"github.com/wangwanjie/gately/internal/iplist"
 )
 
@@ -76,7 +77,41 @@ type Client struct {
 	Group  string `json:"group"`
 	Enable bool   `json:"enable"`
 	ClientSettings
-	Remark string `json:"remark"`
+	// Access 为浏览器访问本实例 http / https 代理的协议、端口与子域名根域名，只用于管理界面生成代理链接，
+	// 不写入 frpc 配置；frpc 不知道 frps 的 vhost 端口，需要用户按 frps 一侧填写
+	Access ClientAccess `json:"access"`
+	Remark string       `json:"remark"`
+}
+
+// ClientAccess 是生成 http / https 代理访问地址所需的 frps 一侧信息。
+type ClientAccess struct {
+	// HTTPScheme 为 http 代理对外的协议，空为 http；frps 前面有终止 TLS 的反向代理或 CDN 时选 https
+	HTTPScheme string `json:"httpScheme"`
+	// HTTPPort 为 http 代理对外的端口，通常是 frps 的 vhostHTTPPort；0 表示不生成链接
+	HTTPPort int `json:"httpPort"`
+	// HTTPSPort 为 https 代理对外的端口，通常是 frps 的 vhostHTTPSPort；0 表示不生成链接
+	HTTPSPort int `json:"httpsPort"`
+	// SubdomainHost 为 frps 的 subDomainHost，用于生成子域名代理的地址
+	SubdomainHost string `json:"subdomainHost"`
+}
+
+// Validate 校验并规范化访问地址设置。
+func (a *ClientAccess) Validate() error {
+	a.HTTPScheme = strings.ToLower(strings.TrimSpace(a.HTTPScheme))
+	switch a.HTTPScheme {
+	case "", "http", "https":
+	default:
+		return fmt.Errorf("不支持的访问协议 %q", a.HTTPScheme)
+	}
+	if a.HTTPPort < 0 || a.HTTPPort > 65535 || a.HTTPSPort < 0 || a.HTTPSPort > 65535 {
+		return errors.New("访问端口无效")
+	}
+	host, ok := hostname.Normalize(a.SubdomainHost, false)
+	if !ok {
+		return fmt.Errorf("子域名根域名 %q 格式错误", strings.TrimSpace(a.SubdomainHost))
+	}
+	a.SubdomainHost = host
+	return nil
 }
 
 // Server 是一个 frps 实例，运行一个独立的 frps 进程。
@@ -178,7 +213,7 @@ func (c *Client) Validate() error {
 	if c.Enable && c.ServerAddr == "" {
 		return errors.New("启用 frpc 时需要填写服务端地址")
 	}
-	return nil
+	return c.Access.Validate()
 }
 
 // Validate 校验并规范化 frps 实例。
@@ -286,6 +321,20 @@ func ParseAllowPorts(s string) ([]PortRange, error) {
 	return out, nil
 }
 
+// splitCustomDomains 把自定义域名分成规范化后可用的域名与写错的原始写法。
+func splitCustomDomains(in []string) (ok, bad []string) {
+	for _, raw := range in {
+		d, valid := hostname.Normalize(raw, true)
+		switch {
+		case !valid:
+			bad = append(bad, strings.TrimSpace(raw))
+		case d != "" && !slices.Contains(ok, d):
+			ok = append(ok, d)
+		}
+	}
+	return ok, bad
+}
+
 // Validate 校验并规范化代理配置。
 func (p *Proxy) Validate() error {
 	if err := crud.NormalizeGroup(&p.Group); err != nil {
@@ -307,13 +356,21 @@ func (p *Proxy) Validate() error {
 	if !validPort(p.LocalPort) {
 		return errors.New("本地端口无效")
 	}
-	var domains []string
-	for _, d := range p.CustomDomains {
-		if d = strings.TrimSpace(d); d != "" {
-			domains = append(domains, d)
-		}
+	// 自定义域名统一为 Host 中的形式（frp 支持 *.example.com 通配），写错的域名在保存时报错，
+	// 免得 frpc 启动后才在 frps 一侧注册失败
+	domains, bad := splitCustomDomains(p.CustomDomains)
+	if len(bad) > 0 {
+		return fmt.Errorf("自定义域名 %q 格式错误", bad[0])
 	}
 	p.CustomDomains = domains
+	// frps 把子域名拼在 subDomainHost 前面，不支持 . 与 *
+	if p.Subdomain != "" {
+		sub, ok := hostname.Normalize(p.Subdomain, false)
+		if !ok || strings.Contains(sub, ".") {
+			return fmt.Errorf("子域名 %q 格式错误，只填一级名称，如 nas", p.Subdomain)
+		}
+		p.Subdomain = sub
+	}
 	switch p.Type {
 	case TypeTCP, TypeUDP:
 		if !validPort(p.RemotePort) {

@@ -110,3 +110,23 @@ func TestProtocolRuleValidate(t *testing.T) {
 		t.Fatalf("规范化结果: %+v", r.Routes)
 	}
 }
+
+// TestRouteDomainsNormalize 路由域名统一为 SNI / Host 的形式，写错的域名在保存时报错。
+func TestRouteDomainsNormalize(t *testing.T) {
+	got, err := cleanRouteDomains([]string{" A.Example.com. ", "中文.com", "*.Wild.com", "a.example.com", ""})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Join(got, ",") != "a.example.com,xn--fiq228c.com,*.wild.com" {
+		t.Fatalf("规范化结果错误: %v", got)
+	}
+	for _, d := range []string{"a.com:443", "a.com/x", "user@a.com", "a..com", "a.*.com", "*a.com"} {
+		if _, err := cleanRouteDomains([]string{d}); err == nil {
+			t.Errorf("域名 %q 应报错", d)
+		}
+	}
+	// Minecraft 客户端按输入原样发送国际化域名，需转为 punycode 才能匹配
+	if h := normalizeMinecraftHost("中文.COM.\x00FML\x00"); h != "xn--fiq228c.com" {
+		t.Fatalf("Minecraft 主机名规范化错误: %q", h)
+	}
+}

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/wangwanjie/gately/internal/crud"
+	"github.com/wangwanjie/gately/internal/hostname"
 	"github.com/wangwanjie/gately/internal/iplist"
 	"github.com/wangwanjie/gately/internal/l4proxy"
 )
@@ -238,33 +239,22 @@ func conflictError(domain, alpn, prev, label string) error {
 }
 
 // cleanRouteDomains 规范化并校验路由的域名，丢弃空项与重复项。
+// 域名统一为 SNI / Host 中的形式：小写、IPv6 不带方括号、国际化域名转 punycode；带端口、路径等写法报错。
 func cleanRouteDomains(in []string) ([]string, error) {
 	var out []string
 	seen := map[string]bool{}
-	for _, d := range in {
-		d = normalizeSNI(d)
+	for _, raw := range in {
+		d, ok := hostname.Normalize(raw, true)
+		if !ok {
+			return nil, fmt.Errorf("域名 %q 格式无效，支持 example.com、*.example.com 或 *", strings.TrimSpace(raw))
+		}
 		if d == "" || seen[d] {
 			continue
-		}
-		if err := validateDomain(d); err != nil {
-			return nil, err
 		}
 		seen[d] = true
 		out = append(out, d)
 	}
 	return out, nil
-}
-
-// validateDomain 检查域名写法：精确域名、*.后缀 或单独的 *。
-func validateDomain(d string) error {
-	if d == "*" {
-		return nil
-	}
-	name := strings.TrimPrefix(d, "*.")
-	if name == "" || strings.Contains(name, "*") || strings.ContainsAny(name, " /:") || strings.HasPrefix(name, ".") || strings.Contains(name, "..") {
-		return fmt.Errorf("域名 %q 格式无效，支持 example.com、*.example.com 或 *", d)
-	}
-	return nil
 }
 
 // cleanALPN 去掉 ALPN 两侧的空白并丢弃空项与重复项。ALPN 区分大小写，按原样比较。

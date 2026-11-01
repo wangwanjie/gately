@@ -38,7 +38,7 @@
 
 ## 比對規則
 
-TLS、HTTP 與 Minecraft 路由依網域比對（Minecraft 使用交握封包中用戶端填寫的伺服器位址，Forge、BungeeCord、TCPShield 附加的內容會被忽略）：精確網域（`vpn.example.com`）優先，其次最長的萬用字元（`*.example.com`，符合任意層級的子網域），再次 `*`（符合任何帶有網域的連線），最後是沒有填寫網域的路由（符合該協定的全部連線，包括沒有 SNI 或 Host 的）。網域不區分大小寫。
+TLS、HTTP 與 Minecraft 路由依網域比對（Minecraft 使用交握封包中用戶端填寫的伺服器位址，Forge、BungeeCord、TCPShield 附加的內容會被忽略）：精確網域（`vpn.example.com`）優先，其次最長的萬用字元（`*.example.com`，符合任意層級的子網域），再次 `*`（符合任何帶有網域的連線），最後是沒有填寫網域的路由（符合該協定的全部連線，包括沒有 SNI 或 Host 的）。網域不區分大小寫。儲存時網域統一為小寫，中文等國際化網域轉為 punycode，帶連接埠、路徑或 `@` 的寫法會被拒絕。
 
 TLS 路由還可以填寫 ALPN：用戶端宣告的 ALPN 含其中任一項時才符合。同一個網域下填寫了 ALPN 的路由優先，ALPN 不符合時繼續依更寬泛的網域查找。例如把 `acme-tls/1` 交給負責 TLS-ALPN-01 憑證驗證的程式，把 `postgresql` 交給 PostgreSQL 17 的直接 TLS 連線。同一協定下，同一個網域（及同一個 ALPN）只能屬於一條路由；其他協定每種只能有一條路由。
 

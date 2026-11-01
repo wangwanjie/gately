@@ -38,7 +38,7 @@
 
 ## 匹配规则
 
-TLS、HTTP 与 Minecraft 路由按域名匹配（Minecraft 用握手包中客户端填写的服务器地址，Forge、BungeeCord、TCPShield 追加的内容会被忽略）：精确域名（`vpn.example.com`）优先，其次最长的通配（`*.example.com`，匹配任意级子域名），再次 `*`（匹配任何携带域名的连接），最后是没有填写域名的路由（匹配该协议的全部连接，包括没有 SNI 或 Host 的）。域名不区分大小写。
+TLS、HTTP 与 Minecraft 路由按域名匹配（Minecraft 用握手包中客户端填写的服务器地址，Forge、BungeeCord、TCPShield 追加的内容会被忽略）：精确域名（`vpn.example.com`）优先，其次最长的通配（`*.example.com`，匹配任意级子域名），再次 `*`（匹配任何携带域名的连接），最后是没有填写域名的路由（匹配该协议的全部连接，包括没有 SNI 或 Host 的）。域名不区分大小写。保存时域名统一为小写，中文等国际化域名转为 punycode，带端口、路径或 `@` 的写法会被拒绝。
 
 TLS 路由还可以填写 ALPN：客户端声明的 ALPN 含其中任一项时才匹配。同一个域名下填写了 ALPN 的路由优先，ALPN 不匹配时继续按更宽泛的域名查找。例如把 `acme-tls/1` 交给负责 TLS-ALPN-01 证书验证的程序，把 `postgresql` 交给 PostgreSQL 17 的直接 TLS 连接。同一协议下，同一个域名（及同一个 ALPN）只能属于一条路由；其他协议每种只能有一条路由。
 

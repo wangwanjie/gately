@@ -929,6 +929,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 
 | Campo | Tipo |
 | --- | --- |
+| `access` | `frp.ClientAccess` |
 | `enable` | boolean |
 | `group` | string |
 | `key` | string |
@@ -939,6 +940,15 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `serverPort` | integer |
 | `token` | string |
 | `user` | string |
+
+### frp.ClientAccess
+
+| Campo | Tipo |
+| --- | --- |
+| `httpPort` | integer |
+| `httpScheme` | string |
+| `httpsPort` | integer |
+| `subdomainHost` | string |
 
 ### frp.ClientSettings
 

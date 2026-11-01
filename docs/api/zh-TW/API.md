@@ -929,6 +929,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | 欄位 | 類型 |
 | --- | --- |
+| `access` | `frp.ClientAccess` |
 | `enable` | boolean |
 | `group` | string |
 | `key` | string |
@@ -939,6 +940,15 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `serverPort` | integer |
 | `token` | string |
 | `user` | string |
+
+### frp.ClientAccess
+
+| 欄位 | 類型 |
+| --- | --- |
+| `httpPort` | integer |
+| `httpScheme` | string |
+| `httpsPort` | integer |
+| `subdomainHost` | string |
 
 ### frp.ClientSettings
 

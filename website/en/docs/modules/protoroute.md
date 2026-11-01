@@ -38,7 +38,7 @@ Each rule has:
 
 ## Matching
 
-TLS, HTTP and Minecraft routes match by domain (Minecraft uses the server address the client typed, found in the handshake; data appended by Forge, BungeeCord or TCPShield is ignored): exact domains (`vpn.example.com`) first, then the longest wildcard (`*.example.com`, any depth), then `*` (any connection that carries a domain), and finally routes without domains (every connection of that protocol, including those without SNI or Host). Domains are case-insensitive.
+TLS, HTTP and Minecraft routes match by domain (Minecraft uses the server address the client typed, found in the handshake; data appended by Forge, BungeeCord or TCPShield is ignored): exact domains (`vpn.example.com`) first, then the longest wildcard (`*.example.com`, any depth), then `*` (any connection that carries a domain), and finally routes without domains (every connection of that protocol, including those without SNI or Host). Domains are case-insensitive. On save, domains are lowercased and internationalized domains are converted to punycode; values with a port, a path or `@` are rejected.
 
 TLS routes can also list ALPN values: the route matches only when the client offers one of them. Under the same domain, routes with ALPN take precedence, and when the ALPN does not match the search moves on to broader domains. For example, send `acme-tls/1` to the program that answers TLS-ALPN-01 certificate validation, or `postgresql` to PostgreSQL 17 direct TLS connections. Within a protocol, a domain (with a given ALPN) can belong to one route only; every other protocol allows one route.
 

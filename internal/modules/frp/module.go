@@ -44,6 +44,8 @@ type instRuntime struct {
 	err string
 	// content 是最近一次按配置应用的配置文件内容，实例停用时为空；内容不变时不重启进程
 	content string
+	// name 是最近一次启动时的实例名称，用作日志来源
+	name string
 }
 
 // Module 是 frp 模块。
@@ -314,7 +316,7 @@ func (m *Module) runInstance(runs map[string]*instRuntime, bin, key, name, conte
 		return
 	}
 	rt.sup.Stop()
-	rt.err, rt.content = "", content
+	rt.err, rt.content, rt.name = "", content, name
 	if content == "" {
 		// 停用的实例不保留含令牌的配置文件
 		m.removeConfigFile(bin, key)
@@ -381,7 +383,12 @@ func (m *Module) applyClientLocked(key string) {
 		return
 	}
 	m.warnDuplicates(c)
-	m.runInstance(m.clients, binClient, key, c.Name, m.clientContent(c), true)
+	content := m.clientContent(c)
+	// 只改了访问地址、分组或备注时，配置内容与名称都不变，不重启 frpc，避免隧道中断；
+	// 上次启动失败（如找不到程序）时保存一次即重试
+	rt := m.clients[key]
+	force := rt == nil || rt.content != content || rt.name != c.Name || rt.err != ""
+	m.runInstance(m.clients, binClient, key, c.Name, content, force)
 }
 
 // applyServerLocked 重启指定 frps 实例；实例已删除时停止并清理。调用方持有 mu。

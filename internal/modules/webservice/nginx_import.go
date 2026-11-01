@@ -511,7 +511,12 @@ func convertNginxServer(srv *ngDirective, l nginxListen, upstreams map[string]*n
 			site.Domains = append(site.Domains, n)
 		}
 	}
-	site.Domains = uniqueList(site.Domains)
+	// 规范化域名，跳过 Host 中不可能出现的写法（如 $hostname 变量），其余域名照常导入
+	var bad []string
+	site.Domains, bad = splitDomains(site.Domains)
+	if len(bad) > 0 {
+		pl.Warnings = append(pl.Warnings, fmt.Sprintf("域名 %s 格式不正确，已忽略", strings.Join(bad, "、")))
+	}
 	if len(site.Domains) > 0 {
 		site.Name = site.Domains[0]
 	}

@@ -7,9 +7,11 @@ import (
 	"net/netip"
 	"net/url"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/wangwanjie/gately/internal/crud"
+	"github.com/wangwanjie/gately/internal/hostname"
 	"github.com/wangwanjie/gately/internal/iplist"
 	"github.com/wangwanjie/gately/internal/thirdauth"
 	"golang.org/x/net/http/httpguts"
@@ -324,6 +326,21 @@ func (l *Listener) Validate() error {
 	return nil
 }
 
+// splitDomains 把域名分成规范化后可用的域名与无法使用的原始写法，导入外部配置时用它跳过个别错误域名，
+// 避免一个域名写错导致整个监听被跳过。
+func splitDomains(in []string) (ok, bad []string) {
+	for _, raw := range in {
+		d, valid := hostname.Normalize(raw, true)
+		switch {
+		case !valid:
+			bad = append(bad, strings.TrimSpace(raw))
+		case d != "" && !slices.Contains(ok, d):
+			ok = append(ok, d)
+		}
+	}
+	return ok, bad
+}
+
 func (s *Site) validate(isDefault bool) error {
 	s.Name = strings.TrimSpace(s.Name)
 	if isDefault {
@@ -333,13 +350,15 @@ func (s *Site) validate(isDefault bool) error {
 		return err
 	}
 	var domains []string
-	for _, d := range s.Domains {
-		d = strings.ToLower(strings.Trim(strings.TrimSpace(d), "."))
-		if d == "" {
-			continue
+	for _, raw := range s.Domains {
+		// 规范化为请求 Host 的形式：小写、IPv6 不带方括号、国际化域名转 punycode；
+		// 带端口、路径、@ 等永远匹配不上的写法直接报错
+		d, ok := hostname.Normalize(raw, true)
+		if !ok {
+			return fmt.Errorf("域名 %q 格式错误", strings.TrimSpace(raw))
 		}
-		if d != "*" && (strings.Count(d, "*") > 1 || (strings.Contains(d, "*") && !strings.HasPrefix(d, "*."))) {
-			return fmt.Errorf("域名 %q 格式错误", d)
+		if d == "" || slices.Contains(domains, d) {
+			continue
 		}
 		domains = append(domains, d)
 	}

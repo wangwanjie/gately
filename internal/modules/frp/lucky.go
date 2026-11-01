@@ -181,7 +181,10 @@ func importLuckyClient(cfg *fileConfig, li *luckyInstance, opts luckyimport.Opti
 	unsupported := map[string]int{}
 	added := 0
 	for _, raw := range li.Proxies {
-		px, why := convertLuckyProxy(raw, unsupported)
+		px, why, bad := convertLuckyProxy(raw, unsupported)
+		if len(bad) > 0 {
+			rep.Warnings = append(rep.Warnings, fmt.Sprintf("代理 %s 的自定义域名 %s 格式不正确，已忽略", px.Name, strings.Join(bad, "、")))
+		}
 		if why != "" {
 			rep.Warnings = append(rep.Warnings, fmt.Sprintf("代理 %s: 跳过，%s", px.Name, why))
 			continue
@@ -214,7 +217,7 @@ func importLuckyClient(cfg *fileConfig, li *luckyInstance, opts luckyimport.Opti
 }
 
 // convertLuckyProxy 转换一个 frp 代理，why 非空时表示无法迁移。unsupported 统计未映射且有值的字段。
-func convertLuckyProxy(raw map[string]any, unsupported map[string]int) (Proxy, string) {
+func convertLuckyProxy(raw map[string]any, unsupported map[string]int) (Proxy, string, []string) {
 	str := func(k string) string {
 		s, _ := raw[k].(string)
 		return strings.TrimSpace(s)
@@ -246,18 +249,21 @@ func convertLuckyProxy(raw map[string]any, unsupported map[string]int) (Proxy, s
 			}
 		}
 	}
+	// 只去掉写错的自定义域名，返回给调用方提示
+	var bad []string
+	px.CustomDomains, bad = splitCustomDomains(px.CustomDomains)
 	if plugin := str("plugin"); plugin != "" {
-		return px, fmt.Sprintf("插件 %s 暂不支持", plugin)
+		return px, fmt.Sprintf("插件 %s 暂不支持", plugin), bad
 	}
 	if err := px.Validate(); err != nil {
-		return px, err.Error()
+		return px, err.Error(), bad
 	}
 	for k, v := range raw {
 		if !luckyProxyKeys[k] && k != "plugin" && !isZero(v) {
 			unsupported[k]++
 		}
 	}
-	return px, ""
+	return px, "", bad
 }
 
 // isZero 判断 JSON 值是否为空值；对象与数组递归判断，Lucky 默认带出的空结构不产生提示。
