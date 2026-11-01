@@ -888,6 +888,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 字段 | 类型 |
 | --- | --- |
 | `records` | 数组 of string |
+| `task` | `ddns.Task` |
 
 ### dnsprovider.Credentials
 

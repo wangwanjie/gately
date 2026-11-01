@@ -888,6 +888,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Champ | Type |
 | --- | --- |
 | `records` | Tableau de string |
+| `task` | `ddns.Task` |
 
 ### dnsprovider.Credentials
 

@@ -649,7 +649,10 @@ async function save() {
       confirmText: t('common.save'),
       run: async (remote) => {
         if (remote) {
-          await api.post(`/api/ddns/tasks/${stored.key}/remote-delete`, { records: removed.map((r) => r.key) })
+          // 带上待保存的配置，后端先校验，校验不通过时不删除服务商处的解析
+          editing.value.credentials.extra = { ...extra.value }
+          const { key: _key, ...task } = editing.value
+          await api.post(`/api/ddns/tasks/${stored.key}/remote-delete`, { records: removed.map((r) => r.key), task })
         }
         await doSave()
       },

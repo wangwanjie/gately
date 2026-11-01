@@ -111,7 +111,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onBeforeUnmount, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { Search, ShieldBan, Unplug } from 'lucide-vue-next'
@@ -238,7 +238,9 @@ function onSearch() {
   searchTimer = window.setTimeout(load, 300)
 }
 
-async function closeConn(row: Conn, banSeconds: number) {
+// closeConn 断开（banSeconds > 0 时同时封禁）一条请求，返回是否成功，供封禁对话框决定是否关闭。
+async function closeConn(row: Conn, banSeconds: number): Promise<boolean> {
+  let ok = false
   try {
     const r = await api.post<{ closed: number; banKey?: string }>('/api/webservice/connections/close', {
       listener: target.listener,
@@ -252,10 +254,12 @@ async function closeConn(row: Conn, banSeconds: number) {
       ElMessage.success(t('siteConns.closedMsg'))
     }
     emit('changed')
+    ok = true
   } catch (e) {
     ElMessage.error((e as Error).message)
   }
   await load()
+  return ok
 }
 
 function openBan(row: Conn) {
@@ -270,12 +274,20 @@ async function confirmBan() {
   }
   banning.value = true
   try {
-    await closeConn(banRow.value, banHours.value * 3600)
-    banVisible.value = false
+    // 封禁失败（如封禁时长超出范围、地址是管理员自己）时保留对话框，便于修改后重试
+    if (await closeConn(banRow.value, banHours.value * 3600)) {
+      banVisible.value = false
+    }
   } finally {
     banning.value = false
   }
 }
+
+// 对话框开着时离开页面（后退、侧滑返回）组件直接卸载，不会触发 @closed，这里停止轮询
+onBeforeUnmount(() => {
+  visible.value = false
+  stop()
+})
 
 function open(listener: string, site: string, name: string) {
   target = { listener, site }

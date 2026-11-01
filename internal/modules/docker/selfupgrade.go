@@ -88,6 +88,12 @@ func (m *Module) startSelfUpgrade(ctx context.Context, c *Client, id string) (se
 	if err != nil {
 		return selfUpgradeResult{}, fmt.Errorf("无法确定程序路径: %w", err)
 	}
+	// 接口返回后辅助容器要等几秒才开始重建，这期间再次升级会创建第二个辅助容器，两者争抢同一个容器名
+	if busy, err := selfUpgradeRunning(ctx, c, name); err != nil {
+		return selfUpgradeResult{}, err
+	} else if busy {
+		return selfUpgradeResult{}, fmt.Errorf("已有升级正在进行，Gately 即将重启，请稍后刷新页面")
+	}
 	log := m.logs.Logger(name)
 	log.Infof("开始升级 Gately 自身，拉取 %s", ref)
 	if err := m.pullImageWithMirrors(ctx, c, ref, func(line string) { log.Infof("%s", line) }); err != nil {
@@ -123,6 +129,25 @@ func (m *Module) startSelfUpgrade(ctx context.Context, c *Client, id string) (se
 	}
 	log.Infof("已拉取新镜像，由辅助容器 %s 重建容器，Gately 即将重启", helperName)
 	return selfUpgradeResult{Helper: hid}, nil
+}
+
+// selfUpgradeRunning 判断是否已有升级 name 的辅助容器尚未结束。
+func selfUpgradeRunning(ctx context.Context, c *Client, name string) (bool, error) {
+	list, err := c.Containers(ctx)
+	if err != nil {
+		return false, err
+	}
+	for _, ct := range list {
+		if ct.Labels[selfUpgradeLabel] == name && helperPending(ct.State) {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+// helperPending 表示辅助容器还没有结束。
+func helperPending(state string) bool {
+	return state == "running" || state == "created" || state == "restarting"
 }
 
 // helperDockerAccess 返回辅助容器使用的 Docker 地址与需要的挂载。
@@ -236,13 +261,24 @@ func (m *Module) collectSelfUpgradesOnce(ctx context.Context, c *Client) (bool, 
 	if err != nil {
 		return false, err
 	}
+	// 只处理升级自己的辅助容器：同一个 Docker 上可能运行着多个 Gately，各自收集自己的结果
+	self := ""
+	for _, ct := range list {
+		if isSelfContainer(ct.ID) {
+			self = ct.Name()
+			break
+		}
+	}
+	if self == "" {
+		return false, nil
+	}
 	pending := false
 	for _, ct := range list {
 		target, ok := ct.Labels[selfUpgradeLabel]
-		if !ok {
+		if !ok || target != self {
 			continue
 		}
-		if ct.State == "running" || ct.State == "created" || ct.State == "restarting" {
+		if helperPending(ct.State) {
 			pending = true
 			continue
 		}
@@ -252,7 +288,8 @@ func (m *Module) collectSelfUpgradesOnce(ctx context.Context, c *Client) (bool, 
 			continue
 		}
 		ingestHelperLog(m.logs.Logger(target), out)
-		if err := c.Remove(lctx, ct.ID); err != nil {
+		// 镜像声明了 VOLUME，辅助容器创建时带有匿名卷，一并删除，避免每次升级遗留一个空卷
+		if err := c.RemoveVolumes(lctx, ct.ID, true); err != nil {
 			m.logs.Logger(target).Warnf("删除升级辅助容器 %s 失败: %v", ct.Name(), err)
 		}
 	}

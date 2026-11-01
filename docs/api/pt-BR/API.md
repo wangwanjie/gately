@@ -888,6 +888,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Campo | Tipo |
 | --- | --- |
 | `records` | Array de string |
+| `task` | `ddns.Task` |
 
 ### dnsprovider.Credentials
 

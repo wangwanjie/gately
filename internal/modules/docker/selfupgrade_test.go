@@ -80,6 +80,25 @@ func TestSelfUpgradeStartsHelper(t *testing.T) {
 	}
 }
 
+// 已有升级自身的辅助容器尚未结束时拒绝再次升级，避免两个辅助容器争抢同一个容器名
+func TestSelfUpgradeRejectsConcurrent(t *testing.T) {
+	f, host := startFake(t)
+	addSelfContainer(t, f, host, true)
+	f.extraList = []map[string]any{
+		{"Id": "h1", "Names": []string{"/gately-upgrade-1"}, "State": "running", "Labels": map[string]string{selfUpgradeLabel: "gately"}},
+	}
+	_, api := ctrAPI(t, host)
+	rec := api("POST", "/containers/"+selfTestID+"/upgrade", "", nil)
+	if rec.Code == 200 || !strings.Contains(rec.Body.String(), "已有升级正在进行") {
+		t.Fatalf("应拒绝并发升级: %d %s", rec.Code, rec.Body)
+	}
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if f.created != nil {
+		t.Fatalf("不应再创建辅助容器: %+v", f.created)
+	}
+}
+
 // 镜像没有更新时不创建辅助容器，避免无谓的重启
 func TestSelfUpgradeUpToDate(t *testing.T) {
 	f, host := startFake(t)
@@ -232,9 +251,12 @@ func TestSelfRestoreOnFailure(t *testing.T) {
 func TestCollectSelfUpgrades(t *testing.T) {
 	f, host := startFake(t)
 	m := newModule(t, host)
+	addSelfContainer(t, f, host, true)
 	f.extraList = []map[string]any{
 		{"Id": "h1", "Names": []string{"/gately-upgrade-1"}, "State": "exited", "Labels": map[string]string{selfUpgradeLabel: "gately"}},
 		{"Id": "h2", "Names": []string{"/gately-upgrade-2"}, "State": "running", "Labels": map[string]string{selfUpgradeLabel: "gately"}},
+		// 同一 Docker 上另一个 Gately 实例的辅助容器，不归这里处理
+		{"Id": "h3", "Names": []string{"/other-upgrade-1"}, "State": "exited", "Labels": map[string]string{selfUpgradeLabel: "other"}},
 	}
 	f.logText = "[info] 开始按新镜像重建容器 gately\n[warn] 删除旧容器 x 失败，请手动清理: busy\n[error] 升级失败: boom\n"
 	c, _ := NewClient(host)
@@ -259,6 +281,9 @@ func TestCollectSelfUpgrades(t *testing.T) {
 	f.mu.Unlock()
 	if !strings.Contains(calls, "DELETE /containers/h1") || strings.Contains(calls, "DELETE /containers/h2") || strings.Contains(calls, "/containers/h2/logs") {
 		t.Fatalf("只处理已结束的辅助容器: %s", calls)
+	}
+	if strings.Contains(calls, "/containers/h3") {
+		t.Fatalf("不应处理其他 Gately 实例的辅助容器: %s", calls)
 	}
 
 	// 轮询到没有运行中的辅助容器为止

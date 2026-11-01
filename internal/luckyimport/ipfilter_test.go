@@ -66,12 +66,19 @@ func TestSafeModeAccess(t *testing.T) {
 		t.Fatalf("黑名单模式结果错误: %+v", a)
 	}
 
-	// 没有 IP 过滤配置：白名单无法还原，给出提示；黑名单保持关闭
-	if a, warns := SafeModeAccess("whitelist", nil); a.IPMode != "" || len(warns) != 1 || !strings.Contains(warns[0], "lucky_ipfilter") {
-		t.Fatalf("缺少 IP 过滤配置时应提示: %+v %v", a, warns)
+	// 没有 IP 过滤配置：名单无法还原，白名单与黑名单都保持关闭并提示
+	for _, mode := range []string{"whitelist", "blacklist", "globalblacklist"} {
+		if a, warns := SafeModeAccess(mode, nil); a.IPMode != "" || len(warns) != 1 || !strings.Contains(warns[0], "lucky_ipfilter") {
+			t.Fatalf("%s 缺少 IP 过滤配置时应提示: %+v %v", mode, a, warns)
+		}
 	}
-	if a, warns := SafeModeAccess("blacklist", nil); a.IPMode != "" || len(warns) != 0 {
-		t.Fatalf("黑名单为空时不应设置访问控制: %+v %v", a, warns)
+	// 黑名单条目都无法导入（如全是 IP 库）：不设置名单并提示暴露面；本就为空的黑名单不提示
+	skippedOnly := map[string]IPFilterList{"blacklist": {Skipped: 3}}
+	if a, warns := SafeModeAccess("blacklist", skippedOnly); a.IPMode != "" || len(warns) != 2 || !strings.Contains(warns[1], "暴露面") {
+		t.Fatalf("黑名单条目都无法导入时应提示: %+v %v", a, warns)
+	}
+	if a, warns := SafeModeAccess("blacklist", map[string]IPFilterList{"blacklist": {}}); a.IPMode != "" || len(warns) != 0 {
+		t.Fatalf("黑名单为空时不应设置访问控制也不提示: %+v %v", a, warns)
 	}
 	// 白名单为空：不设置名单（否则会拒绝全部来源），并提示
 	empty := map[string]IPFilterList{"whitelist": {}}

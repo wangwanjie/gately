@@ -888,6 +888,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Feld | Typ |
 | --- | --- |
 | `records` | Array von string |
+| `task` | `ddns.Task` |
 
 ### dnsprovider.Credentials
 

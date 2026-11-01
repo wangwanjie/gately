@@ -395,6 +395,9 @@
               "type": "string"
             },
             "type": "array"
+          },
+          "task": {
+            "$ref": "#/components/schemas/ddns.Task"
           }
         },
         "type": "object"
@@ -7623,7 +7626,7 @@
     },
     "/api/ddns/providers": {
       "get": {
-        "description": "Erforderliche Berechtigung: `ddns:read`.",
+        "description": "`supportsRemark` bedeutet, dass Eintragsbemerkungen beim Synchronisieren an den Anbieter geschrieben werden, `supportsDelete`, dass Einträge beim Anbieter mit `POST /api/ddns/tasks/{key}/remote-delete` gelöscht werden können.\n\nErforderliche Berechtigung: `ddns:read`.",
         "responses": {
           "200": {
             "description": "Erfolgreich"
@@ -7674,7 +7677,7 @@
     },
     "/api/ddns/settings": {
       "get": {
-        "description": "Erforderliche Berechtigung: `ddns:read`.",
+        "description": "Gibt `{enable, deleteRemote}` zurück: `enable` ist der Modulschalter, `deleteRemote` der Standardwert des Kästchens „Auch beim DNS-Anbieter löschen“ beim Löschen von Einträgen oder Aufgaben.\n\nErforderliche Berechtigung: `ddns:read`.",
         "responses": {
           "200": {
             "description": "Erfolgreich"
@@ -7723,7 +7726,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "Erforderliche Berechtigung: `ddns:write`.",
+        "description": "Request-Body `{enable, deleteRemote}`, Felder wie beim Lese-Endpunkt. Wird nur `deleteRemote` geändert, starten die Aufgaben nicht neu.\n\nErforderliche Berechtigung: `ddns:write`.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -8374,7 +8377,7 @@
     },
     "/api/ddns/tasks/{key}/remote-delete": {
       "post": {
-        "description": "Das Feld `records` im Body listet die `key`s der Einträge; leer bedeutet alle Einträge der Aufgabe. Gelöscht werden nur die DNS-Einträge beim Anbieter, die Aufgabenkonfiguration bleibt unverändert; meist wird es vor dem Löschen von Einträgen oder einer Aufgabe aufgerufen. Gibt es genau einen Eintrag mit gleichem Namen und Typ (und gleicher Leitung), wird er gelöscht; bei mehreren nur die, deren Wert der letzten Synchronisierung entspricht. Lässt es sich nicht bestimmen, wird nichts gelöscht und ein Fehler zurückgegeben. Währenddessen pausiert die Aufgabe die Synchronisierung und setzt sie 30 Sekunden danach fort. Gibt 502 mit dem Grund zurück, wenn ein Eintrag fehlschlägt, und 400, wenn der Anbieter das Löschen nicht unterstützt (`supportsDelete` in `GET /api/ddns/providers` zeigt das an).\n\nErforderliche Berechtigung: `ddns:write`.",
+        "description": "Das Feld `records` im Body listet die `key`s der Einträge; leer bedeutet alle Einträge der Aufgabe. Gelöscht werden nur die DNS-Einträge beim Anbieter, die Aufgabenkonfiguration bleibt unverändert; der Aufruf erfolgt meist vor dem Löschen von Einträgen oder einer Aufgabe. Gelöscht werden nur Einträge mit gleichem Namen und Typ (und Leitung), deren Wert dem letzten Sync entspricht: Ist der Wert unbekannt (nie synchronisiert), abweichend oder enthält der Eintragssatz weitere Werte, wird nichts gelöscht und ein Fehler zurückgegeben; ein beim Anbieter bereits fehlender Eintrag gilt als Erfolg. Das optionale Feld `task` ist die beim Bearbeiten einer Aufgabe zu speichernde Aufgabenkonfiguration; wird es mitgeschickt, wird es zuerst nach den Speicherregeln geprüft und bei fehlgeschlagener Prüfung 400 zurückgegeben, ohne etwas zu löschen. Währenddessen pausiert die Aufgabe ihre Synchronisierung und setzt sie 30 Sekunden danach fort. Gibt 502 mit Grund zurück, wenn ein Eintrag fehlschlägt, und 400, wenn der Anbieter das Löschen nicht unterstützt (`supportsDelete` in `GET /api/ddns/providers` gibt das an).\n\nErforderliche Berechtigung: `ddns:write`.",
         "parameters": [
           {
             "in": "path",
@@ -10568,7 +10571,7 @@
     },
     "/api/docker/containers/{id}/upgrade": {
       "post": {
-        "description": "Erforderliche Berechtigung: `docker:write`.",
+        "description": "Lädt das neue Image und erstellt den Container mit seiner bisherigen Konfiguration neu; zurückgegeben wird der neue Container `{id}`. Beim Container, in dem Gately selbst läuft, wird zuerst das neue Image geladen und nur bei einer neuen Version erstellt ein temporärer Hilfscontainer ihn neu; die Antwort ist `{id, self: true, upToDate}`, und wenn `upToDate` false ist, startet Gately kurz darauf neu. Abgelehnt wird vor dem Laden, wenn der Gately-Container den Docker-Socket nicht einbindet, sowie während bereits ein Upgrade läuft.\n\nErforderliche Berechtigung: `docker:write`.",
         "parameters": [
           {
             "in": "path",

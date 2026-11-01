@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/wangwanjie/gately/internal/crud"
 	"github.com/wangwanjie/gately/internal/dnsprovider"
 	"github.com/wangwanjie/gately/internal/httpx"
 )
@@ -22,6 +23,9 @@ var remoteDelete = dnsprovider.Delete
 // remoteDeleteRequest 指定要从服务商删除的记录 key，留空表示任务中的全部记录。
 type remoteDeleteRequest struct {
 	Records []string `json:"records"`
+	// Task 为可选的待保存任务配置：编辑任务时删掉记录并勾选“同时从服务商删除”，界面会先删服务商处的解析再保存，
+	// 带上它时先按保存时的规则校验，校验不通过就不删除，避免服务商处已删除而本地配置保存失败、下次同步又建回来
+	Task *Task `json:"task,omitempty"`
 }
 
 // RemoteDeleteResult 是一条记录在服务商处的删除结果。
@@ -57,6 +61,16 @@ func (m *Module) handleRemoteDelete(w http.ResponseWriter, r *http.Request) {
 		m.mu.Unlock()
 		httpx.Error(w, http.StatusNotFound, "条目不存在")
 		return
+	}
+	if req.Task != nil {
+		cand := *req.Task
+		cand.Key = key
+		crud.KeepSecret(t.Credentials.Secret, &cand.Credentials.Secret)
+		if err := cand.Validate(); err != nil {
+			m.mu.Unlock()
+			httpx.Error(w, http.StatusBadRequest, "%v", err)
+			return
+		}
 	}
 	task := *t
 	task.Records = slices.Clone(t.Records)

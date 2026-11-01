@@ -369,7 +369,10 @@ async function upgradeSelected() {
           return
         }
         load()
-      })
+      }, withSelf ? () => {
+        // 没轮询到 done 时 Gately 已重启（标签页在后台被节流或网络慢），新进程里查不到旧任务，同样显示等待层
+        overlay.value?.start(t('docker.container.list.selfUpgradeRestarting'))
+      } : undefined)
     } catch (e) {
       ElMessage.error((e as Error).message)
     }

@@ -49,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { api } from '../api'
@@ -101,6 +101,9 @@ async function load() {
 function stop() {
   window.clearInterval(timer)
 }
+
+// 对话框开着时离开页面组件直接卸载，停止定时刷新
+onBeforeUnmount(stop)
 
 function open(listener: string, site: string, name: string) {
   target = { listener, site }

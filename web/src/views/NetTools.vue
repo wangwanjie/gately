@@ -34,13 +34,14 @@
         </template>
         <template v-if="tool === 'speed'">
           <el-form-item :label="t('netTools.downloadUrl')">
-            <!-- 可选常用公开测速节点，也可直接输入任意下载地址；留空由后端使用 Cloudflare -->
-            <el-select v-model="form.url" filterable allow-create default-first-option clearable :placeholder="t('netTools.downloadUrlPlaceholder')" class="w-360">
-              <el-option v-for="n in speedNodes" :key="n.url" :label="`${n.provider} · ${t(`netTools.speedNodes.${n.place}`)}`" :value="n.url">
-                <span>{{ n.provider }} · {{ t(`netTools.speedNodes.${n.place}`) }}</span>
-                <span class="opt-host mono">{{ n.host }}</span>
-              </el-option>
-            </el-select>
+            <!-- 输入框可直接填写任意下载地址，也可从常用公开测速节点中选择；留空由后端使用 Cloudflare。
+                 用 autocomplete 而非 allow-create 的 select：粘贴地址后不按回车直接开始也能生效 -->
+            <el-autocomplete v-model="form.url" :fetch-suggestions="suggestSpeedNodes" value-key="url" clearable :placeholder="t('netTools.downloadUrlPlaceholder')" class="w-360">
+              <template #default="{ item }">
+                <span>{{ item.provider }} · {{ t(`netTools.speedNodes.${item.place}`) }}</span>
+                <span class="opt-host mono">{{ item.host }}</span>
+              </template>
+            </el-autocomplete>
           </el-form-item>
           <el-form-item :label="t('netTools.duration')"><el-input-number v-model="form.seconds" :min="2" :max="30" /></el-form-item>
         </template>
@@ -138,6 +139,16 @@ const speedNodes = [
   { provider: 'Hetzner', place: 'germany', url: 'https://fsn1-speed.hetzner.com/1GB.bin' },
   { provider: 'OVH', place: 'france', url: 'https://proof.ovh.net/files/1Gb.dat' },
 ].map((n) => ({ ...n, host: new URL(n.url).host }))
+
+// suggestSpeedNodes 给测速地址输入框提供候选：输入为空或正是某个节点的地址时列出全部，否则按服务商、地点与域名筛选。
+function suggestSpeedNodes(q: string, cb: (items: typeof speedNodes) => void) {
+  const kw = q.trim().toLowerCase()
+  if (!kw || speedNodes.some((n) => n.url === q.trim())) {
+    cb(speedNodes)
+    return
+  }
+  cb(speedNodes.filter((n) => `${n.provider} ${t(`netTools.speedNodes.${n.place}`)} ${n.url}`.toLowerCase().includes(kw)))
+}
 
 const { t } = useI18n()
 const { isMobile } = useFormLayout()

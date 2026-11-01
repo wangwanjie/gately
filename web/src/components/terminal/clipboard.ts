@@ -15,6 +15,8 @@ export async function readClipboardText(): Promise<string | null> {
   return null
 }
 
+export { sanitizePaste } from './pasteText'
+
 // ---- 最近复制记录 ----
 // HTTP 访问时读不到系统剪贴板，在 Gately 里复制或粘贴过的内容记在本标签页里，粘贴面板中可一键重发。
 // 内容可能含敏感信息，只存 sessionStorage，关闭标签页即清除。

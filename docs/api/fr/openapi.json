@@ -395,6 +395,9 @@
               "type": "string"
             },
             "type": "array"
+          },
+          "task": {
+            "$ref": "#/components/schemas/ddns.Task"
           }
         },
         "type": "object"
@@ -7623,7 +7626,7 @@
     },
     "/api/ddns/providers": {
       "get": {
-        "description": "Permission requise : `ddns:read`.",
+        "description": "`supportsRemark` indique que les remarques des enregistrements sont écrites chez le fournisseur lors de la synchronisation, et `supportsDelete` que les enregistrements chez le fournisseur peuvent être supprimés avec `POST /api/ddns/tasks/{key}/remote-delete`.\n\nPermission requise : `ddns:read`.",
         "responses": {
           "200": {
             "description": "Succès"
@@ -7674,7 +7677,7 @@
     },
     "/api/ddns/settings": {
       "get": {
-        "description": "Permission requise : `ddns:read`.",
+        "description": "Renvoie `{enable, deleteRemote}` : `enable` est l'interrupteur du module et `deleteRemote` la valeur par défaut de la case « Supprimer aussi chez le fournisseur DNS » lors de la suppression d'enregistrements ou de tâches.\n\nPermission requise : `ddns:read`.",
         "responses": {
           "200": {
             "description": "Succès"
@@ -7723,7 +7726,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "Permission requise : `ddns:write`.",
+        "description": "Corps de la requête `{enable, deleteRemote}`, avec les mêmes champs que le point de lecture. Modifier uniquement `deleteRemote` ne redémarre pas les tâches.\n\nPermission requise : `ddns:write`.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -8374,7 +8377,7 @@
     },
     "/api/ddns/tasks/{key}/remote-delete": {
       "post": {
-        "description": "Le champ `records` du corps liste les `key` des enregistrements ; vide, il désigne tous les enregistrements de la tâche. Seuls les enregistrements DNS chez le fournisseur sont supprimés, la configuration de la tâche ne change pas ; on l’appelle en général avant de supprimer des enregistrements ou une tâche. S’il n’y a qu’un enregistrement avec le même nom et le même type (et la même ligne), il est supprimé ; s’il y en a plusieurs, seuls ceux dont la valeur correspond à la dernière synchronisation le sont, et si on ne peut pas trancher rien n’est supprimé et une erreur est renvoyée. Pendant ce temps la tâche suspend la synchronisation et reprend 30 secondes après. Renvoie 502 avec la raison si un enregistrement échoue, et 400 si le fournisseur ne permet pas la suppression (`supportsDelete` dans `GET /api/ddns/providers` l’indique).\n\nPermission requise : `ddns:write`.",
+        "description": "Le champ `records` du corps liste les `key` des enregistrements ; laissez-le vide pour tous les enregistrements de la tâche. Seuls les enregistrements DNS chez le fournisseur sont supprimés et la configuration de la tâche ne change pas ; l'appel se fait généralement avant de supprimer des enregistrements ou une tâche. Seuls les enregistrements de même nom et type (et ligne) dont la valeur correspond à la dernière synchronisation sont supprimés : si la valeur est inconnue (jamais synchronisée), différente, ou si le jeu d'enregistrements contient d'autres valeurs, rien n'est supprimé et une erreur est renvoyée ; un enregistrement déjà absent chez le fournisseur compte comme un succès. Le champ facultatif `task` est la configuration de tâche sur le point d'être enregistrée lors d'une modification ; s'il est fourni, il est d'abord validé selon les règles d'enregistrement et 400 est renvoyé sans rien supprimer si la validation échoue. Pendant ce temps, la tâche suspend sa synchronisation et reprend 30 secondes après. Renvoie 502 avec la raison si un enregistrement échoue, et 400 si le fournisseur ne prend pas en charge la suppression (`supportsDelete` dans `GET /api/ddns/providers` l'indique).\n\nPermission requise : `ddns:write`.",
         "parameters": [
           {
             "in": "path",
@@ -10568,7 +10571,7 @@
     },
     "/api/docker/containers/{id}/upgrade": {
       "post": {
-        "description": "Permission requise : `docker:write`.",
+        "description": "Télécharge la nouvelle image et recrée le conteneur avec sa configuration actuelle, puis renvoie le nouveau conteneur `{id}`. Pour le conteneur dans lequel Gately s'exécute, la nouvelle image est d'abord téléchargée et, seulement s'il existe une nouvelle version, un conteneur auxiliaire temporaire le recrée ; la réponse est `{id, self: true, upToDate}` et, lorsque `upToDate` vaut false, Gately redémarre peu après. La requête est refusée avant le téléchargement si le conteneur Gately ne monte pas le socket Docker, ainsi que lorsqu'une autre mise à niveau est en cours.\n\nPermission requise : `docker:write`.",
         "parameters": [
           {
             "in": "path",

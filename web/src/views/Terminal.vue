@@ -191,7 +191,7 @@ import ShortcutSheet from '../components/terminal/ShortcutSheet.vue'
 import TermPane from '../components/terminal/TermPane.vue'
 import TermTabs from '../components/terminal/TermTabs.vue'
 import TermToolbar from '../components/terminal/TermToolbar.vue'
-import { copyText, readClipboardText, recordClip } from '../components/terminal/clipboard'
+import { copyText, readClipboardText, recordClip, sanitizePaste } from '../components/terminal/clipboard'
 import { useTermPrefs } from '../components/terminal/prefs'
 import type { KeyName } from '../components/terminal/terminalKeys'
 import { normalizeConn, type Conn, type PaneStatus, type SessionInfo, type Shortcut, type SplitLayout, type SplitMode, type TermSettings, type TermTab } from '../components/terminal/types'
@@ -637,7 +637,8 @@ async function pasteToTerminal() {
   }
   const text = await readClipboardText()
   if (text) {
-    await sendPaste(text)
+    // 从系统剪贴板直接读到的内容（可能是密码管理器里复制的密码）不写入复制记录
+    await sendPaste(text, false)
     return
   }
   pasteManual.value = text === null
@@ -645,9 +646,14 @@ async function pasteToTerminal() {
 }
 
 // sendPaste 把文本粘贴到活动终端。多行内容且远端程序没有开启括号粘贴时，每一行都会被当作命令执行，先确认一次。
-async function sendPaste(text: string) {
+// record 为 false 时不写入复制记录（用于直接从系统剪贴板读到的内容）。
+async function sendPaste(raw: string, record = true) {
   const p = activePane()
   if (!p) {
+    return
+  }
+  const text = sanitizePaste(raw)
+  if (!text) {
     return
   }
   // 末尾单个换行只是执行这一条命令，不算多行
@@ -663,7 +669,9 @@ async function sendPaste(text: string) {
       return
     }
   }
-  recordClip(text)
+  if (record) {
+    recordClip(text)
+  }
   pasteSheet.value = false
   p.paste(text)
   p.focus()

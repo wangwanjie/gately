@@ -13,6 +13,8 @@ export interface TrackedTask extends DockerTask {
 export const trackedTasks = reactive<TrackedTask[]>([])
 const callbacks = new Map<string, (task: DockerTask) => void>()
 const timers = new Map<string, number>()
+// 任务记录消失时的回调：升级 Gately 自身后进程重启，旧任务查不到，由调用方按“已在重启”处理
+const lostCallbacks = new Map<string, () => void>()
 
 async function poll(id: string) {
   try {
@@ -28,6 +30,7 @@ async function poll(id: string) {
     timers.delete(id)
     const cb = callbacks.get(id)
     callbacks.delete(id)
+    lostCallbacks.delete(id)
     if (task.status === 'error') {
       ElMessage.error(task.error || t('docker.task.failed', { title: task.title }))
     }
@@ -39,6 +42,17 @@ async function poll(id: string) {
     const msg = (e as Error).message
     if (/不存在|not found|404/i.test(msg)) {
       timers.delete(id)
+      callbacks.delete(id)
+      const lost = lostCallbacks.get(id)
+      lostCallbacks.delete(id)
+      if (lost) {
+        const idx = trackedTasks.findIndex((x) => x.id === id)
+        if (idx >= 0) {
+          trackedTasks.splice(idx, 1)
+        }
+        lost()
+        return
+      }
       const cur = trackedTasks.find((x) => x.id === id)
       if (cur) {
         cur.status = 'error'
@@ -50,14 +64,17 @@ async function poll(id: string) {
   }
 }
 
-// trackTask 开始跟踪一个任务，结束（成功或失败）后调用 onEnd。
-export function trackTask(id: string, title: string, onEnd?: (task: DockerTask) => void) {
+// trackTask 开始跟踪一个任务，结束（成功或失败）后调用 onEnd；onLost 在任务记录不存在（如 Gately 已重启）时调用。
+export function trackTask(id: string, title: string, onEnd?: (task: DockerTask) => void, onLost?: () => void) {
   trackedTasks.unshift({ id, kind: '', title, status: 'running', started: new Date().toISOString(), lines: [], dismissed: false })
   if (trackedTasks.length > 5) {
     trackedTasks.length = 5
   }
   if (onEnd) {
     callbacks.set(id, onEnd)
+  }
+  if (onLost) {
+    lostCallbacks.set(id, onLost)
   }
   poll(id)
 }

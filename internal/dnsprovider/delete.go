@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -47,9 +48,9 @@ var ErrDeleteUnsupported = errors.New("该 DNS 服务商不支持删除解析记
 
 // Delete 删除服务商处由动态域名同步的这条记录，返回删除的条数，记录不存在时返回 0。
 //
-// r.Value 为最近一次同步写入的值，空表示未知。选择规则：同名同类型（同线路）只有一条时直接删除，
-// 与 Upsert 更新的是同一条；有多条时只删除值与 r.Value 相同的，避免误删用户手动添加的同名记录，
-// 无法确定是哪一条时返回错误，一条都不删。
+// r.Value 为最近一次同步写入的值，空表示未知。只删除值与 r.Value 相同的记录：同名同类型（同线路）
+// 只有一条时也要核对值，避免删掉用户手动添加或在控制台改过的记录；值未知时无法确认记录由 Gately 写入，
+// 一条都不删并返回错误。按记录集管理的服务商，记录集里还有其他值时同样不删，避免连带删掉别人的值。
 func Delete(ctx context.Context, p Provider, r Record) (int, error) {
 	d, ok := p.(recordDeleter)
 	if !ok {
@@ -59,9 +60,9 @@ func Delete(ctx context.Context, p Provider, r Record) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	targets := pickTargets(recs, r)
-	if targets == nil {
-		return 0, fmt.Errorf("服务商处有 %d 条 %s %s 记录，无法确定由 Gately 同步的是哪一条，未删除", len(recs), r.Type, r.FQDN())
+	targets, err := pickTargets(recs, r)
+	if err != nil {
+		return 0, err
 	}
 	for i, rec := range targets {
 		if err := d.removeRecord(ctx, r, rec); err != nil {
@@ -71,27 +72,28 @@ func Delete(ctx context.Context, p Provider, r Record) (int, error) {
 	return len(targets), nil
 }
 
-// pickTargets 按 Delete 的规则选出要删除的记录；无法确定时返回 nil，没有记录时返回空切片。
-func pickTargets(recs []remoteRecord, r Record) []remoteRecord {
-	if len(recs) <= 1 {
-		return append([]remoteRecord{}, recs...)
+// pickTargets 按 Delete 的规则选出要删除的记录；没有同名记录时返回空切片，无法确认时返回错误。
+func pickTargets(recs []remoteRecord, r Record) ([]remoteRecord, error) {
+	if len(recs) == 0 {
+		return []remoteRecord{}, nil
 	}
 	if r.Value == "" {
-		return nil
+		return nil, fmt.Errorf("Gately 还没有同步过 %s %s，无法确认服务商处的记录由 Gately 写入，未删除；请先同步一次，或到服务商控制台删除", r.Type, r.FQDN())
 	}
 	var out []remoteRecord
 	for _, rec := range recs {
-		for _, v := range rec.values {
-			if sameValue(r.Type, v, r.Value) {
-				out = append(out, rec)
-				break
-			}
+		if !slices.ContainsFunc(rec.values, func(v string) bool { return sameValue(r.Type, v, r.Value) }) {
+			continue
 		}
+		if len(rec.values) > 1 {
+			return nil, fmt.Errorf("服务商处的 %s %s 记录集还有其他 %d 个值，删除会一并删掉它们，未删除", r.Type, r.FQDN(), len(rec.values)-1)
+		}
+		out = append(out, rec)
 	}
 	if len(out) == 0 {
-		return nil
+		return nil, fmt.Errorf("服务商处的 %s %s 记录值与 Gately 最近同步的 %s 不一致，可能已被修改，未删除", r.Type, r.FQDN(), r.Value)
 	}
-	return out
+	return out, nil
 }
 
 // sameValue 比较记录值：去掉 TXT 的引号与 CNAME 结尾的点，CNAME 不区分大小写。

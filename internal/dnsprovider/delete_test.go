@@ -15,6 +15,8 @@ import (
 func TestPickTargets(t *testing.T) {
 	one := []remoteRecord{{id: "1", values: []string{"1.1.1.1"}}}
 	two := []remoteRecord{{id: "1", values: []string{"1.1.1.1"}}, {id: "2", values: []string{"2.2.2.2"}}}
+	dup := []remoteRecord{{id: "1", values: []string{"1.1.1.1"}}, {id: "2", values: []string{"1.1.1.1"}}}
+	set := []remoteRecord{{id: "rs", values: []string{"1.1.1.1", "3.3.3.3"}}}
 	cases := []struct {
 		name  string
 		recs  []remoteRecord
@@ -22,16 +24,21 @@ func TestPickTargets(t *testing.T) {
 		want  string
 	}{
 		{"没有记录", nil, "1.1.1.1", ""},
-		{"一条且值未知", one, "", "1"},
-		{"一条且值已变", one, "9.9.9.9", "1"},
+		{"没有记录且值未知", nil, "", ""},
+		{"一条且值相同", one, "1.1.1.1", "1"},
+		// 只有一条时也要核对值：值未知或不一致时可能是用户自己的记录
+		{"一条且值未知", one, "", "err"},
+		{"一条且值已变", one, "9.9.9.9", "err"},
 		{"多条按值挑选", two, "2.2.2.2", "2"},
-		{"多条值未知", two, "", "nil"},
-		{"多条都不匹配", two, "9.9.9.9", "nil"},
+		{"多条值未知", two, "", "err"},
+		{"多条都不匹配", two, "9.9.9.9", "err"},
+		{"多条同值都删除", dup, "1.1.1.1", "1,2"},
+		{"记录集还有其他值", set, "1.1.1.1", "err"},
 	}
 	for _, c := range cases {
-		got := pickTargets(c.recs, Record{Type: "A", Value: c.value})
-		ids := "nil"
-		if got != nil {
+		got, err := pickTargets(c.recs, Record{Zone: "example.com", Sub: "www", Type: "A", Value: c.value})
+		ids := "err"
+		if err == nil {
 			var s []string
 			for _, r := range got {
 				s = append(s, r.id)
@@ -39,7 +46,7 @@ func TestPickTargets(t *testing.T) {
 			ids = strings.Join(s, ",")
 		}
 		if ids != c.want {
-			t.Errorf("%s: got %s want %s", c.name, ids, c.want)
+			t.Errorf("%s: got %s want %s (%v)", c.name, ids, c.want, err)
 		}
 	}
 	// TXT 去引号、CNAME 去结尾点且不区分大小写
@@ -69,12 +76,12 @@ func TestAliDNSDelete(t *testing.T) {
 	p, _ := New("alidns", Credentials{ID: "ak", Secret: "sk"}, srv.Client())
 	p.(*aliDNS).endpoint = srv.URL + "/"
 	p.(*aliDNS).now = func() time.Time { return time.Unix(1700000000, 0) }
-	n, err := Delete(context.Background(), p, Record{Zone: "example.com", Sub: "www", Type: "A"})
+	n, err := Delete(context.Background(), p, Record{Zone: "example.com", Sub: "www", Type: "A", Value: "1.1.1.1"})
 	if err != nil || n != 1 || strings.Join(deleted, ",") != "r1" {
 		t.Fatalf("默认线路: %d %v %v", n, err, deleted)
 	}
 	deleted = nil
-	n, err = Delete(context.Background(), p, Record{Zone: "example.com", Sub: "www", Type: "A", Line: "telecom"})
+	n, err = Delete(context.Background(), p, Record{Zone: "example.com", Sub: "www", Type: "A", Line: "telecom", Value: "2.2.2.2"})
 	if err != nil || n != 1 || strings.Join(deleted, ",") != "r2" {
 		t.Fatalf("指定线路: %d %v %v", n, err, deleted)
 	}
@@ -161,7 +168,7 @@ func TestTencentCloudDelete(t *testing.T) {
 	defer srv.Close()
 	p, _ := New("tencentcloud", Credentials{ID: "sid", Secret: "skey"}, srv.Client())
 	p.(*tencentCloud).endpoint = srv.URL
-	if n, err := Delete(context.Background(), p, Record{Zone: "example.com", Sub: "www", Type: "A"}); err != nil || n != 1 || len(deleted) != 1 || deleted[0] != 1 {
+	if n, err := Delete(context.Background(), p, Record{Zone: "example.com", Sub: "www", Type: "A", Value: "1.1.1.1"}); err != nil || n != 1 || len(deleted) != 1 || deleted[0] != 1 {
 		t.Fatalf("%d %v %v", n, err, deleted)
 	}
 }

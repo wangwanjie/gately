@@ -888,6 +888,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Field | Type |
 | --- | --- |
 | `records` | Array of string |
+| `task` | `ddns.Task` |
 
 ### dnsprovider.Credentials
 

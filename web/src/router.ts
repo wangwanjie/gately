@@ -2,6 +2,7 @@ import { watch } from 'vue'
 import { createRouter, createWebHashHistory } from 'vue-router'
 import { i18n, t } from './i18n'
 import { pathEnabled } from './nav'
+import { clearClips } from './components/terminal/clipboard'
 
 const router = createRouter({
   // 使用 hash 路由，避免反向代理子路径部署时刷新 404
@@ -76,6 +77,8 @@ async function hasSession(): Promise<boolean> {
 router.beforeEach(async (to) => {
   if (to.name === 'login') {
     sessionChecked = false
+    // 退出登录或会话失效：清掉 Web 终端的复制记录，避免同一标签页里下一位登录的用户看到
+    clearClips()
     return
   }
   if (!sessionChecked) {

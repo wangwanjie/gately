@@ -50,6 +50,8 @@ func TestProxyDomainsValidate(t *testing.T) {
 		{Name: "a", Type: TypeHTTP, LocalPort: 80, Subdomain: "a.b"},
 		{Name: "a", Type: TypeHTTP, LocalPort: 80, Subdomain: "*"},
 		{Name: "a", Type: TypeHTTP, LocalPort: 80, Subdomain: "a b"},
+		{Name: "a", Type: TypeHTTP, LocalPort: 80, Subdomain: "::1"},
+		{Name: "a", Type: TypeHTTP, LocalPort: 80, Subdomain: "[::1]"},
 	} {
 		if err := bad.Validate(); err == nil {
 			t.Errorf("%+v 应报错", bad)

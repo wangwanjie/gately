@@ -395,6 +395,9 @@
               "type": "string"
             },
             "type": "array"
+          },
+          "task": {
+            "$ref": "#/components/schemas/ddns.Task"
           }
         },
         "type": "object"
@@ -7623,7 +7626,7 @@
     },
     "/api/ddns/providers": {
       "get": {
-        "description": "Required permission: `ddns:read`.",
+        "description": "`supportsRemark` means record remarks are written to the provider when syncing, and `supportsDelete` means records at the provider can be deleted with `POST /api/ddns/tasks/{key}/remote-delete`.\n\nRequired permission: `ddns:read`.",
         "responses": {
           "200": {
             "description": "Success"
@@ -7674,7 +7677,7 @@
     },
     "/api/ddns/settings": {
       "get": {
-        "description": "Required permission: `ddns:read`.",
+        "description": "Returns `{enable, deleteRemote}`: `enable` is the module switch and `deleteRemote` is the default of the \"Also delete from the DNS provider\" checkbox when deleting records or tasks.\n\nRequired permission: `ddns:read`.",
         "responses": {
           "200": {
             "description": "Success"
@@ -7723,7 +7726,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "Required permission: `ddns:write`.",
+        "description": "Request body `{enable, deleteRemote}`, with the same fields as the read endpoint. Changing only `deleteRemote` does not restart tasks.\n\nRequired permission: `ddns:write`.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -8374,7 +8377,7 @@
     },
     "/api/ddns/tasks/{key}/remote-delete": {
       "post": {
-        "description": "The `records` body field lists record `key`s; leave it empty for all records of the task. Only the DNS records at the provider are deleted and the task configuration is unchanged; it is usually called before deleting records or a task. If there is a single record with the same name and type (and line), it is deleted; if there are several, only those whose value matches the last sync are deleted, and when that cannot be determined nothing is deleted and an error is returned. The task pauses syncing meanwhile and resumes 30 seconds afterwards. Returns 502 with the reason if any record fails, and 400 if the provider does not support deletion (`supportsDelete` in `GET /api/ddns/providers` tells whether it does).\n\nRequired permission: `ddns:write`.",
+        "description": "The `records` body field lists record `key`s; leave it empty for all records of the task. Only the DNS records at the provider are deleted and the task configuration is unchanged; it is usually called before deleting records or a task. Only records with the same name and type (and line) whose value matches the last sync are deleted: when the value is unknown (never synced), differs, or the record set has other values, nothing is deleted and an error is returned; a record already gone at the provider counts as success. The optional `task` is the task configuration about to be saved when editing a task; when given, it is validated with the save rules first, and 400 is returned without deleting anything if validation fails. The task pauses syncing meanwhile and resumes 30 seconds afterwards. Returns 502 with the reason if any record fails, and 400 if the provider does not support deletion (`supportsDelete` in `GET /api/ddns/providers` tells whether it does).\n\nRequired permission: `ddns:write`.",
         "parameters": [
           {
             "in": "path",
@@ -10568,7 +10571,7 @@
     },
     "/api/docker/containers/{id}/upgrade": {
       "post": {
-        "description": "Required permission: `docker:write`.",
+        "description": "Pulls the new image and recreates the container with its existing configuration, returning the new container `{id}`. For the container Gately itself runs in, the new image is pulled first and, only when there is a new version, a temporary helper container recreates it; the response is `{id, self: true, upToDate}`, and when `upToDate` is false Gately restarts shortly afterwards. It is rejected before pulling when the Gately container does not mount the Docker socket, and also while another upgrade is in progress.\n\nRequired permission: `docker:write`.",
         "parameters": [
           {
             "in": "path",

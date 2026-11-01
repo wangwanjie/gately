@@ -14,6 +14,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/wangwanjie/gately/internal/crud"
 	"github.com/wangwanjie/gately/internal/dnsprovider"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
@@ -194,6 +195,38 @@ func TestAPIRemoteDelete(t *testing.T) {
 	}
 	if code, _ := post("missing", nil); code != 404 {
 		t.Fatalf("任务不存在应返回 404，实际 %d", code)
+	}
+
+	// 带上待保存的任务配置时先校验：校验不通过不删除；密钥为占位符时沿用已保存的值
+	delete(fd.fail, "nas.example.com")
+	postTask := func(tk Task) (int, string) {
+		t.Helper()
+		b, _ := json.Marshal(map[string]any{"records": []string{"b"}, "task": tk})
+		resp, err := http.Post(srv.URL+"/api/ddns/tasks/t1/remote-delete", "application/json", bytes.NewReader(b))
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer resp.Body.Close()
+		var buf bytes.Buffer
+		_, _ = buf.ReadFrom(resp.Body)
+		return resp.StatusCode, buf.String()
+	}
+	bad := sampleTask()
+	bad.Provider = "no-such-provider"
+	fd.calls = nil
+	if code, body := postTask(bad); code != 400 {
+		t.Fatalf("待保存配置无效时应返回 400: %d %s", code, body)
+	}
+	if len(fd.domains()) != 0 {
+		t.Fatalf("校验不通过时不应删除服务商处的解析: %v", fd.domains())
+	}
+	good := sampleTask()
+	good.Credentials.Secret = crud.SecretMask
+	if code, body := postTask(good); code != 200 {
+		t.Fatalf("待保存配置有效时应删除: %d %s", code, body)
+	}
+	if got := strings.Join(fd.domains(), ","); !strings.Contains(got, "nas.example.com") {
+		t.Fatalf("应删除记录 b: %s", got)
 	}
 
 	// 不支持删除的服务商

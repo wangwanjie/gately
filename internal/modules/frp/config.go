@@ -366,7 +366,8 @@ func (p *Proxy) Validate() error {
 	// frps 把子域名拼在 subDomainHost 前面，不支持 . 与 *
 	if p.Subdomain != "" {
 		sub, ok := hostname.Normalize(p.Subdomain, false)
-		if !ok || strings.Contains(sub, ".") {
+		// IPv6 字面量（如 ::1）规范化后不含 .，也要排除
+		if !ok || strings.Contains(sub, ".") || strings.Contains(sub, ":") {
 			return fmt.Errorf("子域名 %q 格式错误，只填一级名称，如 nas", p.Subdomain)
 		}
 		p.Subdomain = sub

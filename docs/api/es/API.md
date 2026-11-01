@@ -888,6 +888,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Campo | Tipo |
 | --- | --- |
 | `records` | Lista de string |
+| `task` | `ddns.Task` |
 
 ### dnsprovider.Credentials
 

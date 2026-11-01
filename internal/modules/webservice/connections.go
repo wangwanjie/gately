@@ -68,23 +68,26 @@ type activeReq struct {
 	cancel context.CancelCauseFunc
 	// w 为服务器交给处理器的原始 ResponseWriter（各层包装之前），断开时用于让阻塞中的读写立即失败
 	w http.ResponseWriter
-	// mu 保护 conn：协议升级后接管的连接，断开时直接关闭
+	// mu 保护 conn 与 done：conn 为协议升级后接管的连接，断开时直接关闭；
+	// done 表示处理器已返回（end 已调用），此后 w 可能已被 net/http 回收（HTTP/2 会放回池中复用），
+	// 也可能属于同一条长连接上的下一个请求，断开不能再对它设置截止时间
 	mu   sync.Mutex
 	conn net.Conn
+	done bool
 }
 
 // close 断开请求：取消请求上下文（反向代理随之结束后端请求、关闭已升级的后端连接），
 // 并关闭已接管的连接。后续写出的响应会被丢弃，处理结束后由 ServeHTTP 中断连接或请求流。
 // 返回 false 表示已经断开过。
 func (a *activeReq) close() bool {
-	if !a.killed.CompareAndSwap(false, true) {
+	// 整个断开过程持有 mu：与 end 互斥，保证设置截止时间时处理器尚未返回、w 仍属于这个请求
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	if a.done || !a.killed.CompareAndSwap(false, true) {
 		return false
 	}
 	a.cancel(errConnClosed)
-	a.mu.Lock()
-	c := a.conn
-	a.mu.Unlock()
-	if c != nil {
+	if c := a.conn; c != nil {
 		c.Close()
 		return true
 	}
@@ -193,6 +196,9 @@ func (t *connTracker) begin(w http.ResponseWriter, r *http.Request, client netip
 
 // end 注销请求；持续时间达到阈值或被断开的请求写入历史记录。
 func (t *connTracker) end(a *activeReq) {
+	a.mu.Lock()
+	a.done = true
+	a.mu.Unlock()
 	a.cancel(context.Canceled)
 	s := &t.shards[a.id&(connShards-1)]
 	s.mu.Lock()
@@ -444,6 +450,10 @@ func (m *Module) handleCloseConn(w http.ResponseWriter, r *http.Request) {
 		httpx.Error(w, http.StatusBadRequest, "不能封禁你当前使用的地址")
 		return
 	}
+	if msg := m.unbannableReason(addr); msg != "" {
+		httpx.Error(w, http.StatusBadRequest, "%s", msg)
+		return
+	}
 	key := m.auth.ban(addr.String(), time.Duration(req.BanSeconds)*time.Second, "从实时连接封禁", true)
 	if key == "" {
 		httpx.Error(w, http.StatusInternalServerError, "封禁失败")
@@ -452,6 +462,30 @@ func (m *Module) handleCloseConn(w http.ResponseWriter, r *http.Request) {
 	// 封禁只拦截新请求，已在进行中的请求（如 WebSocket、大文件下载）需要一并断开
 	n := m.closeConnsByKey(key)
 	httpx.OK(w, closeConnResult{Closed: n, BanKey: key})
+}
+
+// unbannableReason 返回不能从实时连接封禁该地址的原因，可以封禁时返回空串。
+// 手动封禁会绕过入侵防护的白名单，这里挡住封禁后会拦截一大批无关访客的地址：
+// 回环与未指定地址（经 frp、未带 PROXY 协议的本机转发进来的请求都显示为它），以及可信代理（取不到真实 IP 时列表里显示的是代理地址）。
+// IPv6 按 /64 封禁，只要与可信代理网段有重叠也拒绝。
+func (m *Module) unbannableReason(addr netip.Addr) string {
+	addr = addr.Unmap()
+	if !addr.IsValid() || addr.IsLoopback() || addr.IsUnspecified() {
+		return "不能封禁回环地址：经本机转发（如 frp、未带 PROXY 协议的端口转发）进来的请求都显示为该地址，封禁会拦截全部这类访客"
+	}
+	bits := 32
+	if addr.Is6() {
+		bits = 64
+	}
+	banned, _ := addr.Prefix(bits)
+	if p := m.realIP.p.Load(); p != nil {
+		for _, pf := range p.from {
+			if pf.Overlaps(banned) {
+				return "该地址属于可信代理，封禁会拦截经它访问的全部访客；请检查真实 IP 请求头设置是否取到了访客地址"
+			}
+		}
+	}
+	return ""
 }
 
 // closeConnsByKey 断开全部监听、全部站点上访客地址属于 key（单个地址或 IPv6 /64 网段）的进行中请求。

@@ -145,7 +145,8 @@ func (t *tencentCloud) Upsert(ctx context.Context, r Record) (string, error) {
 		params["Remark"] = r.Remark
 	}
 	for _, rec := range list.RecordList {
-		if rec.Type != r.Type || rec.Line != line {
+		// 与删除一致再按主机记录过滤，避免接口按前缀或模糊匹配返回其他主机头时改错记录
+		if rec.Type != r.Type || rec.Line != line || !strings.EqualFold(rec.Name, r.RR()) {
 			continue
 		}
 		valueSame := rec.Value == r.Value && (r.TTL == 0 || rec.TTL == r.TTL)

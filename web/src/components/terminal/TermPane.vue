@@ -455,6 +455,12 @@ function onTouchEnd(e: TouchEvent) {
   }
 }
 
+// 系统手势、来电或通知打断触摸时浏览器发 touchcancel 而不是 touchend，同样取消长按计时，避免误入选择模式
+function onTouchCancel() {
+  cancelPress()
+  tMode = ''
+}
+
 let lastDataAt = 0
 let lastData = ''
 
@@ -526,6 +532,7 @@ onMounted(() => {
   el.addEventListener('touchstart', onTouchStart, { passive: true, capture: true })
   el.addEventListener('touchmove', onTouchMove, { passive: false, capture: true })
   el.addEventListener('touchend', onTouchEnd, { passive: true, capture: true })
+  el.addEventListener('touchcancel', onTouchCancel, { passive: true, capture: true })
   window.addEventListener('online', reconnect)
   document.addEventListener('visibilitychange', onWake)
 
@@ -574,6 +581,7 @@ onBeforeUnmount(() => {
   el?.removeEventListener('touchstart', onTouchStart, { capture: true })
   el?.removeEventListener('touchmove', onTouchMove, { capture: true })
   el?.removeEventListener('touchend', onTouchEnd, { capture: true })
+  el?.removeEventListener('touchcancel', onTouchCancel, { capture: true })
   ws?.close()
   term?.dispose()
   if (fitFrame) {

@@ -395,6 +395,9 @@
               "type": "string"
             },
             "type": "array"
+          },
+          "task": {
+            "$ref": "#/components/schemas/ddns.Task"
           }
         },
         "type": "object"
@@ -7623,7 +7626,7 @@
     },
     "/api/ddns/providers": {
       "get": {
-        "description": "Permiso necesario: `ddns:read`.",
+        "description": "`supportsRemark` indica que las notas de los registros se escriben en el proveedor al sincronizar, y `supportsDelete` que los registros del proveedor se pueden eliminar con `POST /api/ddns/tasks/{key}/remote-delete`.\n\nPermiso necesario: `ddns:read`.",
         "responses": {
           "200": {
             "description": "Correcto"
@@ -7674,7 +7677,7 @@
     },
     "/api/ddns/settings": {
       "get": {
-        "description": "Permiso necesario: `ddns:read`.",
+        "description": "Devuelve `{enable, deleteRemote}`: `enable` es el interruptor del módulo y `deleteRemote` es el valor predeterminado de la casilla «Eliminar también en el proveedor DNS» al eliminar registros o tareas.\n\nPermiso necesario: `ddns:read`.",
         "responses": {
           "200": {
             "description": "Correcto"
@@ -7723,7 +7726,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "Permiso necesario: `ddns:write`.",
+        "description": "Cuerpo de la solicitud `{enable, deleteRemote}`, con los mismos campos que el endpoint de lectura. Cambiar solo `deleteRemote` no reinicia las tareas.\n\nPermiso necesario: `ddns:write`.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -8374,7 +8377,7 @@
     },
     "/api/ddns/tasks/{key}/remote-delete": {
       "post": {
-        "description": "El campo `records` del cuerpo es la lista de `key` de registros; vacío significa todos los registros de la tarea. Solo elimina los registros DNS en el proveedor sin cambiar la configuración de la tarea; se suele llamar antes de eliminar registros o una tarea. Si hay un único registro con el mismo nombre y tipo (y línea), se elimina; si hay varios, solo los que tengan el valor de la última sincronización, y si no se puede determinar no se elimina nada y se devuelve un error. Mientras tanto la tarea deja de sincronizar y se reanuda 30 segundos después. Devuelve 502 con el motivo si falla alguno y 400 si el proveedor no permite eliminar (`supportsDelete` en `GET /api/ddns/providers` indica si lo permite).\n\nPermiso necesario: `ddns:write`.",
+        "description": "El campo `records` del cuerpo lista los `key` de los registros; déjelo vacío para todos los registros de la tarea. Solo se eliminan los registros DNS del proveedor y la configuración de la tarea no cambia; normalmente se llama antes de eliminar registros o una tarea. Solo se eliminan los registros con el mismo nombre y tipo (y línea) cuyo valor coincide con la última sincronización: si el valor es desconocido (nunca sincronizado), es distinto o el conjunto de registros tiene otros valores, no se elimina nada y se devuelve un error; un registro que ya no existe en el proveedor cuenta como éxito. El campo opcional `task` es la configuración de la tarea que se va a guardar al editarla; si se incluye, primero se valida con las reglas de guardado y, si la validación falla, se devuelve 400 sin eliminar nada. Mientras tanto la tarea deja de sincronizar y se reanuda 30 segundos después. Devuelve 502 con el motivo si falla algún registro, y 400 si el proveedor no admite la eliminación (`supportsDelete` en `GET /api/ddns/providers` indica si la admite).\n\nPermiso necesario: `ddns:write`.",
         "parameters": [
           {
             "in": "path",
@@ -10568,7 +10571,7 @@
     },
     "/api/docker/containers/{id}/upgrade": {
       "post": {
-        "description": "Permiso necesario: `docker:write`.",
+        "description": "Descarga la nueva imagen y recrea el contenedor con su configuración actual, y devuelve el nuevo contenedor `{id}`. Para el contenedor en el que se ejecuta el propio Gately, primero descarga la nueva imagen y, solo si hay una versión nueva, un contenedor auxiliar temporal lo recrea; la respuesta es `{id, self: true, upToDate}` y, cuando `upToDate` es false, Gately se reinicia poco después. Se rechaza antes de descargar cuando el contenedor de Gately no monta el socket de Docker, y también mientras otra actualización está en curso.\n\nPermiso necesario: `docker:write`.",
         "parameters": [
           {
             "in": "path",

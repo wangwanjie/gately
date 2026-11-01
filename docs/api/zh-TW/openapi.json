@@ -395,6 +395,9 @@
               "type": "string"
             },
             "type": "array"
+          },
+          "task": {
+            "$ref": "#/components/schemas/ddns.Task"
           }
         },
         "type": "object"
@@ -7623,7 +7626,7 @@
     },
     "/api/ddns/providers": {
       "get": {
-        "description": "所需權限：`ddns:read`。",
+        "description": "`supportsRemark` 表示同步時會把記錄備註寫到服務商處，`supportsDelete` 表示支援以 `POST /api/ddns/tasks/{key}/remote-delete` 刪除服務商處的解析。\n\n所需權限：`ddns:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -7674,7 +7677,7 @@
     },
     "/api/ddns/settings": {
       "get": {
-        "description": "所需權限：`ddns:read`。",
+        "description": "回傳 `{enable, deleteRemote}`：`enable` 為模組開關，`deleteRemote` 為刪除記錄或任務時「同時從服務商刪除解析」勾選框的預設值。\n\n所需權限：`ddns:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -7723,7 +7726,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "所需權限：`ddns:write`。",
+        "description": "請求本文 `{enable, deleteRemote}`，欄位含義同讀取介面。只修改 `deleteRemote` 時不重新啟動任務。\n\n所需權限：`ddns:write`。",
         "requestBody": {
           "content": {
             "application/json": {
@@ -8374,7 +8377,7 @@
     },
     "/api/ddns/tasks/{key}/remote-delete": {
       "post": {
-        "description": "請求本文 `records` 為記錄 `key` 清單，留空表示工作中的全部記錄。只刪除服務商處的解析，不修改工作設定，通常在刪除記錄或工作之前呼叫。同名同類型（同線路）的解析只有一筆時直接刪除；有多筆時只刪除值與最近一次同步結果相同的，無法確定時不刪除並回報錯誤。期間工作暫停同步，結束 30 秒後恢復。任一筆失敗時回傳 502 與失敗原因；服務商不支援刪除時回傳 400（`GET /api/ddns/providers` 的 `supportsDelete` 標明是否支援）。\n\n所需權限：`ddns:write`。",
+        "description": "請求本文 `records` 為記錄 `key` 清單，留空表示任務中的全部記錄。只刪除服務商處的解析，不修改任務設定，通常在刪除記錄或任務之前呼叫。只刪除同名同類型（同線路）且值與最近一次同步結果相同的解析：值未知（還沒有同步過）、值不一致，或記錄集中還有其他值時都不刪除並報錯；服務商處已經沒有這條記錄時視為成功。可選的 `task` 為編輯任務時待儲存的任務設定，帶上時先按儲存規則校驗，校驗不通過回傳 400 且不刪除。期間任務暫停同步，結束 30 秒後恢復。任一條失敗時回傳 502 與失敗原因；服務商不支援刪除時回傳 400（`GET /api/ddns/providers` 的 `supportsDelete` 標明是否支援）。\n\n所需權限：`ddns:write`。",
         "parameters": [
           {
             "in": "path",
@@ -10568,7 +10571,7 @@
     },
     "/api/docker/containers/{id}/upgrade": {
       "post": {
-        "description": "所需權限：`docker:write`。",
+        "description": "拉取新映像後按原設定重建容器，回傳新容器 `{id}`。對 Gately 自身所在的容器先拉取新映像，有新版本時交給臨時輔助容器重建，回傳 `{id, self: true, upToDate}`：`upToDate` 為 false 時 Gately 隨後重新啟動；Gately 容器沒有掛載 Docker 通訊端時在拉取前拒絕，已有升級正在進行時同樣拒絕。\n\n所需權限：`docker:write`。",
         "parameters": [
           {
             "in": "path",

@@ -395,6 +395,9 @@
               "type": "string"
             },
             "type": "array"
+          },
+          "task": {
+            "$ref": "#/components/schemas/ddns.Task"
           }
         },
         "type": "object"
@@ -7623,7 +7626,7 @@
     },
     "/api/ddns/providers": {
       "get": {
-        "description": "Permissão necessária: `ddns:read`.",
+        "description": "`supportsRemark` indica que as observações dos registros são gravadas no provedor ao sincronizar, e `supportsDelete` que os registros no provedor podem ser excluídos com `POST /api/ddns/tasks/{key}/remote-delete`.\n\nPermissão necessária: `ddns:read`.",
         "responses": {
           "200": {
             "description": "Sucesso"
@@ -7674,7 +7677,7 @@
     },
     "/api/ddns/settings": {
       "get": {
-        "description": "Permissão necessária: `ddns:read`.",
+        "description": "Retorna `{enable, deleteRemote}`: `enable` é o interruptor do módulo e `deleteRemote` é o padrão da caixa \"Excluir também no provedor DNS\" ao excluir registros ou tarefas.\n\nPermissão necessária: `ddns:read`.",
         "responses": {
           "200": {
             "description": "Sucesso"
@@ -7723,7 +7726,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "Permissão necessária: `ddns:write`.",
+        "description": "Corpo da requisição `{enable, deleteRemote}`, com os mesmos campos do endpoint de leitura. Alterar apenas `deleteRemote` não reinicia as tarefas.\n\nPermissão necessária: `ddns:write`.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -8374,7 +8377,7 @@
     },
     "/api/ddns/tasks/{key}/remote-delete": {
       "post": {
-        "description": "O campo `records` do corpo lista as `key`s dos registros; vazio significa todos os registros da tarefa. Só exclui os registros DNS no provedor, sem alterar a configuração da tarefa; normalmente é chamado antes de excluir registros ou uma tarefa. Se houver um único registro com o mesmo nome e tipo (e linha), ele é excluído; se houver vários, só os com o valor da última sincronização, e quando não dá para determinar nada é excluído e um erro é retornado. Enquanto isso a tarefa pausa a sincronização e retoma 30 segundos depois. Retorna 502 com o motivo se algum falhar e 400 se o provedor não permitir exclusão (`supportsDelete` em `GET /api/ddns/providers` indica isso).\n\nPermissão necessária: `ddns:write`.",
+        "description": "O campo `records` do corpo lista as `key` dos registros; deixe vazio para todos os registros da tarefa. Somente os registros DNS no provedor são excluídos e a configuração da tarefa não muda; normalmente é chamado antes de excluir registros ou uma tarefa. Somente registros com o mesmo nome e tipo (e linha) cujo valor corresponde à última sincronização são excluídos: quando o valor é desconhecido (nunca sincronizado), diferente ou o conjunto de registros tem outros valores, nada é excluído e um erro é retornado; um registro que já não existe no provedor conta como sucesso. O campo opcional `task` é a configuração da tarefa prestes a ser salva ao editá-la; quando enviado, é validado primeiro pelas regras de salvamento e, se a validação falhar, 400 é retornado sem excluir nada. Enquanto isso, a tarefa pausa a sincronização e retoma 30 segundos depois. Retorna 502 com o motivo se algum registro falhar, e 400 se o provedor não suportar exclusão (`supportsDelete` em `GET /api/ddns/providers` indica se suporta).\n\nPermissão necessária: `ddns:write`.",
         "parameters": [
           {
             "in": "path",
@@ -10568,7 +10571,7 @@
     },
     "/api/docker/containers/{id}/upgrade": {
       "post": {
-        "description": "Permissão necessária: `docker:write`.",
+        "description": "Baixa a nova imagem e recria o contêiner com a configuração atual, retornando o novo contêiner `{id}`. Para o contêiner em que o próprio Gately roda, a nova imagem é baixada primeiro e, somente se houver versão nova, um contêiner auxiliar temporário o recria; a resposta é `{id, self: true, upToDate}` e, quando `upToDate` é false, o Gately reinicia logo depois. É recusado antes de baixar quando o contêiner do Gately não monta o socket do Docker, e também enquanto outra atualização está em andamento.\n\nPermissão necessária: `docker:write`.",
         "parameters": [
           {
             "in": "path",

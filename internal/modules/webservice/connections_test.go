@@ -587,8 +587,10 @@ func TestConnsAPI(t *testing.T) {
 		{Enable: true, Key: "a", Domains: []string{"a.test"}, Targets: []string{backend.URL}},
 		{Enable: true, Key: "b", Domains: []string{"b.test"}, Targets: []string{backend.URL}},
 	}, Site{Enable: true, Targets: []string{backend.URL}})
+	// 测试客户端都经回环连入，回环地址不允许封禁：把回环设为可信代理，用 X-Forwarded-For 带上访客地址
+	m.realIP.set([]string{"127.0.0.0/8"}, nil)
 	// 封禁列表为全局共享，结束时解除，避免影响其他测试
-	t.Cleanup(func() { m.auth.unban("127.0.0.1") })
+	t.Cleanup(func() { m.auth.unban("203.0.113.5") })
 
 	var wg sync.WaitGroup
 	hold := func(host string) {
@@ -597,6 +599,7 @@ func TestConnsAPI(t *testing.T) {
 			defer wg.Done()
 			req, _ := http.NewRequest("GET", "http://"+addr+"/hold", nil)
 			req.Host = host
+			req.Header.Set("X-Forwarded-For", "203.0.113.5")
 			c := &http.Client{Transport: &http.Transport{DisableKeepAlives: true}, Timeout: 10 * time.Second}
 			if resp, err := c.Do(req); err == nil {
 				resp.Body.Close()
@@ -641,34 +644,148 @@ func TestConnsAPI(t *testing.T) {
 			t.Fatalf("参数错误应返回 400: %+v → %d", bad, code)
 		}
 	}
-	// 管理员自己的地址与访客相同（都是 127.0.0.1）时拒绝封禁，也不断开
-	if code, _ = callJSON(t, m.handleCloseConn, "POST", "/connections/close", closeConnRequest{Listener: "l1", Site: "a", ID: va.ID, BanSeconds: 60}, "127.0.0.1:5555"); code != 400 {
+	// 管理员自己的地址与访客相同时拒绝封禁，也不断开
+	if code, _ = callJSON(t, m.handleCloseConn, "POST", "/connections/close", closeConnRequest{Listener: "l1", Site: "a", ID: va.ID, BanSeconds: 60}, "203.0.113.5:5555"); code != 400 {
 		t.Fatalf("不应允许封禁自己的地址: %d", code)
 	}
 	if ha.conns.snapshot("", time.Now()).Total != 1 {
 		t.Fatal("封禁被拒绝时不应断开")
 	}
 
-	// 断开并封禁：三个站点上来自 127.0.0.1 的请求全部断开
+	// 断开并封禁：三个站点上来自 203.0.113.5 的请求全部断开
 	code, out = callJSON(t, m.handleCloseConn, "POST", "/connections/close", closeConnRequest{Listener: "l1", Site: "a", ID: va.ID, BanSeconds: 60}, "192.0.2.1:5555")
 	if code != 200 {
 		t.Fatalf("断开并封禁失败: %d %v", code, out)
 	}
-	if res := out; res["closed"].(float64) != 3 || res["banKey"] != "127.0.0.1" {
-		t.Fatalf("应断开 3 个请求并封禁 127.0.0.1: %v", res)
+	if res := out; res["closed"].(float64) != 3 || res["banKey"] != "203.0.113.5" {
+		t.Fatalf("应断开 3 个请求并封禁 203.0.113.5: %v", res)
 	}
 	wg.Wait()
 	for _, h := range []*siteHandler{ha, hb, hd} {
 		waitConn(t, "全部断开", func() bool { return h.conns.snapshot("", time.Now()).Total == 0 })
 	}
-	if !m.auth.banned(netip.MustParseAddr("127.0.0.1")) {
+	if !m.auth.banned(netip.MustParseAddr("203.0.113.5")) {
 		t.Fatal("地址应已被封禁")
 	}
-	if resp, _ := get(t, noRedirect(), addr, "a.test", "/", nil); resp.StatusCode != http.StatusForbidden {
+	if resp, _ := get(t, noRedirect(), addr, "a.test", "/", map[string]string{"X-Forwarded-For": "203.0.113.5"}); resp.StatusCode != http.StatusForbidden {
 		t.Fatalf("封禁后新请求应被拒绝: %d", resp.StatusCode)
 	}
 	if code, _ = callJSON(t, m.handleCloseConn, "POST", "/connections/close", closeConnRequest{Listener: "l1", Site: "a", ID: va.ID}, ""); code != 404 {
 		t.Fatalf("已结束的连接应返回 404: %d", code)
+	}
+}
+
+// 断开并封禁拒绝回环地址与可信代理：手动封禁绕过入侵防护白名单，封掉它们会拦截一大批无关访客。
+func TestConnsBanRefusesLoopbackAndProxy(t *testing.T) {
+	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		<-r.Context().Done()
+	}))
+	defer backend.Close()
+	m, addr := newConnsModule(t, []Site{
+		{Enable: true, Key: "a", Domains: []string{"a.test"}, Targets: []string{backend.URL}},
+	}, Site{})
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		req, _ := http.NewRequest("GET", "http://"+addr+"/hold", nil)
+		req.Host = "a.test"
+		c := &http.Client{Transport: &http.Transport{DisableKeepAlives: true}, Timeout: 10 * time.Second}
+		if resp, err := c.Do(req); err == nil {
+			resp.Body.Close()
+		}
+	}()
+	m.mu.Lock()
+	h := m.findSiteLocked("l1", "a")
+	m.mu.Unlock()
+	v := activeOne(t, h)
+	code, out := callJSON(t, m.handleCloseConn, "POST", "/connections/close", closeConnRequest{Listener: "l1", Site: "a", ID: v.ID, BanSeconds: 60}, "192.0.2.1:5555")
+	if code != 400 || !strings.Contains(fmt.Sprint(out), "回环") {
+		t.Fatalf("不应允许封禁回环地址: %d %v", code, out)
+	}
+	if m.auth.banned(netip.MustParseAddr("127.0.0.1")) || h.conns.snapshot("", time.Now()).Total != 1 {
+		t.Fatal("拒绝封禁时不应封禁也不应断开")
+	}
+	// 只断开不封禁仍然可以
+	if code, _ = callJSON(t, m.handleCloseConn, "POST", "/connections/close", closeConnRequest{Listener: "l1", Site: "a", ID: v.ID}, "192.0.2.1:5555"); code != 200 {
+		t.Fatalf("断开回环地址的请求应成功: %d", code)
+	}
+	<-done
+
+	m.realIP.set([]string{"198.51.100.0/24", "2001:db8:1::/48"}, nil)
+	for a, want := range map[string]bool{
+		"198.51.100.7":        true,
+		"::ffff:198.51.100.7": true,
+		"2001:db8:1:2::9":     true,
+		// IPv6 按 /64 封禁：/64 与可信网段 2001:db8:2:3::/64 重叠
+		"2001:db8:2:3::1": true,
+		"203.0.113.9":     false,
+		"2001:db8:9::1":   false,
+		"::1":             true,
+		"0.0.0.0":         true,
+	} {
+		if a == "2001:db8:2:3::1" {
+			m.realIP.set([]string{"198.51.100.0/24", "2001:db8:1::/48", "2001:db8:2:3::8/126"}, nil)
+		}
+		if got := m.unbannableReason(netip.MustParseAddr(a)) != ""; got != want {
+			t.Errorf("%s 拒绝封禁 = %v，应为 %v", a, got, want)
+		}
+		m.realIP.set([]string{"198.51.100.0/24", "2001:db8:1::/48"}, nil)
+	}
+}
+
+// deadlineWriter 记录断开时对 ResponseWriter 设置截止时间的次数。
+type deadlineWriter struct {
+	httptest.ResponseRecorder
+	n atomic.Int32
+}
+
+func (w *deadlineWriter) SetWriteDeadline(time.Time) error {
+	w.n.Add(1)
+	return nil
+}
+
+func (w *deadlineWriter) SetReadDeadline(time.Time) error {
+	w.n.Add(1)
+	return nil
+}
+
+// 请求结束后再断开不能触碰 ResponseWriter：HTTP/2 会把它放回池中复用，HTTP/1.x 的截止时间会落到同一连接的下一个请求上。
+func TestConnCloseAfterEnd(t *testing.T) {
+	tr := newConnTracker()
+	w := &deadlineWriter{}
+	_, a := tr.begin(w, httptest.NewRequest("GET", "/p", nil), netip.MustParseAddrPort("192.0.2.1:1234"))
+	tr.end(a)
+	if a.close() {
+		t.Fatal("已结束的请求不应再断开")
+	}
+	if w.n.Load() != 0 {
+		t.Fatal("已结束的请求不应设置截止时间")
+	}
+
+	w2 := &deadlineWriter{}
+	_, a2 := tr.begin(w2, httptest.NewRequest("GET", "/p", nil), netip.MustParseAddrPort("192.0.2.1:1235"))
+	if !a2.close() || w2.n.Load() != 2 {
+		t.Fatalf("进行中的请求应设置读写截止时间: %d", w2.n.Load())
+	}
+	if a2.close() {
+		t.Fatal("重复断开应返回 false")
+	}
+	tr.end(a2)
+
+	// 断开与结束并发时不能出现数据竞争（go test -race）
+	for i := 0; i < 200; i++ {
+		_, a := tr.begin(&deadlineWriter{}, httptest.NewRequest("GET", "/p", nil), netip.MustParseAddrPort("192.0.2.1:1"))
+		var wg sync.WaitGroup
+		wg.Add(2)
+		go func() {
+			defer wg.Done()
+			a.close()
+		}()
+		go func() {
+			defer wg.Done()
+			tr.end(a)
+		}()
+		wg.Wait()
 	}
 }
 

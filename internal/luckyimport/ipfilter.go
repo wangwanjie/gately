@@ -138,6 +138,9 @@ func SafeModeAccess(mode string, lists map[string]IPFilterList) (iplist.Access, 
 		return iplist.Access{IPMode: iplist.ModeWhitelist, IPList: dedupe(l.Entries)}, warns
 	}
 	// 拒绝规则：本规则与全局黑名单合并
+	if lists == nil {
+		return iplist.Access{}, []string{"原规则启用了黑名单模式，但本次导入没有 Lucky 的 IP 过滤配置（lucky_ipfilter），未设置来源 IP 名单，请注意暴露面"}
+	}
 	gb := lists["globalblacklist"]
 	skipped, entries := l.Skipped, append([]string{}, l.Entries...)
 	if mode != "globalblacklist" {
@@ -149,6 +152,9 @@ func SafeModeAccess(mode string, lists map[string]IPFilterList) (iplist.Access, 
 	}
 	entries = dedupe(entries)
 	if len(entries) == 0 {
+		if skipped > 0 {
+			warns = append(warns, "原规则黑名单中的条目都无法导入，未设置来源 IP 名单，请注意暴露面")
+		}
 		return iplist.Access{}, warns
 	}
 	return iplist.Access{IPMode: iplist.ModeBlacklist, IPList: entries}, warns
