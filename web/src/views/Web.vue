@@ -437,6 +437,28 @@
         <el-form-item :label="t('web.trustedProxies')">
           <el-input v-model="trustedText" type="textarea" :rows="4" class="mono" :placeholder="t('web.trustedPlaceholder')" />
         </el-form-item>
+        <!-- 站点在 CDN / WAF 之后时，按可信代理的请求头取得访客真实地址 -->
+        <el-divider content-position="left">{{ t('web.realIPDivider') }}</el-divider>
+        <el-form-item :label="t('web.realIPFrom')">
+          <el-input v-model="realIPFromText" type="textarea" :rows="3" class="mono" :placeholder="t('web.realIPFromPlaceholder')" />
+          <div class="form-help">{{ t('web.realIPFromHelp') }}</div>
+        </el-form-item>
+        <el-form-item :label="t('web.realIPHeaders')">
+          <el-select
+            v-model="realIPHeaders"
+            multiple
+            filterable
+            allow-create
+            default-first-option
+            :reserve-keyword="false"
+            :disabled="!settings.realIPFrom?.length"
+            :placeholder="t('web.realIPHeadersPlaceholder')"
+            style="width: 100%"
+          >
+            <el-option v-for="h in realIPHeaderOptions" :key="h" :label="h" :value="h" />
+          </el-select>
+          <div class="form-help">{{ t('web.realIPHeadersHelp') }}</div>
+        </el-form-item>
         <el-divider content-position="left">{{ t('web.thirdPartyDivider') }}</el-divider>
         <el-form-item :label="t('web.callbackBase')">
           <el-input v-if="settings" v-model="settings.oauthCallbackBase" :placeholder="t('web.callbackPlaceholder')" />
@@ -660,6 +682,9 @@ const enabling = ref(false)
 interface WebSettings {
   enable: boolean
   trustedProxies: string[] | null
+  // realIPFrom 为可信代理（CDN / WAF 回源地址段），为空不启用真实 IP；realIPHeaders 为按顺序查找的真实 IP 头
+  realIPFrom: string[] | null
+  realIPHeaders: string[] | null
   oauthCallbackBase: string
   oauthProviders: OAuthProvider[]
   autoBanSeconds: number
@@ -714,6 +739,25 @@ const trustedText = bind(
     }
   },
 )
+
+const realIPFromText = bind(
+  () => settings.value?.realIPFrom,
+  (v) => {
+    if (settings.value) {
+      settings.value.realIPFrom = v
+    }
+  },
+)
+// 常见代理写入真实地址的请求头，也可输入自定义头名；选择顺序即查找顺序
+const realIPHeaderOptions = ['CF-Connecting-IP', 'X-Forwarded-For', 'X-Real-IP', 'True-Client-IP']
+const realIPHeaders = computed({
+  get: () => settings.value?.realIPHeaders ?? [],
+  set: (v: string[]) => {
+    if (settings.value) {
+      settings.value.realIPHeaders = v
+    }
+  },
+})
 
 function emptySite(): Site {
   return {

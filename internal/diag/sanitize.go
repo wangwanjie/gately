@@ -32,7 +32,7 @@ var addrKeys = toSet(
 	"targets", "targetAddresses", "to", "from", "dest", "destination", "upstreams", "addr", "addrs",
 	"serverAddr", "server", "publicAddr", "stunServer", "stunServers", "keepAliveServers", "checkAddr",
 	"upnpGateway", "natpmpGateway", "dashboardAddr", "broadcastIps", "ip", "ips", "ipv4", "ipv6",
-	"lastUsedIP", "ipList", "resolvers", "dnsServers", "dns", "curAddr", "trustedProxies", "host", "hostIp",
+	"lastUsedIP", "ipList", "resolvers", "dnsServers", "dns", "curAddr", "trustedProxies", "realIPFrom", "host", "hostIp",
 	"upnpLocalHost", "upnpControlUrl", "publicHost", "socks5", "proxy",
 )
 

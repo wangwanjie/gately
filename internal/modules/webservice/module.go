@@ -40,13 +40,15 @@ type Module struct {
 	auth    *authenticator
 	runners map[string]*listenerRunner
 	errors  map[string]string
+	// realIP 为全部监听器共享的可信代理真实 IP 设置
+	realIP *realIPSource
 	// ipListStates 为订阅 IP 列表的运行状态
 	ipListStates map[string]*ipListState
 }
 
 // New 创建模块。certs 为证书来源，可为 nil（此时不能启用 HTTPS）；waf 可为 nil（站点的 WAF 设置不生效）。
 func New(certs CertSource, waf WAFProvider) *Module {
-	return &Module{certs: certs, waf: waf, runners: map[string]*listenerRunner{}, errors: map[string]string{}, ipListStates: map[string]*ipListState{}}
+	return &Module{certs: certs, waf: waf, runners: map[string]*listenerRunner{}, errors: map[string]string{}, realIP: &realIPSource{}, ipListStates: map[string]*ipListState{}}
 }
 
 // ID 实现 module.Module。
@@ -91,6 +93,12 @@ func (m *Module) Init(env module.Env) error {
 	m.auth = newAuthenticator(m.cfg.Settings.AuthSecret)
 	m.auth.setBanSeconds(m.cfg.Settings.AutoBanSeconds)
 	m.applyOAuthLocked()
+	// 手工编辑配置填入无效或过宽（如 0.0.0.0/0）的可信代理时不启用真实 IP，避免请求头可被任意伪造
+	if from, headers, err := normalizeRealIP(m.cfg.Settings.RealIPFrom, m.cfg.Settings.RealIPHeaders); err != nil {
+		m.logs.Logger("").Errorf("真实 IP 设置无效，未启用: %v", err)
+	} else {
+		m.realIP.set(from, headers)
+	}
 	m.auth.shared.set(m.cfg.Settings.AuthUsers, m.cfg.Settings.SSODomain)
 	m.auth.selfAuth.Store(m.cfg.Settings.SelfServicePassword)
 	m.auth.changeShared = m.changeSharedPassword
@@ -165,6 +173,7 @@ func (m *Module) startLocked(l Listener) {
 	}
 	r, err := newListenerRunner(l, m.logs.Logger(label), m.auth, m.waf)
 	if err == nil {
+		r.realIP = m.realIP
 		err = r.start(m.certs, m.cfg.Settings.TrustedProxies)
 	}
 	if err != nil {
@@ -356,6 +365,12 @@ func (m *Module) handlePutSettings(w http.ResponseWriter, r *http.Request) {
 		httpx.Error(w, http.StatusBadRequest, "%v", err)
 		return
 	}
+	from, headers, err := normalizeRealIP(s.RealIPFrom, s.RealIPHeaders)
+	if err != nil {
+		httpx.Error(w, http.StatusBadRequest, "%v", err)
+		return
+	}
+	s.RealIPFrom, s.RealIPHeaders = from, headers
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	old := m.cfg.Settings
@@ -430,6 +445,8 @@ func (m *Module) handlePutSettings(w http.ResponseWriter, r *http.Request) {
 	}
 	m.applyOAuthLocked()
 	m.applyUsersLocked(s)
+	// 真实 IP 在每个请求进入时判断，替换设置即可生效，不需要重新监听
+	m.realIP.set(s.RealIPFrom, s.RealIPHeaders)
 	// 可信代理在监听层校验 PROXY 协议来源，变化时接收 PROXY 协议的监听器需要重新监听；
 	// 其余设置只需热替换站点表，避免断开正经由这些监听器访问的管理界面（包括本次保存请求）
 	trustedChanged := !slices.Equal(old.TrustedProxies, s.TrustedProxies)

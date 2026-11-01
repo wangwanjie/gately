@@ -106,6 +106,18 @@ Bei „Fester Text“-Sites lässt sich `Content-Type` aus gängigen Typen wähl
 - WebSocket: wird vom Reverse Proxy automatisch unterstützt;
 - PROXY-Protokoll: Ein Listener kann PROXY-Header akzeptieren, die vorgelagerte Komponenten (wie haproxy und frp) senden. Er vertraut nur den IPs oder Subnetzen unter „Globale Einstellungen → Vertrauenswürdige PROXY-Quellen“; bleibt die Liste leer, wird keiner Quelle vertraut. Der Reverse Proxy kann PROXY-Header an das Backend senden. `X-Forwarded-Proto: https` auf Verbindungen aus einer vertrauenswürdigen Quelle wird ebenfalls übernommen: Sitzungs-Cookies erhalten Secure, Ports mit Weiterleitung von Klartext-HTTP leiten nicht mehr weiter, und mit „X-Forwarded-* hinzufügen“ wird https an das Backend weitergegeben.
 
+### Echte Besucher-IP (hinter CDN / WAF) {#real-ip}
+
+Liegt eine Site hinter einem HTTP-Proxy wie Cloudflare, Alibaba Cloud CDN oder Tencent Cloud CDN, kommen die Verbindungen von den Origin-Pull-Adressen des Proxys. Tragen Sie unter **Globale Einstellungen → Echte Besucher-IP** die vertrauenswürdigen Proxys ein (Origin-Pull-IPs oder -Bereiche, mehrere Anbieter möglich) und wählen Sie die Real-IP-Header. Gately liest dann die Besucheradresse aus den Request-Headern und verwendet sie für Zugriffsprotokolle, IP-Allow-/Blocklisten, Nur-LAN-Zugriff, Länderfilter, Sperren nach Anmeldefehlern, Statistiken, Pfad-Probing sowie das an Backends gesendete `X-Real-IP` / `X-Forwarded-For`.
+
+- Header werden nur gelesen, wenn die ursprüngliche Gegenstelle ein vertrauenswürdiger Proxy ist. Das ist die Adresse nach der PROXY-Protokoll-Verarbeitung: bei Verbindungen von einer vertrauenswürdigen PROXY-Quelle die Adresse im PROXY-Header, sonst die TCP-Gegenstelle. Header von direkt verbundenen Clients werden immer ignoriert;
+- Header werden in der gewählten Reihenfolge geprüft, der erste mit gültiger Adresse gilt; ohne Auswahl wird `X-Forwarded-For` verwendet. Mehrwertige Header wie `X-Forwarded-For` werden von rechts nach links gelesen, vertrauenswürdige Proxys übersprungen und die erste nicht vertrauenswürdige Adresse verwendet – vom Client links eingefügte Fälschungen werden nie übernommen;
+- Wählen Sie nur Header, die Ihr Proxy überschreibt. Cloudflare überschreibt etwa `CF-Connecting-IP`, andere Proxys reichen einen gleichnamigen Client-Header oft unverändert durch; dort ist `X-Forwarded-For` sicherer;
+- `0.0.0.0/0` und `::/0` werden beim Speichern abgelehnt;
+- Übergibt das Protokoll-Routing Verbindungen per Loopback an die Webdienste, aktivieren Sie dort das Senden des PROXY-Headers und am Listener dessen Empfang, statt `127.0.0.1` als vertrauenswürdigen Proxy einzutragen; sonst könnten Besucher, die sich direkt mit dem Protokoll-Routing verbinden, die Header fälschen. Durchleitungsrouten des Protokoll-Routings bleiben reine TCP-Weiterleitung und sind nicht betroffen;
+- Anfragen eines vertrauenswürdigen Proxys mit `X-Forwarded-Proto: https` gelten als HTTPS;
+- Ohne vertrauenswürdige Proxys bleibt alles wie bisher. Sperren auf Verbindungsebene (Firewall-Regeln der Einbruchsabwehr) richten sich gegen die TCP-Quelle und wirken nicht auf Besucher hinter einem CDN; die eigenen Sperren der Webdienste gelten für die echte Adresse.
+
 ## Authentifizierung
 
 Konfigurieren Sie sie auf der Seite „Sicherheit“ des Site-Editors:

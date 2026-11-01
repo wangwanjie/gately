@@ -106,6 +106,18 @@ Pour les sites « Texte fixe », le `Content-Type` se choisit parmi les types co
 - WebSocket : pris en charge automatiquement par le proxy inverse ;
 - Protocole PROXY : un écouteur peut accepter les en-têtes PROXY envoyés par des composants en amont (comme haproxy et frp). Il ne fait confiance qu'aux IP ou sous-réseaux listés dans « Paramètres globaux → Sources PROXY de confiance » ; une liste vide ne fait confiance à aucune source. Le proxy inverse peut envoyer des en-têtes PROXY au backend. `X-Forwarded-Proto: https` sur les connexions d'une source de confiance est aussi pris en compte : les cookies de session reçoivent Secure, les ports qui redirigent le HTTP en clair ne redirigent plus et, avec « Ajouter X-Forwarded-* », https est transmis au backend.
 
+### IP réelle du visiteur (derrière un CDN / WAF) {#real-ip}
+
+Lorsqu'un site est derrière un proxy HTTP comme Cloudflare, Alibaba Cloud CDN ou Tencent Cloud CDN, les connexions proviennent des adresses de retour à l'origine du proxy. Renseignez les proxys de confiance (IP ou plages de retour à l'origine du proxy, plusieurs fournisseurs possibles) dans **Paramètres globaux → IP réelle du visiteur** et choisissez les en-têtes d'IP réelle. Gately lit alors l'adresse du visiteur dans les en-têtes et l'utilise pour les journaux d'accès, les listes d'IP autorisées/bloquées, l'accès LAN uniquement, le filtrage par pays, les bannissements après échecs d'authentification, les statistiques, la détection de sondes et les `X-Real-IP` / `X-Forwarded-For` envoyés aux backends.
+
+- Les en-têtes ne sont lus que si le pair d'origine est un proxy de confiance. Le pair d'origine est l'adresse après traitement du protocole PROXY : celle de l'en-tête PROXY pour une connexion venant d'une source PROXY approuvée, sinon le pair TCP. Les en-têtes envoyés par un client connecté directement sont toujours ignorés ;
+- Les en-têtes sont vérifiés dans l'ordre choisi et le premier qui donne une adresse valide l'emporte ; sans choix, `X-Forwarded-For` est utilisé. Les en-têtes à plusieurs valeurs comme `X-Forwarded-For` sont lus de droite à gauche en ignorant les proxys de confiance, et la première adresse non approuvée est retenue : les valeurs usurpées à gauche par le client ne sont jamais prises ;
+- Ne choisissez que des en-têtes que votre proxy écrase. Cloudflare écrase `CF-Connecting-IP`, par exemple, alors que d'autres proxys transmettent souvent tel quel un en-tête du même nom fourni par le client ; `X-Forwarded-For` est alors plus sûr ;
+- `0.0.0.0/0` et `::/0` sont refusés à l'enregistrement ;
+- Si le Routage par protocole transmet les connexions aux Services Web via la boucle locale, activez l'envoi de l'en-tête PROXY dans le Routage par protocole et sa réception sur l'écouteur au lieu d'ajouter `127.0.0.1` aux proxys de confiance ; sinon, un visiteur se connectant directement au Routage par protocole pourrait usurper les en-têtes. Les routes de transfert direct du Routage par protocole restent un simple relais TCP et ne sont pas affectées ;
+- Les requêtes d'un proxy de confiance portant `X-Forwarded-Proto: https` sont traitées comme HTTPS ;
+- Sans proxy de confiance, le comportement est inchangé. Les bannissements au niveau connexion (règles de pare-feu écrites par la Prévention des intrusions) visent la source TCP et sont sans effet sur les visiteurs derrière un CDN ; les bannissements propres aux Services Web s'appliquent à l'adresse réelle.
+
 ## Authentification
 
 À configurer dans la page « Sécurité » de l'éditeur de site :

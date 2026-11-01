@@ -2297,6 +2297,18 @@
           "oidc": {
             "$ref": "#/components/schemas/webservice.OIDCSettings"
           },
+          "realIPFrom": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "realIPHeaders": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "selfServicePassword": {
             "type": "boolean"
           },

@@ -1674,6 +1674,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `oauthCallbackBase` | string |
 | `oauthProviders` | 数组 of `thirdauth.Provider` |
 | `oidc` | `webservice.OIDCSettings` |
+| `realIPFrom` | 数组 of string |
+| `realIPHeaders` | 数组 of string |
 | `selfServicePassword` | boolean |
 | `ssoDomain` | string |
 | `trustedProxies` | 数组 of string |

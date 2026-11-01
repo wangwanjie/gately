@@ -1674,6 +1674,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `oauthCallbackBase` | string |
 | `oauthProviders` | Array of `thirdauth.Provider` |
 | `oidc` | `webservice.OIDCSettings` |
+| `realIPFrom` | Array of string |
+| `realIPHeaders` | Array of string |
 | `selfServicePassword` | boolean |
 | `ssoDomain` | string |
 | `trustedProxies` | Array of string |

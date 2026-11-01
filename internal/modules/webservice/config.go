@@ -188,6 +188,11 @@ type Settings struct {
 	Enable bool `json:"enable"`
 	// TrustedProxies 为可信的 PROXY 协议来源（IP 或 CIDR）
 	TrustedProxies []string `json:"trustedProxies"`
+	// RealIPFrom 为可信代理（IP 或 CIDR，如 CDN / WAF 回源地址段）。原始对端（PROXY 协议处理后的地址）在其中时，
+	// 按 RealIPHeaders 从请求头取得访客真实地址；为空表示不启用，一律以原始对端为客户端地址
+	RealIPFrom []string `json:"realIPFrom"`
+	// RealIPHeaders 为携带真实地址的请求头，按顺序查找，例如 CF-Connecting-IP、X-Forwarded-For、X-Real-IP
+	RealIPHeaders []string `json:"realIPHeaders"`
 	// AuthSecret 用于签名网页认证 Cookie，首次启动自动生成
 	AuthSecret string `json:"authSecret"`
 	// OAuthProviders 为自建的第三方登录配置

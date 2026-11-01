@@ -51,6 +51,8 @@ type listenerRunner struct {
 	table   atomic.Pointer[siteTable]
 	startAt time.Time
 	err     string
+	// realIP 为模块共享的可信代理真实 IP 设置，可为 nil（不启用）
+	realIP *realIPSource
 }
 
 // siteTable 是一个监听器在某一时刻的全部站点。
@@ -108,6 +110,8 @@ func (l *listenerRunner) route(host string) *siteHandler {
 }
 
 func (l *listenerRunner) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// 先确定访客真实地址（对端为可信代理时采信其请求头），后续所有处理都使用改写后的客户端地址
+	r = l.realIP.apply(r)
 	// 通过 TCP 访问时告知浏览器可改用 HTTP/3；HTTP/3 请求本身无需再通告
 	if l.altSvc != "" && r.ProtoMajor < 3 && r.TLS != nil {
 		w.Header().Set("Alt-Svc", l.altSvc)

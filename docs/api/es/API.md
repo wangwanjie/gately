@@ -1674,6 +1674,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `oauthCallbackBase` | string |
 | `oauthProviders` | Lista de `thirdauth.Provider` |
 | `oidc` | `webservice.OIDCSettings` |
+| `realIPFrom` | Lista de string |
+| `realIPHeaders` | Lista de string |
 | `selfServicePassword` | boolean |
 | `ssoDomain` | string |
 | `trustedProxies` | Lista de string |

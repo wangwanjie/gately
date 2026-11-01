@@ -1674,6 +1674,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `oauthCallbackBase` | string |
 | `oauthProviders` | Tableau de `thirdauth.Provider` |
 | `oidc` | `webservice.OIDCSettings` |
+| `realIPFrom` | Tableau de string |
+| `realIPHeaders` | Tableau de string |
 | `selfServicePassword` | boolean |
 | `ssoDomain` | string |
 | `trustedProxies` | Tableau de string |

@@ -1674,6 +1674,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `oauthCallbackBase` | string |
 | `oauthProviders` | Array von `thirdauth.Provider` |
 | `oidc` | `webservice.OIDCSettings` |
+| `realIPFrom` | Array von string |
+| `realIPHeaders` | Array von string |
 | `selfServicePassword` | boolean |
 | `ssoDomain` | string |
 | `trustedProxies` | Array von string |

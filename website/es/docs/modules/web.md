@@ -106,6 +106,18 @@ En los sitios de «Texto fijo», el `Content-Type` se elige entre los tipos habi
 - WebSocket: el proxy inverso lo admite automáticamente;
 - Protocolo PROXY: un listener puede aceptar cabeceras PROXY enviadas por componentes situados antes (como haproxy y frp). Solo confía en las IP o subredes indicadas en «Ajustes globales → Orígenes PROXY de confianza»; si se deja vacío, no confía en ningún origen. El proxy inverso puede enviar cabeceras PROXY al backend. También se acepta `X-Forwarded-Proto: https` en las conexiones de un origen de confianza: las cookies de sesión llevan Secure, los puertos que redirigen HTTP en claro dejan de redirigir y, con «Añadir X-Forwarded-*» activado, se pasa https al backend.
 
+### IP real del visitante (detrás de una CDN / WAF) {#real-ip}
+
+Cuando un sitio está detrás de un proxy HTTP como Cloudflare, Alibaba Cloud CDN o Tencent Cloud CDN, las conexiones llegan desde las direcciones de origen del proxy. Indica los proxies de confianza (las IP o rangos de origen del proxy; se admiten varios proveedores) en **Configuración global → IP real del visitante** y elige los encabezados de IP real. Gately toma entonces la dirección del visitante de los encabezados y la usa en los registros de acceso, listas de IP permitidas/bloqueadas, acceso solo LAN, filtro por país, bloqueos por fallos de autenticación, estadísticas, sondeo de rutas y en los `X-Real-IP` / `X-Forwarded-For` enviados a los backends.
+
+- Los encabezados solo se leen cuando el par original es un proxy de confianza. El par original es la dirección tras procesar el protocolo PROXY: la del encabezado PROXY en conexiones desde un origen PROXY de confianza y, si no, el par TCP. Los encabezados de clientes que se conectan directamente siempre se ignoran;
+- Los encabezados se revisan en el orden elegido y gana el primero que da una dirección válida; sin elección se usa `X-Forwarded-For`. Los encabezados de varios valores como `X-Forwarded-For` se leen de derecha a izquierda saltando los proxies de confianza y se usa la primera dirección no confiable, así que nunca se toman valores falsificados a la izquierda por el cliente;
+- Elige solo encabezados que tu proxy sobrescribe. Cloudflare sobrescribe `CF-Connecting-IP`, por ejemplo, mientras que otros proxies suelen reenviar tal cual un encabezado del mismo nombre enviado por el cliente; ahí `X-Forwarded-For` es más seguro;
+- `0.0.0.0/0` y `::/0` se rechazan al guardar;
+- Si el Enrutamiento por protocolo entrega conexiones a los Servicios web por loopback, activa el envío del encabezado PROXY en el Enrutamiento por protocolo y su recepción en el listener en lugar de añadir `127.0.0.1` a los proxies de confianza; de lo contrario, quien se conecte directamente al Enrutamiento por protocolo podría falsificar los encabezados. Las rutas de paso del Enrutamiento por protocolo siguen siendo reenvío TCP puro y no se ven afectadas;
+- Las solicitudes de un proxy de confianza con `X-Forwarded-Proto: https` se tratan como HTTPS;
+- Sin proxies de confianza el comportamiento no cambia. Los bloqueos a nivel de conexión (reglas de cortafuegos de la Prevención de intrusiones) se aplican al origen TCP y no afectan a visitantes detrás de una CDN; los bloqueos propios de los Servicios web se aplican a la dirección real.
+
 ## Autenticación
 
 Se configura en la página «Seguridad» del editor del sitio:

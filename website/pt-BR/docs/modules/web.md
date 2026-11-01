@@ -106,6 +106,18 @@ Em sites de "Texto fixo", o `Content-Type` pode ser escolhido entre os tipos com
 - WebSocket: compatível automaticamente com o proxy reverso;
 - Protocolo PROXY: um listener pode aceitar cabeçalhos PROXY enviados por componentes upstream (como haproxy e frp). Ele confia apenas nos IPs ou sub-redes listados em "Configurações globais → Origens PROXY confiáveis"; deixar vazio não confia em nenhuma origem. O proxy reverso pode enviar cabeçalhos PROXY ao backend. `X-Forwarded-Proto: https` em conexões de uma origem confiável também é aceito: os cookies de sessão recebem Secure, portas que redirecionam HTTP em texto puro deixam de redirecionar e, com "Adicionar X-Forwarded-*" ativado, https é repassado ao backend.
 
+### IP real do visitante (atrás de CDN / WAF) {#real-ip}
+
+Quando um site fica atrás de um proxy HTTP como Cloudflare, Alibaba Cloud CDN ou Tencent Cloud CDN, as conexões chegam dos endereços de origem do proxy. Informe os proxies confiáveis (IPs ou faixas de origem do proxy, vários provedores permitidos) em **Configurações globais → IP real do visitante** e escolha os cabeçalhos de IP real. O Gately passa a obter o endereço do visitante dos cabeçalhos e a usá-lo nos logs de acesso, listas de IP permitidos/bloqueados, acesso só pela LAN, filtro por país, bloqueios por falha de autenticação, estatísticas, detecção de sondagem de caminhos e nos `X-Real-IP` / `X-Forwarded-For` enviados aos backends.
+
+- Os cabeçalhos só são lidos quando o par original é um proxy confiável. O par original é o endereço após o processamento do protocolo PROXY: o do cabeçalho PROXY em conexões de uma origem PROXY confiável, caso contrário o par TCP. Cabeçalhos de clientes que se conectam diretamente são sempre ignorados;
+- Os cabeçalhos são verificados na ordem escolhida e vale o primeiro que fornecer um endereço válido; sem escolha, usa-se `X-Forwarded-For`. Cabeçalhos com vários valores, como `X-Forwarded-For`, são lidos da direita para a esquerda pulando proxies confiáveis, e o primeiro endereço não confiável é usado, então valores forjados à esquerda pelo cliente nunca são aceitos;
+- Escolha só cabeçalhos que seu proxy sobrescreve. A Cloudflare sobrescreve `CF-Connecting-IP`, por exemplo, enquanto outros proxies costumam repassar sem alteração um cabeçalho de mesmo nome enviado pelo cliente; nesse caso `X-Forwarded-For` é mais seguro;
+- `0.0.0.0/0` e `::/0` são rejeitados ao salvar;
+- Se o Roteamento por protocolo entregar conexões aos Serviços Web via loopback, ative nele o envio do cabeçalho PROXY e, no listener, o recebimento, em vez de adicionar `127.0.0.1` aos proxies confiáveis; caso contrário, quem se conectar direto ao Roteamento por protocolo poderá forjar os cabeçalhos. As rotas de repasse do Roteamento por protocolo continuam sendo encaminhamento TCP puro e não são afetadas;
+- Requisições de um proxy confiável com `X-Forwarded-Proto: https` são tratadas como HTTPS;
+- Sem proxies confiáveis o comportamento não muda. Bloqueios em nível de conexão (regras de firewall escritas pela Prevenção de intrusões) valem para a origem TCP e não afetam visitantes atrás de uma CDN; os bloqueios próprios dos Serviços Web valem para o endereço real.
+
 ## Autenticação
 
 Configure na página "Segurança" do editor do site:

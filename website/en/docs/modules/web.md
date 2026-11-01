@@ -106,6 +106,18 @@ For "Fixed text" sites, `Content-Type` can be picked from common types or typed 
 - WebSocket: supported automatically by reverse proxy;
 - PROXY protocol: a listener can accept PROXY headers sent by upstream components (such as haproxy and frp). It trusts only the IPs or subnets listed in "Global settings → Trusted PROXY sources"; leaving it empty trusts no source. Reverse proxy can send PROXY headers to the backend. `X-Forwarded-Proto: https` on connections from a trusted source is honored too: session cookies get Secure, ports that redirect plain HTTP no longer redirect, and with "Add X-Forwarded-*" on, https is passed on to the backend.
 
+### Visitor real IP (behind a CDN / WAF) {#real-ip}
+
+When a site sits behind an HTTP proxy such as Cloudflare, Alibaba Cloud CDN or Tencent Cloud CDN, connections come from the proxy's origin-pull addresses. Fill in the trusted proxies (the proxy's origin-pull IPs or ranges, several providers allowed) under **Global settings → Visitor real IP** and choose the real IP headers. Gately then takes the visitor address from the request headers and uses it for access logs, IP allow/block lists, LAN-only access, country filtering, auth failure bans, statistics, path probing, and the `X-Real-IP` / `X-Forwarded-For` sent to backends.
+
+- Headers are read only when the original peer is a trusted proxy. The original peer is the address after PROXY protocol handling: the address in the PROXY header for connections from a trusted PROXY source, otherwise the TCP peer. Headers sent by clients connecting directly are always ignored;
+- Headers are checked in the chosen order and the first one that yields a valid address wins; `X-Forwarded-For` is used when none is chosen. Multi-value headers such as `X-Forwarded-For` are read right to left, skipping trusted proxies, and the first untrusted address is used, so values forged on the left by the client are never taken;
+- Pick only headers your proxy overwrites. Cloudflare overwrites `CF-Connecting-IP`, for example, while other proxies usually pass through a client-supplied header of the same name; `X-Forwarded-For` is the safer choice there;
+- `0.0.0.0/0` and `::/0` are rejected on save;
+- When Protocol Routing hands connections to Web Services over loopback, enable sending the PROXY header in Protocol Routing and accepting it on the listener instead of adding `127.0.0.1` to the trusted proxies; otherwise visitors connecting straight to Protocol Routing could forge the headers. Passthrough routes in Protocol Routing remain plain TCP forwarding and are not affected;
+- Requests from a trusted proxy carrying `X-Forwarded-Proto: https` are treated as HTTPS;
+- With no trusted proxies the behavior is unchanged. Connection-level bans (firewall rules written by Intrusion Prevention) match the TCP source and have no effect on visitors behind a CDN; Web Services' own bans apply to the real address.
+
 ## Authentication
 
 Configure it on the "Security" page of the site editor:
