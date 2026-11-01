@@ -41,7 +41,11 @@ scrape_configs:
 | `gately_site_requests_total{listener,site}` | counter | 站台累計請求數 |
 | `gately_site_responses_total{listener,site,class}` | counter | 依狀態類別（2xx/3xx/4xx/5xx）統計的回應數 |
 | `gately_site_response_bytes_total` / `gately_site_errors_total` / `gately_site_active_requests` | counter / counter / gauge | 站台回應位元組數、後端錯誤數、進行中的請求數 |
-| `gately_upstream_up{listener,site,upstream}` | gauge | 後端是否健康 |
+| `gately_site_blocked_total{listener,site,reason}` | counter | 依原因（`ban`、`ip`、`country`、`rateLimit`、`waf`）統計的攔截次數 |
+| `gately_upstream_up{listener,site,upstream}` | gauge | 後端是否健康；依路徑分流與依使用者分流的後端另帶 `route` 標籤（路徑前綴或 `@使用者列表`） |
+| `gately_upstream_requests_total{listener,site,upstream}` | counter | 轉發到後端的累計請求數 |
+| `gately_upstream_response_bytes_total{listener,site,upstream}` | counter | 後端回傳的累計回應主體位元組數（不含 WebSocket 升級後的資料） |
+| `gately_listener_requests_total{listener,action}` | counter | 監聽層直接處理的請求：`https_redirect` 為明文請求跳轉 HTTPS，`not_found` 為未匹配站台的 404 |
 
 ## 告警範例
 

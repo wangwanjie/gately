@@ -407,7 +407,8 @@ Para um listener em execução, clique em "Estatísticas" na linha de um site pa
 - Estatísticas de acesso por minuto: um ponto por minuto, mantidos pelas últimas 24 horas, incluindo uma curva de contagem de requisições e curvas de erros 4xx / 5xx;
 - Distribuição de códigos de status (2xx / 3xx / 4xx / 5xx) e tráfego acumulado de respostas;
 - Top 10 de IPs de origem e top 10 de países (as estatísticas de países exigem um banco de dados GeoIP importado);
-- Sites de proxy reverso mostram o estado de saúde, o peso, a marca de backup e o número atual de conexões de cada backend.
+- Sites de proxy reverso mostram o estado de saúde, o peso, a marca de backup, o número atual de conexões e o número de requisições encaminhadas de cada backend, incluindo os backends por caminho e por usuário (marcados com o caminho ou os usuários);
+- Quando houve requisições bloqueadas, os totais por motivo: banidos, lista de IPs, filtro de país, limite de taxa e WAF (falhas de login não contam).
 
 As estatísticas ficam em memória e voltam a contar do zero depois de uma reinicialização ou de uma alteração nas configurações do próprio listener. Editar um site mantém os contadores dele. Os rankings acompanham no máximo 5000 origens distintas.
 
@@ -423,6 +424,20 @@ A lista conta requisições em andamento: uma conexão HTTP/1.1 persistente não
 **Encerrar** em uma linha termina a requisição assim que você confirma: no HTTP/1.x a conexão inteira é fechada; no HTTP/2 e HTTP/3 só essa requisição é reiniciada e as demais da mesma conexão continuam; um WebSocket após o upgrade é fechado junto com a conexão ao backend. Também vale na hora quando o visitante para de ler e o envio fica bloqueado. A requisição encerrada fica registrada como 444 no log de acesso (ou mantém o código se a resposta já tinha começado) e não conta como erro do backend nem para a detecção de varredura de caminhos. O visitante pode se reconectar na hora; para impedir, use **Encerrar e bloquear**, que adiciona o endereço de origem (a faixa /64 no IPv6) à [lista de banimentos](#lista-de-banimentos) e encerra suas requisições em andamento em todos os listeners e sites. Não é possível banir o endereço de loopback (todas as requisições que chegam pelo frp ou por um redirecionamento local sem protocolo PROXY aparecem com ele) nem endereços dentro dos proxies confiáveis (no IPv6, verificado por /64), pois o banimento bloquearia muitos visitantes sem relação; encerrar sem banir não tem essa restrição.
 
 Contas e tokens somente leitura podem ver a lista; encerrar e bloquear exigem permissão de escrita e ficam registrados no log de auditoria.
+
+### Visão de topologia {#topology}
+
+Alterne entre **Lista** e **Topologia** no cabeçalho da página para abrir a visão de topologia; a escolha fica salva. Ela mostra cinco colunas, Internet → Gately → listeners → sites / ações do listener → backends / destinos, atualiza a cada 2 segundos e pausa enquanto a página está em segundo plano:
+
+- **Nós**: listeners mostram o endereço e o estado de execução, em vermelho quando falharam ao iniciar; sites mostram como correspondem (exato, curinga, qualquer domínio, site padrão), o QPS e as requisições em andamento; sites de proxy reverso se abrem em todos os seus backends, incluindo os backends por caminho e por usuário (marcados com o caminho ou os usuários), com backends indisponíveis em vermelho; sites de redirecionamento, arquivos estáticos, texto fixo e fechar conexão levam cada um a um nó de destino. Um site padrão que fecha conexões, requisições HTTP sem criptografia redirecionadas em uma porta HTTPS (301 / 308) e o 404 retornado quando nenhum site corresponde e nenhum site padrão está ativado são comportamento esperado e aparecem em cinza. Listeners e sites desativados também aparecem, mostrados como parados.
+- **Ligações**: a espessura cresce com o QPS, e ligações com tráfego mostram uma animação de fluxo. Com mais de 120 ligações só o caminho destacado é animado, e nada é animado quando o sistema pede movimento reduzido.
+- **Destaque**: passar o mouse sobre um nó ou clicar nele destaca todo o seu caminho, subindo até a Internet e descendo até os backends, mostra QPS e tráfego nas ligações desse caminho e esmaece o restante; clique em uma área vazia para redefinir.
+- **Painel de detalhes**: para o nó selecionado, o QPS (média dos últimos 10 segundos), a média de 60 segundos, o tráfego de download, as requisições em andamento, o total de requisições, os erros de backend, as requisições bloqueadas por motivo, a distribuição de códigos de status, as curvas por segundo de requisições e tráfego dos últimos 60 segundos e os IPs ativos que passaram por ele. O ⓘ ao lado de cada métrica explica como ela é medida. Para um site, o painel também abre as janelas de estatísticas, conexões e edição.
+- **IPs ativos**: endereços de visitantes com requisições nos últimos 60 segundos, mais os que ainda têm requisições em andamento. A tela mostra só contagens; os endereços completos ficam listados no painel de detalhes. Digite ou escolha um endereço no topo (ou clique em um no painel) para destacar só o caminho que ele percorreu, até o backend exato; **Limpar filtro** redefine. Cada site, backend e ação do listener guarda até 1024 endereços recentes e a API retorna no máximo 500, então com origens demais o painel avisa que a lista está incompleta. Com [proxies confiáveis](#real-ip) configurados, estes são os endereços reais dos visitantes.
+- **Ocultar**: mostra o final dos IPs (os últimos 64 bits no IPv6) e os endereços IP nos endereços de backends e listeners como `*`, para compartilhar capturas de tela; só muda a exibição.
+- A caixa de busca no cabeçalho da página também filtra os sites na topologia (nome, domínio, grupo, endereço de backend); os listeners podem ser recolhidos um a um ou todos de uma vez.
+
+Todos os números vêm dos contadores em memória desta instância: zeram ao reiniciar, editar um site mantém os contadores dele, alterar configurações do listener como a porta zera os contadores desse listener, e outras instâncias do Gately não são agregadas. A visão lê `GET /api/webservice/topology`, que contas e tokens somente leitura podem acessar.
 
 ### Métricas Prometheus
 
@@ -441,9 +456,13 @@ curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/webservice/m
 | `gately_site_active_requests` | gauge | Requisições em andamento |
 | `gately_site_response_bytes_total` | counter | Bytes de resposta acumulados |
 | `gately_site_responses_total` | counter | Respostas contadas por classe de status (label `class`: `2xx` a `5xx`) |
+| `gately_site_blocked_total` | counter | Requisições bloqueadas por motivo (label `reason`: `ban` banidos, `ip` lista de IPs, `country` filtro de país, `rateLimit` limite de taxa, `waf`) |
 | `gately_upstream_up` | gauge | Se um backend está saudável: 1 saudável, 0 indisponível (com a label `upstream`) |
+| `gately_upstream_requests_total` | counter | Requisições encaminhadas a um backend (com a label `upstream`) |
+| `gately_upstream_response_bytes_total` | counter | Bytes do corpo de resposta devolvidos por um backend, sem os dados após upgrade para WebSocket (com a label `upstream`) |
+| `gately_listener_requests_total` | counter | Requisições que o listener atende sozinho, sem site, label `action`: `https_redirect` (HTTP sem criptografia redirecionado em uma porta HTTPS) ou `not_found` (404 quando nenhum site corresponde); tem só a label `listener` |
 
-Todas as métricas têm as labels `listener` (nome do listener#chave do listener) e `site` (nome do site, ou o primeiro domínio quando não há nome).
+Exceto `gately_listener_requests_total`, as métricas têm as labels `listener` (nome do listener#chave do listener) e `site` (nome do site, ou o primeiro domínio quando não há nome). Backends por caminho e por usuário também têm a label `route` em `gately_upstream_*`: o prefixo do caminho, ou `@` seguido da lista de usuários.
 
 ## Importar configuração do nginx {#import-nginx}
 

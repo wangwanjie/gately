@@ -407,7 +407,8 @@ For a running listener, click "Stats" on a site row to open the statistics windo
 - Minute-level access statistics: one point per minute, kept for the last 24 hours, including a request count curve and 4xx / 5xx error curves;
 - Status code distribution (2xx / 3xx / 4xx / 5xx) and cumulative response traffic;
 - Top 10 source IPs and top 10 countries (country statistics need an imported GeoIP database);
-- Reverse proxy sites show the health status, weight, backup flag and current connection count of each backend.
+- Reverse proxy sites show the health status, weight, backup flag, current connection count and forwarded request count of each backend, including path-based and per-user backends (marked with their path or users);
+- When requests were blocked, the totals by reason: banned, IP list, country filter, rate limit and WAF (failed sign-ins are not counted).
 
 Statistics are kept in memory and start counting again after a restart or after the listener's own settings change. Editing a site keeps its counters. The rankings track at most 5000 distinct sources.
 
@@ -423,6 +424,20 @@ The list counts requests in progress: an HTTP/1.1 keep-alive connection belongs 
 **Close** on a row ends that request right after you confirm: HTTP/1.x closes the whole connection, HTTP/2 and HTTP/3 reset only that request and other requests on the same connection continue, and an upgraded WebSocket is closed together with its backend connection. It also takes effect at once when the visitor stops reading and sending is blocked. A closed request is logged as 444 in the access log (or keeps its status code if the response had started) and does not count as a backend error or toward path probing. The visitor can reconnect right away; to keep them out use **Close and ban**, which adds the source address (its /64 range for IPv6) to the [ban list](#ban-list) and closes its requests in progress on every listener and site. Loopback addresses (requests coming in through frp or a local forward without PROXY protocol all show the loopback address) and addresses within the trusted proxies (IPv6 checked by /64) cannot be banned, since banning them would block a large number of unrelated visitors; closing without banning has no such limit.
 
 Read-only accounts and read-only tokens can view the list; closing and banning need write permission and are recorded in the audit log.
+
+### Topology view {#topology}
+
+Switch between **List** and **Topology** in the page header to open the topology view; the choice is remembered. It lays out five columns, Internet → Gately → listeners → sites / listener actions → backends / outcomes, refreshes every 2 seconds and pauses while the page is in the background:
+
+- **Nodes**: listeners show their address and running state, in red when they failed to start; sites show how they match (exact, wildcard, any domain, default site), QPS and requests in progress; reverse proxy sites expand into all their backends, including path-based and per-user backends (marked with their path or users), with unavailable backends in red; redirect, static file, fixed text and close-connection sites each lead to one outcome node. A default site that closes connections, plain HTTP requests redirected on an HTTPS port (301 / 308) and the 404 returned when no site matches and no default site is enabled are expected behavior and shown in gray. Disabled listeners and sites are listed too, shown as not running.
+- **Links**: width grows with QPS, and links carrying traffic show a flowing animation. With more than 120 links only the highlighted path is animated, and nothing is animated when the system asks for reduced motion.
+- **Highlighting**: hovering or clicking a node highlights its whole path, up to the Internet and down to the backends, labels the links on it with QPS and traffic and dims everything else; click an empty spot to reset.
+- **Details panel**: for the selected node, QPS (average over the last 10 seconds), the 60-second average, download traffic, requests in progress, total requests, backend errors, blocked requests by reason, the status code distribution, per-second request and traffic curves for the last 60 seconds, and the active IPs that passed through it. The ⓘ next to each metric explains how it is measured. For a site the panel also opens its statistics, connections and edit windows.
+- **Active IPs**: visitor addresses with requests in the last 60 seconds, plus addresses that still have requests in progress. The canvas shows only counts; the full addresses are listed in the details panel. Type or pick an address at the top (or click one in the panel) to highlight only the path it took, down to the exact backend; **Clear filter** resets it. Each site, backend and listener action remembers up to 1024 recent addresses and the API returns at most 500, so with too many sources the panel notes that the list is incomplete. With [trusted proxies](#real-ip) configured these are the real visitor addresses.
+- **Mask**: shows the last part of IPs (the last 64 bits for IPv6) and IP addresses in backend and listener addresses as `*`, for sharing screenshots; it only changes the display.
+- The search box in the page header filters sites in the topology as well (name, domain, group, backend address); listeners can be folded one by one or all at once.
+
+All numbers come from this instance's in-memory counters: they reset on restart, editing a site keeps its counters, changing listener settings such as the port restarts that listener's counters, and other Gately instances are not aggregated. The view reads `GET /api/webservice/topology`, which read-only accounts and read-only tokens can access.
 
 ### Prometheus metrics
 
@@ -441,9 +456,13 @@ curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/webservice/m
 | `gately_site_active_requests` | gauge | Requests in progress |
 | `gately_site_response_bytes_total` | counter | Cumulative response bytes |
 | `gately_site_responses_total` | counter | Responses counted by status class (label `class`: `2xx` to `5xx`) |
+| `gately_site_blocked_total` | counter | Blocked requests by reason (label `reason`: `ban` banned, `ip` IP list, `country` country filter, `rateLimit` rate limit, `waf`) |
 | `gately_upstream_up` | gauge | Whether a backend is healthy: 1 healthy, 0 unavailable (with label `upstream`) |
+| `gately_upstream_requests_total` | counter | Requests forwarded to a backend (with label `upstream`) |
+| `gately_upstream_response_bytes_total` | counter | Response body bytes returned by a backend, excluding data after a WebSocket upgrade (with label `upstream`) |
+| `gately_listener_requests_total` | counter | Requests the listener handles itself without a site, label `action`: `https_redirect` (plain HTTP redirected on an HTTPS port) or `not_found` (404 when no site matches); carries only the `listener` label |
 
-All metrics carry the labels `listener` (listener name#listener key) and `site` (site name, or the first domain when unnamed).
+Except for `gately_listener_requests_total`, metrics carry the labels `listener` (listener name#listener key) and `site` (site name, or the first domain when unnamed). Path-based and per-user backends also carry a `route` label on `gately_upstream_*`: the path prefix, or `@` followed by the user list.
 
 ## Import nginx config {#import-nginx}
 

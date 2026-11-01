@@ -41,7 +41,11 @@ scrape_configs:
 | `gately_site_requests_total{listener,site}` | counter | Requêtes par site |
 | `gately_site_responses_total{listener,site,class}` | counter | Réponses par classe de statut (2xx/3xx/4xx/5xx) |
 | `gately_site_response_bytes_total` / `gately_site_errors_total` / `gately_site_active_requests` | counter / counter / gauge | Octets de réponse, erreurs de backend, requêtes en cours |
-| `gately_upstream_up{listener,site,upstream}` | gauge | Indique si le serveur amont est en bonne santé |
+| `gately_site_blocked_total{listener,site,reason}` | counter | Requêtes bloquées par motif (`ban`, `ip`, `country`, `rateLimit`, `waf`) |
+| `gately_upstream_up{listener,site,upstream}` | gauge | Indique si le serveur amont est en bonne santé ; les backends par chemin et par utilisateur portent en plus une étiquette `route` (préfixe de chemin, ou `@` suivi de la liste des utilisateurs) |
+| `gately_upstream_requests_total{listener,site,upstream}` | counter | Requêtes transmises au serveur amont |
+| `gately_upstream_response_bytes_total{listener,site,upstream}` | counter | Octets du corps de réponse renvoyés par le serveur amont (hors données après passage en WebSocket) |
+| `gately_listener_requests_total{listener,action}` | counter | Requêtes traitées par l'écouteur lui-même : `https_redirect` pour le HTTP en clair redirigé vers HTTPS, `not_found` pour le 404 lorsqu'aucun site ne correspond |
 
 ## Exemples d'alertes
 

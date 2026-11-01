@@ -407,7 +407,8 @@ Pour un écouteur en cours d'exécution, cliquez sur « Statistiques » sur la l
 - Statistiques d'accès à la minute : un point par minute, conservées sur les dernières 24 heures, avec une courbe du nombre de requêtes et des courbes d'erreurs 4xx / 5xx ;
 - Répartition des codes de statut (2xx / 3xx / 4xx / 5xx) et trafic cumulé des réponses ;
 - Top 10 des IP sources et top 10 des pays (les statistiques par pays nécessitent une base GeoIP importée) ;
-- Les sites en proxy inverse affichent l'état de santé, le poids, l'indicateur de secours et le nombre de connexions actuelles de chaque backend.
+- Les sites en proxy inverse affichent l'état de santé, le poids, l'indicateur de secours, le nombre de connexions actuelles et le nombre de requêtes transmises de chaque backend, y compris les backends par chemin et par utilisateur (marqués de leur chemin ou de leurs utilisateurs) ;
+- Si des requêtes ont été bloquées, les totaux par motif : bannissement, liste d'IP, filtre pays, limitation de débit et WAF (les échecs de connexion ne sont pas comptés).
 
 Les statistiques sont conservées en mémoire et repartent de zéro après un redémarrage ou après la modification des paramètres de l'écouteur lui-même. Modifier un site conserve ses compteurs. Les classements suivent au plus 5000 sources distinctes.
 
@@ -423,6 +424,20 @@ La liste compte les requêtes en cours : une connexion HTTP/1.1 persistante n’
 **Fermer** sur une ligne termine cette requête dès confirmation : en HTTP/1.x toute la connexion est fermée ; en HTTP/2 et HTTP/3 seule cette requête est réinitialisée et les autres requêtes de la même connexion continuent ; un WebSocket mis à niveau est fermé avec sa connexion au backend. Cela prend aussi effet immédiatement quand le visiteur ne lit plus et que l’envoi est bloqué. Une requête fermée est journalisée en 444 (ou garde son code si la réponse avait commencé) et ne compte ni comme erreur du backend ni pour la détection de chemins. Le visiteur peut se reconnecter aussitôt ; pour l’en empêcher, utilisez **Fermer et bannir**, qui ajoute l’adresse source (sa plage /64 en IPv6) à la [liste de bannissement](#liste-de-bannissement) et ferme ses requêtes en cours sur tous les listeners et tous les sites. Les adresses de bouclage (les requêtes arrivées par frp ou par une redirection locale sans protocole PROXY apparaissent toutes avec elles) et les adresses comprises dans les proxys de confiance (par /64 en IPv6) ne peuvent pas être bannies, car les bannir bloquerait un grand nombre de visiteurs sans rapport ; fermer sans bannir n’a pas cette restriction.
 
 Les comptes et jetons en lecture seule peuvent consulter la liste ; fermer et bannir exigent l’accès en écriture et sont consignés dans le journal d’audit.
+
+### Vue topologie {#topology}
+
+Basculez entre **Liste** et **Topologie** dans l'en-tête de la page pour ouvrir la vue topologie ; le choix est mémorisé. Elle dispose cinq colonnes, Internet → Gately → écouteurs → sites / actions de l'écouteur → backends / issues, s'actualise toutes les 2 secondes et se met en pause lorsque la page est en arrière-plan :
+
+- **Nœuds** : les écouteurs affichent leur adresse et leur état d'exécution, en rouge s'ils n'ont pas pu démarrer ; les sites indiquent leur mode de correspondance (exact, joker, tout domaine, site par défaut), leurs QPS et leurs requêtes en cours ; les sites en proxy inverse se déploient en tous leurs backends, y compris les backends par chemin et par utilisateur (marqués de leur chemin ou de leurs utilisateurs), les backends indisponibles étant en rouge ; les sites de redirection, de fichiers statiques, de texte fixe et de fermeture de connexion mènent chacun à un nœud d'issue. Un site par défaut qui ferme les connexions, les requêtes HTTP en clair redirigées sur un port HTTPS (301 / 308) et le 404 renvoyé lorsqu'aucun site ne correspond et qu'aucun site par défaut n'est activé sont des comportements attendus et apparaissent en gris. Les écouteurs et sites désactivés sont aussi listés, affichés comme arrêtés.
+- **Liens** : l'épaisseur augmente avec les QPS, et les liens qui portent du trafic affichent une animation de flux. Au-delà de 120 liens, seul le chemin mis en évidence est animé, et rien n'est animé lorsque le système demande de réduire les animations.
+- **Mise en évidence** : survoler ou cliquer un nœud met en évidence tout son chemin, en remontant jusqu'à Internet et en descendant jusqu'aux backends, affiche les QPS et le trafic sur les liens de ce chemin et estompe le reste ; cliquez sur une zone vide pour réinitialiser.
+- **Panneau de détails** : pour le nœud sélectionné, les QPS (moyenne des 10 dernières secondes), la moyenne sur 60 secondes, le trafic descendant, les requêtes en cours, le total des requêtes, les erreurs de backend, les requêtes bloquées par motif, la répartition des codes de statut, les courbes par seconde des requêtes et du trafic sur les 60 dernières secondes, et les IP actives qui y sont passées. Le ⓘ à côté de chaque métrique explique comment elle est mesurée. Pour un site, le panneau ouvre aussi ses fenêtres de statistiques, de connexions et de modification.
+- **IP actives** : les adresses des visiteurs ayant envoyé des requêtes au cours des 60 dernières secondes, plus celles qui ont encore des requêtes en cours. Le canevas n'affiche que des nombres ; les adresses complètes sont listées dans le panneau de détails. Saisissez ou choisissez une adresse en haut (ou cliquez-en une dans le panneau) pour ne mettre en évidence que le chemin qu'elle a suivi, jusqu'au backend exact ; **Effacer le filtre** réinitialise. Chaque site, backend et action d'écouteur garde jusqu'à 1024 adresses récentes et l'API en renvoie au plus 500 ; avec trop de sources, le panneau signale que la liste est incomplète. Avec des [proxys de confiance](#real-ip) configurés, ce sont les adresses réelles des visiteurs.
+- **Masquer** : affiche la fin des IP (les 64 derniers bits en IPv6) et les adresses IP contenues dans les adresses de backend et d'écouteur sous forme de `*`, pour partager des captures ; seul l'affichage change.
+- Le champ de recherche de l'en-tête de la page filtre aussi les sites dans la topologie (nom, domaine, groupe, adresse de backend) ; les écouteurs se replient un par un ou tous à la fois.
+
+Tous les chiffres proviennent des compteurs en mémoire de cette instance : ils repartent de zéro au redémarrage, modifier un site conserve ses compteurs, modifier les paramètres d'un écouteur comme le port remet à zéro les compteurs de cet écouteur, et les autres instances de Gately ne sont pas agrégées. La vue lit `GET /api/webservice/topology`, accessible aux comptes et jetons en lecture seule.
 
 ### Métriques Prometheus
 
@@ -441,9 +456,13 @@ curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/webservice/m
 | `gately_site_active_requests` | gauge | Requêtes en cours |
 | `gately_site_response_bytes_total` | counter | Octets de réponse cumulés |
 | `gately_site_responses_total` | counter | Réponses comptées par classe de statut (étiquette `class` : `2xx` à `5xx`) |
+| `gately_site_blocked_total` | counter | Requêtes bloquées par motif (étiquette `reason` : `ban` bannissement, `ip` liste d'IP, `country` filtre pays, `rateLimit` limitation de débit, `waf`) |
 | `gately_upstream_up` | gauge | Indique si un backend est sain : 1 sain, 0 indisponible (avec l'étiquette `upstream`) |
+| `gately_upstream_requests_total` | counter | Requêtes transmises à un backend (avec l'étiquette `upstream`) |
+| `gately_upstream_response_bytes_total` | counter | Octets du corps de réponse renvoyés par un backend, hors données après passage en WebSocket (avec l'étiquette `upstream`) |
+| `gately_listener_requests_total` | counter | Requêtes traitées par l'écouteur lui-même sans site, étiquette `action` : `https_redirect` (HTTP en clair redirigé sur un port HTTPS) ou `not_found` (404 lorsqu'aucun site ne correspond) ; ne porte que l'étiquette `listener` |
 
-Toutes les métriques portent les étiquettes `listener` (nom de l'écouteur#clé de l'écouteur) et `site` (nom du site, ou premier domaine s'il n'a pas de nom).
+À l'exception de `gately_listener_requests_total`, les métriques portent les étiquettes `listener` (nom de l'écouteur#clé de l'écouteur) et `site` (nom du site, ou premier domaine s'il n'a pas de nom). Les backends par chemin et par utilisateur portent en plus une étiquette `route` sur `gately_upstream_*` : le préfixe de chemin, ou `@` suivi de la liste des utilisateurs.
 
 ## Importer une configuration nginx {#import-nginx}
 

@@ -41,7 +41,11 @@ scrape_configs:
 | `gately_site_requests_total{listener,site}` | counter | Запросы по сайтам |
 | `gately_site_responses_total{listener,site,class}` | counter | Ответы по классам статуса (2xx/3xx/4xx/5xx) |
 | `gately_site_response_bytes_total` / `gately_site_errors_total` / `gately_site_active_requests` | counter / counter / gauge | Байты ответов, ошибки бэкендов, выполняющиеся запросы |
-| `gately_upstream_up{listener,site,upstream}` | gauge | Работоспособен ли бэкенд |
+| `gately_site_blocked_total{listener,site,reason}` | counter | Заблокированные запросы по причинам (`ban`, `ip`, `country`, `rateLimit`, `waf`) |
+| `gately_upstream_up{listener,site,upstream}` | gauge | Работоспособен ли бэкенд; бэкенды по путям и по пользователям дополнительно имеют метку `route` (префикс пути или `@` со списком пользователей) |
+| `gately_upstream_requests_total{listener,site,upstream}` | counter | Запросы, переданные бэкенду |
+| `gately_upstream_response_bytes_total{listener,site,upstream}` | counter | Байты тела ответов бэкенда (без данных после перехода на WebSocket) |
+| `gately_listener_requests_total{listener,action}` | counter | Запросы, которые слушатель обрабатывает сам: `https_redirect` — перенаправление открытого HTTP на HTTPS, `not_found` — 404, когда ни один сайт не совпал |
 
 ## Примеры оповещений
 

@@ -41,7 +41,11 @@ scrape_configs:
 | `gately_site_requests_total{listener,site}` | counter | Requisições por site |
 | `gately_site_responses_total{listener,site,class}` | counter | Respostas por classe de status (2xx/3xx/4xx/5xx) |
 | `gately_site_response_bytes_total` / `gately_site_errors_total` / `gately_site_active_requests` | counter / counter / gauge | Bytes de resposta, erros de backend, requisições em andamento |
-| `gately_upstream_up{listener,site,upstream}` | gauge | Se o upstream está saudável |
+| `gately_site_blocked_total{listener,site,reason}` | counter | Requisições bloqueadas por motivo (`ban`, `ip`, `country`, `rateLimit`, `waf`) |
+| `gately_upstream_up{listener,site,upstream}` | gauge | Se o upstream está saudável; backends por caminho e por usuário também têm a label `route` (prefixo do caminho, ou `@` mais a lista de usuários) |
+| `gately_upstream_requests_total{listener,site,upstream}` | counter | Requisições encaminhadas ao upstream |
+| `gately_upstream_response_bytes_total{listener,site,upstream}` | counter | Bytes do corpo de resposta devolvidos pelo upstream (sem os dados após upgrade para WebSocket) |
+| `gately_listener_requests_total{listener,action}` | counter | Requisições que o listener atende sozinho: `https_redirect` para HTTP sem criptografia redirecionado para HTTPS, `not_found` para o 404 quando nenhum site corresponde |
 
 ## Exemplos de alertas
 

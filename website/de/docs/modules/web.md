@@ -407,7 +407,8 @@ Klicken Sie bei einem laufenden Listener in der Site-Zeile auf „Statistik“, 
 - Zugriffsstatistik im Minutentakt: ein Punkt pro Minute, die letzten 24 Stunden aufbewahrt, mit einer Kurve der Anfragezahl sowie 4xx- / 5xx-Fehlerkurven;
 - Verteilung der Statuscodes (2xx / 3xx / 4xx / 5xx) und kumulierter Antwort-Traffic;
 - Die Top 10 der Quell-IPs und die Top 10 der Länder (für die Länderstatistik ist eine importierte GeoIP-Datenbank nötig);
-- Reverse-Proxy-Sites zeigen Health-Status, Gewichtung, Backup-Kennzeichen und aktuelle Verbindungsanzahl jedes Backends.
+- Reverse-Proxy-Sites zeigen Health-Status, Gewichtung, Backup-Kennzeichen, aktuelle Verbindungsanzahl und Anzahl weitergeleiteter Anfragen jedes Backends, auch der Backends pro Pfad und pro Benutzer (mit ihrem Pfad bzw. ihren Benutzern gekennzeichnet);
+- Wurden Anfragen blockiert, die Summen nach Grund: gesperrt, IP-Liste, Länderfilter, Ratenbegrenzung und WAF (fehlgeschlagene Anmeldungen zählen nicht).
 
 Die Statistiken liegen im Arbeitsspeicher und beginnen nach einem Neustart oder nach einer Änderung der eigenen Einstellungen des Listeners von vorn. Das Bearbeiten einer Site behält ihre Zähler. Die Ranglisten verfolgen höchstens 5000 verschiedene Quellen.
 
@@ -423,6 +424,20 @@ Die Liste zählt laufende Anfragen: Eine HTTP/1.1-Keep-Alive-Verbindung gehört 
 **Trennen** in einer Zeile beendet diese Anfrage sofort nach der Bestätigung: Unter HTTP/1.x wird die ganze Verbindung geschlossen; unter HTTP/2 und HTTP/3 wird nur diese Anfrage zurückgesetzt, andere Anfragen derselben Verbindung laufen weiter; ein umgestelltes WebSocket wird samt Backend-Verbindung geschlossen. Das greift auch sofort, wenn der Besucher nicht mehr liest und das Senden blockiert. Eine getrennte Anfrage wird im Zugriffsprotokoll als 444 erfasst (bzw. behält ihren Statuscode, wenn die Antwort schon begonnen hatte) und zählt weder als Backend-Fehler noch für die Pfaderkennung. Der Besucher kann sich sofort neu verbinden; um ihn fernzuhalten, nutzen Sie **Trennen und sperren**: Die Quelladresse (bei IPv6 ihr /64-Bereich) kommt auf die [Sperrliste](#sperrliste), und ihre laufenden Anfragen auf allen Listenern und Sites werden getrennt. Loopback-Adressen (Anfragen über frp oder eine lokale Weiterleitung ohne PROXY-Protokoll erscheinen alle mit dieser Adresse) und Adressen innerhalb der vertrauenswürdigen Proxys (bei IPv6 nach /64 geprüft) lassen sich nicht sperren, weil eine Sperre viele unbeteiligte Besucher aussperren würde; für Trennen ohne Sperren gilt diese Einschränkung nicht.
 
 Schreibgeschützte Konten und Token können die Liste ansehen; Trennen und Sperren erfordern Schreibrechte und werden im Audit-Protokoll erfasst.
+
+### Topologieansicht {#topology}
+
+Mit **Liste** und **Topologie** im Seitenkopf wechseln Sie zur Topologieansicht; die Auswahl wird gespeichert. Sie zeigt fünf Spalten, Internet → Gately → Listener → Sites / Listener-Aktionen → Backends / Ziele, aktualisiert sich alle 2 Sekunden und pausiert, solange die Seite im Hintergrund ist:
+
+- **Knoten**: Listener zeigen ihre Adresse und ihren Laufzustand, rot, wenn der Start fehlgeschlagen ist; Sites zeigen ihre Zuordnungsart (exakt, Platzhalter, beliebige Domain, Standard-Site), QPS und laufende Anfragen; Reverse-Proxy-Sites fächern sich in alle ihre Backends auf, auch Backends pro Pfad und pro Benutzer (mit ihrem Pfad bzw. ihren Benutzern gekennzeichnet), nicht verfügbare Backends sind rot; Sites vom Typ Weiterleitung, statische Dateien, fester Text und Verbindung schließen führen jeweils zu einem Zielknoten. Eine Standard-Site, die Verbindungen schließt, unverschlüsselte HTTP-Anfragen, die auf einem HTTPS-Port umgeleitet werden (301 / 308), und die 404, wenn keine Site passt und keine Standard-Site aktiviert ist, sind erwartetes Verhalten und erscheinen grau. Deaktivierte Listener und Sites werden ebenfalls aufgeführt und als nicht laufend angezeigt.
+- **Verbindungslinien**: Die Breite wächst mit den QPS, Linien mit Traffic zeigen eine Flussanimation. Bei mehr als 120 Linien wird nur der hervorgehobene Weg animiert, und nichts wird animiert, wenn das System reduzierte Bewegung verlangt.
+- **Hervorhebung**: Fahren Sie über einen Knoten oder klicken Sie ihn an, wird sein ganzer Weg hervorgehoben, nach oben bis zum Internet und nach unten bis zu den Backends; die Linien darauf zeigen QPS und Traffic, alles andere wird abgeblendet. Ein Klick auf eine leere Stelle setzt zurück.
+- **Detailbereich**: Für den gewählten Knoten QPS (Mittel der letzten 10 Sekunden), das 60-Sekunden-Mittel, Download-Traffic, laufende Anfragen, Anfragen gesamt, Backend-Fehler, blockierte Anfragen nach Grund, die Verteilung der Statuscodes, sekündliche Kurven für Anfragen und Traffic der letzten 60 Sekunden sowie die aktiven IPs, die ihn durchlaufen haben. Das ⓘ neben jeder Kennzahl erklärt, wie sie gemessen wird. Bei einer Site öffnet der Bereich außerdem ihr Statistik-, Verbindungs- und Bearbeitungsfenster.
+- **Aktive IPs**: Besucheradressen mit Anfragen in den letzten 60 Sekunden sowie Adressen, die noch laufende Anfragen haben. Die Zeichenfläche zeigt nur Anzahlen; die vollständigen Adressen stehen im Detailbereich. Geben Sie oben eine Adresse ein oder wählen Sie eine aus (oder klicken Sie eine im Bereich an), um nur ihren Weg bis zum genauen Backend hervorzuheben; **Filter löschen** setzt zurück. Jede Site, jedes Backend und jede Listener-Aktion merkt sich bis zu 1024 neue Adressen, die API liefert höchstens 500; bei zu vielen Quellen weist der Bereich darauf hin, dass die Liste unvollständig ist. Mit konfigurierten [vertrauenswürdigen Proxys](#real-ip) sind das die echten Besucheradressen.
+- **Maskieren**: Zeigt das Ende von IPs (bei IPv6 die letzten 64 Bit) und IP-Adressen in Backend- und Listener-Adressen als `*`, zum Teilen von Screenshots; es ändert nur die Anzeige.
+- Das Suchfeld im Seitenkopf filtert auch die Sites in der Topologie (Name, Domain, Gruppe, Backend-Adresse); Listener lassen sich einzeln oder alle auf einmal einklappen.
+
+Alle Zahlen stammen aus den Zählern dieser Instanz im Arbeitsspeicher: Sie beginnen nach einem Neustart von vorn, das Bearbeiten einer Site behält ihre Zähler, eine Änderung der Listener-Einstellungen wie des Ports setzt die Zähler dieses Listeners zurück, und andere Gately-Instanzen werden nicht zusammengefasst. Die Ansicht liest `GET /api/webservice/topology`, worauf schreibgeschützte Konten und Token zugreifen können.
 
 ### Prometheus-Metriken
 
@@ -441,9 +456,13 @@ curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/webservice/m
 | `gately_site_active_requests` | gauge | Laufende Anfragen |
 | `gately_site_response_bytes_total` | counter | Kumulierte Antwort-Bytes |
 | `gately_site_responses_total` | counter | Antworten, gezählt nach Statusklasse (Label `class`: `2xx` bis `5xx`) |
+| `gately_site_blocked_total` | counter | Blockierte Anfragen nach Grund (Label `reason`: `ban` gesperrt, `ip` IP-Liste, `country` Länderfilter, `rateLimit` Ratenbegrenzung, `waf`) |
 | `gately_upstream_up` | gauge | Ob ein Backend gesund ist: 1 gesund, 0 nicht verfügbar (mit Label `upstream`) |
+| `gately_upstream_requests_total` | counter | An ein Backend weitergeleitete Anfragen (mit Label `upstream`) |
+| `gately_upstream_response_bytes_total` | counter | Vom Backend gelieferte Bytes des Antwort-Bodys, ohne Daten nach einem WebSocket-Upgrade (mit Label `upstream`) |
+| `gately_listener_requests_total` | counter | Anfragen, die der Listener ohne Site selbst beantwortet, Label `action`: `https_redirect` (unverschlüsseltes HTTP auf einem HTTPS-Port umgeleitet) oder `not_found` (404, wenn keine Site passt); trägt nur das Label `listener` |
 
-Alle Metriken tragen die Labels `listener` (Listener-Name#Listener-Schlüssel) und `site` (Site-Name oder, falls unbenannt, die erste Domain).
+Außer `gately_listener_requests_total` tragen die Metriken die Labels `listener` (Listener-Name#Listener-Schlüssel) und `site` (Site-Name oder, falls unbenannt, die erste Domain). Backends pro Pfad und pro Benutzer tragen bei `gately_upstream_*` zusätzlich ein Label `route`: das Pfadpräfix oder `@` gefolgt von der Benutzerliste.
 
 ## nginx-Konfiguration importieren {#import-nginx}
 

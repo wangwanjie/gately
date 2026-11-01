@@ -407,7 +407,8 @@ En un listener en ejecución, pulsa «Estadísticas» en la fila de un sitio par
 - Estadísticas de acceso por minuto: un punto por minuto, conservadas durante las últimas 24 horas, con una curva de número de peticiones y curvas de errores 4xx / 5xx;
 - Distribución de códigos de estado (2xx / 3xx / 4xx / 5xx) y tráfico de respuesta acumulado;
 - Las 10 IP de origen y los 10 países principales (las estadísticas por país requieren una base de datos GeoIP importada);
-- Los sitios de proxy inverso muestran el estado de salud, el peso, la marca de reserva y el número actual de conexiones de cada backend.
+- Los sitios de proxy inverso muestran el estado de salud, el peso, la marca de reserva, el número actual de conexiones y el número de peticiones reenviadas de cada backend, incluidos los backends por ruta y por usuario (marcados con su ruta o sus usuarios);
+- Si hubo peticiones bloqueadas, los totales por motivo: bloqueo de IP, lista de IP, filtro de país, límite de tasa y WAF (los inicios de sesión fallidos no cuentan).
 
 Las estadísticas se guardan en memoria y vuelven a empezar a contarse tras un reinicio o tras cambiar los ajustes propios del listener. Editar un sitio conserva sus contadores. Las clasificaciones siguen como máximo 5000 orígenes distintos.
 
@@ -423,6 +424,20 @@ La lista cuenta solicitudes en curso: una conexión HTTP/1.1 persistente no pert
 **Cerrar** en una fila termina esa solicitud en cuanto confirmas: en HTTP/1.x se cierra toda la conexión; en HTTP/2 y HTTP/3 solo se reinicia esa solicitud y las demás de la misma conexión continúan; un WebSocket actualizado se cierra junto con su conexión al backend. También surte efecto de inmediato cuando el visitante deja de leer y el envío queda bloqueado. Una solicitud cerrada se registra como 444 en el registro de acceso (o conserva su código si la respuesta ya había empezado) y no cuenta como error del backend ni para la detección de rutas. El visitante puede reconectarse al instante; para impedirlo usa **Cerrar y bloquear**, que añade la dirección de origen (su rango /64 en IPv6) a la [lista de bloqueos](#lista-de-bloqueos) y cierra sus solicitudes en curso en todos los listeners y sitios. No se pueden bloquear las direcciones de loopback (todas las solicitudes que llegan por frp o por un reenvío local sin protocolo PROXY aparecen con ellas) ni las direcciones incluidas en los proxies de confianza (en IPv6 se comprueba por /64), porque bloquearlas cortaría el paso a muchos visitantes ajenos; cerrar sin bloquear no tiene esta restricción.
 
 Las cuentas y tokens de solo lectura pueden ver la lista; cerrar y bloquear requieren permiso de escritura y quedan en el registro de auditoría.
+
+### Vista de topología {#topology}
+
+Cambia entre **Lista** y **Topología** en la cabecera de la página para abrir la vista de topología; la elección se recuerda. Muestra cinco columnas, Internet → Gately → listeners → sitios / acciones del listener → backends / destinos, se actualiza cada 2 segundos y se pausa mientras la página está en segundo plano:
+
+- **Nodos**: los listeners muestran su dirección y su estado de ejecución, en rojo si no pudieron arrancar; los sitios muestran cómo coinciden (exacto, comodín, cualquier dominio, sitio por defecto), las QPS y las peticiones en curso; los sitios de proxy inverso se despliegan en todos sus backends, incluidos los backends por ruta y por usuario (marcados con su ruta o sus usuarios), con los backends no disponibles en rojo; los sitios de redirección, archivos estáticos, texto fijo y cierre de conexión llevan cada uno a un nodo de destino. Un sitio por defecto que cierra conexiones, las peticiones HTTP sin cifrar redirigidas en un puerto HTTPS (301 / 308) y el 404 devuelto cuando ningún sitio coincide y no hay un sitio por defecto activado son comportamientos esperados y se muestran en gris. Los listeners y sitios desactivados también aparecen, marcados como detenidos.
+- **Enlaces**: el grosor crece con las QPS y los enlaces con tráfico muestran una animación de flujo. Con más de 120 enlaces solo se anima la ruta resaltada, y no se anima nada cuando el sistema pide reducir el movimiento.
+- **Resaltado**: al pasar el ratón por un nodo o hacer clic en él se resalta toda su ruta, hacia arriba hasta Internet y hacia abajo hasta los backends, los enlaces de esa ruta muestran QPS y tráfico y el resto se atenúa; haz clic en una zona vacía para restablecer.
+- **Panel de detalles**: para el nodo seleccionado, las QPS (media de los últimos 10 segundos), la media de 60 segundos, el tráfico de bajada, las peticiones en curso, el total de peticiones, los errores de backend, las peticiones bloqueadas por motivo, la distribución de códigos de estado, las curvas por segundo de peticiones y tráfico de los últimos 60 segundos y las IP activas que pasaron por él. El ⓘ junto a cada métrica explica cómo se mide. Para un sitio, el panel también abre sus ventanas de estadísticas, conexiones y edición.
+- **IP activas**: direcciones de visitantes con peticiones en los últimos 60 segundos, más las que aún tienen peticiones en curso. El lienzo solo muestra recuentos; las direcciones completas aparecen en el panel de detalles. Escribe o elige una dirección arriba (o haz clic en una del panel) para resaltar solo la ruta que siguió, hasta el backend exacto; **Quitar filtro** lo restablece. Cada sitio, backend y acción del listener recuerda hasta 1024 direcciones recientes y la API devuelve como máximo 500, así que con demasiados orígenes el panel indica que la lista está incompleta. Con [proxies de confianza](#real-ip) configurados son las direcciones reales de los visitantes.
+- **Ocultar**: muestra la última parte de las IP (los últimos 64 bits en IPv6) y las direcciones IP de las direcciones de backends y listeners como `*`, para compartir capturas; solo cambia la visualización.
+- El cuadro de búsqueda de la cabecera de la página también filtra los sitios en la topología (nombre, dominio, grupo, dirección de backend); los listeners se pueden plegar uno a uno o todos a la vez.
+
+Todos los números salen de los contadores en memoria de esta instancia: se reinician al reiniciar, editar un sitio conserva sus contadores, cambiar ajustes del listener como el puerto reinicia los contadores de ese listener y no se suman otras instancias de Gately. La vista lee `GET /api/webservice/topology`, accesible para cuentas y tokens de solo lectura.
 
 ### Métricas de Prometheus
 
@@ -441,9 +456,13 @@ curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/webservice/m
 | `gately_site_active_requests` | gauge | Peticiones en curso |
 | `gately_site_response_bytes_total` | counter | Bytes de respuesta acumulados |
 | `gately_site_responses_total` | counter | Respuestas contadas por clase de estado (etiqueta `class`: de `2xx` a `5xx`) |
+| `gately_site_blocked_total` | counter | Peticiones bloqueadas por motivo (etiqueta `reason`: `ban` bloqueo de IP, `ip` lista de IP, `country` filtro de país, `rateLimit` límite de tasa, `waf`) |
 | `gately_upstream_up` | gauge | Si un backend está saludable: 1 saludable, 0 no disponible (con la etiqueta `upstream`) |
+| `gately_upstream_requests_total` | counter | Peticiones reenviadas a un backend (con la etiqueta `upstream`) |
+| `gately_upstream_response_bytes_total` | counter | Bytes del cuerpo de respuesta devueltos por un backend, sin los datos tras una actualización a WebSocket (con la etiqueta `upstream`) |
+| `gately_listener_requests_total` | counter | Peticiones que el listener atiende por sí mismo sin un sitio, etiqueta `action`: `https_redirect` (HTTP sin cifrar redirigido en un puerto HTTPS) o `not_found` (404 cuando ningún sitio coincide); solo lleva la etiqueta `listener` |
 
-Todas las métricas llevan las etiquetas `listener` (nombre del listener#clave del listener) y `site` (nombre del sitio o, si no tiene, el primer dominio).
+Salvo `gately_listener_requests_total`, las métricas llevan las etiquetas `listener` (nombre del listener#clave del listener) y `site` (nombre del sitio o, si no tiene, el primer dominio). Los backends por ruta y por usuario llevan además una etiqueta `route` en `gately_upstream_*`: el prefijo de ruta, o `@` seguido de la lista de usuarios.
 
 ## Importar configuración de nginx {#import-nginx}
 
