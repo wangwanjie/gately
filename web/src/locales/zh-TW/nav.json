@@ -48,6 +48,9 @@
       "title": "Web 服務",
       "desc": "反向代理、重新導向與靜態網站"
     },
+    "webtopology": {
+      "title": "網路拓撲"
+    },
     "waf": {
       "title": "WAF 防火牆",
       "desc": "基於 OWASP CRS 的應用程式防火牆"

@@ -48,6 +48,9 @@
       "title": "Web Services",
       "desc": "Reverse proxy, redirects and static sites"
     },
+    "webtopology": {
+      "title": "Topology"
+    },
     "waf": {
       "title": "WAF Firewall",
       "desc": "Web application firewall based on OWASP CRS"

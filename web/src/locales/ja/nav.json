@@ -48,6 +48,9 @@
       "title": "Web サービス",
       "desc": "リバースプロキシ、リダイレクト、静的サイト"
     },
+    "webtopology": {
+      "title": "トポロジー"
+    },
     "waf": {
       "title": "WAF ファイアウォール",
       "desc": "OWASP CRS ベースのアプリケーションファイアウォール"

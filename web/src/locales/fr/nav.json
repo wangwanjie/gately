@@ -48,6 +48,9 @@
       "title": "Services Web",
       "desc": "Proxy inverse, redirections et sites statiques"
     },
+    "webtopology": {
+      "title": "Topologie"
+    },
     "waf": {
       "title": "Pare-feu WAF",
       "desc": "Pare-feu applicatif web basé sur OWASP CRS"

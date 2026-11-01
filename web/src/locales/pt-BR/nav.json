@@ -48,6 +48,9 @@
       "title": "Serviços Web",
       "desc": "Proxy reverso, redirecionamentos e sites estáticos"
     },
+    "webtopology": {
+      "title": "Topologia"
+    },
     "waf": {
       "title": "Firewall WAF",
       "desc": "Firewall de aplicações web baseado no OWASP CRS"

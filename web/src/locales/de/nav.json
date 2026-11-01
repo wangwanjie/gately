@@ -48,6 +48,9 @@
       "title": "Web-Dienste",
       "desc": "Reverse-Proxy, Weiterleitungen und statische Websites"
     },
+    "webtopology": {
+      "title": "Topologie"
+    },
     "waf": {
       "title": "WAF-Firewall",
       "desc": "Web Application Firewall auf Basis von OWASP CRS"

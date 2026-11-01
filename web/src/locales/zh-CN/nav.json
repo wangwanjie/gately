@@ -48,6 +48,9 @@
       "title": "Web 服务",
       "desc": "反向代理、重定向与静态站点"
     },
+    "webtopology": {
+      "title": "网络拓扑"
+    },
     "waf": {
       "title": "WAF 防火墙",
       "desc": "基于 OWASP CRS 的应用防火墙"

@@ -1,12 +1,8 @@
 <template>
   <div>
     <PageHeader :title="t('web.title')" :desc="t('web.desc')" :icon="Server">
-      <!-- 列表 / 拓扑 视图切换 -->
-      <el-radio-group v-model="viewMode" class="view-toggle">
-        <el-radio-button value="list"><List :size="15" /><span>{{ t('webTopology.viewList') }}</span></el-radio-button>
-        <el-radio-button value="topology"><Waypoints :size="15" /><span>{{ t('webTopology.viewTopology') }}</span></el-radio-button>
-      </el-radio-group>
-      <el-button v-if="listeners.length && viewMode === 'list'" :icon="allListenersCollapsed ? ChevronsUpDown : ChevronsDownUp" @click="setAll(listeners.map((l) => l.key), !allListenersCollapsed)">
+      <el-button :icon="Workflow" @click="router.push({ name: 'webtopology' })">{{ t('webTopology.title') }}</el-button>
+      <el-button v-if="listeners.length" :icon="allListenersCollapsed ? ChevronsUpDown : ChevronsDownUp" @click="setAll(listeners.map((l) => l.key), !allListenersCollapsed)">
         {{ allListenersCollapsed ? t('common.expandAll') : t('common.collapseAll') }}
       </el-button>
       <el-input
@@ -18,8 +14,8 @@
         :prefix-icon="Search"
         :placeholder="t('web.filterPlaceholder')"
       />
-      <CompactToggle v-if="viewMode === 'list'" v-model="compact" />
-      <el-button v-if="canSort && viewMode === 'list'" :type="sortMode ? 'primary' : 'default'" :icon="ArrowUpDown" @click="sel.toggleSortMode()">
+      <CompactToggle v-model="compact" />
+      <el-button v-if="canSort" :type="sortMode ? 'primary' : 'default'" :icon="ArrowUpDown" @click="sel.toggleSortMode()">
         {{ sortMode ? t('groupSort.sortDone') : t('groupSort.sort') }}
       </el-button>
       <el-button :icon="FileInput" @click="nginxImport?.open()">{{ t('web.importNginx') }}</el-button>
@@ -29,16 +25,8 @@
 
     <ModuleBanner v-if="moduleOff" :title="t('web.moduleOffTitle')" :desc="t('web.moduleOffDesc')" :loading="enabling" @enable="enableModule" />
 
-    <WebTopology
-      v-if="viewMode === 'topology'"
-      :query="filterText"
-      @stats="(lk, sk) => withRow(lk, sk, openStats)"
-      @conns="(lk, sk) => withRow(lk, sk, openConns)"
-      @edit="(lk, sk) => withRow(lk, sk, openSite)"
-    />
-
     <SortToolbar
-      v-if="sortMode && viewMode === 'list'"
+      v-if="sortMode"
       :selected-count="sel.selected.value.size"
       :total="allSiteIds.length"
       :groups="allGroupNames"
@@ -48,7 +36,7 @@
       @set-group="setGroupSelected"
     />
 
-    <div v-if="viewMode === 'list'" v-loading="loading" class="card-list">
+    <div v-loading="loading" class="card-list">
       <el-empty v-if="!loading && !listeners.length" :description="t('web.empty')" />
       <EntityCard
         v-for="(l, li) in listeners"
@@ -525,9 +513,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
   ArrowUpDown,
@@ -539,7 +527,6 @@ import {
   ChevronUp,
   FileInput,
   GripVertical,
-  List,
   Pencil,
   Plus,
   Search,
@@ -548,7 +535,7 @@ import {
   ShieldBan,
   SlidersHorizontal,
   Trash2,
-  Waypoints,
+  Workflow,
 } from 'lucide-vue-next'
 import { api, type OAuthProvider } from '../api'
 import GroupHeader from '../components/GroupHeader.vue'
@@ -585,7 +572,6 @@ import ProxyOptionsHelp from '../components/ProxyOptionsHelp.vue'
 import { usePolling } from '../composables/usePolling'
 
 // 拓扑视图只在切换到拓扑时加载，列表视图不受影响
-const WebTopology = defineAsyncComponent(() => import('../components/WebTopology.vue'))
 
 interface Site {
   key?: string
@@ -700,6 +686,7 @@ interface SiteRow {
 
 const { t } = useI18n()
 const router = useRouter()
+const route = useRoute()
 const compact = useCompactView('web')
 const listeners = ref<ListenerView[]>([])
 // 每个监听下的站点列表可单独收起，状态按监听 key 持久化
@@ -1130,31 +1117,20 @@ async function load() {
   }
 }
 
-// ---- 拓扑视图 ----
+// ---- 从拓扑页跳转编辑站点 ----
 
-const viewKey = 'gately.web.view'
-const viewMode = ref<'list' | 'topology'>(readViewMode())
-watch(viewMode, (v) => {
-  try {
-    localStorage.setItem(viewKey, v)
-  } catch {
-    // 存储不可用时仅本次会话生效
+// 拓扑页点“编辑”会带上 editListener、editSite 跳到本页，列表加载后打开对应站点的编辑框并清掉参数
+async function openFromQuery() {
+  const lk = route.query.editListener
+  const sk = route.query.editSite
+  if (typeof lk !== 'string' || typeof sk !== 'string') {
+    return
   }
-  // 拓扑视图没有排序，切换时退出排序模式
-  if (v === 'topology' && sortMode.value) {
-    sel.toggleSortMode()
-  }
-})
-
-function readViewMode(): 'list' | 'topology' {
-  try {
-    return localStorage.getItem(viewKey) === 'topology' ? 'topology' : 'list'
-  } catch {
-    return 'list'
-  }
+  await router.replace({ query: {} })
+  withRow(lk, sk, openSite)
 }
 
-// withRow 按监听 key 与站点 key（默认站点为 default）找到站点行，交给列表视图已有的统计、连接、编辑入口
+// withRow 按监听 key 与站点 key（默认站点为 default）找到站点行，交给已有的编辑入口
 function withRow(lk: string, sk: string, fn: (l: ListenerView, row: SiteRow) => void) {
   const l = listeners.value.find((x) => x.key === lk)
   if (!l) {
@@ -1411,16 +1387,12 @@ onMounted(async () => {
   loadIPLists()
   wafInstances.value = await api.get('/api/waf/instances')
   await load()
+  openFromQuery()
   polling.start()
 })
 </script>
 
 <style scoped>
-.view-toggle :deep(.el-radio-button__inner) {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
 .users-summary {
   display: flex;
   flex-wrap: wrap;

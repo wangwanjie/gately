@@ -48,6 +48,9 @@
       "title": "Servicios web",
       "desc": "Proxy inverso, redirecciones y sitios estáticos"
     },
+    "webtopology": {
+      "title": "Topología"
+    },
     "waf": {
       "title": "Cortafuegos WAF",
       "desc": "Cortafuegos de aplicaciones web basado en OWASP CRS"

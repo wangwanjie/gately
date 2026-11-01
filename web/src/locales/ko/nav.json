@@ -48,6 +48,9 @@
       "title": "Web 서비스",
       "desc": "리버스 프록시, 리디렉션, 정적 사이트"
     },
+    "webtopology": {
+      "title": "토폴로지"
+    },
     "waf": {
       "title": "WAF 방화벽",
       "desc": "OWASP CRS 기반 웹 애플리케이션 방화벽"
