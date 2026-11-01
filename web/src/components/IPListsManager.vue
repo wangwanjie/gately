@@ -184,7 +184,8 @@ async function remove(l: IPListView) {
     await load()
     emit('changed')
   } catch (e) {
-    ElMessage.error((e as Error).message)
+    // 被引用时后端列出“模块 ID / 规则名”，同样换成界面语言的模块名
+    ElMessage.error((e as Error).message.replace(new RegExp(`\\b(${moduleRefs.join('|')}) / `, 'g'), (_, id: string) => `${t(`nav.items.${id}.title`)} / `))
   }
 }
 

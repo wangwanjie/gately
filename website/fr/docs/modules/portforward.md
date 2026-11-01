@@ -36,7 +36,7 @@ Chaque règle peut utiliser une liste d'autorisation ou de blocage qui décide d
 - La carte de la règle affiche le nombre de refus depuis le démarrage de Gately (connexions en TCP, paquets en UDP), et le niveau débogage du journal consigne chaque refus ;
 - Si un proxy inverse ou un autre relais se trouve devant la règle, la source vue par Gately est son adresse.
 
-Lors d'une importation depuis Lucky, le mode sécurisé de la règle est aussi converti : le mode liste d'autorisation reprend les IP / sous-réseaux de la « liste blanche » du filtre IP de Lucky, le mode liste de blocage reprend la « liste noire » et la « liste noire globale ». Envoyez `lucky_ipfilter.lkcf` (ou une sauvegarde complète) dans la même importation ; les entrées de base IP, d'enregistrement automatique ou de plage d'adresses ne peuvent pas être importées, le résultat le signale.
+Lors d'une importation depuis Lucky, le mode sécurisé de la règle est aussi converti : le mode liste d'autorisation reprend les IP / sous-réseaux de la « liste blanche » du filtre IP de Lucky, le mode liste de blocage reprend la « liste noire » et la « liste noire globale ». Envoyez `lucky_ipfilter.lkcf` (ou une sauvegarde complète) dans la même importation ; les entrées de base IP, d'enregistrement automatique ou de plage d'adresses ne peuvent pas être importées, le résultat le signale. Si le mode sécurisé est désactivé, aucune liste n'est définie ; s'il désigne une règle de filtre IP personnalisée, son action décide : accepter devient une liste d'autorisation, refuser une liste de blocage (fusionnée elle aussi avec la liste noire globale).
 
 ## Scénarios typiques
 

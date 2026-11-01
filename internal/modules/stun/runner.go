@@ -73,6 +73,10 @@ type runner struct {
 	stats    counters
 	// filter 为内置转发的来源 IP 访问控制，修改名单时原地替换（见 setAccess），nil 表示不限制
 	filter atomic.Pointer[iplist.Filter]
+	// selfCheckUntil 为 TCP 通道有效性检测窗口的截止时间（UnixNano），窗口内被名单拒绝的连接不计入拒绝次数
+	selfCheckUntil atomic.Int64
+	// selfCheckPub 为检测时连接的公网 IP（netip.Addr），经 NAT 回流的检测连接可能以它为来源
+	selfCheckPub atomic.Value
 
 	mu    sync.Mutex
 	state RuleState

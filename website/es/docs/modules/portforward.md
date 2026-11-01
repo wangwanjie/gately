@@ -36,7 +36,7 @@ Cada regla puede usar una lista de permitidos o de bloqueo que decide por IP de 
 - La tarjeta de la regla muestra cuántas veces se rechazó un origen desde que arrancó Gately (conexiones en TCP, paquetes en UDP), y el nivel de depuración del registro anota cada rechazo;
 - Si hay un proxy inverso u otro reenvío delante de la regla, el origen que ve Gately es su dirección.
 
-Al importar desde Lucky también se convierte el modo seguro de la regla: el modo de lista de permitidos toma las IP / subredes de la «lista blanca» del filtro IP de Lucky, y el modo de bloqueo toma la «lista negra» y la «lista negra global». Suba `lucky_ipfilter.lkcf` (o una copia completa) en la misma importación; las entradas de base de datos IP, registro automático o rango de direcciones no se pueden importar y el resultado lo indica.
+Al importar desde Lucky también se convierte el modo seguro de la regla: el modo de lista de permitidos toma las IP / subredes de la «lista blanca» del filtro IP de Lucky, y el modo de bloqueo toma la «lista negra» y la «lista negra global». Suba `lucky_ipfilter.lkcf` (o una copia completa) en la misma importación; las entradas de base de datos IP, registro automático o rango de direcciones no se pueden importar y el resultado lo indica. Si el modo seguro está desactivado no se define ninguna lista; si apunta a una regla de filtro IP propia, decide su acción: aceptar se importa como lista de permitidos y denegar como lista de bloqueo (también combinada con la lista negra global).
 
 ## Escenarios típicos
 

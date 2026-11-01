@@ -36,7 +36,7 @@ Each rule can use an allowlist or a blocklist that decides by source IP whether 
 - The rule card shows how many times sources were refused since Gately started (connections for TCP, packets for UDP), and the debug level of the run log records each refusal;
 - When a reverse proxy or another forwarder sits in front of the rule, the source Gately sees is its address.
 
-When importing from Lucky, the rule's safe mode is converted as well: allowlist mode takes the IPs / subnets of the "whitelist" in Lucky's IP filter, and blocklist mode takes the "blacklist" and the "global blacklist". Upload `lucky_ipfilter.lkcf` (or a full backup) in the same import; IP database, auto-recorded and address range entries cannot be imported, and the import result says so.
+When importing from Lucky, the rule's safe mode is converted as well: allowlist mode takes the IPs / subnets of the "whitelist" in Lucky's IP filter, and blocklist mode takes the "blacklist" and the "global blacklist". Upload `lucky_ipfilter.lkcf` (or a full backup) in the same import; IP database, auto-recorded and address range entries cannot be imported, and the import result says so. When the safe mode is off, no list is set; when it points to a custom IP filter rule, the rule's action decides: accept imports as an allowlist and deny as a blocklist (merged with the global blacklist as well).
 
 ## Typical scenarios
 

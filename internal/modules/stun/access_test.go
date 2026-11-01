@@ -169,3 +169,130 @@ func TestOnlyAccessChanged(t *testing.T) {
 		t.Error("其它字段不同时应返回 false")
 	}
 }
+
+func tcpRule(e *testEnv, key string, a iplist.Access) Rule {
+	return Rule{
+		Key: key, Name: key, Enable: true, Protocol: ProtoTCP4, Bind: Bind{Mode: BindIP, IP: "127.0.0.1"}, UseGlobalServers: true,
+		TargetAddresses: []string{"127.0.0.1"}, TargetPort: e.tcpEcho.Addr().(*net.TCPAddr).Port,
+		HeartbeatInterval: 500, StunTimeout: 2000, RetryInterval: 500, AutoRetry: true, Access: a,
+	}
+}
+
+func udpRule(e *testEnv, key string, a iplist.Access) Rule {
+	return Rule{
+		Key: key, Name: key, Enable: true, Protocol: ProtoUDP4, Bind: Bind{Mode: BindIP, IP: "127.0.0.1"}, UseGlobalServers: true,
+		TargetAddresses: []string{"127.0.0.1"}, TargetPort: e.udpEcho.LocalAddr().(*net.UDPAddr).Port,
+		HeartbeatInterval: 500, StunTimeout: 1000, RetryInterval: 500, AutoRetry: true, UDPSessionTimeout: 5, Access: a,
+	}
+}
+
+// TCP 黑名单命中拒绝，计数逐次累加
+func TestTCPAccessBlacklist(t *testing.T) {
+	e := newTestEnv(t)
+	m := startAccessModule(t, tcpRule(e, "b", iplist.Access{IPMode: iplist.ModeBlacklist, IPList: []string{"127.0.0.0/8"}}), e.settings())
+	r := m.runners["b"]
+	pub := r.snapshot().PublicAddr
+	for i := 1; i <= 2; i++ {
+		if tcpPings(t, pub) {
+			t.Fatal("命中黑名单的来源应被拒绝")
+		}
+		// 拒绝计数在 accept 协程中累加，等它落地
+		waitFor(t, "拒绝计数", func() bool { return r.snapshot().Stats.Denied == int64(i) })
+	}
+	if s := r.snapshot().Stats; s.TotalConns != 0 {
+		t.Fatalf("被拒连接不应计入连接数: %+v", s)
+	}
+	// 关闭名单后放行
+	setAccess(m, "b", iplist.Access{})
+	if !tcpPings(t, pub) {
+		t.Fatal("关闭名单后应放行")
+	}
+}
+
+// 订阅列表未载入或已删除时按空列表处理：白名单拒绝，黑名单放行
+func TestAccessMissingSubscription(t *testing.T) {
+	set, _, _ := iplist.Parse(strings.NewReader("127.0.0.0/8\n"))
+	iplist.Default.Store("t-st-gone", set)
+	iplist.Default.Store("t-st-gone", nil)
+	for _, key := range []string{"t-st-never", "t-st-gone"} {
+		e := newTestEnv(t)
+		m := startAccessModule(t, tcpRule(e, "w", iplist.Access{IPMode: iplist.ModeWhitelist, IPSets: []string{key}}), e.settings())
+		if tcpPings(t, m.runners["w"].snapshot().PublicAddr) {
+			t.Fatalf("%s: 白名单引用的列表不可用时应拒绝", key)
+		}
+		setAccess(m, "w", iplist.Access{IPMode: iplist.ModeBlacklist, IPSets: []string{key}})
+		if !tcpPings(t, m.runners["w"].snapshot().PublicAddr) {
+			t.Fatalf("%s: 黑名单引用的列表不可用时应放行", key)
+		}
+	}
+}
+
+// UDP：被拒来源不建立会话；名单收紧后已有会话的上行被丢弃，放开后继续使用原会话
+func TestUDPAccessSessions(t *testing.T) {
+	e := newTestEnv(t)
+	m := startAccessModule(t, udpRule(e, "u", iplist.Access{IPMode: iplist.ModeWhitelist, IPList: []string{"10.0.0.0/8"}}), e.settings())
+	r := m.runners["u"]
+	pub := r.snapshot().PublicAddr
+	conn, err := net.Dial("udp4", pub)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conn.Close()
+	echo := func() bool {
+		_, _ = conn.Write([]byte("ping"))
+		_ = conn.SetReadDeadline(time.Now().Add(400 * time.Millisecond))
+		buf := make([]byte, 16)
+		n, err := conn.Read(buf)
+		return err == nil && string(buf[:n]) == "ping"
+	}
+	if echo() {
+		t.Fatal("被拒来源不应收到回显")
+	}
+	if s := r.snapshot().Stats; s.TotalConns != 0 || s.Denied != 1 {
+		t.Fatalf("被拒来源不应建立会话: %+v", s)
+	}
+	setAccess(m, "u", iplist.Access{IPMode: iplist.ModeWhitelist, IPList: []string{"127.0.0.1"}})
+	if m.runners["u"] != r {
+		t.Fatal("只修改名单时不应重启穿透")
+	}
+	if !echo() {
+		t.Fatal("放行后应建立会话")
+	}
+	setAccess(m, "u", iplist.Access{IPMode: iplist.ModeBlacklist, IPList: []string{"127.0.0.1"}})
+	if echo() {
+		t.Fatal("名单收紧后已有会话的上行应被丢弃")
+	}
+	if s := r.snapshot().Stats; s.ActiveConns != 1 || s.Denied != 2 {
+		t.Fatalf("会话应保留到空闲超时并计入拒绝: %+v", s)
+	}
+	setAccess(m, "u", iplist.Access{})
+	if !echo() {
+		t.Fatal("关闭名单后应继续使用原会话")
+	}
+	if s := r.snapshot().Stats; s.TotalConns != 1 {
+		t.Fatalf("应复用原会话而不是新建: %+v", s)
+	}
+}
+
+func TestAccessValidate(t *testing.T) {
+	base := func(a iplist.Access) Rule {
+		return Rule{Name: "x", Protocol: ProtoTCP4, UseGlobalServers: true, TargetAddresses: []string{"127.0.0.1"}, TargetPort: 22, Access: a}
+	}
+	for name, a := range map[string]iplist.Access{
+		"模式非法":  {IPMode: "on", IPList: []string{"10.0.0.1"}},
+		"网段非法":  {IPMode: iplist.ModeBlacklist, IPList: []string{"300.0.0.0/8"}},
+		"白名单为空": {IPMode: iplist.ModeWhitelist, IPList: []string{""}},
+	} {
+		r := base(a)
+		if err := r.Validate(); err == nil {
+			t.Errorf("%s 应校验失败", name)
+		}
+	}
+	ok := base(iplist.Access{IPMode: iplist.ModeWhitelist, IPSets: []string{"t-st-missing"}})
+	if err := ok.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	if err := ok.Access.CheckSets(); err == nil {
+		t.Error("引用不存在的订阅列表应报错")
+	}
+}

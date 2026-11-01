@@ -32,16 +32,26 @@ func ParsePrefixes(list []string) ([]netip.Prefix, error) {
 			if err != nil {
 				return nil, fmt.Errorf("无效的网段 %q", s)
 			}
-			out = append(out, p.Masked())
+			out = append(out, unmapPrefix(p).Masked())
 			continue
 		}
 		a, err := netip.ParseAddr(s)
 		if err != nil {
 			return nil, fmt.Errorf("无效的 IP %q", s)
 		}
+		// 判断时来源地址会先还原为 IPv4，名单中 ::ffff:a.b.c.d 形式的条目也要还原，否则永远匹配不上
+		a = a.Unmap()
 		out = append(out, netip.PrefixFrom(a, a.BitLen()))
 	}
 	return out, nil
+}
+
+// unmapPrefix 把 ::ffff:0:0/96 之内的 IPv4 映射网段转换为对应的 IPv4 网段，其它网段原样返回。
+func unmapPrefix(p netip.Prefix) netip.Prefix {
+	if a := p.Addr(); a.Is4In6() && p.Bits() >= 96 {
+		return netip.PrefixFrom(a.Unmap(), p.Bits()-96)
+	}
+	return p
 }
 
 // Match 判断地址是否命中手填网段或任一引用的订阅列表；尚未载入的订阅列表按空列表处理。

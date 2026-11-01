@@ -36,7 +36,7 @@ Jede Regel kann eine Zulassungs- oder Sperrliste nutzen, die anhand der Quell-IP
 - Die Regelkarte zeigt, wie oft Quellen seit dem Start von Gately abgewiesen wurden (Verbindungen bei TCP, Pakete bei UDP), und die Debug-Stufe des Laufprotokolls vermerkt jede Abweisung;
 - Steht ein Reverse Proxy oder eine andere Weiterleitung vor der Regel, sieht Gately deren Adresse als Quelle.
 
-Beim Import aus Lucky wird auch der Sicherheitsmodus der Regel übernommen: Der Zulassungslistenmodus übernimmt die IPs / Subnetze der „Whitelist“ des Lucky-IP-Filters, der Sperrlistenmodus die „Blacklist“ und die „globale Blacklist“. Laden Sie im selben Import `lucky_ipfilter.lkcf` (oder eine vollständige Sicherung) hoch; Einträge aus der IP-Datenbank, automatisch erfasste Einträge und Adressbereiche lassen sich nicht importieren, das Importergebnis weist darauf hin.
+Beim Import aus Lucky wird auch der Sicherheitsmodus der Regel übernommen: Der Zulassungslistenmodus übernimmt die IPs / Subnetze der „Whitelist“ des Lucky-IP-Filters, der Sperrlistenmodus die „Blacklist“ und die „globale Blacklist“. Laden Sie im selben Import `lucky_ipfilter.lkcf` (oder eine vollständige Sicherung) hoch; Einträge aus der IP-Datenbank, automatisch erfasste Einträge und Adressbereiche lassen sich nicht importieren, das Importergebnis weist darauf hin. Ist der Sicherheitsmodus aus, wird keine Liste gesetzt; verweist er auf eine eigene IP-Filterregel, entscheidet deren Aktion: Zulassen wird als Zulassungsliste, Ablehnen als Sperrliste importiert (ebenfalls mit der globalen Blacklist zusammengeführt).
 
 ## Typische Szenarien
 

@@ -6,7 +6,8 @@
       <el-radio-button value="whitelist">{{ t('ipAccessEditor.whitelist') }}</el-radio-button>
       <el-radio-button value="blacklist">{{ t('ipAccessEditor.blacklist') }}</el-radio-button>
     </el-radio-group>
-    <div class="form-help">{{ t('ipAccessEditor.help') }}<template v-if="note"> {{ note }}</template></div>
+    <div class="form-help">{{ t('ipAccessEditor.help') }}</div>
+    <div v-if="note" class="form-help">{{ note }}</div>
   </el-form-item>
   <template v-if="mode">
     <el-form-item :label="t('ipAccessEditor.range')">

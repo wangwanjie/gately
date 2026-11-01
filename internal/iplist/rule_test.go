@@ -106,3 +106,17 @@ func TestAccessCheckSetsAndUsers(t *testing.T) {
 		t.Errorf("引用方 = %q", got)
 	}
 }
+
+// 名单中以 IPv4 映射形式填写的地址与网段按 IPv4 处理
+func TestParsePrefixesUnmap(t *testing.T) {
+	ps, err := ParsePrefixes([]string{"::ffff:192.0.2.1", "::ffff:198.51.100.0/120", "2001:db8::/32"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []string{"192.0.2.1/32", "198.51.100.0/24", "2001:db8::/32"}
+	for i, p := range ps {
+		if p.String() != want[i] {
+			t.Errorf("#%d = %s，期望 %s", i, p, want[i])
+		}
+	}
+}

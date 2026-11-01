@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/wangwanjie/gately/internal/banlist"
+	"github.com/wangwanjie/gately/internal/iplist"
 	"github.com/wangwanjie/gately/internal/netpipe"
 	"github.com/wangwanjie/gately/internal/reuseport"
 	stunproto "github.com/wangwanjie/gately/internal/stun"
@@ -87,6 +88,9 @@ func (r *runner) sessionTCP(ctx context.Context) error {
 	}
 
 	if !r.rule.DisableCheck {
+		// 检测连接来自 Gately 自身，名单拒绝它属于正常现象，不计入拒绝次数（见 selfCheckDenied）
+		r.selfCheckPub.Store(pub.Addr())
+		r.selfCheckUntil.Store(time.Now().Add(timeout + time.Second).UnixNano())
 		if err := checkTCP(sctx, pub, timeout); err != nil {
 			return fmt.Errorf("通道有效性检测失败（公网地址 %s 不可达，可能不是 NAT1 网络或未做端口映射）: %w", pub, err)
 		}
@@ -270,8 +274,11 @@ func (r *runner) acceptLoop(ctx context.Context, ln net.Listener) {
 			continue
 		}
 		// 封禁优先，再按来源 IP 名单判断，不命中时不连接目标
-		if !r.allows(c.RemoteAddr()) {
-			r.log.Debugf("%s 不满足来源 IP 访问控制，已断开", c.RemoteAddr())
+		if !r.filter.Load().Allows(c.RemoteAddr()) {
+			if !r.selfCheckDenied(c.RemoteAddr()) {
+				r.stats.denied.Add(1)
+				r.log.Debugf("%s 不满足来源 IP 访问控制，已断开", c.RemoteAddr())
+			}
 			c.Close()
 			continue
 		}
@@ -289,6 +296,44 @@ func (r *runner) acceptLoop(ctx context.Context, ln net.Listener) {
 			r.forwardTCP(ctx, c)
 		}()
 	}
+}
+
+// selfCheckDenied 判断被名单拒绝的连接是否为本次通道有效性检测发起的连接：检测窗口内、来源为本机或自身公网 IP 的
+// 第一个被拒连接视为检测连接（检测只连一次，且先于其它连接进入 accept 队列）。经路由器回流时来源可能是路由器地址，
+// 此时无法区分，检测连接会计入一次拒绝。
+func (r *runner) selfCheckDenied(addr net.Addr) bool {
+	if time.Now().UnixNano() >= r.selfCheckUntil.Load() {
+		return false
+	}
+	ip, ok := iplist.AddrOf(addr)
+	if !ok {
+		return false
+	}
+	pub, _ := r.selfCheckPub.Load().(netip.Addr)
+	if ip != pub && !isLocalIP(ip) {
+		return false
+	}
+	// 只认第一个，之后的同源连接照常计数
+	return r.selfCheckUntil.Swap(0) != 0
+}
+
+// isLocalIP 判断地址是否为本机地址（回环或本机网卡上的地址）。
+func isLocalIP(ip netip.Addr) bool {
+	if ip.IsLoopback() {
+		return true
+	}
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return false
+	}
+	for _, a := range addrs {
+		if n, ok := a.(*net.IPNet); ok {
+			if x, ok := netip.AddrFromSlice(n.IP); ok && x.Unmap() == ip {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (r *runner) forwardTCP(ctx context.Context, client net.Conn) {
