@@ -7,6 +7,10 @@ description: Annonces et notes de version de chaque version de Gately.
 
 Les annonces des versions majeures sont listées ci-dessous. Consultez [GitHub Releases](https://github.com/wangwanjie/gately/releases) pour la liste complète des changements et les téléchargements de chaque version.
 
+## [v0.6.2.1](/fr/news/v0.6.2.1)
+
+1er novembre 2026 · Les Services Web peuvent prendre l’IP réelle du visiteur auprès de proxys de confiance et affichent les connexions en direct de chaque site, avec fermeture et bannissement ; Redirection de ports, Routage par protocole, STUN et frps disposent de listes d’autorisation et de blocage par IP source ; le DNS dynamique écrit les remarques chez le fournisseur et peut y supprimer les enregistrements ; Gately peut mettre à niveau son propre conteneur depuis la page Docker ; le Terminal Web permet la sélection par appui long sur téléphone.
+
 ## [v0.6.2](/fr/news/v0.6.2)
 
 31 octobre 2026 · Le nouveau module Routage par protocole permet à HTTPS, SSH, RDP, OpenVPN et d’autres de partager un même port ; toutes les longues listes peuvent être groupées et triées ; le DNS dynamique peut utiliser les adresses publiques STUN ; STUN fonctionne derrière plusieurs NAT ; plusieurs renforcements de sécurité.

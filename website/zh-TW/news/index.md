@@ -7,6 +7,10 @@ description: Gately 各版本的發布公告與更新說明。
 
 重要版本的發布公告如下，每個版本的完整變更與下載檔案見 [GitHub Releases](https://github.com/wangwanjie/gately/releases)。
 
+## [v0.6.2.1](/zh-TW/news/v0.6.2.1)
+
+2026 年 11 月 1 日 · Web 服務支援從可信代理取得訪客真實 IP、依站點查看即時連線並中斷或封鎖；連接埠轉發、協定分流、STUN 與 frps 支援來源 IP 白名單 / 黑名單；動態網域的備註寫入服務商，並可同時刪除服務商處的解析；Docker 頁面可直接升級 Gately 自身；手機上的 Web 終端機可以長按選取。
+
 ## [v0.6.2](/zh-TW/news/v0.6.2)
 
 2026 年 10 月 31 日 · 新增「協定分流」模組，讓 HTTPS、SSH、RDP、OpenVPN 等協定共用一個連接埠；所有長列表支援分組與排序；動態網域可引用 STUN 穿透的公網位址；STUN 支援多層 NAT；多項安全強化。

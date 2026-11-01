@@ -82,8 +82,8 @@
   "home": {
     "pill": "Kostenlos und Open Source · Apache-2.0",
     "announce": {
-      "text": "v0.6.2 ist da: Protokoll-Routing, Gruppen und Sortierung in Listen, STUN-Adressen in Dynamisches DNS →",
-      "link": "/de/news/v0.6.2"
+      "text": "v0.6.2.1 ist da: echte Besucher-IP, Live-Verbindungen, Quell-IP-Zugriffskontrolle →",
+      "link": "/de/news/v0.6.2.1"
     },
     "titleLine1": "Das All-in-one-Netzwerk-Gateway",
     "titleLine2": "Open Source, sofort einsatzbereit",
