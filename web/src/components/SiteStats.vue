@@ -27,11 +27,22 @@
         :height="50"
       />
       <div v-if="data.upstreams?.length" class="chart-title">{{ t('siteStats.upstreams') }}</div>
-      <div v-for="u in data.upstreams ?? []" :key="u.url" class="up">
+      <!-- 同一地址可能同时出现在站点后端与分路径、按用户分流的后端中，按位置区分 -->
+      <div v-for="(u, i) in data.upstreams ?? []" :key="i" class="up">
         <StatusBadge :type="u.healthy ? 'running' : 'error'" :text="u.healthy ? t('siteStats.healthy') : t('siteStats.unavailable')" />
         <span class="mono">{{ u.url }}</span>
-        <span class="meta">{{ t('siteStats.upstreamMeta', { weight: u.weight, conns: u.conns }) }}<template v-if="u.backup"> · {{ t('siteStats.backup') }}</template></span>
+        <span class="meta">
+          <template v-if="u.scope === 'location'">{{ t('siteStats.scopeLocation', { m: u.match }) }} · </template>
+          <template v-else-if="u.scope === 'user'">{{ t('siteStats.scopeUser', { m: u.match }) }} · </template>
+          {{ t('siteStats.upstreamMeta', { weight: u.weight, conns: u.conns }) }} · {{ t('siteStats.upstreamRequests', { n: u.requests ?? 0 }) }}<template v-if="u.backup"> · {{ t('siteStats.backup') }}</template>
+        </span>
       </div>
+      <template v-if="blockedTotal > 0">
+        <div class="chart-title">{{ t('siteStats.blocked') }}</div>
+        <div class="blocked">
+          <span v-for="b in blockKinds" :key="b.key" class="blocked-item">{{ t(b.label) }} <b>{{ data.blocked?.[b.key] ?? 0 }}</b></span>
+        </div>
+      </template>
       <div class="tops">
         <div>
           <div class="chart-title">{{ t('siteStats.topIps') }}</div>
@@ -63,7 +74,9 @@ interface View {
   bytesOut: number
   topIps: { key: string; count: number }[]
   topCountries: { key: string; count: number }[]
-  upstreams?: { url: string; weight: number; backup: boolean; healthy: boolean; conns: number }[]
+  upstreams?: { url: string; weight: number; backup: boolean; healthy: boolean; conns: number; scope?: string; match?: string; requests?: number }[]
+  // blocked 为按原因分的累计拦截次数
+  blocked?: Record<string, number>
 }
 
 const { t } = useI18n()
@@ -76,6 +89,15 @@ let target = { listener: '', site: '' }
 let timer: number | undefined
 
 const total = computed(() => (data.value?.series ?? []).reduce((n, p) => n + p.requests, 0))
+// 拦截原因的展示顺序
+const blockKinds = [
+  { key: 'ban', label: 'siteStats.block_ban' },
+  { key: 'ip', label: 'siteStats.block_ip' },
+  { key: 'country', label: 'siteStats.block_country' },
+  { key: 'rateLimit', label: 'siteStats.block_rateLimit' },
+  { key: 'waf', label: 'siteStats.block_waf' },
+]
+const blockedTotal = computed(() => Object.values(data.value?.blocked ?? {}).reduce((n, v) => n + v, 0))
 
 function formatBytes(n: number) {
   if (n < 1024) {
@@ -172,5 +194,16 @@ defineExpose({ open })
   justify-content: space-between;
   font-size: 13px;
   padding: 2px 0;
+}
+.blocked {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  font-size: 13px;
+  color: var(--el-text-color-secondary);
+}
+.blocked-item b {
+  color: var(--el-color-warning);
+  font-variant-numeric: tabular-nums;
 }
 </style>

@@ -15,5 +15,14 @@
   "topIps": "送信元 IP トップ 10",
   "topCountries": "国別トップ 10",
   "noData": "データがありません",
-  "noDataGeo": "データがありません（GeoIP データベースのインポートが必要です）"
+  "noDataGeo": "データがありません（GeoIP データベースのインポートが必要です）",
+  "scopeLocation": "パス {m}",
+  "scopeUser": "ユーザー {m}",
+  "upstreamRequests": "リクエスト {n}",
+  "blocked": "ブロック（累計・理由別）",
+  "block_ban": "BAN 済み",
+  "block_ip": "IP リスト",
+  "block_country": "国フィルター",
+  "block_rateLimit": "レート制限",
+  "block_waf": "WAF"
 }

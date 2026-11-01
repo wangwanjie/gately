@@ -15,5 +15,14 @@
   "topIps": "Top 10 source IPs",
   "topCountries": "Top 10 countries",
   "noData": "No data",
-  "noDataGeo": "No data (import a GeoIP database first)"
+  "noDataGeo": "No data (import a GeoIP database first)",
+  "scopeLocation": "Path {m}",
+  "scopeUser": "Users {m}",
+  "upstreamRequests": "{n} requests",
+  "blocked": "Blocked (total, by reason)",
+  "block_ban": "Banned",
+  "block_ip": "IP list",
+  "block_country": "Country filter",
+  "block_rateLimit": "Rate limit",
+  "block_waf": "WAF"
 }

@@ -15,5 +15,14 @@
   "topIps": "Топ-10 IP-адресов источников",
   "topCountries": "Топ-10 стран",
   "noData": "Нет данных",
-  "noDataGeo": "Нет данных (сначала импортируйте базу GeoIP)"
+  "noDataGeo": "Нет данных (сначала импортируйте базу GeoIP)",
+  "scopeLocation": "Путь {m}",
+  "scopeUser": "Пользователи {m}",
+  "upstreamRequests": "Запросов: {n}",
+  "blocked": "Заблокировано (всего, по причинам)",
+  "block_ban": "Бан",
+  "block_ip": "Список IP",
+  "block_country": "Фильтр стран",
+  "block_rateLimit": "Ограничение частоты",
+  "block_waf": "WAF"
 }

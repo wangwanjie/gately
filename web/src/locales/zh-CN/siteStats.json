@@ -15,5 +15,14 @@
   "topIps": "来源 IP Top 10",
   "topCountries": "国家 Top 10",
   "noData": "暂无数据",
-  "noDataGeo": "暂无数据（需导入 GeoIP 数据库）"
+  "noDataGeo": "暂无数据（需导入 GeoIP 数据库）",
+  "scopeLocation": "路径 {m}",
+  "scopeUser": "用户 {m}",
+  "upstreamRequests": "请求 {n}",
+  "blocked": "拦截（累计，按原因）",
+  "block_ban": "已封禁",
+  "block_ip": "IP 名单",
+  "block_country": "国家过滤",
+  "block_rateLimit": "限流",
+  "block_waf": "WAF"
 }

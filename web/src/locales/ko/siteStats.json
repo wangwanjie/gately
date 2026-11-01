@@ -15,5 +15,14 @@
   "topIps": "접속 IP 상위 10",
   "topCountries": "국가 상위 10",
   "noData": "데이터가 없습니다",
-  "noDataGeo": "데이터가 없습니다 (GeoIP 데이터베이스를 가져와야 합니다)"
+  "noDataGeo": "데이터가 없습니다 (GeoIP 데이터베이스를 가져와야 합니다)",
+  "scopeLocation": "경로 {m}",
+  "scopeUser": "사용자 {m}",
+  "upstreamRequests": "요청 {n}",
+  "blocked": "차단(누적, 원인별)",
+  "block_ban": "차단됨(밴)",
+  "block_ip": "IP 목록",
+  "block_country": "국가 필터",
+  "block_rateLimit": "속도 제한",
+  "block_waf": "WAF"
 }
