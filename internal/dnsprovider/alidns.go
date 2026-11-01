@@ -14,18 +14,21 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
+	"unicode/utf8"
 )
 
 // 阿里云云解析 DNS，RPC 风格接口，签名算法 HMAC-SHA1（Signature Version 1.0）。
 // 文档：https://help.aliyun.com/document_detail/29745.html
 func init() {
 	register(Meta{
-		Name:         "alidns",
-		Title:        "阿里云 DNS",
-		IDLabel:      "AccessKey ID",
-		SecretLabel:  "AccessKey Secret",
-		SupportsLine: true,
-		DocURL:       "https://ram.console.aliyun.com/manage/ak",
+		Name:           "alidns",
+		Title:          "阿里云 DNS",
+		IDLabel:        "AccessKey ID",
+		SecretLabel:    "AccessKey Secret",
+		SupportsLine:   true,
+		SupportsRemark: true,
+		DocURL:         "https://ram.console.aliyun.com/manage/ak",
 	}, func(c Credentials, hc *http.Client) (Provider, error) {
 		if err := requireCreds(c, true, true); err != nil {
 			return nil, err
@@ -48,6 +51,7 @@ type aliRecord struct {
 	Value    string `json:"Value"`
 	TTL      int    `json:"TTL"`
 	Line     string `json:"Line"`
+	Remark   string `json:"Remark"`
 }
 
 type aliError struct {
@@ -133,6 +137,7 @@ func (a *aliDNS) Upsert(ctx context.Context, r Record) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	r.Remark = aliRemark(r.Remark)
 	params := map[string]string{"RR": r.RR(), "Type": r.Type, "Value": r.Value}
 	if r.TTL > 0 {
 		params["TTL"] = strconv.Itoa(r.TTL)
@@ -144,18 +149,70 @@ func (a *aliDNS) Upsert(ctx context.Context, r Record) (string, error) {
 		if rec.Type != r.Type || (r.Line != "" && rec.Line != r.Line) {
 			continue
 		}
-		if rec.Value == r.Value && (r.TTL == 0 || rec.TTL == r.TTL) {
+		valueSame := rec.Value == r.Value && (r.TTL == 0 || rec.TTL == r.TTL)
+		remarkSame := r.Remark == "" || rec.Remark == r.Remark
+		if valueSame && remarkSame {
 			return ActionUnchanged, nil
 		}
-		params["RecordId"] = rec.RecordID
-		if err := a.call(ctx, "UpdateDomainRecord", params, nil); err != nil {
-			return "", err
+		// 值与 TTL 都没变时 UpdateDomainRecord 会报 DomainRecordDuplicate，只改备注时跳过
+		if !valueSame {
+			params["RecordId"] = rec.RecordID
+			if err := a.call(ctx, "UpdateDomainRecord", params, nil); err != nil {
+				return "", err
+			}
+		}
+		if !remarkSame {
+			if err := a.setRemark(ctx, rec.RecordID, r.Remark); err != nil {
+				return "", err
+			}
 		}
 		return ActionUpdated, nil
 	}
 	params["DomainName"] = r.Zone
-	if err := a.call(ctx, "AddDomainRecord", params, nil); err != nil {
+	var created struct {
+		RecordID string `json:"RecordId"`
+	}
+	if err := a.call(ctx, "AddDomainRecord", params, &created); err != nil {
 		return "", err
 	}
+	// 新增接口不接受备注，创建后再单独设置
+	if r.Remark != "" && created.RecordID != "" {
+		if err := a.setRemark(ctx, created.RecordID, r.Remark); err != nil {
+			return "", fmt.Errorf("记录已创建，设置备注失败: %w", err)
+		}
+	}
 	return ActionCreated, nil
+}
+
+// aliRemarkMax 为阿里云解析记录备注的最大字符数
+const aliRemarkMax = 50
+
+// aliRemark 把备注转换为阿里云接受的格式：只能含数字、中文、英文字母与 _ - , . ，。（空格也不行），
+// 最多 50 个字符。其他字符换成下划线并合并连续的下划线，避免因备注格式导致解析更新失败。
+func aliRemark(s string) string {
+	var b strings.Builder
+	n := 0
+	lastUnderscore := false
+	for _, c := range s {
+		ok := c < utf8.RuneSelf && (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || strings.ContainsRune("_-,.", c)) ||
+			unicode.Is(unicode.Han, c) || c == '，' || c == '。'
+		if !ok {
+			c = '_'
+		}
+		if c == '_' && lastUnderscore {
+			continue
+		}
+		if n == aliRemarkMax {
+			break
+		}
+		lastUnderscore = c == '_'
+		b.WriteRune(c)
+		n++
+	}
+	return strings.Trim(b.String(), "_")
+}
+
+// setRemark 修改解析记录的备注。
+func (a *aliDNS) setRemark(ctx context.Context, id, remark string) error {
+	return a.call(ctx, "UpdateDomainRecordRemark", map[string]string{"RecordId": id, "Remark": remark}, nil)
 }

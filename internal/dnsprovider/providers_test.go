@@ -67,10 +67,11 @@ func TestCloudflare(t *testing.T) {
 		case r.Method == "POST" && r.URL.Path == "/zones/z1/dns_records":
 			value = readJSON(t, r)["content"].(string)
 			_, _ = w.Write([]byte(`{"success":true,"result":{}}`))
-		case r.Method == "PUT" && r.URL.Path == "/zones/z1/dns_records/r1":
+		case r.Method == "PATCH" && r.URL.Path == "/zones/z1/dns_records/r1":
 			body := readJSON(t, r)
-			if body["proxied"] != true {
-				t.Error("更新时应保留代理状态")
+			// PATCH 不带 proxied，服务商处的代理状态保持不变
+			if _, ok := body["proxied"]; ok {
+				t.Error("更新时不应改动代理状态")
 			}
 			value = body["content"].(string)
 			_, _ = w.Write([]byte(`{"success":true,"result":{}}`))

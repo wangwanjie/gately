@@ -19,12 +19,13 @@ import (
 // 文档：https://cloud.tencent.com/document/api/1427/56193
 func init() {
 	register(Meta{
-		Name:         "tencentcloud",
-		Title:        "腾讯云 DNSPod (API 3.0)",
-		IDLabel:      "SecretId",
-		SecretLabel:  "SecretKey",
-		SupportsLine: true,
-		DocURL:       "https://console.cloud.tencent.com/cam/capi",
+		Name:           "tencentcloud",
+		Title:          "腾讯云 DNSPod (API 3.0)",
+		IDLabel:        "SecretId",
+		SecretLabel:    "SecretKey",
+		SupportsLine:   true,
+		SupportsRemark: true,
+		DocURL:         "https://console.cloud.tencent.com/cam/capi",
 	}, func(c Credentials, hc *http.Client) (Provider, error) {
 		if err := requireCreds(c, true, true); err != nil {
 			return nil, err
@@ -113,6 +114,7 @@ type tcRecord struct {
 	Name     string `json:"Name"`
 	Line     string `json:"Line"`
 	TTL      int    `json:"TTL"`
+	Remark   string `json:"Remark"`
 }
 
 func (t *tencentCloud) Upsert(ctx context.Context, r Record) (string, error) {
@@ -139,20 +141,30 @@ func (t *tencentCloud) Upsert(ctx context.Context, r Record) (string, error) {
 	if r.TTL > 0 {
 		params["TTL"] = r.TTL
 	}
+	if r.Remark != "" {
+		params["Remark"] = r.Remark
+	}
 	for _, rec := range list.RecordList {
 		if rec.Type != r.Type || rec.Line != line {
 			continue
 		}
-		if rec.Value == r.Value && (r.TTL == 0 || rec.TTL == r.TTL) {
+		valueSame := rec.Value == r.Value && (r.TTL == 0 || rec.TTL == r.TTL)
+		remarkSame := r.Remark == "" || rec.Remark == r.Remark
+		if valueSame && remarkSame {
 			return ActionUnchanged, nil
 		}
+		action, params := "ModifyRecord", params
+		if valueSame {
+			// 只有备注不同时调用专门的备注接口，不重复提交记录值
+			action, params = "ModifyRecordRemark", map[string]any{"Domain": r.Zone, "Remark": r.Remark}
+		}
 		params["RecordId"] = rec.RecordID
-		apiErr, err := t.call(ctx, "ModifyRecord", params, nil)
+		apiErr, err := t.call(ctx, action, params, nil)
 		if err != nil {
 			return "", err
 		}
 		if apiErr != nil {
-			return "", fmt.Errorf("腾讯云 ModifyRecord: %s (%s)", apiErr.Message, apiErr.Code)
+			return "", fmt.Errorf("腾讯云 %s: %s (%s)", action, apiErr.Message, apiErr.Code)
 		}
 		return ActionUpdated, nil
 	}

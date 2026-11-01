@@ -37,11 +37,35 @@ When a STUN rule's public address changes, tasks that reference it sync right aw
 
 A Webhook can be called when the IP changes or a sync fails.
 
+## Remarks {#remark}
+
+Records can have a remark, which is written to the DNS provider when syncing so you can see it in the provider's record list. An empty record remark uses the task remark; when both are empty the existing remark at the provider is left unchanged. Changing only the remark also triggers a sync. Anything past 100 characters is not written (the Cloudflare free plan limit). Alibaba Cloud remarks are limited to 50 characters of Chinese, English letters, digits and `_ - , . ，。`; spaces and other symbols become underscores.
+
+Providers that receive remarks: Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod (China and international), Huawei Cloud. For other providers the remark is only stored in Gately.
+
+## Deleting records and tasks {#delete}
+
+When you delete a record (the delete icon at the right of a record in the list, or removing a saved record in the editor and saving) or a task, a confirmation dialog lets you tick "Also delete from the DNS provider":
+
+- When ticked, the DNS records at the provider are deleted first, and the Gately configuration is deleted only if all of them succeed; if any fails, the reason is shown and the Gately configuration stays unchanged, so you can retry or untick the option;
+- Only the record synced by Gately is deleted: if there is a single record with the same name and type (and line), it is deleted; if there are several, only those whose value matches the last sync are deleted, and nothing is deleted when it cannot be determined;
+- A record that no longer exists at the provider counts as success;
+- DuckDNS, Namecheap, DynDNS2 and the custom callback have no delete API, so the option is not shown and the record at the provider has to be deleted by hand.
+
+The default state of the checkbox is set in Global settings.
+
+## Global settings {#settings}
+
+Global settings in the page header contain:
+
+- **Enable module**: while disabled, no IP checks run and no DNS records are updated;
+- **Also delete at the provider**: default state of the "Also delete from the DNS provider" checkbox when deleting a record or task. It is off by default and can still be changed each time.
+
 ## Recommendations
 
 - Create a sub-account key limited to DNS record editing for your DNS provider. Avoid using the main account key;
 - After creating a task, click "Force sync" to confirm that the record has been updated;
-- To drop a record you no longer need, click the delete icon at the right of that record in the list, without opening the editor; it is only removed from the task, the existing DNS record at the provider is kept, and a task keeps at least one record;
+- To drop a record you no longer need, click the delete icon at the right of that record in the list, without opening the editor; a task keeps at least one record, and whether the DNS record at the provider is deleted too is described in [Deleting records and tasks](#delete);
 - The public-IP lookup address no longer depends on any service operated by the project, and you can change it in a task at any time.
 
 ## Groups and sorting

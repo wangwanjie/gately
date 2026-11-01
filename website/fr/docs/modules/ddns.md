@@ -37,11 +37,35 @@ Quand l'adresse publique d'une règle STUN change, les tâches qui y font réfé
 
 Un Webhook peut être appelé lorsque l'IP change ou qu'une synchronisation échoue.
 
+## Notes {#remark}
+
+Les enregistrements peuvent avoir une note, écrite chez le fournisseur DNS lors de la synchronisation et visible dans la liste des enregistrements de sa console. Une note d’enregistrement vide reprend celle de la tâche ; si les deux sont vides, la note existante chez le fournisseur n’est pas modifiée. Modifier seulement la note déclenche aussi une synchronisation. Au-delà de 100 caractères, le reste n’est pas écrit (limite de l’offre gratuite Cloudflare). Chez Alibaba Cloud, la note est limitée à 50 caractères parmi le chinois, les lettres latines, les chiffres et `_ - , . ，。` ; les espaces et autres symboles deviennent des tirets bas.
+
+Fournisseurs qui reçoivent les notes : Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod (Chine et international), Huawei Cloud. Pour les autres, la note est seulement conservée dans Gately.
+
+## Supprimer des enregistrements et des tâches {#delete}
+
+Quand vous supprimez un enregistrement (l’icône de suppression à droite de l’enregistrement dans la liste, ou en retirant un enregistrement enregistré dans l’éditeur puis en enregistrant) ou une tâche, une boîte de confirmation permet de cocher « Supprimer aussi chez le fournisseur DNS » :
+
+- Si la case est cochée, les enregistrements chez le fournisseur sont supprimés d’abord, et la configuration Gately n’est supprimée que s’ils le sont tous ; en cas d’échec, la raison s’affiche et la configuration Gately reste inchangée, vous pouvez réessayer ou décocher l’option ;
+- Seul l’enregistrement synchronisé par Gately est supprimé : s’il n’y en a qu’un avec le même nom et le même type (et la même ligne), il est supprimé ; s’il y en a plusieurs, seuls ceux dont la valeur correspond à la dernière synchronisation le sont, et rien n’est supprimé si on ne peut pas trancher ;
+- Un enregistrement qui n’existe plus chez le fournisseur compte comme un succès ;
+- DuckDNS, Namecheap, DynDNS2 et le rappel personnalisé n’ont pas d’API de suppression : l’option n’est pas proposée et l’enregistrement chez le fournisseur doit être supprimé à la main.
+
+L’état par défaut de la case se règle dans les Paramètres globaux.
+
+## Paramètres globaux {#settings}
+
+Les Paramètres globaux, dans l’en-tête de la page, contiennent :
+
+- **Activer le module** : tant qu’il est désactivé, l’IP n’est pas vérifiée et aucun enregistrement DNS n’est mis à jour ;
+- **Supprimer aussi chez le fournisseur** : état par défaut de la case « Supprimer aussi chez le fournisseur DNS » lors de la suppression d’un enregistrement ou d’une tâche. Elle est décochée par défaut et reste modifiable à chaque suppression.
+
 ## Recommandations
 
 - Créez chez votre fournisseur DNS une clé de sous-compte limitée à la modification des enregistrements DNS. Évitez d'utiliser la clé du compte principal ;
 - Après avoir créé une tâche, cliquez sur « Forcer la synchronisation » pour vérifier que l'enregistrement a bien été mis à jour ;
-- Pour retirer un enregistrement devenu inutile, cliquez sur l'icône de suppression à droite de cet enregistrement dans la liste, sans ouvrir l'éditeur ; il est seulement retiré de la tâche, l'enregistrement DNS existant chez le fournisseur est conservé et la tâche garde au moins un enregistrement ;
+- Pour retirer un enregistrement devenu inutile, cliquez sur l'icône de suppression à droite de cet enregistrement dans la liste, sans ouvrir l'éditeur ; la tâche garde au moins un enregistrement, et la suppression de l'enregistrement DNS chez le fournisseur est décrite dans [Supprimer des enregistrements et des tâches](#delete) ;
 - L'adresse de consultation de l'IP publique ne dépend plus d'aucun service exploité par le projet, et vous pouvez la modifier à tout moment dans une tâche.
 
 ## Groupes et tri

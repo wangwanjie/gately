@@ -24,7 +24,8 @@ func init() {
 		Extra: []Field{
 			{Key: "proxied", Label: "新建时开启代理", Placeholder: "true 或 false，默认 false"},
 		},
-		DocURL: "https://dash.cloudflare.com/profile/api-tokens",
+		DocURL:         "https://dash.cloudflare.com/profile/api-tokens",
+		SupportsRemark: true,
 	}, func(c Credentials, hc *http.Client) (Provider, error) {
 		if err := requireCreds(c, false, true); err != nil {
 			return nil, err
@@ -55,6 +56,8 @@ type cfRecord struct {
 	Content string `json:"content"`
 	TTL     int    `json:"ttl"`
 	Proxied bool   `json:"proxied"`
+	// Comment 为记录备注，空时不发送
+	Comment string `json:"comment,omitempty"`
 }
 
 func (c *cloudflare) call(ctx context.Context, method, path string, body any, out any) error {
@@ -138,17 +141,21 @@ func (c *cloudflare) Upsert(ctx context.Context, r Record) (string, error) {
 	}
 	if len(recs) > 0 {
 		cur := recs[0]
-		if cur.Content == r.Value && (r.TTL <= 0 || cur.TTL == ttl) {
+		valueSame := cur.Content == r.Value && (r.TTL <= 0 || cur.TTL == ttl)
+		if valueSame && (r.Remark == "" || cur.Comment == r.Remark) {
 			return ActionUnchanged, nil
 		}
-		// 保留原记录的代理状态
-		upd := cfRecord{Type: r.Type, Name: r.FQDN(), Content: r.Value, TTL: ttl, Proxied: cur.Proxied}
-		if err := c.call(ctx, http.MethodPut, "/zones/"+zid+"/dns_records/"+cur.ID, upd, nil); err != nil {
+		// PATCH 只改给出的字段，代理状态、标签和未由 Gately 管理的备注保持不变
+		upd := map[string]any{"content": r.Value, "ttl": ttl}
+		if r.Remark != "" {
+			upd["comment"] = r.Remark
+		}
+		if err := c.call(ctx, http.MethodPatch, "/zones/"+zid+"/dns_records/"+cur.ID, upd, nil); err != nil {
 			return "", err
 		}
 		return ActionUpdated, nil
 	}
-	rec := cfRecord{Type: r.Type, Name: r.FQDN(), Content: r.Value, TTL: ttl, Proxied: c.creds.Extra["proxied"] == "true"}
+	rec := cfRecord{Type: r.Type, Name: r.FQDN(), Content: r.Value, TTL: ttl, Proxied: c.creds.Extra["proxied"] == "true", Comment: r.Remark}
 	if err := c.call(ctx, http.MethodPost, "/zones/"+zid+"/dns_records", rec, nil); err != nil {
 		return "", err
 	}

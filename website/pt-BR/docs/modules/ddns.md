@@ -37,11 +37,35 @@ Quando o endereço público de uma regra STUN muda, as tarefas que a usam sincro
 
 Um Webhook pode ser chamado quando o IP muda ou a sincronização falha.
 
+## Observações {#remark}
+
+Os registros podem ter uma observação, gravada no provedor DNS na sincronização e visível na lista de registros do painel do provedor. Se a observação do registro estiver vazia, usa-se a da tarefa; se as duas estiverem vazias, a observação existente no provedor não é alterada. Mudar só a observação também dispara uma sincronização. O que passar de 100 caracteres não é gravado (limite do plano gratuito da Cloudflare). Na Alibaba Cloud a observação aceita 50 caracteres entre chinês, letras do alfabeto inglês, dígitos e `_ - , . ，。`; espaços e outros símbolos viram sublinhados.
+
+Provedores que recebem observações: Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod (China e internacional) e Huawei Cloud. Nos demais, a observação fica salva apenas no Gately.
+
+## Excluir registros e tarefas {#delete}
+
+Ao excluir um registro (o ícone de excluir à direita do registro na lista, ou removendo um registro salvo no editor e salvando) ou uma tarefa, uma caixa de confirmação permite marcar "Excluir também no provedor DNS":
+
+- Se marcada, os registros no provedor são excluídos primeiro, e a configuração do Gately só é excluída se todos derem certo; se algum falhar, o motivo é exibido e a configuração do Gately não muda, então você pode tentar de novo ou desmarcar a opção;
+- Só o registro sincronizado pelo Gately é excluído: se houver um único com o mesmo nome e tipo (e linha), ele é excluído; se houver vários, só os com o valor da última sincronização, e nada é excluído quando não dá para determinar;
+- Um registro que já não existe no provedor conta como sucesso;
+- DuckDNS, Namecheap, DynDNS2 e o callback personalizado não têm API de exclusão, então a opção não aparece e o registro no provedor precisa ser excluído manualmente.
+
+O estado padrão da caixa é definido nas Configurações globais.
+
+## Configurações globais {#settings}
+
+As Configurações globais no cabeçalho da página contêm:
+
+- **Ativar módulo**: enquanto desativado, o IP não é verificado e nenhum registro DNS é atualizado;
+- **Excluir também no provedor**: estado padrão da caixa "Excluir também no provedor DNS" ao excluir um registro ou tarefa. Fica desmarcada por padrão e pode ser alterada a cada exclusão.
+
 ## Recomendações
 
 - Crie, no provedor de DNS, uma chave de subconta limitada à edição de registros DNS e evite usar a chave da conta principal;
 - Depois de criar uma tarefa, clique em "Forçar sincronização" para confirmar que o registro foi atualizado;
-- Para remover um registro que não é mais necessário, clique no ícone de excluir à direita dele na lista, sem abrir o editor; ele é removido apenas da tarefa, o registro DNS existente no provedor é mantido e a tarefa mantém pelo menos um registro;
+- Para remover um registro que não é mais necessário, clique no ícone de excluir à direita dele na lista, sem abrir o editor; a tarefa mantém pelo menos um registro, e como excluir também o registro DNS no provedor está em [Excluir registros e tarefas](#delete);
 - O endereço de consulta do IP público não depende mais de nenhum serviço operado pelo projeto e pode ser trocado em uma tarefa a qualquer momento.
 
 ## Grupos e ordenação

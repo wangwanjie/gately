@@ -296,6 +296,26 @@
         },
         "type": "object"
       },
+      "ddns.RemoteDeleteResult": {
+        "properties": {
+          "deleted": {
+            "type": "integer"
+          },
+          "domain": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "ddns.Task": {
         "properties": {
           "credentials": {
@@ -362,6 +382,17 @@
           "records": {
             "items": {
               "$ref": "#/components/schemas/ddns.recordLayout"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ddns.remoteDeleteRequest": {
+        "properties": {
+          "records": {
+            "items": {
+              "type": "string"
             },
             "type": "array"
           }
@@ -8168,7 +8199,7 @@
     },
     "/api/ddns/tasks/{key}/records/{rec}": {
       "delete": {
-        "description": "`rec` — это `key` записи. Запись удаляется только из конфигурации задачи; существующие DNS-записи у провайдера сохраняются. Возвращает 400, если в задаче осталась одна запись; в этом случае удалите задачу целиком.\n\nТребуемое разрешение: `ddns:write`.",
+        "description": "`rec` — `key` записи. Удаляет запись только из конфигурации задания; существующая DNS-запись у провайдера сохраняется. Чтобы удалить и её, сначала вызовите `POST /api/ddns/tasks/{key}/remote-delete`. Если это единственная запись задания, возвращается 400 — удалите задание целиком.\n\nТребуемое разрешение: `ddns:write`.",
         "parameters": [
           {
             "in": "path",
@@ -8228,6 +8259,86 @@
           }
         ],
         "summary": "Удалить одну запись из задачи DDNS",
+        "tags": [
+          "Динамический DNS"
+        ],
+        "x-required-scope": "ddns:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ddns/tasks/{key}/remote-delete": {
+      "post": {
+        "description": "Поле `records` в теле — список `key` записей; пустой список означает все записи задания. Удаляются только DNS-записи у провайдера, конфигурация задания не меняется; обычно вызывается перед удалением записей или задания. Если запись с тем же именем и типом (и линией) одна, она удаляется; если их несколько — только те, чьё значение совпадает с последней синхронизацией, а если определить нельзя, ничего не удаляется и возвращается ошибка. На это время задание приостанавливает синхронизацию и возобновляет её через 30 секунд. Возвращает 502 с причиной, если хотя бы одна запись не удалась, и 400, если провайдер не поддерживает удаление (поле `supportsDelete` в `GET /api/ddns/providers`).\n\nТребуемое разрешение: `ddns:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ddns.remoteDeleteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ddns.RemoteDeleteResult"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Удалить DNS-записи задания DDNS у DNS-провайдера",
         "tags": [
           "Динамический DNS"
         ],

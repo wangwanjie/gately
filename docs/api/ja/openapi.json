@@ -296,6 +296,26 @@
         },
         "type": "object"
       },
+      "ddns.RemoteDeleteResult": {
+        "properties": {
+          "deleted": {
+            "type": "integer"
+          },
+          "domain": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "ddns.Task": {
         "properties": {
           "credentials": {
@@ -362,6 +382,17 @@
           "records": {
             "items": {
               "$ref": "#/components/schemas/ddns.recordLayout"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ddns.remoteDeleteRequest": {
+        "properties": {
+          "records": {
+            "items": {
+              "type": "string"
             },
             "type": "array"
           }
@@ -8168,7 +8199,7 @@
     },
     "/api/ddns/tasks/{key}/records/{rec}": {
       "delete": {
-        "description": "`rec` はレコードの `key` です。タスク設定からそのレコードを削除するだけで、DNS プロバイダー側の既存レコードは残ります。タスクのレコードが残り 1 件の場合は 400 を返します。その場合はタスク全体を削除してください。\n\n必要な権限: `ddns:write`。",
+        "description": "`rec` はレコードの `key` です。タスクの設定からレコードを外すだけで、プロバイダー側の既存の DNS レコードは残ります。あわせて削除するには先に `POST /api/ddns/tasks/{key}/remote-delete` を呼び出してください。タスクのレコードが 1 件だけのときは 400 を返すので、タスクごと削除してください。\n\n必要な権限: `ddns:write`。",
         "parameters": [
           {
             "in": "path",
@@ -8228,6 +8259,86 @@
           }
         ],
         "summary": "DDNS タスクのレコードを 1 件削除",
+        "tags": [
+          "ダイナミック DNS"
+        ],
+        "x-required-scope": "ddns:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ddns/tasks/{key}/remote-delete": {
+      "post": {
+        "description": "リクエスト本文の `records` はレコード `key` の一覧で、空にするとタスクのすべてのレコードが対象です。プロバイダー側の DNS レコードだけを削除し、タスクの設定は変更しません。通常はレコードやタスクを削除する前に呼び出します。同じ名前・タイプ（・回線）のレコードが 1 件ならそれを削除し、複数ある場合は値が最後の同期結果と一致するものだけを削除します。特定できない場合は削除せずにエラーを返します。その間タスクの同期は止まり、終了の 30 秒後に再開します。1 件でも失敗すると 502 と理由を、プロバイダーが削除に対応していない場合は 400 を返します（対応可否は `GET /api/ddns/providers` の `supportsDelete` で分かります）。\n\n必要な権限: `ddns:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ddns.remoteDeleteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ddns.RemoteDeleteResult"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "DDNS タスクの DNS レコードを DNS プロバイダーから削除",
         "tags": [
           "ダイナミック DNS"
         ],

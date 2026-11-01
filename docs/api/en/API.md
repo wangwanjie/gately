@@ -110,6 +110,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | GET | `/api/ddns/tasks/{key}/secrets` | `ddns:write` | View secrets in plain text |
 | POST | `/api/ddns/tasks/{key}/sync` | `ddns:write` | Sync a DDNS task immediately |
 | DELETE | `/api/ddns/tasks/{key}/records/{rec}` | `ddns:write` | Delete one record from a DDNS task |
+| POST | `/api/ddns/tasks/{key}/remote-delete` | `ddns:write` | Delete the DNS records of a DDNS task at the DNS provider |
 | PUT | `/api/ddns/tasks/{key}/records-layout` | `ddns:write` | Reorder and group a task's DNS records |
 | GET | `/api/ddns/providers` | `ddns:read` | List supported DNS providers and their required parameters |
 | GET | `/api/ddns/netinterfaces` | `ddns:read` | List network interfaces and addresses on this machine |
@@ -838,6 +839,16 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `value` | string |
 | `zone` | string |
 
+### ddns.RemoteDeleteResult
+
+| Field | Type |
+| --- | --- |
+| `deleted` | integer |
+| `domain` | string |
+| `error` | string |
+| `key` | string |
+| `type` | string |
+
 ### ddns.Task
 
 | Field | Type |
@@ -869,6 +880,12 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Field | Type |
 | --- | --- |
 | `records` | Array of `ddns.recordLayout` |
+
+### ddns.remoteDeleteRequest
+
+| Field | Type |
+| --- | --- |
+| `records` | Array of string |
 
 ### dnsprovider.Credentials
 

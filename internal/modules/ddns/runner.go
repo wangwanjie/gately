@@ -81,8 +81,9 @@ func newRunner(t Task, log *logbuf.Logger, prev *TaskState, prevTask *Task) *run
 				continue
 			}
 			// 改了域名、类型、线路或 TTL（例如把 lucky.example.com 改成 gately.example.com）的记录，
-			// 旧状态对应的是另一条解析，保留会被当作“已同步”而永远不创建新记录
-			if o, found := old[rec.Key]; prevTask != nil && (!found || !sameTarget(o, rec)) {
+			// 旧状态对应的是另一条解析，保留会被当作“已同步”而永远不创建新记录；
+			// 备注（含作为默认值的任务备注）变化后也要重新同步，才能写到服务商处
+			if o, found := old[rec.Key]; prevTask != nil && (!found || !sameTarget(o, rec) || prevTask.remarkOf(o) != t.remarkOf(rec)) {
 				continue
 			}
 			r.state.Records[rec.Key] = st
@@ -260,7 +261,7 @@ func (r *runner) syncOnce(ctx context.Context, force bool) {
 		}
 		cctx, cancel := context.WithTimeout(ctx, timeout*3)
 		action, err := provider.Upsert(cctx, dnsprovider.Record{
-			Zone: rec.Zone, Sub: rec.Sub, Type: rec.Type, Value: value, TTL: rec.TTL, Line: rec.Line,
+			Zone: rec.Zone, Sub: rec.Sub, Type: rec.Type, Value: value, TTL: rec.TTL, Line: rec.Line, Remark: t.remarkOf(rec),
 		})
 		cancel()
 		if err != nil {

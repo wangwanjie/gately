@@ -296,6 +296,26 @@
         },
         "type": "object"
       },
+      "ddns.RemoteDeleteResult": {
+        "properties": {
+          "deleted": {
+            "type": "integer"
+          },
+          "domain": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "ddns.Task": {
         "properties": {
           "credentials": {
@@ -362,6 +382,17 @@
           "records": {
             "items": {
               "$ref": "#/components/schemas/ddns.recordLayout"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ddns.remoteDeleteRequest": {
+        "properties": {
+          "records": {
+            "items": {
+              "type": "string"
             },
             "type": "array"
           }
@@ -8168,7 +8199,7 @@
     },
     "/api/ddns/tasks/{key}/records/{rec}": {
       "delete": {
-        "description": "`rec` 為記錄的 `key`。只從任務設定中移除該記錄，DNS 服務商處已有的解析保留；任務只剩一條記錄時返回 400，此時請刪除整個任務。\n\n所需權限：`ddns:write`。",
+        "description": "`rec` 為記錄的 `key`。只從工作設定中移除該記錄，DNS 服務商處已有的解析保留，如需一併刪除請先呼叫 `POST /api/ddns/tasks/{key}/remote-delete`；工作只剩一筆記錄時回傳 400，此時請刪除整個工作。\n\n所需權限：`ddns:write`。",
         "parameters": [
           {
             "in": "path",
@@ -8228,6 +8259,86 @@
           }
         ],
         "summary": "刪除 DDNS 任務中的一條記錄",
+        "tags": [
+          "動態網域"
+        ],
+        "x-required-scope": "ddns:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ddns/tasks/{key}/remote-delete": {
+      "post": {
+        "description": "請求本文 `records` 為記錄 `key` 清單，留空表示工作中的全部記錄。只刪除服務商處的解析，不修改工作設定，通常在刪除記錄或工作之前呼叫。同名同類型（同線路）的解析只有一筆時直接刪除；有多筆時只刪除值與最近一次同步結果相同的，無法確定時不刪除並回報錯誤。期間工作暫停同步，結束 30 秒後恢復。任一筆失敗時回傳 502 與失敗原因；服務商不支援刪除時回傳 400（`GET /api/ddns/providers` 的 `supportsDelete` 標明是否支援）。\n\n所需權限：`ddns:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ddns.remoteDeleteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ddns.RemoteDeleteResult"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "從 DNS 服務商刪除 DDNS 工作中的解析記錄",
         "tags": [
           "動態網域"
         ],

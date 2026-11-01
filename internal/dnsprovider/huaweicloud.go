@@ -17,11 +17,12 @@ import (
 // 文档：https://support.huaweicloud.com/api-dns/dns_api_64001.html
 func init() {
 	register(Meta{
-		Name:        "huaweicloud",
-		Title:       "华为云 DNS",
-		IDLabel:     "Access Key ID",
-		SecretLabel: "Secret Access Key",
-		DocURL:      "https://console.huaweicloud.com/iam/#/mine/accessKey",
+		Name:           "huaweicloud",
+		Title:          "华为云 DNS",
+		IDLabel:        "Access Key ID",
+		SecretLabel:    "Secret Access Key",
+		DocURL:         "https://console.huaweicloud.com/iam/#/mine/accessKey",
+		SupportsRemark: true,
 	}, func(c Credentials, hc *http.Client) (Provider, error) {
 		if err := requireCreds(c, true, true); err != nil {
 			return nil, err
@@ -107,6 +108,8 @@ type hwRecordset struct {
 	Type    string   `json:"type"`
 	TTL     int      `json:"ttl,omitempty"`
 	Records []string `json:"records"`
+	// Description 为记录集备注，空时不发送
+	Description string `json:"description,omitempty"`
 }
 
 func (h *huaweiCloud) Upsert(ctx context.Context, r Record) (string, error) {
@@ -135,12 +138,13 @@ func (h *huaweiCloud) Upsert(ctx context.Context, r Record) (string, error) {
 	if err := h.call(ctx, http.MethodGet, "/v2/zones/"+zid+"/recordsets", url.Values{"name": {fqdn}, "type": {r.Type}, "search_mode": {"equal"}}, nil, &sets); err != nil {
 		return "", err
 	}
-	body := hwRecordset{Name: fqdn, Type: r.Type, TTL: r.TTL, Records: []string{r.Value}}
+	body := hwRecordset{Name: fqdn, Type: r.Type, TTL: r.TTL, Records: []string{r.Value}, Description: r.Remark}
 	for _, s := range sets.Recordsets {
 		if !strings.EqualFold(s.Name, fqdn) || s.Type != r.Type {
 			continue
 		}
-		if len(s.Records) == 1 && s.Records[0] == r.Value && (r.TTL == 0 || s.TTL == r.TTL) {
+		valueSame := len(s.Records) == 1 && s.Records[0] == r.Value && (r.TTL == 0 || s.TTL == r.TTL)
+		if valueSame && (r.Remark == "" || s.Description == r.Remark) {
 			return ActionUnchanged, nil
 		}
 		if err := h.call(ctx, http.MethodPut, "/v2/zones/"+zid+"/recordsets/"+s.ID, nil, body, nil); err != nil {

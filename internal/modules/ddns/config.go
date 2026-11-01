@@ -6,6 +6,7 @@ import (
 	"net/netip"
 	"regexp"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/wangwanjie/gately/internal/crud"
 	"github.com/wangwanjie/gately/internal/dnsprovider"
@@ -39,9 +40,10 @@ type Record struct {
 	Sub  string `json:"sub"`
 	Type string `json:"type"`
 	// Value 支持变量 {ipv4Addr} {ipv6Addr}，以及 {STUN_规则名_PORT} {STUN_规则名_IP} {STUN_规则名_ADDR}
-	Value  string `json:"value"`
-	TTL    int    `json:"ttl"`
-	Line   string `json:"line"`
+	Value string `json:"value"`
+	TTL   int    `json:"ttl"`
+	Line  string `json:"line"`
+	// Remark 为记录备注，同步时写到支持备注的服务商处；留空时使用任务备注
 	Remark string `json:"remark"`
 	// Group 为任务内记录列表中的分组名称，只影响管理界面的展示，留空为未分组
 	Group string `json:"group"`
@@ -71,6 +73,8 @@ type Task struct {
 // Settings 是模块级配置。
 type Settings struct {
 	Enable bool `json:"enable"`
+	// DeleteRemote 为删除记录或任务时“同时从服务商删除解析”勾选框的默认值
+	DeleteRemote bool `json:"deleteRemote"`
 }
 
 type fileConfig struct {
@@ -83,7 +87,22 @@ const (
 	defaultInterval = 300
 	defaultForce    = 3600
 	defaultTimeout  = 20
+	// maxRemarkLen 为写到服务商的备注最大字符数，与 Cloudflare 免费套餐记录备注的上限一致
+	maxRemarkLen = 100
 )
+
+// remarkOf 返回同步到服务商的备注：记录备注优先，留空时用任务备注；
+// 过长时截断，避免因备注超出服务商限制导致解析更新失败。
+func (t *Task) remarkOf(r Record) string {
+	s := strings.TrimSpace(r.Remark)
+	if s == "" {
+		s = strings.TrimSpace(t.Remark)
+	}
+	if utf8.RuneCountInString(s) > maxRemarkLen {
+		s = string([]rune(s)[:maxRemarkLen])
+	}
+	return s
+}
 
 // needs 返回任务是否需要获取 IPv4 / IPv6。
 func (t *Task) needs() (v4, v6 bool) {

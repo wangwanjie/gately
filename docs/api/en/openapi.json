@@ -296,6 +296,26 @@
         },
         "type": "object"
       },
+      "ddns.RemoteDeleteResult": {
+        "properties": {
+          "deleted": {
+            "type": "integer"
+          },
+          "domain": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "ddns.Task": {
         "properties": {
           "credentials": {
@@ -362,6 +382,17 @@
           "records": {
             "items": {
               "$ref": "#/components/schemas/ddns.recordLayout"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ddns.remoteDeleteRequest": {
+        "properties": {
+          "records": {
+            "items": {
+              "type": "string"
             },
             "type": "array"
           }
@@ -8168,7 +8199,7 @@
     },
     "/api/ddns/tasks/{key}/records/{rec}": {
       "delete": {
-        "description": "`rec` is the record's `key`. The record is only removed from the task configuration; existing DNS records at the provider are kept. Returns 400 when the task has only one record left; delete the whole task instead.\n\nRequired permission: `ddns:write`.",
+        "description": "`rec` is the record `key`. Only removes the record from the task configuration; the existing DNS record at the provider is kept. To delete it as well, call `POST /api/ddns/tasks/{key}/remote-delete` first. Returns 400 when it is the task's only record; delete the whole task instead.\n\nRequired permission: `ddns:write`.",
         "parameters": [
           {
             "in": "path",
@@ -8228,6 +8259,86 @@
           }
         ],
         "summary": "Delete one record from a DDNS task",
+        "tags": [
+          "Dynamic DNS"
+        ],
+        "x-required-scope": "ddns:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ddns/tasks/{key}/remote-delete": {
+      "post": {
+        "description": "The `records` body field lists record `key`s; leave it empty for all records of the task. Only the DNS records at the provider are deleted and the task configuration is unchanged; it is usually called before deleting records or a task. If there is a single record with the same name and type (and line), it is deleted; if there are several, only those whose value matches the last sync are deleted, and when that cannot be determined nothing is deleted and an error is returned. The task pauses syncing meanwhile and resumes 30 seconds afterwards. Returns 502 with the reason if any record fails, and 400 if the provider does not support deletion (`supportsDelete` in `GET /api/ddns/providers` tells whether it does).\n\nRequired permission: `ddns:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ddns.remoteDeleteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ddns.RemoteDeleteResult"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete the DNS records of a DDNS task at the DNS provider",
         "tags": [
           "Dynamic DNS"
         ],

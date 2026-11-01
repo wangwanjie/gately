@@ -296,6 +296,26 @@
         },
         "type": "object"
       },
+      "ddns.RemoteDeleteResult": {
+        "properties": {
+          "deleted": {
+            "type": "integer"
+          },
+          "domain": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "ddns.Task": {
         "properties": {
           "credentials": {
@@ -362,6 +382,17 @@
           "records": {
             "items": {
               "$ref": "#/components/schemas/ddns.recordLayout"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ddns.remoteDeleteRequest": {
+        "properties": {
+          "records": {
+            "items": {
+              "type": "string"
             },
             "type": "array"
           }
@@ -8168,7 +8199,7 @@
     },
     "/api/ddns/tasks/{key}/records/{rec}": {
       "delete": {
-        "description": "`rec`는 레코드의 `key`입니다. 작업 설정에서 해당 레코드만 제거하며 DNS 공급자 쪽의 기존 레코드는 유지됩니다. 작업에 레코드가 하나만 남은 경우 400을 반환하며, 이때는 작업 전체를 삭제하세요.\n\n필요한 권한: `ddns:write`.",
+        "description": "`rec`은 레코드의 `key`입니다. 작업 설정에서 레코드만 제거하며 제공업체의 기존 DNS 레코드는 유지됩니다. 함께 삭제하려면 먼저 `POST /api/ddns/tasks/{key}/remote-delete`를 호출하세요. 작업에 레코드가 하나만 남아 있으면 400을 반환하므로 작업 전체를 삭제하세요.\n\n필요한 권한: `ddns:write`.",
         "parameters": [
           {
             "in": "path",
@@ -8228,6 +8259,86 @@
           }
         ],
         "summary": "DDNS 작업의 레코드 하나 삭제",
+        "tags": [
+          "동적 도메인"
+        ],
+        "x-required-scope": "ddns:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ddns/tasks/{key}/remote-delete": {
+      "post": {
+        "description": "요청 본문의 `records`는 레코드 `key` 목록이며, 비워 두면 작업의 모든 레코드가 대상입니다. 제공업체의 DNS 레코드만 삭제하고 작업 설정은 바꾸지 않으며, 보통 레코드나 작업을 삭제하기 전에 호출합니다. 이름·유형(·회선)이 같은 레코드가 하나뿐이면 그것을 삭제하고, 여러 개이면 값이 마지막 동기화 결과와 같은 것만 삭제하며, 판단할 수 없으면 삭제하지 않고 오류를 반환합니다. 그동안 작업은 동기화를 멈추고 끝난 뒤 30초 후에 다시 시작합니다. 하나라도 실패하면 502와 원인을, 제공업체가 삭제를 지원하지 않으면 400을 반환합니다(`GET /api/ddns/providers`의 `supportsDelete`로 지원 여부를 확인할 수 있습니다).\n\n필요한 권한: `ddns:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ddns.remoteDeleteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ddns.RemoteDeleteResult"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "DDNS 작업의 DNS 레코드를 DNS 제공업체에서 삭제",
         "tags": [
           "동적 도메인"
         ],

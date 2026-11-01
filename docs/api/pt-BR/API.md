@@ -110,6 +110,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | GET | `/api/ddns/tasks/{key}/secrets` | `ddns:write` | Ver segredos em texto puro |
 | POST | `/api/ddns/tasks/{key}/sync` | `ddns:write` | Sincronizar uma tarefa DDNS imediatamente |
 | DELETE | `/api/ddns/tasks/{key}/records/{rec}` | `ddns:write` | Excluir um registro de uma tarefa DDNS |
+| POST | `/api/ddns/tasks/{key}/remote-delete` | `ddns:write` | Excluir no provedor DNS os registros de uma tarefa DDNS |
 | PUT | `/api/ddns/tasks/{key}/records-layout` | `ddns:write` | Reordenar e agrupar os registros DNS de uma tarefa |
 | GET | `/api/ddns/providers` | `ddns:read` | Listar provedores de DNS suportados e seus parâmetros necessários |
 | GET | `/api/ddns/netinterfaces` | `ddns:read` | Listar placas de rede e endereços desta máquina |
@@ -838,6 +839,16 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `value` | string |
 | `zone` | string |
 
+### ddns.RemoteDeleteResult
+
+| Campo | Tipo |
+| --- | --- |
+| `deleted` | integer |
+| `domain` | string |
+| `error` | string |
+| `key` | string |
+| `type` | string |
+
 ### ddns.Task
 
 | Campo | Tipo |
@@ -869,6 +880,12 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Campo | Tipo |
 | --- | --- |
 | `records` | Array de `ddns.recordLayout` |
+
+### ddns.remoteDeleteRequest
+
+| Campo | Tipo |
+| --- | --- |
+| `records` | Array de string |
 
 ### dnsprovider.Credentials
 

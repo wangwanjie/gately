@@ -110,6 +110,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/ddns/tasks/{key}/secrets` | `ddns:write` | Показать секреты открытым текстом |
 | POST | `/api/ddns/tasks/{key}/sync` | `ddns:write` | Немедленно синхронизировать задачу DDNS |
 | DELETE | `/api/ddns/tasks/{key}/records/{rec}` | `ddns:write` | Удалить одну запись из задачи DDNS |
+| POST | `/api/ddns/tasks/{key}/remote-delete` | `ddns:write` | Удалить DNS-записи задания DDNS у DNS-провайдера |
 | PUT | `/api/ddns/tasks/{key}/records-layout` | `ddns:write` | Изменить порядок и группы DNS-записей задачи |
 | GET | `/api/ddns/providers` | `ddns:read` | Список поддерживаемых DNS-провайдеров и необходимых им параметров |
 | GET | `/api/ddns/netinterfaces` | `ddns:read` | Список сетевых адаптеров и адресов этой машины |
@@ -838,6 +839,16 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `value` | string |
 | `zone` | string |
 
+### ddns.RemoteDeleteResult
+
+| Поле | Тип |
+| --- | --- |
+| `deleted` | integer |
+| `domain` | string |
+| `error` | string |
+| `key` | string |
+| `type` | string |
+
 ### ddns.Task
 
 | Поле | Тип |
@@ -869,6 +880,12 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Поле | Тип |
 | --- | --- |
 | `records` | Массив из `ddns.recordLayout` |
+
+### ddns.remoteDeleteRequest
+
+| Поле | Тип |
+| --- | --- |
+| `records` | Массив из string |
 
 ### dnsprovider.Credentials
 

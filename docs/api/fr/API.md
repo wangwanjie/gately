@@ -110,6 +110,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | GET | `/api/ddns/tasks/{key}/secrets` | `ddns:write` | Afficher les secrets en clair |
 | POST | `/api/ddns/tasks/{key}/sync` | `ddns:write` | Synchroniser immédiatement une tâche DDNS |
 | DELETE | `/api/ddns/tasks/{key}/records/{rec}` | `ddns:write` | Supprimer un enregistrement d'une tâche DDNS |
+| POST | `/api/ddns/tasks/{key}/remote-delete` | `ddns:write` | Supprimer chez le fournisseur DNS les enregistrements d’une tâche DDNS |
 | PUT | `/api/ddns/tasks/{key}/records-layout` | `ddns:write` | Réordonner et grouper les enregistrements DNS d'une tâche |
 | GET | `/api/ddns/providers` | `ddns:read` | Lister les fournisseurs DNS pris en charge et leurs paramètres requis |
 | GET | `/api/ddns/netinterfaces` | `ddns:read` | Lister les cartes réseau de cette machine et leurs adresses |
@@ -838,6 +839,16 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `value` | string |
 | `zone` | string |
 
+### ddns.RemoteDeleteResult
+
+| Champ | Type |
+| --- | --- |
+| `deleted` | integer |
+| `domain` | string |
+| `error` | string |
+| `key` | string |
+| `type` | string |
+
 ### ddns.Task
 
 | Champ | Type |
@@ -869,6 +880,12 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Champ | Type |
 | --- | --- |
 | `records` | Tableau de `ddns.recordLayout` |
+
+### ddns.remoteDeleteRequest
+
+| Champ | Type |
+| --- | --- |
+| `records` | Tableau de string |
 
 ### dnsprovider.Credentials
 

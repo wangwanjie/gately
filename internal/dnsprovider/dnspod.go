@@ -2,6 +2,7 @@ package dnsprovider
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -13,12 +14,13 @@ import (
 // 文档：https://docs.dnspod.cn/api/
 func init() {
 	register(Meta{
-		Name:         "dnspod",
-		Title:        "DNSPod (国内站 Token)",
-		IDLabel:      "ID",
-		SecretLabel:  "Token",
-		SupportsLine: true,
-		DocURL:       "https://console.dnspod.cn/account/token/token",
+		Name:           "dnspod",
+		Title:          "DNSPod (国内站 Token)",
+		IDLabel:        "ID",
+		SecretLabel:    "Token",
+		SupportsLine:   true,
+		SupportsRemark: true,
+		DocURL:         "https://console.dnspod.cn/account/token/token",
 	}, func(c Credentials, hc *http.Client) (Provider, error) {
 		if err := requireCreds(c, true, true); err != nil {
 			return nil, err
@@ -26,11 +28,12 @@ func init() {
 		return &dnspod{token: c.ID + "," + c.Secret, hc: hc, endpoint: "https://dnsapi.cn", defaultLine: "默认"}, nil
 	})
 	register(Meta{
-		Name:        "dnspodcom",
-		Title:       "DNSPod (国际站 Token)",
-		IDLabel:     "ID",
-		SecretLabel: "Token",
-		DocURL:      "https://www.dnspod.com/",
+		Name:           "dnspodcom",
+		Title:          "DNSPod (国际站 Token)",
+		IDLabel:        "ID",
+		SecretLabel:    "Token",
+		DocURL:         "https://www.dnspod.com/",
+		SupportsRemark: true,
 	}, func(c Credentials, hc *http.Client) (Provider, error) {
 		if err := requireCreds(c, true, true); err != nil {
 			return nil, err
@@ -80,16 +83,27 @@ func (d *dnspod) call(ctx context.Context, action string, form url.Values, out a
 type dnspodList struct {
 	Status  dnspodStatus `json:"status"`
 	Records []struct {
-		ID    string `json:"id"`
-		Name  string `json:"name"`
-		Type  string `json:"type"`
-		Value string `json:"value"`
-		Line  string `json:"line"`
-		TTL   string `json:"ttl"`
+		ID     string `json:"id"`
+		Name   string `json:"name"`
+		Type   string `json:"type"`
+		Value  string `json:"value"`
+		Line   string `json:"line"`
+		TTL    string `json:"ttl"`
+		Remark string `json:"remark"`
 	} `json:"records"`
 }
 
 func (l *dnspodList) status() dnspodStatus { return l.Status }
+
+// dnspodCreated 是 Record.Create 的响应，新记录 ID 用于设置备注
+type dnspodCreated struct {
+	Status dnspodStatus `json:"status"`
+	Record struct {
+		ID json.Number `json:"id"`
+	} `json:"record"`
+}
+
+func (c *dnspodCreated) status() dnspodStatus { return c.Status }
 
 func (d *dnspod) Upsert(ctx context.Context, r Record) (string, error) {
 	var list dnspodList
@@ -117,25 +131,53 @@ func (d *dnspod) Upsert(ctx context.Context, r Record) (string, error) {
 		if rec.Type != r.Type || rec.Line != line {
 			continue
 		}
-		if rec.Value == r.Value && (r.TTL == 0 || rec.TTL == strconv.Itoa(r.TTL)) {
+		valueSame := rec.Value == r.Value && (r.TTL == 0 || rec.TTL == strconv.Itoa(r.TTL))
+		remarkSame := r.Remark == "" || rec.Remark == r.Remark
+		if valueSame && remarkSame {
 			return ActionUnchanged, nil
 		}
-		form.Set("record_id", rec.ID)
-		st, err := d.call(ctx, "Record.Modify", form, nil)
-		if err != nil {
-			return "", err
+		if !valueSame {
+			form.Set("record_id", rec.ID)
+			st, err := d.call(ctx, "Record.Modify", form, nil)
+			if err != nil {
+				return "", err
+			}
+			if st.Code != "1" {
+				return "", fmt.Errorf("DNSPod Record.Modify: %s (%s)", st.Message, st.Code)
+			}
 		}
-		if st.Code != "1" {
-			return "", fmt.Errorf("DNSPod Record.Modify: %s (%s)", st.Message, st.Code)
+		if !remarkSame {
+			if err := d.setRemark(ctx, r.Zone, rec.ID, r.Remark); err != nil {
+				return "", err
+			}
 		}
 		return ActionUpdated, nil
 	}
-	st, err = d.call(ctx, "Record.Create", form, nil)
+	var created dnspodCreated
+	st, err = d.call(ctx, "Record.Create", form, &created)
 	if err != nil {
 		return "", err
 	}
 	if st.Code != "1" {
 		return "", fmt.Errorf("DNSPod Record.Create: %s (%s)", st.Message, st.Code)
 	}
+	// 新增接口不接受备注，创建后再单独设置
+	if r.Remark != "" && created.Record.ID != "" {
+		if err := d.setRemark(ctx, r.Zone, created.Record.ID.String(), r.Remark); err != nil {
+			return "", fmt.Errorf("记录已创建，设置备注失败: %w", err)
+		}
+	}
 	return ActionCreated, nil
+}
+
+// setRemark 修改解析记录的备注。
+func (d *dnspod) setRemark(ctx context.Context, zone, id, remark string) error {
+	st, err := d.call(ctx, "Record.Remark", url.Values{"domain": {zone}, "record_id": {id}, "remark": {remark}}, nil)
+	if err != nil {
+		return err
+	}
+	if st.Code != "1" {
+		return fmt.Errorf("DNSPod Record.Remark: %s (%s)", st.Message, st.Code)
+	}
+	return nil
 }

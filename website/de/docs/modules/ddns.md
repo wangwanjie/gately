@@ -37,11 +37,35 @@ Eintragswerte können diese Variablen verwenden; sie werden bei jeder Synchronis
 
 Bei einer IP-Änderung oder einer fehlgeschlagenen Synchronisierung kann ein Webhook aufgerufen werden.
 
+## Notizen {#remark}
+
+Einträge können eine Notiz haben, die beim Synchronisieren beim DNS-Anbieter gespeichert wird und in dessen Eintragsliste sichtbar ist. Ist die Eintragsnotiz leer, wird die Aufgabennotiz verwendet; sind beide leer, bleibt eine vorhandene Notiz beim Anbieter unverändert. Auch eine reine Änderung der Notiz löst eine Synchronisierung aus. Alles über 100 Zeichen wird nicht übertragen (Grenze des kostenlosen Cloudflare-Tarifs). Bei Alibaba Cloud sind Notizen auf 50 Zeichen aus Chinesisch, lateinischen Buchstaben, Ziffern und `_ - , . ，。` begrenzt; Leerzeichen und andere Symbole werden zu Unterstrichen.
+
+Anbieter, die Notizen erhalten: Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod (China und international), Huawei Cloud. Bei anderen Anbietern wird die Notiz nur in Gately gespeichert.
+
+## Einträge und Aufgaben löschen {#delete}
+
+Beim Löschen eines Eintrags (Löschsymbol rechts neben dem Eintrag in der Liste oder einen gespeicherten Eintrag im Editor entfernen und speichern) oder einer Aufgabe erscheint ein Bestätigungsdialog, in dem Sie „Auch beim DNS-Anbieter löschen“ ankreuzen können:
+
+- Ist es angekreuzt, werden zuerst die Einträge beim Anbieter gelöscht, und die Gately-Konfiguration wird nur gelöscht, wenn das für alle gelingt; schlägt einer fehl, wird der Grund angezeigt und die Gately-Konfiguration bleibt unverändert, sodass Sie es erneut versuchen oder das Kästchen abwählen können;
+- Gelöscht wird nur der von Gately synchronisierte Eintrag: Gibt es genau einen mit gleichem Namen und Typ (und gleicher Leitung), wird er gelöscht; bei mehreren nur die, deren Wert der letzten Synchronisierung entspricht. Lässt es sich nicht bestimmen, wird nichts gelöscht;
+- Existiert der Eintrag beim Anbieter nicht mehr, gilt das als Erfolg;
+- DuckDNS, Namecheap, DynDNS2 und der benutzerdefinierte Callback haben keine Lösch-API, daher wird die Option nicht angezeigt und der Eintrag beim Anbieter muss von Hand gelöscht werden.
+
+Die Voreinstellung des Kästchens legen Sie in den Globalen Einstellungen fest.
+
+## Globale Einstellungen {#settings}
+
+Die Globalen Einstellungen im Seitenkopf enthalten:
+
+- **Modul aktivieren**: Solange es deaktiviert ist, wird die IP nicht geprüft und kein DNS-Eintrag aktualisiert;
+- **Auch beim Anbieter löschen**: Voreinstellung des Kästchens „Auch beim DNS-Anbieter löschen“ beim Löschen eines Eintrags oder einer Aufgabe. Standardmäßig aus, beim Löschen jederzeit änderbar.
+
 ## Empfehlungen
 
 - Legen Sie beim DNS-Anbieter einen Schlüssel für ein Unterkonto an, der auf das Bearbeiten von DNS-Einträgen beschränkt ist. Vermeiden Sie den Schlüssel des Hauptkontos;
 - Klicken Sie nach dem Anlegen einer Aufgabe auf „Sync erzwingen“, um zu prüfen, ob der Eintrag aktualisiert wurde;
-- Einen nicht mehr benötigten Eintrag entfernen Sie direkt über das Löschsymbol rechts neben dem Eintrag in der Liste, ohne den Editor zu öffnen; er wird nur aus der Aufgabe entfernt, der vorhandene DNS-Eintrag beim Anbieter bleibt erhalten, und eine Aufgabe behält mindestens einen Eintrag;
+- Einen nicht mehr benötigten Eintrag entfernen Sie direkt über das Löschsymbol rechts neben dem Eintrag in der Liste, ohne den Editor zu öffnen; eine Aufgabe behält mindestens einen Eintrag, und wie der DNS-Eintrag beim Anbieter mitgelöscht wird, steht unter [Einträge und Aufgaben löschen](#delete);
 - Die Adresse zur Abfrage der öffentlichen IP hängt von keinem vom Projekt betriebenen Dienst ab und lässt sich jederzeit in einer Aufgabe ändern.
 
 ## Gruppen und Sortierung

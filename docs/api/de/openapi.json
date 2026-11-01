@@ -296,6 +296,26 @@
         },
         "type": "object"
       },
+      "ddns.RemoteDeleteResult": {
+        "properties": {
+          "deleted": {
+            "type": "integer"
+          },
+          "domain": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "ddns.Task": {
         "properties": {
           "credentials": {
@@ -362,6 +382,17 @@
           "records": {
             "items": {
               "$ref": "#/components/schemas/ddns.recordLayout"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ddns.remoteDeleteRequest": {
+        "properties": {
+          "records": {
+            "items": {
+              "type": "string"
             },
             "type": "array"
           }
@@ -8168,7 +8199,7 @@
     },
     "/api/ddns/tasks/{key}/records/{rec}": {
       "delete": {
-        "description": "`rec` ist der `key` des Eintrags. Der Eintrag wird nur aus der Aufgabenkonfiguration entfernt; vorhandene DNS-Einträge beim Anbieter bleiben erhalten. Gibt 400 zurück, wenn die Aufgabe nur noch einen Eintrag hat; löschen Sie dann die ganze Aufgabe.\n\nErforderliche Berechtigung: `ddns:write`.",
+        "description": "`rec` ist der `key` des Eintrags. Entfernt den Eintrag nur aus der Aufgabenkonfiguration; der vorhandene DNS-Eintrag beim Anbieter bleibt erhalten. Um ihn mitzulöschen, rufen Sie zuvor `POST /api/ddns/tasks/{key}/remote-delete` auf. Gibt 400 zurück, wenn es der letzte Eintrag der Aufgabe ist; löschen Sie dann die ganze Aufgabe.\n\nErforderliche Berechtigung: `ddns:write`.",
         "parameters": [
           {
             "in": "path",
@@ -8228,6 +8259,86 @@
           }
         ],
         "summary": "Einen Eintrag einer DDNS-Aufgabe löschen",
+        "tags": [
+          "Dynamisches DNS"
+        ],
+        "x-required-scope": "ddns:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ddns/tasks/{key}/remote-delete": {
+      "post": {
+        "description": "Das Feld `records` im Body listet die `key`s der Einträge; leer bedeutet alle Einträge der Aufgabe. Gelöscht werden nur die DNS-Einträge beim Anbieter, die Aufgabenkonfiguration bleibt unverändert; meist wird es vor dem Löschen von Einträgen oder einer Aufgabe aufgerufen. Gibt es genau einen Eintrag mit gleichem Namen und Typ (und gleicher Leitung), wird er gelöscht; bei mehreren nur die, deren Wert der letzten Synchronisierung entspricht. Lässt es sich nicht bestimmen, wird nichts gelöscht und ein Fehler zurückgegeben. Währenddessen pausiert die Aufgabe die Synchronisierung und setzt sie 30 Sekunden danach fort. Gibt 502 mit dem Grund zurück, wenn ein Eintrag fehlschlägt, und 400, wenn der Anbieter das Löschen nicht unterstützt (`supportsDelete` in `GET /api/ddns/providers` zeigt das an).\n\nErforderliche Berechtigung: `ddns:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ddns.remoteDeleteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ddns.RemoteDeleteResult"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "DNS-Einträge einer DDNS-Aufgabe beim DNS-Anbieter löschen",
         "tags": [
           "Dynamisches DNS"
         ],

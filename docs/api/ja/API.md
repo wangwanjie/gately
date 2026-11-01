@@ -110,6 +110,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/ddns/tasks/{key}/secrets` | `ddns:write` | シークレットを平文で表示 |
 | POST | `/api/ddns/tasks/{key}/sync` | `ddns:write` | DDNS タスクを即時同期 |
 | DELETE | `/api/ddns/tasks/{key}/records/{rec}` | `ddns:write` | DDNS タスクのレコードを 1 件削除 |
+| POST | `/api/ddns/tasks/{key}/remote-delete` | `ddns:write` | DDNS タスクの DNS レコードを DNS プロバイダーから削除 |
 | PUT | `/api/ddns/tasks/{key}/records-layout` | `ddns:write` | タスク内の DNS レコードの順序とグループを調整 |
 | GET | `/api/ddns/providers` | `ddns:read` | 対応する DNS プロバイダーと必要なパラメーターを一覧表示 |
 | GET | `/api/ddns/netinterfaces` | `ddns:read` | ローカルのネットワークインターフェースとアドレスを一覧表示 |
@@ -838,6 +839,16 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `value` | string |
 | `zone` | string |
 
+### ddns.RemoteDeleteResult
+
+| フィールド | 型 |
+| --- | --- |
+| `deleted` | integer |
+| `domain` | string |
+| `error` | string |
+| `key` | string |
+| `type` | string |
+
 ### ddns.Task
 
 | フィールド | 型 |
@@ -869,6 +880,12 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | フィールド | 型 |
 | --- | --- |
 | `records` | 配列 of `ddns.recordLayout` |
+
+### ddns.remoteDeleteRequest
+
+| フィールド | 型 |
+| --- | --- |
+| `records` | 配列 of string |
 
 ### dnsprovider.Credentials
 

@@ -34,6 +34,9 @@ type Record struct {
 	TTL int
 	// Line 为解析线路，仅部分国内服务商支持，空表示默认
 	Line string
+	// Remark 为写到服务商处的记录备注，仅 Meta.SupportsRemark 的服务商使用；
+	// 空表示不修改服务商处已有的备注
+	Remark string
 }
 
 // FQDN 返回完整域名（不带结尾点）。
@@ -86,6 +89,10 @@ type Meta struct {
 	DocURL string `json:"docUrl,omitempty"`
 	// SupportsACME 表示可用于证书申请的 DNS 验证（支持 TXT 记录增删）
 	SupportsACME bool `json:"supportsAcme,omitempty"`
+	// SupportsRemark 表示同步记录时会把备注写到服务商处
+	SupportsRemark bool `json:"supportsRemark,omitempty"`
+	// SupportsDelete 表示删除动态域名记录时可以同时删除服务商处的解析
+	SupportsDelete bool `json:"supportsDelete,omitempty"`
 }
 
 // Factory 根据凭据创建 Provider。
@@ -117,6 +124,7 @@ func List() []Meta {
 	for _, e := range registry {
 		m := e.meta
 		m.SupportsACME = SupportsTXT(m.Name)
+		m.SupportsDelete = SupportsDelete(m.Name)
 		out = append(out, m)
 	}
 	sort.Slice(out, func(i, j int) bool { return out[i].Name < out[j].Name })
@@ -126,6 +134,9 @@ func List() []Meta {
 // Lookup 返回服务商描述。
 func Lookup(name string) (Meta, bool) {
 	e, ok := registry[name]
+	if ok {
+		e.meta.SupportsDelete = SupportsDelete(name)
+	}
 	return e.meta, ok
 }
 

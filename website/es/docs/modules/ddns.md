@@ -37,11 +37,35 @@ Cuando cambia la dirección pública de una regla STUN, las tareas que la usan s
 
 Se puede llamar a un webhook cuando cambia la IP o falla una sincronización.
 
+## Notas {#remark}
+
+Los registros pueden tener una nota, que se escribe en el proveedor DNS al sincronizar y se ve en la lista de registros del panel del proveedor. Si la nota del registro está vacía se usa la de la tarea; si ambas están vacías no se modifica la nota que ya exista en el proveedor. Cambiar solo la nota también lanza una sincronización. Lo que pase de 100 caracteres no se escribe (el límite del plan gratuito de Cloudflare). En Alibaba Cloud la nota admite 50 caracteres entre chino, letras inglesas, dígitos y `_ - , . ，。`; los espacios y otros símbolos se cambian por guiones bajos.
+
+Proveedores que reciben notas: Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod (China e internacional) y Huawei Cloud. En los demás, la nota solo se guarda en Gately.
+
+## Eliminar registros y tareas {#delete}
+
+Al eliminar un registro (el icono de eliminar a la derecha del registro en la lista, o quitar un registro guardado en el editor y guardar) o una tarea, un diálogo de confirmación permite marcar «Eliminar también en el proveedor DNS»:
+
+- Si se marca, primero se eliminan los registros en el proveedor y la configuración de Gately solo se borra si todos tienen éxito; si alguno falla se muestra el motivo y la configuración de Gately no cambia, así que puedes reintentar o desmarcar la opción;
+- Solo se elimina el registro que sincroniza Gately: si hay uno con el mismo nombre y tipo (y línea), se elimina; si hay varios, solo los que tengan el valor de la última sincronización, y si no se puede determinar no se elimina nada;
+- Un registro que ya no existe en el proveedor cuenta como éxito;
+- DuckDNS, Namecheap, DynDNS2 y la devolución de llamada personalizada no tienen API de eliminación, así que la opción no aparece y el registro del proveedor se borra a mano.
+
+El estado predeterminado de la casilla se define en Ajustes globales.
+
+## Ajustes globales {#settings}
+
+Los Ajustes globales de la cabecera de la página contienen:
+
+- **Activar módulo**: mientras está desactivado no se comprueba la IP ni se actualiza ningún registro DNS;
+- **Eliminar también en el proveedor**: estado predeterminado de la casilla «Eliminar también en el proveedor DNS» al borrar un registro o una tarea. Está desmarcada por defecto y se puede cambiar cada vez.
+
 ## Recomendaciones
 
 - Crea en tu proveedor DNS una clave de subcuenta limitada a la edición de registros DNS. Evita usar la clave de la cuenta principal;
 - Tras crear una tarea, pulsa «Forzar sincronización» para confirmar que el registro se ha actualizado;
-- Para quitar un registro que ya no necesitas, pulsa el icono de eliminar a la derecha de ese registro en la lista, sin abrir el editor; solo se quita de la tarea, el registro DNS existente en el proveedor se conserva y la tarea mantiene al menos un registro;
+- Para quitar un registro que ya no necesitas, pulsa el icono de eliminar a la derecha de ese registro en la lista, sin abrir el editor; la tarea mantiene al menos un registro, y cómo eliminar también el registro en el proveedor se explica en [Eliminar registros y tareas](#delete);
 - La dirección de consulta de IP pública ya no depende de ningún servicio operado por el proyecto y puedes cambiarla en una tarea en cualquier momento.
 
 ## Grupos y orden

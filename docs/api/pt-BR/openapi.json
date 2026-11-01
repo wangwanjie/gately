@@ -296,6 +296,26 @@
         },
         "type": "object"
       },
+      "ddns.RemoteDeleteResult": {
+        "properties": {
+          "deleted": {
+            "type": "integer"
+          },
+          "domain": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "ddns.Task": {
         "properties": {
           "credentials": {
@@ -362,6 +382,17 @@
           "records": {
             "items": {
               "$ref": "#/components/schemas/ddns.recordLayout"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ddns.remoteDeleteRequest": {
+        "properties": {
+          "records": {
+            "items": {
+              "type": "string"
             },
             "type": "array"
           }
@@ -8168,7 +8199,7 @@
     },
     "/api/ddns/tasks/{key}/records/{rec}": {
       "delete": {
-        "description": "`rec` é a `key` do registro. Ele é removido apenas da configuração da tarefa; os registros DNS existentes no provedor são mantidos. Retorna 400 quando a tarefa tem apenas um registro; nesse caso, exclua a tarefa inteira.\n\nPermissão necessária: `ddns:write`.",
+        "description": "`rec` é a `key` do registro. Só remove o registro da configuração da tarefa; o registro DNS existente no provedor é mantido. Para excluí-lo também, chame antes `POST /api/ddns/tasks/{key}/remote-delete`. Retorna 400 quando é o único registro da tarefa; nesse caso exclua a tarefa inteira.\n\nPermissão necessária: `ddns:write`.",
         "parameters": [
           {
             "in": "path",
@@ -8228,6 +8259,86 @@
           }
         ],
         "summary": "Excluir um registro de uma tarefa DDNS",
+        "tags": [
+          "DNS dinâmico"
+        ],
+        "x-required-scope": "ddns:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ddns/tasks/{key}/remote-delete": {
+      "post": {
+        "description": "O campo `records` do corpo lista as `key`s dos registros; vazio significa todos os registros da tarefa. Só exclui os registros DNS no provedor, sem alterar a configuração da tarefa; normalmente é chamado antes de excluir registros ou uma tarefa. Se houver um único registro com o mesmo nome e tipo (e linha), ele é excluído; se houver vários, só os com o valor da última sincronização, e quando não dá para determinar nada é excluído e um erro é retornado. Enquanto isso a tarefa pausa a sincronização e retoma 30 segundos depois. Retorna 502 com o motivo se algum falhar e 400 se o provedor não permitir exclusão (`supportsDelete` em `GET /api/ddns/providers` indica isso).\n\nPermissão necessária: `ddns:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ddns.remoteDeleteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ddns.RemoteDeleteResult"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Excluir no provedor DNS os registros de uma tarefa DDNS",
         "tags": [
           "DNS dinâmico"
         ],

@@ -110,6 +110,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/ddns/tasks/{key}/secrets` | `ddns:write` | 查看金鑰明文 |
 | POST | `/api/ddns/tasks/{key}/sync` | `ddns:write` | 立即同步一個 DDNS 任務 |
 | DELETE | `/api/ddns/tasks/{key}/records/{rec}` | `ddns:write` | 刪除 DDNS 任務中的一條記錄 |
+| POST | `/api/ddns/tasks/{key}/remote-delete` | `ddns:write` | 從 DNS 服務商刪除 DDNS 工作中的解析記錄 |
 | PUT | `/api/ddns/tasks/{key}/records-layout` | `ddns:write` | 調整任務內解析記錄的順序與分組 |
 | GET | `/api/ddns/providers` | `ddns:read` | 列出支援的 DNS 服務商及其所需參數 |
 | GET | `/api/ddns/netinterfaces` | `ddns:read` | 列出本機網卡及位址 |
@@ -838,6 +839,16 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `value` | string |
 | `zone` | string |
 
+### ddns.RemoteDeleteResult
+
+| 欄位 | 類型 |
+| --- | --- |
+| `deleted` | integer |
+| `domain` | string |
+| `error` | string |
+| `key` | string |
+| `type` | string |
+
 ### ddns.Task
 
 | 欄位 | 類型 |
@@ -869,6 +880,12 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 欄位 | 類型 |
 | --- | --- |
 | `records` | 陣列 of `ddns.recordLayout` |
+
+### ddns.remoteDeleteRequest
+
+| 欄位 | 類型 |
+| --- | --- |
+| `records` | 陣列 of string |
 
 ### dnsprovider.Credentials
 

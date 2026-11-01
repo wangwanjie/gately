@@ -201,6 +201,12 @@ func (m *Module) Routes(r module.Router) {
 	tasks.Register(r, "/tasks")
 	r.HandleFunc("POST /tasks/{key}/sync", m.handleSync)
 	r.HandleFunc("DELETE /tasks/{key}/records/{rec}", m.handleDeleteRecord)
+	r.HandleFunc("POST /tasks/{key}/remote-delete", m.handleRemoteDelete)
+	module.DocOf(r, "POST /tasks/{key}/remote-delete", module.Doc{
+		Summary: "从 DNS 服务商删除任务中的解析记录",
+		Req:     &remoteDeleteRequest{},
+		Resp:    []RemoteDeleteResult{},
+	})
 	r.HandleFunc("PUT /tasks/{key}/records-layout", m.handleRecordsLayout)
 	module.DocOf(r, "PUT /tasks/{key}/records-layout", module.Doc{Summary: "调整任务内解析记录的顺序与分组", Req: &recordsLayoutRequest{}})
 	r.HandleFunc("GET /providers", func(w http.ResponseWriter, r *http.Request) {
@@ -239,7 +245,8 @@ func (m *Module) handleSync(w http.ResponseWriter, r *http.Request) {
 }
 
 // handleDeleteRecord 从任务中移除一条记录，供列表页不进入编辑直接删除。
-// 只修改 Gately 的任务配置，DNS 服务商处已有的解析不受影响；任务至少保留一条记录。
+// 只修改 Gately 的任务配置；要同时删除服务商处的解析，先调用 POST /tasks/{key}/remote-delete。
+// 任务至少保留一条记录。
 func (m *Module) handleDeleteRecord(w http.ResponseWriter, r *http.Request) {
 	key, rec := r.PathValue("key"), r.PathValue("rec")
 	m.mu.Lock()
@@ -324,6 +331,11 @@ func (m *Module) handlePutSettings(w http.ResponseWriter, r *http.Request) {
 	if err := m.saveLocked(); err != nil {
 		m.cfg.Settings = old
 		httpx.Error(w, http.StatusInternalServerError, "保存失败: %v", err)
+		return
+	}
+	// 只改删除默认值等不影响运行的设置时不重启任务
+	if old.Enable == s.Enable {
+		httpx.OK(w, s)
 		return
 	}
 	for key := range m.runners {

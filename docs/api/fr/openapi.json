@@ -296,6 +296,26 @@
         },
         "type": "object"
       },
+      "ddns.RemoteDeleteResult": {
+        "properties": {
+          "deleted": {
+            "type": "integer"
+          },
+          "domain": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "ddns.Task": {
         "properties": {
           "credentials": {
@@ -362,6 +382,17 @@
           "records": {
             "items": {
               "$ref": "#/components/schemas/ddns.recordLayout"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ddns.remoteDeleteRequest": {
+        "properties": {
+          "records": {
+            "items": {
+              "type": "string"
             },
             "type": "array"
           }
@@ -8168,7 +8199,7 @@
     },
     "/api/ddns/tasks/{key}/records/{rec}": {
       "delete": {
-        "description": "`rec` est la `key` de l'enregistrement. Il est seulement retiré de la configuration de la tâche ; les enregistrements DNS existants chez le fournisseur sont conservés. Renvoie 400 s'il ne reste qu'un enregistrement ; supprimez alors la tâche entière.\n\nPermission requise : `ddns:write`.",
+        "description": "`rec` est la `key` de l’enregistrement. Retire seulement l’enregistrement de la configuration de la tâche ; l’enregistrement DNS existant chez le fournisseur est conservé. Pour le supprimer aussi, appelez d’abord `POST /api/ddns/tasks/{key}/remote-delete`. Renvoie 400 s’il s’agit du dernier enregistrement de la tâche ; supprimez alors la tâche entière.\n\nPermission requise : `ddns:write`.",
         "parameters": [
           {
             "in": "path",
@@ -8228,6 +8259,86 @@
           }
         ],
         "summary": "Supprimer un enregistrement d'une tâche DDNS",
+        "tags": [
+          "DNS dynamique"
+        ],
+        "x-required-scope": "ddns:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ddns/tasks/{key}/remote-delete": {
+      "post": {
+        "description": "Le champ `records` du corps liste les `key` des enregistrements ; vide, il désigne tous les enregistrements de la tâche. Seuls les enregistrements DNS chez le fournisseur sont supprimés, la configuration de la tâche ne change pas ; on l’appelle en général avant de supprimer des enregistrements ou une tâche. S’il n’y a qu’un enregistrement avec le même nom et le même type (et la même ligne), il est supprimé ; s’il y en a plusieurs, seuls ceux dont la valeur correspond à la dernière synchronisation le sont, et si on ne peut pas trancher rien n’est supprimé et une erreur est renvoyée. Pendant ce temps la tâche suspend la synchronisation et reprend 30 secondes après. Renvoie 502 avec la raison si un enregistrement échoue, et 400 si le fournisseur ne permet pas la suppression (`supportsDelete` dans `GET /api/ddns/providers` l’indique).\n\nPermission requise : `ddns:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ddns.remoteDeleteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ddns.RemoteDeleteResult"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Supprimer chez le fournisseur DNS les enregistrements d’une tâche DDNS",
         "tags": [
           "DNS dynamique"
         ],

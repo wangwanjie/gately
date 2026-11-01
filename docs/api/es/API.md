@@ -110,6 +110,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | GET | `/api/ddns/tasks/{key}/secrets` | `ddns:write` | Ver secretos en texto plano |
 | POST | `/api/ddns/tasks/{key}/sync` | `ddns:write` | Sincronizar ahora una tarea DDNS |
 | DELETE | `/api/ddns/tasks/{key}/records/{rec}` | `ddns:write` | Eliminar un registro de una tarea DDNS |
+| POST | `/api/ddns/tasks/{key}/remote-delete` | `ddns:write` | Eliminar en el proveedor DNS los registros de una tarea DDNS |
 | PUT | `/api/ddns/tasks/{key}/records-layout` | `ddns:write` | Reordenar y agrupar los registros DNS de una tarea |
 | GET | `/api/ddns/providers` | `ddns:read` | Listar los proveedores DNS compatibles y los parámetros que requieren |
 | GET | `/api/ddns/netinterfaces` | `ddns:read` | Listar las tarjetas de red de este equipo y sus direcciones |
@@ -838,6 +839,16 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `value` | string |
 | `zone` | string |
 
+### ddns.RemoteDeleteResult
+
+| Campo | Tipo |
+| --- | --- |
+| `deleted` | integer |
+| `domain` | string |
+| `error` | string |
+| `key` | string |
+| `type` | string |
+
 ### ddns.Task
 
 | Campo | Tipo |
@@ -869,6 +880,12 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Campo | Tipo |
 | --- | --- |
 | `records` | Lista de `ddns.recordLayout` |
+
+### ddns.remoteDeleteRequest
+
+| Campo | Tipo |
+| --- | --- |
+| `records` | Lista de string |
 
 ### dnsprovider.Credentials
 

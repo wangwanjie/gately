@@ -6,10 +6,7 @@
       </el-button>
       <CompactToggle v-model="compact" />
       <ListTools :gl="gl" :placeholder="t('ddns.filterPlaceholder')" />
-      <div class="module-toggle">
-        <span class="meta">{{ t('ddns.module') }}</span>
-        <el-switch v-model="settings.enable" inline-prompt :active-text="t('ddns.switchOn')" :inactive-text="t('ddns.switchOff')" @change="saveSettings" />
-      </div>
+      <el-button :icon="SlidersHorizontal" @click="openSettings">{{ t('ddns.globalSettings') }}</el-button>
       <el-button type="primary" :icon="Plus" @click="openEditor()">{{ t('ddns.addTask') }}</el-button>
     </PageHeader>
 
@@ -61,6 +58,8 @@
                     <div class="rec-name">
                       <span class="mono rec-domain">{{ fqdn(rec) }}</span>
                       <el-tag size="small" type="info" class="mono">{{ rec.type }}</el-tag>
+                      <!-- 备注单独占一行，不挤占域名的宽度 -->
+                      <span v-if="rec.remark" class="meta rec-remark" :title="rec.remark">{{ rec.remark }}</span>
                     </div>
                     <div class="rec-value mono">{{ (rec.key && tk.state.records?.[rec.key]?.value) || '-' }}</div>
                     <div class="rec-status">
@@ -69,25 +68,17 @@
                     </div>
                     <!-- 不进入编辑页直接删除单条记录；任务至少保留一条记录，最后一条时禁用 -->
                     <div class="rec-ops">
-                      <el-popconfirm
+                      <el-button
                         v-if="rec.key && tk.records.length > 1"
-                        :title="t('ddns.confirmDeleteRecord', { name: fqdn(rec) })"
-                        width="260"
-                        @confirm="removeRecord(tk, rec)"
-                      >
-                        <template #reference>
-                          <el-button
-                            text
-                            type="danger"
-                            size="small"
-                            class="rec-del"
-                            :icon="Trash2"
-                            :loading="deletingRecord === `${tk.key}/${rec.key}`"
-                            :aria-label="t('ddns.deleteRecord')"
-                            :title="t('ddns.deleteRecord')"
-                          />
-                        </template>
-                      </el-popconfirm>
+                        text
+                        type="danger"
+                        size="small"
+                        class="rec-del"
+                        :icon="Trash2"
+                        :aria-label="t('ddns.deleteRecord')"
+                        :title="t('ddns.deleteRecord')"
+                        @click="removeRecord(tk, rec)"
+                      />
                       <el-button
                         v-else
                         text
@@ -113,11 +104,7 @@
             <el-button text size="small" :icon="Zap" :disabled="!taskActive(tk) || !tk.state.running" @click="sync(tk, true)">{{ t('ddns.forceSync') }}</el-button>
             <el-button v-if="tk.records.length > 1" text size="small" :icon="ArrowUpDown" @click="openRecordSort(tk)">{{ t('ddns.sortRecords') }}</el-button>
             <el-button text size="small" :icon="Pencil" @click="openEditor(tk)">{{ t('common.edit') }}</el-button>
-            <el-popconfirm :title="t('ddns.confirmDelete')" width="240" @confirm="remove(tk)">
-              <template #reference>
-                <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
-              </template>
-            </el-popconfirm>
+            <el-button text size="small" type="danger" :icon="Trash2" @click="remove(tk)">{{ t('common.delete') }}</el-button>
           </template>
         </EntityCard>
       </template>
@@ -158,14 +145,17 @@
             <el-form-item :label="t('ddns.httpTimeout')">
               <el-input-number v-model="editing.httpTimeout" :min="1" :max="120" />
             </el-form-item>
-            <el-form-item :label="t('common.remark')"><el-input v-model="editing.remark" /></el-form-item>
+            <el-form-item :label="t('common.remark')">
+              <el-input v-model="editing.remark" />
+              <span v-if="currentProvider?.supportsRemark" class="help">{{ t('ddns.taskRemarkHelp') }}</span>
+            </el-form-item>
             <el-form-item :label="t('common.enable')"><el-switch v-model="editing.enable" /></el-form-item>
           </el-tab-pane>
 
           <el-tab-pane :label="t('ddns.tabRecords')" name="records">
             <div class="rec-edit-head">
               <span>{{ t('common.enable') }}</span><span>{{ t('ddns.host') }}</span><span>{{ t('ddns.zone') }}</span><span>{{ t('ddns.type') }}</span><span>{{ t('ddns.value') }}</span><span>TTL</span>
-              <span>{{ currentProvider?.supportsLine ? t('ddns.line') : '' }}</span><span />
+              <span>{{ t('common.remark') }}</span><span>{{ currentProvider?.supportsLine ? t('ddns.line') : '' }}</span><span />
             </div>
             <div v-for="(row, i) in editing.records" :key="i" class="rec-edit">
               <div class="re-cell re-enable"><label class="re-label">{{ t('common.enable') }}</label><el-switch v-model="row.enable" size="small" /></div>
@@ -179,6 +169,10 @@
               </div>
               <div class="re-cell"><label class="re-label">{{ t('ddns.value') }}</label><el-input v-model="row.value" size="small" class="mono" /></div>
               <div class="re-cell"><label class="re-label">TTL</label><el-input-number v-model="row.ttl" size="small" :min="0" :controls="false" class="re-ttl" /></div>
+              <div class="re-cell">
+                <label class="re-label">{{ t('common.remark') }}</label>
+                <el-input v-model="row.remark" size="small" :maxlength="100" :placeholder="editing.remark || t('ddns.remarkPlaceholder')" />
+              </div>
               <div class="re-cell">
                 <template v-if="currentProvider?.supportsLine">
                   <label class="re-label">{{ t('ddns.line') }}</label>
@@ -194,6 +188,9 @@
               <el-button size="small" :icon="Plus" @click="addRecord('A')">{{ t('ddns.addV4') }}</el-button>
               <el-button size="small" :icon="Plus" @click="addRecord('AAAA')">{{ t('ddns.addV6') }}</el-button>
               <el-button v-if="editing.records.length > 1" size="small" :icon="ArrowUpDown" @click="openEditingRecordSort">{{ t('ddns.sortRecords') }}</el-button>
+            </div>
+            <div v-if="editing.records.length" class="form-help">
+              {{ currentProvider?.supportsRemark ? t('ddns.remarkHelp') : t('ddns.remarkLocalOnly') }}
             </div>
             <div class="form-help">
               <i18n-t keypath="ddns.recordValueHelp" tag="span">
@@ -225,6 +222,40 @@
         <el-button type="primary" :loading="saving" @click="save">{{ t('common.save') }}</el-button>
       </template>
     </el-dialog>
+
+    <el-dialog v-model="settingsVisible" :title="t('ddns.settingsTitle')" width="560px" :fullscreen="isMobile">
+      <el-form :model="settingsForm" label-width="180px" :label-position="labelPosition">
+        <el-form-item :label="t('ddns.enableModule')">
+          <el-switch v-model="settingsForm.enable" />
+          <span class="help">{{ t('ddns.moduleOffDesc') }}</span>
+        </el-form-item>
+        <el-form-item :label="t('ddns.deleteRemoteDefault')">
+          <el-switch v-model="settingsForm.deleteRemote" />
+          <span class="help">{{ t('ddns.deleteRemoteDefaultHelp') }}</span>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="settingsVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" :loading="settingsSaving" @click="submitSettings">{{ t('common.save') }}</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 删除记录或任务的确认框：服务商支持时可勾选同时删除服务商处的解析，默认值取全局设置 -->
+    <el-dialog v-model="delDlg.visible" :title="delDlg.title" width="480px" :fullscreen="isMobile" append-to-body>
+      <p class="del-msg">{{ delDlg.message }}</p>
+      <ul v-if="delDlg.domains.length" class="del-list mono">
+        <li v-for="d in delDlg.domains" :key="d">{{ d }}</li>
+      </ul>
+      <template v-if="delDlg.canRemote">
+        <el-checkbox v-model="delDlg.remote">{{ t('ddns.deleteRemote') }}</el-checkbox>
+        <div class="form-help">{{ delDlg.remote ? t('ddns.deleteRemoteHint') : t('ddns.deleteLocalOnly') }}</div>
+      </template>
+      <div v-else class="form-help">{{ t('ddns.deleteRemoteUnsupported', { provider: delDlg.provider }) }}</div>
+      <template #footer>
+        <el-button @click="delDlg.visible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="danger" :loading="delDlg.loading" @click="confirmDelete">{{ delDlg.confirmText }}</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -232,7 +263,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
-import { ArrowUpDown, ChevronsDownUp, ChevronsUpDown, Globe, Pencil, Plus, RefreshCw, Trash2, Zap } from 'lucide-vue-next'
+import { ArrowUpDown, ChevronsDownUp, ChevronsUpDown, Globe, Pencil, Plus, RefreshCw, SlidersHorizontal, Trash2, Zap } from 'lucide-vue-next'
 import { api } from '../api'
 import GroupHeader from '../components/GroupHeader.vue'
 import GroupedList from '../components/GroupedList.vue'
@@ -265,6 +296,9 @@ interface ProviderMeta {
   idLabel?: string
   secretLabel?: string
   supportsLine?: boolean
+  // supportsRemark 表示记录备注会写到服务商处，supportsDelete 表示删除时可同时删除服务商处的解析
+  supportsRemark?: boolean
+  supportsDelete?: boolean
   docUrl?: string
   extra?: { key: string; label: string; placeholder?: string; multiline?: boolean; required?: boolean }[]
 }
@@ -333,7 +367,11 @@ const allTasksCollapsed = allCollapsed(() => tasks.value.map((tk) => tk.key))
 const providers = ref<ProviderMeta[]>([])
 const interfaces = ref<NetInterface[]>([])
 const defaults = reactive({ ipv4URLs: [] as string[], ipv6URLs: [] as string[] })
-const settings = reactive({ enable: true })
+const settings = reactive({ enable: true, deleteRemote: false })
+// 全局设置对话框的编辑副本，保存成功后才写回 settings
+const settingsVisible = ref(false)
+const settingsSaving = ref(false)
+const settingsForm = reactive({ enable: true, deleteRemote: false })
 const settingsLoaded = ref(false)
 const loading = ref(true)
 const editorVisible = ref(false)
@@ -598,6 +636,34 @@ function onTypeChange(r: DNSRecord) {
 }
 
 async function save() {
+  // 编辑已保存的任务时删掉了已有记录：先确认是否同时从服务商删除，再保存
+  const stored = editing.value.key ? tasks.value.find((tk) => tk.key === editing.value.key) : undefined
+  const kept = new Set(editing.value.records.map((r) => r.key).filter(Boolean))
+  const removed = stored?.records.filter((r) => r.key && !kept.has(r.key)) ?? []
+  if (stored && removed.length) {
+    askDelete({
+      title: t('ddns.removeRecordsTitle'),
+      message: t('ddns.removeRecordsMsg', { count: removed.length }),
+      domains: removed.map((r) => `${r.type} ${fqdn(r)}`),
+      provider: stored.provider,
+      confirmText: t('common.save'),
+      run: async (remote) => {
+        if (remote) {
+          await api.post(`/api/ddns/tasks/${stored.key}/remote-delete`, { records: removed.map((r) => r.key) })
+        }
+        await doSave()
+      },
+    })
+    return
+  }
+  try {
+    await doSave()
+  } catch (e) {
+    ElMessage.error((e as Error).message)
+  }
+}
+
+async function doSave() {
   editing.value.credentials.extra = { ...extra.value }
   saving.value = true
   try {
@@ -610,8 +676,6 @@ async function save() {
     editorVisible.value = false
     ElMessage.success(body.enable && settings.enable ? t('ddns.savedChecking') : t('common.saved'))
     await load()
-  } catch (e) {
-    ElMessage.error((e as Error).message)
   } finally {
     saving.value = false
   }
@@ -636,32 +700,84 @@ async function sync(tk: TaskView, force: boolean) {
   }
 }
 
-async function remove(tk: TaskView) {
-  try {
-    await api.del(`/api/ddns/tasks/${tk.key}`)
-    await load()
-  } catch (e) {
-    ElMessage.error((e as Error).message)
-  }
+// delDlg 为删除确认框的状态；run 按是否勾选“同时从服务商删除”执行删除，失败时保留对话框
+const delDlg = reactive({
+  visible: false,
+  loading: false,
+  title: '',
+  message: '',
+  domains: [] as string[],
+  provider: '',
+  canRemote: false,
+  remote: false,
+  confirmText: '',
+  run: (async () => {}) as (remote: boolean) => Promise<void>,
+})
+
+function askDelete(o: { title: string; message: string; domains: string[]; provider: string; confirmText?: string; run: (remote: boolean) => Promise<void> }) {
+  const meta = providers.value.find((p) => p.name === o.provider)
+  Object.assign(delDlg, {
+    ...o,
+    provider: meta?.title ?? o.provider,
+    canRemote: !!meta?.supportsDelete,
+    remote: !!meta?.supportsDelete && settings.deleteRemote,
+    confirmText: o.confirmText ?? t('common.delete'),
+    loading: false,
+    visible: true,
+  })
 }
 
-// deletingRecord 为正在删除的记录（任务 key/记录 key），用于按钮加载状态并防止重复提交
-const deletingRecord = ref('')
-
-async function removeRecord(tk: TaskView, rec: DNSRecord) {
-  if (!rec.key || deletingRecord.value) {
+async function confirmDelete() {
+  if (delDlg.loading) {
     return
   }
-  deletingRecord.value = `${tk.key}/${rec.key}`
+  delDlg.loading = true
   try {
-    await api.del(`/api/ddns/tasks/${tk.key}/records/${encodeURIComponent(rec.key)}`)
-    ElMessage.success(t('common.deleted'))
-    await load()
+    await delDlg.run(delDlg.canRemote && delDlg.remote)
+    delDlg.visible = false
   } catch (e) {
     ElMessage.error((e as Error).message)
   } finally {
-    deletingRecord.value = ''
+    delDlg.loading = false
   }
+}
+
+function remove(tk: TaskView) {
+  askDelete({
+    title: t('ddns.deleteTaskTitle'),
+    message: t('ddns.confirmDeleteTask', { name: tk.name || t('ddns.unnamedTask'), count: tk.records.length }),
+    domains: tk.records.map((r) => `${r.type} ${fqdn(r)}`),
+    provider: tk.provider,
+    run: async (remote) => {
+      if (remote) {
+        await api.post(`/api/ddns/tasks/${tk.key}/remote-delete`, { records: [] })
+      }
+      await api.del(`/api/ddns/tasks/${tk.key}`)
+      ElMessage.success(remote ? t('ddns.deletedRemote') : t('common.deleted'))
+      await load()
+    },
+  })
+}
+
+function removeRecord(tk: TaskView, rec: DNSRecord) {
+  if (!rec.key) {
+    return
+  }
+  const key = rec.key
+  askDelete({
+    title: t('ddns.deleteRecord'),
+    message: t('ddns.confirmDeleteRecord', { name: fqdn(rec) }),
+    domains: [],
+    provider: tk.provider,
+    run: async (remote) => {
+      if (remote) {
+        await api.post(`/api/ddns/tasks/${tk.key}/remote-delete`, { records: [key] })
+      }
+      await api.del(`/api/ddns/tasks/${tk.key}/records/${encodeURIComponent(key)}`)
+      ElMessage.success(remote ? t('ddns.deletedRemote') : t('common.deleted'))
+      await load()
+    },
+  })
 }
 
 async function saveSettings() {
@@ -671,6 +787,26 @@ async function saveSettings() {
   } catch (e) {
     settings.enable = !settings.enable
     ElMessage.error((e as Error).message)
+  }
+}
+
+function openSettings() {
+  Object.assign(settingsForm, settings)
+  settingsVisible.value = true
+}
+
+async function submitSettings() {
+  settingsSaving.value = true
+  try {
+    await api.put('/api/ddns/settings', settingsForm)
+    Object.assign(settings, settingsForm)
+    settingsVisible.value = false
+    ElMessage.success(t('ddns.settingsSaved'))
+    await load()
+  } catch (e) {
+    ElMessage.error((e as Error).message)
+  } finally {
+    settingsSaving.value = false
   }
 }
 
@@ -688,13 +824,14 @@ onMounted(async () => {
       api.get<ProviderMeta[]>('/api/ddns/providers'),
       api.get<NetInterface[]>('/api/ddns/netinterfaces'),
       api.get<{ ipv4URLs: string[]; ipv6URLs: string[] }>('/api/ddns/defaults'),
-      api.get<{ enable: boolean }>('/api/ddns/settings'),
+      api.get<{ enable: boolean; deleteRemote?: boolean }>('/api/ddns/settings'),
       api.get<TaskView[]>('/api/ddns/tasks'),
     ])
     providers.value = p
     interfaces.value = i
     Object.assign(defaults, d)
     settings.enable = s.enable
+    settings.deleteRemote = !!s.deleteRemote
     settingsLoaded.value = true
     tasks.value = tk
   } finally {
@@ -705,15 +842,23 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.module-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 32px;
-  padding: 0 10px;
-  border: 1px solid var(--g-border);
-  border-radius: 8px;
-  background: var(--el-bg-color);
+.del-msg {
+  margin: 0 0 8px;
+}
+.del-list {
+  margin: 0 0 12px;
+  padding-left: 20px;
+  max-height: 180px;
+  overflow: auto;
+  font-size: 13px;
+}
+.rec-remark {
+  flex-basis: 100%;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 .ip-error {
   margin-bottom: 10px;
@@ -746,8 +891,9 @@ onMounted(async () => {
 }
 .rec-name {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 2px 8px;
   min-width: 0;
 }
 .rec-domain {
@@ -785,7 +931,7 @@ onMounted(async () => {
 .rec-edit-head,
 .rec-edit {
   display: grid;
-  grid-template-columns: 44px 110px minmax(0, 1.3fr) 90px minmax(0, 1.2fr) 70px 90px 36px;
+  grid-template-columns: 44px 100px minmax(0, 1.2fr) 80px minmax(0, 1.1fr) 60px minmax(0, 1fr) 80px 36px;
   gap: 8px;
   align-items: center;
 }

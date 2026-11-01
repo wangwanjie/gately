@@ -110,6 +110,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/ddns/tasks/{key}/secrets` | `ddns:write` | 查看密钥明文 |
 | POST | `/api/ddns/tasks/{key}/sync` | `ddns:write` | 立即同步一个 DDNS 任务 |
 | DELETE | `/api/ddns/tasks/{key}/records/{rec}` | `ddns:write` | 删除 DDNS 任务中的一条记录 |
+| POST | `/api/ddns/tasks/{key}/remote-delete` | `ddns:write` | 从 DNS 服务商删除 DDNS 任务中的解析记录 |
 | PUT | `/api/ddns/tasks/{key}/records-layout` | `ddns:write` | 调整任务内解析记录的顺序与分组 |
 | GET | `/api/ddns/providers` | `ddns:read` | 列出支持的 DNS 服务商及其所需参数 |
 | GET | `/api/ddns/netinterfaces` | `ddns:read` | 列出本机网卡及地址 |
@@ -838,6 +839,16 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `value` | string |
 | `zone` | string |
 
+### ddns.RemoteDeleteResult
+
+| 字段 | 类型 |
+| --- | --- |
+| `deleted` | integer |
+| `domain` | string |
+| `error` | string |
+| `key` | string |
+| `type` | string |
+
 ### ddns.Task
 
 | 字段 | 类型 |
@@ -869,6 +880,12 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 字段 | 类型 |
 | --- | --- |
 | `records` | 数组 of `ddns.recordLayout` |
+
+### ddns.remoteDeleteRequest
+
+| 字段 | 类型 |
+| --- | --- |
+| `records` | 数组 of string |
 
 ### dnsprovider.Credentials
 

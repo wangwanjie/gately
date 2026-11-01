@@ -110,6 +110,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/ddns/tasks/{key}/secrets` | `ddns:write` | 비밀 값 평문 보기 |
 | POST | `/api/ddns/tasks/{key}/sync` | `ddns:write` | DDNS 작업 즉시 동기화 |
 | DELETE | `/api/ddns/tasks/{key}/records/{rec}` | `ddns:write` | DDNS 작업의 레코드 하나 삭제 |
+| POST | `/api/ddns/tasks/{key}/remote-delete` | `ddns:write` | DDNS 작업의 DNS 레코드를 DNS 제공업체에서 삭제 |
 | PUT | `/api/ddns/tasks/{key}/records-layout` | `ddns:write` | 작업 내 DNS 레코드의 순서와 그룹 조정 |
 | GET | `/api/ddns/providers` | `ddns:read` | 지원되는 DNS 서비스 제공자와 필요한 매개변수 목록 조회 |
 | GET | `/api/ddns/netinterfaces` | `ddns:read` | 이 장치의 네트워크 카드 및 주소 목록 조회 |
@@ -838,6 +839,16 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `value` | string |
 | `zone` | string |
 
+### ddns.RemoteDeleteResult
+
+| 필드 | 타입 |
+| --- | --- |
+| `deleted` | integer |
+| `domain` | string |
+| `error` | string |
+| `key` | string |
+| `type` | string |
+
 ### ddns.Task
 
 | 필드 | 타입 |
@@ -869,6 +880,12 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 필드 | 타입 |
 | --- | --- |
 | `records` | Array of `ddns.recordLayout` |
+
+### ddns.remoteDeleteRequest
+
+| 필드 | 타입 |
+| --- | --- |
+| `records` | Array of string |
 
 ### dnsprovider.Credentials
 
