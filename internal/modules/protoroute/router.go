@@ -1,6 +1,7 @@
 package protoroute
 
 import (
+	"slices"
 	"sort"
 	"strings"
 	"sync/atomic"
@@ -15,7 +16,11 @@ type target struct {
 	// port 为目标端口，0 表示按规则的端口映射（默认目标）或与监听端口相同（路由）
 	port          int
 	proxyProtocol string
-	conns         atomic.Int64
+	// match 为路由匹配条件的标识（见 routeMatchKey），热更新时据此沿用旧计数；默认目标为空
+	match string
+	// conns 为该目标累计分到的连接数。热更新时新旧 target 共享同一个计数器，
+	// 仍在使用旧路由表的连接计入后也不会丢失
+	conns *atomic.Int64
 }
 
 // router 按识别出的协议选择目标。TLS 与 HTTP 路由按域名（SNI 或 Host）匹配，其余协议每种至多一条路由。
@@ -142,6 +147,44 @@ func routeProtocol(r Route) string {
 	return r.Protocol
 }
 
+// routeMatchKey 返回路由匹配条件的标识：协议、域名集合与 ALPN 集合，与书写顺序无关。
+// 名称、目标地址、目标端口、PROXY 协议只决定连接去哪里，不影响哪些连接会命中这条路由，因此不参与标识。
+func routeMatchKey(r Route) string {
+	domains := slices.Clone(r.Domains)
+	for i, d := range domains {
+		domains[i] = strings.ToLower(d)
+	}
+	slices.Sort(domains)
+	alpn := slices.Clone(r.ALPN)
+	slices.Sort(alpn)
+	return strings.ToLower(routeProtocol(r)) + "|" + strings.Join(domains, ",") + "|" + strings.Join(alpn, ",")
+}
+
+// inheritCounts 让热更新后的路由表沿用旧路由表的命中计数（共享同一个计数器），规则如下：
+//   - 路由按匹配条件（协议、域名集合、ALPN 集合，见 routeMatchKey）对应，条件不变的路由继续累计，
+//     与它的位置、名称、目标地址、目标端口、PROXY 协议是否改动无关，因此重排路由、改目标都不会清零；
+//   - 新增的路由与改了协议、域名或 ALPN 的路由视为新路由，从 0 开始；删除的路由的计数随之丢弃；
+//   - 未经校验的配置可能有多条匹配条件相同的路由，按出现的先后一一对应；
+//   - 默认目标只要新旧规则都设置了默认目标就继续累计（改默认目标地址不清零），去掉默认目标后计数丢弃。
+func (rt *router) inheritCounts(prev *router) {
+	if prev == nil {
+		return
+	}
+	old := map[string][]*atomic.Int64{}
+	for _, t := range prev.targets {
+		old[t.match] = append(old[t.match], t.conns)
+	}
+	for _, t := range rt.targets {
+		if list := old[t.match]; len(list) > 0 {
+			t.conns = list[0]
+			old[t.match] = list[1:]
+		}
+	}
+	if rt.fallback != nil && prev.fallback != nil {
+		rt.fallback.conns = prev.fallback.conns
+	}
+}
+
 func newRouter(rule Rule) *router {
 	rt := &router{domains: map[string]*domainTable{}, others: map[string]*target{}}
 	for _, route := range rule.Routes {
@@ -150,6 +193,8 @@ func newRouter(rule Rule) *router {
 			picker:        l4proxy.NewPicker(route.TargetAddresses),
 			port:          route.TargetPort,
 			proxyProtocol: route.ProxyProtocol,
+			match:         routeMatchKey(route),
+			conns:         new(atomic.Int64),
 		}
 		rt.targets = append(rt.targets, t)
 		proto := routeProtocol(route)
@@ -184,6 +229,7 @@ func newRouter(rule Rule) *router {
 			name:          "",
 			picker:        l4proxy.NewPicker(rule.TargetAddresses),
 			proxyProtocol: rule.ProxyProtocol,
+			conns:         new(atomic.Int64),
 		}
 	}
 	return rt

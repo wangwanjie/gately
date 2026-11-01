@@ -42,8 +42,13 @@ type runtime struct {
 	filter *iplist.Filter
 }
 
-func newRuntime(rule Rule, settings Settings, log *logbuf.Logger) *runtime {
-	return &runtime{rule: rule, settings: settings, log: log, router: newRouter(rule), filter: rule.Access.Compile()}
+// newRuntime 构建规则的 runtime；prev 为热更新前的 runtime，非 nil 时各路由与默认目标沿用其命中计数（规则见 router.inheritCounts）。
+func newRuntime(rule Rule, settings Settings, log *logbuf.Logger, prev *runtime) *runtime {
+	rt := newRouter(rule)
+	if prev != nil {
+		rt.inheritCounts(prev.router)
+	}
+	return &runtime{rule: rule, settings: settings, log: log, router: rt, filter: rule.Access.Compile()}
 }
 
 // sniffTimeout 返回规则的识别超时，未设置时使用默认值。
@@ -71,7 +76,7 @@ type runner struct {
 
 func newRunner(rule Rule, settings Settings, log *logbuf.Logger) *runner {
 	r := &runner{rule: rule, settings: settings}
-	r.cur.Store(newRuntime(rule, settings, log))
+	r.cur.Store(newRuntime(rule, settings, log, nil))
 	return r
 }
 
@@ -123,9 +128,10 @@ func (r *runner) canUpdate(rule Rule, settings Settings) bool {
 	return effectiveMaxConns(old, r.settings) == effectiveMaxConns(rule, settings)
 }
 
-// update 热替换路由表、默认目标与识别超时，监听器与已建立的连接保持不断。调用前需用 canUpdate 确认。
+// update 热替换路由表、默认目标与识别超时，监听器与已建立的连接保持不断，各路由与默认目标的命中计数沿用旧值。
+// 调用前需用 canUpdate 确认；update 只在模块锁内调用，不会并发执行。
 func (r *runner) update(rule Rule, settings Settings, log *logbuf.Logger) {
-	r.cur.Store(newRuntime(rule, settings, log))
+	r.cur.Store(newRuntime(rule, settings, log, r.current()))
 	log.Infof("配置已更新，监听未中断")
 }
 
