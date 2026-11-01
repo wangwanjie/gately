@@ -82,8 +82,8 @@
   "home": {
     "pill": "開源免費 · Apache-2.0",
     "announce": {
-      "text": "v0.6.2 發布：協定分流、列表分組與排序、動態網域引用 STUN 位址 →",
-      "link": "/zh-TW/news/v0.6.2"
+      "text": "v0.6.2.2 發布：Web 服務拓撲視圖、訪客真實 IP、即時連線、來源 IP 存取控制 →",
+      "link": "/zh-TW/news/v0.6.2.2"
     },
     "titleLine1": "一站式網路閘道",
     "titleLine2": "開源透明，開箱即用",
