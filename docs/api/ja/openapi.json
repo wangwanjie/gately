@@ -2595,6 +2595,9 @@
       },
       "webservice.SiteSharedUsers": {
         "properties": {
+          "disableAuth": {
+            "type": "boolean"
+          },
           "listener": {
             "type": "string"
           },
@@ -30728,7 +30731,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "リクエストボディ `{\"authUsers\": [], \"ssoDomain\": \"\", \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`。各フィールドの意味は全体設定と同じで、これらだけを変更し、全体設定の他の項目はそのまま残ります。マスク用のプレースホルダーは元のパスワードやシークレットを保持します。`sites` には変更するサイトだけを指定します。認証が無効のサイトで有効にすると Web 認証も有効になります。共有ユーザーだけで認証しているサイトはここでは解除できず（解除するとログイン不要になるため）、フォワード認証を使うサイトでは有効にできません。いずれかの検証に失敗すると何も保存されません。\n\n必要な権限: `webservice:write`。",
+        "description": "リクエストボディ `{\"authUsers\": [], \"ssoDomain\": \"\", \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`。各フィールドの意味は全体設定と同じで、これらだけを変更し、全体設定の他の項目はそのまま残ります。マスク用のプレースホルダーは元のパスワードやシークレットを保持します。`sites` には変更するサイトだけを指定します。認証が無効のサイトで有効にすると Web 認証も有効になります。共有ユーザーだけで認証しているサイトを解除するには `\"disableAuth\": true` が必要で、サイトの Web 認証と Basic 認証も無効になりログイン不要になります（指定しない場合は拒否されます）。フォワード認証を使うサイトでは有効にできません。いずれかの検証に失敗すると何も保存されません。\n\n必要な権限: `webservice:write`。",
         "requestBody": {
           "content": {
             "application/json": {

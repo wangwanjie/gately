@@ -2595,6 +2595,9 @@
       },
       "webservice.SiteSharedUsers": {
         "properties": {
+          "disableAuth": {
+            "type": "boolean"
+          },
           "listener": {
             "type": "string"
           },
@@ -30728,7 +30731,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "Request body `{\"authUsers\": [], \"ssoDomain\": \"\", \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`. Fields mean the same as in the global settings; only these are changed and the other global settings stay as they are; the masked placeholder keeps the existing password or secret. `sites` lists only the sites to change: enabling shared users on a site without authentication also turns on web auth; a site that authenticates only with shared users cannot be cleared here (it would no longer require signing in), and sites using forward auth cannot be enabled. If anything fails validation, nothing is saved.\n\nRequired permission: `webservice:write`.",
+        "description": "Request body `{\"authUsers\": [], \"ssoDomain\": \"\", \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`. Fields mean the same as in the global settings; only these are changed and the other global settings stay as they are; the masked placeholder keeps the existing password or secret. `sites` lists only the sites to change: enabling shared users on a site without authentication also turns on web auth; clearing a site that authenticates only with shared users requires `\"disableAuth\": true`, which also turns off its web auth and basic auth so it no longer requires signing in, and is rejected otherwise; sites using forward auth cannot be enabled. If anything fails validation, nothing is saved.\n\nRequired permission: `webservice:write`.",
         "requestBody": {
           "content": {
             "application/json": {

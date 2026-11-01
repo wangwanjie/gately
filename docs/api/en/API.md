@@ -1762,6 +1762,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 
 | Field | Type |
 | --- | --- |
+| `disableAuth` | boolean |
 | `listener` | string |
 | `sharedUsers` | boolean |
 | `site` | string |

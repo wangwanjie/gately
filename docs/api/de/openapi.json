@@ -2595,6 +2595,9 @@
       },
       "webservice.SiteSharedUsers": {
         "properties": {
+          "disableAuth": {
+            "type": "boolean"
+          },
           "listener": {
             "type": "string"
           },
@@ -30728,7 +30731,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "Request-Body `{\"authUsers\": [], \"ssoDomain\": \"\", \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`. Die Felder bedeuten dasselbe wie in den globalen Einstellungen; nur diese werden geändert, die übrigen globalen Einstellungen bleiben unverändert; der maskierte Platzhalter behält das bisherige Passwort bzw. Geheimnis. `sites` enthält nur die zu ändernden Sites: Beim Einschalten für eine Site ohne Authentifizierung wird auch Web-Auth eingeschaltet; eine Site, die nur über gemeinsame Benutzer authentifiziert, kann hier nicht abgeschaltet werden (sie würde keine Anmeldung mehr verlangen), und Sites mit Forward-Auth können nicht eingeschaltet werden. Schlägt eine Prüfung fehl, wird nichts gespeichert.\n\nErforderliche Berechtigung: `webservice:write`.",
+        "description": "Request-Body `{\"authUsers\": [], \"ssoDomain\": \"\", \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`. Die Felder bedeuten dasselbe wie in den globalen Einstellungen; nur diese werden geändert, die übrigen globalen Einstellungen bleiben unverändert; der maskierte Platzhalter behält das bisherige Passwort bzw. Geheimnis. `sites` enthält nur die zu ändernden Sites: Beim Einschalten für eine Site ohne Authentifizierung wird auch Web-Auth eingeschaltet; das Abschalten für eine Site, die nur über gemeinsame Benutzer authentifiziert, erfordert `\"disableAuth\": true`, wodurch auch ihre Web-Auth und Basic-Auth ausgeschaltet werden und sie keine Anmeldung mehr verlangt, sonst wird es abgelehnt; Sites mit Forward-Auth können nicht eingeschaltet werden. Schlägt eine Prüfung fehl, wird nichts gespeichert.\n\nErforderliche Berechtigung: `webservice:write`.",
         "requestBody": {
           "content": {
             "application/json": {

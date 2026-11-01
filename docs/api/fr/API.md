@@ -1762,6 +1762,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 
 | Champ | Type |
 | --- | --- |
+| `disableAuth` | boolean |
 | `listener` | string |
 | `sharedUsers` | boolean |
 | `site` | string |

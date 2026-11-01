@@ -60,6 +60,9 @@ type SiteSharedUsers struct {
 	Listener    string `json:"listener"`
 	Site        string `json:"site"`
 	SharedUsers bool   `json:"sharedUsers"`
+	// DisableAuth 确认关闭认证：取消共享用户后站点若再没有其他认证方式，同时关闭网页认证与基本认证，
+	// 站点变为无需登录即可访问；未确认时拒绝这种修改，避免站点意外公开
+	DisableAuth bool `json:"disableAuth,omitempty"`
 }
 
 // UsersRequest 为 PUT /users 的请求体。Sites 只需列出要修改的站点，省略或为空表示不修改站点。
@@ -130,8 +133,8 @@ func hasOtherAuth(s Site) bool {
 }
 
 // setSiteSharedUsers 修改站点的共享用户开关。启用时站点若未开启任何认证，同时开启网页认证；
-// 取消时站点若再没有其他认证方式会变为无需登录即可访问，这种情况拒绝修改，需在站点设置中明确关闭认证。
-func setSiteSharedUsers(s *Site, on bool) error {
+// 取消时站点若再没有其他认证方式会变为无需登录即可访问：disableAuth 为 true 时同时关闭认证，否则拒绝修改。
+func setSiteSharedUsers(s *Site, on, disableAuth bool) error {
 	if s.SharedUsers == on {
 		return nil
 	}
@@ -149,7 +152,12 @@ func setSiteSharedUsers(s *Site, on bool) error {
 		return nil
 	}
 	if (s.BasicAuth || s.WebAuth) && !hasOtherAuth(*s) {
-		return errors.New("站点只通过共享用户认证，取消后将无需登录即可访问，请在站点设置中关闭认证")
+		if !disableAuth {
+			return errors.New("站点只通过共享用户认证，取消后将无需登录即可访问，需同时确认关闭认证（disableAuth）")
+		}
+		// 已确认关闭认证：认证方式里不再有任何用户，一并关闭，避免留下无人能登录的认证开关
+		s.BasicAuth = false
+		s.WebAuth = false
 	}
 	s.SharedUsers = false
 	return nil
@@ -214,7 +222,7 @@ func (m *Module) handlePutUsers(w http.ResponseWriter, r *http.Request) {
 			httpx.Error(w, http.StatusBadRequest, "站点 %s 不存在", c.Site)
 			return
 		}
-		if err := setSiteSharedUsers(site, c.SharedUsers); err != nil {
+		if err := setSiteSharedUsers(site, c.SharedUsers, c.DisableAuth); err != nil {
 			httpx.Error(w, http.StatusBadRequest, "站点 %s: %v", siteLabel(*site), err)
 			return
 		}

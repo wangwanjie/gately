@@ -2595,6 +2595,9 @@
       },
       "webservice.SiteSharedUsers": {
         "properties": {
+          "disableAuth": {
+            "type": "boolean"
+          },
           "listener": {
             "type": "string"
           },
@@ -30728,7 +30731,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "Cuerpo de la solicitud `{\"authUsers\": [], \"ssoDomain\": \"\", \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`. Los campos significan lo mismo que en los ajustes globales; solo se modifican estos y el resto de los ajustes globales no cambia; el marcador enmascarado conserva la contraseña o el secreto existentes. `sites` solo incluye los sitios que cambian: al activarlo en un sitio sin autenticación también se activa la autenticación web; un sitio que solo se autentica con usuarios compartidos no se puede desactivar aquí (dejaría de requerir inicio de sesión) y los sitios con autenticación delegada no se pueden activar. Si algo no pasa la validación, no se guarda nada.\n\nPermiso necesario: `webservice:write`.",
+        "description": "Cuerpo de la solicitud `{\"authUsers\": [], \"ssoDomain\": \"\", \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`. Los campos significan lo mismo que en los ajustes globales; solo se modifican estos y el resto de los ajustes globales no cambia; el marcador enmascarado conserva la contraseña o el secreto existentes. `sites` solo incluye los sitios que cambian: al activarlo en un sitio sin autenticación también se activa la autenticación web; desactivarlo en un sitio que solo se autentica con usuarios compartidos requiere `\"disableAuth\": true`, que también desactiva su autenticación web y básica y deja de requerir inicio de sesión; sin él se rechaza; los sitios con autenticación delegada no se pueden activar. Si algo no pasa la validación, no se guarda nada.\n\nPermiso necesario: `webservice:write`.",
         "requestBody": {
           "content": {
             "application/json": {

@@ -1762,6 +1762,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 
 | Campo | Tipo |
 | --- | --- |
+| `disableAuth` | boolean |
 | `listener` | string |
 | `sharedUsers` | boolean |
 | `site` | string |

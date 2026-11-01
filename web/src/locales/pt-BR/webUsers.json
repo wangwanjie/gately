@@ -5,7 +5,7 @@
   "sites": {
     "title": "Sites que usam usuários compartilhados",
     "count": "{on} de {total} selecionados",
-    "help": "Os sites selecionados aceitam usuários compartilhados na autenticação web e básica, junto com os usuários próprios; selecionar um site sem autenticação também ativa a autenticação web. Se um app OIDC pode fazer login é definido pela lista de permitidos de cada cliente, abaixo.",
+    "help": "Os sites selecionados aceitam usuários compartilhados na autenticação web e básica, junto com os usuários próprios; selecionar um site sem autenticação também ativa a autenticação web. Se um app OIDC pode fazer login é definido pela lista de permitidos de cada cliente, abaixo. Desmarcar um site que autentica apenas com usuários compartilhados também desativa a autenticação dele ao salvar.",
     "search": "Filtrar por nome do site, domínio ou escuta",
     "checkVisible": "Selecionar os exibidos",
     "uncheckVisible": "Desmarcar os exibidos",
@@ -16,11 +16,15 @@
     "basicAuth": "Autenticação básica",
     "noAuth": "Sem autenticação",
     "willEnableAuth": "A autenticação web será ativada ao salvar",
+    "willDisableAuth": "Sem autenticação ao salvar",
     "lockForward": "Sites com autenticação delegada não podem usar usuários compartilhados",
-    "lockOnly": "Este site autentica apenas com usuários compartilhados e ficaria público ao desmarcar; para torná-lo público, desative a autenticação nas configurações do site",
     "none": "Ainda não há sites que possam usar autenticação",
     "noMatch": "Nenhum site corresponde",
-    "groupCount": "{on} / {total} selecionados"
+    "groupCount": "{on} / {total} selecionados",
+    "disableTitle": "Desativar a autenticação do site",
+    "disableConfirm": "Estes sites autenticam apenas com usuários compartilhados. Desmarcá-los também desativa a autenticação e qualquer pessoa poderá acessá-los sem entrar: {sites}. Salvar mesmo assim?",
+    "disableOk": "Desativar e salvar",
+    "sep": ", "
   },
   "leaveTitle": "Alterações não salvas",
   "leaveConfirm": "Esta página tem alterações não salvas que serão perdidas se você sair.",

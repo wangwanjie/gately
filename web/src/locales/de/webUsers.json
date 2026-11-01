@@ -5,7 +5,7 @@
   "sites": {
     "title": "Sites mit gemeinsamen Benutzern",
     "count": "{on} von {total} ausgewählt",
-    "help": "Ausgewählte Sites akzeptieren gemeinsame Benutzer bei Web- und Basic-Auth, zusätzlich zu ihren eigenen Benutzern; wird eine Site ohne Authentifizierung ausgewählt, wird auch Web-Auth eingeschaltet. Ob sich jemand bei einer OIDC-App anmelden kann, legt die Erlaubnisliste des jeweiligen Clients unten fest.",
+    "help": "Ausgewählte Sites akzeptieren gemeinsame Benutzer bei Web- und Basic-Auth, zusätzlich zu ihren eigenen Benutzern; wird eine Site ohne Authentifizierung ausgewählt, wird auch Web-Auth eingeschaltet. Ob sich jemand bei einer OIDC-App anmelden kann, legt die Erlaubnisliste des jeweiligen Clients unten fest. Wird eine Site abgewählt, die nur über gemeinsame Benutzer authentifiziert, wird beim Speichern auch ihre Authentifizierung ausgeschaltet.",
     "search": "Nach Site-Name, Domain oder Listener filtern",
     "checkVisible": "Angezeigte auswählen",
     "uncheckVisible": "Angezeigte abwählen",
@@ -16,11 +16,15 @@
     "basicAuth": "Basic-Auth",
     "noAuth": "Keine Authentifizierung",
     "willEnableAuth": "Web-Auth wird beim Speichern eingeschaltet",
+    "willDisableAuth": "Auth nach Speichern aus",
     "lockForward": "Sites mit Forward-Auth können keine gemeinsamen Benutzer verwenden",
-    "lockOnly": "Diese Site authentifiziert nur über gemeinsame Benutzer und wäre nach dem Abwählen öffentlich; um sie öffentlich zu machen, schalten Sie die Authentifizierung in den Site-Einstellungen aus",
     "none": "Noch keine Sites, die Authentifizierung nutzen können",
     "noMatch": "Keine passenden Sites",
-    "groupCount": "{on} / {total} ausgewählt"
+    "groupCount": "{on} / {total} ausgewählt",
+    "disableTitle": "Site-Authentifizierung ausschalten",
+    "disableConfirm": "Diese Sites authentifizieren nur über gemeinsame Benutzer. Beim Abwählen wird auch ihre Authentifizierung ausgeschaltet, sodass jeder ohne Anmeldung darauf zugreifen kann: {sites}. Trotzdem speichern?",
+    "disableOk": "Auth ausschalten und speichern",
+    "sep": ", "
   },
   "leaveTitle": "Ungespeicherte Änderungen",
   "leaveConfirm": "Diese Seite hat ungespeicherte Änderungen, die beim Verlassen verloren gehen.",

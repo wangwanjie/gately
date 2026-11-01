@@ -1762,6 +1762,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 
 | Feld | Typ |
 | --- | --- |
+| `disableAuth` | boolean |
 | `listener` | string |
 | `sharedUsers` | boolean |
 | `site` | string |

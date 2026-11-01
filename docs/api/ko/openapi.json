@@ -2595,6 +2595,9 @@
       },
       "webservice.SiteSharedUsers": {
         "properties": {
+          "disableAuth": {
+            "type": "boolean"
+          },
           "listener": {
             "type": "string"
           },
@@ -30728,7 +30731,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "요청 본문 `{\"authUsers\": [], \"ssoDomain\": \"\", \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`. 필드 의미는 전역 설정과 같으며 이 항목만 바꾸고 전역 설정의 다른 항목은 그대로 둡니다. 마스킹 자리표시자는 기존 비밀번호나 시크릿을 유지합니다. `sites`에는 바꿀 사이트만 넣습니다. 인증이 꺼진 사이트에서 켜면 웹 인증도 켜집니다. 공유 사용자로만 인증하는 사이트는 여기서 해제할 수 없고(해제하면 로그인이 필요 없어지므로), 포워드 인증을 쓰는 사이트는 켤 수 없습니다. 하나라도 검증에 실패하면 아무것도 저장하지 않습니다.\n\n필요한 권한: `webservice:write`.",
+        "description": "요청 본문 `{\"authUsers\": [], \"ssoDomain\": \"\", \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`. 필드 의미는 전역 설정과 같으며 이 항목만 바꾸고 전역 설정의 다른 항목은 그대로 둡니다. 마스킹 자리표시자는 기존 비밀번호나 시크릿을 유지합니다. `sites`에는 바꿀 사이트만 넣습니다. 인증이 꺼진 사이트에서 켜면 웹 인증도 켜집니다. 공유 사용자로만 인증하는 사이트를 해제하려면 `\"disableAuth\": true`가 필요하며, 사이트의 웹 인증과 기본 인증도 꺼져 로그인 없이 접근할 수 있게 됩니다(없으면 거부). 포워드 인증을 쓰는 사이트는 켤 수 없습니다. 하나라도 검증에 실패하면 아무것도 저장하지 않습니다.\n\n필요한 권한: `webservice:write`.",
         "requestBody": {
           "content": {
             "application/json": {

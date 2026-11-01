@@ -2595,6 +2595,9 @@
       },
       "webservice.SiteSharedUsers": {
         "properties": {
+          "disableAuth": {
+            "type": "boolean"
+          },
           "listener": {
             "type": "string"
           },
@@ -30728,7 +30731,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "Corps de la requête `{\"authUsers\": [], \"ssoDomain\": \"\", \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`. Les champs ont le même sens que dans les paramètres globaux ; seuls ceux-ci sont modifiés et les autres paramètres globaux restent inchangés ; l'espace réservé masqué conserve le mot de passe ou le secret existant. `sites` ne liste que les sites à modifier : l'activer sur un site sans authentification active aussi l'auth Web ; un site qui ne s'authentifie qu'avec les utilisateurs partagés ne peut pas être désactivé ici (il ne demanderait plus de connexion), et les sites en authentification déléguée ne peuvent pas être activés. Si un élément échoue à la validation, rien n'est enregistré.\n\nPermission requise : `webservice:write`.",
+        "description": "Corps de la requête `{\"authUsers\": [], \"ssoDomain\": \"\", \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`. Les champs ont le même sens que dans les paramètres globaux ; seuls ceux-ci sont modifiés et les autres paramètres globaux restent inchangés ; l'espace réservé masqué conserve le mot de passe ou le secret existant. `sites` ne liste que les sites à modifier : l'activer sur un site sans authentification active aussi l'auth Web ; le désactiver sur un site qui ne s'authentifie qu'avec les utilisateurs partagés exige `\"disableAuth\": true`, qui désactive aussi son auth Web et son auth Basic pour qu'il ne demande plus de connexion, sinon la demande est refusée ; les sites en authentification déléguée ne peuvent pas être activés. Si un élément échoue à la validation, rien n'est enregistré.\n\nPermission requise : `webservice:write`.",
         "requestBody": {
           "content": {
             "application/json": {

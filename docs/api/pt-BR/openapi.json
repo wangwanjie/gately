@@ -2595,6 +2595,9 @@
       },
       "webservice.SiteSharedUsers": {
         "properties": {
+          "disableAuth": {
+            "type": "boolean"
+          },
           "listener": {
             "type": "string"
           },
@@ -30728,7 +30731,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "Corpo da requisição `{\"authUsers\": [], \"ssoDomain\": \"\", \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`. Os campos têm o mesmo significado das configurações globais; só estes são alterados e as demais configurações globais ficam como estão; o marcador mascarado mantém a senha ou o segredo atual. `sites` lista apenas os sites a alterar: ativar em um site sem autenticação também ativa a autenticação web; um site que autentica apenas com usuários compartilhados não pode ser desativado aqui (deixaria de exigir login), e sites com autenticação delegada não podem ser ativados. Se algo falhar na validação, nada é salvo.\n\nPermissão necessária: `webservice:write`.",
+        "description": "Corpo da requisição `{\"authUsers\": [], \"ssoDomain\": \"\", \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`. Os campos têm o mesmo significado das configurações globais; só estes são alterados e as demais configurações globais ficam como estão; o marcador mascarado mantém a senha ou o segredo atual. `sites` lista apenas os sites a alterar: ativar em um site sem autenticação também ativa a autenticação web; desativar em um site que autentica apenas com usuários compartilhados exige `\"disableAuth\": true`, que também desativa a autenticação web e básica dele e deixa de exigir login, caso contrário é recusado; sites com autenticação delegada não podem ser ativados. Se algo falhar na validação, nada é salvo.\n\nPermissão necessária: `webservice:write`.",
         "requestBody": {
           "content": {
             "application/json": {

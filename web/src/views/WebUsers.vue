@@ -74,6 +74,7 @@
                   <el-tag v-if="!s.webAuth && !s.basicAuth" size="small" type="warning">{{ t('webUsers.sites.noAuth') }}</el-tag>
                 </template>
                 <el-tag v-if="willEnableAuth(s)" size="small" type="success">{{ t('webUsers.sites.willEnableAuth') }}</el-tag>
+                <el-tag v-if="willDisableAuth(s)" size="small" type="danger">{{ t('webUsers.sites.willDisableAuth') }}</el-tag>
               </span>
               <div v-if="lockReason(s)" class="form-help lock">{{ lockReason(s) }}</div>
             </div>
@@ -188,11 +189,17 @@ function lockReason(s: UserSite): string {
   if (s.forwardAuth) {
     return t('webUsers.sites.lockForward')
   }
-  // 只靠共享用户认证的站点取消后会变为无需登录，需要在站点设置中明确关闭认证
-  if (s.sharedUsers && (s.webAuth || s.basicAuth) && !s.otherAuth) {
-    return t('webUsers.sites.lockOnly')
-  }
   return ''
+}
+
+// onlyShared 判断站点是否只靠共享用户认证：取消后站点再没有能登录的用户，会同时关闭认证
+function onlyShared(s: UserSite): boolean {
+  return s.sharedUsers && (s.webAuth || s.basicAuth) && !s.otherAuth
+}
+
+// willDisableAuth 判断保存后是否会关闭站点认证，站点将变为无需登录即可访问
+function willDisableAuth(s: UserSite): boolean {
+  return onlyShared(s) && !checked.value[keyOf(s)]
 }
 
 // willEnableAuth 判断保存后是否会为站点开启网页认证（站点原本未开启任何认证）
@@ -259,7 +266,7 @@ function setVisible(on: boolean) {
 function changedSites() {
   return sites.value
     .filter((s) => !!checked.value[keyOf(s)] !== s.sharedUsers)
-    .map((s) => ({ listener: s.listener, site: s.site, sharedUsers: !!checked.value[keyOf(s)] }))
+    .map((s) => ({ listener: s.listener, site: s.site, sharedUsers: !!checked.value[keyOf(s)], disableAuth: willDisableAuth(s) || undefined }))
 }
 
 function snapshot(): string {
@@ -305,6 +312,19 @@ async function save() {
   const f = form.value
   if (!f) {
     return
+  }
+  // 会关闭认证的站点保存后无需登录即可访问，先列出站点请用户确认
+  const exposed = sites.value.filter(willDisableAuth)
+  if (exposed.length) {
+    try {
+      await ElMessageBox.confirm(
+        t('webUsers.sites.disableConfirm', { sites: exposed.map(siteName).join(t('webUsers.sites.sep')) }),
+        t('webUsers.sites.disableTitle'),
+        { type: 'warning', confirmButtonText: t('webUsers.sites.disableOk'), cancelButtonText: t('common.cancel') },
+      )
+    } catch {
+      return
+    }
   }
   saving.value = true
   try {

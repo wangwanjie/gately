@@ -92,7 +92,7 @@ var apiCatalog = map[string]epDoc{
 	"GET /api/webservice/settings":                       {Summary: "读取 Web 服务全局设置"},
 	"PUT /api/webservice/settings":                       {Summary: "保存 Web 服务全局设置", Body: true},
 	"GET /api/webservice/users":                          {Summary: "读取共享用户与 OIDC 身份提供方", Desc: "返回共享用户（密码与 TOTP 密钥脱敏）、`ssoDomain`、`selfServicePassword`、OIDC 身份提供方设置（客户端密钥脱敏），以及可以使用共享用户的站点列表 `sites`：`listener`、`site` 标识站点，`sharedUsers` 为是否使用共享用户，`otherAuth` 表示站点还有本地用户或第三方登录身份，`forwardAuth` 表示站点使用转发认证。断开连接的站点与停用的默认站点不列出。"},
-	"PUT /api/webservice/users":                          {Summary: "保存共享用户与 OIDC 身份提供方，批量设置站点", Desc: "请求体 `{\"authUsers\": [], \"ssoDomain\": \"\", \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`，字段含义同全局设置，只修改这几项，全局设置的其他项保持不变；脱敏占位符表示保留原密码或密钥。`sites` 只需列出要修改的站点：启用时站点若未开启认证会同时开启网页认证；站点只通过共享用户认证时不能在这里取消（取消后将无需登录），使用转发认证的站点不能启用。任一项校验失败时不保存任何修改。", Body: true},
+	"PUT /api/webservice/users":                          {Summary: "保存共享用户与 OIDC 身份提供方，批量设置站点", Desc: "请求体 `{\"authUsers\": [], \"ssoDomain\": \"\", \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`，字段含义同全局设置，只修改这几项，全局设置的其他项保持不变；脱敏占位符表示保留原密码或密钥。`sites` 只需列出要修改的站点：启用时站点若未开启认证会同时开启网页认证；站点只通过共享用户认证时，取消需同时带 `\"disableAuth\": true`，站点的网页认证与基本认证会一起关闭、变为无需登录即可访问，未带时拒绝；使用转发认证的站点不能启用。任一项校验失败时不保存任何修改。", Body: true},
 	"POST /api/wol/devices/{key}/wake":                   {Summary: "向设备发送唤醒魔术包"},
 	"GET /api/wol/status":                                {Summary: "查看设备在线状态"},
 	"DELETE /api/webterminal/connections/{key}/hostkey":  {Summary: "清除已记录的主机密钥"},

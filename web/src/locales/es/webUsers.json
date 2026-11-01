@@ -5,7 +5,7 @@
   "sites": {
     "title": "Sitios que usan usuarios compartidos",
     "count": "{on} de {total} seleccionados",
-    "help": "Los sitios seleccionados aceptan usuarios compartidos en la autenticación web y básica, junto a sus propios usuarios; al seleccionar un sitio sin autenticación también se activa la autenticación web. Si una app OIDC puede iniciar sesión lo decide la lista de permitidos de cada cliente, más abajo.",
+    "help": "Los sitios seleccionados aceptan usuarios compartidos en la autenticación web y básica, junto a sus propios usuarios; al seleccionar un sitio sin autenticación también se activa la autenticación web. Si una app OIDC puede iniciar sesión lo decide la lista de permitidos de cada cliente, más abajo. Al desmarcar un sitio que solo se autentica con usuarios compartidos, su autenticación también se desactiva al guardar.",
     "search": "Filtrar por nombre de sitio, dominio o escucha",
     "checkVisible": "Seleccionar los mostrados",
     "uncheckVisible": "Desmarcar los mostrados",
@@ -16,11 +16,15 @@
     "basicAuth": "Autenticación básica",
     "noAuth": "Sin autenticación",
     "willEnableAuth": "Se activará la autenticación web al guardar",
+    "willDisableAuth": "Sin autenticación al guardar",
     "lockForward": "Los sitios con autenticación delegada no pueden usar usuarios compartidos",
-    "lockOnly": "Este sitio solo se autentica con usuarios compartidos y quedaría público al desmarcarlo; para hacerlo público, desactive la autenticación en la configuración del sitio",
     "none": "Aún no hay sitios que puedan usar autenticación",
     "noMatch": "No hay sitios que coincidan",
-    "groupCount": "{on} / {total} seleccionados"
+    "groupCount": "{on} / {total} seleccionados",
+    "disableTitle": "Desactivar la autenticación del sitio",
+    "disableConfirm": "Estos sitios solo se autentican con usuarios compartidos. Al desmarcarlos también se desactiva su autenticación y cualquiera podrá acceder sin iniciar sesión: {sites}. ¿Guardar de todos modos?",
+    "disableOk": "Desactivar y guardar",
+    "sep": ", "
   },
   "leaveTitle": "Cambios sin guardar",
   "leaveConfirm": "Esta página tiene cambios sin guardar que se perderán si sale.",

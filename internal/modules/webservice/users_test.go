@@ -108,6 +108,14 @@ func TestUsersAPI(t *testing.T) {
 	if code, _, body := put(UsersRequest{UsersSettings: out.UsersSettings, Sites: []SiteSharedUsers{{Listener: "l1", Site: "local", SharedUsers: false}}}); code != 200 || site("local").SharedUsers {
 		t.Fatalf("取消共享用户失败: %d %s", code, body)
 	}
+
+	// 只靠共享用户认证的站点确认关闭认证后可以取消，网页认证一并关闭
+	if code, _, body := put(UsersRequest{UsersSettings: out.UsersSettings, Sites: []SiteSharedUsers{{Listener: "l1", Site: "only", SharedUsers: false, DisableAuth: true}}}); code != 200 {
+		t.Fatalf("确认关闭认证后应可取消: %d %s", code, body)
+	}
+	if s := site("only"); s.SharedUsers || s.WebAuth || s.BasicAuth {
+		t.Fatalf("取消后站点应关闭认证: %+v", s)
+	}
 }
 
 // TestPutSettingsKeepsUsers 验证全局设置省略共享用户、单点登录域、自助改密与 OIDC 时保留原值，提供时照常修改。

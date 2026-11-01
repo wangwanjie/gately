@@ -2595,6 +2595,9 @@
       },
       "webservice.SiteSharedUsers": {
         "properties": {
+          "disableAuth": {
+            "type": "boolean"
+          },
           "listener": {
             "type": "string"
           },
@@ -30728,7 +30731,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "请求体 `{\"authUsers\": [], \"ssoDomain\": \"\", \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`，字段含义同全局设置，只修改这几项，全局设置的其他项保持不变；脱敏占位符表示保留原密码或密钥。`sites` 只需列出要修改的站点：启用时站点若未开启认证会同时开启网页认证；站点只通过共享用户认证时不能在这里取消（取消后将无需登录），使用转发认证的站点不能启用。任一项校验失败时不保存任何修改。\n\n所需权限：`webservice:write`。",
+        "description": "请求体 `{\"authUsers\": [], \"ssoDomain\": \"\", \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`，字段含义同全局设置，只修改这几项，全局设置的其他项保持不变；脱敏占位符表示保留原密码或密钥。`sites` 只需列出要修改的站点：启用时站点若未开启认证会同时开启网页认证；站点只通过共享用户认证时，取消需同时带 `\"disableAuth\": true`，站点的网页认证与基本认证会一起关闭、变为无需登录即可访问，未带时拒绝；使用转发认证的站点不能启用。任一项校验失败时不保存任何修改。\n\n所需权限：`webservice:write`。",
         "requestBody": {
           "content": {
             "application/json": {

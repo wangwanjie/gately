@@ -1762,6 +1762,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 
 | Campo | Tipo |
 | --- | --- |
+| `disableAuth` | boolean |
 | `listener` | string |
 | `sharedUsers` | boolean |
 | `site` | string |

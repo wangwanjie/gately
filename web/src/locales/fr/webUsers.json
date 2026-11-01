@@ -5,7 +5,7 @@
   "sites": {
     "title": "Sites utilisant les utilisateurs partagés",
     "count": "{on} sur {total} sélectionnés",
-    "help": "Les sites sélectionnés acceptent les utilisateurs partagés pour l'auth Web et Basic, en plus de leurs propres utilisateurs ; sélectionner un site sans authentification active aussi l'auth Web. La possibilité de connexion à une application OIDC dépend de la liste d'autorisation de chaque client, ci-dessous.",
+    "help": "Les sites sélectionnés acceptent les utilisateurs partagés pour l'auth Web et Basic, en plus de leurs propres utilisateurs ; sélectionner un site sans authentification active aussi l'auth Web. La possibilité de connexion à une application OIDC dépend de la liste d'autorisation de chaque client, ci-dessous. Décocher un site qui s'authentifie uniquement avec les utilisateurs partagés désactive aussi son authentification à l'enregistrement.",
     "search": "Filtrer par nom de site, domaine ou écoute",
     "checkVisible": "Tout sélectionner (affichés)",
     "uncheckVisible": "Tout désélectionner (affichés)",
@@ -16,11 +16,15 @@
     "basicAuth": "Auth Basic",
     "noAuth": "Sans authentification",
     "willEnableAuth": "L'auth Web sera activée à l'enregistrement",
+    "willDisableAuth": "Authentification désactivée à l'enregistrement",
     "lockForward": "Les sites en authentification déléguée ne peuvent pas utiliser les utilisateurs partagés",
-    "lockOnly": "Ce site ne s'authentifie qu'avec les utilisateurs partagés et deviendrait public si vous le désélectionnez ; pour le rendre public, désactivez l'authentification dans les paramètres du site",
     "none": "Aucun site pouvant utiliser l'authentification pour l'instant",
     "noMatch": "Aucun site correspondant",
-    "groupCount": "{on} / {total} sélectionnés"
+    "groupCount": "{on} / {total} sélectionnés",
+    "disableTitle": "Désactiver l'authentification du site",
+    "disableConfirm": "Ces sites s'authentifient uniquement avec les utilisateurs partagés. Les décocher désactive aussi leur authentification et tout le monde pourra y accéder sans se connecter : {sites}. Enregistrer quand même ?",
+    "disableOk": "Désactiver et enregistrer",
+    "sep": ", "
   },
   "leaveTitle": "Modifications non enregistrées",
   "leaveConfirm": "Cette page contient des modifications non enregistrées qui seront perdues si vous la quittez.",

@@ -5,7 +5,7 @@
   "sites": {
     "title": "Sites using shared users",
     "count": "{on} of {total} selected",
-    "help": "Selected sites accept shared users for web auth and basic auth, alongside their own users; selecting a site without authentication also turns on web auth. Whether an OIDC app can sign a user in is set by each client's allow list below.",
+    "help": "Selected sites accept shared users for web auth and basic auth, alongside their own users; selecting a site without authentication also turns on web auth. Whether an OIDC app can sign a user in is set by each client's allow list below. Clearing a site that authenticates only with shared users also turns off its authentication when saved.",
     "search": "Filter by site name, domain or listener",
     "checkVisible": "Select all shown",
     "uncheckVisible": "Clear all shown",
@@ -16,11 +16,15 @@
     "basicAuth": "Basic auth",
     "noAuth": "No authentication",
     "willEnableAuth": "Web auth turns on when saved",
+    "willDisableAuth": "Auth off after saving",
     "lockForward": "Sites using forward auth cannot use shared users",
-    "lockOnly": "This site authenticates only with shared users and would become public if cleared; to make it public, turn off authentication in the site settings",
     "none": "No sites that can use authentication yet",
     "noMatch": "No matching sites",
-    "groupCount": "{on} / {total} selected"
+    "groupCount": "{on} / {total} selected",
+    "disableTitle": "Turn off site authentication",
+    "disableConfirm": "These sites authenticate only with shared users. Clearing them also turns off their authentication, so anyone can access them without signing in: {sites}. Save anyway?",
+    "disableOk": "Turn off auth and save",
+    "sep": ", "
   },
   "leaveTitle": "Unsaved changes",
   "leaveConfirm": "This page has unsaved changes that will be lost if you leave.",

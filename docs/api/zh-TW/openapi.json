@@ -2595,6 +2595,9 @@
       },
       "webservice.SiteSharedUsers": {
         "properties": {
+          "disableAuth": {
+            "type": "boolean"
+          },
           "listener": {
             "type": "string"
           },
@@ -30728,7 +30731,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "請求主體 `{\"authUsers\": [], \"ssoDomain\": \"\", \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`，欄位含義同全域設定，只修改這幾項，全域設定的其他項保持不變；遮罩預留位置表示保留原密碼或金鑰。`sites` 只需列出要修改的站點：啟用時站點若未開啟驗證會同時開啟網頁驗證；站點只透過共用使用者驗證時不能在這裡取消（取消後將無需登入），使用轉發認證的站點不能啟用。任一項校驗失敗時不儲存任何修改。\n\n所需權限：`webservice:write`。",
+        "description": "請求主體 `{\"authUsers\": [], \"ssoDomain\": \"\", \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`，欄位含義同全域設定，只修改這幾項，全域設定的其他項保持不變；遮罩預留位置表示保留原密碼或金鑰。`sites` 只需列出要修改的站點：啟用時站點若未開啟驗證會同時開啟網頁驗證；站點只透過共用使用者驗證時，取消需同時帶 `\"disableAuth\": true`，站點的網頁驗證與基本驗證會一起關閉、變為無需登入即可存取，未帶時拒絕；使用轉發認證的站點不能啟用。任一項校驗失敗時不儲存任何修改。\n\n所需權限：`webservice:write`。",
         "requestBody": {
           "content": {
             "application/json": {
