@@ -42,9 +42,9 @@ scrape_configs:
 | `gately_site_responses_total{listener,site,class}` | counter | 상태 분류(2xx/3xx/4xx/5xx)별 응답 수 |
 | `gately_site_response_bytes_total` / `gately_site_errors_total` / `gately_site_active_requests` | counter / counter / gauge | 응답 바이트, 백엔드 오류, 처리 중인 요청 |
 | `gately_site_blocked_total{listener,site,reason}` | counter | 원인(`ban`, `ip`, `country`, `rateLimit`, `waf`)별 차단된 요청 수 |
-| `gately_upstream_up{listener,site,upstream}` | gauge | 백엔드 정상 여부. 경로별·사용자별 백엔드에는 `route` 레이블(경로 접두사 또는 `@`와 사용자 목록)도 붙음 |
-| `gately_upstream_requests_total{listener,site,upstream}` | counter | 백엔드로 전달한 요청 수 |
-| `gately_upstream_response_bytes_total{listener,site,upstream}` | counter | 백엔드가 반환한 응답 본문 바이트(WebSocket 업그레이드 이후 데이터 제외) |
+| `gately_upstream_up{listener,site,upstream[,route]}` | gauge | 백엔드 정상 여부. 경로별·사용자별 백엔드에는 `route` 레이블(경로 접두사 또는 `@`와 사용자 목록)도 붙음 |
+| `gately_upstream_requests_total{listener,site,upstream[,route]}` | counter | 백엔드로 전달한 요청 수 |
+| `gately_upstream_response_bytes_total{listener,site,upstream[,route]}` | counter | 백엔드가 반환한 응답 본문 바이트(WebSocket 업그레이드 이후 데이터 제외) |
 | `gately_listener_requests_total{listener,action}` | counter | 리스너가 직접 처리한 요청: `https_redirect`는 평문 HTTP를 HTTPS로 리다이렉트, `not_found`는 일치하는 사이트가 없을 때의 404 |
 
 ## 알림 예시

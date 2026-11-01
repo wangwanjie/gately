@@ -42,9 +42,9 @@ scrape_configs:
 | `gately_site_responses_total{listener,site,class}` | counter | Responses by status class (2xx/3xx/4xx/5xx) |
 | `gately_site_response_bytes_total` / `gately_site_errors_total` / `gately_site_active_requests` | counter / counter / gauge | Response bytes, backend errors, in-flight requests |
 | `gately_site_blocked_total{listener,site,reason}` | counter | Blocked requests by reason (`ban`, `ip`, `country`, `rateLimit`, `waf`) |
-| `gately_upstream_up{listener,site,upstream}` | gauge | Whether the upstream is healthy; path-based and per-user backends also carry a `route` label (path prefix or `@` plus the user list) |
-| `gately_upstream_requests_total{listener,site,upstream}` | counter | Requests forwarded to the upstream |
-| `gately_upstream_response_bytes_total{listener,site,upstream}` | counter | Response body bytes returned by the upstream (excluding data after a WebSocket upgrade) |
+| `gately_upstream_up{listener,site,upstream[,route]}` | gauge | Whether the upstream is healthy; path-based and per-user backends also carry a `route` label (path prefix or `@` plus the user list) |
+| `gately_upstream_requests_total{listener,site,upstream[,route]}` | counter | Requests forwarded to the upstream |
+| `gately_upstream_response_bytes_total{listener,site,upstream[,route]}` | counter | Response body bytes returned by the upstream (excluding data after a WebSocket upgrade) |
 | `gately_listener_requests_total{listener,action}` | counter | Requests the listener handles itself: `https_redirect` for plain HTTP redirected to HTTPS, `not_found` for the 404 when no site matches |
 
 ## Alert examples

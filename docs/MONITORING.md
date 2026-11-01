@@ -42,9 +42,9 @@ scrape_configs:
 | `gately_site_responses_total{listener,site,class}` | counter | 按状态类别（2xx/3xx/4xx/5xx）的响应数 |
 | `gately_site_response_bytes_total` / `gately_site_errors_total` / `gately_site_active_requests` | counter / counter / gauge | 站点响应字节数、后端错误数、进行中请求数 |
 | `gately_site_blocked_total{listener,site,reason}` | counter | 按原因（`ban`、`ip`、`country`、`rateLimit`、`waf`）统计的拦截次数 |
-| `gately_upstream_up{listener,site,upstream}` | gauge | 后端是否健康；分路径与按用户分流的后端另带 `route` 标签（路径前缀或 `@用户列表`） |
-| `gately_upstream_requests_total{listener,site,upstream}` | counter | 转发到后端的累计请求数 |
-| `gately_upstream_response_bytes_total{listener,site,upstream}` | counter | 后端返回的累计响应体字节数（不含 WebSocket 升级后的数据） |
+| `gately_upstream_up{listener,site,upstream[,route]}` | gauge | 后端是否健康；分路径与按用户分流的后端另带 `route` 标签（路径前缀或 `@用户列表`） |
+| `gately_upstream_requests_total{listener,site,upstream[,route]}` | counter | 转发到后端的累计请求数 |
+| `gately_upstream_response_bytes_total{listener,site,upstream[,route]}` | counter | 后端返回的累计响应体字节数（不含 WebSocket 升级后的数据） |
 | `gately_listener_requests_total{listener,action}` | counter | 监听层直接处理的请求：`https_redirect` 明文跳转 HTTPS，`not_found` 未匹配站点的 404 |
 
 ## 告警示例

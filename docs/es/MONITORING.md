@@ -42,9 +42,9 @@ scrape_configs:
 | `gately_site_responses_total{listener,site,class}` | counter | Respuestas por clase de estado (2xx/3xx/4xx/5xx) |
 | `gately_site_response_bytes_total` / `gately_site_errors_total` / `gately_site_active_requests` | counter / counter / gauge | Bytes de respuesta, errores del backend, peticiones en curso |
 | `gately_site_blocked_total{listener,site,reason}` | counter | Peticiones bloqueadas por motivo (`ban`, `ip`, `country`, `rateLimit`, `waf`) |
-| `gately_upstream_up{listener,site,upstream}` | gauge | Si el upstream está sano; los backends por ruta y por usuario llevan además una etiqueta `route` (prefijo de ruta, o `@` más la lista de usuarios) |
-| `gately_upstream_requests_total{listener,site,upstream}` | counter | Peticiones reenviadas al upstream |
-| `gately_upstream_response_bytes_total{listener,site,upstream}` | counter | Bytes del cuerpo de respuesta devueltos por el upstream (sin los datos tras una actualización a WebSocket) |
+| `gately_upstream_up{listener,site,upstream[,route]}` | gauge | Si el upstream está sano; los backends por ruta y por usuario llevan además una etiqueta `route` (prefijo de ruta, o `@` más la lista de usuarios) |
+| `gately_upstream_requests_total{listener,site,upstream[,route]}` | counter | Peticiones reenviadas al upstream |
+| `gately_upstream_response_bytes_total{listener,site,upstream[,route]}` | counter | Bytes del cuerpo de respuesta devueltos por el upstream (sin los datos tras una actualización a WebSocket) |
 | `gately_listener_requests_total{listener,action}` | counter | Peticiones que el listener atiende por sí mismo: `https_redirect` para HTTP sin cifrar redirigido a HTTPS, `not_found` para el 404 cuando ningún sitio coincide |
 
 ## Ejemplos de alertas

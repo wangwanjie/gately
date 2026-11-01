@@ -42,9 +42,9 @@ scrape_configs:
 | `gately_site_responses_total{listener,site,class}` | counter | ステータスの種類（2xx/3xx/4xx/5xx）ごとのレスポンス数 |
 | `gately_site_response_bytes_total` / `gately_site_errors_total` / `gately_site_active_requests` | counter / counter / gauge | レスポンスのバイト数、バックエンドのエラー数、処理中のリクエスト数 |
 | `gately_site_blocked_total{listener,site,reason}` | counter | 理由（`ban`、`ip`、`country`、`rateLimit`、`waf`）別のブロック数 |
-| `gately_upstream_up{listener,site,upstream}` | gauge | バックエンドが正常か。パス別とユーザー別のバックエンドには `route` ラベル（パスのプレフィックス、または `@` とユーザー一覧）も付く |
-| `gately_upstream_requests_total{listener,site,upstream}` | counter | バックエンドへ転送したリクエスト数 |
-| `gately_upstream_response_bytes_total{listener,site,upstream}` | counter | バックエンドが返したレスポンス本文のバイト数（WebSocket アップグレード後のデータは含まない） |
+| `gately_upstream_up{listener,site,upstream[,route]}` | gauge | バックエンドが正常か。パス別とユーザー別のバックエンドには `route` ラベル（パスのプレフィックス、または `@` とユーザー一覧）も付く |
+| `gately_upstream_requests_total{listener,site,upstream[,route]}` | counter | バックエンドへ転送したリクエスト数 |
+| `gately_upstream_response_bytes_total{listener,site,upstream[,route]}` | counter | バックエンドが返したレスポンス本文のバイト数（WebSocket アップグレード後のデータは含まない） |
 | `gately_listener_requests_total{listener,action}` | counter | リスナーが直接処理したリクエスト。`https_redirect` は平文 HTTP の HTTPS へのリダイレクト、`not_found` は一致するサイトがない場合の 404 |
 
 ## アラートの例
