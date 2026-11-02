@@ -51,7 +51,7 @@
     "excludeTip": "Hides logs containing any of these terms, combined with the keywords; space-separated, double quotes group a phrase, e.g. debug \"health check\"",
     "moreFilters": "More filters",
     "reset": "Reset",
-    "ip": "IP or range, e.g. 1.2.3.4, 10.0.0.0/8",
+    "ip": "IP or range, e.g. 1.2.3.4, 10.0.0.0/8; prefix ! to exclude",
     "host": "Site name or domain",
     "status": "Status, e.g. 404, 5xx",
     "to": "End time",
@@ -75,9 +75,22 @@
       "method": "Method",
       "path": "Path",
       "rule": "Rule",
-      "user": "User"
+      "user": "User",
+      "deny": "Blocked by",
+      "admin": "Console user"
     },
-    "from": "Start time"
+    "from": "Start time",
+    "hideBanned": "Hide banned sources",
+    "hideBannedTip": "Hide requests rejected because the source is banned. Display only: the logs are still kept, untick to see them",
+    "hideAdmin": "Hide console requests",
+    "hideAdminTip": "Hide requests that carry an admin console session, such as the log page polling when you open the console through this site. Display only: the logs are still kept",
+    "deny": {
+      "ban": "Banned",
+      "ip": "IP access control",
+      "country": "Country filter",
+      "rateLimit": "Rate limit",
+      "waf": "WAF"
+    }
   },
   "scopeTags": {
     "allWrite": "Full access",

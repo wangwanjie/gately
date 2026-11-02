@@ -51,7 +51,7 @@
     "excludeTip": "Blendet Logs aus, die einen dieser Begriffe enthalten, zusätzlich zu den Stichwörtern; durch Leerzeichen getrennt, doppelte Anführungszeichen bilden eine Phrase, z. B. debug \"health check\"",
     "moreFilters": "Weitere Filter",
     "reset": "Zurücksetzen",
-    "ip": "IP oder Bereich, z. B. 1.2.3.4, 10.0.0.0/8",
+    "ip": "IP oder Bereich, z. B. 1.2.3.4, 10.0.0.0/8; Präfix ! schließt aus",
     "host": "Site-Name oder Domain",
     "status": "Status, z. B. 404, 5xx",
     "to": "Ende",
@@ -75,9 +75,22 @@
       "method": "Methode",
       "path": "Pfad",
       "rule": "Regel",
-      "user": "Benutzer"
+      "user": "Benutzer",
+      "deny": "Blockiert durch",
+      "admin": "Konsolenbenutzer"
     },
-    "from": "Beginn"
+    "from": "Beginn",
+    "hideBanned": "Gesperrte Quellen ausblenden",
+    "hideBannedTip": "Blendet Anfragen aus, die abgelehnt wurden, weil die Quelle gesperrt ist. Nur Anzeige: Die Protokolle bleiben erhalten, Haken entfernen zum Anzeigen",
+    "hideAdmin": "Konsolenanfragen ausblenden",
+    "hideAdminTip": "Blendet Anfragen mit einer Sitzung der Verwaltungsoberfläche aus, etwa das Abfragen der Protokollseite, wenn Sie die Oberfläche über diese Site öffnen. Nur Anzeige: Die Protokolle bleiben erhalten",
+    "deny": {
+      "ban": "Gesperrt",
+      "ip": "IP-Zugriffskontrolle",
+      "country": "Länderfilter",
+      "rateLimit": "Ratenbegrenzung",
+      "waf": "WAF"
+    }
   },
   "scopeTags": {
     "allWrite": "Vollzugriff",

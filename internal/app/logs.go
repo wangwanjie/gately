@@ -64,16 +64,18 @@ func tightenConfigDir(dir string) int {
 }
 
 // logFilterParams 是日志接口支持的过滤参数，接口文档据此列出查询参数。
-var logFilterParams = []string{"level", "source", "q", "exclude", "ip", "host", "status", "from", "to"}
+var logFilterParams = []string{"level", "source", "q", "exclude", "ip", "host", "status", "hideBanned", "hideAdmin", "from", "to"}
 
 // parseLogFilter 解析日志过滤参数：
 //   - level：最低级别（debug、info、warn、error）
 //   - source：来源标签，精确匹配
 //   - q：关键词，空格分隔表示同时包含，双引号包住短语，前缀 - 表示排除
 //   - exclude：不包含的关键词，空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 为“且”的关系
-//   - ip：客户端地址，支持完整地址、CIDR 与地址片段，多个以逗号分隔
+//   - ip：客户端地址，支持完整地址、CIDR 与地址片段，多个以逗号分隔，前缀 ! 或 - 表示排除
 //   - host：站点名称或域名的一部分
 //   - status：状态码，如 404、4xx、500-599，多个以逗号分隔
+//   - hideBanned：为 1 时隐藏来源已被封禁而被拒绝的访问日志
+//   - hideAdmin：为 1 时隐藏带管理后台登录态的请求（管理员经站点反代访问后台产生的访问日志）
 //   - from、to：时间范围，RFC 3339 格式或毫秒时间戳
 //
 // 没有任何过滤条件时返回 nil；参数无效时返回错误信息（完整字面量，便于翻译）。
@@ -93,6 +95,13 @@ func parseLogFilter(q url.Values) (*logbuf.Filter, string) {
 	// exclude 中的词全部视为排除词，写不写前缀 - 都一样
 	exTerms, exExcludes := logbuf.ParseKeywords(q.Get("exclude"))
 	f.Excludes = append(append(f.Excludes, exTerms...), exExcludes...)
+	// 只是隐藏，日志本身照常保存，关闭后可以查到
+	if boolParam(q.Get("hideBanned")) {
+		f.Hide = append(f.Hide, logbuf.FieldCond{Key: logbuf.FieldDeny, Value: logbuf.DenyBan})
+	}
+	if boolParam(q.Get("hideAdmin")) {
+		f.Hide = append(f.Hide, logbuf.FieldCond{Key: logbuf.FieldAdmin})
+	}
 	if v := strings.TrimSpace(q.Get("status")); v != "" {
 		st, ok := logbuf.ParseStatus(v)
 		if !ok {
@@ -114,6 +123,12 @@ func parseLogFilter(q url.Values) (*logbuf.Filter, string) {
 		return nil, ""
 	}
 	return f, ""
+}
+
+// boolParam 判断开关类查询参数是否开启（1 或 true）。
+func boolParam(v string) bool {
+	v = strings.TrimSpace(v)
+	return v == "1" || strings.EqualFold(v, "true")
 }
 
 // minLogTimeMsDigits 为毫秒时间戳的最少位数：12 位对应 1973 年起的时间，

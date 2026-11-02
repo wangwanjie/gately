@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -11,6 +12,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/wangwanjie/gately/internal/auth"
+	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/logbuf"
 )
 
@@ -146,5 +149,90 @@ func TestLogsFilterAPI(t *testing.T) {
 	_ = json.NewDecoder(resp.Body).Decode(&sys)
 	if len(sys) == 0 || !strings.Contains(sys[len(sys)-1].Message, "signed in from") {
 		t.Errorf("英文关键词应匹配登录日志的译文: %+v", sys)
+	}
+}
+
+// TestLogsHideParams 验证 hideBanned、hideAdmin 与 IP 排除参数：只隐藏对应的访问日志，日志本身仍在。
+func TestLogsHideParams(t *testing.T) {
+	a, srv, c := loginApp(t)
+	pf := a.modules[0].logs
+	l := pf.Logger("隐藏测试")
+	l.With(logbuf.Fields{logbuf.FieldIP: "1.2.3.4", logbuf.FieldStatus: "403", logbuf.FieldDeny: logbuf.DenyBan}).Infof("banned")
+	l.With(logbuf.Fields{logbuf.FieldIP: "1.2.3.5", logbuf.FieldStatus: "403", logbuf.FieldDeny: "ip"}).Infof("ip-denied")
+	l.With(logbuf.Fields{logbuf.FieldIP: "10.0.0.8", logbuf.FieldStatus: "200", logbuf.FieldAdmin: "admin"}).Infof("console")
+	l.With(logbuf.Fields{logbuf.FieldIP: "10.0.0.9", logbuf.FieldStatus: "200"}).Infof("normal")
+
+	query := func(q string) (int, string) {
+		t.Helper()
+		resp, err := c.Get(srv.URL + "/api/portforward/logs?source=" + url.QueryEscape("隐藏测试") + "&" + q)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer resp.Body.Close()
+		var es []logbuf.Entry
+		_ = json.NewDecoder(resp.Body).Decode(&es)
+		var msgs []string
+		for _, e := range es {
+			msgs = append(msgs, e.Message)
+		}
+		return resp.StatusCode, strings.Join(msgs, ",")
+	}
+	cases := map[string]string{
+		"":                                     "banned,ip-denied,console,normal",
+		"hideBanned=1":                         "ip-denied,console,normal",
+		"hideAdmin=true":                       "banned,ip-denied,normal",
+		"hideBanned=1&hideAdmin=1":             "ip-denied,normal",
+		"hideBanned=0&hideAdmin=no":            "banned,ip-denied,console,normal",
+		"ip=" + url.QueryEscape("!1.2.3.0/24"): "console,normal",
+		"ip=" + url.QueryEscape("10.0.0.0/8,-10.0.0.8"):    "normal",
+		"hideBanned=1&ip=" + url.QueryEscape("1.2.3.0/24"): "ip-denied",
+	}
+	for q, want := range cases {
+		code, got := query(q)
+		if code != http.StatusOK || got != want {
+			t.Errorf("%q: 状态码 %d，结果 %q，期望 %q", q, code, got, want)
+		}
+	}
+}
+
+// TestSessionCheckHook 验证管理后台注册的登录态校验：有效 Cookie 返回用户名，伪造、篡改或缺失时返回空串，
+// Authorization 头中的令牌不参与（多是发给后端应用的）。
+func TestSessionCheckHook(t *testing.T) {
+	_, srv, c := loginApp(t)
+	u, _ := url.Parse(srv.URL)
+	var token string
+	for _, ck := range c.Jar.Cookies(u) {
+		if ck.Name == auth.CookieName {
+			token = ck.Value
+		}
+	}
+	if token == "" {
+		t.Fatal("登录后应有后台 Cookie")
+	}
+	req := func(cookie, bearer string) *http.Request {
+		r := httptest.NewRequest("GET", "http://site.test/api/webservice/logs", nil)
+		if cookie != "" {
+			r.AddCookie(&http.Cookie{Name: auth.CookieName, Value: cookie})
+		}
+		if bearer != "" {
+			r.Header.Set("Authorization", "Bearer "+bearer)
+		}
+		return r
+	}
+	if got := httpx.SessionUser(req(token, "")); got != "admin" {
+		t.Errorf("有效登录态应返回用户名，得到 %q", got)
+	}
+	p, sig, _ := strings.Cut(token, ".")
+	tampered := p + "x." + sig
+	for name, r := range map[string]*http.Request{
+		"无 Cookie":         req("", ""),
+		"篡改载荷":             req(tampered, ""),
+		"签名长度不对":           req(p+".AAAA", ""),
+		"不是令牌格式":           req("abc", ""),
+		"只在 Authorization": req("", token),
+	} {
+		if got := httpx.SessionUser(r); got != "" {
+			t.Errorf("%s: 应返回空串，得到 %q", name, got)
+		}
 	}
 }

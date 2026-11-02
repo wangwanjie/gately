@@ -22,6 +22,7 @@ import (
 
 	"github.com/wangwanjie/gately/internal/geoip"
 	"github.com/wangwanjie/gately/internal/httpcompress"
+	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/iplist"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/webpage"
@@ -551,6 +552,8 @@ type statusRecorder struct {
 	bytes  int64
 	// denied 表示请求被访问控制拒绝并断开连接（记为 444）
 	denied bool
+	// deny 为请求被拦截的原因（blockNames 中的名称），写入访问日志的 deny 字段，日志页据此隐藏被封禁来源的请求
+	deny string
 	// req 为该请求在实时连接列表中的登记项，可为 nil
 	req *activeReq
 	// wroteHeader 表示已写出响应头
@@ -654,6 +657,12 @@ func (h *siteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	rec := &statusRecorder{ResponseWriter: w, status: http.StatusOK, rate: &h.metrics.rate}
 	// 重写规则会原地改写 r.URL，访问日志与路径探测要用访客实际请求的路径
 	origPath, origURI := r.URL.Path, r.URL.RequestURI()
+	// 带本实例管理后台登录态的请求（管理员经这个站点访问后台，例如日志页的轮询）在访问日志中标记用户名，
+	// 日志页可以隐藏它们。在处理前取得：之后请求头可能被改写；只在记录访问日志时校验
+	admin := ""
+	if h.site.AccessLog {
+		admin = httpx.SessionUser(r)
+	}
 
 	defer func() {
 		// 首字节延迟：协议升级（长连接）、被管理员断开与未写出响应（断开连接）的请求不计入（-1）
@@ -670,7 +679,7 @@ func (h *siteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 			// 末尾按 nginx combined 格式附上 Referer 与 User-Agent，便于区分同一出口 IP 后面的不同设备；
 			// %q 会转义换行等控制字符，防止伪造日志行；三者都由访客控制，先截断再写入
-			h.reqLog(r).With(logbuf.Fields{logbuf.FieldStatus: strconv.Itoa(rec.status)}).
+			h.reqLog(r).With(logbuf.Fields{logbuf.FieldStatus: strconv.Itoa(rec.status), logbuf.FieldDeny: rec.deny, logbuf.FieldAdmin: admin}).
 				Infof("%s %s %s%s %d %dms %q %q", client.Addr(), r.Method, r.Host, clip(uri, maxLogURI), rec.status, time.Since(start).Milliseconds(),
 					orDash(clip(r.Referer(), maxLogHeader)), orDash(clip(r.UserAgent(), maxLogHeader)))
 		}
@@ -730,7 +739,7 @@ func (h *siteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.pipeline.ServeHTTP(rec, r)
 	// WAF 拦截时不会进入 serveInner 并返回 403；进入过 serveInner 的 403 来自认证、后端等，不算 WAF 拦截
 	if h.site.WAF != "" && !ar.inner && rec.status == http.StatusForbidden && !ar.killed.Load() {
-		h.stats.Blocked[blockWAF].Add(1)
+		h.block(rec, blockWAF)
 	}
 }
 
@@ -740,18 +749,18 @@ func (h *siteHandler) accessCheck(w http.ResponseWriter, r *http.Request) (relea
 	client := clientAddr(r)
 	noop := func() {}
 	if h.auth.banned(client.Addr()) {
-		h.stats.Blocked[blockBan].Add(1)
+		h.block(w, blockBan)
 		h.deny(w)
 		return noop, false
 	}
 	if !h.allowedIP(client.Addr(), h.matchRule(r.URL.Path)) {
-		h.stats.Blocked[blockIP].Add(1)
+		h.block(w, blockIP)
 		h.reqLog(r).Warnf("拒绝 %s 访问 %s（访问控制）", client.Addr(), r.Host)
 		h.deny(w)
 		return noop, false
 	}
 	if !h.countryAllowed(client.Addr()) {
-		h.stats.Blocked[blockCountry].Add(1)
+		h.block(w, blockCountry)
 		h.reqLog(r).Warnf("拒绝 %s 访问 %s（国家过滤：%s）", client.Addr(), r.Host, geoip.Default.Country(client.Addr()))
 		h.deny(w)
 		return noop, false
@@ -759,7 +768,7 @@ func (h *siteHandler) accessCheck(w http.ResponseWriter, r *http.Request) (relea
 	if h.limiter != nil {
 		rel, retry, ok := h.limiter.acquire(limitKeyAddr(client.Addr()))
 		if !ok {
-			h.stats.Blocked[blockRateLimit].Add(1)
+			h.block(w, blockRateLimit)
 			w.Header().Set("Retry-After", retryAfterSeconds(retry))
 			http.Error(w, "429 Too Many Requests", http.StatusTooManyRequests)
 			return noop, false
@@ -767,6 +776,15 @@ func (h *siteHandler) accessCheck(w http.ResponseWriter, r *http.Request) (relea
 		return rel, true
 	}
 	return noop, true
+}
+
+// block 按原因计入拦截次数，并把原因记到 statusRecorder 上供访问日志使用；
+// 签发者域名上的 OIDC 协议路径直接传入原始 ResponseWriter，只计数。
+func (h *siteHandler) block(w http.ResponseWriter, kind int) {
+	h.stats.Blocked[kind].Add(1)
+	if rec, ok := w.(*statusRecorder); ok {
+		rec.deny = blockNames[kind]
+	}
 }
 
 // deny 拒绝一次访问控制未通过的请求：站点开启了“拒绝时断开连接”时不写响应直接断开，

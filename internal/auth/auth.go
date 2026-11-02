@@ -401,14 +401,18 @@ func (m *Manager) Identify(token string) (Identity, bool) {
 	if !found {
 		return Identity{}, false
 	}
+	// 先解码签名并检查长度，格式不对的值（例如其他应用同名 Cookie）不必计算 HMAC。
+	// Web 服务会对带后台 Cookie 的每个请求调用这里，用来标记管理员自己的访问日志
+	got, err := base64.RawURLEncoding.DecodeString(sig)
+	if err != nil || len(got) != sha256.Size {
+		return Identity{}, false
+	}
 	m.mu.RLock()
 	acc := m.acc
 	m.mu.RUnlock()
 	mac := hmac.New(sha256.New, []byte(acc.SessionSecret))
 	mac.Write([]byte(p))
-	want := mac.Sum(nil)
-	got, err := base64.RawURLEncoding.DecodeString(sig)
-	if err != nil || !hmac.Equal(got, want) {
+	if !hmac.Equal(got, mac.Sum(nil)) {
 		return Identity{}, false
 	}
 	raw, err := base64.RawURLEncoding.DecodeString(p)

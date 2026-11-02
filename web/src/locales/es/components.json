@@ -51,7 +51,7 @@
     "excludeTip": "Oculta los registros que contienen cualquiera de estos términos, junto con las palabras clave; separados por espacios, las comillas dobles agrupan una frase, p. ej. debug \"health check\"",
     "moreFilters": "Más filtros",
     "reset": "Restablecer",
-    "ip": "IP o rango, p. ej. 1.2.3.4, 10.0.0.0/8",
+    "ip": "IP o rango, p. ej. 1.2.3.4, 10.0.0.0/8; prefijo ! para excluir",
     "host": "Nombre del sitio o dominio",
     "status": "Estado, p. ej. 404, 5xx",
     "to": "Fin",
@@ -75,9 +75,22 @@
       "method": "Método",
       "path": "Ruta",
       "rule": "Regla",
-      "user": "Usuario"
+      "user": "Usuario",
+      "deny": "Bloqueado por",
+      "admin": "Usuario de la consola"
     },
-    "from": "Inicio"
+    "from": "Inicio",
+    "hideBanned": "Ocultar orígenes bloqueados",
+    "hideBannedTip": "Oculta las solicitudes rechazadas porque el origen está bloqueado. Solo afecta a la vista: los registros se conservan; desmarque para verlos",
+    "hideAdmin": "Ocultar solicitudes de la consola",
+    "hideAdminTip": "Oculta las solicitudes con una sesión de la consola de administración, como el sondeo de la página de registros al abrir la consola a través de este sitio. Solo afecta a la vista: los registros se conservan",
+    "deny": {
+      "ban": "Bloqueado",
+      "ip": "Control de acceso por IP",
+      "country": "Filtro por país",
+      "rateLimit": "Límite de tasa",
+      "waf": "WAF"
+    }
   },
   "scopeTags": {
     "allWrite": "Acceso total",

@@ -51,7 +51,7 @@
     "excludeTip": "Masque les journaux contenant l’un de ces termes, en plus des mots-clés ; séparés par des espaces, les guillemets doubles regroupent une expression, ex. debug \"health check\"",
     "moreFilters": "Plus de filtres",
     "reset": "Réinitialiser",
-    "ip": "IP ou plage, par ex. 1.2.3.4, 10.0.0.0/8",
+    "ip": "IP ou plage, ex. 1.2.3.4, 10.0.0.0/8 ; préfixe ! pour exclure",
     "host": "Nom du site ou domaine",
     "status": "Code d’état, par ex. 404, 5xx",
     "to": "Fin",
@@ -75,9 +75,22 @@
       "method": "Méthode",
       "path": "Chemin",
       "rule": "Règle",
-      "user": "Utilisateur"
+      "user": "Utilisateur",
+      "deny": "Bloqué par",
+      "admin": "Utilisateur de la console"
     },
-    "from": "Début"
+    "from": "Début",
+    "hideBanned": "Masquer les sources bannies",
+    "hideBannedTip": "Masque les requêtes refusées parce que la source est bannie. Affichage uniquement : les journaux sont conservés, décochez pour les voir",
+    "hideAdmin": "Masquer les requêtes de la console",
+    "hideAdminTip": "Masque les requêtes portant une session de la console d'administration, comme l'interrogation de la page des journaux lorsque vous ouvrez la console via ce site. Affichage uniquement : les journaux sont conservés",
+    "deny": {
+      "ban": "Banni",
+      "ip": "Contrôle d'accès IP",
+      "country": "Filtre par pays",
+      "rateLimit": "Limitation de débit",
+      "waf": "WAF"
+    }
   },
   "scopeTags": {
     "allWrite": "Accès complet",

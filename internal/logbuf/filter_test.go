@@ -375,3 +375,119 @@ func TestSearchStopsOnError(t *testing.T) {
 		t.Errorf("取消后应只返回缓冲内容，得到 %s", got)
 	}
 }
+
+// TestIPMatcherExclude 验证 IP 条件的排除项：前缀 ! 或 - 的地址、网段与片段命中即排除，可以与包含项组合。
+func TestIPMatcherExclude(t *testing.T) {
+	cases := []struct {
+		expr string
+		want map[string]bool
+	}{
+		// 只有排除项：其余地址都匹配
+		{"!1.2.3.4, -10.0.0.0/8", map[string]bool{"1.2.3.4": false, "1.2.3.4:80": false, "10.9.9.9": false, "::ffff:10.0.0.1": false, "1.2.3.5": true, "2001:db8::1": true}},
+		// 包含与排除组合：先排除再要求命中包含项
+		{"10.0.0.0/8 !10.0.0.5", map[string]bool{"10.0.0.4": true, "10.0.0.5": false, "11.0.0.1": false}},
+		// IPv6 网段与地址片段
+		{"!2001:db8::/32 !192.168.", map[string]bool{"2001:db8::9": false, "[2001:db8::9]:443": false, "2001:db9::1": true, "192.168.1.1": false, "172.16.0.1": true}},
+		// 映射网段同样转换
+		{"!::ffff:1.2.3.0/120", map[string]bool{"1.2.3.9": false, "1.2.4.1": true}},
+	}
+	for _, c := range cases {
+		m := ParseIP(c.expr)
+		if m == nil {
+			t.Fatalf("%q 不应解析为空", c.expr)
+		}
+		for in, want := range c.want {
+			if got := m.match(in); got != want {
+				t.Errorf("%q match(%q) = %v，期望 %v", c.expr, in, got, want)
+			}
+		}
+	}
+	// 单独的 ! 或 - 不构成条件
+	if ParseIP("! -") != nil {
+		t.Error("只有 ! 与 - 时应返回 nil")
+	}
+
+	// 日志没有 ip 字段时，消息中出现任意一个被排除的地址即排除；只有排除项时不含地址的日志照常显示
+	m := ParseIP("!5.6.7.8")
+	for _, c := range []struct {
+		e    Entry
+		want bool
+	}{
+		{Entry{Message: "来自 5.6.7.8 的登录失败"}, false},
+		{Entry{Message: "转发 1.1.1.1:80 -> 5.6.7.8:22"}, false},
+		{Entry{Message: "转发 1.1.1.1:80 -> 9.9.9.9:22"}, true},
+		{Entry{Message: "模块已启动"}, true},
+		// 有 ip 字段时只看字段，消息里出现的其他地址（例如后端地址）不影响
+		{Entry{Message: "1.1.1.1 GET a/ 502 后端 5.6.7.8 不可用", Fields: Fields{FieldIP: "1.1.1.1"}}, true},
+		{Entry{Message: "5.6.7.8 GET a/ 200", Fields: Fields{FieldIP: "5.6.7.8"}}, false},
+	} {
+		if got := m.matchEntry(&c.e); got != c.want {
+			t.Errorf("matchEntry(%q) = %v，期望 %v", c.e.Message, got, c.want)
+		}
+	}
+	// 有包含项时，不含地址的日志不匹配（与原有行为一致）
+	if ParseIP("10.0.0.0/8 !10.0.0.5").matchEntry(&Entry{Message: "模块已启动"}) {
+		t.Error("有包含项时不含地址的日志不应匹配")
+	}
+}
+
+// TestFilterHide 验证按字段隐藏：被封禁来源被拒绝的访问日志、管理员自己的请求，其余日志不受影响。
+func TestFilterHide(t *testing.T) {
+	banned := Entry{Level: LevelInfo, Message: "1.2.3.4 GET a/ 403", Fields: Fields{FieldIP: "1.2.3.4", FieldStatus: "403", FieldDeny: DenyBan}}
+	ipDenied := Entry{Level: LevelInfo, Message: "1.2.3.5 GET a/ 403", Fields: Fields{FieldIP: "1.2.3.5", FieldStatus: "403", FieldDeny: "ip"}}
+	admin := Entry{Level: LevelInfo, Message: "1.2.3.6 GET a/api/webservice/logs 200", Fields: Fields{FieldIP: "1.2.3.6", FieldStatus: "200", FieldAdmin: "admin"}}
+	normal := Entry{Level: LevelInfo, Message: "1.2.3.7 GET a/ 200", Fields: Fields{FieldIP: "1.2.3.7", FieldStatus: "200"}}
+	plain := Entry{Level: LevelWarn, Message: "模块已启动"}
+
+	hideBan := FieldCond{Key: FieldDeny, Value: DenyBan}
+	hideAdmin := FieldCond{Key: FieldAdmin}
+	cases := []struct {
+		name string
+		f    Filter
+		want [5]bool // banned、ipDenied、admin、normal、plain
+	}{
+		{"隐藏被封禁来源", Filter{Hide: []FieldCond{hideBan}}, [5]bool{false, true, true, true, true}},
+		{"隐藏后台请求", Filter{Hide: []FieldCond{hideAdmin}}, [5]bool{true, true, false, true, true}},
+		{"同时隐藏", Filter{Hide: []FieldCond{hideBan, hideAdmin}}, [5]bool{false, true, false, true, true}},
+		{"与其他条件为且", Filter{Hide: []FieldCond{hideBan}, Status: []StatusRange{{400, 499}}}, [5]bool{false, true, false, false, false}},
+	}
+	for _, c := range cases {
+		if c.f.Empty() {
+			t.Fatalf("%s: 带隐藏条件时不应视为空条件", c.name)
+		}
+		for i, e := range []Entry{banned, ipDenied, admin, normal, plain} {
+			if got := c.f.Match(&e); got != c.want[i] {
+				t.Errorf("%s: 第 %d 条（%s）匹配 = %v，期望 %v", c.name, i, e.Message, got, c.want[i])
+			}
+		}
+	}
+}
+
+// TestQueryHideFile 验证隐藏条件对日志文件中的历史同样生效，且隐藏的日志不占 limit 名额。
+func TestQueryHideFile(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "web.log")
+	b := New(4, nil)
+	if err := b.Persist(path, 1<<20); err != nil {
+		t.Fatal(err)
+	}
+	defer b.ClosePersist()
+	l := b.Logger("HTTP :80")
+	for i := 0; i < 20; i++ {
+		l.With(Fields{FieldIP: "1.2.3.4", FieldStatus: "403", FieldDeny: DenyBan}).Infof("1.2.3.4 GET a/ 403 #%d", i)
+		if i%5 == 0 {
+			l.With(Fields{FieldIP: "5.6.7.8", FieldStatus: "200"}).Infof("5.6.7.8 GET a/ 200 #%d", i)
+		}
+	}
+	got := b.Query(0, 0, 3, &Filter{Hide: []FieldCond{{Key: FieldDeny, Value: DenyBan}}})
+	if len(got) != 3 {
+		t.Fatalf("应从文件中凑够 3 条未隐藏的日志，得到 %d 条: %+v", len(got), got)
+	}
+	for _, e := range got {
+		if e.Fields[FieldDeny] != "" {
+			t.Errorf("不应返回被隐藏的日志: %+v", e)
+		}
+	}
+	if got[2].Message != "5.6.7.8 GET a/ 200 #15" || got[0].Message != "5.6.7.8 GET a/ 200 #5" {
+		t.Errorf("结果应为最新的 3 条且按时间顺序: %+v", got)
+	}
+}

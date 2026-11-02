@@ -39,6 +39,15 @@
         {{ t('components.logViewer.moreFilters') }}<span v-if="advancedCount" class="count">{{ advancedCount }}</span>
       </el-button>
       <el-button v-if="active" size="small" text :icon="RotateCcw" @click="resetFilters">{{ t('components.logViewer.reset') }}</el-button>
+      <!-- 访问日志的显示开关：只影响页面显示，日志照常保存；选择记在浏览器里 -->
+      <template v-if="kinds.access">
+        <el-tooltip :content="t('components.logViewer.hideBannedTip')" placement="top">
+          <el-checkbox v-model="hide.banned" size="small">{{ t('components.logViewer.hideBanned') }}</el-checkbox>
+        </el-tooltip>
+        <el-tooltip :content="t('components.logViewer.hideAdminTip')" placement="top">
+          <el-checkbox v-model="hide.admin" size="small">{{ t('components.logViewer.hideAdmin') }}</el-checkbox>
+        </el-tooltip>
+      </template>
       <el-checkbox v-model="follow" size="small">{{ t('components.logViewer.autoScroll') }}</el-checkbox>
       <el-button v-if="clearable" size="small" text :icon="Trash2" class="clear" @click="clear">{{ t('common.clear') }}</el-button>
     </div>
@@ -76,8 +85,14 @@
           </template>
         </span>
         <!-- 消息里没有出现的字段（例如 WAF 命中日志的域名、访问日志的站点名称）以标签显示，点击即按该字段过滤 -->
-        <span v-for="f in e.extra" :key="f.key" class="field" :title="t('components.logViewer.filterBy')" @click="applyField(f.key, f.value)">
-          {{ fieldLabel(f.key) }}={{ f.value }}
+        <span
+          v-for="f in e.extra"
+          :key="f.key"
+          :class="['field', { static: !clickableField(f.key) }]"
+          :title="clickableField(f.key) ? t('components.logViewer.filterBy') : undefined"
+          @click="applyField(f.key, f.value)"
+        >
+          {{ fieldLabel(f.key) }}={{ fieldValue(f.key, f.value) }}
         </span>
       </div>
       <div v-if="!entries.length" class="empty">{{ active ? t('components.logViewer.noMatch') : t('components.logViewer.empty') }}</div>
@@ -105,9 +120,10 @@ const MAX = 2000
 type Part = { text: string; hit: boolean }
 type Row = LogEntry & { timeText: string; parts: Part[]; extra: { key: string; value: string }[] }
 
-// 带结构化字段的模块显示对应的过滤项；IP 对所有日志都可用（没有字段时从消息中识别地址）
-const moduleKinds: Record<string, { host?: boolean; status?: boolean }> = {
-  webservice: { host: true, status: true },
+// 带结构化字段的模块显示对应的过滤项；IP 对所有日志都可用（没有字段时从消息中识别地址）。
+// access 表示有访问日志，显示“隐藏被封禁来源”“隐藏后台自身请求”开关
+const moduleKinds: Record<string, { host?: boolean; status?: boolean; access?: boolean }> = {
+  webservice: { host: true, status: true, access: true },
   waf: { host: true },
 }
 const moduleId = computed(() => props.url.match(/^\/api\/([^/]+)\/logs$/)?.[1] ?? '')
@@ -123,6 +139,33 @@ function emptyFilters() {
 }
 const filters = reactive(emptyFilters())
 const showAdvanced = ref(false)
+
+// 访问日志的显示开关，保存在 localStorage，不随“重置”清除。
+// 管理员自己的请求（尤其是日志页每 2 秒的轮询）默认隐藏，避免“看日志产生日志”；被封禁来源的请求默认显示，便于审计
+const hideKey = 'gately.logs.hide'
+function loadHide() {
+  const out = { banned: false, admin: true }
+  try {
+    const v = JSON.parse(localStorage.getItem(hideKey) ?? '{}')
+    if (typeof v?.banned === 'boolean') {
+      out.banned = v.banned
+    }
+    if (typeof v?.admin === 'boolean') {
+      out.admin = v.admin
+    }
+  } catch {
+    // 存储不可用或内容损坏时使用默认值
+  }
+  return out
+}
+const hide = reactive(loadHide())
+watch(hide, (v) => {
+  try {
+    localStorage.setItem(hideKey, JSON.stringify(v))
+  } catch {
+    // 存储不可用时只在本页生效
+  }
+})
 
 const entries = ref<Row[]>([])
 const follow = ref(true)
@@ -177,6 +220,14 @@ function filterQuery(): string {
   }
   if (kinds.value.status) {
     add('status', filters.status)
+  }
+  if (kinds.value.access) {
+    if (hide.banned) {
+      q.set('hideBanned', '1')
+    }
+    if (hide.admin) {
+      q.set('hideAdmin', '1')
+    }
   }
   if (filters.range === 'custom') {
     if (filters.custom) {
@@ -275,16 +326,29 @@ function toRows(list: LogEntry[]): Row[] {
   return rows
 }
 
-const fieldKeys = ['ip', 'host', 'site', 'status', 'method', 'path', 'rule', 'user']
-const tagKeys = ['ip', 'host', 'site', 'status', 'rule', 'user']
+const fieldKeys = ['ip', 'host', 'site', 'status', 'method', 'path', 'rule', 'user', 'deny', 'admin']
+// deny 为访问被拦截的原因，admin 为请求所带管理后台登录态的用户名
+const tagKeys = ['ip', 'host', 'site', 'status', 'rule', 'user', 'deny', 'admin']
+const denyReasons = ['ban', 'ip', 'country', 'rateLimit', 'waf']
 function fieldLabel(key: string) {
   return fieldKeys.includes(key) ? t(`components.logViewer.field.${key}`) : key
+}
+// 拦截原因与后台用户只作提示：没有对应的过滤项，作为关键词也会误命中其他日志，由上方的显示开关控制
+function clickableField(key: string) {
+  return key !== 'deny' && key !== 'admin'
+}
+// fieldValue 把拦截原因翻译成界面文字，其他字段原样显示
+function fieldValue(key: string, value: string) {
+  return key === 'deny' && denyReasons.includes(value) ? t(`components.logViewer.deny.${value}`) : value
 }
 
 // applyField 点击来源或字段标签时按该值过滤；没有专门过滤项的字段作为关键词追加
 function applyField(key: string, value: string) {
   if (key === 'source') {
     filters.source = value
+    return
+  }
+  if (!clickableField(key)) {
     return
   }
   if (key === 'ip') {
@@ -472,7 +536,7 @@ onMounted(async () => {
   width: 240px;
 }
 .f-ip {
-  width: 240px;
+  width: 300px;
 }
 .f-host {
   width: 180px;
@@ -551,6 +615,10 @@ onMounted(async () => {
   color: var(--el-text-color-secondary);
   background: var(--el-fill-color);
   cursor: pointer;
+}
+.field.static {
+  cursor: default;
+  text-decoration: none;
 }
 mark {
   color: inherit;

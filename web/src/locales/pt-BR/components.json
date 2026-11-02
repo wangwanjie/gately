@@ -51,7 +51,7 @@
     "excludeTip": "Oculta os logs que contêm qualquer um destes termos, junto com as palavras-chave; separados por espaço, aspas duplas agrupam uma frase, ex.: debug \"health check\"",
     "moreFilters": "Mais filtros",
     "reset": "Redefinir",
-    "ip": "IP ou faixa, ex.: 1.2.3.4, 10.0.0.0/8",
+    "ip": "IP ou faixa, ex. 1.2.3.4, 10.0.0.0/8; prefixo ! para excluir",
     "host": "Nome do site ou domínio",
     "status": "Status, ex.: 404, 5xx",
     "to": "Fim",
@@ -75,9 +75,22 @@
       "method": "Método",
       "path": "Caminho",
       "rule": "Regra",
-      "user": "Usuário"
+      "user": "Usuário",
+      "deny": "Bloqueado por",
+      "admin": "Usuário do painel"
     },
-    "from": "Início"
+    "from": "Início",
+    "hideBanned": "Ocultar origens banidas",
+    "hideBannedTip": "Oculta as requisições rejeitadas porque a origem está banida. Afeta apenas a exibição: os logs continuam salvos; desmarque para vê-los",
+    "hideAdmin": "Ocultar requisições do painel",
+    "hideAdminTip": "Oculta as requisições com uma sessão do painel de administração, como a consulta periódica da página de logs ao abrir o painel por este site. Afeta apenas a exibição: os logs continuam salvos",
+    "deny": {
+      "ban": "Banido",
+      "ip": "Controle de acesso por IP",
+      "country": "Filtro por país",
+      "rateLimit": "Limite de taxa",
+      "waf": "WAF"
+    }
   },
   "scopeTags": {
     "allWrite": "Acesso total",

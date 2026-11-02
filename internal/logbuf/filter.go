@@ -17,7 +17,28 @@ const (
 	FieldPath   = "path"
 	FieldRule   = "rule"
 	FieldUser   = "user"
+	// FieldDeny 为访问被拦截的原因（ban、ip、country、rateLimit、waf），只出现在被拦截请求的访问日志中
+	FieldDeny = "deny"
+	// FieldAdmin 为请求所带管理后台登录态的用户名，用于识别管理员经站点反代访问后台产生的访问日志
+	FieldAdmin = "admin"
 )
+
+// DenyBan 是来源地址已被封禁时 FieldDeny 的取值。
+const DenyBan = "ban"
+
+// FieldCond 是按字段隐藏日志的条件：Value 为空表示字段存在（值非空）即命中，否则要求值完全相等。
+type FieldCond struct {
+	Key, Value string
+}
+
+// hit 判断日志是否命中条件。
+func (c FieldCond) hit(e *Entry) bool {
+	v := e.Fields[c.Key]
+	if c.Value == "" {
+		return v != ""
+	}
+	return v == c.Value
+}
 
 // Fields 是一条日志附带的结构化字段，例如访问日志的客户端 IP、域名与状态码。
 type Fields map[string]string
@@ -37,6 +58,8 @@ type Filter struct {
 	Host string
 	// Status 为状态码区间，命中任意一个即匹配；只匹配带 status 字段的日志
 	Status []StatusRange
+	// Hide 为要隐藏的日志：命中其中任意一项即不匹配，例如被封禁来源的访问日志、管理员自己的请求
+	Hide []FieldCond
 	// From、To 为时间范围（含两端），零值表示不限
 	From, To time.Time
 	// Translate 不为 nil 时，关键词与来源也和译文比较：接口按请求语言翻译日志后返回，
@@ -47,7 +70,7 @@ type Filter struct {
 // Empty 判断是否没有任何过滤条件。
 func (f *Filter) Empty() bool {
 	return f == nil || (f.MinLevel == "" && f.Source == "" && len(f.Terms) == 0 && len(f.Excludes) == 0 &&
-		f.IP == nil && f.Host == "" && len(f.Status) == 0 && f.From.IsZero() && f.To.IsZero())
+		f.IP == nil && f.Host == "" && len(f.Status) == 0 && len(f.Hide) == 0 && f.From.IsZero() && f.To.IsZero())
 }
 
 var levelOrder = map[string]int{LevelDebug: 0, LevelInfo: 1, LevelWarn: 2, LevelError: 3}
@@ -74,6 +97,11 @@ func (f *Filter) Match(e *Entry) bool {
 	}
 	if !f.To.IsZero() && e.Time.After(f.To) {
 		return false
+	}
+	for _, c := range f.Hide {
+		if c.hit(e) {
+			return false
+		}
 	}
 	if len(f.Status) > 0 && !f.matchStatus(e) {
 		return false
@@ -187,25 +215,52 @@ func ParseStatus(s string) ([]StatusRange, bool) {
 }
 
 // IPMatcher 匹配客户端地址：可以是完整地址、CIDR 网段，或尚未输完整的地址片段（按子串匹配）。
+// 前缀 ! 或 - 的项为排除项：日志的地址命中任意排除项即不匹配。
 type IPMatcher struct {
+	include ipSet
+	exclude ipSet
+}
+
+// ipSet 是一组地址条件，命中任意一项即算命中。
+type ipSet struct {
 	prefixes []netip.Prefix
 	texts    []string
 }
 
-// ParseIP 解析地址条件，多项以逗号或空格分隔。没有任何有效项时返回 nil。
+func (s *ipSet) empty() bool {
+	return len(s.prefixes) == 0 && len(s.texts) == 0
+}
+
+// add 加入一项：完整地址按单个地址的网段处理，无法解析的按地址片段处理。
+func (s *ipSet) add(item string) {
+	if p, err := netip.ParsePrefix(item); err == nil {
+		s.prefixes = append(s.prefixes, unmapPrefix(p).Masked())
+	} else if a, err := netip.ParseAddr(item); err == nil {
+		a = a.Unmap()
+		s.prefixes = append(s.prefixes, netip.PrefixFrom(a, a.BitLen()))
+	} else {
+		s.texts = append(s.texts, strings.ToLower(item))
+	}
+}
+
+// ParseIP 解析地址条件，多项以逗号或空格分隔，前缀 ! 或 - 表示排除，例如 "!1.2.3.4, -10.0.0.0/8"。
+// 没有任何有效项时返回 nil。
 func ParseIP(s string) *IPMatcher {
 	m := &IPMatcher{}
 	for _, item := range splitList(s) {
-		if p, err := netip.ParsePrefix(item); err == nil {
-			m.prefixes = append(m.prefixes, unmapPrefix(p).Masked())
-		} else if a, err := netip.ParseAddr(item); err == nil {
-			a = a.Unmap()
-			m.prefixes = append(m.prefixes, netip.PrefixFrom(a, a.BitLen()))
-		} else {
-			m.texts = append(m.texts, strings.ToLower(item))
+		// 地址本身不会以 ! 或 - 开头；单独一个 ! 或 - 不构成条件
+		if rest, neg := strings.CutPrefix(item, "!"); neg || strings.HasPrefix(item, "-") {
+			if !neg {
+				rest = item[1:]
+			}
+			if rest != "" {
+				m.exclude.add(rest)
+			}
+			continue
 		}
+		m.include.add(item)
 	}
-	if len(m.prefixes) == 0 && len(m.texts) == 0 {
+	if m.include.empty() && m.exclude.empty() {
 		return nil
 	}
 	return m
@@ -221,20 +276,42 @@ func unmapPrefix(p netip.Prefix) netip.Prefix {
 }
 
 // matchEntry 优先使用 ip 字段；日志没有该字段时，从消息中提取所有像地址的片段逐个比较。
+// 只有排除项时，不含任何地址的日志照常显示；有包含项时须至少命中一项。
 func (m *IPMatcher) matchEntry(e *Entry) bool {
+	var addrs []string
 	if ip, ok := e.Fields[FieldIP]; ok {
-		return m.match(ip)
+		addrs = []string{ip}
+	} else {
+		addrs = addrTokens(e.Message)
 	}
-	for _, tok := range addrTokens(e.Message) {
-		if m.match(tok) {
+	if !m.exclude.empty() {
+		for _, s := range addrs {
+			if m.exclude.match(s) {
+				return false
+			}
+		}
+	}
+	if m.include.empty() {
+		return true
+	}
+	for _, s := range addrs {
+		if m.include.match(s) {
 			return true
 		}
 	}
 	return false
 }
 
-// match 判断一个地址字符串（可带端口）是否命中。
+// match 判断单个地址字符串是否满足条件：不命中任何排除项，且没有包含项或命中其中一项。
 func (m *IPMatcher) match(s string) bool {
+	if m.exclude.match(s) {
+		return false
+	}
+	return m.include.empty() || m.include.match(s)
+}
+
+// match 判断一个地址字符串（可带端口）是否命中。
+func (m *ipSet) match(s string) bool {
 	a, ok := parseAddr(s)
 	if ok {
 		for _, p := range m.prefixes {

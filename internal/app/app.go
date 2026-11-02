@@ -193,6 +193,19 @@ func New(opts Options) (*App, error) {
 	}
 	// 服务未运行期间通过命令行提交的重置请求，在启动时应用
 	a.applyAccountReset()
+	// 管理后台经本机 Web 服务站点反代访问时，站点据此识别管理员自己的请求并在访问日志中标记，日志页可隐藏它们。
+	// 只看后台登录 Cookie：Authorization 头多是发给后端应用的，不必逐个校验；令牌带签名，访客无法伪造
+	httpx.SetSessionCheck(func(r *http.Request) string {
+		c, err := r.Cookie(auth.CookieName)
+		if err != nil || c.Value == "" {
+			return ""
+		}
+		id, ok := a.auth.Identify(c.Value)
+		if !ok {
+			return ""
+		}
+		return id.User
+	})
 
 	// 文件服务共享用户由 WebDAV、FTP、SMB 共用，接口 /api/fileusers 属于应用本身，三个模块都关闭时也能读写
 	if err := fileusers.Default.Init(store); err != nil {

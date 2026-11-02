@@ -191,11 +191,12 @@ func TestBlockedReasons(t *testing.T) {
 	}
 }
 
-// TestBlockedWAF 验证 WAF 拦截计入 waf，正常请求不计。
+// TestBlockedWAF 验证 WAF 拦截计入 waf、访问日志记 deny=waf，正常请求不计。
 func TestBlockedWAF(t *testing.T) {
 	fw := blockingWAF{}
-	l := Listener{Sites: []Site{{Enable: true, Key: "w", Domains: []string{"w.test"}, Type: TypeText, Text: "ok", StatusCode: 200, WAF: "k"}}}
-	addr, run := startRunnerWAF(t, l, fw)
+	l := Listener{Sites: []Site{{Enable: true, Key: "w", Domains: []string{"w.test"}, Type: TypeText, Text: "ok", StatusCode: 200, WAF: "k", AccessLog: true}}}
+	logs := testLogs()
+	addr, run := startRunnerWAFLogs(t, l, fw, logs)
 	if resp, _ := get(t, http.DefaultClient, addr, "w.test", "/", nil); resp.StatusCode != 200 {
 		t.Fatalf("正常请求应放行: %d", resp.StatusCode)
 	}
@@ -204,6 +205,10 @@ func TestBlockedWAF(t *testing.T) {
 	}
 	if n := siteOf(run).stats.Blocked[blockWAF].Load(); n != 1 {
 		t.Fatalf("WAF 拦截数应为 1: %d", n)
+	}
+	es := logs.Query(0, 0, 0, &logbuf.Filter{Status: []logbuf.StatusRange{{Min: 100, Max: 599}}})
+	if len(es) != 2 || es[0].Fields[logbuf.FieldDeny] != "" || es[1].Fields[logbuf.FieldDeny] != "waf" {
+		t.Fatalf("访问日志应只给 WAF 拦截的请求记 deny=waf: %+v", es)
 	}
 }
 
@@ -222,6 +227,12 @@ func (blockingWAF) Middleware(_ string, next http.Handler) http.Handler {
 
 func startRunnerWAF(t *testing.T, l Listener, waf WAFProvider) (string, *listenerRunner) {
 	t.Helper()
+	return startRunnerWAFLogs(t, l, waf, testLogs())
+}
+
+// startRunnerWAFLogs 与 startRunnerWAF 相同，日志写入 logs，便于检查访问日志。
+func startRunnerWAFLogs(t *testing.T, l Listener, waf WAFProvider, logs *logbuf.Buffer) (string, *listenerRunner) {
+	t.Helper()
 	ln, _ := net.Listen("tcp4", "127.0.0.1:0")
 	l.Port = ln.Addr().(*net.TCPAddr).Port
 	ln.Close()
@@ -229,7 +240,7 @@ func startRunnerWAF(t *testing.T, l Listener, waf WAFProvider) (string, *listene
 	if err := l.Validate(); err != nil {
 		t.Fatal(err)
 	}
-	r, err := newListenerRunner(l, testLogs().Logger("t"), newAuthenticator("s"), waf)
+	r, err := newListenerRunner(l, logs.Logger("t"), newAuthenticator("s"), waf)
 	if err != nil {
 		t.Fatal(err)
 	}
