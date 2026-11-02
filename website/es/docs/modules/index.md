@@ -20,5 +20,6 @@ Puedes desactivar un módulo completo en «Ajustes → Módulos». Un módulo de
 | Terminal web | SSH, Telnet, shell local, gestor de archivos SFTP, sesiones persistentes | [Ver](/es/docs/modules/terminal) |
 | Diagnóstico de red | Ping, traceroute, sondeo de puertos, consultas DNS, prueba de velocidad, escaneo de la red local | [Ver](/es/docs/modules/nettools) |
 | Centro de notificaciones | Envío de eventos por varios canales y reglas | [Ver](/es/docs/modules/notify) |
+| Rendimiento | Tendencias del host, el proceso y los sitios (incluido el tiempo hasta el primer byte), alertas por umbral y duración | [Ver](/es/docs/modules/perf) |
 | Copia de seguridad de la configuración | Copias cifradas, política de retención, copia programada y restauración | [Ver](/es/docs/modules/backup) |
 | Archivos y herramientas de operación | WebDAV, FTP, SMB, File Browser, montajes de almacenamiento, Wake-on-LAN, tareas programadas | [Ver](/es/docs/modules/tools) |

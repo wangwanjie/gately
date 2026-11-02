@@ -52,6 +52,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `filebrowser` | File Browser | `filebrowser:read`、`filebrowser:write` |
 | `storage` | Storage Mounts | `storage:read`、`storage:write` |
 | `notify` | Notification center | `notify:read`、`notify:write` |
+| `perf` | Performance | `perf:read`、`perf:write` |
 | `nettools` | Network diagnostics | `nettools:read`、`nettools:write` |
 | `backup` | Configuration backup | `backup:read`、`backup:write` |
 | `status` | System status | `status:read` |
@@ -637,6 +638,26 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | GET | `/api/notify/event-types` | `notify:read` | Event types that can be subscribed to |
 | GET | `/api/notify/history` | `notify:read` | Recent delivery records |
 | POST | `/api/notify/channels/{key}/test` | `notify:write` | Send a test notification to a channel |
+
+## Performance
+
+| Method | Path | Required permission | Description |
+| --- | --- | --- | --- |
+| GET | `/api/perf/logs` | `perf:read` | View module runtime logs |
+| DELETE | `/api/perf/logs` | `perf:write` | Clear module runtime logs |
+| GET | `/api/perf/rules` | `perf:read` | List Performance alert rules |
+| POST | `/api/perf/rules` | `perf:write` | Create Performance alert rules |
+| PUT | `/api/perf/rules/{key}` | `perf:write` | Update Performance alert rules |
+| DELETE | `/api/perf/rules/{key}` | `perf:write` | Delete Performance alert rules |
+| PUT | `/api/perf/rules/{key}/enable` | `perf:write` | Enable or disable Performance alert rules |
+| PUT | `/api/perf/rules-order` | `perf:write` | Reorder Performance alert rules |
+| PUT | `/api/perf/rules-enable` | `perf:write` | Enable or disable in bulk: Performance alert rules |
+| POST | `/api/perf/rules-delete` | `perf:write` | Delete in bulk: Performance alert rules |
+| PUT | `/api/perf/rules-group` | `perf:write` | Set group in bulk: Performance alert rules |
+| GET | `/api/perf/metrics` | `perf:read` | Metrics available for alerts |
+| GET | `/api/perf/overview` | `perf:read` | Host and process history (?range=60s|1h|24h) |
+| GET | `/api/perf/sites` | `perf:read` | Each site's metrics over roughly the last 60 seconds |
+| GET | `/api/perf/alerts` | `perf:read` | Alerts in progress (pending and firing) |
 
 ## Network diagnostics
 
@@ -1362,6 +1383,97 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `name` | string |
 | `silence` | integer |
 
+### perf.AlertState
+
+| Field | Type |
+| --- | --- |
+| `firedAt` | integer |
+| `level` | string |
+| `name` | string |
+| `rule` | string |
+| `since` | integer |
+| `state` | string |
+| `subject` | string |
+| `target` | string |
+| `value` | number |
+
+### perf.MetricDef
+
+| Field | Type |
+| --- | --- |
+| `id` | string |
+| `label` | string |
+| `max` | number |
+| `scope` | string |
+| `unit` | string |
+| `window` | boolean |
+
+### perf.Overview
+
+| Field | Type |
+| --- | --- |
+| `latest` | `perf.Point` |
+| `range` | string |
+| `series` | Array of `perf.Point` |
+| `step` | integer |
+
+### perf.Point
+
+| Field | Type |
+| --- | --- |
+| `cpu` | number |
+| `cpuMax` | number |
+| `disk` | number |
+| `goroutines` | number |
+| `load1` | number |
+| `mem` | number |
+| `procCpu` | number |
+| `procCpuMax` | number |
+| `procFds` | number |
+| `procRss` | number |
+| `t` | integer |
+
+### perf.Rule
+
+| Field | Type |
+| --- | --- |
+| `duration` | integer |
+| `enable` | boolean |
+| `group` | string |
+| `key` | string |
+| `level` | string |
+| `metric` | string |
+| `minRequests` | integer |
+| `name` | string |
+| `op` | string |
+| `remark` | string |
+| `sites` | Array of string |
+| `threshold` | number |
+
+### perf.SiteView
+
+| Field | Type |
+| --- | --- |
+| `active` | integer |
+| `err5xx` | number |
+| `key` | string |
+| `latencies` | integer |
+| `name` | string |
+| `p95` | number |
+| `qps` | number |
+| `requests` | integer |
+| `upstreams` | Array of `perf.UpstreamView` |
+
+### perf.UpstreamView
+
+| Field | Type |
+| --- | --- |
+| `conns` | integer |
+| `healthy` | boolean |
+| `key` | string |
+| `route` | string |
+| `url` | string |
+
 ### portforward.Rule
 
 | Field | Type |
@@ -1777,6 +1889,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Field | Type |
 | --- | --- |
 | `bytes` | integer |
+| `p50` | number |
+| `p95` | number |
 | `requests` | integer |
 | `s4xx` | integer |
 | `s5xx` | integer |

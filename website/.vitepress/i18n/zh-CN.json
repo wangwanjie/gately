@@ -43,6 +43,7 @@
       "modules/terminal": "Web 终端",
       "modules/nettools": "网络诊断",
       "modules/notify": "通知中心",
+      "modules/perf": "性能监控",
       "modules/backup": "配置备份",
       "modules/tools": "文件与运维工具",
       "guide/security": "安全模型与隐私承诺",

@@ -42,10 +42,14 @@ scrape_configs:
 | `gately_site_responses_total{listener,site,class}` | counter | Réponses par classe de statut (2xx/3xx/4xx/5xx) |
 | `gately_site_response_bytes_total` / `gately_site_errors_total` / `gately_site_active_requests` | counter / counter / gauge | Octets de réponse, erreurs de backend, requêtes en cours |
 | `gately_site_blocked_total{listener,site,reason}` | counter | Requêtes bloquées par motif (`ban`, `ip`, `country`, `rateLimit`, `waf`) |
+| `gately_site_request_duration_seconds{listener,site,le}` | histogram | Histogramme du temps jusqu'au premier octet du site en secondes, 13 tranches `le` de 0,005 à 60 ; hors WebSocket et autres changements de protocole et requêtes coupées |
 | `gately_upstream_up{listener,site,upstream[,route]}` | gauge | Indique si le serveur amont est en bonne santé ; les backends par chemin et par utilisateur portent en plus une étiquette `route` (préfixe de chemin, ou `@` suivi de la liste des utilisateurs) |
 | `gately_upstream_requests_total{listener,site,upstream[,route]}` | counter | Requêtes transmises au serveur amont |
 | `gately_upstream_response_bytes_total{listener,site,upstream[,route]}` | counter | Octets du corps de réponse renvoyés par le serveur amont (hors données après passage en WebSocket) |
 | `gately_listener_requests_total{listener,action}` | counter | Requêtes traitées par l'écouteur lui-même : `https_redirect` pour le HTTP en clair redirigé vers HTTPS, `not_found` pour le 404 lorsqu'aucun site ne correspond |
+| `gately_host_cpu_usage_percent` / `gately_host_memory_used_percent` / `gately_host_disk_used_percent` / `gately_host_load1` | gauge | Utilisation CPU, mémoire et partition du répertoire de configuration de l'hôte et charge sur 1 minute du dernier échantillon (exportés quand le module Performances est actif ; les valeurs illisibles sont omises) |
+| `gately_process_cpu_usage_percent` / `gately_process_resident_memory_bytes` / `gately_process_open_fds` | gauge | CPU du processus Gately (part de la machine entière), mémoire résidente et descripteurs de fichiers ouverts du dernier échantillon (exportés quand le module Performances est actif) |
+| `gately_perf_alerts_firing{rule}` | gauge | Nombre d'objets en alerte pour chaque règle d'alerte de performances activée |
 
 ## Exemples d'alertes
 
@@ -62,6 +66,9 @@ groups:
       - alert: GatelyUpstreamDown
         expr: gately_upstream_up == 0
         for: 2m
+      - alert: GatelySiteSlow
+        expr: histogram_quantile(0.95, sum by (le, listener, site) (rate(gately_site_request_duration_seconds_bucket[5m]))) > 2
+        for: 5m
 ```
 
 ## Tableau de bord Grafana

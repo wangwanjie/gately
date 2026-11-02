@@ -62,6 +62,7 @@ export const sidebarGroups: SidebarGroup[] = [
       'modules/terminal',
       'modules/nettools',
       'modules/notify',
+      'modules/perf',
       'modules/backup',
       'modules/tools'
     ]

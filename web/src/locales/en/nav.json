@@ -111,6 +111,10 @@
       "title": "Notifications",
       "desc": "Push events to Telegram, email, WeCom and more"
     },
+    "perf": {
+      "title": "Performance",
+      "desc": "Performance trends and threshold alerts"
+    },
     "logs": {
       "title": "System Logs"
     },

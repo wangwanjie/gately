@@ -1391,6 +1391,218 @@
         },
         "type": "object"
       },
+      "perf.AlertState": {
+        "properties": {
+          "firedAt": {
+            "type": "integer"
+          },
+          "level": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "rule": {
+            "type": "string"
+          },
+          "since": {
+            "type": "integer"
+          },
+          "state": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "perf.MetricDef": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "max": {
+            "type": "number"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "window": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "perf.Overview": {
+        "properties": {
+          "latest": {
+            "$ref": "#/components/schemas/perf.Point"
+          },
+          "range": {
+            "type": "string"
+          },
+          "series": {
+            "items": {
+              "$ref": "#/components/schemas/perf.Point"
+            },
+            "type": "array"
+          },
+          "step": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "perf.Point": {
+        "properties": {
+          "cpu": {
+            "type": "number"
+          },
+          "cpuMax": {
+            "type": "number"
+          },
+          "disk": {
+            "type": "number"
+          },
+          "goroutines": {
+            "type": "number"
+          },
+          "load1": {
+            "type": "number"
+          },
+          "mem": {
+            "type": "number"
+          },
+          "procCpu": {
+            "type": "number"
+          },
+          "procCpuMax": {
+            "type": "number"
+          },
+          "procFds": {
+            "type": "number"
+          },
+          "procRss": {
+            "type": "number"
+          },
+          "t": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "perf.Rule": {
+        "properties": {
+          "duration": {
+            "type": "integer"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "group": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "level": {
+            "type": "string"
+          },
+          "metric": {
+            "type": "string"
+          },
+          "minRequests": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "op": {
+            "type": "string"
+          },
+          "remark": {
+            "type": "string"
+          },
+          "sites": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "threshold": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "perf.SiteView": {
+        "properties": {
+          "active": {
+            "type": "integer"
+          },
+          "err5xx": {
+            "type": "number"
+          },
+          "key": {
+            "type": "string"
+          },
+          "latencies": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "p95": {
+            "type": "number"
+          },
+          "qps": {
+            "type": "number"
+          },
+          "requests": {
+            "type": "integer"
+          },
+          "upstreams": {
+            "items": {
+              "$ref": "#/components/schemas/perf.UpstreamView"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "perf.UpstreamView": {
+        "properties": {
+          "conns": {
+            "type": "integer"
+          },
+          "healthy": {
+            "type": "boolean"
+          },
+          "key": {
+            "type": "string"
+          },
+          "route": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "portforward.Rule": {
         "properties": {
           "enable": {
@@ -2459,6 +2671,12 @@
         "properties": {
           "bytes": {
             "type": "integer"
+          },
+          "p50": {
+            "type": "number"
+          },
+          "p95": {
+            "type": "number"
           },
           "requests": {
             "type": "integer"
@@ -22312,6 +22530,1017 @@
         "x-token-allowed": true
       }
     },
+    "/api/perf/alerts": {
+      "get": {
+        "description": "Erforderliche Berechtigung: `perf:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/perf.AlertState"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Laufende Warnungen (ausstehend und ausgelöst)",
+        "tags": [
+          "Leistung"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/logs": {
+      "delete": {
+        "description": "Erforderliche Berechtigung: `perf:write`.",
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Modulprotokolle leeren",
+        "tags": [
+          "Leistung"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain, `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `perf:read`.",
+        "parameters": [
+          {
+            "description": "Inkrementeller Abruf: gibt nur Protokolle mit einer größeren Sequenznummer zurück",
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Ältere Protokolle laden: gibt nur Protokolle mit einer Sequenznummer kleiner als dieser Wert zurück",
+            "in": "query",
+            "name": "before",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Maximale Anzahl zurückgegebener Einträge, wobei die neuesten passenden genommen werden; 0 oder weggelassen bedeutet unbegrenzt",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Mindeststufe: debug, info, warn oder error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Quellbezeichnung, exakte Übereinstimmung ohne Groß-/Kleinschreibung",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Suchbegriffe: durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes - schließt aus",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Ausgeschlossene Stichwörter: durch Leerzeichen getrennt, doppelte Anführungszeichen bilden eine Phrase; ein Eintrag mit einem davon wird ausgeschlossen; gilt zusammen mit q",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Client-Adresse: vollständige Adresse, CIDR oder Adressteil, durch Kommas getrennt",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Teil des Site-Namens oder der Domain",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Statuscode wie 404, 4xx, 500-599, durch Kommas getrennt",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Startzeit, RFC 3339 oder Zeitstempel in Millisekunden",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Endzeit, RFC 3339 oder Zeitstempel in Millisekunden",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Laufzeitprotokolle eines Moduls anzeigen",
+        "tags": [
+          "Leistung"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/metrics": {
+      "get": {
+        "description": "Erforderliche Berechtigung: `perf:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/perf.MetricDef"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Für Warnungen verfügbare Messwerte",
+        "tags": [
+          "Leistung"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/overview": {
+      "get": {
+        "description": "Erforderliche Berechtigung: `perf:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/perf.Overview"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Verlauf von Host und Prozess (?range=60s|1h|24h)",
+        "tags": [
+          "Leistung"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/rules": {
+      "get": {
+        "description": "Erforderliche Berechtigung: `perf:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/perf.Rule"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Leistungs-Warnregeln auflisten",
+        "tags": [
+          "Leistung"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "Erforderliche Berechtigung: `perf:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/perf.Rule"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/perf.Rule"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Leistungs-Warnregeln hinzufügen",
+        "tags": [
+          "Leistung"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/rules-delete": {
+      "post": {
+        "description": "Erforderliche Berechtigung: `perf:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchDeleteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Im Stapel löschen: Leistungs-Warnregeln",
+        "tags": [
+          "Leistung"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/rules-enable": {
+      "put": {
+        "description": "Erforderliche Berechtigung: `perf:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchEnableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Im Stapel aktivieren oder deaktivieren: Leistungs-Warnregeln",
+        "tags": [
+          "Leistung"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/rules-group": {
+      "put": {
+        "description": "Erforderliche Berechtigung: `perf:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Gruppe mehrerer Einträge festlegen: Leistungs-Warnregeln",
+        "tags": [
+          "Leistung"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/rules-order": {
+      "put": {
+        "description": "Erforderliche Berechtigung: `perf:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.orderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Leistungs-Warnregeln neu anordnen",
+        "tags": [
+          "Leistung"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/rules/{key}": {
+      "delete": {
+        "description": "Erforderliche Berechtigung: `perf:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Leistungs-Warnregeln löschen",
+        "tags": [
+          "Leistung"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Erforderliche Berechtigung: `perf:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/perf.Rule"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/perf.Rule"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Leistungs-Warnregeln ändern",
+        "tags": [
+          "Leistung"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/rules/{key}/enable": {
+      "put": {
+        "description": "Erforderliche Berechtigung: `perf:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.enableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Leistungs-Warnregeln aktivieren oder deaktivieren",
+        "tags": [
+          "Leistung"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/sites": {
+      "get": {
+        "description": "Erforderliche Berechtigung: `perf:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/perf.SiteView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Messwerte jeder Website über etwa die letzten 60 Sekunden",
+        "tags": [
+          "Leistung"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/portforward/logs": {
       "delete": {
         "description": "Erforderliche Berechtigung: `portforward:write`.",
@@ -38736,6 +39965,9 @@
       "name": "Benachrichtigungszentrale"
     },
     {
+      "name": "Leistung"
+    },
+    {
       "name": "Netzwerkdiagnose"
     },
     {
@@ -38779,6 +40011,7 @@
     "filebrowser",
     "storage",
     "notify",
+    "perf",
     "nettools",
     "backup",
     "status",

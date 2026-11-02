@@ -1391,6 +1391,218 @@
         },
         "type": "object"
       },
+      "perf.AlertState": {
+        "properties": {
+          "firedAt": {
+            "type": "integer"
+          },
+          "level": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "rule": {
+            "type": "string"
+          },
+          "since": {
+            "type": "integer"
+          },
+          "state": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "perf.MetricDef": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "max": {
+            "type": "number"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "window": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "perf.Overview": {
+        "properties": {
+          "latest": {
+            "$ref": "#/components/schemas/perf.Point"
+          },
+          "range": {
+            "type": "string"
+          },
+          "series": {
+            "items": {
+              "$ref": "#/components/schemas/perf.Point"
+            },
+            "type": "array"
+          },
+          "step": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "perf.Point": {
+        "properties": {
+          "cpu": {
+            "type": "number"
+          },
+          "cpuMax": {
+            "type": "number"
+          },
+          "disk": {
+            "type": "number"
+          },
+          "goroutines": {
+            "type": "number"
+          },
+          "load1": {
+            "type": "number"
+          },
+          "mem": {
+            "type": "number"
+          },
+          "procCpu": {
+            "type": "number"
+          },
+          "procCpuMax": {
+            "type": "number"
+          },
+          "procFds": {
+            "type": "number"
+          },
+          "procRss": {
+            "type": "number"
+          },
+          "t": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "perf.Rule": {
+        "properties": {
+          "duration": {
+            "type": "integer"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "group": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "level": {
+            "type": "string"
+          },
+          "metric": {
+            "type": "string"
+          },
+          "minRequests": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "op": {
+            "type": "string"
+          },
+          "remark": {
+            "type": "string"
+          },
+          "sites": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "threshold": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "perf.SiteView": {
+        "properties": {
+          "active": {
+            "type": "integer"
+          },
+          "err5xx": {
+            "type": "number"
+          },
+          "key": {
+            "type": "string"
+          },
+          "latencies": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "p95": {
+            "type": "number"
+          },
+          "qps": {
+            "type": "number"
+          },
+          "requests": {
+            "type": "integer"
+          },
+          "upstreams": {
+            "items": {
+              "$ref": "#/components/schemas/perf.UpstreamView"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "perf.UpstreamView": {
+        "properties": {
+          "conns": {
+            "type": "integer"
+          },
+          "healthy": {
+            "type": "boolean"
+          },
+          "key": {
+            "type": "string"
+          },
+          "route": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "portforward.Rule": {
         "properties": {
           "enable": {
@@ -2459,6 +2671,12 @@
         "properties": {
           "bytes": {
             "type": "integer"
+          },
+          "p50": {
+            "type": "number"
+          },
+          "p95": {
+            "type": "number"
           },
           "requests": {
             "type": "integer"
@@ -22312,6 +22530,1017 @@
         "x-token-allowed": true
       }
     },
+    "/api/perf/alerts": {
+      "get": {
+        "description": "Permission requise : `perf:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/perf.AlertState"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Alertes en cours (en attente et déclenchées)",
+        "tags": [
+          "Performances"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/logs": {
+      "delete": {
+        "description": "Permission requise : `perf:write`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Vider les journaux d'exécution d'un module",
+        "tags": [
+          "Performances"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "Prend en charge la récupération incrémentale avec le paramètre `since`, qui renvoie les journaux dont le numéro de séquence est supérieur à cette valeur ; `before` renvoie les journaux dont le numéro de séquence est inférieur à cette valeur, pour charger les entrées plus anciennes ; `limit` ne renvoie que les entrées les plus récentes et, si la mémoire n’en contient pas assez, recherche aussi dans l’historique conservé dans les fichiers journaux. Paramètres de filtre : `level` niveau minimal, `source` source, `q` mots-clés (séparés par des espaces, tous doivent correspondre ; les guillemets doubles regroupent une expression ; un `-` initial exclut), `ip` adresse du client (adresse complète, CIDR ou partie d’adresse, séparées par des virgules), `host` nom du site ou domaine, `status` code d’état (par exemple `404`, `4xx`, `500-599`), `from` et `to` plage horaire (RFC 3339 ou horodatage en millisecondes). `exclude` liste les termes à exclure : les entrées contenant l’un d’eux ne sont pas renvoyées ; même syntaxe que `q`, le `-` initial est facultatif.\n\nPermission requise : `perf:read`.",
+        "parameters": [
+          {
+            "description": "Récupération incrémentale : ne renvoie que les journaux dont le numéro de séquence est supérieur à cette valeur",
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Charger les journaux plus anciens : ne renvoie que les journaux dont le numéro de séquence est inférieur à cette valeur",
+            "in": "query",
+            "name": "before",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Nombre maximal d'entrées renvoyées, en prenant les plus récentes qui correspondent ; 0 ou absent signifie sans limite",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Niveau minimal : debug, info, warn ou error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Étiquette de source, correspondance exacte sans tenir compte de la casse",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Mots-clés : séparés par des espaces, tous doivent correspondre ; les guillemets doubles regroupent une expression ; un - initial exclut",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Mots-clés exclus : séparés par des espaces, les guillemets doubles regroupent une expression ; une entrée contenant l’un d’eux est exclue ; s’applique avec q",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Adresse du client : adresse complète, CIDR ou partie d’adresse, séparées par des virgules",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Partie du nom du site ou du domaine",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Code d’état comme 404, 4xx, 500-599, séparés par des virgules",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Heure de début, RFC 3339 ou horodatage en millisecondes",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Heure de fin, RFC 3339 ou horodatage en millisecondes",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Consulter les journaux d'exécution d'un module",
+        "tags": [
+          "Performances"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/metrics": {
+      "get": {
+        "description": "Permission requise : `perf:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/perf.MetricDef"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Métriques disponibles pour les alertes",
+        "tags": [
+          "Performances"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/overview": {
+      "get": {
+        "description": "Permission requise : `perf:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/perf.Overview"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Historique de l'hôte et du processus (?range=60s|1h|24h)",
+        "tags": [
+          "Performances"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/rules": {
+      "get": {
+        "description": "Permission requise : `perf:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/perf.Rule"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Lister Règles d'alerte de performances",
+        "tags": [
+          "Performances"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "Permission requise : `perf:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/perf.Rule"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/perf.Rule"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ajouter Règles d'alerte de performances",
+        "tags": [
+          "Performances"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/rules-delete": {
+      "post": {
+        "description": "Permission requise : `perf:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchDeleteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Supprimer en lot : Règles d'alerte de performances",
+        "tags": [
+          "Performances"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/rules-enable": {
+      "put": {
+        "description": "Permission requise : `perf:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchEnableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Activer ou désactiver en lot : Règles d'alerte de performances",
+        "tags": [
+          "Performances"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/rules-group": {
+      "put": {
+        "description": "Permission requise : `perf:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Définir le groupe de plusieurs éléments : Règles d'alerte de performances",
+        "tags": [
+          "Performances"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/rules-order": {
+      "put": {
+        "description": "Permission requise : `perf:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.orderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Réordonner Règles d'alerte de performances",
+        "tags": [
+          "Performances"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/rules/{key}": {
+      "delete": {
+        "description": "Permission requise : `perf:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Supprimer Règles d'alerte de performances",
+        "tags": [
+          "Performances"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Permission requise : `perf:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/perf.Rule"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/perf.Rule"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Modifier Règles d'alerte de performances",
+        "tags": [
+          "Performances"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/rules/{key}/enable": {
+      "put": {
+        "description": "Permission requise : `perf:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.enableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Activer ou désactiver Règles d'alerte de performances",
+        "tags": [
+          "Performances"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/sites": {
+      "get": {
+        "description": "Permission requise : `perf:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/perf.SiteView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Métriques de chaque site sur environ les 60 dernières secondes",
+        "tags": [
+          "Performances"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/portforward/logs": {
       "delete": {
         "description": "Permission requise : `portforward:write`.",
@@ -38736,6 +39965,9 @@
       "name": "Centre de notifications"
     },
     {
+      "name": "Performances"
+    },
+    {
       "name": "Diagnostic réseau"
     },
     {
@@ -38779,6 +40011,7 @@
     "filebrowser",
     "storage",
     "notify",
+    "perf",
     "nettools",
     "backup",
     "status",

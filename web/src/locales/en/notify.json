@@ -96,6 +96,10 @@
       "name": "Security & sign-ins",
       "desc": "Failed and successful sign-ins, bans and access to sensitive content"
     },
+    "perf": {
+      "name": "Performance alerts",
+      "desc": "Alerts and recoveries from Performance"
+    },
     "changes": {
       "name": "Configuration changes",
       "desc": "Every configuration change made in the admin console"

@@ -96,6 +96,10 @@
       "name": "Segurança e logins",
       "desc": "Logins bem-sucedidos e com falha, bloqueios e acesso a conteúdo sensível"
     },
+    "perf": {
+      "name": "Alertas de desempenho",
+      "desc": "Alertas e recuperações do Desempenho"
+    },
     "changes": {
       "name": "Alterações de configuração",
       "desc": "Cada alteração de configuração feita no console de administração"

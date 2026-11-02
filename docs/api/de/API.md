@@ -52,6 +52,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `filebrowser` | File Browser | `filebrowser:read`、`filebrowser:write` |
 | `storage` | Speicher-Einbindungen | `storage:read`、`storage:write` |
 | `notify` | Benachrichtigungszentrale | `notify:read`、`notify:write` |
+| `perf` | Leistung | `perf:read`、`perf:write` |
 | `nettools` | Netzwerkdiagnose | `nettools:read`、`nettools:write` |
 | `backup` | Konfigurations-Backup | `backup:read`、`backup:write` |
 | `status` | Systemstatus | `status:read` |
@@ -637,6 +638,26 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | GET | `/api/notify/event-types` | `notify:read` | Abonnierbare Ereignistypen |
 | GET | `/api/notify/history` | `notify:read` | Letzte Zustellungsprotokolle |
 | POST | `/api/notify/channels/{key}/test` | `notify:write` | Testbenachrichtigung an einen Kanal senden |
+
+## Leistung
+
+| Methode | Pfad | Erforderliche Berechtigung | Beschreibung |
+| --- | --- | --- | --- |
+| GET | `/api/perf/logs` | `perf:read` | Laufzeitprotokolle eines Moduls anzeigen |
+| DELETE | `/api/perf/logs` | `perf:write` | Modulprotokolle leeren |
+| GET | `/api/perf/rules` | `perf:read` | Leistungs-Warnregeln auflisten |
+| POST | `/api/perf/rules` | `perf:write` | Leistungs-Warnregeln hinzufügen |
+| PUT | `/api/perf/rules/{key}` | `perf:write` | Leistungs-Warnregeln ändern |
+| DELETE | `/api/perf/rules/{key}` | `perf:write` | Leistungs-Warnregeln löschen |
+| PUT | `/api/perf/rules/{key}/enable` | `perf:write` | Leistungs-Warnregeln aktivieren oder deaktivieren |
+| PUT | `/api/perf/rules-order` | `perf:write` | Leistungs-Warnregeln neu anordnen |
+| PUT | `/api/perf/rules-enable` | `perf:write` | Im Stapel aktivieren oder deaktivieren: Leistungs-Warnregeln |
+| POST | `/api/perf/rules-delete` | `perf:write` | Im Stapel löschen: Leistungs-Warnregeln |
+| PUT | `/api/perf/rules-group` | `perf:write` | Gruppe mehrerer Einträge festlegen: Leistungs-Warnregeln |
+| GET | `/api/perf/metrics` | `perf:read` | Für Warnungen verfügbare Messwerte |
+| GET | `/api/perf/overview` | `perf:read` | Verlauf von Host und Prozess (?range=60s|1h|24h) |
+| GET | `/api/perf/sites` | `perf:read` | Messwerte jeder Website über etwa die letzten 60 Sekunden |
+| GET | `/api/perf/alerts` | `perf:read` | Laufende Warnungen (ausstehend und ausgelöst) |
 
 ## Netzwerkdiagnose
 
@@ -1362,6 +1383,97 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `name` | string |
 | `silence` | integer |
 
+### perf.AlertState
+
+| Feld | Typ |
+| --- | --- |
+| `firedAt` | integer |
+| `level` | string |
+| `name` | string |
+| `rule` | string |
+| `since` | integer |
+| `state` | string |
+| `subject` | string |
+| `target` | string |
+| `value` | number |
+
+### perf.MetricDef
+
+| Feld | Typ |
+| --- | --- |
+| `id` | string |
+| `label` | string |
+| `max` | number |
+| `scope` | string |
+| `unit` | string |
+| `window` | boolean |
+
+### perf.Overview
+
+| Feld | Typ |
+| --- | --- |
+| `latest` | `perf.Point` |
+| `range` | string |
+| `series` | Array von `perf.Point` |
+| `step` | integer |
+
+### perf.Point
+
+| Feld | Typ |
+| --- | --- |
+| `cpu` | number |
+| `cpuMax` | number |
+| `disk` | number |
+| `goroutines` | number |
+| `load1` | number |
+| `mem` | number |
+| `procCpu` | number |
+| `procCpuMax` | number |
+| `procFds` | number |
+| `procRss` | number |
+| `t` | integer |
+
+### perf.Rule
+
+| Feld | Typ |
+| --- | --- |
+| `duration` | integer |
+| `enable` | boolean |
+| `group` | string |
+| `key` | string |
+| `level` | string |
+| `metric` | string |
+| `minRequests` | integer |
+| `name` | string |
+| `op` | string |
+| `remark` | string |
+| `sites` | Array von string |
+| `threshold` | number |
+
+### perf.SiteView
+
+| Feld | Typ |
+| --- | --- |
+| `active` | integer |
+| `err5xx` | number |
+| `key` | string |
+| `latencies` | integer |
+| `name` | string |
+| `p95` | number |
+| `qps` | number |
+| `requests` | integer |
+| `upstreams` | Array von `perf.UpstreamView` |
+
+### perf.UpstreamView
+
+| Feld | Typ |
+| --- | --- |
+| `conns` | integer |
+| `healthy` | boolean |
+| `key` | string |
+| `route` | string |
+| `url` | string |
+
 ### portforward.Rule
 
 | Feld | Typ |
@@ -1777,6 +1889,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Feld | Typ |
 | --- | --- |
 | `bytes` | integer |
+| `p50` | number |
+| `p95` | number |
 | `requests` | integer |
 | `s4xx` | integer |
 | `s5xx` | integer |

@@ -37,6 +37,8 @@ const (
 	LoginSuccessful = "login.success"
 	AuditChange     = "audit.change"
 	AuditAccess     = "audit.access"
+	PerfAlert       = "perf.alert"
+	PerfRecovered   = "perf.recovered"
 )
 
 // Event 是一次可通知的事件。
@@ -79,6 +81,8 @@ var Catalog = []TypeInfo{
 	{LoginSuccessful, "管理后台：登录成功", LevelInfo},
 	{AuditChange, "管理后台：配置变更", LevelInfo},
 	{AuditAccess, "管理后台：访问敏感内容", LevelWarn},
+	{PerfAlert, "性能监控：触发告警", LevelWarn},
+	{PerfRecovered, "性能监控：告警恢复", LevelInfo},
 	{NotifyTest, "测试通知", LevelInfo},
 }
 

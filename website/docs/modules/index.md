@@ -20,5 +20,6 @@ Gately 的每项能力是一个独立模块，可单独启停、单独配置，�
 | Web 终端 | SSH、Telnet、本机 Shell、SFTP 文件管理、持久会话 | [查看](/docs/modules/terminal) |
 | 网络诊断 | Ping、路由追踪、端口探测、DNS 查询、测速、局域网扫描 | [查看](/docs/modules/nettools) |
 | 通知中心 | 多渠道事件推送与规则 | [查看](/docs/modules/notify) |
+| 性能监控 | 主机、进程与站点的性能趋势（含首字节延迟），阈值加持续时长告警 | [查看](/docs/modules/perf) |
 | 配置备份 | 加密备份、保留策略、定时备份与恢复 | [查看](/docs/modules/backup) |
 | 文件与运维工具 | WebDAV、FTP、SMB、File Browser、存储挂载、网络唤醒、计划任务 | [查看](/docs/modules/tools) |

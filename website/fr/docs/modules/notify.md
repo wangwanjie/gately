@@ -98,6 +98,7 @@ Lors de la création d'une règle, cliquez sur un modèle pour préremplir les �
 | Changements d'adresse | Mise à jour d'enregistrement DDNS, changement d'adresse STUN |
 | Santé des services | Amont indisponible puis rétabli, arrêt de conteneur, arrêt de sous-processus |
 | Sécurité et connexions | Échec de connexion, IP bannie, connexion réussie, accès à des contenus sensibles |
+| Alertes de performances | Déclenchement et rétablissement des alertes de performances (sans silence) |
 | Modifications de configuration | Chaque modification de configuration faite dans l'interface d'administration |
 
 ## Types d'événements
@@ -121,6 +122,8 @@ Lors de la création d'une règle, cliquez sur un modèle pour préremplir les �
 | `login.success` | Interface d'administration : connexion réussie | Info | Une connexion à l'interface d'administration a réussi, avec les champs `ip` et `user` |
 | `audit.change` | Interface d'administration : modification de configuration | Info | Toute opération de modification dans l'interface d'administration, avec les champs `actor`, `ip`, `method` et `path` ; voir [Audit et historique de configuration](/fr/docs/guide/audit) |
 | `audit.access` | Interface d'administration : accès à des contenus sensibles | Avertissement | Téléchargement d'une sauvegarde, d'un paquet de diagnostic ou d'une clé privée de certificat, ouverture d'un terminal, etc. ; mêmes champs que ci-dessus |
+| `perf.alert` | Performances : alerte déclenchée | Avertissement ou erreur | La condition d'une règle d'alerte de performances s'est maintenue pendant sa durée ; le niveau vient de la règle, avec les champs `rule`, `metric`, `target`, `value` et `condition` ; voir [Performances](/fr/docs/modules/perf) |
+| `perf.recovered` | Performances : alerte rétablie | Information | La condition d'une alerte de performances déclenchée a cessé ; mêmes champs |
 | `notify.test` | Notification de test | Info | Produite par le bouton « Tester » du canal ; elle ne participe pas à la correspondance des règles |
 
 ## Envoyer un test

@@ -416,11 +416,12 @@ Las redirecciones conservan los parámetros de consulta originales. El destino d
 
 ## Estadísticas de acceso y monitorización
 
-### Estadísticas del sitio
+### Estadísticas del sitio {#site-stats}
 
 En un listener en ejecución, pulsa «Estadísticas» en la fila de un sitio para abrir la ventana de estadísticas, donde puedes elegir la última hora, las últimas 6 horas o las últimas 24 horas:
 
 - Estadísticas de acceso por minuto: un punto por minuto, conservadas durante las últimas 24 horas, con una curva de número de peticiones y curvas de errores 4xx / 5xx;
+- Tiempo hasta el primer byte: P50 / P95 por minuto y el P95 máximo del rango elegido. La latencia va desde la llegada de la petición hasta el envío de las cabeceras de respuesta, sin la transferencia del cuerpo; WebSocket y otras peticiones con cambio de protocolo, así como las peticiones cortadas, no se cuentan, y los percentiles se estiman con el tiempo medio de cada tramo fino. Para alertas por umbral consulta [Rendimiento](/es/docs/modules/perf);
 - Distribución de códigos de estado (2xx / 3xx / 4xx / 5xx) y tráfico de respuesta acumulado;
 - Las 10 IP de origen y los 10 países principales (las estadísticas por país requieren una base de datos GeoIP importada);
 - Los sitios de proxy inverso muestran el estado de salud, el peso, la marca de reserva, el número actual de conexiones y el número de peticiones reenviadas de cada backend, incluidos los backends por ruta y por usuario (marcados con su ruta o sus usuarios);

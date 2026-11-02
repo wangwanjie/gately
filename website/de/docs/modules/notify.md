@@ -98,6 +98,7 @@ Beim Anlegen einer Regel können Sie eine Vorlage anklicken, die Ereignisse, Stu
 | Adressänderungen | DDNS-Eintrag aktualisiert, STUN-Adresse geändert |
 | Dienstzustand | Upstream ausgefallen und wiederhergestellt, Container beendet, Kindprozess beendet |
 | Sicherheit & Anmeldungen | Anmeldung fehlgeschlagen, IP gesperrt, Anmeldung erfolgreich, Zugriff auf sensible Inhalte |
+| Leistungswarnungen | Auslösen und Aufheben von Leistungswarnungen (ohne Stummschaltung) |
 | Konfigurationsänderungen | Jede Konfigurationsänderung in der Verwaltungsoberfläche |
 
 ## Ereignistypen
@@ -121,6 +122,8 @@ Beim Anlegen einer Regel können Sie eine Vorlage anklicken, die Ereignisse, Stu
 | `login.success` | Verwaltungsoberfläche: Anmeldung erfolgreich | Info | Eine Anmeldung an der Verwaltungsoberfläche war erfolgreich, mit den Feldern `ip` und `user` |
 | `audit.change` | Verwaltungsoberfläche: Konfiguration geändert | Info | Jede ändernde Aktion in der Verwaltungsoberfläche, mit den Feldern `actor`, `ip`, `method` und `path`; siehe [Audit und Konfigurationsverlauf](/de/docs/guide/audit) |
 | `audit.access` | Verwaltungsoberfläche: Zugriff auf sensible Inhalte | Warnung | Herunterladen von Sicherungen, Diagnosepaketen oder privaten Zertifikatsschlüsseln, Öffnen eines Terminals und Ähnliches; Felder wie oben |
+| `perf.alert` | Leistung: Warnung ausgelöst | Warnung oder Fehler | Die Bedingung einer Leistungs-Warnregel hat für die eingestellte Dauer angehalten; die Stufe kommt aus der Regel, mit den Feldern `rule`, `metric`, `target`, `value` und `condition`; siehe [Leistung](/de/docs/modules/perf) |
+| `perf.recovered` | Leistung: Warnung aufgehoben | Info | Die Bedingung einer ausgelösten Leistungswarnung besteht nicht mehr; Felder wie oben |
 | `notify.test` | Testbenachrichtigung | Info | Wird von der Schaltfläche „Testen“ des Kanals erzeugt und nimmt nicht am Regelabgleich teil |
 
 ## Test senden

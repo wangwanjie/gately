@@ -43,6 +43,7 @@
       "modules/terminal": "웹 터미널",
       "modules/nettools": "네트워크 진단",
       "modules/notify": "알림 센터",
+      "modules/perf": "성능 모니터링",
       "modules/backup": "설정 백업",
       "modules/tools": "파일 및 운영 도구",
       "guide/security": "보안 모델 및 개인정보 약속",

@@ -43,6 +43,7 @@
       "modules/terminal": "Web 終端機",
       "modules/nettools": "網路診斷",
       "modules/notify": "通知中心",
+      "modules/perf": "效能監控",
       "modules/backup": "設定備份",
       "modules/tools": "檔案與維運工具",
       "guide/security": "安全模型與隱私承諾",

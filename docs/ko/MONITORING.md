@@ -42,10 +42,14 @@ scrape_configs:
 | `gately_site_responses_total{listener,site,class}` | counter | 상태 분류(2xx/3xx/4xx/5xx)별 응답 수 |
 | `gately_site_response_bytes_total` / `gately_site_errors_total` / `gately_site_active_requests` | counter / counter / gauge | 응답 바이트, 백엔드 오류, 처리 중인 요청 |
 | `gately_site_blocked_total{listener,site,reason}` | counter | 원인(`ban`, `ip`, `country`, `rateLimit`, `waf`)별 차단된 요청 수 |
+| `gately_site_request_duration_seconds{listener,site,le}` | histogram | 사이트 첫 바이트 지연 히스토그램(초), `le`는 0.005~60의 13단계. WebSocket 등 프로토콜 업그레이드와 끊긴 요청은 제외 |
 | `gately_upstream_up{listener,site,upstream[,route]}` | gauge | 백엔드 정상 여부. 경로별·사용자별 백엔드에는 `route` 레이블(경로 접두사 또는 `@`와 사용자 목록)도 붙음 |
 | `gately_upstream_requests_total{listener,site,upstream[,route]}` | counter | 백엔드로 전달한 요청 수 |
 | `gately_upstream_response_bytes_total{listener,site,upstream[,route]}` | counter | 백엔드가 반환한 응답 본문 바이트(WebSocket 업그레이드 이후 데이터 제외) |
 | `gately_listener_requests_total{listener,action}` | counter | 리스너가 직접 처리한 요청: `https_redirect`는 평문 HTTP를 HTTPS로 리다이렉트, `not_found`는 일치하는 사이트가 없을 때의 404 |
+| `gately_host_cpu_usage_percent` / `gately_host_memory_used_percent` / `gately_host_disk_used_percent` / `gately_host_load1` | gauge | 최근 수집한 호스트 CPU, 메모리, 설정 디렉터리 파티션 사용률과 1분 부하(성능 모니터링 모듈이 켜져 있을 때 내보내며, 읽을 수 없는 항목은 생략) |
+| `gately_process_cpu_usage_percent` / `gately_process_resident_memory_bytes` / `gately_process_open_fds` | gauge | 최근 수집한 Gately 프로세스 CPU(머신 전체 대비 비율), 상주 메모리, 열린 파일 디스크립터 수(성능 모니터링 모듈이 켜져 있을 때 내보냄) |
+| `gately_perf_alerts_firing{rule}` | gauge | 활성화된 각 성능 경보 규칙에서 현재 경보 중인 대상 수 |
 
 ## 알림 예시
 
@@ -62,6 +66,9 @@ groups:
       - alert: GatelyUpstreamDown
         expr: gately_upstream_up == 0
         for: 2m
+      - alert: GatelySiteSlow
+        expr: histogram_quantile(0.95, sum by (le, listener, site) (rate(gately_site_request_duration_seconds_bucket[5m]))) > 2
+        for: 5m
 ```
 
 ## Grafana 대시보드

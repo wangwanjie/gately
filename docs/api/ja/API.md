@@ -52,6 +52,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `filebrowser` | File Browser | `filebrowser:read`、`filebrowser:write` |
 | `storage` | ストレージマウント | `storage:read`、`storage:write` |
 | `notify` | 通知センター | `notify:read`、`notify:write` |
+| `perf` | パフォーマンス監視 | `perf:read`、`perf:write` |
 | `nettools` | ネットワーク診断 | `nettools:read`、`nettools:write` |
 | `backup` | 設定バックアップ | `backup:read`、`backup:write` |
 | `status` | システムステータス | `status:read` |
@@ -637,6 +638,26 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/notify/event-types` | `notify:read` | 購読可能なイベントタイプ |
 | GET | `/api/notify/history` | `notify:read` | 最近の配信履歴 |
 | POST | `/api/notify/channels/{key}/test` | `notify:write` | チャネルにテスト通知を送信 |
+
+## パフォーマンス監視
+
+| メソッド | パス | 必要な権限 | 説明 |
+| --- | --- | --- | --- |
+| GET | `/api/perf/logs` | `perf:read` | モジュールの実行ログを表示 |
+| DELETE | `/api/perf/logs` | `perf:write` | モジュールの実行ログを消去 |
+| GET | `/api/perf/rules` | `perf:read` | パフォーマンスアラートルール の一覧を取得 |
+| POST | `/api/perf/rules` | `perf:write` | パフォーマンスアラートルール を追加 |
+| PUT | `/api/perf/rules/{key}` | `perf:write` | パフォーマンスアラートルール を更新 |
+| DELETE | `/api/perf/rules/{key}` | `perf:write` | パフォーマンスアラートルール を削除 |
+| PUT | `/api/perf/rules/{key}/enable` | `perf:write` | パフォーマンスアラートルール の有効/無効を切り替え |
+| PUT | `/api/perf/rules-order` | `perf:write` | パフォーマンスアラートルール の並び順を変更 |
+| PUT | `/api/perf/rules-enable` | `perf:write` | パフォーマンスアラートルール の一括有効化・無効化 |
+| POST | `/api/perf/rules-delete` | `perf:write` | パフォーマンスアラートルール の一括削除 |
+| PUT | `/api/perf/rules-group` | `perf:write` | パフォーマンスアラートルール のグループを一括設定 |
+| GET | `/api/perf/metrics` | `perf:read` | アラートに使える指標 |
+| GET | `/api/perf/overview` | `perf:read` | ホストとプロセスの履歴（?range=60s|1h|24h） |
+| GET | `/api/perf/sites` | `perf:read` | 各サイトの直近約 60 秒の指標 |
+| GET | `/api/perf/alerts` | `perf:read` | 進行中のアラート（計測中と発報中） |
 
 ## ネットワーク診断
 
@@ -1362,6 +1383,97 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `name` | string |
 | `silence` | integer |
 
+### perf.AlertState
+
+| フィールド | 型 |
+| --- | --- |
+| `firedAt` | integer |
+| `level` | string |
+| `name` | string |
+| `rule` | string |
+| `since` | integer |
+| `state` | string |
+| `subject` | string |
+| `target` | string |
+| `value` | number |
+
+### perf.MetricDef
+
+| フィールド | 型 |
+| --- | --- |
+| `id` | string |
+| `label` | string |
+| `max` | number |
+| `scope` | string |
+| `unit` | string |
+| `window` | boolean |
+
+### perf.Overview
+
+| フィールド | 型 |
+| --- | --- |
+| `latest` | `perf.Point` |
+| `range` | string |
+| `series` | 配列 of `perf.Point` |
+| `step` | integer |
+
+### perf.Point
+
+| フィールド | 型 |
+| --- | --- |
+| `cpu` | number |
+| `cpuMax` | number |
+| `disk` | number |
+| `goroutines` | number |
+| `load1` | number |
+| `mem` | number |
+| `procCpu` | number |
+| `procCpuMax` | number |
+| `procFds` | number |
+| `procRss` | number |
+| `t` | integer |
+
+### perf.Rule
+
+| フィールド | 型 |
+| --- | --- |
+| `duration` | integer |
+| `enable` | boolean |
+| `group` | string |
+| `key` | string |
+| `level` | string |
+| `metric` | string |
+| `minRequests` | integer |
+| `name` | string |
+| `op` | string |
+| `remark` | string |
+| `sites` | 配列 of string |
+| `threshold` | number |
+
+### perf.SiteView
+
+| フィールド | 型 |
+| --- | --- |
+| `active` | integer |
+| `err5xx` | number |
+| `key` | string |
+| `latencies` | integer |
+| `name` | string |
+| `p95` | number |
+| `qps` | number |
+| `requests` | integer |
+| `upstreams` | 配列 of `perf.UpstreamView` |
+
+### perf.UpstreamView
+
+| フィールド | 型 |
+| --- | --- |
+| `conns` | integer |
+| `healthy` | boolean |
+| `key` | string |
+| `route` | string |
+| `url` | string |
+
 ### portforward.Rule
 
 | フィールド | 型 |
@@ -1777,6 +1889,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | フィールド | 型 |
 | --- | --- |
 | `bytes` | integer |
+| `p50` | number |
+| `p95` | number |
 | `requests` | integer |
 | `s4xx` | integer |
 | `s5xx` | integer |

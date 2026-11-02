@@ -20,5 +20,6 @@ You can turn off a whole module under "Settings → Modules". A disabled module 
 | Web Terminal | SSH, Telnet, local shell, SFTP file manager, persistent sessions | [View](/en/docs/modules/terminal) |
 | Network Diagnostics | Ping, traceroute, port probe, DNS lookup, speed test, LAN scan | [View](/en/docs/modules/nettools) |
 | Notification Center | Multi-channel event push and rules | [View](/en/docs/modules/notify) |
+| Performance | Trends for the host, the process and sites (including time to first byte), alerts on threshold plus duration | [View](/en/docs/modules/perf) |
 | Configuration Backup | Encrypted backups, retention policy, scheduled backup and restore | [View](/en/docs/modules/backup) |
 | File and Ops Tools | WebDAV, FTP, SMB, File Browser, storage mounts, Wake-on-LAN, scheduled tasks | [View](/en/docs/modules/tools) |

@@ -20,5 +20,6 @@ Unter „Einstellungen → Module“ können Sie ein ganzes Modul ausschalten. E
 | Web-Terminal | SSH, Telnet, lokale Shell, SFTP-Dateimanager, persistente Sitzungen | [Ansehen](/de/docs/modules/terminal) |
 | Netzwerkdiagnose | Ping, Traceroute, Portprüfung, DNS-Abfrage, Geschwindigkeitstest, LAN-Scan | [Ansehen](/de/docs/modules/nettools) |
 | Benachrichtigungszentrale | Ereignisversand über mehrere Kanäle und Regeln | [Ansehen](/de/docs/modules/notify) |
+| Leistung | Verläufe für Host, Prozess und Websites (einschließlich Zeit bis zum ersten Byte), Warnungen nach Schwellwert und Dauer | [Ansehen](/de/docs/modules/perf) |
 | Konfigurationssicherung | Verschlüsselte Sicherungen, Aufbewahrungsrichtlinie, geplante Sicherung und Wiederherstellung | [Ansehen](/de/docs/modules/backup) |
 | Datei- und Betriebstools | WebDAV, FTP, SMB, File Browser, Speicher-Einbindungen, Wake-on-LAN, geplante Aufgaben | [Ansehen](/de/docs/modules/tools) |

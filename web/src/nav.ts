@@ -13,6 +13,7 @@ import {
   FolderOpen,
   FolderSync,
   FolderTree,
+  Gauge,
   HardDrive,
   Globe,
   History,
@@ -113,6 +114,7 @@ export const navGroups: NavGroup[] = [
     titleKey: 'nav.groups.system',
     items: [
       { path: '/notify', titleKey: 'nav.items.notify.title', icon: Bell, moduleId: 'notify', descKey: 'nav.items.notify.desc' },
+      { path: '/perf', titleKey: 'nav.items.perf.title', icon: Gauge, moduleId: 'perf', descKey: 'nav.items.perf.desc' },
       { path: '/logs', titleKey: 'nav.items.logs.title', icon: ScrollText },
       { path: '/audit', titleKey: 'nav.items.audit.title', icon: ClipboardList },
       { path: '/history', titleKey: 'nav.items.history.title', icon: History },

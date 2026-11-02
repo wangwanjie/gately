@@ -388,6 +388,7 @@ func (s *statusRecorder) FlushError() error {
 		return errConnClosed
 	}
 	s.wroteHeader = true
+	s.markFirstByte()
 	return http.NewResponseController(s.ResponseWriter).Flush()
 }
 

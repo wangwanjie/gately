@@ -26,6 +26,20 @@
         :capacity="data.series.length"
         :height="50"
       />
+      <!-- 首字节延迟：每分钟一个 P50 / P95 估算值，没有可统计响应的分钟为 0 -->
+      <div class="chart-title">
+        {{ t('siteStats.latency') }}
+        <span class="meta">{{ t('siteStats.latencyPeak', { p95: formatMs(peakP95) }) }}</span>
+      </div>
+      <Sparkline
+        :series="[
+          { values: data.series.map((p) => p.p50 ?? 0), color: 'var(--el-color-primary)' },
+          { values: data.series.map((p) => p.p95 ?? 0), color: 'var(--el-color-warning)' },
+        ]"
+        :capacity="data.series.length"
+        :height="50"
+      />
+      <div class="meta">{{ t('siteStats.latencyHelp') }}</div>
       <div v-if="data.upstreams?.length" class="chart-title">{{ t('siteStats.upstreams') }}</div>
       <!-- 同一地址可能同时出现在站点后端与分路径、按用户分流的后端中，按位置区分 -->
       <div v-for="(u, i) in data.upstreams ?? []" :key="i" class="up">
@@ -69,7 +83,8 @@ import StatusBadge from './StatusBadge.vue'
 import { useFormLayout } from '../composables/useIsMobile'
 
 interface View {
-  series: { t: number; requests: number; bytes: number; s4xx: number; s5xx: number }[]
+  // p50、p95 为每分钟首字节延迟的估算分位数（毫秒）
+  series: { t: number; requests: number; bytes: number; s4xx: number; s5xx: number; p50?: number; p95?: number }[]
   status: Record<string, number>
   bytesOut: number
   topIps: { key: string; count: number }[]
@@ -97,6 +112,15 @@ const blockKinds = [
   { key: 'rateLimit', label: 'siteStats.block_rateLimit' },
   { key: 'waf', label: 'siteStats.block_waf' },
 ]
+const peakP95 = computed(() => Math.max(0, ...(data.value?.series ?? []).map((p) => p.p95 ?? 0)))
+
+function formatMs(v: number) {
+  if (!v) {
+    return '-'
+  }
+  return v >= 1000 ? `${(v / 1000).toFixed(2)} s` : `${v.toFixed(0)} ms`
+}
+
 const blockedTotal = computed(() => Object.values(data.value?.blocked ?? {}).reduce((n, v) => n + v, 0))
 
 function formatBytes(n: number) {

@@ -24,5 +24,8 @@
   "block_ip": "IP リスト",
   "block_country": "国フィルター",
   "block_rateLimit": "レート制限",
-  "block_waf": "WAF"
+  "block_waf": "WAF",
+  "latency": "最初のバイトまでの時間（P50 / P95）",
+  "latencyPeak": "この期間の最大 P95 {p95}",
+  "latencyHelp": "リクエスト到着からレスポンスヘッダー送信までの時間を 1 分ごとに推定します。レスポンス本文の転送は含まず、WebSocket などのプロトコルアップグレードは対象外です。"
 }

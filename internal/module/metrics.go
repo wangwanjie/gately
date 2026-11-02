@@ -12,11 +12,15 @@ import (
 const (
 	MetricCounter = "counter"
 	MetricGauge   = "gauge"
+	// MetricHistogram 的采样点由 Family 归组：_bucket、_sum、_count 共用同一组 HELP / TYPE
+	MetricHistogram = "histogram"
 )
 
 // Sample 是一个 Prometheus 指标采样点。
 type Sample struct {
 	Name string
+	// Family 为 HELP / TYPE 所属的指标族名称，留空时取 Name。直方图的 _bucket / _sum / _count 填基础名称
+	Family string
 	// Help 与 Type 取同名指标第一个采样点的值
 	Help   string
 	Type   string
@@ -29,6 +33,13 @@ type Metricer interface {
 	Metrics() []Sample
 }
 
+func (s Sample) family() string {
+	if s.Family != "" {
+		return s.Family
+	}
+	return s.Name
+}
+
 var labelEscaper = strings.NewReplacer(`\`, `\\`, `"`, `\"`, "\n", `\n`)
 
 // WriteSamples 以 Prometheus 文本格式（0.0.4）写出采样点。同名指标聚合在一起，仅输出一次 HELP / TYPE。
@@ -36,10 +47,11 @@ func WriteSamples(w io.Writer, samples []Sample) error {
 	var order []string
 	groups := map[string][]Sample{}
 	for _, s := range samples {
-		if _, ok := groups[s.Name]; !ok {
-			order = append(order, s.Name)
+		fam := s.family()
+		if _, ok := groups[fam]; !ok {
+			order = append(order, fam)
 		}
-		groups[s.Name] = append(groups[s.Name], s)
+		groups[fam] = append(groups[fam], s)
 	}
 	for _, name := range order {
 		g := groups[name]
@@ -56,7 +68,7 @@ func WriteSamples(w io.Writer, samples []Sample) error {
 			return err
 		}
 		for _, s := range g {
-			if _, err := fmt.Fprintf(w, "%s%s %s\n", name, formatLabels(s.Labels), strconv.FormatFloat(s.Value, 'g', -1, 64)); err != nil {
+			if _, err := fmt.Fprintf(w, "%s%s %s\n", s.Name, formatLabels(s.Labels), strconv.FormatFloat(s.Value, 'g', -1, 64)); err != nil {
 				return err
 			}
 		}

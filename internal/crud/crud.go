@@ -58,6 +58,8 @@ type Collection[T any] struct {
 	// SecretsGuard 在查看密钥明文前调用（未持锁），返回 false 时已写入响应并拒绝，
 	// 例如 Web 终端要求先通过二次验证；可为 nil
 	SecretsGuard func(w http.ResponseWriter, r *http.Request) bool
+	// Max 为条目数量上限，只在新增时检查，0 表示不限
+	Max int
 	// Group 返回条目的分组字段指针；提供时注册批量设置分组接口。分组只影响管理界面的展示，
 	// 修改分组不调用 Changed，不会重启运行实例；可为 nil
 	Group func(*T) *string
@@ -169,6 +171,10 @@ func (c *Collection[T]) create(w http.ResponseWriter, r *http.Request) {
 	}
 	c.Mu.Lock()
 	defer c.Mu.Unlock()
+	if c.Max > 0 && len(*c.Items) >= c.Max {
+		httpx.Error(w, http.StatusBadRequest, "最多只能添加 %d 条", c.Max)
+		return
+	}
 	if c.Check != nil {
 		if err := c.Check(&it); err != nil {
 			httpx.Error(w, http.StatusBadRequest, "%v", err)

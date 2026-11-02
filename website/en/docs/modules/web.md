@@ -416,11 +416,12 @@ Redirects keep the original query parameters. A redirect target may contain `{ho
 
 ## Access statistics and monitoring
 
-### Site statistics
+### Site statistics {#site-stats}
 
 For a running listener, click "Stats" on a site row to open the statistics window, where you can choose the last 1 hour, 6 hours or 24 hours:
 
 - Minute-level access statistics: one point per minute, kept for the last 24 hours, including a request count curve and 4xx / 5xx error curves;
+- Time to first byte: P50 / P95 per minute and the highest P95 in the selected range. Latency runs from request arrival until the response headers are sent, without the response body transfer; WebSocket and other upgraded requests and aborted requests are not counted, and percentiles are estimated from the average time within fine-grained buckets. For threshold alerts see [Performance](/en/docs/modules/perf);
 - Status code distribution (2xx / 3xx / 4xx / 5xx) and cumulative response traffic;
 - Top 10 source IPs and top 10 countries (country statistics need an imported GeoIP database);
 - Reverse proxy sites show the health status, weight, backup flag, current connection count and forwarded request count of each backend, including path-based and per-user backends (marked with their path or users);

@@ -557,6 +557,23 @@ type statusRecorder struct {
 	wroteHeader bool
 	// rate 为站点的秒级速率，写出时登记字节数（大文件下载的吞吐随写出实时体现）
 	rate *rateRing
+	// firstByte 为首次写出响应头（或响应体）的时间，零值表示尚未写出，用于首字节延迟统计
+	firstByte time.Time
+}
+
+// countsForLatency 判断这次请求是否计入首字节延迟：必须写出过响应，且不是协议升级、断开连接或被管理员断开的请求。
+func (s *statusRecorder) countsForLatency() bool {
+	if s.firstByte.IsZero() || s.status == http.StatusSwitchingProtocols || s.status == statusClosed {
+		return false
+	}
+	return s.req == nil || !s.req.killed.Load()
+}
+
+// markFirstByte 记录首次写出响应的时间。
+func (s *statusRecorder) markFirstByte() {
+	if s.firstByte.IsZero() {
+		s.firstByte = time.Now()
+	}
 }
 
 func (s *statusRecorder) Write(p []byte) (int, error) {
@@ -565,6 +582,7 @@ func (s *statusRecorder) Write(p []byte) (int, error) {
 		return 0, errConnClosed
 	}
 	s.wroteHeader = true
+	s.markFirstByte()
 	n, err := s.ResponseWriter.Write(p)
 	s.bytes += int64(n)
 	if s.req != nil {
@@ -584,6 +602,7 @@ func (s *statusRecorder) WriteHeader(code int) {
 	// 1xx 是中间响应，之后还会写出最终的响应头
 	if code >= 200 || code == http.StatusSwitchingProtocols {
 		s.wroteHeader = true
+		s.markFirstByte()
 	}
 	s.ResponseWriter.WriteHeader(code)
 }
@@ -637,7 +656,12 @@ func (h *siteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	origPath, origURI := r.URL.Path, r.URL.RequestURI()
 
 	defer func() {
-		h.metrics.record(client.Addr(), rec.status, rec.bytes, time.Now())
+		// 首字节延迟：协议升级（长连接）、被管理员断开与未写出响应（断开连接）的请求不计入（-1）
+		lat := time.Duration(-1)
+		if rec.countsForLatency() {
+			lat = rec.firstByte.Sub(start)
+		}
+		h.metrics.record(client.Addr(), rec.status, rec.bytes, lat, time.Now())
 		if h.site.AccessLog {
 			uri := origURI
 			// 认证路径的查询串含票据、授权码等敏感信息，不写入日志

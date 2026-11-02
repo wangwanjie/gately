@@ -43,6 +43,7 @@
       "modules/terminal": "Web ターミナル",
       "modules/nettools": "ネットワーク診断",
       "modules/notify": "通知センター",
+      "modules/perf": "パフォーマンス監視",
       "modules/backup": "設定バックアップ",
       "modules/tools": "ファイルと運用ツール",
       "guide/security": "セキュリティモデルとプライバシーの約束",

@@ -52,6 +52,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `filebrowser` | File Browser | `filebrowser:read`、`filebrowser:write` |
 | `storage` | 스토리지 마운트 | `storage:read`、`storage:write` |
 | `notify` | 알림 센터 | `notify:read`、`notify:write` |
+| `perf` | 성능 모니터링 | `perf:read`、`perf:write` |
 | `nettools` | 네트워크 진단 | `nettools:read`、`nettools:write` |
 | `backup` | 설정 백업 | `backup:read`、`backup:write` |
 | `status` | 시스템 상태 | `status:read` |
@@ -637,6 +638,26 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/notify/event-types` | `notify:read` | 구독 가능한 이벤트 유형 |
 | GET | `/api/notify/history` | `notify:read` | 최근 전달 기록 |
 | POST | `/api/notify/channels/{key}/test` | `notify:write` | 채널로 테스트 알림 전송 |
+
+## 성능 모니터링
+
+| 메서드 | 경로 | 필요 권한 | 설명 |
+| --- | --- | --- | --- |
+| GET | `/api/perf/logs` | `perf:read` | 모듈 실행 로그 보기 |
+| DELETE | `/api/perf/logs` | `perf:write` | 모듈 실행 로그 비우기 |
+| GET | `/api/perf/rules` | `perf:read` | 성능 경보 규칙 목록 조회 |
+| POST | `/api/perf/rules` | `perf:write` | 성능 경보 규칙 추가 |
+| PUT | `/api/perf/rules/{key}` | `perf:write` | 성능 경보 규칙 수정 |
+| DELETE | `/api/perf/rules/{key}` | `perf:write` | 성능 경보 규칙 삭제 |
+| PUT | `/api/perf/rules/{key}/enable` | `perf:write` | 성능 경보 규칙 사용 설정/해제 |
+| PUT | `/api/perf/rules-order` | `perf:write` | 성능 경보 규칙 순서 변경 |
+| PUT | `/api/perf/rules-enable` | `perf:write` | 성능 경보 규칙 일괄 사용/사용 안 함 |
+| POST | `/api/perf/rules-delete` | `perf:write` | 성능 경보 규칙 일괄 삭제 |
+| PUT | `/api/perf/rules-group` | `perf:write` | 성능 경보 규칙 그룹 일괄 설정 |
+| GET | `/api/perf/metrics` | `perf:read` | 경보에 쓸 수 있는 지표 |
+| GET | `/api/perf/overview` | `perf:read` | 호스트와 프로세스 기록(?range=60s|1h|24h) |
+| GET | `/api/perf/sites` | `perf:read` | 사이트별 최근 약 60초 지표 |
+| GET | `/api/perf/alerts` | `perf:read` | 진행 중인 경보(대기 중과 경보 중) |
 
 ## 네트워크 진단
 
@@ -1362,6 +1383,97 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `name` | string |
 | `silence` | integer |
 
+### perf.AlertState
+
+| 필드 | 타입 |
+| --- | --- |
+| `firedAt` | integer |
+| `level` | string |
+| `name` | string |
+| `rule` | string |
+| `since` | integer |
+| `state` | string |
+| `subject` | string |
+| `target` | string |
+| `value` | number |
+
+### perf.MetricDef
+
+| 필드 | 타입 |
+| --- | --- |
+| `id` | string |
+| `label` | string |
+| `max` | number |
+| `scope` | string |
+| `unit` | string |
+| `window` | boolean |
+
+### perf.Overview
+
+| 필드 | 타입 |
+| --- | --- |
+| `latest` | `perf.Point` |
+| `range` | string |
+| `series` | Array of `perf.Point` |
+| `step` | integer |
+
+### perf.Point
+
+| 필드 | 타입 |
+| --- | --- |
+| `cpu` | number |
+| `cpuMax` | number |
+| `disk` | number |
+| `goroutines` | number |
+| `load1` | number |
+| `mem` | number |
+| `procCpu` | number |
+| `procCpuMax` | number |
+| `procFds` | number |
+| `procRss` | number |
+| `t` | integer |
+
+### perf.Rule
+
+| 필드 | 타입 |
+| --- | --- |
+| `duration` | integer |
+| `enable` | boolean |
+| `group` | string |
+| `key` | string |
+| `level` | string |
+| `metric` | string |
+| `minRequests` | integer |
+| `name` | string |
+| `op` | string |
+| `remark` | string |
+| `sites` | Array of string |
+| `threshold` | number |
+
+### perf.SiteView
+
+| 필드 | 타입 |
+| --- | --- |
+| `active` | integer |
+| `err5xx` | number |
+| `key` | string |
+| `latencies` | integer |
+| `name` | string |
+| `p95` | number |
+| `qps` | number |
+| `requests` | integer |
+| `upstreams` | Array of `perf.UpstreamView` |
+
+### perf.UpstreamView
+
+| 필드 | 타입 |
+| --- | --- |
+| `conns` | integer |
+| `healthy` | boolean |
+| `key` | string |
+| `route` | string |
+| `url` | string |
+
 ### portforward.Rule
 
 | 필드 | 타입 |
@@ -1777,6 +1889,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 필드 | 타입 |
 | --- | --- |
 | `bytes` | integer |
+| `p50` | number |
+| `p95` | number |
 | `requests` | integer |
 | `s4xx` | integer |
 | `s5xx` | integer |

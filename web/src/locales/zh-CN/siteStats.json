@@ -24,5 +24,8 @@
   "block_ip": "IP 名单",
   "block_country": "国家过滤",
   "block_rateLimit": "限流",
-  "block_waf": "WAF"
+  "block_waf": "WAF",
+  "latency": "首字节延迟（P50 / P95）",
+  "latencyPeak": "本时段最高 P95 {p95}",
+  "latencyHelp": "请求到达到响应头发出的时间，按分钟估算；不含响应体传输，WebSocket 等协议升级请求不计入。"
 }

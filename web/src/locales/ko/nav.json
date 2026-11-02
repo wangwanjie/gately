@@ -111,6 +111,10 @@
       "title": "알림 센터",
       "desc": "이벤트를 Telegram, 이메일, WeCom 등으로 전송"
     },
+    "perf": {
+      "title": "성능 모니터링",
+      "desc": "성능 추이와 임계값 경보"
+    },
     "logs": {
       "title": "시스템 로그"
     },

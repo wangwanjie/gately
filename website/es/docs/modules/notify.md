@@ -98,6 +98,7 @@ Al crear una regla, puedes pulsar una plantilla para rellenar los eventos, el ni
 | Cambios de dirección | Actualización de registro DDNS, cambio de dirección STUN |
 | Estado de servicios | Backend no disponible y recuperado, salida de contenedor, salida de subproceso |
 | Seguridad e inicios de sesión | Inicio de sesión fallido, IP bloqueada, inicio de sesión correcto, acceso a contenido sensible |
+| Alertas de rendimiento | Activación y recuperación de alertas de rendimiento (sin silencio) |
 | Cambios de configuración | Cada cambio de configuración hecho en la interfaz de administración |
 
 ## Tipos de evento
@@ -121,6 +122,8 @@ Al crear una regla, puedes pulsar una plantilla para rellenar los eventos, el ni
 | `login.success` | Interfaz de administración: inicio de sesión correcto | Info | Un inicio de sesión en la interfaz de administración se realizó correctamente, con los campos `ip` y `user` |
 | `audit.change` | Interfaz de administración: cambio de configuración | Info | Cualquier operación de cambio en la interfaz de administración, con los campos `actor`, `ip`, `method` y `path`; consulta [Auditoría e historial de configuración](/es/docs/guide/audit) |
 | `audit.access` | Interfaz de administración: acceso a contenido sensible | Advertencia | Descarga de copias de seguridad, paquetes de diagnóstico o claves privadas de certificados, apertura de terminales, etc.; mismos campos que el anterior |
+| `perf.alert` | Rendimiento: alerta activada | Aviso o error | La condición de una regla de alerta de rendimiento se ha mantenido durante su duración; el nivel lo fija la regla, con los campos `rule`, `metric`, `target`, `value` y `condition`; consulta [Rendimiento](/es/docs/modules/perf) |
+| `perf.recovered` | Rendimiento: alerta recuperada | Información | La condición de una alerta de rendimiento activa ha dejado de cumplirse; mismos campos |
 | `notify.test` | Notificación de prueba | Info | Generada por el botón «Probar» del canal; no participa en la coincidencia con las reglas |
 
 ## Enviar una prueba

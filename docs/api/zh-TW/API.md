@@ -52,6 +52,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `filebrowser` | File Browser | `filebrowser:read`、`filebrowser:write` |
 | `storage` | 儲存掛載 | `storage:read`、`storage:write` |
 | `notify` | 通知中心 | `notify:read`、`notify:write` |
+| `perf` | 效能監控 | `perf:read`、`perf:write` |
 | `nettools` | 網路診斷 | `nettools:read`、`nettools:write` |
 | `backup` | 設定備份 | `backup:read`、`backup:write` |
 | `status` | 系統狀態 | `status:read` |
@@ -637,6 +638,26 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/notify/event-types` | `notify:read` | 可訂閱的事件類型 |
 | GET | `/api/notify/history` | `notify:read` | 最近的投遞記錄 |
 | POST | `/api/notify/channels/{key}/test` | `notify:write` | 向管道傳送測試通知 |
+
+## 效能監控
+
+| 方法 | 路徑 | 所需權限 | 說明 |
+| --- | --- | --- | --- |
+| GET | `/api/perf/logs` | `perf:read` | 檢視模組執行日誌 |
+| DELETE | `/api/perf/logs` | `perf:write` | 清空模組執行日誌 |
+| GET | `/api/perf/rules` | `perf:read` | 取得效能告警規則清單 |
+| POST | `/api/perf/rules` | `perf:write` | 新增效能告警規則 |
+| PUT | `/api/perf/rules/{key}` | `perf:write` | 修改效能告警規則 |
+| DELETE | `/api/perf/rules/{key}` | `perf:write` | 刪除效能告警規則 |
+| PUT | `/api/perf/rules/{key}/enable` | `perf:write` | 啟用或停用效能告警規則 |
+| PUT | `/api/perf/rules-order` | `perf:write` | 調整效能告警規則排序 |
+| PUT | `/api/perf/rules-enable` | `perf:write` | 批次啟用或停用效能告警規則 |
+| POST | `/api/perf/rules-delete` | `perf:write` | 批次刪除效能告警規則 |
+| PUT | `/api/perf/rules-group` | `perf:write` | 批次設定效能告警規則分組 |
+| GET | `/api/perf/metrics` | `perf:read` | 可用於告警的指標 |
+| GET | `/api/perf/overview` | `perf:read` | 主機與程序歷史（?range=60s|1h|24h） |
+| GET | `/api/perf/sites` | `perf:read` | 各站台最近約 60 秒的指標 |
+| GET | `/api/perf/alerts` | `perf:read` | 進行中的告警（計時中與已觸發） |
 
 ## 網路診斷
 
@@ -1362,6 +1383,97 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `name` | string |
 | `silence` | integer |
 
+### perf.AlertState
+
+| 欄位 | 類型 |
+| --- | --- |
+| `firedAt` | integer |
+| `level` | string |
+| `name` | string |
+| `rule` | string |
+| `since` | integer |
+| `state` | string |
+| `subject` | string |
+| `target` | string |
+| `value` | number |
+
+### perf.MetricDef
+
+| 欄位 | 類型 |
+| --- | --- |
+| `id` | string |
+| `label` | string |
+| `max` | number |
+| `scope` | string |
+| `unit` | string |
+| `window` | boolean |
+
+### perf.Overview
+
+| 欄位 | 類型 |
+| --- | --- |
+| `latest` | `perf.Point` |
+| `range` | string |
+| `series` | 陣列 of `perf.Point` |
+| `step` | integer |
+
+### perf.Point
+
+| 欄位 | 類型 |
+| --- | --- |
+| `cpu` | number |
+| `cpuMax` | number |
+| `disk` | number |
+| `goroutines` | number |
+| `load1` | number |
+| `mem` | number |
+| `procCpu` | number |
+| `procCpuMax` | number |
+| `procFds` | number |
+| `procRss` | number |
+| `t` | integer |
+
+### perf.Rule
+
+| 欄位 | 類型 |
+| --- | --- |
+| `duration` | integer |
+| `enable` | boolean |
+| `group` | string |
+| `key` | string |
+| `level` | string |
+| `metric` | string |
+| `minRequests` | integer |
+| `name` | string |
+| `op` | string |
+| `remark` | string |
+| `sites` | 陣列 of string |
+| `threshold` | number |
+
+### perf.SiteView
+
+| 欄位 | 類型 |
+| --- | --- |
+| `active` | integer |
+| `err5xx` | number |
+| `key` | string |
+| `latencies` | integer |
+| `name` | string |
+| `p95` | number |
+| `qps` | number |
+| `requests` | integer |
+| `upstreams` | 陣列 of `perf.UpstreamView` |
+
+### perf.UpstreamView
+
+| 欄位 | 類型 |
+| --- | --- |
+| `conns` | integer |
+| `healthy` | boolean |
+| `key` | string |
+| `route` | string |
+| `url` | string |
+
 ### portforward.Rule
 
 | 欄位 | 類型 |
@@ -1777,6 +1889,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 欄位 | 類型 |
 | --- | --- |
 | `bytes` | integer |
+| `p50` | number |
+| `p95` | number |
 | `requests` | integer |
 | `s4xx` | integer |
 | `s5xx` | integer |

@@ -43,6 +43,7 @@
       "modules/terminal": "Web Terminal",
       "modules/nettools": "Network Diagnostics",
       "modules/notify": "Notification Center",
+      "modules/perf": "Performance",
       "modules/backup": "Configuration Backup",
       "modules/tools": "Files & Ops Tools",
       "guide/security": "Security Model & Privacy Promise",

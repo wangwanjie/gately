@@ -43,6 +43,7 @@
       "modules/terminal": "Terminal Web",
       "modules/nettools": "Diagnostic réseau",
       "modules/notify": "Centre de notifications",
+      "modules/perf": "Performances",
       "modules/backup": "Sauvegarde de la configuration",
       "modules/tools": "Outils de fichiers et d'exploitation",
       "guide/security": "Modèle de sécurité et engagement de confidentialité",

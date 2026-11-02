@@ -185,6 +185,74 @@
       }
     },
     {
+      "id": 11,
+      "title": "Site time to first byte P95",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 20,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le, site) (rate(gately_site_request_duration_seconds_bucket[5m])))",
+          "legendFormat": "{{site}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 12,
+      "title": "Host and Gately CPU / memory",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 20,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "gately_host_cpu_usage_percent",
+          "legendFormat": "host CPU"
+        },
+        {
+          "refId": "B",
+          "expr": "gately_host_memory_used_percent",
+          "legendFormat": "host memory"
+        },
+        {
+          "refId": "C",
+          "expr": "gately_process_cpu_usage_percent",
+          "legendFormat": "Gately CPU"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "max": 100,
+          "min": 0
+        },
+        "overrides": []
+      }
+    },
+    {
       "id": 7,
       "title": "Port forwarding active connections",
       "type": "timeseries",
@@ -194,7 +262,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 20,
+        "y": 28,
         "w": 12,
         "h": 8
       },
@@ -220,7 +288,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 20,
+        "y": 28,
         "w": 12,
         "h": 8
       },
@@ -248,7 +316,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 28,
+        "y": 36,
         "w": 12,
         "h": 8
       },
@@ -279,7 +347,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 28,
+        "y": 36,
         "w": 12,
         "h": 8
       },

@@ -98,6 +98,7 @@ When creating a rule, click a template to prefill the events, level and silence 
 | Address changes | DDNS record updated, STUN address changed |
 | Service health | Upstream down and recovered, container exited, child process exited |
 | Security & sign-ins | Login failures, IP bans, successful logins, access to sensitive content |
+| Performance alerts | Performance alert firing and recovery (no silence) |
 | Configuration changes | Every configuration change made in the management UI |
 
 ## Event types
@@ -121,6 +122,8 @@ When creating a rule, click a template to prefill the events, level and silence 
 | `login.success` | Management UI: login succeeded | Info | A management UI login succeeded, with the `ip` and `user` fields |
 | `audit.change` | Management UI: configuration changed | Info | Any change made in the management UI, with the `actor`, `ip`, `method` and `path` fields; see [Audit Log & Config History](/en/docs/guide/audit) |
 | `audit.access` | Management UI: sensitive content accessed | Warning | Downloading a backup, diagnostics bundle or certificate private key, opening a terminal, and similar; same fields as above |
+| `perf.alert` | Performance: alert firing | Warning or Error | A performance alert rule's condition has held for its duration; the level comes from the rule, with the `rule`, `metric`, `target`, `value` and `condition` fields; see [Performance](/en/docs/modules/perf) |
+| `perf.recovered` | Performance: alert recovered | Info | The condition of a firing performance alert has cleared; same fields as above |
 | `notify.test` | Test notification | Info | Produced by the channel's "Test" button; it does not take part in rule matching |
 
 ## Sending a test

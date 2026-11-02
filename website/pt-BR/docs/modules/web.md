@@ -416,11 +416,12 @@ Os redirecionamentos mantêm os parâmetros de query originais. O destino de um 
 
 ## Estatísticas de acesso e monitoramento
 
-### Estatísticas do site
+### Estatísticas do site {#site-stats}
 
 Para um listener em execução, clique em "Estatísticas" na linha de um site para abrir a janela de estatísticas, onde você pode escolher a última 1 hora, 6 horas ou 24 horas:
 
 - Estatísticas de acesso por minuto: um ponto por minuto, mantidos pelas últimas 24 horas, incluindo uma curva de contagem de requisições e curvas de erros 4xx / 5xx;
+- Tempo até o primeiro byte: P50 / P95 por minuto e o maior P95 do período escolhido. A latência vai da chegada da requisição ao envio dos cabeçalhos da resposta, sem a transferência do corpo; WebSocket e outras requisições com troca de protocolo, assim como requisições interrompidas, não são contadas, e os percentis são estimados pelo tempo médio de cada faixa fina. Para alertas por limite, veja [Desempenho](/pt-BR/docs/modules/perf);
 - Distribuição de códigos de status (2xx / 3xx / 4xx / 5xx) e tráfego acumulado de respostas;
 - Top 10 de IPs de origem e top 10 de países (as estatísticas de países exigem um banco de dados GeoIP importado);
 - Sites de proxy reverso mostram o estado de saúde, o peso, a marca de backup, o número atual de conexões e o número de requisições encaminhadas de cada backend, incluindo os backends por caminho e por usuário (marcados com o caminho ou os usuários);

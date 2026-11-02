@@ -20,5 +20,6 @@ Gately の各機能は独立したモジュールで、個別に有効化・無�
 | Web ターミナル | SSH、Telnet、ローカルシェル、SFTP ファイル管理、永続セッション | [開く](/ja/docs/modules/terminal) |
 | ネットワーク診断 | Ping、トレースルート、ポート検査、DNS 照会、速度測定、LAN スキャン | [開く](/ja/docs/modules/nettools) |
 | 通知センター | 複数チャネルへのイベント通知とルール | [開く](/ja/docs/modules/notify) |
+| パフォーマンス監視 | ホスト・プロセス・サイトの推移（最初のバイトまでの時間を含む）、しきい値と継続時間によるアラート | [開く](/ja/docs/modules/perf) |
 | 設定バックアップ | 暗号化バックアップ、保持ポリシー、定期バックアップと復元 | [開く](/ja/docs/modules/backup) |
 | ファイルと運用ツール | WebDAV、FTP、SMB、File Browser、ストレージマウント、Wake-on-LAN、スケジュールタスク | [開く](/ja/docs/modules/tools) |

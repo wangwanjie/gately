@@ -416,11 +416,12 @@ Les redirections conservent les paramètres de requête d'origine. La cible d'un
 
 ## Statistiques d'accès et supervision
 
-### Statistiques de site
+### Statistiques de site {#site-stats}
 
 Pour un écouteur en cours d'exécution, cliquez sur « Statistiques » sur la ligne d'un site pour ouvrir la fenêtre de statistiques, où vous pouvez choisir la dernière heure, les 6 dernières heures ou les 24 dernières heures :
 
 - Statistiques d'accès à la minute : un point par minute, conservées sur les dernières 24 heures, avec une courbe du nombre de requêtes et des courbes d'erreurs 4xx / 5xx ;
+- Temps jusqu'au premier octet : P50 / P95 par minute et le P95 maximal de la plage choisie. La latence va de l'arrivée de la requête à l'envoi des en-têtes de réponse, sans le transfert du corps ; WebSocket et les autres changements de protocole ainsi que les requêtes coupées ne sont pas comptés, et les centiles sont estimés à partir du temps moyen de chaque tranche fine. Pour les alertes par seuil, voir [Performances](/fr/docs/modules/perf) ;
 - Répartition des codes de statut (2xx / 3xx / 4xx / 5xx) et trafic cumulé des réponses ;
 - Top 10 des IP sources et top 10 des pays (les statistiques par pays nécessitent une base GeoIP importée) ;
 - Les sites en proxy inverse affichent l'état de santé, le poids, l'indicateur de secours, le nombre de connexions actuelles et le nombre de requêtes transmises de chaque backend, y compris les backends par chemin et par utilisateur (marqués de leur chemin ou de leurs utilisateurs) ;

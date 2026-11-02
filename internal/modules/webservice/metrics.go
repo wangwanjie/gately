@@ -34,6 +34,8 @@ type siteMetrics struct {
 	countries map[string]int64
 	bytesOut  int64
 	status    [6]int64
+	// lat 为首字节延迟统计，首次登记延迟时才分配
+	lat *latState
 	// rate 为秒级速率（自带锁，不受 mu 保护），recent 为近期活动的访客地址
 	rate   rateRing
 	recent *recentIPs
@@ -43,8 +45,8 @@ func newSiteMetrics() *siteMetrics {
 	return &siteMetrics{ips: map[string]int64{}, countries: map[string]int64{}, recent: newRecentIPs()}
 }
 
-// record 登记一次请求。
-func (m *siteMetrics) record(ip netip.Addr, status int, bytes int64, now time.Time) {
+// record 登记一次请求；lat 为首字节延迟，小于 0 表示不计入延迟统计。请求计数与延迟在同一次加锁内登记。
+func (m *siteMetrics) record(ip netip.Addr, status int, bytes int64, lat time.Duration, now time.Time) {
 	min := now.Unix() / 60
 	idx := int(min % metricMinutes)
 	class := status / 100
@@ -81,6 +83,9 @@ func (m *siteMetrics) record(ip netip.Addr, status int, bytes int64, now time.Ti
 	if country != "" {
 		m.countries[country]++
 	}
+	if lat >= 0 {
+		m.observeLatencyLocked(lat, now)
+	}
 }
 
 // Point 是一个时间点的统计。
@@ -90,6 +95,9 @@ type Point struct {
 	Bytes    int64 `json:"bytes"`
 	S4xx     int64 `json:"s4xx"`
 	S5xx     int64 `json:"s5xx"`
+	// P50、P95 为本分钟首字节延迟的估算分位数（毫秒），分钟内没有可统计的响应时为 0
+	P50 float64 `json:"p50"`
+	P95 float64 `json:"p95"`
 }
 
 // TopItem 是排行榜的一项。
@@ -143,6 +151,7 @@ func (m *siteMetrics) view(minutes int, now time.Time) SiteStatsView {
 		if b.minute == min {
 			p.Requests, p.Bytes, p.S4xx, p.S5xx = b.req, b.bytes, b.s4xx, b.s5xx
 		}
+		p.P50, p.P95 = m.minuteQuantiles(min)
 		series = append(series, p)
 	}
 	return SiteStatsView{
@@ -259,6 +268,30 @@ func (m *Module) Metrics() []module.Sample {
 		for _, name := range blockNames {
 			add("gately_site_blocked_total", "Requests blocked by the site by reason", module.MetricCounter, with(r.labels, "reason", name), float64(bl[name]))
 		}
+	}
+	// 首字节延迟直方图（秒）：le 为累计桶，取常见的 13 个边界（均为内部细分桶的边界，计数精确），不含协议升级与被断开的请求
+	for _, r := range rows {
+		n, sums := r.h.metrics.latencyTotals()
+		var cum, total uint64
+		var sumMs float64
+		for i := range n {
+			total += n[i]
+			sumMs += sums[i]
+		}
+		fam := "gately_site_request_duration_seconds"
+		help := "Time to first response byte of the site in seconds (excludes upgraded and aborted requests)"
+		next := 0
+		for _, le := range latExportBounds {
+			for next < len(latBounds) && latBounds[next] <= le {
+				cum += n[next]
+				next++
+			}
+			out = append(out, module.Sample{Name: fam + "_bucket", Family: fam, Help: help, Type: module.MetricHistogram,
+				Labels: with(r.labels, "le", strconv.FormatFloat(le/1000, 'g', -1, 64)), Value: float64(cum)})
+		}
+		out = append(out, module.Sample{Name: fam + "_bucket", Family: fam, Help: help, Type: module.MetricHistogram, Labels: with(r.labels, "le", "+Inf"), Value: float64(total)})
+		out = append(out, module.Sample{Name: fam + "_sum", Family: fam, Labels: r.labels, Value: sumMs / 1000})
+		out = append(out, module.Sample{Name: fam + "_count", Family: fam, Labels: r.labels, Value: float64(total)})
 	}
 	// 后端标签：站点后端只有 upstream；分路径与按用户分流的后端另加 route（路径前缀，或 @用户列表），
 	// 同一地址出现在多个分流中时序列不会重复

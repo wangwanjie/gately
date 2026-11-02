@@ -98,6 +98,7 @@ Ao criar uma regra, clique em um modelo para preencher eventos, nível e tempo d
 | Mudanças de endereço | Registro DDNS atualizado, endereço STUN alterado |
 | Saúde dos serviços | Upstream indisponível e recuperado, contêiner encerrado, subprocesso encerrado |
 | Segurança e logins | Falha de login, IP banido, login bem-sucedido, acesso a conteúdo sensível |
+| Alertas de desempenho | Disparo e recuperação de alertas de desempenho (sem silêncio) |
 | Alterações de configuração | Cada alteração de configuração na interface de administração |
 
 ## Tipos de evento
@@ -121,6 +122,8 @@ Ao criar uma regra, clique em um modelo para preencher eventos, nível e tempo d
 | `login.success` | Interface de administração: login bem-sucedido | Info | Um login na interface de administração foi bem-sucedido, com os campos `ip` e `user` |
 | `audit.change` | Interface de administração: alteração de configuração | Info | Qualquer operação de alteração na interface de administração, com os campos `actor`, `ip`, `method` e `path`; veja [Auditoria e histórico de configuração](/pt-BR/docs/guide/audit) |
 | `audit.access` | Interface de administração: acesso a conteúdo sensível | Aviso | Download de backup, pacote de diagnóstico ou chave privada de certificado, abertura de terminal etc.; mesmos campos |
+| `perf.alert` | Desempenho: alerta disparado | Aviso ou erro | A condição de uma regra de alerta de desempenho se manteve pela duração definida; o nível vem da regra, com os campos `rule`, `metric`, `target`, `value` e `condition`; veja [Desempenho](/pt-BR/docs/modules/perf) |
+| `perf.recovered` | Desempenho: alerta recuperado | Informação | A condição de um alerta de desempenho disparado deixou de valer; mesmos campos |
 | `notify.test` | Notificação de teste | Info | Gerada pelo botão "Testar" do canal; não participa da correspondência de regras |
 
 ## Enviar um teste

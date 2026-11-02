@@ -16,6 +16,7 @@ import (
 	"github.com/wangwanjie/gately/internal/modules/guard"
 	"github.com/wangwanjie/gately/internal/modules/nettools"
 	"github.com/wangwanjie/gately/internal/modules/notify"
+	"github.com/wangwanjie/gately/internal/modules/perf"
 	"github.com/wangwanjie/gately/internal/modules/portforward"
 	"github.com/wangwanjie/gately/internal/modules/protoroute"
 	"github.com/wangwanjie/gately/internal/modules/smb"
@@ -57,6 +58,7 @@ func New() (mods []module.Module, certs *ssl.Module) {
 		},
 		Containers: dock.ContainerNames,
 	})
+	web := webservice.New(certs, firewall)
 	mods = []module.Module{
 		portforward.New(),
 		protoroute.New(),
@@ -67,7 +69,7 @@ func New() (mods []module.Module, certs *ssl.Module) {
 		cloudflared.New(),
 		certs,
 		firewall,
-		webservice.New(certs, firewall),
+		web,
 		// 入侵防护读取容器日志时复用 Docker 模块的客户端
 		guard.New(guard.Deps{FollowDocker: dock.FollowLogs}),
 		wol.New(),
@@ -80,6 +82,7 @@ func New() (mods []module.Module, certs *ssl.Module) {
 		filebrowser.New(),
 		files,
 		notify.New(),
+		perf.New(web),
 		nettools.New(),
 		backupmod.New(files),
 	}

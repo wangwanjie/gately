@@ -42,10 +42,14 @@ scrape_configs:
 | `gately_site_responses_total{listener,site,class}` | counter | 按状态类别（2xx/3xx/4xx/5xx）的响应数 |
 | `gately_site_response_bytes_total` / `gately_site_errors_total` / `gately_site_active_requests` | counter / counter / gauge | 站点响应字节数、后端错误数、进行中请求数 |
 | `gately_site_blocked_total{listener,site,reason}` | counter | 按原因（`ban`、`ip`、`country`、`rateLimit`、`waf`）统计的拦截次数 |
+| `gately_site_request_duration_seconds{listener,site,le}` | histogram | 站点首字节延迟直方图（秒），`le` 取 0.005 到 60 共 13 档；不含 WebSocket 等协议升级与被断开的请求 |
 | `gately_upstream_up{listener,site,upstream[,route]}` | gauge | 后端是否健康；分路径与按用户分流的后端另带 `route` 标签（路径前缀或 `@用户列表`） |
 | `gately_upstream_requests_total{listener,site,upstream[,route]}` | counter | 转发到后端的累计请求数 |
 | `gately_upstream_response_bytes_total{listener,site,upstream[,route]}` | counter | 后端返回的累计响应体字节数（不含 WebSocket 升级后的数据） |
 | `gately_listener_requests_total{listener,action}` | counter | 监听层直接处理的请求：`https_redirect` 明文跳转 HTTPS，`not_found` 未匹配站点的 404 |
+| `gately_host_cpu_usage_percent` / `gately_host_memory_used_percent` / `gately_host_disk_used_percent` / `gately_host_load1` | gauge | 最近一次采样的主机 CPU、内存、配置目录所在分区的使用率与 1 分钟负载（性能监控模块开启时导出，取不到的项不导出） |
+| `gately_process_cpu_usage_percent` / `gately_process_resident_memory_bytes` / `gately_process_open_fds` | gauge | 最近一次采样的 Gately 进程 CPU（占整机算力的比例）、常驻内存与打开的文件描述符数（性能监控模块开启时导出） |
+| `gately_perf_alerts_firing{rule}` | gauge | 各条已启用的性能告警规则当前处于告警中的对象数 |
 
 ## 告警示例
 
@@ -62,6 +66,9 @@ groups:
       - alert: GatelyUpstreamDown
         expr: gately_upstream_up == 0
         for: 2m
+      - alert: GatelySiteSlow
+        expr: histogram_quantile(0.95, sum by (le, listener, site) (rate(gately_site_request_duration_seconds_bucket[5m]))) > 2
+        for: 5m
 ```
 
 ## Grafana 面板

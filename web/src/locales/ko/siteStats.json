@@ -24,5 +24,8 @@
   "block_ip": "IP 목록",
   "block_country": "국가 필터",
   "block_rateLimit": "속도 제한",
-  "block_waf": "WAF"
+  "block_waf": "WAF",
+  "latency": "첫 바이트 지연 (P50 / P95)",
+  "latencyPeak": "이 구간 최고 P95 {p95}",
+  "latencyHelp": "요청 도착부터 응답 헤더 전송까지의 시간을 분 단위로 추정합니다. 응답 본문 전송은 포함하지 않으며 WebSocket 등 프로토콜 업그레이드 요청은 제외됩니다."
 }

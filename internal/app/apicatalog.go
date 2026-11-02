@@ -34,6 +34,7 @@ var crudNouns = map[string]string{
 	"frp/proxies":             "frp 代理",
 	"notify/channels":         "通知渠道",
 	"notify/rules":            "通知规则",
+	"perf/rules":              "性能告警规则",
 	"backup/targets":          "备份目的地",
 	"guard/jails":             "入侵防护规则",
 	"storage/mounts":          "存储挂载",

@@ -416,11 +416,12 @@ Weiterleitungen behalten die ursprünglichen Query-Parameter bei. Ein Weiterleit
 
 ## Zugriffsstatistik und Monitoring
 
-### Site-Statistik
+### Site-Statistik {#site-stats}
 
 Klicken Sie bei einem laufenden Listener in der Site-Zeile auf „Statistik“, um das Statistikfenster zu öffnen, in dem Sie die letzte 1 Stunde, 6 Stunden oder 24 Stunden wählen können:
 
 - Zugriffsstatistik im Minutentakt: ein Punkt pro Minute, die letzten 24 Stunden aufbewahrt, mit einer Kurve der Anfragezahl sowie 4xx- / 5xx-Fehlerkurven;
+- Zeit bis zum ersten Byte: P50 / P95 je Minute und der höchste P95 im gewählten Zeitraum. Die Latenz reicht vom Eintreffen der Anfrage bis zum Senden der Antwort-Header, ohne Übertragung des Antwortinhalts; WebSocket und andere Protokollwechsel sowie abgebrochene Anfragen werden nicht gezählt, die Perzentile werden aus der mittleren Zeit feiner Stufen geschätzt. Schwellwert-Warnungen siehe [Leistung](/de/docs/modules/perf);
 - Verteilung der Statuscodes (2xx / 3xx / 4xx / 5xx) und kumulierter Antwort-Traffic;
 - Die Top 10 der Quell-IPs und die Top 10 der Länder (für die Länderstatistik ist eine importierte GeoIP-Datenbank nötig);
 - Reverse-Proxy-Sites zeigen Health-Status, Gewichtung, Backup-Kennzeichen, aktuelle Verbindungsanzahl und Anzahl weitergeleiteter Anfragen jedes Backends, auch der Backends pro Pfad und pro Benutzer (mit ihrem Pfad bzw. ihren Benutzern gekennzeichnet);

@@ -42,10 +42,14 @@ scrape_configs:
 | `gately_site_responses_total{listener,site,class}` | counter | Responses by status class (2xx/3xx/4xx/5xx) |
 | `gately_site_response_bytes_total` / `gately_site_errors_total` / `gately_site_active_requests` | counter / counter / gauge | Response bytes, backend errors, in-flight requests |
 | `gately_site_blocked_total{listener,site,reason}` | counter | Blocked requests by reason (`ban`, `ip`, `country`, `rateLimit`, `waf`) |
+| `gately_site_request_duration_seconds{listener,site,le}` | histogram | Histogram of the site's time to first byte in seconds, 13 `le` buckets from 0.005 to 60; WebSocket and other upgraded requests and aborted requests are excluded |
 | `gately_upstream_up{listener,site,upstream[,route]}` | gauge | Whether the upstream is healthy; path-based and per-user backends also carry a `route` label (path prefix or `@` plus the user list) |
 | `gately_upstream_requests_total{listener,site,upstream[,route]}` | counter | Requests forwarded to the upstream |
 | `gately_upstream_response_bytes_total{listener,site,upstream[,route]}` | counter | Response body bytes returned by the upstream (excluding data after a WebSocket upgrade) |
 | `gately_listener_requests_total{listener,action}` | counter | Requests the listener handles itself: `https_redirect` for plain HTTP redirected to HTTPS, `not_found` for the 404 when no site matches |
+| `gately_host_cpu_usage_percent` / `gately_host_memory_used_percent` / `gately_host_disk_used_percent` / `gately_host_load1` | gauge | Host CPU, memory and config-directory partition usage and 1 minute load from the latest sample (exported while the Performance module is on; values that cannot be read are omitted) |
+| `gately_process_cpu_usage_percent` / `gately_process_resident_memory_bytes` / `gately_process_open_fds` | gauge | CPU of the Gately process (share of the whole machine), resident memory and open file descriptors from the latest sample (exported while the Performance module is on) |
+| `gately_perf_alerts_firing{rule}` | gauge | Number of objects currently firing for each enabled performance alert rule |
 
 ## Alert examples
 
@@ -62,6 +66,9 @@ groups:
       - alert: GatelyUpstreamDown
         expr: gately_upstream_up == 0
         for: 2m
+      - alert: GatelySiteSlow
+        expr: histogram_quantile(0.95, sum by (le, listener, site) (rate(gately_site_request_duration_seconds_bucket[5m]))) > 2
+        for: 5m
 ```
 
 ## Grafana dashboard

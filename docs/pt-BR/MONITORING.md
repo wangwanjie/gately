@@ -42,10 +42,14 @@ scrape_configs:
 | `gately_site_responses_total{listener,site,class}` | counter | Respostas por classe de status (2xx/3xx/4xx/5xx) |
 | `gately_site_response_bytes_total` / `gately_site_errors_total` / `gately_site_active_requests` | counter / counter / gauge | Bytes de resposta, erros de backend, requisições em andamento |
 | `gately_site_blocked_total{listener,site,reason}` | counter | Requisições bloqueadas por motivo (`ban`, `ip`, `country`, `rateLimit`, `waf`) |
+| `gately_site_request_duration_seconds{listener,site,le}` | histogram | Histograma do tempo até o primeiro byte do site em segundos, 13 faixas `le` de 0.005 a 60; exclui WebSocket e outras requisições com troca de protocolo e requisições interrompidas |
 | `gately_upstream_up{listener,site,upstream[,route]}` | gauge | Se o upstream está saudável; backends por caminho e por usuário também têm a label `route` (prefixo do caminho, ou `@` mais a lista de usuários) |
 | `gately_upstream_requests_total{listener,site,upstream[,route]}` | counter | Requisições encaminhadas ao upstream |
 | `gately_upstream_response_bytes_total{listener,site,upstream[,route]}` | counter | Bytes do corpo de resposta devolvidos pelo upstream (sem os dados após upgrade para WebSocket) |
 | `gately_listener_requests_total{listener,action}` | counter | Requisições que o listener atende sozinho: `https_redirect` para HTTP sem criptografia redirecionado para HTTPS, `not_found` para o 404 quando nenhum site corresponde |
+| `gately_host_cpu_usage_percent` / `gately_host_memory_used_percent` / `gately_host_disk_used_percent` / `gately_host_load1` | gauge | Uso de CPU, memória e partição do diretório de configuração do host e carga de 1 minuto da última amostra (exportados com o módulo Desempenho ligado; valores que não podem ser lidos são omitidos) |
+| `gately_process_cpu_usage_percent` / `gately_process_resident_memory_bytes` / `gately_process_open_fds` | gauge | CPU do processo do Gately (parte da máquina inteira), memória residente e descritores de arquivo abertos da última amostra (exportados com o módulo Desempenho ligado) |
+| `gately_perf_alerts_firing{rule}` | gauge | Número de objetos em alerta para cada regra de alerta de desempenho habilitada |
 
 ## Exemplos de alertas
 
@@ -62,6 +66,9 @@ groups:
       - alert: GatelyUpstreamDown
         expr: gately_upstream_up == 0
         for: 2m
+      - alert: GatelySiteSlow
+        expr: histogram_quantile(0.95, sum by (le, listener, site) (rate(gately_site_request_duration_seconds_bucket[5m]))) > 2
+        for: 5m
 ```
 
 ## Dashboard do Grafana

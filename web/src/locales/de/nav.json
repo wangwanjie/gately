@@ -111,6 +111,10 @@
       "title": "Benachrichtigungen",
       "desc": "Ereignisse an Telegram, E-Mail, WeCom und mehr senden"
     },
+    "perf": {
+      "title": "Leistung",
+      "desc": "Leistungsverläufe und Schwellwert-Warnungen"
+    },
     "logs": {
       "title": "Systemprotokolle"
     },

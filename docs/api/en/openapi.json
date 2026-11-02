@@ -1391,6 +1391,218 @@
         },
         "type": "object"
       },
+      "perf.AlertState": {
+        "properties": {
+          "firedAt": {
+            "type": "integer"
+          },
+          "level": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "rule": {
+            "type": "string"
+          },
+          "since": {
+            "type": "integer"
+          },
+          "state": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "perf.MetricDef": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "max": {
+            "type": "number"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "window": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "perf.Overview": {
+        "properties": {
+          "latest": {
+            "$ref": "#/components/schemas/perf.Point"
+          },
+          "range": {
+            "type": "string"
+          },
+          "series": {
+            "items": {
+              "$ref": "#/components/schemas/perf.Point"
+            },
+            "type": "array"
+          },
+          "step": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "perf.Point": {
+        "properties": {
+          "cpu": {
+            "type": "number"
+          },
+          "cpuMax": {
+            "type": "number"
+          },
+          "disk": {
+            "type": "number"
+          },
+          "goroutines": {
+            "type": "number"
+          },
+          "load1": {
+            "type": "number"
+          },
+          "mem": {
+            "type": "number"
+          },
+          "procCpu": {
+            "type": "number"
+          },
+          "procCpuMax": {
+            "type": "number"
+          },
+          "procFds": {
+            "type": "number"
+          },
+          "procRss": {
+            "type": "number"
+          },
+          "t": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "perf.Rule": {
+        "properties": {
+          "duration": {
+            "type": "integer"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "group": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "level": {
+            "type": "string"
+          },
+          "metric": {
+            "type": "string"
+          },
+          "minRequests": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "op": {
+            "type": "string"
+          },
+          "remark": {
+            "type": "string"
+          },
+          "sites": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "threshold": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "perf.SiteView": {
+        "properties": {
+          "active": {
+            "type": "integer"
+          },
+          "err5xx": {
+            "type": "number"
+          },
+          "key": {
+            "type": "string"
+          },
+          "latencies": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "p95": {
+            "type": "number"
+          },
+          "qps": {
+            "type": "number"
+          },
+          "requests": {
+            "type": "integer"
+          },
+          "upstreams": {
+            "items": {
+              "$ref": "#/components/schemas/perf.UpstreamView"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "perf.UpstreamView": {
+        "properties": {
+          "conns": {
+            "type": "integer"
+          },
+          "healthy": {
+            "type": "boolean"
+          },
+          "key": {
+            "type": "string"
+          },
+          "route": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "portforward.Rule": {
         "properties": {
           "enable": {
@@ -2459,6 +2671,12 @@
         "properties": {
           "bytes": {
             "type": "integer"
+          },
+          "p50": {
+            "type": "number"
+          },
+          "p95": {
+            "type": "number"
           },
           "requests": {
             "type": "integer"
@@ -22312,6 +22530,1017 @@
         "x-token-allowed": true
       }
     },
+    "/api/perf/alerts": {
+      "get": {
+        "description": "Required permission: `perf:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/perf.AlertState"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Alerts in progress (pending and firing)",
+        "tags": [
+          "Performance"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/logs": {
+      "delete": {
+        "description": "Required permission: `perf:write`.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Clear module runtime logs",
+        "tags": [
+          "Performance"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain, `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `perf:read`.",
+        "parameters": [
+          {
+            "description": "Incremental fetch: returns only logs with a sequence number greater than this value",
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Load earlier logs: returns only logs with a sequence number less than this value",
+            "in": "query",
+            "name": "before",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Maximum number of entries to return, taking the newest matching ones; 0 or omitted means no limit",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Minimum level: debug, info, warn or error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Source label, exact match, case-insensitive",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Keywords: space-separated terms must all match, double quotes group a phrase, a leading - excludes",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Excluded keywords: space-separated, double quotes group a phrase, an entry containing any of them is excluded; applies together with q",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Client address: full address, CIDR or partial address, comma-separated",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Part of a site name or domain",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Status code such as 404, 4xx, 500-599, comma-separated",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Start time, RFC 3339 or millisecond timestamp",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "End time, RFC 3339 or millisecond timestamp",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "View module runtime logs",
+        "tags": [
+          "Performance"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/metrics": {
+      "get": {
+        "description": "Required permission: `perf:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/perf.MetricDef"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Metrics available for alerts",
+        "tags": [
+          "Performance"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/overview": {
+      "get": {
+        "description": "Required permission: `perf:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/perf.Overview"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Host and process history (?range=60s|1h|24h)",
+        "tags": [
+          "Performance"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/rules": {
+      "get": {
+        "description": "Required permission: `perf:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/perf.Rule"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List Performance alert rules",
+        "tags": [
+          "Performance"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "Required permission: `perf:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/perf.Rule"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/perf.Rule"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create Performance alert rules",
+        "tags": [
+          "Performance"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/rules-delete": {
+      "post": {
+        "description": "Required permission: `perf:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchDeleteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete in bulk: Performance alert rules",
+        "tags": [
+          "Performance"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/rules-enable": {
+      "put": {
+        "description": "Required permission: `perf:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchEnableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Enable or disable in bulk: Performance alert rules",
+        "tags": [
+          "Performance"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/rules-group": {
+      "put": {
+        "description": "Required permission: `perf:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Set group in bulk: Performance alert rules",
+        "tags": [
+          "Performance"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/rules-order": {
+      "put": {
+        "description": "Required permission: `perf:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.orderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Reorder Performance alert rules",
+        "tags": [
+          "Performance"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/rules/{key}": {
+      "delete": {
+        "description": "Required permission: `perf:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete Performance alert rules",
+        "tags": [
+          "Performance"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Required permission: `perf:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/perf.Rule"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/perf.Rule"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update Performance alert rules",
+        "tags": [
+          "Performance"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/rules/{key}/enable": {
+      "put": {
+        "description": "Required permission: `perf:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.enableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Enable or disable Performance alert rules",
+        "tags": [
+          "Performance"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/sites": {
+      "get": {
+        "description": "Required permission: `perf:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/perf.SiteView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Each site's metrics over roughly the last 60 seconds",
+        "tags": [
+          "Performance"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/portforward/logs": {
       "delete": {
         "description": "Required permission: `portforward:write`.",
@@ -38736,6 +39965,9 @@
       "name": "Notification center"
     },
     {
+      "name": "Performance"
+    },
+    {
       "name": "Network diagnostics"
     },
     {
@@ -38779,6 +40011,7 @@
     "filebrowser",
     "storage",
     "notify",
+    "perf",
     "nettools",
     "backup",
     "status",

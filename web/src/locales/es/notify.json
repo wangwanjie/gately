@@ -96,6 +96,10 @@
       "name": "Seguridad e inicios de sesión",
       "desc": "Inicios de sesión correctos y fallidos, bloqueos y acceso a contenido sensible"
     },
+    "perf": {
+      "name": "Alertas de rendimiento",
+      "desc": "Alertas y recuperaciones de Rendimiento"
+    },
     "changes": {
       "name": "Cambios de configuración",
       "desc": "Cada cambio de configuración hecho en la consola de administración"

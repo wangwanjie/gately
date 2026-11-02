@@ -111,6 +111,10 @@
       "title": "Notificações",
       "desc": "Envie eventos para Telegram, e-mail, WeCom e mais"
     },
+    "perf": {
+      "title": "Desempenho",
+      "desc": "Tendências de desempenho e alertas por limite"
+    },
     "logs": {
       "title": "Logs do sistema"
     },

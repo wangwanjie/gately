@@ -20,5 +20,6 @@ Gately의 각 기능은 독립된 모듈이며 따로 켜고 끄고 설정할 �
 | 웹 터미널 | SSH, Telnet, 로컬 셸, SFTP 파일 관리, 영구 세션 | [보기](/ko/docs/modules/terminal) |
 | 네트워크 진단 | Ping, 경로 추적, 포트 점검, DNS 조회, 속도 측정, LAN 스캔 | [보기](/ko/docs/modules/nettools) |
 | 알림 센터 | 다중 채널 이벤트 푸시와 규칙 | [보기](/ko/docs/modules/notify) |
+| 성능 모니터링 | 호스트, 프로세스, 사이트의 성능 추이(첫 바이트 지연 포함), 임계값과 지속 시간 기반 경보 | [보기](/ko/docs/modules/perf) |
 | 설정 백업 | 암호화 백업, 보관 정책, 예약 백업과 복원 | [보기](/ko/docs/modules/backup) |
 | 파일 및 운영 도구 | WebDAV, FTP, SMB, File Browser, 스토리지 마운트, Wake-on-LAN, 예약 작업 | [보기](/ko/docs/modules/tools) |

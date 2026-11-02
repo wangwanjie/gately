@@ -96,6 +96,10 @@
       "name": "Sécurité et connexions",
       "desc": "Connexions réussies et échouées, bannissements et accès à des contenus sensibles"
     },
+    "perf": {
+      "name": "Alertes de performances",
+      "desc": "Alertes et rétablissements des Performances"
+    },
     "changes": {
       "name": "Modifications de configuration",
       "desc": "Chaque modification de configuration faite dans la console d’administration"

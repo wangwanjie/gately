@@ -52,6 +52,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `filebrowser` | File Browser | `filebrowser:read`、`filebrowser:write` |
 | `storage` | Montagens de armazenamento | `storage:read`、`storage:write` |
 | `notify` | Central de notificações | `notify:read`、`notify:write` |
+| `perf` | Desempenho | `perf:read`、`perf:write` |
 | `nettools` | Diagnóstico de rede | `nettools:read`、`nettools:write` |
 | `backup` | Backup de configuração | `backup:read`、`backup:write` |
 | `status` | Estado do sistema | `status:read` |
@@ -637,6 +638,26 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | GET | `/api/notify/event-types` | `notify:read` | Tipos de evento que podem ser assinados |
 | GET | `/api/notify/history` | `notify:read` | Registros de entrega recentes |
 | POST | `/api/notify/channels/{key}/test` | `notify:write` | Enviar notificação de teste ao canal |
+
+## Desempenho
+
+| Método | Caminho | Permissão necessária | Descrição |
+| --- | --- | --- | --- |
+| GET | `/api/perf/logs` | `perf:read` | Ver logs de execução do módulo |
+| DELETE | `/api/perf/logs` | `perf:write` | Limpar logs de execução do módulo |
+| GET | `/api/perf/rules` | `perf:read` | Listar Regras de alerta de desempenho |
+| POST | `/api/perf/rules` | `perf:write` | Adicionar Regras de alerta de desempenho |
+| PUT | `/api/perf/rules/{key}` | `perf:write` | Modificar Regras de alerta de desempenho |
+| DELETE | `/api/perf/rules/{key}` | `perf:write` | Excluir Regras de alerta de desempenho |
+| PUT | `/api/perf/rules/{key}/enable` | `perf:write` | Ativar ou desativar Regras de alerta de desempenho |
+| PUT | `/api/perf/rules-order` | `perf:write` | Reordenar Regras de alerta de desempenho |
+| PUT | `/api/perf/rules-enable` | `perf:write` | Ativar ou desativar em lote: Regras de alerta de desempenho |
+| POST | `/api/perf/rules-delete` | `perf:write` | Excluir em lote: Regras de alerta de desempenho |
+| PUT | `/api/perf/rules-group` | `perf:write` | Definir o grupo de vários itens: Regras de alerta de desempenho |
+| GET | `/api/perf/metrics` | `perf:read` | Métricas disponíveis para alertas |
+| GET | `/api/perf/overview` | `perf:read` | Histórico do host e do processo (?range=60s|1h|24h) |
+| GET | `/api/perf/sites` | `perf:read` | Métricas de cada site em aproximadamente os últimos 60 segundos |
+| GET | `/api/perf/alerts` | `perf:read` | Alertas em andamento (pendentes e disparados) |
 
 ## Diagnóstico de rede
 
@@ -1362,6 +1383,97 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `name` | string |
 | `silence` | integer |
 
+### perf.AlertState
+
+| Campo | Tipo |
+| --- | --- |
+| `firedAt` | integer |
+| `level` | string |
+| `name` | string |
+| `rule` | string |
+| `since` | integer |
+| `state` | string |
+| `subject` | string |
+| `target` | string |
+| `value` | number |
+
+### perf.MetricDef
+
+| Campo | Tipo |
+| --- | --- |
+| `id` | string |
+| `label` | string |
+| `max` | number |
+| `scope` | string |
+| `unit` | string |
+| `window` | boolean |
+
+### perf.Overview
+
+| Campo | Tipo |
+| --- | --- |
+| `latest` | `perf.Point` |
+| `range` | string |
+| `series` | Array de `perf.Point` |
+| `step` | integer |
+
+### perf.Point
+
+| Campo | Tipo |
+| --- | --- |
+| `cpu` | number |
+| `cpuMax` | number |
+| `disk` | number |
+| `goroutines` | number |
+| `load1` | number |
+| `mem` | number |
+| `procCpu` | number |
+| `procCpuMax` | number |
+| `procFds` | number |
+| `procRss` | number |
+| `t` | integer |
+
+### perf.Rule
+
+| Campo | Tipo |
+| --- | --- |
+| `duration` | integer |
+| `enable` | boolean |
+| `group` | string |
+| `key` | string |
+| `level` | string |
+| `metric` | string |
+| `minRequests` | integer |
+| `name` | string |
+| `op` | string |
+| `remark` | string |
+| `sites` | Array de string |
+| `threshold` | number |
+
+### perf.SiteView
+
+| Campo | Tipo |
+| --- | --- |
+| `active` | integer |
+| `err5xx` | number |
+| `key` | string |
+| `latencies` | integer |
+| `name` | string |
+| `p95` | number |
+| `qps` | number |
+| `requests` | integer |
+| `upstreams` | Array de `perf.UpstreamView` |
+
+### perf.UpstreamView
+
+| Campo | Tipo |
+| --- | --- |
+| `conns` | integer |
+| `healthy` | boolean |
+| `key` | string |
+| `route` | string |
+| `url` | string |
+
 ### portforward.Rule
 
 | Campo | Tipo |
@@ -1777,6 +1889,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Campo | Tipo |
 | --- | --- |
 | `bytes` | integer |
+| `p50` | number |
+| `p95` | number |
 | `requests` | integer |
 | `s4xx` | integer |
 | `s5xx` | integer |

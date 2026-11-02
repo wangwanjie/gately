@@ -42,10 +42,14 @@ scrape_configs:
 | `gately_site_responses_total{listener,site,class}` | counter | Ответы по классам статуса (2xx/3xx/4xx/5xx) |
 | `gately_site_response_bytes_total` / `gately_site_errors_total` / `gately_site_active_requests` | counter / counter / gauge | Байты ответов, ошибки бэкендов, выполняющиеся запросы |
 | `gately_site_blocked_total{listener,site,reason}` | counter | Заблокированные запросы по причинам (`ban`, `ip`, `country`, `rateLimit`, `waf`) |
+| `gately_site_request_duration_seconds{listener,site,le}` | histogram | Гистограмма времени до первого байта сайта в секундах, 13 интервалов `le` от 0.005 до 60; WebSocket и другие запросы со сменой протокола, а также оборванные запросы не учитываются |
 | `gately_upstream_up{listener,site,upstream[,route]}` | gauge | Работоспособен ли бэкенд; бэкенды по путям и по пользователям дополнительно имеют метку `route` (префикс пути или `@` со списком пользователей) |
 | `gately_upstream_requests_total{listener,site,upstream[,route]}` | counter | Запросы, переданные бэкенду |
 | `gately_upstream_response_bytes_total{listener,site,upstream[,route]}` | counter | Байты тела ответов бэкенда (без данных после перехода на WebSocket) |
 | `gately_listener_requests_total{listener,action}` | counter | Запросы, которые слушатель обрабатывает сам: `https_redirect` — перенаправление открытого HTTP на HTTPS, `not_found` — 404, когда ни один сайт не совпал |
+| `gately_host_cpu_usage_percent` / `gately_host_memory_used_percent` / `gately_host_disk_used_percent` / `gately_host_load1` | gauge | Загрузка ЦП, памяти и раздела с каталогом конфигурации хоста и нагрузка за 1 минуту по последнему замеру (экспортируются при включённом модуле «Производительность»; недоступные значения пропускаются) |
+| `gately_process_cpu_usage_percent` / `gately_process_resident_memory_bytes` / `gately_process_open_fds` | gauge | ЦП процесса Gately (доля всей машины), резидентная память и число открытых файловых дескрипторов по последнему замеру (экспортируются при включённом модуле «Производительность») |
+| `gately_perf_alerts_firing{rule}` | gauge | Число объектов, по которым сейчас сработало каждое включённое правило оповещений о производительности |
 
 ## Примеры оповещений
 
@@ -62,6 +66,9 @@ groups:
       - alert: GatelyUpstreamDown
         expr: gately_upstream_up == 0
         for: 2m
+      - alert: GatelySiteSlow
+        expr: histogram_quantile(0.95, sum by (le, listener, site) (rate(gately_site_request_duration_seconds_bucket[5m]))) > 2
+        for: 5m
 ```
 
 ## Дашборд Grafana

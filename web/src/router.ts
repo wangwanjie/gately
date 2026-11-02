@@ -40,6 +40,7 @@ const router = createRouter({
         { path: 'cron', name: 'cron', component: () => import('./views/Cron.vue'), meta: { titleKey: 'nav.items.cron.title' } },
         { path: 'nettools', name: 'nettools', component: () => import('./views/NetTools.vue'), meta: { titleKey: 'nav.items.nettools.title' } },
         { path: 'notify', name: 'notify', component: () => import('./views/Notify.vue'), meta: { titleKey: 'nav.items.notify.title' } },
+        { path: 'perf', name: 'perf', component: () => import('./views/Perf.vue'), meta: { titleKey: 'nav.items.perf.title' } },
         { path: 'logs', name: 'logs', component: () => import('./views/Logs.vue'), meta: { titleKey: 'nav.items.logs.title' } },
         { path: 'audit', name: 'audit', component: () => import('./views/Audit.vue'), meta: { titleKey: 'nav.items.audit.title' } },
         { path: 'history', name: 'history', component: () => import('./views/History.vue'), meta: { titleKey: 'nav.items.history.title' } },

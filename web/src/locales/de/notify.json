@@ -96,6 +96,10 @@
       "name": "Sicherheit & Anmeldungen",
       "desc": "Erfolgreiche und fehlgeschlagene Anmeldungen, Sperren und Zugriff auf sensible Inhalte"
     },
+    "perf": {
+      "name": "Leistungswarnungen",
+      "desc": "Warnungen und Entwarnungen aus Leistung"
+    },
     "changes": {
       "name": "Konfigurationsänderungen",
       "desc": "Jede in der Verwaltungsoberfläche vorgenommene Konfigurationsänderung"

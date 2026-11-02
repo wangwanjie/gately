@@ -20,5 +20,6 @@ Gately 的每項能力都是獨立模組，可單獨啟停、單獨設定，設�
 | Web 終端機 | SSH、Telnet、本機 Shell、SFTP 檔案管理、持久工作階段 | [查看](/zh-TW/docs/modules/terminal) |
 | 網路診斷 | Ping、路由追蹤、連接埠探測、DNS 查詢、測速、區域網路掃描 | [查看](/zh-TW/docs/modules/nettools) |
 | 通知中心 | 多管道事件推送與規則 | [查看](/zh-TW/docs/modules/notify) |
+| 效能監控 | 主機、程序與站台的效能趨勢（含首位元組延遲），門檻加持續時長告警 | [查看](/zh-TW/docs/modules/perf) |
 | 設定備份 | 加密備份、保留策略、排程備份與還原 | [查看](/zh-TW/docs/modules/backup) |
 | 檔案與維運工具 | WebDAV、FTP、SMB、File Browser、儲存掛載、網路喚醒、排程工作 | [查看](/zh-TW/docs/modules/tools) |

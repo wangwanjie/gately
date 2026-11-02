@@ -24,5 +24,8 @@
   "block_ip": "Liste d’IP",
   "block_country": "Filtre pays",
   "block_rateLimit": "Limitation de débit",
-  "block_waf": "WAF"
+  "block_waf": "WAF",
+  "latency": "Temps jusqu'au premier octet (P50 / P95)",
+  "latencyPeak": "P95 maximal sur cette plage {p95}",
+  "latencyHelp": "Temps entre l'arrivée de la requête et l'envoi des en-têtes de réponse, estimé par minute ; le transfert du corps n'est pas inclus et WebSocket ainsi que les autres changements de protocole ne sont pas comptés."
 }

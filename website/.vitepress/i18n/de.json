@@ -43,6 +43,7 @@
       "modules/terminal": "Web-Terminal",
       "modules/nettools": "Netzwerkdiagnose",
       "modules/notify": "Benachrichtigungszentrale",
+      "modules/perf": "Leistung",
       "modules/backup": "Konfigurationssicherung",
       "modules/tools": "Datei- und Betriebstools",
       "guide/security": "Sicherheitsmodell & Datenschutzversprechen",

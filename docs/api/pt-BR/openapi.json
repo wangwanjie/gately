@@ -1391,6 +1391,218 @@
         },
         "type": "object"
       },
+      "perf.AlertState": {
+        "properties": {
+          "firedAt": {
+            "type": "integer"
+          },
+          "level": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "rule": {
+            "type": "string"
+          },
+          "since": {
+            "type": "integer"
+          },
+          "state": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "perf.MetricDef": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "max": {
+            "type": "number"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "window": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "perf.Overview": {
+        "properties": {
+          "latest": {
+            "$ref": "#/components/schemas/perf.Point"
+          },
+          "range": {
+            "type": "string"
+          },
+          "series": {
+            "items": {
+              "$ref": "#/components/schemas/perf.Point"
+            },
+            "type": "array"
+          },
+          "step": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "perf.Point": {
+        "properties": {
+          "cpu": {
+            "type": "number"
+          },
+          "cpuMax": {
+            "type": "number"
+          },
+          "disk": {
+            "type": "number"
+          },
+          "goroutines": {
+            "type": "number"
+          },
+          "load1": {
+            "type": "number"
+          },
+          "mem": {
+            "type": "number"
+          },
+          "procCpu": {
+            "type": "number"
+          },
+          "procCpuMax": {
+            "type": "number"
+          },
+          "procFds": {
+            "type": "number"
+          },
+          "procRss": {
+            "type": "number"
+          },
+          "t": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "perf.Rule": {
+        "properties": {
+          "duration": {
+            "type": "integer"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "group": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "level": {
+            "type": "string"
+          },
+          "metric": {
+            "type": "string"
+          },
+          "minRequests": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "op": {
+            "type": "string"
+          },
+          "remark": {
+            "type": "string"
+          },
+          "sites": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "threshold": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "perf.SiteView": {
+        "properties": {
+          "active": {
+            "type": "integer"
+          },
+          "err5xx": {
+            "type": "number"
+          },
+          "key": {
+            "type": "string"
+          },
+          "latencies": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "p95": {
+            "type": "number"
+          },
+          "qps": {
+            "type": "number"
+          },
+          "requests": {
+            "type": "integer"
+          },
+          "upstreams": {
+            "items": {
+              "$ref": "#/components/schemas/perf.UpstreamView"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "perf.UpstreamView": {
+        "properties": {
+          "conns": {
+            "type": "integer"
+          },
+          "healthy": {
+            "type": "boolean"
+          },
+          "key": {
+            "type": "string"
+          },
+          "route": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "portforward.Rule": {
         "properties": {
           "enable": {
@@ -2459,6 +2671,12 @@
         "properties": {
           "bytes": {
             "type": "integer"
+          },
+          "p50": {
+            "type": "number"
+          },
+          "p95": {
+            "type": "number"
           },
           "requests": {
             "type": "integer"
@@ -22312,6 +22530,1017 @@
         "x-token-allowed": true
       }
     },
+    "/api/perf/alerts": {
+      "get": {
+        "description": "Permissão necessária: `perf:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/perf.AlertState"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Alertas em andamento (pendentes e disparados)",
+        "tags": [
+          "Desempenho"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/logs": {
+      "delete": {
+        "description": "Permissão necessária: `perf:write`.",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Limpar logs de execução do módulo",
+        "tags": [
+          "Desempenho"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio, `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `perf:read`.",
+        "parameters": [
+          {
+            "description": "Busca incremental: retorna apenas logs com número de sequência maior que este valor",
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Carregar logs anteriores: retorna apenas logs com número de sequência menor que este valor",
+            "in": "query",
+            "name": "before",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Número máximo de entradas retornadas, pegando as mais recentes que correspondem; 0 ou omitido significa sem limite",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Nível mínimo: debug, info, warn ou error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Rótulo de origem, correspondência exata sem diferenciar maiúsculas",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Palavras-chave: separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um - inicial exclui",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Palavras-chave excluídas: separadas por espaço, aspas duplas agrupam uma frase; a entrada que contiver qualquer uma é excluída; aplica-se junto com q",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Endereço do cliente: endereço completo, CIDR ou parte do endereço, separados por vírgula",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Parte do nome do site ou do domínio",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Código de status como 404, 4xx, 500-599, separados por vírgula",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Hora de início, RFC 3339 ou carimbo de data/hora em milissegundos",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Hora de término, RFC 3339 ou carimbo de data/hora em milissegundos",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ver logs de execução do módulo",
+        "tags": [
+          "Desempenho"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/metrics": {
+      "get": {
+        "description": "Permissão necessária: `perf:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/perf.MetricDef"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Métricas disponíveis para alertas",
+        "tags": [
+          "Desempenho"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/overview": {
+      "get": {
+        "description": "Permissão necessária: `perf:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/perf.Overview"
+                }
+              }
+            },
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Histórico do host e do processo (?range=60s|1h|24h)",
+        "tags": [
+          "Desempenho"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/rules": {
+      "get": {
+        "description": "Permissão necessária: `perf:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/perf.Rule"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Listar Regras de alerta de desempenho",
+        "tags": [
+          "Desempenho"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "Permissão necessária: `perf:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/perf.Rule"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/perf.Rule"
+                }
+              }
+            },
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Adicionar Regras de alerta de desempenho",
+        "tags": [
+          "Desempenho"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/rules-delete": {
+      "post": {
+        "description": "Permissão necessária: `perf:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchDeleteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Excluir em lote: Regras de alerta de desempenho",
+        "tags": [
+          "Desempenho"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/rules-enable": {
+      "put": {
+        "description": "Permissão necessária: `perf:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchEnableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ativar ou desativar em lote: Regras de alerta de desempenho",
+        "tags": [
+          "Desempenho"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/rules-group": {
+      "put": {
+        "description": "Permissão necessária: `perf:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Definir o grupo de vários itens: Regras de alerta de desempenho",
+        "tags": [
+          "Desempenho"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/rules-order": {
+      "put": {
+        "description": "Permissão necessária: `perf:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.orderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Reordenar Regras de alerta de desempenho",
+        "tags": [
+          "Desempenho"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/rules/{key}": {
+      "delete": {
+        "description": "Permissão necessária: `perf:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Excluir Regras de alerta de desempenho",
+        "tags": [
+          "Desempenho"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Permissão necessária: `perf:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/perf.Rule"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/perf.Rule"
+                }
+              }
+            },
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Modificar Regras de alerta de desempenho",
+        "tags": [
+          "Desempenho"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/rules/{key}/enable": {
+      "put": {
+        "description": "Permissão necessária: `perf:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.enableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ativar ou desativar Regras de alerta de desempenho",
+        "tags": [
+          "Desempenho"
+        ],
+        "x-required-scope": "perf:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/sites": {
+      "get": {
+        "description": "Permissão necessária: `perf:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/perf.SiteView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Métricas de cada site em aproximadamente os últimos 60 segundos",
+        "tags": [
+          "Desempenho"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/portforward/logs": {
       "delete": {
         "description": "Permissão necessária: `portforward:write`.",
@@ -38736,6 +39965,9 @@
       "name": "Central de notificações"
     },
     {
+      "name": "Desempenho"
+    },
+    {
       "name": "Diagnóstico de rede"
     },
     {
@@ -38779,6 +40011,7 @@
     "filebrowser",
     "storage",
     "notify",
+    "perf",
     "nettools",
     "backup",
     "status",
