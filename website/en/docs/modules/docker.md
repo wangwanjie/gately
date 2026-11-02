@@ -72,7 +72,15 @@ The "System" tab contains:
 
 ## Background tasks
 
-Long-running operations such as pull, push, build, batch check, batch upgrade and Compose up run as background tasks. The task panel at the bottom of the page shows live output and status (running, done, error), lets you view history, and clears finished tasks. Tasks that are still running are restored after a page refresh.
+Long-running operations such as pull, push, build, batch check, batch upgrade and Compose up run as background tasks. The task panel at the bottom of the page shows live output and status (running, done, error, stopped), lets you view history, and clears finished tasks. Tasks that are still running are restored after a page refresh.
+
+A running task can be stopped with "Stop" in the task panel or under "System → Task history". After you confirm:
+
+- Pulling, pushing, building images and checking for updates stop immediately, and Docker also aborts the corresponding download or build, so no half-pulled image is left behind;
+- Compose commands first receive an interrupt signal (the same as pressing Ctrl+C in a terminal) and wrap up on their own; they are killed only if they have not exited within 30 seconds;
+- A batch upgrade stops once the current container has been handled, and the remaining containers are not upgraded. A container that is being recreated (stopping the old container, creating and starting the new one) ignores the interruption and finishes the recreation; if that fails, the original container is restored as usual, so nothing stops halfway.
+
+After an interruption the task status is "Stopped" and the run log records "Task stopped: …"; a task that had already finished when you interrupted keeps its actual result. A stuck task can be cleaned up with "Clear finished" once it is stopped. The matching API is `POST /api/docker/tasks/{id}/cancel`.
 
 ## Event notifications
 

@@ -13,6 +13,12 @@ description: "下載 Gately 最新版本的執行檔、飛牛 fnOS 與 OpenWrt �
 docker pull ghcr.io/wangwanjie/gately:latest
 ```
 
+也可以從 Docker Hub 拉取同一份映像檔（標籤一致）：
+
+```bash
+docker pull vanjayak/gately:latest
+```
+
 完整的部署參數請見 [安裝部署](/zh-TW/docs/guide/install)。
 
 ## 執行檔

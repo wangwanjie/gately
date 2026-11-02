@@ -7,7 +7,7 @@ Lorsque votre FAI ne fournit pas de port public fixe, la traversée STUN utilise
 - Traversée TCP / UDP avec maintien de session ;
 - UPnP / NAT-PMP crée automatiquement les mappages de ports sur le routeur ;
 - La redirection intégrée envoie directement le port public obtenu par la traversée vers une cible du réseau local ;
-- Des Webhooks et des scripts se déclenchent quand l'adresse ou le port public change, ce qui permet de mettre à jour le DNS, de notifier des clients, etc.
+- Des Webhooks et des scripts se déclenchent quand l'adresse ou le port public change, ce qui permet de mettre à jour le DNS, de notifier des clients, etc. ; le Webhook peut être envoyé via un proxy (le proxy global de mise à jour ou un proxy personnalisé).
 - Contrôle d'accès par IP source (liste d'autorisation / de blocage) pour le relais intégré.
 
 ## Utilisation avec d'autres modules

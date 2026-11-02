@@ -72,7 +72,15 @@ Der Tab „System“ enthält:
 
 ## Hintergrundaufgaben
 
-Lang laufende Vorgänge wie Pull, Push, Build, Sammelprüfung, Sammel-Upgrade und Compose up laufen als Hintergrundaufgaben. Das Aufgabenpanel am Seitenende zeigt Live-Ausgabe und Status (läuft, fertig, Fehler), erlaubt den Blick in den Verlauf und räumt abgeschlossene Aufgaben auf. Noch laufende Aufgaben werden nach einem Neuladen der Seite wiederhergestellt.
+Lang laufende Vorgänge wie Pull, Push, Build, Sammelprüfung, Sammel-Upgrade und Compose up laufen als Hintergrundaufgaben. Das Aufgabenpanel am Seitenende zeigt Live-Ausgabe und Status (läuft, fertig, Fehler, abgebrochen), erlaubt den Blick in den Verlauf und räumt abgeschlossene Aufgaben auf. Noch laufende Aufgaben werden nach einem Neuladen der Seite wiederhergestellt.
+
+Eine laufende Aufgabe lässt sich im Aufgabenpanel oder unter „System → Aufgabenverlauf“ mit „Abbrechen“ beenden. Nach der Bestätigung gilt:
+
+- Pull, Push, Build und Update-Prüfung stoppen sofort, und Docker bricht den zugehörigen Download oder Build ab, sodass kein halb abgerufenes Image zurückbleibt;
+- Compose-Befehle erhalten zuerst ein Abbruchsignal (wie Strg+C im Terminal) und räumen selbst auf; beendet sich der Befehl nicht innerhalb von 30 Sekunden, wird er erzwungen beendet;
+- Ein Sammel-Upgrade stoppt, sobald der aktuelle Container verarbeitet ist; die folgenden Container werden nicht mehr aktualisiert. Ein Container, der gerade neu erstellt wird (alten Container stoppen, neuen erstellen und starten), reagiert nicht auf den Abbruch und wird fertig erstellt; bei einem Fehler wird der ursprüngliche Container wie gewohnt wiederhergestellt, sodass nichts auf halbem Weg stehen bleibt.
+
+Danach hat die Aufgabe den Status „Abgebrochen“ und das Betriebsprotokoll vermerkt „Aufgabe abgebrochen“; Aufgaben, die zum Zeitpunkt des Abbruchs bereits fertig waren, zeigen weiterhin ihr tatsächliches Ergebnis. Eine hängende Aufgabe lässt sich nach dem Abbruch mit „Abgeschlossene leeren“ aufräumen. Die zugehörige API ist `POST /api/docker/tasks/{id}/cancel`.
 
 ## Ereignisbenachrichtigungen
 

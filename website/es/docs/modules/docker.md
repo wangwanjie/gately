@@ -72,7 +72,15 @@ La pestaña «Sistema» contiene:
 
 ## Tareas en segundo plano
 
-Las operaciones largas como pull, push, compilación, comprobación por lotes, actualización por lotes y Compose up se ejecutan como tareas en segundo plano. El panel de tareas de la parte inferior de la página muestra la salida en vivo y el estado (en ejecución, terminada, error), permite ver el historial y limpia las tareas finalizadas. Las tareas que siguen en ejecución se restauran tras actualizar la página.
+Las operaciones largas como pull, push, compilación, comprobación por lotes, actualización por lotes y Compose up se ejecutan como tareas en segundo plano. El panel de tareas de la parte inferior de la página muestra la salida en vivo y el estado (en ejecución, terminada, error, detenida), permite ver el historial y limpia las tareas finalizadas. Las tareas que siguen en ejecución se restauran tras actualizar la página.
+
+Una tarea en curso se puede detener con «Detener» en el panel de tareas o en «Sistema → Historial de tareas»; tras confirmar:
+
+- Pull, push, compilación de imágenes y comprobación de actualizaciones se detienen de inmediato, y Docker también aborta la descarga o compilación correspondiente, así que no queda ninguna imagen a medio descargar;
+- Los comandos de Compose reciben primero una señal de interrupción (la misma que Ctrl+C en un terminal) y terminan por sí mismos; si no han salido en 30 segundos, se fuerzan a terminar;
+- La actualización por lotes se detiene cuando acaba el contenedor actual y los siguientes no se actualizan. El contenedor que se está recreando (el tramo de parar el antiguo, crear e iniciar el nuevo) ignora la interrupción y completa la recreación; si falla, se restaura el contenedor original como siempre, sin quedar a medias.
+
+Tras detenerla, la tarea queda en estado «Detenida» y el registro de ejecución anota «Tarea detenida». Las tareas que ya habían terminado en el momento de detener muestran su resultado real. Una tarea atascada se puede limpiar con «Borrar finalizadas» una vez detenida. La API correspondiente es `POST /api/docker/tasks/{id}/cancel`.
 
 ## Notificaciones de eventos
 

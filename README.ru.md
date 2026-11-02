@@ -35,7 +35,7 @@ https://github.com/user-attachments/assets/ae5b60a4-9402-4a66-86a1-48e40038b4d0
 
 ### Docker
 
-Образ поддерживает amd64, arm64 и arm/v7:
+Образ поддерживает amd64, arm64 и arm/v7 и публикуется в GHCR и в Docker Hub как `vanjayak/gately` (тот же образ и теги; если GHCR недоступен, используйте `vanjayak/gately:latest`):
 
 ```bash
 docker run -d --name gately --network host --cap-add NET_ADMIN \

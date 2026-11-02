@@ -70,6 +70,17 @@ Un puerto 0 usa el puerto por defecto del cifrado elegido. Puedes introducir var
 - Feishu: una vez definido un secreto de firma, el cuerpo de la petición lleva automáticamente `timestamp` y `sign`.
 - WeCom, DingTalk, Feishu y Bark comprueban el código de retorno de negocio de la respuesta. Un HTTP 200 con un fallo de negocio también se registra como una entrega fallida.
 
+### Proxy {#proxy}
+
+Cuando el servicio de notificación no es accesible directamente y solo se llega a él mediante un proxy (por ejemplo Telegram, Discord o Slack), las notificaciones pueden salir por un proxy:
+
+- **Proxy global**: en «Ajustes de notificación», en la cabecera de la página, se define el proxy que usan por defecto todos los canales: «Sin proxy», «Usar el proxy global de actualizaciones» (reutiliza el proxy de comprobación de actualizaciones de los [ajustes del sistema](/es/docs/guide/configuration); el cambio se aplica al instante y, si ese proxy está vacío, equivale a no usar proxy) o «Proxy personalizado».
+- **Proxy por canal**: el campo «Proxy» de la ventana de edición de cada canal tiene por defecto «Según los ajustes de notificación»; también se puede elegir «Directo (sin proxy)», «Usar el proxy global de actualizaciones» o un proxy personalizado, que sustituye al ajuste global. Los servicios autoalojados en la LAN, como ntfy o Gotify, pueden ir en directo.
+- Las direcciones de proxy admiten `http://`, `https://`, `socks5://` y `socks5h://`, con usuario y contraseña opcionales, por ejemplo `http://user:pass@127.0.0.1:7890`; las tarjetas de canal ocultan la contraseña al mostrar el proxy.
+- Con «Sin proxy», los canales HTTP respetan variables de entorno como `HTTPS_PROXY` y `NO_PROXY` y el correo se conecta directamente, igual que antes; «Directo» ignora además las variables de entorno.
+- El correo también admite proxy: con un proxy `http(s)://` se abre un túnel con el método CONNECT hasta el puerto del servidor de correo (el proxy debe permitir conectar a ese puerto; los proxies habituales como Clash lo permiten por defecto), y con un proxy `socks5://` es el proxy quien resuelve el dominio del servidor. STARTTLS / SSL y la autenticación se completan después dentro del túnel, de modo que el proxy no ve el contenido del correo.
+- Si falla la conexión con el proxy, el registro de envíos y el mensaje de la prueba muestran «Falló la conexión a través del proxy …», con la contraseña del proxy sustituida por `xxxxx`.
+
 ## Reglas
 
 Pulsa «Añadir regla»:

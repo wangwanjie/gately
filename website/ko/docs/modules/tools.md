@@ -150,7 +150,7 @@ cron 표현식에 따라 정해진 시간에 명령을 실행하거나 HTTP 요�
 
 - `spec`은 표준 5필드 표현식, 선택 사항인 초 필드(6필드, 예: `*/30 * * * * *`), `@every 10m`, `@daily` 같은 디스크립터를 지원합니다.
 - `type`이 `command`이면 `sh -c`(Windows는 임시 `.bat`)로 `command`를 실행하며 환경 변수에 `taskName`과 `GATELY_` 접두사가 붙은 같은 이름의 대문자 변수를 주입합니다.
-- `type`이 `http`이면 `http` 설정에 따라 요청을 보내며 필드는 `url`, `method`(GET, POST, PUT, PATCH, DELETE), `headers`(항목마다 `Key: Value`), `body`, `successContent`(응답 본문에 이 중 하나라도 포함되어야 성공이며 비우면 2xx만 확인), `timeout`, `insecureSkipVerify`입니다.
+- `type`이 `http`이면 `http` 설정에 따라 요청을 보내며 필드는 `url`, `method`(GET, POST, PUT, PATCH, DELETE), `headers`(항목마다 `Key: Value`), `body`, `successContent`(응답 본문에 이 중 하나라도 포함되어야 성공이며 비우면 2xx만 확인), `timeout`, `insecureSkipVerify`, `proxy`(비우면 프록시를 지정하지 않고, `update`는 전역 업데이트 프록시를 사용하며, `http://`, `https://`, `socks5://` 프록시 주소도 쓸 수 있음)입니다.
 - 작업을 켜거나 끌 수 있고 페이지에 다음 실행 시간이 표시되며 수동으로 즉시 실행할 수도 있습니다.
 - 같은 작업의 이전 실행이 아직 끝나지 않았으면 이번 실행은 건너뜁니다.
 - 작업마다 최근 20회의 실행 기록을 보관하며 시작 시간, 소요 시간, 성공 여부, 수동 실행 여부, 출력(최대 4000자 요약)이 포함됩니다.

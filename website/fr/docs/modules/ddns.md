@@ -35,7 +35,7 @@ Quand l'adresse publique d'une règle STUN change, les tâches qui y font réfé
 
 ## Notifications
 
-Un Webhook peut être appelé lorsque l'IP change ou qu'une synchronisation échoue.
+Un Webhook peut être appelé lorsque l'IP change ou qu'une synchronisation échoue. Si l'adresse de rappel est inaccessible en direct, le champ « Proxy » du Webhook permet de choisir le proxy global de mise à jour ou de saisir une adresse de proxy `http://`, `https://` ou `socks5://` ; les requêtes HTTP de la traversée STUN et des tâches planifiées offrent la même option.
 
 ## Notes {#remark}
 

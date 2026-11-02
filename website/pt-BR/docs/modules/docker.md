@@ -72,7 +72,15 @@ A aba "Sistema" contém:
 
 ## Tarefas em segundo plano
 
-Operações demoradas, como pull, push, build, verificação em lote, upgrade em lote e Compose up, rodam como tarefas em segundo plano. O painel de tarefas, na parte inferior da página, mostra a saída em tempo real e o status (em andamento, concluída, com erro), permite ver o histórico e limpar as tarefas concluídas. As tarefas ainda em execução são restauradas após atualizar a página.
+Operações demoradas, como pull, push, build, verificação em lote, upgrade em lote e Compose up, rodam como tarefas em segundo plano. O painel de tarefas, na parte inferior da página, mostra a saída em tempo real e o status (em andamento, concluída, com erro, interrompida), permite ver o histórico e limpar as tarefas concluídas. As tarefas ainda em execução são restauradas após atualizar a página.
+
+Uma tarefa em andamento pode ser interrompida em "Interromper", no painel de tarefas ou em "Sistema → Histórico de tarefas". Depois da confirmação:
+
+- pull, push, build de imagem e verificação de atualizações param na hora, e o Docker também cancela o download ou o build correspondente, sem deixar uma imagem baixada pela metade;
+- os comandos do Compose recebem primeiro um sinal de interrupção (o mesmo de Ctrl+C no terminal) e encerram por conta própria; se o comando não sair em 30 segundos, é encerrado à força;
+- o upgrade em lote para depois de processar o contêiner atual, e os contêineres seguintes não são atualizados. Um contêiner que está sendo recriado (parar o antigo, criar e iniciar o novo) não responde à interrupção e a recriação é concluída; em caso de falha, o contêiner original é restaurado como de costume, então nada fica pela metade.
+
+Depois da interrupção, a tarefa fica com o status "Interrompida" e o log de execução registra "Tarefa interrompida"; tarefas já concluídas no momento da interrupção continuam mostrando o resultado real. Uma tarefa travada pode ser limpa com "Limpar concluídas" depois de interrompida. A API correspondente é `POST /api/docker/tasks/{id}/cancel`.
 
 ## Notificações de eventos
 

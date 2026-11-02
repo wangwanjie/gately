@@ -150,7 +150,7 @@ WebDAV、FTP 與 SMB 共用一份「共用使用者」，欄位與各服務的�
 
 - `spec` 支援標準 5 段運算式、可選的秒欄位（6 段，如 `*/30 * * * * *`）以及 `@every 10m`、`@daily` 等描述符；
 - `type` 為 `command` 時，透過 `sh -c`（Windows 為臨時 `.bat`）執行 `command`，環境變數中注入 `taskName` 及帶 `GATELY_` 前綴的同名大寫變數；
-- `type` 為 `http` 時依 `http` 設定發起請求，欄位包括 `url`、`method`（GET、POST、PUT、PATCH、DELETE）、`headers`（每項 `Key: Value`）、`body`、`successContent`（回應本文需包含其中任意一項才算成功，為空時只檢查 2xx）、`timeout` 與 `insecureSkipVerify`；
+- `type` 為 `http` 時依 `http` 設定發起請求，欄位包括 `url`、`method`（GET、POST、PUT、PATCH、DELETE）、`headers`（每項 `Key: Value`）、`body`、`successContent`（回應本文需包含其中任意一項才算成功，為空時只檢查 2xx）、`timeout`、`insecureSkipVerify` 與 `proxy`（留空不指定代理，`update` 使用全域更新代理，或 `http://`、`https://`、`socks5://` 代理位址）；
 - 工作可啟用或停用，頁面顯示下次執行時間，可手動立即執行；
 - 同一工作上一次尚未結束時，本次觸發會被略過；
 - 每個工作保留最近 20 次執行記錄，包含開始時間、耗時、成功與否、是否手動觸發，以及輸出（最多保留 4000 字元摘要）；

@@ -70,6 +70,17 @@ Bei Port 0 wird der Standardport der gewählten Verschlüsselung verwendet. Mehr
 - Feishu: Ist ein Signatur-Secret gesetzt, trägt der Anfragekörper automatisch `timestamp` und `sign`.
 - WeCom, DingTalk, Feishu und Bark prüfen den fachlichen Rückgabecode in der Antwort. Auch ein HTTP 200 mit fachlichem Fehler wird als fehlgeschlagene Zustellung erfasst.
 
+### Proxy {#proxy}
+
+Ist ein Benachrichtigungsdienst direkt nicht erreichbar und nur über einen Proxy zugänglich (etwa Telegram, Discord, Slack), können Benachrichtigungen über einen Proxy laufen:
+
+- **Globaler Proxy**: Unter „Benachrichtigungseinstellungen“ im Seitenkopf legen Sie den Standard-Proxy aller Kanäle fest. Zur Wahl stehen „Kein Proxy“, „Globalen Update-Proxy verwenden“ (der Proxy für die Update-Prüfung aus den [Systemeinstellungen](/de/docs/guide/configuration); Änderungen gelten sofort, ist er leer, entspricht das „Kein Proxy“) und „Eigener Proxy“.
+- **Kanal-Proxy**: Im Bearbeitungsfenster jedes Kanals steht „Proxy“ standardmäßig auf „Benachrichtigungseinstellungen folgen“. Sie können dort einzeln „Direkt (ohne Proxy)“, „Globalen Update-Proxy verwenden“ oder einen eigenen Proxy wählen, was die globale Einstellung überschreibt. Selbst gehostete Dienste im LAN wie ntfy oder Gotify lassen sich auf direkt stellen.
+- Proxy-Adressen unterstützen `http://`, `https://`, `socks5://` und `socks5h://`, optional mit Benutzername und Passwort, etwa `http://user:pass@127.0.0.1:7890`; auf der Kanalkarte wird das Passwort ausgeblendet.
+- Bei „Kein Proxy“ befolgen HTTP-Kanäle Umgebungsvariablen wie `HTTPS_PROXY` und `NO_PROXY`, E-Mail verbindet direkt, wie bisher; „Direkt“ liest auch die Umgebungsvariablen nicht.
+- E-Mail unterstützt ebenfalls Proxys: Über einen `http(s)://`-Proxy wird per CONNECT ein Tunnel zum Port des Mailservers aufgebaut (der Proxy muss diesen Port erlauben, gängige Proxys wie Clash tun das standardmäßig), über einen `socks5://`-Proxy löst der Proxy den Servernamen auf. STARTTLS / SSL und Authentifizierung laufen anschließend im Tunnel ab, der Proxy sieht den Inhalt der E-Mail nicht.
+- Schlägt die Proxy-Verbindung fehl, zeigen Zustellprotokoll und Testmeldung „Verbindung über Proxy … fehlgeschlagen“, das Proxy-Passwort wird durch `xxxxx` ersetzt.
+
 ## Regeln
 
 Klicken Sie auf „Regel hinzufügen“:

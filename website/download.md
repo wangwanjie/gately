@@ -13,6 +13,12 @@ description: 下载 Gately 最新版本的二进制、飞牛 fnOS 与 OpenWrt �
 docker pull ghcr.io/wangwanjie/gately:latest
 ```
 
+也可以从 Docker Hub 拉取同一份镜像（标签一致）：
+
+```bash
+docker pull vanjayak/gately:latest
+```
+
 完整的部署参数见 [安装部署](/docs/guide/install)。
 
 ## 二进制

@@ -70,6 +70,17 @@ Un port à 0 utilise le port par défaut du chiffrement choisi. Vous pouvez sais
 - Feishu : une fois un secret de signature défini, le corps de la requête porte automatiquement `timestamp` et `sign`.
 - WeCom, DingTalk, Feishu et Bark vérifient le code de retour métier dans la réponse. Un HTTP 200 accompagné d'un échec métier est également enregistré comme un envoi en échec.
 
+### Proxy {#proxy}
+
+Lorsque le service de notification n'est pas joignable directement et ne l'est que par un proxy (par exemple Telegram, Discord ou Slack), les notifications peuvent passer par un proxy :
+
+- **Proxy global** : dans « Paramètres de notification », en en-tête de la page, on définit le proxy utilisé par défaut par tous les canaux : « Sans proxy », « Utiliser le proxy global de mise à jour » (réutilise le proxy de vérification des mises à jour des [paramètres système](/fr/docs/guide/configuration) ; la modification s'applique immédiatement et, si ce proxy est vide, cela revient à ne pas utiliser de proxy) ou « Proxy personnalisé ».
+- **Proxy par canal** : le champ « Proxy » de la fenêtre de modification de chaque canal vaut par défaut « Suivre les paramètres de notification » ; on peut aussi choisir « Direct (sans proxy) », « Utiliser le proxy global de mise à jour » ou un proxy personnalisé, qui remplace le réglage global. Les services auto-hébergés sur le réseau local, comme ntfy ou Gotify, peuvent rester en direct.
+- Les adresses de proxy acceptent `http://`, `https://`, `socks5://` et `socks5h://`, avec nom d'utilisateur et mot de passe facultatifs, par exemple `http://user:pass@127.0.0.1:7890` ; les cartes de canal masquent le mot de passe lorsqu'elles affichent le proxy.
+- Avec « Sans proxy », les canaux HTTP respectent les variables d'environnement comme `HTTPS_PROXY` et `NO_PROXY` et l'e-mail se connecte directement, comme auparavant ; « Direct » ignore en plus les variables d'environnement.
+- L'e-mail accepte aussi un proxy : avec un proxy `http(s)://`, un tunnel est établi par la méthode CONNECT jusqu'au port du serveur de messagerie (le proxy doit autoriser la connexion à ce port ; les proxys courants comme Clash l'autorisent par défaut), et avec un proxy `socks5://`, c'est le proxy qui résout le nom du serveur. STARTTLS / SSL et l'authentification se déroulent ensuite dans le tunnel, si bien que le proxy ne voit pas le contenu des e-mails.
+- Si la connexion au proxy échoue, le journal des envois et le message du test affichent « Échec de la connexion via le proxy … », le mot de passe du proxy étant remplacé par `xxxxx`.
+
 ## Règles
 
 Cliquez sur « Ajouter une règle » :

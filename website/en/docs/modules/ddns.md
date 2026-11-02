@@ -35,7 +35,7 @@ When a STUN rule's public address changes, tasks that reference it sync right aw
 
 ## Notifications
 
-A Webhook can be called when the IP changes or a sync fails.
+A Webhook can be called when the IP changes or a sync fails. When the callback URL is unreachable directly, choose the global update proxy under the Webhook's "Proxy" or enter a `http://`, `https://` or `socks5://` proxy address; STUN rules and the HTTP requests of scheduled tasks offer the same option.
 
 ## Remarks {#remark}
 

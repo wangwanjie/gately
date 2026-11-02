@@ -35,7 +35,7 @@ Quando o endereço público de uma regra STUN muda, as tarefas que a usam sincro
 
 ## Notificações
 
-Um Webhook pode ser chamado quando o IP muda ou a sincronização falha.
+Um Webhook pode ser chamado quando o IP muda ou a sincronização falha. Se o endereço de callback não for alcançável diretamente, escolha em "Proxy" do Webhook o proxy global de atualização ou informe um endereço de proxy com `http://`, `https://` ou `socks5://`; a travessia STUN e as requisições HTTP das tarefas agendadas têm a mesma opção.
 
 ## Observações {#remark}
 

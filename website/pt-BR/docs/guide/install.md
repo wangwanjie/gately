@@ -2,7 +2,7 @@
 
 ## Docker
 
-Imagem: `ghcr.io/wangwanjie/gately`, disponível para amd64, arm64 e arm/v7.
+Imagem: `ghcr.io/wangwanjie/gately`, publicada também no Docker Hub como `vanjayak/gately` (a mesma imagem com as mesmas tags), disponível para amd64, arm64 e arm/v7. Se o GHCR for difícil de acessar, troque o nome da imagem abaixo por `vanjayak/gately:latest`; espelhos de registro do Docker também funcionam.
 
 ```bash
 docker run -d --name gately --network host --cap-add NET_ADMIN \

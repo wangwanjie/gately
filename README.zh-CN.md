@@ -35,7 +35,7 @@ https://github.com/user-attachments/assets/a86576dc-22f9-40f8-bc57-b013b044e139
 
 ### Docker
 
-镜像支持 amd64、arm64、arm/v7：
+镜像支持 amd64、arm64、arm/v7，同时发布到 GHCR 与 Docker Hub 的 `vanjayak/gately`（同一份镜像与标签，访问 GHCR 不便时改用 `vanjayak/gately:latest`）：
 
 ```bash
 docker run -d --name gately --network host --cap-add NET_ADMIN \

@@ -70,6 +70,17 @@ Uma porta 0 usa a porta padrão da criptografia escolhida. Você pode informar v
 - Feishu: depois de definido um segredo de assinatura, o corpo da requisição leva `timestamp` e `sign` automaticamente.
 - WeCom, DingTalk, Feishu e Bark verificam o código de retorno de negócio na resposta. Um HTTP 200 com falha de negócio também é registrado como envio com falha.
 
+### Proxy {#proxy}
+
+Quando o serviço de notificação não é alcançável diretamente e só pode ser acessado por um proxy (por exemplo Telegram, Discord, Slack), as notificações podem passar por um proxy:
+
+- **Proxy global**: em "Configurações de notificação", no cabeçalho da página, define-se o proxy padrão de todos os canais. As opções são "Sem proxy", "Usar o proxy global de atualização" (o proxy da verificação de atualização nas [configurações do sistema](/pt-BR/docs/guide/configuration); as mudanças valem na hora, e se ele estiver vazio equivale a "Sem proxy") e "Proxy personalizado".
+- **Proxy do canal**: na janela de edição de cada canal, "Proxy" vem como "Seguir as configurações de notificação". Também é possível escolher individualmente "Direto (sem proxy)", "Usar o proxy global de atualização" ou um proxy personalizado, o que substitui a configuração global. Serviços hospedados na rede local, como ntfy e Gotify, podem ficar em conexão direta.
+- Os endereços de proxy aceitam `http://`, `https://`, `socks5://` e `socks5h://`, com usuário e senha opcionais, como `http://user:pass@127.0.0.1:7890`; no cartão do canal a senha fica oculta.
+- Com "Sem proxy", os canais HTTP seguem variáveis de ambiente como `HTTPS_PROXY` e `NO_PROXY`, e o e-mail conecta direto, como antes; "Direto" também ignora as variáveis de ambiente.
+- O e-mail também funciona por proxy: por um proxy `http(s)://`, um túnel até a porta do servidor de e-mail é aberto com o método CONNECT (o proxy precisa permitir essa porta, e proxies comuns como o Clash permitem por padrão); por um proxy `socks5://`, o próprio proxy resolve o nome do servidor. STARTTLS / SSL e autenticação ocorrem depois, dentro do túnel, e o proxy não vê o conteúdo do e-mail.
+- Quando a conexão com o proxy falha, o registro de envio e a mensagem do teste mostram "Falha na conexão pelo proxy …", com a senha do proxy substituída por `xxxxx`.
+
 ## Regras
 
 Clique em "Adicionar regra":

@@ -7,7 +7,7 @@ Quando a sua operadora não oferece uma porta pública fixa, a travessia STUN us
 - Travessia TCP / UDP com keep-alive;
 - UPnP / NAT-PMP cria mapeamentos de porta no roteador automaticamente;
 - O encaminhamento embutido envia a porta pública obtida pela travessia diretamente para um destino da rede local;
-- Webhooks e scripts são disparados quando o endereço ou a porta pública muda, e podem ser usados para atualizar o DNS, avisar clientes e mais.
+- Webhooks e scripts são disparados quando o endereço ou a porta pública muda, e podem ser usados para atualizar o DNS, avisar clientes e mais; os Webhooks podem ser enviados por um proxy (o proxy global de atualização ou um proxy personalizado).
 - Controle de acesso por IP de origem (lista de permissões / de bloqueio) para o encaminhamento integrado.
 
 ## Uso combinado com outros módulos

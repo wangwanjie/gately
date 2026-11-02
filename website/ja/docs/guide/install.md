@@ -2,7 +2,7 @@
 
 ## Docker
 
-イメージのアドレスは `ghcr.io/wangwanjie/gately` で、amd64、arm64、arm/v7 に対応しています。
+イメージのアドレスは `ghcr.io/wangwanjie/gately` で、Docker Hub にも `vanjayak/gately` として公開しています（同じイメージで、タグも共通です）。amd64、arm64、arm/v7 に対応しています。GHCR にアクセスしにくい場合は、以下のイメージ名を `vanjayak/gately:latest` に置き換えてください。Docker のレジストリミラーとも組み合わせられます。
 
 ```bash
 docker run -d --name gately --network host --cap-add NET_ADMIN \

@@ -2,7 +2,7 @@
 
 ## Docker
 
-이미지 주소는 `ghcr.io/wangwanjie/gately`이며 amd64, arm64, arm/v7을 지원합니다.
+이미지 주소는 `ghcr.io/wangwanjie/gately`이며 Docker Hub에도 `vanjayak/gately`로 게시합니다(같은 이미지이며 태그도 같습니다). amd64, arm64, arm/v7을 지원합니다. GHCR에 접속하기 어렵다면 아래 이미지 이름을 `vanjayak/gately:latest`로 바꾸면 되고, Docker 레지스트리 미러와 함께 사용할 수도 있습니다.
 
 ```bash
 docker run -d --name gately --network host --cap-add NET_ADMIN \

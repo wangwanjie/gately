@@ -35,7 +35,7 @@ Cuando cambia la dirección pública de una regla STUN, las tareas que la usan s
 
 ## Notificaciones
 
-Se puede llamar a un webhook cuando cambia la IP o falla una sincronización.
+Se puede llamar a un webhook cuando cambia la IP o falla una sincronización. Si la dirección de retorno no es accesible directamente, en «Proxy» del webhook se puede elegir el proxy global de actualizaciones o indicar una dirección de proxy `http://`, `https://` o `socks5://`; las peticiones HTTP del traversal STUN y de las tareas programadas tienen la misma opción.
 
 ## Notas {#remark}
 

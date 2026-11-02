@@ -2,7 +2,7 @@
 
 ## Docker
 
-镜像地址 `ghcr.io/wangwanjie/gately`，支持 amd64、arm64、arm/v7。
+镜像地址 `ghcr.io/wangwanjie/gately`，同时发布到 Docker Hub 的 `vanjayak/gately`（两处为同一份镜像，标签一致），支持 amd64、arm64、arm/v7。访问 GHCR 不便时，把下文的镜像名换成 `vanjayak/gately:latest` 即可，也可以配合 Docker 的镜像加速使用。
 
 ```bash
 docker run -d --name gately --network host --cap-add NET_ADMIN \

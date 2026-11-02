@@ -35,7 +35,7 @@ Eintragswerte können diese Variablen verwenden; sie werden bei jeder Synchronis
 
 ## Benachrichtigungen
 
-Bei einer IP-Änderung oder einer fehlgeschlagenen Synchronisierung kann ein Webhook aufgerufen werden.
+Bei einer IP-Änderung oder einer fehlgeschlagenen Synchronisierung kann ein Webhook aufgerufen werden. Ist die Callback-Adresse direkt nicht erreichbar, wählen Sie im Webhook unter „Proxy“ den globalen Update-Proxy oder tragen eine Proxy-Adresse mit `http://`, `https://` oder `socks5://` ein; STUN-Traversal und HTTP-Anfragen geplanter Aufgaben bieten dieselbe Option.
 
 ## Notizen {#remark}
 

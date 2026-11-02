@@ -35,7 +35,7 @@ https://github.com/user-attachments/assets/ae5b60a4-9402-4a66-86a1-48e40038b4d0
 
 ### Docker
 
-イメージは amd64、arm64、arm/v7 に対応しています。
+イメージは amd64、arm64、arm/v7 に対応し、GHCR と Docker Hub の `vanjayak/gately` に公開しています（同じイメージとタグです。GHCR にアクセスしにくい場合は `vanjayak/gately:latest` を使ってください）。
 
 ```bash
 docker run -d --name gately --network host --cap-add NET_ADMIN \

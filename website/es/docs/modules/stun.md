@@ -7,7 +7,7 @@ Cuando tu operador no ofrece un puerto público fijo, el traversal STUN usa la p
 - Traversal TCP / UDP con mantenimiento de la conexión;
 - UPnP / NAT-PMP crea automáticamente mapeos de puertos en el router;
 - El reenvío integrado envía el puerto público obtenido mediante el traversal directamente a un destino de la red local;
-- Webhooks y scripts se disparan cuando cambia la dirección o el puerto públicos, y puedes usarlos para actualizar el DNS, avisar a los clientes, etc.
+- Webhooks y scripts se disparan cuando cambia la dirección o el puerto públicos, y puedes usarlos para actualizar el DNS, avisar a los clientes, etc.; el webhook puede enviarse a través de un proxy (el proxy global de actualizaciones o uno personalizado).
 - Control de acceso por IP de origen (lista de permitidos / de bloqueo) para el reenvío integrado.
 
 ## Uso junto con otros módulos

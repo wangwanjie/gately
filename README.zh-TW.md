@@ -35,7 +35,7 @@ https://github.com/user-attachments/assets/a86576dc-22f9-40f8-bc57-b013b044e139
 
 ### Docker
 
-映像檔支援 amd64、arm64、arm/v7：
+映像檔支援 amd64、arm64、arm/v7，同時發佈到 GHCR 與 Docker Hub 的 `vanjayak/gately`（同一份映像檔與標籤，存取 GHCR 不便時改用 `vanjayak/gately:latest`）：
 
 ```bash
 docker run -d --name gately --network host --cap-add NET_ADMIN \

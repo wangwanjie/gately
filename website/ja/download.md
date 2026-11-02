@@ -13,6 +13,12 @@ description: "Gately の最新バージョンのバイナリ、fnOS パッケー
 docker pull ghcr.io/wangwanjie/gately:latest
 ```
 
+同じイメージ（タグも共通）を Docker Hub からも取得できます。
+
+```bash
+docker pull vanjayak/gately:latest
+```
+
 デプロイ時のパラメーターの詳細は [インストールとデプロイ](/ja/docs/guide/install) を参照してください。
 
 ## バイナリ

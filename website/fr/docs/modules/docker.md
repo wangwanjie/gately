@@ -72,7 +72,15 @@ L'onglet « Système » contient :
 
 ## Tâches en arrière-plan
 
-Les opérations longues telles que pull, push, build, vérification par lot, mise à niveau par lot et Compose up s'exécutent comme tâches en arrière-plan. Le panneau des tâches en bas de la page affiche la sortie en direct et l'état (en cours, terminé, erreur), permet de consulter l'historique et d'effacer les tâches terminées. Les tâches encore en cours sont restaurées après un rafraîchissement de la page.
+Les opérations longues telles que pull, push, build, vérification par lot, mise à niveau par lot et Compose up s'exécutent comme tâches en arrière-plan. Le panneau des tâches en bas de la page affiche la sortie en direct et l'état (en cours, terminé, erreur, arrêté), permet de consulter l'historique et d'effacer les tâches terminées. Les tâches encore en cours sont restaurées après un rafraîchissement de la page.
+
+Une tâche en cours peut être arrêtée avec « Arrêter » dans le panneau des tâches ou dans « Système → Historique des tâches » ; après confirmation :
+
+- Pull, push, build d'image et vérification des mises à jour s'interrompent aussitôt, et Docker abandonne le téléchargement ou le build correspondant : aucune image à moitié téléchargée ne subsiste ;
+- Les commandes Compose reçoivent d'abord un signal d'interruption (le même que Ctrl+C dans un terminal) et se terminent d'elles-mêmes ; si elles ne sont pas sorties au bout de 30 secondes, elles sont tuées de force ;
+- La mise à niveau par lot s'arrête une fois le conteneur en cours traité, et les conteneurs suivants ne sont pas mis à niveau. Un conteneur en cours de recréation (de l'arrêt de l'ancien à la création et au démarrage du nouveau) ignore l'interruption et termine sa recréation ; en cas d'échec, le conteneur d'origine est restauré comme d'habitude, sans rester dans un état intermédiaire.
+
+Après l'arrêt, la tâche passe à l'état « Arrêtée » et le journal d'exécution consigne « Tâche arrêtée ». Les tâches déjà terminées au moment de l'arrêt affichent leur résultat réel. Une tâche bloquée se nettoie avec « Effacer les terminées » une fois arrêtée. L'API correspondante est `POST /api/docker/tasks/{id}/cancel`.
 
 ## Notifications d'événements
 

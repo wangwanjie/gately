@@ -150,7 +150,7 @@ Run commands or send HTTP requests on a cron schedule.
 
 - `spec` supports standard 5-field expressions, an optional seconds field (6 fields, such as `*/30 * * * * *`), and descriptors such as `@every 10m` and `@daily`;
 - When `type` is `command`, `command` runs through `sh -c` (a temporary `.bat` on Windows), and the environment gets `taskName` plus an uppercase variable of the same name with the `GATELY_` prefix;
-- When `type` is `http`, a request is sent according to the `http` config, with the fields `url`, `method` (GET, POST, PUT, PATCH, DELETE), `headers` (each as `Key: Value`), `body`, `successContent` (the response body must contain any one of its entries to count as success; when empty, only a 2xx status is checked), `timeout` and `insecureSkipVerify`;
+- When `type` is `http`, a request is sent according to the `http` config, with the fields `url`, `method` (GET, POST, PUT, PATCH, DELETE), `headers` (each as `Key: Value`), `body`, `successContent` (the response body must contain any one of its entries to count as success; when empty, only a 2xx status is checked), `timeout`, `insecureSkipVerify` and `proxy` (leave empty for no proxy, `update` for the global update proxy, or a `http://`, `https://` or `socks5://` proxy address);
 - Tasks can be enabled or disabled, the page shows the next run time, and a task can be run immediately by hand;
 - If the previous run of the same task has not finished, the new trigger is skipped;
 - Each task keeps its latest 20 run records, including start time, duration, success or failure, whether it was triggered manually, and the output (a summary of up to 4000 characters);

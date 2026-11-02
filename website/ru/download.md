@@ -13,6 +13,12 @@ description: "Скачайте актуальные бинарные файлы 
 docker pull ghcr.io/wangwanjie/gately:latest
 ```
 
+Тот же образ (с теми же тегами) есть и в Docker Hub:
+
+```bash
+docker pull vanjayak/gately:latest
+```
+
 Все варианты развёртывания описаны в разделе [Установка](/ru/docs/guide/install).
 
 ## Бинарные файлы

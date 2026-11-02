@@ -2,7 +2,7 @@
 
 ## Docker
 
-映像檔位址 `ghcr.io/wangwanjie/gately`，支援 amd64、arm64、arm/v7。
+映像檔位址 `ghcr.io/wangwanjie/gately`，同時發佈到 Docker Hub 的 `vanjayak/gately`（兩處為同一份映像檔，標籤一致），支援 amd64、arm64、arm/v7。存取 GHCR 不便時，把下文的映像檔名稱換成 `vanjayak/gately:latest` 即可，也可以搭配 Docker 的映像檔加速使用。
 
 ```bash
 docker run -d --name gately --network host --cap-add NET_ADMIN \

@@ -150,7 +150,7 @@ cron 式に従って、コマンドの定期実行や HTTP リクエストの送
 
 - `spec` は、標準の 5 フィールドの式、オプションの秒フィールド（6 フィールド。例：`*/30 * * * * *`）、`@every 10m`、`@daily` などの記述子に対応しています。
 - `type` が `command` の場合は、`sh -c`（Windows では一時的な `.bat`）で `command` を実行し、環境変数に `taskName` と、`GATELY_` 接頭辞付きの同名の大文字変数を注入します。
-- `type` が `http` の場合は、`http` の設定に従ってリクエストを送信します。フィールドは `url`、`method`（GET、POST、PUT、PATCH、DELETE）、`headers`（各項目は `Key: Value`）、`body`、`successContent`（レスポンスボディにこのうちのいずれかが含まれていれば成功とみなす。空の場合は 2xx のみ確認）、`timeout`、`insecureSkipVerify` です。
+- `type` が `http` の場合は、`http` の設定に従ってリクエストを送信します。フィールドは `url`、`method`（GET、POST、PUT、PATCH、DELETE）、`headers`（各項目は `Key: Value`）、`body`、`successContent`（レスポンスボディにこのうちのいずれかが含まれていれば成功とみなす。空の場合は 2xx のみ確認）、`timeout`、`insecureSkipVerify`、`proxy`（空欄はプロキシなし、`update` はグローバル更新プロキシ、または `http://`、`https://`、`socks5://` のプロキシアドレス）です。
 - タスクは有効化・無効化でき、ページに次回の実行日時が表示され、手動ですぐに実行することもできます。
 - 同じタスクの前回の実行がまだ終わっていない場合、今回のトリガーはスキップされます。
 - 各タスクには直近 20 回の実行履歴が保持されます。開始日時、所要時間、成否、手動トリガーかどうか、出力（最大 4000 文字の要約を保持）が含まれます。

@@ -35,7 +35,7 @@ Tres pasos: arranca el contenedor, abre `http://<IP del dispositivo>:16680` e in
 
 ### Docker
 
-La imagen es compatible con amd64, arm64 y arm/v7:
+La imagen es compatible con amd64, arm64 y arm/v7, y se publica en GHCR y en Docker Hub como `vanjayak/gately` (misma imagen y etiquetas; usa `vanjayak/gately:latest` si GHCR te resulta difícil de alcanzar):
 
 ```bash
 docker run -d --name gately --network host --cap-add NET_ADMIN \

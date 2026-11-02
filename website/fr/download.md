@@ -13,6 +13,12 @@ L'image est publiée pour amd64, arm64 et arm/v7 :
 docker pull ghcr.io/wangwanjie/gately:latest
 ```
 
+La même image (mêmes tags) est aussi disponible sur Docker Hub :
+
+```bash
+docker pull vanjayak/gately:latest
+```
+
 Consultez [Installation](/fr/docs/guide/install) pour l'ensemble des options de déploiement.
 
 ## Binaires

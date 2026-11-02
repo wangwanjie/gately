@@ -13,6 +13,12 @@ description: "Gately 최신 바이너리와 fnOS 및 OpenWrt 패키지를 내려
 docker pull ghcr.io/wangwanjie/gately:latest
 ```
 
+같은 이미지(태그 동일)를 Docker Hub에서도 받을 수 있습니다.
+
+```bash
+docker pull vanjayak/gately:latest
+```
+
 전체 배포 옵션은 [설치 및 배포](/ko/docs/guide/install)를 참고하세요.
 
 ## 바이너리

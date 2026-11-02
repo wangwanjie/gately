@@ -70,6 +70,17 @@ A port of 0 uses the default port for the chosen encryption. You can enter sever
 - Feishu: once a signing secret is set, the request body automatically carries `timestamp` and `sign`.
 - WeCom, DingTalk, Feishu and Bark check the business return code in the response. An HTTP 200 with a business failure is also recorded as a failed delivery.
 
+### Proxy {#proxy}
+
+When the notification service cannot be reached directly and only works through a proxy (for example Telegram, Discord or Slack), notifications can go through a proxy:
+
+- **Global proxy**: under "Notification settings" in the page header, set the default proxy for all channels: "No proxy", "Use the global update proxy" (reuses the proxy used for update checks in [System settings](/en/docs/guide/configuration); changes take effect immediately, and an empty update proxy behaves like no proxy) or "Custom proxy".
+- **Channel proxy**: the "Proxy" field in each channel's editor defaults to "Follow notification settings". You can also pick "Direct (no proxy)", "Use the global update proxy" or a custom proxy for that channel, which overrides the global setting. Self-hosted ntfy, Gotify and similar services on the LAN can be set to direct.
+- Proxy addresses support `http://`, `https://`, `socks5://` and `socks5h://`, and may include a username and password, such as `http://user:pass@127.0.0.1:7890`; channel cards hide the password when they show the proxy.
+- With "No proxy", HTTP channels follow environment variables such as `HTTPS_PROXY` and `NO_PROXY`, and email connects directly, as before; "Direct" does not read the environment variables either.
+- Email supports proxies as well: through an `http(s)://` proxy it opens a tunnel to the mail server port with the CONNECT method (the proxy must allow connections to that port, which common proxies such as Clash do by default), and through a `socks5://` proxy the proxy resolves the server domain name. STARTTLS / SSL and authentication then happen inside the tunnel, so the proxy cannot see the mail content.
+- When the connection through the proxy fails, delivery records and test messages show "Connection through proxy … failed", with the proxy password replaced by `xxxxx`.
+
 ## Rules
 
 Click "Add rule":

@@ -7,7 +7,7 @@ When your ISP does not provide a fixed public port, STUN traversal uses NAT hole
 - TCP / UDP traversal with keep-alive;
 - UPnP / NAT-PMP creates port mappings on the router automatically;
 - Built-in forwarding sends the public port obtained through traversal directly to a LAN target;
-- Webhooks and scripts fire when the public address or port changes, which you can use to update DNS, notify clients, and more.
+- Webhooks and scripts fire when the public address or port changes, which you can use to update DNS, notify clients, and more; the Webhook can be sent through a proxy (the global update proxy or a custom one).
 - Source IP access control (allowlist / blocklist) for the built-in forwarding.
 
 ## Using it with other modules

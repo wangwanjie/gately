@@ -2,7 +2,7 @@
 
 ## Docker
 
-Образ `ghcr.io/wangwanjie/gately`, поддерживаются amd64, arm64, arm/v7.
+Образ `ghcr.io/wangwanjie/gately`, также публикуется в Docker Hub как `vanjayak/gately` (тот же образ с теми же тегами), поддерживаются amd64, arm64, arm/v7. Если GHCR недоступен, замените имя образа ниже на `vanjayak/gately:latest`; с ним работают и зеркала реестра Docker.
 
 ```bash
 docker run -d --name gately --network host --cap-add NET_ADMIN \

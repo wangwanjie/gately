@@ -7,7 +7,7 @@ Vergibt Ihr Provider keinen festen öffentlichen Port, nutzt das STUN-Traversal 
 - TCP-/UDP-Traversal mit Keep-alive;
 - UPnP / NAT-PMP legt Portzuordnungen automatisch am Router an;
 - Die integrierte Weiterleitung schickt den per Traversal erhaltenen öffentlichen Port direkt an ein Ziel im LAN;
-- Webhooks und Skripte werden ausgelöst, wenn sich die öffentliche Adresse oder der Port ändert, etwa um DNS zu aktualisieren, Clients zu benachrichtigen und mehr.
+- Webhooks und Skripte werden ausgelöst, wenn sich die öffentliche Adresse oder der Port ändert, etwa um DNS zu aktualisieren, Clients zu benachrichtigen und mehr; Webhooks können über einen Proxy gesendet werden (globaler Update-Proxy oder eigener Proxy).
 - Quell-IP-Zugriffskontrolle (Zulassungs- / Sperrliste) für die eingebaute Weiterleitung.
 
 ## Zusammenspiel mit anderen Modulen

@@ -35,7 +35,7 @@ Three steps: start the container, open `http://<device-ip>:16680`, sign in with 
 
 ### Docker
 
-Images are available for amd64, arm64, and arm/v7:
+Images are available for amd64, arm64, and arm/v7, published to GHCR and to Docker Hub as `vanjayak/gately` (same image and tags; use `vanjayak/gately:latest` if GHCR is hard to reach):
 
 ```bash
 docker run -d --name gately --network host --cap-add NET_ADMIN \

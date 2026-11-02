@@ -150,7 +150,7 @@ WebDAV、FTP 与 SMB 共用一份「共享用户」，字段与各服务的本�
 
 - `spec` 支持标准 5 段表达式、可选的秒字段（6 段，如 `*/30 * * * * *`）以及 `@every 10m`、`@daily` 等描述符；
 - `type` 为 `command` 时，通过 `sh -c`（Windows 为临时 `.bat`）执行 `command`，环境变量中注入 `taskName` 及带 `GATELY_` 前缀的同名大写变量；
-- `type` 为 `http` 时按 `http` 配置发起请求，字段包括 `url`、`method`（GET、POST、PUT、PATCH、DELETE）、`headers`（每项 `Key: Value`）、`body`、`successContent`（响应体需包含其中任意一项才算成功，为空时只检查 2xx）、`timeout` 与 `insecureSkipVerify`；
+- `type` 为 `http` 时按 `http` 配置发起请求，字段包括 `url`、`method`（GET、POST、PUT、PATCH、DELETE）、`headers`（每项 `Key: Value`）、`body`、`successContent`（响应体需包含其中任意一项才算成功，为空时只检查 2xx）、`timeout`、`insecureSkipVerify` 与 `proxy`（留空不指定代理，`update` 使用全局更新代理，或 `http://`、`https://`、`socks5://` 代理地址）；
 - 任务可启用或停用，页面显示下次执行时间，可手动立即运行；
 - 同一任务上一次尚未结束时，本次触发被跳过；
 - 每个任务保留最近 20 次执行记录，包含开始时间、耗时、成功与否、是否手动触发，以及输出（最多保留 4000 字符摘要）；
