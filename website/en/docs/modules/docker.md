@@ -68,7 +68,7 @@ The "System" tab contains:
 | `host` | Docker address, default `unix:///var/run/docker.sock` |
 | `mirrors` | List of mirror addresses, tried in order when a direct pull fails. Independent of `registry-mirrors` in `/etc/docker/daemon.json`, which Docker uses automatically and the settings page shows read-only as "Daemon mirrors" |
 | `registries` | Private registry credentials (`server`, `username`, `password`); the password is masked in the UI |
-| `autoCheckHours` | When greater than 0, container image updates are checked automatically at this interval in hours; 0 turns it off |
+| `autoCheckHours` | When greater than 0, container image updates are checked automatically at this interval in hours; 0 turns it off; newer images publish a `docker.update` event, once per new image |
 
 ## Background tasks
 

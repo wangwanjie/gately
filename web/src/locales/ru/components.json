@@ -154,7 +154,12 @@
     },
     "uninstall": "Удалить",
     "confirmUninstall": "Удалить {files} и все предыдущие версии из {dir}? Использующие программу процессы перезапустятся и не смогут работать, если в PATH нет программы с тем же именем. Настройки модуля сохранятся.",
-    "uninstalled": "{name} удалён"
+    "uninstalled": "{name} удалён",
+    "checkUpdate": "Проверить обновления",
+    "newVersion": "Новая версия {version}",
+    "latestVersion": "Последняя версия {version} (проверено {time})",
+    "checkFailed": "Не удалось проверить обновления: {error}",
+    "latestOnly": "Последняя версия — {version}"
   },
   "resetConfig": {
     "button": "Сбросить настройки",

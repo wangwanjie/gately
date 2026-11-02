@@ -6163,6 +6163,57 @@
         "x-token-allowed": true
       }
     },
+    "/api/cloudflared/install/check": {
+      "post": {
+        "description": "Kein Request-Body. Fragt die neueste stabile Upstream-Version ab (über den Download-Proxy des Programms bzw. die globale Einstellung `updateProxy`, wenn keiner gesetzt ist), ohne das installierte Programm herunterzuladen oder zu ändern; liefert dasselbe wie `GET /api/{module}/install`, wobei `latest` `{version, checkedAt, error, hasUpdate}` ist und `hasUpdate` bedeutet, dass die neueste Version neuer ist als die in bin installierte. Bei aktivierter automatischer Update-Prüfung führt Gately diese Prüfung auch regelmäßig für installierte verwaltete Programme aus. Liefert 409, solange bereits eine Prüfung läuft.\n\nErforderliche Berechtigung: `cloudflared:write`.",
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Verwaltetes Programm auf Updates prüfen",
+        "tags": [
+          "Cloudflare-Tunnel"
+        ],
+        "x-required-scope": "cloudflared:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/cloudflared/install/rollback": {
       "post": {
         "description": "Request-Body `{\"id\": \"\u003cID der früheren Version\u003e\"}`. Die aktuelle Version wird als frühere Version gespeichert, sodass Sie zurückwechseln können; danach werden die Prozesse, die das Programm verwenden, neu gestartet.\n\nErforderliche Berechtigung: `cloudflared:write`.",
@@ -14089,6 +14140,57 @@
         "x-token-allowed": true
       }
     },
+    "/api/filebrowser/install/check": {
+      "post": {
+        "description": "Kein Request-Body. Fragt die neueste stabile Upstream-Version ab (über den Download-Proxy des Programms bzw. die globale Einstellung `updateProxy`, wenn keiner gesetzt ist), ohne das installierte Programm herunterzuladen oder zu ändern; liefert dasselbe wie `GET /api/{module}/install`, wobei `latest` `{version, checkedAt, error, hasUpdate}` ist und `hasUpdate` bedeutet, dass die neueste Version neuer ist als die in bin installierte. Bei aktivierter automatischer Update-Prüfung führt Gately diese Prüfung auch regelmäßig für installierte verwaltete Programme aus. Liefert 409, solange bereits eine Prüfung läuft.\n\nErforderliche Berechtigung: `filebrowser:write`.",
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Verwaltetes Programm auf Updates prüfen",
+        "tags": [
+          "File Browser"
+        ],
+        "x-required-scope": "filebrowser:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/filebrowser/install/rollback": {
       "post": {
         "description": "Request-Body `{\"id\": \"\u003cID der früheren Version\u003e\"}`. Die aktuelle Version wird als frühere Version gespeichert, sodass Sie zurückwechseln können; danach werden die Prozesse, die das Programm verwenden, neu gestartet.\n\nErforderliche Berechtigung: `filebrowser:write`.",
@@ -16380,6 +16482,57 @@
           }
         ],
         "summary": "Gespeicherte frühere Version löschen",
+        "tags": [
+          "frp-Intranet-Durchleitung"
+        ],
+        "x-required-scope": "frp:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/frp/install/check": {
+      "post": {
+        "description": "Kein Request-Body. Fragt die neueste stabile Upstream-Version ab (über den Download-Proxy des Programms bzw. die globale Einstellung `updateProxy`, wenn keiner gesetzt ist), ohne das installierte Programm herunterzuladen oder zu ändern; liefert dasselbe wie `GET /api/{module}/install`, wobei `latest` `{version, checkedAt, error, hasUpdate}` ist und `hasUpdate` bedeutet, dass die neueste Version neuer ist als die in bin installierte. Bei aktivierter automatischer Update-Prüfung führt Gately diese Prüfung auch regelmäßig für installierte verwaltete Programme aus. Liefert 409, solange bereits eine Prüfung läuft.\n\nErforderliche Berechtigung: `frp:write`.",
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Verwaltetes Programm auf Updates prüfen",
         "tags": [
           "frp-Intranet-Durchleitung"
         ],
@@ -30179,7 +30332,7 @@
     },
     "/api/system/update": {
       "get": {
-        "description": "Verwendet für den Zugriff auf GitHub den Proxy aus der globalen Einstellung `updateProxy`. `selfUpgrade.supported` gibt an, ob diese Installation online aktualisiert werden kann; andernfalls ist `reason` `os`, `docker`, `fnos`, `opkg`, `apk` oder `readonly`.\n\nErforderliche Berechtigung: `status:read`.",
+        "description": "Liest sofort die Release-Liste auf GitHub und die veröffentlichten Sicherheitshinweise von Gately (GitHub Security Advisories) über den Proxy der globalen Einstellung `updateProxy`; innerhalb von 30 Sekunden nach der letzten erfolgreichen Prüfung wird das vorige Ergebnis geliefert. `hasUpdate` bedeutet, dass es eine neue Version gibt; `security` ist true, wenn die aktuelle Version von veröffentlichten Sicherheitsproblemen betroffen ist, `advisories` listet die Hinweise, die die aktuelle Version betreffen (`id`, `summary`, `severity`, `url`, `ranges`), und `securityReleases` neuere Versionen, deren Release Notes einen Sicherheitsabschnitt haben. `selfUpgrade.supported` gibt an, ob diese Installation online aktualisiert werden kann; wenn nicht, ist `reason` `os`, `docker`, `fnos`, `opkg`, `apk` oder `readonly`. Liefert 502, wenn das Lesen fehlschlägt.\n\nErforderliche Berechtigung: `status:read`.",
         "responses": {
           "200": {
             "description": "Erfolgreich"
@@ -30220,11 +30373,62 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Nach neuer Version suchen",
+        "summary": "Nach neuen Versionen und Sicherheitshinweisen suchen",
         "tags": [
           "System"
         ],
         "x-required-scope": "status:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/system/update/state": {
+      "get": {
+        "description": "Greift nicht auf das Netzwerk zu. Liefert das zuletzt von der automatischen oder manuellen Prüfung gespeicherte Ergebnis mit denselben Feldern wie `GET /api/system/update` sowie `autoCheck` (ob die automatische Prüfung aktiv ist), `checkedAt` (Zeit der letzten erfolgreichen Prüfung) und `error` und `failedAt` des letzten Fehlschlags. `latest` ist leer, solange noch keine Prüfung erfolgreich war.\n\nErforderliche Berechtigung: `system:read`.",
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ergebnis der letzten Update-Prüfung anzeigen",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "system:read",
         "x-token-allowed": true
       }
     },
@@ -30624,6 +30828,57 @@
           }
         ],
         "summary": "Gespeicherte frühere Version löschen",
+        "tags": [
+          "Tailscale-Netzwerk"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/install/check": {
+      "post": {
+        "description": "Kein Request-Body. Fragt die neueste stabile Upstream-Version ab (über den Download-Proxy des Programms bzw. die globale Einstellung `updateProxy`, wenn keiner gesetzt ist), ohne das installierte Programm herunterzuladen oder zu ändern; liefert dasselbe wie `GET /api/{module}/install`, wobei `latest` `{version, checkedAt, error, hasUpdate}` ist und `hasUpdate` bedeutet, dass die neueste Version neuer ist als die in bin installierte. Bei aktivierter automatischer Update-Prüfung führt Gately diese Prüfung auch regelmäßig für installierte verwaltete Programme aus. Liefert 409, solange bereits eine Prüfung läuft.\n\nErforderliche Berechtigung: `tailscale:write`.",
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Verwaltetes Programm auf Updates prüfen",
         "tags": [
           "Tailscale-Netzwerk"
         ],

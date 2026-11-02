@@ -12,7 +12,7 @@
   "latestRelease": " (latest release {latest})",
   "publishedAt": "Published {time}",
   "viewRelease": "View release page",
-  "updateHint": "Checking for updates and upgrading online reach GitHub only when you click; Gately never goes online on its own.",
+  "updateHint": "With automatic checks on, Gately contacts GitHub every 12 hours to read the release list and security advisories, sending no information; turn them off and GitHub is contacted only when you click Check for updates.",
   "upgrade": {
     "now": "Upgrade now",
     "title": "Online upgrade",
@@ -55,7 +55,8 @@
     },
     "gotIt": "Got it",
     "cancel": "Cancel upgrade",
-    "canceled": "Upgrade canceled"
+    "canceled": "Upgrade canceled",
+    "foundSecurity": "Security update available"
   },
   "proxy": {
     "label": "Update proxy: ",
@@ -163,5 +164,27 @@
     "siteZip": "Full-site zip",
     "portforward": "Port forwarding",
     "cert": "Certificates"
+  },
+  "autoCheck": {
+    "label": "Automatic update checks",
+    "last": "Last checked: {time}",
+    "pending": "Automatic checks are on; the first check runs a few minutes after startup",
+    "off": "Automatic checks are off; GitHub is contacted only when you click Check for updates",
+    "failed": "Last check failed: {error}",
+    "enabled": "Automatic update checks turned on",
+    "disabled": "Automatic update checks turned off"
+  },
+  "security": {
+    "title": "The current version {current} is affected by published security issues",
+    "severity": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    },
+    "fixedIn": "fixed in {version}",
+    "releases": "These newer versions contain security fixes: {versions}",
+    "advice": "Please upgrade to {latest} as soon as possible.",
+    "noFix": "You are already on the latest version. Until a fixed version is released, follow the mitigations in the advisory."
   }
 }

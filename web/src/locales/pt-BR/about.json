@@ -12,7 +12,7 @@
   "latestRelease": " (versão mais recente {latest})",
   "publishedAt": "Publicada {time}",
   "viewRelease": "Ver página da versão",
-  "updateHint": "Verificar atualizações e atualizar online só acessa o GitHub quando você clica; o Gately nunca se conecta por conta própria.",
+  "updateHint": "Com a verificação automática ativada, o Gately consulta o GitHub a cada 12 horas apenas para ler a lista de versões e os avisos de segurança, sem enviar nenhuma informação; desativada, o GitHub só é consultado ao clicar em \"Verificar atualizações\".",
   "upgrade": {
     "now": "Atualizar agora",
     "title": "Atualização online",
@@ -55,7 +55,8 @@
     },
     "gotIt": "Entendi",
     "cancel": "Cancelar atualização",
-    "canceled": "Atualização cancelada"
+    "canceled": "Atualização cancelada",
+    "foundSecurity": "Atualização de segurança disponível"
   },
   "proxy": {
     "label": "Proxy de atualização: ",
@@ -163,5 +164,27 @@
     "siteZip": "Zip do site completo",
     "portforward": "Redirecionamento de portas",
     "cert": "Certificados"
+  },
+  "autoCheck": {
+    "label": "Verificar atualizações automaticamente",
+    "last": "Última verificação: {time}",
+    "pending": "A verificação automática está ativada; a primeira ocorre alguns minutos após a inicialização",
+    "off": "A verificação automática está desativada; o GitHub só é consultado ao clicar em \"Verificar atualizações\"",
+    "failed": "A última verificação falhou: {error}",
+    "enabled": "Verificação automática ativada",
+    "disabled": "Verificação automática desativada"
+  },
+  "security": {
+    "title": "A versão atual {current} é afetada por problemas de segurança publicados",
+    "severity": {
+      "low": "Baixa",
+      "medium": "Média",
+      "high": "Alta",
+      "critical": "Crítica"
+    },
+    "fixedIn": "corrigido na {version}",
+    "releases": "Estas versões mais recentes contêm correções de segurança: {versions}",
+    "advice": "Atualize para {latest} o quanto antes.",
+    "noFix": "Você já está na versão mais recente. Até sair uma versão corrigida, aplique as mitigações do aviso."
   }
 }

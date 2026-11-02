@@ -7,6 +7,7 @@ These three modules integrate the official programs as managed processes: automa
 The frp, Cloudflare Tunnel, Tailscale and [File Browser](/en/docs/modules/tools#filebrowser) pages each have an "online install" card at the bottom:
 
 - **Download and install / Update to latest**: downloads the latest stable release from upstream, verifies it against the SHA-256 recorded upstream, checks that it runs on this machine, installs it into `bin/` under the configuration directory and then restarts the processes that use the program. Nothing is downloaded again when the latest version is already installed;
+- **Check for updates**: only queries the latest stable upstream release without downloading; a "New version" tag appears next to the card title when one exists. With [automatic update checks](/en/docs/guide/install#update-check) on, Gately checks installed programs every 12 hours and publishes a `program.update` notification for a new version;
 - **Install a version**: enter a version number (for example `v0.65.0` for frp, `2025.8.0` for cloudflared, `1.90.2` for Tailscale); this also works for downgrading;
 - **Download proxy**: can be set per program, supports http, https and socks5, and is saved when an install starts; when empty, the update proxy from "Settings" is used;
 - **Previous versions and rollback**: versions replaced by an update or rollback are kept in `bin/.versions/`, at most 3. If a new version has problems, click "Roll back" in the list to switch to an older one; the current version is kept as well, so you can switch back to it later;

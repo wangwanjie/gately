@@ -160,6 +160,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | POST | `/api/tailscale/logout` | `tailscale:write` | Von Tailscale abmelden |
 | GET | `/api/tailscale/install` | `tailscale:read` | Installationsinfo und Fortschritt eines verwalteten Programms anzeigen |
 | POST | `/api/tailscale/install` | `tailscale:write` | Verwaltetes Programm online installieren oder aktualisieren |
+| POST | `/api/tailscale/install/check` | `tailscale:write` | Verwaltetes Programm auf Updates prüfen |
 | POST | `/api/tailscale/install/rollback` | `tailscale:write` | Zu einer gespeicherten früheren Version wechseln |
 | DELETE | `/api/tailscale/install` | `tailscale:write` | Verwaltetes Programm deinstallieren |
 | DELETE | `/api/tailscale/install/backups/{id}` | `tailscale:write` | Gespeicherte frühere Version löschen |
@@ -204,6 +205,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | POST | `/api/frp/import` | `frp:write` | Vorhandene frpc-/frps-Konfiguration importieren (unterstützt altes ini und neues toml); bei apply false nur Vorschau |
 | GET | `/api/frp/install` | `frp:read` | Installationsinfo und Fortschritt eines verwalteten Programms anzeigen |
 | POST | `/api/frp/install` | `frp:write` | Verwaltetes Programm online installieren oder aktualisieren |
+| POST | `/api/frp/install/check` | `frp:write` | Verwaltetes Programm auf Updates prüfen |
 | POST | `/api/frp/install/rollback` | `frp:write` | Zu einer gespeicherten früheren Version wechseln |
 | DELETE | `/api/frp/install` | `frp:write` | Verwaltetes Programm deinstallieren |
 | DELETE | `/api/frp/install/backups/{id}` | `frp:write` | Gespeicherte frühere Version löschen |
@@ -236,6 +238,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | PUT | `/api/cloudflared/settings` | `cloudflared:write` | Cloudflare-Tunnel-Einstellungen speichern |
 | GET | `/api/cloudflared/install` | `cloudflared:read` | Installationsinfo und Fortschritt eines verwalteten Programms anzeigen |
 | POST | `/api/cloudflared/install` | `cloudflared:write` | Verwaltetes Programm online installieren oder aktualisieren |
+| POST | `/api/cloudflared/install/check` | `cloudflared:write` | Verwaltetes Programm auf Updates prüfen |
 | POST | `/api/cloudflared/install/rollback` | `cloudflared:write` | Zu einer gespeicherten früheren Version wechseln |
 | DELETE | `/api/cloudflared/install` | `cloudflared:write` | Verwaltetes Programm deinstallieren |
 | DELETE | `/api/cloudflared/install/backups/{id}` | `cloudflared:write` | Gespeicherte frühere Version löschen |
@@ -583,6 +586,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | PUT | `/api/filebrowser/settings` | `filebrowser:write` | File-Browser-Programmeinstellungen speichern |
 | GET | `/api/filebrowser/install` | `filebrowser:read` | Installationsinfo und Fortschritt eines verwalteten Programms anzeigen |
 | POST | `/api/filebrowser/install` | `filebrowser:write` | Verwaltetes Programm online installieren oder aktualisieren |
+| POST | `/api/filebrowser/install/check` | `filebrowser:write` | Verwaltetes Programm auf Updates prüfen |
 | POST | `/api/filebrowser/install/rollback` | `filebrowser:write` | Zu einer gespeicherten früheren Version wechseln |
 | DELETE | `/api/filebrowser/install` | `filebrowser:write` | Verwaltetes Programm deinstallieren |
 | DELETE | `/api/filebrowser/install/backups/{id}` | `filebrowser:write` | Gespeicherte frühere Version löschen |
@@ -716,7 +720,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | PUT | `/api/system/settings` | Nur Anmeldesitzung | Globale Einstellungen speichern |
 | GET | `/api/system/settings/secrets` | Nur Anmeldesitzung | Client Secrets der Drittanbieter-Anmeldung im Klartext anzeigen |
 | GET | `/api/system/info` | `status:read` | Systeminformationen anzeigen |
-| GET | `/api/system/update` | `status:read` | Nach neuer Version suchen |
+| GET | `/api/system/update` | `status:read` | Nach neuen Versionen und Sicherheitshinweisen suchen |
+| GET | `/api/system/update/state` | `system:read` | Ergebnis der letzten Update-Prüfung anzeigen |
 | POST | `/api/system/upgrade` | Nur Anmeldesitzung | Online auf die neueste Version aktualisieren |
 | GET | `/api/system/upgrade/status` | Nur Anmeldesitzung | Fortschritt des Online-Upgrades anzeigen |
 | POST | `/api/system/upgrade/cancel` | Nur Anmeldesitzung | Online-Upgrade abbrechen |

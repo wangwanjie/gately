@@ -154,7 +154,12 @@
     },
     "uninstall": "Desinstalar",
     "confirmUninstall": "Excluir {files} e todas as versões anteriores de {dir}? Os processos que o usam reiniciam e não poderão rodar se não houver um programa com o mesmo nome no PATH. As configurações do módulo são mantidas.",
-    "uninstalled": "{name} desinstalado"
+    "uninstalled": "{name} desinstalado",
+    "checkUpdate": "Verificar atualizações",
+    "newVersion": "Nova versão {version}",
+    "latestVersion": "Versão mais recente {version} (verificada em {time})",
+    "checkFailed": "Falha ao verificar atualizações: {error}",
+    "latestOnly": "A versão mais recente é {version}"
   },
   "resetConfig": {
     "button": "Restaurar padrões",

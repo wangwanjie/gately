@@ -100,6 +100,7 @@ WAF 攔截和上游狀態變動可能頻繁發生，建議為這類規則設定 
 | 安全與登入 | 登入失敗、IP 封鎖、登入成功、存取敏感內容 |
 | 效能告警 | 效能監控的告警觸發與恢復（不靜默） |
 | 設定變更 | 管理後台的每一次設定變更 |
+| 版本更新 | Gately 的安全更新與新版本、託管程式有新版本、容器映像有新版本（不靜默） |
 
 ## 事件類型
 
@@ -124,6 +125,10 @@ WAF 攔截和上游狀態變動可能頻繁發生，建議為這類規則設定 
 | `audit.access` | 管理後台：存取敏感內容 | 警告 | 下載備份、診斷包、憑證私鑰或開啟終端機等，欄位同上 |
 | `perf.alert` | 效能監控：觸發告警 | 警告或錯誤 | 效能告警規則的條件持續滿足到設定時長，等級取規則設定，附帶 `rule`、`metric`、`target`、`value`、`condition` 欄位，見[效能監控](/zh-TW/docs/modules/perf) |
 | `perf.recovered` | 效能監控：告警恢復 | 資訊 | 已觸發的效能告警條件解除，欄位同上 |
+| `system.update` | Gately：發現新版本 | 資訊 | 自動或手動檢查更新發現新版本，附帶 `current`、`latest`、`url` 欄位，同一版本只通知一次，見[自動檢查更新](/zh-TW/docs/guide/install#update-check) |
+| `system.security` | Gately：安全更新 | 錯誤 | 目前版本受已公開的安全公告影響，或有更新的版本帶有安全修正，附帶 `current`、`latest`、`url`、`advisories`、`securityReleases` 欄位，出現新的安全問題時再次通知 |
+| `program.update` | 託管程式：發現新版本 | 資訊 | 自動檢查發現已安裝的 frp、cloudflared、Tailscale 或 File Browser 有新版本，來源為程式名稱，附帶 `program`、`current`、`latest` 欄位 |
+| `docker.update` | Docker：映像有新版本 | 資訊 | Docker 定時檢查發現容器映像有新版本，一次檢查彙總為一則，同一個新映像只通知一次，附帶 `count` 欄位 |
 | `notify.test` | 測試通知 | 資訊 | 管道的「測試」按鈕產生，不參與規則比對 |
 
 ## 測試發送

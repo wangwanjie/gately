@@ -100,6 +100,7 @@ WAF 차단과 업스트림 상태 변화는 자주 발생할 수 있으므로 �
 | 보안 및 로그인 | 로그인 실패, IP 차단, 로그인 성공, 민감한 콘텐츠 접근 |
 | 성능 경보 | 성능 모니터링의 경보 발생과 복구(무음 없음) |
 | 설정 변경 | 관리 콘솔에서 이루어진 모든 설정 변경 |
+| 업데이트 | Gately 보안 업데이트와 새 버전, 관리 프로그램과 컨테이너 이미지의 새 버전(무음 없음) |
 
 ## 이벤트 유형
 
@@ -124,6 +125,10 @@ WAF 차단과 업스트림 상태 변화는 자주 발생할 수 있으므로 �
 | `audit.access` | 관리 콘솔: 민감한 콘텐츠 접근 | 경고 | 백업, 진단 번들, 인증서 개인 키 다운로드 또는 터미널 열기 등. 필드는 위와 같음 |
 | `perf.alert` | 성능 모니터링: 경보 발생 | 경고 또는 오류 | 성능 경보 규칙의 조건이 설정한 시간 동안 계속 충족됨. 수준은 규칙 설정을 따르며 `rule`, `metric`, `target`, `value`, `condition` 필드가 붙음. [성능 모니터링](/ko/docs/modules/perf) 참고 |
 | `perf.recovered` | 성능 모니터링: 경보 복구 | 정보 | 발생 중인 성능 경보의 조건이 해제됨. 필드는 위와 같음 |
+| `system.update` | Gately: 새 버전 발견 | 정보 | 자동 또는 수동 업데이트 확인에서 새 버전을 발견. `current`, `latest`, `url` 필드 포함, 같은 버전은 한 번만 알림, [자동 업데이트 확인](/ko/docs/guide/install#update-check) 참고 |
+| `system.security` | Gately: 보안 업데이트 | 오류 | 현재 버전이 공개된 보안 공지의 영향을 받거나 더 새로운 버전에 보안 수정이 포함됨. `current`, `latest`, `url`, `advisories`, `securityReleases` 필드 포함, 새 보안 문제가 나오면 다시 알림 |
+| `program.update` | 관리 프로그램: 새 버전 발견 | 정보 | 자동 확인에서 설치된 frp, cloudflared, Tailscale, File Browser 의 새 버전을 발견. 출처는 프로그램 이름, `program`, `current`, `latest` 필드 포함 |
+| `docker.update` | Docker: 새 이미지 있음 | 정보 | Docker 정기 확인에서 컨테이너의 새 이미지를 발견. 한 번의 확인을 한 건으로 묶고 같은 새 이미지는 한 번만 알림, `count` 필드 포함 |
 | `notify.test` | 테스트 알림 | 정보 | 채널의 「테스트」 버튼이 만들며 규칙 매칭에는 참여하지 않음 |
 
 ## 테스트 전송

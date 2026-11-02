@@ -154,7 +154,12 @@
     },
     "uninstall": "제거",
     "confirmUninstall": "{dir} 의 {files} 와(과) 모든 이전 버전을 삭제할까요? 이를 사용하는 프로세스가 다시 시작되며, PATH 에 같은 이름의 프로그램이 없으면 실행할 수 없습니다. 모듈 설정은 유지됩니다.",
-    "uninstalled": "{name} 을(를) 제거했습니다"
+    "uninstalled": "{name} 을(를) 제거했습니다",
+    "checkUpdate": "업데이트 확인",
+    "newVersion": "새 버전 {version}",
+    "latestVersion": "최신 버전 {version} ({time} 확인)",
+    "checkFailed": "업데이트 확인 실패: {error}",
+    "latestOnly": "최신 버전은 {version} 입니다"
   },
   "resetConfig": {
     "button": "기본 설정 복원",

@@ -260,7 +260,7 @@ Gately est entièrement open source afin que les utilisateurs et la communauté 
 
 - Le code source est publié sous licence Apache-2.0 et ouvert à l'examen de la communauté
 - Aucune connexion aux serveurs du projet et aucun envoi d'informations sur l'appareil par défaut ; la connexion via un tiers utilise votre propre application OAuth, sans intermédiaire
-- Toutes les adresses externes (interrogation de l'IP publique, serveurs STUN, etc.) sont visibles, modifiables et désactivables
+- Toutes les adresses externes (interrogation de l'IP publique, serveurs STUN, vérification des mises à jour sur GitHub, etc.) sont visibles, modifiables et désactivables
 - La configuration est du JSON en clair, que vous pouvez placer dans git pour l'audit et le retour en arrière
 
 ## Performances

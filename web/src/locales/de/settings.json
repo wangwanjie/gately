@@ -142,7 +142,9 @@
     },
     "serverLanguage": "Serversprache",
     "serverLanguageAuto": "Systemeinstellung folgen",
-    "serverLanguageHelp": "Sprache für Protokolle, Benachrichtigungen und andere Ausgaben ohne Seitenkontext. Bei leerem Feld wird sie anhand der Systemumgebung (GATELY_LANG, LANG) gewählt; gibt die Umgebung keine Sprache vor, wird die Sprache der letzten Anmeldung an der Verwaltungsoberfläche verwendet."
+    "serverLanguageHelp": "Sprache für Protokolle, Benachrichtigungen und andere Ausgaben ohne Seitenkontext. Bei leerem Feld wird sie anhand der Systemumgebung (GATELY_LANG, LANG) gewählt; gibt die Umgebung keine Sprache vor, wird die Sprache der letzten Anmeldung an der Verwaltungsoberfläche verwendet.",
+    "autoUpdateCheck": "Automatische Update-Prüfung",
+    "autoUpdateCheckHelp": "Ruft alle 12 Stunden GitHub ab, sucht nach neuen Gately-Versionen und Sicherheitshinweisen und prüft installierte verwaltete Programme; Ergebnisse erscheinen oben auf der Seite und werden gemäß den Regeln der Benachrichtigungen gesendet. Die Anfragen sind anonym und übertragen keine Informationen."
   },
   "runtime": {
     "title": "Laufzeitparameter",

@@ -260,7 +260,7 @@ O Gately é totalmente aberto, para que usuários e comunidade possam examinar d
 
 - Código-fonte aberto sob Apache-2.0, sujeito à revisão da comunidade
 - Por padrão, nenhuma conexão com servidores do projeto e nenhum envio de informações do dispositivo; o login de terceiros usa seus próprios aplicativos OAuth, sem intermediários
-- Todos os endereços externos (consulta de IP público, servidores STUN etc.) são visíveis, editáveis e desativáveis
+- Todos os endereços externos (consulta de IP público, servidores STUN, verificação de atualizações no GitHub etc.) são visíveis, editáveis e desativáveis
 - A configuração é JSON em texto simples, que pode ser versionada no git para auditoria e rollback
 
 ## Desempenho

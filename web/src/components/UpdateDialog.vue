@@ -15,7 +15,7 @@
         <AppLogo :size="44" />
         <div class="head-text">
           <template v-if="mode === 'release' && info">
-            <div class="head-title">{{ t('about.upgrade.found') }}</div>
+            <div class="head-title">{{ info.security ? t('about.upgrade.foundSecurity') : t('about.upgrade.found') }}</div>
             <div class="head-ver mono">Gately {{ info.latest }}</div>
             <div class="head-meta">
               {{ t('about.upgrade.currentVersion', { current: info.current }) }}
@@ -32,6 +32,7 @@
 
     <!-- 版本与更新内容 -->
     <template v-if="mode === 'release' && info">
+      <SecurityNotice :info="info" class="security" />
       <div class="label">{{ t('about.upgrade.notes') }}</div>
       <!-- renderMarkdown 先整体转义再生成受控标签，链接仅限 http/https，可安全用于 v-html -->
       <div v-if="info.notes" class="notes md" v-html="notesHTML" />
@@ -88,6 +89,7 @@ import { i18n } from '../i18n'
 import { renderMarkdown } from '../markdown'
 import AppLogo from './AppLogo.vue'
 import RestartOverlay from './RestartOverlay.vue'
+import SecurityNotice from './SecurityNotice.vue'
 
 const props = defineProps<{ isAdmin: boolean }>()
 const { t } = useI18n()
@@ -390,6 +392,9 @@ defineExpose({ showRelease, upload, resume })
   margin-top: 4px;
   font-size: 12px;
   color: var(--el-text-color-secondary);
+}
+.security {
+  margin-bottom: 14px;
 }
 .label {
   margin-bottom: 8px;

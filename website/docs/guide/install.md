@@ -174,6 +174,16 @@ apk add --allow-untrusted ./luci-app-gately_<版本>_openwrt_all.apk
 
 ## 升级
 
+### 自动检查更新与安全提醒 {#update-check}
+
+Gately 默认每 12 小时访问一次 GitHub，读取 Gately 的发布列表与[已公开的安全公告](https://github.com/wangwanjie/gately/security/advisories)，并为已在线安装的托管程序（frp、Cloudflare 隧道、Tailscale、File Browser）查询上游最新版本。请求都是匿名 GET，不携带设备、配置或使用情况等任何信息。
+
+- **新版本**：管理界面顶部显示提示，可以查看更新内容，或忽略这个版本；
+- **安全更新**：当前版本落在某个安全公告的受影响版本范围内，或者比当前版本新的发布说明带有安全修复章节时，顶部以红色提示并列出相关公告与版本。安全提示只能暂缓 24 小时，出现新的安全问题时立即重新提示；
+- **通知**：发现新版本或新的安全问题时发布 `system.update` / `system.security` 事件，托管程序有新版本时发布 `program.update`，在[通知中心](/docs/modules/notify)用「版本更新」模板添加规则即可接收。同一版本、同一安全问题只通知一次，重启后也不会重复。
+
+检查结果保存在配置目录的 `update-check.json`，升级后按新的版本重新判断，无需再次检查。启动后约 3 分钟进行首次检查（距上次成功检查不足 12 小时时等到满 12 小时），失败时 1 小时后重试；访问 GitHub 同样经过下文的更新代理。在「关于」页或「设置 → 网络与运行」中可以关闭自动检查，关闭后只在点击「检查更新」时访问 GitHub。自动检查只负责提示，不会下载或安装任何版本。
+
 ### 在线升级 {#online-upgrade}
 
 Linux 二进制部署（systemd、PVE LXC 容器、手动部署的 OpenWrt 等）可以在管理界面的「关于」页在线升级：点击「检查更新」，发现新版本后点击「立即升级」。在 PVE 中用 OCI 镜像创建的 LXC 容器同样适用，无需删除重建。Gately 会依次：

@@ -68,7 +68,7 @@ Compose 專案由容器標籤 `com.docker.compose.project` 等彙整而得，顯
 | `host` | Docker 位址，預設 `unix:///var/run/docker.sock` |
 | `mirrors` | 映像檔加速位址清單，直接拉取失敗時依序嘗試；與 `/etc/docker/daemon.json` 的 `registry-mirrors` 彼此獨立，後者由 Docker 自動使用，並在設定頁以「守護行程加速」唯讀顯示 |
 | `registries` | 私有倉庫登入資訊（`server`、`username`、`password`），密碼在介面中遮蔽 |
-| `autoCheckHours` | 大於 0 時依該小時間隔自動檢查容器映像檔更新，0 表示關閉 |
+| `autoCheckHours` | 大於 0 時依該小時間隔自動檢查容器映像檔更新，0 表示關閉；發現新映像時發布 `docker.update` 事件，同一個新映像只通知一次 |
 
 ## 背景工作
 

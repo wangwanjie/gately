@@ -113,3 +113,8 @@ func (m *Module) newInstaller() *binstall.Installer {
 		},
 	})
 }
+
+// ProgramInstallers 返回模块托管的程序安装器，供 Gately 自动检查更新时一并检查托管程序。
+func (m *Module) ProgramInstallers() []*binstall.Installer {
+	return []*binstall.Installer{m.install}
+}

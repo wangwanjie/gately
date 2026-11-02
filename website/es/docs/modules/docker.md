@@ -68,7 +68,7 @@ La pestaña «Sistema» contiene:
 | `host` | Dirección de Docker, por defecto `unix:///var/run/docker.sock` |
 | `mirrors` | Lista de direcciones de mirror, que se prueban en orden cuando falla una descarga directa. Son independientes de `registry-mirrors` en `/etc/docker/daemon.json`, que Docker usa automáticamente y la página de ajustes muestra en solo lectura como «Réplicas del daemon» |
 | `registries` | Credenciales de registros privados (`server`, `username`, `password`); la contraseña se enmascara en la interfaz |
-| `autoCheckHours` | Si es mayor que 0, las actualizaciones de las imágenes de los contenedores se comprueban automáticamente con este intervalo en horas; 0 lo desactiva |
+| `autoCheckHours` | Si es mayor que 0, las actualizaciones de las imágenes de los contenedores se comprueban automáticamente con este intervalo en horas; 0 lo desactiva; las imágenes más recientes publican un evento `docker.update`, una vez por imagen nueva |
 
 ## Tareas en segundo plano
 

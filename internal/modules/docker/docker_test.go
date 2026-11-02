@@ -13,8 +13,10 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/wangwanjie/gately/internal/config"
+	"github.com/wangwanjie/gately/internal/events"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
 )
@@ -294,5 +296,76 @@ func TestNegotiateVersion(t *testing.T) {
 		if got := negotiateVersion(c.max, c.min); got != c.want {
 			t.Errorf("negotiateVersion(%q, %q) = %q，期望 %q", c.max, c.min, got, c.want)
 		}
+	}
+}
+
+// 定时检查发现镜像更新时通知一次；同一个新镜像不重复通知，出现更新的镜像时再次通知
+func TestAutoCheckNotifiesImageUpdates(t *testing.T) {
+	f, host := startFake(t)
+	m := newModule(t, host)
+	var mu sync.Mutex
+	var got []events.Event
+	unsub := events.Subscribe(func(e events.Event) {
+		if e.Type == events.DockerUpdate {
+			mu.Lock()
+			got = append(got, e)
+			mu.Unlock()
+		}
+	})
+	defer unsub()
+	take := func() []events.Event {
+		time.Sleep(50 * time.Millisecond)
+		mu.Lock()
+		defer mu.Unlock()
+		out := got
+		got = nil
+		return out
+	}
+	m.autoCheckOnce(context.Background())
+	evs := take()
+	if len(evs) != 1 || evs[0].Fields["count"] != "1" || !strings.Contains(evs[0].Message, "nginx (nginx:1.27)") {
+		t.Fatalf("应通知一次镜像更新: %+v", evs)
+	}
+	m.autoCheckOnce(context.Background())
+	if evs := take(); len(evs) != 0 {
+		t.Fatalf("同一个新镜像不应重复通知: %+v", evs)
+	}
+	f.mu.Lock()
+	f.pullTo = "sha256:newer"
+	f.mu.Unlock()
+	m.autoCheckOnce(context.Background())
+	if evs := take(); len(evs) != 1 {
+		t.Fatalf("出现更新的镜像时应再次通知: %+v", evs)
+	}
+	// 手动检查不发通知
+	c, _ := NewClient(host)
+	if err := m.checkAll(context.Background(), c, func(string) {}, nil); err != nil {
+		t.Fatal(err)
+	}
+	if evs := take(); len(evs) != 0 {
+		t.Fatalf("手动检查不应通知: %+v", evs)
+	}
+}
+
+func TestPublishImageUpdatesLimit(t *testing.T) {
+	ch := make(chan events.Event, 1)
+	unsub := events.Subscribe(func(e events.Event) {
+		if e.Type == events.DockerUpdate {
+			ch <- e
+		}
+	})
+	defer unsub()
+	var names []string
+	for i := range maxUpdateNames + 5 {
+		names = append(names, fmt.Sprintf("c%d (img)", i))
+	}
+	publishImageUpdates(names)
+	select {
+	case e := <-ch:
+		if strings.Contains(e.Message, fmt.Sprintf("c%d (", maxUpdateNames)) || !strings.Contains(e.Message, fmt.Sprintf("等 %d 个", len(names))) {
+			t.Fatalf("超出上限的容器应以数量概括: %s", e.Message)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("没有收到通知")
 	}
 }

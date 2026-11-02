@@ -174,6 +174,16 @@ Sem `-c`, o comando procura, nesta ordem, em `GATELY_CONFIG_DIR`, em `data` no d
 
 ## Atualização
 
+### Verificação automática de atualizações e alertas de segurança {#update-check}
+
+Por padrão, o Gately consulta o GitHub a cada 12 horas para ler a lista de versões do Gately e os [avisos de segurança publicados](https://github.com/wangwanjie/gately/security/advisories), e verifica a versão mais recente dos programas gerenciados instalados online (frp, túnel Cloudflare, Tailscale, File Browser). Todas as requisições são GET anônimas e não levam informações do dispositivo, da configuração ou do uso.
+
+- **Nova versão**: um aviso aparece no topo da interface; você pode ver as novidades ou ignorar essa versão;
+- **Atualização de segurança**: quando a versão atual está no intervalo afetado de um aviso, ou uma versão mais nova traz nas notas uma seção de correções de segurança, um aviso vermelho no topo lista os avisos e versões. O alerta de segurança só pode ser adiado por 24 horas e volta na hora se surgir um novo problema de segurança;
+- **Notificações**: uma nova versão ou um novo problema de segurança publica o evento `system.update` / `system.security`, e uma nova versão de programa gerenciado publica `program.update`. Adicione uma regra com o modelo "Atualizações" em [Notificações](/pt-BR/docs/modules/notify) para recebê-las. Cada versão e cada problema de segurança é notificado uma única vez, mesmo após reiniciar.
+
+O resultado fica salvo em `update-check.json` no diretório de configuração e, após atualizar, é reavaliado para a nova versão sem outra verificação. A primeira verificação ocorre cerca de 3 minutos após a inicialização (ou espera até completar 12 horas desde a última bem-sucedida) e, se falhar, é repetida depois de uma hora; o GitHub é acessado pelo proxy de atualização descrito abaixo. É possível desativá-la na página Sobre ou em Configurações → Rede e execução; aí o GitHub só é consultado ao clicar em "Verificar atualizações". A verificação automática apenas avisa: nunca baixa nem instala nada.
+
 ### Atualização online {#online-upgrade}
 
 Instalações binárias no Linux (systemd, contêineres LXC do PVE, OpenWrt implantado manualmente etc.) podem ser atualizadas online pela página Sobre do painel: clique em "Verificar atualizações" e, havendo versão nova, em "Atualizar agora". Isso vale também para contêineres LXC criados no PVE a partir da imagem OCI, sem precisar apagá-los e recriá-los. O Gately vai:

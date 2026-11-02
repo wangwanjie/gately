@@ -100,6 +100,7 @@ Ao criar uma regra, clique em um modelo para preencher eventos, nível e tempo d
 | Segurança e logins | Falha de login, IP banido, login bem-sucedido, acesso a conteúdo sensível |
 | Alertas de desempenho | Disparo e recuperação de alertas de desempenho (sem silêncio) |
 | Alterações de configuração | Cada alteração de configuração na interface de administração |
+| Atualizações | Atualizações de segurança e novas versões do Gately, novas versões de programas gerenciados e imagens de contêiner (sem silêncio) |
 
 ## Tipos de evento
 
@@ -124,6 +125,10 @@ Ao criar uma regra, clique em um modelo para preencher eventos, nível e tempo d
 | `audit.access` | Interface de administração: acesso a conteúdo sensível | Aviso | Download de backup, pacote de diagnóstico ou chave privada de certificado, abertura de terminal etc.; mesmos campos |
 | `perf.alert` | Desempenho: alerta disparado | Aviso ou erro | A condição de uma regra de alerta de desempenho se manteve pela duração definida; o nível vem da regra, com os campos `rule`, `metric`, `target`, `value` e `condition`; veja [Desempenho](/pt-BR/docs/modules/perf) |
 | `perf.recovered` | Desempenho: alerta recuperado | Informação | A condição de um alerta de desempenho disparado deixou de valer; mesmos campos |
+| `system.update` | Gately: nova versão disponível | Info | Uma verificação automática ou manual encontrou uma nova versão; campos `current`, `latest`, `url`; cada versão é notificada uma vez, veja [Verificação automática de atualizações](/pt-BR/docs/guide/install#update-check) |
+| `system.security` | Gately: atualização de segurança | Erro | A versão atual é afetada por um aviso de segurança publicado, ou uma versão mais nova contém correções de segurança; campos `current`, `latest`, `url`, `advisories`, `securityReleases`; nova notificação quando surge um novo problema |
+| `program.update` | Programas gerenciados: nova versão disponível | Info | A verificação automática encontrou uma nova versão de frp, cloudflared, Tailscale ou File Browser instalados; a origem é o nome do programa; campos `program`, `current`, `latest` |
+| `docker.update` | Docker: imagem mais recente disponível | Info | A verificação agendada do Docker encontrou imagens mais recentes; uma notificação por verificação, uma vez por imagem nova; campo `count` |
 | `notify.test` | Notificação de teste | Info | Gerada pelo botão "Testar" do canal; não participa da correspondência de regras |
 
 ## Enviar um teste

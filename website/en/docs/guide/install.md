@@ -174,6 +174,16 @@ Without `-c`, the command looks in `GATELY_CONFIG_DIR`, `data` in the current di
 
 ## Upgrading
 
+### Automatic update checks and security alerts {#update-check}
+
+By default Gately contacts GitHub every 12 hours to read Gately's release list and [published security advisories](https://github.com/wangwanjie/gately/security/advisories), and queries the latest upstream version of managed programs installed online (frp, Cloudflare Tunnel, Tailscale, File Browser). All requests are anonymous GETs and carry no device, configuration or usage information.
+
+- **New version**: a notice appears at the top of the admin UI; you can view the release notes or skip that version;
+- **Security update**: when the current version falls within the affected range of an advisory, or a release newer than the current version has a security-fix section in its notes, a red notice at the top lists the advisories and versions. A security notice can only be postponed for 24 hours, and it returns immediately when a new security issue appears;
+- **Notifications**: a new version or a new security issue publishes a `system.update` / `system.security` event, and a new version of a managed program publishes `program.update`. Add a rule from the "Updates" template in [Notifications](/en/docs/modules/notify) to receive them. Each version and each security issue is notified once, and restarts do not repeat it.
+
+The result is saved in `update-check.json` in the config directory and is re-evaluated for the new version after an upgrade, without another check. The first check runs about 3 minutes after startup (or waits until 12 hours have passed since the last successful check), and a failed check is retried after an hour; GitHub is reached through the update proxy described below. Automatic checks can be turned off on the About page or in Settings → Network & runtime, after which GitHub is contacted only when you click Check for updates. Automatic checks only notify you; they never download or install anything.
+
 ### Online upgrade {#online-upgrade}
 
 Linux binary installs (systemd, PVE LXC containers, manual OpenWrt installs and so on) can upgrade online from the About page of the admin UI: click "Check for Updates", then "Upgrade now" when a new version is found. This also works for LXC containers created in PVE from the OCI image, so there is no need to delete and recreate them. Gately will:

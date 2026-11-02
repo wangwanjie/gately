@@ -154,7 +154,12 @@
     },
     "uninstall": "Uninstall",
     "confirmUninstall": "Delete {files} and all previous versions from {dir}? Processes using it restart and cannot run unless a program of the same name is in PATH. The module settings are kept.",
-    "uninstalled": "{name} uninstalled"
+    "uninstalled": "{name} uninstalled",
+    "checkUpdate": "Check for updates",
+    "newVersion": "New version {version}",
+    "latestVersion": "Latest version {version} (checked {time})",
+    "checkFailed": "Update check failed: {error}",
+    "latestOnly": "The latest version is {version}"
   },
   "resetConfig": {
     "button": "Restore defaults",

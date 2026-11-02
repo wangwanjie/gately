@@ -160,6 +160,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/tailscale/logout` | `tailscale:write` | Выйти из Tailscale |
 | GET | `/api/tailscale/install` | `tailscale:read` | Просмотр сведений об установке и хода установки управляемой программы |
 | POST | `/api/tailscale/install` | `tailscale:write` | Установить или обновить управляемую программу онлайн |
+| POST | `/api/tailscale/install/check` | `tailscale:write` | Проверить обновления управляемой программы |
 | POST | `/api/tailscale/install/rollback` | `tailscale:write` | Переключиться на сохранённую предыдущую версию |
 | DELETE | `/api/tailscale/install` | `tailscale:write` | Удалить управляемую программу |
 | DELETE | `/api/tailscale/install/backups/{id}` | `tailscale:write` | Удалить сохранённую предыдущую версию |
@@ -204,6 +205,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/frp/import` | `frp:write` | Импорт существующей конфигурации frpc / frps (поддерживаются старый ini и новый toml); если apply равен false, выполняется только предпросмотр |
 | GET | `/api/frp/install` | `frp:read` | Просмотр сведений об установке и хода установки управляемой программы |
 | POST | `/api/frp/install` | `frp:write` | Установить или обновить управляемую программу онлайн |
+| POST | `/api/frp/install/check` | `frp:write` | Проверить обновления управляемой программы |
 | POST | `/api/frp/install/rollback` | `frp:write` | Переключиться на сохранённую предыдущую версию |
 | DELETE | `/api/frp/install` | `frp:write` | Удалить управляемую программу |
 | DELETE | `/api/frp/install/backups/{id}` | `frp:write` | Удалить сохранённую предыдущую версию |
@@ -236,6 +238,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/cloudflared/settings` | `cloudflared:write` | Сохранить настройки туннеля Cloudflare |
 | GET | `/api/cloudflared/install` | `cloudflared:read` | Просмотр сведений об установке и хода установки управляемой программы |
 | POST | `/api/cloudflared/install` | `cloudflared:write` | Установить или обновить управляемую программу онлайн |
+| POST | `/api/cloudflared/install/check` | `cloudflared:write` | Проверить обновления управляемой программы |
 | POST | `/api/cloudflared/install/rollback` | `cloudflared:write` | Переключиться на сохранённую предыдущую версию |
 | DELETE | `/api/cloudflared/install` | `cloudflared:write` | Удалить управляемую программу |
 | DELETE | `/api/cloudflared/install/backups/{id}` | `cloudflared:write` | Удалить сохранённую предыдущую версию |
@@ -583,6 +586,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/filebrowser/settings` | `filebrowser:write` | Сохранить настройки программы File Browser |
 | GET | `/api/filebrowser/install` | `filebrowser:read` | Просмотр сведений об установке и хода установки управляемой программы |
 | POST | `/api/filebrowser/install` | `filebrowser:write` | Установить или обновить управляемую программу онлайн |
+| POST | `/api/filebrowser/install/check` | `filebrowser:write` | Проверить обновления управляемой программы |
 | POST | `/api/filebrowser/install/rollback` | `filebrowser:write` | Переключиться на сохранённую предыдущую версию |
 | DELETE | `/api/filebrowser/install` | `filebrowser:write` | Удалить управляемую программу |
 | DELETE | `/api/filebrowser/install/backups/{id}` | `filebrowser:write` | Удалить сохранённую предыдущую версию |
@@ -716,7 +720,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/system/settings` | Только сессия входа | Сохранить глобальные настройки |
 | GET | `/api/system/settings/secrets` | Только сессия входа | Показать Client Secret стороннего входа открытым текстом |
 | GET | `/api/system/info` | `status:read` | Просмотр информации о системе |
-| GET | `/api/system/update` | `status:read` | Проверить наличие новой версии |
+| GET | `/api/system/update` | `status:read` | Проверить новые версии и бюллетени безопасности |
+| GET | `/api/system/update/state` | `system:read` | Результат последней проверки обновлений |
 | POST | `/api/system/upgrade` | Только сессия входа | Обновить онлайн до последней версии |
 | GET | `/api/system/upgrade/status` | Только сессия входа | Показать ход онлайн-обновления |
 | POST | `/api/system/upgrade/cancel` | Только сессия входа | Отменить онлайн-обновление |

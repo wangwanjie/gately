@@ -6163,6 +6163,57 @@
         "x-token-allowed": true
       }
     },
+    "/api/cloudflared/install/check": {
+      "post": {
+        "description": "Sin cuerpo de solicitud. Consulta la última versión estable del proyecto original (con el proxy de descarga del programa o, si no hay, el ajuste global `updateProxy`) sin descargar ni modificar el programa instalado; devuelve lo mismo que `GET /api/{module}/install`, donde `latest` es `{version, checkedAt, error, hasUpdate}` y `hasUpdate` indica que la última versión es más reciente que la instalada en bin. Con la comprobación automática de actualizaciones activada, Gately también ejecuta esta comprobación periódicamente para los programas gestionados instalados. Devuelve 409 si ya hay una comprobación en curso.\n\nPermiso necesario: `cloudflared:write`.",
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Buscar actualizaciones de un programa gestionado",
+        "tags": [
+          "Túnel de Cloudflare"
+        ],
+        "x-required-scope": "cloudflared:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/cloudflared/install/rollback": {
       "post": {
         "description": "Cuerpo `{\"id\": \"\u003cID de versión anterior\u003e\"}`. La versión actual se guarda como versión anterior para poder volver a ella; después se reinician los procesos que usan el programa.\n\nPermiso necesario: `cloudflared:write`.",
@@ -14089,6 +14140,57 @@
         "x-token-allowed": true
       }
     },
+    "/api/filebrowser/install/check": {
+      "post": {
+        "description": "Sin cuerpo de solicitud. Consulta la última versión estable del proyecto original (con el proxy de descarga del programa o, si no hay, el ajuste global `updateProxy`) sin descargar ni modificar el programa instalado; devuelve lo mismo que `GET /api/{module}/install`, donde `latest` es `{version, checkedAt, error, hasUpdate}` y `hasUpdate` indica que la última versión es más reciente que la instalada en bin. Con la comprobación automática de actualizaciones activada, Gately también ejecuta esta comprobación periódicamente para los programas gestionados instalados. Devuelve 409 si ya hay una comprobación en curso.\n\nPermiso necesario: `filebrowser:write`.",
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Buscar actualizaciones de un programa gestionado",
+        "tags": [
+          "File Browser"
+        ],
+        "x-required-scope": "filebrowser:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/filebrowser/install/rollback": {
       "post": {
         "description": "Cuerpo `{\"id\": \"\u003cID de versión anterior\u003e\"}`. La versión actual se guarda como versión anterior para poder volver a ella; después se reinician los procesos que usan el programa.\n\nPermiso necesario: `filebrowser:write`.",
@@ -16380,6 +16482,57 @@
           }
         ],
         "summary": "Eliminar una versión anterior guardada",
+        "tags": [
+          "Traversal de red interna frp"
+        ],
+        "x-required-scope": "frp:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/frp/install/check": {
+      "post": {
+        "description": "Sin cuerpo de solicitud. Consulta la última versión estable del proyecto original (con el proxy de descarga del programa o, si no hay, el ajuste global `updateProxy`) sin descargar ni modificar el programa instalado; devuelve lo mismo que `GET /api/{module}/install`, donde `latest` es `{version, checkedAt, error, hasUpdate}` y `hasUpdate` indica que la última versión es más reciente que la instalada en bin. Con la comprobación automática de actualizaciones activada, Gately también ejecuta esta comprobación periódicamente para los programas gestionados instalados. Devuelve 409 si ya hay una comprobación en curso.\n\nPermiso necesario: `frp:write`.",
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Buscar actualizaciones de un programa gestionado",
         "tags": [
           "Traversal de red interna frp"
         ],
@@ -30179,7 +30332,7 @@
     },
     "/api/system/update": {
       "get": {
-        "description": "Usa el proxy del ajuste global `updateProxy` para acceder a GitHub. `selfUpgrade.supported` indica si esta instalación puede actualizarse en línea; si no, `reason` es `os`, `docker`, `fnos`, `opkg`, `apk` o `readonly`.\n\nPermiso necesario: `status:read`.",
+        "description": "Lee de inmediato la lista de versiones de GitHub y los avisos de seguridad publicados de Gately (GitHub Security Advisories), usando el proxy del ajuste global `updateProxy`; si la última comprobación correcta fue hace menos de 30 segundos, devuelve el resultado anterior. `hasUpdate` indica que hay una versión nueva; `security` es true cuando la versión actual está afectada por problemas de seguridad publicados, `advisories` enumera los avisos que afectan a la versión actual (`id`, `summary`, `severity`, `url`, `ranges`) y `securityReleases` las versiones más recientes cuyas notas incluyen una sección de seguridad. `selfUpgrade.supported` indica si este despliegue puede actualizarse en línea; si no, `reason` es `os`, `docker`, `fnos`, `opkg`, `apk` o `readonly`. Devuelve 502 si la lectura falla.\n\nPermiso necesario: `status:read`.",
         "responses": {
           "200": {
             "description": "Correcto"
@@ -30220,11 +30373,62 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Buscar nueva versión",
+        "summary": "Buscar nuevas versiones y avisos de seguridad",
         "tags": [
           "Sistema"
         ],
         "x-required-scope": "status:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/system/update/state": {
+      "get": {
+        "description": "No accede a la red. Devuelve el resultado más reciente guardado por la comprobación automática o manual, con los mismos campos que `GET /api/system/update` más `autoCheck` (si la comprobación automática está activada), `checkedAt` (hora de la última comprobación correcta) y `error` y `failedAt` del último fallo. `latest` está vacío si ninguna comprobación ha tenido éxito.\n\nPermiso necesario: `system:read`.",
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ver el resultado de la última comprobación de actualizaciones",
+        "tags": [
+          "Sistema"
+        ],
+        "x-required-scope": "system:read",
         "x-token-allowed": true
       }
     },
@@ -30624,6 +30828,57 @@
           }
         ],
         "summary": "Eliminar una versión anterior guardada",
+        "tags": [
+          "Red Tailscale"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/install/check": {
+      "post": {
+        "description": "Sin cuerpo de solicitud. Consulta la última versión estable del proyecto original (con el proxy de descarga del programa o, si no hay, el ajuste global `updateProxy`) sin descargar ni modificar el programa instalado; devuelve lo mismo que `GET /api/{module}/install`, donde `latest` es `{version, checkedAt, error, hasUpdate}` y `hasUpdate` indica que la última versión es más reciente que la instalada en bin. Con la comprobación automática de actualizaciones activada, Gately también ejecuta esta comprobación periódicamente para los programas gestionados instalados. Devuelve 409 si ya hay una comprobación en curso.\n\nPermiso necesario: `tailscale:write`.",
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Buscar actualizaciones de un programa gestionado",
         "tags": [
           "Red Tailscale"
         ],

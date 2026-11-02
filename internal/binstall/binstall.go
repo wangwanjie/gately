@@ -180,6 +180,9 @@ type Installer struct {
 	probeMod  time.Time
 	probeSize int64
 	probeVer  string
+	// latest 为最近一次查询到的上游最新版本，由 mu 保护；checkMu 保证同一时间只查询一次
+	latest  Latest
+	checkMu sync.Mutex
 }
 
 // New 创建安装器。

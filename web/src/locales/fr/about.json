@@ -12,7 +12,7 @@
   "latestRelease": " (dernière version : {latest})",
   "publishedAt": "Publiée le {time}",
   "viewRelease": "Voir la page de la version",
-  "updateHint": "La recherche de mises à jour et la mise à niveau en ligne ne contactent GitHub que lorsque vous cliquez ; Gately ne se connecte jamais de lui-même.",
+  "updateHint": "Avec la vérification automatique, Gately interroge GitHub toutes les 12 heures pour lire la liste des versions et les avis de sécurité, sans envoyer aucune information ; désactivée, GitHub n'est contacté que lorsque vous cliquez sur « Rechercher des mises à jour ».",
   "upgrade": {
     "now": "Mettre à niveau",
     "title": "Mise à niveau en ligne",
@@ -55,7 +55,8 @@
     },
     "gotIt": "Compris",
     "cancel": "Annuler la mise à niveau",
-    "canceled": "Mise à niveau annulée"
+    "canceled": "Mise à niveau annulée",
+    "foundSecurity": "Mise à jour de sécurité disponible"
   },
   "proxy": {
     "label": "Proxy de mise à jour : ",
@@ -163,5 +164,27 @@
     "siteZip": "Archive zip du site complet",
     "portforward": "Redirection de ports",
     "cert": "Certificats"
+  },
+  "autoCheck": {
+    "label": "Vérification automatique des mises à jour",
+    "last": "Dernière vérification : {time}",
+    "pending": "La vérification automatique est activée ; la première a lieu quelques minutes après le démarrage",
+    "off": "La vérification automatique est désactivée ; GitHub n'est contacté que lorsque vous cliquez sur « Rechercher des mises à jour »",
+    "failed": "La dernière vérification a échoué : {error}",
+    "enabled": "Vérification automatique activée",
+    "disabled": "Vérification automatique désactivée"
+  },
+  "security": {
+    "title": "La version actuelle {current} est concernée par des problèmes de sécurité publiés",
+    "severity": {
+      "low": "Faible",
+      "medium": "Moyenne",
+      "high": "Élevée",
+      "critical": "Critique"
+    },
+    "fixedIn": "corrigé dans {version}",
+    "releases": "Ces versions plus récentes contiennent des correctifs de sécurité : {versions}",
+    "advice": "Mettez à jour vers {latest} dès que possible.",
+    "noFix": "Vous utilisez déjà la dernière version. En attendant une version corrigée, appliquez les mesures d'atténuation de l'avis."
   }
 }

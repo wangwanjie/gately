@@ -1,7 +1,6 @@
 package app
 
 import (
-	"context"
 	"crypto/rand"
 	"crypto/tls"
 	"encoding/hex"
@@ -160,24 +159,6 @@ func (a *App) handleSystemInfo(w http.ResponseWriter, r *http.Request) {
 func fileExists(p string) bool {
 	_, err := os.Stat(p)
 	return err == nil
-}
-
-func (a *App) handleCheckUpdate(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := context.WithTimeout(r.Context(), 15*time.Second)
-	defer cancel()
-	rel, err := fetchLatestRelease(ctx, a.updateClient())
-	if err != nil {
-		httpx.Error(w, http.StatusBadGateway, "%v", err)
-		return
-	}
-	httpx.OK(w, map[string]any{
-		"current": version.Version, "latest": rel.TagName, "url": rel.HTMLURL, "notes": rel.Body,
-		"publishedAt": rel.PublishedAt, "hasUpdate": versionNewer(rel.TagName, version.Version),
-		// 版本号无法比较（如开发版 dev）时前端提示用户自行确认，避免误报“已是最新”
-		"comparable": versionComparable(rel.TagName, version.Version),
-		// 能否在线升级，前端据此显示“立即升级”或对应部署方式的升级说明
-		"selfUpgrade": a.upgradeSupport(),
-	})
 }
 
 // ---- Lucky 基础设置导入 ----

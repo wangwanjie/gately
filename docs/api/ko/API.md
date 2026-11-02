@@ -160,6 +160,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/tailscale/logout` | `tailscale:write` | Tailscale 로그아웃 |
 | GET | `/api/tailscale/install` | `tailscale:read` | 관리 프로그램의 설치 정보와 진행 상태 보기 |
 | POST | `/api/tailscale/install` | `tailscale:write` | 관리 프로그램 온라인 설치 또는 업데이트 |
+| POST | `/api/tailscale/install/check` | `tailscale:write` | 관리 프로그램 업데이트 확인 |
 | POST | `/api/tailscale/install/rollback` | `tailscale:write` | 저장된 이전 버전으로 전환 |
 | DELETE | `/api/tailscale/install` | `tailscale:write` | 관리 프로그램 제거 |
 | DELETE | `/api/tailscale/install/backups/{id}` | `tailscale:write` | 저장된 이전 버전 삭제 |
@@ -204,6 +205,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/frp/import` | `frp:write` | 기존 frpc / frps 설정 가져오기 (구버전 ini와 신버전 toml 지원). apply가 false이면 미리보기만 수행 |
 | GET | `/api/frp/install` | `frp:read` | 관리 프로그램의 설치 정보와 진행 상태 보기 |
 | POST | `/api/frp/install` | `frp:write` | 관리 프로그램 온라인 설치 또는 업데이트 |
+| POST | `/api/frp/install/check` | `frp:write` | 관리 프로그램 업데이트 확인 |
 | POST | `/api/frp/install/rollback` | `frp:write` | 저장된 이전 버전으로 전환 |
 | DELETE | `/api/frp/install` | `frp:write` | 관리 프로그램 제거 |
 | DELETE | `/api/frp/install/backups/{id}` | `frp:write` | 저장된 이전 버전 삭제 |
@@ -236,6 +238,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/cloudflared/settings` | `cloudflared:write` | Cloudflare 터널 설정 저장 |
 | GET | `/api/cloudflared/install` | `cloudflared:read` | 관리 프로그램의 설치 정보와 진행 상태 보기 |
 | POST | `/api/cloudflared/install` | `cloudflared:write` | 관리 프로그램 온라인 설치 또는 업데이트 |
+| POST | `/api/cloudflared/install/check` | `cloudflared:write` | 관리 프로그램 업데이트 확인 |
 | POST | `/api/cloudflared/install/rollback` | `cloudflared:write` | 저장된 이전 버전으로 전환 |
 | DELETE | `/api/cloudflared/install` | `cloudflared:write` | 관리 프로그램 제거 |
 | DELETE | `/api/cloudflared/install/backups/{id}` | `cloudflared:write` | 저장된 이전 버전 삭제 |
@@ -583,6 +586,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/filebrowser/settings` | `filebrowser:write` | File Browser 프로그램 설정 저장 |
 | GET | `/api/filebrowser/install` | `filebrowser:read` | 관리 프로그램의 설치 정보와 진행 상태 보기 |
 | POST | `/api/filebrowser/install` | `filebrowser:write` | 관리 프로그램 온라인 설치 또는 업데이트 |
+| POST | `/api/filebrowser/install/check` | `filebrowser:write` | 관리 프로그램 업데이트 확인 |
 | POST | `/api/filebrowser/install/rollback` | `filebrowser:write` | 저장된 이전 버전으로 전환 |
 | DELETE | `/api/filebrowser/install` | `filebrowser:write` | 관리 프로그램 제거 |
 | DELETE | `/api/filebrowser/install/backups/{id}` | `filebrowser:write` | 저장된 이전 버전 삭제 |
@@ -716,7 +720,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/system/settings` | 로그인 세션 전용 | 전역 설정 저장 |
 | GET | `/api/system/settings/secrets` | 로그인 세션 전용 | 서드파티 로그인 Client Secret 평문 보기 |
 | GET | `/api/system/info` | `status:read` | 시스템 정보 보기 |
-| GET | `/api/system/update` | `status:read` | 새 버전 확인 |
+| GET | `/api/system/update` | `status:read` | 새 버전과 보안 공지 확인 |
+| GET | `/api/system/update/state` | `system:read` | 마지막 업데이트 확인 결과 보기 |
 | POST | `/api/system/upgrade` | 로그인 세션 전용 | 최신 버전으로 온라인 업그레이드 |
 | GET | `/api/system/upgrade/status` | 로그인 세션 전용 | 온라인 업그레이드 진행 상황 보기 |
 | POST | `/api/system/upgrade/cancel` | 로그인 세션 전용 | 온라인 업그레이드 취소 |

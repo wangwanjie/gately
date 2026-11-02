@@ -10,5 +10,14 @@
   "logoutOk": "ログアウト",
   "readonlyBadge": "読み取り専用",
   "defaultPassword": "デフォルトパスワード {password} のままです。このパスワードを知っている人は誰でも管理画面にログインできるため、すぐに変更してください。",
-  "changeNow": "今すぐ変更"
+  "changeNow": "今すぐ変更",
+  "update": {
+    "available": "新しいバージョン {latest} があります（現在 {current}）",
+    "securityAdvisories": "現在のバージョン {current} は公開済みのセキュリティ問題（{count} 件）の影響を受けます。できるだけ早く {latest} にアップグレードしてください",
+    "securityNoFix": "現在のバージョン {current} は公開済みのセキュリティ問題（{count} 件）の影響を受けます。修正版はまだ公開されていません。アドバイザリーの緩和策を確認してください",
+    "securityReleases": "{versions} には現在のバージョン {current} にないセキュリティ修正が含まれます。できるだけ早く {latest} にアップグレードしてください",
+    "view": "詳細",
+    "snooze": "明日また通知",
+    "skip": "このバージョンをスキップ"
+  }
 }

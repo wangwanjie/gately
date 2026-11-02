@@ -12,7 +12,7 @@
   "latestRelease": " (última versión {latest})",
   "publishedAt": "Publicada {time}",
   "viewRelease": "Ver página de la versión",
-  "updateHint": "Buscar actualizaciones y actualizar en línea solo accede a GitHub cuando haces clic; Gately nunca se conecta por su cuenta.",
+  "updateHint": "Con la comprobación automática activada, Gately consulta GitHub cada 12 horas para leer la lista de versiones y los avisos de seguridad, sin enviar ninguna información; si la desactivas, solo se consulta al pulsar «Buscar actualizaciones».",
   "upgrade": {
     "now": "Actualizar ahora",
     "title": "Actualización en línea",
@@ -55,7 +55,8 @@
     },
     "gotIt": "Entendido",
     "cancel": "Cancelar actualización",
-    "canceled": "Actualización cancelada"
+    "canceled": "Actualización cancelada",
+    "foundSecurity": "Actualización de seguridad disponible"
   },
   "proxy": {
     "label": "Proxy de actualización: ",
@@ -163,5 +164,27 @@
     "siteZip": "Zip de todo el sitio",
     "portforward": "Reenvío de puertos",
     "cert": "Certificados"
+  },
+  "autoCheck": {
+    "label": "Comprobar actualizaciones automáticamente",
+    "last": "Última comprobación: {time}",
+    "pending": "La comprobación automática está activada; la primera se hace unos minutos después del arranque",
+    "off": "La comprobación automática está desactivada; solo se consulta GitHub al pulsar «Buscar actualizaciones»",
+    "failed": "La última comprobación falló: {error}",
+    "enabled": "Comprobación automática activada",
+    "disabled": "Comprobación automática desactivada"
+  },
+  "security": {
+    "title": "La versión actual {current} está afectada por problemas de seguridad publicados",
+    "severity": {
+      "low": "Baja",
+      "medium": "Media",
+      "high": "Alta",
+      "critical": "Crítica"
+    },
+    "fixedIn": "corregido en {version}",
+    "releases": "Estas versiones más recientes incluyen correcciones de seguridad: {versions}",
+    "advice": "Actualiza a {latest} lo antes posible.",
+    "noFix": "Ya tienes la última versión. Hasta que se publique una versión corregida, aplica las mitigaciones del aviso."
   }
 }

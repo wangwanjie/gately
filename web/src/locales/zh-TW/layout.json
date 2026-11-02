@@ -10,5 +10,14 @@
   "logoutOk": "登出",
   "readonlyBadge": "唯讀",
   "defaultPassword": "目前仍在使用預設密碼 {password}，知道它的人都能登入管理介面，請立即修改。",
-  "changeNow": "立即修改"
+  "changeNow": "立即修改",
+  "update": {
+    "available": "發現新版本 {latest}（目前 {current}）",
+    "securityAdvisories": "目前版本 {current} 受已公開的安全問題影響（{count} 個），請盡快升級到 {latest}",
+    "securityNoFix": "目前版本 {current} 受已公開的安全問題影響（{count} 個），修正版本尚未發布，請查看公告中的緩解措施",
+    "securityReleases": "{versions} 包含安全修正，目前版本 {current} 尚未包含，請盡快升級到 {latest}",
+    "view": "查看",
+    "snooze": "明天再提醒",
+    "skip": "忽略此版本"
+  }
 }

@@ -154,7 +154,12 @@
     },
     "uninstall": "卸载",
     "confirmUninstall": "删除 {dir} 下的 {files} 与全部旧版本？使用它的进程会重启，PATH 中没有同名程序时将无法运行。模块配置保留。",
-    "uninstalled": "已卸载 {name}"
+    "uninstalled": "已卸载 {name}",
+    "checkUpdate": "检查更新",
+    "newVersion": "新版本 {version}",
+    "latestVersion": "最新版本 {version}（检查于 {time}）",
+    "checkFailed": "检查更新失败：{error}",
+    "latestOnly": "最新版本为 {version}"
   },
   "resetConfig": {
     "button": "恢复默认配置",

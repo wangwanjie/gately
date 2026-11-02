@@ -4,7 +4,7 @@ Gately funciona en el borde de la red y maneja claves de proveedores DNS, claves
 
 ## Compromiso de privacidad
 
-- **Cero conexiones salientes por defecto**: sin conexiones a servidores del proyecto, sin envío de datos del dispositivo y sin envío remoto de configuración.
+- **Sin conexiones a servidores del proyecto**: sin envío de datos del dispositivo y sin envío remoto de configuración. Por defecto, Gately lee de forma anónima la lista de versiones y los avisos de seguridad de GitHub cada 12 horas, solo para avisarte de versiones nuevas y actualizaciones de seguridad; se puede desactivar, consulta [Comprobación automática de actualizaciones](/es/docs/guide/install#update-check).
 - **Direcciones salientes visibles y editables**: la consulta de IP pública, los servidores STUN y direcciones similares se muestran en la interfaz y se pueden cambiar o desactivar.
 - **Inicio de sesión de terceros bajo tu control**: el acceso con GitHub, Google, QQ y OIDC usa aplicaciones OAuth que registras tú mismo, sin ningún relé intermedio.
 - **Actualizaciones bajo tu control**: el programa nunca se descarga ni se reemplaza a sí mismo en segundo plano. La actualización en línea de las instalaciones binarias en Linux solo se ejecuta cuando un administrador hace clic, verifica el SHA-256 y conserva la versión anterior; tú decides cuándo actualizar.

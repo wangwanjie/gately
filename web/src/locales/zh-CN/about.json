@@ -12,7 +12,7 @@
   "latestRelease": "（最新发布 {latest}）",
   "publishedAt": "发布于 {time}",
   "viewRelease": "查看发布页",
-  "updateHint": "检查更新与在线升级只在点击时访问 GitHub，平时不会主动联网。",
+  "updateHint": "开启自动检查时每 12 小时访问一次 GitHub，只读取发布列表与安全公告，不发送任何信息；关闭后只在点击“检查更新”时访问。",
   "upgrade": {
     "now": "立即升级",
     "title": "在线升级",
@@ -55,7 +55,8 @@
     },
     "gotIt": "知道了",
     "cancel": "取消升级",
-    "canceled": "已取消升级"
+    "canceled": "已取消升级",
+    "foundSecurity": "发现安全更新"
   },
   "proxy": {
     "label": "更新代理：",
@@ -163,5 +164,27 @@
     "siteZip": "整站 zip",
     "portforward": "端口转发",
     "cert": "证书"
+  },
+  "autoCheck": {
+    "label": "自动检查更新",
+    "last": "上次检查：{time}",
+    "pending": "自动检查已开启，启动几分钟后进行首次检查",
+    "off": "自动检查已关闭，只在点击“检查更新”时访问 GitHub",
+    "failed": "最近一次检查失败：{error}",
+    "enabled": "已开启自动检查更新",
+    "disabled": "已关闭自动检查更新"
+  },
+  "security": {
+    "title": "当前版本 {current} 受已公开的安全问题影响",
+    "severity": {
+      "low": "低危",
+      "medium": "中危",
+      "high": "高危",
+      "critical": "严重"
+    },
+    "fixedIn": "已在 {version} 修复",
+    "releases": "以下新版本包含安全修复：{versions}",
+    "advice": "请尽快升级到 {latest}。",
+    "noFix": "当前已是最新版本，修复版本发布前请按公告中的缓解措施处理。"
   }
 }

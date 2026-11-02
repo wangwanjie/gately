@@ -142,7 +142,9 @@
     },
     "serverLanguage": "Langue du serveur",
     "serverLanguageAuto": "Suivre le système",
-    "serverLanguageHelp": "Langue des journaux, des notifications et des autres sorties sans contexte de page. Si le champ est vide, elle suit l'environnement du système (GATELY_LANG, LANG) ; si l'environnement n'indique aucune langue, elle suit celle de la dernière connexion à la console d'administration."
+    "serverLanguageHelp": "Langue des journaux, des notifications et des autres sorties sans contexte de page. Si le champ est vide, elle suit l'environnement du système (GATELY_LANG, LANG) ; si l'environnement n'indique aucune langue, elle suit celle de la dernière connexion à la console d'administration.",
+    "autoUpdateCheck": "Vérification automatique des mises à jour",
+    "autoUpdateCheckHelp": "Interroge GitHub toutes les 12 heures pour rechercher les nouvelles versions de Gately et les avis de sécurité, et vérifie les programmes gérés installés ; les résultats s'affichent en haut de la page et sont notifiés selon les règles du centre de notifications. Les requêtes sont anonymes et n'envoient aucune information."
   },
   "runtime": {
     "title": "Paramètres d'exécution",

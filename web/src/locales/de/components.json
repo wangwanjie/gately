@@ -154,7 +154,12 @@
     },
     "uninstall": "Deinstallieren",
     "confirmUninstall": "{files} und alle früheren Versionen aus {dir} löschen? Prozesse, die es verwenden, starten neu und laufen nicht mehr, wenn kein gleichnamiges Programm in PATH liegt. Die Moduleinstellungen bleiben erhalten.",
-    "uninstalled": "{name} deinstalliert"
+    "uninstalled": "{name} deinstalliert",
+    "checkUpdate": "Nach Updates suchen",
+    "newVersion": "Neue Version {version}",
+    "latestVersion": "Neueste Version {version} (geprüft {time})",
+    "checkFailed": "Update-Prüfung fehlgeschlagen: {error}",
+    "latestOnly": "Die neueste Version ist {version}"
   },
   "resetConfig": {
     "button": "Standardeinstellungen wiederherstellen",

@@ -160,6 +160,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | POST | `/api/tailscale/logout` | `tailscale:write` | Se déconnecter de Tailscale |
 | GET | `/api/tailscale/install` | `tailscale:read` | Voir les informations d'installation et la progression d'un programme géré |
 | POST | `/api/tailscale/install` | `tailscale:write` | Installer ou mettre à jour en ligne un programme géré |
+| POST | `/api/tailscale/install/check` | `tailscale:write` | Vérifier les mises à jour d'un programme géré |
 | POST | `/api/tailscale/install/rollback` | `tailscale:write` | Revenir à une version précédente conservée |
 | DELETE | `/api/tailscale/install` | `tailscale:write` | Désinstaller un programme géré |
 | DELETE | `/api/tailscale/install/backups/{id}` | `tailscale:write` | Supprimer une version précédente conservée |
@@ -204,6 +205,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | POST | `/api/frp/import` | `frp:write` | Importer une configuration frpc / frps existante (anciens ini et nouveaux toml pris en charge) ; aperçu uniquement si apply vaut false |
 | GET | `/api/frp/install` | `frp:read` | Voir les informations d'installation et la progression d'un programme géré |
 | POST | `/api/frp/install` | `frp:write` | Installer ou mettre à jour en ligne un programme géré |
+| POST | `/api/frp/install/check` | `frp:write` | Vérifier les mises à jour d'un programme géré |
 | POST | `/api/frp/install/rollback` | `frp:write` | Revenir à une version précédente conservée |
 | DELETE | `/api/frp/install` | `frp:write` | Désinstaller un programme géré |
 | DELETE | `/api/frp/install/backups/{id}` | `frp:write` | Supprimer une version précédente conservée |
@@ -236,6 +238,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | PUT | `/api/cloudflared/settings` | `cloudflared:write` | Enregistrer les paramètres du tunnel Cloudflare |
 | GET | `/api/cloudflared/install` | `cloudflared:read` | Voir les informations d'installation et la progression d'un programme géré |
 | POST | `/api/cloudflared/install` | `cloudflared:write` | Installer ou mettre à jour en ligne un programme géré |
+| POST | `/api/cloudflared/install/check` | `cloudflared:write` | Vérifier les mises à jour d'un programme géré |
 | POST | `/api/cloudflared/install/rollback` | `cloudflared:write` | Revenir à une version précédente conservée |
 | DELETE | `/api/cloudflared/install` | `cloudflared:write` | Désinstaller un programme géré |
 | DELETE | `/api/cloudflared/install/backups/{id}` | `cloudflared:write` | Supprimer une version précédente conservée |
@@ -583,6 +586,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | PUT | `/api/filebrowser/settings` | `filebrowser:write` | Enregistrer les paramètres du programme File Browser |
 | GET | `/api/filebrowser/install` | `filebrowser:read` | Voir les informations d'installation et la progression d'un programme géré |
 | POST | `/api/filebrowser/install` | `filebrowser:write` | Installer ou mettre à jour en ligne un programme géré |
+| POST | `/api/filebrowser/install/check` | `filebrowser:write` | Vérifier les mises à jour d'un programme géré |
 | POST | `/api/filebrowser/install/rollback` | `filebrowser:write` | Revenir à une version précédente conservée |
 | DELETE | `/api/filebrowser/install` | `filebrowser:write` | Désinstaller un programme géré |
 | DELETE | `/api/filebrowser/install/backups/{id}` | `filebrowser:write` | Supprimer une version précédente conservée |
@@ -716,7 +720,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | PUT | `/api/system/settings` | Session connectée uniquement | Enregistrer les paramètres globaux |
 | GET | `/api/system/settings/secrets` | Session connectée uniquement | Afficher en clair les Client Secret de la connexion tierce |
 | GET | `/api/system/info` | `status:read` | Consulter les informations système |
-| GET | `/api/system/update` | `status:read` | Rechercher une nouvelle version |
+| GET | `/api/system/update` | `status:read` | Rechercher les nouvelles versions et les avis de sécurité |
+| GET | `/api/system/update/state` | `system:read` | Afficher le résultat de la dernière vérification des mises à jour |
 | POST | `/api/system/upgrade` | Session connectée uniquement | Mettre à niveau en ligne vers la dernière version |
 | GET | `/api/system/upgrade/status` | Session connectée uniquement | Voir la progression de la mise à niveau en ligne |
 | POST | `/api/system/upgrade/cancel` | Session connectée uniquement | Annuler la mise à niveau en ligne |

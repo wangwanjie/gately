@@ -54,6 +54,8 @@
           <span class="default-pw-text">{{ t('layout.defaultPassword', { password: DEFAULT_PASSWORD }) }}</span>
           <el-button type="warning" size="small" @click="onCommand('password')">{{ t('layout.changeNow') }}</el-button>
         </div>
+        <!-- 自动检查发现新版本或当前版本受安全问题影响时提示 -->
+        <UpdateBanner :is-admin="role === 'admin'" />
         <router-view />
       </main>
     </div>
@@ -63,6 +65,7 @@
 
 <script setup lang="ts">
 import Onboarding from '../components/Onboarding.vue'
+import UpdateBanner from '../components/UpdateBanner.vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'

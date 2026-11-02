@@ -6163,6 +6163,57 @@
         "x-token-allowed": true
       }
     },
+    "/api/cloudflared/install/check": {
+      "post": {
+        "description": "No request body. Queries the latest stable upstream release (through the program's download proxy, or the global `updateProxy` setting when none is set) without downloading or changing the installed program; returns the same as `GET /api/{module}/install`, where `latest` is `{version, checkedAt, error, hasUpdate}` and `hasUpdate` means the latest release is newer than the version installed in bin. With automatic update checks on, Gately also runs this check periodically for installed managed programs. Returns 409 while another check is running.\n\nRequired permission: `cloudflared:write`.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Check a managed program for updates",
+        "tags": [
+          "Cloudflare Tunnel"
+        ],
+        "x-required-scope": "cloudflared:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/cloudflared/install/rollback": {
       "post": {
         "description": "Request body `{\"id\": \"\u003cprevious version ID\u003e\"}`. The current version is saved as a previous version so you can switch back; processes using the program are restarted afterwards.\n\nRequired permission: `cloudflared:write`.",
@@ -14089,6 +14140,57 @@
         "x-token-allowed": true
       }
     },
+    "/api/filebrowser/install/check": {
+      "post": {
+        "description": "No request body. Queries the latest stable upstream release (through the program's download proxy, or the global `updateProxy` setting when none is set) without downloading or changing the installed program; returns the same as `GET /api/{module}/install`, where `latest` is `{version, checkedAt, error, hasUpdate}` and `hasUpdate` means the latest release is newer than the version installed in bin. With automatic update checks on, Gately also runs this check periodically for installed managed programs. Returns 409 while another check is running.\n\nRequired permission: `filebrowser:write`.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Check a managed program for updates",
+        "tags": [
+          "File Browser"
+        ],
+        "x-required-scope": "filebrowser:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/filebrowser/install/rollback": {
       "post": {
         "description": "Request body `{\"id\": \"\u003cprevious version ID\u003e\"}`. The current version is saved as a previous version so you can switch back; processes using the program are restarted afterwards.\n\nRequired permission: `filebrowser:write`.",
@@ -16380,6 +16482,57 @@
           }
         ],
         "summary": "Delete a saved previous version",
+        "tags": [
+          "frp tunneling"
+        ],
+        "x-required-scope": "frp:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/frp/install/check": {
+      "post": {
+        "description": "No request body. Queries the latest stable upstream release (through the program's download proxy, or the global `updateProxy` setting when none is set) without downloading or changing the installed program; returns the same as `GET /api/{module}/install`, where `latest` is `{version, checkedAt, error, hasUpdate}` and `hasUpdate` means the latest release is newer than the version installed in bin. With automatic update checks on, Gately also runs this check periodically for installed managed programs. Returns 409 while another check is running.\n\nRequired permission: `frp:write`.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Check a managed program for updates",
         "tags": [
           "frp tunneling"
         ],
@@ -30179,7 +30332,7 @@
     },
     "/api/system/update": {
       "get": {
-        "description": "Uses the proxy in the global setting `updateProxy` to reach GitHub. `selfUpgrade.supported` tells whether this installation can upgrade online; if not, `reason` is `os`, `docker`, `fnos`, `opkg`, `apk` or `readonly`.\n\nRequired permission: `status:read`.",
+        "description": "Immediately reads the release list on GitHub and Gately's published security advisories (GitHub Security Advisories), through the proxy in the global `updateProxy` setting; within 30 seconds of the last successful check the previous result is returned. `hasUpdate` means a new version exists; `security` is true when the current version is affected by published security issues, `advisories` lists the advisories affecting the current version (`id`, `summary`, `severity`, `url`, `ranges`), and `securityReleases` lists versions newer than the current one whose release notes have a security section. `selfUpgrade.supported` tells whether this deployment can upgrade online; if not, `reason` is `os`, `docker`, `fnos`, `opkg`, `apk` or `readonly`. Returns 502 when reading fails.\n\nRequired permission: `status:read`.",
         "responses": {
           "200": {
             "description": "Success"
@@ -30220,11 +30373,62 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Check for a new version",
+        "summary": "Check for new versions and security advisories",
         "tags": [
           "System"
         ],
         "x-required-scope": "status:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/system/update/state": {
+      "get": {
+        "description": "Does not access the network. Returns the most recent result saved by the automatic or manual check, with the same fields as `GET /api/system/update` plus `autoCheck` (whether automatic checks are on), `checkedAt` (time of the last successful check) and `error` and `failedAt` of the last failure. `latest` is empty if no check has ever succeeded.\n\nRequired permission: `system:read`.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "View the result of the last update check",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "system:read",
         "x-token-allowed": true
       }
     },
@@ -30624,6 +30828,57 @@
           }
         ],
         "summary": "Delete a saved previous version",
+        "tags": [
+          "Tailscale networking"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/install/check": {
+      "post": {
+        "description": "No request body. Queries the latest stable upstream release (through the program's download proxy, or the global `updateProxy` setting when none is set) without downloading or changing the installed program; returns the same as `GET /api/{module}/install`, where `latest` is `{version, checkedAt, error, hasUpdate}` and `hasUpdate` means the latest release is newer than the version installed in bin. With automatic update checks on, Gately also runs this check periodically for installed managed programs. Returns 409 while another check is running.\n\nRequired permission: `tailscale:write`.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Check a managed program for updates",
         "tags": [
           "Tailscale networking"
         ],

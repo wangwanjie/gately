@@ -266,6 +266,10 @@
                 </el-select>
                 <div class="form-help">{{ t('settings.network.dnsHelp') }}</div>
               </el-form-item>
+              <el-form-item :label="t('settings.network.autoUpdateCheck')">
+                <el-switch :model-value="!form.disableUpdateCheck" @update:model-value="setAutoUpdateCheck" />
+                <div class="form-help">{{ t('settings.network.autoUpdateCheckHelp') }}</div>
+              </el-form-item>
               <el-form-item :label="t('settings.network.updateProxy')">
                 <el-input v-model="form.updateProxy" clearable :placeholder="t('settings.network.updateProxyPlaceholder')" class="w-480" />
                 <div class="form-help">{{ t('settings.network.updateProxyHelp') }}</div>
@@ -649,6 +653,13 @@ async function saveSettings() {
     ElMessage.error((e as Error).message)
   } finally {
     saving.value = false
+  }
+}
+
+// setAutoUpdateCheck 切换“自动检查更新”：设置中保存的是关闭标记 disableUpdateCheck，默认开启
+function setAutoUpdateCheck(v: string | number | boolean) {
+  if (form.value) {
+    form.value.disableUpdateCheck = !v
   }
 }
 

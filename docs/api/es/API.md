@@ -160,6 +160,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | POST | `/api/tailscale/logout` | `tailscale:write` | Cerrar sesión de Tailscale |
 | GET | `/api/tailscale/install` | `tailscale:read` | Ver la información de instalación y el progreso de un programa gestionado |
 | POST | `/api/tailscale/install` | `tailscale:write` | Instalar o actualizar en línea un programa gestionado |
+| POST | `/api/tailscale/install/check` | `tailscale:write` | Buscar actualizaciones de un programa gestionado |
 | POST | `/api/tailscale/install/rollback` | `tailscale:write` | Cambiar a una versión anterior guardada |
 | DELETE | `/api/tailscale/install` | `tailscale:write` | Desinstalar un programa gestionado |
 | DELETE | `/api/tailscale/install/backups/{id}` | `tailscale:write` | Eliminar una versión anterior guardada |
@@ -204,6 +205,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | POST | `/api/frp/import` | `frp:write` | Importar configuraciones existentes de frpc / frps (admite ini antiguo y toml nuevo); con apply en false solo se muestra una vista previa |
 | GET | `/api/frp/install` | `frp:read` | Ver la información de instalación y el progreso de un programa gestionado |
 | POST | `/api/frp/install` | `frp:write` | Instalar o actualizar en línea un programa gestionado |
+| POST | `/api/frp/install/check` | `frp:write` | Buscar actualizaciones de un programa gestionado |
 | POST | `/api/frp/install/rollback` | `frp:write` | Cambiar a una versión anterior guardada |
 | DELETE | `/api/frp/install` | `frp:write` | Desinstalar un programa gestionado |
 | DELETE | `/api/frp/install/backups/{id}` | `frp:write` | Eliminar una versión anterior guardada |
@@ -236,6 +238,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | PUT | `/api/cloudflared/settings` | `cloudflared:write` | Guardar los ajustes del túnel de Cloudflare |
 | GET | `/api/cloudflared/install` | `cloudflared:read` | Ver la información de instalación y el progreso de un programa gestionado |
 | POST | `/api/cloudflared/install` | `cloudflared:write` | Instalar o actualizar en línea un programa gestionado |
+| POST | `/api/cloudflared/install/check` | `cloudflared:write` | Buscar actualizaciones de un programa gestionado |
 | POST | `/api/cloudflared/install/rollback` | `cloudflared:write` | Cambiar a una versión anterior guardada |
 | DELETE | `/api/cloudflared/install` | `cloudflared:write` | Desinstalar un programa gestionado |
 | DELETE | `/api/cloudflared/install/backups/{id}` | `cloudflared:write` | Eliminar una versión anterior guardada |
@@ -583,6 +586,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | PUT | `/api/filebrowser/settings` | `filebrowser:write` | Guardar los ajustes del programa File Browser |
 | GET | `/api/filebrowser/install` | `filebrowser:read` | Ver la información de instalación y el progreso de un programa gestionado |
 | POST | `/api/filebrowser/install` | `filebrowser:write` | Instalar o actualizar en línea un programa gestionado |
+| POST | `/api/filebrowser/install/check` | `filebrowser:write` | Buscar actualizaciones de un programa gestionado |
 | POST | `/api/filebrowser/install/rollback` | `filebrowser:write` | Cambiar a una versión anterior guardada |
 | DELETE | `/api/filebrowser/install` | `filebrowser:write` | Desinstalar un programa gestionado |
 | DELETE | `/api/filebrowser/install/backups/{id}` | `filebrowser:write` | Eliminar una versión anterior guardada |
@@ -716,7 +720,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | PUT | `/api/system/settings` | Solo sesión iniciada | Guardar los ajustes globales |
 | GET | `/api/system/settings/secrets` | Solo sesión iniciada | Ver en texto plano los Client Secret del inicio de sesión de terceros |
 | GET | `/api/system/info` | `status:read` | Ver la información del sistema |
-| GET | `/api/system/update` | `status:read` | Buscar nueva versión |
+| GET | `/api/system/update` | `status:read` | Buscar nuevas versiones y avisos de seguridad |
+| GET | `/api/system/update/state` | `system:read` | Ver el resultado de la última comprobación de actualizaciones |
 | POST | `/api/system/upgrade` | Solo sesión iniciada | Actualizar en línea a la última versión |
 | GET | `/api/system/upgrade/status` | Solo sesión iniciada | Ver el progreso de la actualización en línea |
 | POST | `/api/system/upgrade/cancel` | Solo sesión iniciada | Cancelar la actualización en línea |

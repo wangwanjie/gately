@@ -103,6 +103,10 @@
     "changes": {
       "name": "Konfigurationsänderungen",
       "desc": "Jede in der Verwaltungsoberfläche vorgenommene Konfigurationsänderung"
+    },
+    "updates": {
+      "name": "Updates",
+      "desc": "Sicherheitsupdates und neue Versionen von Gately sowie neue Versionen verwalteter Programme und Container-Images"
     }
   }
 }

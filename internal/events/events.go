@@ -39,6 +39,12 @@ const (
 	AuditAccess     = "audit.access"
 	PerfAlert       = "perf.alert"
 	PerfRecovered   = "perf.recovered"
+	// SystemUpdate / SystemSecurity 由自动检查更新发布：Gately 有新版本、当前版本受安全问题影响
+	SystemUpdate   = "system.update"
+	SystemSecurity = "system.security"
+	// ProgramUpdate 为托管程序（frp、Tailscale 等）有新版本，DockerUpdate 为 Docker 定时检查发现容器镜像有新版本
+	ProgramUpdate = "program.update"
+	DockerUpdate  = "docker.update"
 )
 
 // Event 是一次可通知的事件。
@@ -72,6 +78,7 @@ var Catalog = []TypeInfo{
 	{UpstreamDown, "反向代理：上游不可用", LevelError},
 	{UpstreamUp, "反向代理：上游恢复", LevelInfo},
 	{DockerExited, "Docker：容器退出", LevelWarn},
+	{DockerUpdate, "Docker：镜像有新版本", LevelInfo},
 	{ProcessExited, "子进程异常退出", LevelError},
 	{BackupDone, "备份：完成", LevelInfo},
 	{BackupFailed, "备份：失败", LevelError},
@@ -83,6 +90,9 @@ var Catalog = []TypeInfo{
 	{AuditAccess, "管理后台：访问敏感内容", LevelWarn},
 	{PerfAlert, "性能监控：触发告警", LevelWarn},
 	{PerfRecovered, "性能监控：告警恢复", LevelInfo},
+	{SystemUpdate, "Gately：发现新版本", LevelInfo},
+	{SystemSecurity, "Gately：安全更新", LevelError},
+	{ProgramUpdate, "托管程序：发现新版本", LevelInfo},
 	{NotifyTest, "测试通知", LevelInfo},
 }
 

@@ -173,6 +173,8 @@ export interface SystemSettings {
   dnsServers: string[] | null
   // 检查更新与在线升级访问 GitHub 时使用的代理，为空直连
   updateProxy: string
+  // 为 true 时不再定期检查更新与安全公告，只在点击“检查更新”时访问 GitHub
+  disableUpdateCheck: boolean
   logLines: number
   // 为 true 时运行日志只保留在内存；默认写入配置目录下的 logs/
   disableLogPersist: boolean
@@ -249,16 +251,46 @@ export interface UpgradeResult {
   previous: string
 }
 
-// UpdateInfo 对应 GET /api/system/update。
+// SecurityAdvisory 是一条影响当前版本的已公开安全公告（GitHub Security Advisories）。
+export interface SecurityAdvisory {
+  id: string
+  cve?: string
+  summary: string
+  // low / medium / high / critical，未填写时为空
+  severity?: string
+  url: string
+  publishedAt: string
+  // 受影响的版本范围与修复版本，写法同 GitHub，例如 "<= 0.6.0.4"
+  ranges: { vulnerable: string; patched?: string }[]
+}
+
+// ReleaseBrief 是一个发布版本的摘要。
+export interface ReleaseBrief {
+  version: string
+  url: string
+  publishedAt: string
+}
+
+// UpdateInfo 对应 GET /api/system/update（立即检查）与 GET /api/system/update/state（上次检查的结果）。
 export interface UpdateInfo {
   current: string
+  // 从未成功检查过时为空
   latest: string
   url: string
   notes: string
-  publishedAt: string
+  publishedAt?: string
   hasUpdate: boolean
   // 当前版本与最新版本号能否比较新旧（开发版等无法比较时为 false）
   comparable: boolean
+  // 当前版本受已公开的安全问题影响：advisories 为影响当前版本的安全公告，securityReleases 为比当前版本新、带有安全修复的版本
+  security: boolean
+  advisories: SecurityAdvisory[]
+  securityReleases: ReleaseBrief[]
+  // 是否开启自动检查、最近一次成功检查的时间，以及最近一次失败的原因与时间
+  autoCheck: boolean
+  checkedAt?: string
+  error?: string
+  failedAt?: string
   selfUpgrade: SelfUpgrade
 }
 

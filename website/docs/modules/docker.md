@@ -68,7 +68,7 @@ Compose 项目由容器标签 `com.docker.compose.project` 等聚合得到，显
 | `host` | Docker 地址，默认 `unix:///var/run/docker.sock` |
 | `mirrors` | 镜像加速地址列表，直接拉取失败时依次尝试；与 `/etc/docker/daemon.json` 的 `registry-mirrors` 相互独立，后者由 Docker 自动使用，并在设置页以「守护进程加速」只读显示 |
 | `registries` | 私有仓库登录信息（`server`、`username`、`password`），密码在界面中脱敏 |
-| `autoCheckHours` | 大于 0 时按该小时间隔自动检查容器镜像更新，0 表示关闭 |
+| `autoCheckHours` | 大于 0 时按该小时间隔自动检查容器镜像更新，0 表示关闭；发现新镜像时发布 `docker.update` 事件，同一个新镜像只通知一次 |
 
 ## 后台任务
 

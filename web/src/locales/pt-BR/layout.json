@@ -10,5 +10,14 @@
   "logoutOk": "Sair",
   "readonlyBadge": "Somente leitura",
   "defaultPassword": "Você ainda está usando a senha padrão {password}. Qualquer pessoa que a conheça pode entrar na interface de administração; troque-a agora.",
-  "changeNow": "Trocar agora"
+  "changeNow": "Trocar agora",
+  "update": {
+    "available": "Gately {latest} disponível (atual {current})",
+    "securityAdvisories": "A versão atual {current} é afetada por problemas de segurança publicados ({count}). Atualize para {latest} o quanto antes",
+    "securityNoFix": "A versão atual {current} é afetada por problemas de segurança publicados ({count}). Ainda não há versão corrigida; veja as mitigações no aviso",
+    "securityReleases": "{versions} contêm correções de segurança que faltam na versão atual {current}. Atualize para {latest} o quanto antes",
+    "view": "Ver",
+    "snooze": "Lembrar amanhã",
+    "skip": "Ignorar esta versão"
+  }
 }

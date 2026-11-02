@@ -10,5 +10,14 @@
   "logoutOk": "Sign out",
   "readonlyBadge": "Read-only",
   "defaultPassword": "You are still using the default password {password}. Anyone who knows it can sign in to the admin UI, so change it now.",
-  "changeNow": "Change now"
+  "changeNow": "Change now",
+  "update": {
+    "available": "Gately {latest} is available (current {current})",
+    "securityAdvisories": "The current version {current} is affected by published security issues ({count}). Please upgrade to {latest} as soon as possible",
+    "securityNoFix": "The current version {current} is affected by published security issues ({count}). No fixed version has been released yet; see the advisory for mitigations",
+    "securityReleases": "{versions} contain security fixes that the current version {current} lacks. Please upgrade to {latest} as soon as possible",
+    "view": "View",
+    "snooze": "Remind me tomorrow",
+    "skip": "Skip this version"
+  }
 }

@@ -100,6 +100,7 @@ Beim Anlegen einer Regel können Sie eine Vorlage anklicken, die Ereignisse, Stu
 | Sicherheit & Anmeldungen | Anmeldung fehlgeschlagen, IP gesperrt, Anmeldung erfolgreich, Zugriff auf sensible Inhalte |
 | Leistungswarnungen | Auslösen und Aufheben von Leistungswarnungen (ohne Stummschaltung) |
 | Konfigurationsänderungen | Jede Konfigurationsänderung in der Verwaltungsoberfläche |
+| Updates | Sicherheitsupdates und neue Versionen von Gately, neue Versionen verwalteter Programme und Container-Images (keine Stummschaltung) |
 
 ## Ereignistypen
 
@@ -124,6 +125,10 @@ Beim Anlegen einer Regel können Sie eine Vorlage anklicken, die Ereignisse, Stu
 | `audit.access` | Verwaltungsoberfläche: Zugriff auf sensible Inhalte | Warnung | Herunterladen von Sicherungen, Diagnosepaketen oder privaten Zertifikatsschlüsseln, Öffnen eines Terminals und Ähnliches; Felder wie oben |
 | `perf.alert` | Leistung: Warnung ausgelöst | Warnung oder Fehler | Die Bedingung einer Leistungs-Warnregel hat für die eingestellte Dauer angehalten; die Stufe kommt aus der Regel, mit den Feldern `rule`, `metric`, `target`, `value` und `condition`; siehe [Leistung](/de/docs/modules/perf) |
 | `perf.recovered` | Leistung: Warnung aufgehoben | Info | Die Bedingung einer ausgelösten Leistungswarnung besteht nicht mehr; Felder wie oben |
+| `system.update` | Gately: neue Version verfügbar | Info | Eine automatische oder manuelle Update-Prüfung hat eine neue Version gefunden; Felder `current`, `latest`, `url`; jede Version wird einmal gemeldet, siehe [Automatische Update-Prüfung](/de/docs/guide/install#update-check) |
+| `system.security` | Gately: Sicherheitsupdate | Fehler | Die aktuelle Version ist von einem veröffentlichten Sicherheitshinweis betroffen oder eine neuere Version enthält Sicherheitskorrekturen; Felder `current`, `latest`, `url`, `advisories`, `securityReleases`; erneute Meldung bei einem neuen Sicherheitsproblem |
+| `program.update` | Verwaltete Programme: neue Version verfügbar | Info | Die automatische Prüfung hat eine neue Version des installierten frp, cloudflared, Tailscale oder File Browser gefunden; Quelle ist der Programmname; Felder `program`, `current`, `latest` |
+| `docker.update` | Docker: neueres Image verfügbar | Info | Die geplante Docker-Prüfung hat neuere Container-Images gefunden; eine Meldung pro Prüfung, jedes neue Image nur einmal; Feld `count` |
 | `notify.test` | Testbenachrichtigung | Info | Wird von der Schaltfläche „Testen“ des Kanals erzeugt und nimmt nicht am Regelabgleich teil |
 
 ## Test senden

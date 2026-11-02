@@ -6163,6 +6163,57 @@
         "x-token-allowed": true
       }
     },
+    "/api/cloudflared/install/check": {
+      "post": {
+        "description": "無需請求本文。查詢上游最新正式版（使用該程式的下載代理，未設定時沿用全域設定 `updateProxy`），不下載也不改動已安裝的程式；回傳值同 `GET /api/{module}/install`，其中 `latest` 為 `{version, checkedAt, error, hasUpdate}`，`hasUpdate` 表示最新版比 bin 下安裝的版本新。開啟自動檢查更新時，Gately 也會定期為已安裝的託管程式執行此檢查。已有檢查在進行時回傳 409。\n\n所需權限：`cloudflared:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "檢查託管程式的更新",
+        "tags": [
+          "Cloudflare 通道"
+        ],
+        "x-required-scope": "cloudflared:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/cloudflared/install/rollback": {
       "post": {
         "description": "請求主體 `{\"id\": \"\u003c舊版本 ID\u003e\"}`。目前版本會另存為舊版本，之後仍可切回；完成後重新啟動使用該程式的程序。\n\n所需權限：`cloudflared:write`。",
@@ -14089,6 +14140,57 @@
         "x-token-allowed": true
       }
     },
+    "/api/filebrowser/install/check": {
+      "post": {
+        "description": "無需請求本文。查詢上游最新正式版（使用該程式的下載代理，未設定時沿用全域設定 `updateProxy`），不下載也不改動已安裝的程式；回傳值同 `GET /api/{module}/install`，其中 `latest` 為 `{version, checkedAt, error, hasUpdate}`，`hasUpdate` 表示最新版比 bin 下安裝的版本新。開啟自動檢查更新時，Gately 也會定期為已安裝的託管程式執行此檢查。已有檢查在進行時回傳 409。\n\n所需權限：`filebrowser:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "檢查託管程式的更新",
+        "tags": [
+          "File Browser"
+        ],
+        "x-required-scope": "filebrowser:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/filebrowser/install/rollback": {
       "post": {
         "description": "請求主體 `{\"id\": \"\u003c舊版本 ID\u003e\"}`。目前版本會另存為舊版本，之後仍可切回；完成後重新啟動使用該程式的程序。\n\n所需權限：`filebrowser:write`。",
@@ -16380,6 +16482,57 @@
           }
         ],
         "summary": "刪除保存的舊版本",
+        "tags": [
+          "frp 內網穿透"
+        ],
+        "x-required-scope": "frp:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/frp/install/check": {
+      "post": {
+        "description": "無需請求本文。查詢上游最新正式版（使用該程式的下載代理，未設定時沿用全域設定 `updateProxy`），不下載也不改動已安裝的程式；回傳值同 `GET /api/{module}/install`，其中 `latest` 為 `{version, checkedAt, error, hasUpdate}`，`hasUpdate` 表示最新版比 bin 下安裝的版本新。開啟自動檢查更新時，Gately 也會定期為已安裝的託管程式執行此檢查。已有檢查在進行時回傳 409。\n\n所需權限：`frp:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "檢查託管程式的更新",
         "tags": [
           "frp 內網穿透"
         ],
@@ -30179,7 +30332,7 @@
     },
     "/api/system/update": {
       "get": {
-        "description": "存取 GitHub 時使用全域設定 `updateProxy` 中的代理。`selfUpgrade.supported` 表示目前部署方式能否線上升級，不能時 `reason` 為 `os`、`docker`、`fnos`、`opkg`、`apk` 或 `readonly`。\n\n所需權限：`status:read`。",
+        "description": "立即讀取 GitHub 上的發布列表與 Gately 已公開的安全公告（GitHub Security Advisories），存取時使用全域設定 `updateProxy` 中的代理；距上次成功檢查不足 30 秒時直接回傳上次結果。`hasUpdate` 表示有新版本；`security` 為 true 表示目前版本受已公開的安全問題影響，`advisories` 列出影響目前版本的安全公告（`id`、`summary`、`severity`、`url`、`ranges`），`securityReleases` 列出比目前版本新、更新說明帶有安全章節的版本。`selfUpgrade.supported` 表示目前部署方式能否線上升級，不能時 `reason` 為 `os`、`docker`、`fnos`、`opkg`、`apk` 或 `readonly`。讀取失敗回傳 502。\n\n所需權限：`status:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -30220,11 +30373,62 @@
             "bearerAuth": []
           }
         ],
-        "summary": "檢查新版本",
+        "summary": "檢查新版本與安全公告",
         "tags": [
           "系統"
         ],
         "x-required-scope": "status:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/system/update/state": {
+      "get": {
+        "description": "不存取網路，回傳自動檢查或手動檢查儲存的最近一次結果，欄位同 `GET /api/system/update`，另有 `autoCheck`（是否開啟自動檢查）、`checkedAt`（最近一次成功檢查的時間）以及最近一次失敗的 `error` 與 `failedAt`。從未成功檢查過時 `latest` 為空。\n\n所需權限：`system:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "查看上次檢查更新的結果",
+        "tags": [
+          "系統"
+        ],
+        "x-required-scope": "system:read",
         "x-token-allowed": true
       }
     },
@@ -30624,6 +30828,57 @@
           }
         ],
         "summary": "刪除保存的舊版本",
+        "tags": [
+          "Tailscale 組網"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/install/check": {
+      "post": {
+        "description": "無需請求本文。查詢上游最新正式版（使用該程式的下載代理，未設定時沿用全域設定 `updateProxy`），不下載也不改動已安裝的程式；回傳值同 `GET /api/{module}/install`，其中 `latest` 為 `{version, checkedAt, error, hasUpdate}`，`hasUpdate` 表示最新版比 bin 下安裝的版本新。開啟自動檢查更新時，Gately 也會定期為已安裝的託管程式執行此檢查。已有檢查在進行時回傳 409。\n\n所需權限：`tailscale:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "檢查託管程式的更新",
         "tags": [
           "Tailscale 組網"
         ],

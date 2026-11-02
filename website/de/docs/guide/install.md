@@ -174,6 +174,16 @@ Ohne `-c` sucht der Befehl nacheinander in `GATELY_CONFIG_DIR`, im Verzeichnis `
 
 ## Upgrade
 
+### Automatische Update-Prüfung und Sicherheitswarnungen {#update-check}
+
+Standardmäßig ruft Gately alle 12 Stunden GitHub ab, liest die Release-Liste von Gately und die [veröffentlichten Sicherheitshinweise](https://github.com/wangwanjie/gately/security/advisories) und fragt die neueste Version der online installierten verwalteten Programme ab (frp, Cloudflare-Tunnel, Tailscale, File Browser). Alle Anfragen sind anonyme GET-Anfragen ohne Geräte-, Konfigurations- oder Nutzungsdaten.
+
+- **Neue Version**: Oben in der Oberfläche erscheint ein Hinweis; Sie können die Änderungen ansehen oder diese Version überspringen;
+- **Sicherheitsupdate**: Liegt die aktuelle Version im betroffenen Bereich eines Hinweises oder enthält eine neuere Version in ihren Release Notes einen Abschnitt mit Sicherheitskorrekturen, listet ein roter Hinweis oben die Hinweise und Versionen auf. Ein Sicherheitshinweis lässt sich nur um 24 Stunden verschieben und erscheint sofort wieder, wenn ein neues Sicherheitsproblem auftaucht;
+- **Benachrichtigungen**: Eine neue Version oder ein neues Sicherheitsproblem veröffentlicht das Ereignis `system.update` / `system.security`, eine neue Version eines verwalteten Programms `program.update`. Legen Sie unter [Benachrichtigungen](/de/docs/modules/notify) eine Regel mit der Vorlage „Updates“ an, um sie zu erhalten. Jede Version und jedes Sicherheitsproblem wird nur einmal gemeldet, auch nach einem Neustart.
+
+Das Ergebnis wird in `update-check.json` im Konfigurationsverzeichnis gespeichert und nach einem Upgrade ohne erneute Prüfung für die neue Version neu bewertet. Die erste Prüfung erfolgt etwa 3 Minuten nach dem Start (oder wartet, bis 12 Stunden seit der letzten erfolgreichen Prüfung vergangen sind); eine fehlgeschlagene Prüfung wird nach einer Stunde wiederholt. GitHub wird über den unten beschriebenen Update-Proxy erreicht. Die automatische Prüfung lässt sich auf der Seite „Über“ oder unter Einstellungen → Netzwerk & Laufzeit abschalten; dann wird GitHub nur beim Klick auf „Nach Updates suchen“ kontaktiert. Die automatische Prüfung meldet nur und lädt oder installiert nie etwas.
+
 ### Online-Upgrade {#online-upgrade}
 
 Linux-Binärinstallationen (systemd, PVE-LXC-Container, manuell eingerichtetes OpenWrt usw.) lassen sich auf der Seite „Über“ der Verwaltungsoberfläche online aktualisieren: Klicken Sie auf „Nach Updates suchen“ und bei einer neuen Version auf „Jetzt aktualisieren“. Das gilt auch für LXC-Container, die in PVE aus dem OCI-Image erstellt wurden; Löschen und Neuanlegen ist nicht nötig. Gately geht so vor:

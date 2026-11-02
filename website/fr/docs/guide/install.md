@@ -174,6 +174,16 @@ Sans `-c`, la commande cherche successivement dans `GATELY_CONFIG_DIR`, dans `da
 
 ## Mise à niveau
 
+### Vérification automatique des mises à jour et alertes de sécurité {#update-check}
+
+Par défaut, Gately interroge GitHub toutes les 12 heures pour lire la liste des versions de Gately et les [avis de sécurité publiés](https://github.com/wangwanjie/gately/security/advisories), et recherche la dernière version des programmes gérés installés en ligne (frp, tunnel Cloudflare, Tailscale, File Browser). Toutes les requêtes sont des GET anonymes et ne transmettent aucune information sur l'appareil, la configuration ou l'utilisation.
+
+- **Nouvelle version** : un bandeau apparaît en haut de l'interface ; vous pouvez consulter les notes de version ou ignorer cette version ;
+- **Mise à jour de sécurité** : si la version actuelle se trouve dans la plage concernée d'un avis, ou si une version plus récente comporte une section de correctifs de sécurité dans ses notes, un bandeau rouge en haut liste les avis et versions concernés. Une alerte de sécurité ne peut être reportée que de 24 heures et réapparaît aussitôt qu'un nouveau problème de sécurité survient ;
+- **Notifications** : une nouvelle version ou un nouveau problème de sécurité publie l'événement `system.update` / `system.security`, et une nouvelle version d'un programme géré publie `program.update`. Ajoutez une règle avec le modèle « Mises à jour » dans [Notifications](/fr/docs/modules/notify) pour les recevoir. Chaque version et chaque problème de sécurité ne sont notifiés qu'une fois, même après un redémarrage.
+
+Le résultat est enregistré dans `update-check.json` du répertoire de configuration et réévalué pour la nouvelle version après une mise à jour, sans nouvelle vérification. La première vérification a lieu environ 3 minutes après le démarrage (ou attend que 12 heures se soient écoulées depuis la dernière réussie) et, en cas d'échec, est relancée au bout d'une heure ; GitHub est contacté via le proxy de mise à jour décrit plus bas. Vous pouvez la désactiver dans la page À propos ou dans Réglages → Réseau et exécution ; GitHub n'est alors contacté que lorsque vous cliquez sur « Rechercher des mises à jour ». La vérification automatique se contente d'avertir : elle ne télécharge ni n'installe rien.
+
 ### Mise à niveau en ligne {#online-upgrade}
 
 Les installations binaires Linux (systemd, conteneurs LXC de PVE, OpenWrt déployé manuellement, etc.) peuvent être mises à niveau en ligne depuis la page À propos de l'interface d'administration : cliquez sur « Rechercher des mises à jour », puis sur « Mettre à niveau » si une nouvelle version est disponible. Cela fonctionne aussi pour les conteneurs LXC créés dans PVE à partir de l'image OCI, sans les supprimer ni les recréer. Gately va :

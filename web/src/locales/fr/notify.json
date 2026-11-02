@@ -103,6 +103,10 @@
     "changes": {
       "name": "Modifications de configuration",
       "desc": "Chaque modification de configuration faite dans la console d’administration"
+    },
+    "updates": {
+      "name": "Mises à jour",
+      "desc": "Mises à jour de sécurité et nouvelles versions de Gately, ainsi que les nouvelles versions des programmes gérés et des images de conteneurs"
     }
   }
 }

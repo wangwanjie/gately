@@ -154,7 +154,12 @@
     },
     "uninstall": "Désinstaller",
     "confirmUninstall": "Supprimer {files} et toutes les versions précédentes de {dir} ? Les processus qui l'utilisent redémarrent et ne pourront plus s'exécuter sans programme du même nom dans le PATH. Les paramètres du module sont conservés.",
-    "uninstalled": "{name} désinstallé"
+    "uninstalled": "{name} désinstallé",
+    "checkUpdate": "Rechercher des mises à jour",
+    "newVersion": "Nouvelle version {version}",
+    "latestVersion": "Dernière version {version} (vérifiée le {time})",
+    "checkFailed": "Échec de la vérification des mises à jour : {error}",
+    "latestOnly": "La dernière version est {version}"
   },
   "resetConfig": {
     "button": "Rétablir les valeurs par défaut",

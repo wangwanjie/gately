@@ -10,5 +10,14 @@
   "logoutOk": "Abmelden",
   "readonlyBadge": "Nur lesen",
   "defaultPassword": "Sie verwenden noch das Standardpasswort {password}. Wer es kennt, kann sich an der Admin-Oberfläche anmelden – ändern Sie es jetzt.",
-  "changeNow": "Jetzt ändern"
+  "changeNow": "Jetzt ändern",
+  "update": {
+    "available": "Gately {latest} ist verfügbar (aktuell {current})",
+    "securityAdvisories": "Die aktuelle Version {current} ist von veröffentlichten Sicherheitsproblemen betroffen ({count}). Bitte so bald wie möglich auf {latest} aktualisieren",
+    "securityNoFix": "Die aktuelle Version {current} ist von veröffentlichten Sicherheitsproblemen betroffen ({count}). Noch gibt es keine korrigierte Version; siehe die Gegenmaßnahmen im Advisory",
+    "securityReleases": "{versions} enthalten Sicherheitskorrekturen, die der aktuellen Version {current} fehlen. Bitte so bald wie möglich auf {latest} aktualisieren",
+    "view": "Ansehen",
+    "snooze": "Morgen erinnern",
+    "skip": "Diese Version überspringen"
+  }
 }

@@ -4,7 +4,7 @@ Gately läuft am Netzwerkrand und verwaltet DNS-Anbieter-Schlüssel, private Zer
 
 ## Datenschutzversprechen
 
-- **Standardmäßig keine ausgehenden Verbindungen**: keine Verbindungen zu Projektservern, keine Übermittlung von Geräteinformationen, kein Konfigurations-Push aus der Ferne.
+- **Keine Verbindungen zu Projektservern**: keine Übermittlung von Geräteinformationen, kein Konfigurations-Push aus der Ferne. Standardmäßig liest Gately alle 12 Stunden anonym die Release-Liste und die Sicherheitshinweise auf GitHub, nur um auf neue Versionen und Sicherheitsupdates hinzuweisen; das lässt sich abschalten, siehe [Automatische Update-Prüfung](/de/docs/guide/install#update-check).
 - **Sichtbare, änderbare ausgehende Adressen**: Abfrage der öffentlichen IP, STUN-Server und ähnliche Adressen werden in der Oberfläche angezeigt und lassen sich ändern oder abschalten.
 - **Selbst verwaltete Anmeldung über Drittanbieter**: Die Anmeldung über GitHub, Google, QQ und OIDC nutzt OAuth-Apps, die Sie selbst registrieren, ohne Relay dazwischen.
 - **Selbst verwaltete Upgrades**: Das Programm lädt oder ersetzt sich nie im Hintergrund. Online-Upgrades von Linux-Binärinstallationen laufen erst nach dem Klick eines Administrators, prüfen die SHA-256 und behalten die vorherige Version; Sie entscheiden, wann Sie upgraden.

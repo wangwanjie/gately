@@ -10,5 +10,14 @@
   "logoutOk": "로그아웃",
   "readonlyBadge": "읽기 전용",
   "defaultPassword": "아직 기본 비밀번호 {password}를 사용 중입니다. 이 비밀번호를 아는 사람은 누구나 관리 화면에 로그인할 수 있으니 지금 변경하세요.",
-  "changeNow": "지금 변경"
+  "changeNow": "지금 변경",
+  "update": {
+    "available": "새 버전 {latest} 이(가) 있습니다 (현재 {current})",
+    "securityAdvisories": "현재 버전 {current} 이(가) 공개된 보안 문제({count}건)의 영향을 받습니다. 가능한 한 빨리 {latest}(으)로 업그레이드하세요",
+    "securityNoFix": "현재 버전 {current} 이(가) 공개된 보안 문제({count}건)의 영향을 받습니다. 아직 수정 버전이 없으니 공지의 완화 조치를 확인하세요",
+    "securityReleases": "{versions} 에 현재 버전 {current} 에 없는 보안 수정이 포함되어 있습니다. 가능한 한 빨리 {latest}(으)로 업그레이드하세요",
+    "view": "보기",
+    "snooze": "내일 다시 알림",
+    "skip": "이 버전 건너뛰기"
+  }
 }

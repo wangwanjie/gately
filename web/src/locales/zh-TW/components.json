@@ -154,7 +154,12 @@
     },
     "uninstall": "解除安裝",
     "confirmUninstall": "刪除 {dir} 下的 {files} 與全部舊版本？使用它的程序會重新啟動，PATH 中沒有同名程式時將無法執行。模組設定保留。",
-    "uninstalled": "已解除安裝 {name}"
+    "uninstalled": "已解除安裝 {name}",
+    "checkUpdate": "檢查更新",
+    "newVersion": "新版本 {version}",
+    "latestVersion": "最新版本 {version}（檢查於 {time}）",
+    "checkFailed": "檢查更新失敗：{error}",
+    "latestOnly": "最新版本為 {version}"
   },
   "resetConfig": {
     "button": "恢復預設設定",

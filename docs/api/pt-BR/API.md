@@ -160,6 +160,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | POST | `/api/tailscale/logout` | `tailscale:write` | Sair do login do Tailscale |
 | GET | `/api/tailscale/install` | `tailscale:read` | Ver as informações de instalação e o progresso de um programa gerenciado |
 | POST | `/api/tailscale/install` | `tailscale:write` | Instalar ou atualizar online um programa gerenciado |
+| POST | `/api/tailscale/install/check` | `tailscale:write` | Verificar atualizações de um programa gerenciado |
 | POST | `/api/tailscale/install/rollback` | `tailscale:write` | Mudar para uma versão anterior salva |
 | DELETE | `/api/tailscale/install` | `tailscale:write` | Desinstalar um programa gerenciado |
 | DELETE | `/api/tailscale/install/backups/{id}` | `tailscale:write` | Excluir uma versão anterior salva |
@@ -204,6 +205,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | POST | `/api/frp/import` | `frp:write` | Importar configuração existente de frpc / frps (suporta ini antigo e toml novo); com apply igual a false apenas pré-visualiza |
 | GET | `/api/frp/install` | `frp:read` | Ver as informações de instalação e o progresso de um programa gerenciado |
 | POST | `/api/frp/install` | `frp:write` | Instalar ou atualizar online um programa gerenciado |
+| POST | `/api/frp/install/check` | `frp:write` | Verificar atualizações de um programa gerenciado |
 | POST | `/api/frp/install/rollback` | `frp:write` | Mudar para uma versão anterior salva |
 | DELETE | `/api/frp/install` | `frp:write` | Desinstalar um programa gerenciado |
 | DELETE | `/api/frp/install/backups/{id}` | `frp:write` | Excluir uma versão anterior salva |
@@ -236,6 +238,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | PUT | `/api/cloudflared/settings` | `cloudflared:write` | Salvar configurações do túnel Cloudflare |
 | GET | `/api/cloudflared/install` | `cloudflared:read` | Ver as informações de instalação e o progresso de um programa gerenciado |
 | POST | `/api/cloudflared/install` | `cloudflared:write` | Instalar ou atualizar online um programa gerenciado |
+| POST | `/api/cloudflared/install/check` | `cloudflared:write` | Verificar atualizações de um programa gerenciado |
 | POST | `/api/cloudflared/install/rollback` | `cloudflared:write` | Mudar para uma versão anterior salva |
 | DELETE | `/api/cloudflared/install` | `cloudflared:write` | Desinstalar um programa gerenciado |
 | DELETE | `/api/cloudflared/install/backups/{id}` | `cloudflared:write` | Excluir uma versão anterior salva |
@@ -583,6 +586,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | PUT | `/api/filebrowser/settings` | `filebrowser:write` | Salvar as configurações do programa File Browser |
 | GET | `/api/filebrowser/install` | `filebrowser:read` | Ver as informações de instalação e o progresso de um programa gerenciado |
 | POST | `/api/filebrowser/install` | `filebrowser:write` | Instalar ou atualizar online um programa gerenciado |
+| POST | `/api/filebrowser/install/check` | `filebrowser:write` | Verificar atualizações de um programa gerenciado |
 | POST | `/api/filebrowser/install/rollback` | `filebrowser:write` | Mudar para uma versão anterior salva |
 | DELETE | `/api/filebrowser/install` | `filebrowser:write` | Desinstalar um programa gerenciado |
 | DELETE | `/api/filebrowser/install/backups/{id}` | `filebrowser:write` | Excluir uma versão anterior salva |
@@ -716,7 +720,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | PUT | `/api/system/settings` | Somente sessão de login | Salvar configurações globais |
 | GET | `/api/system/settings/secrets` | Somente sessão de login | Ver Client Secrets do login de terceiros em texto puro |
 | GET | `/api/system/info` | `status:read` | Ver informações do sistema |
-| GET | `/api/system/update` | `status:read` | Verificar nova versão |
+| GET | `/api/system/update` | `status:read` | Verificar novas versões e avisos de segurança |
+| GET | `/api/system/update/state` | `system:read` | Ver o resultado da última verificação de atualizações |
 | POST | `/api/system/upgrade` | Somente sessão de login | Atualizar online para a versão mais recente |
 | GET | `/api/system/upgrade/status` | Somente sessão de login | Ver o progresso da atualização online |
 | POST | `/api/system/upgrade/cancel` | Somente sessão de login | Cancelar a atualização online |

@@ -6163,6 +6163,57 @@
         "x-token-allowed": true
       }
     },
+    "/api/cloudflared/install/check": {
+      "post": {
+        "description": "Aucun corps de requête. Interroge la dernière version stable en amont (via le proxy de téléchargement du programme, ou le réglage global `updateProxy` s'il n'y en a pas) sans télécharger ni modifier le programme installé ; renvoie la même chose que `GET /api/{module}/install`, où `latest` vaut `{version, checkedAt, error, hasUpdate}` et `hasUpdate` indique que la dernière version est plus récente que celle installée dans bin. Avec la vérification automatique des mises à jour activée, Gately effectue aussi cette vérification périodiquement pour les programmes gérés installés. Renvoie 409 si une vérification est déjà en cours.\n\nPermission requise : `cloudflared:write`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Vérifier les mises à jour d'un programme géré",
+        "tags": [
+          "Tunnel Cloudflare"
+        ],
+        "x-required-scope": "cloudflared:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/cloudflared/install/rollback": {
       "post": {
         "description": "Corps `{\"id\": \"\u003cID de version précédente\u003e\"}`. La version actuelle est conservée comme version précédente pour pouvoir y revenir ; les processus utilisant le programme sont ensuite redémarrés.\n\nPermission requise : `cloudflared:write`.",
@@ -14089,6 +14140,57 @@
         "x-token-allowed": true
       }
     },
+    "/api/filebrowser/install/check": {
+      "post": {
+        "description": "Aucun corps de requête. Interroge la dernière version stable en amont (via le proxy de téléchargement du programme, ou le réglage global `updateProxy` s'il n'y en a pas) sans télécharger ni modifier le programme installé ; renvoie la même chose que `GET /api/{module}/install`, où `latest` vaut `{version, checkedAt, error, hasUpdate}` et `hasUpdate` indique que la dernière version est plus récente que celle installée dans bin. Avec la vérification automatique des mises à jour activée, Gately effectue aussi cette vérification périodiquement pour les programmes gérés installés. Renvoie 409 si une vérification est déjà en cours.\n\nPermission requise : `filebrowser:write`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Vérifier les mises à jour d'un programme géré",
+        "tags": [
+          "File Browser"
+        ],
+        "x-required-scope": "filebrowser:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/filebrowser/install/rollback": {
       "post": {
         "description": "Corps `{\"id\": \"\u003cID de version précédente\u003e\"}`. La version actuelle est conservée comme version précédente pour pouvoir y revenir ; les processus utilisant le programme sont ensuite redémarrés.\n\nPermission requise : `filebrowser:write`.",
@@ -16380,6 +16482,57 @@
           }
         ],
         "summary": "Supprimer une version précédente conservée",
+        "tags": [
+          "Traversée de réseau frp"
+        ],
+        "x-required-scope": "frp:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/frp/install/check": {
+      "post": {
+        "description": "Aucun corps de requête. Interroge la dernière version stable en amont (via le proxy de téléchargement du programme, ou le réglage global `updateProxy` s'il n'y en a pas) sans télécharger ni modifier le programme installé ; renvoie la même chose que `GET /api/{module}/install`, où `latest` vaut `{version, checkedAt, error, hasUpdate}` et `hasUpdate` indique que la dernière version est plus récente que celle installée dans bin. Avec la vérification automatique des mises à jour activée, Gately effectue aussi cette vérification périodiquement pour les programmes gérés installés. Renvoie 409 si une vérification est déjà en cours.\n\nPermission requise : `frp:write`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Vérifier les mises à jour d'un programme géré",
         "tags": [
           "Traversée de réseau frp"
         ],
@@ -30179,7 +30332,7 @@
     },
     "/api/system/update": {
       "get": {
-        "description": "Utilise le proxy du réglage global `updateProxy` pour joindre GitHub. `selfUpgrade.supported` indique si cette installation peut être mise à niveau en ligne ; sinon `reason` vaut `os`, `docker`, `fnos`, `opkg`, `apk` ou `readonly`.\n\nPermission requise : `status:read`.",
+        "description": "Lit immédiatement la liste des versions sur GitHub et les avis de sécurité publiés de Gately (GitHub Security Advisories), via le proxy du réglage global `updateProxy` ; moins de 30 secondes après la dernière vérification réussie, le résultat précédent est renvoyé. `hasUpdate` indique qu'une nouvelle version existe ; `security` vaut true quand la version actuelle est concernée par des problèmes de sécurité publiés, `advisories` liste les avis qui concernent la version actuelle (`id`, `summary`, `severity`, `url`, `ranges`) et `securityReleases` les versions plus récentes dont les notes contiennent une section sécurité. `selfUpgrade.supported` indique si ce déploiement peut être mis à jour en ligne ; sinon `reason` vaut `os`, `docker`, `fnos`, `opkg`, `apk` ou `readonly`. Renvoie 502 en cas d'échec de lecture.\n\nPermission requise : `status:read`.",
         "responses": {
           "200": {
             "description": "Succès"
@@ -30220,11 +30373,62 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Rechercher une nouvelle version",
+        "summary": "Rechercher les nouvelles versions et les avis de sécurité",
         "tags": [
           "Système"
         ],
         "x-required-scope": "status:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/system/update/state": {
+      "get": {
+        "description": "N'accède pas au réseau. Renvoie le dernier résultat enregistré par la vérification automatique ou manuelle, avec les mêmes champs que `GET /api/system/update` plus `autoCheck` (vérification automatique activée ou non), `checkedAt` (heure de la dernière vérification réussie) ainsi que `error` et `failedAt` du dernier échec. `latest` est vide si aucune vérification n'a jamais réussi.\n\nPermission requise : `system:read`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Afficher le résultat de la dernière vérification des mises à jour",
+        "tags": [
+          "Système"
+        ],
+        "x-required-scope": "system:read",
         "x-token-allowed": true
       }
     },
@@ -30624,6 +30828,57 @@
           }
         ],
         "summary": "Supprimer une version précédente conservée",
+        "tags": [
+          "Réseau Tailscale"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/install/check": {
+      "post": {
+        "description": "Aucun corps de requête. Interroge la dernière version stable en amont (via le proxy de téléchargement du programme, ou le réglage global `updateProxy` s'il n'y en a pas) sans télécharger ni modifier le programme installé ; renvoie la même chose que `GET /api/{module}/install`, où `latest` vaut `{version, checkedAt, error, hasUpdate}` et `hasUpdate` indique que la dernière version est plus récente que celle installée dans bin. Avec la vérification automatique des mises à jour activée, Gately effectue aussi cette vérification périodiquement pour les programmes gérés installés. Renvoie 409 si une vérification est déjà en cours.\n\nPermission requise : `tailscale:write`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Vérifier les mises à jour d'un programme géré",
         "tags": [
           "Réseau Tailscale"
         ],

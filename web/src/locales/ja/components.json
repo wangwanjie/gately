@@ -154,7 +154,12 @@
     },
     "uninstall": "アンインストール",
     "confirmUninstall": "{dir} の {files} とすべての旧バージョンを削除しますか？使用中のプロセスは再起動し、PATH に同名のプログラムがなければ実行できなくなります。モジュール設定は保持されます。",
-    "uninstalled": "{name} をアンインストールしました"
+    "uninstalled": "{name} をアンインストールしました",
+    "checkUpdate": "更新を確認",
+    "newVersion": "新しいバージョン {version}",
+    "latestVersion": "最新バージョン {version}（{time} に確認）",
+    "checkFailed": "更新の確認に失敗しました：{error}",
+    "latestOnly": "最新バージョンは {version} です"
   },
   "resetConfig": {
     "button": "デフォルト設定に戻す",

@@ -6163,6 +6163,57 @@
         "x-token-allowed": true
       }
     },
+    "/api/cloudflared/install/check": {
+      "post": {
+        "description": "Sem corpo de requisição. Consulta a versão estável mais recente no projeto de origem (pelo proxy de download do programa ou, se não houver, pela configuração global `updateProxy`) sem baixar nem alterar o programa instalado; retorna o mesmo que `GET /api/{module}/install`, em que `latest` é `{version, checkedAt, error, hasUpdate}` e `hasUpdate` indica que a versão mais recente é mais nova que a instalada em bin. Com a verificação automática de atualizações ativada, o Gately também executa essa verificação periodicamente para os programas gerenciados instalados. Retorna 409 se já houver uma verificação em andamento.\n\nPermissão necessária: `cloudflared:write`.",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Verificar atualizações de um programa gerenciado",
+        "tags": [
+          "Túnel Cloudflare"
+        ],
+        "x-required-scope": "cloudflared:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/cloudflared/install/rollback": {
       "post": {
         "description": "Corpo `{\"id\": \"\u003cID da versão anterior\u003e\"}`. A versão atual é salva como versão anterior para que você possa voltar; depois os processos que usam o programa são reiniciados.\n\nPermissão necessária: `cloudflared:write`.",
@@ -14089,6 +14140,57 @@
         "x-token-allowed": true
       }
     },
+    "/api/filebrowser/install/check": {
+      "post": {
+        "description": "Sem corpo de requisição. Consulta a versão estável mais recente no projeto de origem (pelo proxy de download do programa ou, se não houver, pela configuração global `updateProxy`) sem baixar nem alterar o programa instalado; retorna o mesmo que `GET /api/{module}/install`, em que `latest` é `{version, checkedAt, error, hasUpdate}` e `hasUpdate` indica que a versão mais recente é mais nova que a instalada em bin. Com a verificação automática de atualizações ativada, o Gately também executa essa verificação periodicamente para os programas gerenciados instalados. Retorna 409 se já houver uma verificação em andamento.\n\nPermissão necessária: `filebrowser:write`.",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Verificar atualizações de um programa gerenciado",
+        "tags": [
+          "File Browser"
+        ],
+        "x-required-scope": "filebrowser:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/filebrowser/install/rollback": {
       "post": {
         "description": "Corpo `{\"id\": \"\u003cID da versão anterior\u003e\"}`. A versão atual é salva como versão anterior para que você possa voltar; depois os processos que usam o programa são reiniciados.\n\nPermissão necessária: `filebrowser:write`.",
@@ -16380,6 +16482,57 @@
           }
         ],
         "summary": "Excluir uma versão anterior salva",
+        "tags": [
+          "Travessia de rede interna frp"
+        ],
+        "x-required-scope": "frp:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/frp/install/check": {
+      "post": {
+        "description": "Sem corpo de requisição. Consulta a versão estável mais recente no projeto de origem (pelo proxy de download do programa ou, se não houver, pela configuração global `updateProxy`) sem baixar nem alterar o programa instalado; retorna o mesmo que `GET /api/{module}/install`, em que `latest` é `{version, checkedAt, error, hasUpdate}` e `hasUpdate` indica que a versão mais recente é mais nova que a instalada em bin. Com a verificação automática de atualizações ativada, o Gately também executa essa verificação periodicamente para os programas gerenciados instalados. Retorna 409 se já houver uma verificação em andamento.\n\nPermissão necessária: `frp:write`.",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Verificar atualizações de um programa gerenciado",
         "tags": [
           "Travessia de rede interna frp"
         ],
@@ -30179,7 +30332,7 @@
     },
     "/api/system/update": {
       "get": {
-        "description": "Usa o proxy da configuração global `updateProxy` para acessar o GitHub. `selfUpgrade.supported` indica se esta instalação pode ser atualizada online; caso contrário, `reason` é `os`, `docker`, `fnos`, `opkg`, `apk` ou `readonly`.\n\nPermissão necessária: `status:read`.",
+        "description": "Lê imediatamente a lista de versões no GitHub e os avisos de segurança publicados do Gately (GitHub Security Advisories), usando o proxy da configuração global `updateProxy`; menos de 30 segundos após a última verificação bem-sucedida, retorna o resultado anterior. `hasUpdate` indica que há uma nova versão; `security` é true quando a versão atual é afetada por problemas de segurança publicados, `advisories` lista os avisos que afetam a versão atual (`id`, `summary`, `severity`, `url`, `ranges`) e `securityReleases` as versões mais novas cujas notas têm uma seção de segurança. `selfUpgrade.supported` indica se esta instalação pode ser atualizada online; se não, `reason` é `os`, `docker`, `fnos`, `opkg`, `apk` ou `readonly`. Retorna 502 se a leitura falhar.\n\nPermissão necessária: `status:read`.",
         "responses": {
           "200": {
             "description": "Sucesso"
@@ -30220,11 +30373,62 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Verificar nova versão",
+        "summary": "Verificar novas versões e avisos de segurança",
         "tags": [
           "Sistema"
         ],
         "x-required-scope": "status:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/system/update/state": {
+      "get": {
+        "description": "Não acessa a rede. Retorna o resultado mais recente salvo pela verificação automática ou manual, com os mesmos campos de `GET /api/system/update` mais `autoCheck` (se a verificação automática está ativada), `checkedAt` (hora da última verificação bem-sucedida) e `error` e `failedAt` da última falha. `latest` fica vazio se nenhuma verificação teve sucesso.\n\nPermissão necessária: `system:read`.",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ver o resultado da última verificação de atualizações",
+        "tags": [
+          "Sistema"
+        ],
+        "x-required-scope": "system:read",
         "x-token-allowed": true
       }
     },
@@ -30624,6 +30828,57 @@
           }
         ],
         "summary": "Excluir uma versão anterior salva",
+        "tags": [
+          "Rede Tailscale"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/install/check": {
+      "post": {
+        "description": "Sem corpo de requisição. Consulta a versão estável mais recente no projeto de origem (pelo proxy de download do programa ou, se não houver, pela configuração global `updateProxy`) sem baixar nem alterar o programa instalado; retorna o mesmo que `GET /api/{module}/install`, em que `latest` é `{version, checkedAt, error, hasUpdate}` e `hasUpdate` indica que a versão mais recente é mais nova que a instalada em bin. Com a verificação automática de atualizações ativada, o Gately também executa essa verificação periodicamente para os programas gerenciados instalados. Retorna 409 se já houver uma verificação em andamento.\n\nPermissão necessária: `tailscale:write`.",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Verificar atualizações de um programa gerenciado",
         "tags": [
           "Rede Tailscale"
         ],

@@ -111,6 +111,7 @@ func setupUpgrade(t *testing.T) string {
 		t.Fatal(err)
 	}
 	oldGOOS, oldExe, oldMarkers, oldVer, oldAPI := upgradeGOOS, upgradeExecutable, containerMarkers, version.Version, releaseAPI
+	oldReleases, oldAdvisories := releasesAPI, advisoriesAPI
 	oldPkgExe, oldOpkg, oldApk := packagedExecutable, opkgControlFile, apkInstalledDB
 	upgradeGOOS = "linux"
 	upgradeExecutable = func() (string, error) { return exe, nil }
@@ -127,6 +128,7 @@ func setupUpgrade(t *testing.T) string {
 	t.Cleanup(func() {
 		upgradeGOOS, upgradeExecutable, containerMarkers, version.Version, releaseAPI = oldGOOS, oldExe, oldMarkers, oldVer, oldAPI
 		packagedExecutable, opkgControlFile, apkInstalledDB = oldPkgExe, oldOpkg, oldApk
+		releasesAPI, advisoriesAPI = oldReleases, oldAdvisories
 	})
 	return exe
 }
@@ -151,6 +153,11 @@ func fakeRelease(t *testing.T, tag string, pkg []byte, sumOverride string) *http
 					{"name": "checksums.txt", "browser_download_url": srv.URL + "/dl/checksums.txt"},
 				},
 			})
+		case "/releases":
+			// 检查更新读取发布列表与安全公告
+			_ = json.NewEncoder(w).Encode([]map[string]any{{"tag_name": tag, "html_url": "https://example.com", "published_at": time.Now()}})
+		case "/advisories":
+			_, _ = w.Write([]byte("[]"))
 		case "/dl/" + name:
 			_, _ = w.Write(pkg)
 		case "/dl/checksums.txt":
@@ -161,6 +168,7 @@ func fakeRelease(t *testing.T, tag string, pkg []byte, sumOverride string) *http
 	}))
 	t.Cleanup(srv.Close)
 	releaseAPI = srv.URL + "/latest"
+	releasesAPI, advisoriesAPI = srv.URL+"/releases", srv.URL+"/advisories"
 	return srv
 }
 
@@ -371,12 +379,16 @@ func TestUpdateProxySetting(t *testing.T) {
 func TestUpdateUsesProxy(t *testing.T) {
 	setupUpgrade(t)
 	a, srv, c := loginApp(t)
-	releaseAPI = "http://release.invalid/latest"
+	releasesAPI, advisoriesAPI = "http://release.invalid/releases", "http://release.invalid/advisories"
 	hits := make(chan string, 4)
 	proxy := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// 经 HTTP 代理转发的请求行为完整 URL
 		hits <- r.URL.String()
-		_ = json.NewEncoder(w).Encode(map[string]any{"tag_name": "v0.2.0"})
+		if strings.HasSuffix(r.URL.Path, "/advisories") {
+			_, _ = w.Write([]byte("[]"))
+			return
+		}
+		_ = json.NewEncoder(w).Encode([]map[string]any{{"tag_name": "v0.2.0"}})
 	}))
 	t.Cleanup(proxy.Close)
 	a.settingsMu.Lock()
@@ -388,8 +400,8 @@ func TestUpdateUsesProxy(t *testing.T) {
 	}
 	select {
 	case u := <-hits:
-		if u != releaseAPI {
-			t.Fatalf("代理收到的地址应为 %s，实际 %s", releaseAPI, u)
+		if u != releasesAPI {
+			t.Fatalf("代理收到的地址应为 %s，实际 %s", releasesAPI, u)
 		}
 	default:
 		t.Fatal("请求没有经过代理")

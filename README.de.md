@@ -260,7 +260,7 @@ Gately ist vollständig quelloffen, sodass Nutzer und Community Quellcode und Ko
 
 - Der Quellcode steht unter Apache-2.0 und kann von der Community geprüft werden
 - Standardmäßig keine Verbindung zu Servern des Projekts und keine Übermittlung von Geräteinformationen; die Anmeldung über Drittanbieter nutzt Ihre eigenen OAuth-Anwendungen ohne Zwischenstation
-- Alle externen Adressen (Abfrage der öffentlichen IP, STUN-Server usw.) sind sichtbar, änderbar und abschaltbar
+- Alle externen Adressen (Abfrage der öffentlichen IP, STUN-Server, Update-Prüfung über GitHub usw.) sind sichtbar, änderbar und abschaltbar
 - Die Konfiguration ist reines JSON und lässt sich zur Prüfung und für Rollbacks direkt in git verwalten
 
 ## Leistung

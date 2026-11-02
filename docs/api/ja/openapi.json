@@ -6163,6 +6163,57 @@
         "x-token-allowed": true
       }
     },
+    "/api/cloudflared/install/check": {
+      "post": {
+        "description": "リクエストボディは不要です。上流の最新正式版を照会します（プログラムのダウンロードプロキシを使用し、未設定の場合はグローバル設定 `updateProxy` を使用）。ダウンロードやインストール済みプログラムの変更は行いません。戻り値は `GET /api/{module}/install` と同じで、`latest` は `{version, checkedAt, error, hasUpdate}`、`hasUpdate` は最新版が bin にインストールされたバージョンより新しいことを示します。自動更新チェックが有効な場合、Gately はインストール済みの管理プログラムについてもこのチェックを定期的に実行します。別のチェックが実行中の場合は 409 を返します。\n\n必要な権限: `cloudflared:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "管理プログラムの更新を確認",
+        "tags": [
+          "Cloudflare トンネル"
+        ],
+        "x-required-scope": "cloudflared:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/cloudflared/install/rollback": {
       "post": {
         "description": "リクエストボディ `{\"id\": \"\u003c旧バージョン ID\u003e\"}`。現在のバージョンは旧バージョンとして保存され、後で切り戻せます。完了後、このプログラムを使うプロセスを再起動します。\n\n必要な権限: `cloudflared:write`。",
@@ -14089,6 +14140,57 @@
         "x-token-allowed": true
       }
     },
+    "/api/filebrowser/install/check": {
+      "post": {
+        "description": "リクエストボディは不要です。上流の最新正式版を照会します（プログラムのダウンロードプロキシを使用し、未設定の場合はグローバル設定 `updateProxy` を使用）。ダウンロードやインストール済みプログラムの変更は行いません。戻り値は `GET /api/{module}/install` と同じで、`latest` は `{version, checkedAt, error, hasUpdate}`、`hasUpdate` は最新版が bin にインストールされたバージョンより新しいことを示します。自動更新チェックが有効な場合、Gately はインストール済みの管理プログラムについてもこのチェックを定期的に実行します。別のチェックが実行中の場合は 409 を返します。\n\n必要な権限: `filebrowser:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "管理プログラムの更新を確認",
+        "tags": [
+          "File Browser"
+        ],
+        "x-required-scope": "filebrowser:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/filebrowser/install/rollback": {
       "post": {
         "description": "リクエストボディ `{\"id\": \"\u003c旧バージョン ID\u003e\"}`。現在のバージョンは旧バージョンとして保存され、後で切り戻せます。完了後、このプログラムを使うプロセスを再起動します。\n\n必要な権限: `filebrowser:write`。",
@@ -16380,6 +16482,57 @@
           }
         ],
         "summary": "保存された旧バージョンを削除",
+        "tags": [
+          "frp イントラネット穿透"
+        ],
+        "x-required-scope": "frp:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/frp/install/check": {
+      "post": {
+        "description": "リクエストボディは不要です。上流の最新正式版を照会します（プログラムのダウンロードプロキシを使用し、未設定の場合はグローバル設定 `updateProxy` を使用）。ダウンロードやインストール済みプログラムの変更は行いません。戻り値は `GET /api/{module}/install` と同じで、`latest` は `{version, checkedAt, error, hasUpdate}`、`hasUpdate` は最新版が bin にインストールされたバージョンより新しいことを示します。自動更新チェックが有効な場合、Gately はインストール済みの管理プログラムについてもこのチェックを定期的に実行します。別のチェックが実行中の場合は 409 を返します。\n\n必要な権限: `frp:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "管理プログラムの更新を確認",
         "tags": [
           "frp イントラネット穿透"
         ],
@@ -30179,7 +30332,7 @@
     },
     "/api/system/update": {
       "get": {
-        "description": "GitHub へのアクセスにはグローバル設定 `updateProxy` のプロキシを使います。`selfUpgrade.supported` は現在の導入方法でオンラインアップグレードできるかを示し、できない場合 `reason` は `os`、`docker`、`fnos`、`opkg`、`apk`、`readonly` のいずれかです。\n\n必要な権限: `status:read`。",
+        "description": "GitHub のリリース一覧と Gately の公開済みセキュリティアドバイザリー（GitHub Security Advisories）を即座に読み込みます。アクセスにはグローバル設定 `updateProxy` のプロキシを使用し、前回の成功から 30 秒以内は前回の結果を返します。`hasUpdate` は新しいバージョンがあることを示し、`security` が true の場合は現在のバージョンが公開済みのセキュリティ問題の影響を受けます。`advisories` は現在のバージョンに影響するアドバイザリー（`id`、`summary`、`severity`、`url`、`ranges`）、`securityReleases` は現在より新しく、リリースノートにセキュリティの章があるバージョンです。`selfUpgrade.supported` はこのデプロイ方法でオンラインアップグレードできるかを示し、できない場合 `reason` は `os`、`docker`、`fnos`、`opkg`、`apk`、`readonly` のいずれかです。読み込みに失敗すると 502 を返します。\n\n必要な権限: `status:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -30220,11 +30373,62 @@
             "bearerAuth": []
           }
         ],
-        "summary": "新しいバージョンを確認",
+        "summary": "新しいバージョンとセキュリティアドバイザリーを確認",
         "tags": [
           "システム"
         ],
         "x-required-scope": "status:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/system/update/state": {
+      "get": {
+        "description": "ネットワークにはアクセスしません。自動または手動チェックで保存された最新の結果を返します。フィールドは `GET /api/system/update` と同じで、ほかに `autoCheck`（自動チェックが有効か）、`checkedAt`（最後に成功したチェックの時刻）、直近の失敗の `error` と `failedAt` があります。一度も成功していない場合 `latest` は空です。\n\n必要な権限: `system:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "前回の更新チェックの結果を表示",
+        "tags": [
+          "システム"
+        ],
+        "x-required-scope": "system:read",
         "x-token-allowed": true
       }
     },
@@ -30624,6 +30828,57 @@
           }
         ],
         "summary": "保存された旧バージョンを削除",
+        "tags": [
+          "Tailscale ネットワーク"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/install/check": {
+      "post": {
+        "description": "リクエストボディは不要です。上流の最新正式版を照会します（プログラムのダウンロードプロキシを使用し、未設定の場合はグローバル設定 `updateProxy` を使用）。ダウンロードやインストール済みプログラムの変更は行いません。戻り値は `GET /api/{module}/install` と同じで、`latest` は `{version, checkedAt, error, hasUpdate}`、`hasUpdate` は最新版が bin にインストールされたバージョンより新しいことを示します。自動更新チェックが有効な場合、Gately はインストール済みの管理プログラムについてもこのチェックを定期的に実行します。別のチェックが実行中の場合は 409 を返します。\n\n必要な権限: `tailscale:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "管理プログラムの更新を確認",
         "tags": [
           "Tailscale ネットワーク"
         ],

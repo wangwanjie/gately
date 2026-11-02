@@ -27,8 +27,13 @@
         {{ t('about.newVersion', { latest: update.latest, current: update.current }) }}
         <el-button link type="primary" @click="dialog?.showRelease(update)">{{ t('common.details') }}</el-button>
       </div>
-      <!-- 在线升级工具：更新代理与手动上传升级包，仅管理员可见 -->
+      <SecurityNotice v-if="update" :info="update" class="about-security" />
+      <!-- 在线升级工具：自动检查开关、更新代理与手动上传升级包，仅管理员可见 -->
       <div v-if="isAdmin" class="upgrade-tools">
+        <span class="auto-switch">
+          {{ t('about.autoCheck.label') }}
+          <el-switch :model-value="update?.autoCheck ?? true" size="small" :loading="autoSaving" @change="toggleAutoCheck" />
+        </span>
         <span>
           {{ t('about.proxy.label') }}<span class="mono">{{ proxy || t('about.proxy.none') }}</span>
           <el-button link type="primary" @click="openProxy">{{ t('common.edit') }}</el-button>
@@ -37,6 +42,13 @@
           {{ t('about.upgrade.upload') }}
         </el-button>
         <input ref="fileInput" type="file" accept=".gz,.tgz,application/gzip,application/octet-stream" hidden @change="upgradeUpload" />
+      </div>
+      <div v-if="update" class="hint">
+        <template v-if="update.autoCheck">
+          {{ update.checkedAt ? t('about.autoCheck.last', { time: new Date(update.checkedAt).toLocaleString() }) : t('about.autoCheck.pending') }}
+        </template>
+        <template v-else>{{ t('about.autoCheck.off') }}</template>
+        <span v-if="update.error" class="check-error">{{ t('about.autoCheck.failed', { error: update.error }) }}</span>
       </div>
       <div class="hint">{{ t('about.updateHint') }}</div>
 
@@ -177,6 +189,7 @@ import {
 import { api, type SystemSettings, type SystemInfo, type UpdateInfo, type UpgradeStatus } from '../api'
 import AppLogo from '../components/AppLogo.vue'
 import UpdateDialog from '../components/UpdateDialog.vue'
+import SecurityNotice from '../components/SecurityNotice.vue'
 import { copyText } from '../composables/useClipboard'
 
 const { t, locale } = useI18n()
@@ -237,6 +250,31 @@ async function checkUpdate() {
     ElMessage.error((e as Error).message)
   } finally {
     checking.value = false
+  }
+}
+
+// loadUpdateState 读取上次检查更新的结果（自动检查或手动检查保存的，不访问网络）
+async function loadUpdateState() {
+  try {
+    update.value = await api.get<UpdateInfo>('/api/system/update/state')
+  } catch {
+    // 读取失败时只是不显示上次结果
+  }
+}
+
+// toggleAutoCheck 读取最新的全局设置后只改动自动检查开关
+const autoSaving = ref(false)
+async function toggleAutoCheck(v: string | number | boolean) {
+  autoSaving.value = true
+  try {
+    const s = await api.get<SystemSettings>('/api/system/settings')
+    await api.put<SystemSettings>('/api/system/settings', { ...s, disableUpdateCheck: !v })
+    ElMessage.success(v ? t('about.autoCheck.enabled') : t('about.autoCheck.disabled'))
+    await loadUpdateState()
+  } catch (e) {
+    ElMessage.error((e as Error).message)
+  } finally {
+    autoSaving.value = false
   }
 }
 
@@ -318,6 +356,7 @@ const dockerCmdEl = ref<HTMLElement>()
 
 onMounted(async () => {
   loadProxy()
+  loadUpdateState()
   try {
     info.value = await api.get<SystemInfo>('/api/system/info')
   } catch {
@@ -418,6 +457,19 @@ h1 {
 }
 .actions a.el-button {
   text-decoration: none;
+}
+.about-security {
+  max-width: 640px;
+  margin: 12px auto 0;
+}
+.auto-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.check-error {
+  margin-left: 6px;
+  color: var(--el-color-warning);
 }
 .update-hint {
   margin-top: 16px;

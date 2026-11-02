@@ -63,6 +63,9 @@ type Settings struct {
 	// UpdateProxy 为检查更新与在线升级访问 GitHub 时使用的代理，支持 http、https 与 socks5；
 	// 为空时直连（仍遵循 HTTPS_PROXY 等环境变量）
 	UpdateProxy string `json:"updateProxy"`
+	// DisableUpdateCheck 为 true 时不再定期检查更新与安全公告，只在点击“检查更新”时访问 GitHub。
+	// 默认开启：安全修复版本发布后需要尽快让用户知道
+	DisableUpdateCheck bool `json:"disableUpdateCheck"`
 	// LogLines 为每个模块保留的日志条数
 	LogLines int `json:"logLines"`
 	// DisableLogPersist 为 true 时运行日志只保留在内存，重启后丢失；默认写入配置目录下的 logs/
@@ -310,6 +313,10 @@ func (a *App) handlePutSettings(w http.ResponseWriter, r *http.Request) {
 	a.settingsMu.Unlock()
 	if restartRequired(old, next) {
 		a.restartPending.Store(true)
+	}
+	if old.DisableUpdateCheck && !next.DisableUpdateCheck {
+		// 重新开启自动检查后按上次检查时间重新计时，不必等到原定的下一次
+		a.wakeUpdateCheck()
 	}
 	a.applyRuntime()
 	a.sysLogs.Add(logbuf.LevelInfo, "settings", "全局设置已更新")

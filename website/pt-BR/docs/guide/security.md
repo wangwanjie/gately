@@ -4,7 +4,7 @@ O Gately roda na borda da rede e lida com chaves de provedores de DNS, chaves pr
 
 ## Compromisso de privacidade
 
-- **Zero conexões externas por padrão**: nenhuma conexão com servidores do projeto, nenhum envio de informações do dispositivo, nenhum envio remoto de configuração.
+- **Nenhuma conexão com servidores do projeto**: nenhum envio de informações do dispositivo, nenhum envio remoto de configuração. Por padrão, o Gately lê anonimamente a lista de versões e os avisos de segurança no GitHub a cada 12 horas, apenas para avisar sobre novas versões e atualizações de segurança; isso pode ser desativado, veja [Verificação automática de atualizações](/pt-BR/docs/guide/install#update-check).
 - **Endereços externos visíveis e editáveis**: a consulta do IP público, os servidores STUN e endereços semelhantes aparecem na interface e podem ser alterados ou desativados.
 - **Login de terceiros sob o seu controle**: o login com GitHub, Google, QQ e OIDC usa aplicativos OAuth que você mesmo registra, sem intermediários.
 - **Atualizações sob o seu controle**: o programa nunca se baixa nem se substitui em segundo plano. A atualização online das instalações binárias no Linux só roda depois que um administrador clica, confere o SHA-256 e guarda a versão anterior; você decide quando atualizar.

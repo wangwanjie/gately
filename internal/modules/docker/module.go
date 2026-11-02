@@ -61,6 +61,8 @@ type Module struct {
 	stopWatch context.CancelFunc
 	parent    context.Context
 	auto      *autoRunner
+	// notified 记录定时检查已通知过的更新（容器 ID -> 最新镜像 ID），同一个新镜像只通知一次，由 mu 保护
+	notified map[string]string
 
 	composeMu    sync.Mutex
 	composeCache composeInfo
@@ -181,33 +183,35 @@ func containerImage(info map[string]json.RawMessage) (ref, imageID, name string,
 
 // checkUpdate 拉取最新镜像并与容器当前镜像比较。
 func (m *Module) checkUpdate(ctx context.Context, c *Client, id string) (bool, error) {
-	return m.checkUpdateMemo(ctx, c, id, nil)
+	has, _, err := m.checkUpdateMemo(ctx, c, id, nil)
+	return has, err
 }
 
-// checkUpdateMemo 与 checkUpdate 相同，memo 记录本轮已拉取的镜像引用及其最新镜像 ID，批量检查时同一引用只拉取一次。
-func (m *Module) checkUpdateMemo(ctx context.Context, c *Client, id string, memo map[string]string) (bool, error) {
+// checkUpdateMemo 与 checkUpdate 相同，另外返回拉取到的最新镜像 ID；
+// memo 记录本轮已拉取的镜像引用及其最新镜像 ID，批量检查时同一引用只拉取一次。
+func (m *Module) checkUpdateMemo(ctx context.Context, c *Client, id string, memo map[string]string) (bool, string, error) {
 	info, err := c.Inspect(ctx, id)
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 	ref, cur, _, err := containerImage(info)
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 	latest, ok := memo[ref]
 	if !ok {
 		if err := m.pullImageWithMirrors(ctx, c, ref, nil); err != nil {
-			return false, fmt.Errorf("拉取 %s 失败: %w", ref, err)
+			return false, "", fmt.Errorf("拉取 %s 失败: %w", ref, err)
 		}
 		latest, err = c.ImageID(ctx, ref)
 		if err != nil {
-			return false, err
+			return false, "", err
 		}
 		if memo != nil {
 			memo[ref] = latest
 		}
 	}
-	return latest != "" && latest != cur, nil
+	return latest != "" && latest != cur, latest, nil
 }
 
 // upgrade 拉取最新镜像并按原配置重建容器；新容器启动失败时恢复旧容器。

@@ -12,7 +12,7 @@
   "latestRelease": " (neuestes Release {latest})",
   "publishedAt": "Veröffentlicht {time}",
   "viewRelease": "Release-Seite ansehen",
-  "updateHint": "Update-Prüfung und Online-Upgrade greifen nur beim Klicken auf GitHub zu; Gately geht nie von selbst online.",
+  "updateHint": "Mit aktivierter automatischer Prüfung ruft Gately alle 12 Stunden GitHub ab und liest nur die Release-Liste und Sicherheitshinweise, ohne Informationen zu senden; ist sie aus, wird GitHub nur beim Klick auf „Nach Updates suchen“ kontaktiert.",
   "upgrade": {
     "now": "Jetzt aktualisieren",
     "title": "Online-Upgrade",
@@ -55,7 +55,8 @@
     },
     "gotIt": "Verstanden",
     "cancel": "Upgrade abbrechen",
-    "canceled": "Upgrade abgebrochen"
+    "canceled": "Upgrade abgebrochen",
+    "foundSecurity": "Sicherheitsupdate verfügbar"
   },
   "proxy": {
     "label": "Update-Proxy: ",
@@ -163,5 +164,27 @@
     "siteZip": "ZIP der Gesamtkonfiguration",
     "portforward": "Portweiterleitung",
     "cert": "Zertifikate"
+  },
+  "autoCheck": {
+    "label": "Automatische Update-Prüfung",
+    "last": "Zuletzt geprüft: {time}",
+    "pending": "Automatische Prüfung ist aktiv; die erste Prüfung erfolgt einige Minuten nach dem Start",
+    "off": "Automatische Prüfung ist aus; GitHub wird nur beim Klick auf „Nach Updates suchen“ kontaktiert",
+    "failed": "Letzte Prüfung fehlgeschlagen: {error}",
+    "enabled": "Automatische Update-Prüfung aktiviert",
+    "disabled": "Automatische Update-Prüfung deaktiviert"
+  },
+  "security": {
+    "title": "Die aktuelle Version {current} ist von veröffentlichten Sicherheitsproblemen betroffen",
+    "severity": {
+      "low": "Niedrig",
+      "medium": "Mittel",
+      "high": "Hoch",
+      "critical": "Kritisch"
+    },
+    "fixedIn": "behoben in {version}",
+    "releases": "Diese neueren Versionen enthalten Sicherheitskorrekturen: {versions}",
+    "advice": "Bitte so bald wie möglich auf {latest} aktualisieren.",
+    "noFix": "Sie verwenden bereits die neueste Version. Bis eine korrigierte Version erscheint, folgen Sie den Gegenmaßnahmen im Advisory."
   }
 }

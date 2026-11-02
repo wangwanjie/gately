@@ -260,7 +260,7 @@ Gately is fully open source, so users and the community can read the source and 
 
 - The source is released under Apache-2.0 and open to community review
 - No connections to any project-operated server by default and no device information reported; third-party sign-in uses your own OAuth apps, with no relay in between
-- Every outbound address (public IP lookup, STUN servers, and so on) is visible, editable, and can be turned off
+- Every outbound address (public IP lookup, STUN servers, the GitHub update check, and so on) is visible, editable, and can be turned off
 - Configuration is plain-text JSON, so you can put it under git for auditing and rollback
 
 ## Performance

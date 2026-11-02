@@ -142,7 +142,9 @@
     },
     "serverLanguage": "伺服器語言",
     "serverLanguageAuto": "跟隨系統",
-    "serverLanguageHelp": "記錄檔、通知等沒有頁面情境的輸出所使用的語言；留空時依系統環境變數（GATELY_LANG、LANG）選擇，環境變數未指定語言時跟隨最近一次登入管理介面時使用的語言。"
+    "serverLanguageHelp": "記錄檔、通知等沒有頁面情境的輸出所使用的語言；留空時依系統環境變數（GATELY_LANG、LANG）選擇，環境變數未指定語言時跟隨最近一次登入管理介面時使用的語言。",
+    "autoUpdateCheck": "自動檢查更新",
+    "autoUpdateCheckHelp": "每 12 小時存取一次 GitHub，檢查 Gately 的新版本與安全公告，並檢查已安裝的託管程式；發現後在頁面頂部提示，並依通知中心的規則傳送通知。只傳送匿名請求，不上傳任何資訊。"
   },
   "runtime": {
     "title": "執行參數",

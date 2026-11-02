@@ -6163,6 +6163,57 @@
         "x-token-allowed": true
       }
     },
+    "/api/cloudflared/install/check": {
+      "post": {
+        "description": "无需请求体。查询上游最新正式版（使用该程序的下载代理，未设置时沿用全局设置 `updateProxy`），不下载也不改动已安装的程序；返回值同 `GET /api/{module}/install`，其中 `latest` 为 `{version, checkedAt, error, hasUpdate}`，`hasUpdate` 表示最新版比 bin 下安装的版本新。开启自动检查更新时，Gately 也会定期为已安装的托管程序执行该检查。已有检查在进行时返回 409。\n\n所需权限：`cloudflared:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "检查托管程序的更新",
+        "tags": [
+          "Cloudflare 隧道"
+        ],
+        "x-required-scope": "cloudflared:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/cloudflared/install/rollback": {
       "post": {
         "description": "请求体 `{\"id\": \"\u003c旧版本 ID\u003e\"}`。当前版本会另存为旧版本，之后仍可切回；完成后重启使用该程序的进程。\n\n所需权限：`cloudflared:write`。",
@@ -14089,6 +14140,57 @@
         "x-token-allowed": true
       }
     },
+    "/api/filebrowser/install/check": {
+      "post": {
+        "description": "无需请求体。查询上游最新正式版（使用该程序的下载代理，未设置时沿用全局设置 `updateProxy`），不下载也不改动已安装的程序；返回值同 `GET /api/{module}/install`，其中 `latest` 为 `{version, checkedAt, error, hasUpdate}`，`hasUpdate` 表示最新版比 bin 下安装的版本新。开启自动检查更新时，Gately 也会定期为已安装的托管程序执行该检查。已有检查在进行时返回 409。\n\n所需权限：`filebrowser:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "检查托管程序的更新",
+        "tags": [
+          "File Browser"
+        ],
+        "x-required-scope": "filebrowser:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/filebrowser/install/rollback": {
       "post": {
         "description": "请求体 `{\"id\": \"\u003c旧版本 ID\u003e\"}`。当前版本会另存为旧版本，之后仍可切回；完成后重启使用该程序的进程。\n\n所需权限：`filebrowser:write`。",
@@ -16380,6 +16482,57 @@
           }
         ],
         "summary": "删除保存的旧版本",
+        "tags": [
+          "frp 内网穿透"
+        ],
+        "x-required-scope": "frp:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/frp/install/check": {
+      "post": {
+        "description": "无需请求体。查询上游最新正式版（使用该程序的下载代理，未设置时沿用全局设置 `updateProxy`），不下载也不改动已安装的程序；返回值同 `GET /api/{module}/install`，其中 `latest` 为 `{version, checkedAt, error, hasUpdate}`，`hasUpdate` 表示最新版比 bin 下安装的版本新。开启自动检查更新时，Gately 也会定期为已安装的托管程序执行该检查。已有检查在进行时返回 409。\n\n所需权限：`frp:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "检查托管程序的更新",
         "tags": [
           "frp 内网穿透"
         ],
@@ -30179,7 +30332,7 @@
     },
     "/api/system/update": {
       "get": {
-        "description": "访问 GitHub 时使用全局设置 `updateProxy` 中的代理。`selfUpgrade.supported` 表示当前部署方式能否在线升级，不能时 `reason` 为 `os`、`docker`、`fnos`、`opkg`、`apk` 或 `readonly`。\n\n所需权限：`status:read`。",
+        "description": "立即读取 GitHub 上的发布列表与 Gately 已公开的安全公告（GitHub Security Advisories），访问时使用全局设置 `updateProxy` 中的代理；距上次成功检查不足 30 秒时直接返回上次结果。`hasUpdate` 表示有新版本；`security` 为 true 表示当前版本受已公开的安全问题影响，`advisories` 列出影响当前版本的安全公告（`id`、`summary`、`severity`、`url`、`ranges`），`securityReleases` 列出比当前版本新、更新说明带有安全章节的版本。`selfUpgrade.supported` 表示当前部署方式能否在线升级，不能时 `reason` 为 `os`、`docker`、`fnos`、`opkg`、`apk` 或 `readonly`。读取失败返回 502。\n\n所需权限：`status:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -30220,11 +30373,62 @@
             "bearerAuth": []
           }
         ],
-        "summary": "检查新版本",
+        "summary": "检查新版本与安全公告",
         "tags": [
           "系统"
         ],
         "x-required-scope": "status:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/system/update/state": {
+      "get": {
+        "description": "不访问网络，返回自动检查或手动检查保存的最近一次结果，字段同 `GET /api/system/update`，另有 `autoCheck`（是否开启自动检查）、`checkedAt`（最近一次成功检查的时间）以及最近一次失败的 `error` 与 `failedAt`。从未成功检查过时 `latest` 为空。\n\n所需权限：`system:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "查看上次检查更新的结果",
+        "tags": [
+          "系统"
+        ],
+        "x-required-scope": "system:read",
         "x-token-allowed": true
       }
     },
@@ -30624,6 +30828,57 @@
           }
         ],
         "summary": "删除保存的旧版本",
+        "tags": [
+          "Tailscale 组网"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/install/check": {
+      "post": {
+        "description": "无需请求体。查询上游最新正式版（使用该程序的下载代理，未设置时沿用全局设置 `updateProxy`），不下载也不改动已安装的程序；返回值同 `GET /api/{module}/install`，其中 `latest` 为 `{version, checkedAt, error, hasUpdate}`，`hasUpdate` 表示最新版比 bin 下安装的版本新。开启自动检查更新时，Gately 也会定期为已安装的托管程序执行该检查。已有检查在进行时返回 409。\n\n所需权限：`tailscale:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "检查托管程序的更新",
         "tags": [
           "Tailscale 组网"
         ],

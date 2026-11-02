@@ -6163,6 +6163,57 @@
         "x-token-allowed": true
       }
     },
+    "/api/cloudflared/install/check": {
+      "post": {
+        "description": "Тело запроса не требуется. Запрашивает последнюю стабильную версию у первоисточника (через прокси загрузки программы, а если он не задан — через глобальную настройку `updateProxy`), ничего не скачивая и не изменяя установленную программу; возвращает то же, что `GET /api/{module}/install`, где `latest` — `{version, checkedAt, error, hasUpdate}`, а `hasUpdate` означает, что последняя версия новее установленной в bin. При включённой автоматической проверке обновлений Gately также периодически выполняет эту проверку для установленных управляемых программ. Если проверка уже выполняется, возвращает 409.\n\nТребуемое разрешение: `cloudflared:write`.",
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Проверить обновления управляемой программы",
+        "tags": [
+          "Туннель Cloudflare"
+        ],
+        "x-required-scope": "cloudflared:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/cloudflared/install/rollback": {
       "post": {
         "description": "Тело запроса `{\"id\": \"\u003cID предыдущей версии\u003e\"}`. Текущая версия сохраняется как предыдущая, к ней можно вернуться; затем процессы, использующие программу, перезапускаются.\n\nТребуемое разрешение: `cloudflared:write`.",
@@ -14089,6 +14140,57 @@
         "x-token-allowed": true
       }
     },
+    "/api/filebrowser/install/check": {
+      "post": {
+        "description": "Тело запроса не требуется. Запрашивает последнюю стабильную версию у первоисточника (через прокси загрузки программы, а если он не задан — через глобальную настройку `updateProxy`), ничего не скачивая и не изменяя установленную программу; возвращает то же, что `GET /api/{module}/install`, где `latest` — `{version, checkedAt, error, hasUpdate}`, а `hasUpdate` означает, что последняя версия новее установленной в bin. При включённой автоматической проверке обновлений Gately также периодически выполняет эту проверку для установленных управляемых программ. Если проверка уже выполняется, возвращает 409.\n\nТребуемое разрешение: `filebrowser:write`.",
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Проверить обновления управляемой программы",
+        "tags": [
+          "File Browser"
+        ],
+        "x-required-scope": "filebrowser:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/filebrowser/install/rollback": {
       "post": {
         "description": "Тело запроса `{\"id\": \"\u003cID предыдущей версии\u003e\"}`. Текущая версия сохраняется как предыдущая, к ней можно вернуться; затем процессы, использующие программу, перезапускаются.\n\nТребуемое разрешение: `filebrowser:write`.",
@@ -16380,6 +16482,57 @@
           }
         ],
         "summary": "Удалить сохранённую предыдущую версию",
+        "tags": [
+          "Проброс внутренней сети frp"
+        ],
+        "x-required-scope": "frp:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/frp/install/check": {
+      "post": {
+        "description": "Тело запроса не требуется. Запрашивает последнюю стабильную версию у первоисточника (через прокси загрузки программы, а если он не задан — через глобальную настройку `updateProxy`), ничего не скачивая и не изменяя установленную программу; возвращает то же, что `GET /api/{module}/install`, где `latest` — `{version, checkedAt, error, hasUpdate}`, а `hasUpdate` означает, что последняя версия новее установленной в bin. При включённой автоматической проверке обновлений Gately также периодически выполняет эту проверку для установленных управляемых программ. Если проверка уже выполняется, возвращает 409.\n\nТребуемое разрешение: `frp:write`.",
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Проверить обновления управляемой программы",
         "tags": [
           "Проброс внутренней сети frp"
         ],
@@ -30179,7 +30332,7 @@
     },
     "/api/system/update": {
       "get": {
-        "description": "Для доступа к GitHub использует прокси из глобальной настройки `updateProxy`. `selfUpgrade.supported` показывает, можно ли обновить эту установку онлайн; если нет, `reason` равен `os`, `docker`, `fnos`, `opkg`, `apk` или `readonly`.\n\nТребуемое разрешение: `status:read`.",
+        "description": "Сразу читает список выпусков на GitHub и опубликованные бюллетени безопасности Gately (GitHub Security Advisories) через прокси из глобальной настройки `updateProxy`; если с последней успешной проверки прошло меньше 30 секунд, возвращается прежний результат. `hasUpdate` означает, что есть новая версия; `security` равно true, если текущая версия подвержена опубликованным проблемам безопасности, `advisories` перечисляет бюллетени, затрагивающие текущую версию (`id`, `summary`, `severity`, `url`, `ranges`), а `securityReleases` — более новые версии, в описании которых есть раздел о безопасности. `selfUpgrade.supported` показывает, можно ли обновить эту установку онлайн; если нет, `reason` — `os`, `docker`, `fnos`, `opkg`, `apk` или `readonly`. При ошибке чтения возвращает 502.\n\nТребуемое разрешение: `status:read`.",
         "responses": {
           "200": {
             "description": "Успешно"
@@ -30220,11 +30373,62 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Проверить наличие новой версии",
+        "summary": "Проверить новые версии и бюллетени безопасности",
         "tags": [
           "Система"
         ],
         "x-required-scope": "status:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/system/update/state": {
+      "get": {
+        "description": "Не обращается к сети. Возвращает последний результат, сохранённый автоматической или ручной проверкой, с теми же полями, что и `GET /api/system/update`, а также `autoCheck` (включена ли автоматическая проверка), `checkedAt` (время последней успешной проверки) и `error` и `failedAt` последней неудачи. Если ни одна проверка не прошла успешно, `latest` пуст.\n\nТребуемое разрешение: `system:read`.",
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Результат последней проверки обновлений",
+        "tags": [
+          "Система"
+        ],
+        "x-required-scope": "system:read",
         "x-token-allowed": true
       }
     },
@@ -30624,6 +30828,57 @@
           }
         ],
         "summary": "Удалить сохранённую предыдущую версию",
+        "tags": [
+          "Сеть Tailscale"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/install/check": {
+      "post": {
+        "description": "Тело запроса не требуется. Запрашивает последнюю стабильную версию у первоисточника (через прокси загрузки программы, а если он не задан — через глобальную настройку `updateProxy`), ничего не скачивая и не изменяя установленную программу; возвращает то же, что `GET /api/{module}/install`, где `latest` — `{version, checkedAt, error, hasUpdate}`, а `hasUpdate` означает, что последняя версия новее установленной в bin. При включённой автоматической проверке обновлений Gately также периодически выполняет эту проверку для установленных управляемых программ. Если проверка уже выполняется, возвращает 409.\n\nТребуемое разрешение: `tailscale:write`.",
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Проверить обновления управляемой программы",
         "tags": [
           "Сеть Tailscale"
         ],

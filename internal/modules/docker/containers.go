@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/wangwanjie/gately/internal/events"
 	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/logbuf"
 )
@@ -760,7 +761,8 @@ func (m *Module) handleUpgrade(w http.ResponseWriter, r *http.Request) {
 }
 
 // checkAll 逐个检查运行中容器的镜像更新并记录结果。同一个镜像引用只拉取一次。
-func (m *Module) checkAll(ctx context.Context, c *Client, progress func(string)) error {
+// found 非空时对每个有新版本的容器回调，latest 为拉取到的最新镜像 ID。
+func (m *Module) checkAll(ctx context.Context, c *Client, progress func(string), found func(ct Container, latest string)) error {
 	list, err := c.Containers(ctx)
 	if err != nil {
 		return err
@@ -775,7 +777,7 @@ func (m *Module) checkAll(ctx context.Context, c *Client, progress func(string))
 			return ctx.Err()
 		}
 		total++
-		has, err := m.checkUpdateMemo(ctx, c, ct.ID, memo)
+		has, latest, err := m.checkUpdateMemo(ctx, c, ct.ID, memo)
 		info := UpdateInfo{Checked: time.Now(), HasUpdate: has}
 		switch {
 		case err != nil:
@@ -784,6 +786,9 @@ func (m *Module) checkAll(ctx context.Context, c *Client, progress func(string))
 		case has:
 			updates++
 			progress(fmt.Sprintf("%s: 有新版本 (%s)", ct.Name(), ct.Image))
+			if found != nil {
+				found(ct, latest)
+			}
 		default:
 			progress(fmt.Sprintf("%s: 已是最新", ct.Name()))
 		}
@@ -801,7 +806,7 @@ func (m *Module) handleCheckAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	id := m.startTask("check", "检查容器镜像更新", func(ctx context.Context, progress func(string)) error {
-		return m.checkAll(ctx, c, progress)
+		return m.checkAll(ctx, c, progress, nil)
 	})
 	httpx.OK(w, map[string]string{"task": id})
 }
@@ -947,7 +952,7 @@ func (m *Module) restartAutoCheck() {
 	}()
 }
 
-// autoCheckOnce 执行一次定时检查，结果写入模块日志。
+// autoCheckOnce 执行一次定时检查，结果写入模块日志；发现新的镜像更新时向通知中心发布一条汇总通知。
 func (m *Module) autoCheckOnce(ctx context.Context) {
 	c, err := m.client()
 	if err != nil {
@@ -957,10 +962,21 @@ func (m *Module) autoCheckOnce(ctx context.Context) {
 	cctx, cancel := context.WithTimeout(ctx, waitTimeout)
 	defer cancel()
 	found := 0
+	// 本轮有更新的容器（容器 ID -> 最新镜像 ID）与其中尚未通知过的容器
+	current := map[string]string{}
+	var fresh []string
 	err = m.checkAll(cctx, c, func(line string) {
 		if strings.Contains(line, "有新版本") {
 			found++
 			m.logs.Add(logbuf.LevelInfo, "", "定时检查："+line)
+		}
+	}, func(ct Container, latest string) {
+		current[ct.ID] = latest
+		m.mu.Lock()
+		seen := m.notified[ct.ID] == latest
+		m.mu.Unlock()
+		if !seen {
+			fresh = append(fresh, fmt.Sprintf("%s (%s)", ct.Name(), ct.Image))
 		}
 	})
 	if err != nil {
@@ -968,6 +984,32 @@ func (m *Module) autoCheckOnce(ctx context.Context) {
 		return
 	}
 	m.logs.Add(logbuf.LevelInfo, "", fmt.Sprintf("定时检查更新完成，%d 个容器有新版本", found))
+	// 只保留本轮仍有更新的容器：升级或删除后的容器不再占用记录，以后再出现新镜像时重新通知
+	m.mu.Lock()
+	m.notified = current
+	m.mu.Unlock()
+	if len(fresh) > 0 {
+		publishImageUpdates(fresh)
+	}
+}
+
+// maxUpdateNames 是一条通知中列出的容器数量上限，其余以数量概括
+const maxUpdateNames = 20
+
+// publishImageUpdates 发布“镜像有新版本”通知，names 为“容器名 (镜像)”，分隔符不含中文以便各语言通用。
+func publishImageUpdates(names []string) {
+	list := names
+	more := ""
+	if len(list) > maxUpdateNames {
+		list = list[:maxUpdateNames]
+		more = fmt.Sprintf("等 %d 个", len(names))
+	}
+	events.Publish(events.Event{
+		Type: events.DockerUpdate, Source: "Docker", Level: events.LevelInfo,
+		Title:   fmt.Sprintf("%d 个容器的镜像有新版本", len(names)),
+		Message: fmt.Sprintf("定时检查发现以下容器的镜像有新版本：%s%s。可在 Docker 页面升级，升级失败会自动回滚", strings.Join(list, ", "), more),
+		Fields:  map[string]string{"count": fmt.Sprint(len(names))},
+	})
 }
 
 // ---------- 资源统计与进程 ----------

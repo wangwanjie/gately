@@ -94,9 +94,18 @@ type App struct {
 	upgradeSt upgradeStatus
 	// upgradeCancel 取消进行中的在线升级，同样由 upgradeMu 保护
 	upgradeCancel context.CancelFunc
-	restartCh     chan struct{}
-	auth          *auth.Manager
-	tokens        *apitoken.Manager
+	// upd 为最近一次检查更新的结果，由 updMu 保护，updOnce 负责首次从文件读取；
+	// updCheckMu 串行化 Gately 本身的检查与结果写回，updProgMu 串行化托管程序的检查，
+	// updWake 在重新开启自动检查时唤醒检查协程
+	upd        updateCache
+	updMu      sync.Mutex
+	updOnce    sync.Once
+	updCheckMu sync.Mutex
+	updProgMu  sync.Mutex
+	updWake    chan struct{}
+	restartCh  chan struct{}
+	auth       *auth.Manager
+	tokens     *apitoken.Manager
 	// audit 记录管理后台的操作审计日志
 	audit *audit.Log
 	// routes 为最近一次构建处理器时登记的全部接口，用于生成 API 文档
@@ -155,6 +164,7 @@ func New(opts Options) (*App, error) {
 		hostStats: sysstat.New(opts.ConfigDir),
 		logger:    logger,
 		restartCh: make(chan struct{}, 1),
+		updWake:   make(chan struct{}, 1),
 		audit:     audit.New(opts.ConfigDir),
 	}
 	if _, err := store.Load(settingsName, &a.settings); err != nil {
@@ -287,6 +297,7 @@ func (a *App) Handler() http.Handler {
 	rec.docs["GET /api/system/settings/secrets"] = module.Doc{Summary: "查看第三方登录 Client Secret 明文", Resp: map[string]string{}}
 	rec.add("GET /api/system/info", a.handleSystemInfo, "")
 	rec.add("GET /api/system/update", a.handleCheckUpdate, "")
+	rec.add("GET /api/system/update/state", a.handleUpdateState, "")
 	rec.add("POST /api/system/upgrade", a.handleUpgrade, "")
 	rec.add("GET /api/system/upgrade/status", a.handleUpgradeStatus, "")
 	rec.add("POST /api/system/upgrade/cancel", a.handleUpgradeCancel, "")
@@ -360,6 +371,7 @@ func (a *App) Run(parent context.Context) error {
 		a.sysLogs.Add(logbuf.LevelInfo, "", "以下功能模块已关闭，未启动："+strings.Join(disabled, "、"))
 	}
 	go a.watchAccountReset(ctx)
+	go a.runUpdateCheck(ctx)
 	s := a.settingsSnapshot()
 	handler := a.Handler()
 	servers := []*http.Server{{Addr: s.Listen, Handler: handler, ReadHeaderTimeout: 10 * time.Second}}

@@ -20,6 +20,8 @@ type View struct {
 	MainPath  string    `json:"mainPath"`
 	Installed Installed `json:"installed"`
 	Backups   []Backup  `json:"backups"`
+	// Latest 为最近一次检查更新查询到的上游最新版本，从未检查过时为空
+	Latest *Latest `json:"latest,omitempty"`
 	// Proxy 为该程序单独设置的下载代理，空表示沿用全局“更新代理”
 	Proxy    string `json:"proxy"`
 	Platform string `json:"platform"`
@@ -42,6 +44,9 @@ func (in *Installer) View() View {
 	if in.opt.GetProxy != nil {
 		v.Proxy = in.opt.GetProxy()
 	}
+	if l := in.LatestInfo(); !l.CheckedAt.IsZero() {
+		v.Latest = &l
+	}
 	if in.spec.Check != nil {
 		if err := in.spec.Check(in.plat); err != nil {
 			v.Unsupported = err.Error()
@@ -62,6 +67,7 @@ type installRequest struct {
 //
 //	GET    /install               安装信息与进度
 //	POST   /install               开始安装或更新
+//	POST   /install/check         检查更新：查询上游最新版本，不下载
 //	POST   /install/rollback      切换到保存的旧版本
 //	DELETE /install/backups/{id}  删除保存的旧版本
 //	DELETE /install               卸载：删除安装的程序与全部旧版本
@@ -98,6 +104,21 @@ func (in *Installer) Register(r module.Router) {
 			status := http.StatusBadRequest
 			if errors.Is(err, ErrBusy) {
 				status = http.StatusConflict
+			}
+			httpx.Error(w, status, "%v", err)
+			return
+		}
+		httpx.OK(w, in.View())
+	})
+	r.HandleFunc("POST /install/check", func(w http.ResponseWriter, req *http.Request) {
+		if _, err := in.CheckLatest(req.Context()); err != nil {
+			status := http.StatusBadGateway
+			var unsupported *UnsupportedError
+			switch {
+			case errors.Is(err, ErrChecking):
+				status = http.StatusConflict
+			case errors.As(err, &unsupported):
+				status = http.StatusBadRequest
 			}
 			httpx.Error(w, status, "%v", err)
 			return

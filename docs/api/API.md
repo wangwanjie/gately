@@ -160,6 +160,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/tailscale/logout` | `tailscale:write` | 退出 Tailscale 登录 |
 | GET | `/api/tailscale/install` | `tailscale:read` | 查看托管程序的安装信息与进度 |
 | POST | `/api/tailscale/install` | `tailscale:write` | 在线安装或更新托管程序 |
+| POST | `/api/tailscale/install/check` | `tailscale:write` | 检查托管程序的更新 |
 | POST | `/api/tailscale/install/rollback` | `tailscale:write` | 切换到保存的旧版本 |
 | DELETE | `/api/tailscale/install` | `tailscale:write` | 卸载托管程序 |
 | DELETE | `/api/tailscale/install/backups/{id}` | `tailscale:write` | 删除保存的旧版本 |
@@ -204,6 +205,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/frp/import` | `frp:write` | 导入已有的 frpc / frps 配置（支持旧版 ini 与新版 toml）；apply 为 false 时仅预览 |
 | GET | `/api/frp/install` | `frp:read` | 查看托管程序的安装信息与进度 |
 | POST | `/api/frp/install` | `frp:write` | 在线安装或更新托管程序 |
+| POST | `/api/frp/install/check` | `frp:write` | 检查托管程序的更新 |
 | POST | `/api/frp/install/rollback` | `frp:write` | 切换到保存的旧版本 |
 | DELETE | `/api/frp/install` | `frp:write` | 卸载托管程序 |
 | DELETE | `/api/frp/install/backups/{id}` | `frp:write` | 删除保存的旧版本 |
@@ -236,6 +238,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/cloudflared/settings` | `cloudflared:write` | 保存 Cloudflare 隧道设置 |
 | GET | `/api/cloudflared/install` | `cloudflared:read` | 查看托管程序的安装信息与进度 |
 | POST | `/api/cloudflared/install` | `cloudflared:write` | 在线安装或更新托管程序 |
+| POST | `/api/cloudflared/install/check` | `cloudflared:write` | 检查托管程序的更新 |
 | POST | `/api/cloudflared/install/rollback` | `cloudflared:write` | 切换到保存的旧版本 |
 | DELETE | `/api/cloudflared/install` | `cloudflared:write` | 卸载托管程序 |
 | DELETE | `/api/cloudflared/install/backups/{id}` | `cloudflared:write` | 删除保存的旧版本 |
@@ -583,6 +586,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/filebrowser/settings` | `filebrowser:write` | 保存 File Browser 程序设置 |
 | GET | `/api/filebrowser/install` | `filebrowser:read` | 查看托管程序的安装信息与进度 |
 | POST | `/api/filebrowser/install` | `filebrowser:write` | 在线安装或更新托管程序 |
+| POST | `/api/filebrowser/install/check` | `filebrowser:write` | 检查托管程序的更新 |
 | POST | `/api/filebrowser/install/rollback` | `filebrowser:write` | 切换到保存的旧版本 |
 | DELETE | `/api/filebrowser/install` | `filebrowser:write` | 卸载托管程序 |
 | DELETE | `/api/filebrowser/install/backups/{id}` | `filebrowser:write` | 删除保存的旧版本 |
@@ -716,7 +720,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/system/settings` | 仅登录会话 | 保存全局设置 |
 | GET | `/api/system/settings/secrets` | 仅登录会话 | 查看第三方登录 Client Secret 明文 |
 | GET | `/api/system/info` | `status:read` | 查看系统信息 |
-| GET | `/api/system/update` | `status:read` | 检查新版本 |
+| GET | `/api/system/update` | `status:read` | 检查新版本与安全公告 |
+| GET | `/api/system/update/state` | `system:read` | 查看上次检查更新的结果 |
 | POST | `/api/system/upgrade` | 仅登录会话 | 在线升级到最新版本 |
 | GET | `/api/system/upgrade/status` | 仅登录会话 | 查看在线升级进度 |
 | POST | `/api/system/upgrade/cancel` | 仅登录会话 | 取消在线升级 |

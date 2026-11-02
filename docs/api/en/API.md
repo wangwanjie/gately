@@ -160,6 +160,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | POST | `/api/tailscale/logout` | `tailscale:write` | Sign out of Tailscale |
 | GET | `/api/tailscale/install` | `tailscale:read` | View the install info and progress of a managed program |
 | POST | `/api/tailscale/install` | `tailscale:write` | Install or update a managed program online |
+| POST | `/api/tailscale/install/check` | `tailscale:write` | Check a managed program for updates |
 | POST | `/api/tailscale/install/rollback` | `tailscale:write` | Switch to a saved previous version |
 | DELETE | `/api/tailscale/install` | `tailscale:write` | Uninstall a managed program |
 | DELETE | `/api/tailscale/install/backups/{id}` | `tailscale:write` | Delete a saved previous version |
@@ -204,6 +205,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | POST | `/api/frp/import` | `frp:write` | Import an existing frpc / frps configuration (legacy ini and new toml are supported); preview only when apply is false |
 | GET | `/api/frp/install` | `frp:read` | View the install info and progress of a managed program |
 | POST | `/api/frp/install` | `frp:write` | Install or update a managed program online |
+| POST | `/api/frp/install/check` | `frp:write` | Check a managed program for updates |
 | POST | `/api/frp/install/rollback` | `frp:write` | Switch to a saved previous version |
 | DELETE | `/api/frp/install` | `frp:write` | Uninstall a managed program |
 | DELETE | `/api/frp/install/backups/{id}` | `frp:write` | Delete a saved previous version |
@@ -236,6 +238,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | PUT | `/api/cloudflared/settings` | `cloudflared:write` | Save Cloudflare Tunnel settings |
 | GET | `/api/cloudflared/install` | `cloudflared:read` | View the install info and progress of a managed program |
 | POST | `/api/cloudflared/install` | `cloudflared:write` | Install or update a managed program online |
+| POST | `/api/cloudflared/install/check` | `cloudflared:write` | Check a managed program for updates |
 | POST | `/api/cloudflared/install/rollback` | `cloudflared:write` | Switch to a saved previous version |
 | DELETE | `/api/cloudflared/install` | `cloudflared:write` | Uninstall a managed program |
 | DELETE | `/api/cloudflared/install/backups/{id}` | `cloudflared:write` | Delete a saved previous version |
@@ -583,6 +586,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | PUT | `/api/filebrowser/settings` | `filebrowser:write` | Save File Browser program settings |
 | GET | `/api/filebrowser/install` | `filebrowser:read` | View the install info and progress of a managed program |
 | POST | `/api/filebrowser/install` | `filebrowser:write` | Install or update a managed program online |
+| POST | `/api/filebrowser/install/check` | `filebrowser:write` | Check a managed program for updates |
 | POST | `/api/filebrowser/install/rollback` | `filebrowser:write` | Switch to a saved previous version |
 | DELETE | `/api/filebrowser/install` | `filebrowser:write` | Uninstall a managed program |
 | DELETE | `/api/filebrowser/install/backups/{id}` | `filebrowser:write` | Delete a saved previous version |
@@ -716,7 +720,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | PUT | `/api/system/settings` | Login sessions only | Save global settings |
 | GET | `/api/system/settings/secrets` | Login sessions only | View third-party login Client Secrets in plain text |
 | GET | `/api/system/info` | `status:read` | View system information |
-| GET | `/api/system/update` | `status:read` | Check for a new version |
+| GET | `/api/system/update` | `status:read` | Check for new versions and security advisories |
+| GET | `/api/system/update/state` | `system:read` | View the result of the last update check |
 | POST | `/api/system/upgrade` | Login sessions only | Upgrade online to the latest version |
 | GET | `/api/system/upgrade/status` | Login sessions only | Show online upgrade progress |
 | POST | `/api/system/upgrade/cancel` | Login sessions only | Cancel online upgrade |

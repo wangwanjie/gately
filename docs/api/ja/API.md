@@ -160,6 +160,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/tailscale/logout` | `tailscale:write` | Tailscale からログアウト |
 | GET | `/api/tailscale/install` | `tailscale:read` | 管理プログラムのインストール情報と進捗を表示 |
 | POST | `/api/tailscale/install` | `tailscale:write` | 管理プログラムをオンラインでインストールまたは更新 |
+| POST | `/api/tailscale/install/check` | `tailscale:write` | 管理プログラムの更新を確認 |
 | POST | `/api/tailscale/install/rollback` | `tailscale:write` | 保存された旧バージョンに切り替え |
 | DELETE | `/api/tailscale/install` | `tailscale:write` | 管理プログラムをアンインストール |
 | DELETE | `/api/tailscale/install/backups/{id}` | `tailscale:write` | 保存された旧バージョンを削除 |
@@ -204,6 +205,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/frp/import` | `frp:write` | 既存の frpc / frps 設定をインポート（旧形式 ini と新形式 toml に対応）。apply が false の場合はプレビューのみ |
 | GET | `/api/frp/install` | `frp:read` | 管理プログラムのインストール情報と進捗を表示 |
 | POST | `/api/frp/install` | `frp:write` | 管理プログラムをオンラインでインストールまたは更新 |
+| POST | `/api/frp/install/check` | `frp:write` | 管理プログラムの更新を確認 |
 | POST | `/api/frp/install/rollback` | `frp:write` | 保存された旧バージョンに切り替え |
 | DELETE | `/api/frp/install` | `frp:write` | 管理プログラムをアンインストール |
 | DELETE | `/api/frp/install/backups/{id}` | `frp:write` | 保存された旧バージョンを削除 |
@@ -236,6 +238,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/cloudflared/settings` | `cloudflared:write` | Cloudflare トンネルの設定を保存 |
 | GET | `/api/cloudflared/install` | `cloudflared:read` | 管理プログラムのインストール情報と進捗を表示 |
 | POST | `/api/cloudflared/install` | `cloudflared:write` | 管理プログラムをオンラインでインストールまたは更新 |
+| POST | `/api/cloudflared/install/check` | `cloudflared:write` | 管理プログラムの更新を確認 |
 | POST | `/api/cloudflared/install/rollback` | `cloudflared:write` | 保存された旧バージョンに切り替え |
 | DELETE | `/api/cloudflared/install` | `cloudflared:write` | 管理プログラムをアンインストール |
 | DELETE | `/api/cloudflared/install/backups/{id}` | `cloudflared:write` | 保存された旧バージョンを削除 |
@@ -583,6 +586,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/filebrowser/settings` | `filebrowser:write` | File Browser のプログラム設定を保存 |
 | GET | `/api/filebrowser/install` | `filebrowser:read` | 管理プログラムのインストール情報と進捗を表示 |
 | POST | `/api/filebrowser/install` | `filebrowser:write` | 管理プログラムをオンラインでインストールまたは更新 |
+| POST | `/api/filebrowser/install/check` | `filebrowser:write` | 管理プログラムの更新を確認 |
 | POST | `/api/filebrowser/install/rollback` | `filebrowser:write` | 保存された旧バージョンに切り替え |
 | DELETE | `/api/filebrowser/install` | `filebrowser:write` | 管理プログラムをアンインストール |
 | DELETE | `/api/filebrowser/install/backups/{id}` | `filebrowser:write` | 保存された旧バージョンを削除 |
@@ -716,7 +720,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/system/settings` | ログインセッションのみ | グローバル設定を保存 |
 | GET | `/api/system/settings/secrets` | ログインセッションのみ | サードパーティログインの Client Secret を平文で表示 |
 | GET | `/api/system/info` | `status:read` | システム情報を表示 |
-| GET | `/api/system/update` | `status:read` | 新しいバージョンを確認 |
+| GET | `/api/system/update` | `status:read` | 新しいバージョンとセキュリティアドバイザリーを確認 |
+| GET | `/api/system/update/state` | `system:read` | 前回の更新チェックの結果を表示 |
 | POST | `/api/system/upgrade` | ログインセッションのみ | 最新バージョンへオンラインアップグレード |
 | GET | `/api/system/upgrade/status` | ログインセッションのみ | オンラインアップグレードの進捗を確認 |
 | POST | `/api/system/upgrade/cancel` | ログインセッションのみ | オンラインアップグレードを取消 |

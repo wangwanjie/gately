@@ -103,6 +103,10 @@
     "changes": {
       "name": "Configuration changes",
       "desc": "Every configuration change made in the admin console"
+    },
+    "updates": {
+      "name": "Updates",
+      "desc": "Gately security updates and new versions, plus new versions of managed programs and container images"
     }
   }
 }

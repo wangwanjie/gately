@@ -12,7 +12,7 @@
   "latestRelease": "(최신 릴리스 {latest})",
   "publishedAt": "{time}에 릴리스됨",
   "viewRelease": "릴리스 페이지 보기",
-  "updateHint": "업데이트 확인과 온라인 업그레이드는 클릭할 때만 GitHub에 접속하며, 평소에는 스스로 통신하지 않습니다.",
+  "updateHint": "자동 확인을 켜면 12시간마다 GitHub 에 접속해 릴리스 목록과 보안 공지만 읽으며 어떤 정보도 보내지 않습니다. 끄면 \"업데이트 확인\"을 누를 때만 접속합니다.",
   "upgrade": {
     "now": "지금 업그레이드",
     "title": "온라인 업그레이드",
@@ -55,7 +55,8 @@
     },
     "gotIt": "확인",
     "cancel": "업그레이드 취소",
-    "canceled": "업그레이드를 취소했습니다"
+    "canceled": "업그레이드를 취소했습니다",
+    "foundSecurity": "보안 업데이트가 있습니다"
   },
   "proxy": {
     "label": "업데이트 프록시: ",
@@ -163,5 +164,27 @@
     "siteZip": "전체 사이트 zip",
     "portforward": "포트 포워딩",
     "cert": "인증서"
+  },
+  "autoCheck": {
+    "label": "자동 업데이트 확인",
+    "last": "마지막 확인: {time}",
+    "pending": "자동 확인이 켜져 있습니다. 시작 후 몇 분 뒤 첫 확인을 합니다",
+    "off": "자동 확인이 꺼져 있습니다. \"업데이트 확인\"을 누를 때만 GitHub 에 접속합니다",
+    "failed": "최근 확인 실패: {error}",
+    "enabled": "자동 업데이트 확인을 켰습니다",
+    "disabled": "자동 업데이트 확인을 껐습니다"
+  },
+  "security": {
+    "title": "현재 버전 {current} 은(는) 공개된 보안 문제의 영향을 받습니다",
+    "severity": {
+      "low": "낮음",
+      "medium": "보통",
+      "high": "높음",
+      "critical": "심각"
+    },
+    "fixedIn": "{version} 에서 수정됨",
+    "releases": "다음 새 버전에 보안 수정이 포함되어 있습니다: {versions}",
+    "advice": "가능한 한 빨리 {latest}(으)로 업그레이드하세요.",
+    "noFix": "이미 최신 버전입니다. 수정 버전이 나오기 전까지 공지의 완화 조치를 따르세요."
   }
 }

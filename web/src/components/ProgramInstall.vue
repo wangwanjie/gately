@@ -5,11 +5,13 @@
       <div class="g-card-title">
         <PackageCheck :size="16" />{{ title ?? t('components.programInstall.title', { name: info.program }) }}
         <span v-if="info.installed.present" class="g-card-desc">{{ info.installed.version || t('components.programInstall.unknownVersion') }}</span>
+        <el-tag v-if="info.latest?.hasUpdate" size="small" type="success" effect="light">{{ t('components.programInstall.newVersion', { version: info.latest.version }) }}</el-tag>
       </div>
       <div class="head-actions">
         <el-button size="small" type="primary" :icon="Download" :loading="running" :disabled="!!info.unsupported" @click="install()">
           {{ info.installed.present ? t('components.programInstall.update') : t('components.programInstall.install') }}
         </el-button>
+        <el-button size="small" :icon="RefreshCw" :loading="checking" :disabled="running || !!info.unsupported" @click="checkLatest">{{ t('components.programInstall.checkUpdate') }}</el-button>
         <el-button size="small" :icon="Tag" :disabled="running || !!info.unsupported" @click="installVersion">{{ t('components.programInstall.installVersion') }}</el-button>
         <el-button size="small" type="danger" plain :icon="PackageX" :disabled="running || (!info.installed.present && !info.backups.length)" @click="uninstall">
           {{ t('components.programInstall.uninstall') }}
@@ -26,6 +28,10 @@
               <span v-if="info.installed.missing?.length" class="warn">{{ t('components.programInstall.missing', { files: info.installed.missing.join(', ') }) }}</span>
             </template>
             <span v-else class="muted">{{ t('components.programInstall.notInstalled', { dir: info.binDir }) }}</span>
+          </div>
+          <div v-if="info.latest" class="form-help">
+            <template v-if="info.latest.version">{{ t('components.programInstall.latestVersion', { version: info.latest.version, time: new Date(info.latest.checkedAt).toLocaleString() }) }}</template>
+            <span v-if="info.latest.error" class="warn">{{ t('components.programInstall.checkFailed', { error: info.latest.error }) }}</span>
           </div>
           <div v-if="notUsed" class="form-help warn">{{ t('components.programInstall.notUsed', { path: notUsed }) }}</div>
         </el-form-item>
@@ -78,7 +84,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Download, PackageCheck, PackageX, Tag, Trash2, Undo2 } from 'lucide-vue-next'
+import { Download, PackageCheck, PackageX, RefreshCw, Tag, Trash2, Undo2 } from 'lucide-vue-next'
 import { api } from '../api'
 import { useFormLayout } from '../composables/useIsMobile'
 
@@ -95,6 +101,13 @@ interface Backup {
   version: string
   savedAt: string
 }
+// Latest 是最近一次检查更新查询到的上游最新版本
+interface Latest {
+  version?: string
+  checkedAt: string
+  error?: string
+  hasUpdate: boolean
+}
 interface InstallView {
   state: InstallState
   program: string
@@ -106,6 +119,8 @@ interface InstallView {
   proxy: string
   platform: string
   unsupported: string
+  // 从未检查过更新时为空
+  latest?: Latest
 }
 
 const props = defineProps<{
@@ -202,6 +217,27 @@ async function install(version = '') {
     poll()
   } catch (e) {
     ElMessage.error((e as Error).message)
+  }
+}
+
+// checkLatest 查询上游最新版本，不下载；开启自动检查更新时 Gately 也会定期检查已安装的程序
+const checking = ref(false)
+async function checkLatest() {
+  checking.value = true
+  try {
+    const v = await api.post<InstallView>(`${props.base}/install/check`)
+    info.value = v
+    const l = v.latest
+    if (l?.hasUpdate) {
+      ElMessage.success(t('components.programInstall.newVersion', { version: l.version }))
+    } else if (l?.version) {
+      ElMessage.info(v.installed.present ? t('components.programInstall.upToDate', { version: l.version }) : t('components.programInstall.latestOnly', { version: l.version }))
+    }
+  } catch (e) {
+    ElMessage.error((e as Error).message)
+    await load().catch(() => undefined)
+  } finally {
+    checking.value = false
   }
 }
 
