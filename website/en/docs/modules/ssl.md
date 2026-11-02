@@ -20,6 +20,8 @@ Choose DNS-01 as the certificate's "Method" and pick a DNS provider. During issu
 
 "Root domain" is the DNS zone that holds the record. When it is left empty, Gately looks up the authoritative zone of the validation record with an SOA query, so a subdomain delegated to another DNS provider (for example `web.example.com` hosted apart from `example.com`) and multi-level suffixes such as `example.com.cn` are detected correctly. If the lookup fails, the zone is inferred from the domain name and the reason is logged. You can also fill in the root domain yourself, for example `web.example.com`.
 
+When `_acme-challenge` has a CNAME, Gately follows it by default and writes the TXT record at the name it points to, so validation can be delegated to another domain. A CNAME that comes from a wildcard record (for example `*.example.com` pointing to `example.com`) is detected automatically: such a CNAME is only a side effect of the wildcard, so Gately does not follow it and writes the TXT record at `_acme-challenge.example.com`, noting this in the log. To always write the record at `_acme-challenge` itself, check "Do not follow the CNAME of _acme-challenge" under "CNAME".
+
 ## Issuance network
 
 The certificate's "Network" option restricts the outbound network used during issuance: "Auto" leaves the choice to the system, and "IPv4 only" or "IPv6 only" makes reaching the CA, calling the DNS provider API and checking that the TXT record has propagated all use only that address family. When the host has an IPv6 address but IPv6 does not actually work, the propagation check in auto mode may time out while querying the authoritative DNS servers; choose "IPv4 only" in that case.

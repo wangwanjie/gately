@@ -20,6 +20,8 @@ Elige DNS-01 en el «Método» del certificado y selecciona un proveedor de DNS.
 
 El «Dominio raíz» es la zona DNS que contiene el registro. Si se deja vacío, Gately busca la zona autoritativa del registro de validación con una consulta SOA, de modo que se detectan correctamente un subdominio delegado a otro proveedor de DNS (por ejemplo, `web.example.com` alojado aparte de `example.com`) y los sufijos de varios niveles como `example.com.cn`. Si la consulta falla, la zona se deduce del nombre de dominio y el motivo queda registrado en el log. También puedes indicar el dominio raíz manualmente, por ejemplo `web.example.com`.
 
+Cuando `_acme-challenge` tiene un CNAME, Gately lo sigue por defecto y escribe el registro TXT en el nombre al que apunta, para poder delegar la validación a otro dominio. Un CNAME que proviene de un registro comodín (por ejemplo `*.example.com` apuntando a `example.com`) se detecta automáticamente: es solo un efecto secundario del comodín, así que Gately no lo sigue, escribe el TXT en `_acme-challenge.example.com` y lo indica en el registro. Para escribir siempre en `_acme-challenge`, marque «No seguir el CNAME de _acme-challenge» en «CNAME».
+
 ## Red de emisión
 
 La opción «Red» del certificado limita la red de salida usada durante la emisión: «Automática» deja la elección al sistema, y «Solo IPv4» o «Solo IPv6» hace que el acceso a la CA, las llamadas a la API del proveedor DNS y la comprobación de propagación del registro TXT usen únicamente esa familia de direcciones. Si el host tiene dirección IPv6 pero IPv6 no funciona realmente, la comprobación de propagación en modo automático puede agotar el tiempo de espera al consultar los servidores DNS autoritativos; en ese caso, elige «Solo IPv4».

@@ -1539,6 +1539,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `credentials` | `dnsprovider.Credentials` |
 | `directoryUrl` | string |
 | `disableAuthoritativeCheck` | boolean |
+| `disableCname` | boolean |
 | `domains` | Tableau de string |
 | `eabHmac` | string |
 | `eabKid` | string |

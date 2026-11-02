@@ -1539,6 +1539,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `credentials` | `dnsprovider.Credentials` |
 | `directoryUrl` | string |
 | `disableAuthoritativeCheck` | boolean |
+| `disableCname` | boolean |
 | `domains` | Array of string |
 | `eabHmac` | string |
 | `eabKid` | string |

@@ -1539,6 +1539,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `credentials` | `dnsprovider.Credentials` |
 | `directoryUrl` | string |
 | `disableAuthoritativeCheck` | boolean |
+| `disableCname` | boolean |
 | `domains` | Array de string |
 | `eabHmac` | string |
 | `eabKid` | string |

@@ -1539,6 +1539,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `credentials` | `dnsprovider.Credentials` |
 | `directoryUrl` | string |
 | `disableAuthoritativeCheck` | boolean |
+| `disableCname` | boolean |
 | `domains` | Array von string |
 | `eabHmac` | string |
 | `eabKid` | string |

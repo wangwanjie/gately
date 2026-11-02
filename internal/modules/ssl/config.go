@@ -83,6 +83,9 @@ type ACMEConfig struct {
 	SkipPropagationCheck bool `json:"skipPropagationCheck"`
 	// DisableAuthoritativeCheck 只通过递归 DNS 检查 TXT 是否生效，不查询权威服务器
 	DisableAuthoritativeCheck bool `json:"disableAuthoritativeCheck"`
+	// DisableCNAME 不跟随 _acme-challenge 的 CNAME，验证记录直接写在 _acme-challenge.<域名>。
+	// 默认跟随（用于把验证委派到其他域名），但来自泛解析的 CNAME 会被自动识别并不跟随
+	DisableCNAME bool `json:"disableCname,omitempty"`
 	// Network 限定签发时的出站网络：留空自动选择，tcp4 只用 IPv4，tcp6 只用 IPv6。
 	// 作用于 ACME 接口、DNS 服务商接口与 TXT 生效检查，适用于有 IPv6 地址但 IPv6 不通的主机
 	Network string `json:"network,omitempty"`

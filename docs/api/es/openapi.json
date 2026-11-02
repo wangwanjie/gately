@@ -1794,6 +1794,9 @@
           "disableAuthoritativeCheck": {
             "type": "boolean"
           },
+          "disableCname": {
+            "type": "boolean"
+          },
           "domains": {
             "items": {
               "type": "string"

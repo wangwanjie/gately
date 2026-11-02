@@ -1539,6 +1539,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `credentials` | `dnsprovider.Credentials` |
 | `directoryUrl` | string |
 | `disableAuthoritativeCheck` | boolean |
+| `disableCname` | boolean |
 | `domains` | Array of string |
 | `eabHmac` | string |
 | `eabKid` | string |

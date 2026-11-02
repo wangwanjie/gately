@@ -125,6 +125,8 @@ type netPreCheck struct {
 	nameservers []string
 	// authoritative 为是否查询权威服务器
 	authoritative bool
+	// noCNAME 为 true 时不跟随递归 DNS 返回的 CNAME，直接检查 fqdn 本身
+	noCNAME bool
 }
 
 // authoritativePort 是权威服务器的 DNS 端口，测试中替换。
@@ -135,8 +137,12 @@ var dnsQueryTimeout = 10 * time.Second
 
 // exchange 用限定网络向 server 发出一次查询，响应被截断时改用 TCP 重试。
 func (p netPreCheck) exchange(m *dns.Msg, server string) (*dns.Msg, error) {
-	udp, tcp := "udp4", "tcp4"
-	if p.network == NetworkIPv6 {
+	// 未限定网络时由系统选择地址族
+	udp, tcp := "udp", "tcp"
+	switch p.network {
+	case NetworkIPv4:
+		udp, tcp = "udp4", "tcp4"
+	case NetworkIPv6:
 		udp, tcp = "udp6", "tcp6"
 	}
 	r, _, err := (&dns.Client{Net: udp, Timeout: dnsQueryTimeout}).Exchange(m, server)
@@ -172,24 +178,34 @@ func (p netPreCheck) query(name string, qtype uint16, servers []string, recursiv
 // nsAddrs 通过递归 DNS 解析权威服务器在当前地址族下的地址。
 // 查询失败时返回错误，由调用方稍后重试；确实没有该地址族的地址时返回空列表。
 func (p netPreCheck) nsAddrs(host string) ([]string, error) {
-	qtype := dns.TypeA
-	if p.network == NetworkIPv6 {
-		qtype = dns.TypeAAAA
-	}
-	r, err := p.query(host, qtype, p.nameservers, true)
-	if err != nil {
-		return nil, err
-	}
-	if r.Rcode != dns.RcodeSuccess {
-		return nil, fmt.Errorf("解析 %s 返回 %s", host, dns.RcodeToString[r.Rcode])
+	// 未限定网络时 IPv4 与 IPv6 地址都用，IPv4 在前
+	qtypes := []uint16{dns.TypeA, dns.TypeAAAA}
+	switch p.network {
+	case NetworkIPv4:
+		qtypes = []uint16{dns.TypeA}
+	case NetworkIPv6:
+		qtypes = []uint16{dns.TypeAAAA}
 	}
 	var out []string
-	for _, rr := range r.Answer {
-		switch v := rr.(type) {
-		case *dns.A:
-			out = append(out, net.JoinHostPort(v.A.String(), authoritativePort))
-		case *dns.AAAA:
-			out = append(out, net.JoinHostPort(v.AAAA.String(), authoritativePort))
+	for _, qtype := range qtypes {
+		r, err := p.query(host, qtype, p.nameservers, true)
+		if err == nil && r.Rcode != dns.RcodeSuccess {
+			err = fmt.Errorf("解析 %s 返回 %s", host, dns.RcodeToString[r.Rcode])
+		}
+		if err != nil {
+			// 未限定网络时已有 IPv4 地址就不因 IPv6 查询失败而中断
+			if p.network == "" && len(out) > 0 {
+				continue
+			}
+			return nil, err
+		}
+		for _, rr := range r.Answer {
+			switch v := rr.(type) {
+			case *dns.A:
+				out = append(out, net.JoinHostPort(v.A.String(), authoritativePort))
+			case *dns.AAAA:
+				out = append(out, net.JoinHostPort(v.AAAA.String(), authoritativePort))
+			}
 		}
 	}
 	return out, nil
@@ -214,10 +230,12 @@ func (p netPreCheck) check(_, fqdn, value string, _ dns01.PreCheckFunc) (bool, e
 	if err != nil {
 		return false, fmt.Errorf("递归 DNS: %w", err)
 	}
-	// 与 lego 一致：验证记录是 CNAME 时检查 CNAME 指向的记录
-	for _, rr := range r.Answer {
-		if cn, ok := rr.(*dns.CNAME); ok && strings.EqualFold(cn.Hdr.Name, fqdn) {
-			fqdn = cn.Target
+	// 与 lego 一致：验证记录是 CNAME 时检查 CNAME 指向的记录（决定不跟随 CNAME 时除外）
+	if !p.noCNAME {
+		for _, rr := range r.Answer {
+			if cn, ok := rr.(*dns.CNAME); ok && strings.EqualFold(cn.Hdr.Name, fqdn) {
+				fqdn = cn.Target
+			}
 		}
 	}
 	if !p.authoritative {

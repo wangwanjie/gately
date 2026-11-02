@@ -1539,6 +1539,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `credentials` | `dnsprovider.Credentials` |
 | `directoryUrl` | string |
 | `disableAuthoritativeCheck` | boolean |
+| `disableCname` | boolean |
 | `domains` | Lista de string |
 | `eabHmac` | string |
 | `eabKid` | string |

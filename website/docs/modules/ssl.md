@@ -20,6 +20,8 @@
 
 「主域名」即记录所在的 DNS 区域（zone）。留空时，Gately 用 SOA 查询找出验证记录的权威区域，因此子域名单独委派给另一个 DNS 服务商（例如 `web.example.com` 与 `example.com` 分开托管）以及 `example.com.cn` 这类多级后缀都能正确识别；查询失败时按域名推断主域名，并在日志中记录原因。也可以手动填写主域名，例如 `web.example.com`。
 
+`_acme-challenge` 已设置 CNAME 时，Gately 默认跟随 CNAME，把 TXT 记录写到它指向的名称，用于把验证委派到另一个域名。CNAME 来自泛解析记录（例如 `*.example.com` 指向 `example.com`）时会被自动识别：这种 CNAME 只是泛解析的副作用，Gately 不跟随，直接在 `_acme-challenge.example.com` 写入 TXT，日志中会注明。需要始终写在 `_acme-challenge` 本身时，勾选「CNAME」中的「不跟随 _acme-challenge 的 CNAME」。
+
 ## 签发网络
 
 证书的「网络」选项限定签发时的出站网络：「自动」按系统选择，「仅 IPv4」或「仅 IPv6」让访问 CA、调用 DNS 服务商接口以及检查 TXT 记录生效都只使用对应的地址族。主机有 IPv6 地址但 IPv6 实际不通时，自动模式下的生效检查可能在查询权威 DNS 服务器时超时，此时选择「仅 IPv4」。

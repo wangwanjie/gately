@@ -168,6 +168,10 @@
             <el-input v-model="extra[f.key]" :placeholder="f.placeholder" />
           </el-form-item>
           <el-form-item :label="t('ssl.zone')"><el-input v-model="editing.acme.zone" :placeholder="t('ssl.zonePlaceholder')" /></el-form-item>
+          <el-form-item :label="t('ssl.cname')">
+            <el-checkbox v-model="editing.acme.disableCname">{{ t('ssl.disableCname') }}</el-checkbox>
+            <span class="help">{{ t('ssl.cnameHelp') }}</span>
+          </el-form-item>
           <el-form-item :label="t('ssl.resolvers')"><el-input v-model="resolversText" :placeholder="t('ssl.resolversPlaceholder')" /></el-form-item>
           <el-form-item :label="t('ssl.propagationTimeout')"><el-input-number v-model="editing.acme.propagationTimeout" :min="30" :max="3600" /></el-form-item>
           <el-form-item :label="t('ssl.propagationCheck')">
@@ -333,6 +337,7 @@ interface Cert {
     propagationTimeout: number
     skipPropagationCheck: boolean
     disableAuthoritativeCheck: boolean
+    disableCname?: boolean
     // network 限定签发时的出站网络：空为自动，tcp4 仅 IPv4，tcp6 仅 IPv6
     network?: string
   }
@@ -482,6 +487,7 @@ function emptyCert(): Cert {
       propagationTimeout: 300,
       skipPropagationCheck: false,
       disableAuthoritativeCheck: false,
+      disableCname: false,
       network: '',
     },
     certFile: '',

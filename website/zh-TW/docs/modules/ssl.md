@@ -20,6 +20,8 @@
 
 「主網域」即記錄所在的 DNS 區域（zone）。留空時，Gately 以 SOA 查詢找出驗證記錄的權威區域，因此子網域單獨委派給另一家 DNS 服務商（例如 `web.example.com` 與 `example.com` 分開託管）以及 `example.com.cn` 這類多層後綴都能正確識別；查詢失敗時依網域名稱推斷主網域，並在日誌中記錄原因。也可以手動填寫主網域，例如 `web.example.com`。
 
+`_acme-challenge` 已設定 CNAME 時，Gately 預設跟隨 CNAME，把 TXT 記錄寫到它指向的名稱，用於把驗證委派到另一個網域。CNAME 來自萬用字元解析記錄（例如 `*.example.com` 指向 `example.com`）時會被自動識別：這種 CNAME 只是萬用字元解析的副作用，Gately 不跟隨，直接在 `_acme-challenge.example.com` 寫入 TXT，日誌中會註明。需要一律寫在 `_acme-challenge` 本身時，勾選「CNAME」中的「不跟隨 _acme-challenge 的 CNAME」。
+
 ## 簽發網路
 
 憑證的「網路」選項限定簽發時的對外網路：「自動」由系統選擇，「僅 IPv4」或「僅 IPv6」讓存取 CA、呼叫 DNS 服務商 API 以及檢查 TXT 記錄生效都只使用對應的位址族。主機有 IPv6 位址但 IPv6 實際不通時，自動模式下的生效檢查可能在查詢權威 DNS 伺服器時逾時，此時選擇「僅 IPv4」。
