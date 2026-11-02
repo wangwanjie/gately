@@ -103,14 +103,16 @@ type TopoSite struct {
 	// Target 为非代理站点的去向：跳转地址、静态目录或固定内容的状态码
 	Target string `json:"target,omitempty"`
 	// Guards 为站点启用的防护：auth、waf、ip、country、rateLimit、denyClose
-	Guards   []string         `json:"guards"`
-	Requests int64            `json:"requests"`
-	Active   int64            `json:"active"`
-	Errors   int64            `json:"errors"`
-	Closed   int64            `json:"closed"`
-	Rate     Rate             `json:"rate"`
-	Status   map[string]int64 `json:"status"`
-	Blocked  map[string]int64 `json:"blocked"`
+	Guards []string `json:"guards"`
+	// AccessLog 表示站点开启了访问日志，拓扑页据此提示按站点查看日志是否会有内容
+	AccessLog bool             `json:"accessLog"`
+	Requests  int64            `json:"requests"`
+	Active    int64            `json:"active"`
+	Errors    int64            `json:"errors"`
+	Closed    int64            `json:"closed"`
+	Rate      Rate             `json:"rate"`
+	Status    map[string]int64 `json:"status"`
+	Blocked   map[string]int64 `json:"blocked"`
 	// Upstreams 为反向代理站点的后端（站点后端、分路径后端、按用户分流后端依次展开）
 	Upstreams []TopoUpstream `json:"upstreams"`
 }
@@ -234,7 +236,7 @@ func newTopoSite(lk string, s Site, deflt bool) TopoSite {
 	return TopoSite{
 		ID: "s:" + lk + "/" + key, Key: key, Name: s.Name, Group: s.Group, Type: s.Type,
 		Domains: append([]string{}, domains...), Default: deflt, Enable: s.Enable,
-		Target: siteTarget(s), Guards: siteGuards(s),
+		Target: siteTarget(s), Guards: siteGuards(s), AccessLog: s.AccessLog,
 		Status: map[string]int64{}, Blocked: map[string]int64{}, Upstreams: []TopoUpstream{},
 	}
 }

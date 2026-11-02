@@ -146,5 +146,10 @@
   "heightCustom": "高度 {h}px",
   "heightAuto": "自動高度",
   "enterFull": "全螢幕顯示畫布",
-  "exitFull": "離開全螢幕（Esc）"
+  "exitFull": "離開全螢幕（Esc）",
+  "openLogs": "存取記錄",
+  "openLogsIp": "此 IP 的存取記錄",
+  "ipLogs": "查看此 IP 在此站點的存取記錄",
+  "ipLogsAll": "查看此 IP 在全部站點的存取記錄",
+  "editListener": "編輯監聽"
 }

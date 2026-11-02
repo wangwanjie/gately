@@ -1,0 +1,7 @@
+{
+  "title": "Log de acesso · {site}",
+  "titleIp": "Log de acesso · {site} · {ip}",
+  "titleAll": "Log de acesso · {ip}",
+  "accessLogOff": "Este site está com o log de acesso desativado, então aparecem só alguns registros, como bloqueios. Ative-o em \"Básico\" ao editar o site.",
+  "noName": "O site não tem nome, então os registros não trazem o campo de site e aqui são filtrados pelo domínio, o que pode incluir sites parecidos. Dê um nome ao site para resultados exatos."
+}

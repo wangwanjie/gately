@@ -1,5 +1,7 @@
 <template>
   <div>
+    <!-- dialogOnly 时只提供监听与站点的编辑弹窗，供网络拓扑页原地编辑，不渲染页面本身 -->
+    <template v-if="!dialogOnly">
     <PageHeader :title="t('web.title')" :desc="t('web.desc')" :icon="Server">
       <el-button :icon="Workflow" @click="router.push({ name: 'webtopology' })">{{ t('webTopology.title') }}</el-button>
       <el-button v-if="listeners.length" :icon="allListenersCollapsed ? ChevronsUpDown : ChevronsDownUp" @click="setAll(listeners.map((l) => l.key), !allListenersCollapsed)">
@@ -162,6 +164,7 @@
               <div v-else class="site-actions">
                 <el-button v-if="l.running" text size="small" :icon="BarChart3" :title="t('web.stats')" @click="openStats(l, item.item)">{{ t('web.stats') }}</el-button>
                 <el-button v-if="l.running" text size="small" :icon="Cable" :title="t('web.connections')" @click="openConns(l, item.item)">{{ t('web.connections') }}</el-button>
+                <el-button v-if="!item.item.isDefault" text size="small" :icon="FileText" :title="t('web.siteLogs')" @click="openLogs(item.item)">{{ t('web.siteLogs') }}</el-button>
                 <el-button text size="small" :icon="Pencil" :title="t('common.edit')" @click="openSite(l, item.item)">{{ t('common.edit') }}</el-button>
                 <el-button v-if="!item.item.isDefault" text size="small" :icon="CopyPlus" :title="t('web.copySite')" :aria-label="t('web.copySite')" @click="openSite(l, item.item, true)">{{ t('common.duplicate') }}</el-button>
                 <el-popconfirm v-if="item.item.isDefault" :title="t('web.resetDefaultConfirm')" width="260" @confirm="resetDefaultSite(l)">
@@ -205,6 +208,8 @@
     <LogCard url="/api/webservice/logs" clearable />
     <SiteStats ref="statsDialog" />
     <SiteConns ref="connsDialog" @changed="load" />
+    <SiteLogDialog ref="logsDialog" />
+    </template>
 
     <el-dialog v-model="listenerVisible" :title="editingListener.key ? t('web.editListener') : t('web.addListener')" width="560px" :fullscreen="isMobile">
       <CopyHint :from="copyListenerFrom" />
@@ -549,6 +554,7 @@ import {
   ChevronUp,
   CopyPlus,
   FileInput,
+  FileText,
   Globe,
   GripVertical,
   ListChecks,
@@ -584,6 +590,7 @@ import NginxImport from '../components/NginxImport.vue'
 import SiteTraffic, { type Rewrite } from '../components/SiteTraffic.vue'
 import SiteStats from '../components/SiteStats.vue'
 import SiteConns from '../components/SiteConns.vue'
+import SiteLogDialog from '../components/SiteLogDialog.vue'
 import SiteAccess, { type PathRule, type ShareLink } from '../components/SiteAccess.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
@@ -713,6 +720,11 @@ interface SiteRow {
 const { t } = useI18n()
 const router = useRouter()
 const route = useRoute()
+
+// dialogOnly 为 true 时本组件只作为编辑弹窗使用（网络拓扑页原地编辑），不渲染列表、不轮询；
+// 保存成功后触发 saved，由宿主刷新自己的数据
+const props = defineProps<{ dialogOnly?: boolean }>()
+const emit = defineEmits<{ saved: [] }>()
 const compact = useCompactView('web')
 const listeners = ref<ListenerView[]>([])
 // 每个监听下的站点列表可单独收起，状态按监听 key 持久化
@@ -1273,6 +1285,7 @@ async function saveListener() {
     }
     listenerVisible.value = false
     ElMessage.success(t('common.saved'))
+    emit('saved')
     await load()
   } catch (e) {
     ElMessage.error((e as Error).message)
@@ -1323,6 +1336,12 @@ function openStats(l: ListenerView, row: SiteRow) {
 const connsDialog = ref<InstanceType<typeof SiteConns>>()
 function openConns(l: ListenerView, row: SiteRow) {
   connsDialog.value?.open(l.key ?? '', statKey(row), siteTitle(row))
+}
+
+// openLogs 查看站点的访问日志：按站点名称完整匹配，没有名称时按第一个域名过滤
+const logsDialog = ref<InstanceType<typeof SiteLogDialog>>()
+function openLogs(row: SiteRow) {
+  logsDialog.value?.open({ name: row.site.name, label: siteTitle(row), domain: row.site.domains?.[0], accessLog: row.site.accessLog })
 }
 
 // downCount 统计站点中不可用的后端数量
@@ -1419,6 +1438,7 @@ async function saveSite() {
     await putListener(l)
     siteVisible.value = false
     ElMessage.success(t('web.savedReloaded'))
+    emit('saved')
     await load()
   } catch (e) {
     ElMessage.error((e as Error).message)
@@ -1524,10 +1544,68 @@ async function loadIPLists() {
   }
 }
 
+// ---- 供网络拓扑页原地编辑 ----
+
+// prepared 记录弹窗所需的数据（全局设置、WAF 实例）是否已加载；dialogOnly 模式下首次打开时才加载
+let prepared: Promise<void> | undefined
+function prepare() {
+  if (!prepared) {
+    prepared = (async () => {
+      fetchSettings()
+      wafInstances.value = await api.get('/api/waf/instances')
+    })()
+    // 加载失败时允许下次重试
+    prepared.catch(() => (prepared = undefined))
+  }
+  return prepared
+}
+
+// editSite 打开指定站点（默认站点的 key 为 default）的编辑框；每次都重新读取监听，保证基于最新配置修改
+async function editSite(lk: string, sk: string): Promise<boolean> {
+  try {
+    await prepare()
+    await load()
+  } catch (e) {
+    ElMessage.error((e as Error).message)
+    return false
+  }
+  let found = false
+  withRow(lk, sk, (l, row) => {
+    found = true
+    openSite(l, row)
+  })
+  if (!found) {
+    ElMessage.warning(t('web.siteGone'))
+  }
+  return found
+}
+
+// editListenerByKey 打开指定监听的编辑框
+async function editListenerByKey(lk: string): Promise<boolean> {
+  try {
+    await prepare()
+    await load()
+  } catch (e) {
+    ElMessage.error((e as Error).message)
+    return false
+  }
+  const l = listeners.value.find((x) => x.key === lk)
+  if (!l) {
+    ElMessage.warning(t('web.siteGone'))
+    return false
+  }
+  openListener(l)
+  return true
+}
+
+defineExpose({ editSite, editListener: editListenerByKey })
+
 onMounted(async () => {
-  fetchSettings()
+  if (props.dialogOnly) {
+    return
+  }
+  await prepare()
   loadIPLists()
-  wafInstances.value = await api.get('/api/waf/instances')
   await load()
   openFromQuery()
   polling.start()

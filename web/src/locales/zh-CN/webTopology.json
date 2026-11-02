@@ -146,5 +146,10 @@
   "heightCustom": "高度 {h}px",
   "heightAuto": "自动高度",
   "enterFull": "全屏显示画布",
-  "exitFull": "退出全屏（Esc）"
+  "exitFull": "退出全屏（Esc）",
+  "openLogs": "访问日志",
+  "openLogsIp": "该 IP 的访问日志",
+  "ipLogs": "查看该 IP 在此站点的访问日志",
+  "ipLogsAll": "查看该 IP 在全部站点的访问日志",
+  "editListener": "编辑监听"
 }

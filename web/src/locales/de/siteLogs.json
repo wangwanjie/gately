@@ -1,0 +1,7 @@
+{
+  "title": "Zugriffsprotokoll · {site}",
+  "titleIp": "Zugriffsprotokoll · {site} · {ip}",
+  "titleAll": "Zugriffsprotokoll · {ip}",
+  "accessLogOff": "Für diese Site ist das Zugriffsprotokoll ausgeschaltet, daher erscheinen hier nur wenige Einträge wie Sperren. Aktivieren Sie es beim Bearbeiten der Site unter „Allgemein“.",
+  "noName": "Die Site hat keinen Namen, daher fehlt den Einträgen das Site-Feld und hier wird nach Domain gefiltert, wodurch ähnliche Sites mit erscheinen können. Geben Sie der Site einen Namen für exakte Ergebnisse."
+}

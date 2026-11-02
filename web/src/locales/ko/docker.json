@@ -21,7 +21,11 @@
     "removing": "삭제 중"
   },
   "task": {
-    "failed": "{title} 실패"
+    "failed": "{title} 실패",
+    "cancel": "중단",
+    "cancelConfirm": "이 작업을 중단할까요? 재생성 중인 컨테이너는 먼저 완료하거나 원래 컨테이너로 복구합니다.",
+    "stopping": "중지 중…",
+    "cancelled": "중단됨: {title}"
   },
   "compose": {
     "editor": {
@@ -473,7 +477,8 @@
     "empty": "작업이 없습니다",
     "running": "진행 중",
     "success": "성공",
-    "failed": "실패"
+    "failed": "실패",
+    "cancelled": "중단됨"
   },
   "taskPanel": {
     "defaultTitle": "백그라운드 작업",

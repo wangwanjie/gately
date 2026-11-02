@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"net/netip"
 	"os"
+	"strings"
 	"sync/atomic"
 	"testing"
 
@@ -109,5 +110,67 @@ func TestIPListSubscription(t *testing.T) {
 	t.Cleanup(func() { iplist.Default.SetUsers("frp", nil) })
 	if users := m2.ipListUsersLocked(key); len(users) != 1 || users[0] != "frps / 家里" {
 		t.Fatalf("应包含其它模块的引用方: %v", users)
+	}
+}
+
+func TestIPListProxy(t *testing.T) {
+	var proxied atomic.Int32
+	// 正向代理：只代理 http:// 目标，返回固定列表，确认请求确实经过了它
+	proxy := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !r.URL.IsAbs() {
+			http.Error(w, "not proxy", http.StatusBadRequest)
+			return
+		}
+		proxied.Add(1)
+		_, _ = io.WriteString(w, "10.0.0.0/8\n")
+	}))
+	defer proxy.Close()
+
+	for _, bad := range []string{"127.0.0.1:7890", "ftp://x"} {
+		l := IPList{Name: "x", URL: "http://example.invalid/list", Proxy: bad}
+		if l.Validate() == nil {
+			t.Errorf("代理 %q 应被拒绝", bad)
+		}
+	}
+	l := IPList{Key: "p", Name: "p", Enable: true, URL: "http://lists.example.invalid/cn.txt", Proxy: " " + proxy.URL + " "}
+	if err := l.Validate(); err != nil || l.Proxy != proxy.URL {
+		t.Fatalf("代理应通过校验并去掉空白: %q %v", l.Proxy, err)
+	}
+	st, _ := config.Open(t.TempDir())
+	m := New(nil, nil)
+	if err := m.Init(module.Env{Store: st, Logs: logbuf.New(50, log.New(io.Discard, "", 0))}); err != nil {
+		t.Fatal(err)
+	}
+	set, n, err := m.downloadIPList(context.Background(), l)
+	if err != nil || n != 1 || !set.Contains(netip.MustParseAddr("10.1.2.3")) || proxied.Load() != 1 {
+		t.Fatalf("应经代理下载列表: n=%d err=%v 代理次数=%d", n, err, proxied.Load())
+	}
+}
+
+func TestGeoIPDownloadProxy(t *testing.T) {
+	m := New(nil, nil)
+	st, _ := config.Open(t.TempDir())
+	if err := m.Init(module.Env{Store: st, Logs: logbuf.New(50, log.New(io.Discard, "", 0))}); err != nil {
+		t.Fatal(err)
+	}
+	var proxied atomic.Int32
+	proxy := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		proxied.Add(1)
+		_, _ = io.WriteString(w, "not a database")
+	}))
+	defer proxy.Close()
+	do := func(body string) *httptest.ResponseRecorder {
+		req := httptest.NewRequest(http.MethodPost, "/geoip/download", strings.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		m.handleGeoIPDownload(w, req)
+		return w
+	}
+	if w := do(`{"url":"http://geo.example.invalid/x.mmdb","proxy":"1.2.3.4:80"}`); w.Code != http.StatusBadRequest {
+		t.Fatalf("无效代理应返回 400: %d %s", w.Code, w.Body.String())
+	}
+	// 经代理下载：代理返回的不是有效数据库，报错但确认请求经过了代理
+	if w := do(`{"url":"http://geo.example.invalid/x.mmdb","proxy":"` + proxy.URL + `"}`); w.Code != http.StatusBadGateway || proxied.Load() != 1 {
+		t.Fatalf("应经代理下载: %d %s 代理次数=%d", w.Code, w.Body.String(), proxied.Load())
 	}
 }

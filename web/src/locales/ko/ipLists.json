@@ -20,5 +20,7 @@
   "statusLoaded": "{count}개 로드됨",
   "statusFailed": "내려받기 실패",
   "statusPending": "대기 중",
-  "refreshed": "새로고침 완료, {count}개"
+  "refreshed": "새로고침 완료, {count}개",
+  "proxy": "다운로드 프록시",
+  "proxyHelp": "목록 주소(GitHub 등)에 직접 연결되지 않을 때 프록시로 다운로드합니다. http://, https://, socks5://를 지원합니다."
 }

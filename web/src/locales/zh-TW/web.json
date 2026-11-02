@@ -195,5 +195,7 @@
   "copySites": "站點",
   "copySitesLabel": "同時複製其中的 {count} 個站點",
   "copySitesHelp": "分享連結不會複製：其權杖可繞過認證，需要時在副本中重新建立。",
-  "siteListener": "所屬監聽"
+  "siteListener": "所屬監聽",
+  "siteLogs": "記錄",
+  "siteGone": "找不到該站點，可能已被刪除或移動，請重新整理後再試"
 }

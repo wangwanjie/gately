@@ -45,6 +45,11 @@
           <el-input v-model="geoUrl" :placeholder="t('accessSettings.mmdbUrlPlaceholder')" class="mono flex" />
           <el-button size="small" :loading="busy" :disabled="!geoUrl" @click="download">{{ t('common.download') }}</el-button>
         </div>
+        <!-- 下载地址常在 GitHub 上，可以经代理下载；只用于本次下载，不保存 -->
+        <div class="row">
+          <span class="meta">{{ t('accessSettings.geoProxy') }}</span>
+          <ProxyInput v-model="geoProxy" class="flex" />
+        </div>
       </div>
     </el-form-item>
   </div>
@@ -57,6 +62,7 @@ import { ElMessage } from 'element-plus'
 import { Upload } from 'lucide-vue-next'
 import { api } from '../api'
 import { moduleEnabled } from '../nav'
+import ProxyInput from './ProxyInput.vue'
 
 interface Ban {
   key: string
@@ -81,6 +87,8 @@ const geo = ref<GeoInfo>({ loaded: false, size: 0 })
 const newIp = ref('')
 const newHours = ref(24)
 const geoUrl = ref('')
+// geoProxy 为下载数据库使用的代理，默认复用全局更新代理（未设置更新代理时等同直连）
+const geoProxy = ref('update')
 const busy = ref(false)
 
 async function loadBans() {
@@ -127,7 +135,7 @@ async function upload(opt: { file: File }) {
 async function download() {
   busy.value = true
   try {
-    geo.value = await api.post<GeoInfo>('/api/webservice/geoip/download', { url: geoUrl.value })
+    geo.value = await api.post<GeoInfo>('/api/webservice/geoip/download', { url: geoUrl.value, proxy: geoProxy.value.trim() })
     ElMessage.success(t('accessSettings.geoDownloaded'))
   } catch (e) {
     ElMessage.error((e as Error).message)

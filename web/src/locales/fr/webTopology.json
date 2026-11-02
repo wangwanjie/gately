@@ -146,5 +146,10 @@
   "heightCustom": "Hauteur {h} px",
   "heightAuto": "Hauteur automatique",
   "enterFull": "Afficher le canevas sur toute la fenêtre",
-  "exitFull": "Quitter le plein écran (Échap)"
+  "exitFull": "Quitter le plein écran (Échap)",
+  "openLogs": "Journal d'accès",
+  "openLogsIp": "Journal d'accès de cette IP",
+  "ipLogs": "Voir le journal d'accès de cette IP sur ce site",
+  "ipLogsAll": "Voir le journal d'accès de cette IP sur tous les sites",
+  "editListener": "Modifier l'écoute"
 }

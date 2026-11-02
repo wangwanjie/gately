@@ -195,5 +195,7 @@
   "copySites": "Sites",
   "copySitesLabel": "Copier aussi ses {count} site(s)",
   "copySitesHelp": "Les liens de partage ne sont pas copiés : leurs jetons contournent l'authentification. Créez-en de nouveaux sur la copie si besoin.",
-  "siteListener": "Écouteur"
+  "siteListener": "Écouteur",
+  "siteLogs": "Journaux",
+  "siteGone": "Site introuvable. Il a peut-être été supprimé ou déplacé ; actualisez puis réessayez"
 }

@@ -125,6 +125,9 @@ func TestFilterMatch(t *testing.T) {
 		{"IP 从消息提取", Filter{IP: ParseIP("5.6.0.0/16")}, false, true},
 		{"站点名称", Filter{Host: "博客"}, true, false},
 		{"域名片段", Filter{Host: "example"}, true, false},
+		{"站点完整匹配", Filter{Site: "博客"}, true, false},
+		{"站点不做部分匹配", Filter{Site: "博"}, false, false},
+		{"站点不区分大小写", Filter{Site: "BLOG"}, false, false},
 		{"无字段时域名在消息中查找", Filter{Host: "5.6.7"}, false, true},
 		{"状态码只匹配带字段的日志", Filter{Status: []StatusRange{{400, 499}}}, true, false},
 		{"状态码不命中", Filter{Status: []StatusRange{{500, 599}}}, false, false},
@@ -138,6 +141,15 @@ func TestFilterMatch(t *testing.T) {
 		if got := c.f.Match(&login); got != c.login {
 			t.Errorf("%s: 登录日志匹配 = %v，期望 %v", c.name, got, c.login)
 		}
+	}
+	// 站点名称不区分大小写
+	en := access
+	en.Fields = Fields{FieldSite: "Blog", FieldIP: "1.2.3.4"}
+	if !(&Filter{Site: "blog"}).Match(&en) || (&Filter{Site: "blog", IP: ParseIP("9.9.9.9")}).Match(&en) {
+		t.Error("站点条件应不区分大小写，并与 IP 条件同时生效")
+	}
+	if (&Filter{Site: "x"}).Empty() {
+		t.Error("只有站点条件时不应视为空")
 	}
 	var nilFilter *Filter
 	if !nilFilter.Match(&login) {

@@ -195,5 +195,7 @@
   "copySites": "사이트",
   "copySitesLabel": "포함된 사이트 {count}개도 복제",
   "copySitesHelp": "공유 링크는 복제되지 않습니다. 토큰으로 인증을 우회할 수 있으므로 필요하면 사본에서 새로 만드세요.",
-  "siteListener": "소속 리스너"
+  "siteListener": "소속 리스너",
+  "siteLogs": "로그",
+  "siteGone": "사이트를 찾을 수 없습니다. 삭제되었거나 이동했을 수 있으니 새로 고친 뒤 다시 시도하세요"
 }

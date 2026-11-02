@@ -41,6 +41,8 @@ export interface TopoSite {
   running: boolean
   target?: string
   guards: string[]
+  // accessLog 表示站点开启了访问日志
+  accessLog?: boolean
   requests: number
   active: number
   errors: number

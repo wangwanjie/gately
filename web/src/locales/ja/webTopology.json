@@ -146,5 +146,10 @@
   "heightCustom": "高さ {h}px",
   "heightAuto": "自動の高さ",
   "enterFull": "キャンバスをウィンドウ全体に表示",
-  "exitFull": "全体表示を終了（Esc）"
+  "exitFull": "全体表示を終了（Esc）",
+  "openLogs": "アクセスログ",
+  "openLogsIp": "この IP のアクセスログ",
+  "ipLogs": "このサイトでのこの IP のアクセスログを表示",
+  "ipLogsAll": "全サイトでのこの IP のアクセスログを表示",
+  "editListener": "リスナーを編集"
 }

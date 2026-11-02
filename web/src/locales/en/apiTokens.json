@@ -50,5 +50,8 @@
   "execTag": "Runs commands",
   "execTip": "Write access to this module can run commands on the server (commands, scripts or program paths). It equals command execution as the Gately process user, so grant it only to scripts you fully trust.",
   "execWarn": "Whoever holds this token can run commands on the server through write access to: {modules}. Grant this only to scripts you fully trust.",
-  "listSep": ", "
+  "listSep": ", ",
+  "exampleStatusNote": "/api/status requires the token to have read access to System status.",
+  "exampleOpenAPI": "Read the API description (OpenAPI)",
+  "exampleOpenAPINote": "Any valid token can read it without extra permissions. Use it to check the token works or to import into API tools such as Postman; invalid tokens are still rejected."
 }

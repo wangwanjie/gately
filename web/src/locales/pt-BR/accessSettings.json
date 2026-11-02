@@ -19,5 +19,6 @@
   "uploadMmdb": "Enviar .mmdb",
   "mmdbUrlPlaceholder": "Ou informe a URL de download de um .mmdb",
   "geoImported": "Banco de dados GeoIP importado",
-  "geoDownloaded": "Banco de dados GeoIP baixado e carregado"
+  "geoDownloaded": "Banco de dados GeoIP baixado e carregado",
+  "geoProxy": "Proxy de download"
 }

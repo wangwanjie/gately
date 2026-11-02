@@ -483,6 +483,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/docker/logs` | `docker:write` | モジュールの実行ログを消去 |
 | GET | `/api/docker/tasks` | `docker:read` | バックグラウンドタスクを一覧表示 |
 | GET | `/api/docker/tasks/{id}` | `docker:read` | バックグラウンドタスクの進行状況と出力を表示 |
+| POST | `/api/docker/tasks/{id}/cancel` | `docker:write` | 実行中のバックグラウンドタスクを中断 |
 | DELETE | `/api/docker/tasks` | `docker:write` | 終了済みのバックグラウンドタスクをクリーンアップ |
 | GET | `/api/docker/images` | `docker:read` | イメージを一覧表示 |
 | POST | `/api/docker/images/pull` | `docker:write` | イメージを取得 |
@@ -661,6 +662,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/notify/rules-enable` | `notify:write` | 通知ルール の一括有効化・無効化 |
 | POST | `/api/notify/rules-delete` | `notify:write` | 通知ルール の一括削除 |
 | PUT | `/api/notify/rules-group` | `notify:write` | 通知ルール のグループを一括設定 |
+| GET | `/api/notify/settings` | `notify:read` | 通知設定を取得 |
+| PUT | `/api/notify/settings` | `notify:write` | 通知設定を保存 |
 | GET | `/api/notify/event-types` | `notify:read` | 購読可能なイベントタイプ |
 | GET | `/api/notify/history` | `notify:read` | 最近の配信履歴 |
 | POST | `/api/notify/channels/{key}/test` | `notify:write` | チャネルにテスト通知を送信 |
@@ -1379,6 +1382,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `kind` | string |
 | `name` | string |
 | `port` | integer |
+| `proxy` | string |
 | `remark` | string |
 | `secret` | string |
 | `security` | string |
@@ -1411,6 +1415,12 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `minLevel` | string |
 | `name` | string |
 | `silence` | integer |
+
+### notify.Settings
+
+| フィールド | 型 |
+| --- | --- |
+| `proxy` | string |
 
 ### perf.AlertState
 
@@ -1766,6 +1776,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `headers` | 配列 of string |
 | `insecureSkipVerify` | boolean |
 | `method` | string |
+| `proxy` | string |
 | `successContent` | 配列 of string |
 | `timeout` | integer |
 | `url` | string |
@@ -1860,6 +1871,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `enable` | boolean |
 | `key` | string |
 | `name` | string |
+| `proxy` | string |
 | `refreshHours` | integer |
 | `remark` | string |
 | `updatedAt` | 時刻 (RFC 3339) |
@@ -2168,6 +2180,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | フィールド | 型 |
 | --- | --- |
+| `accessLog` | boolean |
 | `active` | integer |
 | `blocked` | マップ of integer |
 | `closed` | integer |
@@ -2311,6 +2324,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | フィールド | 型 |
 | --- | --- |
+| `proxy` | string |
 | `url` | string |
 
 ### webservice.totpRequest

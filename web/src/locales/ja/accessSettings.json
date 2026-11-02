@@ -19,5 +19,6 @@
   "uploadMmdb": ".mmdb をアップロード",
   "mmdbUrlPlaceholder": "または .mmdb のダウンロード URL を入力",
   "geoImported": "GeoIP データベースをインポートしました",
-  "geoDownloaded": "GeoIP データベースをダウンロードして読み込みました"
+  "geoDownloaded": "GeoIP データベースをダウンロードして読み込みました",
+  "geoProxy": "ダウンロード用プロキシ"
 }

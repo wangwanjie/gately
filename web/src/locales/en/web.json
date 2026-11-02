@@ -195,5 +195,7 @@
   "copySites": "Sites",
   "copySitesLabel": "Also copy its {count} site(s)",
   "copySitesHelp": "Share links are not copied: their tokens bypass authentication. Create new ones on the copy if needed.",
-  "siteListener": "Listener"
+  "siteListener": "Listener",
+  "siteLogs": "Logs",
+  "siteGone": "The site was not found. It may have been deleted or moved; refresh and try again"
 }

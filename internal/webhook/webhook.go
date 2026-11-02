@@ -3,7 +3,6 @@ package webhook
 
 import (
 	"context"
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
@@ -11,6 +10,8 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/wangwanjie/gately/internal/proxyx"
 )
 
 // Config 是一个 Webhook 的配置。URL、Headers、Body 中的 {变量名} 会被替换。
@@ -25,6 +26,9 @@ type Config struct {
 	SuccessContent     []string `json:"successContent"`
 	Timeout            int      `json:"timeout"`
 	InsecureSkipVerify bool     `json:"insecureSkipVerify"`
+	// Proxy 为请求使用的代理：留空遵循 HTTPS_PROXY 等环境变量，direct 为直连，update 为全局更新代理，
+	// 也可以填写 http://、https://、socks5:// 开头的代理地址（见 proxyx 包）
+	Proxy string `json:"proxy,omitempty"`
 }
 
 // Validate 校验配置。未启用时不做检查。
@@ -49,7 +53,8 @@ func (c *Config) Validate() error {
 			return fmt.Errorf("请求头格式应为 Key: Value，实际 %q", h)
 		}
 	}
-	return nil
+	c.Proxy = proxyx.Normalize(c.Proxy)
+	return proxyx.Validate(c.Proxy)
 }
 
 // Render 把 s 中的 {name}（或 #{name}）替换为 vars[name]；未知变量保持原样。
@@ -135,11 +140,8 @@ func Send(ctx context.Context, c Config, vars map[string]string) (*Result, error
 	if body != nil && req.Header.Get("Content-Type") == "" {
 		req.Header.Set("Content-Type", "application/json")
 	}
-	client := &http.Client{}
-	if c.InsecureSkipVerify {
-		client.Transport = &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
-	}
-	resp, err := client.Do(req)
+	// 超时由 context 控制；客户端按代理设置复用连接
+	resp, err := proxyx.Client(c.Proxy, 0, c.InsecureSkipVerify).Do(req)
 	if err != nil {
 		return nil, err
 	}

@@ -483,6 +483,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/docker/logs` | `docker:write` | Limpar logs de execução do módulo |
 | GET | `/api/docker/tasks` | `docker:read` | Listar tarefas em segundo plano |
 | GET | `/api/docker/tasks/{id}` | `docker:read` | Ver progresso e saída das tarefas em segundo plano |
+| POST | `/api/docker/tasks/{id}/cancel` | `docker:write` | Cancelar uma tarefa em segundo plano em andamento |
 | DELETE | `/api/docker/tasks` | `docker:write` | Limpar tarefas em segundo plano já encerradas |
 | GET | `/api/docker/images` | `docker:read` | Listar imagens |
 | POST | `/api/docker/images/pull` | `docker:write` | Baixar imagem |
@@ -661,6 +662,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | PUT | `/api/notify/rules-enable` | `notify:write` | Ativar ou desativar em lote: Regras de notificação |
 | POST | `/api/notify/rules-delete` | `notify:write` | Excluir em lote: Regras de notificação |
 | PUT | `/api/notify/rules-group` | `notify:write` | Definir o grupo de vários itens: Regras de notificação |
+| GET | `/api/notify/settings` | `notify:read` | Ler as configurações de notificação |
+| PUT | `/api/notify/settings` | `notify:write` | Salvar as configurações de notificação |
 | GET | `/api/notify/event-types` | `notify:read` | Tipos de evento que podem ser assinados |
 | GET | `/api/notify/history` | `notify:read` | Registros de entrega recentes |
 | POST | `/api/notify/channels/{key}/test` | `notify:write` | Enviar notificação de teste ao canal |
@@ -1379,6 +1382,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `kind` | string |
 | `name` | string |
 | `port` | integer |
+| `proxy` | string |
 | `remark` | string |
 | `secret` | string |
 | `security` | string |
@@ -1411,6 +1415,12 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `minLevel` | string |
 | `name` | string |
 | `silence` | integer |
+
+### notify.Settings
+
+| Campo | Tipo |
+| --- | --- |
+| `proxy` | string |
 
 ### perf.AlertState
 
@@ -1766,6 +1776,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `headers` | Array de string |
 | `insecureSkipVerify` | boolean |
 | `method` | string |
+| `proxy` | string |
 | `successContent` | Array de string |
 | `timeout` | integer |
 | `url` | string |
@@ -1860,6 +1871,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `enable` | boolean |
 | `key` | string |
 | `name` | string |
+| `proxy` | string |
 | `refreshHours` | integer |
 | `remark` | string |
 | `updatedAt` | Hora (RFC 3339) |
@@ -2168,6 +2180,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 
 | Campo | Tipo |
 | --- | --- |
+| `accessLog` | boolean |
 | `active` | integer |
 | `blocked` | Mapa de integer |
 | `closed` | integer |
@@ -2311,6 +2324,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 
 | Campo | Tipo |
 | --- | --- |
+| `proxy` | string |
 | `url` | string |
 
 ### webservice.totpRequest

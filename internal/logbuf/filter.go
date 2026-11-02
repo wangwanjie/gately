@@ -56,6 +56,8 @@ type Filter struct {
 	IP *IPMatcher
 	// Host 为站点或域名（已转小写）的子串
 	Host string
+	// Site 为站点名称，不区分大小写完整匹配 site 字段；只匹配带该字段的日志（访问日志）
+	Site string
 	// Status 为状态码区间，命中任意一个即匹配；只匹配带 status 字段的日志
 	Status []StatusRange
 	// Hide 为要隐藏的日志：命中其中任意一项即不匹配，例如被封禁来源的访问日志、管理员自己的请求
@@ -70,7 +72,7 @@ type Filter struct {
 // Empty 判断是否没有任何过滤条件。
 func (f *Filter) Empty() bool {
 	return f == nil || (f.MinLevel == "" && f.Source == "" && len(f.Terms) == 0 && len(f.Excludes) == 0 &&
-		f.IP == nil && f.Host == "" && len(f.Status) == 0 && len(f.Hide) == 0 && f.From.IsZero() && f.To.IsZero())
+		f.IP == nil && f.Host == "" && f.Site == "" && len(f.Status) == 0 && len(f.Hide) == 0 && f.From.IsZero() && f.To.IsZero())
 }
 
 var levelOrder = map[string]int{LevelDebug: 0, LevelInfo: 1, LevelWarn: 2, LevelError: 3}
@@ -107,6 +109,9 @@ func (f *Filter) Match(e *Entry) bool {
 		return false
 	}
 	if f.Host != "" && !f.matchHost(e) {
+		return false
+	}
+	if f.Site != "" && !strings.EqualFold(e.Fields[FieldSite], f.Site) {
 		return false
 	}
 	if f.IP != nil && !f.IP.matchEntry(e) {

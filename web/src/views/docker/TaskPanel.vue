@@ -5,8 +5,18 @@
       <div class="task-head">
         <Loader v-if="task.status === 'running'" :size="16" class="spin" />
         <CircleCheck v-else-if="task.status === 'done'" :size="16" class="ok" />
+        <Ban v-else-if="task.status === 'cancelled'" :size="16" class="muted" />
         <CircleX v-else :size="16" class="bad" />
         <span class="task-title">{{ task.title || t('docker.taskPanel.defaultTitle') }}</span>
+        <!-- 进行中的任务可以中断：拉取、构建等随即中止，批量升级在当前容器处理完后停止 -->
+        <template v-if="task.status === 'running'">
+          <span v-if="task.cancelling" class="stopping">{{ t('docker.task.stopping') }}</span>
+          <el-popconfirm v-else :title="t('docker.task.cancelConfirm')" width="260" @confirm="cancelTask(task.id)">
+            <template #reference>
+              <el-button text size="small" type="danger" :icon="Square" class="task-btn">{{ t('docker.task.cancel') }}</el-button>
+            </template>
+          </el-popconfirm>
+        </template>
         <el-button text size="small" class="task-btn" @click="toggle(task.id)">{{ open[task.id] ? t('docker.taskPanel.collapse') : t('common.details') }}</el-button>
         <el-button v-if="task.status !== 'running'" text size="small" :icon="X" class="task-btn" :aria-label="t('common.close')" @click="task.dismissed = true" />
       </div>
@@ -20,8 +30,8 @@
 <script setup lang="ts">
 import { computed, reactive } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { CircleCheck, CircleX, Loader, X } from 'lucide-vue-next'
-import { trackedTasks, type TrackedTask } from './tasks'
+import { Ban, CircleCheck, CircleX, Loader, Square, X } from 'lucide-vue-next'
+import { cancelTask, trackedTasks, type TrackedTask } from './tasks'
 
 const { t } = useI18n()
 
@@ -84,6 +94,14 @@ function lastLine(task: TrackedTask): string {
 }
 .bad {
   color: var(--el-color-danger);
+}
+.muted {
+  color: var(--el-text-color-secondary);
+}
+.stopping {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--el-color-warning);
 }
 .spin {
   color: var(--el-color-primary);

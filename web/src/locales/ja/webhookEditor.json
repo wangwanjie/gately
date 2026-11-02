@@ -10,5 +10,7 @@
   "timeout": "タイムアウト(秒)",
   "ignoreCertError": "証明書エラーを無視",
   "variables": "利用可能な変数",
-  "varsTip": "{plain}、または {hash}"
+  "varsTip": "{plain}、または {hash}",
+  "proxy": "プロキシ",
+  "proxyHelp": "コールバック先に直接つながらない場合はプロキシ経由で送信できます。http://、https://、socks5:// に対応します。プロキシなしの場合は HTTPS_PROXY などの環境変数に従います。"
 }

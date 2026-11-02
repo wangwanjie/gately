@@ -483,6 +483,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/docker/logs` | `docker:write` | Modulprotokolle leeren |
 | GET | `/api/docker/tasks` | `docker:read` | Hintergrundaufgaben auflisten |
 | GET | `/api/docker/tasks/{id}` | `docker:read` | Fortschritt und Ausgabe einer Hintergrundaufgabe anzeigen |
+| POST | `/api/docker/tasks/{id}/cancel` | `docker:write` | Laufende Hintergrundaufgabe abbrechen |
 | DELETE | `/api/docker/tasks` | `docker:write` | Beendete Hintergrundaufgaben bereinigen |
 | GET | `/api/docker/images` | `docker:read` | Images auflisten |
 | POST | `/api/docker/images/pull` | `docker:write` | Image pullen |
@@ -661,6 +662,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | PUT | `/api/notify/rules-enable` | `notify:write` | Im Stapel aktivieren oder deaktivieren: Benachrichtigungsregeln |
 | POST | `/api/notify/rules-delete` | `notify:write` | Im Stapel löschen: Benachrichtigungsregeln |
 | PUT | `/api/notify/rules-group` | `notify:write` | Gruppe mehrerer Einträge festlegen: Benachrichtigungsregeln |
+| GET | `/api/notify/settings` | `notify:read` | Benachrichtigungseinstellungen abrufen |
+| PUT | `/api/notify/settings` | `notify:write` | Benachrichtigungseinstellungen speichern |
 | GET | `/api/notify/event-types` | `notify:read` | Abonnierbare Ereignistypen |
 | GET | `/api/notify/history` | `notify:read` | Letzte Zustellungsprotokolle |
 | POST | `/api/notify/channels/{key}/test` | `notify:write` | Testbenachrichtigung an einen Kanal senden |
@@ -1379,6 +1382,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `kind` | string |
 | `name` | string |
 | `port` | integer |
+| `proxy` | string |
 | `remark` | string |
 | `secret` | string |
 | `security` | string |
@@ -1411,6 +1415,12 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `minLevel` | string |
 | `name` | string |
 | `silence` | integer |
+
+### notify.Settings
+
+| Feld | Typ |
+| --- | --- |
+| `proxy` | string |
 
 ### perf.AlertState
 
@@ -1766,6 +1776,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `headers` | Array von string |
 | `insecureSkipVerify` | boolean |
 | `method` | string |
+| `proxy` | string |
 | `successContent` | Array von string |
 | `timeout` | integer |
 | `url` | string |
@@ -1860,6 +1871,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `enable` | boolean |
 | `key` | string |
 | `name` | string |
+| `proxy` | string |
 | `refreshHours` | integer |
 | `remark` | string |
 | `updatedAt` | Zeit (RFC 3339) |
@@ -2168,6 +2180,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 
 | Feld | Typ |
 | --- | --- |
+| `accessLog` | boolean |
 | `active` | integer |
 | `blocked` | Map von integer |
 | `closed` | integer |
@@ -2311,6 +2324,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 
 | Feld | Typ |
 | --- | --- |
+| `proxy` | string |
 | `url` | string |
 
 ### webservice.totpRequest

@@ -21,7 +21,11 @@
     "removing": "Удаляется"
   },
   "task": {
-    "failed": "{title}: ошибка"
+    "failed": "{title}: ошибка",
+    "cancel": "Прервать",
+    "cancelConfirm": "Прервать задачу? Пересоздаваемый контейнер сначала будет завершён или восстановлен.",
+    "stopping": "Остановка…",
+    "cancelled": "Прервано: {title}"
   },
   "compose": {
     "editor": {
@@ -473,7 +477,8 @@
     "empty": "Нет задач",
     "running": "Выполняется",
     "success": "Успешно",
-    "failed": "Ошибка"
+    "failed": "Ошибка",
+    "cancelled": "Прервано"
   },
   "taskPanel": {
     "defaultTitle": "Фоновая задача",

@@ -108,5 +108,10 @@
       "name": "Updates",
       "desc": "Gately security updates and new versions, plus new versions of managed programs and container images"
     }
-  }
+  },
+  "settings": "Notification settings",
+  "proxy": "Proxy",
+  "proxyGlobalHelp": "Default proxy for all channels; each channel can set its own or connect directly. Supports http://, https:// and socks5:// proxies; \"Use the global update proxy\" reuses the update proxy from System Settings. Without a proxy, HTTP channels follow HTTPS_PROXY and similar environment variables and email connects directly.",
+  "proxyChannelHelp": "For networks where the notification service is only reachable through a proxy. Follows the global proxy in notification settings by default.",
+  "proxySmtpHelp": "Email opens its TCP connection through the proxy: http(s) proxies use the CONNECT method (the proxy must allow the mail port), socks5 proxies resolve the server name on the proxy."
 }

@@ -10,5 +10,7 @@
   "timeout": "Zeitlimit (s)",
   "ignoreCertError": "Zertifikatsfehler ignorieren",
   "variables": "Verfügbare Variablen",
-  "varsTip": "{plain} oder {hash}"
+  "varsTip": "{plain} oder {hash}",
+  "proxy": "Proxy",
+  "proxyHelp": "Die Callback-URL über einen Proxy erreichen, wenn sie direkt nicht erreichbar ist. Unterstützt http://, https:// und socks5://. Ohne Proxy gelten HTTPS_PROXY und ähnliche Umgebungsvariablen."
 }

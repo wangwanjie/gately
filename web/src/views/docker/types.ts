@@ -156,8 +156,10 @@ export interface DockerTask {
   id: string
   kind: string
   title: string
-  status: 'running' | 'done' | 'error'
+  status: 'running' | 'done' | 'error' | 'cancelled'
   error?: string
+  // cancelling 表示已请求取消、任务正在收尾
+  cancelling?: boolean
   lines?: string[]
   started: string
   finished?: string

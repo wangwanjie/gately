@@ -483,6 +483,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/docker/logs` | `docker:write` | Очистить журнал работы модуля |
 | GET | `/api/docker/tasks` | `docker:read` | Список фоновых задач |
 | GET | `/api/docker/tasks/{id}` | `docker:read` | Просмотр хода выполнения и вывода фоновой задачи |
+| POST | `/api/docker/tasks/{id}/cancel` | `docker:write` | Отменить выполняемую фоновую задачу |
 | DELETE | `/api/docker/tasks` | `docker:write` | Очистить завершённые фоновые задачи |
 | GET | `/api/docker/images` | `docker:read` | Список образов |
 | POST | `/api/docker/images/pull` | `docker:write` | Загрузить образ |
@@ -661,6 +662,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/notify/rules-enable` | `notify:write` | Пакетно включить или отключить: Правила уведомлений |
 | POST | `/api/notify/rules-delete` | `notify:write` | Пакетно удалить: Правила уведомлений |
 | PUT | `/api/notify/rules-group` | `notify:write` | Задать группу сразу для нескольких: Правила уведомлений |
+| GET | `/api/notify/settings` | `notify:read` | Получить настройки уведомлений |
+| PUT | `/api/notify/settings` | `notify:write` | Сохранить настройки уведомлений |
 | GET | `/api/notify/event-types` | `notify:read` | Типы событий, на которые можно подписаться |
 | GET | `/api/notify/history` | `notify:read` | Последние записи доставки |
 | POST | `/api/notify/channels/{key}/test` | `notify:write` | Отправить тестовое уведомление в канал |
@@ -1379,6 +1382,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `kind` | string |
 | `name` | string |
 | `port` | integer |
+| `proxy` | string |
 | `remark` | string |
 | `secret` | string |
 | `security` | string |
@@ -1411,6 +1415,12 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `minLevel` | string |
 | `name` | string |
 | `silence` | integer |
+
+### notify.Settings
+
+| Поле | Тип |
+| --- | --- |
+| `proxy` | string |
 
 ### perf.AlertState
 
@@ -1766,6 +1776,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `headers` | Массив из string |
 | `insecureSkipVerify` | boolean |
 | `method` | string |
+| `proxy` | string |
 | `successContent` | Массив из string |
 | `timeout` | integer |
 | `url` | string |
@@ -1860,6 +1871,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `enable` | boolean |
 | `key` | string |
 | `name` | string |
+| `proxy` | string |
 | `refreshHours` | integer |
 | `remark` | string |
 | `updatedAt` | Время (RFC 3339) |
@@ -2168,6 +2180,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | Поле | Тип |
 | --- | --- |
+| `accessLog` | boolean |
 | `active` | integer |
 | `blocked` | Словарь из integer |
 | `closed` | integer |
@@ -2311,6 +2324,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | Поле | Тип |
 | --- | --- |
+| `proxy` | string |
 | `url` | string |
 
 ### webservice.totpRequest

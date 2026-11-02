@@ -20,5 +20,7 @@
   "statusLoaded": "{count} geladen",
   "statusFailed": "Download fehlgeschlagen",
   "statusPending": "Wartet",
-  "refreshed": "Aktualisiert, {count} Einträge"
+  "refreshed": "Aktualisiert, {count} Einträge",
+  "proxy": "Download-Proxy",
+  "proxyHelp": "Über einen Proxy herunterladen, wenn die Listen-URL (z. B. GitHub) direkt nicht erreichbar ist. Unterstützt http://, https:// und socks5://."
 }

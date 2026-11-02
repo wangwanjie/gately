@@ -20,5 +20,7 @@
   "statusLoaded": "已載入 {count} 筆",
   "statusFailed": "下載失敗",
   "statusPending": "等待下載",
-  "refreshed": "已重新整理，共 {count} 筆"
+  "refreshed": "已重新整理，共 {count} 筆",
+  "proxy": "下載代理",
+  "proxyHelp": "清單位址（如 GitHub）直連不通時經代理下載，支援 http://、https:// 與 socks5://。"
 }

@@ -21,7 +21,11 @@
     "removing": "Eliminando"
   },
   "task": {
-    "failed": "{title} falló"
+    "failed": "{title} falló",
+    "cancel": "Detener",
+    "cancelConfirm": "¿Detener esta tarea? Un contenedor que se está recreando se completa o se restaura primero.",
+    "stopping": "Deteniendo…",
+    "cancelled": "Detenida: {title}"
   },
   "compose": {
     "editor": {
@@ -473,7 +477,8 @@
     "empty": "No hay tareas",
     "running": "En curso",
     "success": "Correcta",
-    "failed": "Fallida"
+    "failed": "Fallida",
+    "cancelled": "Detenida"
   },
   "taskPanel": {
     "defaultTitle": "Tarea en segundo plano",

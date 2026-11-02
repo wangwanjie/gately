@@ -146,5 +146,10 @@
   "heightCustom": "Altura {h}px",
   "heightAuto": "Altura automática",
   "enterFull": "Mostrar a tela na janela inteira",
-  "exitFull": "Sair da tela cheia (Esc)"
+  "exitFull": "Sair da tela cheia (Esc)",
+  "openLogs": "Log de acesso",
+  "openLogsIp": "Log de acesso deste IP",
+  "ipLogs": "Ver o log de acesso deste IP neste site",
+  "ipLogsAll": "Ver o log de acesso deste IP em todos os sites",
+  "editListener": "Editar escuta"
 }

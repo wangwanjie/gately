@@ -21,7 +21,11 @@
     "removing": "Suppression"
   },
   "task": {
-    "failed": "Échec : {title}"
+    "failed": "Échec : {title}",
+    "cancel": "Arrêter",
+    "cancelConfirm": "Arrêter cette tâche ? Un conteneur en cours de recréation est d'abord terminé ou restauré.",
+    "stopping": "Arrêt en cours…",
+    "cancelled": "Arrêtée : {title}"
   },
   "compose": {
     "editor": {
@@ -473,7 +477,8 @@
     "empty": "Aucune tâche",
     "running": "En cours",
     "success": "Réussie",
-    "failed": "Échec"
+    "failed": "Échec",
+    "cancelled": "Arrêtée"
   },
   "taskPanel": {
     "defaultTitle": "Tâche en arrière-plan",

@@ -64,7 +64,7 @@ func tightenConfigDir(dir string) int {
 }
 
 // logFilterParams 是日志接口支持的过滤参数，接口文档据此列出查询参数。
-var logFilterParams = []string{"level", "source", "q", "exclude", "ip", "host", "status", "hideBanned", "hideAdmin", "from", "to"}
+var logFilterParams = []string{"level", "source", "q", "exclude", "ip", "host", "site", "status", "hideBanned", "hideAdmin", "from", "to"}
 
 // parseLogFilter 解析日志过滤参数：
 //   - level：最低级别（debug、info、warn、error）
@@ -73,6 +73,7 @@ var logFilterParams = []string{"level", "source", "q", "exclude", "ip", "host", 
 //   - exclude：不包含的关键词，空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 为“且”的关系
 //   - ip：客户端地址，支持完整地址、CIDR 与地址片段，多个以逗号分隔，前缀 ! 或 - 表示排除
 //   - host：站点名称或域名的一部分
+//   - site：站点名称，不区分大小写完整匹配（访问日志的 site 字段），用于只看某个站点的日志
 //   - status：状态码，如 404、4xx、500-599，多个以逗号分隔
 //   - hideBanned：为 1 时隐藏来源已被封禁而被拒绝的访问日志
 //   - hideAdmin：为 1 时隐藏带管理后台登录态的请求（管理员经站点反代访问后台产生的访问日志）
@@ -83,6 +84,7 @@ func parseLogFilter(q url.Values) (*logbuf.Filter, string) {
 	f := &logbuf.Filter{
 		Source: strings.TrimSpace(q.Get("source")),
 		Host:   strings.ToLower(strings.TrimSpace(q.Get("host"))),
+		Site:   strings.TrimSpace(q.Get("site")),
 		IP:     logbuf.ParseIP(q.Get("ip")),
 	}
 	if lv := q.Get("level"); lv != "" && lv != "all" {

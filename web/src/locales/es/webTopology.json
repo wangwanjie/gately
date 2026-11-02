@@ -146,5 +146,10 @@
   "heightCustom": "Altura {h}px",
   "heightAuto": "Altura automática",
   "enterFull": "Mostrar el lienzo en toda la ventana",
-  "exitFull": "Salir de pantalla completa (Esc)"
+  "exitFull": "Salir de pantalla completa (Esc)",
+  "openLogs": "Registro de acceso",
+  "openLogsIp": "Registro de acceso de esta IP",
+  "ipLogs": "Ver el registro de acceso de esta IP en este sitio",
+  "ipLogsAll": "Ver el registro de acceso de esta IP en todos los sitios",
+  "editListener": "Editar escucha"
 }

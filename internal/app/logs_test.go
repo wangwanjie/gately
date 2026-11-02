@@ -64,7 +64,7 @@ func TestLogsFilterAPI(t *testing.T) {
 	a, srv, c := loginApp(t)
 	pf := a.modules[0].logs
 	l := pf.Logger("规则A")
-	l.With(logbuf.Fields{logbuf.FieldIP: "10.0.0.5", logbuf.FieldHost: "a.example.com", logbuf.FieldStatus: "404"}).Infof("10.0.0.5 GET a.example.com/x 404 1ms")
+	l.With(logbuf.Fields{logbuf.FieldIP: "10.0.0.5", logbuf.FieldHost: "a.example.com", logbuf.FieldSite: "博客", logbuf.FieldStatus: "404"}).Infof("10.0.0.5 GET a.example.com/x 404 1ms")
 	l.With(logbuf.Fields{logbuf.FieldIP: "10.0.0.6", logbuf.FieldHost: "b.example.com", logbuf.FieldStatus: "502"}).Warnf("10.0.0.6 GET b.example.com/y 502 9ms")
 	pf.Logger("规则B").Errorf("连接 192.168.1.9:80 失败")
 
@@ -111,6 +111,10 @@ func TestLogsFilterAPI(t *testing.T) {
 		{"ip=10.0.0.0/24", "[10.0.0.5 GET a.example.com/x 404 1ms 10.0.0.6 GET b.example.com/y 502 9ms]"},
 		{"ip=192.168.1.9", "[连接 192.168.1.9:80 失败]"},
 		{"host=b.example", "[10.0.0.6 GET b.example.com/y 502 9ms]"},
+		// site 完整匹配站点名称，只返回带该站点字段的访问日志；与 ip 同时生效
+		{"site=" + url.QueryEscape("博客"), "[10.0.0.5 GET a.example.com/x 404 1ms]"},
+		{"site=" + url.QueryEscape("博"), "[]"},
+		{"site=" + url.QueryEscape("博客") + "&ip=10.0.0.6", "[]"},
 		{"status=4xx", "[10.0.0.5 GET a.example.com/x 404 1ms]"},
 		{"status=500-599&limit=1", "[10.0.0.6 GET b.example.com/y 502 9ms]"},
 		{"from=" + url.QueryEscape(time.Now().Add(time.Hour).Format(time.RFC3339)), "[]"},

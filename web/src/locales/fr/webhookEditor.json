@@ -10,5 +10,7 @@
   "timeout": "Délai d'expiration (s)",
   "ignoreCertError": "Ignorer les erreurs de certificat",
   "variables": "Variables disponibles",
-  "varsTip": "{plain} ou {hash}"
+  "varsTip": "{plain} ou {hash}",
+  "proxy": "Proxy",
+  "proxyHelp": "Passer par un proxy lorsque l'URL de rappel n'est pas joignable directement. http://, https:// et socks5:// sont pris en charge. Sans proxy, HTTPS_PROXY et les variables similaires s'appliquent."
 }

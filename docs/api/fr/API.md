@@ -483,6 +483,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | DELETE | `/api/docker/logs` | `docker:write` | Vider les journaux d'exécution d'un module |
 | GET | `/api/docker/tasks` | `docker:read` | Lister les tâches d'arrière-plan |
 | GET | `/api/docker/tasks/{id}` | `docker:read` | Consulter la progression et la sortie d'une tâche d'arrière-plan |
+| POST | `/api/docker/tasks/{id}/cancel` | `docker:write` | Annuler une tâche d'arrière-plan en cours |
 | DELETE | `/api/docker/tasks` | `docker:write` | Nettoyer les tâches d'arrière-plan terminées |
 | GET | `/api/docker/images` | `docker:read` | Lister les images |
 | POST | `/api/docker/images/pull` | `docker:write` | Télécharger une image |
@@ -661,6 +662,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | PUT | `/api/notify/rules-enable` | `notify:write` | Activer ou désactiver en lot : Règles de notification |
 | POST | `/api/notify/rules-delete` | `notify:write` | Supprimer en lot : Règles de notification |
 | PUT | `/api/notify/rules-group` | `notify:write` | Définir le groupe de plusieurs éléments : Règles de notification |
+| GET | `/api/notify/settings` | `notify:read` | Lire les paramètres de notification |
+| PUT | `/api/notify/settings` | `notify:write` | Enregistrer les paramètres de notification |
 | GET | `/api/notify/event-types` | `notify:read` | Types d'événements auxquels s'abonner |
 | GET | `/api/notify/history` | `notify:read` | Dernières livraisons |
 | POST | `/api/notify/channels/{key}/test` | `notify:write` | Envoyer une notification de test au canal |
@@ -1379,6 +1382,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `kind` | string |
 | `name` | string |
 | `port` | integer |
+| `proxy` | string |
 | `remark` | string |
 | `secret` | string |
 | `security` | string |
@@ -1411,6 +1415,12 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `minLevel` | string |
 | `name` | string |
 | `silence` | integer |
+
+### notify.Settings
+
+| Champ | Type |
+| --- | --- |
+| `proxy` | string |
 
 ### perf.AlertState
 
@@ -1766,6 +1776,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `headers` | Tableau de string |
 | `insecureSkipVerify` | boolean |
 | `method` | string |
+| `proxy` | string |
 | `successContent` | Tableau de string |
 | `timeout` | integer |
 | `url` | string |
@@ -1860,6 +1871,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `enable` | boolean |
 | `key` | string |
 | `name` | string |
+| `proxy` | string |
 | `refreshHours` | integer |
 | `remark` | string |
 | `updatedAt` | Heure (RFC 3339) |
@@ -2168,6 +2180,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 
 | Champ | Type |
 | --- | --- |
+| `accessLog` | boolean |
 | `active` | integer |
 | `blocked` | Table de correspondance de integer |
 | `closed` | integer |
@@ -2311,6 +2324,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 
 | Champ | Type |
 | --- | --- |
+| `proxy` | string |
 | `url` | string |
 
 ### webservice.totpRequest

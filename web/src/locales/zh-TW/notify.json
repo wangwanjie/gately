@@ -108,5 +108,10 @@
       "name": "版本更新",
       "desc": "Gately 的安全更新與新版本、託管程式與容器映像的新版本"
     }
-  }
+  },
+  "settings": "通知設定",
+  "proxy": "代理",
+  "proxyGlobalHelp": "各通道預設使用的代理，通道中可以單獨設定或改為直連。支援 http://、https:// 與 socks5:// 代理；「使用全域更新代理」沿用系統設定中的更新代理。不使用代理時 HTTP 通道遵循 HTTPS_PROXY 等環境變數，郵件直連。",
+  "proxyChannelHelp": "用於通知服務直連不通、只能經代理存取的網路。預設跟隨通知設定中的全域代理。",
+  "proxySmtpHelp": "郵件經代理建立 TCP 連線：http(s) 代理使用 CONNECT 方法（代理需允許連線郵件連接埠），socks5 代理由代理解析伺服器網域。"
 }

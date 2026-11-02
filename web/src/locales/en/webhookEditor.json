@@ -10,5 +10,7 @@
   "timeout": "Timeout (s)",
   "ignoreCertError": "Ignore certificate errors",
   "variables": "Available variables",
-  "varsTip": "{plain} or {hash}"
+  "varsTip": "{plain} or {hash}",
+  "proxy": "Proxy",
+  "proxyHelp": "Reach the callback URL through a proxy when it is not directly reachable. Supports http://, https:// and socks5://. Without a proxy, HTTPS_PROXY and similar environment variables apply."
 }

@@ -19,5 +19,6 @@
   "uploadMmdb": "Загрузить .mmdb",
   "mmdbUrlPlaceholder": "Или укажите URL для скачивания .mmdb",
   "geoImported": "База GeoIP импортирована",
-  "geoDownloaded": "База GeoIP скачана и загружена"
+  "geoDownloaded": "База GeoIP скачана и загружена",
+  "geoProxy": "Прокси для загрузки"
 }

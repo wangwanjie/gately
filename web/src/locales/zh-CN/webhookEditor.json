@@ -10,5 +10,7 @@
   "timeout": "超时(秒)",
   "ignoreCertError": "忽略证书错误",
   "variables": "可用变量",
-  "varsTip": "{plain} 或 {hash}"
+  "varsTip": "{plain} 或 {hash}",
+  "proxy": "代理",
+  "proxyHelp": "回调地址直连不通时可经代理访问，支持 http://、https:// 与 socks5://。不使用代理时遵循 HTTPS_PROXY 等环境变量。"
 }

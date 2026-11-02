@@ -90,7 +90,8 @@
       "country": "Filtro por país",
       "rateLimit": "Limite de taxa",
       "waf": "WAF"
-    }
+    },
+    "siteChip": "Site: {site}"
   },
   "scopeTags": {
     "allWrite": "Acesso total",
@@ -178,5 +179,12 @@
   "urlLink": {
     "copy": "Copiar URL",
     "copied": "URL copiada"
+  },
+  "proxyInput": {
+    "inherit": "Seguir as configurações de notificação",
+    "direct": "Direto (sem proxy)",
+    "none": "Sem proxy",
+    "update": "Usar o proxy global de atualização",
+    "custom": "Proxy personalizado"
   }
 }

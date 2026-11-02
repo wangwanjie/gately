@@ -50,5 +50,8 @@
   "execTag": "Führt Befehle aus",
   "execTip": "Schreibzugriff auf dieses Modul kann Befehle auf dem Server ausführen (Befehle, Skripte oder Programmpfade). Das entspricht der Befehlsausführung als Benutzer des Gately-Prozesses – vergeben Sie ihn nur an Skripte, denen Sie voll vertrauen.",
   "execWarn": "Wer dieses Token besitzt, kann über den Schreibzugriff auf folgende Module Befehle auf dem Server ausführen: {modules}. Vergeben Sie das nur an Skripte, denen Sie voll vertrauen.",
-  "listSep": ", "
+  "listSep": ", ",
+  "exampleStatusNote": "/api/status erfordert Lesezugriff des Tokens auf „Systemstatus“.",
+  "exampleOpenAPI": "API-Beschreibung (OpenAPI) abrufen",
+  "exampleOpenAPINote": "Jedes gültige Token kann sie ohne zusätzliche Rechte abrufen. Nützlich, um das Token zu prüfen oder in API-Tools wie Postman zu importieren; ungültige Tokens werden weiterhin abgelehnt."
 }

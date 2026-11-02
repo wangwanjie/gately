@@ -25,6 +25,10 @@
         <el-input-number v-model="model.timeout" :min="0" :max="120" />
         <el-checkbox v-model="model.insecureSkipVerify" class="skip">{{ t('webhookEditor.ignoreCertError') }}</el-checkbox>
       </el-form-item>
+      <el-form-item :label="t('webhookEditor.proxy')">
+        <ProxyInput v-model="proxy" :owner="model" />
+        <div class="form-help">{{ t('webhookEditor.proxyHelp') }}</div>
+      </el-form-item>
       <el-form-item :label="t('webhookEditor.variables')">
         <div class="vars">
           <div class="vars-tip">
@@ -44,6 +48,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useListText, splitLines } from '../composables/useListText'
+import ProxyInput from './ProxyInput.vue'
 
 export interface WebhookConfig {
   enable: boolean
@@ -54,6 +59,8 @@ export interface WebhookConfig {
   successContent: string[] | null
   timeout: number
   insecureSkipVerify: boolean
+  // proxy 为请求使用的代理：留空不指定，update 使用全局更新代理，或代理地址
+  proxy?: string
 }
 
 const { t } = useI18n()
@@ -65,6 +72,11 @@ const model = defineModel<WebhookConfig>({ required: true })
 const headersText = useListText(() => model.value.headers, (v) => (model.value.headers = v), { split: splitLines })
 const successText = useListText(() => model.value.successContent, (v) => (model.value.successContent = v), { split: splitLines })
 const variables = computed(() => props.variables)
+// 旧配置没有 proxy 字段，读写时按空字符串处理
+const proxy = computed({
+  get: () => model.value.proxy ?? '',
+  set: (v: string) => (model.value.proxy = v),
+})
 </script>
 
 <style scoped>

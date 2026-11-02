@@ -21,7 +21,11 @@
     "removing": "削除中"
   },
   "task": {
-    "failed": "{title} に失敗しました"
+    "failed": "{title} に失敗しました",
+    "cancel": "中断",
+    "cancelConfirm": "このタスクを中断しますか？再作成中のコンテナーは完了するか元に戻してから停止します。",
+    "stopping": "停止中…",
+    "cancelled": "中断しました：{title}"
   },
   "compose": {
     "editor": {
@@ -473,7 +477,8 @@
     "empty": "タスクがありません",
     "running": "実行中",
     "success": "成功",
-    "failed": "失敗"
+    "failed": "失敗",
+    "cancelled": "中断"
   },
   "taskPanel": {
     "defaultTitle": "バックグラウンドタスク",

@@ -1,0 +1,7 @@
+{
+  "title": "Journal d'accès · {site}",
+  "titleIp": "Journal d'accès · {site} · {ip}",
+  "titleAll": "Journal d'accès · {ip}",
+  "accessLogOff": "Le journal d'accès de ce site est désactivé : seules quelques entrées, comme les blocages, apparaissent ici. Activez-le dans « Général » lors de la modification du site.",
+  "noName": "Le site n'a pas de nom : ses entrées n'ont pas de champ site et sont filtrées ici par domaine, ce qui peut inclure des sites proches. Donnez-lui un nom pour un résultat exact."
+}

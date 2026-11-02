@@ -146,5 +146,10 @@
   "heightCustom": "Höhe {h} px",
   "heightAuto": "Automatische Höhe",
   "enterFull": "Zeichenfläche im ganzen Fenster zeigen",
-  "exitFull": "Vollbild verlassen (Esc)"
+  "exitFull": "Vollbild verlassen (Esc)",
+  "openLogs": "Zugriffsprotokoll",
+  "openLogsIp": "Zugriffsprotokoll dieser IP",
+  "ipLogs": "Zugriffsprotokoll dieser IP auf dieser Site anzeigen",
+  "ipLogsAll": "Zugriffsprotokoll dieser IP auf allen Sites anzeigen",
+  "editListener": "Listener bearbeiten"
 }

@@ -19,6 +19,7 @@ import (
 	"github.com/wangwanjie/gately/internal/i18n"
 	"github.com/wangwanjie/gately/internal/iplist"
 	"github.com/wangwanjie/gately/internal/module"
+	"github.com/wangwanjie/gately/internal/proxyx"
 )
 
 // IP 列表刷新参数，可在测试中调整
@@ -37,8 +38,10 @@ type IPList struct {
 	// URL 为列表下载地址，内容每行一个 IP、CIDR 或 起始-结束 范围
 	URL string `json:"url"`
 	// RefreshHours 为自动刷新间隔（小时），默认 24
-	RefreshHours int    `json:"refreshHours"`
-	Remark       string `json:"remark"`
+	RefreshHours int `json:"refreshHours"`
+	// Proxy 为下载使用的代理：留空遵循 HTTPS_PROXY 等环境变量，direct 为直连，update 为全局更新代理，也可以填写代理地址
+	Proxy  string `json:"proxy,omitempty"`
+	Remark string `json:"remark"`
 	// UpdatedAt 与 Count 为最近一次成功下载的时间与条目数
 	UpdatedAt time.Time `json:"updatedAt,omitzero"`
 	Count     int       `json:"count"`
@@ -71,6 +74,10 @@ func (l *IPList) Validate() error {
 	l.URL = strings.TrimSpace(l.URL)
 	if !strings.HasPrefix(l.URL, "http://") && !strings.HasPrefix(l.URL, "https://") {
 		return errors.New("下载地址需以 http(s):// 开头")
+	}
+	l.Proxy = proxyx.Normalize(l.Proxy)
+	if err := proxyx.Validate(l.Proxy); err != nil {
+		return err
 	}
 	if l.RefreshHours == 0 {
 		l.RefreshHours = 24
@@ -221,7 +228,7 @@ func (m *Module) downloadIPList(ctx context.Context, l IPList) (*iplist.Set, int
 	if err != nil {
 		return nil, 0, err
 	}
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := proxyx.Client(l.Proxy, 0, false).Do(req)
 	if err != nil {
 		return nil, 0, err
 	}

@@ -483,6 +483,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/docker/logs` | `docker:write` | 清空模組執行日誌 |
 | GET | `/api/docker/tasks` | `docker:read` | 列出背景任務 |
 | GET | `/api/docker/tasks/{id}` | `docker:read` | 檢視背景任務進度與輸出 |
+| POST | `/api/docker/tasks/{id}/cancel` | `docker:write` | 取消進行中的背景任務 |
 | DELETE | `/api/docker/tasks` | `docker:write` | 清理已結束的背景任務 |
 | GET | `/api/docker/images` | `docker:read` | 列出映像檔 |
 | POST | `/api/docker/images/pull` | `docker:write` | 拉取映像檔 |
@@ -661,6 +662,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/notify/rules-enable` | `notify:write` | 批次啟用或停用通知規則 |
 | POST | `/api/notify/rules-delete` | `notify:write` | 批次刪除通知規則 |
 | PUT | `/api/notify/rules-group` | `notify:write` | 批次設定通知規則分組 |
+| GET | `/api/notify/settings` | `notify:read` | 讀取通知設定 |
+| PUT | `/api/notify/settings` | `notify:write` | 儲存通知設定 |
 | GET | `/api/notify/event-types` | `notify:read` | 可訂閱的事件類型 |
 | GET | `/api/notify/history` | `notify:read` | 最近的投遞記錄 |
 | POST | `/api/notify/channels/{key}/test` | `notify:write` | 向管道傳送測試通知 |
@@ -1379,6 +1382,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `kind` | string |
 | `name` | string |
 | `port` | integer |
+| `proxy` | string |
 | `remark` | string |
 | `secret` | string |
 | `security` | string |
@@ -1411,6 +1415,12 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `minLevel` | string |
 | `name` | string |
 | `silence` | integer |
+
+### notify.Settings
+
+| 欄位 | 類型 |
+| --- | --- |
+| `proxy` | string |
 
 ### perf.AlertState
 
@@ -1766,6 +1776,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `headers` | 陣列 of string |
 | `insecureSkipVerify` | boolean |
 | `method` | string |
+| `proxy` | string |
 | `successContent` | 陣列 of string |
 | `timeout` | integer |
 | `url` | string |
@@ -1860,6 +1871,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `enable` | boolean |
 | `key` | string |
 | `name` | string |
+| `proxy` | string |
 | `refreshHours` | integer |
 | `remark` | string |
 | `updatedAt` | 時間 (RFC 3339) |
@@ -2168,6 +2180,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | 欄位 | 類型 |
 | --- | --- |
+| `accessLog` | boolean |
 | `active` | integer |
 | `blocked` | 對應 of integer |
 | `closed` | integer |
@@ -2311,6 +2324,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | 欄位 | 類型 |
 | --- | --- |
+| `proxy` | string |
 | `url` | string |
 
 ### webservice.totpRequest

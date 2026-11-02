@@ -1305,6 +1305,9 @@
           "port": {
             "type": "integer"
           },
+          "proxy": {
+            "type": "string"
+          },
           "remark": {
             "type": "string"
           },
@@ -1387,6 +1390,14 @@
           },
           "silence": {
             "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "notify.Settings": {
+        "properties": {
+          "proxy": {
+            "type": "string"
           }
         },
         "type": "object"
@@ -2303,6 +2314,9 @@
           "method": {
             "type": "string"
           },
+          "proxy": {
+            "type": "string"
+          },
           "successContent": {
             "items": {
               "type": "string"
@@ -2521,6 +2535,9 @@
             "type": "string"
           },
           "name": {
+            "type": "string"
+          },
+          "proxy": {
             "type": "string"
           },
           "refreshHours": {
@@ -3326,6 +3343,9 @@
       },
       "webservice.TopoSite": {
         "properties": {
+          "accessLog": {
+            "type": "boolean"
+          },
           "active": {
             "type": "integer"
           },
@@ -3690,6 +3710,9 @@
       },
       "webservice.geoipDownload": {
         "properties": {
+          "proxy": {
+            "type": "string"
+          },
           "url": {
             "type": "string"
           }
@@ -4908,7 +4931,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio, `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `backup:read`.",
+        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio (correspondência parcial), `site` nome do site (correspondência exata; retorna só o log de acesso desse site), `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `backup:read`.",
         "parameters": [
           {
             "description": "Busca incremental: retorna apenas logs com número de sequência maior que este valor",
@@ -4978,6 +5001,14 @@
             "description": "Parte do nome do site ou do domínio",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -6402,7 +6433,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio, `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `cloudflared:read`.",
+        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio (correspondência parcial), `site` nome do site (correspondência exata; retorna só o log de acesso desse site), `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `cloudflared:read`.",
         "parameters": [
           {
             "description": "Busca incremental: retorna apenas logs com número de sequência maior que este valor",
@@ -6472,6 +6503,14 @@
             "description": "Parte do nome do site ou do domínio",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -7686,7 +7725,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio, `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `cron:read`.",
+        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio (correspondência parcial), `site` nome do site (correspondência exata; retorna só o log de acesso desse site), `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `cron:read`.",
         "parameters": [
           {
             "description": "Busca incremental: retorna apenas logs com número de sequência maior que este valor",
@@ -7756,6 +7795,14 @@
             "description": "Parte do nome do site ou do domínio",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -8781,7 +8828,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio, `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `ddns:read`.",
+        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio (correspondência parcial), `site` nome do site (correspondência exata; retorna só o log de acesso desse site), `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `ddns:read`.",
         "parameters": [
           {
             "description": "Busca incremental: retorna apenas logs com número de sequência maior que este valor",
@@ -8851,6 +8898,14 @@
             "description": "Parte do nome do site ou do domínio",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -13073,7 +13128,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio, `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `docker:read`.",
+        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio (correspondência parcial), `site` nome do site (correspondência exata; retorna só o log de acesso desse site), `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `docker:read`.",
         "parameters": [
           {
             "description": "Busca incremental: retorna apenas logs com número de sequência maior que este valor",
@@ -13143,6 +13198,14 @@
             "description": "Parte do nome do site ou do domínio",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -13934,6 +13997,67 @@
           "Gerenciamento do Docker"
         ],
         "x-required-scope": "docker:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/docker/tasks/{id}/cancel": {
+      "post": {
+        "description": "Baixar, enviar e construir imagens interrompem a operação correspondente do Docker; comandos do Compose recebem primeiro um sinal de interrupção e encerram por conta própria; atualizações em lote param após o contêiner atual, e um contêiner sendo recriado é concluído ou restaurado, nunca fica pela metade. Após o cancelamento o status da tarefa é `cancelled`, e `cancelling` é true durante a finalização; retorna 409 se a tarefa já terminou.\n\nPermissão necessária: `docker:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Cancelar uma tarefa em segundo plano em andamento",
+        "tags": [
+          "Gerenciamento do Docker"
+        ],
+        "x-required-scope": "docker:write",
         "x-token-allowed": true
       }
     },
@@ -15391,7 +15515,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio, `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `filebrowser:read`.",
+        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio (correspondência parcial), `site` nome do site (correspondência exata; retorna só o log de acesso desse site), `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `filebrowser:read`.",
         "parameters": [
           {
             "description": "Busca incremental: retorna apenas logs com número de sequência maior que este valor",
@@ -15461,6 +15585,14 @@
             "description": "Parte do nome do site ou do domínio",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -17113,7 +17245,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio, `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `frp:read`.",
+        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio (correspondência parcial), `site` nome do site (correspondência exata; retorna só o log de acesso desse site), `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `frp:read`.",
         "parameters": [
           {
             "description": "Busca incremental: retorna apenas logs com número de sequência maior que este valor",
@@ -17183,6 +17315,14 @@
             "description": "Parte do nome do site ou do domínio",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -18995,7 +19135,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio, `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `ftp:read`.",
+        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio (correspondência parcial), `site` nome do site (correspondência exata; retorna só o log de acesso desse site), `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `ftp:read`.",
         "parameters": [
           {
             "description": "Busca incremental: retorna apenas logs com número de sequência maior que este valor",
@@ -19065,6 +19205,14 @@
             "description": "Parte do nome do site ou do domínio",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -20442,7 +20590,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio, `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `guard:read`.",
+        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio (correspondência parcial), `site` nome do site (correspondência exata; retorna só o log de acesso desse site), `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `guard:read`.",
         "parameters": [
           {
             "description": "Busca incremental: retorna apenas logs com número de sequência maior que este valor",
@@ -20512,6 +20660,14 @@
             "description": "Parte do nome do site ou do domínio",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -21074,7 +21230,7 @@
     },
     "/api/logs": {
       "get": {
-        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio, `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `logs:read`.",
+        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio (correspondência parcial), `site` nome do site (correspondência exata; retorna só o log de acesso desse site), `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `logs:read`.",
         "parameters": [
           {
             "description": "Busca incremental: retorna apenas logs com número de sequência maior que este valor",
@@ -21144,6 +21300,14 @@
             "description": "Parte do nome do site ou do domínio",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -21339,7 +21503,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio, `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `nettools:read`.",
+        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio (correspondência parcial), `site` nome do site (correspondência exata; retorna só o log de acesso desse site), `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `nettools:read`.",
         "parameters": [
           {
             "description": "Busca incremental: retorna apenas logs com número de sequência maior que este valor",
@@ -21409,6 +21573,14 @@
             "description": "Parte do nome do site ou do domínio",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -22895,7 +23067,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio, `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `notify:read`.",
+        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio (correspondência parcial), `site` nome do site (correspondência exata; retorna só o log de acesso desse site), `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `notify:read`.",
         "parameters": [
           {
             "description": "Busca incremental: retorna apenas logs com número de sequência maior que este valor",
@@ -22965,6 +23137,14 @@
             "description": "Parte do nome do site ou do domínio",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -23707,6 +23887,129 @@
         "x-token-allowed": true
       }
     },
+    "/api/notify/settings": {
+      "get": {
+        "description": "Permissão necessária: `notify:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/notify.Settings"
+                }
+              }
+            },
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ler as configurações de notificação",
+        "tags": [
+          "Central de notificações"
+        ],
+        "x-required-scope": "notify:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Permissão necessária: `notify:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/notify.Settings"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/notify.Settings"
+                }
+              }
+            },
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Salvar as configurações de notificação",
+        "tags": [
+          "Central de notificações"
+        ],
+        "x-required-scope": "notify:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/openapi.json": {
       "get": {
         "description": "Qualquer token de API válido pode acessar; nenhuma permissão específica é necessária.",
@@ -23860,7 +24163,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio, `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `perf:read`.",
+        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio (correspondência parcial), `site` nome do site (correspondência exata; retorna só o log de acesso desse site), `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `perf:read`.",
         "parameters": [
           {
             "description": "Busca incremental: retorna apenas logs com número de sequência maior que este valor",
@@ -23930,6 +24233,14 @@
             "description": "Parte do nome do site ou do domínio",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -24903,7 +25214,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio, `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `portforward:read`.",
+        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio (correspondência parcial), `site` nome do site (correspondência exata; retorna só o log de acesso desse site), `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `portforward:read`.",
         "parameters": [
           {
             "description": "Busca incremental: retorna apenas logs com número de sequência maior que este valor",
@@ -24973,6 +25284,14 @@
             "description": "Parte do nome do site ou do domínio",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -25875,7 +26194,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio, `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `protoroute:read`.",
+        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio (correspondência parcial), `site` nome do site (correspondência exata; retorna só o log de acesso desse site), `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `protoroute:read`.",
         "parameters": [
           {
             "description": "Busca incremental: retorna apenas logs com número de sequência maior que este valor",
@@ -25945,6 +26264,14 @@
             "description": "Parte do nome do site ou do domínio",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -26888,7 +27215,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio, `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `smb:read`.",
+        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio (correspondência parcial), `site` nome do site (correspondência exata; retorna só o log de acesso desse site), `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `smb:read`.",
         "parameters": [
           {
             "description": "Busca incremental: retorna apenas logs com número de sequência maior que este valor",
@@ -26958,6 +27285,14 @@
             "description": "Parte do nome do site ou do domínio",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -28335,7 +28670,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio, `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `ssl:read`.",
+        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio (correspondência parcial), `site` nome do site (correspondência exata; retorna só o log de acesso desse site), `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `ssl:read`.",
         "parameters": [
           {
             "description": "Busca incremental: retorna apenas logs com número de sequência maior que este valor",
@@ -28405,6 +28740,14 @@
             "description": "Parte do nome do site ou do domínio",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -29144,7 +29487,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio, `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `storage:read`.",
+        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio (correspondência parcial), `site` nome do site (correspondência exata; retorna só o log de acesso desse site), `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `storage:read`.",
         "parameters": [
           {
             "description": "Busca incremental: retorna apenas logs com número de sequência maior que este valor",
@@ -29214,6 +29557,14 @@
             "description": "Parte do nome do site ou do domínio",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -30078,7 +30429,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio, `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `stun:read`.",
+        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio (correspondência parcial), `site` nome do site (correspondência exata; retorna só o log de acesso desse site), `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `stun:read`.",
         "parameters": [
           {
             "description": "Busca incremental: retorna apenas logs com número de sequência maior que este valor",
@@ -30148,6 +30499,14 @@
             "description": "Parte do nome do site ou do domínio",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -32357,7 +32716,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio, `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `tailscale:read`.",
+        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio (correspondência parcial), `site` nome do site (correspondência exata; retorna só o log de acesso desse site), `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `tailscale:read`.",
         "parameters": [
           {
             "description": "Busca incremental: retorna apenas logs com número de sequência maior que este valor",
@@ -32427,6 +32786,14 @@
             "description": "Parte do nome do site ou do domínio",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -34085,7 +34452,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio, `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `waf:read`.",
+        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio (correspondência parcial), `site` nome do site (correspondência exata; retorna só o log de acesso desse site), `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `waf:read`.",
         "parameters": [
           {
             "description": "Busca incremental: retorna apenas logs com número de sequência maior que este valor",
@@ -34155,6 +34522,14 @@
             "description": "Parte do nome do site ou do domínio",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -34359,7 +34734,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio, `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `webdav:read`.",
+        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio (correspondência parcial), `site` nome do site (correspondência exata; retorna só o log de acesso desse site), `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `webdav:read`.",
         "parameters": [
           {
             "description": "Busca incremental: retorna apenas logs com número de sequência maior que este valor",
@@ -34429,6 +34804,14 @@
             "description": "Parte do nome do site ou do domínio",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -36678,7 +37061,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio, `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `webservice:read`.",
+        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio (correspondência parcial), `site` nome do site (correspondência exata; retorna só o log de acesso desse site), `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `webservice:read`.",
         "parameters": [
           {
             "description": "Busca incremental: retorna apenas logs com número de sequência maior que este valor",
@@ -36748,6 +37131,14 @@
             "description": "Parte do nome do site ou do domínio",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -39363,7 +39754,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio, `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `webterminal:read`.",
+        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio (correspondência parcial), `site` nome do site (correspondência exata; retorna só o log de acesso desse site), `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `webterminal:read`.",
         "parameters": [
           {
             "description": "Busca incremental: retorna apenas logs com número de sequência maior que este valor",
@@ -39433,6 +39824,14 @@
             "description": "Parte do nome do site ou do domínio",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -42191,7 +42590,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio, `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `wol:read`.",
+        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio (correspondência parcial), `site` nome do site (correspondência exata; retorna só o log de acesso desse site), `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `wol:read`.",
         "parameters": [
           {
             "description": "Busca incremental: retorna apenas logs com número de sequência maior que este valor",
@@ -42261,6 +42660,14 @@
             "description": "Parte do nome do site ou do domínio",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }

@@ -2,6 +2,7 @@ package docker
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"sort"
 	"strconv"
@@ -17,12 +18,26 @@ type Task struct {
 	ID       string    `json:"id"`
 	Kind     string    `json:"kind"`   // pull / push / build / compose / upgrade / volume 等
 	Title    string    `json:"title"`  // 展示用标题
-	Status   string    `json:"status"` // running / done / error
+	Status   string    `json:"status"` // running / done / error / cancelled
 	Error    string    `json:"error,omitempty"`
 	Lines    []string  `json:"lines"` // 最近的进度行（最多 maxTaskLines 行）
 	Started  time.Time `json:"started"`
 	Finished time.Time `json:"finished,omitempty"`
+	// Cancelling 表示已请求取消、任务正在收尾（例如等待 compose 进程退出）
+	Cancelling bool `json:"cancelling,omitempty"`
+
+	// cancel 取消任务的 context；cancelled 记录是否由用户取消
+	cancel    context.CancelFunc
+	cancelled bool
 }
+
+// 任务状态
+const (
+	taskRunning   = "running"
+	taskDone      = "done"
+	taskError     = "error"
+	taskCancelled = "cancelled"
+)
 
 const (
 	maxTaskLines = 300
@@ -42,7 +57,10 @@ func (m *Module) startTask(kind, title string, fn func(ctx context.Context, prog
 	tasks.mu.Lock()
 	tasks.seq++
 	id := strconv.FormatInt(time.Now().Unix(), 36) + "-" + strconv.Itoa(tasks.seq)
-	t := &Task{ID: id, Kind: kind, Title: title, Status: "running", Lines: []string{}, Started: time.Now()}
+	// 取消任务即取消该 context：拉取、推送、构建等 Docker 请求随之断开，Docker 会中止对应操作；
+	// compose 命令先收到中断信号，由它自行收尾。重建容器的关键步骤使用独立超时，不会因取消停在一半
+	ctx, cancel := context.WithTimeout(context.Background(), waitTimeout)
+	t := &Task{ID: id, Kind: kind, Title: title, Status: taskRunning, Lines: []string{}, Started: time.Now(), cancel: cancel}
 	tasks.tasks[id] = t
 	tasks.prune()
 	tasks.mu.Unlock()
@@ -50,26 +68,70 @@ func (m *Module) startTask(kind, title string, fn func(ctx context.Context, prog
 	progress := func(line string) {
 		tasks.mu.Lock()
 		defer tasks.mu.Unlock()
-		t.Lines = append(t.Lines, line)
-		if len(t.Lines) > maxTaskLines {
-			t.Lines = t.Lines[len(t.Lines)-maxTaskLines:]
-		}
+		t.appendLine(line)
 	}
 	go func() {
-		ctx, cancel := context.WithTimeout(context.Background(), waitTimeout)
 		defer cancel()
 		err := fn(ctx, progress)
 		tasks.mu.Lock()
 		defer tasks.mu.Unlock()
 		t.Finished = time.Now()
-		if err != nil {
-			t.Status, t.Error = "error", err.Error()
-			return
+		t.Cancelling = false
+		switch {
+		case err != nil && t.cancelled:
+			// 取消后任务以错误结束（通常是 context canceled），记为已取消；取消时已经完成的任务仍按实际结果记录
+			t.Status = taskCancelled
+			t.appendLine("任务已中断")
+		case err != nil:
+			t.Status, t.Error = taskError, err.Error()
+		default:
+			t.Status = taskDone
 		}
-		t.Status = "done"
 	}()
 	return id
 }
+
+// userCancelled 判断任务 context 是否被用户取消（超时为 DeadlineExceeded，不算取消）；
+// 被取消的任务由 startTask 记录“已中断任务”，各任务不再另记失败日志。
+func userCancelled(ctx context.Context) bool {
+	return errors.Is(ctx.Err(), context.Canceled)
+}
+
+// appendLine 追加一行进度，超过上限时丢弃最早的行；调用方需持有锁。
+func (t *Task) appendLine(line string) {
+	t.Lines = append(t.Lines, line)
+	if len(t.Lines) > maxTaskLines {
+		t.Lines = t.Lines[len(t.Lines)-maxTaskLines:]
+	}
+}
+
+// errTaskNotRunning 表示任务已经结束，无法取消
+var errTaskNotRunning = errors.New("任务已结束")
+
+// cancelTask 请求取消进行中的任务，返回取消后的任务快照。
+func (s *taskStore) cancelTask(id string) (Task, error) {
+	s.mu.Lock()
+	t, ok := s.tasks[id]
+	if !ok {
+		s.mu.Unlock()
+		return Task{}, errTaskNotFound
+	}
+	if t.Status != taskRunning {
+		s.mu.Unlock()
+		return Task{}, errTaskNotRunning
+	}
+	if !t.cancelled {
+		t.cancelled, t.Cancelling = true, true
+		t.appendLine("已请求中断，正在停止…")
+		t.cancel()
+	}
+	s.mu.Unlock()
+	snap, _ := s.snapshot(id)
+	return snap, nil
+}
+
+// errTaskNotFound 表示任务不存在（已被清理或 ID 错误）
+var errTaskNotFound = errors.New("任务不存在")
 
 // prune 只保留最近 maxTasks 个任务，调用方需持有锁。
 func (s *taskStore) prune() {
@@ -82,7 +144,7 @@ func (s *taskStore) prune() {
 	}
 	sort.Slice(list, func(i, j int) bool { return list[i].Started.After(list[j].Started) })
 	for _, t := range list[maxTasks:] {
-		if t.Status != "running" {
+		if t.Status != taskRunning {
 			delete(s.tasks, t.ID)
 		}
 	}
@@ -122,10 +184,23 @@ func (m *Module) registerTaskRoutes(add func(pattern string, h http.HandlerFunc)
 		}
 		httpx.OK(w, t)
 	})
+	add("POST /tasks/{id}/cancel", func(w http.ResponseWriter, r *http.Request) {
+		t, err := tasks.cancelTask(r.PathValue("id"))
+		switch {
+		case errors.Is(err, errTaskNotFound):
+			httpx.Error(w, http.StatusNotFound, "任务不存在")
+			return
+		case errors.Is(err, errTaskNotRunning):
+			httpx.Error(w, http.StatusConflict, "任务已结束")
+			return
+		}
+		m.logInfo("已中断任务：%s", t.Title)
+		httpx.OK(w, t)
+	})
 	add("DELETE /tasks", func(w http.ResponseWriter, r *http.Request) {
 		tasks.mu.Lock()
 		for id, t := range tasks.tasks {
-			if t.Status != "running" {
+			if t.Status != taskRunning {
 				delete(tasks.tasks, id)
 			}
 		}

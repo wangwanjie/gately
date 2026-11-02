@@ -195,5 +195,7 @@
   "copySites": "Sites",
   "copySitesLabel": "Auch die {count} Site(s) kopieren",
   "copySitesHelp": "Freigabelinks werden nicht kopiert, da ihre Token die Anmeldung umgehen. Bei Bedarf in der Kopie neu anlegen.",
-  "siteListener": "Listener"
+  "siteListener": "Listener",
+  "siteLogs": "Protokolle",
+  "siteGone": "Site nicht gefunden. Sie wurde möglicherweise gelöscht oder verschoben; bitte neu laden und erneut versuchen"
 }

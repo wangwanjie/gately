@@ -1305,6 +1305,9 @@
           "port": {
             "type": "integer"
           },
+          "proxy": {
+            "type": "string"
+          },
           "remark": {
             "type": "string"
           },
@@ -1387,6 +1390,14 @@
           },
           "silence": {
             "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "notify.Settings": {
+        "properties": {
+          "proxy": {
+            "type": "string"
           }
         },
         "type": "object"
@@ -2303,6 +2314,9 @@
           "method": {
             "type": "string"
           },
+          "proxy": {
+            "type": "string"
+          },
           "successContent": {
             "items": {
               "type": "string"
@@ -2521,6 +2535,9 @@
             "type": "string"
           },
           "name": {
+            "type": "string"
+          },
+          "proxy": {
             "type": "string"
           },
           "refreshHours": {
@@ -3326,6 +3343,9 @@
       },
       "webservice.TopoSite": {
         "properties": {
+          "accessLog": {
+            "type": "boolean"
+          },
           "active": {
             "type": "integer"
           },
@@ -3690,6 +3710,9 @@
       },
       "webservice.geoipDownload": {
         "properties": {
+          "proxy": {
+            "type": "string"
+          },
           "url": {
             "type": "string"
           }
@@ -4908,7 +4931,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名，`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`backup:read`。",
+        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名（部分匹配），`site` 站点名称（完整匹配，只返回该站点的访问日志），`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`backup:read`。",
         "parameters": [
           {
             "description": "增量拉取：只返回序号大于该值的日志",
@@ -4978,6 +5001,14 @@
             "description": "站点名称或域名的一部分",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -6402,7 +6433,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名，`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`cloudflared:read`。",
+        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名（部分匹配），`site` 站点名称（完整匹配，只返回该站点的访问日志），`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`cloudflared:read`。",
         "parameters": [
           {
             "description": "增量拉取：只返回序号大于该值的日志",
@@ -6472,6 +6503,14 @@
             "description": "站点名称或域名的一部分",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -7686,7 +7725,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名，`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`cron:read`。",
+        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名（部分匹配），`site` 站点名称（完整匹配，只返回该站点的访问日志），`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`cron:read`。",
         "parameters": [
           {
             "description": "增量拉取：只返回序号大于该值的日志",
@@ -7756,6 +7795,14 @@
             "description": "站点名称或域名的一部分",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -8781,7 +8828,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名，`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`ddns:read`。",
+        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名（部分匹配），`site` 站点名称（完整匹配，只返回该站点的访问日志），`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`ddns:read`。",
         "parameters": [
           {
             "description": "增量拉取：只返回序号大于该值的日志",
@@ -8851,6 +8898,14 @@
             "description": "站点名称或域名的一部分",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -13073,7 +13128,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名，`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`docker:read`。",
+        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名（部分匹配），`site` 站点名称（完整匹配，只返回该站点的访问日志），`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`docker:read`。",
         "parameters": [
           {
             "description": "增量拉取：只返回序号大于该值的日志",
@@ -13143,6 +13198,14 @@
             "description": "站点名称或域名的一部分",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -13934,6 +13997,67 @@
           "Docker 管理"
         ],
         "x-required-scope": "docker:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/docker/tasks/{id}/cancel": {
+      "post": {
+        "description": "拉取、推送、构建镜像会中止对应的 Docker 操作，Compose 命令先收到中断信号再自行退出；批量升级在当前容器处理完后停止，正在重建的容器会完成或恢复原容器，不会停在一半。取消后任务状态为 `cancelled`，收尾期间 `cancelling` 为 true；任务已结束时返回 409。\n\n所需权限：`docker:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "取消进行中的后台任务",
+        "tags": [
+          "Docker 管理"
+        ],
+        "x-required-scope": "docker:write",
         "x-token-allowed": true
       }
     },
@@ -15391,7 +15515,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名，`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`filebrowser:read`。",
+        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名（部分匹配），`site` 站点名称（完整匹配，只返回该站点的访问日志），`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`filebrowser:read`。",
         "parameters": [
           {
             "description": "增量拉取：只返回序号大于该值的日志",
@@ -15461,6 +15585,14 @@
             "description": "站点名称或域名的一部分",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -17113,7 +17245,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名，`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`frp:read`。",
+        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名（部分匹配），`site` 站点名称（完整匹配，只返回该站点的访问日志），`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`frp:read`。",
         "parameters": [
           {
             "description": "增量拉取：只返回序号大于该值的日志",
@@ -17183,6 +17315,14 @@
             "description": "站点名称或域名的一部分",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -18995,7 +19135,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名，`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`ftp:read`。",
+        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名（部分匹配），`site` 站点名称（完整匹配，只返回该站点的访问日志），`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`ftp:read`。",
         "parameters": [
           {
             "description": "增量拉取：只返回序号大于该值的日志",
@@ -19065,6 +19205,14 @@
             "description": "站点名称或域名的一部分",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -20442,7 +20590,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名，`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`guard:read`。",
+        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名（部分匹配），`site` 站点名称（完整匹配，只返回该站点的访问日志），`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`guard:read`。",
         "parameters": [
           {
             "description": "增量拉取：只返回序号大于该值的日志",
@@ -20512,6 +20660,14 @@
             "description": "站点名称或域名的一部分",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -21074,7 +21230,7 @@
     },
     "/api/logs": {
       "get": {
-        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名，`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`logs:read`。",
+        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名（部分匹配），`site` 站点名称（完整匹配，只返回该站点的访问日志），`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`logs:read`。",
         "parameters": [
           {
             "description": "增量拉取：只返回序号大于该值的日志",
@@ -21144,6 +21300,14 @@
             "description": "站点名称或域名的一部分",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -21339,7 +21503,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名，`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`nettools:read`。",
+        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名（部分匹配），`site` 站点名称（完整匹配，只返回该站点的访问日志），`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`nettools:read`。",
         "parameters": [
           {
             "description": "增量拉取：只返回序号大于该值的日志",
@@ -21409,6 +21573,14 @@
             "description": "站点名称或域名的一部分",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -22895,7 +23067,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名，`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`notify:read`。",
+        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名（部分匹配），`site` 站点名称（完整匹配，只返回该站点的访问日志），`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`notify:read`。",
         "parameters": [
           {
             "description": "增量拉取：只返回序号大于该值的日志",
@@ -22965,6 +23137,14 @@
             "description": "站点名称或域名的一部分",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -23707,6 +23887,129 @@
         "x-token-allowed": true
       }
     },
+    "/api/notify/settings": {
+      "get": {
+        "description": "所需权限：`notify:read`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/notify.Settings"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "读取通知设置",
+        "tags": [
+          "通知中心"
+        ],
+        "x-required-scope": "notify:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "所需权限：`notify:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/notify.Settings"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/notify.Settings"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "保存通知设置",
+        "tags": [
+          "通知中心"
+        ],
+        "x-required-scope": "notify:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/openapi.json": {
       "get": {
         "description": "任何有效的 API 令牌均可访问，无需特定权限。",
@@ -23860,7 +24163,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名，`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`perf:read`。",
+        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名（部分匹配），`site` 站点名称（完整匹配，只返回该站点的访问日志），`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`perf:read`。",
         "parameters": [
           {
             "description": "增量拉取：只返回序号大于该值的日志",
@@ -23930,6 +24233,14 @@
             "description": "站点名称或域名的一部分",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -24903,7 +25214,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名，`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`portforward:read`。",
+        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名（部分匹配），`site` 站点名称（完整匹配，只返回该站点的访问日志），`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`portforward:read`。",
         "parameters": [
           {
             "description": "增量拉取：只返回序号大于该值的日志",
@@ -24973,6 +25284,14 @@
             "description": "站点名称或域名的一部分",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -25875,7 +26194,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名，`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`protoroute:read`。",
+        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名（部分匹配），`site` 站点名称（完整匹配，只返回该站点的访问日志），`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`protoroute:read`。",
         "parameters": [
           {
             "description": "增量拉取：只返回序号大于该值的日志",
@@ -25945,6 +26264,14 @@
             "description": "站点名称或域名的一部分",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -26888,7 +27215,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名，`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`smb:read`。",
+        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名（部分匹配），`site` 站点名称（完整匹配，只返回该站点的访问日志），`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`smb:read`。",
         "parameters": [
           {
             "description": "增量拉取：只返回序号大于该值的日志",
@@ -26958,6 +27285,14 @@
             "description": "站点名称或域名的一部分",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -28335,7 +28670,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名，`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`ssl:read`。",
+        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名（部分匹配），`site` 站点名称（完整匹配，只返回该站点的访问日志），`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`ssl:read`。",
         "parameters": [
           {
             "description": "增量拉取：只返回序号大于该值的日志",
@@ -28405,6 +28740,14 @@
             "description": "站点名称或域名的一部分",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -29144,7 +29487,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名，`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`storage:read`。",
+        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名（部分匹配），`site` 站点名称（完整匹配，只返回该站点的访问日志），`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`storage:read`。",
         "parameters": [
           {
             "description": "增量拉取：只返回序号大于该值的日志",
@@ -29214,6 +29557,14 @@
             "description": "站点名称或域名的一部分",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -30078,7 +30429,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名，`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`stun:read`。",
+        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名（部分匹配），`site` 站点名称（完整匹配，只返回该站点的访问日志），`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`stun:read`。",
         "parameters": [
           {
             "description": "增量拉取：只返回序号大于该值的日志",
@@ -30148,6 +30499,14 @@
             "description": "站点名称或域名的一部分",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -32357,7 +32716,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名，`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`tailscale:read`。",
+        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名（部分匹配），`site` 站点名称（完整匹配，只返回该站点的访问日志），`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`tailscale:read`。",
         "parameters": [
           {
             "description": "增量拉取：只返回序号大于该值的日志",
@@ -32427,6 +32786,14 @@
             "description": "站点名称或域名的一部分",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -34085,7 +34452,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名，`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`waf:read`。",
+        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名（部分匹配），`site` 站点名称（完整匹配，只返回该站点的访问日志），`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`waf:read`。",
         "parameters": [
           {
             "description": "增量拉取：只返回序号大于该值的日志",
@@ -34155,6 +34522,14 @@
             "description": "站点名称或域名的一部分",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -34359,7 +34734,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名，`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`webdav:read`。",
+        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名（部分匹配），`site` 站点名称（完整匹配，只返回该站点的访问日志），`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`webdav:read`。",
         "parameters": [
           {
             "description": "增量拉取：只返回序号大于该值的日志",
@@ -34429,6 +34804,14 @@
             "description": "站点名称或域名的一部分",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -36678,7 +37061,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名，`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`webservice:read`。",
+        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名（部分匹配），`site` 站点名称（完整匹配，只返回该站点的访问日志），`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`webservice:read`。",
         "parameters": [
           {
             "description": "增量拉取：只返回序号大于该值的日志",
@@ -36748,6 +37131,14 @@
             "description": "站点名称或域名的一部分",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -39363,7 +39754,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名，`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`webterminal:read`。",
+        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名（部分匹配），`site` 站点名称（完整匹配，只返回该站点的访问日志），`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`webterminal:read`。",
         "parameters": [
           {
             "description": "增量拉取：只返回序号大于该值的日志",
@@ -39433,6 +39824,14 @@
             "description": "站点名称或域名的一部分",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -42191,7 +42590,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名，`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`wol:read`。",
+        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名（部分匹配），`site` 站点名称（完整匹配，只返回该站点的访问日志），`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`wol:read`。",
         "parameters": [
           {
             "description": "增量拉取：只返回序号大于该值的日志",
@@ -42261,6 +42660,14 @@
             "description": "站点名称或域名的一部分",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }

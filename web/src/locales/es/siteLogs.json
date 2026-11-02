@@ -1,0 +1,7 @@
+{
+  "title": "Registro de acceso · {site}",
+  "titleIp": "Registro de acceso · {site} · {ip}",
+  "titleAll": "Registro de acceso · {ip}",
+  "accessLogOff": "Este sitio tiene el registro de acceso desactivado, así que solo aparecen unas pocas entradas, como los bloqueos. Actívalo en «Básico» al editar el sitio.",
+  "noName": "El sitio no tiene nombre, así que sus entradas no llevan el campo de sitio y aquí se filtran por dominio, lo que puede incluir sitios parecidos. Ponle un nombre para resultados exactos."
+}

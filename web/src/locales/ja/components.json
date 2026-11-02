@@ -90,7 +90,8 @@
       "country": "国フィルター",
       "rateLimit": "レート制限",
       "waf": "WAF"
-    }
+    },
+    "siteChip": "サイト：{site}"
   },
   "scopeTags": {
     "allWrite": "すべて読み書き",
@@ -178,5 +179,12 @@
   "urlLink": {
     "copy": "URL をコピー",
     "copied": "URL をコピーしました"
+  },
+  "proxyInput": {
+    "inherit": "通知設定に従う",
+    "direct": "直接接続（プロキシなし）",
+    "none": "プロキシを使用しない",
+    "update": "グローバル更新プロキシを使用",
+    "custom": "カスタムプロキシ"
   }
 }

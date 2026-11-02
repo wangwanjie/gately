@@ -483,6 +483,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | DELETE | `/api/docker/logs` | `docker:write` | Clear module runtime logs |
 | GET | `/api/docker/tasks` | `docker:read` | List background tasks |
 | GET | `/api/docker/tasks/{id}` | `docker:read` | View background task progress and output |
+| POST | `/api/docker/tasks/{id}/cancel` | `docker:write` | Cancel a running background task |
 | DELETE | `/api/docker/tasks` | `docker:write` | Clean up finished background tasks |
 | GET | `/api/docker/images` | `docker:read` | List images |
 | POST | `/api/docker/images/pull` | `docker:write` | Pull an image |
@@ -661,6 +662,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | PUT | `/api/notify/rules-enable` | `notify:write` | Enable or disable in bulk: Notification rule |
 | POST | `/api/notify/rules-delete` | `notify:write` | Delete in bulk: Notification rule |
 | PUT | `/api/notify/rules-group` | `notify:write` | Set group in bulk: Notification rule |
+| GET | `/api/notify/settings` | `notify:read` | Get notification settings |
+| PUT | `/api/notify/settings` | `notify:write` | Save notification settings |
 | GET | `/api/notify/event-types` | `notify:read` | Event types that can be subscribed to |
 | GET | `/api/notify/history` | `notify:read` | Recent delivery records |
 | POST | `/api/notify/channels/{key}/test` | `notify:write` | Send a test notification to a channel |
@@ -1379,6 +1382,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `kind` | string |
 | `name` | string |
 | `port` | integer |
+| `proxy` | string |
 | `remark` | string |
 | `secret` | string |
 | `security` | string |
@@ -1411,6 +1415,12 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `minLevel` | string |
 | `name` | string |
 | `silence` | integer |
+
+### notify.Settings
+
+| Field | Type |
+| --- | --- |
+| `proxy` | string |
 
 ### perf.AlertState
 
@@ -1766,6 +1776,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `headers` | Array of string |
 | `insecureSkipVerify` | boolean |
 | `method` | string |
+| `proxy` | string |
 | `successContent` | Array of string |
 | `timeout` | integer |
 | `url` | string |
@@ -1860,6 +1871,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `enable` | boolean |
 | `key` | string |
 | `name` | string |
+| `proxy` | string |
 | `refreshHours` | integer |
 | `remark` | string |
 | `updatedAt` | Time (RFC 3339) |
@@ -2168,6 +2180,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 
 | Field | Type |
 | --- | --- |
+| `accessLog` | boolean |
 | `active` | integer |
 | `blocked` | Map of integer |
 | `closed` | integer |
@@ -2311,6 +2324,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 
 | Field | Type |
 | --- | --- |
+| `proxy` | string |
 | `url` | string |
 
 ### webservice.totpRequest

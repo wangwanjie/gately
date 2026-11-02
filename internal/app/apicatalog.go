@@ -43,7 +43,7 @@ var crudNouns = map[string]string{
 
 // apiCatalog 以“方法 路径”为键，补充非通用接口的说明。
 var apiCatalog = map[string]epDoc{
-	"GET /api/{module}/logs":                             {Summary: "查看模块运行日志", Desc: "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名，`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。"},
+	"GET /api/{module}/logs":                             {Summary: "查看模块运行日志", Desc: "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名（部分匹配），`site` 站点名称（完整匹配，只返回该站点的访问日志），`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。"},
 	"DELETE /api/{module}/logs":                          {Summary: "清空模块运行日志"},
 	"GET /api/{module}/install":                          {Summary: "查看托管程序的安装信息与进度", Desc: "frp、Cloudflare 隧道、Tailscale 与 File Browser 提供。返回配置目录 bin 下已安装的版本、保存的旧版本（`backups`，最多 3 个）、该程序单独设置的下载代理 `proxy`、当前平台，以及安装进度 `state`（`stage` 为 checking、downloading、verifying、extracting、done、uptodate 或 failed）。`unsupported` 非空时表示上游没有提供当前平台的程序。"},
 	"POST /api/{module}/install":                         {Summary: "在线安装或更新托管程序", Desc: "请求体 `{\"version\": \"\", \"proxy\": \"\"}`：`version` 为空时安装最新正式版（已是最新版时不下载，`stage` 为 uptodate），否则安装指定版本；`proxy` 为下载代理（http、https 或 socks5），会保存下来供下次使用，为空时沿用全局设置 `updateProxy`。下载后校验 SHA-256，安装到配置目录的 bin 下，原有版本移入旧版本列表，完成后重启使用该程序的进程。立即返回，进度通过 `GET /api/{module}/install` 查询。", Body: true},
@@ -138,6 +138,7 @@ var apiCatalog = map[string]epDoc{
 	"GET /api/docker/tasks":                              {Summary: "列出后台任务"},
 	"GET /api/docker/tasks/{id}":                         {Summary: "查看后台任务进度与输出"},
 	"DELETE /api/docker/tasks":                           {Summary: "清理已结束的后台任务"},
+	"POST /api/docker/tasks/{id}/cancel":                 {Summary: "取消进行中的后台任务", Desc: "拉取、推送、构建镜像会中止对应的 Docker 操作，Compose 命令先收到中断信号再自行退出；批量升级在当前容器处理完后停止，正在重建的容器会完成或恢复原容器，不会停在一半。取消后任务状态为 `cancelled`，收尾期间 `cancelling` 为 true；任务已结束时返回 409。"},
 	"GET /api/docker/images":                             {Summary: "列出镜像"},
 	"POST /api/docker/images/pull":                       {Summary: "拉取镜像", Body: true},
 	"POST /api/docker/images/push":                       {Summary: "推送镜像", Body: true},
@@ -220,7 +221,7 @@ var apiCatalog = map[string]epDoc{
 	"DELETE /api/storage/files/{key}":                    {Summary: "删除存储文件"},
 	"GET /api/session":                                   {Summary: "查看当前认证身份", Desc: "返回 `username`、`role`（`admin` 或 `readonly`）、`disabledModules`（已关闭的功能模块 ID）与 `defaultPassword`（管理员仍在使用默认密码 `gately.cn` 时为 true，管理界面据此提醒修改）。"},
 	"GET /api/status":                                    {Summary: "查看系统与各模块状态", Desc: "包含主机资源、版本与模块摘要。"},
-	"GET /api/logs":                                      {Summary: "查看系统日志", Desc: "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名，`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。"},
+	"GET /api/logs":                                      {Summary: "查看系统日志", Desc: "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名（部分匹配），`site` 站点名称（完整匹配，只返回该站点的访问日志），`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。"},
 	"GET /api/system/settings":                           {Summary: "读取全局设置", Desc: "仅登录会话可用。只读字段 `modules` 列出全部功能模块及依赖关系，`gatewayAvailable` 表示以飞牛统一网关方式运行。`updateProxy` 为检查更新与在线升级访问 GitHub 时使用的代理。"},
 	"PUT /api/system/settings":                           {Summary: "保存全局设置", Desc: "`disabledModules` 为关闭的功能模块 ID 列表，被其他模块依赖的模块不能关闭，修改后重启生效；`gatewaySSO` 开启飞牛登录态自动登录，仅飞牛安装包有效。", Body: true},
 	"GET /api/system/info":                               {Summary: "查看系统信息"},

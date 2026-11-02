@@ -20,5 +20,7 @@
   "statusLoaded": "{count} 件読み込み済み",
   "statusFailed": "ダウンロード失敗",
   "statusPending": "待機中",
-  "refreshed": "更新しました（{count} 件）"
+  "refreshed": "更新しました（{count} 件）",
+  "proxy": "ダウンロード用プロキシ",
+  "proxyHelp": "リストの URL（GitHub など）に直接つながらない場合はプロキシ経由でダウンロードします。http://、https://、socks5:// に対応します。"
 }

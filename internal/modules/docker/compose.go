@@ -288,6 +288,15 @@ func splitLines(data []byte, atEOF bool) (int, []byte, error) {
 func (m *Module) runCompose(ctx context.Context, cli *composeCLI, dir string, args []string, progress func(string)) error {
 	full := append(append([]string{}, cli.prefix...), args...)
 	cmd := exec.CommandContext(ctx, cli.bin, full...)
+	// 任务被取消或超时时先发中断信号，compose 会像在终端按 Ctrl+C 一样停止拉取、等待正在进行的容器操作收尾；
+	// 超过 composeStopGrace 仍未退出才强制结束（不支持信号的系统直接结束）
+	cmd.Cancel = func() error {
+		if err := cmd.Process.Signal(os.Interrupt); err != nil {
+			return cmd.Process.Kill()
+		}
+		return nil
+	}
+	cmd.WaitDelay = composeStopGrace
 	cmd.Dir = dir
 	cmd.Env = os.Environ()
 	if host := m.dockerHostEnv(); host != "" {
@@ -633,6 +642,9 @@ func (m *Module) handleComposeAction(w http.ResponseWriter, r *http.Request) {
 	httpx.OK(w, map[string]bool{"ok": true})
 }
 
+// composeStopGrace 为取消 compose 任务后等待其自行退出的时间；测试可缩短
+var composeStopGrace = 30 * time.Second
+
 // requireCLI 查找 compose 命令，不可用时写出 501。
 func (m *Module) requireCLI(w http.ResponseWriter, ctx context.Context) (*composeCLI, bool) {
 	cli, err := findComposeCLI(ctx)
@@ -648,7 +660,10 @@ func (m *Module) startComposeTask(title string, cli *composeCLI, p *composeProje
 	return m.startTask("compose", title, func(ctx context.Context, progress func(string)) error {
 		err := m.runCompose(ctx, cli, p.WorkingDir, composeArgs(p, extra...), progress)
 		if err != nil {
-			m.logWarn("%s 失败: %v", title, err)
+			// 用户取消时由 startTask 记录“已中断任务”，不当作失败记录
+			if !userCancelled(ctx) {
+				m.logWarn("%s 失败: %v", title, err)
+			}
 			return err
 		}
 		m.logInfo("%s 完成", title)

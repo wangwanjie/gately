@@ -10,5 +10,7 @@
   "timeout": "Tempo limite (s)",
   "ignoreCertError": "Ignorar erros de certificado",
   "variables": "Variáveis disponíveis",
-  "varsTip": "{plain} ou {hash}"
+  "varsTip": "{plain} ou {hash}",
+  "proxy": "Proxy",
+  "proxyHelp": "Use um proxy quando a URL de retorno não for acessível diretamente. Aceita http://, https:// e socks5://. Sem proxy valem HTTPS_PROXY e variáveis semelhantes."
 }

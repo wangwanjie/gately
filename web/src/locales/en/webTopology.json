@@ -146,5 +146,10 @@
   "heightCustom": "Height {h}px",
   "heightAuto": "Auto height",
   "enterFull": "Show the canvas full window",
-  "exitFull": "Exit full window (Esc)"
+  "exitFull": "Exit full window (Esc)",
+  "openLogs": "Access log",
+  "openLogsIp": "Access log for this IP",
+  "ipLogs": "View this IP's access log on this site",
+  "ipLogsAll": "View this IP's access log on all sites",
+  "editListener": "Edit listener"
 }

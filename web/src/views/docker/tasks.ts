@@ -33,6 +33,8 @@ async function poll(id: string) {
     lostCallbacks.delete(id)
     if (task.status === 'error') {
       ElMessage.error(task.error || t('docker.task.failed', { title: task.title }))
+    } else if (task.status === 'cancelled') {
+      ElMessage.info(t('docker.task.cancelled', { title: task.title }))
     }
     if (cb) {
       cb(task)
@@ -77,6 +79,21 @@ export function trackTask(id: string, title: string, onEnd?: (task: DockerTask) 
     lostCallbacks.set(id, onLost)
   }
   poll(id)
+}
+
+// cancelTask 请求取消进行中的任务；返回的任务快照同步到浮条，最终状态由轮询更新。
+export async function cancelTask(id: string): Promise<DockerTask | undefined> {
+  try {
+    const task = await api.post<DockerTask>(`/api/docker/tasks/${encodeURIComponent(id)}/cancel`)
+    const cur = trackedTasks.find((x) => x.id === id)
+    if (cur) {
+      Object.assign(cur, task)
+    }
+    return task
+  } catch (e) {
+    ElMessage.error((e as Error).message)
+    return undefined
+  }
 }
 
 // 恢复页面上仍在运行的任务（刷新页面后继续展示进度）。

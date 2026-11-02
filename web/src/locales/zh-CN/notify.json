@@ -108,5 +108,10 @@
       "name": "版本更新",
       "desc": "Gately 的安全更新与新版本、托管程序与容器镜像的新版本"
     }
-  }
+  },
+  "settings": "通知设置",
+  "proxy": "代理",
+  "proxyGlobalHelp": "各渠道默认使用的代理，渠道中可以单独设置或改为直连。支持 http://、https:// 与 socks5:// 代理；「使用全局更新代理」复用系统设置中的更新代理。不使用代理时 HTTP 渠道遵循 HTTPS_PROXY 等环境变量，邮件直连。",
+  "proxyChannelHelp": "用于通知服务直连不通、只能经代理访问的网络。默认跟随通知设置中的全局代理。",
+  "proxySmtpHelp": "邮件经代理建立 TCP 连接：http(s) 代理使用 CONNECT 方法（代理需允许连接邮件端口），socks5 代理由代理解析服务器域名。"
 }

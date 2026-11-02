@@ -50,5 +50,8 @@
   "execTag": "Ejecuta comandos",
   "execTip": "El acceso de escritura a este módulo puede ejecutar comandos en el servidor (comandos, scripts o rutas de programa). Equivale a ejecutar comandos como el usuario del proceso de Gately, así que concédelo solo a scripts de plena confianza.",
   "execWarn": "Quien tenga este token puede ejecutar comandos en el servidor mediante el acceso de escritura a: {modules}. Concédelo solo a scripts de plena confianza.",
-  "listSep": ", "
+  "listSep": ", ",
+  "exampleStatusNote": "/api/status requiere que el token tenga permiso de lectura en «Estado del sistema».",
+  "exampleOpenAPI": "Leer la descripción de la API (OpenAPI)",
+  "exampleOpenAPINote": "Cualquier token válido puede leerla sin permisos adicionales. Sirve para comprobar que el token funciona o para importarla en herramientas como Postman; los tokens no válidos se rechazan igualmente."
 }

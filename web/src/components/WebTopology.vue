@@ -375,13 +375,17 @@
           <div v-if="data?.ipTruncated" class="ip-warn">{{ t('webTopology.ipTruncated') }}</div>
           <div class="ip-list">
             <div v-if="!panelIps.length" class="ip-empty">{{ t('webTopology.ipNone') }}</div>
-            <button v-for="ip in panelIps" :key="ip.ip" type="button" class="ip-row" :class="{ on: ip.ip === ipFilter }" @click="setIp(ip.ip)">
+            <div v-for="ip in panelIps" :key="ip.ip" role="button" tabindex="0" class="ip-row" :class="{ on: ip.ip === ipFilter }" @click="setIp(ip.ip)" @keydown.enter="setIp(ip.ip)">
               <span class="mono ip">{{ showIP(ip.ip) }}</span>
               <span class="ip-meta">
                 <span v-if="ip.n" class="live">{{ t('webTopology.ipActive', { n: ip.n }) }}</span>
                 <span v-else>{{ ago(ip.last) }}</span>
+                <!-- 查看该地址在所选站点（未选站点时为全部站点）的访问日志 -->
+                <el-tooltip :content="logSite ? t('webTopology.ipLogs') : t('webTopology.ipLogsAll')" placement="top">
+                  <button type="button" class="ip-log" :aria-label="t('webTopology.ipLogs')" @click.stop="openLogs(ip.ip)"><FileText :size="13" /></button>
+                </el-tooltip>
               </span>
-            </button>
+            </div>
           </div>
         </template>
       </aside>
@@ -444,6 +448,7 @@ import {
 } from 'lucide-vue-next'
 import { api, formatBytes, formatRate } from '../api'
 import Sparkline from './Sparkline.vue'
+import type { SiteLogTarget } from './SiteLogDialog.vue'
 import { useCollapsed } from '../composables/useCollapsed'
 import { useScrollLock } from '../composables/useScrollLock'
 import {
@@ -496,6 +501,8 @@ const emit = defineEmits<{
   stats: [listener: string, site: string, name: string]
   conns: [listener: string, site: string, name: string]
   edit: [listener: string, site: string]
+  editListener: [listener: string]
+  logs: [target: SiteLogTarget]
 }>()
 
 const { t } = useI18n()
@@ -1176,6 +1183,7 @@ const detail = computed<Detail | undefined>(() => {
       ]
       // 桑基、旭日、矩形树图与气泡布局的画布上没有折叠按钮，在面板中提供
       d.actions.push({ key: 'fold', label: n.collapsed ? t('common.expand') : t('common.collapse'), icon: n.collapsed ? ChevronsUpDown : ChevronsDownUp, run: () => toggleListener(n) })
+      d.actions.push({ key: 'edit', label: t('webTopology.editListener'), icon: Pencil, run: () => emit('editListener', n.id.slice(2)) })
       break
     }
     case 'site': {
@@ -1214,6 +1222,7 @@ const detail = computed<Detail | undefined>(() => {
         d.actions.push({ key: 'stats', label: t('webTopology.openStats'), icon: BarChart3, run: () => emit('stats', lk, s.key, siteName(s)) })
         d.actions.push({ key: 'conns', label: t('webTopology.openConns'), icon: ArrowRightLeft, run: () => emit('conns', lk, s.key, siteName(s)) })
       }
+      d.actions.push({ key: 'logs', label: ipFilter.value ? t('webTopology.openLogsIp') : t('webTopology.openLogs'), icon: FileText, run: () => openLogs(ipFilter.value) })
       d.actions.push({ key: 'edit', label: t('common.edit'), icon: Pencil, run: () => emit('edit', lk, s.key) })
       break
     }
@@ -1259,6 +1268,9 @@ const detail = computed<Detail | undefined>(() => {
         { label: t('webTopology.upBytes'), value: formatBytes(u.bytes), help: t('webTopology.bpsUpstreamHelp') },
       ]
       d.rows.push({ label: t('webTopology.weight'), value: String(u.weight) })
+      // 访问日志只记录到站点，按后端所属站点查看
+      d.actions.push({ key: 'logs', label: ipFilter.value ? t('webTopology.openLogsIp') : t('webTopology.openLogs'), icon: FileText, run: () => openLogs(ipFilter.value) })
+      d.actions.push({ key: 'edit', label: t('common.edit'), icon: Pencil, run: () => emit('edit', n.site!.id.slice(2).split('/')[0], n.site!.key) })
       break
     }
   }
@@ -1275,6 +1287,28 @@ const panelIps = computed<(TopoIP & { n: number })[]>(() => {
   // 接口已按总进行中数与最后出现时间排序，这里只把该节点上进行中的提到前面（稳定排序保留原顺序）
   return list.sort((a, b) => (b.n > 0 ? 1 : 0) - (a.n > 0 ? 1 : 0))
 })
+
+// ---- 查看访问日志 ----
+
+// logSite 为当前选中节点所属的站点：站点、后端与终点节点都对应一个站点，其余节点没有
+const logSite = computed(() => {
+  const n = selectedNode.value
+  return n && (n.kind === 'site' || n.kind === 'upstream' || n.kind === 'terminal') ? n.site : undefined
+})
+
+// openLogs 打开访问日志：选中站点类节点时按该站点过滤，ip 非空时再按访客地址过滤；
+// 未选中站点时只按地址查看全部站点的访问日志
+function openLogs(ip: string) {
+  const s = logSite.value
+  emit('logs', {
+    name: s && !s.default ? s.name : '',
+    label: s ? siteName(s) : '',
+    domain: s && !s.default ? s.domains[0] : undefined,
+    ip: ip || undefined,
+    ipLabel: ip ? showIP(ip) : undefined,
+    accessLog: s ? !!s.accessLog : true,
+  })
+}
 
 // ---- 交互 ----
 
@@ -2821,7 +2855,23 @@ defineExpose({ reload })
 }
 .ip-meta {
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   color: var(--el-text-color-secondary);
+}
+.ip-log {
+  display: inline-flex;
+  padding: 2px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: var(--el-text-color-secondary);
+  cursor: pointer;
+}
+.ip-log:hover {
+  color: var(--el-color-primary);
+  background: var(--el-fill-color);
 }
 .live {
   color: var(--el-color-success);

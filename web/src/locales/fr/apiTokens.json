@@ -50,5 +50,8 @@
   "execTag": "Exécute des commandes",
   "execTip": "L'accès en écriture à ce module permet d'exécuter des commandes sur le serveur (commandes, scripts ou chemins de programme). Il équivaut à exécuter des commandes en tant qu'utilisateur du processus Gately : ne l'accordez qu'aux scripts en qui vous avez entièrement confiance.",
   "execWarn": "Le détenteur de ce jeton peut exécuter des commandes sur le serveur via l'accès en écriture à : {modules}. Ne l'accordez qu'aux scripts en qui vous avez entièrement confiance.",
-  "listSep": ", "
+  "listSep": ", ",
+  "exampleStatusNote": "/api/status nécessite que le jeton ait l'accès en lecture à « État du système ».",
+  "exampleOpenAPI": "Lire la description de l'API (OpenAPI)",
+  "exampleOpenAPINote": "Tout jeton valide peut la lire sans permission supplémentaire. Utile pour vérifier que le jeton fonctionne ou pour l'importer dans des outils comme Postman ; un jeton invalide reste refusé."
 }

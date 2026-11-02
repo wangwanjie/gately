@@ -154,6 +154,14 @@
         <pre ref="curlEl" class="sec-curl mono" @click="selectNode(curlEl)">{{ curlExample }}</pre>
         <el-button :icon="Copy" @click="copy(curlExample, curlEl)">{{ t('common.copy') }}</el-button>
       </div>
+      <div class="sec-note">{{ t('apiTokens.exampleStatusNote') }}</div>
+      <!-- 接口描述任何有效令牌都可以读取，不需要额外权限，适合验证令牌与导入 API 工具 -->
+      <div class="sec-label">{{ t('apiTokens.exampleOpenAPI') }}</div>
+      <div class="sec-box sec-curl-box">
+        <pre ref="openapiEl" class="sec-curl mono" @click="selectNode(openapiEl)">{{ openapiExample }}</pre>
+        <el-button :icon="Copy" @click="copy(openapiExample, openapiEl)">{{ t('common.copy') }}</el-button>
+      </div>
+      <div class="sec-note">{{ t('apiTokens.exampleOpenAPINote') }}</div>
       <template #footer>
         <el-button type="primary" :icon="Check" @click="closeSecret">{{ t('apiTokens.saved') }}</el-button>
       </template>
@@ -521,8 +529,11 @@ const secretName = ref('')
 const secretEl = ref<HTMLElement>()
 const curlEl = ref<HTMLElement>()
 
-// curl 示例使用当前访问地址，调用 /api/status
+const openapiEl = ref<HTMLElement>()
+
+// curl 示例使用当前访问地址：/api/status 需要系统状态的读权限，/api/openapi.json 任何有效令牌都可以访问
 const curlExample = computed(() => `curl -H "Authorization: Bearer ${secret.value}" ${apiOrigin}/api/status`)
+const openapiExample = computed(() => `curl -H "Authorization: Bearer ${secret.value}" ${apiOrigin}/api/openapi.json`)
 
 function showSecret(r: TokenSecret) {
   secret.value = r.secret
@@ -665,6 +676,11 @@ onMounted(load)
   font-size: 13px;
   word-break: break-all;
   user-select: all;
+}
+.sec-note {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
 }
 .sec-curl-box {
   align-items: flex-start;

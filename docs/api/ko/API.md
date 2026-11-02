@@ -483,6 +483,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/docker/logs` | `docker:write` | 모듈 실행 로그 비우기 |
 | GET | `/api/docker/tasks` | `docker:read` | 백그라운드 작업 목록 조회 |
 | GET | `/api/docker/tasks/{id}` | `docker:read` | 백그라운드 작업 진행 상황 및 출력 보기 |
+| POST | `/api/docker/tasks/{id}/cancel` | `docker:write` | 진행 중인 백그라운드 작업 취소 |
 | DELETE | `/api/docker/tasks` | `docker:write` | 종료된 백그라운드 작업 정리 |
 | GET | `/api/docker/images` | `docker:read` | 이미지 목록 조회 |
 | POST | `/api/docker/images/pull` | `docker:write` | 이미지 가져오기 |
@@ -661,6 +662,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/notify/rules-enable` | `notify:write` | 알림 규칙 일괄 사용/사용 안 함 |
 | POST | `/api/notify/rules-delete` | `notify:write` | 알림 규칙 일괄 삭제 |
 | PUT | `/api/notify/rules-group` | `notify:write` | 알림 규칙 그룹 일괄 설정 |
+| GET | `/api/notify/settings` | `notify:read` | 알림 설정 조회 |
+| PUT | `/api/notify/settings` | `notify:write` | 알림 설정 저장 |
 | GET | `/api/notify/event-types` | `notify:read` | 구독 가능한 이벤트 유형 |
 | GET | `/api/notify/history` | `notify:read` | 최근 전달 기록 |
 | POST | `/api/notify/channels/{key}/test` | `notify:write` | 채널로 테스트 알림 전송 |
@@ -1379,6 +1382,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `kind` | string |
 | `name` | string |
 | `port` | integer |
+| `proxy` | string |
 | `remark` | string |
 | `secret` | string |
 | `security` | string |
@@ -1411,6 +1415,12 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `minLevel` | string |
 | `name` | string |
 | `silence` | integer |
+
+### notify.Settings
+
+| 필드 | 타입 |
+| --- | --- |
+| `proxy` | string |
 
 ### perf.AlertState
 
@@ -1766,6 +1776,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `headers` | Array of string |
 | `insecureSkipVerify` | boolean |
 | `method` | string |
+| `proxy` | string |
 | `successContent` | Array of string |
 | `timeout` | integer |
 | `url` | string |
@@ -1860,6 +1871,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `enable` | boolean |
 | `key` | string |
 | `name` | string |
+| `proxy` | string |
 | `refreshHours` | integer |
 | `remark` | string |
 | `updatedAt` | 시간 (RFC 3339) |
@@ -2168,6 +2180,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | 필드 | 타입 |
 | --- | --- |
+| `accessLog` | boolean |
 | `active` | integer |
 | `blocked` | Map of integer |
 | `closed` | integer |
@@ -2311,6 +2324,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | 필드 | 타입 |
 | --- | --- |
+| `proxy` | string |
 | `url` | string |
 
 ### webservice.totpRequest

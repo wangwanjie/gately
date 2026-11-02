@@ -33,6 +33,7 @@ import (
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/luckyimport"
 	"github.com/wangwanjie/gately/internal/module"
+	"github.com/wangwanjie/gately/internal/proxyx"
 	"github.com/wangwanjie/gately/internal/sysstat"
 	"github.com/wangwanjie/gately/internal/thirdauth"
 	"github.com/wangwanjie/gately/internal/version"
@@ -227,6 +228,8 @@ func New(opts Options) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
+	// 通知、Webhook、订阅下载等可以选择复用更新代理，每次使用时读取最新设置
+	proxyx.SetUpdateProxy(func() string { return a.settingsSnapshot().UpdateProxy })
 	seen := map[string]bool{}
 	for _, m := range opts.Modules {
 		if seen[m.ID()] || m.ID() == settingsName || m.ID() == accountName {

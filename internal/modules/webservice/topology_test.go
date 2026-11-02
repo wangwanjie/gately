@@ -438,7 +438,7 @@ func TestTopologyAPI(t *testing.T) {
 	m, addr := newConnsModule(t, []Site{
 		{Enable: true, Key: "a", Name: "A", Group: "g1", Domains: []string{"a.test"}, Targets: []string{other.URL, backend.URL + " backup"}, LBPolicy: LBRoundRobin, WAF: "k", RateLimit: RateLimit{Enable: true, Rate: 100, Burst: 100}},
 		{Enable: false, Key: "off", Domains: []string{"off.test"}, Targets: []string{"http://u:pw@10.0.0.9:80"}},
-		{Enable: true, Key: "r", Domains: []string{"*.r.test"}, Type: TypeRedirect, RedirectTo: "https://example.com", RedirectCode: 302},
+		{Enable: true, Key: "r", Domains: []string{"*.r.test"}, Type: TypeRedirect, RedirectTo: "https://example.com", RedirectCode: 302, AccessLog: true},
 	}, Site{Enable: true, Type: TypeClose})
 	m.realIP.set([]string{"127.0.0.0/8"}, nil)
 
@@ -493,6 +493,10 @@ func TestTopologyAPI(t *testing.T) {
 	}
 	if off.Running || off.Enable || len(off.Upstreams) != 1 || off.Upstreams[0].Healthy != nil || strings.Contains(off.Upstreams[0].URL, "pw") || off.Upstreams[0].ID != "u:l1/off/0" {
 		t.Fatalf("未启用站点应列出配置中的后端、无运行状态、去掉密码: %+v", off)
+	}
+	// 拓扑页据此提示站点是否开启了访问日志
+	if !r.AccessLog || a.AccessLog {
+		t.Fatalf("站点的访问日志开关错误: r=%v a=%v", r.AccessLog, a.AccessLog)
 	}
 	if r.Type != TypeRedirect || r.Target != "https://example.com" || r.Requests != 1 || r.Status["3xx"] != 1 {
 		t.Fatalf("跳转站点错误: %+v", r)

@@ -146,5 +146,10 @@
   "heightCustom": "높이 {h}px",
   "heightAuto": "자동 높이",
   "enterFull": "캔버스를 창 전체에 표시",
-  "exitFull": "전체 표시 끝내기(Esc)"
+  "exitFull": "전체 표시 끝내기(Esc)",
+  "openLogs": "접근 로그",
+  "openLogsIp": "이 IP의 접근 로그",
+  "ipLogs": "이 사이트에서 이 IP의 접근 로그 보기",
+  "ipLogsAll": "모든 사이트에서 이 IP의 접근 로그 보기",
+  "editListener": "리스너 편집"
 }

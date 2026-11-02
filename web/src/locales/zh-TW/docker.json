@@ -21,7 +21,11 @@
     "removing": "刪除中"
   },
   "task": {
-    "failed": "{title} 失敗"
+    "failed": "{title} 失敗",
+    "cancel": "中斷",
+    "cancelConfirm": "中斷此任務？正在重建的容器會先完成或還原原容器。",
+    "stopping": "正在停止…",
+    "cancelled": "已中斷：{title}"
   },
   "compose": {
     "editor": {
@@ -473,7 +477,8 @@
     "empty": "暫無工作",
     "running": "進行中",
     "success": "成功",
-    "failed": "失敗"
+    "failed": "失敗",
+    "cancelled": "已中斷"
   },
   "taskPanel": {
     "defaultTitle": "背景工作",

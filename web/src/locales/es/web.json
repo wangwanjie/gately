@@ -195,5 +195,7 @@
   "copySites": "Sitios",
   "copySitesLabel": "Copiar también sus {count} sitio(s)",
   "copySitesHelp": "Los enlaces compartidos no se copian: sus tokens omiten la autenticación. Crea otros en la copia si los necesitas.",
-  "siteListener": "Listener"
+  "siteListener": "Listener",
+  "siteLogs": "Registros",
+  "siteGone": "No se encontró el sitio. Puede que se haya eliminado o movido; actualiza e inténtalo de nuevo"
 }

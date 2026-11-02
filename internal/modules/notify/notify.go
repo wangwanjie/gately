@@ -18,6 +18,7 @@ import (
 	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
+	"github.com/wangwanjie/gately/internal/proxyx"
 	"github.com/wangwanjie/gately/internal/webhook"
 )
 
@@ -58,7 +59,34 @@ type Channel struct {
 	User     string         `json:"user"`
 	From     string         `json:"from"`
 	Webhook  webhook.Config `json:"webhook"`
-	Remark   string         `json:"remark"`
+	// Proxy 为该渠道使用的代理，留空跟随通知设置中的全局代理；取值见 Settings.Proxy，另外 direct 表示该渠道直连
+	Proxy  string `json:"proxy,omitempty"`
+	Remark string `json:"remark"`
+}
+
+// Settings 是通知中心的全局设置。
+type Settings struct {
+	// Proxy 为各渠道默认使用的代理：留空时 HTTP 渠道遵循 HTTPS_PROXY 等环境变量、邮件直连；
+	// update 为复用全局设置中的更新代理；也可以填写 http://、https://、socks5:// 开头的代理地址
+	Proxy string `json:"proxy"`
+}
+
+// Validate 校验并规范化全局设置。
+func (s *Settings) Validate() error {
+	s.Proxy = proxyx.Normalize(s.Proxy)
+	// 全局设置没有上一级可以跟随，direct 与留空含义相同，统一保存为留空
+	if s.Proxy == proxyx.Direct {
+		s.Proxy = ""
+	}
+	return proxyx.Validate(s.Proxy)
+}
+
+// effectiveProxy 返回渠道实际使用的代理设置：渠道未设置时跟随全局设置。
+func effectiveProxy(ch Channel, s Settings) string {
+	if ch.Proxy != "" {
+		return ch.Proxy
+	}
+	return s.Proxy
 }
 
 // Rule 把一组事件路由到若干渠道。
@@ -90,6 +118,7 @@ type Record struct {
 }
 
 type fileConfig struct {
+	Settings Settings  `json:"settings"`
 	Channels []Channel `json:"channels"`
 	Rules    []Rule    `json:"rules"`
 }
@@ -112,6 +141,12 @@ func (c *Channel) Validate() error {
 	}
 	c.URL = strings.TrimSpace(c.URL)
 	c.Target = strings.TrimSpace(c.Target)
+	c.Proxy = proxyx.Normalize(c.Proxy)
+	if err := proxyx.Validate(c.Proxy); err != nil {
+		return err
+	}
+	// 渠道的代理统一由 Proxy 决定，Webhook 自身的代理字段不再单独生效
+	c.Webhook.Proxy = ""
 	switch c.Kind {
 	case KindWebhook:
 		c.Webhook.Enable = true
@@ -336,6 +371,8 @@ func (m *Module) plan(e events.Event) []dispatch {
 			for _, ch := range m.cfg.Channels {
 				if ch.Key == ck && ch.Enable {
 					seen[ck] = true
+					// ch 是副本，写入实际使用的代理不影响保存的配置
+					ch.Proxy = effectiveProxy(ch, m.cfg.Settings)
 					out = append(out, dispatch{rule: r.Name, ch: ch})
 				}
 			}
@@ -420,12 +457,44 @@ func (m *Module) Routes(r module.Router) {
 		Validate: func(x *Rule) error { return x.Validate() },
 	}
 	rules.Register(r, "/rules")
+	r.HandleFunc("GET /settings", m.handleGetSettings)
+	r.HandleFunc("PUT /settings", m.handlePutSettings)
 	r.HandleFunc("GET /event-types", m.handleEventTypes)
 	r.HandleFunc("GET /history", m.handleHistory)
 	r.HandleFunc("POST /channels/{key}/test", m.handleTest)
+	module.DocOf(r, "GET /settings", module.Doc{Summary: "读取通知设置", Resp: Settings{}})
+	module.DocOf(r, "PUT /settings", module.Doc{Summary: "保存通知设置", Req: Settings{}, Resp: Settings{}})
 	module.DocOf(r, "GET /event-types", module.Doc{Summary: "可订阅的事件类型", Resp: []events.TypeInfo{}})
 	module.DocOf(r, "GET /history", module.Doc{Summary: "最近的投递记录", Resp: []Record{}})
 	module.DocOf(r, "POST /channels/{key}/test", module.Doc{Summary: "向渠道发送测试通知"})
+}
+
+func (m *Module) handleGetSettings(w http.ResponseWriter, _ *http.Request) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	httpx.OK(w, m.cfg.Settings)
+}
+
+func (m *Module) handlePutSettings(w http.ResponseWriter, r *http.Request) {
+	var s Settings
+	if err := httpx.ReadJSON(r, &s); err != nil {
+		httpx.Error(w, http.StatusBadRequest, "%v", err)
+		return
+	}
+	if err := s.Validate(); err != nil {
+		httpx.Error(w, http.StatusBadRequest, "%v", err)
+		return
+	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	old := m.cfg.Settings
+	m.cfg.Settings = s
+	if err := m.saveLocked(); err != nil {
+		m.cfg.Settings = old
+		httpx.Error(w, http.StatusInternalServerError, "%v", err)
+		return
+	}
+	httpx.OK(w, s)
 }
 
 func (m *Module) handleEventTypes(w http.ResponseWriter, _ *http.Request) {
@@ -450,6 +519,7 @@ func (m *Module) handleTest(w http.ResponseWriter, r *http.Request) {
 	for i := range m.cfg.Channels {
 		if m.cfg.Channels[i].Key == key {
 			c := m.cfg.Channels[i]
+			c.Proxy = effectiveProxy(c, m.cfg.Settings)
 			ch = &c
 			break
 		}

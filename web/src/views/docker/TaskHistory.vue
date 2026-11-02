@@ -13,6 +13,14 @@
           <StatusBadge :type="badge(task).type" :text="badge(task).text" />
           <span class="t-title">{{ task.title }}</span>
           <span class="t-time muted">{{ formatTime(task.started) }}</span>
+          <template v-if="task.status === 'running'">
+            <span v-if="task.cancelling" class="stopping">{{ t('docker.task.stopping') }}</span>
+            <el-popconfirm v-else :title="t('docker.task.cancelConfirm')" width="260" @confirm="cancel(task)">
+              <template #reference>
+                <el-button text size="small" type="danger" :icon="Square" @click.stop>{{ t('docker.task.cancel') }}</el-button>
+              </template>
+            </el-popconfirm>
+          </template>
           <ChevronRight :size="16" class="chev" :class="{ open: !!open[task.id] }" />
         </div>
         <div v-if="open[task.id]" class="t-body">
@@ -29,10 +37,11 @@
 import { onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
-import { ChevronRight, ListChecks, RefreshCw, Trash2 } from 'lucide-vue-next'
+import { ChevronRight, ListChecks, RefreshCw, Square, Trash2 } from 'lucide-vue-next'
 import { api } from '../../api'
 import StatusBadge, { type StatusType } from '../../components/StatusBadge.vue'
 import { formatTime } from './format'
+import { cancelTask } from './tasks'
 import type { DockerTask } from './types'
 
 const { t } = useI18n()
@@ -46,7 +55,23 @@ function badge(task: DockerTask): { type: StatusType; text: string } {
   if (task.status === 'running') {
     return { type: 'pending', text: t('docker.taskHistory.running') }
   }
+  if (task.status === 'cancelled') {
+    return { type: 'off', text: t('docker.taskHistory.cancelled') }
+  }
   return task.status === 'done' ? { type: 'ok', text: t('docker.taskHistory.success') } : { type: 'error', text: t('docker.taskHistory.failed') }
+}
+
+// cancel 中断进行中的任务，随后刷新列表；展开的详情一并刷新以显示“已请求取消”
+async function cancel(task: DockerTask) {
+  const snap = await cancelTask(task.id)
+  if (snap) {
+    Object.assign(task, { ...snap, lines: task.lines })
+    if (open[task.id]) {
+      detail[task.id] = snap
+    }
+  }
+  // 拉取等任务通常很快结束，稍后再刷新一次拿到最终状态
+  window.setTimeout(load, 1500)
 }
 
 async function load() {
@@ -108,6 +133,10 @@ onMounted(load)
 }
 .t-time {
   font-size: 12px;
+}
+.stopping {
+  font-size: 12px;
+  color: var(--el-color-warning);
 }
 .chev {
   transition: transform 0.15s;

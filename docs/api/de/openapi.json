@@ -1305,6 +1305,9 @@
           "port": {
             "type": "integer"
           },
+          "proxy": {
+            "type": "string"
+          },
           "remark": {
             "type": "string"
           },
@@ -1387,6 +1390,14 @@
           },
           "silence": {
             "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "notify.Settings": {
+        "properties": {
+          "proxy": {
+            "type": "string"
           }
         },
         "type": "object"
@@ -2303,6 +2314,9 @@
           "method": {
             "type": "string"
           },
+          "proxy": {
+            "type": "string"
+          },
           "successContent": {
             "items": {
               "type": "string"
@@ -2521,6 +2535,9 @@
             "type": "string"
           },
           "name": {
+            "type": "string"
+          },
+          "proxy": {
             "type": "string"
           },
           "refreshHours": {
@@ -3326,6 +3343,9 @@
       },
       "webservice.TopoSite": {
         "properties": {
+          "accessLog": {
+            "type": "boolean"
+          },
           "active": {
             "type": "integer"
           },
@@ -3690,6 +3710,9 @@
       },
       "webservice.geoipDownload": {
         "properties": {
+          "proxy": {
+            "type": "string"
+          },
           "url": {
             "type": "string"
           }
@@ -4908,7 +4931,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain, `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `backup:read`.",
+        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain (Teilübereinstimmung), `site` Site-Name (exakte Übereinstimmung, liefert nur das Zugriffsprotokoll dieser Site), `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `backup:read`.",
         "parameters": [
           {
             "description": "Inkrementeller Abruf: gibt nur Protokolle mit einer größeren Sequenznummer zurück",
@@ -4978,6 +5001,14 @@
             "description": "Teil des Site-Namens oder der Domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -6402,7 +6433,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain, `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `cloudflared:read`.",
+        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain (Teilübereinstimmung), `site` Site-Name (exakte Übereinstimmung, liefert nur das Zugriffsprotokoll dieser Site), `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `cloudflared:read`.",
         "parameters": [
           {
             "description": "Inkrementeller Abruf: gibt nur Protokolle mit einer größeren Sequenznummer zurück",
@@ -6472,6 +6503,14 @@
             "description": "Teil des Site-Namens oder der Domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -7686,7 +7725,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain, `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `cron:read`.",
+        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain (Teilübereinstimmung), `site` Site-Name (exakte Übereinstimmung, liefert nur das Zugriffsprotokoll dieser Site), `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `cron:read`.",
         "parameters": [
           {
             "description": "Inkrementeller Abruf: gibt nur Protokolle mit einer größeren Sequenznummer zurück",
@@ -7756,6 +7795,14 @@
             "description": "Teil des Site-Namens oder der Domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -8781,7 +8828,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain, `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `ddns:read`.",
+        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain (Teilübereinstimmung), `site` Site-Name (exakte Übereinstimmung, liefert nur das Zugriffsprotokoll dieser Site), `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `ddns:read`.",
         "parameters": [
           {
             "description": "Inkrementeller Abruf: gibt nur Protokolle mit einer größeren Sequenznummer zurück",
@@ -8851,6 +8898,14 @@
             "description": "Teil des Site-Namens oder der Domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -13073,7 +13128,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain, `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `docker:read`.",
+        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain (Teilübereinstimmung), `site` Site-Name (exakte Übereinstimmung, liefert nur das Zugriffsprotokoll dieser Site), `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `docker:read`.",
         "parameters": [
           {
             "description": "Inkrementeller Abruf: gibt nur Protokolle mit einer größeren Sequenznummer zurück",
@@ -13143,6 +13198,14 @@
             "description": "Teil des Site-Namens oder der Domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -13934,6 +13997,67 @@
           "Docker-Verwaltung"
         ],
         "x-required-scope": "docker:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/docker/tasks/{id}/cancel": {
+      "post": {
+        "description": "Pull, Push und Build von Images brechen den jeweiligen Docker-Vorgang ab; Compose-Befehle erhalten zuerst ein Interrupt-Signal und beenden sich selbst; Batch-Upgrades stoppen nach dem aktuellen Container, und ein gerade neu erstellter Container wird fertiggestellt oder wiederhergestellt, nie halb zurückgelassen. Nach dem Abbruch ist der Status `cancelled`, während des Abschlusses ist `cancelling` true; liefert 409, wenn die Aufgabe bereits beendet ist.\n\nErforderliche Berechtigung: `docker:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Laufende Hintergrundaufgabe abbrechen",
+        "tags": [
+          "Docker-Verwaltung"
+        ],
+        "x-required-scope": "docker:write",
         "x-token-allowed": true
       }
     },
@@ -15391,7 +15515,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain, `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `filebrowser:read`.",
+        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain (Teilübereinstimmung), `site` Site-Name (exakte Übereinstimmung, liefert nur das Zugriffsprotokoll dieser Site), `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `filebrowser:read`.",
         "parameters": [
           {
             "description": "Inkrementeller Abruf: gibt nur Protokolle mit einer größeren Sequenznummer zurück",
@@ -15461,6 +15585,14 @@
             "description": "Teil des Site-Namens oder der Domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -17113,7 +17245,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain, `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `frp:read`.",
+        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain (Teilübereinstimmung), `site` Site-Name (exakte Übereinstimmung, liefert nur das Zugriffsprotokoll dieser Site), `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `frp:read`.",
         "parameters": [
           {
             "description": "Inkrementeller Abruf: gibt nur Protokolle mit einer größeren Sequenznummer zurück",
@@ -17183,6 +17315,14 @@
             "description": "Teil des Site-Namens oder der Domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -18995,7 +19135,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain, `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `ftp:read`.",
+        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain (Teilübereinstimmung), `site` Site-Name (exakte Übereinstimmung, liefert nur das Zugriffsprotokoll dieser Site), `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `ftp:read`.",
         "parameters": [
           {
             "description": "Inkrementeller Abruf: gibt nur Protokolle mit einer größeren Sequenznummer zurück",
@@ -19065,6 +19205,14 @@
             "description": "Teil des Site-Namens oder der Domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -20442,7 +20590,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain, `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `guard:read`.",
+        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain (Teilübereinstimmung), `site` Site-Name (exakte Übereinstimmung, liefert nur das Zugriffsprotokoll dieser Site), `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `guard:read`.",
         "parameters": [
           {
             "description": "Inkrementeller Abruf: gibt nur Protokolle mit einer größeren Sequenznummer zurück",
@@ -20512,6 +20660,14 @@
             "description": "Teil des Site-Namens oder der Domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -21074,7 +21230,7 @@
     },
     "/api/logs": {
       "get": {
-        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain, `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `logs:read`.",
+        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain (Teilübereinstimmung), `site` Site-Name (exakte Übereinstimmung, liefert nur das Zugriffsprotokoll dieser Site), `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `logs:read`.",
         "parameters": [
           {
             "description": "Inkrementeller Abruf: gibt nur Protokolle mit einer größeren Sequenznummer zurück",
@@ -21144,6 +21300,14 @@
             "description": "Teil des Site-Namens oder der Domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -21339,7 +21503,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain, `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `nettools:read`.",
+        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain (Teilübereinstimmung), `site` Site-Name (exakte Übereinstimmung, liefert nur das Zugriffsprotokoll dieser Site), `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `nettools:read`.",
         "parameters": [
           {
             "description": "Inkrementeller Abruf: gibt nur Protokolle mit einer größeren Sequenznummer zurück",
@@ -21409,6 +21573,14 @@
             "description": "Teil des Site-Namens oder der Domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -22895,7 +23067,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain, `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `notify:read`.",
+        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain (Teilübereinstimmung), `site` Site-Name (exakte Übereinstimmung, liefert nur das Zugriffsprotokoll dieser Site), `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `notify:read`.",
         "parameters": [
           {
             "description": "Inkrementeller Abruf: gibt nur Protokolle mit einer größeren Sequenznummer zurück",
@@ -22965,6 +23137,14 @@
             "description": "Teil des Site-Namens oder der Domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -23707,6 +23887,129 @@
         "x-token-allowed": true
       }
     },
+    "/api/notify/settings": {
+      "get": {
+        "description": "Erforderliche Berechtigung: `notify:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/notify.Settings"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Benachrichtigungseinstellungen abrufen",
+        "tags": [
+          "Benachrichtigungszentrale"
+        ],
+        "x-required-scope": "notify:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Erforderliche Berechtigung: `notify:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/notify.Settings"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/notify.Settings"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Benachrichtigungseinstellungen speichern",
+        "tags": [
+          "Benachrichtigungszentrale"
+        ],
+        "x-required-scope": "notify:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/openapi.json": {
       "get": {
         "description": "Jedes gültige API-Token hat Zugriff; eine bestimmte Berechtigung ist nicht erforderlich.",
@@ -23860,7 +24163,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain, `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `perf:read`.",
+        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain (Teilübereinstimmung), `site` Site-Name (exakte Übereinstimmung, liefert nur das Zugriffsprotokoll dieser Site), `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `perf:read`.",
         "parameters": [
           {
             "description": "Inkrementeller Abruf: gibt nur Protokolle mit einer größeren Sequenznummer zurück",
@@ -23930,6 +24233,14 @@
             "description": "Teil des Site-Namens oder der Domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -24903,7 +25214,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain, `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `portforward:read`.",
+        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain (Teilübereinstimmung), `site` Site-Name (exakte Übereinstimmung, liefert nur das Zugriffsprotokoll dieser Site), `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `portforward:read`.",
         "parameters": [
           {
             "description": "Inkrementeller Abruf: gibt nur Protokolle mit einer größeren Sequenznummer zurück",
@@ -24973,6 +25284,14 @@
             "description": "Teil des Site-Namens oder der Domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -25875,7 +26194,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain, `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `protoroute:read`.",
+        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain (Teilübereinstimmung), `site` Site-Name (exakte Übereinstimmung, liefert nur das Zugriffsprotokoll dieser Site), `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `protoroute:read`.",
         "parameters": [
           {
             "description": "Inkrementeller Abruf: gibt nur Protokolle mit einer größeren Sequenznummer zurück",
@@ -25945,6 +26264,14 @@
             "description": "Teil des Site-Namens oder der Domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -26888,7 +27215,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain, `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `smb:read`.",
+        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain (Teilübereinstimmung), `site` Site-Name (exakte Übereinstimmung, liefert nur das Zugriffsprotokoll dieser Site), `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `smb:read`.",
         "parameters": [
           {
             "description": "Inkrementeller Abruf: gibt nur Protokolle mit einer größeren Sequenznummer zurück",
@@ -26958,6 +27285,14 @@
             "description": "Teil des Site-Namens oder der Domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -28335,7 +28670,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain, `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `ssl:read`.",
+        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain (Teilübereinstimmung), `site` Site-Name (exakte Übereinstimmung, liefert nur das Zugriffsprotokoll dieser Site), `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `ssl:read`.",
         "parameters": [
           {
             "description": "Inkrementeller Abruf: gibt nur Protokolle mit einer größeren Sequenznummer zurück",
@@ -28405,6 +28740,14 @@
             "description": "Teil des Site-Namens oder der Domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -29144,7 +29487,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain, `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `storage:read`.",
+        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain (Teilübereinstimmung), `site` Site-Name (exakte Übereinstimmung, liefert nur das Zugriffsprotokoll dieser Site), `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `storage:read`.",
         "parameters": [
           {
             "description": "Inkrementeller Abruf: gibt nur Protokolle mit einer größeren Sequenznummer zurück",
@@ -29214,6 +29557,14 @@
             "description": "Teil des Site-Namens oder der Domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -30078,7 +30429,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain, `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `stun:read`.",
+        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain (Teilübereinstimmung), `site` Site-Name (exakte Übereinstimmung, liefert nur das Zugriffsprotokoll dieser Site), `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `stun:read`.",
         "parameters": [
           {
             "description": "Inkrementeller Abruf: gibt nur Protokolle mit einer größeren Sequenznummer zurück",
@@ -30148,6 +30499,14 @@
             "description": "Teil des Site-Namens oder der Domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -32357,7 +32716,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain, `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `tailscale:read`.",
+        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain (Teilübereinstimmung), `site` Site-Name (exakte Übereinstimmung, liefert nur das Zugriffsprotokoll dieser Site), `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `tailscale:read`.",
         "parameters": [
           {
             "description": "Inkrementeller Abruf: gibt nur Protokolle mit einer größeren Sequenznummer zurück",
@@ -32427,6 +32786,14 @@
             "description": "Teil des Site-Namens oder der Domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -34085,7 +34452,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain, `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `waf:read`.",
+        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain (Teilübereinstimmung), `site` Site-Name (exakte Übereinstimmung, liefert nur das Zugriffsprotokoll dieser Site), `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `waf:read`.",
         "parameters": [
           {
             "description": "Inkrementeller Abruf: gibt nur Protokolle mit einer größeren Sequenznummer zurück",
@@ -34155,6 +34522,14 @@
             "description": "Teil des Site-Namens oder der Domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -34359,7 +34734,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain, `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `webdav:read`.",
+        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain (Teilübereinstimmung), `site` Site-Name (exakte Übereinstimmung, liefert nur das Zugriffsprotokoll dieser Site), `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `webdav:read`.",
         "parameters": [
           {
             "description": "Inkrementeller Abruf: gibt nur Protokolle mit einer größeren Sequenznummer zurück",
@@ -34429,6 +34804,14 @@
             "description": "Teil des Site-Namens oder der Domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -36678,7 +37061,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain, `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `webservice:read`.",
+        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain (Teilübereinstimmung), `site` Site-Name (exakte Übereinstimmung, liefert nur das Zugriffsprotokoll dieser Site), `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `webservice:read`.",
         "parameters": [
           {
             "description": "Inkrementeller Abruf: gibt nur Protokolle mit einer größeren Sequenznummer zurück",
@@ -36748,6 +37131,14 @@
             "description": "Teil des Site-Namens oder der Domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -39363,7 +39754,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain, `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `webterminal:read`.",
+        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain (Teilübereinstimmung), `site` Site-Name (exakte Übereinstimmung, liefert nur das Zugriffsprotokoll dieser Site), `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `webterminal:read`.",
         "parameters": [
           {
             "description": "Inkrementeller Abruf: gibt nur Protokolle mit einer größeren Sequenznummer zurück",
@@ -39433,6 +39824,14 @@
             "description": "Teil des Site-Namens oder der Domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -42191,7 +42590,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain, `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `wol:read`.",
+        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain (Teilübereinstimmung), `site` Site-Name (exakte Übereinstimmung, liefert nur das Zugriffsprotokoll dieser Site), `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `wol:read`.",
         "parameters": [
           {
             "description": "Inkrementeller Abruf: gibt nur Protokolle mit einer größeren Sequenznummer zurück",
@@ -42261,6 +42660,14 @@
             "description": "Teil des Site-Namens oder der Domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }

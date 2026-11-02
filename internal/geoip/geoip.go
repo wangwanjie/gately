@@ -150,9 +150,11 @@ func Save(path string, r io.Reader) (int64, error) {
 	return n, os.Rename(tmp.Name(), path)
 }
 
-// Download 从 url 下载数据库到 path。
-func Download(url, path string) (int64, error) {
-	client := &http.Client{Timeout: 5 * time.Minute}
+// Download 用 client 从 url 下载数据库到 path；client 为 nil 时使用 5 分钟超时的默认客户端。
+func Download(client *http.Client, url, path string) (int64, error) {
+	if client == nil {
+		client = &http.Client{Timeout: 5 * time.Minute}
+	}
 	resp, err := client.Get(url)
 	if err != nil {
 		return 0, err

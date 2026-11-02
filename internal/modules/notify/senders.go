@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/wangwanjie/gately/internal/events"
+	"github.com/wangwanjie/gately/internal/proxyx"
 	"github.com/wangwanjie/gately/internal/webhook"
 )
 
@@ -106,15 +107,33 @@ func (m Message) vars() map[string]string {
 	return v
 }
 
-// httpClient 供各渠道共用；测试可替换。
-var httpClient = &http.Client{Timeout: 20 * time.Second}
+// httpTimeout 为单次 HTTP 投递的超时
+const httpTimeout = 20 * time.Second
 
-// send 按渠道类型投递消息。
+// newClient 按渠道的代理设置返回 HTTP 客户端；测试可替换。
+var newClient = func(proxy string) *http.Client {
+	return proxyx.Client(proxy, httpTimeout, false)
+}
+
+// clientKey 是 context 中保存本次投递所用客户端的键
+type clientKey struct{}
+
+// clientFrom 取出 send 放入 context 的客户端；没有时（直接调用发送函数的测试）按未设置代理处理。
+func clientFrom(ctx context.Context) *http.Client {
+	if c, ok := ctx.Value(clientKey{}).(*http.Client); ok {
+		return c
+	}
+	return newClient("")
+}
+
+// send 按渠道类型投递消息。ch.Proxy 为已合并全局设置后的实际代理。
 func send(ctx context.Context, ch Channel, msg Message) error {
+	ctx = context.WithValue(ctx, clientKey{}, newClient(ch.Proxy))
 	switch ch.Kind {
 	case KindWebhook:
 		cfg := ch.Webhook
 		cfg.Enable = true
+		cfg.Proxy = ch.Proxy
 		_, err := webhook.Send(ctx, cfg, msg.vars())
 		return err
 	case KindTelegram:
@@ -161,7 +180,7 @@ func postJSON(ctx context.Context, target string, body any, okField string, okVa
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	resp, err := httpClient.Do(req)
+	resp, err := clientFrom(ctx).Do(req)
 	if err != nil {
 		return err
 	}
@@ -254,6 +273,9 @@ func sendFeishu(ctx context.Context, ch Channel, msg Message) error {
 	return postJSON(ctx, ch.URL, body, "code", 0)
 }
 
+// smtpDial 建立到 SMTP 服务器的 TCP 连接；测试可替换。
+var smtpDial = proxyx.Dial
+
 // SMTP 加密方式
 const (
 	SecurityNone     = "none"
@@ -263,19 +285,21 @@ const (
 
 func sendSMTP(ctx context.Context, ch Channel, msg Message) error {
 	addr := net.JoinHostPort(ch.Host, strconv.Itoa(ch.Port))
-	dialer := &net.Dialer{Timeout: 15 * time.Second}
 	tlsCfg := &tls.Config{ServerName: ch.Host}
-	var conn net.Conn
-	var err error
-	if ch.Security == SecurityTLS {
-		conn, err = tls.DialWithDialer(dialer, "tcp", addr, tlsCfg)
-	} else {
-		conn, err = dialer.DialContext(ctx, "tcp", addr)
-	}
+	// 配置了代理时经代理建立 TCP 连接（http/https 代理用 CONNECT，socks5 由代理解析域名），否则直连
+	conn, err := smtpDial(ctx, ch.Proxy, addr, 15*time.Second)
 	if err != nil {
 		return err
 	}
 	_ = conn.SetDeadline(time.Now().Add(30 * time.Second))
+	if ch.Security == SecurityTLS {
+		tc := tls.Client(conn, tlsCfg)
+		if err := tc.HandshakeContext(ctx); err != nil {
+			conn.Close()
+			return err
+		}
+		conn = tc
+	}
 	c, err := smtp.NewClient(conn, ch.Host)
 	if err != nil {
 		conn.Close()
@@ -359,7 +383,7 @@ func levelPriority(level string) int {
 
 // doRequest 发送请求并按 HTTP 状态码判断成败，返回响应体。
 func doRequest(req *http.Request) ([]byte, error) {
-	resp, err := httpClient.Do(req)
+	resp, err := clientFrom(req.Context()).Do(req)
 	if err != nil {
 		return nil, err
 	}

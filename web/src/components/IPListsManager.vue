@@ -42,6 +42,10 @@
           <el-input v-model="editing.url" class="mono" placeholder="https://metowolf.github.io/iplist/data/cncity/440000.txt" />
           <div class="form-help">{{ t('ipLists.urlHelp') }}</div>
         </el-form-item>
+        <el-form-item :label="t('ipLists.proxy')">
+          <ProxyInput v-model="editing.proxy" :owner="editing" />
+          <div class="form-help">{{ t('ipLists.proxyHelp') }}</div>
+        </el-form-item>
         <el-form-item :label="t('ipLists.refreshHours')">
           <el-input-number v-model="editing.refreshHours" :min="1" :max="720" />
           <span class="inline-help">{{ t('ipLists.hours') }}</span>
@@ -67,6 +71,7 @@ import CopyHint from './CopyHint.vue'
 import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import { useFormLayout } from '../composables/useIsMobile'
 import { usePolling } from '../composables/usePolling'
+import ProxyInput from './ProxyInput.vue'
 
 // IPList 对应 /api/webservice/iplists 的条目：按地址订阅、定时刷新的 IP 列表
 export interface IPList {
@@ -75,6 +80,8 @@ export interface IPList {
   enable: boolean
   url: string
   refreshHours: number
+  // proxy 为下载使用的代理：留空不指定，update 使用全局更新代理，或代理地址
+  proxy: string
   remark: string
   updatedAt?: string
   count?: number
@@ -112,7 +119,7 @@ function usedByLabel(s: string) {
 }
 
 function empty(): IPList {
-  return { name: '', enable: true, url: '', refreshHours: 24, remark: '' }
+  return { name: '', enable: true, url: '', refreshHours: 24, proxy: '', remark: '' }
 }
 
 // statusOf 计算列表状态：停用、下载中、已载入或下载失败
@@ -137,7 +144,7 @@ async function load() {
 function openEditor(l?: IPListView, copy = false) {
   copyFrom.value = null
   if (l) {
-    editing.value = { key: l.key, name: l.name, enable: l.enable, url: l.url, refreshHours: l.refreshHours, remark: l.remark }
+    editing.value = { key: l.key, name: l.name, enable: l.enable, url: l.url, refreshHours: l.refreshHours, proxy: l.proxy ?? '', remark: l.remark }
     if (copy) {
       copyFrom.value = { key: l.key ?? '', name: l.name }
       editing.value.key = ''

@@ -483,6 +483,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/docker/logs` | `docker:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/docker/tasks` | `docker:read` | Listar tareas en segundo plano |
 | GET | `/api/docker/tasks/{id}` | `docker:read` | Ver el progreso y la salida de una tarea en segundo plano |
+| POST | `/api/docker/tasks/{id}/cancel` | `docker:write` | Cancelar una tarea en segundo plano en curso |
 | DELETE | `/api/docker/tasks` | `docker:write` | Limpiar las tareas en segundo plano finalizadas |
 | GET | `/api/docker/images` | `docker:read` | Listar imágenes |
 | POST | `/api/docker/images/pull` | `docker:write` | Descargar una imagen |
@@ -661,6 +662,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | PUT | `/api/notify/rules-enable` | `notify:write` | Activar o desactivar en lote: Regla de notificación |
 | POST | `/api/notify/rules-delete` | `notify:write` | Eliminar en lote: Regla de notificación |
 | PUT | `/api/notify/rules-group` | `notify:write` | Asignar grupo a varios elementos: Regla de notificación |
+| GET | `/api/notify/settings` | `notify:read` | Leer los ajustes de notificación |
+| PUT | `/api/notify/settings` | `notify:write` | Guardar los ajustes de notificación |
 | GET | `/api/notify/event-types` | `notify:read` | Tipos de evento a los que se puede suscribir |
 | GET | `/api/notify/history` | `notify:read` | Registros de entrega recientes |
 | POST | `/api/notify/channels/{key}/test` | `notify:write` | Enviar una notificación de prueba al canal |
@@ -1379,6 +1382,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `kind` | string |
 | `name` | string |
 | `port` | integer |
+| `proxy` | string |
 | `remark` | string |
 | `secret` | string |
 | `security` | string |
@@ -1411,6 +1415,12 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `minLevel` | string |
 | `name` | string |
 | `silence` | integer |
+
+### notify.Settings
+
+| Campo | Tipo |
+| --- | --- |
+| `proxy` | string |
 
 ### perf.AlertState
 
@@ -1766,6 +1776,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `headers` | Lista de string |
 | `insecureSkipVerify` | boolean |
 | `method` | string |
+| `proxy` | string |
 | `successContent` | Lista de string |
 | `timeout` | integer |
 | `url` | string |
@@ -1860,6 +1871,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `enable` | boolean |
 | `key` | string |
 | `name` | string |
+| `proxy` | string |
 | `refreshHours` | integer |
 | `remark` | string |
 | `updatedAt` | Hora (RFC 3339) |
@@ -2168,6 +2180,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 
 | Campo | Tipo |
 | --- | --- |
+| `accessLog` | boolean |
 | `active` | integer |
 | `blocked` | Mapa de integer |
 | `closed` | integer |
@@ -2311,6 +2324,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 
 | Campo | Tipo |
 | --- | --- |
+| `proxy` | string |
 | `url` | string |
 
 ### webservice.totpRequest

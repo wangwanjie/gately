@@ -90,7 +90,8 @@
       "country": "國家過濾",
       "rateLimit": "限流",
       "waf": "WAF"
-    }
+    },
+    "siteChip": "站點：{site}"
   },
   "scopeTags": {
     "allWrite": "全部讀寫",
@@ -178,5 +179,12 @@
   "urlLink": {
     "copy": "複製位址",
     "copied": "已複製位址"
+  },
+  "proxyInput": {
+    "inherit": "跟隨通知設定",
+    "direct": "直連（不使用代理）",
+    "none": "不使用代理",
+    "update": "使用全域更新代理",
+    "custom": "自訂代理"
   }
 }

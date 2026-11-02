@@ -21,7 +21,11 @@
     "removing": "删除中"
   },
   "task": {
-    "failed": "{title} 失败"
+    "failed": "{title} 失败",
+    "cancel": "中断",
+    "cancelConfirm": "中断该任务？正在重建的容器会先完成或恢复原容器。",
+    "stopping": "正在停止…",
+    "cancelled": "已中断：{title}"
   },
   "compose": {
     "editor": {
@@ -473,7 +477,8 @@
     "empty": "暂无任务",
     "running": "进行中",
     "success": "成功",
-    "failed": "失败"
+    "failed": "失败",
+    "cancelled": "已中断"
   },
   "taskPanel": {
     "defaultTitle": "后台任务",

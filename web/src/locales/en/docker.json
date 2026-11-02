@@ -21,7 +21,11 @@
     "removing": "Removing"
   },
   "task": {
-    "failed": "{title} failed"
+    "failed": "{title} failed",
+    "cancel": "Stop",
+    "cancelConfirm": "Stop this task? A container being recreated is finished or restored first.",
+    "stopping": "Stopping…",
+    "cancelled": "Stopped: {title}"
   },
   "compose": {
     "editor": {
@@ -473,7 +477,8 @@
     "empty": "No tasks",
     "running": "In progress",
     "success": "Succeeded",
-    "failed": "Failed"
+    "failed": "Failed",
+    "cancelled": "Stopped"
   },
   "taskPanel": {
     "defaultTitle": "Background task",

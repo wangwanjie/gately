@@ -19,5 +19,6 @@
   "uploadMmdb": "上传 .mmdb",
   "mmdbUrlPlaceholder": "或填写 .mmdb 下载地址",
   "geoImported": "GeoIP 数据库已导入",
-  "geoDownloaded": "GeoIP 数据库已下载并加载"
+  "geoDownloaded": "GeoIP 数据库已下载并加载",
+  "geoProxy": "下载代理"
 }

@@ -90,7 +90,8 @@
       "country": "국가 필터",
       "rateLimit": "속도 제한",
       "waf": "WAF"
-    }
+    },
+    "siteChip": "사이트: {site}"
   },
   "scopeTags": {
     "allWrite": "전체 읽기/쓰기",
@@ -178,5 +179,12 @@
   "urlLink": {
     "copy": "주소 복사",
     "copied": "주소를 복사했습니다"
+  },
+  "proxyInput": {
+    "inherit": "알림 설정 따르기",
+    "direct": "직접 연결(프록시 사용 안 함)",
+    "none": "프록시 사용 안 함",
+    "update": "전역 업데이트 프록시 사용",
+    "custom": "사용자 지정 프록시"
   }
 }

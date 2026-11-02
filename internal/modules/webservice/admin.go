@@ -10,6 +10,7 @@ import (
 
 	"github.com/wangwanjie/gately/internal/geoip"
 	"github.com/wangwanjie/gately/internal/httpx"
+	"github.com/wangwanjie/gately/internal/proxyx"
 )
 
 type banRequest struct {
@@ -21,6 +22,8 @@ type banRequest struct {
 
 type geoipDownload struct {
 	URL string `json:"url"`
+	// Proxy 为下载使用的代理：留空遵循环境变量，update 为全局更新代理，也可以填写代理地址
+	Proxy string `json:"proxy,omitempty"`
 }
 
 func (m *Module) handleListBans(w http.ResponseWriter, _ *http.Request) {
@@ -113,7 +116,11 @@ func (m *Module) handleGeoIPDownload(w http.ResponseWriter, r *http.Request) {
 		httpx.Error(w, http.StatusBadRequest, "下载地址需以 http(s):// 开头")
 		return
 	}
-	if _, err := geoip.Download(u, m.geoipPath()); err != nil {
+	if err := proxyx.Validate(req.Proxy); err != nil {
+		httpx.Error(w, http.StatusBadRequest, "%v", err)
+		return
+	}
+	if _, err := geoip.Download(proxyx.Client(req.Proxy, 5*time.Minute, false), u, m.geoipPath()); err != nil {
 		httpx.Error(w, http.StatusBadGateway, "%v", err)
 		return
 	}

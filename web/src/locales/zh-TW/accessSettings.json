@@ -19,5 +19,6 @@
   "uploadMmdb": "上傳 .mmdb",
   "mmdbUrlPlaceholder": "或填寫 .mmdb 下載網址",
   "geoImported": "GeoIP 資料庫已匯入",
-  "geoDownloaded": "GeoIP 資料庫已下載並載入"
+  "geoDownloaded": "GeoIP 資料庫已下載並載入",
+  "geoProxy": "下載代理"
 }

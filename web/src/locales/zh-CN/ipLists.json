@@ -20,5 +20,7 @@
   "statusLoaded": "已载入 {count} 条",
   "statusFailed": "下载失败",
   "statusPending": "等待下载",
-  "refreshed": "已刷新，共 {count} 条"
+  "refreshed": "已刷新，共 {count} 条",
+  "proxy": "下载代理",
+  "proxyHelp": "列表地址（如 GitHub）直连不通时经代理下载，支持 http://、https:// 与 socks5://。"
 }

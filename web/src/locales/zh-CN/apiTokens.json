@@ -50,5 +50,8 @@
   "execTag": "可执行命令",
   "execTip": "该模块的写权限可以在服务器上执行命令（命令、脚本或程序路径），等同于 Gately 进程用户的命令执行权限，只授予完全信任的脚本。",
   "execWarn": "令牌持有者可以借以下模块的写权限在服务器上执行命令：{modules}。只授予完全信任的脚本。",
-  "listSep": "、"
+  "listSep": "、",
+  "exampleStatusNote": "/api/status 需要令牌具备「系统状态」的读权限。",
+  "exampleOpenAPI": "读取接口描述（OpenAPI）",
+  "exampleOpenAPINote": "任何有效令牌都可以读取，不需要额外权限，可用来确认令牌可用，或导入 Postman 等 API 工具；令牌无效时同样被拒绝。"
 }

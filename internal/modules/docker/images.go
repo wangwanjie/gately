@@ -418,7 +418,10 @@ func (m *Module) handleImagePull(w http.ResponseWriter, r *http.Request) {
 	id := m.startTask("pull", "拉取镜像 "+ref, func(ctx context.Context, progress func(string)) error {
 		err := m.pullImageWithMirrors(ctx, c, ref, progress)
 		if err != nil {
-			m.logWarn("拉取镜像 %s 失败: %v", ref, err)
+			// 用户取消时由 startTask 记录“已中断任务”，不当作失败记录
+			if !userCancelled(ctx) {
+				m.logWarn("拉取镜像 %s 失败: %v", ref, err)
+			}
 			return err
 		}
 		m.logInfo("拉取镜像 %s 完成", ref)
@@ -447,7 +450,10 @@ func (m *Module) handleImagePush(w http.ResponseWriter, r *http.Request) {
 		err := c.resImagePush(ctx, ref, m.registryAuth(ref), pt.Add)
 		pt.Flush()
 		if err != nil {
-			m.logWarn("推送镜像 %s 失败: %v", ref, err)
+			// 用户取消时由 startTask 记录“已中断任务”，不当作失败记录
+			if !userCancelled(ctx) {
+				m.logWarn("推送镜像 %s 失败: %v", ref, err)
+			}
 			return err
 		}
 		m.logInfo("推送镜像 %s 完成", ref)
@@ -666,7 +672,10 @@ func (m *Module) handleImageBuild(w http.ResponseWriter, r *http.Request) {
 		})
 		pt.Flush()
 		if err != nil {
-			m.logWarn("构建镜像 %s 失败: %v", req.Tag, err)
+			// 用户取消时由 startTask 记录“已中断任务”，不当作失败记录
+			if !userCancelled(ctx) {
+				m.logWarn("构建镜像 %s 失败: %v", req.Tag, err)
+			}
 			return err
 		}
 		m.logInfo("构建镜像 %s 完成", req.Tag)

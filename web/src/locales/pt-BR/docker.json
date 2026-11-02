@@ -21,7 +21,11 @@
     "removing": "Removendo"
   },
   "task": {
-    "failed": "{title} falhou"
+    "failed": "{title} falhou",
+    "cancel": "Interromper",
+    "cancelConfirm": "Interromper esta tarefa? Um contêiner sendo recriado é concluído ou restaurado primeiro.",
+    "stopping": "Interrompendo…",
+    "cancelled": "Interrompida: {title}"
   },
   "compose": {
     "editor": {
@@ -473,7 +477,8 @@
     "empty": "Nenhuma tarefa",
     "running": "Em andamento",
     "success": "Concluída com sucesso",
-    "failed": "Falhou"
+    "failed": "Falhou",
+    "cancelled": "Interrompida"
   },
   "taskPanel": {
     "defaultTitle": "Tarefa em segundo plano",

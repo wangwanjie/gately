@@ -19,5 +19,6 @@
   "uploadMmdb": ".mmdb 업로드",
   "mmdbUrlPlaceholder": "또는 .mmdb 다운로드 주소 입력",
   "geoImported": "GeoIP 데이터베이스를 가져왔습니다",
-  "geoDownloaded": "GeoIP 데이터베이스를 다운로드하여 로드했습니다"
+  "geoDownloaded": "GeoIP 데이터베이스를 다운로드하여 로드했습니다",
+  "geoProxy": "다운로드 프록시"
 }

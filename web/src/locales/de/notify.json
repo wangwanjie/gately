@@ -108,5 +108,10 @@
       "name": "Updates",
       "desc": "Sicherheitsupdates und neue Versionen von Gately sowie neue Versionen verwalteter Programme und Container-Images"
     }
-  }
+  },
+  "settings": "Benachrichtigungseinstellungen",
+  "proxy": "Proxy",
+  "proxyGlobalHelp": "Standard-Proxy für alle Kanäle; jeder Kanal kann einen eigenen festlegen oder direkt verbinden. Unterstützt http://-, https://- und socks5://-Proxys; „Globalen Update-Proxy verwenden“ übernimmt den Update-Proxy aus den Systemeinstellungen. Ohne Proxy folgen HTTP-Kanäle HTTPS_PROXY und ähnlichen Umgebungsvariablen, E-Mail verbindet direkt.",
+  "proxyChannelHelp": "Für Netzwerke, in denen der Benachrichtigungsdienst nur über einen Proxy erreichbar ist. Folgt standardmäßig dem globalen Proxy der Benachrichtigungseinstellungen.",
+  "proxySmtpHelp": "E-Mail baut die TCP-Verbindung über den Proxy auf: http(s)-Proxys nutzen die CONNECT-Methode (der Proxy muss den Mail-Port erlauben), socks5-Proxys lösen den Servernamen auf dem Proxy auf."
 }

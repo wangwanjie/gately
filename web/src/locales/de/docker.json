@@ -21,7 +21,11 @@
     "removing": "Wird entfernt"
   },
   "task": {
-    "failed": "{title} fehlgeschlagen"
+    "failed": "{title} fehlgeschlagen",
+    "cancel": "Abbrechen",
+    "cancelConfirm": "Diese Aufgabe abbrechen? Ein Container, der gerade neu erstellt wird, wird zuerst fertiggestellt oder wiederhergestellt.",
+    "stopping": "Wird gestoppt…",
+    "cancelled": "Abgebrochen: {title}"
   },
   "compose": {
     "editor": {
@@ -473,7 +477,8 @@
     "empty": "Keine Aufgaben",
     "running": "In Bearbeitung",
     "success": "Erfolgreich",
-    "failed": "Fehlgeschlagen"
+    "failed": "Fehlgeschlagen",
+    "cancelled": "Abgebrochen"
   },
   "taskPanel": {
     "defaultTitle": "Hintergrundaufgabe",

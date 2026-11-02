@@ -1305,6 +1305,9 @@
           "port": {
             "type": "integer"
           },
+          "proxy": {
+            "type": "string"
+          },
           "remark": {
             "type": "string"
           },
@@ -1387,6 +1390,14 @@
           },
           "silence": {
             "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "notify.Settings": {
+        "properties": {
+          "proxy": {
+            "type": "string"
           }
         },
         "type": "object"
@@ -2303,6 +2314,9 @@
           "method": {
             "type": "string"
           },
+          "proxy": {
+            "type": "string"
+          },
           "successContent": {
             "items": {
               "type": "string"
@@ -2521,6 +2535,9 @@
             "type": "string"
           },
           "name": {
+            "type": "string"
+          },
+          "proxy": {
             "type": "string"
           },
           "refreshHours": {
@@ -3326,6 +3343,9 @@
       },
       "webservice.TopoSite": {
         "properties": {
+          "accessLog": {
+            "type": "boolean"
+          },
           "active": {
             "type": "integer"
           },
@@ -3690,6 +3710,9 @@
       },
       "webservice.geoipDownload": {
         "properties": {
+          "proxy": {
+            "type": "string"
+          },
           "url": {
             "type": "string"
           }
@@ -4908,7 +4931,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain, `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `backup:read`.",
+        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain (partial match), `site` site name (exact match, returns only that site's access log), `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `backup:read`.",
         "parameters": [
           {
             "description": "Incremental fetch: returns only logs with a sequence number greater than this value",
@@ -4978,6 +5001,14 @@
             "description": "Part of a site name or domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -6402,7 +6433,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain, `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `cloudflared:read`.",
+        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain (partial match), `site` site name (exact match, returns only that site's access log), `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `cloudflared:read`.",
         "parameters": [
           {
             "description": "Incremental fetch: returns only logs with a sequence number greater than this value",
@@ -6472,6 +6503,14 @@
             "description": "Part of a site name or domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -7686,7 +7725,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain, `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `cron:read`.",
+        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain (partial match), `site` site name (exact match, returns only that site's access log), `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `cron:read`.",
         "parameters": [
           {
             "description": "Incremental fetch: returns only logs with a sequence number greater than this value",
@@ -7756,6 +7795,14 @@
             "description": "Part of a site name or domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -8781,7 +8828,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain, `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `ddns:read`.",
+        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain (partial match), `site` site name (exact match, returns only that site's access log), `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `ddns:read`.",
         "parameters": [
           {
             "description": "Incremental fetch: returns only logs with a sequence number greater than this value",
@@ -8851,6 +8898,14 @@
             "description": "Part of a site name or domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -13073,7 +13128,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain, `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `docker:read`.",
+        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain (partial match), `site` site name (exact match, returns only that site's access log), `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `docker:read`.",
         "parameters": [
           {
             "description": "Incremental fetch: returns only logs with a sequence number greater than this value",
@@ -13143,6 +13198,14 @@
             "description": "Part of a site name or domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -13934,6 +13997,67 @@
           "Docker management"
         ],
         "x-required-scope": "docker:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/docker/tasks/{id}/cancel": {
+      "post": {
+        "description": "Pulling, pushing and building images abort the corresponding Docker operation; Compose commands receive an interrupt signal first and exit on their own; batch upgrades stop after the current container, and a container being recreated is finished or restored, never left halfway. After cancellation the task status is `cancelled`, and `cancelling` is true while it winds down; returns 409 if the task has already finished.\n\nRequired permission: `docker:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Cancel a running background task",
+        "tags": [
+          "Docker management"
+        ],
+        "x-required-scope": "docker:write",
         "x-token-allowed": true
       }
     },
@@ -15391,7 +15515,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain, `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `filebrowser:read`.",
+        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain (partial match), `site` site name (exact match, returns only that site's access log), `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `filebrowser:read`.",
         "parameters": [
           {
             "description": "Incremental fetch: returns only logs with a sequence number greater than this value",
@@ -15461,6 +15585,14 @@
             "description": "Part of a site name or domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -17113,7 +17245,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain, `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `frp:read`.",
+        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain (partial match), `site` site name (exact match, returns only that site's access log), `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `frp:read`.",
         "parameters": [
           {
             "description": "Incremental fetch: returns only logs with a sequence number greater than this value",
@@ -17183,6 +17315,14 @@
             "description": "Part of a site name or domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -18995,7 +19135,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain, `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `ftp:read`.",
+        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain (partial match), `site` site name (exact match, returns only that site's access log), `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `ftp:read`.",
         "parameters": [
           {
             "description": "Incremental fetch: returns only logs with a sequence number greater than this value",
@@ -19065,6 +19205,14 @@
             "description": "Part of a site name or domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -20442,7 +20590,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain, `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `guard:read`.",
+        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain (partial match), `site` site name (exact match, returns only that site's access log), `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `guard:read`.",
         "parameters": [
           {
             "description": "Incremental fetch: returns only logs with a sequence number greater than this value",
@@ -20512,6 +20660,14 @@
             "description": "Part of a site name or domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -21074,7 +21230,7 @@
     },
     "/api/logs": {
       "get": {
-        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain, `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `logs:read`.",
+        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain (partial match), `site` site name (exact match, returns only that site's access log), `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `logs:read`.",
         "parameters": [
           {
             "description": "Incremental fetch: returns only logs with a sequence number greater than this value",
@@ -21144,6 +21300,14 @@
             "description": "Part of a site name or domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -21339,7 +21503,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain, `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `nettools:read`.",
+        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain (partial match), `site` site name (exact match, returns only that site's access log), `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `nettools:read`.",
         "parameters": [
           {
             "description": "Incremental fetch: returns only logs with a sequence number greater than this value",
@@ -21409,6 +21573,14 @@
             "description": "Part of a site name or domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -22895,7 +23067,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain, `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `notify:read`.",
+        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain (partial match), `site` site name (exact match, returns only that site's access log), `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `notify:read`.",
         "parameters": [
           {
             "description": "Incremental fetch: returns only logs with a sequence number greater than this value",
@@ -22965,6 +23137,14 @@
             "description": "Part of a site name or domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -23707,6 +23887,129 @@
         "x-token-allowed": true
       }
     },
+    "/api/notify/settings": {
+      "get": {
+        "description": "Required permission: `notify:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/notify.Settings"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get notification settings",
+        "tags": [
+          "Notification center"
+        ],
+        "x-required-scope": "notify:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Required permission: `notify:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/notify.Settings"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/notify.Settings"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Save notification settings",
+        "tags": [
+          "Notification center"
+        ],
+        "x-required-scope": "notify:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/openapi.json": {
       "get": {
         "description": "Any valid API token can access this endpoint; no specific permission is required.",
@@ -23860,7 +24163,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain, `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `perf:read`.",
+        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain (partial match), `site` site name (exact match, returns only that site's access log), `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `perf:read`.",
         "parameters": [
           {
             "description": "Incremental fetch: returns only logs with a sequence number greater than this value",
@@ -23930,6 +24233,14 @@
             "description": "Part of a site name or domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -24903,7 +25214,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain, `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `portforward:read`.",
+        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain (partial match), `site` site name (exact match, returns only that site's access log), `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `portforward:read`.",
         "parameters": [
           {
             "description": "Incremental fetch: returns only logs with a sequence number greater than this value",
@@ -24973,6 +25284,14 @@
             "description": "Part of a site name or domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -25875,7 +26194,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain, `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `protoroute:read`.",
+        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain (partial match), `site` site name (exact match, returns only that site's access log), `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `protoroute:read`.",
         "parameters": [
           {
             "description": "Incremental fetch: returns only logs with a sequence number greater than this value",
@@ -25945,6 +26264,14 @@
             "description": "Part of a site name or domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -26888,7 +27215,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain, `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `smb:read`.",
+        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain (partial match), `site` site name (exact match, returns only that site's access log), `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `smb:read`.",
         "parameters": [
           {
             "description": "Incremental fetch: returns only logs with a sequence number greater than this value",
@@ -26958,6 +27285,14 @@
             "description": "Part of a site name or domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -28335,7 +28670,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain, `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `ssl:read`.",
+        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain (partial match), `site` site name (exact match, returns only that site's access log), `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `ssl:read`.",
         "parameters": [
           {
             "description": "Incremental fetch: returns only logs with a sequence number greater than this value",
@@ -28405,6 +28740,14 @@
             "description": "Part of a site name or domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -29144,7 +29487,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain, `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `storage:read`.",
+        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain (partial match), `site` site name (exact match, returns only that site's access log), `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `storage:read`.",
         "parameters": [
           {
             "description": "Incremental fetch: returns only logs with a sequence number greater than this value",
@@ -29214,6 +29557,14 @@
             "description": "Part of a site name or domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -30078,7 +30429,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain, `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `stun:read`.",
+        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain (partial match), `site` site name (exact match, returns only that site's access log), `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `stun:read`.",
         "parameters": [
           {
             "description": "Incremental fetch: returns only logs with a sequence number greater than this value",
@@ -30148,6 +30499,14 @@
             "description": "Part of a site name or domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -32357,7 +32716,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain, `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `tailscale:read`.",
+        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain (partial match), `site` site name (exact match, returns only that site's access log), `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `tailscale:read`.",
         "parameters": [
           {
             "description": "Incremental fetch: returns only logs with a sequence number greater than this value",
@@ -32427,6 +32786,14 @@
             "description": "Part of a site name or domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -34085,7 +34452,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain, `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `waf:read`.",
+        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain (partial match), `site` site name (exact match, returns only that site's access log), `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `waf:read`.",
         "parameters": [
           {
             "description": "Incremental fetch: returns only logs with a sequence number greater than this value",
@@ -34155,6 +34522,14 @@
             "description": "Part of a site name or domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -34359,7 +34734,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain, `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `webdav:read`.",
+        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain (partial match), `site` site name (exact match, returns only that site's access log), `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `webdav:read`.",
         "parameters": [
           {
             "description": "Incremental fetch: returns only logs with a sequence number greater than this value",
@@ -34429,6 +34804,14 @@
             "description": "Part of a site name or domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -36678,7 +37061,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain, `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `webservice:read`.",
+        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain (partial match), `site` site name (exact match, returns only that site's access log), `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `webservice:read`.",
         "parameters": [
           {
             "description": "Incremental fetch: returns only logs with a sequence number greater than this value",
@@ -36748,6 +37131,14 @@
             "description": "Part of a site name or domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -39363,7 +39754,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain, `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `webterminal:read`.",
+        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain (partial match), `site` site name (exact match, returns only that site's access log), `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `webterminal:read`.",
         "parameters": [
           {
             "description": "Incremental fetch: returns only logs with a sequence number greater than this value",
@@ -39433,6 +39824,14 @@
             "description": "Part of a site name or domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }
@@ -42191,7 +42590,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain, `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `wol:read`.",
+        "description": "Supports incremental fetching with the `since` parameter, returning logs with a sequence number greater than this value; `before` returns logs with a sequence number less than this value, for loading earlier entries; `limit` returns only the newest entries among them, and when memory does not hold enough, the history kept in the log files is searched as well. Filter parameters: `level` minimum level, `source` source, `q` keywords (space-separated terms must all match, double quotes group a phrase, a leading `-` excludes), `ip` client address (full address, CIDR or partial address, comma-separated), `host` site name or domain (partial match), `site` site name (exact match, returns only that site's access log), `status` status code (such as `404`, `4xx`, `500-599`), `from` and `to` time range (RFC 3339 or millisecond timestamp). `exclude` lists terms to exclude: entries containing any of them are not returned; written like `q`, the leading `-` is optional.\n\nRequired permission: `wol:read`.",
         "parameters": [
           {
             "description": "Incremental fetch: returns only logs with a sequence number greater than this value",
@@ -42261,6 +42660,14 @@
             "description": "Part of a site name or domain",
             "in": "query",
             "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
             "schema": {
               "type": "string"
             }

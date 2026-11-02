@@ -1,0 +1,7 @@
+{
+  "title": "Access log · {site}",
+  "titleIp": "Access log · {site} · {ip}",
+  "titleAll": "Access log · {ip}",
+  "accessLogOff": "This site has the access log turned off, so only a few entries such as blocks appear here. Turn on the access log under Basic when editing the site.",
+  "noName": "The site has no name, so its access log entries carry no site field and are filtered by domain here, which may include similar sites. Give the site a name for exact results."
+}

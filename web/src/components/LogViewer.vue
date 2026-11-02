@@ -38,6 +38,10 @@
       <el-button size="small" :type="advancedCount ? 'primary' : 'default'" :plain="!!advancedCount" :icon="Filter" @click="showAdvanced = !showAdvanced">
         {{ t('components.logViewer.moreFilters') }}<span v-if="advancedCount" class="count">{{ advancedCount }}</span>
       </el-button>
+      <!-- 站点条件按名称完整匹配，由拓扑页等入口带入或点击日志中的站点标签设置 -->
+      <el-tag v-if="kinds.access && filters.site" closable size="small" class="f-site" @close="filters.site = ''">
+        {{ t('components.logViewer.siteChip', { site: filters.site }) }}
+      </el-tag>
       <el-button v-if="active" size="small" text :icon="RotateCcw" @click="resetFilters">{{ t('components.logViewer.reset') }}</el-button>
       <!-- 访问日志的显示开关：只影响页面显示，日志照常保存；选择记在浏览器里 -->
       <template v-if="kinds.access">
@@ -109,8 +113,9 @@ import { usePolling } from '../composables/usePolling'
 
 const { t } = useI18n()
 
-// height 可覆盖默认高度，例如独立日志页填满可视区域
-const props = defineProps<{ url: string; clearable?: boolean; height?: string }>()
+// height 可覆盖默认高度，例如独立日志页填满可视区域；
+// initial 为打开时的过滤条件，例如拓扑页按站点与访客 IP 查看访问日志（site 为站点名称，完整匹配）
+const props = defineProps<{ url: string; clearable?: boolean; height?: string; initial?: { ip?: string; site?: string; host?: string } }>()
 
 // 首次只拉最近 PAGE 条，更早的日志点“加载更早的日志”按页补充；轮询追加后最多保留 MAX 条
 const PAGE = 200
@@ -135,10 +140,11 @@ type Range = (typeof ranges)[number]
 const rangeMs: Record<string, number> = { '15m': 15 * 60e3, '1h': 3600e3, '6h': 6 * 3600e3, '24h': 24 * 3600e3, '7d': 7 * 24 * 3600e3 }
 
 function emptyFilters() {
-  return { level: 'all', source: '', q: '', exclude: '', ip: '', host: '', status: '', range: 'all' as Range, custom: null as [Date, Date] | null }
+  return { level: 'all', source: '', q: '', exclude: '', ip: '', host: '', site: '', status: '', range: 'all' as Range, custom: null as [Date, Date] | null }
 }
-const filters = reactive(emptyFilters())
-const showAdvanced = ref(false)
+const filters = reactive({ ...emptyFilters(), ...(props.initial ?? {}) })
+// 带入了 IP 或域名条件时展开高级过滤，让用户看到当前生效的条件
+const showAdvanced = ref(!!(props.initial?.ip || props.initial?.host))
 
 // 访问日志的显示开关，保存在 localStorage，不随“重置”清除。
 // 管理员自己的请求（尤其是日志页每 2 秒的轮询）默认隐藏，避免“看日志产生日志”；被封禁来源的请求默认显示，便于审计
@@ -198,7 +204,9 @@ const sourceOptions = computed(() => {
 // 高级过滤项中已填写的数量，显示在按钮上；自定义时间范围清空了日期时不会发出时间条件，不计入
 const rangeActive = computed(() => (filters.range === 'custom' ? !!filters.custom?.[0] : filters.range !== 'all'))
 const advancedCount = computed(() => [filters.ip, kinds.value.host && filters.host, kinds.value.status && filters.status, rangeActive.value].filter(Boolean).length)
-const active = computed(() => filters.level !== 'all' || !!filters.source || !!filters.q.trim() || !!filters.exclude.trim() || advancedCount.value > 0)
+const active = computed(
+  () => filters.level !== 'all' || !!filters.source || !!filters.q.trim() || !!filters.exclude.trim() || (kinds.value.access && !!filters.site) || advancedCount.value > 0,
+)
 
 // filterQuery 把过滤条件拼成查询参数（不含 since/before/limit）
 function filterQuery(): string {
@@ -222,6 +230,7 @@ function filterQuery(): string {
     add('status', filters.status)
   }
   if (kinds.value.access) {
+    add('site', filters.site)
     if (hide.banned) {
       q.set('hideBanned', '1')
     }
@@ -353,6 +362,10 @@ function applyField(key: string, value: string) {
   }
   if (key === 'ip') {
     filters.ip = value
+  } else if (key === 'site' && kinds.value.access) {
+    // 站点名称按完整匹配过滤，不会混入名称相近的其他站点
+    filters.site = value
+    return
   } else if ((key === 'host' || key === 'site') && kinds.value.host) {
     filters.host = value
   } else if (key === 'status' && kinds.value.status) {
@@ -534,6 +547,11 @@ onMounted(async () => {
 }
 .f-q {
   width: 240px;
+}
+.f-site {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .f-ip {
   width: 300px;

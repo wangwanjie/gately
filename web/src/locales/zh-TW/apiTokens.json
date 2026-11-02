@@ -50,5 +50,8 @@
   "execTag": "可執行命令",
   "execTip": "該模組的寫入權限可以在伺服器上執行命令（命令、指令碼或程式路徑），等同於 Gately 程序使用者的命令執行權限，只授予完全信任的指令碼。",
   "execWarn": "令牌持有者可以藉以下模組的寫入權限在伺服器上執行命令：{modules}。只授予完全信任的指令碼。",
-  "listSep": "、"
+  "listSep": "、",
+  "exampleStatusNote": "/api/status 需要權杖具備「系統狀態」的讀取權限。",
+  "exampleOpenAPI": "讀取介面描述（OpenAPI）",
+  "exampleOpenAPINote": "任何有效權杖都可以讀取，不需要額外權限，可用來確認權杖可用，或匯入 Postman 等 API 工具；權杖無效時同樣被拒絕。"
 }

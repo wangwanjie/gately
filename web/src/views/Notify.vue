@@ -1,6 +1,7 @@
 <template>
   <div>
     <PageHeader :title="t('notify.title')" :desc="t('notify.desc')" :icon="Bell">
+      <el-button :icon="SlidersHorizontal" @click="openSettings">{{ t('notify.settings') }}</el-button>
       <el-button :icon="Plus" @click="openRule()">{{ t('notify.addRule') }}</el-button>
       <el-button type="primary" :icon="Plus" @click="openChannel()">{{ t('notify.addChannel') }}</el-button>
     </PageHeader>
@@ -22,6 +23,7 @@
           <template #title>{{ c.name }}</template>
           <template #sub>{{ kindLabel(c.kind) }}</template>
           <Field :label="t('notify.target')" mono>{{ channelTarget(c) }}</Field>
+          <Field v-if="c.proxy" :label="t('notify.proxy')" mono>{{ proxyLabel(c.proxy) }}</Field>
           <Field v-if="c.remark" :label="t('common.remark')">{{ c.remark }}</Field>
           <template v-if="sorting" #actions>
             <SortMoves :gl="glChannels" :it="it" />
@@ -186,12 +188,30 @@
           </el-form-item>
         </template>
 
+        <el-form-item :label="t('notify.proxy')">
+          <ProxyInput v-model="editingChannel.proxy" inherit :owner="editingChannel" />
+          <div class="form-help">{{ editingChannel.kind === 'smtp' ? t('notify.proxySmtpHelp') : t('notify.proxyChannelHelp') }}</div>
+        </el-form-item>
         <el-form-item :label="t('common.remark')"><el-input v-model="editingChannel.remark" /></el-form-item>
         <el-form-item :label="t('common.enable')"><el-switch v-model="editingChannel.enable" /></el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="channelVisible = false">{{ t('common.cancel') }}</el-button>
         <el-button type="primary" @click="saveChannel">{{ t('common.save') }}</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 通知中心的全局设置：目前只有各渠道默认使用的代理 -->
+    <el-dialog v-model="settingsVisible" :title="t('notify.settings')" width="560px" :fullscreen="isMobile">
+      <el-form label-width="110px" :label-position="labelPosition">
+        <el-form-item :label="t('notify.proxy')">
+          <ProxyInput v-model="settingsDraft.proxy" :owner="settingsDraft" />
+          <div class="form-help">{{ t('notify.proxyGlobalHelp') }}</div>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="settingsVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" :loading="savingSettings" @click="saveSettings">{{ t('common.save') }}</el-button>
       </template>
     </el-dialog>
 
@@ -243,10 +263,12 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import { Bell, CopyPlus, Pencil, Plus, Send, Trash2 } from 'lucide-vue-next'
+import { Bell, CopyPlus, Pencil, Plus, Send, SlidersHorizontal, Trash2 } from 'lucide-vue-next'
 import { api } from '../api'
 import { SECRET_MASK, secretOf } from '../secrets'
 import SecretInput from '../components/SecretInput.vue'
+import ProxyInput from '../components/ProxyInput.vue'
+import { proxyLabel } from '../proxy'
 import PageHeader from '../components/PageHeader.vue'
 import EntityCard from '../components/EntityCard.vue'
 import GroupedList from '../components/GroupedList.vue'
@@ -294,6 +316,8 @@ interface Channel {
   user: string
   from: string
   webhook: WebhookCfg
+  // proxy 为该渠道的代理：留空跟随通知设置，direct 直连，update 使用全局更新代理，或代理地址
+  proxy: string
   remark: string
 }
 
@@ -418,6 +442,7 @@ function emptyChannel(): Channel {
     user: '',
     from: '',
     webhook: { enable: true, url: '', method: 'POST', headers: [], body: '{"text":"{title}\\n{text}"}', successContent: [], timeout: 0, insecureSkipVerify: false },
+    proxy: '',
     remark: '',
   }
 }
@@ -463,6 +488,34 @@ function channelTarget(c: Channel) {
       return kindLabel(c.kind)
     default:
       return c.url
+  }
+}
+
+// ---- 通知设置 ----
+const settingsVisible = ref(false)
+const savingSettings = ref(false)
+const settingsDraft = ref({ proxy: '' })
+
+async function openSettings() {
+  try {
+    const s = await api.get<{ proxy?: string }>('/api/notify/settings')
+    settingsDraft.value = { proxy: s.proxy ?? '' }
+    settingsVisible.value = true
+  } catch (e) {
+    ElMessage.error((e as Error).message)
+  }
+}
+
+async function saveSettings() {
+  savingSettings.value = true
+  try {
+    await api.put('/api/notify/settings', { proxy: settingsDraft.value.proxy.trim() })
+    settingsVisible.value = false
+    ElMessage.success(t('common.saved'))
+  } catch (e) {
+    ElMessage.error((e as Error).message)
+  } finally {
+    savingSettings.value = false
   }
 }
 

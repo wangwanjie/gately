@@ -19,5 +19,6 @@
   "uploadMmdb": "Téléverser un .mmdb",
   "mmdbUrlPlaceholder": "Ou saisissez l'URL de téléchargement d'un .mmdb",
   "geoImported": "Base GeoIP importée",
-  "geoDownloaded": "Base GeoIP téléchargée et chargée"
+  "geoDownloaded": "Base GeoIP téléchargée et chargée",
+  "geoProxy": "Proxy de téléchargement"
 }
