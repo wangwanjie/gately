@@ -27,10 +27,7 @@
 
 > **fnOS ユーザーの方へ**：Gately は fnOS のネイティブアプリとして提供されています。**fnOS 統一ゲートウェイ**に統合されており、fnOS デスクトップのアイコンから開けます。リモートアクセス用のドメインを含め、fnOS と同じアドレスでそのまま使えるため、ポートを追加で開放する必要はありません。有効にすると、**fnOS 管理者は fnOS のログイン状態のままログイン**でき、Gately のパスワードや 2 段階認証コードの入力は不要です。詳しくは [fnOS ネイティブアプリ](https://gately.cn/ja/docs/guide/install#fnos) を参照してください。
 
-<p align="center">
-  <a href="https://gately.cn/videos/gately-tour.en.mp4"><img src="docs/images/tour-poster.en.webp" alt="2 分でわかる機能ツアーを見る" width="100%"></a><br>
-  <sub><a href="https://gately.cn/videos/gately-tour.en.mp4"><b>▶ 2 分でわかる機能ツアーを見る</b></a></sub>
-</p>
+https://github.com/user-attachments/assets/5e12c870-f50d-490b-a4ea-f1b8055739d4
 
 ## クイックスタート
 

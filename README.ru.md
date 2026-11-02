@@ -27,10 +27,7 @@ DNS и обход NAT, обратный прокси и HTTPS-сертифика
 
 > **Пользователям fnOS:** Gately поставляется как нативное приложение для fnOS. Оно подключается к **единому шлюзу fnOS**, поэтому открывается значком на рабочем столе fnOS и работает по тому же адресу, что и сама fnOS, включая удалённый домен, без открытия дополнительных портов. После включения **администраторы fnOS могут входить напрямую по своему сеансу fnOS**, без пароля Gately и кода двухэтапной проверки. Подробнее — в разделе [Нативное приложение для fnOS](https://gately.cn/ru/docs/guide/install#fnos).
 
-<p align="center">
-  <a href="https://gately.cn/videos/gately-tour.en.mp4"><img src="docs/images/tour-poster.en.webp" alt="Смотреть обзор за 2 минуты" width="100%"></a><br>
-  <sub><a href="https://gately.cn/videos/gately-tour.en.mp4"><b>▶ Смотреть обзор за 2 минуты</b></a></sub>
-</p>
+https://github.com/user-attachments/assets/5e12c870-f50d-490b-a4ea-f1b8055739d4
 
 ## Быстрый старт
 
