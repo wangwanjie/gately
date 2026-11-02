@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/wangwanjie/gately/internal/auth"
+	"github.com/wangwanjie/gately/internal/banlist"
 	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/logbuf"
 )
@@ -165,6 +166,12 @@ func TestLogsHideParams(t *testing.T) {
 	l.With(logbuf.Fields{logbuf.FieldIP: "1.2.3.5", logbuf.FieldStatus: "403", logbuf.FieldDeny: "ip"}).Infof("ip-denied")
 	l.With(logbuf.Fields{logbuf.FieldIP: "10.0.0.8", logbuf.FieldStatus: "200", logbuf.FieldAdmin: "admin"}).Infof("console")
 	l.With(logbuf.Fields{logbuf.FieldIP: "10.0.0.9", logbuf.FieldStatus: "200"}).Infof("normal")
+	// 触发封禁的请求发生在封禁之前，没有 deny 标记，来源当前在封禁中时同样隐藏
+	l.With(logbuf.Fields{logbuf.FieldIP: "203.0.113.7", logbuf.FieldStatus: "444"}).Infof("trigger")
+	if _, _, err := banlist.Default.Ban("203.0.113.7", banlist.Options{Duration: time.Minute, Force: true}); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { banlist.Default.Unban("203.0.113.7") })
 
 	query := func(q string) (int, string) {
 		t.Helper()
@@ -182,12 +189,12 @@ func TestLogsHideParams(t *testing.T) {
 		return resp.StatusCode, strings.Join(msgs, ",")
 	}
 	cases := map[string]string{
-		"":                                     "banned,ip-denied,console,normal",
+		"":                                     "banned,ip-denied,console,normal,trigger",
 		"hideBanned=1":                         "ip-denied,console,normal",
-		"hideAdmin=true":                       "banned,ip-denied,normal",
+		"hideAdmin=true":                       "banned,ip-denied,normal,trigger",
 		"hideBanned=1&hideAdmin=1":             "ip-denied,normal",
-		"hideBanned=0&hideAdmin=no":            "banned,ip-denied,console,normal",
-		"ip=" + url.QueryEscape("!1.2.3.0/24"): "console,normal",
+		"hideBanned=0&hideAdmin=no":            "banned,ip-denied,console,normal,trigger",
+		"ip=" + url.QueryEscape("!1.2.3.0/24"): "console,normal,trigger",
 		"ip=" + url.QueryEscape("10.0.0.0/8,-10.0.0.8"):    "normal",
 		"hideBanned=1&ip=" + url.QueryEscape("1.2.3.0/24"): "ip-denied",
 	}

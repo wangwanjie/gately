@@ -1,6 +1,7 @@
 package app
 
 import (
+	"net/netip"
 	"net/url"
 	"path/filepath"
 	"strconv"
@@ -8,6 +9,7 @@ import (
 	"time"
 
 	"github.com/wangwanjie/gately/internal/auth"
+	"github.com/wangwanjie/gately/internal/banlist"
 	"github.com/wangwanjie/gately/internal/fsperm"
 	"github.com/wangwanjie/gately/internal/logbuf"
 )
@@ -75,7 +77,7 @@ var logFilterParams = []string{"level", "source", "q", "exclude", "ip", "host", 
 //   - host：站点名称或域名的一部分
 //   - site：站点名称，不区分大小写完整匹配（访问日志的 site 字段），用于只看某个站点的日志
 //   - status：状态码，如 404、4xx、500-599，多个以逗号分隔
-//   - hideBanned：为 1 时隐藏来源已被封禁而被拒绝的访问日志
+//   - hideBanned：为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）
 //   - hideAdmin：为 1 时隐藏带管理后台登录态的请求（管理员经站点反代访问后台产生的访问日志）
 //   - from、to：时间范围，RFC 3339 格式或毫秒时间戳
 //
@@ -100,6 +102,12 @@ func parseLogFilter(q url.Values) (*logbuf.Filter, string) {
 	// 只是隐藏，日志本身照常保存，关闭后可以查到
 	if boolParam(q.Get("hideBanned")) {
 		f.Hide = append(f.Hide, logbuf.FieldCond{Key: logbuf.FieldDeny, Value: logbuf.DenyBan})
+		// 触发封禁的请求发生在封禁之前，没有 deny 标记；封禁后由防火墙丢弃的包也不再产生日志。
+		// 按当前封禁列表隐藏这些来源的全部请求，解封或到期后重新显示
+		f.HideIP = func(ip string) bool {
+			a, err := netip.ParseAddr(ip)
+			return err == nil && banlist.Default.Banned(a)
+		}
 	}
 	if boolParam(q.Get("hideAdmin")) {
 		f.Hide = append(f.Hide, logbuf.FieldCond{Key: logbuf.FieldAdmin})

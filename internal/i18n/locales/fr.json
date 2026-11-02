@@ -581,7 +581,7 @@
   "两步验证": "Authentification à deux facteurs",
   "两步验证码错误": "Code d'authentification à deux facteurs incorrect",
   "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志": "Avec 1, masque les requêtes portant une session de la console d'administration, c'est-à-dire les journaux d'accès produits par les administrateurs qui accèdent à la console via un site du Service Web",
-  "为 1 时隐藏来源已被封禁而被拒绝的访问日志（只影响返回结果，日志照常保存）": "Avec 1, masque les journaux d'accès des requêtes refusées parce que la source est bannie (n'affecte que la réponse ; les journaux sont conservés)",
+  "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存": "À 1, masque les journaux d'accès des sources bannies : les requêtes refusées à cause du bannissement et toutes celles des sources encore bannies, y compris celles qui l'ont déclenché (n'affecte que la réponse ; les journaux sont conservés)",
   "为共享用户生成新的 TOTP 密钥（不保存，保存设置后生效）": "Générer une nouvelle clé TOTP pour un utilisateur partagé (non enregistrée ; effective après enregistrement)",
   "为镜像打标签": "Étiqueter l'image",
   "主域名 %q 无效": "Domaine principal %q invalide",

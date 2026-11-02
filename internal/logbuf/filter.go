@@ -62,6 +62,8 @@ type Filter struct {
 	Status []StatusRange
 	// Hide 为要隐藏的日志：命中其中任意一项即不匹配，例如被封禁来源的访问日志、管理员自己的请求
 	Hide []FieldCond
+	// HideIP 不为 nil 时，ip 字段使其返回 true 的日志不匹配，例如隐藏当前已被封禁来源的全部访问日志
+	HideIP func(ip string) bool
 	// From、To 为时间范围（含两端），零值表示不限
 	From, To time.Time
 	// Translate 不为 nil 时，关键词与来源也和译文比较：接口按请求语言翻译日志后返回，
@@ -72,7 +74,7 @@ type Filter struct {
 // Empty 判断是否没有任何过滤条件。
 func (f *Filter) Empty() bool {
 	return f == nil || (f.MinLevel == "" && f.Source == "" && len(f.Terms) == 0 && len(f.Excludes) == 0 &&
-		f.IP == nil && f.Host == "" && f.Site == "" && len(f.Status) == 0 && len(f.Hide) == 0 && f.From.IsZero() && f.To.IsZero())
+		f.IP == nil && f.Host == "" && f.Site == "" && len(f.Status) == 0 && len(f.Hide) == 0 && f.HideIP == nil && f.From.IsZero() && f.To.IsZero())
 }
 
 var levelOrder = map[string]int{LevelDebug: 0, LevelInfo: 1, LevelWarn: 2, LevelError: 3}
@@ -102,6 +104,11 @@ func (f *Filter) Match(e *Entry) bool {
 	}
 	for _, c := range f.Hide {
 		if c.hit(e) {
+			return false
+		}
+	}
+	if f.HideIP != nil {
+		if ip := e.Fields[FieldIP]; ip != "" && f.HideIP(ip) {
 			return false
 		}
 	}

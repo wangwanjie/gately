@@ -81,7 +81,7 @@
     },
     "from": "Inicio",
     "hideBanned": "Ocultar orígenes bloqueados",
-    "hideBannedTip": "Oculta las solicitudes rechazadas porque el origen está bloqueado. Solo afecta a la vista: los registros se conservan; desmarque para verlos",
+    "hideBannedTip": "Oculta las solicitudes de orígenes bloqueados: las rechazadas por el bloqueo y todas las de orígenes que siguen bloqueados, incluidas las que provocaron el bloqueo. Solo afecta a la vista: los registros se conservan; desmarque para verlos",
     "hideAdmin": "Ocultar solicitudes de la consola",
     "hideAdminTip": "Oculta las solicitudes con una sesión de la consola de administración, como el sondeo de la página de registros al abrir la consola a través de este sitio. Solo afecta a la vista: los registros se conservan",
     "deny": {

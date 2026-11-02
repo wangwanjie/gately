@@ -81,7 +81,7 @@
     },
     "from": "Start time",
     "hideBanned": "Hide banned sources",
-    "hideBannedTip": "Hide requests rejected because the source is banned. Display only: the logs are still kept, untick to see them",
+    "hideBannedTip": "Hide requests from banned sources: requests rejected because the source is banned, and every request from sources that are still banned, including the ones that triggered the ban. Display only: the logs are still kept, untick to see them",
     "hideAdmin": "Hide console requests",
     "hideAdminTip": "Hide requests that carry an admin console session, such as the log page polling when you open the console through this site. Display only: the logs are still kept",
     "deny": {

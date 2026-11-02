@@ -581,7 +581,7 @@
   "两步验证": "Verificación en dos pasos",
   "两步验证码错误": "Código de verificación en dos pasos incorrecto",
   "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志": "Con 1, oculta las solicitudes que llevan una sesión de la consola de administración, es decir, los registros de acceso generados por administradores que acceden a la consola a través de un sitio del Servicio Web",
-  "为 1 时隐藏来源已被封禁而被拒绝的访问日志（只影响返回结果，日志照常保存）": "Con 1, oculta los registros de acceso de solicitudes rechazadas porque el origen está bloqueado (solo afecta a la respuesta; los registros se conservan)",
+  "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存": "Con 1, oculta los registros de acceso de orígenes bloqueados: las solicitudes rechazadas por el bloqueo y todas las de orígenes que siguen bloqueados, incluidas las que provocaron el bloqueo (solo afecta a la respuesta; los registros se conservan)",
   "为共享用户生成新的 TOTP 密钥（不保存，保存设置后生效）": "Generar una nueva clave TOTP para un usuario compartido (no se guarda; se aplica al guardar la configuración)",
   "为镜像打标签": "Etiquetar la imagen",
   "主域名 %q 无效": "Dominio principal %q no válido",

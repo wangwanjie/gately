@@ -581,7 +581,7 @@
   "两步验证": "Two-factor authentication",
   "两步验证码错误": "Incorrect two-factor code",
   "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志": "When 1, hide requests that carry an admin console session, i.e. access logs produced by administrators reaching the console through a Web Service site",
-  "为 1 时隐藏来源已被封禁而被拒绝的访问日志（只影响返回结果，日志照常保存）": "When 1, hide access logs of requests rejected because the source is banned (only affects the response; logs are still kept)",
+  "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存": "When 1, hide access logs of banned sources: requests rejected because the source is banned, and every request from sources that are still banned, including the ones that triggered the ban (only affects the response; logs are still kept)",
   "为共享用户生成新的 TOTP 密钥（不保存，保存设置后生效）": "Generate a new TOTP key for a shared user (not saved; takes effect after saving settings)",
   "为镜像打标签": "Tag an image",
   "主域名 %q 无效": "Invalid primary domain %q",

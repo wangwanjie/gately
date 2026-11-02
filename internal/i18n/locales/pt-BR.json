@@ -581,7 +581,7 @@
   "两步验证": "Verificação em duas etapas",
   "两步验证码错误": "Código de verificação em duas etapas incorreto",
   "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志": "Com 1, oculta as requisições que trazem uma sessão do painel de administração, ou seja, os logs de acesso gerados por administradores acessando o painel por um site do Serviço Web",
-  "为 1 时隐藏来源已被封禁而被拒绝的访问日志（只影响返回结果，日志照常保存）": "Com 1, oculta os logs de acesso de requisições rejeitadas porque a origem está banida (afeta apenas a resposta; os logs continuam salvos)",
+  "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存": "Com 1, oculta os logs de acesso de origens banidas: as requisições rejeitadas pelo banimento e todas as de origens que continuam banidas, incluindo as que causaram o banimento (afeta apenas a resposta; os logs continuam salvos)",
   "为共享用户生成新的 TOTP 密钥（不保存，保存设置后生效）": "Gerar nova chave TOTP para um usuário compartilhado (não salva; vale após salvar as configurações)",
   "为镜像打标签": "Marcar imagem com tag",
   "主域名 %q 无效": "Domínio principal %q inválido",

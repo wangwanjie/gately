@@ -5022,7 +5022,7 @@
             }
           },
           {
-            "description": "Com 1, oculta os logs de acesso de requisições rejeitadas porque a origem está banida (afeta apenas a resposta; os logs continuam salvos)",
+            "description": "Com 1, oculta os logs de acesso de origens banidas: as requisições rejeitadas pelo banimento e todas as de origens que continuam banidas, incluindo as que causaram o banimento (afeta apenas a resposta; os logs continuam salvos)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -6524,7 +6524,7 @@
             }
           },
           {
-            "description": "Com 1, oculta os logs de acesso de requisições rejeitadas porque a origem está banida (afeta apenas a resposta; os logs continuam salvos)",
+            "description": "Com 1, oculta os logs de acesso de origens banidas: as requisições rejeitadas pelo banimento e todas as de origens que continuam banidas, incluindo as que causaram o banimento (afeta apenas a resposta; os logs continuam salvos)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -7816,7 +7816,7 @@
             }
           },
           {
-            "description": "Com 1, oculta os logs de acesso de requisições rejeitadas porque a origem está banida (afeta apenas a resposta; os logs continuam salvos)",
+            "description": "Com 1, oculta os logs de acesso de origens banidas: as requisições rejeitadas pelo banimento e todas as de origens que continuam banidas, incluindo as que causaram o banimento (afeta apenas a resposta; os logs continuam salvos)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -8919,7 +8919,7 @@
             }
           },
           {
-            "description": "Com 1, oculta os logs de acesso de requisições rejeitadas porque a origem está banida (afeta apenas a resposta; os logs continuam salvos)",
+            "description": "Com 1, oculta os logs de acesso de origens banidas: as requisições rejeitadas pelo banimento e todas as de origens que continuam banidas, incluindo as que causaram o banimento (afeta apenas a resposta; os logs continuam salvos)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -13219,7 +13219,7 @@
             }
           },
           {
-            "description": "Com 1, oculta os logs de acesso de requisições rejeitadas porque a origem está banida (afeta apenas a resposta; os logs continuam salvos)",
+            "description": "Com 1, oculta os logs de acesso de origens banidas: as requisições rejeitadas pelo banimento e todas as de origens que continuam banidas, incluindo as que causaram o banimento (afeta apenas a resposta; os logs continuam salvos)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -15606,7 +15606,7 @@
             }
           },
           {
-            "description": "Com 1, oculta os logs de acesso de requisições rejeitadas porque a origem está banida (afeta apenas a resposta; os logs continuam salvos)",
+            "description": "Com 1, oculta os logs de acesso de origens banidas: as requisições rejeitadas pelo banimento e todas as de origens que continuam banidas, incluindo as que causaram o banimento (afeta apenas a resposta; os logs continuam salvos)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -17336,7 +17336,7 @@
             }
           },
           {
-            "description": "Com 1, oculta os logs de acesso de requisições rejeitadas porque a origem está banida (afeta apenas a resposta; os logs continuam salvos)",
+            "description": "Com 1, oculta os logs de acesso de origens banidas: as requisições rejeitadas pelo banimento e todas as de origens que continuam banidas, incluindo as que causaram o banimento (afeta apenas a resposta; os logs continuam salvos)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -19226,7 +19226,7 @@
             }
           },
           {
-            "description": "Com 1, oculta os logs de acesso de requisições rejeitadas porque a origem está banida (afeta apenas a resposta; os logs continuam salvos)",
+            "description": "Com 1, oculta os logs de acesso de origens banidas: as requisições rejeitadas pelo banimento e todas as de origens que continuam banidas, incluindo as que causaram o banimento (afeta apenas a resposta; os logs continuam salvos)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -20681,7 +20681,7 @@
             }
           },
           {
-            "description": "Com 1, oculta os logs de acesso de requisições rejeitadas porque a origem está banida (afeta apenas a resposta; os logs continuam salvos)",
+            "description": "Com 1, oculta os logs de acesso de origens banidas: as requisições rejeitadas pelo banimento e todas as de origens que continuam banidas, incluindo as que causaram o banimento (afeta apenas a resposta; os logs continuam salvos)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -21321,7 +21321,7 @@
             }
           },
           {
-            "description": "Com 1, oculta os logs de acesso de requisições rejeitadas porque a origem está banida (afeta apenas a resposta; os logs continuam salvos)",
+            "description": "Com 1, oculta os logs de acesso de origens banidas: as requisições rejeitadas pelo banimento e todas as de origens que continuam banidas, incluindo as que causaram o banimento (afeta apenas a resposta; os logs continuam salvos)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -21594,7 +21594,7 @@
             }
           },
           {
-            "description": "Com 1, oculta os logs de acesso de requisições rejeitadas porque a origem está banida (afeta apenas a resposta; os logs continuam salvos)",
+            "description": "Com 1, oculta os logs de acesso de origens banidas: as requisições rejeitadas pelo banimento e todas as de origens que continuam banidas, incluindo as que causaram o banimento (afeta apenas a resposta; os logs continuam salvos)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -23158,7 +23158,7 @@
             }
           },
           {
-            "description": "Com 1, oculta os logs de acesso de requisições rejeitadas porque a origem está banida (afeta apenas a resposta; os logs continuam salvos)",
+            "description": "Com 1, oculta os logs de acesso de origens banidas: as requisições rejeitadas pelo banimento e todas as de origens que continuam banidas, incluindo as que causaram o banimento (afeta apenas a resposta; os logs continuam salvos)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -24254,7 +24254,7 @@
             }
           },
           {
-            "description": "Com 1, oculta os logs de acesso de requisições rejeitadas porque a origem está banida (afeta apenas a resposta; os logs continuam salvos)",
+            "description": "Com 1, oculta os logs de acesso de origens banidas: as requisições rejeitadas pelo banimento e todas as de origens que continuam banidas, incluindo as que causaram o banimento (afeta apenas a resposta; os logs continuam salvos)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -25305,7 +25305,7 @@
             }
           },
           {
-            "description": "Com 1, oculta os logs de acesso de requisições rejeitadas porque a origem está banida (afeta apenas a resposta; os logs continuam salvos)",
+            "description": "Com 1, oculta os logs de acesso de origens banidas: as requisições rejeitadas pelo banimento e todas as de origens que continuam banidas, incluindo as que causaram o banimento (afeta apenas a resposta; os logs continuam salvos)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -26285,7 +26285,7 @@
             }
           },
           {
-            "description": "Com 1, oculta os logs de acesso de requisições rejeitadas porque a origem está banida (afeta apenas a resposta; os logs continuam salvos)",
+            "description": "Com 1, oculta os logs de acesso de origens banidas: as requisições rejeitadas pelo banimento e todas as de origens que continuam banidas, incluindo as que causaram o banimento (afeta apenas a resposta; os logs continuam salvos)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -27306,7 +27306,7 @@
             }
           },
           {
-            "description": "Com 1, oculta os logs de acesso de requisições rejeitadas porque a origem está banida (afeta apenas a resposta; os logs continuam salvos)",
+            "description": "Com 1, oculta os logs de acesso de origens banidas: as requisições rejeitadas pelo banimento e todas as de origens que continuam banidas, incluindo as que causaram o banimento (afeta apenas a resposta; os logs continuam salvos)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -28761,7 +28761,7 @@
             }
           },
           {
-            "description": "Com 1, oculta os logs de acesso de requisições rejeitadas porque a origem está banida (afeta apenas a resposta; os logs continuam salvos)",
+            "description": "Com 1, oculta os logs de acesso de origens banidas: as requisições rejeitadas pelo banimento e todas as de origens que continuam banidas, incluindo as que causaram o banimento (afeta apenas a resposta; os logs continuam salvos)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -29578,7 +29578,7 @@
             }
           },
           {
-            "description": "Com 1, oculta os logs de acesso de requisições rejeitadas porque a origem está banida (afeta apenas a resposta; os logs continuam salvos)",
+            "description": "Com 1, oculta os logs de acesso de origens banidas: as requisições rejeitadas pelo banimento e todas as de origens que continuam banidas, incluindo as que causaram o banimento (afeta apenas a resposta; os logs continuam salvos)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -30520,7 +30520,7 @@
             }
           },
           {
-            "description": "Com 1, oculta os logs de acesso de requisições rejeitadas porque a origem está banida (afeta apenas a resposta; os logs continuam salvos)",
+            "description": "Com 1, oculta os logs de acesso de origens banidas: as requisições rejeitadas pelo banimento e todas as de origens que continuam banidas, incluindo as que causaram o banimento (afeta apenas a resposta; os logs continuam salvos)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -32807,7 +32807,7 @@
             }
           },
           {
-            "description": "Com 1, oculta os logs de acesso de requisições rejeitadas porque a origem está banida (afeta apenas a resposta; os logs continuam salvos)",
+            "description": "Com 1, oculta os logs de acesso de origens banidas: as requisições rejeitadas pelo banimento e todas as de origens que continuam banidas, incluindo as que causaram o banimento (afeta apenas a resposta; os logs continuam salvos)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -34543,7 +34543,7 @@
             }
           },
           {
-            "description": "Com 1, oculta os logs de acesso de requisições rejeitadas porque a origem está banida (afeta apenas a resposta; os logs continuam salvos)",
+            "description": "Com 1, oculta os logs de acesso de origens banidas: as requisições rejeitadas pelo banimento e todas as de origens que continuam banidas, incluindo as que causaram o banimento (afeta apenas a resposta; os logs continuam salvos)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -34825,7 +34825,7 @@
             }
           },
           {
-            "description": "Com 1, oculta os logs de acesso de requisições rejeitadas porque a origem está banida (afeta apenas a resposta; os logs continuam salvos)",
+            "description": "Com 1, oculta os logs de acesso de origens banidas: as requisições rejeitadas pelo banimento e todas as de origens que continuam banidas, incluindo as que causaram o banimento (afeta apenas a resposta; os logs continuam salvos)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -37152,7 +37152,7 @@
             }
           },
           {
-            "description": "Com 1, oculta os logs de acesso de requisições rejeitadas porque a origem está banida (afeta apenas a resposta; os logs continuam salvos)",
+            "description": "Com 1, oculta os logs de acesso de origens banidas: as requisições rejeitadas pelo banimento e todas as de origens que continuam banidas, incluindo as que causaram o banimento (afeta apenas a resposta; os logs continuam salvos)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -39845,7 +39845,7 @@
             }
           },
           {
-            "description": "Com 1, oculta os logs de acesso de requisições rejeitadas porque a origem está banida (afeta apenas a resposta; os logs continuam salvos)",
+            "description": "Com 1, oculta os logs de acesso de origens banidas: as requisições rejeitadas pelo banimento e todas as de origens que continuam banidas, incluindo as que causaram o banimento (afeta apenas a resposta; os logs continuam salvos)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -42681,7 +42681,7 @@
             }
           },
           {
-            "description": "Com 1, oculta os logs de acesso de requisições rejeitadas porque a origem está banida (afeta apenas a resposta; os logs continuam salvos)",
+            "description": "Com 1, oculta os logs de acesso de origens banidas: as requisições rejeitadas pelo banimento e todas as de origens que continuam banidas, incluindo as que causaram o banimento (afeta apenas a resposta; os logs continuam salvos)",
             "in": "query",
             "name": "hideBanned",
             "schema": {

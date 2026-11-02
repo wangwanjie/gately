@@ -581,7 +581,7 @@
   "两步验证": "Zwei-Faktor-Authentifizierung",
   "两步验证码错误": "Code der Zwei-Faktor-Authentifizierung falsch",
   "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志": "Bei 1 werden Anfragen mit einer Sitzung der Verwaltungsoberfläche ausgeblendet, also Zugriffsprotokolle, die entstehen, wenn Administratoren die Oberfläche über eine Web-Service-Site aufrufen",
-  "为 1 时隐藏来源已被封禁而被拒绝的访问日志（只影响返回结果，日志照常保存）": "Bei 1 werden Zugriffsprotokolle von Anfragen ausgeblendet, die abgelehnt wurden, weil die Quelle gesperrt ist (betrifft nur die Antwort; die Protokolle bleiben erhalten)",
+  "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存": "Bei 1 werden Zugriffsprotokolle gesperrter Quellen ausgeblendet: wegen der Sperre abgelehnte Anfragen und alle Anfragen noch gesperrter Quellen, einschließlich derer, die die Sperre ausgelöst haben (betrifft nur die Antwort; Protokolle bleiben erhalten)",
   "为共享用户生成新的 TOTP 密钥（不保存，保存设置后生效）": "Neuen TOTP-Schlüssel für einen gemeinsamen Benutzer erzeugen (nicht gespeichert; wirksam nach dem Speichern)",
   "为镜像打标签": "Image taggen",
   "主域名 %q 无效": "Hauptdomain %q ungültig",

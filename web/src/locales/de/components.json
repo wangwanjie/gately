@@ -81,7 +81,7 @@
     },
     "from": "Beginn",
     "hideBanned": "Gesperrte Quellen ausblenden",
-    "hideBannedTip": "Blendet Anfragen aus, die abgelehnt wurden, weil die Quelle gesperrt ist. Nur Anzeige: Die Protokolle bleiben erhalten, Haken entfernen zum Anzeigen",
+    "hideBannedTip": "Blendet Anfragen gesperrter Quellen aus: wegen der Sperre abgelehnte Anfragen und alle Anfragen noch gesperrter Quellen, einschließlich derer, die die Sperre ausgelöst haben. Nur Anzeige: Die Protokolle bleiben erhalten, Haken entfernen zum Anzeigen",
     "hideAdmin": "Konsolenanfragen ausblenden",
     "hideAdminTip": "Blendet Anfragen mit einer Sitzung der Verwaltungsoberfläche aus, etwa das Abfragen der Protokollseite, wenn Sie die Oberfläche über diese Site öffnen. Nur Anzeige: Die Protokolle bleiben erhalten",
     "deny": {

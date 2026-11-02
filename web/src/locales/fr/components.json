@@ -81,7 +81,7 @@
     },
     "from": "Début",
     "hideBanned": "Masquer les sources bannies",
-    "hideBannedTip": "Masque les requêtes refusées parce que la source est bannie. Affichage uniquement : les journaux sont conservés, décochez pour les voir",
+    "hideBannedTip": "Masque les requêtes des sources bannies : celles refusées à cause du bannissement et toutes celles des sources encore bannies, y compris celles qui l'ont déclenché. Affichage uniquement : les journaux sont conservés, décochez pour les voir",
     "hideAdmin": "Masquer les requêtes de la console",
     "hideAdminTip": "Masque les requêtes portant une session de la console d'administration, comme l'interrogation de la page des journaux lorsque vous ouvrez la console via ce site. Affichage uniquement : les journaux sont conservés",
     "deny": {

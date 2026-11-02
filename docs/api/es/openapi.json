@@ -5022,7 +5022,7 @@
             }
           },
           {
-            "description": "Con 1, oculta los registros de acceso de solicitudes rechazadas porque el origen está bloqueado (solo afecta a la respuesta; los registros se conservan)",
+            "description": "Con 1, oculta los registros de acceso de orígenes bloqueados: las solicitudes rechazadas por el bloqueo y todas las de orígenes que siguen bloqueados, incluidas las que provocaron el bloqueo (solo afecta a la respuesta; los registros se conservan)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -6524,7 +6524,7 @@
             }
           },
           {
-            "description": "Con 1, oculta los registros de acceso de solicitudes rechazadas porque el origen está bloqueado (solo afecta a la respuesta; los registros se conservan)",
+            "description": "Con 1, oculta los registros de acceso de orígenes bloqueados: las solicitudes rechazadas por el bloqueo y todas las de orígenes que siguen bloqueados, incluidas las que provocaron el bloqueo (solo afecta a la respuesta; los registros se conservan)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -7816,7 +7816,7 @@
             }
           },
           {
-            "description": "Con 1, oculta los registros de acceso de solicitudes rechazadas porque el origen está bloqueado (solo afecta a la respuesta; los registros se conservan)",
+            "description": "Con 1, oculta los registros de acceso de orígenes bloqueados: las solicitudes rechazadas por el bloqueo y todas las de orígenes que siguen bloqueados, incluidas las que provocaron el bloqueo (solo afecta a la respuesta; los registros se conservan)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -8919,7 +8919,7 @@
             }
           },
           {
-            "description": "Con 1, oculta los registros de acceso de solicitudes rechazadas porque el origen está bloqueado (solo afecta a la respuesta; los registros se conservan)",
+            "description": "Con 1, oculta los registros de acceso de orígenes bloqueados: las solicitudes rechazadas por el bloqueo y todas las de orígenes que siguen bloqueados, incluidas las que provocaron el bloqueo (solo afecta a la respuesta; los registros se conservan)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -13219,7 +13219,7 @@
             }
           },
           {
-            "description": "Con 1, oculta los registros de acceso de solicitudes rechazadas porque el origen está bloqueado (solo afecta a la respuesta; los registros se conservan)",
+            "description": "Con 1, oculta los registros de acceso de orígenes bloqueados: las solicitudes rechazadas por el bloqueo y todas las de orígenes que siguen bloqueados, incluidas las que provocaron el bloqueo (solo afecta a la respuesta; los registros se conservan)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -15606,7 +15606,7 @@
             }
           },
           {
-            "description": "Con 1, oculta los registros de acceso de solicitudes rechazadas porque el origen está bloqueado (solo afecta a la respuesta; los registros se conservan)",
+            "description": "Con 1, oculta los registros de acceso de orígenes bloqueados: las solicitudes rechazadas por el bloqueo y todas las de orígenes que siguen bloqueados, incluidas las que provocaron el bloqueo (solo afecta a la respuesta; los registros se conservan)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -17336,7 +17336,7 @@
             }
           },
           {
-            "description": "Con 1, oculta los registros de acceso de solicitudes rechazadas porque el origen está bloqueado (solo afecta a la respuesta; los registros se conservan)",
+            "description": "Con 1, oculta los registros de acceso de orígenes bloqueados: las solicitudes rechazadas por el bloqueo y todas las de orígenes que siguen bloqueados, incluidas las que provocaron el bloqueo (solo afecta a la respuesta; los registros se conservan)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -19226,7 +19226,7 @@
             }
           },
           {
-            "description": "Con 1, oculta los registros de acceso de solicitudes rechazadas porque el origen está bloqueado (solo afecta a la respuesta; los registros se conservan)",
+            "description": "Con 1, oculta los registros de acceso de orígenes bloqueados: las solicitudes rechazadas por el bloqueo y todas las de orígenes que siguen bloqueados, incluidas las que provocaron el bloqueo (solo afecta a la respuesta; los registros se conservan)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -20681,7 +20681,7 @@
             }
           },
           {
-            "description": "Con 1, oculta los registros de acceso de solicitudes rechazadas porque el origen está bloqueado (solo afecta a la respuesta; los registros se conservan)",
+            "description": "Con 1, oculta los registros de acceso de orígenes bloqueados: las solicitudes rechazadas por el bloqueo y todas las de orígenes que siguen bloqueados, incluidas las que provocaron el bloqueo (solo afecta a la respuesta; los registros se conservan)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -21321,7 +21321,7 @@
             }
           },
           {
-            "description": "Con 1, oculta los registros de acceso de solicitudes rechazadas porque el origen está bloqueado (solo afecta a la respuesta; los registros se conservan)",
+            "description": "Con 1, oculta los registros de acceso de orígenes bloqueados: las solicitudes rechazadas por el bloqueo y todas las de orígenes que siguen bloqueados, incluidas las que provocaron el bloqueo (solo afecta a la respuesta; los registros se conservan)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -21594,7 +21594,7 @@
             }
           },
           {
-            "description": "Con 1, oculta los registros de acceso de solicitudes rechazadas porque el origen está bloqueado (solo afecta a la respuesta; los registros se conservan)",
+            "description": "Con 1, oculta los registros de acceso de orígenes bloqueados: las solicitudes rechazadas por el bloqueo y todas las de orígenes que siguen bloqueados, incluidas las que provocaron el bloqueo (solo afecta a la respuesta; los registros se conservan)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -23158,7 +23158,7 @@
             }
           },
           {
-            "description": "Con 1, oculta los registros de acceso de solicitudes rechazadas porque el origen está bloqueado (solo afecta a la respuesta; los registros se conservan)",
+            "description": "Con 1, oculta los registros de acceso de orígenes bloqueados: las solicitudes rechazadas por el bloqueo y todas las de orígenes que siguen bloqueados, incluidas las que provocaron el bloqueo (solo afecta a la respuesta; los registros se conservan)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -24254,7 +24254,7 @@
             }
           },
           {
-            "description": "Con 1, oculta los registros de acceso de solicitudes rechazadas porque el origen está bloqueado (solo afecta a la respuesta; los registros se conservan)",
+            "description": "Con 1, oculta los registros de acceso de orígenes bloqueados: las solicitudes rechazadas por el bloqueo y todas las de orígenes que siguen bloqueados, incluidas las que provocaron el bloqueo (solo afecta a la respuesta; los registros se conservan)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -25305,7 +25305,7 @@
             }
           },
           {
-            "description": "Con 1, oculta los registros de acceso de solicitudes rechazadas porque el origen está bloqueado (solo afecta a la respuesta; los registros se conservan)",
+            "description": "Con 1, oculta los registros de acceso de orígenes bloqueados: las solicitudes rechazadas por el bloqueo y todas las de orígenes que siguen bloqueados, incluidas las que provocaron el bloqueo (solo afecta a la respuesta; los registros se conservan)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -26285,7 +26285,7 @@
             }
           },
           {
-            "description": "Con 1, oculta los registros de acceso de solicitudes rechazadas porque el origen está bloqueado (solo afecta a la respuesta; los registros se conservan)",
+            "description": "Con 1, oculta los registros de acceso de orígenes bloqueados: las solicitudes rechazadas por el bloqueo y todas las de orígenes que siguen bloqueados, incluidas las que provocaron el bloqueo (solo afecta a la respuesta; los registros se conservan)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -27306,7 +27306,7 @@
             }
           },
           {
-            "description": "Con 1, oculta los registros de acceso de solicitudes rechazadas porque el origen está bloqueado (solo afecta a la respuesta; los registros se conservan)",
+            "description": "Con 1, oculta los registros de acceso de orígenes bloqueados: las solicitudes rechazadas por el bloqueo y todas las de orígenes que siguen bloqueados, incluidas las que provocaron el bloqueo (solo afecta a la respuesta; los registros se conservan)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -28761,7 +28761,7 @@
             }
           },
           {
-            "description": "Con 1, oculta los registros de acceso de solicitudes rechazadas porque el origen está bloqueado (solo afecta a la respuesta; los registros se conservan)",
+            "description": "Con 1, oculta los registros de acceso de orígenes bloqueados: las solicitudes rechazadas por el bloqueo y todas las de orígenes que siguen bloqueados, incluidas las que provocaron el bloqueo (solo afecta a la respuesta; los registros se conservan)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -29578,7 +29578,7 @@
             }
           },
           {
-            "description": "Con 1, oculta los registros de acceso de solicitudes rechazadas porque el origen está bloqueado (solo afecta a la respuesta; los registros se conservan)",
+            "description": "Con 1, oculta los registros de acceso de orígenes bloqueados: las solicitudes rechazadas por el bloqueo y todas las de orígenes que siguen bloqueados, incluidas las que provocaron el bloqueo (solo afecta a la respuesta; los registros se conservan)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -30520,7 +30520,7 @@
             }
           },
           {
-            "description": "Con 1, oculta los registros de acceso de solicitudes rechazadas porque el origen está bloqueado (solo afecta a la respuesta; los registros se conservan)",
+            "description": "Con 1, oculta los registros de acceso de orígenes bloqueados: las solicitudes rechazadas por el bloqueo y todas las de orígenes que siguen bloqueados, incluidas las que provocaron el bloqueo (solo afecta a la respuesta; los registros se conservan)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -32807,7 +32807,7 @@
             }
           },
           {
-            "description": "Con 1, oculta los registros de acceso de solicitudes rechazadas porque el origen está bloqueado (solo afecta a la respuesta; los registros se conservan)",
+            "description": "Con 1, oculta los registros de acceso de orígenes bloqueados: las solicitudes rechazadas por el bloqueo y todas las de orígenes que siguen bloqueados, incluidas las que provocaron el bloqueo (solo afecta a la respuesta; los registros se conservan)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -34543,7 +34543,7 @@
             }
           },
           {
-            "description": "Con 1, oculta los registros de acceso de solicitudes rechazadas porque el origen está bloqueado (solo afecta a la respuesta; los registros se conservan)",
+            "description": "Con 1, oculta los registros de acceso de orígenes bloqueados: las solicitudes rechazadas por el bloqueo y todas las de orígenes que siguen bloqueados, incluidas las que provocaron el bloqueo (solo afecta a la respuesta; los registros se conservan)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -34825,7 +34825,7 @@
             }
           },
           {
-            "description": "Con 1, oculta los registros de acceso de solicitudes rechazadas porque el origen está bloqueado (solo afecta a la respuesta; los registros se conservan)",
+            "description": "Con 1, oculta los registros de acceso de orígenes bloqueados: las solicitudes rechazadas por el bloqueo y todas las de orígenes que siguen bloqueados, incluidas las que provocaron el bloqueo (solo afecta a la respuesta; los registros se conservan)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -37152,7 +37152,7 @@
             }
           },
           {
-            "description": "Con 1, oculta los registros de acceso de solicitudes rechazadas porque el origen está bloqueado (solo afecta a la respuesta; los registros se conservan)",
+            "description": "Con 1, oculta los registros de acceso de orígenes bloqueados: las solicitudes rechazadas por el bloqueo y todas las de orígenes que siguen bloqueados, incluidas las que provocaron el bloqueo (solo afecta a la respuesta; los registros se conservan)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -39845,7 +39845,7 @@
             }
           },
           {
-            "description": "Con 1, oculta los registros de acceso de solicitudes rechazadas porque el origen está bloqueado (solo afecta a la respuesta; los registros se conservan)",
+            "description": "Con 1, oculta los registros de acceso de orígenes bloqueados: las solicitudes rechazadas por el bloqueo y todas las de orígenes que siguen bloqueados, incluidas las que provocaron el bloqueo (solo afecta a la respuesta; los registros se conservan)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
@@ -42681,7 +42681,7 @@
             }
           },
           {
-            "description": "Con 1, oculta los registros de acceso de solicitudes rechazadas porque el origen está bloqueado (solo afecta a la respuesta; los registros se conservan)",
+            "description": "Con 1, oculta los registros de acceso de orígenes bloqueados: las solicitudes rechazadas por el bloqueo y todas las de orígenes que siguen bloqueados, incluidas las que provocaron el bloqueo (solo afecta a la respuesta; los registros se conservan)",
             "in": "query",
             "name": "hideBanned",
             "schema": {
