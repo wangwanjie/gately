@@ -290,6 +290,7 @@ func TestSafeLineStreamingBodyNotRead(t *testing.T) {
 	defer pw.Close()
 	req := httptest.NewRequest("POST", "/svc.Echo/Stream", pr)
 	req.ContentLength = -1
+	req.ProtoMajor, req.ProtoMinor = 2, 0
 	req.Header.Set("Content-Type", "application/grpc")
 	done := make(chan int, 1)
 	go func() {
@@ -304,6 +305,47 @@ func TestSafeLineStreamingBodyNotRead(t *testing.T) {
 		}
 	case <-time.After(3 * time.Second):
 		t.Fatal("长度未知的 gRPC 请求体不应被读取")
+	}
+}
+
+// HTTP/1.1 分块请求伪造 gRPC 的 Content-Type 时请求体照常送检，不能借此绕过检测。
+func TestSafeLineFakeGRPCOverHTTP1Inspected(t *testing.T) {
+	d := newFakeDetector(t)
+	m := newModule(t, safeLineInstance(d.addr()))
+	req := httptest.NewRequest("POST", "/api", strings.NewReader("attack"))
+	req.ContentLength = -1
+	req.Header.Set("Content-Type", "application/grpc")
+	rec := httptest.NewRecorder()
+	m.Middleware("sl", ok).ServeHTTP(rec, req)
+	if rec.Code != 403 {
+		t.Fatalf("HTTP/1.1 伪造 gRPC 的请求体应被检测并拦截: %d", rec.Code)
+	}
+}
+
+// 规则组编译失败时雷池仍然生效。
+func TestSafeLineSurvivesRuleCompileError(t *testing.T) {
+	d := newFakeDetector(t)
+	m := newModule(t, safeLineInstance(d.addr()))
+	// 保存时会校验规则，这里直接改内存中的配置模拟编译失败（如引用的规则文件损坏）
+	m.mu.Lock()
+	m.cfg.Instances[0].RuleSets = []RuleSet{{Enable: true, Type: RuleCustom, Param: `SecRule ARGS:x "@bogusop bad" "id:10002,phase:1,deny"`}}
+	m.buildLocked("sl")
+	m.mu.Unlock()
+	if m.errors["sl"] == "" {
+		t.Fatal("应记录编译错误")
+	}
+	if c := status(t, m.Middleware("sl", ok), "/?q=attack"); c != 403 {
+		t.Fatalf("规则组编译失败时雷池应照常拦截: %d", c)
+	}
+}
+
+// 检测引擎的附加响应头只接受 Set-Cookie 与 X- 开头的头。
+func TestSafeLineExtraHeadersFiltered(t *testing.T) {
+	rec := httptest.NewRecorder()
+	applyExtraHeaders(rec, &t1kResult{extraHeader: []byte("Set-Cookie:sl-session=1\nX-Trace:a\nContent-Length:0\nLocation:https://evil.example\n")})
+	h := rec.Header()
+	if h.Get("Set-Cookie") != "sl-session=1" || h.Get("X-Trace") != "a" || h.Get("Content-Length") != "" || h.Get("Location") != "" {
+		t.Fatalf("headers = %v", h)
 	}
 }
 
@@ -364,6 +406,38 @@ func TestSafeLineRetryStaleConn(t *testing.T) {
 	}
 	if v := m.viewLocked(&m.cfg.Instances[0]).(InstanceView); v.SafeLineErrors != 0 {
 		t.Fatalf("重试成功不应计为失败: %+v", v)
+	}
+}
+
+// 检测引擎重启后池里的多条空闲连接都已失效，重试时必须新建连接，不能再取到另一条失效连接。
+func TestSafeLineRetryManyStaleConns(t *testing.T) {
+	d := newFakeDetector(t)
+	d.closeAfter.Store(true)
+	c := newT1KClient(d.addr(), 2*time.Second)
+	defer c.close()
+	deadline := time.Now().Add(2 * time.Second)
+	var conns []*t1kConn
+	for i := 0; i < 3; i++ {
+		cn, _, err := c.get(deadline)
+		if err != nil {
+			t.Fatal(err)
+		}
+		conns = append(conns, cn)
+	}
+	var buf bytes.Buffer
+	if err := writeT1K(&buf, []t1kSection{{tag: 0}}); err != nil {
+		t.Fatal(err)
+	}
+	for _, cn := range conns {
+		// 每条连接完成一次交换后被检测引擎关闭，再放回池中
+		if _, err := c.exchange(cn, buf.Bytes(), deadline); err != nil {
+			t.Fatal(err)
+		}
+		c.put(cn)
+	}
+	time.Sleep(50 * time.Millisecond)
+	if err := c.heartbeat(); err != nil {
+		t.Fatalf("池中多条失效连接时重试应新建连接: %v", err)
 	}
 }
 

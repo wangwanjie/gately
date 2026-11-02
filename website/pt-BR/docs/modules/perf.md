@@ -86,7 +86,7 @@ As métricas de sites e de nós de backend são avaliadas e alertadas por objeto
 
 O topo da página lista os objetos pendentes e disparados com o valor atual e a duração.
 
-Alterar o nome, o nível ou a observação de uma regra mantém a contagem em andamento; alterar a métrica, o limite, a duração, os sites ou o mínimo de requisições, ou desativar a regra, limpa as contagens e alertas dela. Contagens e estados de alerta ficam só na memória e recomeçam após uma reinicialização.
+Alterar o nome, o nível ou a observação de uma regra mantém a contagem em andamento; alterar a métrica, o limite, a duração, os sites ou o mínimo de requisições, ou desativar a regra, limpa as contagens e alertas dela. Um alerta já disparado recebe um aviso de recuperação informando que a regra foi excluída, desativada ou alterada. Contagens e estados de alerta ficam só na memória e recomeçam após uma reinicialização.
 
 Os alertas são enviados pela Central de notificações: adicione uma regra de notificação que assine "Desempenho: alerta disparado" e "Desempenho: alerta recuperado" (o modelo "Alertas de desempenho" faz isso); caso contrário, os alertas só são gravados no log desta página, e a página mostra um aviso. O silêncio da Central de notificações também vale para alertas de desempenho; cada objeto tem uma origem de evento diferente, então eles não se silenciam entre si. A duração já evita alertas intermitentes, por isso o silêncio raramente é necessário.
 

@@ -107,7 +107,8 @@ func TestAccessLogDenyAndAdmin(t *testing.T) {
 		t.Errorf("限流拒绝应记 deny=rateLimit: %+v", e.Fields)
 	}
 
-	// 封禁：返回 403 与断开连接（444）两种拒绝方式都记 deny=ban；管理员被封禁时同样带用户名
+	// 封禁：返回 403 与断开连接（444）两种拒绝方式都记 deny=ban；被拦截的请求即使带后台登录态也不标记后台用户，
+	// 避免拦截记录在“隐藏后台自身请求”时被一并隐藏
 	key := banlist.KeyFor(netip.MustParseAddr("127.0.0.1"))
 	if _, _, err := banlist.Default.Ban(key, banlist.Options{Duration: time.Minute, Force: true, Source: banlist.SourceManual}); err != nil {
 		t.Fatal(err)
@@ -116,7 +117,7 @@ func TestAccessLogDenyAndAdmin(t *testing.T) {
 	if resp, _ := get(t, c, addr, "open.test", "/", map[string]string{"Cookie": "gately_token=valid"}); resp.StatusCode != http.StatusForbidden {
 		t.Fatalf("被封禁的来源应返回 403，得到 %d", resp.StatusCode)
 	}
-	if e := last(); e.Fields[logbuf.FieldDeny] != logbuf.DenyBan || e.Fields[logbuf.FieldStatus] != "403" || e.Fields[logbuf.FieldAdmin] != "admin" {
+	if e := last(); e.Fields[logbuf.FieldDeny] != logbuf.DenyBan || e.Fields[logbuf.FieldStatus] != "403" || e.Fields[logbuf.FieldAdmin] != "" {
 		t.Errorf("被封禁的请求应记 deny=ban: %+v", e.Fields)
 	}
 	req, _ := http.NewRequest("GET", "http://"+addr+"/", nil)

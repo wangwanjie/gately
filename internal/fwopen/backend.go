@@ -116,8 +116,9 @@ func (b *cmdBackend) targets(ctx context.Context) ([]target, map[string][]existi
 			return nil, nil, err
 		}
 		for _, c := range chains {
-			if c.Family == "ip" && c.Table == "filter" && b.iptNFT {
-				// iptables-nft 管理的表用 iptables 命令写入，iptables -L 等工具才能正常显示
+			if c.Family == "ip" && c.Table == "filter" && c.Chain == "INPUT" && b.iptNFT {
+				// iptables-nft 管理的 INPUT 链用 iptables 命令写入，iptables -L 等工具才能正常显示；
+				// 手写的同名表中其他名字的链（如 input）仍按 nft 处理
 				hasIPFilter = true
 				continue
 			}

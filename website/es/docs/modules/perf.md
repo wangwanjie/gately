@@ -86,7 +86,7 @@ Las métricas de sitios y de nodos de backend se evalúan y alertan por objeto, 
 
 La parte superior de la página lista los objetos pendientes y activos con su valor actual y su duración.
 
-Cambiar el nombre, el nivel o la nota de una regla mantiene el contador en curso; cambiar la métrica, el umbral, la duración, los sitios o las peticiones mínimas, o desactivar la regla, borra sus contadores y alertas. Los contadores y estados de alerta solo viven en memoria y empiezan de nuevo tras un reinicio.
+Cambiar el nombre, el nivel o la nota de una regla mantiene el contador en curso; cambiar la métrica, el umbral, la duración, los sitios o las peticiones mínimas, o desactivar la regla, borra sus contadores y alertas. Una alerta ya disparada recibe un aviso de recuperación que indica que la regla se eliminó, desactivó o modificó. Los contadores y estados de alerta solo viven en memoria y empiezan de nuevo tras un reinicio.
 
 Las alertas se envían por el Centro de notificaciones: añade una regla de notificación que suscriba «Rendimiento: alerta activada» y «Rendimiento: alerta recuperada» (la plantilla «Alertas de rendimiento» lo hace); si no, las alertas solo se escriben en el registro de esta página y la página muestra un aviso. El silencio del Centro de notificaciones también se aplica a las alertas de rendimiento; cada objeto tiene un origen de evento distinto, así que no se silencian entre sí. La duración ya evita alertas intermitentes, por lo que normalmente no hace falta silencio.
 

@@ -46,6 +46,8 @@ func (m *Module) Title() string { return "STUN 穿透" }
 func (m *Module) Init(env module.Env) error {
 	m.store = env.Store
 	m.logs = env.Logs
+	// 自动放行防火墙按配置目录区分实例，同一主机上的多个 Gately 不会互删规则
+	fwopen.SetInstance(m.store.Dir())
 	m.cfg = fileConfig{Settings: defaultSettings()}
 	if _, err := m.store.Load(ID, &m.cfg); err != nil {
 		return err

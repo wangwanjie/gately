@@ -7,8 +7,10 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/wangwanjie/gately/internal/config"
 	"github.com/wangwanjie/gately/internal/logbuf"
@@ -301,5 +303,50 @@ func TestSiteBatchValidateRollback(t *testing.T) {
 	}
 	if m.siteOf(t, "l1", "b").Enable || m.siteOf(t, "l1", "default").Enable {
 		t.Fatalf("失败后不应启用任何站点: %+v", m.cfg.Listeners[0])
+	}
+}
+
+// knownWAF 是只认识部分实例的 WAF，用于校验批量设置 WAF 引用。
+type knownWAF map[string]bool
+
+func (knownWAF) Middleware(_ string, next http.Handler) http.Handler { return next }
+func (k knownWAF) HasInstance(key string) bool                       { return k[key] }
+
+// 批量设置引用不存在的 WAF 实例时拒绝，避免选中的站点静默失去防护。
+func TestSiteBatchSetUnknownWAF(t *testing.T) {
+	m := batchModule(t)
+	m.waf = knownWAF{"w1": true}
+	bad, good := "typo", "w1"
+	if code, _, body := m.batch(t, SiteBatchRequest{Sites: refs("l1", "a"), Action: BatchSet, Options: &SiteBatchOptions{WAF: &bad}}); code != 400 {
+		t.Fatalf("不存在的 WAF 实例应 400: %d %s", code, body)
+	}
+	if m.siteOf(t, "l1", "a").WAF != "" {
+		t.Fatal("拒绝后不应修改站点")
+	}
+	if code, _, body := m.batch(t, SiteBatchRequest{Sites: refs("l1", "a"), Action: BatchSet, Options: &SiteBatchOptions{WAF: &good}}); code != 200 {
+		t.Fatalf("存在的 WAF 实例应成功: %d %s", code, body)
+	}
+}
+
+// 超大的站点或域名数组在去重之前就被拒绝，不会长时间占用 CPU。
+func TestSiteBatchOversizedInput(t *testing.T) {
+	m := batchModule(t)
+	many := make([]SiteRef, 100000)
+	for i := range many {
+		many[i] = SiteRef{Listener: "l1", Site: strconv.Itoa(i)}
+	}
+	start := time.Now()
+	if code, _, _ := m.batch(t, SiteBatchRequest{Sites: many, Action: BatchDisable}); code != 400 {
+		t.Fatalf("超大站点数组应 400，实际 %d", code)
+	}
+	domains := make([]string, 100000)
+	for i := range domains {
+		domains[i] = "d" + strconv.Itoa(i) + ".example.com"
+	}
+	if _, err := normalizeBatchDomains(domains); err == nil {
+		t.Fatal("超大域名数组应被拒绝")
+	}
+	if d := time.Since(start); d > 2*time.Second {
+		t.Fatalf("拒绝超大输入耗时过长: %v", d)
 	}
 }

@@ -382,6 +382,10 @@ const MaxBatch = 500
 
 // BatchKeys 校验批量操作的 key 列表：不能为空、不超过 MaxBatch，去重并保持原有顺序。
 func BatchKeys(keys []string) ([]string, error) {
+	// 先按原始数量粗略限制（允许一定的重复），避免超大请求体占用 CPU 与内存
+	if len(keys) > MaxBatch*2 {
+		return nil, fmt.Errorf("一次最多操作 %d 个条目", MaxBatch)
+	}
 	var out []string
 	seen := map[string]bool{}
 	for _, k := range keys {

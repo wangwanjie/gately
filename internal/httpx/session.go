@@ -1,6 +1,7 @@
 package httpx
 
 import (
+	"context"
 	"net/http"
 	"sync/atomic"
 )
@@ -30,4 +31,21 @@ func SessionUser(r *http.Request) string {
 		return ""
 	}
 	return (*f)(r)
+}
+
+// wafFlagKey 为请求上下文中“已被 WAF 拦截”标记的键。
+type wafFlagKey struct{}
+
+// WithWAFFlag 在请求上下文中放入 WAF 拦截标记，WAF 拦截时由 MarkWAFBlocked 置位，
+// Web 服务据此在访问日志与统计中记录 deny=waf，不再按状态码推断（雷池可返回 403 以外的状态码，后端自己的 403 也不算）。
+func WithWAFFlag(r *http.Request) (*http.Request, *atomic.Bool) {
+	flag := &atomic.Bool{}
+	return r.WithContext(context.WithValue(r.Context(), wafFlagKey{}, flag)), flag
+}
+
+// MarkWAFBlocked 标记请求已被 WAF 拦截；请求上下文中没有标记时忽略。
+func MarkWAFBlocked(r *http.Request) {
+	if flag, ok := r.Context().Value(wafFlagKey{}).(*atomic.Bool); ok {
+		flag.Store(true)
+	}
 }

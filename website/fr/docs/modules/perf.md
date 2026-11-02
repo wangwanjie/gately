@@ -86,7 +86,7 @@ Les métriques de sites et de nœuds de backend sont évaluées et alertées obj
 
 Le haut de la page liste les objets en attente et en alerte avec leur valeur actuelle et leur durée.
 
-Modifier le nom, le niveau ou la remarque d'une règle conserve le compteur en cours ; modifier la métrique, le seuil, la durée, les sites ou les requêtes minimum, ou désactiver la règle, efface ses compteurs et alertes. Compteurs et états d'alerte ne vivent qu'en mémoire et repartent de zéro après un redémarrage.
+Modifier le nom, le niveau ou la remarque d'une règle conserve le compteur en cours ; modifier la métrique, le seuil, la durée, les sites ou les requêtes minimum, ou désactiver la règle, efface ses compteurs et alertes. Une alerte déjà déclenchée reçoit un avis de rétablissement indiquant que la règle a été supprimée, désactivée ou modifiée. Compteurs et états d'alerte ne vivent qu'en mémoire et repartent de zéro après un redémarrage.
 
 Les alertes passent par le Centre de notifications : ajoutez une règle de notification abonnée à « Performances : alerte déclenchée » et « Performances : alerte rétablie » (le modèle « Alertes de performances » le fait), sinon les alertes sont seulement écrites dans le journal de cette page et la page affiche un avertissement. Le silence du Centre de notifications s'applique aussi aux alertes de performances ; chaque objet a sa propre source d'événement, ils ne se masquent donc pas entre eux. La durée évite déjà les alertes intermittentes, un silence est donc rarement utile.
 

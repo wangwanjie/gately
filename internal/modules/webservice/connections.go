@@ -76,8 +76,6 @@ type activeReq struct {
 	done bool
 	// upstream 为反向代理为这个请求选中的后端（非代理站点为 nil），拓扑视图据此把访客地址归到具体后端
 	upstream atomic.Pointer[upstream]
-	// inner 表示请求已通过 WAF 进入跨域、认证与站点处理环节，只在处理请求的 goroutine 中读写
-	inner bool
 }
 
 // ctxKeyActiveReq 为请求上下文中登记项的键。

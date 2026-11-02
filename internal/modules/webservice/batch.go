@@ -75,13 +75,19 @@ func (m *Module) registerBatch(r module.Router) {
 
 // normalizeBatchDomains 规范化并去重批量提交的域名，写法错误时整体报错。
 func normalizeBatchDomains(in []string) ([]string, error) {
+	// 先按原始数量粗略限制（允许一定的重复），避免超大请求体逐个规范化占用 CPU
+	if len(in) > maxBatchDomains*2 {
+		return nil, fmt.Errorf("一次最多处理 %d 个域名", maxBatchDomains)
+	}
 	var out []string
+	seen := map[string]bool{}
 	for _, raw := range in {
 		d, ok := hostname.Normalize(raw, true)
 		if !ok {
 			return nil, fmt.Errorf("域名 %q 格式错误", strings.TrimSpace(raw))
 		}
-		if d != "" && !slices.Contains(out, d) {
+		if d != "" && !seen[d] {
+			seen[d] = true
 			out = append(out, d)
 		}
 	}
@@ -207,13 +213,29 @@ func (m *Module) handleSiteBatch(w http.ResponseWriter, r *http.Request) {
 			httpx.Error(w, http.StatusBadRequest, "WAF 实例标识过长")
 			return
 		}
+		// WAF 中间件找不到实例时直接放行，写错的引用会让选中站点全部失去防护，批量设置时先确认实例存在
+		if req.Options.WAF != nil {
+			if key := strings.TrimSpace(*req.Options.WAF); key != "" {
+				if p, ok := m.waf.(interface{ HasInstance(string) bool }); ok && !p.HasInstance(key) {
+					httpx.Error(w, http.StatusBadRequest, "引用的 WAF 实例不存在")
+					return
+				}
+			}
+		}
 	default:
 		httpx.Error(w, http.StatusBadRequest, "未知的批量操作 %q", req.Action)
 		return
 	}
+	// 先按原始数量粗略限制（允许一定的重复），再用 map 去重，避免超大请求体占用 CPU
+	if len(req.Sites) > crud.MaxBatch*2 {
+		httpx.Error(w, http.StatusBadRequest, "一次最多操作 %d 个站点", crud.MaxBatch)
+		return
+	}
 	refs := make([]SiteRef, 0, len(req.Sites))
+	seenRefs := map[SiteRef]bool{}
 	for _, ref := range req.Sites {
-		if !slices.Contains(refs, ref) {
+		if !seenRefs[ref] {
+			seenRefs[ref] = true
 			refs = append(refs, ref)
 		}
 	}
@@ -246,8 +268,13 @@ func (m *Module) handleSiteBatch(w http.ResponseWriter, r *http.Request) {
 		}
 		l := &listeners[i]
 		if !cloned[l.Key] {
-			// 首次修改该监听器时复制站点列表，避免改到当前配置
+			// 首次修改该监听器时复制站点列表，避免改到当前配置；
+			// 校验会原地规范化路径规则与按用户分流，这两个切片也要复制，校验失败时当前配置保持原样
 			l.Sites = slices.Clone(l.Sites)
+			for k := range l.Sites {
+				cloneSiteSlices(&l.Sites[k])
+			}
+			cloneSiteSlices(&l.Default)
 			cloned[l.Key] = true
 		}
 		var site *Site
@@ -349,4 +376,10 @@ func (m *Module) handleSiteBatch(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	httpx.OK(w, res)
+}
+
+// cloneSiteSlices 复制站点中会被校验原地改写的切片。
+func cloneSiteSlices(s *Site) {
+	s.Locations = slices.Clone(s.Locations)
+	s.UserRoutes = slices.Clone(s.UserRoutes)
 }

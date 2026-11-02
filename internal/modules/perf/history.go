@@ -190,20 +190,34 @@ func (h *hostHistory) minutes(now time.Time, n int) []hostPoint {
 	return out
 }
 
-// merge 把按时间正序的分钟点每 size 个合并为一个点：平均值取均值，峰值取最大值，时间取这一段的起点。
+// merge 把按时间正序的分钟点按 size 分钟对齐的时间桶合并：平均值取均值，峰值取最大值，时间取桶的起点。
+// 按时间对齐（而非按下标每 size 个一组）：重启或休眠造成的空洞两侧不会被合进同一个点，桶边界也不随当前时间滑动。
 func merge(points []hostPoint, size int) []hostPoint {
 	if size <= 1 || len(points) == 0 {
 		return points
 	}
+	span := int64(size) * 60
 	var out []hostPoint
-	for i := 0; i < len(points); i += size {
-		end := i + size
-		if end > len(points) {
-			end = len(points)
+	start := 0
+	for i := 1; i <= len(points); i++ {
+		if i < len(points) && floorDiv(points[i].T, span) == floorDiv(points[start].T, span) {
+			continue
 		}
-		out = append(out, mergeGroup(points[i:end]))
+		g := mergeGroup(points[start:i])
+		g.T = floorDiv(points[start].T, span) * span
+		out = append(out, g)
+		start = i
 	}
 	return out
+}
+
+// floorDiv 为向下取整的整数除法（时间戳为负时也正确）。
+func floorDiv(a, b int64) int64 {
+	q := a / b
+	if a%b != 0 && (a < 0) != (b < 0) {
+		q--
+	}
+	return q
 }
 
 func mergeGroup(g []hostPoint) hostPoint {

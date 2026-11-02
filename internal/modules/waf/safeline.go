@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/wangwanjie/gately/internal/events"
+	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/i18n"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/webpage"
@@ -175,7 +176,8 @@ func readBodyPrefix(r *http.Request, limit int64) []byte {
 	if r.Body == nil || r.Body == http.NoBody || r.ContentLength == 0 || limit <= 0 {
 		return nil
 	}
-	if r.ContentLength < 0 && streamingContentType(r.Header.Get("Content-Type")) {
+	// gRPC 只走 HTTP/2 及以上，HTTP/1.x 请求伪造 gRPC 的 Content-Type 不能借此跳过请求体检测
+	if r.ContentLength < 0 && r.ProtoMajor >= 2 && streamingContentType(r.Header.Get("Content-Type")) {
 		return nil
 	}
 	n := limit
@@ -328,6 +330,7 @@ func (s *safelineChecker) check(w http.ResponseWriter, r *http.Request, c *compi
 		Message: r.Method + " " + r.Host + r.URL.Path,
 		Fields:  map[string]string{"ip": r.RemoteAddr, "host": r.Host, "path": r.URL.Path},
 	})
+	httpx.MarkWAFBlocked(r)
 	writeSafeLineBlock(w, r, res, eventID)
 	return false
 }
@@ -340,9 +343,14 @@ func orNone(s string) string {
 }
 
 // applyExtraHeaders 把检测引擎要求的附加响应头加到响应上。
+// 只接受 Set-Cookie（如人机验证的 sl-session）与 X- 开头的头，长度、编码、跳转等会与后端响应冲突的头一律丢弃。
 func applyExtraHeaders(w http.ResponseWriter, res *t1kResult) {
 	for _, kv := range res.headers() {
-		w.Header().Add(kv[0], kv[1])
+		name := http.CanonicalHeaderKey(strings.TrimSpace(kv[0]))
+		if name != "Set-Cookie" && !strings.HasPrefix(name, "X-") {
+			continue
+		}
+		w.Header().Add(name, kv[1])
 	}
 }
 

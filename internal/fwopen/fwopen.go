@@ -11,7 +11,10 @@ package fwopen
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -23,6 +26,31 @@ import (
 
 // commentPrefix 标记 Gately 插入的放行规则，只删除带此前缀的规则。
 const commentPrefix = "gately-open:"
+
+// instance 区分同一主机（同一网络命名空间）上的多个 Gately 实例：注释为 前缀 + 实例 + ":" + owner + …，
+// 对账只处理本实例的规则，避免多个实例互删放行规则。由 SetInstance 按配置目录生成。
+var (
+	instMu   sync.RWMutex
+	instance = "default"
+)
+
+// SetInstance 按配置目录设置本实例标识（目录绝对路径的短哈希），应在首次放行前调用。
+func SetInstance(dir string) {
+	if abs, err := filepath.Abs(dir); err == nil {
+		dir = abs
+	}
+	sum := sha256.Sum256([]byte(dir))
+	instMu.Lock()
+	instance = hex.EncodeToString(sum[:4])
+	instMu.Unlock()
+}
+
+// ownPrefix 返回本实例规则注释的前缀。
+func ownPrefix() string {
+	instMu.RLock()
+	defer instMu.RUnlock()
+	return commentPrefix + instance + ":"
+}
 
 // reconcileInterval 为定时对账周期。
 const reconcileInterval = 30 * time.Second
@@ -208,17 +236,18 @@ func normalize(in []Port) []Port {
 	return out
 }
 
-// comment 生成规则注释：前缀 + owner + 协议 + 端口，对账时按注释判断规则是否仍需要。
+// comment 生成规则注释：前缀 + 实例 + owner + 协议 + 端口，对账时按注释判断规则是否仍需要。
 func comment(owner string, p Port) string {
-	return commentPrefix + owner + ":" + p.Proto + ":" + strconv.Itoa(p.Port)
+	return ownPrefix() + owner + ":" + p.Proto + ":" + strconv.Itoa(p.Port)
 }
 
-// ownerOf 从注释中取出 owner，非 Gately 注释返回 false。
+// ownerOf 从注释中取出 owner，非本实例的注释（其他程序或其他 Gately 实例）返回 false。
 func ownerOf(c string) (string, bool) {
-	if !strings.HasPrefix(c, commentPrefix) {
+	prefix := ownPrefix()
+	if !strings.HasPrefix(c, prefix) {
 		return "", false
 	}
-	rest := strings.TrimPrefix(c, commentPrefix)
+	rest := strings.TrimPrefix(c, prefix)
 	// 去掉末尾的 :协议:端口
 	for i := 0; i < 2; i++ {
 		idx := strings.LastIndex(rest, ":")
@@ -259,7 +288,12 @@ func (m *manager) reconcile(ctx context.Context, periodic bool) {
 		key := t.String()
 		present := map[string]bool{}
 		for _, e := range have[key] {
-			owner, _ := ownerOf(e.Comment)
+			owner, mine := ownerOf(e.Comment)
+			if !mine {
+				// 其他 Gately 实例插入的规则由它自己维护，不动
+				present[e.Comment] = true
+				continue
+			}
 			ports, ok := want[owner]
 			keep := ok && t.needed() && hasComment(owner, ports, e.Comment) && !present[e.Comment]
 			if keep {

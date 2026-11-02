@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -21,6 +22,7 @@ import (
 	"time"
 
 	"github.com/wangwanjie/gately/internal/auth"
+	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/i18n"
 	"github.com/wangwanjie/gately/internal/luckyimport"
 	"github.com/wangwanjie/gately/internal/module"
@@ -709,6 +711,10 @@ func TestReadonlyUser(t *testing.T) {
 		// 只读账号不能查看密钥明文
 		{"GET", "/api/frp/clients/abc/secrets"},
 		{"GET", "/api/ddns/tasks/abc/secrets"},
+		// 批量启停、删除与站点批量操作属于写操作
+		{"PUT", "/api/portforward/rules-enable"},
+		{"POST", "/api/portforward/rules-delete"},
+		{"POST", "/api/webservice/sites/batch"},
 	} {
 		var body any
 		if c.method == "POST" {
@@ -717,6 +723,21 @@ func TestReadonlyUser(t *testing.T) {
 		if code, _ := doJSON(t, ro, c.method, srv.URL+c.path, body); code != 403 {
 			t.Errorf("只读账号访问 %s %s 应返回 403，实际 %d", c.method, c.path, code)
 		}
+	}
+	// Web 服务访问日志的“后台用户”标记只认管理员会话，只读账号的 Cookie 不能用来隐藏请求
+	u, _ := url.Parse(srv.URL)
+	tagged := func(c *http.Client) string {
+		req := httptest.NewRequest("GET", "/", nil)
+		for _, ck := range c.Jar.Cookies(u) {
+			req.AddCookie(ck)
+		}
+		return httpx.SessionUser(req)
+	}
+	if got := tagged(ro); got != "" {
+		t.Errorf("只读账号的会话不应标记为后台请求: %q", got)
+	}
+	if got := tagged(admin); got == "" {
+		t.Error("管理员会话应标记为后台请求")
 	}
 	// 重置密码后，旧会话立即失效
 	if code, _ := doJSON(t, admin, "PUT", srv.URL+"/api/account/users/viewer", map[string]string{"password": "viewer-pass-2"}); code != 200 {

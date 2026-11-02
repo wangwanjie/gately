@@ -86,7 +86,7 @@ Site and backend node metrics are evaluated and alerted on per object, so one "5
 
 The top of the page lists pending and firing objects with their current value and how long they have lasted.
 
-Changing a rule's name, level or remark keeps a running timer; changing the metric, threshold, duration, sites or minimum requests, or disabling the rule, clears the rule's timers and alerts. Timers and alert states live in memory only and start over after a restart.
+Changing a rule's name, level or remark keeps a running timer; changing the metric, threshold, duration, sites or minimum requests, or disabling the rule, clears the rule's timers and alerts. An alert that has already fired gets a recovery notice saying the rule was deleted, disabled or changed. Timers and alert states live in memory only and start over after a restart.
 
 Alerts are sent through the Notification Center: add a notification rule that subscribes to "Performance: alert firing" and "Performance: alert recovered" (the "Performance alerts" template does this), otherwise alerts are only written to the log on this page and the page shows a hint. Notification Center silence also applies to performance alerts; different objects have different event sources, so they do not suppress each other. The duration already debounces alerts, so silence is usually not needed.
 

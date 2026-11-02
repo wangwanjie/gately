@@ -16,6 +16,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/logbuf"
 )
 
@@ -194,7 +195,8 @@ func TestBlockedReasons(t *testing.T) {
 // TestBlockedWAF 验证 WAF 拦截计入 waf、访问日志记 deny=waf，正常请求不计。
 func TestBlockedWAF(t *testing.T) {
 	fw := blockingWAF{}
-	l := Listener{Sites: []Site{{Enable: true, Key: "w", Domains: []string{"w.test"}, Type: TypeText, Text: "ok", StatusCode: 200, WAF: "k", AccessLog: true}}}
+	l := Listener{Sites: []Site{{Enable: true, Key: "w", Domains: []string{"w.test"}, Type: TypeText, Text: "ok", StatusCode: 200, WAF: "k", AccessLog: true},
+		{Enable: true, Key: "f", Domains: []string{"f.test"}, Type: TypeText, Text: "no", StatusCode: 403, WAF: "k"}}}
 	logs := testLogs()
 	addr, run := startRunnerWAFLogs(t, l, fw, logs)
 	if resp, _ := get(t, http.DefaultClient, addr, "w.test", "/", nil); resp.StatusCode != 200 {
@@ -205,6 +207,13 @@ func TestBlockedWAF(t *testing.T) {
 	}
 	if n := siteOf(run).stats.Blocked[blockWAF].Load(); n != 1 {
 		t.Fatalf("WAF 拦截数应为 1: %d", n)
+	}
+	// 站点自身（或后端）返回的 403 不算 WAF 拦截
+	if resp, _ := get(t, http.DefaultClient, addr, "f.test", "/", nil); resp.StatusCode != 403 {
+		t.Fatalf("站点应返回 403: %d", resp.StatusCode)
+	}
+	if n := run.current().sites[1].stats.Blocked[blockWAF].Load(); n != 0 {
+		t.Fatalf("站点自身的 403 不应计为 WAF 拦截: %d", n)
 	}
 	es := logs.Query(0, 0, 0, &logbuf.Filter{Status: []logbuf.StatusRange{{Min: 100, Max: 599}}})
 	if len(es) != 2 || es[0].Fields[logbuf.FieldDeny] != "" || es[1].Fields[logbuf.FieldDeny] != "waf" {
@@ -218,6 +227,7 @@ type blockingWAF struct{}
 func (blockingWAF) Middleware(_ string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/attack" {
+			httpx.MarkWAFBlocked(r)
 			http.Error(w, "blocked", http.StatusForbidden)
 			return
 		}

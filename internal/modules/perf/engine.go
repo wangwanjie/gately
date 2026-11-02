@@ -82,6 +82,7 @@ type alertInst struct {
 	value    float64
 	level    string
 	ruleName string
+	metric   string
 }
 
 // engine 保存采样历史并评估告警规则。tick 由单个后台协程调用，查询接口并发读取。
@@ -253,7 +254,9 @@ func (e *engine) tick(now time.Time, host hostSample, sites []webservice.PerfSit
 	defer e.mu.Unlock()
 	e.views = e.windowViews(now, sites)
 
-	// 规则被删除、停用或判定条件被修改后，旧的计时与触发状态作废
+	// 规则被删除、停用或判定条件被修改后，旧的计时与触发状态作废；
+	// 已触发的告警补发一条恢复通知，通知渠道里不会只剩一条没有下文的告警
+	var out []events.Event
 	live := map[string]*Rule{}
 	for i := range rules {
 		if rules[i].Enable {
@@ -262,11 +265,13 @@ func (e *engine) tick(now time.Time, host hostSample, sites []webservice.PerfSit
 	}
 	for k, st := range e.states {
 		if r := live[st.rule]; r == nil || r.signature() != st.sig {
+			if st.firing {
+				out = append(out, closedEvent(now, st))
+			}
 			delete(e.states, k)
 		}
 	}
 
-	var out []events.Event
 	for _, r := range rules {
 		if !r.Enable {
 			continue
@@ -283,7 +288,7 @@ func (e *engine) tick(now time.Time, host hostSample, sites []webservice.PerfSit
 			st := e.states[stKey]
 			if s.ok && rule.compare(s.value) {
 				if st == nil {
-					st = &alertInst{rule: rule.Key, sig: rule.signature(), subject: s.key, since: now}
+					st = &alertInst{rule: rule.Key, sig: rule.signature(), subject: s.key, since: now, metric: rule.Metric}
 					e.states[stKey] = st
 				}
 				st.target, st.value, st.level, st.ruleName = s.name, s.value, rule.Level, rule.Name
@@ -344,6 +349,19 @@ func recoverEvent(now time.Time, r *Rule, def MetricDef, st *alertInst, s subjec
 		Title:   "性能告警已恢复：" + r.Name,
 		Message: msg,
 		Fields:  map[string]string{"rule": r.Key, "metric": r.Metric, "target": st.target, "value": value, "condition": cond},
+		Time:    now,
+	}
+}
+
+// closedEvent 生成规则被删除、停用或修改判定条件后、已触发告警的结束通知。
+func closedEvent(now time.Time, st *alertInst) events.Event {
+	return events.Event{
+		Type:    events.PerfRecovered,
+		Source:  st.ruleName + " · " + st.target,
+		Level:   events.LevelInfo,
+		Title:   "性能告警已恢复：" + st.ruleName,
+		Message: fmt.Sprintf("%s：告警规则已删除、停用或修改，告警结束，告警持续 %s", st.target, spanText(now.Sub(st.firedAt))),
+		Fields:  map[string]string{"rule": st.rule, "metric": st.metric, "target": st.target, "value": "", "condition": ""},
 		Time:    now,
 	}
 }

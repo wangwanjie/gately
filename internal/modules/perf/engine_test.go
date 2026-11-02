@@ -140,12 +140,41 @@ func TestDisabledAndEditedRuleDropsState(t *testing.T) {
 	if len(a) != 1 || a[0].Since == t0.Unix() {
 		t.Fatalf("修改阈值应重新计时: %+v", a)
 	}
-	// 停用：状态清除且不发任何事件
+	// 停用：还在计时（未触发）的状态清除且不发任何事件
 	disabled := changed
 	disabled.Enable = false
 	evs, _ := run(e, now, 1, func(int) hostSample { return hostAt(95) }, nil, []Rule{disabled})
 	if len(evs) != 0 || len(e.alerts()) != 0 {
 		t.Fatalf("停用应静默清除状态: %+v", evs)
+	}
+}
+
+// 已触发的告警在规则被删除或修改判定条件时补发结束通知。
+func TestFiringAlertClosedOnRuleChange(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		rules func(Rule) []Rule
+	}{
+		{"删除", func(Rule) []Rule { return nil }},
+		{"停用", func(r Rule) []Rule { r.Enable = false; return []Rule{r} }},
+		{"改阈值", func(r Rule) []Rule { r.Threshold = 70; return []Rule{r} }},
+	} {
+		e := newEngine()
+		rule := cpuRule(1)
+		evs, now := run(e, t0, 14, func(int) hostSample { return hostAt(95) }, nil, []Rule{rule})
+		if len(evs) != 1 || evs[0].Type != events.PerfAlert {
+			t.Fatalf("%s: 应先触发告警: %+v", tc.name, evs)
+		}
+		evs, _ = run(e, now, 1, func(int) hostSample { return hostAt(95) }, nil, tc.rules(rule))
+		var closed int
+		for _, ev := range evs {
+			if ev.Type == events.PerfRecovered && strings.Contains(ev.Message, "告警结束") {
+				closed++
+			}
+		}
+		if closed != 1 {
+			t.Fatalf("%s: 应补发一条结束通知: %+v", tc.name, evs)
+		}
 	}
 }
 
@@ -320,8 +349,35 @@ func TestHostHistoryRingAndMerge(t *testing.T) {
 		t.Fatalf("秒级环应保留 %d 点，实际 %d", shortSlots, len(got))
 	}
 	m := merge(pts, 3)
-	if len(m) != 1 || m[0].CPU != 50 || m[0].CPUMax != 90 || m[0].T != pts[0].T {
+	for _, p := range m {
+		if p.T%180 != 0 || p.CPUMax != 90 {
+			t.Fatalf("合并点应对齐到 3 分钟且保留峰值: %+v", m)
+		}
+	}
+	if len(m) == 0 || len(m) > 2 {
 		t.Fatalf("合并结果不对: %+v", m)
+	}
+}
+
+// 合并按时间对齐：空洞两侧的分钟不合进同一个点，时间取对齐后的桶起点。
+func TestMergeAlignsAcrossGaps(t *testing.T) {
+	base := int64(1_800_000_000) / 300 * 300
+	pts := []hostPoint{
+		{T: base + 60, CPU: 10, CPUMax: 10},
+		{T: base + 120, CPU: 20, CPUMax: 20},
+		// 中间空了 4 小时（重启或休眠）
+		{T: base + 4*3600, CPU: 80, CPUMax: 80},
+		{T: base + 4*3600 + 60, CPU: 60, CPUMax: 90},
+	}
+	m := merge(pts, 5)
+	if len(m) != 2 {
+		t.Fatalf("空洞两侧应分成两个点: %+v", m)
+	}
+	if m[0].T != base || m[0].CPU != 15 || m[0].CPUMax != 20 {
+		t.Fatalf("第一个桶不对: %+v", m[0])
+	}
+	if m[1].T != base+4*3600 || m[1].CPU != 70 || m[1].CPUMax != 90 {
+		t.Fatalf("第二个桶不对: %+v", m[1])
 	}
 }
 

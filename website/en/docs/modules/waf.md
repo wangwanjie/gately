@@ -63,7 +63,7 @@ Notes:
 - With SafeLine connected, rule groups can be left empty; if you keep them, requests are checked by SafeLine first and then by the rule groups. In "Detect only" mode, attacks detected by SafeLine are only logged and the request goes through.
 - Blocked requests: browsers see a block page with the event ID, other clients get the same JSON as SafeLine's official plugins (including `event_id`). The status code is the one suggested by the engine, usually 403. Blocks are counted in access logs (`deny=waf`), site statistics and WAF block events, and the "WAF blocks" preset of Intrusion Guard applies as well.
 - Attacks are also recorded in the SafeLine console and can be looked up by event ID; these records do not belong to any SafeLine site.
-- Up to 1024 KB of the request body is sent for inspection by default; the rest is not inspected and is forwarded to the backend unchanged. "Paths without body inspection" and "WebDAV and upload compatible" apply to SafeLine too; gRPC request bodies of unknown length are not inspected.
+- Up to 1024 KB of the request body is sent for inspection by default; the rest is not inspected and is forwarded to the backend unchanged. "Paths without body inspection" and "WebDAV and upload compatible" apply to SafeLine too; gRPC request bodies of unknown length over HTTP/2 are not inspected.
 - The detection timeout defaults to 1 second. When the engine is unavailable (connection failure or timeout), requests are allowed by default, the instance shows "SafeLine down" and an error is logged; with "Reject requests" such requests get 503. Right after the engine starts it may return unrecognized results for a few seconds, which are treated the same way.
 - Only requests are inspected; responses are not sent to SafeLine.
 

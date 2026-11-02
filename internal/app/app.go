@@ -201,7 +201,8 @@ func New(opts Options) (*App, error) {
 			return ""
 		}
 		id, ok := a.auth.Identify(c.Value)
-		if !ok {
+		// 只认管理员会话：只读账号的 Cookie 一旦泄露，不能被用来给扫描流量打上“后台请求”标记、在默认视图中隐藏
+		if !ok || id.Role != auth.RoleAdmin {
 			return ""
 		}
 		return id.User

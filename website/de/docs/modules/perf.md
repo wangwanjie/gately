@@ -86,7 +86,7 @@ Website- und Backend-Knoten-Messwerte werden je Objekt bewertet und gemeldet, ei
 
 Oben auf der Seite stehen ausstehende und ausgelöste Objekte mit aktuellem Wert und Dauer.
 
-Änderungen an Name, Stufe oder Bemerkung einer Regel behalten einen laufenden Zähler bei; Änderungen an Messwert, Schwellwert, Dauer, Websites oder Mindestanzahl Anfragen oder das Deaktivieren der Regel löschen ihre Zähler und Warnungen. Zähler und Warnzustände liegen nur im Speicher und beginnen nach einem Neustart von vorn.
+Änderungen an Name, Stufe oder Bemerkung einer Regel behalten einen laufenden Zähler bei; Änderungen an Messwert, Schwellwert, Dauer, Websites oder Mindestanzahl Anfragen oder das Deaktivieren der Regel löschen ihre Zähler und Warnungen. Bereits ausgelöste Warnungen erhalten eine Entwarnung mit dem Hinweis, dass die Regel gelöscht, deaktiviert oder geändert wurde. Zähler und Warnzustände liegen nur im Speicher und beginnen nach einem Neustart von vorn.
 
 Warnungen werden über die Benachrichtigungszentrale gesendet: Legen Sie eine Benachrichtigungsregel an, die „Leistung: Warnung ausgelöst“ und „Leistung: Warnung aufgehoben“ abonniert (die Vorlage „Leistungswarnungen“ erledigt das). Andernfalls landen Warnungen nur im Protokoll dieser Seite, und die Seite zeigt einen Hinweis. Die Stummschaltung der Benachrichtigungszentrale gilt auch für Leistungswarnungen; jedes Objekt hat eine eigene Ereignisquelle, sie unterdrücken sich also nicht gegenseitig. Da die Dauer bereits entprellt, ist eine Stummschaltung meist nicht nötig.
 

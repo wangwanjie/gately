@@ -679,7 +679,7 @@ func (h *siteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 			// 末尾按 nginx combined 格式附上 Referer 与 User-Agent，便于区分同一出口 IP 后面的不同设备；
 			// %q 会转义换行等控制字符，防止伪造日志行；三者都由访客控制，先截断再写入
-			h.reqLog(r).With(logbuf.Fields{logbuf.FieldStatus: strconv.Itoa(rec.status), logbuf.FieldDeny: rec.deny, logbuf.FieldAdmin: admin}).
+			h.reqLog(r).With(logbuf.Fields{logbuf.FieldStatus: strconv.Itoa(rec.status), logbuf.FieldDeny: rec.deny, logbuf.FieldAdmin: adminTag(admin, rec.deny)}).
 				Infof("%s %s %s%s %d %dms %q %q", client.Addr(), r.Method, r.Host, clip(uri, maxLogURI), rec.status, time.Since(start).Milliseconds(),
 					orDash(clip(r.Referer(), maxLogHeader)), orDash(clip(r.UserAgent(), maxLogHeader)))
 		}
@@ -736,9 +736,13 @@ func (h *siteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer release()
+	// WAF（Coraza 规则组或雷池）拦截时在请求上下文中置位标记，认证、后端等返回的 403 不算 WAF 拦截
+	var wafBlocked *atomic.Bool
+	if h.site.WAF != "" {
+		r, wafBlocked = httpx.WithWAFFlag(r)
+	}
 	h.pipeline.ServeHTTP(rec, r)
-	// WAF 拦截时不会进入 serveInner 并返回 403；进入过 serveInner 的 403 来自认证、后端等，不算 WAF 拦截
-	if h.site.WAF != "" && !ar.inner && rec.status == http.StatusForbidden && !ar.killed.Load() {
+	if wafBlocked != nil && wafBlocked.Load() && !ar.killed.Load() {
 		h.block(rec, blockWAF)
 	}
 }
@@ -802,12 +806,17 @@ func (h *siteHandler) deny(w http.ResponseWriter) {
 	http.Error(w, "403 Forbidden", http.StatusForbidden)
 }
 
+// adminTag 返回访问日志中的后台用户字段：被拦截（封禁、名单、WAF 等）的请求不标记，
+// 带后台登录态也不能让被拦截的请求在“隐藏后台自身请求”时消失。
+func adminTag(admin, deny string) string {
+	if deny != "" {
+		return ""
+	}
+	return admin
+}
+
 // serveInner 处理跨域、认证并交给站点处理器。
 func (h *siteHandler) serveInner(rec http.ResponseWriter, r *http.Request) {
-	// 标记请求已通过 WAF，供 ServeHTTP 区分 WAF 拦截与后续环节返回的 403
-	if a, ok := r.Context().Value(ctxKeyActiveReq{}).(*activeReq); ok {
-		a.inner = true
-	}
 	if h.site.CORS {
 		if origin := r.Header.Get("Origin"); origin != "" && h.corsAllowed(origin) {
 			rec.Header().Set("Access-Control-Allow-Origin", origin)

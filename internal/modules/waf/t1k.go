@@ -309,6 +309,19 @@ func (c *t1kClient) roundTrip(secs []t1kSection) (*t1kResult, error) {
 		if !reused || attempt > 0 || !time.Now().Before(deadline) {
 			return nil, err
 		}
+		// 复用的连接失效多半是检测引擎重启过，池里其余空闲连接也已失效，全部丢弃，重试时新建连接
+		c.dropIdle()
+	}
+}
+
+// dropIdle 关闭并丢弃全部空闲连接，之后的 get 会新建连接。
+func (c *t1kClient) dropIdle() {
+	c.mu.Lock()
+	idle := c.idle
+	c.idle = nil
+	c.mu.Unlock()
+	for _, cn := range idle {
+		_ = cn.Close()
 	}
 }
 

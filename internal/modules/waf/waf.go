@@ -434,6 +434,11 @@ func (m *Module) buildLocked(key string) {
 	if err != nil {
 		m.errors[key] = err.Error()
 		log.Errorf("编译失败: %v", err)
+		if c.safe != nil {
+			// 规则组编译失败时雷池检测照常生效，只是不执行规则组
+			m.state.Store(key, c)
+			return
+		}
 		m.state.Delete(key)
 		return
 	}
@@ -467,8 +472,16 @@ func (m *Module) Middleware(key string, next http.Handler) http.Handler {
 		rec := &blockRecorder{ResponseWriter: w}
 		r, done := trackRequest(r)
 		defer done()
-		txhttp.WrapHandler(c.waf, next).ServeHTTP(rec, r)
-		if rec.blocked {
+		// inner 记录后端实际写出的状态码：后端自己返回 403 等不算 WAF 拦截；
+		// 请求阶段拦截时后端不会被调用，响应阶段拦截时写给访客的状态码与后端的不同
+		var inner *blockRecorder
+		reached := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			inner = &blockRecorder{ResponseWriter: w}
+			next.ServeHTTP(inner, r)
+		})
+		txhttp.WrapHandler(c.waf, reached).ServeHTTP(rec, r)
+		if rec.code >= 400 && (inner == nil || inner.code != rec.code) {
+			httpx.MarkWAFBlocked(r)
 			c.blocked.Add(1)
 			events.Publish(events.Event{
 				Type:    events.WAFBlocked,
@@ -482,23 +495,27 @@ func (m *Module) Middleware(key string, next http.Handler) http.Handler {
 	})
 }
 
-// blockRecorder 识别 WAF 拦截（下游未写入即返回 403）。
+// blockRecorder 记录首次写出的状态码（1xx 除外），用于识别 WAF 拦截。
 type blockRecorder struct {
 	http.ResponseWriter
-	blocked bool
-	wrote   bool
+	// code 为首次写出的最终状态码；只写正文时为 200，劫持连接时保持 0
+	code  int
+	wrote bool
 }
 
 func (b *blockRecorder) WriteHeader(code int) {
-	if !b.wrote && code == http.StatusForbidden {
-		b.blocked = true
+	if !b.wrote && code >= 200 {
+		b.code = code
+		b.wrote = true
 	}
-	b.wrote = true
 	b.ResponseWriter.WriteHeader(code)
 }
 
 func (b *blockRecorder) Write(p []byte) (int, error) {
-	b.wrote = true
+	if !b.wrote {
+		b.code = http.StatusOK
+		b.wrote = true
+	}
 	return b.ResponseWriter.Write(p)
 }
 
@@ -531,6 +548,18 @@ func (m *Module) Instances() []InstanceInfo {
 		out = append(out, InstanceInfo{Key: in.Key, Name: in.Name})
 	}
 	return out
+}
+
+// HasInstance 判断实例是否存在，供 Web 服务批量设置 WAF 引用时校验。
+func (m *Module) HasInstance(key string) bool {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	for _, in := range m.cfg.Instances {
+		if in.Key == key {
+			return true
+		}
+	}
+	return false
 }
 
 // InstanceView 是带统计的实例。

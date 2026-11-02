@@ -70,7 +70,7 @@ func TestReconcileAddRemove(t *testing.T) {
 		t.Fatalf("status = %q", status)
 	}
 	got := comments(f, fw4.String())
-	if len(got) != 1 || got[0] != "gately-open:stun:k1:tcp:34811" {
+	if len(got) != 1 || got[0] != ownPrefix()+"stun:k1:tcp:34811" {
 		t.Fatalf("fw4 rules = %v", got)
 	}
 	// 默认放行且没有其他规则的链不需要插入
@@ -114,6 +114,37 @@ func TestReconcileFailureAndNoFirewall(t *testing.T) {
 	}
 	if !strings.Contains(s, "失败") || !strings.Contains(s, "boom") {
 		t.Fatalf("status = %q", s)
+	}
+}
+
+// 同一主机上其他 Gately 实例（不同配置目录）的规则不会被本实例删除。
+func TestReconcileKeepsOtherInstances(t *testing.T) {
+	fw4 := target{Kind: "nft", Family: "inet", Table: "fw4", Chain: "input", Policy: "drop"}
+	SetInstance("/tmp/other-gately")
+	foreign := comment("stun:x", Port{"udp", 2000})
+	SetInstance("/tmp/this-gately")
+	defer func() {
+		instMu.Lock()
+		instance = "default"
+		instMu.Unlock()
+	}()
+	if foreign == comment("stun:x", Port{"udp", 2000}) {
+		t.Fatal("instances should produce different comments")
+	}
+	if _, ok := ownerOf(foreign); ok {
+		t.Fatal("foreign comment must not belong to this instance")
+	}
+	f := &fakeBackend{chains: []target{fw4}, rules: map[string][]existing{
+		fw4.String(): {{Comment: foreign, Ref: "f"}},
+	}}
+	m := newTestManager(f)
+	m.set("stun:k", []Port{{"tcp", 3000}}, nil)
+	m.clear("stun:k")
+	// Sweep 式对账（没有登记的端口）也不删除其他实例的规则
+	m.reconcile(context.Background(), false)
+	got := comments(f, fw4.String())
+	if len(got) != 1 || got[0] != foreign {
+		t.Fatalf("rules = %v", got)
 	}
 }
 
