@@ -83,8 +83,8 @@
   "home": {
     "pill": "Kostenlos und Open Source · Apache-2.0",
     "announce": {
-      "text": "v0.6.2.2 ist da: Topologie der Web-Dienste, echte Besucher-IP, Live-Verbindungen, Quell-IP-Zugriffskontrolle →",
-      "link": "/de/news/v0.6.2.2"
+      "text": "v0.6.3: Leistungsüberwachung mit Warnungen, SafeLine für die WAF, Massenaktionen, automatische Firewall-Freigabe für STUN →",
+      "link": "/de/news/v0.6.3"
     },
     "titleLine1": "Das All-in-one-Netzwerk-Gateway",
     "titleLine2": "Open Source, sofort einsatzbereit",
@@ -133,7 +133,7 @@
       },
       {
         "title": "STUN-Traversal",
-        "text": "TCP-/UDP-Hole-Punching und Keep-alive, UPnP / NAT-PMP, integrierte Weiterleitung; löst Webhooks und Skripte aus, wenn sich die öffentliche Adresse ändert."
+        "text": "TCP-/UDP-Hole-Punching und Keep-alive, UPnP / NAT-PMP, automatische Portfreigabe in der Host-Firewall, integrierte Weiterleitung; löst Webhooks und Skripte aus, wenn sich die öffentliche Adresse ändert."
       },
       {
         "title": "Portweiterleitung",
@@ -149,7 +149,7 @@
       },
       {
         "title": "WAF-Firewall",
-        "text": "Integriertes Coraza mit OWASP CRS v4, Regeln dateiweise aktivierbar, eigene SecLang-Regeln, wahlweise blockieren oder nur erkennen."
+        "text": "Integriertes Coraza mit OWASP CRS v4, Regeln dateiweise aktivierbar, eigene SecLang-Regeln, wahlweise blockieren oder nur erkennen; Anbindung an eine selbst betriebene SafeLine-Engine zur semantischen Erkennung."
       },
       {
         "title": "Netzwerk & Tunnel",
@@ -181,7 +181,7 @@
       },
       {
         "title": "Zugriffsstatistik & Monitoring",
-        "text": "Globale Prometheus-Metriken und Grafana-Dashboard für Zertifikate, DDNS, Portweiterleitung und Sites; Netzwerk-Selbsttest per Klick prüft NAT, Ports, Uhrzeit und DNS-Auflösung."
+        "text": "Leistungs-Dashboard mit Verläufen für Host, Prozess und Sites inklusive Time to First Byte sowie Schwellwert-Alarme mit Dauer; globale Prometheus-Metriken und Grafana-Dashboard für Zertifikate, DDNS, Portweiterleitung und Sites; Netzwerk-Selbsttest per Klick prüft NAT, Ports, Uhrzeit und DNS-Auflösung."
       },
       {
         "title": "Benachrichtigungszentrale",

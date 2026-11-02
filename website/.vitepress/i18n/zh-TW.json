@@ -83,8 +83,8 @@
   "home": {
     "pill": "開源免費 · Apache-2.0",
     "announce": {
-      "text": "v0.6.2.2 發布：Web 服務拓撲視圖、訪客真實 IP、即時連線、來源 IP 存取控制 →",
-      "link": "/zh-TW/news/v0.6.2.2"
+      "text": "v0.6.3 發布：效能監控與告警、WAF 接入雷池、批次操作、STUN 自動放行防火牆 →",
+      "link": "/zh-TW/news/v0.6.3"
     },
     "titleLine1": "一站式網路閘道",
     "titleLine2": "開源透明，開箱即用",
@@ -133,7 +133,7 @@
       },
       {
         "title": "STUN 穿透",
-        "text": "TCP / UDP 打洞與保活，UPnP / NAT-PMP，內建轉發；公網位址變更時觸發 Webhook 與指令碼。"
+        "text": "TCP / UDP 打洞與保活，UPnP / NAT-PMP，自動在本機防火牆放行連接埠，內建轉發；公網位址變更時觸發 Webhook 與指令碼。"
       },
       {
         "title": "連接埠轉發",
@@ -149,7 +149,7 @@
       },
       {
         "title": "WAF 防火牆",
-        "text": "內建 Coraza 與 OWASP CRS v4，依檔案啟用規則，支援自訂 SecLang，可攔截或僅偵測。"
+        "text": "內建 Coraza 與 OWASP CRS v4，依檔案啟用規則，支援自訂 SecLang，可攔截或僅偵測；可接入自建的雷池（SafeLine）語意偵測引擎。"
       },
       {
         "title": "組網與穿透",
@@ -181,7 +181,7 @@
       },
       {
         "title": "存取統計與監控",
-        "text": "全域 Prometheus 指標與 Grafana 儀表板，涵蓋憑證、DDNS、連接埠轉發與站台；一鍵網路自檢排查 NAT、連接埠、時間與解析。"
+        "text": "效能面板顯示主機、程序與站台趨勢（含首位元組延遲），閾值加持續時間告警；全域 Prometheus 指標與 Grafana 儀表板，涵蓋憑證、DDNS、連接埠轉發與站台；一鍵網路自檢排查 NAT、連接埠、時間與解析。"
       },
       {
         "title": "通知中心",

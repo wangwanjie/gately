@@ -222,7 +222,7 @@ Cloudflare、阿里雲、DNSPod、Route 53 等都能用。支援 IPv4 與 IPv6�
 | 模組 | 功能 |
 | --- | --- |
 | 動態網域 | Alibaba Cloud、Cloudflare、Tencent Cloud、DNSPod、Huawei Cloud、GoDaddy、Porkbun、dynv6、DuckDNS、Amazon Route 53、OVHcloud、Gandi、NS1、Bunny DNS、Namecheap、DynDNS2（No-IP、Dynu 等）、自訂回呼；以 URL／網路卡／指令取得 IP；IPv4/IPv6；Webhook；分組、排序與搜尋；備註寫入服務商；刪除時可同時刪除服務商處的解析 |
-| STUN 穿透 | TCP/UDP、保活、UPnP/NAT-PMP、內建轉發、位址變更時觸發 Webhook 與腳本；來源 IP 白名單／黑名單（可引用訂閱 IP 清單） |
+| STUN 穿透 | TCP/UDP、保活、UPnP/NAT-PMP、自動在本機防火牆（nftables／iptables）放行連接埠、內建轉發、位址變更時觸發 Webhook 與腳本；來源 IP 白名單／黑名單（可引用訂閱 IP 清單） |
 | 連接埠轉發 | TCP/UDP、IPv4/IPv6、連接埠範圍、多目標故障轉移、連線數限制、流量統計、PROXY 協定（v1/v2）；分組、排序與搜尋；來源 IP 白名單／黑名單（可引用訂閱 IP 清單） |
 | 協定分流 | 多個服務共用 443 等同一個連接埠：依協定辨識連線並透傳、不解密，TLS 依 SNI 與 ALPN、HTTP 依 Host，Minecraft 依伺服器位址，另可辨識 SSH、RDP、SOCKS、OpenVPN、RTSP、SIP、XMPP、MQTT、AMQP、PostgreSQL、Redis、SMB、Git、IRC、ADB、BitTorrent，VNC 等伺服器先發話的協定走等待逾時路由；預設目標、每條路由可單獨設定 PROXY 協定；取代 haproxy SNI 分流與 sslh；來源 IP 白名單／黑名單（可引用訂閱 IP 清單） |
 | SSL 憑證 | ACME 自動簽發與續期，支援 DNS-01（萬用字元；委派子網域依 SOA 自動識別 DNS 區域）與 HTTP-01（無需 DNS 服務商）、短期憑證與公網 IP 位址憑證（Let's Encrypt shortlived 設定檔）、EAB、上傳、讀取檔案、對應到目錄並執行腳本；憑證更新後經 SSH 推送到其他主機並執行指令，或重新啟動使用憑證的 Docker 容器 |

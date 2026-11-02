@@ -83,8 +83,8 @@
   "home": {
     "pill": "Free and open source · Apache-2.0",
     "announce": {
-      "text": "v0.6.2.2 is out: Web Services topology, real visitor IP, live connections, source IP access control →",
-      "link": "/en/news/v0.6.2.2"
+      "text": "v0.6.3: performance monitoring and alerts, SafeLine for the WAF, bulk operations, automatic firewall opening for STUN →",
+      "link": "/en/news/v0.6.3"
     },
     "titleLine1": "The all-in-one network gateway",
     "titleLine2": "Open source, ready out of the box",
@@ -133,7 +133,7 @@
       },
       {
         "title": "STUN Traversal",
-        "text": "TCP / UDP hole punching and keep-alive, UPnP / NAT-PMP, built-in forwarding; triggers webhooks and scripts when the public address changes."
+        "text": "TCP / UDP hole punching and keep-alive, UPnP / NAT-PMP, automatic port opening in the host firewall, built-in forwarding; triggers webhooks and scripts when the public address changes."
       },
       {
         "title": "Port Forwarding",
@@ -149,7 +149,7 @@
       },
       {
         "title": "WAF Firewall",
-        "text": "Built-in Coraza and OWASP CRS v4, rules enabled per file, custom SecLang support, block or detect-only mode."
+        "text": "Built-in Coraza and OWASP CRS v4, rules enabled per file, custom SecLang support, block or detect-only mode; can also send requests to a self-hosted SafeLine semantic detection engine."
       },
       {
         "title": "Networking & Tunnels",
@@ -181,7 +181,7 @@
       },
       {
         "title": "Traffic Stats & Monitoring",
-        "text": "Global Prometheus metrics and a Grafana dashboard covering certificates, DDNS, port forwarding and sites; a one-click network self-check for NAT, ports, clock and DNS resolution."
+        "text": "A performance dashboard with host, process and site trends including time to first byte, plus threshold alerts with a duration; global Prometheus metrics and a Grafana dashboard covering certificates, DDNS, port forwarding and sites; a one-click network self-check for NAT, ports, clock and DNS resolution."
       },
       {
         "title": "Notification Center",

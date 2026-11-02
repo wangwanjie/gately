@@ -222,7 +222,7 @@ Cloudflare、阿里云、DNSPod、Route 53 等都能用。IPv4 与 IPv6，IP 可
 | 模块 | 能力 |
 | --- | --- |
 | 动态域名 | 阿里云、Cloudflare、腾讯云、DNSPod、华为云、GoDaddy、Porkbun、dynv6、DuckDNS、Amazon Route 53、OVHcloud、Gandi、NS1、Bunny DNS、Namecheap、DynDNS2（No-IP、Dynu 等）、自定义回调；URL/网卡/命令取 IP；IPv4/IPv6；Webhook；分组、排序与搜索；备注写入服务商；删除时可同时删除服务商处的解析 |
-| STUN 穿透 | TCP/UDP、保活、UPnP/NAT-PMP、内置转发、地址变化时触发 Webhook 与脚本；来源 IP 白名单 / 黑名单（可引用订阅 IP 列表） |
+| STUN 穿透 | TCP/UDP、保活、UPnP/NAT-PMP、自动在本机防火墙（nftables / iptables）放行端口、内置转发、地址变化时触发 Webhook 与脚本；来源 IP 白名单 / 黑名单（可引用订阅 IP 列表） |
 | 端口转发 | TCP/UDP、IPv4/IPv6、端口段、多目标故障转移、连接数限制、流量统计、PROXY 协议（v1/v2）；分组、排序与搜索；来源 IP 白名单 / 黑名单（可引用订阅 IP 列表） |
 | 协议分流 | 多个服务共用 443 等同一个端口：按协议识别连接并透传、不解密，TLS 按 SNI 与 ALPN、HTTP 按 Host，Minecraft 按服务器地址，另可识别 SSH、RDP、SOCKS、OpenVPN、RTSP、SIP、XMPP、MQTT、AMQP、PostgreSQL、Redis、SMB、Git、IRC、ADB、BitTorrent，VNC 等服务端先发言的协议走等待超时路由；默认目标、每条路由单独设置 PROXY 协议；替代 haproxy SNI 分流与 sslh；来源 IP 白名单 / 黑名单（可引用订阅 IP 列表） |
 | SSL 证书 | ACME 自动签发与续期，支持 DNS-01（通配符；委派子域名按 SOA 自动识别 DNS 区域）与 HTTP-01（无需 DNS 服务商）、短期证书与公网 IP 地址证书（Let's Encrypt shortlived 配置）、EAB、上传、读取文件、映射到目录并执行脚本；证书更新后经 SSH 推送到其他主机并执行命令，或重启使用证书的 Docker 容器 |

@@ -83,8 +83,8 @@
   "home": {
     "pill": "Gratis y de código abierto · Apache-2.0",
     "announce": {
-      "text": "v0.6.2.2 ya disponible: topología de Servicios web, IP real del visitante, conexiones en vivo y control de acceso por IP de origen →",
-      "link": "/es/news/v0.6.2.2"
+      "text": "v0.6.3: monitorización de rendimiento y alertas, SafeLine para el WAF, operaciones en lote, apertura automática del cortafuegos para STUN →",
+      "link": "/es/news/v0.6.3"
     },
     "titleLine1": "La pasarela de red todo en uno",
     "titleLine2": "Código abierto y lista para usar",
@@ -133,7 +133,7 @@
       },
       {
         "title": "Traversal STUN",
-        "text": "Perforación de NAT y mantenimiento de la conexión en TCP / UDP, UPnP / NAT-PMP y reenvío integrado; lanza webhooks y scripts cuando cambia la dirección pública."
+        "text": "Perforación de NAT y mantenimiento de la conexión en TCP / UDP, UPnP / NAT-PMP, apertura automática del puerto en el cortafuegos del host y reenvío integrado; lanza webhooks y scripts cuando cambia la dirección pública."
       },
       {
         "title": "Reenvío de puertos",
@@ -149,7 +149,7 @@
       },
       {
         "title": "Cortafuegos WAF",
-        "text": "Coraza y OWASP CRS v4 integrados, reglas activables por archivo, compatibilidad con SecLang personalizado, modo de bloqueo o solo detección."
+        "text": "Coraza y OWASP CRS v4 integrados, reglas activables por archivo, compatibilidad con SecLang personalizado, modo de bloqueo o solo detección; también puede enviar las solicitudes a un motor de detección semántica SafeLine autoalojado."
       },
       {
         "title": "Redes y túneles",
@@ -181,7 +181,7 @@
       },
       {
         "title": "Estadísticas y monitorización de tráfico",
-        "text": "Métricas globales de Prometheus y panel de Grafana para certificados, DDNS, reenvío de puertos y sitios; autodiagnóstico de red en un clic para revisar NAT, puertos, reloj y resolución DNS."
+        "text": "Panel de rendimiento con tendencias del host, del proceso y de los sitios, incluido el tiempo hasta el primer byte, y alertas por umbral con duración; métricas globales de Prometheus y panel de Grafana para certificados, DDNS, reenvío de puertos y sitios; autodiagnóstico de red en un clic para revisar NAT, puertos, reloj y resolución DNS."
       },
       {
         "title": "Centro de notificaciones",

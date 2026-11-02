@@ -83,8 +83,8 @@
   "home": {
     "pill": "Gratuit et open source · Apache-2.0",
     "announce": {
-      "text": "v0.6.2.2 est disponible : topologie des Services Web, IP réelle du visiteur, connexions en direct, contrôle d’accès par IP source →",
-      "link": "/fr/news/v0.6.2.2"
+      "text": "v0.6.3 : suivi des performances et alertes, SafeLine pour le WAF, actions groupées, ouverture automatique du pare-feu pour STUN →",
+      "link": "/fr/news/v0.6.3"
     },
     "titleLine1": "La passerelle réseau tout-en-un",
     "titleLine2": "Open source, prête à l'emploi",
@@ -133,7 +133,7 @@
       },
       {
         "title": "Traversée STUN",
-        "text": "Percement de NAT et maintien de session TCP / UDP, UPnP / NAT-PMP, redirection intégrée ; déclenche webhooks et scripts quand l'adresse publique change."
+        "text": "Percement de NAT et maintien de session TCP / UDP, UPnP / NAT-PMP, ouverture automatique du port dans le pare-feu de l'hôte, redirection intégrée ; déclenche webhooks et scripts quand l'adresse publique change."
       },
       {
         "title": "Redirection de ports",
@@ -149,7 +149,7 @@
       },
       {
         "title": "Pare-feu WAF",
-        "text": "Coraza et OWASP CRS v4 intégrés, règles activables par fichier, SecLang personnalisé, mode blocage ou détection seule."
+        "text": "Coraza et OWASP CRS v4 intégrés, règles activables par fichier, SecLang personnalisé, mode blocage ou détection seule ; peut aussi soumettre les requêtes à un moteur de détection sémantique SafeLine auto-hébergé."
       },
       {
         "title": "Réseaux et tunnels",
@@ -181,7 +181,7 @@
       },
       {
         "title": "Statistiques et supervision",
-        "text": "Métriques Prometheus globales et tableau de bord Grafana couvrant certificats, DDNS, redirection de ports et sites ; auto-diagnostic réseau en un clic pour vérifier NAT, ports, horloge et résolution DNS."
+        "text": "Tableau de bord des performances avec les tendances de l'hôte, du processus et des sites, temps jusqu'au premier octet compris, et alertes sur seuil avec durée ; métriques Prometheus globales et tableau de bord Grafana couvrant certificats, DDNS, redirection de ports et sites ; auto-diagnostic réseau en un clic pour vérifier NAT, ports, horloge et résolution DNS."
       },
       {
         "title": "Centre de notifications",

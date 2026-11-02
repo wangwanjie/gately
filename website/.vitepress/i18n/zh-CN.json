@@ -83,8 +83,8 @@
   "home": {
     "pill": "开源免费 · Apache-2.0",
     "announce": {
-      "text": "v0.6.2.2 发布：Web 服务拓扑视图、访客真实 IP、实时连接、来源 IP 访问控制 →",
-      "link": "/news/v0.6.2.2"
+      "text": "v0.6.3 发布：性能监控与告警、WAF 接入雷池、批量操作、STUN 自动放行防火墙 →",
+      "link": "/news/v0.6.3"
     },
     "titleLine1": "一站式网络网关",
     "titleLine2": "开源透明，开箱即用",
@@ -133,7 +133,7 @@
       },
       {
         "title": "STUN 穿透",
-        "text": "TCP / UDP 打洞与保活，UPnP / NAT-PMP，内置转发；公网地址变化时触发 Webhook 与脚本。"
+        "text": "TCP / UDP 打洞与保活，UPnP / NAT-PMP，自动在本机防火墙放行端口，内置转发；公网地址变化时触发 Webhook 与脚本。"
       },
       {
         "title": "端口转发",
@@ -149,7 +149,7 @@
       },
       {
         "title": "WAF 防火墙",
-        "text": "内置 Coraza 与 OWASP CRS v4，按文件启用规则，支持自定义 SecLang，可拦截或仅检测。"
+        "text": "内置 Coraza 与 OWASP CRS v4，按文件启用规则，支持自定义 SecLang，可拦截或仅检测；可接入自建的雷池（SafeLine）语义检测引擎。"
       },
       {
         "title": "组网与穿透",
@@ -181,7 +181,7 @@
       },
       {
         "title": "访问统计与监控",
-        "text": "全局 Prometheus 指标与 Grafana 面板，覆盖证书、DDNS、端口转发与站点；一键网络自检排查 NAT、端口、时间与解析。"
+        "text": "性能面板展示主机、进程与站点趋势（含首字节延迟），阈值加持续时长告警；全局 Prometheus 指标与 Grafana 面板，覆盖证书、DDNS、端口转发与站点；一键网络自检排查 NAT、端口、时间与解析。"
       },
       {
         "title": "通知中心",

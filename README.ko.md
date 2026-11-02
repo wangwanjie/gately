@@ -222,7 +222,7 @@ fail2ban 방식 규칙이 로그 파일, journald, 컨테이너 로그를 읽고
 | 모듈 | 기능 |
 | --- | --- |
 | 동적 도메인 | Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun, dynv6, DuckDNS, Amazon Route 53, OVHcloud, Gandi, NS1, Bunny DNS, Namecheap, DynDNS2(No-IP, Dynu 등), 사용자 지정 콜백. URL/네트워크 카드/명령으로 IP 조회. IPv4/IPv6. Webhook; 그룹, 정렬, 검색; 메모를 제공업체에 기록, 삭제 시 제공업체 레코드도 함께 삭제 가능 |
-| STUN 터널링 | TCP/UDP, keep-alive, UPnP/NAT-PMP, 내장 포워딩, 주소 변경 시 Webhook 및 스크립트 실행; 출발지 IP 허용 목록 / 차단 목록(구독 IP 목록 참조 가능) |
+| STUN 터널링 | TCP/UDP, keep-alive, UPnP/NAT-PMP, 호스트 방화벽(nftables / iptables) 포트 자동 개방, 내장 포워딩, 주소 변경 시 Webhook 및 스크립트 실행; 출발지 IP 허용 목록 / 차단 목록(구독 IP 목록 참조 가능) |
 | 포트 포워딩 | TCP/UDP, IPv4/IPv6, 포트 범위, 다중 대상 장애 조치, 연결 수 제한, 트래픽 통계, PROXY 프로토콜(v1/v2); 그룹, 정렬, 검색; 출발지 IP 허용 목록 / 차단 목록(구독 IP 목록 참조 가능) |
 | 프로토콜 라우팅 | 여러 서비스가 443 같은 포트 하나를 함께 사용: 연결을 프로토콜로 식별해 복호화 없이 그대로 전달. TLS는 SNI와 ALPN, HTTP는 Host, Minecraft는 서버 주소로 구분하고 SSH, RDP, SOCKS, OpenVPN, RTSP, SIP, XMPP, MQTT, AMQP, PostgreSQL, Redis, SMB, Git, IRC, ADB, BitTorrent도 식별하며, VNC처럼 서버가 먼저 보내는 프로토콜은 대기 시간 초과 라우트로 처리; 기본 대상, 라우트별 PROXY 프로토콜 설정; haproxy SNI 라우팅과 sslh 대체; 출발지 IP 허용 목록 / 차단 목록(구독 IP 목록 참조 가능) |
 | SSL 인증서 | DNS-01(와일드카드, 위임된 서브도메인의 DNS 영역은 SOA로 자동 인식) 또는 HTTP-01(DNS 제공업체 불필요) 방식의 ACME 자동 발급 및 갱신, 단기 인증서와 공인 IP 주소 인증서(Let's Encrypt shortlived 프로필), EAB, 업로드, 파일 읽기, 디렉터리 매핑 및 스크립트 실행. 인증서가 갱신되면 SSH로 다른 호스트에 업로드하고 명령 실행, 또는 인증서를 쓰는 Docker 컨테이너 재시작 |

@@ -222,7 +222,7 @@ fail2ban 風のルールがログファイル、journald、コンテナのログ
 | モジュール | 機能 |
 | --- | --- |
 | ダイナミック DNS | Alibaba Cloud、Cloudflare、Tencent Cloud、DNSPod、Huawei Cloud、GoDaddy、Porkbun、dynv6、DuckDNS、Amazon Route 53、OVHcloud、Gandi、NS1、Bunny DNS、Namecheap、DynDNS2（No-IP、Dynu など）、カスタムコールバック。URL／ネットワークインターフェース／コマンドによる IP 取得、IPv4/IPv6、Webhook；グループ分け・並べ替え・検索；メモをプロバイダーに書き込み、削除時にプロバイダー側のレコードも削除可能 |
-| STUN 穿孔 | TCP/UDP、キープアライブ、UPnP/NAT-PMP、内蔵フォワーディング、アドレス変更時の Webhook・スクリプト実行；送信元 IP の許可リスト／拒否リスト（購読 IP リストを参照可） |
+| STUN 穿孔 | TCP/UDP、キープアライブ、UPnP/NAT-PMP、ホストのファイアウォール（nftables／iptables）でポートを自動開放、内蔵フォワーディング、アドレス変更時の Webhook・スクリプト実行；送信元 IP の許可リスト／拒否リスト（購読 IP リストを参照可） |
 | ポート転送 | TCP/UDP、IPv4/IPv6、ポート範囲、複数ターゲットのフェイルオーバー、接続数制限、トラフィック統計、PROXY プロトコル（v1/v2）；グループ分け・並べ替え・検索；送信元 IP の許可リスト／拒否リスト（購読 IP リストを参照可） |
 | プロトコル振り分け | 443 などの 1 つのポートを複数のサービスで共用：接続をプロトコルで判別し、復号せずにそのまま中継。TLS は SNI と ALPN、HTTP は Host、Minecraft はサーバーアドレスで振り分け、SSH、RDP、SOCKS、OpenVPN、RTSP、SIP、XMPP、MQTT、AMQP、PostgreSQL、Redis、SMB、Git、IRC、ADB、BitTorrent も判別し、VNC のようにサーバーが先に送るプロトコルは待機タイムアウトのルートへ；デフォルトターゲット、ルートごとの PROXY プロトコル設定；haproxy の SNI 振り分けと sslh の代わりに使えます；送信元 IP の許可リスト／拒否リスト（購読 IP リストを参照可） |
 | SSL 証明書 | ACME による自動発行・更新（DNS-01 はワイルドカード対応で、委任されたサブドメインの DNS ゾーンを SOA で自動判別、HTTP-01 は DNS プロバイダー不要）、短期証明書とグローバル IP アドレス証明書（Let's Encrypt の shortlived プロファイル）、EAB、アップロード、ファイル読み込み、ディレクトリへのマッピングとスクリプト実行、証明書の更新後に SSH で他のホストへ送ってコマンドを実行、または証明書を使う Docker コンテナを再起動 |
