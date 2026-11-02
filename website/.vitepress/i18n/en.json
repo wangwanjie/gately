@@ -24,7 +24,7 @@
       "guide/quick-start": "Quick Start",
       "guide/install": "Installation",
       "guide/configuration": "Configuration & Runtime Options",
-      "guide/lists": "List Grouping, Sorting & Bulk Operations",
+      "guide/lists": "List Grouping, Sorting, Bulk Operations & Duplication",
       "guide/cli-mcp": "CLI & MCP",
       "guide/migration": "Migration guide",
       "guide/faq": "FAQ",

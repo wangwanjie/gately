@@ -1,4 +1,4 @@
-# Groupes, tri et opérations en lot des listes
+# Groupes, tri, opérations en lot et duplication des listes
 
 Les listes comportant de nombreuses entrées peuvent être groupées, triées manuellement, filtrées par recherche et modifiées en lot, avec les mêmes commandes sur toutes les pages. L'ordre et les groupes n'agissent que sur l'affichage dans l'interface d'administration ; les modifier ne redémarre pas les instances en cours et ne coupe aucune connexion.
 
@@ -51,6 +51,16 @@ Après avoir coché des entrées en mode de tri, la barre d'outils permet aussi 
 
 Une opération en lot traite jusqu'à 500 entrées. Elle n'est enregistrée que si toutes les entrées passent la validation ; si l'une échoue, rien n'est modifié. Les appareils Wake-on-LAN n'ont pas d'interrupteur d'activation et ne proposent que la suppression en lot ; les jetons d'API ne proposent pas encore l'activation, la désactivation ni la suppression en lot. Services Web propose aussi la modification en lot des domaines et des options, voir [Services Web](/fr/docs/modules/web#operations-en-lot).
 
+## Dupliquer des éléments
+
+Tous les éléments du tableau ci-dessus, sauf les jetons d'API, peuvent être dupliqués, de même que les listes d'IP abonnées, les destinations de sauvegarde, les préréglages d'identifiants du Terminal web, les enregistrements d'une tâche DDNS et les sites d'un écouteur du Service web. Cliquez sur « Dupliquer » sur un élément pour ouvrir la boîte d'ajout avec cet élément comme modèle ; le nom reçoit le suffixe « (copie) ». Modifiez les paramètres qui doivent différer et enregistrez pour ajouter un nouvel élément. L'original reste inchangé et la copie est placée juste après lui.
+
+- **Les secrets sont repris de l'original** : les mots de passe, jetons et clés privées enregistrés restent masqués dans la boîte de dialogue. Si vous ne les modifiez pas, la copie utilise les valeurs de l'original et le texte en clair ne transite jamais par le navigateur. Le bouton en forme d'œil affiche le texte en clair de l'original. Pour les connexions et préréglages d'identifiants du Terminal web, il faut accepter l'accord d'utilisation et passer la vérification en deux étapes avant de réutiliser des secrets.
+- **Le contenu géré par le système n'est pas copié** : les certificats obtenus via ACME ou lus depuis des fichiers sont émis ou relus avec les paramètres de la copie ; un certificat téléversé est copié avec sa clé privée. Les historiques de déploiement des certificats sont effacés, les listes d'IP abonnées sont retéléchargées et les liens de partage des sites ne sont pas copiés, car leurs jetons contournent l'authentification.
+- **Cibles de déploiement du certificat** : elles sont désactivées dans la copie pour qu'elle n'écrive pas dans les mêmes fichiers que le certificat d'origine. Activez-les après avoir vérifié que les noms de fichiers ne se chevauchent pas.
+- **Service web** : en dupliquant un site, vous pouvez le placer sous un autre écouteur (par exemple d'un écouteur HTTP vers un écouteur HTTPS). En dupliquant un écouteur, vous pouvez choisir de copier aussi ses sites.
+- La copie conserve l'état d'activation de l'original. Avant d'enregistrer, modifiez les ports, domaines, enregistrements et autres paramètres qui doivent différer pour éviter tout conflit avec l'original.
+
 ## Remarques par page
 
 - **DNS dynamique** : « Trier les enregistrements » sur la carte d'une tâche ouvre une boîte de dialogue pour régler l'ordre et les groupes des enregistrements DNS de cette tâche. L'enregistrement prend effet immédiatement, sans nouvelle synchronisation. Lors de l'édition d'une tâche, la même boîte de dialogue est disponible dans l'onglet « Enregistrements DNS » et est enregistrée avec la tâche. Lorsque les enregistrements ont des groupes, ils s'affichent par groupe sur la carte, et chaque groupe se replie séparément.
@@ -61,3 +71,5 @@ Une opération en lot traite jusqu'à 500 entrées. Elle n'est enregistrée que 
 ## API
 
 Tous les points de terminaison de listes génériques proposent `PUT <chemin de la liste>-order` (corps `{"keys": [...]}`, qui doit contenir toutes les entrées) pour modifier l'ordre et `PUT <chemin de la liste>-group` (corps `{"keys": [...], "group": "..."}`) pour définir le groupe en lot, `PUT <chemin de la liste>-enable` (corps `{"keys": [...], "enable": true}`) pour activer ou désactiver en lot et `POST <chemin de la liste>-delete` (corps `{"keys": [...]}`) pour supprimer en lot, par exemple `PUT /api/stun/rules-group` et `POST /api/portforward/rules-delete`. Les enregistrements d'une tâche DDNS utilisent `PUT /api/ddns/tasks/{key}/records-layout`, et les jetons d'API utilisent `PUT /api/tokens/order` et `PUT /api/tokens/group`. Voir la [Référence de l'API](/fr/docs/reference/api-reference) pour plus de détails.
+
+La duplication utilise `POST <chemin de la liste>/{key}/copy`. Le corps est le nouvel élément, et les secrets restés au marqueur `********` reprennent les valeurs de l'élément `{key}`, par exemple `POST /api/frp/clients/{key}/copy`.

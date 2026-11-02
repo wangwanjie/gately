@@ -24,7 +24,7 @@
       "guide/quick-start": "Démarrage rapide",
       "guide/install": "Installation",
       "guide/configuration": "Configuration et options d'exécution",
-      "guide/lists": "Groupes, tri et opérations en lot",
+      "guide/lists": "Groupes, tri, opérations en lot et duplication",
       "guide/cli-mcp": "Ligne de commande et MCP",
       "guide/migration": "Guide de migration",
       "guide/faq": "FAQ",

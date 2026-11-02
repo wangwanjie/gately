@@ -1,4 +1,4 @@
-# Grupos, ordenação e operações em lote de listas
+# Grupos, ordenação, operações em lote e duplicação de listas
 
 Listas com muitas entradas podem ser agrupadas, ordenadas manualmente, pesquisadas e alteradas em lote, e os controles funcionam da mesma forma em todas as páginas. A ordem e os grupos afetam apenas a exibição na interface de administração; alterá-los não reinicia instâncias em execução nem derruba conexões.
 
@@ -51,6 +51,16 @@ Depois de marcar entradas no modo de ordenação, a barra de ferramentas também
 
 Uma operação em lote processa até 500 entradas. Ela só é salva quando todas as entradas passam na validação; se alguma falhar, nada é alterado. Os dispositivos de Wake-on-LAN não têm chave de ativação e oferecem apenas a exclusão em lote; os tokens de API ainda não oferecem ativação, desativação nem exclusão em lote. Os Serviços Web também permitem alterar domínios e opções em lote; veja [Serviços Web](/pt-BR/docs/modules/web#operacoes-em-lote).
 
+## Duplicar itens
+
+Todos os itens da tabela acima, exceto os tokens de API, podem ser duplicados, assim como listas de IP assinadas, destinos de backup, credenciais predefinidas do Terminal web, registros de uma tarefa DDNS e sites de uma escuta do Serviço web. Clique em "Duplicar" em um item para abrir o diálogo de inclusão com esse item como modelo; o nome recebe o sufixo "(cópia)". Altere as configurações que precisam ser diferentes e salve para adicionar um novo item. O original não muda, e a cópia fica logo depois dele.
+
+- **Os segredos vêm do original**: senhas, tokens e chaves privadas salvos continuam mascarados no diálogo. Se você não os alterar, a cópia usa os valores do original, e o texto puro nunca passa pelo navegador. O botão de olho mostra o texto puro do original. Para conexões e credenciais predefinidas do Terminal web, é preciso aceitar o acordo de uso e passar pela verificação em duas etapas antes de reutilizar segredos.
+- **O conteúdo mantido pelo sistema não é copiado**: certificados obtidos via ACME ou lidos de arquivos são emitidos ou lidos novamente com as configurações da cópia; um certificado enviado é copiado junto com a chave privada. Os registros de implantação dos certificados são limpos, as listas de IP assinadas são baixadas de novo e os links de compartilhamento dos sites não são copiados, pois seus tokens ignoram a autenticação.
+- **Destinos de implantação do certificado** ficam desativados na cópia para que ela não grave nos mesmos arquivos do certificado original. Ative-os depois de verificar que os nomes de arquivo não coincidem.
+- **Serviço web**: ao duplicar um site, você pode colocá-lo em outra escuta (por exemplo, de uma escuta HTTP para uma HTTPS). Ao duplicar uma escuta, você pode escolher se os sites dela também são copiados.
+- A cópia mantém o estado de ativação do original. Antes de salvar, altere portas, domínios, registros e outras configurações que precisam ser diferentes para evitar conflito com o original.
+
 ## Observações por página
 
 - **DNS dinâmico**: "Ordenar registros" no cartão de uma tarefa abre uma caixa de diálogo para ajustar a ordem e os grupos dos registros DNS dessa tarefa. Ao salvar, a alteração vale imediatamente, sem nova sincronização. Ao editar uma tarefa, a mesma caixa de diálogo também está disponível na aba "Registros DNS" e é salva junto com a tarefa. Quando os registros têm grupos, eles aparecem no cartão por grupo, e cada grupo pode ser recolhido separadamente.
@@ -61,3 +71,5 @@ Uma operação em lote processa até 500 entradas. Ela só é salva quando todas
 ## API
 
 Todos os endpoints de listas genéricas oferecem `PUT <caminho da lista>-order` (corpo `{"keys": [...]}`, que deve conter todas as entradas) para alterar a ordem e `PUT <caminho da lista>-group` (corpo `{"keys": [...], "group": "..."}`) para definir o grupo em lote, `PUT <caminho da lista>-enable` (corpo `{"keys": [...], "enable": true}`) para ativar ou desativar em lote e `POST <caminho da lista>-delete` (corpo `{"keys": [...]}`) para excluir em lote, por exemplo `PUT /api/stun/rules-group` e `POST /api/portforward/rules-delete`. Os registros de uma tarefa DDNS usam `PUT /api/ddns/tasks/{key}/records-layout`, e os tokens de API usam `PUT /api/tokens/order` e `PUT /api/tokens/group`. Veja a [Referência da API](/pt-BR/docs/reference/api-reference) para mais detalhes.
+
+Para duplicar, use `POST <caminho da lista>/{key}/copy`. O corpo é o novo item, e segredos que continuam com o marcador `********` recebem os valores do item `{key}`, por exemplo `POST /api/frp/clients/{key}/copy`.

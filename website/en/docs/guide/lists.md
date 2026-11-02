@@ -1,4 +1,4 @@
-# List groups, sorting and bulk operations
+# List groups, sorting, bulk operations and duplication
 
 Lists with many entries can be grouped, sorted manually, searched and changed in bulk, and the controls work the same way on every page. Order and groups only affect how the admin UI displays the list; changing them does not restart running instances or drop connections.
 
@@ -51,6 +51,16 @@ After checking entries in sort mode, the toolbar can also:
 
 A bulk operation handles up to 500 entries. It is saved only when every entry passes validation; if any entry fails, nothing changes. Wake-on-LAN devices have no enable switch and only support bulk delete; API tokens do not offer bulk enable, disable or delete yet. Web Services also has bulk domain and option changes, see [Web Services](/en/docs/modules/web#bulk-operations).
 
+## Duplicating entries
+
+Every entry in the table above except API tokens can be duplicated, and so can subscribed IP lists, backup destinations, Web Terminal credential presets, records within a DDNS task and sites within a Web Service listener. Click "Duplicate" on an entry to open the add dialog with that entry as a template; the name gets a "(copy)" suffix. Change the settings that need to differ and save to add a new entry. The original is left unchanged, and the copy is placed right after it.
+
+- **Secrets are taken from the original**: saved passwords, tokens and private keys stay masked in the dialog. If you leave them unchanged, the copy uses the original's values, and the plaintext never passes through the browser. The eye button shows the original's plaintext. For Web Terminal connections and credential presets, you must accept the user agreement and pass two-factor verification before secrets are reused.
+- **Content maintained by the system is not copied**: certificates obtained through ACME or read from files are issued or read again with the copy's settings, while an uploaded certificate is copied together with its private key. Certificate deployment records are cleared, subscribed IP lists are downloaded again, and site share links are not copied because their tokens bypass authentication.
+- **Certificate deploy targets** are disabled in the copy so it does not write to the same files as the original certificate. Enable them after checking that the file names do not clash.
+- **Web Service**: when duplicating a site you can place it under another listener (for example from an HTTP listener to an HTTPS one). When duplicating a listener you can choose whether to copy its sites as well.
+- The copy keeps the original's enabled state. Before saving, change the ports, domains, records and other settings that must differ so the copy does not conflict with the original.
+
 ## Notes for specific pages
 
 - **Dynamic DNS**: "Sort records" on a task card opens a dialog for the order and groups of the DNS records in that task. Saving takes effect immediately and does not trigger a new sync. When editing a task, the same dialog is also available in the "DNS records" tab and is saved together with the task. When records have groups, the records on the card are shown by group, and each group can be collapsed on its own.
@@ -61,3 +71,5 @@ A bulk operation handles up to 500 entries. It is saved only when every entry pa
 ## API
 
 Every general list endpoint provides `PUT <list path>-order` (body `{"keys": [...]}`, which must contain all entries) to change the order and `PUT <list path>-group` (body `{"keys": [...], "group": "..."}`) to set the group in bulk, `PUT <list path>-enable` (body `{"keys": [...], "enable": true}`) to enable or disable in bulk, and `POST <list path>-delete` (body `{"keys": [...]}`) to delete in bulk, for example `PUT /api/stun/rules-group` and `POST /api/portforward/rules-delete`. Records within a DDNS task use `PUT /api/ddns/tasks/{key}/records-layout`, and API tokens use `PUT /api/tokens/order` and `PUT /api/tokens/group`. See the [API reference](/en/docs/reference/api-reference) for details.
+
+Duplicating uses `POST <list path>/{key}/copy`. The body is the new entry, and secrets that are still the `********` placeholder take the values of entry `{key}`, for example `POST /api/frp/clients/{key}/copy`.

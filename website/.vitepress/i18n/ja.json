@@ -24,7 +24,7 @@
       "guide/quick-start": "クイックスタート",
       "guide/install": "インストールとデプロイ",
       "guide/configuration": "設定と起動オプション",
-      "guide/lists": "リストのグループ化・並べ替え・一括操作",
+      "guide/lists": "リストのグループ化・並べ替え・一括操作・複製",
       "guide/cli-mcp": "コマンドラインと MCP",
       "guide/migration": "移行ガイド",
       "guide/faq": "よくある質問",

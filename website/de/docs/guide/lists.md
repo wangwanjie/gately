@@ -1,4 +1,4 @@
-# Gruppen, Sortierung und Stapelverarbeitung in Listen
+# Gruppen, Sortierung, Stapelverarbeitung und Duplizieren in Listen
 
 Listen mit vielen Einträgen lassen sich gruppieren, manuell sortieren, durchsuchen und im Stapel bearbeiten; die Bedienung ist auf allen Seiten gleich. Reihenfolge und Gruppen wirken sich nur auf die Anzeige in der Verwaltungsoberfläche aus; Änderungen starten laufende Instanzen nicht neu und trennen keine Verbindungen.
 
@@ -51,6 +51,16 @@ Nachdem Sie im Sortiermodus Einträge markiert haben, bietet die Werkzeugleiste 
 
 Eine Stapeloperation verarbeitet bis zu 500 Einträge. Gespeichert wird nur, wenn alle Einträge die Prüfung bestehen; schlägt einer fehl, bleibt alles unverändert. Wake-on-LAN-Geräte haben keinen Aktivierungsschalter und bieten nur das Löschen im Stapel; API-Tokens bieten Aktivieren, Deaktivieren und Löschen im Stapel noch nicht an. Die Web-Dienste können zusätzlich Domains und Optionen im Stapel ändern, siehe [Web-Dienste](/de/docs/modules/web#stapelverarbeitung).
 
+## Einträge duplizieren
+
+Alle Einträge aus der Tabelle oben außer API-Token lassen sich duplizieren, ebenso abonnierte IP-Listen, Backup-Ziele, Anmeldevorlagen des Web-Terminals, Einträge innerhalb einer DDNS-Aufgabe und Sites innerhalb eines Listeners des Webdienstes. Ein Klick auf „Duplizieren“ öffnet den Dialog zum Hinzufügen mit diesem Eintrag als Vorlage; der Name erhält den Zusatz „(Kopie)“. Ändern Sie die Einstellungen, die sich unterscheiden müssen, und speichern Sie, um einen neuen Eintrag anzulegen. Das Original bleibt unverändert, die Kopie steht direkt dahinter.
+
+- **Geheimnisse werden vom Original übernommen**: gespeicherte Passwörter, Token und private Schlüssel bleiben im Dialog maskiert. Bleiben sie unverändert, verwendet die Kopie die Werte des Originals, und der Klartext läuft nie über den Browser. Die Augen-Schaltfläche zeigt den Klartext des Originals. Für Verbindungen und Anmeldevorlagen des Web-Terminals müssen vor der Übernahme von Geheimnissen die Nutzungsvereinbarung akzeptiert und die Zwei-Faktor-Prüfung bestanden werden.
+- **Vom System gepflegte Inhalte werden nicht kopiert**: per ACME bezogene oder aus Dateien gelesene Zertifikate werden mit den Einstellungen der Kopie neu ausgestellt bzw. eingelesen; ein hochgeladenes Zertifikat wird samt privatem Schlüssel kopiert. Die Bereitstellungsprotokolle der Zertifikate werden geleert, abonnierte IP-Listen neu heruntergeladen, und Freigabelinks von Sites werden nicht kopiert, da ihre Token die Anmeldung umgehen.
+- **Bereitstellungsziele des Zertifikats** sind in der Kopie deaktiviert, damit sie nicht in dieselben Dateien wie das Original schreibt. Aktivieren Sie sie, nachdem Sie geprüft haben, dass sich die Dateinamen nicht überschneiden.
+- **Webdienst**: Beim Duplizieren einer Site können Sie sie einem anderen Listener zuordnen (zum Beispiel von einem HTTP- zu einem HTTPS-Listener). Beim Duplizieren eines Listeners können Sie wählen, ob seine Sites mitkopiert werden.
+- Die Kopie übernimmt den Aktivierungsstatus des Originals. Ändern Sie vor dem Speichern Ports, Domains, Einträge und andere Einstellungen, die sich unterscheiden müssen, damit die Kopie nicht mit dem Original kollidiert.
+
 ## Hinweise zu einzelnen Seiten
 
 - **Dynamisches DNS**: „Einträge sortieren“ auf einer Aufgabenkarte öffnet einen Dialog für Reihenfolge und Gruppen der DNS-Einträge dieser Aufgabe. Das Speichern wirkt sofort und löst keine erneute Synchronisierung aus. Beim Bearbeiten einer Aufgabe ist derselbe Dialog auch im Tab „DNS-Einträge“ verfügbar und wird zusammen mit der Aufgabe gespeichert. Haben Einträge Gruppen, werden sie auf der Karte nach Gruppen angezeigt, und jede Gruppe lässt sich einzeln einklappen.
@@ -61,3 +71,5 @@ Eine Stapeloperation verarbeitet bis zu 500 Einträge. Gespeichert wird nur, wen
 ## API
 
 Alle allgemeinen Listen-Endpunkte bieten `PUT <Listenpfad>-order` (Body `{"keys": [...]}`, der alle Einträge enthalten muss) zum Ändern der Reihenfolge und `PUT <Listenpfad>-group` (Body `{"keys": [...], "group": "..."}`) zum gesammelten Setzen der Gruppe, `PUT <Listenpfad>-enable` (Body `{"keys": [...], "enable": true}`) zum gesammelten Aktivieren oder Deaktivieren und `POST <Listenpfad>-delete` (Body `{"keys": [...]}`) zum gesammelten Löschen, zum Beispiel `PUT /api/stun/rules-group` und `POST /api/portforward/rules-delete`. Einträge innerhalb einer DDNS-Aufgabe verwenden `PUT /api/ddns/tasks/{key}/records-layout`, API-Tokens verwenden `PUT /api/tokens/order` und `PUT /api/tokens/group`. Details finden Sie in der [API-Referenz](/de/docs/reference/api-reference).
+
+Zum Duplizieren dient `POST <Listenpfad>/{key}/copy`. Der Body ist der neue Eintrag; Geheimnisse, die noch den Platzhalter `********` enthalten, übernehmen die Werte des Eintrags `{key}`, zum Beispiel `POST /api/frp/clients/{key}/copy`.
