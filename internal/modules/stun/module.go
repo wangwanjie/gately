@@ -10,6 +10,7 @@ import (
 
 	"github.com/wangwanjie/gately/internal/config"
 	"github.com/wangwanjie/gately/internal/crud"
+	"github.com/wangwanjie/gately/internal/fwopen"
 	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/iplist"
 	"github.com/wangwanjie/gately/internal/ipsource"
@@ -60,6 +61,8 @@ func (m *Module) Start(ctx context.Context) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.ctx = ctx
+	// 清理上次运行遗留的自动放行规则（例如进程被强制结束），之后启动的规则会重新放行
+	go fwopen.Sweep(ctx)
 	if !m.cfg.Settings.Enable {
 		m.logs.Add(logbuf.LevelInfo, "", "STUN 穿透模块已禁用")
 		return nil

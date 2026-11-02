@@ -1526,6 +1526,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | 欄位 | 類型 |
 | --- | --- |
+| `autoFirewall` | boolean |
 | `autoRetry` | boolean |
 | `bind` | `stun.Bind` |
 | `disableCheck` | boolean |

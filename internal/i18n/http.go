@@ -46,9 +46,10 @@ var messageKeys = map[string]bool{
 }
 
 // stringMessageKeys 只在值为字符串时按说明字段翻译：同名字段在别处是用户配置对象，
-// 如 STUN 状态的 mapping 是端口映射结果说明，证书的 mapping 却是用户填写的目录与脚本。
+// 如 STUN 状态的 mapping 是端口映射结果说明，证书的 mapping 却是用户填写的目录与脚本；
+// STUN 状态的 firewall 是自动放行防火墙的结果说明，入侵防护状态里同名字段是布尔值或对象。
 var stringMessageKeys = map[string]bool{
-	"mapping": true, "unsupported": true,
+	"mapping": true, "unsupported": true, "firewall": true,
 }
 
 // TrFields 递归翻译 JSON 值中 keys 字段（及 messageKeys）下的字符串，其他字段原样保留。

@@ -26,6 +26,7 @@
               <el-tag size="small" effect="plain">{{ r.protocol === 'udp4' ? 'UDP' : 'TCP' }}</el-tag>
               <el-tag v-if="r.upnp" size="small" type="info">UPnP</el-tag>
               <el-tag v-if="r.natpmp" size="small" type="info">NAT-PMP</el-tag>
+              <el-tag v-if="r.autoFirewall" size="small" type="info">{{ t('stun.firewallTag') }}</el-tag>
             </span>
           </template>
           <template v-if="r.remark" #sub>{{ r.remark }}</template>
@@ -47,9 +48,10 @@
           </Field>
           <Field v-if="r.ipMode && !r.disableForward" :label="t('ipAccessEditor.title')">{{ r.ipMode === 'whitelist' ? t('ipAccessEditor.whitelist') : t('ipAccessEditor.blacklist') }}</Field>
           <Field v-if="r.state.stats.denied" :label="t('ipAccessEditor.denied')" mono>{{ r.state.stats.denied }}</Field>
-          <template v-if="!sorting && (r.enable && !moduleOff && (r.state.error || r.state.mapping))" #extra>
+          <template v-if="!sorting && (r.enable && !moduleOff && (r.state.error || r.state.mapping || r.state.firewall))" #extra>
             <div v-if="r.state.error" class="err-line">{{ r.state.error }}</div>
             <div v-if="r.state.mapping" class="meta">{{ r.state.mapping }}</div>
+            <div v-if="r.state.firewall" class="meta">{{ r.state.firewall }}</div>
           </template>
           <template v-if="sorting" #actions>
             <SortMoves :gl="gl" :it="it" />
@@ -84,6 +86,10 @@
             <el-form-item :label="t('stun.localPort')">
               <el-input-number v-model="editing.localPort" :min="0" :max="65535" />
               <span class="help">{{ t('stun.localPortHelp') }}</span>
+            </el-form-item>
+            <el-form-item :label="t('stun.autoFirewall')">
+              <el-switch v-model="editing.autoFirewall" />
+              <span class="help">{{ t('stun.autoFirewallHelp') }}</span>
             </el-form-item>
             <el-form-item :label="t('stun.disableForward')">
               <el-switch v-model="editing.disableForward" />
@@ -258,6 +264,8 @@ interface Rule {
   upnpInternalPort: number
   natpmp: boolean
   natpmpGateway: string
+  // autoFirewall 在本机防火墙（nftables / iptables）自动放行通道端口
+  autoFirewall: boolean
   heartbeatInterval: number
   stunTimeout: number
   retryInterval: number
@@ -286,6 +294,8 @@ interface RuleView extends Rule {
     since?: string
     error?: string
     mapping?: string
+    // firewall 为自动放行防火墙的结果说明
+    firewall?: string
     // denied 为不满足来源 IP 访问控制而被拒绝的次数（TCP 按连接、UDP 按数据包）
     stats: { activeConns: number; totalConns: number; bytesIn: number; bytesOut: number; denied?: number }
   }
@@ -372,6 +382,7 @@ function emptyRule(): Rule {
     upnpInternalPort: 0,
     natpmp: false,
     natpmpGateway: '',
+    autoFirewall: false,
     heartbeatInterval: 3000,
     stunTimeout: 3000,
     retryInterval: 3000,

@@ -476,7 +476,7 @@ func TestConvertLucky(t *testing.T) {
 	raw := json.RawMessage(`[
 	 {"Name":"ssh","Enable":true,"StunType":"tcp4","UseGlobalStunServerList":true,"StunServerList":["stun.a.com"],"TcpKeepAliveServerList":["qq.com"],
 	  "StunListenType":"ip","ListenIP":"","ListenPort":0,"SpecifyNetworkInterface":"vmbr0","TargetAddressList":["192.168.1.2"],"TargetPort":22,
-	  "UPnP":true,"UPnPGawayIP":"192.168.1.1","StunHeartbeatInterval":2300,"StunTimeout":3000,"StunRetryInterval":3000,"StunAutoRetry":true,
+	  "UPnP":true,"UPnPGawayIP":"192.168.1.1","AutoOptionsFirewall":true,"StunHeartbeatInterval":2300,"StunTimeout":3000,"StunRetryInterval":3000,"StunAutoRetry":true,
 	  "WebhookEnable":false,"WebhookOnlyAddrChange":true,"CallScript":true,"CallScriptContent":"/etc/lucky/custom_scripts/n.sh --port \"${port}\"",
 	  "Options":{"SingleProxyMaxTCPConnections":256,"UDPSessionTimeout":30000}},
 	 {"Name":"bad","StunType":"tcp6"},
@@ -491,12 +491,12 @@ func TestConvertLucky(t *testing.T) {
 		t.Fatalf("found=%d imported=%d %v", found, len(rules), warns)
 	}
 	a := rules[0]
-	if !a.Enable || !a.UPnP || a.UPnPGateway != "192.168.1.1" || a.HeartbeatInterval != 2300 || !a.ScriptEnable || a.UDPSessionTimeout != 30 ||
+	if !a.Enable || !a.UPnP || !a.AutoFirewall || a.UPnPGateway != "192.168.1.1" || a.HeartbeatInterval != 2300 || !a.ScriptEnable || a.UDPSessionTimeout != 30 ||
 		a.KeepAliveServers[0] != "qq.com:80" || a.Bind.Mode != BindIP {
 		t.Fatalf("规则 1 映射错误: %+v", a)
 	}
 	b := rules[1]
-	if b.Bind.Mode != BindInterface || b.Bind.Interface != "eth1" || b.Bind.Regex != "2" || b.Protocol != ProtoUDP4 {
+	if b.AutoFirewall || b.Bind.Mode != BindInterface || b.Bind.Interface != "eth1" || b.Bind.Regex != "2" || b.Protocol != ProtoUDP4 {
 		t.Fatalf("规则 2 映射错误: %+v", b)
 	}
 	joined := strings.Join(warns, "\n")

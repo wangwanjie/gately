@@ -1526,6 +1526,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 
 | Champ | Type |
 | --- | --- |
+| `autoFirewall` | boolean |
 | `autoRetry` | boolean |
 | `bind` | `stun.Bind` |
 | `disableCheck` | boolean |

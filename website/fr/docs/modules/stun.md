@@ -25,6 +25,16 @@ Le port public obtenu via STUN change généralement. Associez-le à :
 - **Fixer le port local et l'autoriser dans le pare-feu** : un port local vide est choisi au hasard à chaque démarrage. Si l'hôte utilise un pare-feu (par exemple le pare-feu système de fnOS), fixez le port local de la règle et autorisez-le dans le pare-feu (vous pouvez réserver une plage de ports aux règles STUN) ; sinon le pare-feu rejette les connexions entrantes et l'adresse de traversée reste injoignable.
 - **TCP et NAT à cône du routeur** : sur certains routeurs, « NAT1 / cône complet » ne s'applique qu'à l'UDP et le port source TCP est réécrit en sortie. Les règles TCP nécessitent UPnP, ou un mappage du port du tunnel vers cet hôte sur le routeur.
 
+## Ouvrir le port dans le pare-feu {#auto-firewall}
+
+Lorsque « Ouvrir le port dans le pare-feu » est activé sur une règle, Gately autorise le port du canal dans le pare-feu de cet hôte (ainsi que le port interne UPnP / NAT-PMP s'il est renseigné) et retire l'autorisation quand la règle s'arrête ou est supprimée. À utiliser quand Gately tourne sur un routeur comme OpenWrt ou sur un hôte Linux avec pare-feu actif. Linux uniquement.
+
+- nftables : une règle d'autorisation est insérée en tête de chaque chaîne de filtrage sur le hook input (par exemple OpenWrt fw4 et firewalld) ;
+- iptables : une règle d'autorisation est insérée en tête de la chaîne INPUT de la table filter (par exemple OpenWrt fw3 et ufw) ;
+- les règles portent le commentaire `gately-open:` ; un rechargement du pare-feu les efface, et Gately vérifie toutes les 30 secondes et les rajoute ;
+- en Docker, il faut le réseau host et `cap_add: NET_ADMIN` ; la carte de la règle affiche le résultat ou la raison de l'échec ;
+- les pare-feu qui ne passent pas par nftables / iptables, comme le pare-feu système de fnOS, demandent toujours d'ouvrir le port à la main dans leurs réglages.
+
 ## Contrôle d'accès par IP source
 
 Avec le relais intégré, chaque règle peut utiliser une liste d'autorisation ou de blocage qui décide d'après l'IP source si le trafic est relayé vers la cible. Les listes et les listes d'IP abonnées fonctionnent comme pour la [Redirection de ports](/fr/docs/modules/portforward#controle-d-acces-par-ip-source), et les bannissements de la Prévention des intrusions passent aussi en premier. La liste ne s'applique qu'au relais ; les requêtes STUN et la vérification du canal ne sont pas affectées. Modifier la liste ne refait pas la traversée, le port public reste le même. UDP est vérifié par paquet. Sans le relais intégré, les connexions externes ne passent pas par Gately et la liste est sans effet.

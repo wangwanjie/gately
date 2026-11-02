@@ -1526,6 +1526,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 
 | Campo | Tipo |
 | --- | --- |
+| `autoFirewall` | boolean |
 | `autoRetry` | boolean |
 | `bind` | `stun.Bind` |
 | `disableCheck` | boolean |

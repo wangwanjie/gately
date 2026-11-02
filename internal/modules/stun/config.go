@@ -67,6 +67,9 @@ type Rule struct {
 	UPnPInternalPort int    `json:"upnpInternalPort"`
 	NATPMP           bool   `json:"natpmp"`
 	NATPMPGateway    string `json:"natpmpGateway"`
+	// AutoFirewall 为 true 时在本机防火墙（nftables / iptables 的 input 链）放行通道端口，
+	// 规则停止时删除；Gately 运行在路由器或开了防火墙的主机上时使用
+	AutoFirewall bool `json:"autoFirewall"`
 
 	// 以下时间单位为毫秒
 	HeartbeatInterval int  `json:"heartbeatInterval"`

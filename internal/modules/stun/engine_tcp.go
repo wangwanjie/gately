@@ -55,6 +55,7 @@ func (r *runner) sessionTCP(ctx context.Context) error {
 	r.mu.Unlock()
 
 	// 先在路由器建立映射，路由器的 NAT 会复用该端口处理后续出站连接，公网端口更稳定
+	r.openFirewall()
 	unmap := r.mapPort(sctx, "tcp", r.port)
 	defer unmap()
 

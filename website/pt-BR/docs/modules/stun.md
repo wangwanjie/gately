@@ -25,6 +25,16 @@ A porta pública obtida via STUN costuma mudar. Combine com:
 - **Fixe a porta local e libere-a no firewall**: uma porta local vazia é escolhida ao acaso a cada início. Se o host usa firewall (por exemplo, o firewall do sistema do fnOS), fixe a porta local da regra e libere-a no firewall (você pode reservar uma faixa de portas para as regras STUN); caso contrário o firewall descarta as conexões de entrada e o endereço fica inacessível.
 - **TCP e o NAT de cone do roteador**: em alguns roteadores, “NAT1 / cone completo” vale só para UDP e a porta de origem TCP é reescrita na saída. Regras TCP precisam de UPnP ou de um mapeamento da porta do túnel para este host no roteador.
 
+## Liberar porta no firewall {#auto-firewall}
+
+Com "Liberar porta no firewall" ativado em uma regra, o Gately libera a porta do canal no firewall deste host (e a porta interna de UPnP / NAT-PMP, se informada) e remove a liberação quando a regra para ou é excluída. Use quando o Gately roda em um roteador como o OpenWrt ou em um host Linux com firewall ativo. Somente Linux.
+
+- nftables: uma regra de liberação é inserida no topo de cada cadeia de filtro no hook input (por exemplo, OpenWrt fw4 e firewalld);
+- iptables: uma regra de liberação é inserida no topo da cadeia INPUT da tabela filter (por exemplo, OpenWrt fw3 e ufw);
+- as regras levam o comentário `gately-open:`; recarregar o firewall as apaga, e o Gately verifica a cada 30 segundos e as adiciona de novo;
+- no Docker é preciso a rede host e `cap_add: NET_ADMIN`; o cartão da regra mostra o resultado ou o motivo da falha;
+- firewalls que não passam por nftables / iptables, como o firewall do sistema do fnOS, continuam exigindo liberar a porta manualmente nas configurações deles.
+
 ## Controle de acesso por IP de origem
 
 Com o encaminhamento integrado, cada regra pode usar uma lista de permissões ou de bloqueio que decide pelo IP de origem se o tráfego é encaminhado ao destino. As listas e as listas de IP assinadas funcionam como no [Redirecionamento de portas](/pt-BR/docs/modules/portforward#controle-de-acesso-por-ip-de-origem), e os banimentos da Prevenção de intrusão também têm prioridade. A lista vale só para o encaminhamento; consultas STUN e a verificação do canal não são afetadas. Editar a lista não refaz a travessia, então a porta pública continua a mesma. O UDP é verificado por pacote. Sem o encaminhamento integrado, as conexões externas não passam pelo Gately e a lista não tem efeito.

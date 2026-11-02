@@ -1823,6 +1823,9 @@
       },
       "stun.Rule": {
         "properties": {
+          "autoFirewall": {
+            "type": "boolean"
+          },
           "autoRetry": {
             "type": "boolean"
           },

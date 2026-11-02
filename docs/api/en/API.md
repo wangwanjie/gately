@@ -1526,6 +1526,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 
 | Field | Type |
 | --- | --- |
+| `autoFirewall` | boolean |
 | `autoRetry` | boolean |
 | `bind` | `stun.Bind` |
 | `disableCheck` | boolean |

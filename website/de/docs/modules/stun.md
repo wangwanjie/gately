@@ -25,6 +25,16 @@ Der per STUN erhaltene öffentliche Port ändert sich meist. Kombinieren Sie ihn
 - **Lokalen Port festlegen und in der Firewall freigeben**: Ein leerer lokaler Port wird bei jedem Start zufällig gewählt. Läuft auf dem Host eine Firewall (zum Beispiel die Systemfirewall von fnOS), legen Sie für die Regel einen festen lokalen Port fest und geben ihn in der Firewall frei (Sie können einen Portbereich für STUN-Regeln reservieren); sonst verwirft die Firewall eingehende Verbindungen und die Adresse ist nicht erreichbar.
 - **TCP und Cone-NAT des Routers**: Bei manchen Routern gilt „NAT1 / Full Cone“ nur für UDP, und bei TCP wird der Quellport beim Verlassen umgeschrieben. TCP-Regeln brauchen UPnP oder eine Portzuordnung des Tunnelports auf diesen Host am Router.
 
+## Firewall-Port freigeben {#auto-firewall}
+
+Ist bei einer Regel „Firewall-Port freigeben" aktiviert, gibt Gately den Kanal-Port in der Firewall dieses Hosts frei (und den internen UPnP-/NAT-PMP-Port, falls angegeben) und entfernt die Freigabe, wenn die Regel stoppt oder gelöscht wird. Gedacht für Gately auf einem Router wie OpenWrt oder auf einem Linux-Host mit aktiver Firewall. Nur Linux.
+
+- nftables: Eine Freigaberegel wird am Anfang jeder Filterkette am input-Hook eingefügt (zum Beispiel OpenWrt fw4 und firewalld);
+- iptables: Eine Freigaberegel wird am Anfang der INPUT-Kette der filter-Tabelle eingefügt (zum Beispiel OpenWrt fw3 und ufw);
+- die Regeln tragen den Kommentar `gately-open:`; ein Neuladen der Firewall löscht sie, Gately prüft alle 30 Sekunden und fügt sie wieder hinzu;
+- Docker-Bereitstellungen brauchen das Host-Netzwerk und `cap_add: NET_ADMIN`; die Regelkarte zeigt das Ergebnis oder den Fehlergrund;
+- Firewalls, die nicht über nftables / iptables laufen, etwa die Systemfirewall von fnOS, müssen den Port weiterhin manuell in ihren Einstellungen freigeben.
+
 ## Quell-IP-Zugriffskontrolle
 
 Mit der eingebauten Weiterleitung kann jede Regel eine Zulassungs- oder Sperrliste nutzen, die anhand der Quell-IP entscheidet, ob zum Ziel weitergeleitet wird. Listen und abonnierte IP-Listen funktionieren wie bei der [Portweiterleitung](/de/docs/modules/portforward#quell-ip-zugriffskontrolle), Sperren des Einbruchschutzes haben auch hier Vorrang. Die Liste gilt nur für die Weiterleitung; STUN-Abfragen und die Kanalprüfung bleiben unberührt. Das Bearbeiten der Liste startet keine neue Durchdringung, der öffentliche Port bleibt gleich. UDP wird pro Paket geprüft. Ohne eingebaute Weiterleitung laufen externe Verbindungen nicht über Gately, die Liste wirkt dann nicht.

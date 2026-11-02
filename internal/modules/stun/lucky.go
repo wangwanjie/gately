@@ -24,6 +24,7 @@ type luckyRule struct {
 	ListenIP                                  string
 	ListenPort                                int
 	DisableStunAvalidCheck                    bool
+	AutoOptionsFirewall                       bool
 	DisablePortForward                        bool
 	TargetAddressList                         []string
 	TargetPort                                int
@@ -126,6 +127,7 @@ func convertLuckyRules(raw json.RawMessage, ipFilter map[string]luckyimport.IPFi
 			UPnPInternalPort:    lr.UPnPLocalPort,
 			NATPMP:              lr.NatPMP,
 			NATPMPGateway:       lr.NatPMPGateway,
+			AutoFirewall:        lr.AutoOptionsFirewall,
 			HeartbeatInterval:   lr.StunHeartbeatInterval,
 			StunTimeout:         lr.StunTimeout,
 			RetryInterval:       lr.StunRetryInterval,

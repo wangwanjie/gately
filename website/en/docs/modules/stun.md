@@ -25,6 +25,16 @@ The public port obtained through STUN usually changes. Combine it with:
 - **Fix the local port and open it in the firewall**: an empty local port is picked at random on every start. If the host runs a firewall (for example the fnOS system firewall), give the rule a fixed local port and allow it in the firewall (you can reserve a port range for STUN rules); otherwise the firewall drops inbound connections and the traversal address cannot be reached.
 - **TCP and the router's cone NAT**: on some routers "NAT1 / full cone" only applies to UDP and TCP source ports are rewritten on the way out. TCP rules need UPnP enabled, or a port mapping of the tunnel port to this host on the router.
 
+## Open firewall port {#auto-firewall}
+
+When a rule has "Open firewall port" turned on, Gately allows the channel port in this host's firewall (and the UPnP / NAT-PMP internal port when one is set), and removes the rule when the STUN rule stops or is deleted. Use it when Gately runs on a router such as OpenWrt, or on a Linux host with a firewall enabled. Linux only.
+
+- nftables: an allow rule is inserted at the top of every filter chain on the input hook (for example OpenWrt fw4 and firewalld);
+- iptables: an allow rule is inserted at the top of the INPUT chain of the filter table (for example OpenWrt fw3 and ufw);
+- the rules carry a `gately-open:` comment; a firewall reload clears them, and Gately checks every 30 seconds and adds them back;
+- Docker deployments need the host network and `cap_add: NET_ADMIN`; the rule card shows the result or the reason it failed;
+- firewalls that do not go through nftables / iptables, such as the fnOS system firewall, still need the port allowed by hand in their settings.
+
 ## Source IP access control
 
 With the built-in forwarding, each rule can use an allowlist or a blocklist that decides by source IP whether traffic is forwarded to the target. Lists and subscribed IP lists work the same as in [Port Forwarding](/en/docs/modules/portforward#source-ip-access-control), and Intrusion Prevention bans come first here too. The list only applies to forwarding; STUN queries and the channel check are unaffected. Editing the list does not redo the traversal, so the public port stays the same. UDP is checked per packet. Without the built-in forwarding, outside connections do not pass through Gately and the list has no effect.

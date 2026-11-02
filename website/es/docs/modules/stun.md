@@ -25,6 +25,16 @@ El puerto público obtenido con STUN suele cambiar. Combínalo con:
 - **Fija el puerto local y permítelo en el cortafuegos**: si dejas vacío el puerto local, se elige al azar en cada arranque. Si el equipo usa un cortafuegos (por ejemplo el cortafuegos del sistema de fnOS), fija el puerto local de la regla y permítelo en el cortafuegos (puedes reservar un rango de puertos para las reglas STUN); si no, el cortafuegos descarta las conexiones entrantes y la dirección no es accesible.
 - **TCP y el NAT de cono del router**: en algunos routers «NAT1 / cono completo» solo se aplica a UDP y en TCP se reescribe el puerto de origen al salir. Las reglas TCP necesitan UPnP o un mapeo del puerto del túnel a este equipo en el router.
 
+## Abrir puerto en el cortafuegos {#auto-firewall}
+
+Con «Abrir puerto en el cortafuegos» activado en una regla, Gately permite el puerto del canal en el cortafuegos de este equipo (y el puerto interno de UPnP / NAT-PMP si se indica) y elimina el permiso cuando la regla se detiene o se borra. Sirve cuando Gately se ejecuta en un router como OpenWrt o en un equipo Linux con cortafuegos activo. Solo Linux.
+
+- nftables: se inserta una regla de permiso al principio de cada cadena de filtrado en el hook input (por ejemplo, OpenWrt fw4 y firewalld);
+- iptables: se inserta una regla de permiso al principio de la cadena INPUT de la tabla filter (por ejemplo, OpenWrt fw3 y ufw);
+- las reglas llevan el comentario `gately-open:`; recargar el cortafuegos las borra, y Gately comprueba cada 30 segundos y las vuelve a añadir;
+- en Docker hacen falta la red host y `cap_add: NET_ADMIN`; la tarjeta de la regla muestra el resultado o el motivo del fallo;
+- los cortafuegos que no pasan por nftables / iptables, como el cortafuegos del sistema de fnOS, requieren abrir el puerto a mano en sus ajustes.
+
 ## Control de acceso por IP de origen
 
 Con el reenvío integrado, cada regla puede usar una lista de permitidos o de bloqueo que decide por IP de origen si el tráfico se reenvía al destino. Las listas y las listas de IP suscritas funcionan igual que en [Reenvío de puertos](/es/docs/modules/portforward#control-de-acceso-por-ip-de-origen), y los bloqueos de Prevención de intrusiones también tienen prioridad. La lista solo afecta al reenvío; las consultas STUN y la comprobación del canal no cambian. Editar la lista no repite la travesía, así que el puerto público se mantiene. UDP se comprueba por paquete. Sin el reenvío integrado, las conexiones externas no pasan por Gately y la lista no tiene efecto.

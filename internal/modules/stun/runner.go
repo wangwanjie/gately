@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/wangwanjie/gately/internal/events"
+	"github.com/wangwanjie/gately/internal/fwopen"
 	"github.com/wangwanjie/gately/internal/iplist"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/script"
@@ -48,15 +49,17 @@ type Stats struct {
 
 // RuleState 是规则运行状态。
 type RuleState struct {
-	Status     string       `json:"status"`
-	PublicAddr string       `json:"publicAddr,omitempty"`
-	LocalAddr  string       `json:"localAddr,omitempty"`
-	StunServer string       `json:"stunServer,omitempty"`
-	Since      time.Time    `json:"since,omitzero"`
-	Error      string       `json:"error,omitempty"`
-	Mapping    string       `json:"mapping,omitempty"`
-	History    []AddrChange `json:"history,omitempty"`
-	Stats      Stats        `json:"stats"`
+	Status     string    `json:"status"`
+	PublicAddr string    `json:"publicAddr,omitempty"`
+	LocalAddr  string    `json:"localAddr,omitempty"`
+	StunServer string    `json:"stunServer,omitempty"`
+	Since      time.Time `json:"since,omitzero"`
+	Error      string    `json:"error,omitempty"`
+	Mapping    string    `json:"mapping,omitempty"`
+	// Firewall 为自动放行防火墙的结果说明
+	Firewall string       `json:"firewall,omitempty"`
+	History  []AddrChange `json:"history,omitempty"`
+	Stats    Stats        `json:"stats"`
 }
 
 type counters struct {
@@ -84,6 +87,8 @@ type runner struct {
 	port int
 	// lastPublished 用于判断地址是否变化
 	lastPublished string
+	// lastFirewall 为上次记录到日志的放行结果，相同结果不重复记录
+	lastFirewall string
 	// serverIdx 记住上次成功的 STUN 服务器，下次优先使用
 	serverIdx int
 }
@@ -124,7 +129,44 @@ func (r *runner) stop() {
 	}
 	// 规则停止后不再提供地址，Web 服务里引用它的重定向会提示暂不可用
 	stunaddr.Delete(r.rule.Key)
+	if r.rule.AutoFirewall {
+		fwopen.Clear(r.firewallOwner())
+	}
 	r.setStatus(StatusStopped, "")
+}
+
+// firewallOwner 是本规则在自动放行防火墙中的标识。
+func (r *runner) firewallOwner() string {
+	return "stun:" + r.rule.Key
+}
+
+// openFirewall 在本机防火墙放行通道端口（以及 UPnP / NAT-PMP 直接映射到的内部端口）。
+// 每次穿透会话开始时调用，端口不变时不会重复插入；规则停止时由 stop 删除。
+func (r *runner) openFirewall() {
+	if !r.rule.AutoFirewall || r.port == 0 {
+		return
+	}
+	proto := "tcp"
+	if r.rule.Protocol == ProtoUDP4 {
+		proto = "udp"
+	}
+	ports := []fwopen.Port{{Proto: proto, Port: r.port}}
+	if (r.rule.UPnP || r.rule.NATPMP) && r.rule.UPnPInternalPort > 0 {
+		ports = append(ports, fwopen.Port{Proto: proto, Port: r.rule.UPnPInternalPort})
+	}
+	status, ok := fwopen.Set(r.firewallOwner(), ports, r.log)
+	r.mu.Lock()
+	changed := status != r.lastFirewall
+	r.lastFirewall = status
+	r.mu.Unlock()
+	if !changed {
+		return
+	}
+	if !ok {
+		r.log.Warnf("%s", status)
+	} else {
+		r.log.Infof("%s", status)
+	}
 }
 
 func (r *runner) snapshot() RuleState {
@@ -138,6 +180,9 @@ func (r *runner) snapshot() RuleState {
 		BytesIn:     r.stats.in.Load(),
 		BytesOut:    r.stats.out.Load(),
 		Denied:      r.stats.denied.Load(),
+	}
+	if r.rule.AutoFirewall {
+		s.Firewall = fwopen.Status(r.firewallOwner())
 	}
 	return s
 }

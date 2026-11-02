@@ -70,6 +70,7 @@ func (r *runner) sessionUDP(ctx context.Context) error {
 		d.wg.Wait()
 	}()
 
+	r.openFirewall()
 	unmap := r.mapPort(sctx, "udp", r.port)
 	defer unmap()
 	pub, err := d.query(sctx, timeout)

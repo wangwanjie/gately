@@ -1526,6 +1526,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 
 | Feld | Typ |
 | --- | --- |
+| `autoFirewall` | boolean |
 | `autoRetry` | boolean |
 | `bind` | `stun.Bind` |
 | `disableCheck` | boolean |
