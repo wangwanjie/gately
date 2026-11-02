@@ -2234,6 +2234,9 @@
             },
             "type": "array"
           },
+          "safeline": {
+            "$ref": "#/components/schemas/waf.SafeLine"
+          },
           "skipBodyPaths": {
             "type": "string"
           },
@@ -2256,6 +2259,26 @@
           },
           "type": {
             "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "waf.SafeLine": {
+        "properties": {
+          "addr": {
+            "type": "string"
+          },
+          "bodyLimitKB": {
+            "type": "integer"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "failClosed": {
+            "type": "boolean"
+          },
+          "timeoutMs": {
+            "type": "integer"
           }
         },
         "type": "object"
@@ -32581,6 +32604,66 @@
           "WAF 방화벽"
         ],
         "x-required-scope": "waf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/waf/safeline/test": {
+      "post": {
+        "description": "요청 본문은 인스턴스의 `safeline` 필드와 같습니다(`addr`은 `호스트:포트` 또는 `unix:`로 시작하는 소켓 경로, `timeoutMs`는 시간 초과). 하트비트로 연결을 확인한 뒤 샘플 SQL 인젝션 요청을 검사로 보냅니다. `latencyMs`(하트비트 왕복 밀리초), `blocked`(샘플 공격 탐지 여부), `eventId`(SafeLine의 이벤트 ID)를 반환합니다. 연결에 실패하면 502를 반환합니다. 샘플 공격은 SafeLine 콘솔의 공격 기록에 표시됩니다.\n\n필요한 권한: `waf:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "SafeLine 탐지 엔진 테스트",
+        "tags": [
+          "WAF 방화벽"
+        ],
+        "x-required-scope": "waf:write",
         "x-token-allowed": true
       }
     },

@@ -280,6 +280,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/waf/instances-enable` | `waf:write` | Пакетно включить или отключить: Экземпляр WAF |
 | POST | `/api/waf/instances-delete` | `waf:write` | Пакетно удалить: Экземпляр WAF |
 | PUT | `/api/waf/instances-group` | `waf:write` | Задать группу сразу для нескольких: Экземпляр WAF |
+| POST | `/api/waf/safeline/test` | `waf:write` | Проверить движок обнаружения SafeLine |
 | GET | `/api/waf/crs` | `waf:read` | Список файлов правил OWASP CRS |
 | GET | `/api/waf/crs/{file}` | `waf:read` | Прочитать один файл правил CRS |
 
@@ -1705,6 +1706,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `paranoia` | integer |
 | `remark` | string |
 | `ruleSets` | Массив из `waf.RuleSet` |
+| `safeline` | `waf.SafeLine` |
 | `skipBodyPaths` | string |
 | `webdav` | boolean |
 
@@ -1716,6 +1718,16 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `param` | string |
 | `remark` | string |
 | `type` | string |
+
+### waf.SafeLine
+
+| Поле | Тип |
+| --- | --- |
+| `addr` | string |
+| `bodyLimitKB` | integer |
+| `enable` | boolean |
+| `failClosed` | boolean |
+| `timeoutMs` | integer |
 
 ### webhook.Config
 

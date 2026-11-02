@@ -280,6 +280,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | PUT | `/api/waf/instances-enable` | `waf:write` | Activar o desactivar en lote: Instancia WAF |
 | POST | `/api/waf/instances-delete` | `waf:write` | Eliminar en lote: Instancia WAF |
 | PUT | `/api/waf/instances-group` | `waf:write` | Asignar grupo a varios elementos: Instancia WAF |
+| POST | `/api/waf/safeline/test` | `waf:write` | Probar el motor de detección SafeLine |
 | GET | `/api/waf/crs` | `waf:read` | Listar archivos de reglas OWASP CRS |
 | GET | `/api/waf/crs/{file}` | `waf:read` | Leer un archivo de reglas CRS |
 
@@ -1705,6 +1706,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `paranoia` | integer |
 | `remark` | string |
 | `ruleSets` | Lista de `waf.RuleSet` |
+| `safeline` | `waf.SafeLine` |
 | `skipBodyPaths` | string |
 | `webdav` | boolean |
 
@@ -1716,6 +1718,16 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `param` | string |
 | `remark` | string |
 | `type` | string |
+
+### waf.SafeLine
+
+| Campo | Tipo |
+| --- | --- |
+| `addr` | string |
+| `bodyLimitKB` | integer |
+| `enable` | boolean |
+| `failClosed` | boolean |
+| `timeoutMs` | integer |
 
 ### webhook.Config
 

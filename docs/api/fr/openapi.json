@@ -2234,6 +2234,9 @@
             },
             "type": "array"
           },
+          "safeline": {
+            "$ref": "#/components/schemas/waf.SafeLine"
+          },
           "skipBodyPaths": {
             "type": "string"
           },
@@ -2256,6 +2259,26 @@
           },
           "type": {
             "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "waf.SafeLine": {
+        "properties": {
+          "addr": {
+            "type": "string"
+          },
+          "bodyLimitKB": {
+            "type": "integer"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "failClosed": {
+            "type": "boolean"
+          },
+          "timeoutMs": {
+            "type": "integer"
           }
         },
         "type": "object"
@@ -32581,6 +32604,66 @@
           "Pare-feu WAF"
         ],
         "x-required-scope": "waf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/waf/safeline/test": {
+      "post": {
+        "description": "Le corps est identique au champ `safeline` de l’instance (`addr` vaut `hôte:port` ou un chemin de socket commençant par `unix:`, `timeoutMs` est le délai). Envoie un battement pour vérifier la connexion, puis une requête d’injection SQL d’exemple à inspecter ; renvoie `latencyMs` (aller-retour du battement en millisecondes), `blocked` (si l’attaque d’exemple a été détectée) et `eventId` (l’ID d’événement dans SafeLine). Renvoie 502 en cas d’échec de connexion. L’attaque d’exemple apparaît dans l’historique des attaques de la console SafeLine.\n\nPermission requise : `waf:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tester le moteur de détection SafeLine",
+        "tags": [
+          "Pare-feu WAF"
+        ],
+        "x-required-scope": "waf:write",
         "x-token-allowed": true
       }
     },

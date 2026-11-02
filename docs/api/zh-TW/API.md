@@ -280,6 +280,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/waf/instances-enable` | `waf:write` | 批次啟用或停用WAF 執行個體 |
 | POST | `/api/waf/instances-delete` | `waf:write` | 批次刪除WAF 執行個體 |
 | PUT | `/api/waf/instances-group` | `waf:write` | 批次設定WAF 執行個體分組 |
+| POST | `/api/waf/safeline/test` | `waf:write` | 測試雷池偵測引擎 |
 | GET | `/api/waf/crs` | `waf:read` | 列出 OWASP CRS 規則檔案 |
 | GET | `/api/waf/crs/{file}` | `waf:read` | 讀取一個 CRS 規則檔案 |
 
@@ -1705,6 +1706,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `paranoia` | integer |
 | `remark` | string |
 | `ruleSets` | 陣列 of `waf.RuleSet` |
+| `safeline` | `waf.SafeLine` |
 | `skipBodyPaths` | string |
 | `webdav` | boolean |
 
@@ -1716,6 +1718,16 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `param` | string |
 | `remark` | string |
 | `type` | string |
+
+### waf.SafeLine
+
+| 欄位 | 類型 |
+| --- | --- |
+| `addr` | string |
+| `bodyLimitKB` | integer |
+| `enable` | boolean |
+| `failClosed` | boolean |
+| `timeoutMs` | integer |
 
 ### webhook.Config
 

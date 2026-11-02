@@ -280,6 +280,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | PUT | `/api/waf/instances-enable` | `waf:write` | Ativar ou desativar em lote: Instância WAF |
 | POST | `/api/waf/instances-delete` | `waf:write` | Excluir em lote: Instância WAF |
 | PUT | `/api/waf/instances-group` | `waf:write` | Definir o grupo de vários itens: Instância WAF |
+| POST | `/api/waf/safeline/test` | `waf:write` | Testar o mecanismo de detecção SafeLine |
 | GET | `/api/waf/crs` | `waf:read` | Listar arquivos de regras OWASP CRS |
 | GET | `/api/waf/crs/{file}` | `waf:read` | Ler um arquivo de regras CRS |
 
@@ -1705,6 +1706,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `paranoia` | integer |
 | `remark` | string |
 | `ruleSets` | Array de `waf.RuleSet` |
+| `safeline` | `waf.SafeLine` |
 | `skipBodyPaths` | string |
 | `webdav` | boolean |
 
@@ -1716,6 +1718,16 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `param` | string |
 | `remark` | string |
 | `type` | string |
+
+### waf.SafeLine
+
+| Campo | Tipo |
+| --- | --- |
+| `addr` | string |
+| `bodyLimitKB` | integer |
+| `enable` | boolean |
+| `failClosed` | boolean |
+| `timeoutMs` | integer |
 
 ### webhook.Config
 

@@ -280,6 +280,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/waf/instances-enable` | `waf:write` | WAF 인스턴스 일괄 사용/사용 안 함 |
 | POST | `/api/waf/instances-delete` | `waf:write` | WAF 인스턴스 일괄 삭제 |
 | PUT | `/api/waf/instances-group` | `waf:write` | WAF 인스턴스 그룹 일괄 설정 |
+| POST | `/api/waf/safeline/test` | `waf:write` | SafeLine 탐지 엔진 테스트 |
 | GET | `/api/waf/crs` | `waf:read` | OWASP CRS 규칙 파일 목록 조회 |
 | GET | `/api/waf/crs/{file}` | `waf:read` | CRS 규칙 파일 하나 읽기 |
 
@@ -1705,6 +1706,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `paranoia` | integer |
 | `remark` | string |
 | `ruleSets` | Array of `waf.RuleSet` |
+| `safeline` | `waf.SafeLine` |
 | `skipBodyPaths` | string |
 | `webdav` | boolean |
 
@@ -1716,6 +1718,16 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `param` | string |
 | `remark` | string |
 | `type` | string |
+
+### waf.SafeLine
+
+| 필드 | 타입 |
+| --- | --- |
+| `addr` | string |
+| `bodyLimitKB` | integer |
+| `enable` | boolean |
+| `failClosed` | boolean |
+| `timeoutMs` | integer |
 
 ### webhook.Config
 

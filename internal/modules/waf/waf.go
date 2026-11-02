@@ -103,8 +103,10 @@ type Instance struct {
 	// SkipBodyPaths 是不检查请求体的路径前缀，每行一个（如 /api/upload）；请求头、URL 与参数仍照常检查
 	SkipBodyPaths string `json:"skipBodyPaths"`
 	// WebDAV 为 true 时放行 WebDAV 与上传用到的方法、请求头与任意内容类型，供网盘、WebDAV 等站点使用
-	WebDAV bool   `json:"webdav"`
-	Remark string `json:"remark"`
+	WebDAV bool `json:"webdav"`
+	// SafeLine 为接入雷池检测引擎的设置，可与规则组同时使用：先经雷池检测，再经规则组检查
+	SafeLine SafeLine `json:"safeline"`
+	Remark   string   `json:"remark"`
 }
 
 type fileConfig struct {
@@ -188,6 +190,9 @@ func (in *Instance) Validate() error {
 			return fmt.Errorf("未知的规则类型 %q", rs.Type)
 		}
 	}
+	if err := in.SafeLine.validate(); err != nil {
+		return err
+	}
 	_, err := in.directives()
 	if err != nil {
 		return err
@@ -197,6 +202,16 @@ func (in *Instance) Validate() error {
 		return fmt.Errorf("规则编译失败: %w", err)
 	}
 	return nil
+}
+
+// hasRuleSets 判断实例是否有启用的规则组。
+func (in *Instance) hasRuleSets() bool {
+	for _, rs := range in.RuleSets {
+		if rs.Enable {
+			return true
+		}
+	}
+	return false
 }
 
 func splitLines(s string) []string {
@@ -325,7 +340,10 @@ func compile(in Instance, onMatch func(types.MatchedRule)) (coraza.WAF, error) {
 }
 
 type compiled struct {
-	waf     coraza.WAF
+	// waf 为规则组编译出的 Coraza 实例；只用雷池、没有启用规则组时为空，不再经过 Coraza
+	waf coraza.WAF
+	// safe 为雷池检测，未启用时为空
+	safe    *safelineChecker
 	enabled bool
 	name    string
 	blocked atomic.Int64
@@ -379,6 +397,10 @@ func (m *Module) buildLocked(key string) {
 			inst = &m.cfg.Instances[i]
 		}
 	}
+	// 旧实例的雷池连接池不再使用，关闭空闲连接；进行中的检测结束后归还的连接也会关闭
+	if old, ok := m.state.Load(key); ok && old.(*compiled).safe != nil {
+		defer old.(*compiled).safe.client.close()
+	}
 	if inst == nil {
 		m.state.Delete(key)
 		delete(m.errors, key)
@@ -389,6 +411,18 @@ func (m *Module) buildLocked(key string) {
 	if old, ok := m.state.Load(key); ok {
 		c.blocked.Store(old.(*compiled).blocked.Load())
 		c.matched.Store(old.(*compiled).matched.Load())
+	}
+	if inst.SafeLine.Enable {
+		c.safe = newSafeLineChecker(inst, log)
+		// 与拦截计数一样，修改实例后保留累计的检测失败次数
+		if old, ok := m.state.Load(key); ok && old.(*compiled).safe != nil {
+			c.safe.errors.Store(old.(*compiled).safe.errors.Load())
+		}
+		if !inst.hasRuleSets() {
+			delete(m.errors, key)
+			m.state.Store(key, c)
+			return
+		}
 	}
 	w, err := compile(*inst, func(r types.MatchedRule) {
 		c.matched.Add(1)
@@ -418,7 +452,15 @@ func (m *Module) Middleware(key string, next http.Handler) http.Handler {
 			return
 		}
 		c := v.(*compiled)
-		if !c.enabled || c.waf == nil {
+		if !c.enabled {
+			next.ServeHTTP(w, r)
+			return
+		}
+		// 先经雷池检测：拦截或检测引擎不可用且设置为拒绝时已写出响应
+		if c.safe != nil && !c.safe.check(w, r, c) {
+			return
+		}
+		if c.waf == nil {
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -497,13 +539,21 @@ type InstanceView struct {
 	Error   string `json:"error,omitempty"`
 	Blocked int64  `json:"blocked"`
 	Matched int64  `json:"matched"`
+	// SafeLineError 为最近一次雷池检测失败的原因，正常时为空；SafeLineErrors 为累计失败次数
+	SafeLineError  string `json:"safelineError,omitempty"`
+	SafeLineErrors int64  `json:"safelineErrors"`
 }
 
 func (m *Module) viewLocked(in *Instance) any {
 	v := InstanceView{Instance: *in, Error: m.errors[in.Key]}
 	if c, ok := m.state.Load(in.Key); ok {
-		v.Blocked = c.(*compiled).blocked.Load()
-		v.Matched = c.(*compiled).matched.Load()
+		cc := c.(*compiled)
+		v.Blocked = cc.blocked.Load()
+		v.Matched = cc.matched.Load()
+		if cc.safe != nil {
+			v.SafeLineError = cc.safe.status()
+			v.SafeLineErrors = cc.safe.errors.Load()
+		}
 	}
 	return v
 }
@@ -523,6 +573,20 @@ func (m *Module) Routes(r module.Router) {
 		Removed:  m.buildLocked,
 	}
 	insts.Register(r, "/instances")
+	// 测试雷池检测引擎：心跳确认连接，再送检示例攻击确认能识别
+	r.HandleFunc("POST /safeline/test", func(w http.ResponseWriter, req *http.Request) {
+		var s SafeLine
+		if err := httpx.ReadJSON(req, &s); err != nil {
+			httpx.Error(w, http.StatusBadRequest, "%s", err.Error())
+			return
+		}
+		res, err := TestSafeLine(s)
+		if err != nil {
+			httpx.Error(w, http.StatusBadGateway, "%s", err.Error())
+			return
+		}
+		httpx.OK(w, res)
+	})
 	r.HandleFunc("GET /crs", func(w http.ResponseWriter, req *http.Request) {
 		httpx.OK(w, CRSFiles())
 	})

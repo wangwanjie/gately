@@ -280,6 +280,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | PUT | `/api/waf/instances-enable` | `waf:write` | Im Stapel aktivieren oder deaktivieren: WAF-Instanzen |
 | POST | `/api/waf/instances-delete` | `waf:write` | Im Stapel löschen: WAF-Instanzen |
 | PUT | `/api/waf/instances-group` | `waf:write` | Gruppe mehrerer Einträge festlegen: WAF-Instanzen |
+| POST | `/api/waf/safeline/test` | `waf:write` | SafeLine-Erkennungs-Engine testen |
 | GET | `/api/waf/crs` | `waf:read` | OWASP-CRS-Regeldateien auflisten |
 | GET | `/api/waf/crs/{file}` | `waf:read` | Eine CRS-Regeldatei lesen |
 
@@ -1705,6 +1706,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `paranoia` | integer |
 | `remark` | string |
 | `ruleSets` | Array von `waf.RuleSet` |
+| `safeline` | `waf.SafeLine` |
 | `skipBodyPaths` | string |
 | `webdav` | boolean |
 
@@ -1716,6 +1718,16 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `param` | string |
 | `remark` | string |
 | `type` | string |
+
+### waf.SafeLine
+
+| Feld | Typ |
+| --- | --- |
+| `addr` | string |
+| `bodyLimitKB` | integer |
+| `enable` | boolean |
+| `failClosed` | boolean |
+| `timeoutMs` | integer |
 
 ### webhook.Config
 

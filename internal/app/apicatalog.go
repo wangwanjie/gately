@@ -89,6 +89,7 @@ var apiCatalog = map[string]epDoc{
 	"GET /api/ssl/providers":                             {Summary: "列出支持的 DNS 验证服务商"},
 	"GET /api/ssl/settings":                              {Summary: "读取证书全局设置"},
 	"PUT /api/ssl/settings":                              {Summary: "保存证书全局设置", Body: true},
+	"POST /api/waf/safeline/test":                        {Summary: "测试雷池检测引擎", Desc: "请求体与实例的 `safeline` 字段相同（`addr` 为 `主机:端口` 或 `unix:` 开头的套接字路径，`timeoutMs` 为超时）。先发送心跳确认连接，再送检一个示例 SQL 注入请求；返回 `latencyMs`（心跳往返毫秒数）、`blocked`（示例攻击是否被识别）与 `eventId`（雷池中的事件 ID）。连接失败返回 502。示例攻击会出现在雷池控制台的攻击记录中。", Body: true},
 	"GET /api/waf/crs":                                   {Summary: "列出 OWASP CRS 规则文件"},
 	"GET /api/waf/crs/{file}":                            {Summary: "读取一个 CRS 规则文件"},
 	"GET /api/webservice/topology":                       {Summary: "Web 服务拓扑视图快照", Desc: "只读，数据全部来自内存计数，适合每 2 秒轮询。`rate` 中 `qps`、`bps` 为最近 `window` 个完整秒的均值，`qps60` 为 60 秒均值。节点编号：监听 `l:<监听 key>`，站点 `s:<监听 key>/<站点 key>`，后端 `u:` 开头，监听级动作 `a:<监听 key>/redirect` 或 `a:<监听 key>/notfound`；`focus` 为节点编号（或 internet、gately 表示整个实例）时在 `series` 中返回该节点近 60 秒每秒的请求数与字节数。`ip` 为访客地址时保证它出现在 `ips` 中，地址无效返回 400。站点的 `blocked` 按原因统计拦截次数，键为 ban、ip、country、rateLimit、waf。`ips` 为近 60 秒出现过或仍有进行中请求的访客地址，最多 500 个，`ipTotal` 为总数，超出时 `ipTruncated` 为 true。"},

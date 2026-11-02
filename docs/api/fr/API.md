@@ -280,6 +280,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | PUT | `/api/waf/instances-enable` | `waf:write` | Activer ou désactiver en lot : Instance WAF |
 | POST | `/api/waf/instances-delete` | `waf:write` | Supprimer en lot : Instance WAF |
 | PUT | `/api/waf/instances-group` | `waf:write` | Définir le groupe de plusieurs éléments : Instance WAF |
+| POST | `/api/waf/safeline/test` | `waf:write` | Tester le moteur de détection SafeLine |
 | GET | `/api/waf/crs` | `waf:read` | Lister les fichiers de règles OWASP CRS |
 | GET | `/api/waf/crs/{file}` | `waf:read` | Lire un fichier de règles CRS |
 
@@ -1705,6 +1706,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `paranoia` | integer |
 | `remark` | string |
 | `ruleSets` | Tableau de `waf.RuleSet` |
+| `safeline` | `waf.SafeLine` |
 | `skipBodyPaths` | string |
 | `webdav` | boolean |
 
@@ -1716,6 +1718,16 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `param` | string |
 | `remark` | string |
 | `type` | string |
+
+### waf.SafeLine
+
+| Champ | Type |
+| --- | --- |
+| `addr` | string |
+| `bodyLimitKB` | integer |
+| `enable` | boolean |
+| `failClosed` | boolean |
+| `timeoutMs` | integer |
 
 ### webhook.Config
 

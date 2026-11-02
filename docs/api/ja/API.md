@@ -280,6 +280,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/waf/instances-enable` | `waf:write` | WAF インスタンス の一括有効化・無効化 |
 | POST | `/api/waf/instances-delete` | `waf:write` | WAF インスタンス の一括削除 |
 | PUT | `/api/waf/instances-group` | `waf:write` | WAF インスタンス のグループを一括設定 |
+| POST | `/api/waf/safeline/test` | `waf:write` | SafeLine 検知エンジンをテスト |
 | GET | `/api/waf/crs` | `waf:read` | OWASP CRS ルールファイルを一覧表示 |
 | GET | `/api/waf/crs/{file}` | `waf:read` | CRS ルールファイルを 1 つ読み取り |
 
@@ -1705,6 +1706,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `paranoia` | integer |
 | `remark` | string |
 | `ruleSets` | 配列 of `waf.RuleSet` |
+| `safeline` | `waf.SafeLine` |
 | `skipBodyPaths` | string |
 | `webdav` | boolean |
 
@@ -1716,6 +1718,16 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `param` | string |
 | `remark` | string |
 | `type` | string |
+
+### waf.SafeLine
+
+| フィールド | 型 |
+| --- | --- |
+| `addr` | string |
+| `bodyLimitKB` | integer |
+| `enable` | boolean |
+| `failClosed` | boolean |
+| `timeoutMs` | integer |
 
 ### webhook.Config
 

@@ -280,6 +280,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | PUT | `/api/waf/instances-enable` | `waf:write` | Enable or disable in bulk: WAF instance |
 | POST | `/api/waf/instances-delete` | `waf:write` | Delete in bulk: WAF instance |
 | PUT | `/api/waf/instances-group` | `waf:write` | Set group in bulk: WAF instance |
+| POST | `/api/waf/safeline/test` | `waf:write` | Test the SafeLine detection engine |
 | GET | `/api/waf/crs` | `waf:read` | List OWASP CRS rule files |
 | GET | `/api/waf/crs/{file}` | `waf:read` | Read a CRS rule file |
 
@@ -1705,6 +1706,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `paranoia` | integer |
 | `remark` | string |
 | `ruleSets` | Array of `waf.RuleSet` |
+| `safeline` | `waf.SafeLine` |
 | `skipBodyPaths` | string |
 | `webdav` | boolean |
 
@@ -1716,6 +1718,16 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `param` | string |
 | `remark` | string |
 | `type` | string |
+
+### waf.SafeLine
+
+| Field | Type |
+| --- | --- |
+| `addr` | string |
+| `bodyLimitKB` | integer |
+| `enable` | boolean |
+| `failClosed` | boolean |
+| `timeoutMs` | integer |
 
 ### webhook.Config
 

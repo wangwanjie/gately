@@ -2234,6 +2234,9 @@
             },
             "type": "array"
           },
+          "safeline": {
+            "$ref": "#/components/schemas/waf.SafeLine"
+          },
           "skipBodyPaths": {
             "type": "string"
           },
@@ -2256,6 +2259,26 @@
           },
           "type": {
             "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "waf.SafeLine": {
+        "properties": {
+          "addr": {
+            "type": "string"
+          },
+          "bodyLimitKB": {
+            "type": "integer"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "failClosed": {
+            "type": "boolean"
+          },
+          "timeoutMs": {
+            "type": "integer"
           }
         },
         "type": "object"
@@ -32581,6 +32604,66 @@
           "WAF firewall"
         ],
         "x-required-scope": "waf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/waf/safeline/test": {
+      "post": {
+        "description": "The body is the same as the instance `safeline` field (`addr` is `host:port` or a socket path starting with `unix:`, `timeoutMs` is the timeout). Sends a heartbeat to check the connection, then a sample SQL injection request for inspection; returns `latencyMs` (heartbeat round trip in milliseconds), `blocked` (whether the sample attack was detected) and `eventId` (the event ID in SafeLine). Returns 502 when the connection fails. The sample attack appears in the attack records of the SafeLine console.\n\nRequired permission: `waf:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Test the SafeLine detection engine",
+        "tags": [
+          "WAF firewall"
+        ],
+        "x-required-scope": "waf:write",
         "x-token-allowed": true
       }
     },

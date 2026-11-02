@@ -280,6 +280,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/waf/instances-enable` | `waf:write` | 批量启用或停用WAF 实例 |
 | POST | `/api/waf/instances-delete` | `waf:write` | 批量删除WAF 实例 |
 | PUT | `/api/waf/instances-group` | `waf:write` | 批量设置WAF 实例分组 |
+| POST | `/api/waf/safeline/test` | `waf:write` | 测试雷池检测引擎 |
 | GET | `/api/waf/crs` | `waf:read` | 列出 OWASP CRS 规则文件 |
 | GET | `/api/waf/crs/{file}` | `waf:read` | 读取一个 CRS 规则文件 |
 
@@ -1705,6 +1706,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `paranoia` | integer |
 | `remark` | string |
 | `ruleSets` | 数组 of `waf.RuleSet` |
+| `safeline` | `waf.SafeLine` |
 | `skipBodyPaths` | string |
 | `webdav` | boolean |
 
@@ -1716,6 +1718,16 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `param` | string |
 | `remark` | string |
 | `type` | string |
+
+### waf.SafeLine
+
+| 字段 | 类型 |
+| --- | --- |
+| `addr` | string |
+| `bodyLimitKB` | integer |
+| `enable` | boolean |
+| `failClosed` | boolean |
+| `timeoutMs` | integer |
 
 ### webhook.Config
 
