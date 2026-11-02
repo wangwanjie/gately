@@ -38,7 +38,7 @@
       "modules/oidc": "OIDC-Single-Sign-on",
       "modules/waf": "WAF-Firewall",
       "modules/guard": "Einbruchschutz",
-      "modules/tunnels": "Tailscale / frp / cloudflared",
+      "modules/tunnels": "Tailscale / NetBird / frp / cloudflared",
       "modules/docker": "Docker-Verwaltung",
       "modules/terminal": "Web-Terminal",
       "modules/nettools": "Netzwerkdiagnose",
@@ -153,7 +153,7 @@
       },
       {
         "title": "Netzwerk & Tunnel",
-        "text": "Betreibt Tailscale, frp (frpc / frps) und cloudflared-Tunnel als verwaltete Prozesse, mit Online-Installation, Update, Rollback und Deinstallation."
+        "text": "Betreibt Tailscale, NetBird, frp (frpc / frps) und cloudflared-Tunnel als verwaltete Prozesse, mit Online-Installation, Update, Rollback und Deinstallation."
       },
       {
         "title": "Docker-Verwaltung",

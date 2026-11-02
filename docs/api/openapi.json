@@ -6103,7 +6103,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "frp、Cloudflare 隧道、Tailscale 与 File Browser 提供。返回配置目录 bin 下已安装的版本、保存的旧版本（`backups`，最多 3 个）、该程序单独设置的下载代理 `proxy`、当前平台，以及安装进度 `state`（`stage` 为 checking、downloading、verifying、extracting、done、uptodate 或 failed）。`unsupported` 非空时表示上游没有提供当前平台的程序。\n\n所需权限：`cloudflared:read`。",
+        "description": "frp、Cloudflare 隧道、Tailscale、NetBird 与 File Browser 提供。返回配置目录 bin 下已安装的版本、保存的旧版本（`backups`，最多 3 个）、该程序单独设置的下载代理 `proxy`、当前平台，以及安装进度 `state`（`stage` 为 checking、downloading、verifying、extracting、done、uptodate 或 failed）。`unsupported` 非空时表示上游没有提供当前平台的程序。\n\n所需权限：`cloudflared:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -6606,7 +6606,7 @@
     },
     "/api/cloudflared/reset": {
       "post": {
-        "description": "frp、Cloudflare 隧道、Tailscale 与 File Browser 提供，无需请求体。停止该模块的全部进程，把配置（包括程序路径与下载代理）恢复为默认值，并删除 Gately 为它生成的文件：frp 的配置文件、File Browser 各实例的数据目录（用户、分享链接与缓存）、Tailscale 默认状态目录中的登录状态（Gately 托管的 tailscaled 运行中时先退出登录；自定义状态目录与系统已有的 tailscaled 不处理）。旧配置保存在配置历史中，可以恢复；安装的程序不受影响，卸载使用 `DELETE /api/{module}/install`。\n\n所需权限：`cloudflared:write`。",
+        "description": "frp、Cloudflare 隧道、Tailscale、NetBird 与 File Browser 提供，无需请求体。停止该模块的全部进程，把配置（包括程序路径与下载代理）恢复为默认值，并删除 Gately 为它生成的文件：frp 的配置文件、File Browser 各实例的数据目录（用户、分享链接与缓存）、Tailscale 默认状态目录中的登录状态（Gately 托管的 tailscaled 运行中时先退出登录；自定义状态目录与系统已有的 tailscaled 不处理）、NetBird 默认状态目录中的登录状态与密钥（Gately 托管的守护进程运行中时先退出登录，本机会从组网中删除；自定义状态目录与系统已有的 NetBird 服务不处理）。旧配置保存在配置历史中，可以恢复；安装的程序不受影响，卸载使用 `DELETE /api/{module}/install`。\n\n所需权限：`cloudflared:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -14404,7 +14404,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "frp、Cloudflare 隧道、Tailscale 与 File Browser 提供。返回配置目录 bin 下已安装的版本、保存的旧版本（`backups`，最多 3 个）、该程序单独设置的下载代理 `proxy`、当前平台，以及安装进度 `state`（`stage` 为 checking、downloading、verifying、extracting、done、uptodate 或 failed）。`unsupported` 非空时表示上游没有提供当前平台的程序。\n\n所需权限：`filebrowser:read`。",
+        "description": "frp、Cloudflare 隧道、Tailscale、NetBird 与 File Browser 提供。返回配置目录 bin 下已安装的版本、保存的旧版本（`backups`，最多 3 个）、该程序单独设置的下载代理 `proxy`、当前平台，以及安装进度 `state`（`stage` 为 checking、downloading、verifying、extracting、done、uptodate 或 failed）。`unsupported` 非空时表示上游没有提供当前平台的程序。\n\n所需权限：`filebrowser:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -15688,7 +15688,7 @@
     },
     "/api/filebrowser/reset": {
       "post": {
-        "description": "frp、Cloudflare 隧道、Tailscale 与 File Browser 提供，无需请求体。停止该模块的全部进程，把配置（包括程序路径与下载代理）恢复为默认值，并删除 Gately 为它生成的文件：frp 的配置文件、File Browser 各实例的数据目录（用户、分享链接与缓存）、Tailscale 默认状态目录中的登录状态（Gately 托管的 tailscaled 运行中时先退出登录；自定义状态目录与系统已有的 tailscaled 不处理）。旧配置保存在配置历史中，可以恢复；安装的程序不受影响，卸载使用 `DELETE /api/{module}/install`。\n\n所需权限：`filebrowser:write`。",
+        "description": "frp、Cloudflare 隧道、Tailscale、NetBird 与 File Browser 提供，无需请求体。停止该模块的全部进程，把配置（包括程序路径与下载代理）恢复为默认值，并删除 Gately 为它生成的文件：frp 的配置文件、File Browser 各实例的数据目录（用户、分享链接与缓存）、Tailscale 默认状态目录中的登录状态（Gately 托管的 tailscaled 运行中时先退出登录；自定义状态目录与系统已有的 tailscaled 不处理）、NetBird 默认状态目录中的登录状态与密钥（Gately 托管的守护进程运行中时先退出登录，本机会从组网中删除；自定义状态目录与系统已有的 NetBird 服务不处理）。旧配置保存在配置历史中，可以恢复；安装的程序不受影响，卸载使用 `DELETE /api/{module}/install`。\n\n所需权限：`filebrowser:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -16915,7 +16915,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "frp、Cloudflare 隧道、Tailscale 与 File Browser 提供。返回配置目录 bin 下已安装的版本、保存的旧版本（`backups`，最多 3 个）、该程序单独设置的下载代理 `proxy`、当前平台，以及安装进度 `state`（`stage` 为 checking、downloading、verifying、extracting、done、uptodate 或 failed）。`unsupported` 非空时表示上游没有提供当前平台的程序。\n\n所需权限：`frp:read`。",
+        "description": "frp、Cloudflare 隧道、Tailscale、NetBird 与 File Browser 提供。返回配置目录 bin 下已安装的版本、保存的旧版本（`backups`，最多 3 个）、该程序单独设置的下载代理 `proxy`、当前平台，以及安装进度 `state`（`stage` 为 checking、downloading、verifying、extracting、done、uptodate 或 failed）。`unsupported` 非空时表示上游没有提供当前平台的程序。\n\n所需权限：`frp:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -18138,7 +18138,7 @@
     },
     "/api/frp/reset": {
       "post": {
-        "description": "frp、Cloudflare 隧道、Tailscale 与 File Browser 提供，无需请求体。停止该模块的全部进程，把配置（包括程序路径与下载代理）恢复为默认值，并删除 Gately 为它生成的文件：frp 的配置文件、File Browser 各实例的数据目录（用户、分享链接与缓存）、Tailscale 默认状态目录中的登录状态（Gately 托管的 tailscaled 运行中时先退出登录；自定义状态目录与系统已有的 tailscaled 不处理）。旧配置保存在配置历史中，可以恢复；安装的程序不受影响，卸载使用 `DELETE /api/{module}/install`。\n\n所需权限：`frp:write`。",
+        "description": "frp、Cloudflare 隧道、Tailscale、NetBird 与 File Browser 提供，无需请求体。停止该模块的全部进程，把配置（包括程序路径与下载代理）恢复为默认值，并删除 Gately 为它生成的文件：frp 的配置文件、File Browser 各实例的数据目录（用户、分享链接与缓存）、Tailscale 默认状态目录中的登录状态（Gately 托管的 tailscaled 运行中时先退出登录；自定义状态目录与系统已有的 tailscaled 不处理）、NetBird 默认状态目录中的登录状态与密钥（Gately 托管的守护进程运行中时先退出登录，本机会从组网中删除；自定义状态目录与系统已有的 NetBird 服务不处理）。旧配置保存在配置历史中，可以恢复；安装的程序不受影响，卸载使用 `DELETE /api/{module}/install`。\n\n所需权限：`frp:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -21449,6 +21449,932 @@
           "系统"
         ],
         "x-required-scope": "metrics:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/install": {
+      "delete": {
+        "description": "删除配置目录 bin 下安装的程序与全部保存的旧版本，之后重启使用该程序的进程：PATH 中有同名程序时改用它，没有时进程无法启动。模块配置不受影响，清除配置使用 `POST /api/{module}/reset`。\n\n所需权限：`netbird:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "卸载托管程序",
+        "tags": [
+          "NetBird 组网"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "frp、Cloudflare 隧道、Tailscale、NetBird 与 File Browser 提供。返回配置目录 bin 下已安装的版本、保存的旧版本（`backups`，最多 3 个）、该程序单独设置的下载代理 `proxy`、当前平台，以及安装进度 `state`（`stage` 为 checking、downloading、verifying、extracting、done、uptodate 或 failed）。`unsupported` 非空时表示上游没有提供当前平台的程序。\n\n所需权限：`netbird:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "查看托管程序的安装信息与进度",
+        "tags": [
+          "NetBird 组网"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "请求体 `{\"version\": \"\", \"proxy\": \"\"}`：`version` 为空时安装最新正式版（已是最新版时不下载，`stage` 为 uptodate），否则安装指定版本；`proxy` 为下载代理（http、https 或 socks5），会保存下来供下次使用，为空时沿用全局设置 `updateProxy`。下载后校验 SHA-256，安装到配置目录的 bin 下，原有版本移入旧版本列表，完成后重启使用该程序的进程。立即返回，进度通过 `GET /api/{module}/install` 查询。\n\n所需权限：`netbird:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "在线安装或更新托管程序",
+        "tags": [
+          "NetBird 组网"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/install/backups/{id}": {
+      "delete": {
+        "description": "所需权限：`netbird:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "删除保存的旧版本",
+        "tags": [
+          "NetBird 组网"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/install/check": {
+      "post": {
+        "description": "无需请求体。查询上游最新正式版（使用该程序的下载代理，未设置时沿用全局设置 `updateProxy`），不下载也不改动已安装的程序；返回值同 `GET /api/{module}/install`，其中 `latest` 为 `{version, checkedAt, error, hasUpdate}`，`hasUpdate` 表示最新版比 bin 下安装的版本新。开启自动检查更新时，Gately 也会定期为已安装的托管程序执行该检查。已有检查在进行时返回 409。\n\n所需权限：`netbird:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "检查托管程序的更新",
+        "tags": [
+          "NetBird 组网"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/install/rollback": {
+      "post": {
+        "description": "请求体 `{\"id\": \"\u003c旧版本 ID\u003e\"}`。当前版本会另存为旧版本，之后仍可切回；完成后重启使用该程序的进程。\n\n所需权限：`netbird:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "切换到保存的旧版本",
+        "tags": [
+          "NetBird 组网"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/logout": {
+      "post": {
+        "description": "执行 `netbird logout`：从管理服务注销本机并删除本地登录信息，本机会从组网的节点列表中移除，再次加入需要重新登录或使用设置密钥。\n\n所需权限：`netbird:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "退出 NetBird 登录",
+        "tags": [
+          "NetBird 组网"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/logs": {
+      "delete": {
+        "description": "所需权限：`netbird:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "清空模块运行日志",
+        "tags": [
+          "NetBird 组网"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名（部分匹配），`site` 站点名称（完整匹配，只返回该站点的访问日志），`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。\n\n所需权限：`netbird:read`。",
+        "parameters": [
+          {
+            "description": "增量拉取：只返回序号大于该值的日志",
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "加载更早的日志：只返回序号小于该值的日志",
+            "in": "query",
+            "name": "before",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "最多返回的条数，取符合条件的最新几条；0 或不传表示不限",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "最低级别：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "来源标签，不区分大小写精确匹配",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "关键词：空格分隔表示同时包含，双引号包住短语，前缀 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "客户端地址：完整地址、CIDR 或地址片段，多个以逗号分隔，前缀 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称或域名的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "开始时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "结束时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "查看模块运行日志",
+        "tags": [
+          "NetBird 组网"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/reset": {
+      "post": {
+        "description": "frp、Cloudflare 隧道、Tailscale、NetBird 与 File Browser 提供，无需请求体。停止该模块的全部进程，把配置（包括程序路径与下载代理）恢复为默认值，并删除 Gately 为它生成的文件：frp 的配置文件、File Browser 各实例的数据目录（用户、分享链接与缓存）、Tailscale 默认状态目录中的登录状态（Gately 托管的 tailscaled 运行中时先退出登录；自定义状态目录与系统已有的 tailscaled 不处理）、NetBird 默认状态目录中的登录状态与密钥（Gately 托管的守护进程运行中时先退出登录，本机会从组网中删除；自定义状态目录与系统已有的 NetBird 服务不处理）。旧配置保存在配置历史中，可以恢复；安装的程序不受影响，卸载使用 `DELETE /api/{module}/install`。\n\n所需权限：`netbird:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "恢复模块默认配置",
+        "tags": [
+          "NetBird 组网"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/restart": {
+      "post": {
+        "description": "所需权限：`netbird:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "重启 NetBird",
+        "tags": [
+          "NetBird 组网"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/secrets": {
+      "get": {
+        "description": "所需权限：`netbird:write`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "查看密钥明文",
+        "tags": [
+          "NetBird 组网"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/settings": {
+      "get": {
+        "description": "返回 `settings`（设置密钥 `setupKey` 已脱敏）、`defaultStateDir`（`stateDir` 留空时使用的状态目录）与 `defaultManagementUrl`（`managementUrl` 留空时使用的 NetBird 官方云地址）。\n\n所需权限：`netbird:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "读取 NetBird 设置",
+        "tags": [
+          "NetBird 组网"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "保存后按新配置重启：托管守护进程时重启 `netbird service run` 后执行 `netbird up`，托管时关闭守护进程自身的自动连接，守护进程异常退出被重启后会再次执行 up；使用外部守护进程且已连接时先断开再执行 `netbird up`，让新配置生效。`setupKey` 为 `********` 时沿用已保存的密钥；`installProxy` 只由安装接口修改。开关类设置都会显式传给 netbird up：`acceptRoutes` 对应 `--disable-client-routes` 取反，`serverRoutes` 对应 `--disable-server-routes` 取反，`acceptDns` 对应 `--disable-dns` 取反，`blockInbound` 对应 `--block-inbound`。\n\n所需权限：`netbird:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "保存 NetBird 设置",
+        "tags": [
+          "NetBird 组网"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/status": {
+      "get": {
+        "description": "`daemonStatus` 为 Idle、Connecting、Connected、NeedsLogin、LoginFailed 或 SessionExpired。未填写设置密钥时 `authUrl` 为登录链接（Linux 下为设备码登录，可在任意设备上打开；macOS 与 Windows 上通常只能在本机浏览器完成），`authCode` 为需要输入的代码（链接已包含时为空），链接过期后自动更新。`peers` 为组网中的其他节点，`connType` 为 P2P 或 Relayed。\n\n所需权限：`netbird:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "查看 NetBird 连接状态",
+        "tags": [
+          "NetBird 组网"
+        ],
+        "x-required-scope": "netbird:read",
         "x-token-allowed": true
       }
     },
@@ -32335,7 +33261,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "frp、Cloudflare 隧道、Tailscale 与 File Browser 提供。返回配置目录 bin 下已安装的版本、保存的旧版本（`backups`，最多 3 个）、该程序单独设置的下载代理 `proxy`、当前平台，以及安装进度 `state`（`stage` 为 checking、downloading、verifying、extracting、done、uptodate 或 failed）。`unsupported` 非空时表示上游没有提供当前平台的程序。\n\n所需权限：`tailscale:read`。",
+        "description": "frp、Cloudflare 隧道、Tailscale、NetBird 与 File Browser 提供。返回配置目录 bin 下已安装的版本、保存的旧版本（`backups`，最多 3 个）、该程序单独设置的下载代理 `proxy`、当前平台，以及安装进度 `state`（`stage` 为 checking、downloading、verifying、extracting、done、uptodate 或 failed）。`unsupported` 非空时表示上游没有提供当前平台的程序。\n\n所需权限：`tailscale:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -32889,7 +33815,7 @@
     },
     "/api/tailscale/reset": {
       "post": {
-        "description": "frp、Cloudflare 隧道、Tailscale 与 File Browser 提供，无需请求体。停止该模块的全部进程，把配置（包括程序路径与下载代理）恢复为默认值，并删除 Gately 为它生成的文件：frp 的配置文件、File Browser 各实例的数据目录（用户、分享链接与缓存）、Tailscale 默认状态目录中的登录状态（Gately 托管的 tailscaled 运行中时先退出登录；自定义状态目录与系统已有的 tailscaled 不处理）。旧配置保存在配置历史中，可以恢复；安装的程序不受影响，卸载使用 `DELETE /api/{module}/install`。\n\n所需权限：`tailscale:write`。",
+        "description": "frp、Cloudflare 隧道、Tailscale、NetBird 与 File Browser 提供，无需请求体。停止该模块的全部进程，把配置（包括程序路径与下载代理）恢复为默认值，并删除 Gately 为它生成的文件：frp 的配置文件、File Browser 各实例的数据目录（用户、分享链接与缓存）、Tailscale 默认状态目录中的登录状态（Gately 托管的 tailscaled 运行中时先退出登录；自定义状态目录与系统已有的 tailscaled 不处理）、NetBird 默认状态目录中的登录状态与密钥（Gately 托管的守护进程运行中时先退出登录，本机会从组网中删除；自定义状态目录与系统已有的 NetBird 服务不处理）。旧配置保存在配置历史中，可以恢复；安装的程序不受影响，卸载使用 `DELETE /api/{module}/install`。\n\n所需权限：`tailscale:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -42836,6 +43762,9 @@
       "name": "Tailscale 组网"
     },
     {
+      "name": "NetBird 组网"
+    },
+    {
       "name": "frp 内网穿透"
     },
     {
@@ -42914,6 +43843,7 @@
     "ddns",
     "stun",
     "tailscale",
+    "netbird",
     "frp",
     "cloudflared",
     "ssl",

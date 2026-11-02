@@ -6103,7 +6103,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "frp、Cloudflare トンネル、Tailscale、File Browser が提供します。設定ディレクトリの bin にインストール済みのバージョン、保存された旧バージョン（`backups`、最大 3 個）、このプログラム個別のダウンロードプロキシ `proxy`、現在のプラットフォーム、インストール進捗 `state`（`stage` は checking、downloading、verifying、extracting、done、uptodate、failed のいずれか）を返します。`unsupported` が空でない場合、上流は現在のプラットフォーム用のプログラムを提供していません。\n\n必要な権限: `cloudflared:read`。",
+        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、File Browser が提供します。設定ディレクトリの bin にインストール済みのバージョン、保存された旧バージョン（`backups`、最大 3 個）、このプログラム個別のダウンロードプロキシ `proxy`、現在のプラットフォーム、インストール進捗 `state`（`stage` は checking、downloading、verifying、extracting、done、uptodate、failed のいずれか）を返します。`unsupported` が空でない場合、上流は現在のプラットフォーム用のプログラムを提供していません。\n\n必要な権限: `cloudflared:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -6606,7 +6606,7 @@
     },
     "/api/cloudflared/reset": {
       "post": {
-        "description": "frp、Cloudflare トンネル、Tailscale、File Browser が提供します。リクエストボディは不要です。モジュールのすべてのプロセスを停止し、設定（プログラムのパスとダウンロードプロキシを含む）をデフォルトに戻し、Gately が生成したファイルを削除します：frp の設定ファイル、File Browser 各インスタンスのデータディレクトリ（ユーザー、共有リンク、キャッシュ）、Tailscale のデフォルト状態ディレクトリにあるログイン状態（Gately が管理する tailscaled が動作中なら先にログアウト。カスタム状態ディレクトリと既存のシステム tailscaled は対象外）。以前の設定は設定履歴に残り復元できます。インストール済みのプログラムは影響を受けません。アンインストールは `DELETE /api/{module}/install` を使います。\n\n必要な権限: `cloudflared:write`。",
+        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、File Browser が提供します。リクエストボディは不要です。モジュールのすべてのプロセスを停止し、設定（プログラムのパスとダウンロードプロキシを含む）をデフォルトに戻し、Gately が生成したファイルを削除します：frp の設定ファイル、File Browser 各インスタンスのデータディレクトリ（ユーザー、共有リンク、キャッシュ）、Tailscale のデフォルト状態ディレクトリにあるログイン状態（Gately が管理する tailscaled が動作中なら先にログアウト。カスタム状態ディレクトリと既存のシステム tailscaled は対象外）、NetBird のデフォルト状態ディレクトリにあるログイン状態と鍵（Gately が管理するデーモンが動作中なら先にログアウトし、このマシンはネットワークから削除されます。カスタム状態ディレクトリと既存のシステムの NetBird サービスは対象外）。以前の設定は設定履歴に残り復元できます。インストール済みのプログラムは影響を受けません。アンインストールは `DELETE /api/{module}/install` を使います。\n\n必要な権限: `cloudflared:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -14404,7 +14404,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "frp、Cloudflare トンネル、Tailscale、File Browser が提供します。設定ディレクトリの bin にインストール済みのバージョン、保存された旧バージョン（`backups`、最大 3 個）、このプログラム個別のダウンロードプロキシ `proxy`、現在のプラットフォーム、インストール進捗 `state`（`stage` は checking、downloading、verifying、extracting、done、uptodate、failed のいずれか）を返します。`unsupported` が空でない場合、上流は現在のプラットフォーム用のプログラムを提供していません。\n\n必要な権限: `filebrowser:read`。",
+        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、File Browser が提供します。設定ディレクトリの bin にインストール済みのバージョン、保存された旧バージョン（`backups`、最大 3 個）、このプログラム個別のダウンロードプロキシ `proxy`、現在のプラットフォーム、インストール進捗 `state`（`stage` は checking、downloading、verifying、extracting、done、uptodate、failed のいずれか）を返します。`unsupported` が空でない場合、上流は現在のプラットフォーム用のプログラムを提供していません。\n\n必要な権限: `filebrowser:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -15688,7 +15688,7 @@
     },
     "/api/filebrowser/reset": {
       "post": {
-        "description": "frp、Cloudflare トンネル、Tailscale、File Browser が提供します。リクエストボディは不要です。モジュールのすべてのプロセスを停止し、設定（プログラムのパスとダウンロードプロキシを含む）をデフォルトに戻し、Gately が生成したファイルを削除します：frp の設定ファイル、File Browser 各インスタンスのデータディレクトリ（ユーザー、共有リンク、キャッシュ）、Tailscale のデフォルト状態ディレクトリにあるログイン状態（Gately が管理する tailscaled が動作中なら先にログアウト。カスタム状態ディレクトリと既存のシステム tailscaled は対象外）。以前の設定は設定履歴に残り復元できます。インストール済みのプログラムは影響を受けません。アンインストールは `DELETE /api/{module}/install` を使います。\n\n必要な権限: `filebrowser:write`。",
+        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、File Browser が提供します。リクエストボディは不要です。モジュールのすべてのプロセスを停止し、設定（プログラムのパスとダウンロードプロキシを含む）をデフォルトに戻し、Gately が生成したファイルを削除します：frp の設定ファイル、File Browser 各インスタンスのデータディレクトリ（ユーザー、共有リンク、キャッシュ）、Tailscale のデフォルト状態ディレクトリにあるログイン状態（Gately が管理する tailscaled が動作中なら先にログアウト。カスタム状態ディレクトリと既存のシステム tailscaled は対象外）、NetBird のデフォルト状態ディレクトリにあるログイン状態と鍵（Gately が管理するデーモンが動作中なら先にログアウトし、このマシンはネットワークから削除されます。カスタム状態ディレクトリと既存のシステムの NetBird サービスは対象外）。以前の設定は設定履歴に残り復元できます。インストール済みのプログラムは影響を受けません。アンインストールは `DELETE /api/{module}/install` を使います。\n\n必要な権限: `filebrowser:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -16915,7 +16915,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "frp、Cloudflare トンネル、Tailscale、File Browser が提供します。設定ディレクトリの bin にインストール済みのバージョン、保存された旧バージョン（`backups`、最大 3 個）、このプログラム個別のダウンロードプロキシ `proxy`、現在のプラットフォーム、インストール進捗 `state`（`stage` は checking、downloading、verifying、extracting、done、uptodate、failed のいずれか）を返します。`unsupported` が空でない場合、上流は現在のプラットフォーム用のプログラムを提供していません。\n\n必要な権限: `frp:read`。",
+        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、File Browser が提供します。設定ディレクトリの bin にインストール済みのバージョン、保存された旧バージョン（`backups`、最大 3 個）、このプログラム個別のダウンロードプロキシ `proxy`、現在のプラットフォーム、インストール進捗 `state`（`stage` は checking、downloading、verifying、extracting、done、uptodate、failed のいずれか）を返します。`unsupported` が空でない場合、上流は現在のプラットフォーム用のプログラムを提供していません。\n\n必要な権限: `frp:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -18138,7 +18138,7 @@
     },
     "/api/frp/reset": {
       "post": {
-        "description": "frp、Cloudflare トンネル、Tailscale、File Browser が提供します。リクエストボディは不要です。モジュールのすべてのプロセスを停止し、設定（プログラムのパスとダウンロードプロキシを含む）をデフォルトに戻し、Gately が生成したファイルを削除します：frp の設定ファイル、File Browser 各インスタンスのデータディレクトリ（ユーザー、共有リンク、キャッシュ）、Tailscale のデフォルト状態ディレクトリにあるログイン状態（Gately が管理する tailscaled が動作中なら先にログアウト。カスタム状態ディレクトリと既存のシステム tailscaled は対象外）。以前の設定は設定履歴に残り復元できます。インストール済みのプログラムは影響を受けません。アンインストールは `DELETE /api/{module}/install` を使います。\n\n必要な権限: `frp:write`。",
+        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、File Browser が提供します。リクエストボディは不要です。モジュールのすべてのプロセスを停止し、設定（プログラムのパスとダウンロードプロキシを含む）をデフォルトに戻し、Gately が生成したファイルを削除します：frp の設定ファイル、File Browser 各インスタンスのデータディレクトリ（ユーザー、共有リンク、キャッシュ）、Tailscale のデフォルト状態ディレクトリにあるログイン状態（Gately が管理する tailscaled が動作中なら先にログアウト。カスタム状態ディレクトリと既存のシステム tailscaled は対象外）、NetBird のデフォルト状態ディレクトリにあるログイン状態と鍵（Gately が管理するデーモンが動作中なら先にログアウトし、このマシンはネットワークから削除されます。カスタム状態ディレクトリと既存のシステムの NetBird サービスは対象外）。以前の設定は設定履歴に残り復元できます。インストール済みのプログラムは影響を受けません。アンインストールは `DELETE /api/{module}/install` を使います。\n\n必要な権限: `frp:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -21449,6 +21449,932 @@
           "システム"
         ],
         "x-required-scope": "metrics:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/install": {
+      "delete": {
+        "description": "設定ディレクトリの bin にインストールしたプログラムと保存されたすべての旧バージョンを削除し、このプログラムを使うプロセスを再起動します。PATH に同名のプログラムがあればそれを使い、なければプロセスは起動できません。モジュール設定は影響を受けません。設定の消去は `POST /api/{module}/reset` を使います。\n\n必要な権限: `netbird:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "管理プログラムをアンインストール",
+        "tags": [
+          "NetBird ネットワーク"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、File Browser が提供します。設定ディレクトリの bin にインストール済みのバージョン、保存された旧バージョン（`backups`、最大 3 個）、このプログラム個別のダウンロードプロキシ `proxy`、現在のプラットフォーム、インストール進捗 `state`（`stage` は checking、downloading、verifying、extracting、done、uptodate、failed のいずれか）を返します。`unsupported` が空でない場合、上流は現在のプラットフォーム用のプログラムを提供していません。\n\n必要な権限: `netbird:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "管理プログラムのインストール情報と進捗を表示",
+        "tags": [
+          "NetBird ネットワーク"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "リクエストボディ `{\"version\": \"\", \"proxy\": \"\"}`：`version` が空の場合は最新の正式版をインストールし（すでに最新ならダウンロードせず `stage` は uptodate）、それ以外は指定バージョンをインストールします。`proxy` はダウンロードプロキシ（http、https、socks5）で、次回用に保存されます。空の場合はグローバル設定 `updateProxy` を使います。ダウンロード後に SHA-256 を検証して設定ディレクトリの bin にインストールし、既存のバージョンは旧バージョン一覧に移し、このプログラムを使うプロセスを再起動します。すぐに返り、進捗は `GET /api/{module}/install` で確認します。\n\n必要な権限: `netbird:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "管理プログラムをオンラインでインストールまたは更新",
+        "tags": [
+          "NetBird ネットワーク"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/install/backups/{id}": {
+      "delete": {
+        "description": "必要な権限: `netbird:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "保存された旧バージョンを削除",
+        "tags": [
+          "NetBird ネットワーク"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/install/check": {
+      "post": {
+        "description": "リクエストボディは不要です。上流の最新正式版を照会します（プログラムのダウンロードプロキシを使用し、未設定の場合はグローバル設定 `updateProxy` を使用）。ダウンロードやインストール済みプログラムの変更は行いません。戻り値は `GET /api/{module}/install` と同じで、`latest` は `{version, checkedAt, error, hasUpdate}`、`hasUpdate` は最新版が bin にインストールされたバージョンより新しいことを示します。自動更新チェックが有効な場合、Gately はインストール済みの管理プログラムについてもこのチェックを定期的に実行します。別のチェックが実行中の場合は 409 を返します。\n\n必要な権限: `netbird:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "管理プログラムの更新を確認",
+        "tags": [
+          "NetBird ネットワーク"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/install/rollback": {
+      "post": {
+        "description": "リクエストボディ `{\"id\": \"\u003c旧バージョン ID\u003e\"}`。現在のバージョンは旧バージョンとして保存され、後で切り戻せます。完了後、このプログラムを使うプロセスを再起動します。\n\n必要な権限: `netbird:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "保存された旧バージョンに切り替え",
+        "tags": [
+          "NetBird ネットワーク"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/logout": {
+      "post": {
+        "description": "`netbird logout` を実行します：管理サーバーからこのマシンの登録を解除してローカルのログイン情報を削除し、ネットワークのピア一覧から外します。再参加には再ログインかセットアップキーが必要です。\n\n必要な権限: `netbird:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "NetBird からログアウト",
+        "tags": [
+          "NetBird ネットワーク"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/logs": {
+      "delete": {
+        "description": "必要な権限: `netbird:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールの実行ログを消去",
+        "tags": [
+          "NetBird ネットワーク"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "`since` パラメーターで増分取得でき、シーケンス番号がこの値より大きいログを返します。`before` はシーケンス番号がこの値より小さいログを返し、古い記録の読み込みに使います。`limit` はそのうち最新の指定件数だけを返し、メモリ内で足りない場合はログファイルに残っている履歴も検索します。フィルターパラメーター：`level` 最低レベル、`source` ソース、`q` キーワード（スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の `-` で除外）、`ip` クライアントアドレス（完全なアドレス、CIDR またはアドレスの一部、複数はカンマ区切り）、`host` サイト名またはドメイン（部分一致）、`site` サイト名（完全一致、そのサイトのアクセスログのみ返す）、`status` ステータスコード（`404`、`4xx`、`500-599` など）、`from`・`to` 時間範囲（RFC 3339 またはミリ秒タイムスタンプ）。`exclude` は除外語で、いずれかを含むログは返しません。書き方は `q` と同じで、先頭の `-` は省略できます。\n\n必要な権限: `netbird:read`。",
+        "parameters": [
+          {
+            "description": "増分取得：このシーケンス番号より大きいログのみ返します",
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "過去のログを読み込む：シーケンス番号がこの値より小さいログのみを返します",
+            "in": "query",
+            "name": "before",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "返す最大件数。条件に合う最新のものから取ります。0 または省略時は無制限",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "最低レベル：debug、info、warn、error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ソースラベル（大文字小文字を区別しない完全一致）",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "キーワード：スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の - で除外",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "除外キーワード：スペース区切り、二重引用符でフレーズを指定。いずれかを含むと除外。q と同時に適用",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "クライアントアドレス：完全なアドレス、CIDR またはアドレスの一部。複数はカンマ区切り。先頭に ! または - を付けると除外",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名またはドメインの一部",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ステータスコード（404、4xx、500-599 など、複数はカンマ区切り）",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、禁止された送信元のアクセスログを隠します。禁止により拒否されたリクエストと、現在も禁止中の送信元のすべてのリクエスト（禁止のきっかけになったものを含む）が対象です（返却結果にのみ影響し、ログは保存されます）",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、管理画面のログインセッションを持つリクエスト（管理者が Web サービスのサイト経由で管理画面にアクセスして生じたアクセスログ）を非表示にします",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "終了時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールの実行ログを表示",
+        "tags": [
+          "NetBird ネットワーク"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/reset": {
+      "post": {
+        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、File Browser が提供します。リクエストボディは不要です。モジュールのすべてのプロセスを停止し、設定（プログラムのパスとダウンロードプロキシを含む）をデフォルトに戻し、Gately が生成したファイルを削除します：frp の設定ファイル、File Browser 各インスタンスのデータディレクトリ（ユーザー、共有リンク、キャッシュ）、Tailscale のデフォルト状態ディレクトリにあるログイン状態（Gately が管理する tailscaled が動作中なら先にログアウト。カスタム状態ディレクトリと既存のシステム tailscaled は対象外）、NetBird のデフォルト状態ディレクトリにあるログイン状態と鍵（Gately が管理するデーモンが動作中なら先にログアウトし、このマシンはネットワークから削除されます。カスタム状態ディレクトリと既存のシステムの NetBird サービスは対象外）。以前の設定は設定履歴に残り復元できます。インストール済みのプログラムは影響を受けません。アンインストールは `DELETE /api/{module}/install` を使います。\n\n必要な権限: `netbird:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールのデフォルト設定に戻す",
+        "tags": [
+          "NetBird ネットワーク"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/restart": {
+      "post": {
+        "description": "必要な権限: `netbird:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "NetBird を再起動",
+        "tags": [
+          "NetBird ネットワーク"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/secrets": {
+      "get": {
+        "description": "必要な権限: `netbird:write`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "シークレットを平文で表示",
+        "tags": [
+          "NetBird ネットワーク"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/settings": {
+      "get": {
+        "description": "`settings`（セットアップキー `setupKey` はマスク済み）、`defaultStateDir`（`stateDir` が空のときに使う状態ディレクトリ）、`defaultManagementUrl`（`managementUrl` が空のときに使う NetBird クラウドのアドレス）を返します。\n\n必要な権限: `netbird:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "NetBird の設定を取得",
+        "tags": [
+          "NetBird ネットワーク"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "新しい設定で再起動します。デーモンを管理している場合は `netbird service run` を再起動して `netbird up` を実行します。管理時はデーモン自身の自動接続をオフにし、デーモンが異常終了して再起動されるたびに up を再実行します。外部デーモンが接続済みの場合は、いったん切断してから `netbird up` を実行して新しい設定を反映します。`setupKey` が `********` のときは保存済みのキーを使います。`installProxy` はインストール API でのみ変更されます。スイッチ類は常に netbird up に明示的に渡されます：`acceptRoutes` は `--disable-client-routes` の反転、`serverRoutes` は `--disable-server-routes` の反転、`acceptDns` は `--disable-dns` の反転、`blockInbound` は `--block-inbound` に対応します。\n\n必要な権限: `netbird:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "NetBird の設定を保存",
+        "tags": [
+          "NetBird ネットワーク"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/status": {
+      "get": {
+        "description": "`daemonStatus` は Idle、Connecting、Connected、NeedsLogin、LoginFailed、SessionExpired のいずれかです。セットアップキーがない場合、`authUrl` はログインリンク（Linux ではデバイスコードログインで、どのデバイスでも開けます。macOS と Windows では通常そのマシンのブラウザでしか完了できません）、`authCode` は入力するコード（リンクに含まれる場合は空）で、リンクは期限切れになると自動で更新されます。`peers` はネットワーク内の他のピアで、`connType` は P2P または Relayed です。\n\n必要な権限: `netbird:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "NetBird の接続状態を取得",
+        "tags": [
+          "NetBird ネットワーク"
+        ],
+        "x-required-scope": "netbird:read",
         "x-token-allowed": true
       }
     },
@@ -32335,7 +33261,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "frp、Cloudflare トンネル、Tailscale、File Browser が提供します。設定ディレクトリの bin にインストール済みのバージョン、保存された旧バージョン（`backups`、最大 3 個）、このプログラム個別のダウンロードプロキシ `proxy`、現在のプラットフォーム、インストール進捗 `state`（`stage` は checking、downloading、verifying、extracting、done、uptodate、failed のいずれか）を返します。`unsupported` が空でない場合、上流は現在のプラットフォーム用のプログラムを提供していません。\n\n必要な権限: `tailscale:read`。",
+        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、File Browser が提供します。設定ディレクトリの bin にインストール済みのバージョン、保存された旧バージョン（`backups`、最大 3 個）、このプログラム個別のダウンロードプロキシ `proxy`、現在のプラットフォーム、インストール進捗 `state`（`stage` は checking、downloading、verifying、extracting、done、uptodate、failed のいずれか）を返します。`unsupported` が空でない場合、上流は現在のプラットフォーム用のプログラムを提供していません。\n\n必要な権限: `tailscale:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -32889,7 +33815,7 @@
     },
     "/api/tailscale/reset": {
       "post": {
-        "description": "frp、Cloudflare トンネル、Tailscale、File Browser が提供します。リクエストボディは不要です。モジュールのすべてのプロセスを停止し、設定（プログラムのパスとダウンロードプロキシを含む）をデフォルトに戻し、Gately が生成したファイルを削除します：frp の設定ファイル、File Browser 各インスタンスのデータディレクトリ（ユーザー、共有リンク、キャッシュ）、Tailscale のデフォルト状態ディレクトリにあるログイン状態（Gately が管理する tailscaled が動作中なら先にログアウト。カスタム状態ディレクトリと既存のシステム tailscaled は対象外）。以前の設定は設定履歴に残り復元できます。インストール済みのプログラムは影響を受けません。アンインストールは `DELETE /api/{module}/install` を使います。\n\n必要な権限: `tailscale:write`。",
+        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、File Browser が提供します。リクエストボディは不要です。モジュールのすべてのプロセスを停止し、設定（プログラムのパスとダウンロードプロキシを含む）をデフォルトに戻し、Gately が生成したファイルを削除します：frp の設定ファイル、File Browser 各インスタンスのデータディレクトリ（ユーザー、共有リンク、キャッシュ）、Tailscale のデフォルト状態ディレクトリにあるログイン状態（Gately が管理する tailscaled が動作中なら先にログアウト。カスタム状態ディレクトリと既存のシステム tailscaled は対象外）、NetBird のデフォルト状態ディレクトリにあるログイン状態と鍵（Gately が管理するデーモンが動作中なら先にログアウトし、このマシンはネットワークから削除されます。カスタム状態ディレクトリと既存のシステムの NetBird サービスは対象外）。以前の設定は設定履歴に残り復元できます。インストール済みのプログラムは影響を受けません。アンインストールは `DELETE /api/{module}/install` を使います。\n\n必要な権限: `tailscale:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -42836,6 +43762,9 @@
       "name": "Tailscale ネットワーク"
     },
     {
+      "name": "NetBird ネットワーク"
+    },
+    {
       "name": "frp イントラネット穿透"
     },
     {
@@ -42914,6 +43843,7 @@
     "ddns",
     "stun",
     "tailscale",
+    "netbird",
     "frp",
     "cloudflared",
     "ssl",

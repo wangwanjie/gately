@@ -48,7 +48,7 @@
   },
   "h": {
     "publicIPv4Fail": "Ausgehende Verbindung und DNS prüfen oder die IP-Abfrage-URLs in den DDNS-Einstellungen ändern.",
-    "behindNat": "Für eingehenden Zugriff sind Portweiterleitung am Router, UPnP, STUN, IPv6 oder ein Tunnel (Tailscale, frp, Cloudflare Tunnel) nötig.",
+    "behindNat": "Für eingehenden Zugriff sind Portweiterleitung am Router, UPnP, STUN, IPv6 oder ein Tunnel (Tailscale, NetBird, frp, Cloudflare Tunnel) nötig.",
     "cgnat": "Ihr Anbieter vergibt möglicherweise keine öffentliche IPv4. Nutzen Sie IPv6, STUN oder einen Tunnel. Tailscale verwendet ebenfalls 100.64.0.0/10.",
     "clockSkew": "Eine falsche Uhr lässt Zwei-Faktor-Codes und die Zertifikatsprüfung scheitern. NTP-Zeitsynchronisierung aktivieren.",
     "portInUse": "Normal, wenn ein Webdienst von Gately den Port nutzt. Sonst das andere Programm mit ss -ltnp suchen.",

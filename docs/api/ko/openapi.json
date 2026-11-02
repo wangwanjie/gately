@@ -6103,7 +6103,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "frp, Cloudflare 터널, Tailscale, File Browser 에서 제공합니다. 설정 디렉터리 bin 에 설치된 버전, 저장된 이전 버전(`backups`, 최대 3개), 이 프로그램에 따로 지정한 다운로드 프록시 `proxy`, 현재 플랫폼, 설치 진행 상태 `state`(`stage` 는 checking, downloading, verifying, extracting, done, uptodate, failed 중 하나)를 반환합니다. `unsupported` 가 비어 있지 않으면 업스트림이 현재 플랫폼용 프로그램을 제공하지 않는다는 뜻입니다.\n\n필요한 권한: `cloudflared:read`.",
+        "description": "frp, Cloudflare 터널, Tailscale, NetBird, File Browser 에서 제공합니다. 설정 디렉터리 bin 에 설치된 버전, 저장된 이전 버전(`backups`, 최대 3개), 이 프로그램에 따로 지정한 다운로드 프록시 `proxy`, 현재 플랫폼, 설치 진행 상태 `state`(`stage` 는 checking, downloading, verifying, extracting, done, uptodate, failed 중 하나)를 반환합니다. `unsupported` 가 비어 있지 않으면 업스트림이 현재 플랫폼용 프로그램을 제공하지 않는다는 뜻입니다.\n\n필요한 권한: `cloudflared:read`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -6606,7 +6606,7 @@
     },
     "/api/cloudflared/reset": {
       "post": {
-        "description": "frp, Cloudflare 터널, Tailscale, File Browser 에서 제공하며 요청 본문이 필요 없습니다. 모듈의 모든 프로세스를 중지하고 설정(프로그램 경로와 다운로드 프록시 포함)을 기본값으로 되돌리며, Gately 가 생성한 파일을 삭제합니다: frp 설정 파일, File Browser 각 인스턴스의 데이터 디렉터리(사용자, 공유 링크, 캐시), Tailscale 기본 상태 디렉터리의 로그인 상태(Gately 가 관리하는 tailscaled 가 실행 중이면 먼저 로그아웃하며, 사용자 지정 상태 디렉터리와 시스템의 기존 tailscaled 는 처리하지 않음). 이전 설정은 설정 기록에 남아 복원할 수 있으며, 설치된 프로그램은 영향을 받지 않습니다. 제거는 `DELETE /api/{module}/install` 을 사용합니다.\n\n필요한 권한: `cloudflared:write`.",
+        "description": "frp, Cloudflare 터널, Tailscale, NetBird, File Browser 에서 제공하며 요청 본문이 필요 없습니다. 모듈의 모든 프로세스를 중지하고 설정(프로그램 경로와 다운로드 프록시 포함)을 기본값으로 되돌리며, Gately 가 생성한 파일을 삭제합니다: frp 설정 파일, File Browser 각 인스턴스의 데이터 디렉터리(사용자, 공유 링크, 캐시), Tailscale 기본 상태 디렉터리의 로그인 상태(Gately 가 관리하는 tailscaled 가 실행 중이면 먼저 로그아웃하며, 사용자 지정 상태 디렉터리와 시스템의 기존 tailscaled 는 처리하지 않음), NetBird 기본 상태 디렉터리의 로그인 상태와 키(Gately 가 관리하는 데몬이 실행 중이면 먼저 로그아웃하며 이 기기는 네트워크에서 삭제됨, 사용자 지정 상태 디렉터리와 시스템의 기존 NetBird 서비스는 처리하지 않음). 이전 설정은 설정 기록에 남아 복원할 수 있으며, 설치된 프로그램은 영향을 받지 않습니다. 제거는 `DELETE /api/{module}/install` 을 사용합니다.\n\n필요한 권한: `cloudflared:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -14404,7 +14404,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "frp, Cloudflare 터널, Tailscale, File Browser 에서 제공합니다. 설정 디렉터리 bin 에 설치된 버전, 저장된 이전 버전(`backups`, 최대 3개), 이 프로그램에 따로 지정한 다운로드 프록시 `proxy`, 현재 플랫폼, 설치 진행 상태 `state`(`stage` 는 checking, downloading, verifying, extracting, done, uptodate, failed 중 하나)를 반환합니다. `unsupported` 가 비어 있지 않으면 업스트림이 현재 플랫폼용 프로그램을 제공하지 않는다는 뜻입니다.\n\n필요한 권한: `filebrowser:read`.",
+        "description": "frp, Cloudflare 터널, Tailscale, NetBird, File Browser 에서 제공합니다. 설정 디렉터리 bin 에 설치된 버전, 저장된 이전 버전(`backups`, 최대 3개), 이 프로그램에 따로 지정한 다운로드 프록시 `proxy`, 현재 플랫폼, 설치 진행 상태 `state`(`stage` 는 checking, downloading, verifying, extracting, done, uptodate, failed 중 하나)를 반환합니다. `unsupported` 가 비어 있지 않으면 업스트림이 현재 플랫폼용 프로그램을 제공하지 않는다는 뜻입니다.\n\n필요한 권한: `filebrowser:read`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -15688,7 +15688,7 @@
     },
     "/api/filebrowser/reset": {
       "post": {
-        "description": "frp, Cloudflare 터널, Tailscale, File Browser 에서 제공하며 요청 본문이 필요 없습니다. 모듈의 모든 프로세스를 중지하고 설정(프로그램 경로와 다운로드 프록시 포함)을 기본값으로 되돌리며, Gately 가 생성한 파일을 삭제합니다: frp 설정 파일, File Browser 각 인스턴스의 데이터 디렉터리(사용자, 공유 링크, 캐시), Tailscale 기본 상태 디렉터리의 로그인 상태(Gately 가 관리하는 tailscaled 가 실행 중이면 먼저 로그아웃하며, 사용자 지정 상태 디렉터리와 시스템의 기존 tailscaled 는 처리하지 않음). 이전 설정은 설정 기록에 남아 복원할 수 있으며, 설치된 프로그램은 영향을 받지 않습니다. 제거는 `DELETE /api/{module}/install` 을 사용합니다.\n\n필요한 권한: `filebrowser:write`.",
+        "description": "frp, Cloudflare 터널, Tailscale, NetBird, File Browser 에서 제공하며 요청 본문이 필요 없습니다. 모듈의 모든 프로세스를 중지하고 설정(프로그램 경로와 다운로드 프록시 포함)을 기본값으로 되돌리며, Gately 가 생성한 파일을 삭제합니다: frp 설정 파일, File Browser 각 인스턴스의 데이터 디렉터리(사용자, 공유 링크, 캐시), Tailscale 기본 상태 디렉터리의 로그인 상태(Gately 가 관리하는 tailscaled 가 실행 중이면 먼저 로그아웃하며, 사용자 지정 상태 디렉터리와 시스템의 기존 tailscaled 는 처리하지 않음), NetBird 기본 상태 디렉터리의 로그인 상태와 키(Gately 가 관리하는 데몬이 실행 중이면 먼저 로그아웃하며 이 기기는 네트워크에서 삭제됨, 사용자 지정 상태 디렉터리와 시스템의 기존 NetBird 서비스는 처리하지 않음). 이전 설정은 설정 기록에 남아 복원할 수 있으며, 설치된 프로그램은 영향을 받지 않습니다. 제거는 `DELETE /api/{module}/install` 을 사용합니다.\n\n필요한 권한: `filebrowser:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -16915,7 +16915,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "frp, Cloudflare 터널, Tailscale, File Browser 에서 제공합니다. 설정 디렉터리 bin 에 설치된 버전, 저장된 이전 버전(`backups`, 최대 3개), 이 프로그램에 따로 지정한 다운로드 프록시 `proxy`, 현재 플랫폼, 설치 진행 상태 `state`(`stage` 는 checking, downloading, verifying, extracting, done, uptodate, failed 중 하나)를 반환합니다. `unsupported` 가 비어 있지 않으면 업스트림이 현재 플랫폼용 프로그램을 제공하지 않는다는 뜻입니다.\n\n필요한 권한: `frp:read`.",
+        "description": "frp, Cloudflare 터널, Tailscale, NetBird, File Browser 에서 제공합니다. 설정 디렉터리 bin 에 설치된 버전, 저장된 이전 버전(`backups`, 최대 3개), 이 프로그램에 따로 지정한 다운로드 프록시 `proxy`, 현재 플랫폼, 설치 진행 상태 `state`(`stage` 는 checking, downloading, verifying, extracting, done, uptodate, failed 중 하나)를 반환합니다. `unsupported` 가 비어 있지 않으면 업스트림이 현재 플랫폼용 프로그램을 제공하지 않는다는 뜻입니다.\n\n필요한 권한: `frp:read`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -18138,7 +18138,7 @@
     },
     "/api/frp/reset": {
       "post": {
-        "description": "frp, Cloudflare 터널, Tailscale, File Browser 에서 제공하며 요청 본문이 필요 없습니다. 모듈의 모든 프로세스를 중지하고 설정(프로그램 경로와 다운로드 프록시 포함)을 기본값으로 되돌리며, Gately 가 생성한 파일을 삭제합니다: frp 설정 파일, File Browser 각 인스턴스의 데이터 디렉터리(사용자, 공유 링크, 캐시), Tailscale 기본 상태 디렉터리의 로그인 상태(Gately 가 관리하는 tailscaled 가 실행 중이면 먼저 로그아웃하며, 사용자 지정 상태 디렉터리와 시스템의 기존 tailscaled 는 처리하지 않음). 이전 설정은 설정 기록에 남아 복원할 수 있으며, 설치된 프로그램은 영향을 받지 않습니다. 제거는 `DELETE /api/{module}/install` 을 사용합니다.\n\n필요한 권한: `frp:write`.",
+        "description": "frp, Cloudflare 터널, Tailscale, NetBird, File Browser 에서 제공하며 요청 본문이 필요 없습니다. 모듈의 모든 프로세스를 중지하고 설정(프로그램 경로와 다운로드 프록시 포함)을 기본값으로 되돌리며, Gately 가 생성한 파일을 삭제합니다: frp 설정 파일, File Browser 각 인스턴스의 데이터 디렉터리(사용자, 공유 링크, 캐시), Tailscale 기본 상태 디렉터리의 로그인 상태(Gately 가 관리하는 tailscaled 가 실행 중이면 먼저 로그아웃하며, 사용자 지정 상태 디렉터리와 시스템의 기존 tailscaled 는 처리하지 않음), NetBird 기본 상태 디렉터리의 로그인 상태와 키(Gately 가 관리하는 데몬이 실행 중이면 먼저 로그아웃하며 이 기기는 네트워크에서 삭제됨, 사용자 지정 상태 디렉터리와 시스템의 기존 NetBird 서비스는 처리하지 않음). 이전 설정은 설정 기록에 남아 복원할 수 있으며, 설치된 프로그램은 영향을 받지 않습니다. 제거는 `DELETE /api/{module}/install` 을 사용합니다.\n\n필요한 권한: `frp:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -21449,6 +21449,932 @@
           "시스템"
         ],
         "x-required-scope": "metrics:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/install": {
+      "delete": {
+        "description": "설정 디렉터리 bin 에 설치된 프로그램과 저장된 모든 이전 버전을 삭제한 뒤 이 프로그램을 사용하는 프로세스를 다시 시작합니다. PATH 에 같은 이름의 프로그램이 있으면 그것을 사용하고, 없으면 프로세스를 시작할 수 없습니다. 모듈 설정은 영향을 받지 않으며, 설정 삭제는 `POST /api/{module}/reset` 을 사용합니다.\n\n필요한 권한: `netbird:write`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "관리 프로그램 제거",
+        "tags": [
+          "NetBird 네트워크"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "frp, Cloudflare 터널, Tailscale, NetBird, File Browser 에서 제공합니다. 설정 디렉터리 bin 에 설치된 버전, 저장된 이전 버전(`backups`, 최대 3개), 이 프로그램에 따로 지정한 다운로드 프록시 `proxy`, 현재 플랫폼, 설치 진행 상태 `state`(`stage` 는 checking, downloading, verifying, extracting, done, uptodate, failed 중 하나)를 반환합니다. `unsupported` 가 비어 있지 않으면 업스트림이 현재 플랫폼용 프로그램을 제공하지 않는다는 뜻입니다.\n\n필요한 권한: `netbird:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "관리 프로그램의 설치 정보와 진행 상태 보기",
+        "tags": [
+          "NetBird 네트워크"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "요청 본문 `{\"version\": \"\", \"proxy\": \"\"}`: `version` 이 비어 있으면 최신 정식 버전을 설치하고(이미 최신이면 다운로드하지 않으며 `stage` 는 uptodate), 아니면 지정한 버전을 설치합니다. `proxy` 는 다운로드 프록시(http, https, socks5)로 다음에도 쓰도록 저장되며, 비어 있으면 전역 설정 `updateProxy` 를 사용합니다. 다운로드 후 SHA-256 을 검증해 설정 디렉터리 bin 에 설치하고, 기존 버전은 이전 버전 목록으로 옮기며, 이 프로그램을 사용하는 프로세스를 다시 시작합니다. 즉시 반환하며 진행 상태는 `GET /api/{module}/install` 로 조회합니다.\n\n필요한 권한: `netbird:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "관리 프로그램 온라인 설치 또는 업데이트",
+        "tags": [
+          "NetBird 네트워크"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/install/backups/{id}": {
+      "delete": {
+        "description": "필요한 권한: `netbird:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "저장된 이전 버전 삭제",
+        "tags": [
+          "NetBird 네트워크"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/install/check": {
+      "post": {
+        "description": "요청 본문이 필요 없습니다. 업스트림의 최신 정식 버전을 조회하며(해당 프로그램의 다운로드 프록시, 없으면 전역 설정 `updateProxy` 사용) 다운로드하거나 설치된 프로그램을 변경하지 않습니다. 반환값은 `GET /api/{module}/install` 과 같으며 `latest` 는 `{version, checkedAt, error, hasUpdate}`, `hasUpdate` 는 최신 버전이 bin 에 설치된 버전보다 새로움을 뜻합니다. 자동 업데이트 확인이 켜져 있으면 Gately 가 설치된 관리 프로그램에 대해 이 확인을 주기적으로 실행합니다. 다른 확인이 진행 중이면 409 를 반환합니다.\n\n필요한 권한: `netbird:write`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "관리 프로그램 업데이트 확인",
+        "tags": [
+          "NetBird 네트워크"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/install/rollback": {
+      "post": {
+        "description": "요청 본문 `{\"id\": \"\u003c이전 버전 ID\u003e\"}`. 현재 버전은 이전 버전으로 저장되어 나중에 다시 전환할 수 있으며, 완료 후 이 프로그램을 사용하는 프로세스를 다시 시작합니다.\n\n필요한 권한: `netbird:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "저장된 이전 버전으로 전환",
+        "tags": [
+          "NetBird 네트워크"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/logout": {
+      "post": {
+        "description": "`netbird logout` 을 실행합니다: 관리 서버에서 이 기기의 등록을 해제하고 로컬 로그인 정보를 삭제하여 네트워크 피어 목록에서 제거합니다. 다시 참여하려면 재로그인하거나 설정 키를 사용해야 합니다.\n\n필요한 권한: `netbird:write`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "NetBird 로그아웃",
+        "tags": [
+          "NetBird 네트워크"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/logs": {
+      "delete": {
+        "description": "필요한 권한: `netbird:write`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 실행 로그 비우기",
+        "tags": [
+          "NetBird 네트워크"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "`since` 매개변수로 증분 조회하며 시퀀스 번호가 이 값보다 큰 로그를 반환합니다. `before`는 시퀀스 번호가 이 값보다 작은 로그를 반환하여 이전 기록을 불러올 때 사용합니다. `limit`은 그중 최신 항목만 반환하며, 메모리에 부족하면 로그 파일에 보관된 기록도 검색합니다. 필터 매개변수: `level` 최소 수준, `source` 소스, `q` 키워드(공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 `-`는 제외), `ip` 클라이언트 주소(전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분), `host` 사이트 이름 또는 도메인(부분 일치), `site` 사이트 이름(완전 일치, 해당 사이트의 접근 로그만 반환), `status` 상태 코드(`404`, `4xx`, `500-599` 등), `from`·`to` 시간 범위(RFC 3339 또는 밀리초 타임스탬프). `exclude`는 제외어로, 그중 하나라도 포함한 로그는 반환하지 않습니다. 작성법은 `q`와 같고 앞의 `-`는 생략할 수 있습니다.\n\n필요한 권한: `netbird:read`.",
+        "parameters": [
+          {
+            "description": "증분 조회: 일련번호가 이 값보다 큰 로그만 반환",
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "이전 로그 불러오기: 순번이 이 값보다 작은 로그만 반환",
+            "in": "query",
+            "name": "before",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "반환할 최대 개수로, 조건에 맞는 최신 항목부터 가져옵니다. 0 또는 생략 시 제한 없음",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "최소 수준: debug, info, warn 또는 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "소스 레이블, 대소문자 구분 없이 정확히 일치",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "키워드: 공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 - 는 제외",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "제외 키워드: 공백으로 구분, 큰따옴표로 구문을 묶음, 하나라도 포함하면 제외되며 q와 함께 적용",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "클라이언트 주소: 전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분, 앞에 ! 또는 -를 붙이면 제외",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름 또는 도메인의 일부",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "상태 코드(예: 404, 4xx, 500-599), 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 차단된 출처의 접근 로그를 숨깁니다. 차단되어 거부된 요청과 현재 차단 중인 출처의 모든 요청(차단을 일으킨 요청 포함)이 대상입니다(반환 결과에만 영향, 로그는 그대로 보관)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 관리 콘솔 로그인 세션이 있는 요청, 즉 관리자가 Web 서비스 사이트를 통해 콘솔에 접근하며 생긴 액세스 로그를 숨깁니다",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "시작 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "종료 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 실행 로그 보기",
+        "tags": [
+          "NetBird 네트워크"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/reset": {
+      "post": {
+        "description": "frp, Cloudflare 터널, Tailscale, NetBird, File Browser 에서 제공하며 요청 본문이 필요 없습니다. 모듈의 모든 프로세스를 중지하고 설정(프로그램 경로와 다운로드 프록시 포함)을 기본값으로 되돌리며, Gately 가 생성한 파일을 삭제합니다: frp 설정 파일, File Browser 각 인스턴스의 데이터 디렉터리(사용자, 공유 링크, 캐시), Tailscale 기본 상태 디렉터리의 로그인 상태(Gately 가 관리하는 tailscaled 가 실행 중이면 먼저 로그아웃하며, 사용자 지정 상태 디렉터리와 시스템의 기존 tailscaled 는 처리하지 않음), NetBird 기본 상태 디렉터리의 로그인 상태와 키(Gately 가 관리하는 데몬이 실행 중이면 먼저 로그아웃하며 이 기기는 네트워크에서 삭제됨, 사용자 지정 상태 디렉터리와 시스템의 기존 NetBird 서비스는 처리하지 않음). 이전 설정은 설정 기록에 남아 복원할 수 있으며, 설치된 프로그램은 영향을 받지 않습니다. 제거는 `DELETE /api/{module}/install` 을 사용합니다.\n\n필요한 권한: `netbird:write`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 기본 설정 복원",
+        "tags": [
+          "NetBird 네트워크"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/restart": {
+      "post": {
+        "description": "필요한 권한: `netbird:write`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "NetBird 재시작",
+        "tags": [
+          "NetBird 네트워크"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/secrets": {
+      "get": {
+        "description": "필요한 권한: `netbird:write`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "비밀 값 평문 보기",
+        "tags": [
+          "NetBird 네트워크"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/settings": {
+      "get": {
+        "description": "`settings`(설정 키 `setupKey` 는 가려짐), `defaultStateDir`(`stateDir` 가 비어 있을 때 쓰는 상태 디렉터리), `defaultManagementUrl`(`managementUrl` 이 비어 있을 때 쓰는 NetBird 클라우드 주소)을 반환합니다.\n\n필요한 권한: `netbird:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "NetBird 설정 조회",
+        "tags": [
+          "NetBird 네트워크"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "새 설정으로 다시 시작합니다. 데몬을 관리하는 경우 `netbird service run` 을 다시 시작한 뒤 `netbird up` 을 실행하며, 관리 중에는 데몬 자체의 자동 연결을 끄고 데몬이 비정상 종료 후 다시 시작될 때마다 up 을 다시 실행합니다. 외부 데몬이 이미 연결되어 있으면 연결을 끊은 뒤 `netbird up` 을 실행해 새 설정을 적용합니다. `setupKey` 가 `********` 이면 저장된 키를 그대로 씁니다. `installProxy` 는 설치 API로만 변경됩니다. 스위치 설정은 항상 netbird up 에 명시적으로 전달됩니다: `acceptRoutes` 는 `--disable-client-routes` 의 반대, `serverRoutes` 는 `--disable-server-routes` 의 반대, `acceptDns` 는 `--disable-dns` 의 반대, `blockInbound` 는 `--block-inbound` 에 대응합니다.\n\n필요한 권한: `netbird:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "NetBird 설정 저장",
+        "tags": [
+          "NetBird 네트워크"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/status": {
+      "get": {
+        "description": "`daemonStatus` 는 Idle, Connecting, Connected, NeedsLogin, LoginFailed, SessionExpired 중 하나입니다. 설정 키가 없으면 `authUrl` 은 로그인 링크(Linux 에서는 장치 코드 로그인으로 어느 기기에서나 열 수 있고, macOS 와 Windows 에서는 보통 해당 기기의 브라우저에서만 완료할 수 있음), `authCode` 는 입력할 코드(링크에 포함된 경우 비어 있음)이며, 링크는 만료되면 자동으로 갱신됩니다. `peers` 는 네트워크의 다른 피어이고 `connType` 은 P2P 또는 Relayed 입니다.\n\n필요한 권한: `netbird:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "NetBird 연결 상태 조회",
+        "tags": [
+          "NetBird 네트워크"
+        ],
+        "x-required-scope": "netbird:read",
         "x-token-allowed": true
       }
     },
@@ -32335,7 +33261,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "frp, Cloudflare 터널, Tailscale, File Browser 에서 제공합니다. 설정 디렉터리 bin 에 설치된 버전, 저장된 이전 버전(`backups`, 최대 3개), 이 프로그램에 따로 지정한 다운로드 프록시 `proxy`, 현재 플랫폼, 설치 진행 상태 `state`(`stage` 는 checking, downloading, verifying, extracting, done, uptodate, failed 중 하나)를 반환합니다. `unsupported` 가 비어 있지 않으면 업스트림이 현재 플랫폼용 프로그램을 제공하지 않는다는 뜻입니다.\n\n필요한 권한: `tailscale:read`.",
+        "description": "frp, Cloudflare 터널, Tailscale, NetBird, File Browser 에서 제공합니다. 설정 디렉터리 bin 에 설치된 버전, 저장된 이전 버전(`backups`, 최대 3개), 이 프로그램에 따로 지정한 다운로드 프록시 `proxy`, 현재 플랫폼, 설치 진행 상태 `state`(`stage` 는 checking, downloading, verifying, extracting, done, uptodate, failed 중 하나)를 반환합니다. `unsupported` 가 비어 있지 않으면 업스트림이 현재 플랫폼용 프로그램을 제공하지 않는다는 뜻입니다.\n\n필요한 권한: `tailscale:read`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -32889,7 +33815,7 @@
     },
     "/api/tailscale/reset": {
       "post": {
-        "description": "frp, Cloudflare 터널, Tailscale, File Browser 에서 제공하며 요청 본문이 필요 없습니다. 모듈의 모든 프로세스를 중지하고 설정(프로그램 경로와 다운로드 프록시 포함)을 기본값으로 되돌리며, Gately 가 생성한 파일을 삭제합니다: frp 설정 파일, File Browser 각 인스턴스의 데이터 디렉터리(사용자, 공유 링크, 캐시), Tailscale 기본 상태 디렉터리의 로그인 상태(Gately 가 관리하는 tailscaled 가 실행 중이면 먼저 로그아웃하며, 사용자 지정 상태 디렉터리와 시스템의 기존 tailscaled 는 처리하지 않음). 이전 설정은 설정 기록에 남아 복원할 수 있으며, 설치된 프로그램은 영향을 받지 않습니다. 제거는 `DELETE /api/{module}/install` 을 사용합니다.\n\n필요한 권한: `tailscale:write`.",
+        "description": "frp, Cloudflare 터널, Tailscale, NetBird, File Browser 에서 제공하며 요청 본문이 필요 없습니다. 모듈의 모든 프로세스를 중지하고 설정(프로그램 경로와 다운로드 프록시 포함)을 기본값으로 되돌리며, Gately 가 생성한 파일을 삭제합니다: frp 설정 파일, File Browser 각 인스턴스의 데이터 디렉터리(사용자, 공유 링크, 캐시), Tailscale 기본 상태 디렉터리의 로그인 상태(Gately 가 관리하는 tailscaled 가 실행 중이면 먼저 로그아웃하며, 사용자 지정 상태 디렉터리와 시스템의 기존 tailscaled 는 처리하지 않음), NetBird 기본 상태 디렉터리의 로그인 상태와 키(Gately 가 관리하는 데몬이 실행 중이면 먼저 로그아웃하며 이 기기는 네트워크에서 삭제됨, 사용자 지정 상태 디렉터리와 시스템의 기존 NetBird 서비스는 처리하지 않음). 이전 설정은 설정 기록에 남아 복원할 수 있으며, 설치된 프로그램은 영향을 받지 않습니다. 제거는 `DELETE /api/{module}/install` 을 사용합니다.\n\n필요한 권한: `tailscale:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -42836,6 +43762,9 @@
       "name": "Tailscale 네트워킹"
     },
     {
+      "name": "NetBird 네트워크"
+    },
+    {
       "name": "frp 내부망 터널링"
     },
     {
@@ -42914,6 +43843,7 @@
     "ddns",
     "stun",
     "tailscale",
+    "netbird",
     "frp",
     "cloudflared",
     "ssl",

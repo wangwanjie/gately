@@ -36,6 +36,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `ddns` | ダイナミック DNS | `ddns:read`、`ddns:write` |
 | `stun` | STUN 穿透 | `stun:read`、`stun:write` |
 | `tailscale` | Tailscale ネットワーク | `tailscale:read`、`tailscale:write` |
+| `netbird` | NetBird ネットワーク | `netbird:read`、`netbird:write` |
 | `frp` | frp イントラネット穿透 | `frp:read`、`frp:write` |
 | `cloudflared` | Cloudflare トンネル | `cloudflared:read`、`cloudflared:write` |
 | `ssl` | SSL 証明書 | `ssl:read`、`ssl:write` |
@@ -169,6 +170,26 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/tailscale/install` | `tailscale:write` | 管理プログラムをアンインストール |
 | DELETE | `/api/tailscale/install/backups/{id}` | `tailscale:write` | 保存された旧バージョンを削除 |
 | POST | `/api/tailscale/reset` | `tailscale:write` | モジュールのデフォルト設定に戻す |
+
+## NetBird ネットワーク
+
+| メソッド | パス | 必要な権限 | 説明 |
+| --- | --- | --- | --- |
+| GET | `/api/netbird/logs` | `netbird:read` | モジュールの実行ログを表示 |
+| DELETE | `/api/netbird/logs` | `netbird:write` | モジュールの実行ログを消去 |
+| GET | `/api/netbird/settings` | `netbird:read` | NetBird の設定を取得 |
+| PUT | `/api/netbird/settings` | `netbird:write` | NetBird の設定を保存 |
+| GET | `/api/netbird/secrets` | `netbird:write` | シークレットを平文で表示 |
+| GET | `/api/netbird/status` | `netbird:read` | NetBird の接続状態を取得 |
+| POST | `/api/netbird/restart` | `netbird:write` | NetBird を再起動 |
+| POST | `/api/netbird/logout` | `netbird:write` | NetBird からログアウト |
+| GET | `/api/netbird/install` | `netbird:read` | 管理プログラムのインストール情報と進捗を表示 |
+| POST | `/api/netbird/install` | `netbird:write` | 管理プログラムをオンラインでインストールまたは更新 |
+| POST | `/api/netbird/install/check` | `netbird:write` | 管理プログラムの更新を確認 |
+| POST | `/api/netbird/install/rollback` | `netbird:write` | 保存された旧バージョンに切り替え |
+| DELETE | `/api/netbird/install` | `netbird:write` | 管理プログラムをアンインストール |
+| DELETE | `/api/netbird/install/backups/{id}` | `netbird:write` | 保存された旧バージョンを削除 |
+| POST | `/api/netbird/reset` | `netbird:write` | モジュールのデフォルト設定に戻す |
 
 ## frp イントラネット穿透
 

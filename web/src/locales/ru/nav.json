@@ -36,6 +36,10 @@
       "title": "Tailscale",
       "desc": "Подключение к сети Tailscale / Headscale"
     },
+    "netbird": {
+      "title": "NetBird",
+      "desc": "Подключиться к сети NetBird (облако или свой сервер)"
+    },
     "frp": {
       "title": "frp",
       "desc": "Обход NAT через frpc / frps"

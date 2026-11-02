@@ -48,7 +48,7 @@
   },
   "h": {
     "publicIPv4Fail": "检查出网连通性与 DNS，或在 DDNS 设置中更换 IP 查询地址。",
-    "behindNat": "要让外部访问进来，需要路由器端口映射、UPnP、STUN、IPv6 或隧道（Tailscale、frp、Cloudflare 隧道）。",
+    "behindNat": "要让外部访问进来，需要路由器端口映射、UPnP、STUN、IPv6 或隧道（Tailscale、NetBird、frp、Cloudflare 隧道）。",
     "cgnat": "运营商可能没有分配公网 IPv4。可改用 IPv6、STUN 或隧道。注意 Tailscale 也使用 100.64.0.0/10 地址段。",
     "clockSkew": "系统时间不准会导致两步验证码和证书校验失败，请启用 NTP 时间同步。",
     "portInUse": "如果是 Gately 的 Web 服务监听属于正常；否则可用 ss -ltnp 查找占用的程序。",

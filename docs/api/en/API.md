@@ -36,6 +36,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `ddns` | Dynamic DNS | `ddns:read`、`ddns:write` |
 | `stun` | STUN traversal | `stun:read`、`stun:write` |
 | `tailscale` | Tailscale networking | `tailscale:read`、`tailscale:write` |
+| `netbird` | NetBird network | `netbird:read`、`netbird:write` |
 | `frp` | frp tunneling | `frp:read`、`frp:write` |
 | `cloudflared` | Cloudflare Tunnel | `cloudflared:read`、`cloudflared:write` |
 | `ssl` | SSL certificate | `ssl:read`、`ssl:write` |
@@ -169,6 +170,26 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | DELETE | `/api/tailscale/install` | `tailscale:write` | Uninstall a managed program |
 | DELETE | `/api/tailscale/install/backups/{id}` | `tailscale:write` | Delete a saved previous version |
 | POST | `/api/tailscale/reset` | `tailscale:write` | Restore the module default settings |
+
+## NetBird network
+
+| Method | Path | Required permission | Description |
+| --- | --- | --- | --- |
+| GET | `/api/netbird/logs` | `netbird:read` | View module runtime logs |
+| DELETE | `/api/netbird/logs` | `netbird:write` | Clear module runtime logs |
+| GET | `/api/netbird/settings` | `netbird:read` | Get NetBird settings |
+| PUT | `/api/netbird/settings` | `netbird:write` | Save NetBird settings |
+| GET | `/api/netbird/secrets` | `netbird:write` | View secrets in plain text |
+| GET | `/api/netbird/status` | `netbird:read` | Get NetBird connection status |
+| POST | `/api/netbird/restart` | `netbird:write` | Restart NetBird |
+| POST | `/api/netbird/logout` | `netbird:write` | Log out of NetBird |
+| GET | `/api/netbird/install` | `netbird:read` | View the install info and progress of a managed program |
+| POST | `/api/netbird/install` | `netbird:write` | Install or update a managed program online |
+| POST | `/api/netbird/install/check` | `netbird:write` | Check a managed program for updates |
+| POST | `/api/netbird/install/rollback` | `netbird:write` | Switch to a saved previous version |
+| DELETE | `/api/netbird/install` | `netbird:write` | Uninstall a managed program |
+| DELETE | `/api/netbird/install/backups/{id}` | `netbird:write` | Delete a saved previous version |
+| POST | `/api/netbird/reset` | `netbird:write` | Restore the module default settings |
 
 ## frp tunneling
 

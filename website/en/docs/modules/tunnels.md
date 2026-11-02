@@ -1,10 +1,10 @@
-# Tailscale / frp / cloudflared
+# Tailscale / NetBird / frp / cloudflared
 
-These three modules integrate the official programs as managed processes: automatic restart, logs collected in the UI, and configuration done in the UI. Gately does not bundle these programs; you can install, update and roll them back online from the page.
+These four modules integrate the official programs as managed processes: automatic restart, logs collected in the UI, and configuration done in the UI. Gately does not bundle these programs; you can install, update and roll them back online from the page.
 
 ## Online install, update and rollback {#install}
 
-The frp, Cloudflare Tunnel, Tailscale and [File Browser](/en/docs/modules/tools#filebrowser) pages each have an "online install" card at the bottom:
+The frp, Cloudflare Tunnel, Tailscale, NetBird and [File Browser](/en/docs/modules/tools#filebrowser) pages each have an "online install" card at the bottom:
 
 - **Download and install / Update to latest**: downloads the latest stable release from upstream, verifies it against the SHA-256 recorded upstream, checks that it runs on this machine, installs it into `bin/` under the configuration directory and then restarts the processes that use the program. Nothing is downloaded again when the latest version is already installed;
 - **Check for updates**: only queries the latest stable upstream release without downloading; a "New version" tag appears next to the card title when one exists. With [automatic update checks](/en/docs/guide/install#update-check) on, Gately checks installed programs every 12 hours and publishes a `program.update` notification for a new version;
@@ -18,6 +18,7 @@ The frp, Cloudflare Tunnel, Tailscale and [File Browser](/en/docs/modules/tools#
 | frp | GitHub fatedier/frp | `frpc`, `frps` |
 | cloudflared | GitHub cloudflare/cloudflared | `cloudflared` |
 | Tailscale | pkgs.tailscale.com static packages, Linux only | `tailscale`, `tailscaled` |
+| NetBird | GitHub netbirdio/netbird, Linux, macOS and Windows | `netbird` |
 | FileBrowser Quantum | GitHub gtsteffaniak/filebrowser | `filebrowser` |
 
 Tailscale has no ready-to-run packages for macOS and Windows; use the official installer and enter its path in the settings. The card tells you when the current platform is unsupported.
@@ -31,6 +32,7 @@ Tailscale has no ready-to-run packages for macOS and Windows; use the official i
 | frp | All frpc / frps instances, proxies and program settings, plus the config files generated under `frp/` |
 | Cloudflare Tunnel | All tunnels and program settings |
 | Tailscale | All settings and the login state in the default state directory; a running Gately-managed tailscaled logs out first. Custom state directories and an existing system tailscaled are left alone |
+| NetBird | All settings and the login state and keys in the default state directory; a running Gately-managed daemon logs out first, which removes this machine from the network. Custom state directories and an existing system NetBird service are left alone |
 | File Browser | All instances and program settings, plus each instance's users, share links and caches; files in the shared directories stay untouched |
 
 The old settings are kept in the [config history](/en/docs/guide/audit), so you can restore them after a mistake. To remove a module completely, uninstall the program first, then restore defaults. The API endpoints are `DELETE /api/{module}/install` (uninstall) and `POST /api/{module}/reset` (restore defaults).
@@ -55,6 +57,19 @@ Tokens and keys are stored with 0600 permissions. The cloudflared token is passe
 - Node list and SOCKS5 proxy;
 - Fixed WireGuard UDP port, making it easy to allow direct connections through a firewall;
 - Extra tailscaled arguments and environment variables. If the host's iptables uses the nf_tables backend, add `TS_DEBUG_FIREWALL_MODE=nftables` to the environment variables, otherwise subnet forwarding will not work.
+
+## NetBird
+
+- Join a NetBird network on NetBird Cloud or on your own management server (enter its URL);
+- Authenticate with a setup key or a login link. On Linux the login link uses device code login and can be opened on any device; on macOS and Windows the login usually has to be completed in a browser on the machine running Gately, so use a setup key when managing it remotely. The link is renewed automatically when it expires;
+- Managed `netbird` daemon (userspace networking, container-friendly) or attach to the NetBird service already installed on the system;
+- With userspace networking, other peers can reach services on this machine by default (including services listening only on 127.0.0.1; the access policies of the management server still apply), and local programs reach devices in the network through a SOCKS5 proxy (default `127.0.0.1:1080`);
+- Network routes, exit nodes and access policies are configured in the NetBird dashboard; in Gately you choose whether to accept routes, act as a routing peer, accept DNS and block inbound connections;
+- Peer list with direct or relayed connections, latency and network routes;
+- Fixed WireGuard port, extra daemon arguments and environment variables (the advanced `NB_` options in the NetBird docs);
+- With userspace networking off, kernel WireGuard is used: it needs root and a TUN device, creates the `wt0` interface and adds its own firewall rules (on OpenWrt it also allows inbound `wt0` traffic in fw4), and local services must listen on all addresses or on the NetBird address to be reachable from other peers;
+- The `netbird` program is about 41 MB and uses about 60 MB of memory, and online install keeps up to 3 old versions in `bin/.versions/`. On routers with little flash, watch the free space: delete old versions in the install card, or put the program on external storage and enter its path in the settings;
+- Restore defaults and `POST /api/netbird/logout` deregister this machine from the management server and remove it from the network; joining again requires authenticating again.
 
 ## frp
 
@@ -87,6 +102,7 @@ The public hostnames and origin services (routes) of a token tunnel are stored o
 | Scenario | Recommendation |
 | --- | --- |
 | Build a private network across multiple devices | Tailscale |
+| A private network where both the client and the management server are open source and self-hostable | NetBird |
 | You own a public server and want to map internal services out through it | frp |
 | No public IP and no server, and you want to expose a web service quickly | Cloudflare Tunnel |
 | Your ISP provides a NAT that allows hole punching | [STUN Traversal](/en/docs/modules/stun) |

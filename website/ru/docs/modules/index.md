@@ -15,7 +15,7 @@
 | Единый вход OIDC | Предоставляет общих пользователей Gitea, OpenList, Grafana и другим приложениям по OpenID Connect, заменяет OIDC Authelia | [Открыть](/ru/docs/modules/oidc) |
 | Брандмауэр WAF | Coraza + OWASP CRS v4 | [Открыть](/ru/docs/modules/waf) |
 | Защита от вторжений | Правила журналов (в духе fail2ban), порты-ловушки и обнаружение сканирования, блокировки синхронизируются с nftables | [Открыть](/ru/docs/modules/guard) |
-| Tailscale / frp / cloudflared | Сеть и проброс во внутреннюю сеть через управляемые официальные бинарные файлы | [Открыть](/ru/docs/modules/tunnels) |
+| Tailscale / NetBird / frp / cloudflared | Сеть и проброс во внутреннюю сеть через управляемые официальные бинарные файлы | [Открыть](/ru/docs/modules/tunnels) |
 | Docker | Создание и редактирование контейнеров, журналы и терминал, Compose, обновление образов, сети и тома | [Открыть](/ru/docs/modules/docker) |
 | Веб-терминал | SSH, Telnet, локальный Shell, файловый менеджер SFTP, постоянные сессии | [Открыть](/ru/docs/modules/terminal) |
 | Сетевая диагностика | Ping, трассировка маршрута, проверка портов, DNS-запросы, тест скорости, сканирование локальной сети | [Открыть](/ru/docs/modules/nettools) |

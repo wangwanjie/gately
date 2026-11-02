@@ -1,10 +1,10 @@
-# Tailscale / frp / cloudflared
+# Tailscale / NetBird / frp / cloudflared
 
-三個模組以行程託管方式整合官方程式：自動重啟、日誌彙整到介面、設定在介面中完成。Gately 本體並未內建這些程式，可以在頁面中線上安裝、更新與回滾。
+四個模組以行程託管方式整合官方程式：自動重啟、日誌彙整到介面、設定在介面中完成。Gately 本體並未內建這些程式，可以在頁面中線上安裝、更新與回滾。
 
 ## 線上安裝、更新與回滾 {#install}
 
-frp、Cloudflare 通道、Tailscale 與 [File Browser](/zh-TW/docs/modules/tools#filebrowser) 頁面下方都有「線上安裝」卡片：
+frp、Cloudflare 通道、Tailscale、NetBird 與 [File Browser](/zh-TW/docs/modules/tools#filebrowser) 頁面下方都有「線上安裝」卡片：
 
 - **下載安裝 / 更新到最新版**：從上游下載最新正式版，依上游記錄的 SHA-256 校驗，確認能在本機執行後安裝到設定目錄的 `bin/`，完成後自動重啟使用該程式的行程。已經是最新版時不會重複下載；
 - **檢查更新**：只查詢上游最新正式版，不下載；有新版本時卡片標題旁顯示「新版本」。開啟[自動檢查更新](/zh-TW/docs/guide/install#update-check)時，Gately 每 12 小時為已安裝的程式檢查一次，發現新版本時發布 `program.update` 通知；
@@ -18,6 +18,7 @@ frp、Cloudflare 通道、Tailscale 與 [File Browser](/zh-TW/docs/modules/tools
 | frp | GitHub fatedier/frp | `frpc`、`frps` |
 | cloudflared | GitHub cloudflare/cloudflared | `cloudflared` |
 | Tailscale | pkgs.tailscale.com 靜態套件，僅 Linux | `tailscale`、`tailscaled` |
+| NetBird | GitHub netbirdio/netbird，Linux、macOS、Windows | `netbird` |
 | FileBrowser Quantum | GitHub gtsteffaniak/filebrowser | `filebrowser` |
 
 Tailscale 在 macOS 與 Windows 上沒有可直接執行的程式套件，請使用官方安裝程式，再於設定中填寫路徑。卡片會提示目前平台不支援的情況。
@@ -31,6 +32,7 @@ Tailscale 在 macOS 與 Windows 上沒有可直接執行的程式套件，請使
 | frp | 全部 frpc / frps 實例、代理與程式設定，`frp/` 下產生的設定檔 |
 | Cloudflare 通道 | 全部通道與程式設定 |
 | Tailscale | 全部設定，預設狀態目錄中的登入狀態；Gately 託管的 tailscaled 執行中時先登出。自訂的狀態目錄與系統既有的 tailscaled 不處理 |
+| NetBird | 全部設定，預設狀態目錄中的登入狀態與金鑰；Gately 託管的常駐程式執行中時先登出，本機從組網中刪除。自訂的狀態目錄與系統既有的 NetBird 服務不處理 |
 | File Browser | 全部實例與程式設定，各實例的使用者、分享連結與快取；共享目錄中的檔案不受影響 |
 
 舊設定保存在 [設定歷史](/zh-TW/docs/guide/audit) 中，誤操作時可以還原。要徹底移除，先解除安裝程式，再恢復預設設定。介面為 `DELETE /api/{module}/install`（解除安裝）與 `POST /api/{module}/reset`（恢復預設設定）。
@@ -55,6 +57,19 @@ Tailscale 在 macOS 與 Windows 上沒有可直接執行的程式套件，請使
 - 節點清單與 SOCKS5 代理；
 - 固定 WireGuard UDP 連接埠，方便在防火牆放行直連；
 - tailscaled 額外參數與環境變數。主機 iptables 是 nf_tables 後端時，在環境變數中加入 `TS_DEBUG_FIREWALL_MODE=nftables`，子網轉發才會生效。
+
+## NetBird
+
+- 加入 NetBird 官方雲或自建管理服務（填寫管理服務位址）的組網；
+- 設定金鑰或登入連結認證。Linux 下的登入連結是裝置碼登入，可以在任意裝置上開啟；macOS 與 Windows 上通常只能在執行 Gately 的這台電腦上用瀏覽器完成登入，遠端管理時請使用設定金鑰。連結過期後自動更新；
+- 託管 `netbird` 常駐程式（使用者態網路，容器友善）或接入系統已安裝的 NetBird 服務；
+- 使用者態網路下預設允許其他節點存取本機服務（包括只監聽 127.0.0.1 的服務，仍受管理端存取策略限制），本機程式透過 SOCKS5 代理（預設 `127.0.0.1:1080`）存取組網內的裝置；
+- 網路路由、出口節點與存取策略在 NetBird 管理端設定，Gately 中可以選擇是否接受路由、是否作為路由節點、是否接受 DNS 以及拒絕入站；
+- 節點清單顯示直連或中繼、延遲與網路路由；
+- 固定 WireGuard 連接埠，常駐程式額外參數與環境變數（NetBird 文件中以 `NB_` 開頭的進階選項）；
+- 關閉使用者態網路時使用核心 WireGuard：需要 root 與 TUN 裝置，會建立 `wt0` 網路介面並自行加入防火牆規則（OpenWrt 的 fw4 中也會放行 `wt0` 入站），本機服務要監聽在所有位址或組網位址上才能被其他節點存取；
+- `netbird` 程式約 41 MB，執行時記憶體約 60 MB，線上安裝還會在 `bin/.versions/` 保留最多 3 個舊版本。快閃記憶體較小的路由器請留意剩餘空間，可在安裝卡片中刪除舊版本，或把程式放在外部儲存並在設定中填寫路徑；
+- 恢復預設設定與 `POST /api/netbird/logout` 會從管理服務註銷本機，節點從組網中刪除，再次加入需要重新認證。
 
 ## frp
 
@@ -87,6 +102,7 @@ Tailscale 在 macOS 與 Windows 上沒有可直接執行的程式套件，請使
 | 情境 | 建議 |
 | --- | --- |
 | 在多台裝置之間組成私有網路 | Tailscale |
+| 組網，並希望用戶端與管理端都開源、可以自建 | NetBird |
 | 自己有公網伺服器，把內網服務對應出去 | frp |
 | 沒有公網 IP 也沒有伺服器，快速公開 Web 服務 | Cloudflare 通道 |
 | 電信業者提供了可打洞的 NAT | [STUN 穿透](/zh-TW/docs/modules/stun) |

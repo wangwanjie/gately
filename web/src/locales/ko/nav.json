@@ -36,6 +36,10 @@
       "title": "Tailscale",
       "desc": "Tailscale / Headscale 네트워크에 참여"
     },
+    "netbird": {
+      "title": "NetBird",
+      "desc": "NetBird 네트워크에 참여(클라우드 또는 자체 호스팅)"
+    },
     "frp": {
       "title": "frp",
       "desc": "frpc / frps 내부망 터널링"

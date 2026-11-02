@@ -48,9 +48,9 @@ func (a *App) closeLogs() {
 }
 
 // privatePaths 是配置目录下保存敏感内容的文件与子目录（支持通配符）：配置、令牌、配置历史、
-// frp 生成的配置、审计与运行日志、IP 列表缓存、入侵防护的封禁记录、本地备份、恢复前的备份与 Tailscale 状态。
+// frp 生成的配置、审计与运行日志、IP 列表缓存、入侵防护的封禁记录、本地备份、恢复前的备份与 Tailscale、NetBird 状态。
 // bin/ 等存放用户程序的目录不在其中。
-var privatePaths = []string{"*.json", "audit.log*", auth.ResetFile, logsDir, "history", "frp", "iplists", "guard", "backups", "backup-*", "tailscale"}
+var privatePaths = []string{"*.json", "audit.log*", auth.ResetFile, logsDir, "history", "frp", "iplists", "guard", "backups", "backup-*", "tailscale", "netbird"}
 
 // tightenConfigDir 收紧配置目录下敏感文件的权限，修复旧版本在会忽略创建权限的文件系统
 // （如飞牛 fnOS 的 trimacl 卷）上创建的 0755 文件，返回改动的数量。

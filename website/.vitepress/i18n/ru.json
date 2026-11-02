@@ -38,7 +38,7 @@
       "modules/oidc": "Единый вход OIDC",
       "modules/waf": "Брандмауэр WAF",
       "modules/guard": "Защита от вторжений",
-      "modules/tunnels": "Tailscale / frp / cloudflared",
+      "modules/tunnels": "Tailscale / NetBird / frp / cloudflared",
       "modules/docker": "Управление Docker",
       "modules/terminal": "Веб-терминал",
       "modules/nettools": "Сетевая диагностика",
@@ -153,7 +153,7 @@
       },
       {
         "title": "Сети и туннели",
-        "text": "Запускает и контролирует туннели Tailscale, frp (frpc / frps) и cloudflared как управляемые процессы, с онлайн-установкой, обновлением, откатом и удалением."
+        "text": "Запускает и контролирует туннели Tailscale, NetBird, frp (frpc / frps) и cloudflared как управляемые процессы, с онлайн-установкой, обновлением, откатом и удалением."
       },
       {
         "title": "Управление Docker",

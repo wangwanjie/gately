@@ -59,8 +59,11 @@ func TestClassify(t *testing.T) {
 		"ERR connection lost": logbuf.LevelError,
 		"[W] retry":           logbuf.LevelWarn,
 		"WRN slow":            logbuf.LevelWarn,
-		"[I] ok":              logbuf.LevelInfo,
-		"plain line":          logbuf.LevelInfo,
+		"ERRO client/iface/netstack/tun.go:65: error": logbuf.LevelError,
+		"WARN client/internal/engine.go:965: failed":  logbuf.LevelWarn,
+		"DEBU client/internal/peer/conn.go:1: x":      logbuf.LevelDebug,
+		"[I] ok":                                      logbuf.LevelInfo,
+		"plain line":                                  logbuf.LevelInfo,
 	}
 	for in, want := range cases {
 		if got := classify(in); got != want {

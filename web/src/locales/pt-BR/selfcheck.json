@@ -48,7 +48,7 @@
   },
   "h": {
     "publicIPv4Fail": "Verifique a conectividade de saída e o DNS, ou altere as URLs de consulta de IP nas configurações de DDNS.",
-    "behindNat": "O acesso de entrada exige redirecionamento de portas no roteador, UPnP, STUN, IPv6 ou um túnel (Tailscale, frp, Cloudflare Tunnel).",
+    "behindNat": "O acesso de entrada exige redirecionamento de portas no roteador, UPnP, STUN, IPv6 ou um túnel (Tailscale, NetBird, frp, Cloudflare Tunnel).",
     "cgnat": "Sua operadora pode não fornecer IPv4 público. Use IPv6, STUN ou um túnel. O Tailscale também usa a faixa 100.64.0.0/10.",
     "clockSkew": "Um relógio errado quebra os códigos de verificação em duas etapas e a validação de certificados. Ative a sincronização NTP.",
     "portInUse": "Normal se um serviço Web do Gately a usa. Caso contrário, encontre o outro programa com ss -ltnp.",

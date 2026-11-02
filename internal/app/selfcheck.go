@@ -126,9 +126,9 @@ var listIfaceAddrs = func() []ifaceAddr {
 	return out
 }
 
-// isOverlayIface 判断网卡是否为 Tailscale 等组网虚拟网卡：这类网卡的 100.64.0.0/10 地址不代表运营商 NAT。
+// isOverlayIface 判断网卡是否为 Tailscale、NetBird（Linux 与 Windows 下为 wt0）等组网虚拟网卡：这类网卡的 100.64.0.0/10 地址不代表运营商 NAT。
 func isOverlayIface(ia ifaceAddr) bool {
-	if strings.HasPrefix(ia.name, "tailscale") || strings.HasPrefix(ia.name, "ts") || strings.HasPrefix(ia.name, "utun") || strings.HasPrefix(ia.name, "zt") {
+	if strings.HasPrefix(ia.name, "tailscale") || strings.HasPrefix(ia.name, "ts") || strings.HasPrefix(ia.name, "utun") || strings.HasPrefix(ia.name, "zt") || strings.HasPrefix(ia.name, "wt") {
 		return true
 	}
 	for _, a := range ia.addrs {

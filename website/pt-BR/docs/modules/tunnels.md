@@ -1,10 +1,10 @@
-# Tailscale / frp / cloudflared
+# Tailscale / NetBird / frp / cloudflared
 
-Estes três módulos integram os programas oficiais como processos gerenciados: reinício automático, logs reunidos na interface e configuração feita na interface. O Gately não embute esses programas; eles podem ser instalados, atualizados e revertidos online pela página.
+Estes quatro módulos integram os programas oficiais como processos gerenciados: reinício automático, logs reunidos na interface e configuração feita na interface. O Gately não embute esses programas; eles podem ser instalados, atualizados e revertidos online pela página.
 
 ## Instalação, atualização e reversão online {#install}
 
-As páginas de frp, Cloudflare Tunnel, Tailscale e [File Browser](/pt-BR/docs/modules/tools#filebrowser) têm, no fim, um cartão "Instalação online":
+As páginas de frp, Cloudflare Tunnel, Tailscale, NetBird e [File Browser](/pt-BR/docs/modules/tools#filebrowser) têm, no fim, um cartão "Instalação online":
 
 - **Baixar e instalar / Atualizar para a mais recente**: baixa a versão estável mais recente do projeto original, verifica pelo SHA-256 registrado por ele, confirma que roda nesta máquina, instala em `bin/` no diretório de configuração e depois reinicia os processos que usam o programa. Se a versão mais recente já estiver instalada, nada é baixado de novo;
 - **Verificar atualizações**: apenas consulta a versão estável mais recente no projeto de origem, sem baixar; se houver uma nova, aparece "Nova versão" ao lado do título do cartão. Com a [verificação automática de atualizações](/pt-BR/docs/guide/install#update-check) ativada, o Gately verifica os programas instalados a cada 12 horas e publica uma notificação `program.update` quando há versão nova;
@@ -18,6 +18,7 @@ As páginas de frp, Cloudflare Tunnel, Tailscale e [File Browser](/pt-BR/docs/mo
 | frp | GitHub fatedier/frp | `frpc`, `frps` |
 | cloudflared | GitHub cloudflare/cloudflared | `cloudflared` |
 | Tailscale | pacotes estáticos de pkgs.tailscale.com, só Linux | `tailscale`, `tailscaled` |
+| NetBird | GitHub netbirdio/netbird, Linux, macOS e Windows | `netbird` |
 | FileBrowser Quantum | GitHub gtsteffaniak/filebrowser | `filebrowser` |
 
 No macOS e no Windows o Tailscale não tem pacotes prontos para executar: use o instalador oficial e informe o caminho nas configurações. O cartão avisa quando a plataforma atual não é suportada.
@@ -31,6 +32,7 @@ O botão "Restaurar padrões" no cabeçalho da página é separado da desinstala
 | frp | Todas as instâncias de frpc / frps, os proxies e as configurações dos programas, os arquivos de configuração gerados em `frp/` |
 | Cloudflare Tunnel | Todos os túneis e as configurações do programa |
 | Tailscale | Todas as configurações e o estado de login no diretório de estado padrão; se um tailscaled gerenciado pelo Gately estiver rodando, ele faz logout antes. Diretórios de estado personalizados e um tailscaled já existente no sistema ficam intactos |
+| NetBird | Todas as configurações e o estado de login e as chaves no diretório de estado padrão; se o daemon gerenciado pelo Gately estiver em execução, ele faz logout antes e esta máquina é removida da rede. Diretórios de estado personalizados e o serviço NetBird já existente no sistema não são tocados |
 | File Browser | Todas as instâncias e as configurações do programa, os usuários, links de compartilhamento e caches de cada instância; os arquivos nos diretórios compartilhados ficam intactos |
 
 A configuração antiga fica guardada no [histórico de configuração](/pt-BR/docs/guide/audit) e pode ser restaurada em caso de engano. Para remover tudo, desinstale primeiro o programa e depois restaure os padrões. Os endpoints da API são `DELETE /api/{module}/install` (desinstalar) e `POST /api/{module}/reset` (restaurar padrões).
@@ -55,6 +57,19 @@ Tokens e chaves são armazenados com permissão 0600. O token do cloudflared é 
 - Lista de nós e proxy SOCKS5;
 - Porta UDP fixa do WireGuard, facilitando liberar conexões diretas no firewall;
 - Argumentos extras e variáveis de ambiente do tailscaled. Se o iptables do host usa o backend nf_tables, adicione `TS_DEBUG_FIREWALL_MODE=nftables` às variáveis de ambiente; sem isso, o encaminhamento de sub-rede não funciona.
+
+## NetBird
+
+- Entrar em uma rede NetBird no NetBird Cloud ou no seu próprio servidor de gerenciamento (informando a URL);
+- Autenticação por chave de configuração ou link de login. No Linux o link usa login por código de dispositivo e pode ser aberto em qualquer dispositivo; no macOS e no Windows o login normalmente precisa ser concluído em um navegador da máquina que executa o Gately, então use uma chave de configuração para gerenciá-la remotamente. O link é renovado automaticamente ao expirar;
+- Daemon `netbird` gerenciado (rede em espaço de usuário, compatível com contêineres) ou conexão ao serviço NetBird já instalado no sistema;
+- Com rede em espaço de usuário, por padrão outros pares alcançam os serviços desta máquina (inclusive os que escutam só em 127.0.0.1; as políticas de acesso do servidor de gerenciamento continuam valendo), e programas locais alcançam os dispositivos da rede por um proxy SOCKS5 (padrão `127.0.0.1:1080`);
+- Rotas de rede, nós de saída e políticas de acesso são configurados no painel do NetBird; no Gately você escolhe se aceita rotas, atua como par de roteamento, aceita DNS e bloqueia conexões de entrada;
+- Lista de pares com conexão direta ou via relay, latência e rotas de rede;
+- Porta WireGuard fixa, argumentos extras do daemon e variáveis de ambiente (as opções avançadas `NB_` da documentação do NetBird);
+- Com a rede em espaço de usuário desligada, usa-se o WireGuard do kernel: requer root e um dispositivo TUN, cria a interface `wt0` e adiciona as próprias regras de firewall (no OpenWrt também libera a entrada de `wt0` no fw4), e os serviços locais precisam escutar em todos os endereços ou no endereço do NetBird para outros pares os alcançarem;
+- O programa `netbird` tem cerca de 41 MB e usa cerca de 60 MB de memória, e a instalação online guarda até 3 versões antigas em `bin/.versions/`. Em roteadores com pouca flash, fique de olho no espaço livre: exclua versões antigas no cartão de instalação ou coloque o programa em um armazenamento externo e informe o caminho nas configurações;
+- Restaurar o padrão e `POST /api/netbird/logout` cancelam o registro desta máquina no servidor de gerenciamento e a removem da rede; para entrar de novo é preciso autenticar novamente.
 
 ## frp
 
@@ -87,6 +102,7 @@ Os hostnames públicos e os serviços de origem (rotas) de um túnel com token f
 | Cenário | Recomendação |
 | --- | --- |
 | Criar uma rede privada entre vários dispositivos | Tailscale |
+| Uma rede privada em que o cliente e o servidor de gerenciamento são de código aberto e auto-hospedáveis | NetBird |
 | Você tem um servidor público e quer expor serviços internos por ele | frp |
 | Sem IP público e sem servidor, e você quer expor rapidamente um serviço web | Cloudflare Tunnel |
 | Sua operadora oferece um NAT que permite hole punching | [Travessia STUN](/pt-BR/docs/modules/stun) |

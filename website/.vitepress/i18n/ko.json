@@ -1,7 +1,7 @@
 {
   "label": "한국어",
   "lang": "ko",
-  "description": "오픈소스로 감사 가능한 네트워크 게이트웨이 도구 모음: DDNS, STUN NAT 통과, 포트 포워딩, 리버스 프록시, 인증서, WAF, Tailscale, frp를 단일 파일 하나에 담았습니다.",
+  "description": "오픈소스로 감사 가능한 네트워크 게이트웨이 도구 모음: DDNS, STUN NAT 통과, 포트 포워딩, 리버스 프록시, 인증서, WAF, Tailscale, NetBird, frp를 단일 파일 하나에 담았습니다.",
   "keywords": "Gately,DDNS,STUN,NAT 통과,포트 포워딩,리버스 프록시,ACME,WAF,Tailscale,frp,NAS,홈랩,셀프 호스팅,fnOS",
   "ogTitle": "Gately - 오픈소스로 감사 가능한 네트워크 게이트웨이 도구 모음",
   "nav": {
@@ -38,7 +38,7 @@
       "modules/oidc": "OIDC 통합 로그인",
       "modules/waf": "WAF 방화벽",
       "modules/guard": "침입 방지",
-      "modules/tunnels": "Tailscale / frp / cloudflared",
+      "modules/tunnels": "Tailscale / NetBird / frp / cloudflared",
       "modules/docker": "Docker 관리",
       "modules/terminal": "웹 터미널",
       "modules/nettools": "네트워크 진단",

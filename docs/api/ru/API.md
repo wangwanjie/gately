@@ -36,6 +36,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `ddns` | Динамический DNS | `ddns:read`、`ddns:write` |
 | `stun` | Проброс STUN | `stun:read`、`stun:write` |
 | `tailscale` | Сеть Tailscale | `tailscale:read`、`tailscale:write` |
+| `netbird` | Сеть NetBird | `netbird:read`、`netbird:write` |
 | `frp` | Проброс внутренней сети frp | `frp:read`、`frp:write` |
 | `cloudflared` | Туннель Cloudflare | `cloudflared:read`、`cloudflared:write` |
 | `ssl` | SSL-сертификат | `ssl:read`、`ssl:write` |
@@ -169,6 +170,26 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/tailscale/install` | `tailscale:write` | Удалить управляемую программу |
 | DELETE | `/api/tailscale/install/backups/{id}` | `tailscale:write` | Удалить сохранённую предыдущую версию |
 | POST | `/api/tailscale/reset` | `tailscale:write` | Сбросить настройки модуля по умолчанию |
+
+## Сеть NetBird
+
+| Метод | Путь | Необходимое право | Описание |
+| --- | --- | --- | --- |
+| GET | `/api/netbird/logs` | `netbird:read` | Просмотр журнала работы модуля |
+| DELETE | `/api/netbird/logs` | `netbird:write` | Очистить журнал работы модуля |
+| GET | `/api/netbird/settings` | `netbird:read` | Получить настройки NetBird |
+| PUT | `/api/netbird/settings` | `netbird:write` | Сохранить настройки NetBird |
+| GET | `/api/netbird/secrets` | `netbird:write` | Показать секреты открытым текстом |
+| GET | `/api/netbird/status` | `netbird:read` | Получить состояние подключения NetBird |
+| POST | `/api/netbird/restart` | `netbird:write` | Перезапустить NetBird |
+| POST | `/api/netbird/logout` | `netbird:write` | Выйти из NetBird |
+| GET | `/api/netbird/install` | `netbird:read` | Просмотр сведений об установке и хода установки управляемой программы |
+| POST | `/api/netbird/install` | `netbird:write` | Установить или обновить управляемую программу онлайн |
+| POST | `/api/netbird/install/check` | `netbird:write` | Проверить обновления управляемой программы |
+| POST | `/api/netbird/install/rollback` | `netbird:write` | Переключиться на сохранённую предыдущую версию |
+| DELETE | `/api/netbird/install` | `netbird:write` | Удалить управляемую программу |
+| DELETE | `/api/netbird/install/backups/{id}` | `netbird:write` | Удалить сохранённую предыдущую версию |
+| POST | `/api/netbird/reset` | `netbird:write` | Сбросить настройки модуля по умолчанию |
 
 ## Проброс внутренней сети frp
 

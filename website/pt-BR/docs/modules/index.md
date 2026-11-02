@@ -15,7 +15,7 @@ Você pode desativar um módulo inteiro em "Configurações → Módulos". Um m�
 | Login único OIDC | Oferece os usuários compartilhados a Gitea, OpenList, Grafana e outros apps via OpenID Connect, substituindo o OIDC do Authelia | [Ver](/pt-BR/docs/modules/oidc) |
 | Firewall WAF | Coraza + OWASP CRS v4 | [Ver](/pt-BR/docs/modules/waf) |
 | Prevenção de intrusão | Regras de logs (estilo fail2ban), portas armadilha e detecção de varredura, com bloqueios sincronizados no nftables | [Ver](/pt-BR/docs/modules/guard) |
-| Tailscale / frp / cloudflared | Redes e travessia de NAT com binários oficiais gerenciados | [Ver](/pt-BR/docs/modules/tunnels) |
+| Tailscale / NetBird / frp / cloudflared | Redes e travessia de NAT com binários oficiais gerenciados | [Ver](/pt-BR/docs/modules/tunnels) |
 | Docker | Criação e edição de contêineres, logs e terminal, Compose, atualização de imagens e upgrades, redes e volumes | [Ver](/pt-BR/docs/modules/docker) |
 | Terminal Web | SSH, Telnet, shell local, gerenciador de arquivos SFTP, sessões persistentes | [Ver](/pt-BR/docs/modules/terminal) |
 | Diagnóstico de rede | Ping, traceroute, sondagem de portas, consulta DNS, teste de velocidade, varredura da rede local | [Ver](/pt-BR/docs/modules/nettools) |

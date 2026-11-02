@@ -48,7 +48,7 @@
   },
   "h": {
     "publicIPv4Fail": "檢查對外連線與 DNS，或在 DDNS 設定中更換 IP 查詢位址。",
-    "behindNat": "要讓外部連入，需要路由器連接埠轉發、UPnP、STUN、IPv6 或通道（Tailscale、frp、Cloudflare 通道）。",
+    "behindNat": "要讓外部連入，需要路由器連接埠轉發、UPnP、STUN、IPv6 或通道（Tailscale、NetBird、frp、Cloudflare 通道）。",
     "cgnat": "電信業者可能沒有配發公網 IPv4。可改用 IPv6、STUN 或通道。注意 Tailscale 也使用 100.64.0.0/10 網段。",
     "clockSkew": "系統時間不準會導致兩步驟驗證碼與憑證驗證失敗，請啟用 NTP 時間同步。",
     "portInUse": "若是 Gately 的 Web 服務監聽則屬正常；否則可用 ss -ltnp 找出占用的程式。",

@@ -36,6 +36,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `ddns` | 動態網域 | `ddns:read`、`ddns:write` |
 | `stun` | STUN 穿透 | `stun:read`、`stun:write` |
 | `tailscale` | Tailscale 組網 | `tailscale:read`、`tailscale:write` |
+| `netbird` | NetBird 組網 | `netbird:read`、`netbird:write` |
 | `frp` | frp 內網穿透 | `frp:read`、`frp:write` |
 | `cloudflared` | Cloudflare 通道 | `cloudflared:read`、`cloudflared:write` |
 | `ssl` | SSL 憑證 | `ssl:read`、`ssl:write` |
@@ -169,6 +170,26 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/tailscale/install` | `tailscale:write` | 解除安裝託管程式 |
 | DELETE | `/api/tailscale/install/backups/{id}` | `tailscale:write` | 刪除保存的舊版本 |
 | POST | `/api/tailscale/reset` | `tailscale:write` | 恢復模組預設設定 |
+
+## NetBird 組網
+
+| 方法 | 路徑 | 所需權限 | 說明 |
+| --- | --- | --- | --- |
+| GET | `/api/netbird/logs` | `netbird:read` | 檢視模組執行日誌 |
+| DELETE | `/api/netbird/logs` | `netbird:write` | 清空模組執行日誌 |
+| GET | `/api/netbird/settings` | `netbird:read` | 讀取 NetBird 設定 |
+| PUT | `/api/netbird/settings` | `netbird:write` | 儲存 NetBird 設定 |
+| GET | `/api/netbird/secrets` | `netbird:write` | 查看金鑰明文 |
+| GET | `/api/netbird/status` | `netbird:read` | 查看 NetBird 連線狀態 |
+| POST | `/api/netbird/restart` | `netbird:write` | 重新啟動 NetBird |
+| POST | `/api/netbird/logout` | `netbird:write` | 登出 NetBird |
+| GET | `/api/netbird/install` | `netbird:read` | 檢視託管程式的安裝資訊與進度 |
+| POST | `/api/netbird/install` | `netbird:write` | 線上安裝或更新託管程式 |
+| POST | `/api/netbird/install/check` | `netbird:write` | 檢查託管程式的更新 |
+| POST | `/api/netbird/install/rollback` | `netbird:write` | 切換到保存的舊版本 |
+| DELETE | `/api/netbird/install` | `netbird:write` | 解除安裝託管程式 |
+| DELETE | `/api/netbird/install/backups/{id}` | `netbird:write` | 刪除保存的舊版本 |
+| POST | `/api/netbird/reset` | `netbird:write` | 恢復模組預設設定 |
 
 ## frp 內網穿透
 

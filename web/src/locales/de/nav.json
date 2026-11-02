@@ -36,6 +36,10 @@
       "title": "Tailscale",
       "desc": "Einem Tailscale- / Headscale-Netzwerk beitreten"
     },
+    "netbird": {
+      "title": "NetBird",
+      "desc": "Einem NetBird-Netzwerk beitreten (Cloud oder selbst gehostet)"
+    },
     "frp": {
       "title": "frp",
       "desc": "frpc- / frps-NAT-Traversal"

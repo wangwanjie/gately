@@ -6103,7 +6103,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Disponible en frp, Túnel de Cloudflare, Tailscale y File Browser. Devuelve la versión instalada en bin dentro del directorio de configuración, las versiones anteriores guardadas (`backups`, como máximo 3), el proxy de descarga de este programa (`proxy`), la plataforma actual y el progreso de instalación `state` (`stage` es checking, downloading, verifying, extracting, done, uptodate o failed). Un `unsupported` no vacío indica que el proyecto no ofrece un programa para la plataforma actual.\n\nPermiso necesario: `cloudflared:read`.",
+        "description": "Disponible en frp, Túnel de Cloudflare, Tailscale, NetBird y File Browser. Devuelve la versión instalada en bin dentro del directorio de configuración, las versiones anteriores guardadas (`backups`, como máximo 3), el proxy de descarga de este programa (`proxy`), la plataforma actual y el progreso de instalación `state` (`stage` es checking, downloading, verifying, extracting, done, uptodate o failed). Un `unsupported` no vacío indica que el proyecto no ofrece un programa para la plataforma actual.\n\nPermiso necesario: `cloudflared:read`.",
         "responses": {
           "200": {
             "description": "Correcto"
@@ -6606,7 +6606,7 @@
     },
     "/api/cloudflared/reset": {
       "post": {
-        "description": "Disponible en frp, Túnel de Cloudflare, Tailscale y File Browser; sin cuerpo. Detiene todos los procesos del módulo, restaura sus ajustes (incluidos la ruta del programa y el proxy de descarga) a los valores predeterminados y elimina los archivos que Gately generó para él: los archivos de configuración de frp, el directorio de datos de cada instancia de File Browser (usuarios, enlaces compartidos y cachés) y el estado de sesión del directorio de estado predeterminado de Tailscale (si el tailscaled gestionado por Gately está en marcha, primero cierra sesión; los directorios de estado personalizados y un tailscaled del sistema no se tocan). Los ajustes anteriores quedan en el historial de configuración y pueden restaurarse; los programas instalados no se ven afectados, para desinstalar use `DELETE /api/{module}/install`.\n\nPermiso necesario: `cloudflared:write`.",
+        "description": "Disponible en frp, Túnel de Cloudflare, Tailscale, NetBird y File Browser; sin cuerpo. Detiene todos los procesos del módulo, restaura sus ajustes (incluidos la ruta del programa y el proxy de descarga) a los valores predeterminados y elimina los archivos que Gately generó para él: los archivos de configuración de frp, el directorio de datos de cada instancia de File Browser (usuarios, enlaces compartidos y cachés), el estado de sesión del directorio de estado predeterminado de Tailscale (si el tailscaled gestionado por Gately está en marcha, primero cierra sesión; los directorios de estado personalizados y un tailscaled del sistema no se tocan) y el estado de sesión y las claves del directorio de estado predeterminado de NetBird (si el demonio gestionado por Gately está en marcha, primero cierra sesión y esta máquina se elimina de la red; los directorios de estado personalizados y un servicio NetBird del sistema no se tocan). Los ajustes anteriores quedan en el historial de configuración y pueden restaurarse; los programas instalados no se ven afectados, para desinstalar use `DELETE /api/{module}/install`.\n\nPermiso necesario: `cloudflared:write`.",
         "responses": {
           "200": {
             "description": "Correcto"
@@ -14404,7 +14404,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Disponible en frp, Túnel de Cloudflare, Tailscale y File Browser. Devuelve la versión instalada en bin dentro del directorio de configuración, las versiones anteriores guardadas (`backups`, como máximo 3), el proxy de descarga de este programa (`proxy`), la plataforma actual y el progreso de instalación `state` (`stage` es checking, downloading, verifying, extracting, done, uptodate o failed). Un `unsupported` no vacío indica que el proyecto no ofrece un programa para la plataforma actual.\n\nPermiso necesario: `filebrowser:read`.",
+        "description": "Disponible en frp, Túnel de Cloudflare, Tailscale, NetBird y File Browser. Devuelve la versión instalada en bin dentro del directorio de configuración, las versiones anteriores guardadas (`backups`, como máximo 3), el proxy de descarga de este programa (`proxy`), la plataforma actual y el progreso de instalación `state` (`stage` es checking, downloading, verifying, extracting, done, uptodate o failed). Un `unsupported` no vacío indica que el proyecto no ofrece un programa para la plataforma actual.\n\nPermiso necesario: `filebrowser:read`.",
         "responses": {
           "200": {
             "description": "Correcto"
@@ -15688,7 +15688,7 @@
     },
     "/api/filebrowser/reset": {
       "post": {
-        "description": "Disponible en frp, Túnel de Cloudflare, Tailscale y File Browser; sin cuerpo. Detiene todos los procesos del módulo, restaura sus ajustes (incluidos la ruta del programa y el proxy de descarga) a los valores predeterminados y elimina los archivos que Gately generó para él: los archivos de configuración de frp, el directorio de datos de cada instancia de File Browser (usuarios, enlaces compartidos y cachés) y el estado de sesión del directorio de estado predeterminado de Tailscale (si el tailscaled gestionado por Gately está en marcha, primero cierra sesión; los directorios de estado personalizados y un tailscaled del sistema no se tocan). Los ajustes anteriores quedan en el historial de configuración y pueden restaurarse; los programas instalados no se ven afectados, para desinstalar use `DELETE /api/{module}/install`.\n\nPermiso necesario: `filebrowser:write`.",
+        "description": "Disponible en frp, Túnel de Cloudflare, Tailscale, NetBird y File Browser; sin cuerpo. Detiene todos los procesos del módulo, restaura sus ajustes (incluidos la ruta del programa y el proxy de descarga) a los valores predeterminados y elimina los archivos que Gately generó para él: los archivos de configuración de frp, el directorio de datos de cada instancia de File Browser (usuarios, enlaces compartidos y cachés), el estado de sesión del directorio de estado predeterminado de Tailscale (si el tailscaled gestionado por Gately está en marcha, primero cierra sesión; los directorios de estado personalizados y un tailscaled del sistema no se tocan) y el estado de sesión y las claves del directorio de estado predeterminado de NetBird (si el demonio gestionado por Gately está en marcha, primero cierra sesión y esta máquina se elimina de la red; los directorios de estado personalizados y un servicio NetBird del sistema no se tocan). Los ajustes anteriores quedan en el historial de configuración y pueden restaurarse; los programas instalados no se ven afectados, para desinstalar use `DELETE /api/{module}/install`.\n\nPermiso necesario: `filebrowser:write`.",
         "responses": {
           "200": {
             "description": "Correcto"
@@ -16915,7 +16915,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Disponible en frp, Túnel de Cloudflare, Tailscale y File Browser. Devuelve la versión instalada en bin dentro del directorio de configuración, las versiones anteriores guardadas (`backups`, como máximo 3), el proxy de descarga de este programa (`proxy`), la plataforma actual y el progreso de instalación `state` (`stage` es checking, downloading, verifying, extracting, done, uptodate o failed). Un `unsupported` no vacío indica que el proyecto no ofrece un programa para la plataforma actual.\n\nPermiso necesario: `frp:read`.",
+        "description": "Disponible en frp, Túnel de Cloudflare, Tailscale, NetBird y File Browser. Devuelve la versión instalada en bin dentro del directorio de configuración, las versiones anteriores guardadas (`backups`, como máximo 3), el proxy de descarga de este programa (`proxy`), la plataforma actual y el progreso de instalación `state` (`stage` es checking, downloading, verifying, extracting, done, uptodate o failed). Un `unsupported` no vacío indica que el proyecto no ofrece un programa para la plataforma actual.\n\nPermiso necesario: `frp:read`.",
         "responses": {
           "200": {
             "description": "Correcto"
@@ -18138,7 +18138,7 @@
     },
     "/api/frp/reset": {
       "post": {
-        "description": "Disponible en frp, Túnel de Cloudflare, Tailscale y File Browser; sin cuerpo. Detiene todos los procesos del módulo, restaura sus ajustes (incluidos la ruta del programa y el proxy de descarga) a los valores predeterminados y elimina los archivos que Gately generó para él: los archivos de configuración de frp, el directorio de datos de cada instancia de File Browser (usuarios, enlaces compartidos y cachés) y el estado de sesión del directorio de estado predeterminado de Tailscale (si el tailscaled gestionado por Gately está en marcha, primero cierra sesión; los directorios de estado personalizados y un tailscaled del sistema no se tocan). Los ajustes anteriores quedan en el historial de configuración y pueden restaurarse; los programas instalados no se ven afectados, para desinstalar use `DELETE /api/{module}/install`.\n\nPermiso necesario: `frp:write`.",
+        "description": "Disponible en frp, Túnel de Cloudflare, Tailscale, NetBird y File Browser; sin cuerpo. Detiene todos los procesos del módulo, restaura sus ajustes (incluidos la ruta del programa y el proxy de descarga) a los valores predeterminados y elimina los archivos que Gately generó para él: los archivos de configuración de frp, el directorio de datos de cada instancia de File Browser (usuarios, enlaces compartidos y cachés), el estado de sesión del directorio de estado predeterminado de Tailscale (si el tailscaled gestionado por Gately está en marcha, primero cierra sesión; los directorios de estado personalizados y un tailscaled del sistema no se tocan) y el estado de sesión y las claves del directorio de estado predeterminado de NetBird (si el demonio gestionado por Gately está en marcha, primero cierra sesión y esta máquina se elimina de la red; los directorios de estado personalizados y un servicio NetBird del sistema no se tocan). Los ajustes anteriores quedan en el historial de configuración y pueden restaurarse; los programas instalados no se ven afectados, para desinstalar use `DELETE /api/{module}/install`.\n\nPermiso necesario: `frp:write`.",
         "responses": {
           "200": {
             "description": "Correcto"
@@ -21449,6 +21449,932 @@
           "Sistema"
         ],
         "x-required-scope": "metrics:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/install": {
+      "delete": {
+        "description": "Elimina el programa instalado en bin dentro del directorio de configuración y todas las versiones anteriores guardadas, y reinicia los procesos que lo usan: si hay un programa con el mismo nombre en el PATH se usa ese, si no los procesos no pueden iniciarse. Los ajustes del módulo no cambian; para borrarlos use `POST /api/{module}/reset`.\n\nPermiso necesario: `netbird:write`.",
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Desinstalar un programa gestionado",
+        "tags": [
+          "Red NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "Disponible en frp, Túnel de Cloudflare, Tailscale, NetBird y File Browser. Devuelve la versión instalada en bin dentro del directorio de configuración, las versiones anteriores guardadas (`backups`, como máximo 3), el proxy de descarga de este programa (`proxy`), la plataforma actual y el progreso de instalación `state` (`stage` es checking, downloading, verifying, extracting, done, uptodate o failed). Un `unsupported` no vacío indica que el proyecto no ofrece un programa para la plataforma actual.\n\nPermiso necesario: `netbird:read`.",
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ver la información de instalación y el progreso de un programa gestionado",
+        "tags": [
+          "Red NetBird"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "Cuerpo `{\"version\": \"\", \"proxy\": \"\"}`: un `version` vacío instala la última versión estable (si ya está instalada no se descarga nada y `stage` es uptodate); en otro caso, la versión indicada. `proxy` es el proxy de descarga (http, https o socks5), se guarda para la próxima vez y, si está vacío, se usa el ajuste global `updateProxy`. La descarga se verifica con su SHA-256 y se instala en bin dentro del directorio de configuración; la versión existente pasa a las versiones anteriores y se reinician los procesos que usan el programa. Responde de inmediato; consulte el progreso con `GET /api/{module}/install`.\n\nPermiso necesario: `netbird:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Instalar o actualizar en línea un programa gestionado",
+        "tags": [
+          "Red NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/install/backups/{id}": {
+      "delete": {
+        "description": "Permiso necesario: `netbird:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Eliminar una versión anterior guardada",
+        "tags": [
+          "Red NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/install/check": {
+      "post": {
+        "description": "Sin cuerpo de solicitud. Consulta la última versión estable del proyecto original (con el proxy de descarga del programa o, si no hay, el ajuste global `updateProxy`) sin descargar ni modificar el programa instalado; devuelve lo mismo que `GET /api/{module}/install`, donde `latest` es `{version, checkedAt, error, hasUpdate}` y `hasUpdate` indica que la última versión es más reciente que la instalada en bin. Con la comprobación automática de actualizaciones activada, Gately también ejecuta esta comprobación periódicamente para los programas gestionados instalados. Devuelve 409 si ya hay una comprobación en curso.\n\nPermiso necesario: `netbird:write`.",
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Buscar actualizaciones de un programa gestionado",
+        "tags": [
+          "Red NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/install/rollback": {
+      "post": {
+        "description": "Cuerpo `{\"id\": \"\u003cID de versión anterior\u003e\"}`. La versión actual se guarda como versión anterior para poder volver a ella; después se reinician los procesos que usan el programa.\n\nPermiso necesario: `netbird:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Cambiar a una versión anterior guardada",
+        "tags": [
+          "Red NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/logout": {
+      "post": {
+        "description": "Ejecuta `netbird logout`: da de baja esta máquina en el servidor de gestión y elimina el inicio de sesión local, quitándola de la lista de pares de la red; para volver a unirse hace falta iniciar sesión de nuevo o una clave de configuración.\n\nPermiso necesario: `netbird:write`.",
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Cerrar sesión en NetBird",
+        "tags": [
+          "Red NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/logs": {
+      "delete": {
+        "description": "Permiso necesario: `netbird:write`.",
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Vaciar los registros de ejecución del módulo",
+        "tags": [
+          "Red NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "Admite la obtención incremental con el parámetro `since`, que devuelve los registros con un número de secuencia mayor que este valor; `before` devuelve los registros con un número de secuencia menor que este valor, para cargar entradas anteriores; `limit` devuelve solo las entradas más recientes y, cuando la memoria no tiene suficientes, también busca en el historial guardado en los archivos de registro. Parámetros de filtro: `level` nivel mínimo, `source` origen, `q` palabras clave (separadas por espacios deben coincidir todas, las comillas dobles agrupan una frase, un `-` inicial excluye), `ip` dirección del cliente (dirección completa, CIDR o parte de una dirección, separadas por comas), `host` nombre del sitio o dominio (coincidencia parcial), `site` nombre del sitio (coincidencia exacta; solo devuelve el registro de acceso de ese sitio), `status` código de estado (como `404`, `4xx`, `500-599`), `from` y `to` intervalo de tiempo (RFC 3339 o marca de tiempo en milisegundos). `exclude` indica términos a excluir: no se devuelven las entradas que contengan alguno; se escribe como `q` y el `-` inicial es opcional.\n\nPermiso necesario: `netbird:read`.",
+        "parameters": [
+          {
+            "description": "Obtención incremental: solo devuelve registros con número de secuencia mayor que este valor",
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Cargar registros anteriores: devuelve solo los registros con número de secuencia menor que este valor",
+            "in": "query",
+            "name": "before",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Número máximo de entradas a devolver, tomando las más recientes que coincidan; 0 u omitido significa sin límite",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Nivel mínimo: debug, info, warn o error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Etiqueta de origen, coincidencia exacta sin distinguir mayúsculas",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Palabras clave: separadas por espacios deben coincidir todas, las comillas dobles agrupan una frase, un - inicial excluye",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Palabras clave excluidas: separadas por espacios, las comillas dobles agrupan una frase; se excluye la entrada que contenga cualquiera; se aplica junto con q",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Dirección del cliente: dirección completa, CIDR o parte de la dirección, separadas por comas; el prefijo ! o - excluye",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Parte del nombre del sitio o del dominio",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Código de estado como 404, 4xx, 500-599, separados por comas",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Con 1, oculta los registros de acceso de orígenes bloqueados: las solicitudes rechazadas por el bloqueo y todas las de orígenes que siguen bloqueados, incluidas las que provocaron el bloqueo (solo afecta a la respuesta; los registros se conservan)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Con 1, oculta las solicitudes que llevan una sesión de la consola de administración, es decir, los registros de acceso generados por administradores que acceden a la consola a través de un sitio del Servicio Web",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Hora de inicio, RFC 3339 o marca de tiempo en milisegundos",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Hora de fin, RFC 3339 o marca de tiempo en milisegundos",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ver los registros de ejecución del módulo",
+        "tags": [
+          "Red NetBird"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/reset": {
+      "post": {
+        "description": "Disponible en frp, Túnel de Cloudflare, Tailscale, NetBird y File Browser; sin cuerpo. Detiene todos los procesos del módulo, restaura sus ajustes (incluidos la ruta del programa y el proxy de descarga) a los valores predeterminados y elimina los archivos que Gately generó para él: los archivos de configuración de frp, el directorio de datos de cada instancia de File Browser (usuarios, enlaces compartidos y cachés), el estado de sesión del directorio de estado predeterminado de Tailscale (si el tailscaled gestionado por Gately está en marcha, primero cierra sesión; los directorios de estado personalizados y un tailscaled del sistema no se tocan) y el estado de sesión y las claves del directorio de estado predeterminado de NetBird (si el demonio gestionado por Gately está en marcha, primero cierra sesión y esta máquina se elimina de la red; los directorios de estado personalizados y un servicio NetBird del sistema no se tocan). Los ajustes anteriores quedan en el historial de configuración y pueden restaurarse; los programas instalados no se ven afectados, para desinstalar use `DELETE /api/{module}/install`.\n\nPermiso necesario: `netbird:write`.",
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Restaurar los ajustes predeterminados del módulo",
+        "tags": [
+          "Red NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/restart": {
+      "post": {
+        "description": "Permiso necesario: `netbird:write`.",
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Reiniciar NetBird",
+        "tags": [
+          "Red NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/secrets": {
+      "get": {
+        "description": "Permiso necesario: `netbird:write`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ver secretos en texto plano",
+        "tags": [
+          "Red NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/settings": {
+      "get": {
+        "description": "Devuelve `settings` (la clave de configuración `setupKey` va enmascarada), `defaultStateDir` (el directorio de estado usado cuando `stateDir` está vacío) y `defaultManagementUrl` (la dirección de NetBird Cloud usada cuando `managementUrl` está vacío).\n\nPermiso necesario: `netbird:read`.",
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Leer los ajustes de NetBird",
+        "tags": [
+          "Red NetBird"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Reinicia con los ajustes nuevos: si el demonio está gestionado se reinicia `netbird service run` y se ejecuta `netbird up`; la conexión automática del propio demonio se desactiva y up se vuelve a ejecutar cada vez que el demonio se reinicia tras un fallo. Con un demonio externo ya conectado, primero se desconecta y luego se ejecuta `netbird up` para que los ajustes nuevos surtan efecto. Un `setupKey` igual a `********` conserva la clave guardada; `installProxy` solo se cambia mediante los endpoints de instalación. Los interruptores siempre se pasan explícitamente a netbird up: `acceptRoutes` es lo contrario de `--disable-client-routes`, `serverRoutes` lo contrario de `--disable-server-routes`, `acceptDns` lo contrario de `--disable-dns` y `blockInbound` corresponde a `--block-inbound`.\n\nPermiso necesario: `netbird:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Guardar los ajustes de NetBird",
+        "tags": [
+          "Red NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/status": {
+      "get": {
+        "description": "`daemonStatus` es Idle, Connecting, Connected, NeedsLogin, LoginFailed o SessionExpired. Sin clave de configuración, `authUrl` es el enlace de inicio de sesión (en Linux, inicio con código de dispositivo, que se puede abrir en cualquier dispositivo; en macOS y Windows normalmente debe completarse en un navegador de esa máquina) y `authCode` es el código a introducir (vacío si el enlace ya lo incluye); el enlace se renueva automáticamente al caducar. `peers` son los demás pares de la red y `connType` es P2P o Relayed.\n\nPermiso necesario: `netbird:read`.",
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ver el estado de conexión de NetBird",
+        "tags": [
+          "Red NetBird"
+        ],
+        "x-required-scope": "netbird:read",
         "x-token-allowed": true
       }
     },
@@ -32335,7 +33261,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Disponible en frp, Túnel de Cloudflare, Tailscale y File Browser. Devuelve la versión instalada en bin dentro del directorio de configuración, las versiones anteriores guardadas (`backups`, como máximo 3), el proxy de descarga de este programa (`proxy`), la plataforma actual y el progreso de instalación `state` (`stage` es checking, downloading, verifying, extracting, done, uptodate o failed). Un `unsupported` no vacío indica que el proyecto no ofrece un programa para la plataforma actual.\n\nPermiso necesario: `tailscale:read`.",
+        "description": "Disponible en frp, Túnel de Cloudflare, Tailscale, NetBird y File Browser. Devuelve la versión instalada en bin dentro del directorio de configuración, las versiones anteriores guardadas (`backups`, como máximo 3), el proxy de descarga de este programa (`proxy`), la plataforma actual y el progreso de instalación `state` (`stage` es checking, downloading, verifying, extracting, done, uptodate o failed). Un `unsupported` no vacío indica que el proyecto no ofrece un programa para la plataforma actual.\n\nPermiso necesario: `tailscale:read`.",
         "responses": {
           "200": {
             "description": "Correcto"
@@ -32889,7 +33815,7 @@
     },
     "/api/tailscale/reset": {
       "post": {
-        "description": "Disponible en frp, Túnel de Cloudflare, Tailscale y File Browser; sin cuerpo. Detiene todos los procesos del módulo, restaura sus ajustes (incluidos la ruta del programa y el proxy de descarga) a los valores predeterminados y elimina los archivos que Gately generó para él: los archivos de configuración de frp, el directorio de datos de cada instancia de File Browser (usuarios, enlaces compartidos y cachés) y el estado de sesión del directorio de estado predeterminado de Tailscale (si el tailscaled gestionado por Gately está en marcha, primero cierra sesión; los directorios de estado personalizados y un tailscaled del sistema no se tocan). Los ajustes anteriores quedan en el historial de configuración y pueden restaurarse; los programas instalados no se ven afectados, para desinstalar use `DELETE /api/{module}/install`.\n\nPermiso necesario: `tailscale:write`.",
+        "description": "Disponible en frp, Túnel de Cloudflare, Tailscale, NetBird y File Browser; sin cuerpo. Detiene todos los procesos del módulo, restaura sus ajustes (incluidos la ruta del programa y el proxy de descarga) a los valores predeterminados y elimina los archivos que Gately generó para él: los archivos de configuración de frp, el directorio de datos de cada instancia de File Browser (usuarios, enlaces compartidos y cachés), el estado de sesión del directorio de estado predeterminado de Tailscale (si el tailscaled gestionado por Gately está en marcha, primero cierra sesión; los directorios de estado personalizados y un tailscaled del sistema no se tocan) y el estado de sesión y las claves del directorio de estado predeterminado de NetBird (si el demonio gestionado por Gately está en marcha, primero cierra sesión y esta máquina se elimina de la red; los directorios de estado personalizados y un servicio NetBird del sistema no se tocan). Los ajustes anteriores quedan en el historial de configuración y pueden restaurarse; los programas instalados no se ven afectados, para desinstalar use `DELETE /api/{module}/install`.\n\nPermiso necesario: `tailscale:write`.",
         "responses": {
           "200": {
             "description": "Correcto"
@@ -42836,6 +43762,9 @@
       "name": "Red Tailscale"
     },
     {
+      "name": "Red NetBird"
+    },
+    {
       "name": "Traversal de red interna frp"
     },
     {
@@ -42914,6 +43843,7 @@
     "ddns",
     "stun",
     "tailscale",
+    "netbird",
     "frp",
     "cloudflared",
     "ssl",

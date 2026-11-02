@@ -54,7 +54,7 @@ const fnosPoints = computed(() => h.value.fnos.points.map((f: any, i: number) =>
 // 滚动条带里的平台与集成都是专有名词，各语言通用
 const marquee = [
   'Linux', 'Docker', 'OpenWrt', 'fnOS', 'macOS', 'Windows', 'FreeBSD', 'Cloudflare', "Let's Encrypt",
-  'Tailscale', 'frp', 'cloudflared', 'OWASP CRS', 'Coraza', 'Prometheus', 'Grafana', 'HTTP/3', 'IPv6',
+  'Tailscale', 'NetBird', 'frp', 'cloudflared', 'OWASP CRS', 'Coraza', 'Prometheus', 'Grafana', 'HTTP/3', 'IPv6',
   'WebDAV', 'SMB', 'Passkey', 'OIDC', 'Telegram', 'ntfy', 'Bark', 'MCP'
 ]
 

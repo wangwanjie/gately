@@ -48,7 +48,7 @@
   },
   "h": {
     "publicIPv4Fail": "外向きの接続と DNS を確認するか、DDNS 設定で IP 照会 URL を変更してください。",
-    "behindNat": "外部からの接続には、ルーターのポート転送、UPnP、STUN、IPv6、またはトンネル（Tailscale、frp、Cloudflare Tunnel）が必要です。",
+    "behindNat": "外部からの接続には、ルーターのポート転送、UPnP、STUN、IPv6、またはトンネル（Tailscale、NetBird、frp、Cloudflare Tunnel）が必要です。",
     "cgnat": "ISP から公開 IPv4 が割り当てられていない可能性があります。IPv6、STUN、トンネルを利用してください。Tailscale も 100.64.0.0/10 を使います。",
     "clockSkew": "時刻が不正確だと 2 段階認証コードや証明書の検証が失敗します。NTP による時刻同期を有効にしてください。",
     "portInUse": "Gately の Web サービスが使用している場合は正常です。そうでなければ ss -ltnp で使用中のプログラムを確認してください。",

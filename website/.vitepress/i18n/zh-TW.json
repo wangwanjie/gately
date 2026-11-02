@@ -1,7 +1,7 @@
 {
   "label": "繁體中文",
   "lang": "zh-TW",
-  "description": "開源、可稽核的網路閘道工具集：DDNS、STUN 穿透、連接埠轉發、反向代理、憑證、WAF、Tailscale、frp 整合在單一檔案中。",
+  "description": "開源、可稽核的網路閘道工具集：DDNS、STUN 穿透、連接埠轉發、反向代理、憑證、WAF、Tailscale、NetBird、frp 整合在單一檔案中。",
   "keywords": "Gately,DDNS,STUN,內網穿透,連接埠轉發,反向代理,ACME,WAF,Tailscale,frp,NAS,飛牛,fnOS",
   "ogTitle": "Gately - 開源可稽核的網路閘道工具集",
   "nav": {
@@ -38,7 +38,7 @@
       "modules/oidc": "OIDC 單一登入",
       "modules/waf": "WAF 防火牆",
       "modules/guard": "入侵防護",
-      "modules/tunnels": "Tailscale / frp / cloudflared",
+      "modules/tunnels": "Tailscale / NetBird / frp / cloudflared",
       "modules/docker": "Docker 管理",
       "modules/terminal": "Web 終端機",
       "modules/nettools": "網路診斷",

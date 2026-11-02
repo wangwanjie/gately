@@ -135,7 +135,7 @@ type updateView struct {
 	SelfUpgrade upgradeSupport `json:"selfUpgrade"`
 }
 
-// programInstallers 由托管外部程序的模块（frp、Tailscale、Cloudflare 隧道、File Browser）实现。
+// programInstallers 由托管外部程序的模块（frp、Tailscale、NetBird、Cloudflare 隧道、File Browser）实现。
 type programInstallers interface {
 	ProgramInstallers() []*binstall.Installer
 }

@@ -36,6 +36,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `ddns` | 동적 도메인 | `ddns:read`、`ddns:write` |
 | `stun` | STUN 터널링 | `stun:read`、`stun:write` |
 | `tailscale` | Tailscale 네트워킹 | `tailscale:read`、`tailscale:write` |
+| `netbird` | NetBird 네트워크 | `netbird:read`、`netbird:write` |
 | `frp` | frp 내부망 터널링 | `frp:read`、`frp:write` |
 | `cloudflared` | Cloudflare 터널 | `cloudflared:read`、`cloudflared:write` |
 | `ssl` | SSL 인증서 | `ssl:read`、`ssl:write` |
@@ -169,6 +170,26 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/tailscale/install` | `tailscale:write` | 관리 프로그램 제거 |
 | DELETE | `/api/tailscale/install/backups/{id}` | `tailscale:write` | 저장된 이전 버전 삭제 |
 | POST | `/api/tailscale/reset` | `tailscale:write` | 모듈 기본 설정 복원 |
+
+## NetBird 네트워크
+
+| 메서드 | 경로 | 필요 권한 | 설명 |
+| --- | --- | --- | --- |
+| GET | `/api/netbird/logs` | `netbird:read` | 모듈 실행 로그 보기 |
+| DELETE | `/api/netbird/logs` | `netbird:write` | 모듈 실행 로그 비우기 |
+| GET | `/api/netbird/settings` | `netbird:read` | NetBird 설정 조회 |
+| PUT | `/api/netbird/settings` | `netbird:write` | NetBird 설정 저장 |
+| GET | `/api/netbird/secrets` | `netbird:write` | 비밀 값 평문 보기 |
+| GET | `/api/netbird/status` | `netbird:read` | NetBird 연결 상태 조회 |
+| POST | `/api/netbird/restart` | `netbird:write` | NetBird 재시작 |
+| POST | `/api/netbird/logout` | `netbird:write` | NetBird 로그아웃 |
+| GET | `/api/netbird/install` | `netbird:read` | 관리 프로그램의 설치 정보와 진행 상태 보기 |
+| POST | `/api/netbird/install` | `netbird:write` | 관리 프로그램 온라인 설치 또는 업데이트 |
+| POST | `/api/netbird/install/check` | `netbird:write` | 관리 프로그램 업데이트 확인 |
+| POST | `/api/netbird/install/rollback` | `netbird:write` | 저장된 이전 버전으로 전환 |
+| DELETE | `/api/netbird/install` | `netbird:write` | 관리 프로그램 제거 |
+| DELETE | `/api/netbird/install/backups/{id}` | `netbird:write` | 저장된 이전 버전 삭제 |
+| POST | `/api/netbird/reset` | `netbird:write` | 모듈 기본 설정 복원 |
 
 ## frp 내부망 터널링
 

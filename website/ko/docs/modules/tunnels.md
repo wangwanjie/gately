@@ -1,10 +1,10 @@
-# Tailscale / frp / cloudflared
+# Tailscale / NetBird / frp / cloudflared
 
-세 모듈은 공식 프로그램을 프로세스로 관리하는 방식으로 통합되어 있습니다. 자동 재시작, 로그의 UI 집계, UI에서의 설정을 지원합니다. Gately 본체에는 이 프로그램들이 내장되어 있지 않으며, 페이지에서 온라인으로 설치, 업데이트, 롤백할 수 있습니다.
+네 모듈은 공식 프로그램을 프로세스로 관리하는 방식으로 통합되어 있습니다. 자동 재시작, 로그의 UI 집계, UI에서의 설정을 지원합니다. Gately 본체에는 이 프로그램들이 내장되어 있지 않으며, 페이지에서 온라인으로 설치, 업데이트, 롤백할 수 있습니다.
 
 ## 온라인 설치, 업데이트, 롤백 {#install}
 
-frp, Cloudflare 터널, Tailscale, [File Browser](/ko/docs/modules/tools#filebrowser) 페이지 하단에는 모두 「온라인 설치」 카드가 있습니다.
+frp, Cloudflare 터널, Tailscale, NetBird, [File Browser](/ko/docs/modules/tools#filebrowser) 페이지 하단에는 모두 「온라인 설치」 카드가 있습니다.
 
 - **다운로드 및 설치 / 최신 버전으로 업데이트**: 업스트림에서 최신 안정 버전을 내려받아 업스트림에 기록된 SHA-256으로 검증하고, 이 기기에서 실행되는지 확인한 뒤 설정 디렉터리의 `bin/`에 설치합니다. 완료되면 해당 프로그램을 사용하는 프로세스를 자동으로 다시 시작합니다. 이미 최신 버전이면 다시 내려받지 않습니다.
 - **업데이트 확인**: 업스트림의 최신 정식 버전만 조회하며 다운로드하지 않습니다. 새 버전이 있으면 카드 제목 옆에 "새 버전"이 표시됩니다. [자동 업데이트 확인](/ko/docs/guide/install#update-check)이 켜져 있으면 Gately 가 설치된 프로그램을 12시간마다 확인하고 새 버전이 있으면 `program.update` 알림을 보냅니다;
@@ -18,6 +18,7 @@ frp, Cloudflare 터널, Tailscale, [File Browser](/ko/docs/modules/tools#filebro
 | frp | GitHub fatedier/frp | `frpc`, `frps` |
 | cloudflared | GitHub cloudflare/cloudflared | `cloudflared` |
 | Tailscale | pkgs.tailscale.com 정적 패키지, Linux 전용 | `tailscale`, `tailscaled` |
+| NetBird | GitHub netbirdio/netbird, Linux·macOS·Windows | `netbird` |
 | FileBrowser Quantum | GitHub gtsteffaniak/filebrowser | `filebrowser` |
 
 Tailscale은 macOS와 Windows용으로 바로 실행 가능한 패키지가 없으므로 공식 설치 프로그램을 사용한 뒤 설정에 경로를 입력하세요. 현재 플랫폼이 지원되지 않으면 카드에 안내가 표시됩니다.
@@ -31,6 +32,7 @@ Tailscale은 macOS와 Windows용으로 바로 실행 가능한 패키지가 없�
 | frp | 모든 frpc / frps 인스턴스, 프록시와 프로그램 설정, `frp/`에 생성된 설정 파일 |
 | Cloudflare 터널 | 모든 터널과 프로그램 설정 |
 | Tailscale | 모든 설정, 기본 상태 디렉터리의 로그인 상태. Gately가 관리하는 tailscaled가 실행 중이면 먼저 로그아웃합니다. 사용자 지정 상태 디렉터리와 시스템에 이미 있는 tailscaled는 그대로 둡니다 |
+| NetBird | 모든 설정, 기본 상태 디렉터리의 로그인 상태와 키. Gately가 관리하는 데몬이 실행 중이면 먼저 로그아웃하며 이 기기는 네트워크에서 삭제됩니다. 사용자 지정 상태 디렉터리와 시스템에 이미 있는 NetBird 서비스는 그대로 둡니다 |
 | File Browser | 모든 인스턴스와 프로그램 설정, 각 인스턴스의 사용자, 공유 링크, 캐시. 공유 디렉터리의 파일은 그대로 유지됩니다 |
 
 이전 설정은 [설정 기록](/ko/docs/guide/audit)에 보관되므로 실수로 초기화했을 때 복원할 수 있습니다. 완전히 정리하려면 먼저 프로그램을 제거한 뒤 기본 설정을 복원하세요. API는 `DELETE /api/{module}/install`(제거)과 `POST /api/{module}/reset`(기본 설정 복원)입니다.
@@ -55,6 +57,19 @@ Tailscale은 macOS와 Windows용으로 바로 실행 가능한 패키지가 없�
 - 노드 목록과 SOCKS5 프록시
 - WireGuard UDP 포트 고정: 방화벽에서 직접 연결을 허용하기 쉽습니다.
 - tailscaled 추가 인자와 환경 변수. 호스트 iptables가 nf_tables 백엔드라면 환경 변수에 `TS_DEBUG_FIREWALL_MODE=nftables`를 추가해야 서브넷 포워딩이 동작합니다.
+
+## NetBird
+
+- NetBird 클라우드 또는 자체 관리 서버(주소 입력)의 네트워크에 참여합니다.
+- 설정 키 또는 로그인 링크로 인증합니다. Linux의 로그인 링크는 장치 코드 로그인이라 어느 기기에서나 열 수 있습니다. macOS와 Windows에서는 보통 Gately를 실행하는 기기의 브라우저에서만 로그인을 완료할 수 있으므로 원격으로 관리할 때는 설정 키를 사용하세요. 링크는 만료되면 자동으로 갱신됩니다.
+- `netbird` 데몬 관리(사용자 공간 네트워크, 컨테이너 친화적) 또는 시스템에 설치된 NetBird 서비스에 연결합니다.
+- 사용자 공간 네트워크에서는 기본적으로 다른 피어가 이 기기의 서비스에 접근할 수 있습니다(127.0.0.1에서만 수신하는 서비스 포함, 관리 서버의 접근 정책은 그대로 적용). 로컬 프로그램은 SOCKS5 프록시(기본 `127.0.0.1:1080`)를 통해 네트워크 안의 기기에 접근합니다.
+- 네트워크 경로, 출구 노드, 접근 정책은 NetBird 대시보드에서 설정합니다. Gately에서는 경로 수락, 라우팅 피어 동작, DNS 수락, 인바운드 차단 여부를 고를 수 있습니다.
+- 직접 연결 또는 릴레이, 지연 시간, 네트워크 경로를 보여 주는 피어 목록.
+- WireGuard 포트 고정, 데몬 추가 인수와 환경 변수(NetBird 문서의 `NB_`로 시작하는 고급 옵션).
+- 사용자 공간 네트워크를 끄면 커널 WireGuard를 사용합니다. root와 TUN 장치가 필요하고 `wt0` 인터페이스를 만들어 자체 방화벽 규칙을 추가하며(OpenWrt의 fw4에서도 `wt0` 인바운드를 허용), 다른 피어가 접근할 로컬 서비스는 모든 주소나 NetBird 주소에서 수신해야 합니다.
+- `netbird` 프로그램은 약 41 MB, 실행 메모리는 약 60 MB이며, 온라인 설치는 `bin/.versions/`에 이전 버전을 최대 3개 보관합니다. 플래시가 작은 라우터에서는 남은 공간에 유의하고, 설치 카드에서 이전 버전을 삭제하거나 프로그램을 외부 저장소에 두고 설정에 경로를 입력하세요.
+- 기본 설정 복원과 `POST /api/netbird/logout`은 관리 서버에서 이 기기의 등록을 해제하고 네트워크에서 삭제합니다. 다시 참여하려면 다시 인증해야 합니다.
 
 ## frp
 
@@ -87,6 +102,7 @@ Tailscale은 macOS와 Windows용으로 바로 실행 가능한 패키지가 없�
 | 상황 | 권장 |
 | --- | --- |
 | 여러 기기 사이에 프라이빗 네트워크를 구성 | Tailscale |
+| 클라이언트와 관리 서버가 모두 오픈 소스이고 직접 호스팅할 수 있는 프라이빗 네트워크 | NetBird |
 | 공인 서버가 있고 내부 서비스를 외부로 매핑 | frp |
 | 공인 IP도 서버도 없이 웹 서비스를 빠르게 공개 | Cloudflare 터널 |
 | 통신사가 홀 펀칭 가능한 NAT를 제공 | [STUN 통과](/ko/docs/modules/stun) |

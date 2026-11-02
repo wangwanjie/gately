@@ -48,7 +48,7 @@
   },
   "h": {
     "publicIPv4Fail": "Vérifiez la connectivité sortante et le DNS, ou changez les URL de requête d’IP dans les réglages DDNS.",
-    "behindNat": "L’accès entrant nécessite une redirection de ports sur le routeur, UPnP, STUN, IPv6 ou un tunnel (Tailscale, frp, Cloudflare Tunnel).",
+    "behindNat": "L’accès entrant nécessite une redirection de ports sur le routeur, UPnP, STUN, IPv6 ou un tunnel (Tailscale, NetBird, frp, Cloudflare Tunnel).",
     "cgnat": "Votre FAI ne fournit peut-être pas d’IPv4 publique. Utilisez IPv6, STUN ou un tunnel. Tailscale utilise aussi la plage 100.64.0.0/10.",
     "clockSkew": "Une horloge fausse casse les codes de vérification en deux étapes et la validation des certificats. Activez la synchronisation NTP.",
     "portInUse": "Normal si un service Web de Gately l’utilise. Sinon, trouvez l’autre programme avec ss -ltnp.",

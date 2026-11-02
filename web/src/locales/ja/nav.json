@@ -36,6 +36,10 @@
       "title": "Tailscale",
       "desc": "Tailscale / Headscale のネットワークに参加"
     },
+    "netbird": {
+      "title": "NetBird",
+      "desc": "NetBird ネットワークに参加（クラウドまたはセルフホスト）"
+    },
     "frp": {
       "title": "frp",
       "desc": "frpc / frps による社内サービスの外部公開"

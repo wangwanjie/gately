@@ -14,6 +14,7 @@ import (
 	"github.com/wangwanjie/gately/internal/modules/frp"
 	"github.com/wangwanjie/gately/internal/modules/ftp"
 	"github.com/wangwanjie/gately/internal/modules/guard"
+	"github.com/wangwanjie/gately/internal/modules/netbird"
 	"github.com/wangwanjie/gately/internal/modules/nettools"
 	"github.com/wangwanjie/gately/internal/modules/notify"
 	"github.com/wangwanjie/gately/internal/modules/perf"
@@ -65,6 +66,7 @@ func New() (mods []module.Module, certs *ssl.Module) {
 		ddns.New(),
 		stun.New(),
 		tailscale.New(),
+		netbird.New(),
 		frp.New(),
 		cloudflared.New(),
 		certs,

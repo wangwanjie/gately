@@ -36,6 +36,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `ddns` | DNS dinámico | `ddns:read`、`ddns:write` |
 | `stun` | Traversal STUN | `stun:read`、`stun:write` |
 | `tailscale` | Red Tailscale | `tailscale:read`、`tailscale:write` |
+| `netbird` | Red NetBird | `netbird:read`、`netbird:write` |
 | `frp` | Traversal de red interna frp | `frp:read`、`frp:write` |
 | `cloudflared` | Túnel de Cloudflare | `cloudflared:read`、`cloudflared:write` |
 | `ssl` | Certificado SSL | `ssl:read`、`ssl:write` |
@@ -169,6 +170,26 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/tailscale/install` | `tailscale:write` | Desinstalar un programa gestionado |
 | DELETE | `/api/tailscale/install/backups/{id}` | `tailscale:write` | Eliminar una versión anterior guardada |
 | POST | `/api/tailscale/reset` | `tailscale:write` | Restaurar los ajustes predeterminados del módulo |
+
+## Red NetBird
+
+| Método | Ruta | Permiso requerido | Descripción |
+| --- | --- | --- | --- |
+| GET | `/api/netbird/logs` | `netbird:read` | Ver los registros de ejecución del módulo |
+| DELETE | `/api/netbird/logs` | `netbird:write` | Vaciar los registros de ejecución del módulo |
+| GET | `/api/netbird/settings` | `netbird:read` | Leer los ajustes de NetBird |
+| PUT | `/api/netbird/settings` | `netbird:write` | Guardar los ajustes de NetBird |
+| GET | `/api/netbird/secrets` | `netbird:write` | Ver secretos en texto plano |
+| GET | `/api/netbird/status` | `netbird:read` | Ver el estado de conexión de NetBird |
+| POST | `/api/netbird/restart` | `netbird:write` | Reiniciar NetBird |
+| POST | `/api/netbird/logout` | `netbird:write` | Cerrar sesión en NetBird |
+| GET | `/api/netbird/install` | `netbird:read` | Ver la información de instalación y el progreso de un programa gestionado |
+| POST | `/api/netbird/install` | `netbird:write` | Instalar o actualizar en línea un programa gestionado |
+| POST | `/api/netbird/install/check` | `netbird:write` | Buscar actualizaciones de un programa gestionado |
+| POST | `/api/netbird/install/rollback` | `netbird:write` | Cambiar a una versión anterior guardada |
+| DELETE | `/api/netbird/install` | `netbird:write` | Desinstalar un programa gestionado |
+| DELETE | `/api/netbird/install/backups/{id}` | `netbird:write` | Eliminar una versión anterior guardada |
+| POST | `/api/netbird/reset` | `netbird:write` | Restaurar los ajustes predeterminados del módulo |
 
 ## Traversal de red interna frp
 

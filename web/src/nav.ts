@@ -4,6 +4,7 @@ import { t } from './i18n'
 import {
   Activity,
   ArrowLeftRight,
+  Bird,
   BookOpen,
   Bell,
   CalendarClock,
@@ -74,6 +75,7 @@ export const navGroups: NavGroup[] = [
     titleKey: 'nav.groups.tunnel',
     items: [
       { path: '/tailscale', titleKey: 'nav.items.tailscale.title', icon: Network, moduleId: 'tailscale', descKey: 'nav.items.tailscale.desc' },
+      { path: '/netbird', titleKey: 'nav.items.netbird.title', icon: Bird, moduleId: 'netbird', descKey: 'nav.items.netbird.desc' },
       { path: '/frp', titleKey: 'nav.items.frp.title', icon: Waypoints, moduleId: 'frp', descKey: 'nav.items.frp.desc' },
       { path: '/cloudflared', titleKey: 'nav.items.cloudflared.title', icon: Cloud, moduleId: 'cloudflared', descKey: 'nav.items.cloudflared.desc' },
       { path: '/stun', titleKey: 'nav.items.stun.title', icon: Radar, moduleId: 'stun', descKey: 'nav.items.stun.desc' },

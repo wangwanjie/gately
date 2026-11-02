@@ -36,6 +36,10 @@
       "title": "Tailscale",
       "desc": "加入 Tailscale / Headscale 組網"
     },
+    "netbird": {
+      "title": "NetBird",
+      "desc": "加入 NetBird 官方雲或自建組網"
+    },
     "frp": {
       "title": "frp",
       "desc": "frpc / frps 內網穿透"

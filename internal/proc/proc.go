@@ -344,9 +344,10 @@ func Clean(line string) string {
 }
 
 var (
-	errRe   = regexp.MustCompile(`\[E\]|\bERR\b|\bERROR\b|\blevel=error\b|\bFATAL\b`)
+	// ERRO、FATA、PANI、DEBU、TRAC 是 logrus 文本格式的四字母级别（NetBird 等使用）
+	errRe   = regexp.MustCompile(`\[E\]|\bERR\b|\bERRO\b|\bERROR\b|\blevel=error\b|\bFATAL?\b|\bPANI\b`)
 	warnRe  = regexp.MustCompile(`\[W\]|\bWRN\b|\bWARN(ING)?\b|\blevel=warn`)
-	debugRe = regexp.MustCompile(`\[D\]|\bDBG\b|\bDEBUG\b`)
+	debugRe = regexp.MustCompile(`\[D\]|\bDBG\b|\bDEBUG?\b|\bTRAC\b`)
 )
 
 // classify 根据 frp（[I] [W] [E]）与 cloudflared（INF WRN ERR）的日志格式判断级别。

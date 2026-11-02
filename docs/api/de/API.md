@@ -36,6 +36,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `ddns` | Dynamisches DNS | `ddns:read`、`ddns:write` |
 | `stun` | STUN-Durchleitung | `stun:read`、`stun:write` |
 | `tailscale` | Tailscale-Netzwerk | `tailscale:read`、`tailscale:write` |
+| `netbird` | NetBird-Netzwerk | `netbird:read`、`netbird:write` |
 | `frp` | frp-Intranet-Durchleitung | `frp:read`、`frp:write` |
 | `cloudflared` | Cloudflare-Tunnel | `cloudflared:read`、`cloudflared:write` |
 | `ssl` | SSL-Zertifikate | `ssl:read`、`ssl:write` |
@@ -169,6 +170,26 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/tailscale/install` | `tailscale:write` | Verwaltetes Programm deinstallieren |
 | DELETE | `/api/tailscale/install/backups/{id}` | `tailscale:write` | Gespeicherte frühere Version löschen |
 | POST | `/api/tailscale/reset` | `tailscale:write` | Standardeinstellungen des Moduls wiederherstellen |
+
+## NetBird-Netzwerk
+
+| Methode | Pfad | Erforderliche Berechtigung | Beschreibung |
+| --- | --- | --- | --- |
+| GET | `/api/netbird/logs` | `netbird:read` | Laufzeitprotokolle eines Moduls anzeigen |
+| DELETE | `/api/netbird/logs` | `netbird:write` | Modulprotokolle leeren |
+| GET | `/api/netbird/settings` | `netbird:read` | NetBird-Einstellungen lesen |
+| PUT | `/api/netbird/settings` | `netbird:write` | NetBird-Einstellungen speichern |
+| GET | `/api/netbird/secrets` | `netbird:write` | Geheimnisse im Klartext anzeigen |
+| GET | `/api/netbird/status` | `netbird:read` | NetBird-Verbindungsstatus abrufen |
+| POST | `/api/netbird/restart` | `netbird:write` | NetBird neu starten |
+| POST | `/api/netbird/logout` | `netbird:write` | Von NetBird abmelden |
+| GET | `/api/netbird/install` | `netbird:read` | Installationsinfo und Fortschritt eines verwalteten Programms anzeigen |
+| POST | `/api/netbird/install` | `netbird:write` | Verwaltetes Programm online installieren oder aktualisieren |
+| POST | `/api/netbird/install/check` | `netbird:write` | Verwaltetes Programm auf Updates prüfen |
+| POST | `/api/netbird/install/rollback` | `netbird:write` | Zu einer gespeicherten früheren Version wechseln |
+| DELETE | `/api/netbird/install` | `netbird:write` | Verwaltetes Programm deinstallieren |
+| DELETE | `/api/netbird/install/backups/{id}` | `netbird:write` | Gespeicherte frühere Version löschen |
+| POST | `/api/netbird/reset` | `netbird:write` | Standardeinstellungen des Moduls wiederherstellen |
 
 ## frp-Intranet-Durchleitung
 

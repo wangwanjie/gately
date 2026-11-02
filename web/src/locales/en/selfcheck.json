@@ -48,7 +48,7 @@
   },
   "h": {
     "publicIPv4Fail": "Check outbound connectivity and DNS, or change the IP lookup URLs in the DDNS settings.",
-    "behindNat": "Inbound access needs port forwarding on the router, UPnP, STUN, IPv6 or a tunnel (Tailscale, frp, Cloudflare Tunnel).",
+    "behindNat": "Inbound access needs port forwarding on the router, UPnP, STUN, IPv6 or a tunnel (Tailscale, NetBird, frp, Cloudflare Tunnel).",
     "cgnat": "Your ISP may not give you a public IPv4 address. Use IPv6, STUN or a tunnel. Note that Tailscale also uses the 100.64.0.0/10 range.",
     "clockSkew": "A wrong clock breaks two-step verification codes and certificate validation. Enable NTP time sync.",
     "portInUse": "Normal if a Web Service listener of Gately uses it. Otherwise find the other program with ss -ltnp.",

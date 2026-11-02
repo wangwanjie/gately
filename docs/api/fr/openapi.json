@@ -6103,7 +6103,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Fourni par frp, Tunnel Cloudflare, Tailscale et File Browser. Renvoie la version installée dans bin sous le répertoire de configuration, les versions précédentes conservées (`backups`, 3 au plus), le proxy de téléchargement propre à ce programme (`proxy`), la plateforme actuelle et la progression `state` (`stage` vaut checking, downloading, verifying, extracting, done, uptodate ou failed). Un `unsupported` non vide signifie que le projet ne fournit pas de programme pour la plateforme actuelle.\n\nPermission requise : `cloudflared:read`.",
+        "description": "Fourni par frp, Tunnel Cloudflare, Tailscale, NetBird et File Browser. Renvoie la version installée dans bin sous le répertoire de configuration, les versions précédentes conservées (`backups`, 3 au plus), le proxy de téléchargement propre à ce programme (`proxy`), la plateforme actuelle et la progression `state` (`stage` vaut checking, downloading, verifying, extracting, done, uptodate ou failed). Un `unsupported` non vide signifie que le projet ne fournit pas de programme pour la plateforme actuelle.\n\nPermission requise : `cloudflared:read`.",
         "responses": {
           "200": {
             "description": "Succès"
@@ -6606,7 +6606,7 @@
     },
     "/api/cloudflared/reset": {
       "post": {
-        "description": "Fourni par frp, Tunnel Cloudflare, Tailscale et File Browser ; sans corps. Arrête tous les processus du module, rétablit ses paramètres par défaut (y compris le chemin du programme et le proxy de téléchargement) et supprime les fichiers que Gately a générés pour lui : les fichiers de configuration frp, le répertoire de données de chaque instance File Browser (utilisateurs, liens de partage et caches) et l'état de connexion du répertoire d'état Tailscale par défaut (un tailscaled géré par Gately en cours d'exécution se déconnecte d'abord ; les répertoires d'état personnalisés et un tailscaled système existant ne sont pas touchés). Les anciens paramètres restent dans l'historique de configuration et peuvent être restaurés ; les programmes installés ne sont pas concernés, utilisez `DELETE /api/{module}/install` pour désinstaller.\n\nPermission requise : `cloudflared:write`.",
+        "description": "Fourni par frp, Tunnel Cloudflare, Tailscale, NetBird et File Browser ; sans corps. Arrête tous les processus du module, rétablit ses paramètres par défaut (y compris le chemin du programme et le proxy de téléchargement) et supprime les fichiers que Gately a générés pour lui : les fichiers de configuration frp, le répertoire de données de chaque instance File Browser (utilisateurs, liens de partage et caches), l'état de connexion du répertoire d'état Tailscale par défaut (un tailscaled géré par Gately en cours d'exécution se déconnecte d'abord ; les répertoires d'état personnalisés et un tailscaled système existant ne sont pas touchés) et l'état de connexion et les clés du répertoire d'état NetBird par défaut (un démon géré par Gately en cours d'exécution se déconnecte d'abord, ce qui retire cette machine du réseau ; les répertoires d'état personnalisés et un service NetBird système existant ne sont pas touchés). Les anciens paramètres restent dans l'historique de configuration et peuvent être restaurés ; les programmes installés ne sont pas concernés, utilisez `DELETE /api/{module}/install` pour désinstaller.\n\nPermission requise : `cloudflared:write`.",
         "responses": {
           "200": {
             "description": "Succès"
@@ -14404,7 +14404,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Fourni par frp, Tunnel Cloudflare, Tailscale et File Browser. Renvoie la version installée dans bin sous le répertoire de configuration, les versions précédentes conservées (`backups`, 3 au plus), le proxy de téléchargement propre à ce programme (`proxy`), la plateforme actuelle et la progression `state` (`stage` vaut checking, downloading, verifying, extracting, done, uptodate ou failed). Un `unsupported` non vide signifie que le projet ne fournit pas de programme pour la plateforme actuelle.\n\nPermission requise : `filebrowser:read`.",
+        "description": "Fourni par frp, Tunnel Cloudflare, Tailscale, NetBird et File Browser. Renvoie la version installée dans bin sous le répertoire de configuration, les versions précédentes conservées (`backups`, 3 au plus), le proxy de téléchargement propre à ce programme (`proxy`), la plateforme actuelle et la progression `state` (`stage` vaut checking, downloading, verifying, extracting, done, uptodate ou failed). Un `unsupported` non vide signifie que le projet ne fournit pas de programme pour la plateforme actuelle.\n\nPermission requise : `filebrowser:read`.",
         "responses": {
           "200": {
             "description": "Succès"
@@ -15688,7 +15688,7 @@
     },
     "/api/filebrowser/reset": {
       "post": {
-        "description": "Fourni par frp, Tunnel Cloudflare, Tailscale et File Browser ; sans corps. Arrête tous les processus du module, rétablit ses paramètres par défaut (y compris le chemin du programme et le proxy de téléchargement) et supprime les fichiers que Gately a générés pour lui : les fichiers de configuration frp, le répertoire de données de chaque instance File Browser (utilisateurs, liens de partage et caches) et l'état de connexion du répertoire d'état Tailscale par défaut (un tailscaled géré par Gately en cours d'exécution se déconnecte d'abord ; les répertoires d'état personnalisés et un tailscaled système existant ne sont pas touchés). Les anciens paramètres restent dans l'historique de configuration et peuvent être restaurés ; les programmes installés ne sont pas concernés, utilisez `DELETE /api/{module}/install` pour désinstaller.\n\nPermission requise : `filebrowser:write`.",
+        "description": "Fourni par frp, Tunnel Cloudflare, Tailscale, NetBird et File Browser ; sans corps. Arrête tous les processus du module, rétablit ses paramètres par défaut (y compris le chemin du programme et le proxy de téléchargement) et supprime les fichiers que Gately a générés pour lui : les fichiers de configuration frp, le répertoire de données de chaque instance File Browser (utilisateurs, liens de partage et caches), l'état de connexion du répertoire d'état Tailscale par défaut (un tailscaled géré par Gately en cours d'exécution se déconnecte d'abord ; les répertoires d'état personnalisés et un tailscaled système existant ne sont pas touchés) et l'état de connexion et les clés du répertoire d'état NetBird par défaut (un démon géré par Gately en cours d'exécution se déconnecte d'abord, ce qui retire cette machine du réseau ; les répertoires d'état personnalisés et un service NetBird système existant ne sont pas touchés). Les anciens paramètres restent dans l'historique de configuration et peuvent être restaurés ; les programmes installés ne sont pas concernés, utilisez `DELETE /api/{module}/install` pour désinstaller.\n\nPermission requise : `filebrowser:write`.",
         "responses": {
           "200": {
             "description": "Succès"
@@ -16915,7 +16915,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Fourni par frp, Tunnel Cloudflare, Tailscale et File Browser. Renvoie la version installée dans bin sous le répertoire de configuration, les versions précédentes conservées (`backups`, 3 au plus), le proxy de téléchargement propre à ce programme (`proxy`), la plateforme actuelle et la progression `state` (`stage` vaut checking, downloading, verifying, extracting, done, uptodate ou failed). Un `unsupported` non vide signifie que le projet ne fournit pas de programme pour la plateforme actuelle.\n\nPermission requise : `frp:read`.",
+        "description": "Fourni par frp, Tunnel Cloudflare, Tailscale, NetBird et File Browser. Renvoie la version installée dans bin sous le répertoire de configuration, les versions précédentes conservées (`backups`, 3 au plus), le proxy de téléchargement propre à ce programme (`proxy`), la plateforme actuelle et la progression `state` (`stage` vaut checking, downloading, verifying, extracting, done, uptodate ou failed). Un `unsupported` non vide signifie que le projet ne fournit pas de programme pour la plateforme actuelle.\n\nPermission requise : `frp:read`.",
         "responses": {
           "200": {
             "description": "Succès"
@@ -18138,7 +18138,7 @@
     },
     "/api/frp/reset": {
       "post": {
-        "description": "Fourni par frp, Tunnel Cloudflare, Tailscale et File Browser ; sans corps. Arrête tous les processus du module, rétablit ses paramètres par défaut (y compris le chemin du programme et le proxy de téléchargement) et supprime les fichiers que Gately a générés pour lui : les fichiers de configuration frp, le répertoire de données de chaque instance File Browser (utilisateurs, liens de partage et caches) et l'état de connexion du répertoire d'état Tailscale par défaut (un tailscaled géré par Gately en cours d'exécution se déconnecte d'abord ; les répertoires d'état personnalisés et un tailscaled système existant ne sont pas touchés). Les anciens paramètres restent dans l'historique de configuration et peuvent être restaurés ; les programmes installés ne sont pas concernés, utilisez `DELETE /api/{module}/install` pour désinstaller.\n\nPermission requise : `frp:write`.",
+        "description": "Fourni par frp, Tunnel Cloudflare, Tailscale, NetBird et File Browser ; sans corps. Arrête tous les processus du module, rétablit ses paramètres par défaut (y compris le chemin du programme et le proxy de téléchargement) et supprime les fichiers que Gately a générés pour lui : les fichiers de configuration frp, le répertoire de données de chaque instance File Browser (utilisateurs, liens de partage et caches), l'état de connexion du répertoire d'état Tailscale par défaut (un tailscaled géré par Gately en cours d'exécution se déconnecte d'abord ; les répertoires d'état personnalisés et un tailscaled système existant ne sont pas touchés) et l'état de connexion et les clés du répertoire d'état NetBird par défaut (un démon géré par Gately en cours d'exécution se déconnecte d'abord, ce qui retire cette machine du réseau ; les répertoires d'état personnalisés et un service NetBird système existant ne sont pas touchés). Les anciens paramètres restent dans l'historique de configuration et peuvent être restaurés ; les programmes installés ne sont pas concernés, utilisez `DELETE /api/{module}/install` pour désinstaller.\n\nPermission requise : `frp:write`.",
         "responses": {
           "200": {
             "description": "Succès"
@@ -21449,6 +21449,932 @@
           "Système"
         ],
         "x-required-scope": "metrics:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/install": {
+      "delete": {
+        "description": "Supprime le programme installé dans bin sous le répertoire de configuration et toutes les versions précédentes conservées, puis redémarre les processus qui l'utilisent : un programme du même nom dans le PATH est utilisé s'il existe, sinon les processus ne peuvent pas démarrer. Les paramètres du module ne changent pas ; utilisez `POST /api/{module}/reset` pour les effacer.\n\nPermission requise : `netbird:write`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Désinstaller un programme géré",
+        "tags": [
+          "Réseau NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "Fourni par frp, Tunnel Cloudflare, Tailscale, NetBird et File Browser. Renvoie la version installée dans bin sous le répertoire de configuration, les versions précédentes conservées (`backups`, 3 au plus), le proxy de téléchargement propre à ce programme (`proxy`), la plateforme actuelle et la progression `state` (`stage` vaut checking, downloading, verifying, extracting, done, uptodate ou failed). Un `unsupported` non vide signifie que le projet ne fournit pas de programme pour la plateforme actuelle.\n\nPermission requise : `netbird:read`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Voir les informations d'installation et la progression d'un programme géré",
+        "tags": [
+          "Réseau NetBird"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "Corps `{\"version\": \"\", \"proxy\": \"\"}` : un `version` vide installe la dernière version stable (rien n'est téléchargé si elle est déjà installée, `stage` vaut alors uptodate), sinon la version indiquée ; `proxy` est le proxy de téléchargement (http, https ou socks5), conservé pour la prochaine fois ; vide, le paramètre global `updateProxy` s'applique. Le téléchargement est vérifié par son SHA-256 et installé dans bin sous le répertoire de configuration, la version existante rejoint les versions précédentes et les processus utilisant le programme sont redémarrés. Répond immédiatement ; suivez la progression avec `GET /api/{module}/install`.\n\nPermission requise : `netbird:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Installer ou mettre à jour en ligne un programme géré",
+        "tags": [
+          "Réseau NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/install/backups/{id}": {
+      "delete": {
+        "description": "Permission requise : `netbird:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Supprimer une version précédente conservée",
+        "tags": [
+          "Réseau NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/install/check": {
+      "post": {
+        "description": "Aucun corps de requête. Interroge la dernière version stable en amont (via le proxy de téléchargement du programme, ou le réglage global `updateProxy` s'il n'y en a pas) sans télécharger ni modifier le programme installé ; renvoie la même chose que `GET /api/{module}/install`, où `latest` vaut `{version, checkedAt, error, hasUpdate}` et `hasUpdate` indique que la dernière version est plus récente que celle installée dans bin. Avec la vérification automatique des mises à jour activée, Gately effectue aussi cette vérification périodiquement pour les programmes gérés installés. Renvoie 409 si une vérification est déjà en cours.\n\nPermission requise : `netbird:write`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Vérifier les mises à jour d'un programme géré",
+        "tags": [
+          "Réseau NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/install/rollback": {
+      "post": {
+        "description": "Corps `{\"id\": \"\u003cID de version précédente\u003e\"}`. La version actuelle est conservée comme version précédente pour pouvoir y revenir ; les processus utilisant le programme sont ensuite redémarrés.\n\nPermission requise : `netbird:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Revenir à une version précédente conservée",
+        "tags": [
+          "Réseau NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/logout": {
+      "post": {
+        "description": "Exécute `netbird logout` : désinscrit cette machine du serveur de gestion et supprime la connexion locale, ce qui la retire de la liste des pairs du réseau ; pour la rejoindre il faut se reconnecter ou utiliser une clé de configuration.\n\nPermission requise : `netbird:write`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Se déconnecter de NetBird",
+        "tags": [
+          "Réseau NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/logs": {
+      "delete": {
+        "description": "Permission requise : `netbird:write`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Vider les journaux d'exécution d'un module",
+        "tags": [
+          "Réseau NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "Prend en charge la récupération incrémentale avec le paramètre `since`, qui renvoie les journaux dont le numéro de séquence est supérieur à cette valeur ; `before` renvoie les journaux dont le numéro de séquence est inférieur à cette valeur, pour charger les entrées plus anciennes ; `limit` ne renvoie que les entrées les plus récentes et, si la mémoire n’en contient pas assez, recherche aussi dans l’historique conservé dans les fichiers journaux. Paramètres de filtre : `level` niveau minimal, `source` source, `q` mots-clés (séparés par des espaces, tous doivent correspondre ; les guillemets doubles regroupent une expression ; un `-` initial exclut), `ip` adresse du client (adresse complète, CIDR ou partie d’adresse, séparées par des virgules), `host` nom du site ou domaine (correspondance partielle), `site` nom du site (correspondance exacte, ne renvoie que le journal d'accès de ce site), `status` code d’état (par exemple `404`, `4xx`, `500-599`), `from` et `to` plage horaire (RFC 3339 ou horodatage en millisecondes). `exclude` liste les termes à exclure : les entrées contenant l’un d’eux ne sont pas renvoyées ; même syntaxe que `q`, le `-` initial est facultatif.\n\nPermission requise : `netbird:read`.",
+        "parameters": [
+          {
+            "description": "Récupération incrémentale : ne renvoie que les journaux dont le numéro de séquence est supérieur à cette valeur",
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Charger les journaux plus anciens : ne renvoie que les journaux dont le numéro de séquence est inférieur à cette valeur",
+            "in": "query",
+            "name": "before",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Nombre maximal d'entrées renvoyées, en prenant les plus récentes qui correspondent ; 0 ou absent signifie sans limite",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Niveau minimal : debug, info, warn ou error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Étiquette de source, correspondance exacte sans tenir compte de la casse",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Mots-clés : séparés par des espaces, tous doivent correspondre ; les guillemets doubles regroupent une expression ; un - initial exclut",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Mots-clés exclus : séparés par des espaces, les guillemets doubles regroupent une expression ; une entrée contenant l’un d’eux est exclue ; s’applique avec q",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Adresse du client : adresse complète, CIDR ou partie d'adresse, séparées par des virgules ; le préfixe ! ou - exclut",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Partie du nom du site ou du domaine",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Code d’état comme 404, 4xx, 500-599, séparés par des virgules",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "À 1, masque les journaux d'accès des sources bannies : les requêtes refusées à cause du bannissement et toutes celles des sources encore bannies, y compris celles qui l'ont déclenché (n'affecte que la réponse ; les journaux sont conservés)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Avec 1, masque les requêtes portant une session de la console d'administration, c'est-à-dire les journaux d'accès produits par les administrateurs qui accèdent à la console via un site du Service Web",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Heure de début, RFC 3339 ou horodatage en millisecondes",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Heure de fin, RFC 3339 ou horodatage en millisecondes",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Consulter les journaux d'exécution d'un module",
+        "tags": [
+          "Réseau NetBird"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/reset": {
+      "post": {
+        "description": "Fourni par frp, Tunnel Cloudflare, Tailscale, NetBird et File Browser ; sans corps. Arrête tous les processus du module, rétablit ses paramètres par défaut (y compris le chemin du programme et le proxy de téléchargement) et supprime les fichiers que Gately a générés pour lui : les fichiers de configuration frp, le répertoire de données de chaque instance File Browser (utilisateurs, liens de partage et caches), l'état de connexion du répertoire d'état Tailscale par défaut (un tailscaled géré par Gately en cours d'exécution se déconnecte d'abord ; les répertoires d'état personnalisés et un tailscaled système existant ne sont pas touchés) et l'état de connexion et les clés du répertoire d'état NetBird par défaut (un démon géré par Gately en cours d'exécution se déconnecte d'abord, ce qui retire cette machine du réseau ; les répertoires d'état personnalisés et un service NetBird système existant ne sont pas touchés). Les anciens paramètres restent dans l'historique de configuration et peuvent être restaurés ; les programmes installés ne sont pas concernés, utilisez `DELETE /api/{module}/install` pour désinstaller.\n\nPermission requise : `netbird:write`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Rétablir les paramètres par défaut du module",
+        "tags": [
+          "Réseau NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/restart": {
+      "post": {
+        "description": "Permission requise : `netbird:write`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Redémarrer NetBird",
+        "tags": [
+          "Réseau NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/secrets": {
+      "get": {
+        "description": "Permission requise : `netbird:write`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Afficher les secrets en clair",
+        "tags": [
+          "Réseau NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/settings": {
+      "get": {
+        "description": "Renvoie `settings` (la clé de configuration `setupKey` est masquée), `defaultStateDir` (le répertoire d’état utilisé quand `stateDir` est vide) et `defaultManagementUrl` (l’adresse NetBird Cloud utilisée quand `managementUrl` est vide).\n\nPermission requise : `netbird:read`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Lire les paramètres NetBird",
+        "tags": [
+          "Réseau NetBird"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Redémarre avec les nouveaux paramètres : si le démon est géré, `netbird service run` est redémarré puis `netbird up` est exécuté ; la connexion automatique propre au démon est désactivée et up est relancé chaque fois que le démon redémarre après un plantage. Avec un démon externe déjà connecté, la connexion est d’abord coupée puis `netbird up` est exécuté pour appliquer les nouveaux paramètres. Un `setupKey` égal à `********` conserve la clé enregistrée ; `installProxy` ne se modifie que par les points d’accès d’installation. Les interrupteurs sont toujours transmis explicitement à netbird up : `acceptRoutes` est l’inverse de `--disable-client-routes`, `serverRoutes` l’inverse de `--disable-server-routes`, `acceptDns` l’inverse de `--disable-dns`, et `blockInbound` correspond à `--block-inbound`.\n\nPermission requise : `netbird:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Enregistrer les paramètres NetBird",
+        "tags": [
+          "Réseau NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/status": {
+      "get": {
+        "description": "`daemonStatus` vaut Idle, Connecting, Connected, NeedsLogin, LoginFailed ou SessionExpired. Sans clé de configuration, `authUrl` est le lien de connexion (connexion par code d’appareil sous Linux, que l’on peut ouvrir sur n’importe quel appareil ; sous macOS et Windows la connexion doit en général se terminer dans un navigateur de cette machine) et `authCode` le code à saisir (vide si le lien le contient déjà) ; le lien est renouvelé automatiquement à son expiration. `peers` liste les autres pairs du réseau et `connType` vaut P2P ou Relayed.\n\nPermission requise : `netbird:read`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Consulter l’état de connexion NetBird",
+        "tags": [
+          "Réseau NetBird"
+        ],
+        "x-required-scope": "netbird:read",
         "x-token-allowed": true
       }
     },
@@ -32335,7 +33261,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Fourni par frp, Tunnel Cloudflare, Tailscale et File Browser. Renvoie la version installée dans bin sous le répertoire de configuration, les versions précédentes conservées (`backups`, 3 au plus), le proxy de téléchargement propre à ce programme (`proxy`), la plateforme actuelle et la progression `state` (`stage` vaut checking, downloading, verifying, extracting, done, uptodate ou failed). Un `unsupported` non vide signifie que le projet ne fournit pas de programme pour la plateforme actuelle.\n\nPermission requise : `tailscale:read`.",
+        "description": "Fourni par frp, Tunnel Cloudflare, Tailscale, NetBird et File Browser. Renvoie la version installée dans bin sous le répertoire de configuration, les versions précédentes conservées (`backups`, 3 au plus), le proxy de téléchargement propre à ce programme (`proxy`), la plateforme actuelle et la progression `state` (`stage` vaut checking, downloading, verifying, extracting, done, uptodate ou failed). Un `unsupported` non vide signifie que le projet ne fournit pas de programme pour la plateforme actuelle.\n\nPermission requise : `tailscale:read`.",
         "responses": {
           "200": {
             "description": "Succès"
@@ -32889,7 +33815,7 @@
     },
     "/api/tailscale/reset": {
       "post": {
-        "description": "Fourni par frp, Tunnel Cloudflare, Tailscale et File Browser ; sans corps. Arrête tous les processus du module, rétablit ses paramètres par défaut (y compris le chemin du programme et le proxy de téléchargement) et supprime les fichiers que Gately a générés pour lui : les fichiers de configuration frp, le répertoire de données de chaque instance File Browser (utilisateurs, liens de partage et caches) et l'état de connexion du répertoire d'état Tailscale par défaut (un tailscaled géré par Gately en cours d'exécution se déconnecte d'abord ; les répertoires d'état personnalisés et un tailscaled système existant ne sont pas touchés). Les anciens paramètres restent dans l'historique de configuration et peuvent être restaurés ; les programmes installés ne sont pas concernés, utilisez `DELETE /api/{module}/install` pour désinstaller.\n\nPermission requise : `tailscale:write`.",
+        "description": "Fourni par frp, Tunnel Cloudflare, Tailscale, NetBird et File Browser ; sans corps. Arrête tous les processus du module, rétablit ses paramètres par défaut (y compris le chemin du programme et le proxy de téléchargement) et supprime les fichiers que Gately a générés pour lui : les fichiers de configuration frp, le répertoire de données de chaque instance File Browser (utilisateurs, liens de partage et caches), l'état de connexion du répertoire d'état Tailscale par défaut (un tailscaled géré par Gately en cours d'exécution se déconnecte d'abord ; les répertoires d'état personnalisés et un tailscaled système existant ne sont pas touchés) et l'état de connexion et les clés du répertoire d'état NetBird par défaut (un démon géré par Gately en cours d'exécution se déconnecte d'abord, ce qui retire cette machine du réseau ; les répertoires d'état personnalisés et un service NetBird système existant ne sont pas touchés). Les anciens paramètres restent dans l'historique de configuration et peuvent être restaurés ; les programmes installés ne sont pas concernés, utilisez `DELETE /api/{module}/install` pour désinstaller.\n\nPermission requise : `tailscale:write`.",
         "responses": {
           "200": {
             "description": "Succès"
@@ -42836,6 +43762,9 @@
       "name": "Réseau Tailscale"
     },
     {
+      "name": "Réseau NetBird"
+    },
+    {
       "name": "Traversée de réseau frp"
     },
     {
@@ -42914,6 +43843,7 @@
     "ddns",
     "stun",
     "tailscale",
+    "netbird",
     "frp",
     "cloudflared",
     "ssl",

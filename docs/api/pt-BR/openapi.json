@@ -6103,7 +6103,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Disponível em frp, Túnel Cloudflare, Tailscale e File Browser. Retorna a versão instalada em bin no diretório de configuração, as versões anteriores salvas (`backups`, no máximo 3), o proxy de download definido para este programa (`proxy`), a plataforma atual e o progresso da instalação `state` (`stage` é checking, downloading, verifying, extracting, done, uptodate ou failed). Um `unsupported` não vazio indica que o projeto não oferece programa para a plataforma atual.\n\nPermissão necessária: `cloudflared:read`.",
+        "description": "Disponível em frp, Túnel Cloudflare, Tailscale, NetBird e File Browser. Retorna a versão instalada em bin no diretório de configuração, as versões anteriores salvas (`backups`, no máximo 3), o proxy de download definido para este programa (`proxy`), a plataforma atual e o progresso da instalação `state` (`stage` é checking, downloading, verifying, extracting, done, uptodate ou failed). Um `unsupported` não vazio indica que o projeto não oferece programa para a plataforma atual.\n\nPermissão necessária: `cloudflared:read`.",
         "responses": {
           "200": {
             "description": "Sucesso"
@@ -6606,7 +6606,7 @@
     },
     "/api/cloudflared/reset": {
       "post": {
-        "description": "Disponível em frp, Túnel Cloudflare, Tailscale e File Browser; sem corpo. Para todos os processos do módulo, restaura as configurações padrão (incluindo o caminho do programa e o proxy de download) e exclui os arquivos que o Gately gerou para ele: os arquivos de configuração do frp, o diretório de dados de cada instância do File Browser (usuários, links de compartilhamento e caches) e o estado de login no diretório de estado padrão do Tailscale (um tailscaled gerenciado pelo Gately em execução sai da conta antes; diretórios de estado personalizados e um tailscaled do sistema não são tocados). As configurações antigas ficam no histórico de configuração e podem ser restauradas; os programas instalados não são afetados, para desinstalar use `DELETE /api/{module}/install`.\n\nPermissão necessária: `cloudflared:write`.",
+        "description": "Disponível em frp, Túnel Cloudflare, Tailscale, NetBird e File Browser; sem corpo. Para todos os processos do módulo, restaura as configurações padrão (incluindo o caminho do programa e o proxy de download) e exclui os arquivos que o Gately gerou para ele: os arquivos de configuração do frp, o diretório de dados de cada instância do File Browser (usuários, links de compartilhamento e caches), o estado de login no diretório de estado padrão do Tailscale (um tailscaled gerenciado pelo Gately em execução sai da conta antes; diretórios de estado personalizados e um tailscaled do sistema não são tocados) e o estado de login e as chaves no diretório de estado padrão do NetBird (um daemon gerenciado pelo Gately em execução faz logout antes, removendo esta máquina da rede; diretórios de estado personalizados e um serviço NetBird do sistema não são tocados). As configurações antigas ficam no histórico de configuração e podem ser restauradas; os programas instalados não são afetados, para desinstalar use `DELETE /api/{module}/install`.\n\nPermissão necessária: `cloudflared:write`.",
         "responses": {
           "200": {
             "description": "Sucesso"
@@ -14404,7 +14404,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Disponível em frp, Túnel Cloudflare, Tailscale e File Browser. Retorna a versão instalada em bin no diretório de configuração, as versões anteriores salvas (`backups`, no máximo 3), o proxy de download definido para este programa (`proxy`), a plataforma atual e o progresso da instalação `state` (`stage` é checking, downloading, verifying, extracting, done, uptodate ou failed). Um `unsupported` não vazio indica que o projeto não oferece programa para a plataforma atual.\n\nPermissão necessária: `filebrowser:read`.",
+        "description": "Disponível em frp, Túnel Cloudflare, Tailscale, NetBird e File Browser. Retorna a versão instalada em bin no diretório de configuração, as versões anteriores salvas (`backups`, no máximo 3), o proxy de download definido para este programa (`proxy`), a plataforma atual e o progresso da instalação `state` (`stage` é checking, downloading, verifying, extracting, done, uptodate ou failed). Um `unsupported` não vazio indica que o projeto não oferece programa para a plataforma atual.\n\nPermissão necessária: `filebrowser:read`.",
         "responses": {
           "200": {
             "description": "Sucesso"
@@ -15688,7 +15688,7 @@
     },
     "/api/filebrowser/reset": {
       "post": {
-        "description": "Disponível em frp, Túnel Cloudflare, Tailscale e File Browser; sem corpo. Para todos os processos do módulo, restaura as configurações padrão (incluindo o caminho do programa e o proxy de download) e exclui os arquivos que o Gately gerou para ele: os arquivos de configuração do frp, o diretório de dados de cada instância do File Browser (usuários, links de compartilhamento e caches) e o estado de login no diretório de estado padrão do Tailscale (um tailscaled gerenciado pelo Gately em execução sai da conta antes; diretórios de estado personalizados e um tailscaled do sistema não são tocados). As configurações antigas ficam no histórico de configuração e podem ser restauradas; os programas instalados não são afetados, para desinstalar use `DELETE /api/{module}/install`.\n\nPermissão necessária: `filebrowser:write`.",
+        "description": "Disponível em frp, Túnel Cloudflare, Tailscale, NetBird e File Browser; sem corpo. Para todos os processos do módulo, restaura as configurações padrão (incluindo o caminho do programa e o proxy de download) e exclui os arquivos que o Gately gerou para ele: os arquivos de configuração do frp, o diretório de dados de cada instância do File Browser (usuários, links de compartilhamento e caches), o estado de login no diretório de estado padrão do Tailscale (um tailscaled gerenciado pelo Gately em execução sai da conta antes; diretórios de estado personalizados e um tailscaled do sistema não são tocados) e o estado de login e as chaves no diretório de estado padrão do NetBird (um daemon gerenciado pelo Gately em execução faz logout antes, removendo esta máquina da rede; diretórios de estado personalizados e um serviço NetBird do sistema não são tocados). As configurações antigas ficam no histórico de configuração e podem ser restauradas; os programas instalados não são afetados, para desinstalar use `DELETE /api/{module}/install`.\n\nPermissão necessária: `filebrowser:write`.",
         "responses": {
           "200": {
             "description": "Sucesso"
@@ -16915,7 +16915,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Disponível em frp, Túnel Cloudflare, Tailscale e File Browser. Retorna a versão instalada em bin no diretório de configuração, as versões anteriores salvas (`backups`, no máximo 3), o proxy de download definido para este programa (`proxy`), a plataforma atual e o progresso da instalação `state` (`stage` é checking, downloading, verifying, extracting, done, uptodate ou failed). Um `unsupported` não vazio indica que o projeto não oferece programa para a plataforma atual.\n\nPermissão necessária: `frp:read`.",
+        "description": "Disponível em frp, Túnel Cloudflare, Tailscale, NetBird e File Browser. Retorna a versão instalada em bin no diretório de configuração, as versões anteriores salvas (`backups`, no máximo 3), o proxy de download definido para este programa (`proxy`), a plataforma atual e o progresso da instalação `state` (`stage` é checking, downloading, verifying, extracting, done, uptodate ou failed). Um `unsupported` não vazio indica que o projeto não oferece programa para a plataforma atual.\n\nPermissão necessária: `frp:read`.",
         "responses": {
           "200": {
             "description": "Sucesso"
@@ -18138,7 +18138,7 @@
     },
     "/api/frp/reset": {
       "post": {
-        "description": "Disponível em frp, Túnel Cloudflare, Tailscale e File Browser; sem corpo. Para todos os processos do módulo, restaura as configurações padrão (incluindo o caminho do programa e o proxy de download) e exclui os arquivos que o Gately gerou para ele: os arquivos de configuração do frp, o diretório de dados de cada instância do File Browser (usuários, links de compartilhamento e caches) e o estado de login no diretório de estado padrão do Tailscale (um tailscaled gerenciado pelo Gately em execução sai da conta antes; diretórios de estado personalizados e um tailscaled do sistema não são tocados). As configurações antigas ficam no histórico de configuração e podem ser restauradas; os programas instalados não são afetados, para desinstalar use `DELETE /api/{module}/install`.\n\nPermissão necessária: `frp:write`.",
+        "description": "Disponível em frp, Túnel Cloudflare, Tailscale, NetBird e File Browser; sem corpo. Para todos os processos do módulo, restaura as configurações padrão (incluindo o caminho do programa e o proxy de download) e exclui os arquivos que o Gately gerou para ele: os arquivos de configuração do frp, o diretório de dados de cada instância do File Browser (usuários, links de compartilhamento e caches), o estado de login no diretório de estado padrão do Tailscale (um tailscaled gerenciado pelo Gately em execução sai da conta antes; diretórios de estado personalizados e um tailscaled do sistema não são tocados) e o estado de login e as chaves no diretório de estado padrão do NetBird (um daemon gerenciado pelo Gately em execução faz logout antes, removendo esta máquina da rede; diretórios de estado personalizados e um serviço NetBird do sistema não são tocados). As configurações antigas ficam no histórico de configuração e podem ser restauradas; os programas instalados não são afetados, para desinstalar use `DELETE /api/{module}/install`.\n\nPermissão necessária: `frp:write`.",
         "responses": {
           "200": {
             "description": "Sucesso"
@@ -21449,6 +21449,932 @@
           "Sistema"
         ],
         "x-required-scope": "metrics:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/install": {
+      "delete": {
+        "description": "Exclui o programa instalado em bin no diretório de configuração e todas as versões anteriores salvas, depois reinicia os processos que o usam: se houver um programa com o mesmo nome no PATH ele é usado, senão os processos não iniciam. As configurações do módulo não mudam; para limpá-las use `POST /api/{module}/reset`.\n\nPermissão necessária: `netbird:write`.",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Desinstalar um programa gerenciado",
+        "tags": [
+          "Rede NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "Disponível em frp, Túnel Cloudflare, Tailscale, NetBird e File Browser. Retorna a versão instalada em bin no diretório de configuração, as versões anteriores salvas (`backups`, no máximo 3), o proxy de download definido para este programa (`proxy`), a plataforma atual e o progresso da instalação `state` (`stage` é checking, downloading, verifying, extracting, done, uptodate ou failed). Um `unsupported` não vazio indica que o projeto não oferece programa para a plataforma atual.\n\nPermissão necessária: `netbird:read`.",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ver as informações de instalação e o progresso de um programa gerenciado",
+        "tags": [
+          "Rede NetBird"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "Corpo `{\"version\": \"\", \"proxy\": \"\"}`: um `version` vazio instala a versão estável mais recente (se já estiver instalada nada é baixado e `stage` é uptodate), caso contrário a versão indicada; `proxy` é o proxy de download (http, https ou socks5), salvo para a próxima vez, e vazio usa a configuração global `updateProxy`. O download é verificado pelo SHA-256 e instalado em bin no diretório de configuração, a versão existente vai para as versões anteriores e os processos que usam o programa são reiniciados. Responde imediatamente; consulte o progresso com `GET /api/{module}/install`.\n\nPermissão necessária: `netbird:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Instalar ou atualizar online um programa gerenciado",
+        "tags": [
+          "Rede NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/install/backups/{id}": {
+      "delete": {
+        "description": "Permissão necessária: `netbird:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Excluir uma versão anterior salva",
+        "tags": [
+          "Rede NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/install/check": {
+      "post": {
+        "description": "Sem corpo de requisição. Consulta a versão estável mais recente no projeto de origem (pelo proxy de download do programa ou, se não houver, pela configuração global `updateProxy`) sem baixar nem alterar o programa instalado; retorna o mesmo que `GET /api/{module}/install`, em que `latest` é `{version, checkedAt, error, hasUpdate}` e `hasUpdate` indica que a versão mais recente é mais nova que a instalada em bin. Com a verificação automática de atualizações ativada, o Gately também executa essa verificação periodicamente para os programas gerenciados instalados. Retorna 409 se já houver uma verificação em andamento.\n\nPermissão necessária: `netbird:write`.",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Verificar atualizações de um programa gerenciado",
+        "tags": [
+          "Rede NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/install/rollback": {
+      "post": {
+        "description": "Corpo `{\"id\": \"\u003cID da versão anterior\u003e\"}`. A versão atual é salva como versão anterior para que você possa voltar; depois os processos que usam o programa são reiniciados.\n\nPermissão necessária: `netbird:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Mudar para uma versão anterior salva",
+        "tags": [
+          "Rede NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/logout": {
+      "post": {
+        "description": "Executa `netbird logout`: cancela o registro desta máquina no servidor de gerenciamento e apaga o login local, removendo-a da lista de pares da rede; para entrar de novo é preciso fazer login outra vez ou usar uma chave de configuração.\n\nPermissão necessária: `netbird:write`.",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Sair do NetBird",
+        "tags": [
+          "Rede NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/logs": {
+      "delete": {
+        "description": "Permissão necessária: `netbird:write`.",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Limpar logs de execução do módulo",
+        "tags": [
+          "Rede NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio (correspondência parcial), `site` nome do site (correspondência exata; retorna só o log de acesso desse site), `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `netbird:read`.",
+        "parameters": [
+          {
+            "description": "Busca incremental: retorna apenas logs com número de sequência maior que este valor",
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Carregar logs anteriores: retorna apenas logs com número de sequência menor que este valor",
+            "in": "query",
+            "name": "before",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Número máximo de entradas retornadas, pegando as mais recentes que correspondem; 0 ou omitido significa sem limite",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Nível mínimo: debug, info, warn ou error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Rótulo de origem, correspondência exata sem diferenciar maiúsculas",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Palavras-chave: separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um - inicial exclui",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Palavras-chave excluídas: separadas por espaço, aspas duplas agrupam uma frase; a entrada que contiver qualquer uma é excluída; aplica-se junto com q",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Endereço do cliente: endereço completo, CIDR ou parte do endereço, separados por vírgula; o prefixo ! ou - exclui",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Parte do nome do site ou do domínio",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Código de status como 404, 4xx, 500-599, separados por vírgula",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Com 1, oculta os logs de acesso de origens banidas: as requisições rejeitadas pelo banimento e todas as de origens que continuam banidas, incluindo as que causaram o banimento (afeta apenas a resposta; os logs continuam salvos)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Com 1, oculta as requisições que trazem uma sessão do painel de administração, ou seja, os logs de acesso gerados por administradores acessando o painel por um site do Serviço Web",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Hora de início, RFC 3339 ou carimbo de data/hora em milissegundos",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Hora de término, RFC 3339 ou carimbo de data/hora em milissegundos",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ver logs de execução do módulo",
+        "tags": [
+          "Rede NetBird"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/reset": {
+      "post": {
+        "description": "Disponível em frp, Túnel Cloudflare, Tailscale, NetBird e File Browser; sem corpo. Para todos os processos do módulo, restaura as configurações padrão (incluindo o caminho do programa e o proxy de download) e exclui os arquivos que o Gately gerou para ele: os arquivos de configuração do frp, o diretório de dados de cada instância do File Browser (usuários, links de compartilhamento e caches), o estado de login no diretório de estado padrão do Tailscale (um tailscaled gerenciado pelo Gately em execução sai da conta antes; diretórios de estado personalizados e um tailscaled do sistema não são tocados) e o estado de login e as chaves no diretório de estado padrão do NetBird (um daemon gerenciado pelo Gately em execução faz logout antes, removendo esta máquina da rede; diretórios de estado personalizados e um serviço NetBird do sistema não são tocados). As configurações antigas ficam no histórico de configuração e podem ser restauradas; os programas instalados não são afetados, para desinstalar use `DELETE /api/{module}/install`.\n\nPermissão necessária: `netbird:write`.",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Restaurar as configurações padrão do módulo",
+        "tags": [
+          "Rede NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/restart": {
+      "post": {
+        "description": "Permissão necessária: `netbird:write`.",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Reiniciar o NetBird",
+        "tags": [
+          "Rede NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/secrets": {
+      "get": {
+        "description": "Permissão necessária: `netbird:write`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ver segredos em texto puro",
+        "tags": [
+          "Rede NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/settings": {
+      "get": {
+        "description": "Retorna `settings` (a chave de configuração `setupKey` vem mascarada), `defaultStateDir` (o diretório de estado usado quando `stateDir` está vazio) e `defaultManagementUrl` (o endereço do NetBird Cloud usado quando `managementUrl` está vazio).\n\nPermissão necessária: `netbird:read`.",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ler as configurações do NetBird",
+        "tags": [
+          "Rede NetBird"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Reinicia com as novas configurações: com o daemon gerenciado, `netbird service run` é reiniciado e `netbird up` é executado; a conexão automática do próprio daemon fica desligada e up é executado de novo sempre que o daemon é reiniciado após uma falha. Com um daemon externo já conectado, a conexão é derrubada antes e depois `netbird up` é executado para aplicar as novas configurações. Um `setupKey` igual a `********` mantém a chave salva; `installProxy` só é alterado pelos endpoints de instalação. Os interruptores são sempre passados explicitamente ao netbird up: `acceptRoutes` é o inverso de `--disable-client-routes`, `serverRoutes` o inverso de `--disable-server-routes`, `acceptDns` o inverso de `--disable-dns` e `blockInbound` corresponde a `--block-inbound`.\n\nPermissão necessária: `netbird:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Salvar as configurações do NetBird",
+        "tags": [
+          "Rede NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/status": {
+      "get": {
+        "description": "`daemonStatus` é Idle, Connecting, Connected, NeedsLogin, LoginFailed ou SessionExpired. Sem chave de configuração, `authUrl` é o link de login (no Linux, login por código de dispositivo, que pode ser aberto em qualquer dispositivo; no macOS e no Windows normalmente precisa ser concluído em um navegador daquela máquina) e `authCode` é o código a digitar (vazio quando o link já o contém); o link é renovado automaticamente ao expirar. `peers` são os demais pares da rede e `connType` é P2P ou Relayed.\n\nPermissão necessária: `netbird:read`.",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ver o status de conexão do NetBird",
+        "tags": [
+          "Rede NetBird"
+        ],
+        "x-required-scope": "netbird:read",
         "x-token-allowed": true
       }
     },
@@ -32335,7 +33261,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Disponível em frp, Túnel Cloudflare, Tailscale e File Browser. Retorna a versão instalada em bin no diretório de configuração, as versões anteriores salvas (`backups`, no máximo 3), o proxy de download definido para este programa (`proxy`), a plataforma atual e o progresso da instalação `state` (`stage` é checking, downloading, verifying, extracting, done, uptodate ou failed). Um `unsupported` não vazio indica que o projeto não oferece programa para a plataforma atual.\n\nPermissão necessária: `tailscale:read`.",
+        "description": "Disponível em frp, Túnel Cloudflare, Tailscale, NetBird e File Browser. Retorna a versão instalada em bin no diretório de configuração, as versões anteriores salvas (`backups`, no máximo 3), o proxy de download definido para este programa (`proxy`), a plataforma atual e o progresso da instalação `state` (`stage` é checking, downloading, verifying, extracting, done, uptodate ou failed). Um `unsupported` não vazio indica que o projeto não oferece programa para a plataforma atual.\n\nPermissão necessária: `tailscale:read`.",
         "responses": {
           "200": {
             "description": "Sucesso"
@@ -32889,7 +33815,7 @@
     },
     "/api/tailscale/reset": {
       "post": {
-        "description": "Disponível em frp, Túnel Cloudflare, Tailscale e File Browser; sem corpo. Para todos os processos do módulo, restaura as configurações padrão (incluindo o caminho do programa e o proxy de download) e exclui os arquivos que o Gately gerou para ele: os arquivos de configuração do frp, o diretório de dados de cada instância do File Browser (usuários, links de compartilhamento e caches) e o estado de login no diretório de estado padrão do Tailscale (um tailscaled gerenciado pelo Gately em execução sai da conta antes; diretórios de estado personalizados e um tailscaled do sistema não são tocados). As configurações antigas ficam no histórico de configuração e podem ser restauradas; os programas instalados não são afetados, para desinstalar use `DELETE /api/{module}/install`.\n\nPermissão necessária: `tailscale:write`.",
+        "description": "Disponível em frp, Túnel Cloudflare, Tailscale, NetBird e File Browser; sem corpo. Para todos os processos do módulo, restaura as configurações padrão (incluindo o caminho do programa e o proxy de download) e exclui os arquivos que o Gately gerou para ele: os arquivos de configuração do frp, o diretório de dados de cada instância do File Browser (usuários, links de compartilhamento e caches), o estado de login no diretório de estado padrão do Tailscale (um tailscaled gerenciado pelo Gately em execução sai da conta antes; diretórios de estado personalizados e um tailscaled do sistema não são tocados) e o estado de login e as chaves no diretório de estado padrão do NetBird (um daemon gerenciado pelo Gately em execução faz logout antes, removendo esta máquina da rede; diretórios de estado personalizados e um serviço NetBird do sistema não são tocados). As configurações antigas ficam no histórico de configuração e podem ser restauradas; os programas instalados não são afetados, para desinstalar use `DELETE /api/{module}/install`.\n\nPermissão necessária: `tailscale:write`.",
         "responses": {
           "200": {
             "description": "Sucesso"
@@ -42836,6 +43762,9 @@
       "name": "Rede Tailscale"
     },
     {
+      "name": "Rede NetBird"
+    },
+    {
       "name": "Travessia de rede interna frp"
     },
     {
@@ -42914,6 +43843,7 @@
     "ddns",
     "stun",
     "tailscale",
+    "netbird",
     "frp",
     "cloudflared",
     "ssl",

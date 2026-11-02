@@ -15,7 +15,7 @@ You can turn off a whole module under "Settings → Modules". A disabled module 
 | OIDC single sign-on | Offers the shared users to Gitea, OpenList, Grafana and other apps over OpenID Connect, replacing Authelia's OIDC provider | [View](/en/docs/modules/oidc) |
 | WAF Firewall | Coraza + OWASP CRS v4 | [View](/en/docs/modules/waf) |
 | Intrusion Prevention | Log jails (fail2ban-style), trap ports and port-scan detection, with bans synced to nftables | [View](/en/docs/modules/guard) |
-| Tailscale / frp / cloudflared | Networking and NAT traversal with managed official binaries | [View](/en/docs/modules/tunnels) |
+| Tailscale / NetBird / frp / cloudflared | Networking and NAT traversal with managed official binaries | [View](/en/docs/modules/tunnels) |
 | Docker | Container creation and editing, logs and terminal, Compose, image updates and upgrades, networks and volumes | [View](/en/docs/modules/docker) |
 | Web Terminal | SSH, Telnet, local shell, SFTP file manager, persistent sessions | [View](/en/docs/modules/terminal) |
 | Network Diagnostics | Ping, traceroute, port probe, DNS lookup, speed test, LAN scan | [View](/en/docs/modules/nettools) |
