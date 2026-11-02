@@ -29,12 +29,17 @@
             </div>
             <span v-if="!(w.ruleSets ?? []).length" class="muted">{{ t('common.none') }}</span>
           </Field>
+          <Field :label="t('waf.safeline')">
+            <span v-if="w.safeline?.enable" class="mono">{{ w.safeline.addr }}</span>
+            <span v-else class="muted">{{ t('waf.safelineOff') }}</span>
+          </Field>
           <Field :label="t('waf.thresholdParanoia')">{{ t('waf.thresholdValue', { inbound: w.inboundThreshold, outbound: w.outboundThreshold, level: w.paranoia }) }}</Field>
           <Field :label="t('waf.bodyCheck')">{{ bodySummary(w) }}</Field>
           <Field :label="t('waf.blocked')"><span :class="{ 'text-danger': w.blocked > 0 }">{{ w.blocked }}</span></Field>
           <Field :label="t('waf.matched')">{{ w.matched }}</Field>
-          <template v-if="!sorting && (w.error && w.enable)" #extra>
-            <div class="err-line">{{ w.error }}</div>
+          <template v-if="!sorting && w.enable && (w.error || (w.safeline?.enable && w.safelineError))" #extra>
+            <div v-if="w.error" class="err-line">{{ w.error }}</div>
+            <div v-else class="err-line">{{ t('waf.safelineErrorLine', { error: w.safelineError, policy: w.safeline.failClosed ? t('waf.safelineFailClosed') : t('waf.safelineFailOpen') }) }}</div>
           </template>
           <template v-if="sorting" #actions>
             <SortMoves :gl="gl" :it="it" />
@@ -90,7 +95,38 @@
           <el-input v-model="editing.skipBodyPaths" type="textarea" :rows="3" class="mono" :placeholder="'/api/upload\n/remote.php/dav/'" />
           <div class="help block">{{ t('waf.skipBodyPathsHelp') }}</div>
         </el-form-item>
+        <el-divider content-position="left">{{ t('waf.safelineSection') }}</el-divider>
+        <el-form-item :label="t('waf.safelineEnable')">
+          <el-switch v-model="editing.safeline.enable" />
+          <div class="help block">{{ t('waf.safelineHelp') }}</div>
+        </el-form-item>
+        <template v-if="editing.safeline.enable">
+          <el-form-item :label="t('waf.safelineAddr')">
+            <div class="sl-addr">
+              <el-input v-model="editing.safeline.addr" class="mono" placeholder="172.22.222.5:8000" />
+              <el-button :loading="testing" @click="testSafeLine">{{ t('waf.safelineTest') }}</el-button>
+            </div>
+            <div class="help block">{{ t('waf.safelineAddrHelp') }}</div>
+          </el-form-item>
+          <el-form-item :label="t('waf.safelineTimeout')">
+            <el-input-number v-model="editing.safeline.timeoutMs" :min="10" :max="30000" :step="100" />
+            <span class="unit">ms</span>
+          </el-form-item>
+          <el-form-item :label="t('waf.safelineBodyLimit')">
+            <el-input-number v-model="editing.safeline.bodyLimitKB" :min="0" :max="65536" :step="256" />
+            <span class="unit">KB</span>
+            <span class="help">{{ t('waf.safelineBodyLimitHelp') }}</span>
+          </el-form-item>
+          <el-form-item :label="t('waf.safelineOnError')">
+            <el-radio-group v-model="editing.safeline.failClosed">
+              <el-radio-button :value="false">{{ t('waf.safelineFailOpen') }}</el-radio-button>
+              <el-radio-button :value="true">{{ t('waf.safelineFailClosed') }}</el-radio-button>
+            </el-radio-group>
+            <div class="help block">{{ editing.safeline.failClosed ? t('waf.safelineFailClosedHelp') : t('waf.safelineFailOpenHelp') }}</div>
+          </el-form-item>
+        </template>
         <el-divider content-position="left">{{ t('waf.ruleSets') }}</el-divider>
+        <div v-if="editing.safeline.enable" class="help block rs-note">{{ t('waf.ruleSetsWithSafeline') }}</div>
         <div v-for="(r, i) in editing.ruleSets" :key="i" class="ruleset">
           <div class="ruleset-head">
             <el-switch v-model="r.enable" size="small" />
@@ -177,7 +213,17 @@ interface Instance {
   bodyLimitAction: string
   skipBodyPaths: string
   webdav: boolean
+  safeline: SafeLine
   remark: string
+}
+
+// SafeLine 是接入雷池检测引擎的设置
+interface SafeLine {
+  enable: boolean
+  addr: string
+  timeoutMs: number
+  bodyLimitKB: number
+  failClosed: boolean
 }
 
 interface InstanceView extends Instance {
@@ -185,6 +231,9 @@ interface InstanceView extends Instance {
   error?: string
   blocked: number
   matched: number
+  // safelineError 为最近一次雷池检测失败的原因，正常时为空
+  safelineError?: string
+  safelineErrors: number
 }
 
 const { t } = useI18n()
@@ -202,12 +251,17 @@ const gl = useGroupedList<InstanceView>({
 const crsFiles = ref<string[]>([])
 const editorVisible = ref(false)
 const saving = ref(false)
+const testing = ref(false)
 const editing = ref<Instance>(empty())
 // 定时刷新，标签页在后台时暂停
 const polling = usePolling(load, 5000)
 
 function empty(): Instance {
-  return { name: '', enable: true, mode: 'block', paranoia: 1, inboundThreshold: 5, outboundThreshold: 4, ruleSets: [{ enable: true, remark: t('waf.defaultRuleSetRemark'), type: 'crs', param: '' }], bodyLimitMB: 0, bodyLimitAction: 'reject', skipBodyPaths: '', webdav: false, remark: '' }
+  return { name: '', enable: true, mode: 'block', paranoia: 1, inboundThreshold: 5, outboundThreshold: 4, ruleSets: [{ enable: true, remark: t('waf.defaultRuleSetRemark'), type: 'crs', param: '' }], bodyLimitMB: 0, bodyLimitAction: 'reject', skipBodyPaths: '', webdav: false, safeline: emptySafeLine(), remark: '' }
+}
+
+function emptySafeLine(): SafeLine {
+  return { enable: false, addr: '', timeoutMs: 1000, bodyLimitKB: 1024, failClosed: false }
 }
 
 // bodySummary 概括请求体检查设置：上限、超限处理方式与跳过的路径数
@@ -225,6 +279,9 @@ function instStatus(w: InstanceView): { type: StatusType; text: string; title?: 
   }
   if (w.error) {
     return { type: 'error', text: t('waf.statusCompileFailed'), title: w.error }
+  }
+  if (w.safeline?.enable && w.safelineError) {
+    return { type: 'warn', text: t('waf.statusSafelineDown'), title: w.safelineError }
   }
   return { type: 'running', text: w.mode === 'block' ? t('waf.statusProtecting') : t('waf.statusDetecting') }
 }
@@ -249,12 +306,13 @@ async function load() {
 
 function openEditor(row?: InstanceView) {
   if (row) {
-    const { error: _e, blocked: _b, matched: _m, ...inst } = row
+    const { error: _e, blocked: _b, matched: _m, safelineError: _se, safelineErrors: _sn, ...inst } = row
     editing.value = JSON.parse(JSON.stringify(inst))
     editing.value.ruleSets = editing.value.ruleSets ?? []
     editing.value.bodyLimitAction = editing.value.bodyLimitAction || 'reject'
     editing.value.skipBodyPaths = editing.value.skipBodyPaths ?? ''
     editing.value.bodyLimitMB = editing.value.bodyLimitMB ?? 0
+    editing.value.safeline = { ...emptySafeLine(), ...(editing.value.safeline ?? {}) }
   } else {
     editing.value = empty()
   }
@@ -277,6 +335,23 @@ async function save() {
     ElMessage.error((e as Error).message)
   } finally {
     saving.value = false
+  }
+}
+
+// testSafeLine 测试雷池检测引擎：确认连接，并送检一个示例攻击确认检测引擎能识别
+async function testSafeLine() {
+  testing.value = true
+  try {
+    const r = await api.post<{ latencyMs: number; blocked: boolean; eventId?: string }>('/api/waf/safeline/test', editing.value.safeline)
+    if (r.blocked) {
+      ElMessage.success(t('waf.safelineTestOk', { ms: r.latencyMs.toFixed(1), id: r.eventId || '-' }))
+    } else {
+      ElMessage.warning(t('waf.safelineTestNotBlocked', { ms: r.latencyMs.toFixed(1) }))
+    }
+  } catch (e) {
+    ElMessage.error((e as Error).message)
+  } finally {
+    testing.value = false
   }
 }
 
@@ -358,6 +433,17 @@ onMounted(async () => {
 }
 .remark {
   margin-top: 16px;
+}
+.sl-addr {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+.sl-addr .el-input {
+  flex: 1;
+}
+.rs-note {
+  margin-bottom: 10px;
 }
 .unit {
   margin: 0 10px 0 6px;
