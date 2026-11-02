@@ -10,6 +10,7 @@ Un pare-feu applicatif web basé sur [Coraza](https://coraza.io/) et OWASP CRS v
 - Mode blocage et mode détection seule ;
 - Limite d'inspection du corps de requête réglable : au-delà, la requête est rejetée ou seul le début est inspecté ; l'inspection du corps peut être ignorée par chemin ;
 - Mode de compatibilité WebDAV : autorise les méthodes, les en-têtes et tout type de contenu d'envoi utilisés par les clouds personnels et WebDAV ;
+- Peut utiliser un moteur de détection SafeLine auto-hébergé, seul ou avec des groupes de règles ;
 - Plusieurs instances, référencées par les sites selon les besoins.
 
 ## Recommandations
@@ -38,6 +39,33 @@ Par défaut, le WAF n'inspecte que les corps de requête jusqu'à 12,5 Mo et rej
 Pour les clouds personnels et les sites WebDAV, créez de préférence une instance dédiée : activez « Compatible WebDAV et envois », choisissez « Inspecter uniquement le début » et, si nécessaire, ajoutez les points d'envoi aux chemins sans inspection ; les autres sites gardent les réglages par défaut.
 
 curl, rclone et d'autres clients envoient l'en-tête `Expect: 100-continue` pour les envois volumineux, en-tête que CRS 4 bloque par défaut. Toutes les instances de Gately autorisent cet en-tête (Gately gère lui-même le 100-continue) : aucun réglage supplémentaire n'est nécessaire.
+
+## Utiliser SafeLine
+
+[SafeLine](https://waf.chaitin.com/) est un pare-feu applicatif web de Chaitin Tech qui détecte les attaques grâce à un moteur d’analyse sémantique et produit peu de faux positifs. Gately peut envoyer les requêtes à votre moteur de détection SafeLine auto-hébergé (safeline-detector) et les autoriser ou les bloquer selon le résultat ; les points d’entrée, les certificats, l’authentification et les bannissements restent gérés par Gately, SafeLine n’a donc plus besoin d’être une couche de proxy inverse supplémentaire.
+
+1. Installez SafeLine Community Edition en suivant sa documentation officielle ; le répertoire d’installation par défaut est `/data/safeline`.
+2. Choisissez comment vous connecter au moteur de détection :
+   - **Socket Unix** (Gately et SafeLine sur la même machine) : le moteur écoute par défaut sur `/data/safeline/resources/detector/snserver.sock`, utilisez donc l’adresse `unix:/data/safeline/resources/detector/snserver.sock`. Si Gately tourne dans Docker, montez le répertoire `/data/safeline/resources/detector` dans le conteneur Gately et utilisez le chemin dans le conteneur.
+   - **TCP** : ajoutez les deux lignes ci-dessous à `/data/safeline/resources/detector/detector.yml`, puis exécutez `docker restart safeline-detector`. Une fois passé en TCP, le moteur n’écoute plus sur le socket Unix.
+
+     ```yaml
+     bind_addr: 0.0.0.0
+     listen_port: 8000
+     ```
+
+     Utilisez comme adresse l’IP et le port du conteneur safeline-detector, par exemple `172.22.222.5:8000` ; `docker inspect safeline-detector | grep IPAddress` affiche l’IP du conteneur. Si Gately tourne sur un réseau bridge Docker, connectez-le au réseau de SafeLine avec `docker network connect safeline-ce <nom du conteneur Gately>`. Le moteur de détection n’a pas d’authentification : n’exposez pas le port 8000 sur Internet.
+3. Dans l’instance WAF, activez « Utiliser SafeLine », saisissez l’adresse et cliquez sur « Tester la connexion ». Gately envoie un battement puis une requête d’injection SQL d’exemple à inspecter ; « l’attaque d’exemple a été détectée » signifie que le moteur fonctionne. Cette attaque d’exemple apparaît dans l’historique des attaques de la console SafeLine avec la source 127.0.0.1 et le domaine gately-test.invalid.
+4. Référencez l’instance depuis un site du Service Web.
+
+Remarques :
+
+- Avec SafeLine connecté, les groupes de règles peuvent rester vides ; si vous les conservez, les requêtes passent d’abord par SafeLine puis par les groupes de règles. En mode « Détection seule », les attaques détectées par SafeLine sont seulement journalisées et la requête continue.
+- Requêtes bloquées : les navigateurs voient une page de blocage avec l’ID d’événement, les autres clients reçoivent le même JSON que les plugins officiels de SafeLine (avec `event_id`). Le code d’état est celui indiqué par le moteur, généralement 403. Les blocages sont comptés dans les journaux d’accès (`deny=waf`), les statistiques du site et les événements de blocage du WAF, et le préréglage « Blocages du WAF » de la Protection contre les intrusions s’applique aussi.
+- Les attaques sont également enregistrées dans la console SafeLine et peuvent être retrouvées par ID d’événement ; ces enregistrements n’appartiennent à aucun site SafeLine.
+- Par défaut, jusqu’à 1024 Ko du corps de la requête sont envoyés pour inspection ; le reste n’est pas inspecté et est transmis tel quel au backend. « Chemins sans inspection du corps » et « Compatible WebDAV et envois » s’appliquent aussi à SafeLine ; les corps gRPC de longueur inconnue ne sont pas inspectés.
+- Le délai de détection est de 1 seconde par défaut. Si le moteur est indisponible (échec de connexion ou délai dépassé), les requêtes sont autorisées par défaut, l’instance affiche « SafeLine indisponible » et une erreur est journalisée ; avec « Rejeter les requêtes », ces requêtes reçoivent 503. Juste après son démarrage, le moteur peut renvoyer pendant quelques secondes des résultats non reconnus, traités de la même façon.
+- Seules les requêtes sont inspectées ; les réponses ne sont pas envoyées à SafeLine.
 
 ## Tests
 

@@ -10,6 +10,7 @@
 - 拦截模式与仅检测模式；
 - 请求体检查上限可调，超过上限时拒绝请求或只检查前面部分；可按路径跳过请求体检查；
 - WebDAV 兼容模式：放行网盘、WebDAV 用到的方法、请求头与任意上传内容类型；
+- 可接入自行部署的雷池（SafeLine）检测引擎，单独使用或与规则组同时使用；
 - 多个实例，站点按需引用。
 
 ## 使用建议
@@ -38,6 +39,33 @@ WAF 默认只检查不超过 12.5 MB 的请求体，更大的请求会被拒绝�
 推荐为网盘、WebDAV 这类站点单独建一个实例：开启「兼容 WebDAV 与上传」并选择「只检查前面部分」，必要时把上传接口加入跳过路径，其他站点继续使用默认设置。
 
 curl、rclone 等客户端上传较大的内容时会带 `Expect: 100-continue` 请求头，CRS 4 默认会拦截它。Gately 的所有实例都放行该请求头（由 Gately 自行处理 100-continue），不需要额外设置。
+
+## 接入雷池（SafeLine）
+
+[雷池](https://waf-ce.chaitin.cn/)是长亭科技的 Web 应用防火墙，靠语义分析引擎识别攻击，误报较少。Gately 可以把请求送到你自己部署的雷池检测引擎（safeline-detector）检测，按结果放行或拦截；入口、证书、认证与封禁仍由 Gately 负责，雷池不必再当一层反向代理。
+
+1. 按雷池官方文档安装社区版，默认安装目录为 `/data/safeline`。
+2. 选择连接检测引擎的方式：
+   - **Unix 套接字**（Gately 与雷池在同一台机器上）：检测引擎默认监听 `/data/safeline/resources/detector/snserver.sock`，地址填 `unix:/data/safeline/resources/detector/snserver.sock`。Gately 运行在 Docker 中时，把 `/data/safeline/resources/detector` 目录挂载进 Gately 容器，地址填容器内的路径。
+   - **TCP**：在 `/data/safeline/resources/detector/detector.yml` 中写入下面两行，再执行 `docker restart safeline-detector`。改为 TCP 后检测引擎不再监听 Unix 套接字。
+
+     ```yaml
+     bind_addr: 0.0.0.0
+     listen_port: 8000
+     ```
+
+     地址填 safeline-detector 容器的 IP 与端口，例如 `172.22.222.5:8000`，容器 IP 可以用 `docker inspect safeline-detector | grep IPAddress` 查看。Gately 运行在 Docker 的 bridge 网络中时，用 `docker network connect safeline-ce <Gately 容器名>` 把它接入雷池的网络。检测引擎没有认证，不要把 8000 端口暴露到公网。
+3. 在 WAF 实例中打开「接入雷池」，填写地址后点「测试连接」。Gately 先发送心跳，再送检一个示例 SQL 注入请求，提示「示例攻击已被识别」说明检测引擎工作正常。这条示例攻击会出现在雷池控制台的攻击记录中，来源为 127.0.0.1，域名为 gately-test.invalid。
+4. 在 Web 服务的站点中引用这个实例。
+
+说明：
+
+- 接入雷池后规则组可以留空；同时保留规则组时，请求先经雷池检测，再经规则组检查。「仅检测」模式下，雷池识别出的攻击只写日志，请求照常放行。
+- 被拦截的请求：浏览器看到带事件 ID 的拦截页，其他客户端得到与雷池官方插件相同的 JSON（含 `event_id`）。状态码采用检测引擎给出的值，通常为 403。拦截计入访问日志（`deny=waf`）、站点统计与 WAF 拦截事件，入侵防护的「WAF 拦截」预设同样生效。
+- 攻击记录也会写入雷池控制台，可以按事件 ID 查到；这些记录不归属雷池中的任何站点。
+- 送检的请求体默认最多 1024 KB，超出部分不送检、原样转发给后端。「跳过请求体的路径」与「兼容 WebDAV 与上传」对雷池同样生效；长度未知的 gRPC 请求体不送检。
+- 检测超时默认 1 秒。检测引擎不可用（连接失败、超时）时默认放行请求，实例显示「雷池不可用」并写入错误日志；选择「拒绝请求」后，这类请求返回 503。检测引擎刚启动的几秒内可能返回无法识别的结果，同样按不可用处理。
+- 只检测请求，不送检响应。
 
 ## 验证
 
