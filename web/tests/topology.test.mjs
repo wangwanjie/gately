@@ -1,7 +1,7 @@
 // 拓扑视图纯函数的单元测试：node --test tests/（Node 22.18+ 可直接加载 .ts）
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { ROW, PAD_Y, activeAt, buildLayout, resolveId, isColumnar, maskDomain, maskDomainText, edgeWidth, flowLevel, formatCount, formatQps, ipPath, isValidIP, maskIP, maskText, maskURL, nodeCovers, pathOf, siteMatches, terminalId } from '../src/topology.ts'
+import { ROW, PAD_Y, Aliases, activeAt, aliasDomain, aliasDomainText, aliasIP, aliasText, aliasURL, filterActive, filterView, buildLayout, resolveId, isColumnar, maskDomain, maskDomainText, edgeWidth, flowLevel, formatCount, formatQps, ipPath, isValidIP, maskIP, maskText, maskURL, nodeCovers, pathOf, siteMatches, terminalId } from '../src/topology.ts'
 
 const rate = (qps = 0, bps = 0) => ({ qps, bps, qps60: qps })
 const up = (id, url, healthy = true) => ({ id, url, weight: 1, healthy, conns: 0, requests: 0, bytes: 0, rate: rate(1, 10) })
@@ -378,4 +378,61 @@ test('buildLayout 矩形树图父节点顶部留出名称的高度', () => {
   const l = buildLayout(view(), new Set(), '', { mode: 'treemap' })
   assert.ok(l.byId.get('l:a').y - l.byId.get('gately').y >= 20)
   assert.ok(l.byId.get('u:a/app/0').y - l.byId.get('s:a/app').y >= 18)
+})
+
+test('filterView 按监听、异常与拦截原因筛选', () => {
+  const v = view()
+  assert.equal(filterView(v, {}), v)
+  assert.equal(filterActive({ listeners: [], blocked: [] }), false)
+  // 只按监听筛选：保留整个监听
+  const onlyA = filterView(v, { listeners: ['a'] })
+  assert.deepEqual(onlyA.listeners.map((l) => l.key), ['a'])
+  assert.equal(onlyA.listeners[0].actions.length, 1)
+  // 只看异常：App 有不健康的后端，默认站点正常；监听级动作隐藏
+  const issues = filterView(v, { issues: true })
+  assert.deepEqual(issues.listeners[0].sites.map((s) => s.key), ['app'])
+  assert.equal(issues.listeners[0].actions.length, 0)
+  // 停用的监听不算启动失败
+  assert.ok(!issues.listeners.some((l) => l.key === 'b'))
+  // 启动失败的监听保留全部站点
+  v.listeners[1].enable = true
+  v.listeners[1].error = 'listen tcp :80: bind: address already in use'
+  const failed = filterView(v, { issues: true })
+  assert.equal(failed.listeners.find((l) => l.key === 'b').sites.length, v.listeners[1].sites.length)
+  // 按拦截原因：只保留出现过所选原因拦截的站点，无剩余站点的监听隐藏
+  v.listeners[0].sites[1].blocked = { waf: 2 }
+  const waf = filterView(v, { blocked: ['waf'] })
+  assert.deepEqual(waf.listeners.map((l) => l.sites.map((s) => s.key)), [['default']])
+  assert.equal(filterView(v, { blocked: ['ban'] }).listeners.length, 0)
+  // 原数据不被修改
+  assert.equal(v.listeners[0].sites.length, 2)
+})
+
+test('代号打码：同值同号、不同值不同号、不保留片段', () => {
+  const a = new Aliases()
+  assert.equal(aliasIP(a, '203.0.113.45', 'Visitor'), 'Visitor-01')
+  assert.equal(aliasIP(a, '203.0.113.46', 'Visitor'), 'Visitor-02')
+  assert.equal(aliasIP(a, '203.0.113.45', 'Visitor'), 'Visitor-01')
+  assert.equal(aliasIP(a, '2001:DB8::1', 'Visitor'), 'Visitor-03')
+  assert.equal(aliasIP(a, '2001:db8::1', 'Visitor'), 'Visitor-03')
+  assert.equal(aliasIP(a, '0.0.0.0', 'Listen'), '0.0.0.0')
+  // 类别之间独立编号
+  assert.equal(aliasIP(a, '203.0.113.45', 'Backend'), 'Backend-01')
+  assert.equal(aliasURL(a, 'http://10.0.0.1:8080/api', 'Backend'), 'http://Backend-02:8080/api')
+  assert.equal(aliasURL(a, 'https://[fd00::9]:8443', 'Backend'), 'https://[Backend-03]:8443')
+  // 域名：同一可注册域名下的子域名共享 domain 编号，主机部分各自编号，只保留公共后缀
+  assert.equal(aliasDomain(a, 'example.com'), 'domain-01.com')
+  assert.equal(aliasDomain(a, 'nas.home.example.com'), 'host-01.domain-01.com')
+  assert.equal(aliasDomain(a, 'app.example.com'), 'host-02.domain-01.com')
+  assert.equal(aliasDomain(a, '*.example.com'), '*.domain-01.com')
+  assert.equal(aliasDomain(a, 'shop.example.com.cn'), 'host-03.domain-02.com.cn')
+  assert.equal(aliasDomain(a, 'nas'), 'host-04')
+  assert.equal(aliasDomain(a, 'NAS'), 'host-04')
+  assert.equal(aliasDomain(a, '*'), '*')
+  assert.equal(aliasURL(a, 'http://app.example.com:5000', 'Backend'), 'http://host-02.domain-01.com:5000')
+  assert.equal(aliasDomainText(a, '主站 app.example.com'), '主站 host-02.domain-01.com')
+  assert.equal(aliasText(a, 'listen tcp 192.168.1.5:443: bind: address already in use', 'Listen'), 'listen tcp Listen-01:443: bind: address already in use')
+  assert.equal(aliasText(a, 'listen tcp [fd00::5]:443: bind', 'Listen'), 'listen tcp [Listen-02]:443: bind')
+  // 新的映射表重新编号
+  assert.equal(aliasIP(new Aliases(), '203.0.113.46', 'Visitor'), 'Visitor-01')
 })

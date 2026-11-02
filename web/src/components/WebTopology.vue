@@ -37,6 +37,44 @@
           <span class="kpi" :title="t('webTopology.activeHelp')"><b>{{ data.active }}</b> {{ t('webTopology.active') }}</span>
           <span class="kpi" :title="t('webTopology.activeIpsHelp')"><b>{{ data.ipTotal }}</b> IP</span>
         </div>
+        <!-- 筛选：按监听、运行异常与拦截原因裁剪拓扑，各条件同时生效 -->
+        <el-dropdown trigger="click" placement="bottom-end" :hide-on-click="false" :max-height="460" @command="onFilterCommand">
+          <el-button :type="filtering ? 'primary' : 'default'">
+            <ListFilter :size="14" class="btn-ic" />{{ filterCount ? t('webTopology.filterN', { n: filterCount }) : t('webTopology.filter') }}<ChevronDown :size="14" class="btn-caret" />
+          </el-button>
+          <template #dropdown>
+            <el-dropdown-menu class="topo-mask-menu">
+              <el-dropdown-item command="issues">
+                <span class="mm-box" :class="{ on: filter.issues }"><Check v-if="filter.issues" :size="12" /></span>
+                <span class="lm-text">
+                  <span class="lm-name">{{ t('webTopology.filterIssues') }}</span>
+                  <span class="lm-desc">{{ t('webTopology.filterIssuesDesc') }}</span>
+                </span>
+              </el-dropdown-item>
+              <div class="mm-sec">{{ t('webTopology.filterBlocked') }}</div>
+              <el-dropdown-item v-for="r in BLOCK_REASONS" :key="r" :command="'blocked:' + r">
+                <span class="mm-box" :class="{ on: filter.blocked.includes(r) }"><Check v-if="filter.blocked.includes(r)" :size="12" /></span>
+                <span class="lm-text">
+                  <span class="lm-name">{{ t(blockKeys[r]) }}</span>
+                </span>
+              </el-dropdown-item>
+              <template v-if="listenerKeys.length > 1">
+                <div class="mm-sec">{{ t('webTopology.filterListeners') }}</div>
+                <el-dropdown-item v-for="l in data?.listeners ?? []" :key="l.key" :command="'listener:' + l.key">
+                  <span class="mm-box" :class="{ on: filter.listeners.includes(l.key) }"><Check v-if="filter.listeners.includes(l.key)" :size="12" /></span>
+                  <span class="lm-text">
+                    <span class="lm-name">{{ l.name || listenerAddr(l) }}</span>
+                    <span v-if="l.name" class="lm-desc mono">{{ listenerAddr(l) }}</span>
+                  </span>
+                </el-dropdown-item>
+              </template>
+              <el-dropdown-item v-if="filtering" command="clear" divided>
+                <X :size="15" class="lm-icon" />
+                <span class="lm-text"><span class="lm-name">{{ t('webTopology.filterClear') }}</span></span>
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
         <!-- 布局切换：下拉菜单列出各布局的图标与一句话说明，按钮只显示当前布局 -->
         <el-dropdown trigger="click" placement="bottom-end" @command="(m: LayoutMode) => (layoutMode = m)">
           <el-button>
@@ -56,11 +94,20 @@
           </template>
         </el-dropdown>
         <!-- 打码：主按钮开关，右侧下拉选择打码哪些内容 -->
-        <el-dropdown split-button trigger="click" :type="masked ? 'primary' : 'default'" :hide-on-click="false" @click="masked = !masked" @command="toggleMaskPart">
+        <el-dropdown split-button trigger="click" :type="masked ? 'primary' : 'default'" :hide-on-click="false" @click="masked = !masked" @command="onMaskCommand">
           <component :is="masked ? EyeOff : Eye" :size="14" class="btn-ic" />{{ t('webTopology.mask') }}
           <template #dropdown>
             <el-dropdown-menu class="topo-mask-menu">
               <div class="mm-head">{{ t('webTopology.maskTip') }}</div>
+              <!-- 打码方式：星号遮住部分内容，代号把整个值换成编号 -->
+              <el-dropdown-item v-for="st in MASK_STYLES" :key="st" :command="'style:' + st">
+                <span class="mm-radio" :class="{ on: maskStyle === st }" />
+                <span class="lm-text">
+                  <span class="lm-name">{{ t(maskStyleKeys[st]) }}</span>
+                  <span class="lm-desc">{{ t(maskStyleKeys[st] + 'Desc') }}</span>
+                </span>
+              </el-dropdown-item>
+              <div class="mm-sec">{{ t('webTopology.maskParts') }}</div>
               <el-dropdown-item v-for="p in MASK_PARTS" :key="p" :command="p">
                 <span class="mm-box" :class="{ on: maskParts.has(p) }"><Check v-if="maskParts.has(p)" :size="12" /></span>
                 <span class="lm-text">
@@ -248,7 +295,7 @@
             </svg>
             </Transition>
           </div>
-          <div v-if="!layout.nodes.some((n) => n.kind === 'listener')" class="canvas-hint">{{ query ? t('webTopology.noMatch') : t('webTopology.empty') }}</div>
+          <div v-if="!layout.nodes.some((n) => n.kind === 'listener')" class="canvas-hint">{{ query || filtering ? t('webTopology.noMatch') : t('webTopology.empty') }}</div>
           <!-- 缩放控件 -->
           <div class="zoom" @click.stop @pointerdown.stop @wheel.stop>
             <el-tooltip :content="t('webTopology.zoomOut')" placement="top">
@@ -377,6 +424,7 @@ import {
   Hand,
   Info,
   LayoutDashboard,
+  ListFilter,
   ListTree,
   LocateFixed,
   Lock,
@@ -401,13 +449,23 @@ import { useScrollLock } from '../composables/useScrollLock'
 import {
   COLS,
   LAYOUT_MODES,
+  BLOCK_REASONS,
   RADIAL_LABEL,
   SANKEY_COLS,
   SANKEY_LABEL,
   SANKEY_ROW,
+  Aliases,
   activeAt,
+  aliasDomain,
+  aliasDomainText,
+  aliasHost,
+  aliasIP,
+  aliasText,
+  aliasURL,
   buildLayout,
   edgeWidth,
+  filterActive,
+  filterView,
   flowLevel,
   formatCount,
   formatQps,
@@ -427,6 +485,8 @@ import {
   type LayoutEdge,
   type LayoutMode,
   type LayoutNode,
+  type MaskStyle,
+  type TopoFilter,
   type TopoIP,
   type TopologyView,
 } from '../topology'
@@ -497,6 +557,45 @@ function toggleMaskPart(p: MaskPart) {
     // 存储不可用时仅本次会话生效
   }
 }
+// onMaskCommand 处理打码菜单：style: 前缀切换打码方式，其余为打码范围
+function onMaskCommand(c: string) {
+  if (c.startsWith('style:')) {
+    maskStyle.value = c.slice(6) as MaskStyle
+    masked.value = true
+    return
+  }
+  toggleMaskPart(c as MaskPart)
+}
+
+// 打码方式：stars 星号遮住地址末段与域名中段，alias 把整个值换成代号；代号映射只保存在本页内存中
+const MASK_STYLES: MaskStyle[] = ['stars', 'alias']
+const maskStyleKeys: Record<MaskStyle, string> = {
+  stars: 'webTopology.maskStars',
+  alias: 'webTopology.maskAlias',
+}
+const maskStyleKey = 'gately.topology.maskStyle'
+const maskStyle = ref<MaskStyle>(readMaskStyle())
+watch(maskStyle, (v) => {
+  try {
+    localStorage.setItem(maskStyleKey, v)
+  } catch {
+    // 存储不可用时仅本次会话生效
+  }
+})
+function readMaskStyle(): MaskStyle {
+  try {
+    const v = localStorage.getItem(maskStyleKey) as MaskStyle
+    return MASK_STYLES.includes(v) ? v : 'stars'
+  } catch {
+    return 'stars'
+  }
+}
+const aliases = new Aliases()
+// aliasing 判断当前是否用代号打码
+function aliasing() {
+  return maskStyle.value === 'alias'
+}
+
 // hide 判断某类内容当前是否需要打码
 function hide(p: MaskPart) {
   return masked.value && maskParts.value.has(p)
@@ -517,6 +616,35 @@ function toggleListener(n: LayoutNode) {
 }
 
 const query = computed(() => props.query.trim())
+
+// 筛选条件只在本页内存中保存，离开页面后恢复为显示全部
+const filter = ref<Required<TopoFilter>>({ listeners: [], issues: false, blocked: [] })
+const filtering = computed(() => filterActive(filter.value))
+const filterCount = computed(() => filter.value.listeners.length + filter.value.blocked.length + (filter.value.issues ? 1 : 0))
+// onFilterCommand 处理筛选菜单：issues 切换只看异常，blocked:/listener: 前缀切换对应项，clear 清除全部
+function onFilterCommand(c: string) {
+  const f = { ...filter.value }
+  const toggle = (list: string[], v: string) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v])
+  if (c === 'clear') {
+    f.listeners = []
+    f.blocked = []
+    f.issues = false
+  } else if (c === 'issues') {
+    f.issues = !f.issues
+  } else if (c.startsWith('blocked:')) {
+    f.blocked = toggle(f.blocked, c.slice(8))
+  } else if (c.startsWith('listener:')) {
+    f.listeners = toggle(f.listeners, c.slice(9))
+  }
+  filter.value = f
+}
+// 已删除的监听不再参与筛选，避免筛选条件残留导致画布一直为空
+watch(listenerKeys, (keys) => {
+  const kept = filter.value.listeners.filter((k) => keys.includes(k))
+  if (kept.length !== filter.value.listeners.length) {
+    filter.value = { ...filter.value, listeners: kept }
+  }
+})
 
 // 布局方式（树形 / 径向），记住上次的选择
 const layoutKey = 'gately.topology.layout'
@@ -571,7 +699,7 @@ function toggleMore(n: LayoutNode) {
   expanded.value = next
 }
 
-const layout = computed(() => (data.value ? buildLayout(data.value, collapsedSet.value, query.value, { mode: layoutMode.value, expanded: expanded.value }) : undefined))
+const layout = computed(() => (data.value ? buildLayout(filterView(data.value, filter.value), collapsedSet.value, query.value, { mode: layoutMode.value, expanded: expanded.value }) : undefined))
 
 // 系统开启“减少动态效果”时不播放连线动画
 const reduceMotion = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
@@ -757,16 +885,30 @@ function nodeIcon(n: LayoutNode): string {
 }
 
 function showIP(ip: string) {
-  return hide('visitor') ? maskIP(ip) : ip
+  if (!hide('visitor')) {
+    return ip
+  }
+  return aliasing() ? aliasIP(aliases, ip, 'Visitor') : maskIP(ip)
 }
 
 // showURL 打码后端与跳转地址：IP 与主机名都隐藏
 function showURL(u: string) {
-  return hide('backend') ? maskURL(u, true) : u
+  if (!hide('backend')) {
+    return u
+  }
+  return aliasing() ? aliasURL(aliases, u, 'Backend') : maskURL(u, true)
+}
+
+// showListenIP 打码本机监听地址（含以 IP 作为域名的站点与监听错误信息中的地址）
+function showListenIP(h: string) {
+  if (!hide('listener')) {
+    return h
+  }
+  return aliasing() ? aliasHost(aliases, h, 'Listen') : maskHost(h)
 }
 
 function listenerAddr(l: NonNullable<LayoutNode['listener']>) {
-  const host = l.listenIp ? (hide('listener') ? maskHost(l.listenIp) : l.listenIp) : ''
+  const host = l.listenIp ? showListenIP(l.listenIp) : ''
   return (host.includes(':') ? `[${host}]` : host) + ':' + l.port
 }
 
@@ -776,7 +918,10 @@ function siteName(s: NonNullable<LayoutNode['site']>) {
   }
   if (s.name) {
     // 名称里常直接写域名，打码域名时一并隐藏
-    return hide('domain') ? maskDomainText(s.name) : s.name
+    if (!hide('domain')) {
+      return s.name
+    }
+    return aliasing() ? aliasDomainText(aliases, s.name) : maskDomainText(s.name)
   }
   return (s.domains[0] ? showHost(s.domains[0]) : '') || s.key
 }
@@ -784,9 +929,12 @@ function siteName(s: NonNullable<LayoutNode['site']>) {
 // showHost 打码站点域名：以 IP 作为域名的站点是本机地址，随监听地址打码，其余随域名打码
 function showHost(h: string) {
   if (isIPLiteral(h)) {
-    return hide('listener') ? maskHost(h) : h
+    return showListenIP(h)
   }
-  return hide('domain') ? maskDomain(h) : h
+  if (!hide('domain')) {
+    return h
+  }
+  return aliasing() ? aliasDomain(aliases, h) : maskDomain(h)
 }
 
 const typeKeys: Record<string, string> = {
@@ -1010,7 +1158,7 @@ const detail = computed<Detail | undefined>(() => {
       d.title = l.name || listenerAddr(l)
       d.sub = [listenerAddr(l), l.tls ? 'HTTPS' : 'HTTP', l.http3 ? 'HTTP/3' : ''].filter(Boolean).join(' · ')
       // 错误信息里常带监听地址（如 listen tcp 192.168.1.5:443: bind: ...）
-      d.error = hide('listener') && l.error ? maskText(l.error) : l.error
+      d.error = hide('listener') && l.error ? (aliasing() ? aliasText(aliases, l.error, 'Listen') : maskText(l.error)) : l.error
       d.tags.push(l.running ? { text: t('webTopology.running'), type: 'success' } : { text: l.enable ? t('webTopology.notRunning') : t('webTopology.disabled'), type: 'info' })
       if (l.tls && l.plainHttp === 'redirect') {
         d.tags.push({ text: t('webTopology.plainRedirect') })
@@ -2770,6 +2918,29 @@ defineExpose({ reload })
   border: 1px solid var(--el-border-color);
   border-radius: 4px;
   color: #fff;
+}
+.topo-mask-menu .mm-sec {
+  padding: 8px 14px 4px;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  border-top: 1px solid var(--el-border-color-lighter);
+  margin-top: 4px;
+}
+.topo-mask-menu .mm-radio {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--el-border-color);
+  border-radius: 50%;
+}
+.topo-mask-menu .mm-radio.on {
+  border: 5px solid var(--el-color-primary);
+}
+.topo-mask-menu .lm-icon {
+  flex-shrink: 0;
+}
+.topo-mask-menu .mono {
+  font-family: var(--el-font-family-mono, ui-monospace, monospace);
 }
 .topo-mask-menu .mm-box.on {
   border-color: var(--el-color-primary);

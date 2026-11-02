@@ -225,6 +225,68 @@ export function siteMatches(s: TopoSite, q: string): boolean {
   return s.upstreams.some((u) => u.url.toLowerCase().includes(k))
 }
 
+// TopoFilter 为拓扑筛选条件：listeners 只显示这些监听（key，为空时显示全部），
+// issues 只看运行异常（监听启动失败、站点未运行、后端不健康），blocked 只看出现过这些原因拦截的站点（自启动以来计数）。
+export interface TopoFilter {
+  listeners?: string[]
+  issues?: boolean
+  blocked?: string[]
+}
+
+// BLOCK_REASONS 为站点拦截计数的原因，与后端 SiteStats.blocked 的键一致
+export const BLOCK_REASONS = ['ban', 'ip', 'country', 'rateLimit', 'waf']
+
+// filterActive 判断筛选条件是否生效（用于按钮高亮与空结果提示）。
+export function filterActive(f: TopoFilter): boolean {
+  return !!(f.listeners?.length || f.issues || f.blocked?.length)
+}
+
+// listenerFailed 判断监听是否启动失败（已启用但未运行或有错误）。
+export function listenerFailed(l: TopoListener): boolean {
+  return l.enable && (!l.running || !!l.error)
+}
+
+// siteIssue 判断站点是否运行异常：已启用却未运行，或有后端被判定为不健康。
+export function siteIssue(s: TopoSite): boolean {
+  if (!s.enable) {
+    return false
+  }
+  return !s.running || s.upstreams.some((u) => u.healthy === false)
+}
+
+// filterView 按筛选条件裁剪拓扑数据，返回新的视图（不修改原数据），再交给 buildLayout 排版。
+// 各条件同时生效：先按监听筛选；只看异常时，启动失败的监听保留全部站点，其余监听只保留异常站点；
+// 按拦截原因筛选时只保留出现过所选原因拦截的站点。站点被筛掉的监听连同监听级动作一起隐藏。
+export function filterView(v: TopologyView, f: TopoFilter): TopologyView {
+  if (!filterActive(f)) {
+    return v
+  }
+  const only = f.listeners?.length ? new Set(f.listeners) : undefined
+  const reasons = f.blocked ?? []
+  const listeners: TopoListener[] = []
+  for (const l of v.listeners) {
+    if (only && !only.has(l.key)) {
+      continue
+    }
+    const failed = listenerFailed(l)
+    let sites = l.sites
+    if (f.issues && !failed) {
+      // 停用的监听下站点都不运行，属于预期状态，不算异常
+      sites = l.enable ? sites.filter(siteIssue) : []
+    }
+    if (reasons.length) {
+      sites = sites.filter((s) => reasons.some((r) => (s.blocked?.[r] ?? 0) > 0))
+    }
+    // 只按监听筛选时原样保留；其余条件下没有剩余站点的监听隐藏（启动失败的监听在只看异常且未按原因筛选时保留）
+    const narrowed = f.issues || reasons.length > 0
+    if (narrowed && !sites.length && !(f.issues && failed && !reasons.length)) {
+      continue
+    }
+    listeners.push(narrowed ? { ...l, sites, actions: [] } : l)
+  }
+  return { ...v, listeners }
+}
+
 // terminalId 返回非代理站点的去向节点编号。
 export function terminalId(siteId: string): string {
   return 't:' + siteId.slice(2)
@@ -963,6 +1025,110 @@ export function maskURL(raw: string, names = false): string {
     return raw
   }
   const host = isIPLiteral(m[2]) ? maskHost(m[2]) : names ? maskDomain(m[2]) : m[2]
+  return m[1] + host + m[3]
+}
+
+// 打码方式：stars 以 * 遮住地址末段与域名中段；alias 把整个值换成本页内一致的代号（如 Visitor-01、domain-02.com），
+// 不保留任何网段或域名片段，不同的值编号不同，画面上仍能分辨哪些节点相同。
+export type MaskStyle = 'stars' | 'alias'
+
+// Aliases 为代号映射表：同一类别内同一原始值始终得到同一个编号，按首次出现的顺序递增。
+// 映射只保存在页面内存中，刷新页面后重新编号。
+export class Aliases {
+  private maps = new Map<string, Map<string, string>>()
+
+  // token 返回 prefix 类别下 raw 的代号，如 Visitor-01；编号至少两位
+  token(prefix: string, raw: string): string {
+    let m = this.maps.get(prefix)
+    if (!m) {
+      m = new Map()
+      this.maps.set(prefix, m)
+    }
+    let v = m.get(raw)
+    if (!v) {
+      v = prefix + '-' + String(m.size + 1).padStart(2, '0')
+      m.set(raw, v)
+    }
+    return v
+  }
+}
+
+// 常见的二级公共后缀：这些后缀下的可注册域名多一段（如 example.com.cn）。不引入完整的公共后缀列表，覆盖常见情况即可
+const SECOND_LEVEL = new Set(['com', 'net', 'org', 'gov', 'edu', 'ac', 'co', 'ne', 'or', 'go'])
+
+// splitDomain 把域名拆成主机部分、可注册部分与公共后缀，如 a.b.example.com.cn → ['a.b', 'example', 'com.cn']。
+function splitDomain(host: string): [string, string, string] | undefined {
+  const labels = host.split('.')
+  if (labels.length < 2) {
+    return undefined
+  }
+  let n = 1
+  if (labels.length >= 3 && labels[labels.length - 1].length === 2 && SECOND_LEVEL.has(labels[labels.length - 2])) {
+    n = 2
+  }
+  const suffix = labels.slice(-n).join('.')
+  const reg = labels[labels.length - n - 1]
+  const sub = labels.slice(0, labels.length - n - 1).join('.')
+  return [sub, reg, suffix]
+}
+
+// aliasIP 把 IP 换成 prefix 类别的代号；通配地址（监听全部地址）不含信息，原样显示。
+export function aliasIP(a: Aliases, ip: string, prefix: string): string {
+  if (!ip || ip === '0.0.0.0' || ip === '::') {
+    return ip
+  }
+  return a.token(prefix, ip.toLowerCase())
+}
+
+// aliasHost 换掉地址中的 IP（IPv6 保留方括号），主机名不变。
+export function aliasHost(a: Aliases, host: string, prefix: string): string {
+  if (!isIPLiteral(host)) {
+    return host
+  }
+  if (host.startsWith('[')) {
+    return '[' + aliasIP(a, host.slice(1, -1), prefix) + ']'
+  }
+  return aliasIP(a, host, prefix)
+}
+
+// aliasDomain 把域名换成代号，只保留公共后缀与通配前缀：可注册部分按 domain-NN 编号，
+// 其上的主机部分按 host-NN 编号（同一可注册域名下的子域名共享 domain 编号），如 nas.home.example.com → host-01.domain-01.com。
+// 单段名称（如 localhost、nas）整体换成 host-NN，IP 原样返回由调用方按地址类别处理。
+export function aliasDomain(a: Aliases, host: string): string {
+  if (!host || isIPLiteral(host) || host === '*') {
+    return host
+  }
+  const wild = host.startsWith('*.')
+  const h = (wild ? host.slice(2) : host).toLowerCase()
+  const parts = splitDomain(h)
+  if (!parts) {
+    return (wild ? '*.' : '') + a.token('host', h)
+  }
+  const [sub, reg, suffix] = parts
+  const base = a.token('domain', reg + '.' + suffix) + '.' + suffix
+  return (wild ? '*.' : '') + (sub ? a.token('host', h) + '.' : '') + base
+}
+
+// aliasDomainText 换掉自由文本（如站点名称）中出现的域名。
+export function aliasDomainText(a: Aliases, text: string): string {
+  return text.replace(/(?<![\w.-])(?:\*\.)?(?:[a-z0-9_-]+\.)+[a-z][a-z0-9-]*[a-z](?![\w.-])/gi, (d) => aliasDomain(a, d))
+}
+
+// aliasText 换掉自由文本（如监听错误信息）中出现的 IP 地址。
+export function aliasText(a: Aliases, text: string, prefix: string): string {
+  return text
+    .replace(/\[([0-9a-fA-F:.]+)\]/g, (m, ip: string) => (ip.includes(':') ? '[' + aliasIP(a, ip, prefix) + ']' : m))
+    .replace(/(?<![\w.:])\d{1,3}(?:\.\d{1,3}){3}(?![\w.])/g, (ip) => aliasIP(a, ip, prefix))
+    .replace(/(?<![\w:[])(?:[0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}(?![\w:\]])/g, (ip) => (isValidIP(ip) ? aliasIP(a, ip, prefix) : ip))
+}
+
+// aliasURL 把后端或跳转地址的主机换成代号（保留协议、端口与路径）：IP 按 prefix 类别编号，主机名按域名编号。
+export function aliasURL(a: Aliases, raw: string, prefix: string): string {
+  const m = /^([a-z][a-z0-9+.-]*:\/\/)(\[[^\]]+\]|[^/:?#]+)(.*)$/i.exec(raw)
+  if (!m) {
+    return raw
+  }
+  const host = isIPLiteral(m[2]) ? aliasHost(a, m[2], prefix) : aliasDomain(a, m[2])
   return m[1] + host + m[3]
 }
 
