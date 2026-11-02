@@ -16,7 +16,7 @@
 1. `npm install`（只需 `playwright-core`），然后切到对应数据并跑流量。
 2. 截图：`./runA.sh <语言...>` 生成除终端外的页面，`./runTerm.sh <语言...>` 逐语言重启后截终端页（终端会话会累积标签页）。
 3. 拓扑动图：`./topoAll.sh <语言...>`，输出 `/tmp/gs/vid/<语言>/topology.webp`。
-4. 巡览视频：`node tour.mjs en|zh <输出目录>`，再用 ffmpeg 转 mp4：`ffmpeg -i tour.webm -an -c:v libx264 -preset slow -crf 27 -pix_fmt yuv420p -movflags +faststart gately-tour.<en|zh>.mp4`。README 里的视频由 GitHub 托管播放：在任一 issue 评论框粘贴 mp4（10 MB 以内）拿到 `https://github.com/user-attachments/assets/...` 链接，不提交评论，把链接单独放一行替换 README 顶部的旧链接；`website/public/videos/` 里的同名文件只供官网使用。
+4. 巡览视频：`node tour.mjs en|zh <输出目录>`，再用 ffmpeg 转 mp4，`-ss` 取脚本写出的 `trim.txt`（片头卡片完全显示的秒数），裁掉开头页面加载时的白屏，否则 GitHub 播放器和各平台封面都会取到白色首帧：`ffmpeg -ss $(cat trim.txt) -i tour.webm -an -c:v libx264 -preset slow -crf 27 -pix_fmt yuv420p -movflags +faststart gately-tour.<en|zh>.mp4`。README 里的视频由 GitHub 托管播放：在任一 issue 评论框粘贴 mp4（10 MB 以内）拿到 `https://github.com/user-attachments/assets/...` 链接，不提交评论，把链接单独放一行替换 README 顶部的旧链接；`website/public/videos/` 里的同名文件只供官网使用。
 5. 截图转 webp：`cwebp -q 78 -resize 2000 1250 in.png -o out.webp`。
 
 脚本里的路径（`/tmp/gs/...`）按本机习惯写死，换机器时先全局替换。

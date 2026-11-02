@@ -27,7 +27,7 @@ DNS e travessia de NAT, proxy reverso e certificados HTTPS, WAF e prevenção de
 
 > **Usuários do fnOS:** o Gately é distribuído como aplicativo nativo do fnOS. Ele se integra ao **gateway unificado do fnOS**, então abre pelo ícone na área de trabalho do fnOS e funciona no mesmo endereço que você usa para o fnOS, inclusive o seu domínio remoto, sem nenhuma porta extra para abrir. Depois de ativado, **os administradores do fnOS podem entrar diretamente com a sessão do fnOS**, sem a senha do Gately nem o código de verificação em dois fatores. Veja [Aplicativo nativo para fnOS](https://gately.cn/pt-BR/docs/guide/install#fnos).
 
-https://github.com/user-attachments/assets/5e12c870-f50d-490b-a4ea-f1b8055739d4
+https://github.com/user-attachments/assets/ae5b60a4-9402-4a66-86a1-48e40038b4d0
 
 ## Início rápido
 

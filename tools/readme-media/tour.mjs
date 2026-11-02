@@ -74,6 +74,9 @@ await ctx.addInitScript(({ l, logo }) => {
   if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', setup) } else { setup() }
 }, { l: locale, logo: LOGO })
 p = await ctx.newPage()
+// 录像从新建页面开始，页面加载前的帧是白屏；记下片头卡片完全显示的时刻，转码时从这里裁起
+const t0 = Date.now()
+let introAt = 0
 const sleep = (ms) => p.waitForTimeout(ms)
 const cap = (t) => p.evaluate((x) => window.__cap(x), t)
 const card = (h) => p.evaluate((x) => window.__card(x), h)
@@ -97,7 +100,7 @@ async function layout(i) {
 await p.goto(`${BASE}/#/overview`); await sleep(800)
 await p.evaluate(() => window.__cur(720, 450))
 // 片头
-await card(`${LOGO}<h1>${T.intro[0]}</h1><h2>${T.intro[1]}</h2><p>${T.intro[2]}</p>`); await sleep(4200); await card(null); await sleep(600)
+await card(`${LOGO}<h1>${T.intro[0]}</h1><h2>${T.intro[1]}</h2><p>${T.intro[2]}</p>`); await sleep(600); introAt = (Date.now() - t0) / 1000; await sleep(3600); await card(null); await sleep(600)
 // 概览
 await cap(T.overview); await sleep(3000); await scroll(600); await sleep(2500)
 // Web 服务
@@ -140,5 +143,6 @@ await sleep(6500)
 const v = p.video()
 await ctx.close()
 fs.renameSync(await v.path(), `${outDir}/tour.webm`)
+fs.writeFileSync(`${outDir}/trim.txt`, introAt.toFixed(2))
 await browser.close()
-console.log('done', lang)
+console.log('done', lang, 'trim', introAt.toFixed(2))

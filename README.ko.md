@@ -27,7 +27,7 @@
 
 > **fnOS 사용자:** Gately는 fnOS 네이티브 앱으로도 제공됩니다. **fnOS 통합 게이트웨이**에 연결되므로 fnOS 바탕 화면 아이콘으로 열 수 있고, 원격 도메인을 포함해 fnOS에 접속하는 주소 그대로 사용할 수 있으며 포트를 따로 열 필요가 없습니다. 기능을 켜면 **fnOS 관리자는 fnOS 로그인 상태로 바로 로그인**할 수 있어 Gately 비밀번호나 2단계 인증 코드가 필요 없습니다. 자세한 내용은 [fnOS 네이티브 앱](https://gately.cn/ko/docs/guide/install#fnos)을 참고하세요.
 
-https://github.com/user-attachments/assets/5e12c870-f50d-490b-a4ea-f1b8055739d4
+https://github.com/user-attachments/assets/ae5b60a4-9402-4a66-86a1-48e40038b4d0
 
 ## 빠른 시작
 

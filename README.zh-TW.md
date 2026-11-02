@@ -27,7 +27,7 @@
 
 > **飛牛 fnOS 使用者**：Gately 提供飛牛原生應用。它接入**飛牛統一閘道**，點擊飛牛桌面圖示即可開啟，遠端存取飛牛的網域同樣可用，無需額外開放連接埠；開啟後還支援**飛牛管理員登入狀態直接登入**，無需再輸入 Gately 密碼與兩步驟驗證碼。詳見[飛牛原生應用](https://gately.cn/zh-TW/docs/guide/install#fnos)。
 
-https://github.com/user-attachments/assets/ed8de7a2-d402-49fe-b34b-f14281dd4930
+https://github.com/user-attachments/assets/a86576dc-22f9-40f8-bc57-b013b044e139
 
 ## 快速開始
 
