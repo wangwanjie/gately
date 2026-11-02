@@ -7,6 +7,10 @@ description: Anuncios y notas de cada versión de Gately.
 
 A continuación se listan los anuncios de las versiones principales. Consulta [GitHub Releases](https://github.com/wangwanjie/gately/releases) para ver todos los cambios y las descargas de cada versión.
 
+## [v0.6.3](/es/news/v0.6.3)
+
+2 de noviembre de 2026 · Nueva supervisión del rendimiento (tendencias, tiempo hasta el primer byte y alertas por umbral); el WAF puede usar un motor de detección SafeLine autoalojado; las listas y los sitios de Servicios web admiten operaciones por lotes; las reglas STUN pueden abrir automáticamente los puertos del cortafuegos de esta máquina; corrige los fallos de emisión DNS-01 causados por CNAME comodín; los registros de Servicios web pueden ocultar los orígenes bloqueados y las solicitudes de la propia consola.
+
 ## [v0.6.2.3](/es/news/v0.6.2.3)
 
 2 de noviembre de 2026 · La topología de red pasa a tener su propia página con siete diseños, zoom y modo ventana completa, y categorías de ocultación a elegir; la página de inicio y los README muestran capturas en cada idioma, con un vídeo de recorrido de 2 minutos.

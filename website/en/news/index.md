@@ -7,6 +7,10 @@ description: Release announcements and notes for each Gately version.
 
 Announcements for major releases are listed below. See [GitHub Releases](https://github.com/wangwanjie/gately/releases) for the full changes and downloads of every version.
 
+## [v0.6.3](/en/news/v0.6.3)
+
+November 2, 2026 · New Performance module (trends, time to first byte and threshold alerts); WAF can use a self-hosted SafeLine detection engine; lists and Web Services sites support batch operations; STUN rules can open firewall ports on this machine automatically; fixes DNS-01 issuance failing because of wildcard CNAMEs; Web Services logs can hide banned sources and the console's own requests.
+
 ## [v0.6.2.3](/en/news/v0.6.2.3)
 
 November 2, 2026 · Network topology becomes its own page with seven layouts, zoom and full-window mode, and mask categories you can choose; the home page and READMEs show screenshots in each language, with a 2 minute tour video.
