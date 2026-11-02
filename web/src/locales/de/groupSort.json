@@ -1,5 +1,5 @@
 {
-  "sort": "Sortieren",
+  "sort": "Sortieren & Stapel",
   "sortDone": "Sortieren beenden",
   "group": "Gruppe",
   "groupPlaceholder": "Leer lassen für keine Gruppe oder eine vorhandene Gruppe wählen",
@@ -26,5 +26,14 @@
   "mergeConfirm": "Die Gruppe „{to}“ existiert bereits. „{from}“ damit zusammenführen?",
   "count": "{count} Einträge",
   "selectItem": "Diesen Eintrag auswählen",
-  "search": "Name, Gruppe, Notiz suchen"
+  "search": "Name, Gruppe, Notiz suchen",
+  "batchEnable": "Aktivieren",
+  "batchDisable": "Deaktivieren",
+  "batchRemove": "Löschen",
+  "batchEnabled": "{count} Einträge aktiviert",
+  "batchDisabled": "{count} Einträge deaktiviert",
+  "batchRemoved": "{count} Einträge gelöscht",
+  "batchRemoveTitle": "Auswahl löschen",
+  "batchRemoveConfirm": "Die {count} ausgewählten Einträge ({names}) löschen? Das lässt sich nicht rückgängig machen.",
+  "batchRemoveMore": " und {count} weitere"
 }

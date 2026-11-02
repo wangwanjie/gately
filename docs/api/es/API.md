@@ -74,6 +74,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/portforward/rules/{key}` | `portforward:write` | Eliminar Regla de reenvío de puertos |
 | PUT | `/api/portforward/rules/{key}/enable` | `portforward:write` | Activar o desactivar Regla de reenvío de puertos |
 | PUT | `/api/portforward/rules-order` | `portforward:write` | Reordenar Regla de reenvío de puertos |
+| PUT | `/api/portforward/rules-enable` | `portforward:write` | Activar o desactivar en lote: Regla de reenvío de puertos |
+| POST | `/api/portforward/rules-delete` | `portforward:write` | Eliminar en lote: Regla de reenvío de puertos |
 | PUT | `/api/portforward/rules-group` | `portforward:write` | Asignar grupo a varios elementos: Regla de reenvío de puertos |
 | GET | `/api/portforward/settings` | `portforward:read` | Leer los ajustes globales de reenvío de puertos |
 | PUT | `/api/portforward/settings` | `portforward:write` | Guardar los ajustes globales de reenvío de puertos |
@@ -90,6 +92,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/protoroute/rules/{key}` | `protoroute:write` | Eliminar regla de enrutamiento por protocolo |
 | PUT | `/api/protoroute/rules/{key}/enable` | `protoroute:write` | Activar o desactivar regla de enrutamiento por protocolo |
 | PUT | `/api/protoroute/rules-order` | `protoroute:write` | Reordenar regla de enrutamiento por protocolo |
+| PUT | `/api/protoroute/rules-enable` | `protoroute:write` | Activar o desactivar en lote: regla de enrutamiento por protocolo |
+| POST | `/api/protoroute/rules-delete` | `protoroute:write` | Eliminar en lote: regla de enrutamiento por protocolo |
 | PUT | `/api/protoroute/rules-group` | `protoroute:write` | Asignar grupo a varios elementos: regla de enrutamiento por protocolo |
 | GET | `/api/protoroute/settings` | `protoroute:read` | Leer los ajustes del enrutamiento por protocolo |
 | PUT | `/api/protoroute/settings` | `protoroute:write` | Guardar los ajustes del enrutamiento por protocolo |
@@ -106,6 +110,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/ddns/tasks/{key}` | `ddns:write` | Eliminar Tarea DDNS |
 | PUT | `/api/ddns/tasks/{key}/enable` | `ddns:write` | Activar o desactivar Tarea DDNS |
 | PUT | `/api/ddns/tasks-order` | `ddns:write` | Reordenar Tarea DDNS |
+| PUT | `/api/ddns/tasks-enable` | `ddns:write` | Activar o desactivar en lote: Tarea DDNS |
+| POST | `/api/ddns/tasks-delete` | `ddns:write` | Eliminar en lote: Tarea DDNS |
 | PUT | `/api/ddns/tasks-group` | `ddns:write` | Asignar grupo a varios elementos: Tarea DDNS |
 | GET | `/api/ddns/tasks/{key}/secrets` | `ddns:write` | Ver secretos en texto plano |
 | POST | `/api/ddns/tasks/{key}/sync` | `ddns:write` | Sincronizar ahora una tarea DDNS |
@@ -131,6 +137,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/stun/rules/{key}` | `stun:write` | Eliminar Regla STUN |
 | PUT | `/api/stun/rules/{key}/enable` | `stun:write` | Activar o desactivar Regla STUN |
 | PUT | `/api/stun/rules-order` | `stun:write` | Reordenar Regla STUN |
+| PUT | `/api/stun/rules-enable` | `stun:write` | Activar o desactivar en lote: Regla STUN |
+| POST | `/api/stun/rules-delete` | `stun:write` | Eliminar en lote: Regla STUN |
 | PUT | `/api/stun/rules-group` | `stun:write` | Asignar grupo a varios elementos: Regla STUN |
 | POST | `/api/stun/rules/{key}/restart` | `stun:write` | Reiniciar una regla STUN |
 | GET | `/api/stun/netinterfaces` | `stun:read` | Listar las tarjetas de red de este equipo y sus direcciones |
@@ -168,6 +176,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/frp/clients/{key}` | `frp:write` | Eliminar Cliente frp |
 | PUT | `/api/frp/clients/{key}/enable` | `frp:write` | Activar o desactivar Cliente frp |
 | PUT | `/api/frp/clients-order` | `frp:write` | Reordenar Cliente frp |
+| PUT | `/api/frp/clients-enable` | `frp:write` | Activar o desactivar en lote: Cliente frp |
+| POST | `/api/frp/clients-delete` | `frp:write` | Eliminar en lote: Cliente frp |
 | PUT | `/api/frp/clients-group` | `frp:write` | Asignar grupo a varios elementos: Cliente frp |
 | GET | `/api/frp/clients/{key}/secrets` | `frp:write` | Ver secretos en texto plano |
 | GET | `/api/frp/servers` | `frp:read` | Listar Servidor frp |
@@ -176,6 +186,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/frp/servers/{key}` | `frp:write` | Eliminar Servidor frp |
 | PUT | `/api/frp/servers/{key}/enable` | `frp:write` | Activar o desactivar Servidor frp |
 | PUT | `/api/frp/servers-order` | `frp:write` | Reordenar Servidor frp |
+| PUT | `/api/frp/servers-enable` | `frp:write` | Activar o desactivar en lote: Servidor frp |
+| POST | `/api/frp/servers-delete` | `frp:write` | Eliminar en lote: Servidor frp |
 | PUT | `/api/frp/servers-group` | `frp:write` | Asignar grupo a varios elementos: Servidor frp |
 | GET | `/api/frp/servers/{key}/secrets` | `frp:write` | Ver secretos en texto plano |
 | GET | `/api/frp/proxies` | `frp:read` | Listar proxies de frp |
@@ -184,6 +196,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/frp/proxies/{key}` | `frp:write` | Eliminar proxies de frp |
 | PUT | `/api/frp/proxies/{key}/enable` | `frp:write` | Activar o desactivar proxies de frp |
 | PUT | `/api/frp/proxies-order` | `frp:write` | Reordenar proxies de frp |
+| PUT | `/api/frp/proxies-enable` | `frp:write` | Activar o desactivar en lote: proxies de frp |
+| POST | `/api/frp/proxies-delete` | `frp:write` | Eliminar en lote: proxies de frp |
 | PUT | `/api/frp/proxies-group` | `frp:write` | Asignar grupo a varios elementos: proxies de frp |
 | GET | `/api/frp/proxies/{key}/secrets` | `frp:write` | Ver secretos en texto plano |
 | POST | `/api/frp/import` | `frp:write` | Importar configuraciones existentes de frpc / frps (admite ini antiguo y toml nuevo); con apply en false solo se muestra una vista previa |
@@ -210,6 +224,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/cloudflared/tunnels/{key}` | `cloudflared:write` | Eliminar Túnel de Cloudflare |
 | PUT | `/api/cloudflared/tunnels/{key}/enable` | `cloudflared:write` | Activar o desactivar Túnel de Cloudflare |
 | PUT | `/api/cloudflared/tunnels-order` | `cloudflared:write` | Reordenar Túnel de Cloudflare |
+| PUT | `/api/cloudflared/tunnels-enable` | `cloudflared:write` | Activar o desactivar en lote: Túnel de Cloudflare |
+| POST | `/api/cloudflared/tunnels-delete` | `cloudflared:write` | Eliminar en lote: Túnel de Cloudflare |
 | PUT | `/api/cloudflared/tunnels-group` | `cloudflared:write` | Asignar grupo a varios elementos: Túnel de Cloudflare |
 | GET | `/api/cloudflared/tunnels/{key}/secrets` | `cloudflared:write` | Ver secretos en texto plano |
 | POST | `/api/cloudflared/tunnels/{key}/restart` | `cloudflared:write` | Reiniciar un túnel de Cloudflare |
@@ -236,6 +252,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/ssl/certs/{key}` | `ssl:write` | Eliminar Certificado |
 | PUT | `/api/ssl/certs/{key}/enable` | `ssl:write` | Activar o desactivar Certificado |
 | PUT | `/api/ssl/certs-order` | `ssl:write` | Reordenar Certificado |
+| PUT | `/api/ssl/certs-enable` | `ssl:write` | Activar o desactivar en lote: Certificado |
+| POST | `/api/ssl/certs-delete` | `ssl:write` | Eliminar en lote: Certificado |
 | PUT | `/api/ssl/certs-group` | `ssl:write` | Asignar grupo a varios elementos: Certificado |
 | GET | `/api/ssl/certs/{key}/secrets` | `ssl:write` | Ver secretos en texto plano |
 | POST | `/api/ssl/certs/{key}/renew` | `ssl:write` | Emitir o renovar un certificado ahora |
@@ -258,6 +276,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/waf/instances/{key}` | `waf:write` | Eliminar Instancia WAF |
 | PUT | `/api/waf/instances/{key}/enable` | `waf:write` | Activar o desactivar Instancia WAF |
 | PUT | `/api/waf/instances-order` | `waf:write` | Reordenar Instancia WAF |
+| PUT | `/api/waf/instances-enable` | `waf:write` | Activar o desactivar en lote: Instancia WAF |
+| POST | `/api/waf/instances-delete` | `waf:write` | Eliminar en lote: Instancia WAF |
 | PUT | `/api/waf/instances-group` | `waf:write` | Asignar grupo a varios elementos: Instancia WAF |
 | GET | `/api/waf/crs` | `waf:read` | Listar archivos de reglas OWASP CRS |
 | GET | `/api/waf/crs/{file}` | `waf:read` | Leer un archivo de reglas CRS |
@@ -274,15 +294,20 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/webservice/listeners/{key}` | `webservice:write` | Eliminar Escucha del servicio web |
 | PUT | `/api/webservice/listeners/{key}/enable` | `webservice:write` | Activar o desactivar Escucha del servicio web |
 | PUT | `/api/webservice/listeners-order` | `webservice:write` | Reordenar Escucha del servicio web |
+| PUT | `/api/webservice/listeners-enable` | `webservice:write` | Activar o desactivar en lote: Escucha del servicio web |
+| POST | `/api/webservice/listeners-delete` | `webservice:write` | Eliminar en lote: Escucha del servicio web |
 | GET | `/api/webservice/iplists` | `webservice:read` | Listar las listas de IP suscritas |
 | POST | `/api/webservice/iplists` | `webservice:write` | Añadir Lista de IP suscrita |
 | PUT | `/api/webservice/iplists/{key}` | `webservice:write` | Modificar Lista de IP suscrita |
 | DELETE | `/api/webservice/iplists/{key}` | `webservice:write` | Eliminar Lista de IP suscrita |
 | PUT | `/api/webservice/iplists/{key}/enable` | `webservice:write` | Activar o desactivar Lista de IP suscrita |
 | PUT | `/api/webservice/iplists-order` | `webservice:write` | Reordenar Lista de IP suscrita |
+| PUT | `/api/webservice/iplists-enable` | `webservice:write` | Activar o desactivar en lote: Lista de IP suscrita |
+| POST | `/api/webservice/iplists-delete` | `webservice:write` | Eliminar en lote: Lista de IP suscrita |
 | POST | `/api/webservice/iplists/{key}/refresh` | `webservice:write` | Actualizar ahora una lista de IP suscrita |
 | GET | `/api/webservice/users` | `webservice:read` | Leer usuarios compartidos y proveedor de identidad OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Guardar usuarios compartidos y proveedor de identidad OIDC, configurar sitios en bloque |
+| POST | `/api/webservice/sites/batch` | `webservice:write` | Operaciones en lote sobre sitios: activar, desactivar, eliminar, añadir, quitar o reemplazar dominios y cambiar algunas opciones; solo se guarda si todos los sitios pasan la validación |
 | POST | `/api/webservice/import/nginx` | `webservice:write` | Importar configuración de nginx |
 | GET | `/api/webservice/settings` | `webservice:read` | Leer los ajustes globales del servicio web |
 | GET | `/api/webservice/settings/secrets/totp` | `webservice:write` | Ver en texto plano los secretos TOTP de los usuarios compartidos (por nombre de usuario) |
@@ -314,6 +339,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/guard/jails/{key}` | `guard:write` | Eliminar regla de prevención de intrusiones |
 | PUT | `/api/guard/jails/{key}/enable` | `guard:write` | Activar o desactivar regla de prevención de intrusiones |
 | PUT | `/api/guard/jails-order` | `guard:write` | Reordenar regla de prevención de intrusiones |
+| PUT | `/api/guard/jails-enable` | `guard:write` | Activar o desactivar en lote: regla de prevención de intrusiones |
+| POST | `/api/guard/jails-delete` | `guard:write` | Eliminar en lote: regla de prevención de intrusiones |
 | PUT | `/api/guard/jails-group` | `guard:write` | Asignar grupo a varios elementos: regla de prevención de intrusiones |
 | GET | `/api/guard/presets` | `guard:read` | Plantillas de reglas para servicios habituales |
 | POST | `/api/guard/jails/test` | `guard:write` | Probar filtros con líneas de registro de ejemplo |
@@ -337,6 +364,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/wol/devices/{key}` | `wol:write` | Eliminar Activar un dispositivo |
 | PUT | `/api/wol/devices/{key}/enable` | `wol:write` | Activar o desactivar Activar un dispositivo |
 | PUT | `/api/wol/devices-order` | `wol:write` | Reordenar Activar un dispositivo |
+| PUT | `/api/wol/devices-enable` | `wol:write` | Activar o desactivar en lote: Activar un dispositivo |
+| POST | `/api/wol/devices-delete` | `wol:write` | Eliminar en lote: Activar un dispositivo |
 | PUT | `/api/wol/devices-group` | `wol:write` | Asignar grupo a varios elementos: Activar un dispositivo |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | Enviar un paquete mágico de activación al dispositivo |
 | GET | `/api/wol/status` | `wol:read` | Ver el estado en línea del dispositivo |
@@ -353,6 +382,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/webterminal/connections/{key}` | `webterminal:write` | Eliminar Conexión de terminal |
 | PUT | `/api/webterminal/connections/{key}/enable` | `webterminal:write` | Activar o desactivar Conexión de terminal |
 | PUT | `/api/webterminal/connections-order` | `webterminal:write` | Reordenar Conexión de terminal |
+| PUT | `/api/webterminal/connections-enable` | `webterminal:write` | Activar o desactivar en lote: Conexión de terminal |
+| POST | `/api/webterminal/connections-delete` | `webterminal:write` | Eliminar en lote: Conexión de terminal |
 | PUT | `/api/webterminal/connections-group` | `webterminal:write` | Asignar grupo a varios elementos: Conexión de terminal |
 | GET | `/api/webterminal/connections/{key}/secrets` | `webterminal:write` | Ver secretos en texto plano |
 | DELETE | `/api/webterminal/connections/{key}/hostkey` | `webterminal:write` | Borrar la clave de host registrada |
@@ -365,6 +396,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/webterminal/credentials/{key}` | `webterminal:write` | Eliminar Entrada |
 | PUT | `/api/webterminal/credentials/{key}/enable` | `webterminal:write` | Activar o desactivar Entrada |
 | PUT | `/api/webterminal/credentials-order` | `webterminal:write` | Reordenar Entrada |
+| PUT | `/api/webterminal/credentials-enable` | `webterminal:write` | Activar o desactivar en lote: Entrada |
+| POST | `/api/webterminal/credentials-delete` | `webterminal:write` | Eliminar en lote: Entrada |
 | GET | `/api/webterminal/credentials/{key}/secrets` | `webterminal:write` | Ver secretos en texto plano |
 | GET | `/api/webterminal/connections/{key}/ws` | `webterminal:write` | Abrir una sesión de terminal (WebSocket) |
 | GET | `/api/webterminal/sessions/{id}/ws` | `webterminal:write` | Unirse a una sesión de terminal existente (WebSocket) |
@@ -414,6 +447,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/cron/tasks/{key}` | `cron:write` | Eliminar Tarea programada |
 | PUT | `/api/cron/tasks/{key}/enable` | `cron:write` | Activar o desactivar Tarea programada |
 | PUT | `/api/cron/tasks-order` | `cron:write` | Reordenar Tarea programada |
+| PUT | `/api/cron/tasks-enable` | `cron:write` | Activar o desactivar en lote: Tarea programada |
+| POST | `/api/cron/tasks-delete` | `cron:write` | Eliminar en lote: Tarea programada |
 | PUT | `/api/cron/tasks-group` | `cron:write` | Asignar grupo a varios elementos: Tarea programada |
 | POST | `/api/cron/tasks/{key}/run` | `cron:write` | Ejecutar ahora una tarea programada |
 | POST | `/api/cron/parse` | `cron:write` | Analizar y previsualizar una expresión Cron |
@@ -537,6 +572,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/filebrowser/instances/{key}` | `filebrowser:write` | Eliminar Instancia de File Browser |
 | PUT | `/api/filebrowser/instances/{key}/enable` | `filebrowser:write` | Activar o desactivar Instancia de File Browser |
 | PUT | `/api/filebrowser/instances-order` | `filebrowser:write` | Reordenar Instancia de File Browser |
+| PUT | `/api/filebrowser/instances-enable` | `filebrowser:write` | Activar o desactivar en lote: Instancia de File Browser |
+| POST | `/api/filebrowser/instances-delete` | `filebrowser:write` | Eliminar en lote: Instancia de File Browser |
 | PUT | `/api/filebrowser/instances-group` | `filebrowser:write` | Asignar grupo a varios elementos: Instancia de File Browser |
 | GET | `/api/filebrowser/instances/{key}/secrets` | `filebrowser:write` | Ver secretos en texto plano |
 | POST | `/api/filebrowser/instances/{key}/restart` | `filebrowser:write` | Reiniciar una instancia de File Browser |
@@ -561,6 +598,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/storage/mounts/{key}` | `storage:write` | Eliminar Montajes de almacenamiento |
 | PUT | `/api/storage/mounts/{key}/enable` | `storage:write` | Activar o desactivar Montajes de almacenamiento |
 | PUT | `/api/storage/mounts-order` | `storage:write` | Reordenar Montajes de almacenamiento |
+| PUT | `/api/storage/mounts-enable` | `storage:write` | Activar o desactivar en lote: Montajes de almacenamiento |
+| POST | `/api/storage/mounts-delete` | `storage:write` | Eliminar en lote: Montajes de almacenamiento |
 | PUT | `/api/storage/mounts-group` | `storage:write` | Asignar grupo a varios elementos: Montajes de almacenamiento |
 | GET | `/api/storage/mounts/{key}/secrets` | `storage:write` | Ver secretos en texto plano |
 | GET | `/api/storage/files/{key}/list` | `storage:write` | Listar el directorio de almacenamiento |
@@ -582,6 +621,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/notify/channels/{key}` | `notify:write` | Eliminar Canal de notificaciones |
 | PUT | `/api/notify/channels/{key}/enable` | `notify:write` | Activar o desactivar Canal de notificaciones |
 | PUT | `/api/notify/channels-order` | `notify:write` | Reordenar Canal de notificaciones |
+| PUT | `/api/notify/channels-enable` | `notify:write` | Activar o desactivar en lote: Canal de notificaciones |
+| POST | `/api/notify/channels-delete` | `notify:write` | Eliminar en lote: Canal de notificaciones |
 | PUT | `/api/notify/channels-group` | `notify:write` | Asignar grupo a varios elementos: Canal de notificaciones |
 | GET | `/api/notify/channels/{key}/secrets` | `notify:write` | Ver secretos en texto plano |
 | GET | `/api/notify/rules` | `notify:read` | Listar Regla de notificación |
@@ -590,6 +631,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/notify/rules/{key}` | `notify:write` | Eliminar Regla de notificación |
 | PUT | `/api/notify/rules/{key}/enable` | `notify:write` | Activar o desactivar Regla de notificación |
 | PUT | `/api/notify/rules-order` | `notify:write` | Reordenar Regla de notificación |
+| PUT | `/api/notify/rules-enable` | `notify:write` | Activar o desactivar en lote: Regla de notificación |
+| POST | `/api/notify/rules-delete` | `notify:write` | Eliminar en lote: Regla de notificación |
 | PUT | `/api/notify/rules-group` | `notify:write` | Asignar grupo a varios elementos: Regla de notificación |
 | GET | `/api/notify/event-types` | `notify:read` | Tipos de evento a los que se puede suscribir |
 | GET | `/api/notify/history` | `notify:read` | Registros de entrega recientes |
@@ -621,6 +664,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/backup/targets/{key}` | `backup:write` | Eliminar Destino de copia de seguridad |
 | PUT | `/api/backup/targets/{key}/enable` | `backup:write` | Activar o desactivar Destino de copia de seguridad |
 | PUT | `/api/backup/targets-order` | `backup:write` | Reordenar Destino de copia de seguridad |
+| PUT | `/api/backup/targets-enable` | `backup:write` | Activar o desactivar en lote: Destino de copia de seguridad |
+| POST | `/api/backup/targets-delete` | `backup:write` | Eliminar en lote: Destino de copia de seguridad |
 | GET | `/api/backup/settings` | `backup:read` | Ajustes de copia de seguridad |
 | PUT | `/api/backup/settings` | `backup:write` | Modificar los ajustes de copia de seguridad (enviar el marcador de posición como contraseña para conservarla) |
 | GET | `/api/backup/secrets` | `backup:write` | Ver secretos en texto plano |
@@ -807,6 +852,19 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `remark` | string |
 | `spec` | string |
 | `type` | string |
+
+### crud.batchDeleteRequest
+
+| Campo | Tipo |
+| --- | --- |
+| `keys` | Lista de string |
+
+### crud.batchEnableRequest
+
+| Campo | Tipo |
+| --- | --- |
+| `enable` | boolean |
+| `keys` | Lista de string |
 
 ### crud.enableRequest
 
@@ -1843,6 +1901,42 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `users` | Lista de string |
 | `waf` | string |
 | `webAuth` | boolean |
+
+### webservice.SiteBatchOptions
+
+| Campo | Tipo |
+| --- | --- |
+| `accessLog` | boolean |
+| `compress` | boolean |
+| `cors` | boolean |
+| `denyClose` | boolean |
+| `forwardedHeaders` | boolean |
+| `waf` | string |
+
+### webservice.SiteBatchRequest
+
+| Campo | Tipo |
+| --- | --- |
+| `action` | string |
+| `domains` | Lista de string |
+| `from` | string |
+| `options` | `webservice.SiteBatchOptions` |
+| `sites` | Lista de `webservice.SiteRef` |
+| `to` | string |
+
+### webservice.SiteBatchResult
+
+| Campo | Tipo |
+| --- | --- |
+| `changed` | integer |
+| `unchanged` | integer |
+
+### webservice.SiteRef
+
+| Campo | Tipo |
+| --- | --- |
+| `listener` | string |
+| `site` | string |
 
 ### webservice.SiteSharedUsers
 

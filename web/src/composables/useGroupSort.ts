@@ -184,6 +184,9 @@ export interface GroupedListOptions<T> {
   // visible 为搜索之外的额外筛选（如按 frpc 实例筛选代理），排序模式下不生效
   visible?: (it: T) => boolean
   base?: string
+  // batch 控制排序模式工具栏上的批量启停与删除，仅在提供 base 时可用（走 <base>-enable 与 <base>-delete）；
+  // 默认都开启，条目没有启用开关的列表设 enable: false，传 false 关闭全部
+  batch?: { enable?: boolean; remove?: boolean } | false
   save?: (next: Section<T>[]) => Promise<void>
   // reload 在保存后重新加载列表；本地排序时可为空函数
   reload: () => Promise<void>
@@ -191,12 +194,13 @@ export interface GroupedListOptions<T> {
 
 // fieldOf 读取条目的字符串字段，缺省为空字符串
 function fieldOf(it: unknown, name: string) {
-  const v = (it as Record<string, unknown>)[name]
+  const v = it ? (it as Record<string, unknown>)[name] : undefined
   return typeof v === 'string' ? v : ''
 }
 
 // useGroupedList 为条目列表提供搜索、分组、排序与批量操作，返回值交给 GroupedList 组件渲染
 export function useGroupedList<T>(opts: GroupedListOptions<T>) {
+  const { t } = useI18n()
   const sel = useSortSelect()
   const filterText = ref('')
   const fold = useCollapsed(opts.storageKey)
@@ -227,6 +231,74 @@ export function useGroupedList<T>(opts: GroupedListOptions<T>) {
     if (order.join('\n') !== orderedIds.value.join('\n')) {
       await api.put(`${opts.base}-order`, { keys: order })
     }
+  }
+
+  // batchOps 为工具栏上可用的批量操作，null 表示该列表不支持
+  const batchOps = computed(() => {
+    if (!opts.base || opts.batch === false) {
+      return null
+    }
+    const enable = opts.batch?.enable !== false
+    const remove = opts.batch?.remove !== false
+    return enable || remove ? { enable, remove } : null
+  })
+
+  // selectedKeys 为选中且仍在列表中的条目 id，按显示顺序排列
+  function selectedKeys() {
+    return orderedIds.value.filter((id) => sel.isSelected(id))
+  }
+
+  // runBatch 执行一次批量请求：提示结果后清空选择并重新加载列表，失败时保留选择方便重试
+  async function runBatch(call: () => Promise<unknown>, done: string) {
+    if (busy.value) {
+      return
+    }
+    busy.value = true
+    let ok = true
+    try {
+      await call()
+      ElMessage.success(done)
+    } catch (e) {
+      ok = false
+      ElMessage.error((e as Error).message)
+    } finally {
+      busy.value = false
+    }
+    if (ok) {
+      sel.clearSelection()
+    }
+    await opts.reload()
+  }
+
+  // batchEnable 批量启用或停用选中项，后端一次保存，状态没有变化的条目不会重启
+  async function batchEnable(enable: boolean) {
+    const keys = selectedKeys()
+    if (!keys.length) {
+      return
+    }
+    await runBatch(() => api.put(`${opts.base}-enable`, { keys, enable }), t(enable ? 'groupSort.batchEnabled' : 'groupSort.batchDisabled', { count: keys.length }))
+  }
+
+  // batchRemove 确认后批量删除选中项；任一条目不允许删除（如仍被引用）时后端整体拒绝
+  async function batchRemove() {
+    const keys = selectedKeys()
+    if (!keys.length) {
+      return
+    }
+    const byId = new Map(opts.items().map((it) => [idOf(it), it]))
+    const names = keys.slice(0, 5).map((k) => fieldOf(byId.get(k), 'name') || k)
+    const more = keys.length > names.length ? t('groupSort.batchRemoveMore', { count: keys.length - names.length }) : ''
+    try {
+      await ElMessageBox.confirm(t('groupSort.batchRemoveConfirm', { count: keys.length, names: names.join('、') + more }), t('groupSort.batchRemoveTitle'), {
+        type: 'warning',
+        confirmButtonText: t('common.delete'),
+        cancelButtonText: t('common.cancel'),
+        confirmButtonClass: 'el-button--danger',
+      })
+    } catch {
+      return
+    }
+    await runBatch(() => api.post(`${opts.base}-delete`, { keys }), t('groupSort.batchRemoved', { count: keys.length }))
   }
 
   // persist 保存新的分组与顺序，然后重新加载列表；next 为 null 表示没有变化
@@ -315,6 +387,9 @@ export function useGroupedList<T>(opts: GroupedListOptions<T>) {
     moveItem,
     moveGroup,
     setGroup,
+    batchOps,
+    batchEnable,
+    batchRemove,
     dragStart,
     drop,
     selectAll,

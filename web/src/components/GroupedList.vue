@@ -8,9 +8,12 @@
     :total="gl.total.value"
     :groups="gl.groupNames.value"
     :busy="gl.busy.value"
+    :batch="gl.batchOps.value"
     @select-all="gl.selectAll()"
     @clear="gl.clearSelection()"
     @set-group="gl.setGroup"
+    @enable="gl.batchEnable"
+    @remove="gl.batchRemove"
   />
   <div v-loading="loading" v-bind="$attrs" class="grouped-list" :class="{ 'is-sorting': sorting, 'is-compact': dense, 'is-flush': flush }">
     <el-empty v-if="!loading && !gl.total.value" :description="emptyText" :image-size="emptyImageSize" />

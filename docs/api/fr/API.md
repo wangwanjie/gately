@@ -74,6 +74,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | DELETE | `/api/portforward/rules/{key}` | `portforward:write` | Supprimer Règle de redirection de ports |
 | PUT | `/api/portforward/rules/{key}/enable` | `portforward:write` | Activer ou désactiver Règle de redirection de ports |
 | PUT | `/api/portforward/rules-order` | `portforward:write` | Réordonner Règle de redirection de ports |
+| PUT | `/api/portforward/rules-enable` | `portforward:write` | Activer ou désactiver en lot : Règle de redirection de ports |
+| POST | `/api/portforward/rules-delete` | `portforward:write` | Supprimer en lot : Règle de redirection de ports |
 | PUT | `/api/portforward/rules-group` | `portforward:write` | Définir le groupe de plusieurs éléments : Règle de redirection de ports |
 | GET | `/api/portforward/settings` | `portforward:read` | Lire les paramètres globaux de redirection de ports |
 | PUT | `/api/portforward/settings` | `portforward:write` | Enregistrer les paramètres globaux de redirection de ports |
@@ -90,6 +92,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | DELETE | `/api/protoroute/rules/{key}` | `protoroute:write` | Supprimer règle de routage par protocole |
 | PUT | `/api/protoroute/rules/{key}/enable` | `protoroute:write` | Activer ou désactiver règle de routage par protocole |
 | PUT | `/api/protoroute/rules-order` | `protoroute:write` | Réordonner règle de routage par protocole |
+| PUT | `/api/protoroute/rules-enable` | `protoroute:write` | Activer ou désactiver en lot : règle de routage par protocole |
+| POST | `/api/protoroute/rules-delete` | `protoroute:write` | Supprimer en lot : règle de routage par protocole |
 | PUT | `/api/protoroute/rules-group` | `protoroute:write` | Définir le groupe de plusieurs éléments : règle de routage par protocole |
 | GET | `/api/protoroute/settings` | `protoroute:read` | Lire les paramètres du routage par protocole |
 | PUT | `/api/protoroute/settings` | `protoroute:write` | Enregistrer les paramètres du routage par protocole |
@@ -106,6 +110,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | DELETE | `/api/ddns/tasks/{key}` | `ddns:write` | Supprimer Tâche DDNS |
 | PUT | `/api/ddns/tasks/{key}/enable` | `ddns:write` | Activer ou désactiver Tâche DDNS |
 | PUT | `/api/ddns/tasks-order` | `ddns:write` | Réordonner Tâche DDNS |
+| PUT | `/api/ddns/tasks-enable` | `ddns:write` | Activer ou désactiver en lot : Tâche DDNS |
+| POST | `/api/ddns/tasks-delete` | `ddns:write` | Supprimer en lot : Tâche DDNS |
 | PUT | `/api/ddns/tasks-group` | `ddns:write` | Définir le groupe de plusieurs éléments : Tâche DDNS |
 | GET | `/api/ddns/tasks/{key}/secrets` | `ddns:write` | Afficher les secrets en clair |
 | POST | `/api/ddns/tasks/{key}/sync` | `ddns:write` | Synchroniser immédiatement une tâche DDNS |
@@ -131,6 +137,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | DELETE | `/api/stun/rules/{key}` | `stun:write` | Supprimer Règle STUN |
 | PUT | `/api/stun/rules/{key}/enable` | `stun:write` | Activer ou désactiver Règle STUN |
 | PUT | `/api/stun/rules-order` | `stun:write` | Réordonner Règle STUN |
+| PUT | `/api/stun/rules-enable` | `stun:write` | Activer ou désactiver en lot : Règle STUN |
+| POST | `/api/stun/rules-delete` | `stun:write` | Supprimer en lot : Règle STUN |
 | PUT | `/api/stun/rules-group` | `stun:write` | Définir le groupe de plusieurs éléments : Règle STUN |
 | POST | `/api/stun/rules/{key}/restart` | `stun:write` | Redémarrer une règle STUN |
 | GET | `/api/stun/netinterfaces` | `stun:read` | Lister les cartes réseau de cette machine et leurs adresses |
@@ -168,6 +176,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | DELETE | `/api/frp/clients/{key}` | `frp:write` | Supprimer Client frp |
 | PUT | `/api/frp/clients/{key}/enable` | `frp:write` | Activer ou désactiver Client frp |
 | PUT | `/api/frp/clients-order` | `frp:write` | Réordonner Client frp |
+| PUT | `/api/frp/clients-enable` | `frp:write` | Activer ou désactiver en lot : Client frp |
+| POST | `/api/frp/clients-delete` | `frp:write` | Supprimer en lot : Client frp |
 | PUT | `/api/frp/clients-group` | `frp:write` | Définir le groupe de plusieurs éléments : Client frp |
 | GET | `/api/frp/clients/{key}/secrets` | `frp:write` | Afficher les secrets en clair |
 | GET | `/api/frp/servers` | `frp:read` | Lister Serveur frp |
@@ -176,6 +186,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | DELETE | `/api/frp/servers/{key}` | `frp:write` | Supprimer Serveur frp |
 | PUT | `/api/frp/servers/{key}/enable` | `frp:write` | Activer ou désactiver Serveur frp |
 | PUT | `/api/frp/servers-order` | `frp:write` | Réordonner Serveur frp |
+| PUT | `/api/frp/servers-enable` | `frp:write` | Activer ou désactiver en lot : Serveur frp |
+| POST | `/api/frp/servers-delete` | `frp:write` | Supprimer en lot : Serveur frp |
 | PUT | `/api/frp/servers-group` | `frp:write` | Définir le groupe de plusieurs éléments : Serveur frp |
 | GET | `/api/frp/servers/{key}/secrets` | `frp:write` | Afficher les secrets en clair |
 | GET | `/api/frp/proxies` | `frp:read` | Lister proxys frp |
@@ -184,6 +196,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | DELETE | `/api/frp/proxies/{key}` | `frp:write` | Supprimer proxys frp |
 | PUT | `/api/frp/proxies/{key}/enable` | `frp:write` | Activer ou désactiver proxys frp |
 | PUT | `/api/frp/proxies-order` | `frp:write` | Réordonner proxys frp |
+| PUT | `/api/frp/proxies-enable` | `frp:write` | Activer ou désactiver en lot : proxys frp |
+| POST | `/api/frp/proxies-delete` | `frp:write` | Supprimer en lot : proxys frp |
 | PUT | `/api/frp/proxies-group` | `frp:write` | Définir le groupe de plusieurs éléments : proxys frp |
 | GET | `/api/frp/proxies/{key}/secrets` | `frp:write` | Afficher les secrets en clair |
 | POST | `/api/frp/import` | `frp:write` | Importer une configuration frpc / frps existante (anciens ini et nouveaux toml pris en charge) ; aperçu uniquement si apply vaut false |
@@ -210,6 +224,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | DELETE | `/api/cloudflared/tunnels/{key}` | `cloudflared:write` | Supprimer Tunnel Cloudflare |
 | PUT | `/api/cloudflared/tunnels/{key}/enable` | `cloudflared:write` | Activer ou désactiver Tunnel Cloudflare |
 | PUT | `/api/cloudflared/tunnels-order` | `cloudflared:write` | Réordonner Tunnel Cloudflare |
+| PUT | `/api/cloudflared/tunnels-enable` | `cloudflared:write` | Activer ou désactiver en lot : Tunnel Cloudflare |
+| POST | `/api/cloudflared/tunnels-delete` | `cloudflared:write` | Supprimer en lot : Tunnel Cloudflare |
 | PUT | `/api/cloudflared/tunnels-group` | `cloudflared:write` | Définir le groupe de plusieurs éléments : Tunnel Cloudflare |
 | GET | `/api/cloudflared/tunnels/{key}/secrets` | `cloudflared:write` | Afficher les secrets en clair |
 | POST | `/api/cloudflared/tunnels/{key}/restart` | `cloudflared:write` | Redémarrer un tunnel Cloudflare |
@@ -236,6 +252,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | DELETE | `/api/ssl/certs/{key}` | `ssl:write` | Supprimer Certificat |
 | PUT | `/api/ssl/certs/{key}/enable` | `ssl:write` | Activer ou désactiver Certificat |
 | PUT | `/api/ssl/certs-order` | `ssl:write` | Réordonner Certificat |
+| PUT | `/api/ssl/certs-enable` | `ssl:write` | Activer ou désactiver en lot : Certificat |
+| POST | `/api/ssl/certs-delete` | `ssl:write` | Supprimer en lot : Certificat |
 | PUT | `/api/ssl/certs-group` | `ssl:write` | Définir le groupe de plusieurs éléments : Certificat |
 | GET | `/api/ssl/certs/{key}/secrets` | `ssl:write` | Afficher les secrets en clair |
 | POST | `/api/ssl/certs/{key}/renew` | `ssl:write` | Émettre ou renouveler un certificat immédiatement |
@@ -258,6 +276,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | DELETE | `/api/waf/instances/{key}` | `waf:write` | Supprimer Instance WAF |
 | PUT | `/api/waf/instances/{key}/enable` | `waf:write` | Activer ou désactiver Instance WAF |
 | PUT | `/api/waf/instances-order` | `waf:write` | Réordonner Instance WAF |
+| PUT | `/api/waf/instances-enable` | `waf:write` | Activer ou désactiver en lot : Instance WAF |
+| POST | `/api/waf/instances-delete` | `waf:write` | Supprimer en lot : Instance WAF |
 | PUT | `/api/waf/instances-group` | `waf:write` | Définir le groupe de plusieurs éléments : Instance WAF |
 | GET | `/api/waf/crs` | `waf:read` | Lister les fichiers de règles OWASP CRS |
 | GET | `/api/waf/crs/{file}` | `waf:read` | Lire un fichier de règles CRS |
@@ -274,15 +294,20 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | DELETE | `/api/webservice/listeners/{key}` | `webservice:write` | Supprimer Écoute du service Web |
 | PUT | `/api/webservice/listeners/{key}/enable` | `webservice:write` | Activer ou désactiver Écoute du service Web |
 | PUT | `/api/webservice/listeners-order` | `webservice:write` | Réordonner Écoute du service Web |
+| PUT | `/api/webservice/listeners-enable` | `webservice:write` | Activer ou désactiver en lot : Écoute du service Web |
+| POST | `/api/webservice/listeners-delete` | `webservice:write` | Supprimer en lot : Écoute du service Web |
 | GET | `/api/webservice/iplists` | `webservice:read` | Lister les listes d’IP abonnées |
 | POST | `/api/webservice/iplists` | `webservice:write` | Ajouter Liste d'IP abonnée |
 | PUT | `/api/webservice/iplists/{key}` | `webservice:write` | Modifier Liste d'IP abonnée |
 | DELETE | `/api/webservice/iplists/{key}` | `webservice:write` | Supprimer Liste d'IP abonnée |
 | PUT | `/api/webservice/iplists/{key}/enable` | `webservice:write` | Activer ou désactiver Liste d'IP abonnée |
 | PUT | `/api/webservice/iplists-order` | `webservice:write` | Réordonner Liste d'IP abonnée |
+| PUT | `/api/webservice/iplists-enable` | `webservice:write` | Activer ou désactiver en lot : Liste d'IP abonnée |
+| POST | `/api/webservice/iplists-delete` | `webservice:write` | Supprimer en lot : Liste d'IP abonnée |
 | POST | `/api/webservice/iplists/{key}/refresh` | `webservice:write` | Actualiser maintenant une liste d'IP abonnée |
 | GET | `/api/webservice/users` | `webservice:read` | Lire les utilisateurs partagés et le fournisseur d'identité OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Enregistrer utilisateurs partagés et fournisseur d'identité OIDC, configurer les sites en masse |
+| POST | `/api/webservice/sites/batch` | `webservice:write` | Opérations en lot sur les sites : activer, désactiver, supprimer, ajouter, retirer ou remplacer des domaines et modifier certaines options ; rien n'est enregistré tant que tous les sites ne passent pas la validation |
 | POST | `/api/webservice/import/nginx` | `webservice:write` | Importer une configuration nginx |
 | GET | `/api/webservice/settings` | `webservice:read` | Lire les paramètres globaux du service Web |
 | GET | `/api/webservice/settings/secrets/totp` | `webservice:write` | Afficher en clair les secrets TOTP des utilisateurs partagés (indexés par nom d'utilisateur) |
@@ -314,6 +339,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | DELETE | `/api/guard/jails/{key}` | `guard:write` | Supprimer règle de prévention des intrusions |
 | PUT | `/api/guard/jails/{key}/enable` | `guard:write` | Activer ou désactiver règle de prévention des intrusions |
 | PUT | `/api/guard/jails-order` | `guard:write` | Réordonner règle de prévention des intrusions |
+| PUT | `/api/guard/jails-enable` | `guard:write` | Activer ou désactiver en lot : règle de prévention des intrusions |
+| POST | `/api/guard/jails-delete` | `guard:write` | Supprimer en lot : règle de prévention des intrusions |
 | PUT | `/api/guard/jails-group` | `guard:write` | Définir le groupe de plusieurs éléments : règle de prévention des intrusions |
 | GET | `/api/guard/presets` | `guard:read` | Modèles de règles pour les services courants |
 | POST | `/api/guard/jails/test` | `guard:write` | Tester les filtres sur des lignes de journal |
@@ -337,6 +364,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | DELETE | `/api/wol/devices/{key}` | `wol:write` | Supprimer Réveiller l'appareil |
 | PUT | `/api/wol/devices/{key}/enable` | `wol:write` | Activer ou désactiver Réveiller l'appareil |
 | PUT | `/api/wol/devices-order` | `wol:write` | Réordonner Réveiller l'appareil |
+| PUT | `/api/wol/devices-enable` | `wol:write` | Activer ou désactiver en lot : Réveiller l'appareil |
+| POST | `/api/wol/devices-delete` | `wol:write` | Supprimer en lot : Réveiller l'appareil |
 | PUT | `/api/wol/devices-group` | `wol:write` | Définir le groupe de plusieurs éléments : Réveiller l'appareil |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | Envoyer un paquet magique de réveil à l'appareil |
 | GET | `/api/wol/status` | `wol:read` | Consulter l'état en ligne des appareils |
@@ -353,6 +382,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | DELETE | `/api/webterminal/connections/{key}` | `webterminal:write` | Supprimer Connexion de terminal |
 | PUT | `/api/webterminal/connections/{key}/enable` | `webterminal:write` | Activer ou désactiver Connexion de terminal |
 | PUT | `/api/webterminal/connections-order` | `webterminal:write` | Réordonner Connexion de terminal |
+| PUT | `/api/webterminal/connections-enable` | `webterminal:write` | Activer ou désactiver en lot : Connexion de terminal |
+| POST | `/api/webterminal/connections-delete` | `webterminal:write` | Supprimer en lot : Connexion de terminal |
 | PUT | `/api/webterminal/connections-group` | `webterminal:write` | Définir le groupe de plusieurs éléments : Connexion de terminal |
 | GET | `/api/webterminal/connections/{key}/secrets` | `webterminal:write` | Afficher les secrets en clair |
 | DELETE | `/api/webterminal/connections/{key}/hostkey` | `webterminal:write` | Effacer la clé d'hôte enregistrée |
@@ -365,6 +396,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | DELETE | `/api/webterminal/credentials/{key}` | `webterminal:write` | Supprimer Entrée |
 | PUT | `/api/webterminal/credentials/{key}/enable` | `webterminal:write` | Activer ou désactiver Entrée |
 | PUT | `/api/webterminal/credentials-order` | `webterminal:write` | Réordonner Entrée |
+| PUT | `/api/webterminal/credentials-enable` | `webterminal:write` | Activer ou désactiver en lot : Entrée |
+| POST | `/api/webterminal/credentials-delete` | `webterminal:write` | Supprimer en lot : Entrée |
 | GET | `/api/webterminal/credentials/{key}/secrets` | `webterminal:write` | Afficher les secrets en clair |
 | GET | `/api/webterminal/connections/{key}/ws` | `webterminal:write` | Ouvrir une session de terminal (WebSocket) |
 | GET | `/api/webterminal/sessions/{id}/ws` | `webterminal:write` | Se rattacher à une session de terminal existante (WebSocket) |
@@ -414,6 +447,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | DELETE | `/api/cron/tasks/{key}` | `cron:write` | Supprimer Tâche planifiée |
 | PUT | `/api/cron/tasks/{key}/enable` | `cron:write` | Activer ou désactiver Tâche planifiée |
 | PUT | `/api/cron/tasks-order` | `cron:write` | Réordonner Tâche planifiée |
+| PUT | `/api/cron/tasks-enable` | `cron:write` | Activer ou désactiver en lot : Tâche planifiée |
+| POST | `/api/cron/tasks-delete` | `cron:write` | Supprimer en lot : Tâche planifiée |
 | PUT | `/api/cron/tasks-group` | `cron:write` | Définir le groupe de plusieurs éléments : Tâche planifiée |
 | POST | `/api/cron/tasks/{key}/run` | `cron:write` | Exécuter immédiatement une tâche planifiée |
 | POST | `/api/cron/parse` | `cron:write` | Analyser et prévisualiser une expression Cron |
@@ -537,6 +572,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | DELETE | `/api/filebrowser/instances/{key}` | `filebrowser:write` | Supprimer Instance File Browser |
 | PUT | `/api/filebrowser/instances/{key}/enable` | `filebrowser:write` | Activer ou désactiver Instance File Browser |
 | PUT | `/api/filebrowser/instances-order` | `filebrowser:write` | Réordonner Instance File Browser |
+| PUT | `/api/filebrowser/instances-enable` | `filebrowser:write` | Activer ou désactiver en lot : Instance File Browser |
+| POST | `/api/filebrowser/instances-delete` | `filebrowser:write` | Supprimer en lot : Instance File Browser |
 | PUT | `/api/filebrowser/instances-group` | `filebrowser:write` | Définir le groupe de plusieurs éléments : Instance File Browser |
 | GET | `/api/filebrowser/instances/{key}/secrets` | `filebrowser:write` | Afficher les secrets en clair |
 | POST | `/api/filebrowser/instances/{key}/restart` | `filebrowser:write` | Redémarrer une instance File Browser |
@@ -561,6 +598,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | DELETE | `/api/storage/mounts/{key}` | `storage:write` | Supprimer Montages de stockage |
 | PUT | `/api/storage/mounts/{key}/enable` | `storage:write` | Activer ou désactiver Montages de stockage |
 | PUT | `/api/storage/mounts-order` | `storage:write` | Réordonner Montages de stockage |
+| PUT | `/api/storage/mounts-enable` | `storage:write` | Activer ou désactiver en lot : Montages de stockage |
+| POST | `/api/storage/mounts-delete` | `storage:write` | Supprimer en lot : Montages de stockage |
 | PUT | `/api/storage/mounts-group` | `storage:write` | Définir le groupe de plusieurs éléments : Montages de stockage |
 | GET | `/api/storage/mounts/{key}/secrets` | `storage:write` | Afficher les secrets en clair |
 | GET | `/api/storage/files/{key}/list` | `storage:write` | Lister le répertoire de stockage |
@@ -582,6 +621,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | DELETE | `/api/notify/channels/{key}` | `notify:write` | Supprimer Canaux de notification |
 | PUT | `/api/notify/channels/{key}/enable` | `notify:write` | Activer ou désactiver Canaux de notification |
 | PUT | `/api/notify/channels-order` | `notify:write` | Réordonner Canaux de notification |
+| PUT | `/api/notify/channels-enable` | `notify:write` | Activer ou désactiver en lot : Canaux de notification |
+| POST | `/api/notify/channels-delete` | `notify:write` | Supprimer en lot : Canaux de notification |
 | PUT | `/api/notify/channels-group` | `notify:write` | Définir le groupe de plusieurs éléments : Canaux de notification |
 | GET | `/api/notify/channels/{key}/secrets` | `notify:write` | Afficher les secrets en clair |
 | GET | `/api/notify/rules` | `notify:read` | Lister Règles de notification |
@@ -590,6 +631,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | DELETE | `/api/notify/rules/{key}` | `notify:write` | Supprimer Règles de notification |
 | PUT | `/api/notify/rules/{key}/enable` | `notify:write` | Activer ou désactiver Règles de notification |
 | PUT | `/api/notify/rules-order` | `notify:write` | Réordonner Règles de notification |
+| PUT | `/api/notify/rules-enable` | `notify:write` | Activer ou désactiver en lot : Règles de notification |
+| POST | `/api/notify/rules-delete` | `notify:write` | Supprimer en lot : Règles de notification |
 | PUT | `/api/notify/rules-group` | `notify:write` | Définir le groupe de plusieurs éléments : Règles de notification |
 | GET | `/api/notify/event-types` | `notify:read` | Types d'événements auxquels s'abonner |
 | GET | `/api/notify/history` | `notify:read` | Dernières livraisons |
@@ -621,6 +664,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | DELETE | `/api/backup/targets/{key}` | `backup:write` | Supprimer Destination de sauvegarde |
 | PUT | `/api/backup/targets/{key}/enable` | `backup:write` | Activer ou désactiver Destination de sauvegarde |
 | PUT | `/api/backup/targets-order` | `backup:write` | Réordonner Destination de sauvegarde |
+| PUT | `/api/backup/targets-enable` | `backup:write` | Activer ou désactiver en lot : Destination de sauvegarde |
+| POST | `/api/backup/targets-delete` | `backup:write` | Supprimer en lot : Destination de sauvegarde |
 | GET | `/api/backup/settings` | `backup:read` | Paramètres de sauvegarde |
 | PUT | `/api/backup/settings` | `backup:write` | Modifier les paramètres de sauvegarde (un espace réservé pour la phrase secrète la laisse inchangée) |
 | GET | `/api/backup/secrets` | `backup:write` | Afficher les secrets en clair |
@@ -807,6 +852,19 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `remark` | string |
 | `spec` | string |
 | `type` | string |
+
+### crud.batchDeleteRequest
+
+| Champ | Type |
+| --- | --- |
+| `keys` | Tableau de string |
+
+### crud.batchEnableRequest
+
+| Champ | Type |
+| --- | --- |
+| `enable` | boolean |
+| `keys` | Tableau de string |
 
 ### crud.enableRequest
 
@@ -1843,6 +1901,42 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `users` | Tableau de string |
 | `waf` | string |
 | `webAuth` | boolean |
+
+### webservice.SiteBatchOptions
+
+| Champ | Type |
+| --- | --- |
+| `accessLog` | boolean |
+| `compress` | boolean |
+| `cors` | boolean |
+| `denyClose` | boolean |
+| `forwardedHeaders` | boolean |
+| `waf` | string |
+
+### webservice.SiteBatchRequest
+
+| Champ | Type |
+| --- | --- |
+| `action` | string |
+| `domains` | Tableau de string |
+| `from` | string |
+| `options` | `webservice.SiteBatchOptions` |
+| `sites` | Tableau de `webservice.SiteRef` |
+| `to` | string |
+
+### webservice.SiteBatchResult
+
+| Champ | Type |
+| --- | --- |
+| `changed` | integer |
+| `unchanged` | integer |
+
+### webservice.SiteRef
+
+| Champ | Type |
+| --- | --- |
+| `listener` | string |
+| `site` | string |
 
 ### webservice.SiteSharedUsers
 

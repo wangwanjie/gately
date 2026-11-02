@@ -1,5 +1,5 @@
 {
-  "sort": "Trier",
+  "sort": "Tri et lot",
   "sortDone": "Terminer le tri",
   "group": "Groupe",
   "groupPlaceholder": "Laisser vide pour aucun groupe, ou choisir un groupe existant",
@@ -26,5 +26,14 @@
   "mergeConfirm": "Le groupe « {to} » existe déjà. Y fusionner « {from} » ?",
   "count": "{count} éléments",
   "selectItem": "Sélectionner cet élément",
-  "search": "Rechercher nom, groupe, remarque"
+  "search": "Rechercher nom, groupe, remarque",
+  "batchEnable": "Activer",
+  "batchDisable": "Désactiver",
+  "batchRemove": "Supprimer",
+  "batchEnabled": "{count} éléments activés",
+  "batchDisabled": "{count} éléments désactivés",
+  "batchRemoved": "{count} éléments supprimés",
+  "batchRemoveTitle": "Supprimer la sélection",
+  "batchRemoveConfirm": "Supprimer les {count} éléments sélectionnés ({names}) ? Cette action est irréversible.",
+  "batchRemoveMore": " et {count} autres"
 }

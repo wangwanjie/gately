@@ -74,6 +74,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/portforward/rules/{key}` | `portforward:write` | Portweiterleitungsregeln löschen |
 | PUT | `/api/portforward/rules/{key}/enable` | `portforward:write` | Portweiterleitungsregeln aktivieren oder deaktivieren |
 | PUT | `/api/portforward/rules-order` | `portforward:write` | Portweiterleitungsregeln neu anordnen |
+| PUT | `/api/portforward/rules-enable` | `portforward:write` | Im Stapel aktivieren oder deaktivieren: Portweiterleitungsregeln |
+| POST | `/api/portforward/rules-delete` | `portforward:write` | Im Stapel löschen: Portweiterleitungsregeln |
 | PUT | `/api/portforward/rules-group` | `portforward:write` | Gruppe mehrerer Einträge festlegen: Portweiterleitungsregeln |
 | GET | `/api/portforward/settings` | `portforward:read` | Globale Portweiterleitungs-Einstellungen lesen |
 | PUT | `/api/portforward/settings` | `portforward:write` | Globale Portweiterleitungs-Einstellungen speichern |
@@ -90,6 +92,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/protoroute/rules/{key}` | `protoroute:write` | Protokoll-Routing-Regel löschen |
 | PUT | `/api/protoroute/rules/{key}/enable` | `protoroute:write` | Protokoll-Routing-Regel aktivieren oder deaktivieren |
 | PUT | `/api/protoroute/rules-order` | `protoroute:write` | Protokoll-Routing-Regel neu anordnen |
+| PUT | `/api/protoroute/rules-enable` | `protoroute:write` | Im Stapel aktivieren oder deaktivieren: Protokoll-Routing-Regel |
+| POST | `/api/protoroute/rules-delete` | `protoroute:write` | Im Stapel löschen: Protokoll-Routing-Regel |
 | PUT | `/api/protoroute/rules-group` | `protoroute:write` | Gruppe mehrerer Einträge festlegen: Protokoll-Routing-Regel |
 | GET | `/api/protoroute/settings` | `protoroute:read` | Einstellungen für Protokoll-Routing lesen |
 | PUT | `/api/protoroute/settings` | `protoroute:write` | Einstellungen für Protokoll-Routing speichern |
@@ -106,6 +110,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/ddns/tasks/{key}` | `ddns:write` | DDNS-Aufgaben löschen |
 | PUT | `/api/ddns/tasks/{key}/enable` | `ddns:write` | DDNS-Aufgaben aktivieren oder deaktivieren |
 | PUT | `/api/ddns/tasks-order` | `ddns:write` | DDNS-Aufgaben neu anordnen |
+| PUT | `/api/ddns/tasks-enable` | `ddns:write` | Im Stapel aktivieren oder deaktivieren: DDNS-Aufgaben |
+| POST | `/api/ddns/tasks-delete` | `ddns:write` | Im Stapel löschen: DDNS-Aufgaben |
 | PUT | `/api/ddns/tasks-group` | `ddns:write` | Gruppe mehrerer Einträge festlegen: DDNS-Aufgaben |
 | GET | `/api/ddns/tasks/{key}/secrets` | `ddns:write` | Geheimnisse im Klartext anzeigen |
 | POST | `/api/ddns/tasks/{key}/sync` | `ddns:write` | Eine DDNS-Aufgabe sofort synchronisieren |
@@ -131,6 +137,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/stun/rules/{key}` | `stun:write` | STUN-Regeln löschen |
 | PUT | `/api/stun/rules/{key}/enable` | `stun:write` | STUN-Regeln aktivieren oder deaktivieren |
 | PUT | `/api/stun/rules-order` | `stun:write` | STUN-Regeln neu anordnen |
+| PUT | `/api/stun/rules-enable` | `stun:write` | Im Stapel aktivieren oder deaktivieren: STUN-Regeln |
+| POST | `/api/stun/rules-delete` | `stun:write` | Im Stapel löschen: STUN-Regeln |
 | PUT | `/api/stun/rules-group` | `stun:write` | Gruppe mehrerer Einträge festlegen: STUN-Regeln |
 | POST | `/api/stun/rules/{key}/restart` | `stun:write` | Eine STUN-Regel neu starten |
 | GET | `/api/stun/netinterfaces` | `stun:read` | Netzwerkschnittstellen und Adressen dieses Rechners auflisten |
@@ -168,6 +176,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/frp/clients/{key}` | `frp:write` | frp-Client löschen |
 | PUT | `/api/frp/clients/{key}/enable` | `frp:write` | frp-Client aktivieren oder deaktivieren |
 | PUT | `/api/frp/clients-order` | `frp:write` | frp-Client neu anordnen |
+| PUT | `/api/frp/clients-enable` | `frp:write` | Im Stapel aktivieren oder deaktivieren: frp-Client |
+| POST | `/api/frp/clients-delete` | `frp:write` | Im Stapel löschen: frp-Client |
 | PUT | `/api/frp/clients-group` | `frp:write` | Gruppe mehrerer Einträge festlegen: frp-Client |
 | GET | `/api/frp/clients/{key}/secrets` | `frp:write` | Geheimnisse im Klartext anzeigen |
 | GET | `/api/frp/servers` | `frp:read` | frp-Server auflisten |
@@ -176,6 +186,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/frp/servers/{key}` | `frp:write` | frp-Server löschen |
 | PUT | `/api/frp/servers/{key}/enable` | `frp:write` | frp-Server aktivieren oder deaktivieren |
 | PUT | `/api/frp/servers-order` | `frp:write` | frp-Server neu anordnen |
+| PUT | `/api/frp/servers-enable` | `frp:write` | Im Stapel aktivieren oder deaktivieren: frp-Server |
+| POST | `/api/frp/servers-delete` | `frp:write` | Im Stapel löschen: frp-Server |
 | PUT | `/api/frp/servers-group` | `frp:write` | Gruppe mehrerer Einträge festlegen: frp-Server |
 | GET | `/api/frp/servers/{key}/secrets` | `frp:write` | Geheimnisse im Klartext anzeigen |
 | GET | `/api/frp/proxies` | `frp:read` | frp-Proxys auflisten |
@@ -184,6 +196,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/frp/proxies/{key}` | `frp:write` | frp-Proxys löschen |
 | PUT | `/api/frp/proxies/{key}/enable` | `frp:write` | frp-Proxys aktivieren oder deaktivieren |
 | PUT | `/api/frp/proxies-order` | `frp:write` | frp-Proxys neu anordnen |
+| PUT | `/api/frp/proxies-enable` | `frp:write` | Im Stapel aktivieren oder deaktivieren: frp-Proxys |
+| POST | `/api/frp/proxies-delete` | `frp:write` | Im Stapel löschen: frp-Proxys |
 | PUT | `/api/frp/proxies-group` | `frp:write` | Gruppe mehrerer Einträge festlegen: frp-Proxys |
 | GET | `/api/frp/proxies/{key}/secrets` | `frp:write` | Geheimnisse im Klartext anzeigen |
 | POST | `/api/frp/import` | `frp:write` | Vorhandene frpc-/frps-Konfiguration importieren (unterstützt altes ini und neues toml); bei apply false nur Vorschau |
@@ -210,6 +224,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/cloudflared/tunnels/{key}` | `cloudflared:write` | Cloudflare-Tunnel löschen |
 | PUT | `/api/cloudflared/tunnels/{key}/enable` | `cloudflared:write` | Cloudflare-Tunnel aktivieren oder deaktivieren |
 | PUT | `/api/cloudflared/tunnels-order` | `cloudflared:write` | Cloudflare-Tunnel neu anordnen |
+| PUT | `/api/cloudflared/tunnels-enable` | `cloudflared:write` | Im Stapel aktivieren oder deaktivieren: Cloudflare-Tunnel |
+| POST | `/api/cloudflared/tunnels-delete` | `cloudflared:write` | Im Stapel löschen: Cloudflare-Tunnel |
 | PUT | `/api/cloudflared/tunnels-group` | `cloudflared:write` | Gruppe mehrerer Einträge festlegen: Cloudflare-Tunnel |
 | GET | `/api/cloudflared/tunnels/{key}/secrets` | `cloudflared:write` | Geheimnisse im Klartext anzeigen |
 | POST | `/api/cloudflared/tunnels/{key}/restart` | `cloudflared:write` | Einen Cloudflare-Tunnel neu starten |
@@ -236,6 +252,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/ssl/certs/{key}` | `ssl:write` | Zertifikate löschen |
 | PUT | `/api/ssl/certs/{key}/enable` | `ssl:write` | Zertifikate aktivieren oder deaktivieren |
 | PUT | `/api/ssl/certs-order` | `ssl:write` | Zertifikate neu anordnen |
+| PUT | `/api/ssl/certs-enable` | `ssl:write` | Im Stapel aktivieren oder deaktivieren: Zertifikate |
+| POST | `/api/ssl/certs-delete` | `ssl:write` | Im Stapel löschen: Zertifikate |
 | PUT | `/api/ssl/certs-group` | `ssl:write` | Gruppe mehrerer Einträge festlegen: Zertifikate |
 | GET | `/api/ssl/certs/{key}/secrets` | `ssl:write` | Geheimnisse im Klartext anzeigen |
 | POST | `/api/ssl/certs/{key}/renew` | `ssl:write` | Zertifikat sofort ausstellen oder erneuern |
@@ -258,6 +276,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/waf/instances/{key}` | `waf:write` | WAF-Instanzen löschen |
 | PUT | `/api/waf/instances/{key}/enable` | `waf:write` | WAF-Instanzen aktivieren oder deaktivieren |
 | PUT | `/api/waf/instances-order` | `waf:write` | WAF-Instanzen neu anordnen |
+| PUT | `/api/waf/instances-enable` | `waf:write` | Im Stapel aktivieren oder deaktivieren: WAF-Instanzen |
+| POST | `/api/waf/instances-delete` | `waf:write` | Im Stapel löschen: WAF-Instanzen |
 | PUT | `/api/waf/instances-group` | `waf:write` | Gruppe mehrerer Einträge festlegen: WAF-Instanzen |
 | GET | `/api/waf/crs` | `waf:read` | OWASP-CRS-Regeldateien auflisten |
 | GET | `/api/waf/crs/{file}` | `waf:read` | Eine CRS-Regeldatei lesen |
@@ -274,15 +294,20 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/webservice/listeners/{key}` | `webservice:write` | Web-Dienst lauscht löschen |
 | PUT | `/api/webservice/listeners/{key}/enable` | `webservice:write` | Web-Dienst lauscht aktivieren oder deaktivieren |
 | PUT | `/api/webservice/listeners-order` | `webservice:write` | Web-Dienst lauscht neu anordnen |
+| PUT | `/api/webservice/listeners-enable` | `webservice:write` | Im Stapel aktivieren oder deaktivieren: Web-Dienst lauscht |
+| POST | `/api/webservice/listeners-delete` | `webservice:write` | Im Stapel löschen: Web-Dienst lauscht |
 | GET | `/api/webservice/iplists` | `webservice:read` | Abonnierte IP-Listen auflisten |
 | POST | `/api/webservice/iplists` | `webservice:write` | Abonnierte IP-Liste hinzufügen |
 | PUT | `/api/webservice/iplists/{key}` | `webservice:write` | Abonnierte IP-Liste ändern |
 | DELETE | `/api/webservice/iplists/{key}` | `webservice:write` | Abonnierte IP-Liste löschen |
 | PUT | `/api/webservice/iplists/{key}/enable` | `webservice:write` | Abonnierte IP-Liste aktivieren oder deaktivieren |
 | PUT | `/api/webservice/iplists-order` | `webservice:write` | Abonnierte IP-Liste neu anordnen |
+| PUT | `/api/webservice/iplists-enable` | `webservice:write` | Im Stapel aktivieren oder deaktivieren: Abonnierte IP-Liste |
+| POST | `/api/webservice/iplists-delete` | `webservice:write` | Im Stapel löschen: Abonnierte IP-Liste |
 | POST | `/api/webservice/iplists/{key}/refresh` | `webservice:write` | Abonnierte IP-Liste jetzt aktualisieren |
 | GET | `/api/webservice/users` | `webservice:read` | Gemeinsame Benutzer und OIDC-Identitätsanbieter lesen |
 | PUT | `/api/webservice/users` | `webservice:write` | Gemeinsame Benutzer und OIDC-Identitätsanbieter speichern, Sites gesammelt einstellen |
+| POST | `/api/webservice/sites/batch` | `webservice:write` | Stapelaktionen für Sites: aktivieren, deaktivieren, löschen, Domains hinzufügen, entfernen oder ersetzen und einige Optionen ändern; gespeichert wird nur, wenn alle Sites die Prüfung bestehen |
 | POST | `/api/webservice/import/nginx` | `webservice:write` | nginx-Konfiguration importieren |
 | GET | `/api/webservice/settings` | `webservice:read` | Globale Web-Dienst-Einstellungen lesen |
 | GET | `/api/webservice/settings/secrets/totp` | `webservice:write` | TOTP-Geheimnisse der gemeinsamen Benutzer im Klartext anzeigen (nach Benutzername) |
@@ -314,6 +339,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/guard/jails/{key}` | `guard:write` | Einbruchschutz-Regel löschen |
 | PUT | `/api/guard/jails/{key}/enable` | `guard:write` | Einbruchschutz-Regel aktivieren oder deaktivieren |
 | PUT | `/api/guard/jails-order` | `guard:write` | Einbruchschutz-Regel neu anordnen |
+| PUT | `/api/guard/jails-enable` | `guard:write` | Im Stapel aktivieren oder deaktivieren: Einbruchschutz-Regel |
+| POST | `/api/guard/jails-delete` | `guard:write` | Im Stapel löschen: Einbruchschutz-Regel |
 | PUT | `/api/guard/jails-group` | `guard:write` | Gruppe mehrerer Einträge festlegen: Einbruchschutz-Regel |
 | GET | `/api/guard/presets` | `guard:read` | Regelvorlagen für gängige Dienste |
 | POST | `/api/guard/jails/test` | `guard:write` | Filter mit Beispielzeilen testen |
@@ -337,6 +364,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/wol/devices/{key}` | `wol:write` | Gerät aufwecken löschen |
 | PUT | `/api/wol/devices/{key}/enable` | `wol:write` | Gerät aufwecken aktivieren oder deaktivieren |
 | PUT | `/api/wol/devices-order` | `wol:write` | Gerät aufwecken neu anordnen |
+| PUT | `/api/wol/devices-enable` | `wol:write` | Im Stapel aktivieren oder deaktivieren: Gerät aufwecken |
+| POST | `/api/wol/devices-delete` | `wol:write` | Im Stapel löschen: Gerät aufwecken |
 | PUT | `/api/wol/devices-group` | `wol:write` | Gruppe mehrerer Einträge festlegen: Gerät aufwecken |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | Wake-on-LAN-Magic-Packet an ein Gerät senden |
 | GET | `/api/wol/status` | `wol:read` | Online-Status eines Geräts anzeigen |
@@ -353,6 +382,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/webterminal/connections/{key}` | `webterminal:write` | Terminalverbindungen löschen |
 | PUT | `/api/webterminal/connections/{key}/enable` | `webterminal:write` | Terminalverbindungen aktivieren oder deaktivieren |
 | PUT | `/api/webterminal/connections-order` | `webterminal:write` | Terminalverbindungen neu anordnen |
+| PUT | `/api/webterminal/connections-enable` | `webterminal:write` | Im Stapel aktivieren oder deaktivieren: Terminalverbindungen |
+| POST | `/api/webterminal/connections-delete` | `webterminal:write` | Im Stapel löschen: Terminalverbindungen |
 | PUT | `/api/webterminal/connections-group` | `webterminal:write` | Gruppe mehrerer Einträge festlegen: Terminalverbindungen |
 | GET | `/api/webterminal/connections/{key}/secrets` | `webterminal:write` | Geheimnisse im Klartext anzeigen |
 | DELETE | `/api/webterminal/connections/{key}/hostkey` | `webterminal:write` | Gespeicherten Host-Schlüssel löschen |
@@ -365,6 +396,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/webterminal/credentials/{key}` | `webterminal:write` | Einträge löschen |
 | PUT | `/api/webterminal/credentials/{key}/enable` | `webterminal:write` | Einträge aktivieren oder deaktivieren |
 | PUT | `/api/webterminal/credentials-order` | `webterminal:write` | Einträge neu anordnen |
+| PUT | `/api/webterminal/credentials-enable` | `webterminal:write` | Im Stapel aktivieren oder deaktivieren: Einträge |
+| POST | `/api/webterminal/credentials-delete` | `webterminal:write` | Im Stapel löschen: Einträge |
 | GET | `/api/webterminal/credentials/{key}/secrets` | `webterminal:write` | Geheimnisse im Klartext anzeigen |
 | GET | `/api/webterminal/connections/{key}/ws` | `webterminal:write` | Terminalsitzung öffnen (WebSocket) |
 | GET | `/api/webterminal/sessions/{id}/ws` | `webterminal:write` | An bestehende Terminalsitzung anbinden (WebSocket) |
@@ -414,6 +447,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/cron/tasks/{key}` | `cron:write` | Geplante Aufgaben löschen |
 | PUT | `/api/cron/tasks/{key}/enable` | `cron:write` | Geplante Aufgaben aktivieren oder deaktivieren |
 | PUT | `/api/cron/tasks-order` | `cron:write` | Geplante Aufgaben neu anordnen |
+| PUT | `/api/cron/tasks-enable` | `cron:write` | Im Stapel aktivieren oder deaktivieren: Geplante Aufgaben |
+| POST | `/api/cron/tasks-delete` | `cron:write` | Im Stapel löschen: Geplante Aufgaben |
 | PUT | `/api/cron/tasks-group` | `cron:write` | Gruppe mehrerer Einträge festlegen: Geplante Aufgaben |
 | POST | `/api/cron/tasks/{key}/run` | `cron:write` | Eine geplante Aufgabe sofort ausführen |
 | POST | `/api/cron/parse` | `cron:write` | Cron-Ausdruck parsen und Vorschau anzeigen |
@@ -537,6 +572,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/filebrowser/instances/{key}` | `filebrowser:write` | File-Browser-Instanz löschen |
 | PUT | `/api/filebrowser/instances/{key}/enable` | `filebrowser:write` | File-Browser-Instanz aktivieren oder deaktivieren |
 | PUT | `/api/filebrowser/instances-order` | `filebrowser:write` | File-Browser-Instanz neu anordnen |
+| PUT | `/api/filebrowser/instances-enable` | `filebrowser:write` | Im Stapel aktivieren oder deaktivieren: File-Browser-Instanz |
+| POST | `/api/filebrowser/instances-delete` | `filebrowser:write` | Im Stapel löschen: File-Browser-Instanz |
 | PUT | `/api/filebrowser/instances-group` | `filebrowser:write` | Gruppe mehrerer Einträge festlegen: File-Browser-Instanz |
 | GET | `/api/filebrowser/instances/{key}/secrets` | `filebrowser:write` | Geheimnisse im Klartext anzeigen |
 | POST | `/api/filebrowser/instances/{key}/restart` | `filebrowser:write` | Eine File-Browser-Instanz neu starten |
@@ -561,6 +598,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/storage/mounts/{key}` | `storage:write` | Speicher-Einbindungen löschen |
 | PUT | `/api/storage/mounts/{key}/enable` | `storage:write` | Speicher-Einbindungen aktivieren oder deaktivieren |
 | PUT | `/api/storage/mounts-order` | `storage:write` | Speicher-Einbindungen neu anordnen |
+| PUT | `/api/storage/mounts-enable` | `storage:write` | Im Stapel aktivieren oder deaktivieren: Speicher-Einbindungen |
+| POST | `/api/storage/mounts-delete` | `storage:write` | Im Stapel löschen: Speicher-Einbindungen |
 | PUT | `/api/storage/mounts-group` | `storage:write` | Gruppe mehrerer Einträge festlegen: Speicher-Einbindungen |
 | GET | `/api/storage/mounts/{key}/secrets` | `storage:write` | Geheimnisse im Klartext anzeigen |
 | GET | `/api/storage/files/{key}/list` | `storage:write` | Speicherverzeichnis auflisten |
@@ -582,6 +621,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/notify/channels/{key}` | `notify:write` | Benachrichtigungskanäle löschen |
 | PUT | `/api/notify/channels/{key}/enable` | `notify:write` | Benachrichtigungskanäle aktivieren oder deaktivieren |
 | PUT | `/api/notify/channels-order` | `notify:write` | Benachrichtigungskanäle neu anordnen |
+| PUT | `/api/notify/channels-enable` | `notify:write` | Im Stapel aktivieren oder deaktivieren: Benachrichtigungskanäle |
+| POST | `/api/notify/channels-delete` | `notify:write` | Im Stapel löschen: Benachrichtigungskanäle |
 | PUT | `/api/notify/channels-group` | `notify:write` | Gruppe mehrerer Einträge festlegen: Benachrichtigungskanäle |
 | GET | `/api/notify/channels/{key}/secrets` | `notify:write` | Geheimnisse im Klartext anzeigen |
 | GET | `/api/notify/rules` | `notify:read` | Benachrichtigungsregeln auflisten |
@@ -590,6 +631,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/notify/rules/{key}` | `notify:write` | Benachrichtigungsregeln löschen |
 | PUT | `/api/notify/rules/{key}/enable` | `notify:write` | Benachrichtigungsregeln aktivieren oder deaktivieren |
 | PUT | `/api/notify/rules-order` | `notify:write` | Benachrichtigungsregeln neu anordnen |
+| PUT | `/api/notify/rules-enable` | `notify:write` | Im Stapel aktivieren oder deaktivieren: Benachrichtigungsregeln |
+| POST | `/api/notify/rules-delete` | `notify:write` | Im Stapel löschen: Benachrichtigungsregeln |
 | PUT | `/api/notify/rules-group` | `notify:write` | Gruppe mehrerer Einträge festlegen: Benachrichtigungsregeln |
 | GET | `/api/notify/event-types` | `notify:read` | Abonnierbare Ereignistypen |
 | GET | `/api/notify/history` | `notify:read` | Letzte Zustellungsprotokolle |
@@ -621,6 +664,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/backup/targets/{key}` | `backup:write` | Backup-Ziele löschen |
 | PUT | `/api/backup/targets/{key}/enable` | `backup:write` | Backup-Ziele aktivieren oder deaktivieren |
 | PUT | `/api/backup/targets-order` | `backup:write` | Backup-Ziele neu anordnen |
+| PUT | `/api/backup/targets-enable` | `backup:write` | Im Stapel aktivieren oder deaktivieren: Backup-Ziele |
+| POST | `/api/backup/targets-delete` | `backup:write` | Im Stapel löschen: Backup-Ziele |
 | GET | `/api/backup/settings` | `backup:read` | Backup-Einstellungen |
 | PUT | `/api/backup/settings` | `backup:write` | Backup-Einstellungen ändern (Passphrase als Platzhalter übergeben, um sie beizubehalten) |
 | GET | `/api/backup/secrets` | `backup:write` | Geheimnisse im Klartext anzeigen |
@@ -807,6 +852,19 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `remark` | string |
 | `spec` | string |
 | `type` | string |
+
+### crud.batchDeleteRequest
+
+| Feld | Typ |
+| --- | --- |
+| `keys` | Array von string |
+
+### crud.batchEnableRequest
+
+| Feld | Typ |
+| --- | --- |
+| `enable` | boolean |
+| `keys` | Array von string |
 
 ### crud.enableRequest
 
@@ -1843,6 +1901,42 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `users` | Array von string |
 | `waf` | string |
 | `webAuth` | boolean |
+
+### webservice.SiteBatchOptions
+
+| Feld | Typ |
+| --- | --- |
+| `accessLog` | boolean |
+| `compress` | boolean |
+| `cors` | boolean |
+| `denyClose` | boolean |
+| `forwardedHeaders` | boolean |
+| `waf` | string |
+
+### webservice.SiteBatchRequest
+
+| Feld | Typ |
+| --- | --- |
+| `action` | string |
+| `domains` | Array von string |
+| `from` | string |
+| `options` | `webservice.SiteBatchOptions` |
+| `sites` | Array von `webservice.SiteRef` |
+| `to` | string |
+
+### webservice.SiteBatchResult
+
+| Feld | Typ |
+| --- | --- |
+| `changed` | integer |
+| `unchanged` | integer |
+
+### webservice.SiteRef
+
+| Feld | Typ |
+| --- | --- |
+| `listener` | string |
+| `site` | string |
 
 ### webservice.SiteSharedUsers
 

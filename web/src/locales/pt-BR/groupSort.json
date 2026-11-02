@@ -1,5 +1,5 @@
 {
-  "sort": "Ordenar",
+  "sort": "Ordenar e lote",
   "sortDone": "Concluir ordenação",
   "group": "Grupo",
   "groupPlaceholder": "Deixe em branco para nenhum grupo ou escolha um grupo existente",
@@ -26,5 +26,14 @@
   "mergeConfirm": "O grupo \"{to}\" já existe. Juntar \"{from}\" a ele?",
   "count": "{count} itens",
   "selectItem": "Selecionar este item",
-  "search": "Buscar nome, grupo, observação"
+  "search": "Buscar nome, grupo, observação",
+  "batchEnable": "Ativar",
+  "batchDisable": "Desativar",
+  "batchRemove": "Excluir",
+  "batchEnabled": "{count} itens ativados",
+  "batchDisabled": "{count} itens desativados",
+  "batchRemoved": "{count} itens excluídos",
+  "batchRemoveTitle": "Excluir selecionados",
+  "batchRemoveConfirm": "Excluir os {count} itens selecionados ({names})? Isso não pode ser desfeito.",
+  "batchRemoveMore": " e mais {count}"
 }

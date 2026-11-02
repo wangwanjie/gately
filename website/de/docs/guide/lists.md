@@ -1,6 +1,6 @@
-# Gruppen und Sortierung in Listen
+# Gruppen, Sortierung und Stapelverarbeitung in Listen
 
-Listen mit vielen Einträgen lassen sich gruppieren, manuell sortieren und durchsuchen; die Bedienung ist auf allen Seiten gleich. Reihenfolge und Gruppen wirken sich nur auf die Anzeige in der Verwaltungsoberfläche aus; Änderungen starten laufende Instanzen nicht neu und trennen keine Verbindungen.
+Listen mit vielen Einträgen lassen sich gruppieren, manuell sortieren, durchsuchen und im Stapel bearbeiten; die Bedienung ist auf allen Seiten gleich. Reihenfolge und Gruppen wirken sich nur auf die Anzeige in der Verwaltungsoberfläche aus; Änderungen starten laufende Instanzen nicht neu und trennen keine Verbindungen.
 
 ## Unterstützte Listen
 
@@ -33,7 +33,7 @@ Fahren Sie mit der Maus über eine Gruppenüberschrift und klicken Sie auf den S
 
 ## Sortiermodus
 
-Klicken Sie auf „Sortieren“, um den Sortiermodus zu öffnen. Dabei werden alle Einträge angezeigt, Suche und Filter sind vorübergehend ausgesetzt:
+Klicken Sie auf „Sortieren & Stapel“, um den Sortiermodus zu öffnen. Dabei werden alle Einträge angezeigt, Suche und Filter sind vorübergehend ausgesetzt:
 
 - Mit den Pfeilen verschieben Sie Einträge innerhalb einer Gruppe nach oben oder unten, mit den Pfeilen an der Gruppenüberschrift die ganze Gruppe;
 - Am Desktop lassen sich Einträge direkt ziehen; wer sie auf einen Eintrag oder die Überschrift einer anderen Gruppe zieht, fügt sie dieser Gruppe hinzu;
@@ -41,6 +41,15 @@ Klicken Sie auf „Sortieren“, um den Sortiermodus zu öffnen. Dabei werden al
 - Über die Werkzeugleiste können Sie markierte Einträge gesammelt „In Gruppe verschieben“; bleibt das Feld leer, werden sie aus ihrer Gruppe entfernt.
 
 Smartphones und andere schmale Bildschirme unterstützen kein Ziehen; dieselben Schritte gehen dort mit den Pfeilen und der Werkzeugleiste.
+
+## Stapelverarbeitung
+
+Nachdem Sie im Sortiermodus Einträge markiert haben, bietet die Werkzeugleiste außerdem:
+
+- **Aktivieren / Deaktivieren**: speichert alle markierten Einträge auf einmal; Einträge, die bereits den Zielzustand haben, werden nicht neu gestartet;
+- **Löschen**: Der Bestätigungsdialog listet die zu löschenden Einträge auf; das Löschen lässt sich nicht rückgängig machen. Lässt sich ein Eintrag nicht löschen (etwa ein Zertifikat, das noch von einer Site verwendet wird), wird keiner gelöscht und der Grund angezeigt.
+
+Eine Stapeloperation verarbeitet bis zu 500 Einträge. Gespeichert wird nur, wenn alle Einträge die Prüfung bestehen; schlägt einer fehl, bleibt alles unverändert. Wake-on-LAN-Geräte haben keinen Aktivierungsschalter und bieten nur das Löschen im Stapel; API-Tokens bieten Aktivieren, Deaktivieren und Löschen im Stapel noch nicht an. Die Web-Dienste können zusätzlich Domains und Optionen im Stapel ändern, siehe [Web-Dienste](/de/docs/modules/web#stapelverarbeitung).
 
 ## Hinweise zu einzelnen Seiten
 
@@ -51,4 +60,4 @@ Smartphones und andere schmale Bildschirme unterstützen kein Ziehen; dieselben 
 
 ## API
 
-Alle allgemeinen Listen-Endpunkte bieten `PUT <Listenpfad>-order` (Body `{"keys": [...]}`, der alle Einträge enthalten muss) zum Ändern der Reihenfolge und `PUT <Listenpfad>-group` (Body `{"keys": [...], "group": "..."}`) zum gesammelten Setzen der Gruppe, zum Beispiel `PUT /api/stun/rules-group`. Einträge innerhalb einer DDNS-Aufgabe verwenden `PUT /api/ddns/tasks/{key}/records-layout`, API-Tokens verwenden `PUT /api/tokens/order` und `PUT /api/tokens/group`. Details finden Sie in der [API-Referenz](/de/docs/reference/api-reference).
+Alle allgemeinen Listen-Endpunkte bieten `PUT <Listenpfad>-order` (Body `{"keys": [...]}`, der alle Einträge enthalten muss) zum Ändern der Reihenfolge und `PUT <Listenpfad>-group` (Body `{"keys": [...], "group": "..."}`) zum gesammelten Setzen der Gruppe, `PUT <Listenpfad>-enable` (Body `{"keys": [...], "enable": true}`) zum gesammelten Aktivieren oder Deaktivieren und `POST <Listenpfad>-delete` (Body `{"keys": [...]}`) zum gesammelten Löschen, zum Beispiel `PUT /api/stun/rules-group` und `POST /api/portforward/rules-delete`. Einträge innerhalb einer DDNS-Aufgabe verwenden `PUT /api/ddns/tasks/{key}/records-layout`, API-Tokens verwenden `PUT /api/tokens/order` und `PUT /api/tokens/group`. Details finden Sie in der [API-Referenz](/de/docs/reference/api-reference).

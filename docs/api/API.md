@@ -74,6 +74,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/portforward/rules/{key}` | `portforward:write` | 删除端口转发规则 |
 | PUT | `/api/portforward/rules/{key}/enable` | `portforward:write` | 启用或停用端口转发规则 |
 | PUT | `/api/portforward/rules-order` | `portforward:write` | 调整端口转发规则排序 |
+| PUT | `/api/portforward/rules-enable` | `portforward:write` | 批量启用或停用端口转发规则 |
+| POST | `/api/portforward/rules-delete` | `portforward:write` | 批量删除端口转发规则 |
 | PUT | `/api/portforward/rules-group` | `portforward:write` | 批量设置端口转发规则分组 |
 | GET | `/api/portforward/settings` | `portforward:read` | 读取端口转发全局设置 |
 | PUT | `/api/portforward/settings` | `portforward:write` | 保存端口转发全局设置 |
@@ -90,6 +92,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/protoroute/rules/{key}` | `protoroute:write` | 删除协议分流规则 |
 | PUT | `/api/protoroute/rules/{key}/enable` | `protoroute:write` | 启用或停用协议分流规则 |
 | PUT | `/api/protoroute/rules-order` | `protoroute:write` | 调整协议分流规则排序 |
+| PUT | `/api/protoroute/rules-enable` | `protoroute:write` | 批量启用或停用协议分流规则 |
+| POST | `/api/protoroute/rules-delete` | `protoroute:write` | 批量删除协议分流规则 |
 | PUT | `/api/protoroute/rules-group` | `protoroute:write` | 批量设置协议分流规则分组 |
 | GET | `/api/protoroute/settings` | `protoroute:read` | 读取协议分流全局设置 |
 | PUT | `/api/protoroute/settings` | `protoroute:write` | 保存协议分流全局设置 |
@@ -106,6 +110,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/ddns/tasks/{key}` | `ddns:write` | 删除DDNS 任务 |
 | PUT | `/api/ddns/tasks/{key}/enable` | `ddns:write` | 启用或停用DDNS 任务 |
 | PUT | `/api/ddns/tasks-order` | `ddns:write` | 调整DDNS 任务排序 |
+| PUT | `/api/ddns/tasks-enable` | `ddns:write` | 批量启用或停用DDNS 任务 |
+| POST | `/api/ddns/tasks-delete` | `ddns:write` | 批量删除DDNS 任务 |
 | PUT | `/api/ddns/tasks-group` | `ddns:write` | 批量设置DDNS 任务分组 |
 | GET | `/api/ddns/tasks/{key}/secrets` | `ddns:write` | 查看密钥明文 |
 | POST | `/api/ddns/tasks/{key}/sync` | `ddns:write` | 立即同步一个 DDNS 任务 |
@@ -131,6 +137,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/stun/rules/{key}` | `stun:write` | 删除STUN 规则 |
 | PUT | `/api/stun/rules/{key}/enable` | `stun:write` | 启用或停用STUN 规则 |
 | PUT | `/api/stun/rules-order` | `stun:write` | 调整STUN 规则排序 |
+| PUT | `/api/stun/rules-enable` | `stun:write` | 批量启用或停用STUN 规则 |
+| POST | `/api/stun/rules-delete` | `stun:write` | 批量删除STUN 规则 |
 | PUT | `/api/stun/rules-group` | `stun:write` | 批量设置STUN 规则分组 |
 | POST | `/api/stun/rules/{key}/restart` | `stun:write` | 重启一条 STUN 规则 |
 | GET | `/api/stun/netinterfaces` | `stun:read` | 列出本机网卡及地址 |
@@ -168,6 +176,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/frp/clients/{key}` | `frp:write` | 删除frp 客户端 |
 | PUT | `/api/frp/clients/{key}/enable` | `frp:write` | 启用或停用frp 客户端 |
 | PUT | `/api/frp/clients-order` | `frp:write` | 调整frp 客户端排序 |
+| PUT | `/api/frp/clients-enable` | `frp:write` | 批量启用或停用frp 客户端 |
+| POST | `/api/frp/clients-delete` | `frp:write` | 批量删除frp 客户端 |
 | PUT | `/api/frp/clients-group` | `frp:write` | 批量设置frp 客户端分组 |
 | GET | `/api/frp/clients/{key}/secrets` | `frp:write` | 查看密钥明文 |
 | GET | `/api/frp/servers` | `frp:read` | 获取frp 服务端列表 |
@@ -176,6 +186,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/frp/servers/{key}` | `frp:write` | 删除frp 服务端 |
 | PUT | `/api/frp/servers/{key}/enable` | `frp:write` | 启用或停用frp 服务端 |
 | PUT | `/api/frp/servers-order` | `frp:write` | 调整frp 服务端排序 |
+| PUT | `/api/frp/servers-enable` | `frp:write` | 批量启用或停用frp 服务端 |
+| POST | `/api/frp/servers-delete` | `frp:write` | 批量删除frp 服务端 |
 | PUT | `/api/frp/servers-group` | `frp:write` | 批量设置frp 服务端分组 |
 | GET | `/api/frp/servers/{key}/secrets` | `frp:write` | 查看密钥明文 |
 | GET | `/api/frp/proxies` | `frp:read` | 获取frp 代理列表 |
@@ -184,6 +196,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/frp/proxies/{key}` | `frp:write` | 删除frp 代理 |
 | PUT | `/api/frp/proxies/{key}/enable` | `frp:write` | 启用或停用frp 代理 |
 | PUT | `/api/frp/proxies-order` | `frp:write` | 调整frp 代理排序 |
+| PUT | `/api/frp/proxies-enable` | `frp:write` | 批量启用或停用frp 代理 |
+| POST | `/api/frp/proxies-delete` | `frp:write` | 批量删除frp 代理 |
 | PUT | `/api/frp/proxies-group` | `frp:write` | 批量设置frp 代理分组 |
 | GET | `/api/frp/proxies/{key}/secrets` | `frp:write` | 查看密钥明文 |
 | POST | `/api/frp/import` | `frp:write` | 导入已有的 frpc / frps 配置（支持旧版 ini 与新版 toml）；apply 为 false 时仅预览 |
@@ -210,6 +224,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/cloudflared/tunnels/{key}` | `cloudflared:write` | 删除Cloudflare 隧道 |
 | PUT | `/api/cloudflared/tunnels/{key}/enable` | `cloudflared:write` | 启用或停用Cloudflare 隧道 |
 | PUT | `/api/cloudflared/tunnels-order` | `cloudflared:write` | 调整Cloudflare 隧道排序 |
+| PUT | `/api/cloudflared/tunnels-enable` | `cloudflared:write` | 批量启用或停用Cloudflare 隧道 |
+| POST | `/api/cloudflared/tunnels-delete` | `cloudflared:write` | 批量删除Cloudflare 隧道 |
 | PUT | `/api/cloudflared/tunnels-group` | `cloudflared:write` | 批量设置Cloudflare 隧道分组 |
 | GET | `/api/cloudflared/tunnels/{key}/secrets` | `cloudflared:write` | 查看密钥明文 |
 | POST | `/api/cloudflared/tunnels/{key}/restart` | `cloudflared:write` | 重启一条 Cloudflare 隧道 |
@@ -236,6 +252,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/ssl/certs/{key}` | `ssl:write` | 删除证书 |
 | PUT | `/api/ssl/certs/{key}/enable` | `ssl:write` | 启用或停用证书 |
 | PUT | `/api/ssl/certs-order` | `ssl:write` | 调整证书排序 |
+| PUT | `/api/ssl/certs-enable` | `ssl:write` | 批量启用或停用证书 |
+| POST | `/api/ssl/certs-delete` | `ssl:write` | 批量删除证书 |
 | PUT | `/api/ssl/certs-group` | `ssl:write` | 批量设置证书分组 |
 | GET | `/api/ssl/certs/{key}/secrets` | `ssl:write` | 查看密钥明文 |
 | POST | `/api/ssl/certs/{key}/renew` | `ssl:write` | 立即签发或续期证书 |
@@ -258,6 +276,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/waf/instances/{key}` | `waf:write` | 删除WAF 实例 |
 | PUT | `/api/waf/instances/{key}/enable` | `waf:write` | 启用或停用WAF 实例 |
 | PUT | `/api/waf/instances-order` | `waf:write` | 调整WAF 实例排序 |
+| PUT | `/api/waf/instances-enable` | `waf:write` | 批量启用或停用WAF 实例 |
+| POST | `/api/waf/instances-delete` | `waf:write` | 批量删除WAF 实例 |
 | PUT | `/api/waf/instances-group` | `waf:write` | 批量设置WAF 实例分组 |
 | GET | `/api/waf/crs` | `waf:read` | 列出 OWASP CRS 规则文件 |
 | GET | `/api/waf/crs/{file}` | `waf:read` | 读取一个 CRS 规则文件 |
@@ -274,15 +294,20 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/webservice/listeners/{key}` | `webservice:write` | 删除Web 服务监听 |
 | PUT | `/api/webservice/listeners/{key}/enable` | `webservice:write` | 启用或停用Web 服务监听 |
 | PUT | `/api/webservice/listeners-order` | `webservice:write` | 调整Web 服务监听排序 |
+| PUT | `/api/webservice/listeners-enable` | `webservice:write` | 批量启用或停用Web 服务监听 |
+| POST | `/api/webservice/listeners-delete` | `webservice:write` | 批量删除Web 服务监听 |
 | GET | `/api/webservice/iplists` | `webservice:read` | 获取订阅 IP 列表 |
 | POST | `/api/webservice/iplists` | `webservice:write` | 新增订阅 IP 列表 |
 | PUT | `/api/webservice/iplists/{key}` | `webservice:write` | 修改订阅 IP 列表 |
 | DELETE | `/api/webservice/iplists/{key}` | `webservice:write` | 删除订阅 IP 列表 |
 | PUT | `/api/webservice/iplists/{key}/enable` | `webservice:write` | 启用或停用订阅 IP 列表 |
 | PUT | `/api/webservice/iplists-order` | `webservice:write` | 调整订阅 IP 列表排序 |
+| PUT | `/api/webservice/iplists-enable` | `webservice:write` | 批量启用或停用订阅 IP 列表 |
+| POST | `/api/webservice/iplists-delete` | `webservice:write` | 批量删除订阅 IP 列表 |
 | POST | `/api/webservice/iplists/{key}/refresh` | `webservice:write` | 立即刷新订阅 IP 列表 |
 | GET | `/api/webservice/users` | `webservice:read` | 读取共享用户与 OIDC 身份提供方 |
 | PUT | `/api/webservice/users` | `webservice:write` | 保存共享用户与 OIDC 身份提供方，批量设置站点 |
+| POST | `/api/webservice/sites/batch` | `webservice:write` | 批量操作站点：启停、删除、增删或替换域名、修改部分选项；全部校验通过才保存，任一站点失败都不修改 |
 | POST | `/api/webservice/import/nginx` | `webservice:write` | 导入 nginx 配置 |
 | GET | `/api/webservice/settings` | `webservice:read` | 读取 Web 服务全局设置 |
 | GET | `/api/webservice/settings/secrets/totp` | `webservice:write` | 查看共享用户的 TOTP 密钥明文（按用户名索引） |
@@ -314,6 +339,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/guard/jails/{key}` | `guard:write` | 删除入侵防护规则 |
 | PUT | `/api/guard/jails/{key}/enable` | `guard:write` | 启用或停用入侵防护规则 |
 | PUT | `/api/guard/jails-order` | `guard:write` | 调整入侵防护规则排序 |
+| PUT | `/api/guard/jails-enable` | `guard:write` | 批量启用或停用入侵防护规则 |
+| POST | `/api/guard/jails-delete` | `guard:write` | 批量删除入侵防护规则 |
 | PUT | `/api/guard/jails-group` | `guard:write` | 批量设置入侵防护规则分组 |
 | GET | `/api/guard/presets` | `guard:read` | 常见服务的规则模板 |
 | POST | `/api/guard/jails/test` | `guard:write` | 用日志样例测试过滤规则 |
@@ -337,6 +364,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/wol/devices/{key}` | `wol:write` | 删除唤醒设备 |
 | PUT | `/api/wol/devices/{key}/enable` | `wol:write` | 启用或停用唤醒设备 |
 | PUT | `/api/wol/devices-order` | `wol:write` | 调整唤醒设备排序 |
+| PUT | `/api/wol/devices-enable` | `wol:write` | 批量启用或停用唤醒设备 |
+| POST | `/api/wol/devices-delete` | `wol:write` | 批量删除唤醒设备 |
 | PUT | `/api/wol/devices-group` | `wol:write` | 批量设置唤醒设备分组 |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | 向设备发送唤醒魔术包 |
 | GET | `/api/wol/status` | `wol:read` | 查看设备在线状态 |
@@ -353,6 +382,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/webterminal/connections/{key}` | `webterminal:write` | 删除终端连接 |
 | PUT | `/api/webterminal/connections/{key}/enable` | `webterminal:write` | 启用或停用终端连接 |
 | PUT | `/api/webterminal/connections-order` | `webterminal:write` | 调整终端连接排序 |
+| PUT | `/api/webterminal/connections-enable` | `webterminal:write` | 批量启用或停用终端连接 |
+| POST | `/api/webterminal/connections-delete` | `webterminal:write` | 批量删除终端连接 |
 | PUT | `/api/webterminal/connections-group` | `webterminal:write` | 批量设置终端连接分组 |
 | GET | `/api/webterminal/connections/{key}/secrets` | `webterminal:write` | 查看密钥明文 |
 | DELETE | `/api/webterminal/connections/{key}/hostkey` | `webterminal:write` | 清除已记录的主机密钥 |
@@ -365,6 +396,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/webterminal/credentials/{key}` | `webterminal:write` | 删除条目 |
 | PUT | `/api/webterminal/credentials/{key}/enable` | `webterminal:write` | 启用或停用条目 |
 | PUT | `/api/webterminal/credentials-order` | `webterminal:write` | 调整条目排序 |
+| PUT | `/api/webterminal/credentials-enable` | `webterminal:write` | 批量启用或停用条目 |
+| POST | `/api/webterminal/credentials-delete` | `webterminal:write` | 批量删除条目 |
 | GET | `/api/webterminal/credentials/{key}/secrets` | `webterminal:write` | 查看密钥明文 |
 | GET | `/api/webterminal/connections/{key}/ws` | `webterminal:write` | 打开终端会话（WebSocket） |
 | GET | `/api/webterminal/sessions/{id}/ws` | `webterminal:write` | 接入已有终端会话（WebSocket） |
@@ -414,6 +447,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/cron/tasks/{key}` | `cron:write` | 删除计划任务 |
 | PUT | `/api/cron/tasks/{key}/enable` | `cron:write` | 启用或停用计划任务 |
 | PUT | `/api/cron/tasks-order` | `cron:write` | 调整计划任务排序 |
+| PUT | `/api/cron/tasks-enable` | `cron:write` | 批量启用或停用计划任务 |
+| POST | `/api/cron/tasks-delete` | `cron:write` | 批量删除计划任务 |
 | PUT | `/api/cron/tasks-group` | `cron:write` | 批量设置计划任务分组 |
 | POST | `/api/cron/tasks/{key}/run` | `cron:write` | 立即执行一个计划任务 |
 | POST | `/api/cron/parse` | `cron:write` | 解析并预览 Cron 表达式 |
@@ -537,6 +572,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/filebrowser/instances/{key}` | `filebrowser:write` | 删除File Browser 实例 |
 | PUT | `/api/filebrowser/instances/{key}/enable` | `filebrowser:write` | 启用或停用File Browser 实例 |
 | PUT | `/api/filebrowser/instances-order` | `filebrowser:write` | 调整File Browser 实例排序 |
+| PUT | `/api/filebrowser/instances-enable` | `filebrowser:write` | 批量启用或停用File Browser 实例 |
+| POST | `/api/filebrowser/instances-delete` | `filebrowser:write` | 批量删除File Browser 实例 |
 | PUT | `/api/filebrowser/instances-group` | `filebrowser:write` | 批量设置File Browser 实例分组 |
 | GET | `/api/filebrowser/instances/{key}/secrets` | `filebrowser:write` | 查看密钥明文 |
 | POST | `/api/filebrowser/instances/{key}/restart` | `filebrowser:write` | 重启一个 File Browser 实例 |
@@ -561,6 +598,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/storage/mounts/{key}` | `storage:write` | 删除存储挂载 |
 | PUT | `/api/storage/mounts/{key}/enable` | `storage:write` | 启用或停用存储挂载 |
 | PUT | `/api/storage/mounts-order` | `storage:write` | 调整存储挂载排序 |
+| PUT | `/api/storage/mounts-enable` | `storage:write` | 批量启用或停用存储挂载 |
+| POST | `/api/storage/mounts-delete` | `storage:write` | 批量删除存储挂载 |
 | PUT | `/api/storage/mounts-group` | `storage:write` | 批量设置存储挂载分组 |
 | GET | `/api/storage/mounts/{key}/secrets` | `storage:write` | 查看密钥明文 |
 | GET | `/api/storage/files/{key}/list` | `storage:write` | 列出存储目录 |
@@ -582,6 +621,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/notify/channels/{key}` | `notify:write` | 删除通知渠道 |
 | PUT | `/api/notify/channels/{key}/enable` | `notify:write` | 启用或停用通知渠道 |
 | PUT | `/api/notify/channels-order` | `notify:write` | 调整通知渠道排序 |
+| PUT | `/api/notify/channels-enable` | `notify:write` | 批量启用或停用通知渠道 |
+| POST | `/api/notify/channels-delete` | `notify:write` | 批量删除通知渠道 |
 | PUT | `/api/notify/channels-group` | `notify:write` | 批量设置通知渠道分组 |
 | GET | `/api/notify/channels/{key}/secrets` | `notify:write` | 查看密钥明文 |
 | GET | `/api/notify/rules` | `notify:read` | 获取通知规则列表 |
@@ -590,6 +631,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/notify/rules/{key}` | `notify:write` | 删除通知规则 |
 | PUT | `/api/notify/rules/{key}/enable` | `notify:write` | 启用或停用通知规则 |
 | PUT | `/api/notify/rules-order` | `notify:write` | 调整通知规则排序 |
+| PUT | `/api/notify/rules-enable` | `notify:write` | 批量启用或停用通知规则 |
+| POST | `/api/notify/rules-delete` | `notify:write` | 批量删除通知规则 |
 | PUT | `/api/notify/rules-group` | `notify:write` | 批量设置通知规则分组 |
 | GET | `/api/notify/event-types` | `notify:read` | 可订阅的事件类型 |
 | GET | `/api/notify/history` | `notify:read` | 最近的投递记录 |
@@ -621,6 +664,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/backup/targets/{key}` | `backup:write` | 删除备份目的地 |
 | PUT | `/api/backup/targets/{key}/enable` | `backup:write` | 启用或停用备份目的地 |
 | PUT | `/api/backup/targets-order` | `backup:write` | 调整备份目的地排序 |
+| PUT | `/api/backup/targets-enable` | `backup:write` | 批量启用或停用备份目的地 |
+| POST | `/api/backup/targets-delete` | `backup:write` | 批量删除备份目的地 |
 | GET | `/api/backup/settings` | `backup:read` | 备份设置 |
 | PUT | `/api/backup/settings` | `backup:write` | 修改备份设置（口令传占位符表示保持不变） |
 | GET | `/api/backup/secrets` | `backup:write` | 查看密钥明文 |
@@ -807,6 +852,19 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `remark` | string |
 | `spec` | string |
 | `type` | string |
+
+### crud.batchDeleteRequest
+
+| 字段 | 类型 |
+| --- | --- |
+| `keys` | 数组 of string |
+
+### crud.batchEnableRequest
+
+| 字段 | 类型 |
+| --- | --- |
+| `enable` | boolean |
+| `keys` | 数组 of string |
 
 ### crud.enableRequest
 
@@ -1843,6 +1901,42 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `users` | 数组 of string |
 | `waf` | string |
 | `webAuth` | boolean |
+
+### webservice.SiteBatchOptions
+
+| 字段 | 类型 |
+| --- | --- |
+| `accessLog` | boolean |
+| `compress` | boolean |
+| `cors` | boolean |
+| `denyClose` | boolean |
+| `forwardedHeaders` | boolean |
+| `waf` | string |
+
+### webservice.SiteBatchRequest
+
+| 字段 | 类型 |
+| --- | --- |
+| `action` | string |
+| `domains` | 数组 of string |
+| `from` | string |
+| `options` | `webservice.SiteBatchOptions` |
+| `sites` | 数组 of `webservice.SiteRef` |
+| `to` | string |
+
+### webservice.SiteBatchResult
+
+| 字段 | 类型 |
+| --- | --- |
+| `changed` | integer |
+| `unchanged` | integer |
+
+### webservice.SiteRef
+
+| 字段 | 类型 |
+| --- | --- |
+| `listener` | string |
+| `site` | string |
 
 ### webservice.SiteSharedUsers
 

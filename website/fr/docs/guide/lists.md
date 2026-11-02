@@ -1,6 +1,6 @@
-# Groupes et tri des listes
+# Groupes, tri et opérations en lot des listes
 
-Les listes comportant de nombreuses entrées peuvent être groupées, triées manuellement et filtrées par recherche, avec les mêmes commandes sur toutes les pages. L'ordre et les groupes n'agissent que sur l'affichage dans l'interface d'administration ; les modifier ne redémarre pas les instances en cours et ne coupe aucune connexion.
+Les listes comportant de nombreuses entrées peuvent être groupées, triées manuellement, filtrées par recherche et modifiées en lot, avec les mêmes commandes sur toutes les pages. L'ordre et les groupes n'agissent que sur l'affichage dans l'interface d'administration ; les modifier ne redémarre pas les instances en cours et ne coupe aucune connexion.
 
 ## Listes prises en charge
 
@@ -33,7 +33,7 @@ Survolez l'en-tête d'un groupe et cliquez sur le bouton crayon pour le renommer
 
 ## Mode de tri
 
-Cliquez sur « Trier » pour passer en mode de tri. Toutes les entrées sont alors affichées, et la recherche et les filtres sont suspendus :
+Cliquez sur « Tri et lot » pour passer en mode de tri. Toutes les entrées sont alors affichées, et la recherche et les filtres sont suspendus :
 
 - Utilisez les flèches pour monter ou descendre une entrée dans son groupe, ou celles de l'en-tête pour déplacer tout le groupe ;
 - Sur ordinateur, vous pouvez faire glisser les entrées directement ; les déposer sur une entrée ou l'en-tête d'un autre groupe les ajoute à ce groupe ;
@@ -41,6 +41,15 @@ Cliquez sur « Trier » pour passer en mode de tri. Toutes les entrées sont alo
 - La barre d'outils permet de « Déplacer dans le groupe » les entrées sélectionnées en une fois ; laisser le champ vide les retire de leur groupe.
 
 Les téléphones et autres écrans étroits ne prennent pas en charge le glisser-déposer ; utilisez les flèches et la barre d'outils pour les mêmes opérations.
+
+## Opérations en lot
+
+Après avoir coché des entrées en mode de tri, la barre d'outils permet aussi de :
+
+- **Activer / Désactiver** : enregistre toutes les entrées cochées en une fois ; les entrées déjà dans l'état visé ne sont pas redémarrées ;
+- **Supprimer** : la boîte de confirmation liste les entrées à supprimer, et la suppression est définitive. Si une entrée ne peut pas être supprimée (par exemple un certificat encore utilisé par un site), aucune n'est supprimée et la raison est affichée.
+
+Une opération en lot traite jusqu'à 500 entrées. Elle n'est enregistrée que si toutes les entrées passent la validation ; si l'une échoue, rien n'est modifié. Les appareils Wake-on-LAN n'ont pas d'interrupteur d'activation et ne proposent que la suppression en lot ; les jetons d'API ne proposent pas encore l'activation, la désactivation ni la suppression en lot. Services Web propose aussi la modification en lot des domaines et des options, voir [Services Web](/fr/docs/modules/web#operations-en-lot).
 
 ## Remarques par page
 
@@ -51,4 +60,4 @@ Les téléphones et autres écrans étroits ne prennent pas en charge le glisser
 
 ## API
 
-Tous les points de terminaison de listes génériques proposent `PUT <chemin de la liste>-order` (corps `{"keys": [...]}`, qui doit contenir toutes les entrées) pour modifier l'ordre et `PUT <chemin de la liste>-group` (corps `{"keys": [...], "group": "..."}`) pour définir le groupe en lot, par exemple `PUT /api/stun/rules-group`. Les enregistrements d'une tâche DDNS utilisent `PUT /api/ddns/tasks/{key}/records-layout`, et les jetons d'API utilisent `PUT /api/tokens/order` et `PUT /api/tokens/group`. Voir la [Référence de l'API](/fr/docs/reference/api-reference) pour plus de détails.
+Tous les points de terminaison de listes génériques proposent `PUT <chemin de la liste>-order` (corps `{"keys": [...]}`, qui doit contenir toutes les entrées) pour modifier l'ordre et `PUT <chemin de la liste>-group` (corps `{"keys": [...], "group": "..."}`) pour définir le groupe en lot, `PUT <chemin de la liste>-enable` (corps `{"keys": [...], "enable": true}`) pour activer ou désactiver en lot et `POST <chemin de la liste>-delete` (corps `{"keys": [...]}`) pour supprimer en lot, par exemple `PUT /api/stun/rules-group` et `POST /api/portforward/rules-delete`. Les enregistrements d'une tâche DDNS utilisent `PUT /api/ddns/tasks/{key}/records-layout`, et les jetons d'API utilisent `PUT /api/tokens/order` et `PUT /api/tokens/group`. Voir la [Référence de l'API](/fr/docs/reference/api-reference) pour plus de détails.

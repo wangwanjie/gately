@@ -1,6 +1,6 @@
-# Grupos y orden de las listas
+# Grupos, orden y operaciones en lote de las listas
 
-Las listas con muchas entradas se pueden agrupar, ordenar manualmente y buscar, y los controles funcionan igual en todas las páginas. El orden y los grupos solo afectan a la visualización en la interfaz de administración; cambiarlos no reinicia las instancias en ejecución ni corta conexiones.
+Las listas con muchas entradas se pueden agrupar, ordenar manualmente, buscar y modificar en lote, y los controles funcionan igual en todas las páginas. El orden y los grupos solo afectan a la visualización en la interfaz de administración; cambiarlos no reinicia las instancias en ejecución ni corta conexiones.
 
 ## Listas compatibles
 
@@ -33,7 +33,7 @@ Pasa el ratón sobre el encabezado de un grupo y pulsa el botón del lápiz para
 
 ## Modo de ordenación
 
-Pulsa "Ordenar" para entrar en el modo de ordenación. Se muestran todas las entradas y la búsqueda y los filtros quedan en pausa:
+Pulsa "Ordenar y lotes" para entrar en el modo de ordenación. Se muestran todas las entradas y la búsqueda y los filtros quedan en pausa:
 
 - Usa las flechas para subir o bajar entradas dentro de un grupo, o las del encabezado para mover el grupo completo;
 - En escritorio puedes arrastrar las entradas directamente; al soltarlas sobre una entrada o el encabezado de otro grupo pasan a ese grupo;
@@ -41,6 +41,15 @@ Pulsa "Ordenar" para entrar en el modo de ordenación. Se muestran todas las ent
 - La barra de herramientas permite "Mover al grupo" las entradas seleccionadas en bloque; si se deja vacío, salen de su grupo.
 
 Los teléfonos y otras pantallas estrechas no admiten arrastrar; usa las flechas y la barra de herramientas para hacer lo mismo.
+
+## Operaciones en lote
+
+Tras marcar entradas en el modo de ordenación, la barra de herramientas también permite:
+
+- **Activar / Desactivar**: guarda todas las entradas marcadas de una vez; las que ya están en el estado deseado no se reinician;
+- **Eliminar**: el diálogo de confirmación enumera las entradas que se van a eliminar, y la eliminación no se puede deshacer. Si alguna entrada no se puede eliminar (por ejemplo, un certificado que aún usa un sitio), no se elimina ninguna y se muestra el motivo.
+
+Una operación en lote procesa hasta 500 entradas. Solo se guarda cuando todas las entradas superan la validación; si alguna falla, no se modifica nada. Los dispositivos de Wake-on-LAN no tienen interruptor de activación y solo admiten la eliminación en lote; los tokens de API todavía no admiten activar, desactivar ni eliminar en lote. Servicios web ofrece además cambios en lote de dominios y opciones; consulta [Servicios web](/es/docs/modules/web#operaciones-en-lote).
 
 ## Notas por página
 
@@ -51,4 +60,4 @@ Los teléfonos y otras pantallas estrechas no admiten arrastrar; usa las flechas
 
 ## API
 
-Todos los endpoints de listas genéricas ofrecen `PUT <ruta de la lista>-order` (cuerpo `{"keys": [...]}`, que debe incluir todas las entradas) para cambiar el orden y `PUT <ruta de la lista>-group` (cuerpo `{"keys": [...], "group": "..."}`) para asignar el grupo en bloque, por ejemplo `PUT /api/stun/rules-group`. Los registros de una tarea DDNS usan `PUT /api/ddns/tasks/{key}/records-layout`, y los tokens de API usan `PUT /api/tokens/order` y `PUT /api/tokens/group`. Consulta la [Referencia de la API](/es/docs/reference/api-reference) para más detalles.
+Todos los endpoints de listas genéricas ofrecen `PUT <ruta de la lista>-order` (cuerpo `{"keys": [...]}`, que debe incluir todas las entradas) para cambiar el orden y `PUT <ruta de la lista>-group` (cuerpo `{"keys": [...], "group": "..."}`) para asignar el grupo en bloque, `PUT <ruta de la lista>-enable` (cuerpo `{"keys": [...], "enable": true}`) para activar o desactivar en lote y `POST <ruta de la lista>-delete` (cuerpo `{"keys": [...]}`) para eliminar en lote, por ejemplo `PUT /api/stun/rules-group` y `POST /api/portforward/rules-delete`. Los registros de una tarea DDNS usan `PUT /api/ddns/tasks/{key}/records-layout`, y los tokens de API usan `PUT /api/tokens/order` y `PUT /api/tokens/group`. Consulta la [Referencia de la API](/es/docs/reference/api-reference) para más detalles.

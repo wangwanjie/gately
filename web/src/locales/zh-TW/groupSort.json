@@ -1,5 +1,5 @@
 {
-  "sort": "排序",
+  "sort": "排序與批次",
   "sortDone": "完成排序",
   "group": "分組",
   "groupPlaceholder": "留空為未分組，可選擇已有分組",
@@ -26,5 +26,14 @@
   "mergeConfirm": "分組「{to}」已存在，確定把「{from}」合併進去嗎？",
   "count": "{count} 項",
   "selectItem": "選擇此項",
-  "search": "搜尋名稱、分組、備註"
+  "search": "搜尋名稱、分組、備註",
+  "batchEnable": "啟用",
+  "batchDisable": "停用",
+  "batchRemove": "刪除",
+  "batchEnabled": "已啟用 {count} 項",
+  "batchDisabled": "已停用 {count} 項",
+  "batchRemoved": "已刪除 {count} 項",
+  "batchRemoveTitle": "批次刪除",
+  "batchRemoveConfirm": "確定刪除選取的 {count} 項（{names}）嗎？刪除後無法復原。",
+  "batchRemoveMore": "，另有 {count} 項"
 }

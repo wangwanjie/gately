@@ -1,5 +1,5 @@
 {
-  "sort": "Sort",
+  "sort": "Sort & batch",
   "sortDone": "Done sorting",
   "group": "Group",
   "groupPlaceholder": "Leave empty for no group, or pick an existing group",
@@ -26,5 +26,14 @@
   "mergeConfirm": "Group \"{to}\" already exists. Merge \"{from}\" into it?",
   "count": "{count} items",
   "selectItem": "Select this item",
-  "search": "Search name, group, remark"
+  "search": "Search name, group, remark",
+  "batchEnable": "Enable",
+  "batchDisable": "Disable",
+  "batchRemove": "Delete",
+  "batchEnabled": "Enabled {count} items",
+  "batchDisabled": "Disabled {count} items",
+  "batchRemoved": "Deleted {count} items",
+  "batchRemoveTitle": "Delete selected",
+  "batchRemoveConfirm": "Delete the {count} selected items ({names})? This cannot be undone.",
+  "batchRemoveMore": ", and {count} more"
 }

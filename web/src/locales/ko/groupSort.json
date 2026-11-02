@@ -1,5 +1,5 @@
 {
-  "sort": "정렬",
+  "sort": "정렬 및 일괄",
   "sortDone": "정렬 완료",
   "group": "그룹",
   "groupPlaceholder": "비워 두면 그룹 없음, 기존 그룹 선택 가능",
@@ -26,5 +26,14 @@
   "mergeConfirm": "\"{to}\" 그룹이 이미 있습니다. \"{from}\"을(를) 합칠까요?",
   "count": "{count}개",
   "selectItem": "이 항목 선택",
-  "search": "이름, 그룹, 메모 검색"
+  "search": "이름, 그룹, 메모 검색",
+  "batchEnable": "사용",
+  "batchDisable": "사용 안 함",
+  "batchRemove": "삭제",
+  "batchEnabled": "{count}개 항목을 사용 설정했습니다",
+  "batchDisabled": "{count}개 항목을 사용 중지했습니다",
+  "batchRemoved": "{count}개 항목을 삭제했습니다",
+  "batchRemoveTitle": "일괄 삭제",
+  "batchRemoveConfirm": "선택한 {count}개 항목({names})을 삭제할까요? 되돌릴 수 없습니다.",
+  "batchRemoveMore": " 외 {count}개"
 }

@@ -31,10 +31,17 @@
       :total="allSiteIds.length"
       :groups="allGroupNames"
       :busy="busy"
+      :batch="{ enable: true, remove: true }"
       @select-all="sel.setSelected(allSiteIds, true)"
       @clear="sel.clearSelection()"
       @set-group="setGroupSelected"
-    />
+      @enable="(v: boolean) => batchEnable(v)"
+      @remove="batchRemove"
+    >
+      <el-button size="small" :icon="Globe" :disabled="!sel.selected.value.size || busy" @click="openBatch('domains')">{{ t('webBatch.domains') }}</el-button>
+      <el-button size="small" :icon="ListChecks" :disabled="!sel.selected.value.size || busy" @click="openBatch('options')">{{ t('webBatch.options') }}</el-button>
+    </SortToolbar>
+    <WebBatch ref="batchDialog" :waf-instances="wafInstances" @done="onBatchDone" />
 
     <div v-loading="loading" class="card-list">
       <el-empty v-if="!loading && !listeners.length" :description="t('web.empty')" />
@@ -526,7 +533,9 @@ import {
   ChevronsUpDown,
   ChevronUp,
   FileInput,
+  Globe,
   GripVertical,
+  ListChecks,
   Pencil,
   Plus,
   Search,
@@ -540,6 +549,7 @@ import {
 import { api, type OAuthProvider } from '../api'
 import GroupHeader from '../components/GroupHeader.vue'
 import SortToolbar from '../components/SortToolbar.vue'
+import WebBatch, { type SiteRef } from '../components/WebBatch.vue'
 import GroupInput from '../components/GroupInput.vue'
 import { useGroupRename, useSortSelect } from '../composables/useGroupSort'
 import { buildSections, displayItems as displayGroupItems, dropTarget, flatten, moveInto, moveSection, moveStep, renameSection, type GroupItem, type Section } from '../groupSort'
@@ -1039,6 +1049,57 @@ async function setGroupSelected(name: string) {
     const next = moveInto(siteSections(l), (r) => siteId(l, r), ids, { group: name })
     await saveSiteOrder(l, next)
   }
+  await load()
+}
+
+// ---- 批量操作：启停、删除、增删或替换域名、修改部分选项，全部由 WebBatch 一次请求提交 ----
+
+const batchDialog = ref<InstanceType<typeof WebBatch>>()
+
+// selectedSites 把选中的站点 id（监听key/站点key）转为接口引用，并给出站点名称用于确认提示
+function selectedSites(): { refs: SiteRef[]; names: string[] } {
+  const refs: SiteRef[] = []
+  const names: string[] = []
+  for (const l of listeners.value) {
+    for (const row of flatten(siteSections(l))) {
+      const key = row.site.key
+      if (key && sel.isSelected(siteId(l, row))) {
+        refs.push({ listener: l.key, site: key })
+        names.push(row.site.name || row.site.domains?.[0] || key)
+      }
+    }
+  }
+  return { refs, names }
+}
+
+// runBatch 串行化批量操作，期间禁用工具栏；成功后清空选择
+async function runBatch(fn: (refs: SiteRef[], names: string[]) => Promise<boolean | undefined>) {
+  const { refs, names } = selectedSites()
+  if (!refs.length || busy.value) {
+    return
+  }
+  busy.value = true
+  try {
+    if (await fn(refs, names)) {
+      sel.clearSelection()
+    }
+  } finally {
+    busy.value = false
+  }
+}
+
+const batchEnable = (on: boolean) => runBatch((refs) => batchDialog.value!.enable(refs, on))
+const batchRemove = () => runBatch((refs, names) => batchDialog.value!.remove(refs, names))
+
+function openBatch(mode: 'domains' | 'options') {
+  const { refs } = selectedSites()
+  if (refs.length) {
+    batchDialog.value?.open(mode, refs)
+  }
+}
+
+// onBatchDone 在批量操作成功后刷新列表；修改域名与选项后保留选择，方便继续操作其他项
+async function onBatchDone() {
   await load()
 }
 

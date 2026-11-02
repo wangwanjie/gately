@@ -74,6 +74,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/portforward/rules/{key}` | `portforward:write` | 포트 포워딩 규칙 삭제 |
 | PUT | `/api/portforward/rules/{key}/enable` | `portforward:write` | 포트 포워딩 규칙 사용 설정/해제 |
 | PUT | `/api/portforward/rules-order` | `portforward:write` | 포트 포워딩 규칙 순서 변경 |
+| PUT | `/api/portforward/rules-enable` | `portforward:write` | 포트 포워딩 규칙 일괄 사용/사용 안 함 |
+| POST | `/api/portforward/rules-delete` | `portforward:write` | 포트 포워딩 규칙 일괄 삭제 |
 | PUT | `/api/portforward/rules-group` | `portforward:write` | 포트 포워딩 규칙 그룹 일괄 설정 |
 | GET | `/api/portforward/settings` | `portforward:read` | 포트 포워딩 전역 설정 읽기 |
 | PUT | `/api/portforward/settings` | `portforward:write` | 포트 포워딩 전역 설정 저장 |
@@ -90,6 +92,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/protoroute/rules/{key}` | `protoroute:write` | 프로토콜 라우팅 규칙 삭제 |
 | PUT | `/api/protoroute/rules/{key}/enable` | `protoroute:write` | 프로토콜 라우팅 규칙 사용 설정/해제 |
 | PUT | `/api/protoroute/rules-order` | `protoroute:write` | 프로토콜 라우팅 규칙 순서 변경 |
+| PUT | `/api/protoroute/rules-enable` | `protoroute:write` | 프로토콜 라우팅 규칙 일괄 사용/사용 안 함 |
+| POST | `/api/protoroute/rules-delete` | `protoroute:write` | 프로토콜 라우팅 규칙 일괄 삭제 |
 | PUT | `/api/protoroute/rules-group` | `protoroute:write` | 프로토콜 라우팅 규칙 그룹 일괄 설정 |
 | GET | `/api/protoroute/settings` | `protoroute:read` | 프로토콜 라우팅 전역 설정 읽기 |
 | PUT | `/api/protoroute/settings` | `protoroute:write` | 프로토콜 라우팅 전역 설정 저장 |
@@ -106,6 +110,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/ddns/tasks/{key}` | `ddns:write` | DDNS 작업 삭제 |
 | PUT | `/api/ddns/tasks/{key}/enable` | `ddns:write` | DDNS 작업 사용 설정/해제 |
 | PUT | `/api/ddns/tasks-order` | `ddns:write` | DDNS 작업 순서 변경 |
+| PUT | `/api/ddns/tasks-enable` | `ddns:write` | DDNS 작업 일괄 사용/사용 안 함 |
+| POST | `/api/ddns/tasks-delete` | `ddns:write` | DDNS 작업 일괄 삭제 |
 | PUT | `/api/ddns/tasks-group` | `ddns:write` | DDNS 작업 그룹 일괄 설정 |
 | GET | `/api/ddns/tasks/{key}/secrets` | `ddns:write` | 비밀 값 평문 보기 |
 | POST | `/api/ddns/tasks/{key}/sync` | `ddns:write` | DDNS 작업 즉시 동기화 |
@@ -131,6 +137,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/stun/rules/{key}` | `stun:write` | STUN 규칙 삭제 |
 | PUT | `/api/stun/rules/{key}/enable` | `stun:write` | STUN 규칙 사용 설정/해제 |
 | PUT | `/api/stun/rules-order` | `stun:write` | STUN 규칙 순서 변경 |
+| PUT | `/api/stun/rules-enable` | `stun:write` | STUN 규칙 일괄 사용/사용 안 함 |
+| POST | `/api/stun/rules-delete` | `stun:write` | STUN 규칙 일괄 삭제 |
 | PUT | `/api/stun/rules-group` | `stun:write` | STUN 규칙 그룹 일괄 설정 |
 | POST | `/api/stun/rules/{key}/restart` | `stun:write` | STUN 규칙 재시작 |
 | GET | `/api/stun/netinterfaces` | `stun:read` | 이 장치의 네트워크 카드 및 주소 목록 조회 |
@@ -168,6 +176,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/frp/clients/{key}` | `frp:write` | frp 클라이언트 삭제 |
 | PUT | `/api/frp/clients/{key}/enable` | `frp:write` | frp 클라이언트 사용 설정/해제 |
 | PUT | `/api/frp/clients-order` | `frp:write` | frp 클라이언트 순서 변경 |
+| PUT | `/api/frp/clients-enable` | `frp:write` | frp 클라이언트 일괄 사용/사용 안 함 |
+| POST | `/api/frp/clients-delete` | `frp:write` | frp 클라이언트 일괄 삭제 |
 | PUT | `/api/frp/clients-group` | `frp:write` | frp 클라이언트 그룹 일괄 설정 |
 | GET | `/api/frp/clients/{key}/secrets` | `frp:write` | 비밀 값 평문 보기 |
 | GET | `/api/frp/servers` | `frp:read` | frp 서버 목록 조회 |
@@ -176,6 +186,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/frp/servers/{key}` | `frp:write` | frp 서버 삭제 |
 | PUT | `/api/frp/servers/{key}/enable` | `frp:write` | frp 서버 사용 설정/해제 |
 | PUT | `/api/frp/servers-order` | `frp:write` | frp 서버 순서 변경 |
+| PUT | `/api/frp/servers-enable` | `frp:write` | frp 서버 일괄 사용/사용 안 함 |
+| POST | `/api/frp/servers-delete` | `frp:write` | frp 서버 일괄 삭제 |
 | PUT | `/api/frp/servers-group` | `frp:write` | frp 서버 그룹 일괄 설정 |
 | GET | `/api/frp/servers/{key}/secrets` | `frp:write` | 비밀 값 평문 보기 |
 | GET | `/api/frp/proxies` | `frp:read` | frp 프록시 목록 조회 |
@@ -184,6 +196,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/frp/proxies/{key}` | `frp:write` | frp 프록시 삭제 |
 | PUT | `/api/frp/proxies/{key}/enable` | `frp:write` | frp 프록시 사용 설정/해제 |
 | PUT | `/api/frp/proxies-order` | `frp:write` | frp 프록시 순서 변경 |
+| PUT | `/api/frp/proxies-enable` | `frp:write` | frp 프록시 일괄 사용/사용 안 함 |
+| POST | `/api/frp/proxies-delete` | `frp:write` | frp 프록시 일괄 삭제 |
 | PUT | `/api/frp/proxies-group` | `frp:write` | frp 프록시 그룹 일괄 설정 |
 | GET | `/api/frp/proxies/{key}/secrets` | `frp:write` | 비밀 값 평문 보기 |
 | POST | `/api/frp/import` | `frp:write` | 기존 frpc / frps 설정 가져오기 (구버전 ini와 신버전 toml 지원). apply가 false이면 미리보기만 수행 |
@@ -210,6 +224,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/cloudflared/tunnels/{key}` | `cloudflared:write` | Cloudflare 터널 삭제 |
 | PUT | `/api/cloudflared/tunnels/{key}/enable` | `cloudflared:write` | Cloudflare 터널 사용 설정/해제 |
 | PUT | `/api/cloudflared/tunnels-order` | `cloudflared:write` | Cloudflare 터널 순서 변경 |
+| PUT | `/api/cloudflared/tunnels-enable` | `cloudflared:write` | Cloudflare 터널 일괄 사용/사용 안 함 |
+| POST | `/api/cloudflared/tunnels-delete` | `cloudflared:write` | Cloudflare 터널 일괄 삭제 |
 | PUT | `/api/cloudflared/tunnels-group` | `cloudflared:write` | Cloudflare 터널 그룹 일괄 설정 |
 | GET | `/api/cloudflared/tunnels/{key}/secrets` | `cloudflared:write` | 비밀 값 평문 보기 |
 | POST | `/api/cloudflared/tunnels/{key}/restart` | `cloudflared:write` | Cloudflare 터널 재시작 |
@@ -236,6 +252,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/ssl/certs/{key}` | `ssl:write` | 인증서 삭제 |
 | PUT | `/api/ssl/certs/{key}/enable` | `ssl:write` | 인증서 사용 설정/해제 |
 | PUT | `/api/ssl/certs-order` | `ssl:write` | 인증서 순서 변경 |
+| PUT | `/api/ssl/certs-enable` | `ssl:write` | 인증서 일괄 사용/사용 안 함 |
+| POST | `/api/ssl/certs-delete` | `ssl:write` | 인증서 일괄 삭제 |
 | PUT | `/api/ssl/certs-group` | `ssl:write` | 인증서 그룹 일괄 설정 |
 | GET | `/api/ssl/certs/{key}/secrets` | `ssl:write` | 비밀 값 평문 보기 |
 | POST | `/api/ssl/certs/{key}/renew` | `ssl:write` | 인증서 즉시 발급 또는 갱신 |
@@ -258,6 +276,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/waf/instances/{key}` | `waf:write` | WAF 인스턴스 삭제 |
 | PUT | `/api/waf/instances/{key}/enable` | `waf:write` | WAF 인스턴스 사용 설정/해제 |
 | PUT | `/api/waf/instances-order` | `waf:write` | WAF 인스턴스 순서 변경 |
+| PUT | `/api/waf/instances-enable` | `waf:write` | WAF 인스턴스 일괄 사용/사용 안 함 |
+| POST | `/api/waf/instances-delete` | `waf:write` | WAF 인스턴스 일괄 삭제 |
 | PUT | `/api/waf/instances-group` | `waf:write` | WAF 인스턴스 그룹 일괄 설정 |
 | GET | `/api/waf/crs` | `waf:read` | OWASP CRS 규칙 파일 목록 조회 |
 | GET | `/api/waf/crs/{file}` | `waf:read` | CRS 규칙 파일 하나 읽기 |
@@ -274,15 +294,20 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/webservice/listeners/{key}` | `webservice:write` | Web 서비스 수신 대기 삭제 |
 | PUT | `/api/webservice/listeners/{key}/enable` | `webservice:write` | Web 서비스 수신 대기 사용 설정/해제 |
 | PUT | `/api/webservice/listeners-order` | `webservice:write` | Web 서비스 수신 대기 순서 변경 |
+| PUT | `/api/webservice/listeners-enable` | `webservice:write` | Web 서비스 수신 대기 일괄 사용/사용 안 함 |
+| POST | `/api/webservice/listeners-delete` | `webservice:write` | Web 서비스 수신 대기 일괄 삭제 |
 | GET | `/api/webservice/iplists` | `webservice:read` | 구독 IP 목록 조회 |
 | POST | `/api/webservice/iplists` | `webservice:write` | 구독 IP 목록 추가 |
 | PUT | `/api/webservice/iplists/{key}` | `webservice:write` | 구독 IP 목록 수정 |
 | DELETE | `/api/webservice/iplists/{key}` | `webservice:write` | 구독 IP 목록 삭제 |
 | PUT | `/api/webservice/iplists/{key}/enable` | `webservice:write` | 구독 IP 목록 사용 설정/해제 |
 | PUT | `/api/webservice/iplists-order` | `webservice:write` | 구독 IP 목록 순서 변경 |
+| PUT | `/api/webservice/iplists-enable` | `webservice:write` | 구독 IP 목록 일괄 사용/사용 안 함 |
+| POST | `/api/webservice/iplists-delete` | `webservice:write` | 구독 IP 목록 일괄 삭제 |
 | POST | `/api/webservice/iplists/{key}/refresh` | `webservice:write` | 구독 IP 목록 지금 새로고침 |
 | GET | `/api/webservice/users` | `webservice:read` | 공유 사용자와 OIDC ID 공급자 조회 |
 | PUT | `/api/webservice/users` | `webservice:write` | 공유 사용자와 OIDC ID 공급자 저장, 사이트 일괄 설정 |
+| POST | `/api/webservice/sites/batch` | `webservice:write` | 사이트 일괄 작업: 사용·사용 안 함, 삭제, 도메인 추가·제거·교체, 일부 옵션 변경. 모든 사이트가 검증을 통과해야 저장하며 하나라도 실패하면 아무것도 바꾸지 않습니다 |
 | POST | `/api/webservice/import/nginx` | `webservice:write` | nginx 설정 가져오기 |
 | GET | `/api/webservice/settings` | `webservice:read` | Web 서비스 전역 설정 읽기 |
 | GET | `/api/webservice/settings/secrets/totp` | `webservice:write` | 공유 사용자의 TOTP 비밀 키 평문 보기(사용자 이름으로 색인) |
@@ -314,6 +339,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/guard/jails/{key}` | `guard:write` | 침입 방지 규칙 삭제 |
 | PUT | `/api/guard/jails/{key}/enable` | `guard:write` | 침입 방지 규칙 사용 설정/해제 |
 | PUT | `/api/guard/jails-order` | `guard:write` | 침입 방지 규칙 순서 변경 |
+| PUT | `/api/guard/jails-enable` | `guard:write` | 침입 방지 규칙 일괄 사용/사용 안 함 |
+| POST | `/api/guard/jails-delete` | `guard:write` | 침입 방지 규칙 일괄 삭제 |
 | PUT | `/api/guard/jails-group` | `guard:write` | 침입 방지 규칙 그룹 일괄 설정 |
 | GET | `/api/guard/presets` | `guard:read` | 일반 서비스용 규칙 템플릿 |
 | POST | `/api/guard/jails/test` | `guard:write` | 로그 샘플로 필터 테스트 |
@@ -337,6 +364,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/wol/devices/{key}` | `wol:write` | 장치 깨우기 삭제 |
 | PUT | `/api/wol/devices/{key}/enable` | `wol:write` | 장치 깨우기 사용 설정/해제 |
 | PUT | `/api/wol/devices-order` | `wol:write` | 장치 깨우기 순서 변경 |
+| PUT | `/api/wol/devices-enable` | `wol:write` | 장치 깨우기 일괄 사용/사용 안 함 |
+| POST | `/api/wol/devices-delete` | `wol:write` | 장치 깨우기 일괄 삭제 |
 | PUT | `/api/wol/devices-group` | `wol:write` | 장치 깨우기 그룹 일괄 설정 |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | 장치에 깨우기 매직 패킷 전송 |
 | GET | `/api/wol/status` | `wol:read` | 장치 온라인 상태 보기 |
@@ -353,6 +382,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/webterminal/connections/{key}` | `webterminal:write` | 터미널 연결 삭제 |
 | PUT | `/api/webterminal/connections/{key}/enable` | `webterminal:write` | 터미널 연결 사용 설정/해제 |
 | PUT | `/api/webterminal/connections-order` | `webterminal:write` | 터미널 연결 순서 변경 |
+| PUT | `/api/webterminal/connections-enable` | `webterminal:write` | 터미널 연결 일괄 사용/사용 안 함 |
+| POST | `/api/webterminal/connections-delete` | `webterminal:write` | 터미널 연결 일괄 삭제 |
 | PUT | `/api/webterminal/connections-group` | `webterminal:write` | 터미널 연결 그룹 일괄 설정 |
 | GET | `/api/webterminal/connections/{key}/secrets` | `webterminal:write` | 비밀 값 평문 보기 |
 | DELETE | `/api/webterminal/connections/{key}/hostkey` | `webterminal:write` | 기록된 호스트 키 삭제 |
@@ -365,6 +396,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/webterminal/credentials/{key}` | `webterminal:write` | 항목 삭제 |
 | PUT | `/api/webterminal/credentials/{key}/enable` | `webterminal:write` | 항목 사용 설정/해제 |
 | PUT | `/api/webterminal/credentials-order` | `webterminal:write` | 항목 순서 변경 |
+| PUT | `/api/webterminal/credentials-enable` | `webterminal:write` | 항목 일괄 사용/사용 안 함 |
+| POST | `/api/webterminal/credentials-delete` | `webterminal:write` | 항목 일괄 삭제 |
 | GET | `/api/webterminal/credentials/{key}/secrets` | `webterminal:write` | 비밀 값 평문 보기 |
 | GET | `/api/webterminal/connections/{key}/ws` | `webterminal:write` | 터미널 세션 열기 (WebSocket) |
 | GET | `/api/webterminal/sessions/{id}/ws` | `webterminal:write` | 기존 터미널 세션에 연결 (WebSocket) |
@@ -414,6 +447,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/cron/tasks/{key}` | `cron:write` | 예약 작업 삭제 |
 | PUT | `/api/cron/tasks/{key}/enable` | `cron:write` | 예약 작업 사용 설정/해제 |
 | PUT | `/api/cron/tasks-order` | `cron:write` | 예약 작업 순서 변경 |
+| PUT | `/api/cron/tasks-enable` | `cron:write` | 예약 작업 일괄 사용/사용 안 함 |
+| POST | `/api/cron/tasks-delete` | `cron:write` | 예약 작업 일괄 삭제 |
 | PUT | `/api/cron/tasks-group` | `cron:write` | 예약 작업 그룹 일괄 설정 |
 | POST | `/api/cron/tasks/{key}/run` | `cron:write` | 예약 작업 즉시 실행 |
 | POST | `/api/cron/parse` | `cron:write` | Cron 표현식 파싱 및 미리보기 |
@@ -537,6 +572,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/filebrowser/instances/{key}` | `filebrowser:write` | File Browser 인스턴스 삭제 |
 | PUT | `/api/filebrowser/instances/{key}/enable` | `filebrowser:write` | File Browser 인스턴스 사용 설정/해제 |
 | PUT | `/api/filebrowser/instances-order` | `filebrowser:write` | File Browser 인스턴스 순서 변경 |
+| PUT | `/api/filebrowser/instances-enable` | `filebrowser:write` | File Browser 인스턴스 일괄 사용/사용 안 함 |
+| POST | `/api/filebrowser/instances-delete` | `filebrowser:write` | File Browser 인스턴스 일괄 삭제 |
 | PUT | `/api/filebrowser/instances-group` | `filebrowser:write` | File Browser 인스턴스 그룹 일괄 설정 |
 | GET | `/api/filebrowser/instances/{key}/secrets` | `filebrowser:write` | 비밀 값 평문 보기 |
 | POST | `/api/filebrowser/instances/{key}/restart` | `filebrowser:write` | File Browser 인스턴스 다시 시작 |
@@ -561,6 +598,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/storage/mounts/{key}` | `storage:write` | 스토리지 마운트 삭제 |
 | PUT | `/api/storage/mounts/{key}/enable` | `storage:write` | 스토리지 마운트 사용 설정/해제 |
 | PUT | `/api/storage/mounts-order` | `storage:write` | 스토리지 마운트 순서 변경 |
+| PUT | `/api/storage/mounts-enable` | `storage:write` | 스토리지 마운트 일괄 사용/사용 안 함 |
+| POST | `/api/storage/mounts-delete` | `storage:write` | 스토리지 마운트 일괄 삭제 |
 | PUT | `/api/storage/mounts-group` | `storage:write` | 스토리지 마운트 그룹 일괄 설정 |
 | GET | `/api/storage/mounts/{key}/secrets` | `storage:write` | 비밀 값 평문 보기 |
 | GET | `/api/storage/files/{key}/list` | `storage:write` | 스토리지 디렉터리 목록 조회 |
@@ -582,6 +621,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/notify/channels/{key}` | `notify:write` | 알림 채널 삭제 |
 | PUT | `/api/notify/channels/{key}/enable` | `notify:write` | 알림 채널 사용 설정/해제 |
 | PUT | `/api/notify/channels-order` | `notify:write` | 알림 채널 순서 변경 |
+| PUT | `/api/notify/channels-enable` | `notify:write` | 알림 채널 일괄 사용/사용 안 함 |
+| POST | `/api/notify/channels-delete` | `notify:write` | 알림 채널 일괄 삭제 |
 | PUT | `/api/notify/channels-group` | `notify:write` | 알림 채널 그룹 일괄 설정 |
 | GET | `/api/notify/channels/{key}/secrets` | `notify:write` | 비밀 값 평문 보기 |
 | GET | `/api/notify/rules` | `notify:read` | 알림 규칙 목록 조회 |
@@ -590,6 +631,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/notify/rules/{key}` | `notify:write` | 알림 규칙 삭제 |
 | PUT | `/api/notify/rules/{key}/enable` | `notify:write` | 알림 규칙 사용 설정/해제 |
 | PUT | `/api/notify/rules-order` | `notify:write` | 알림 규칙 순서 변경 |
+| PUT | `/api/notify/rules-enable` | `notify:write` | 알림 규칙 일괄 사용/사용 안 함 |
+| POST | `/api/notify/rules-delete` | `notify:write` | 알림 규칙 일괄 삭제 |
 | PUT | `/api/notify/rules-group` | `notify:write` | 알림 규칙 그룹 일괄 설정 |
 | GET | `/api/notify/event-types` | `notify:read` | 구독 가능한 이벤트 유형 |
 | GET | `/api/notify/history` | `notify:read` | 최근 전달 기록 |
@@ -621,6 +664,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/backup/targets/{key}` | `backup:write` | 백업 대상 삭제 |
 | PUT | `/api/backup/targets/{key}/enable` | `backup:write` | 백업 대상 사용 설정/해제 |
 | PUT | `/api/backup/targets-order` | `backup:write` | 백업 대상 순서 변경 |
+| PUT | `/api/backup/targets-enable` | `backup:write` | 백업 대상 일괄 사용/사용 안 함 |
+| POST | `/api/backup/targets-delete` | `backup:write` | 백업 대상 일괄 삭제 |
 | GET | `/api/backup/settings` | `backup:read` | 백업 설정 |
 | PUT | `/api/backup/settings` | `backup:write` | 백업 설정 수정 (암호에 자리 표시자를 전달하면 기존 값 유지) |
 | GET | `/api/backup/secrets` | `backup:write` | 비밀 값 평문 보기 |
@@ -807,6 +852,19 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `remark` | string |
 | `spec` | string |
 | `type` | string |
+
+### crud.batchDeleteRequest
+
+| 필드 | 타입 |
+| --- | --- |
+| `keys` | Array of string |
+
+### crud.batchEnableRequest
+
+| 필드 | 타입 |
+| --- | --- |
+| `enable` | boolean |
+| `keys` | Array of string |
 
 ### crud.enableRequest
 
@@ -1843,6 +1901,42 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `users` | Array of string |
 | `waf` | string |
 | `webAuth` | boolean |
+
+### webservice.SiteBatchOptions
+
+| 필드 | 타입 |
+| --- | --- |
+| `accessLog` | boolean |
+| `compress` | boolean |
+| `cors` | boolean |
+| `denyClose` | boolean |
+| `forwardedHeaders` | boolean |
+| `waf` | string |
+
+### webservice.SiteBatchRequest
+
+| 필드 | 타입 |
+| --- | --- |
+| `action` | string |
+| `domains` | Array of string |
+| `from` | string |
+| `options` | `webservice.SiteBatchOptions` |
+| `sites` | Array of `webservice.SiteRef` |
+| `to` | string |
+
+### webservice.SiteBatchResult
+
+| 필드 | 타입 |
+| --- | --- |
+| `changed` | integer |
+| `unchanged` | integer |
+
+### webservice.SiteRef
+
+| 필드 | 타입 |
+| --- | --- |
+| `listener` | string |
+| `site` | string |
 
 ### webservice.SiteSharedUsers
 

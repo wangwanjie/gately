@@ -33,7 +33,7 @@ func TestGroupedListRoutes(t *testing.T) {
 		"/api/guard/jails",
 	}
 	for _, p := range lists {
-		for _, ep := range []string{"PUT " + p + "-order", "PUT " + p + "-group"} {
+		for _, ep := range []string{"PUT " + p + "-order", "PUT " + p + "-group", "PUT " + p + "-enable", "POST " + p + "-delete"} {
 			if !have[ep] {
 				t.Errorf("缺少接口 %s", ep)
 			}

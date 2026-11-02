@@ -276,6 +276,7 @@ func (m *Module) Routes(r module.Router) {
 	listeners.Register(r, "/listeners")
 	m.registerIPLists(r)
 	m.registerUsers(r)
+	m.registerBatch(r)
 	r.HandleFunc("POST /import/nginx", m.handleImportNginx)
 	r.HandleFunc("GET /settings", func(w http.ResponseWriter, req *http.Request) {
 		m.mu.Lock()

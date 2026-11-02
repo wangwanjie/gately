@@ -74,6 +74,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/portforward/rules/{key}` | `portforward:write` | Excluir Regra de encaminhamento de portas |
 | PUT | `/api/portforward/rules/{key}/enable` | `portforward:write` | Ativar ou desativar Regra de encaminhamento de portas |
 | PUT | `/api/portforward/rules-order` | `portforward:write` | Reordenar Regra de encaminhamento de portas |
+| PUT | `/api/portforward/rules-enable` | `portforward:write` | Ativar ou desativar em lote: Regra de encaminhamento de portas |
+| POST | `/api/portforward/rules-delete` | `portforward:write` | Excluir em lote: Regra de encaminhamento de portas |
 | PUT | `/api/portforward/rules-group` | `portforward:write` | Definir o grupo de vários itens: Regra de encaminhamento de portas |
 | GET | `/api/portforward/settings` | `portforward:read` | Ler configurações globais do encaminhamento de portas |
 | PUT | `/api/portforward/settings` | `portforward:write` | Salvar configurações globais do encaminhamento de portas |
@@ -90,6 +92,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/protoroute/rules/{key}` | `protoroute:write` | Excluir regra de roteamento por protocolo |
 | PUT | `/api/protoroute/rules/{key}/enable` | `protoroute:write` | Ativar ou desativar regra de roteamento por protocolo |
 | PUT | `/api/protoroute/rules-order` | `protoroute:write` | Reordenar regra de roteamento por protocolo |
+| PUT | `/api/protoroute/rules-enable` | `protoroute:write` | Ativar ou desativar em lote: regra de roteamento por protocolo |
+| POST | `/api/protoroute/rules-delete` | `protoroute:write` | Excluir em lote: regra de roteamento por protocolo |
 | PUT | `/api/protoroute/rules-group` | `protoroute:write` | Definir o grupo de vários itens: regra de roteamento por protocolo |
 | GET | `/api/protoroute/settings` | `protoroute:read` | Ler as configurações do roteamento por protocolo |
 | PUT | `/api/protoroute/settings` | `protoroute:write` | Salvar as configurações do roteamento por protocolo |
@@ -106,6 +110,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/ddns/tasks/{key}` | `ddns:write` | Excluir Tarefa DDNS |
 | PUT | `/api/ddns/tasks/{key}/enable` | `ddns:write` | Ativar ou desativar Tarefa DDNS |
 | PUT | `/api/ddns/tasks-order` | `ddns:write` | Reordenar Tarefa DDNS |
+| PUT | `/api/ddns/tasks-enable` | `ddns:write` | Ativar ou desativar em lote: Tarefa DDNS |
+| POST | `/api/ddns/tasks-delete` | `ddns:write` | Excluir em lote: Tarefa DDNS |
 | PUT | `/api/ddns/tasks-group` | `ddns:write` | Definir o grupo de vários itens: Tarefa DDNS |
 | GET | `/api/ddns/tasks/{key}/secrets` | `ddns:write` | Ver segredos em texto puro |
 | POST | `/api/ddns/tasks/{key}/sync` | `ddns:write` | Sincronizar uma tarefa DDNS imediatamente |
@@ -131,6 +137,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/stun/rules/{key}` | `stun:write` | Excluir Regra STUN |
 | PUT | `/api/stun/rules/{key}/enable` | `stun:write` | Ativar ou desativar Regra STUN |
 | PUT | `/api/stun/rules-order` | `stun:write` | Reordenar Regra STUN |
+| PUT | `/api/stun/rules-enable` | `stun:write` | Ativar ou desativar em lote: Regra STUN |
+| POST | `/api/stun/rules-delete` | `stun:write` | Excluir em lote: Regra STUN |
 | PUT | `/api/stun/rules-group` | `stun:write` | Definir o grupo de vários itens: Regra STUN |
 | POST | `/api/stun/rules/{key}/restart` | `stun:write` | Reiniciar uma regra STUN |
 | GET | `/api/stun/netinterfaces` | `stun:read` | Listar placas de rede e endereços desta máquina |
@@ -168,6 +176,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/frp/clients/{key}` | `frp:write` | Excluir Cliente frp |
 | PUT | `/api/frp/clients/{key}/enable` | `frp:write` | Ativar ou desativar Cliente frp |
 | PUT | `/api/frp/clients-order` | `frp:write` | Reordenar Cliente frp |
+| PUT | `/api/frp/clients-enable` | `frp:write` | Ativar ou desativar em lote: Cliente frp |
+| POST | `/api/frp/clients-delete` | `frp:write` | Excluir em lote: Cliente frp |
 | PUT | `/api/frp/clients-group` | `frp:write` | Definir o grupo de vários itens: Cliente frp |
 | GET | `/api/frp/clients/{key}/secrets` | `frp:write` | Ver segredos em texto puro |
 | GET | `/api/frp/servers` | `frp:read` | Listar Servidor frp |
@@ -176,6 +186,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/frp/servers/{key}` | `frp:write` | Excluir Servidor frp |
 | PUT | `/api/frp/servers/{key}/enable` | `frp:write` | Ativar ou desativar Servidor frp |
 | PUT | `/api/frp/servers-order` | `frp:write` | Reordenar Servidor frp |
+| PUT | `/api/frp/servers-enable` | `frp:write` | Ativar ou desativar em lote: Servidor frp |
+| POST | `/api/frp/servers-delete` | `frp:write` | Excluir em lote: Servidor frp |
 | PUT | `/api/frp/servers-group` | `frp:write` | Definir o grupo de vários itens: Servidor frp |
 | GET | `/api/frp/servers/{key}/secrets` | `frp:write` | Ver segredos em texto puro |
 | GET | `/api/frp/proxies` | `frp:read` | Listar proxies do frp |
@@ -184,6 +196,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/frp/proxies/{key}` | `frp:write` | Excluir proxies do frp |
 | PUT | `/api/frp/proxies/{key}/enable` | `frp:write` | Ativar ou desativar proxies do frp |
 | PUT | `/api/frp/proxies-order` | `frp:write` | Reordenar proxies do frp |
+| PUT | `/api/frp/proxies-enable` | `frp:write` | Ativar ou desativar em lote: proxies do frp |
+| POST | `/api/frp/proxies-delete` | `frp:write` | Excluir em lote: proxies do frp |
 | PUT | `/api/frp/proxies-group` | `frp:write` | Definir o grupo de vários itens: proxies do frp |
 | GET | `/api/frp/proxies/{key}/secrets` | `frp:write` | Ver segredos em texto puro |
 | POST | `/api/frp/import` | `frp:write` | Importar configuração existente de frpc / frps (suporta ini antigo e toml novo); com apply igual a false apenas pré-visualiza |
@@ -210,6 +224,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/cloudflared/tunnels/{key}` | `cloudflared:write` | Excluir Túnel Cloudflare |
 | PUT | `/api/cloudflared/tunnels/{key}/enable` | `cloudflared:write` | Ativar ou desativar Túnel Cloudflare |
 | PUT | `/api/cloudflared/tunnels-order` | `cloudflared:write` | Reordenar Túnel Cloudflare |
+| PUT | `/api/cloudflared/tunnels-enable` | `cloudflared:write` | Ativar ou desativar em lote: Túnel Cloudflare |
+| POST | `/api/cloudflared/tunnels-delete` | `cloudflared:write` | Excluir em lote: Túnel Cloudflare |
 | PUT | `/api/cloudflared/tunnels-group` | `cloudflared:write` | Definir o grupo de vários itens: Túnel Cloudflare |
 | GET | `/api/cloudflared/tunnels/{key}/secrets` | `cloudflared:write` | Ver segredos em texto puro |
 | POST | `/api/cloudflared/tunnels/{key}/restart` | `cloudflared:write` | Reiniciar um túnel Cloudflare |
@@ -236,6 +252,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/ssl/certs/{key}` | `ssl:write` | Excluir Certificado |
 | PUT | `/api/ssl/certs/{key}/enable` | `ssl:write` | Ativar ou desativar Certificado |
 | PUT | `/api/ssl/certs-order` | `ssl:write` | Reordenar Certificado |
+| PUT | `/api/ssl/certs-enable` | `ssl:write` | Ativar ou desativar em lote: Certificado |
+| POST | `/api/ssl/certs-delete` | `ssl:write` | Excluir em lote: Certificado |
 | PUT | `/api/ssl/certs-group` | `ssl:write` | Definir o grupo de vários itens: Certificado |
 | GET | `/api/ssl/certs/{key}/secrets` | `ssl:write` | Ver segredos em texto puro |
 | POST | `/api/ssl/certs/{key}/renew` | `ssl:write` | Emitir ou renovar o certificado imediatamente |
@@ -258,6 +276,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/waf/instances/{key}` | `waf:write` | Excluir Instância WAF |
 | PUT | `/api/waf/instances/{key}/enable` | `waf:write` | Ativar ou desativar Instância WAF |
 | PUT | `/api/waf/instances-order` | `waf:write` | Reordenar Instância WAF |
+| PUT | `/api/waf/instances-enable` | `waf:write` | Ativar ou desativar em lote: Instância WAF |
+| POST | `/api/waf/instances-delete` | `waf:write` | Excluir em lote: Instância WAF |
 | PUT | `/api/waf/instances-group` | `waf:write` | Definir o grupo de vários itens: Instância WAF |
 | GET | `/api/waf/crs` | `waf:read` | Listar arquivos de regras OWASP CRS |
 | GET | `/api/waf/crs/{file}` | `waf:read` | Ler um arquivo de regras CRS |
@@ -274,15 +294,20 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/webservice/listeners/{key}` | `webservice:write` | Excluir Escuta do serviço web |
 | PUT | `/api/webservice/listeners/{key}/enable` | `webservice:write` | Ativar ou desativar Escuta do serviço web |
 | PUT | `/api/webservice/listeners-order` | `webservice:write` | Reordenar Escuta do serviço web |
+| PUT | `/api/webservice/listeners-enable` | `webservice:write` | Ativar ou desativar em lote: Escuta do serviço web |
+| POST | `/api/webservice/listeners-delete` | `webservice:write` | Excluir em lote: Escuta do serviço web |
 | GET | `/api/webservice/iplists` | `webservice:read` | Listar as listas de IP assinadas |
 | POST | `/api/webservice/iplists` | `webservice:write` | Adicionar Lista de IP assinada |
 | PUT | `/api/webservice/iplists/{key}` | `webservice:write` | Modificar Lista de IP assinada |
 | DELETE | `/api/webservice/iplists/{key}` | `webservice:write` | Excluir Lista de IP assinada |
 | PUT | `/api/webservice/iplists/{key}/enable` | `webservice:write` | Ativar ou desativar Lista de IP assinada |
 | PUT | `/api/webservice/iplists-order` | `webservice:write` | Reordenar Lista de IP assinada |
+| PUT | `/api/webservice/iplists-enable` | `webservice:write` | Ativar ou desativar em lote: Lista de IP assinada |
+| POST | `/api/webservice/iplists-delete` | `webservice:write` | Excluir em lote: Lista de IP assinada |
 | POST | `/api/webservice/iplists/{key}/refresh` | `webservice:write` | Atualizar agora uma lista de IP assinada |
 | GET | `/api/webservice/users` | `webservice:read` | Ler usuários compartilhados e provedor de identidade OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Salvar usuários compartilhados e provedor de identidade OIDC, configurar sites em lote |
+| POST | `/api/webservice/sites/batch` | `webservice:write` | Operações em lote nos sites: ativar, desativar, excluir, adicionar, remover ou substituir domínios e alterar algumas opções; só salva se todos os sites passarem na validação |
 | POST | `/api/webservice/import/nginx` | `webservice:write` | Importar configuração do nginx |
 | GET | `/api/webservice/settings` | `webservice:read` | Ler configurações globais do serviço web |
 | GET | `/api/webservice/settings/secrets/totp` | `webservice:write` | Ver segredos TOTP dos usuários compartilhados em texto puro (por nome de usuário) |
@@ -314,6 +339,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/guard/jails/{key}` | `guard:write` | Excluir regra de prevenção de intrusões |
 | PUT | `/api/guard/jails/{key}/enable` | `guard:write` | Ativar ou desativar regra de prevenção de intrusões |
 | PUT | `/api/guard/jails-order` | `guard:write` | Reordenar regra de prevenção de intrusões |
+| PUT | `/api/guard/jails-enable` | `guard:write` | Ativar ou desativar em lote: regra de prevenção de intrusões |
+| POST | `/api/guard/jails-delete` | `guard:write` | Excluir em lote: regra de prevenção de intrusões |
 | PUT | `/api/guard/jails-group` | `guard:write` | Definir o grupo de vários itens: regra de prevenção de intrusões |
 | GET | `/api/guard/presets` | `guard:read` | Modelos de regras para serviços comuns |
 | POST | `/api/guard/jails/test` | `guard:write` | Testar filtros com linhas de log de exemplo |
@@ -337,6 +364,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/wol/devices/{key}` | `wol:write` | Excluir Despertar dispositivo |
 | PUT | `/api/wol/devices/{key}/enable` | `wol:write` | Ativar ou desativar Despertar dispositivo |
 | PUT | `/api/wol/devices-order` | `wol:write` | Reordenar Despertar dispositivo |
+| PUT | `/api/wol/devices-enable` | `wol:write` | Ativar ou desativar em lote: Despertar dispositivo |
+| POST | `/api/wol/devices-delete` | `wol:write` | Excluir em lote: Despertar dispositivo |
 | PUT | `/api/wol/devices-group` | `wol:write` | Definir o grupo de vários itens: Despertar dispositivo |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | Enviar o pacote mágico de despertar ao dispositivo |
 | GET | `/api/wol/status` | `wol:read` | Ver o estado online do dispositivo |
@@ -353,6 +382,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/webterminal/connections/{key}` | `webterminal:write` | Excluir Conexão de terminal |
 | PUT | `/api/webterminal/connections/{key}/enable` | `webterminal:write` | Ativar ou desativar Conexão de terminal |
 | PUT | `/api/webterminal/connections-order` | `webterminal:write` | Reordenar Conexão de terminal |
+| PUT | `/api/webterminal/connections-enable` | `webterminal:write` | Ativar ou desativar em lote: Conexão de terminal |
+| POST | `/api/webterminal/connections-delete` | `webterminal:write` | Excluir em lote: Conexão de terminal |
 | PUT | `/api/webterminal/connections-group` | `webterminal:write` | Definir o grupo de vários itens: Conexão de terminal |
 | GET | `/api/webterminal/connections/{key}/secrets` | `webterminal:write` | Ver segredos em texto puro |
 | DELETE | `/api/webterminal/connections/{key}/hostkey` | `webterminal:write` | Limpar chaves de host registradas |
@@ -365,6 +396,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/webterminal/credentials/{key}` | `webterminal:write` | Excluir Entrada |
 | PUT | `/api/webterminal/credentials/{key}/enable` | `webterminal:write` | Ativar ou desativar Entrada |
 | PUT | `/api/webterminal/credentials-order` | `webterminal:write` | Reordenar Entrada |
+| PUT | `/api/webterminal/credentials-enable` | `webterminal:write` | Ativar ou desativar em lote: Entrada |
+| POST | `/api/webterminal/credentials-delete` | `webterminal:write` | Excluir em lote: Entrada |
 | GET | `/api/webterminal/credentials/{key}/secrets` | `webterminal:write` | Ver segredos em texto puro |
 | GET | `/api/webterminal/connections/{key}/ws` | `webterminal:write` | Abrir sessão de terminal (WebSocket) |
 | GET | `/api/webterminal/sessions/{id}/ws` | `webterminal:write` | Anexar a uma sessão de terminal existente (WebSocket) |
@@ -414,6 +447,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/cron/tasks/{key}` | `cron:write` | Excluir Tarefa agendada |
 | PUT | `/api/cron/tasks/{key}/enable` | `cron:write` | Ativar ou desativar Tarefa agendada |
 | PUT | `/api/cron/tasks-order` | `cron:write` | Reordenar Tarefa agendada |
+| PUT | `/api/cron/tasks-enable` | `cron:write` | Ativar ou desativar em lote: Tarefa agendada |
+| POST | `/api/cron/tasks-delete` | `cron:write` | Excluir em lote: Tarefa agendada |
 | PUT | `/api/cron/tasks-group` | `cron:write` | Definir o grupo de vários itens: Tarefa agendada |
 | POST | `/api/cron/tasks/{key}/run` | `cron:write` | Executar uma tarefa agendada imediatamente |
 | POST | `/api/cron/parse` | `cron:write` | Analisar e pré-visualizar expressão Cron |
@@ -537,6 +572,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/filebrowser/instances/{key}` | `filebrowser:write` | Excluir Instância do File Browser |
 | PUT | `/api/filebrowser/instances/{key}/enable` | `filebrowser:write` | Ativar ou desativar Instância do File Browser |
 | PUT | `/api/filebrowser/instances-order` | `filebrowser:write` | Reordenar Instância do File Browser |
+| PUT | `/api/filebrowser/instances-enable` | `filebrowser:write` | Ativar ou desativar em lote: Instância do File Browser |
+| POST | `/api/filebrowser/instances-delete` | `filebrowser:write` | Excluir em lote: Instância do File Browser |
 | PUT | `/api/filebrowser/instances-group` | `filebrowser:write` | Definir o grupo de vários itens: Instância do File Browser |
 | GET | `/api/filebrowser/instances/{key}/secrets` | `filebrowser:write` | Ver segredos em texto puro |
 | POST | `/api/filebrowser/instances/{key}/restart` | `filebrowser:write` | Reiniciar uma instância do File Browser |
@@ -561,6 +598,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/storage/mounts/{key}` | `storage:write` | Excluir Montagens de armazenamento |
 | PUT | `/api/storage/mounts/{key}/enable` | `storage:write` | Ativar ou desativar Montagens de armazenamento |
 | PUT | `/api/storage/mounts-order` | `storage:write` | Reordenar Montagens de armazenamento |
+| PUT | `/api/storage/mounts-enable` | `storage:write` | Ativar ou desativar em lote: Montagens de armazenamento |
+| POST | `/api/storage/mounts-delete` | `storage:write` | Excluir em lote: Montagens de armazenamento |
 | PUT | `/api/storage/mounts-group` | `storage:write` | Definir o grupo de vários itens: Montagens de armazenamento |
 | GET | `/api/storage/mounts/{key}/secrets` | `storage:write` | Ver segredos em texto puro |
 | GET | `/api/storage/files/{key}/list` | `storage:write` | Listar diretório de armazenamento |
@@ -582,6 +621,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/notify/channels/{key}` | `notify:write` | Excluir Canais de notificação |
 | PUT | `/api/notify/channels/{key}/enable` | `notify:write` | Ativar ou desativar Canais de notificação |
 | PUT | `/api/notify/channels-order` | `notify:write` | Reordenar Canais de notificação |
+| PUT | `/api/notify/channels-enable` | `notify:write` | Ativar ou desativar em lote: Canais de notificação |
+| POST | `/api/notify/channels-delete` | `notify:write` | Excluir em lote: Canais de notificação |
 | PUT | `/api/notify/channels-group` | `notify:write` | Definir o grupo de vários itens: Canais de notificação |
 | GET | `/api/notify/channels/{key}/secrets` | `notify:write` | Ver segredos em texto puro |
 | GET | `/api/notify/rules` | `notify:read` | Listar Regras de notificação |
@@ -590,6 +631,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/notify/rules/{key}` | `notify:write` | Excluir Regras de notificação |
 | PUT | `/api/notify/rules/{key}/enable` | `notify:write` | Ativar ou desativar Regras de notificação |
 | PUT | `/api/notify/rules-order` | `notify:write` | Reordenar Regras de notificação |
+| PUT | `/api/notify/rules-enable` | `notify:write` | Ativar ou desativar em lote: Regras de notificação |
+| POST | `/api/notify/rules-delete` | `notify:write` | Excluir em lote: Regras de notificação |
 | PUT | `/api/notify/rules-group` | `notify:write` | Definir o grupo de vários itens: Regras de notificação |
 | GET | `/api/notify/event-types` | `notify:read` | Tipos de evento que podem ser assinados |
 | GET | `/api/notify/history` | `notify:read` | Registros de entrega recentes |
@@ -621,6 +664,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/backup/targets/{key}` | `backup:write` | Excluir Destino do backup |
 | PUT | `/api/backup/targets/{key}/enable` | `backup:write` | Ativar ou desativar Destino do backup |
 | PUT | `/api/backup/targets-order` | `backup:write` | Reordenar Destino do backup |
+| PUT | `/api/backup/targets-enable` | `backup:write` | Ativar ou desativar em lote: Destino do backup |
+| POST | `/api/backup/targets-delete` | `backup:write` | Excluir em lote: Destino do backup |
 | GET | `/api/backup/settings` | `backup:read` | Configurações de backup |
 | PUT | `/api/backup/settings` | `backup:write` | Modificar configurações de backup (enviar o marcador no lugar da senha mantém o valor atual) |
 | GET | `/api/backup/secrets` | `backup:write` | Ver segredos em texto puro |
@@ -807,6 +852,19 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `remark` | string |
 | `spec` | string |
 | `type` | string |
+
+### crud.batchDeleteRequest
+
+| Campo | Tipo |
+| --- | --- |
+| `keys` | Array de string |
+
+### crud.batchEnableRequest
+
+| Campo | Tipo |
+| --- | --- |
+| `enable` | boolean |
+| `keys` | Array de string |
 
 ### crud.enableRequest
 
@@ -1843,6 +1901,42 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `users` | Array de string |
 | `waf` | string |
 | `webAuth` | boolean |
+
+### webservice.SiteBatchOptions
+
+| Campo | Tipo |
+| --- | --- |
+| `accessLog` | boolean |
+| `compress` | boolean |
+| `cors` | boolean |
+| `denyClose` | boolean |
+| `forwardedHeaders` | boolean |
+| `waf` | string |
+
+### webservice.SiteBatchRequest
+
+| Campo | Tipo |
+| --- | --- |
+| `action` | string |
+| `domains` | Array de string |
+| `from` | string |
+| `options` | `webservice.SiteBatchOptions` |
+| `sites` | Array de `webservice.SiteRef` |
+| `to` | string |
+
+### webservice.SiteBatchResult
+
+| Campo | Tipo |
+| --- | --- |
+| `changed` | integer |
+| `unchanged` | integer |
+
+### webservice.SiteRef
+
+| Campo | Tipo |
+| --- | --- |
+| `listener` | string |
+| `site` | string |
 
 ### webservice.SiteSharedUsers
 

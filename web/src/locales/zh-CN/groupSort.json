@@ -1,5 +1,5 @@
 {
-  "sort": "排序",
+  "sort": "排序与批量",
   "sortDone": "完成排序",
   "group": "分组",
   "groupPlaceholder": "留空为未分组，可选择已有分组",
@@ -26,5 +26,14 @@
   "mergeConfirm": "分组「{to}」已存在，确定把「{from}」合并进去吗？",
   "count": "{count} 项",
   "selectItem": "选择此项",
-  "search": "搜索名称、分组、备注"
+  "search": "搜索名称、分组、备注",
+  "batchEnable": "启用",
+  "batchDisable": "停用",
+  "batchRemove": "删除",
+  "batchEnabled": "已启用 {count} 项",
+  "batchDisabled": "已停用 {count} 项",
+  "batchRemoved": "已删除 {count} 项",
+  "batchRemoveTitle": "批量删除",
+  "batchRemoveConfirm": "确定删除选中的 {count} 项（{names}）吗？删除后无法恢复。",
+  "batchRemoveMore": "，另有 {count} 项"
 }

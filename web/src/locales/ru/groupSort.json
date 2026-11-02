@@ -1,5 +1,5 @@
 {
-  "sort": "Сортировка",
+  "sort": "Сортировка и пакет",
   "sortDone": "Завершить сортировку",
   "group": "Группа",
   "groupPlaceholder": "Оставьте пустым без группы или выберите существующую",
@@ -26,5 +26,14 @@
   "mergeConfirm": "Группа «{to}» уже существует. Объединить с ней «{from}»?",
   "count": "Элементов: {count}",
   "selectItem": "Выбрать элемент",
-  "search": "Поиск по имени, группе, заметке"
+  "search": "Поиск по имени, группе, заметке",
+  "batchEnable": "Включить",
+  "batchDisable": "Отключить",
+  "batchRemove": "Удалить",
+  "batchEnabled": "Включено элементов: {count}",
+  "batchDisabled": "Отключено элементов: {count}",
+  "batchRemoved": "Удалено элементов: {count}",
+  "batchRemoveTitle": "Удалить выбранное",
+  "batchRemoveConfirm": "Удалить выбранные элементы ({count}): {names}? Это действие необратимо.",
+  "batchRemoveMore": " и ещё {count}"
 }

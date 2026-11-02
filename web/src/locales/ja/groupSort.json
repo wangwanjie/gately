@@ -1,5 +1,5 @@
 {
-  "sort": "並べ替え",
+  "sort": "並べ替え・一括",
   "sortDone": "並べ替え完了",
   "group": "グループ",
   "groupPlaceholder": "空欄でグループなし。既存のグループも選択可",
@@ -26,5 +26,14 @@
   "mergeConfirm": "グループ「{to}」は既に存在します。「{from}」を統合しますか？",
   "count": "{count} 件",
   "selectItem": "この項目を選択",
-  "search": "名前・グループ・備考で検索"
+  "search": "名前・グループ・備考で検索",
+  "batchEnable": "有効化",
+  "batchDisable": "無効化",
+  "batchRemove": "削除",
+  "batchEnabled": "{count} 件を有効にしました",
+  "batchDisabled": "{count} 件を無効にしました",
+  "batchRemoved": "{count} 件を削除しました",
+  "batchRemoveTitle": "一括削除",
+  "batchRemoveConfirm": "選択した {count} 件（{names}）を削除しますか？元に戻せません。",
+  "batchRemoveMore": "、ほか {count} 件"
 }

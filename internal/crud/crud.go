@@ -9,12 +9,15 @@
 //	PUT    /<path>/{key}/enable  启停，body {"enable": bool}
 //	PUT    /<path>-order         排序，body {"keys": [...]}
 //	PUT    /<path>-group         批量设置分组，body {"keys": [...], "group": "..."}（仅在提供 Group 时注册）
+//	PUT    /<path>-enable        批量启停，body {"keys": [...], "enable": bool}，全部成功才保存
+//	POST   /<path>-delete        批量删除，body {"keys": [...]}，任一条目拒绝删除时都不删
 //	GET    /<path>/{key}/secrets 查看条目中被脱敏的密钥明文（仅在提供 Secrets 时注册）
 package crud
 
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"net/http"
 	"slices"
@@ -107,6 +110,8 @@ func (c *Collection[T]) Register(r module.Router, path string) {
 	r.HandleFunc("DELETE "+path+"/{key}", c.remove)
 	r.HandleFunc("PUT "+path+"/{key}/enable", c.enable)
 	r.HandleFunc("PUT "+path+"-order", c.order)
+	r.HandleFunc("PUT "+path+"-enable", c.batchEnable)
+	r.HandleFunc("POST "+path+"-delete", c.batchDelete)
 
 	// 登记接口文档：列表返回条目数组，新增与修改的请求体为条目本身
 	var item T
@@ -116,6 +121,8 @@ func (c *Collection[T]) Register(r module.Router, path string) {
 	module.DocOf(r, "DELETE "+path+"/{key}", module.Doc{Summary: "删除"})
 	module.DocOf(r, "PUT "+path+"/{key}/enable", module.Doc{Summary: "启用或停用", Req: &enableRequest{}})
 	module.DocOf(r, "PUT "+path+"-order", module.Doc{Summary: "调整排序", Req: &orderRequest{}})
+	module.DocOf(r, "PUT "+path+"-enable", module.Doc{Summary: "批量启用或停用", Req: &batchEnableRequest{}})
+	module.DocOf(r, "POST "+path+"-delete", module.Doc{Summary: "批量删除", Req: &batchDeleteRequest{}})
 	if c.Group != nil {
 		r.HandleFunc("PUT "+path+"-group", c.setGroup)
 		module.DocOf(r, "PUT "+path+"-group", module.Doc{Summary: "批量设置分组", Req: &groupRequest{}})
@@ -362,6 +369,139 @@ func (c *Collection[T]) setGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	httpx.OK(w, map[string]bool{"ok": true})
+}
+
+// MaxBatch 为一次批量操作最多处理的条目数，避免一次请求长时间占用模块锁与反复重启实例。
+const MaxBatch = 500
+
+// BatchKeys 校验批量操作的 key 列表：不能为空、不超过 MaxBatch，去重并保持原有顺序。
+func BatchKeys(keys []string) ([]string, error) {
+	var out []string
+	seen := map[string]bool{}
+	for _, k := range keys {
+		if k != "" && !seen[k] {
+			seen[k] = true
+			out = append(out, k)
+		}
+	}
+	if len(out) == 0 {
+		return nil, errors.New("请选择要操作的条目")
+	}
+	if len(out) > MaxBatch {
+		return nil, fmt.Errorf("一次最多操作 %d 个条目", MaxBatch)
+	}
+	return out, nil
+}
+
+type batchEnableRequest struct {
+	Keys   []string `json:"keys"`
+	Enable bool     `json:"enable"`
+}
+
+// batchEnable 批量启停：先确认全部条目存在，再统一修改并保存一次；只对状态真正变化的条目调用 Changed。
+func (c *Collection[T]) batchEnable(w http.ResponseWriter, r *http.Request) {
+	var req batchEnableRequest
+	if err := httpx.ReadJSON(r, &req); err != nil {
+		httpx.Error(w, http.StatusBadRequest, "%v", err)
+		return
+	}
+	keys, err := BatchKeys(req.Keys)
+	if err != nil {
+		httpx.Error(w, http.StatusBadRequest, "%v", err)
+		return
+	}
+	c.Mu.Lock()
+	defer c.Mu.Unlock()
+	its := make([]*T, 0, len(keys))
+	for _, k := range keys {
+		it := c.Find(k)
+		if it == nil {
+			httpx.Error(w, http.StatusNotFound, "条目 %s 不存在", k)
+			return
+		}
+		its = append(its, it)
+	}
+	var changed []string
+	var prev []bool
+	for i, it := range its {
+		en := c.Enabled(it)
+		if *en != req.Enable {
+			changed = append(changed, keys[i])
+			prev = append(prev, *en)
+			*en = req.Enable
+		}
+	}
+	if len(changed) > 0 {
+		if err := c.Save(); err != nil {
+			for i, k := range changed {
+				*c.Enabled(c.Find(k)) = prev[i]
+			}
+			httpx.Error(w, http.StatusInternalServerError, "保存失败: %v", err)
+			return
+		}
+		if c.Changed != nil {
+			for _, k := range changed {
+				c.Changed(k)
+			}
+		}
+	}
+	httpx.OK(w, map[string]int{"changed": len(changed)})
+}
+
+type batchDeleteRequest struct {
+	Keys []string `json:"keys"`
+}
+
+// batchDelete 批量删除：任一条目不存在或被拒绝删除（BeforeRemove 返回错误）时都不删除，错误信息中带上条目 key。
+func (c *Collection[T]) batchDelete(w http.ResponseWriter, r *http.Request) {
+	var req batchDeleteRequest
+	if err := httpx.ReadJSON(r, &req); err != nil {
+		httpx.Error(w, http.StatusBadRequest, "%v", err)
+		return
+	}
+	keys, err := BatchKeys(req.Keys)
+	if err != nil {
+		httpx.Error(w, http.StatusBadRequest, "%v", err)
+		return
+	}
+	c.Mu.Lock()
+	defer c.Mu.Unlock()
+	for _, k := range keys {
+		it := c.Find(k)
+		if it == nil {
+			httpx.Error(w, http.StatusNotFound, "条目 %s 不存在", k)
+			return
+		}
+		if c.BeforeRemove != nil {
+			if err := c.BeforeRemove(it); err != nil {
+				httpx.Error(w, http.StatusConflict, "%v", err)
+				return
+			}
+		}
+	}
+	drop := map[string]bool{}
+	for _, k := range keys {
+		drop[k] = true
+	}
+	old := slices.Clone(*c.Items)
+	kept := make([]T, 0, len(old))
+	for _, it := range old {
+		if !drop[*c.Key(&it)] {
+			kept = append(kept, it)
+		}
+	}
+	*c.Items = kept
+	if err := c.Save(); err != nil {
+		*c.Items = old
+		httpx.Error(w, http.StatusInternalServerError, "保存失败: %v", err)
+		return
+	}
+	if c.Removed != nil {
+		for _, k := range keys {
+			c.Removed(k)
+		}
+	}
+	httpx.OK(w, map[string]int{"deleted": len(keys)})
 }
 
 // SecretMask 是 API 输出中替代真实密钥的占位符。客户端原样提交时服务端保留旧值。

@@ -109,6 +109,8 @@ const gl = useGroupedList<Device>({
   storageKey: 'wol.groups',
   items: () => devices.value,
   base: '/api/wol/devices',
+  // 唤醒设备没有启用开关
+  batch: { enable: false },
   reload: load,
   matches: (d, q) => [d.name, d.group ?? '', d.remark, ...d.macs, d.checkAddr].join('\n').toLowerCase().includes(q),
 })

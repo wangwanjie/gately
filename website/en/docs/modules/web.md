@@ -14,11 +14,27 @@ Saving a change to a site or to the default site swaps the site list in place: t
 
 Each exact domain in the site list is a full clickable URL that opens in a new tab, with a button next to it that copies the URL; wildcard domains (`*.example.com`, `*`) stay plain text. The URL is derived from the listener: `https` when HTTPS is on, `http` otherwise, with the listener port, leaving out default ports such as 443 and 80, for example `https://example.com:8443`. When visitors reach the listener through Protocol Routing, a router port mapping, frp or a CDN, the public scheme or port can differ from the listener; set them in the listener's **Access address** (for example 443 for a listener on 8443 that Protocol Routing feeds from 443, or https and 443 when a CDN pulls from http on 8080). The access address only shapes the links, and changing it does not restart the listener. On save, domains are stored the way browsers send them: lowercase, IPv6 without brackets, internationalized domains in punycode (`中文.com` becomes `xn--fiq228c.com`); values that can never match, such as ones with a port, a path or `@`, are rejected. Imports from Lucky or nginx skip only the invalid domains and say so.
 
-A site can have a "Group" (up to 64 characters; the default site cannot be grouped). Under each listener, the list shows groups as collapsible sections: groups appear in the order they first occur, ungrouped sites come after them, and the default site always comes last. The collapsed state of each group is kept in the browser. Click "Sort" to enter sort mode, where you can move sites up and down, drag them within their group, move whole groups and reorder listeners. Order only affects the list: domain matching follows the priority above regardless of site order, and saving the new order swaps the site list in place without dropping connections. The search box at the top of the page filters sites by domain, name, group, backend or remark.
+A site can have a "Group" (up to 64 characters; the default site cannot be grouped). Under each listener, the list shows groups as collapsible sections: groups appear in the order they first occur, ungrouped sites come after them, and the default site always comes last. The collapsed state of each group is kept in the browser. Click "Sort & batch" to enter sort mode, where you can move sites up and down, drag them within their group, move whole groups and reorder listeners. Order only affects the list: domain matching follows the priority above regardless of site order, and saving the new order swaps the site list in place without dropping connections. The search box at the top of the page filters sites by domain, name, group, backend or remark.
 
 In sort mode you can also check several sites (the checkbox on a group header selects the whole group). Dragging any checked site moves all of them, and dropping onto a site or the header of another group moves them into that group. The toolbar moves the checked sites into a group in one step, or out of their group when the name is left empty; checked sites under different listeners are saved per listener.
 
 Hover over a group header and click the pencil button to rename the group: everything in it moves to the new name and keeps its position and order. Choosing a name that is already in use merges the two groups after a confirmation.
+
+### Bulk operations
+
+Check sites in sort mode (across listeners if needed) and the toolbar offers the bulk operations below. Each operation is submitted in one go: it is saved only when every site passes validation, and if any site fails nothing changes and the failing site is named. Each affected listener reloads once and swaps its site list in place without dropping connections.
+
+- **Enable / Disable**: sites already in the target state are left alone.
+- **Delete**: deletes the checked sites after confirmation; the default site cannot be deleted.
+- **Bulk domains**:
+  - Add domains: one per line (commas also work); domains a site already has are skipped, and new domains are appended at the end;
+  - Remove domains: matched by full domain; domains a site does not have are ignored, and a site cannot lose all of its domains;
+  - Replace main domain: swaps a domain suffix for a new one. The old domain itself and its subdomains (including the `*.old-domain` wildcard) are replaced, so with `old.com` → `new.com`, `www.old.com` becomes `www.new.com`. Duplicates after the replacement are merged, and sites that do not match stay unchanged.
+
+  A newly added domain is rejected if it would appear on several sites of the same listener, since only the first of those sites could ever match it; different listeners can use the same domain.
+- **Bulk options**: turn Compression, Access log, CORS, Forwarded headers and Close connection when denied on or off, and set or clear the WAF. Items left at "Keep" retain each site's own setting. Settings that affect access, such as authentication, access control and backend addresses, are changed site by site.
+
+The matching endpoint is `POST /api/webservice/sites/batch` with the body `{"sites": [{"listener": "listener key", "site": "site key"}], "action": "...", ...}`. `action` is `enable`, `disable`, `delete`, `addDomains`, `removeDomains` (with `domains`), `replaceDomain` (with `from` and `to`) or `set` (with `options`, which accepts only the option fields above). The response gives the number of sites changed and the number that needed no change. One request handles up to 500 sites and 100 domains. Listeners themselves also support the general `PUT /api/webservice/listeners-enable` and `POST /api/webservice/listeners-delete`.
 
 ## Site types
 

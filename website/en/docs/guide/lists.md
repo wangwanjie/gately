@@ -1,6 +1,6 @@
-# List groups and sorting
+# List groups, sorting and bulk operations
 
-Lists with many entries can be grouped, sorted manually and searched, and the controls work the same way on every page. Order and groups only affect how the admin UI displays the list; changing them does not restart running instances or drop connections.
+Lists with many entries can be grouped, sorted manually, searched and changed in bulk, and the controls work the same way on every page. Order and groups only affect how the admin UI displays the list; changing them does not restart running instances or drop connections.
 
 ## Supported lists
 
@@ -33,7 +33,7 @@ Hover over a group heading and click the pencil button to rename the group: all 
 
 ## Sort mode
 
-Click "Sort" to enter sort mode. All entries are shown, and search and filters are paused:
+Click "Sort & batch" to enter sort mode. All entries are shown, and search and filters are paused:
 
 - Use the arrows to move entries up or down within a group, or on a group heading to move the whole group;
 - On desktop you can drag entries directly; dropping onto an entry or heading of another group adds the entry to that group;
@@ -41,6 +41,15 @@ Click "Sort" to enter sort mode. All entries are shown, and search and filters a
 - The toolbar can move the selected entries to a given group in one step ("Move to group"); leaving it empty removes them from their group.
 
 Phones and other narrow screens do not support dragging; use the arrows and the toolbar to do the same.
+
+## Bulk operations
+
+After checking entries in sort mode, the toolbar can also:
+
+- **Enable / Disable**: saves all checked entries at once; entries already in the target state are not restarted;
+- **Delete**: the confirmation dialog lists the entries to be deleted, and deletion cannot be undone. If any entry cannot be deleted (for example a certificate still used by a site), nothing is deleted and the reason is shown.
+
+A bulk operation handles up to 500 entries. It is saved only when every entry passes validation; if any entry fails, nothing changes. Wake-on-LAN devices have no enable switch and only support bulk delete; API tokens do not offer bulk enable, disable or delete yet. Web Services also has bulk domain and option changes, see [Web Services](/en/docs/modules/web#bulk-operations).
 
 ## Notes for specific pages
 
@@ -51,4 +60,4 @@ Phones and other narrow screens do not support dragging; use the arrows and the 
 
 ## API
 
-Every general list endpoint provides `PUT <list path>-order` (body `{"keys": [...]}`, which must contain all entries) to change the order and `PUT <list path>-group` (body `{"keys": [...], "group": "..."}`) to set the group in bulk, for example `PUT /api/stun/rules-group`. Records within a DDNS task use `PUT /api/ddns/tasks/{key}/records-layout`, and API tokens use `PUT /api/tokens/order` and `PUT /api/tokens/group`. See the [API reference](/en/docs/reference/api-reference) for details.
+Every general list endpoint provides `PUT <list path>-order` (body `{"keys": [...]}`, which must contain all entries) to change the order and `PUT <list path>-group` (body `{"keys": [...], "group": "..."}`) to set the group in bulk, `PUT <list path>-enable` (body `{"keys": [...], "enable": true}`) to enable or disable in bulk, and `POST <list path>-delete` (body `{"keys": [...]}`) to delete in bulk, for example `PUT /api/stun/rules-group` and `POST /api/portforward/rules-delete`. Records within a DDNS task use `PUT /api/ddns/tasks/{key}/records-layout`, and API tokens use `PUT /api/tokens/order` and `PUT /api/tokens/group`. See the [API reference](/en/docs/reference/api-reference) for details.

@@ -74,6 +74,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/portforward/rules/{key}` | `portforward:write` | ポートフォワードルール を削除 |
 | PUT | `/api/portforward/rules/{key}/enable` | `portforward:write` | ポートフォワードルール の有効/無効を切り替え |
 | PUT | `/api/portforward/rules-order` | `portforward:write` | ポートフォワードルール の並び順を変更 |
+| PUT | `/api/portforward/rules-enable` | `portforward:write` | ポートフォワードルール の一括有効化・無効化 |
+| POST | `/api/portforward/rules-delete` | `portforward:write` | ポートフォワードルール の一括削除 |
 | PUT | `/api/portforward/rules-group` | `portforward:write` | ポートフォワードルール のグループを一括設定 |
 | GET | `/api/portforward/settings` | `portforward:read` | ポートフォワードのグローバル設定を読み取り |
 | PUT | `/api/portforward/settings` | `portforward:write` | ポートフォワードのグローバル設定を保存 |
@@ -90,6 +92,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/protoroute/rules/{key}` | `protoroute:write` | プロトコル振り分けルール を削除 |
 | PUT | `/api/protoroute/rules/{key}/enable` | `protoroute:write` | プロトコル振り分けルール の有効/無効を切り替え |
 | PUT | `/api/protoroute/rules-order` | `protoroute:write` | プロトコル振り分けルール の並び順を変更 |
+| PUT | `/api/protoroute/rules-enable` | `protoroute:write` | プロトコル振り分けルール の一括有効化・無効化 |
+| POST | `/api/protoroute/rules-delete` | `protoroute:write` | プロトコル振り分けルール の一括削除 |
 | PUT | `/api/protoroute/rules-group` | `protoroute:write` | プロトコル振り分けルール のグループを一括設定 |
 | GET | `/api/protoroute/settings` | `protoroute:read` | プロトコル振り分けの全体設定を取得 |
 | PUT | `/api/protoroute/settings` | `protoroute:write` | プロトコル振り分けの全体設定を保存 |
@@ -106,6 +110,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/ddns/tasks/{key}` | `ddns:write` | DDNS タスク を削除 |
 | PUT | `/api/ddns/tasks/{key}/enable` | `ddns:write` | DDNS タスク の有効/無効を切り替え |
 | PUT | `/api/ddns/tasks-order` | `ddns:write` | DDNS タスク の並び順を変更 |
+| PUT | `/api/ddns/tasks-enable` | `ddns:write` | DDNS タスク の一括有効化・無効化 |
+| POST | `/api/ddns/tasks-delete` | `ddns:write` | DDNS タスク の一括削除 |
 | PUT | `/api/ddns/tasks-group` | `ddns:write` | DDNS タスク のグループを一括設定 |
 | GET | `/api/ddns/tasks/{key}/secrets` | `ddns:write` | シークレットを平文で表示 |
 | POST | `/api/ddns/tasks/{key}/sync` | `ddns:write` | DDNS タスクを即時同期 |
@@ -131,6 +137,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/stun/rules/{key}` | `stun:write` | STUN ルール を削除 |
 | PUT | `/api/stun/rules/{key}/enable` | `stun:write` | STUN ルール の有効/無効を切り替え |
 | PUT | `/api/stun/rules-order` | `stun:write` | STUN ルール の並び順を変更 |
+| PUT | `/api/stun/rules-enable` | `stun:write` | STUN ルール の一括有効化・無効化 |
+| POST | `/api/stun/rules-delete` | `stun:write` | STUN ルール の一括削除 |
 | PUT | `/api/stun/rules-group` | `stun:write` | STUN ルール のグループを一括設定 |
 | POST | `/api/stun/rules/{key}/restart` | `stun:write` | STUN ルールを 1 つ再起動 |
 | GET | `/api/stun/netinterfaces` | `stun:read` | ローカルのネットワークインターフェースとアドレスを一覧表示 |
@@ -168,6 +176,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/frp/clients/{key}` | `frp:write` | frp クライアント を削除 |
 | PUT | `/api/frp/clients/{key}/enable` | `frp:write` | frp クライアント の有効/無効を切り替え |
 | PUT | `/api/frp/clients-order` | `frp:write` | frp クライアント の並び順を変更 |
+| PUT | `/api/frp/clients-enable` | `frp:write` | frp クライアント の一括有効化・無効化 |
+| POST | `/api/frp/clients-delete` | `frp:write` | frp クライアント の一括削除 |
 | PUT | `/api/frp/clients-group` | `frp:write` | frp クライアント のグループを一括設定 |
 | GET | `/api/frp/clients/{key}/secrets` | `frp:write` | シークレットを平文で表示 |
 | GET | `/api/frp/servers` | `frp:read` | frp サーバー の一覧を取得 |
@@ -176,6 +186,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/frp/servers/{key}` | `frp:write` | frp サーバー を削除 |
 | PUT | `/api/frp/servers/{key}/enable` | `frp:write` | frp サーバー の有効/無効を切り替え |
 | PUT | `/api/frp/servers-order` | `frp:write` | frp サーバー の並び順を変更 |
+| PUT | `/api/frp/servers-enable` | `frp:write` | frp サーバー の一括有効化・無効化 |
+| POST | `/api/frp/servers-delete` | `frp:write` | frp サーバー の一括削除 |
 | PUT | `/api/frp/servers-group` | `frp:write` | frp サーバー のグループを一括設定 |
 | GET | `/api/frp/servers/{key}/secrets` | `frp:write` | シークレットを平文で表示 |
 | GET | `/api/frp/proxies` | `frp:read` | frp プロキシ の一覧を取得 |
@@ -184,6 +196,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/frp/proxies/{key}` | `frp:write` | frp プロキシ を削除 |
 | PUT | `/api/frp/proxies/{key}/enable` | `frp:write` | frp プロキシ の有効/無効を切り替え |
 | PUT | `/api/frp/proxies-order` | `frp:write` | frp プロキシ の並び順を変更 |
+| PUT | `/api/frp/proxies-enable` | `frp:write` | frp プロキシ の一括有効化・無効化 |
+| POST | `/api/frp/proxies-delete` | `frp:write` | frp プロキシ の一括削除 |
 | PUT | `/api/frp/proxies-group` | `frp:write` | frp プロキシ のグループを一括設定 |
 | GET | `/api/frp/proxies/{key}/secrets` | `frp:write` | シークレットを平文で表示 |
 | POST | `/api/frp/import` | `frp:write` | 既存の frpc / frps 設定をインポート（旧形式 ini と新形式 toml に対応）。apply が false の場合はプレビューのみ |
@@ -210,6 +224,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/cloudflared/tunnels/{key}` | `cloudflared:write` | Cloudflare トンネル を削除 |
 | PUT | `/api/cloudflared/tunnels/{key}/enable` | `cloudflared:write` | Cloudflare トンネル の有効/無効を切り替え |
 | PUT | `/api/cloudflared/tunnels-order` | `cloudflared:write` | Cloudflare トンネル の並び順を変更 |
+| PUT | `/api/cloudflared/tunnels-enable` | `cloudflared:write` | Cloudflare トンネル の一括有効化・無効化 |
+| POST | `/api/cloudflared/tunnels-delete` | `cloudflared:write` | Cloudflare トンネル の一括削除 |
 | PUT | `/api/cloudflared/tunnels-group` | `cloudflared:write` | Cloudflare トンネル のグループを一括設定 |
 | GET | `/api/cloudflared/tunnels/{key}/secrets` | `cloudflared:write` | シークレットを平文で表示 |
 | POST | `/api/cloudflared/tunnels/{key}/restart` | `cloudflared:write` | Cloudflare トンネルを 1 つ再起動 |
@@ -236,6 +252,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/ssl/certs/{key}` | `ssl:write` | 証明書 を削除 |
 | PUT | `/api/ssl/certs/{key}/enable` | `ssl:write` | 証明書 の有効/無効を切り替え |
 | PUT | `/api/ssl/certs-order` | `ssl:write` | 証明書 の並び順を変更 |
+| PUT | `/api/ssl/certs-enable` | `ssl:write` | 証明書 の一括有効化・無効化 |
+| POST | `/api/ssl/certs-delete` | `ssl:write` | 証明書 の一括削除 |
 | PUT | `/api/ssl/certs-group` | `ssl:write` | 証明書 のグループを一括設定 |
 | GET | `/api/ssl/certs/{key}/secrets` | `ssl:write` | シークレットを平文で表示 |
 | POST | `/api/ssl/certs/{key}/renew` | `ssl:write` | 証明書を即時発行または更新 |
@@ -258,6 +276,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/waf/instances/{key}` | `waf:write` | WAF インスタンス を削除 |
 | PUT | `/api/waf/instances/{key}/enable` | `waf:write` | WAF インスタンス の有効/無効を切り替え |
 | PUT | `/api/waf/instances-order` | `waf:write` | WAF インスタンス の並び順を変更 |
+| PUT | `/api/waf/instances-enable` | `waf:write` | WAF インスタンス の一括有効化・無効化 |
+| POST | `/api/waf/instances-delete` | `waf:write` | WAF インスタンス の一括削除 |
 | PUT | `/api/waf/instances-group` | `waf:write` | WAF インスタンス のグループを一括設定 |
 | GET | `/api/waf/crs` | `waf:read` | OWASP CRS ルールファイルを一覧表示 |
 | GET | `/api/waf/crs/{file}` | `waf:read` | CRS ルールファイルを 1 つ読み取り |
@@ -274,15 +294,20 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/webservice/listeners/{key}` | `webservice:write` | Web サービスのリッスン を削除 |
 | PUT | `/api/webservice/listeners/{key}/enable` | `webservice:write` | Web サービスのリッスン の有効/無効を切り替え |
 | PUT | `/api/webservice/listeners-order` | `webservice:write` | Web サービスのリッスン の並び順を変更 |
+| PUT | `/api/webservice/listeners-enable` | `webservice:write` | Web サービスのリッスン の一括有効化・無効化 |
+| POST | `/api/webservice/listeners-delete` | `webservice:write` | Web サービスのリッスン の一括削除 |
 | GET | `/api/webservice/iplists` | `webservice:read` | 購読 IP リストの一覧を取得 |
 | POST | `/api/webservice/iplists` | `webservice:write` | 購読 IP リスト を追加 |
 | PUT | `/api/webservice/iplists/{key}` | `webservice:write` | 購読 IP リスト を更新 |
 | DELETE | `/api/webservice/iplists/{key}` | `webservice:write` | 購読 IP リスト を削除 |
 | PUT | `/api/webservice/iplists/{key}/enable` | `webservice:write` | 購読 IP リスト の有効/無効を切り替え |
 | PUT | `/api/webservice/iplists-order` | `webservice:write` | 購読 IP リスト の並び順を変更 |
+| PUT | `/api/webservice/iplists-enable` | `webservice:write` | 購読 IP リスト の一括有効化・無効化 |
+| POST | `/api/webservice/iplists-delete` | `webservice:write` | 購読 IP リスト の一括削除 |
 | POST | `/api/webservice/iplists/{key}/refresh` | `webservice:write` | 購読 IP リストを今すぐ更新 |
 | GET | `/api/webservice/users` | `webservice:read` | 共有ユーザーと OIDC ID プロバイダーを取得 |
 | PUT | `/api/webservice/users` | `webservice:write` | 共有ユーザーと OIDC ID プロバイダーを保存し、サイトを一括設定 |
+| POST | `/api/webservice/sites/batch` | `webservice:write` | サイトの一括操作：有効化・無効化、削除、ドメインの追加・削除・置換、一部オプションの変更。すべてのサイトが検証を通過した場合のみ保存し、1 件でも失敗すると何も変更しません |
 | POST | `/api/webservice/import/nginx` | `webservice:write` | nginx 設定をインポート |
 | GET | `/api/webservice/settings` | `webservice:read` | Web サービスのグローバル設定を読み取り |
 | GET | `/api/webservice/settings/secrets/totp` | `webservice:write` | 共有ユーザーの TOTP シークレットを平文で表示（ユーザー名で索引） |
@@ -314,6 +339,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/guard/jails/{key}` | `guard:write` | 侵入防御ルール を削除 |
 | PUT | `/api/guard/jails/{key}/enable` | `guard:write` | 侵入防御ルール の有効/無効を切り替え |
 | PUT | `/api/guard/jails-order` | `guard:write` | 侵入防御ルール の並び順を変更 |
+| PUT | `/api/guard/jails-enable` | `guard:write` | 侵入防御ルール の一括有効化・無効化 |
+| POST | `/api/guard/jails-delete` | `guard:write` | 侵入防御ルール の一括削除 |
 | PUT | `/api/guard/jails-group` | `guard:write` | 侵入防御ルール のグループを一括設定 |
 | GET | `/api/guard/presets` | `guard:read` | よく使われるサービスのルールテンプレート |
 | POST | `/api/guard/jails/test` | `guard:write` | ログのサンプルでフィルターをテスト |
@@ -337,6 +364,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/wol/devices/{key}` | `wol:write` | デバイスをウェイクアップ を削除 |
 | PUT | `/api/wol/devices/{key}/enable` | `wol:write` | デバイスをウェイクアップ の有効/無効を切り替え |
 | PUT | `/api/wol/devices-order` | `wol:write` | デバイスをウェイクアップ の並び順を変更 |
+| PUT | `/api/wol/devices-enable` | `wol:write` | デバイスをウェイクアップ の一括有効化・無効化 |
+| POST | `/api/wol/devices-delete` | `wol:write` | デバイスをウェイクアップ の一括削除 |
 | PUT | `/api/wol/devices-group` | `wol:write` | デバイスをウェイクアップ のグループを一括設定 |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | デバイスにウェイクアップのマジックパケットを送信 |
 | GET | `/api/wol/status` | `wol:read` | デバイスのオンライン状態を表示 |
@@ -353,6 +382,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/webterminal/connections/{key}` | `webterminal:write` | ターミナル接続 を削除 |
 | PUT | `/api/webterminal/connections/{key}/enable` | `webterminal:write` | ターミナル接続 の有効/無効を切り替え |
 | PUT | `/api/webterminal/connections-order` | `webterminal:write` | ターミナル接続 の並び順を変更 |
+| PUT | `/api/webterminal/connections-enable` | `webterminal:write` | ターミナル接続 の一括有効化・無効化 |
+| POST | `/api/webterminal/connections-delete` | `webterminal:write` | ターミナル接続 の一括削除 |
 | PUT | `/api/webterminal/connections-group` | `webterminal:write` | ターミナル接続 のグループを一括設定 |
 | GET | `/api/webterminal/connections/{key}/secrets` | `webterminal:write` | シークレットを平文で表示 |
 | DELETE | `/api/webterminal/connections/{key}/hostkey` | `webterminal:write` | 記録済みのホストキーをクリア |
@@ -365,6 +396,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/webterminal/credentials/{key}` | `webterminal:write` | エントリ を削除 |
 | PUT | `/api/webterminal/credentials/{key}/enable` | `webterminal:write` | エントリ の有効/無効を切り替え |
 | PUT | `/api/webterminal/credentials-order` | `webterminal:write` | エントリ の並び順を変更 |
+| PUT | `/api/webterminal/credentials-enable` | `webterminal:write` | エントリ の一括有効化・無効化 |
+| POST | `/api/webterminal/credentials-delete` | `webterminal:write` | エントリ の一括削除 |
 | GET | `/api/webterminal/credentials/{key}/secrets` | `webterminal:write` | シークレットを平文で表示 |
 | GET | `/api/webterminal/connections/{key}/ws` | `webterminal:write` | ターミナルセッションを開く（WebSocket） |
 | GET | `/api/webterminal/sessions/{id}/ws` | `webterminal:write` | 既存のターミナルセッションに接続（WebSocket） |
@@ -414,6 +447,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/cron/tasks/{key}` | `cron:write` | スケジュールタスク を削除 |
 | PUT | `/api/cron/tasks/{key}/enable` | `cron:write` | スケジュールタスク の有効/無効を切り替え |
 | PUT | `/api/cron/tasks-order` | `cron:write` | スケジュールタスク の並び順を変更 |
+| PUT | `/api/cron/tasks-enable` | `cron:write` | スケジュールタスク の一括有効化・無効化 |
+| POST | `/api/cron/tasks-delete` | `cron:write` | スケジュールタスク の一括削除 |
 | PUT | `/api/cron/tasks-group` | `cron:write` | スケジュールタスク のグループを一括設定 |
 | POST | `/api/cron/tasks/{key}/run` | `cron:write` | スケジュールタスクを即時実行 |
 | POST | `/api/cron/parse` | `cron:write` | Cron 式を解析してプレビュー |
@@ -537,6 +572,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/filebrowser/instances/{key}` | `filebrowser:write` | File Browser インスタンス を削除 |
 | PUT | `/api/filebrowser/instances/{key}/enable` | `filebrowser:write` | File Browser インスタンス の有効/無効を切り替え |
 | PUT | `/api/filebrowser/instances-order` | `filebrowser:write` | File Browser インスタンス の並び順を変更 |
+| PUT | `/api/filebrowser/instances-enable` | `filebrowser:write` | File Browser インスタンス の一括有効化・無効化 |
+| POST | `/api/filebrowser/instances-delete` | `filebrowser:write` | File Browser インスタンス の一括削除 |
 | PUT | `/api/filebrowser/instances-group` | `filebrowser:write` | File Browser インスタンス のグループを一括設定 |
 | GET | `/api/filebrowser/instances/{key}/secrets` | `filebrowser:write` | シークレットを平文で表示 |
 | POST | `/api/filebrowser/instances/{key}/restart` | `filebrowser:write` | File Browser インスタンスを再起動 |
@@ -561,6 +598,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/storage/mounts/{key}` | `storage:write` | ストレージマウント を削除 |
 | PUT | `/api/storage/mounts/{key}/enable` | `storage:write` | ストレージマウント の有効/無効を切り替え |
 | PUT | `/api/storage/mounts-order` | `storage:write` | ストレージマウント の並び順を変更 |
+| PUT | `/api/storage/mounts-enable` | `storage:write` | ストレージマウント の一括有効化・無効化 |
+| POST | `/api/storage/mounts-delete` | `storage:write` | ストレージマウント の一括削除 |
 | PUT | `/api/storage/mounts-group` | `storage:write` | ストレージマウント のグループを一括設定 |
 | GET | `/api/storage/mounts/{key}/secrets` | `storage:write` | シークレットを平文で表示 |
 | GET | `/api/storage/files/{key}/list` | `storage:write` | ストレージのディレクトリを一覧表示 |
@@ -582,6 +621,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/notify/channels/{key}` | `notify:write` | 通知チャネル を削除 |
 | PUT | `/api/notify/channels/{key}/enable` | `notify:write` | 通知チャネル の有効/無効を切り替え |
 | PUT | `/api/notify/channels-order` | `notify:write` | 通知チャネル の並び順を変更 |
+| PUT | `/api/notify/channels-enable` | `notify:write` | 通知チャネル の一括有効化・無効化 |
+| POST | `/api/notify/channels-delete` | `notify:write` | 通知チャネル の一括削除 |
 | PUT | `/api/notify/channels-group` | `notify:write` | 通知チャネル のグループを一括設定 |
 | GET | `/api/notify/channels/{key}/secrets` | `notify:write` | シークレットを平文で表示 |
 | GET | `/api/notify/rules` | `notify:read` | 通知ルール の一覧を取得 |
@@ -590,6 +631,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/notify/rules/{key}` | `notify:write` | 通知ルール を削除 |
 | PUT | `/api/notify/rules/{key}/enable` | `notify:write` | 通知ルール の有効/無効を切り替え |
 | PUT | `/api/notify/rules-order` | `notify:write` | 通知ルール の並び順を変更 |
+| PUT | `/api/notify/rules-enable` | `notify:write` | 通知ルール の一括有効化・無効化 |
+| POST | `/api/notify/rules-delete` | `notify:write` | 通知ルール の一括削除 |
 | PUT | `/api/notify/rules-group` | `notify:write` | 通知ルール のグループを一括設定 |
 | GET | `/api/notify/event-types` | `notify:read` | 購読可能なイベントタイプ |
 | GET | `/api/notify/history` | `notify:read` | 最近の配信履歴 |
@@ -621,6 +664,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/backup/targets/{key}` | `backup:write` | バックアップ先 を削除 |
 | PUT | `/api/backup/targets/{key}/enable` | `backup:write` | バックアップ先 の有効/無効を切り替え |
 | PUT | `/api/backup/targets-order` | `backup:write` | バックアップ先 の並び順を変更 |
+| PUT | `/api/backup/targets-enable` | `backup:write` | バックアップ先 の一括有効化・無効化 |
+| POST | `/api/backup/targets-delete` | `backup:write` | バックアップ先 の一括削除 |
 | GET | `/api/backup/settings` | `backup:read` | バックアップ設定 |
 | PUT | `/api/backup/settings` | `backup:write` | バックアップ設定を変更（パスフレーズにプレースホルダーを渡すと変更なし） |
 | GET | `/api/backup/secrets` | `backup:write` | シークレットを平文で表示 |
@@ -807,6 +852,19 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `remark` | string |
 | `spec` | string |
 | `type` | string |
+
+### crud.batchDeleteRequest
+
+| フィールド | 型 |
+| --- | --- |
+| `keys` | 配列 of string |
+
+### crud.batchEnableRequest
+
+| フィールド | 型 |
+| --- | --- |
+| `enable` | boolean |
+| `keys` | 配列 of string |
 
 ### crud.enableRequest
 
@@ -1843,6 +1901,42 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `users` | 配列 of string |
 | `waf` | string |
 | `webAuth` | boolean |
+
+### webservice.SiteBatchOptions
+
+| フィールド | 型 |
+| --- | --- |
+| `accessLog` | boolean |
+| `compress` | boolean |
+| `cors` | boolean |
+| `denyClose` | boolean |
+| `forwardedHeaders` | boolean |
+| `waf` | string |
+
+### webservice.SiteBatchRequest
+
+| フィールド | 型 |
+| --- | --- |
+| `action` | string |
+| `domains` | 配列 of string |
+| `from` | string |
+| `options` | `webservice.SiteBatchOptions` |
+| `sites` | 配列 of `webservice.SiteRef` |
+| `to` | string |
+
+### webservice.SiteBatchResult
+
+| フィールド | 型 |
+| --- | --- |
+| `changed` | integer |
+| `unchanged` | integer |
+
+### webservice.SiteRef
+
+| フィールド | 型 |
+| --- | --- |
+| `listener` | string |
+| `site` | string |
 
 ### webservice.SiteSharedUsers
 

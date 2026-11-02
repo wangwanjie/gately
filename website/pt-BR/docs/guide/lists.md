@@ -1,6 +1,6 @@
-# Grupos e ordenação de listas
+# Grupos, ordenação e operações em lote de listas
 
-Listas com muitas entradas podem ser agrupadas, ordenadas manualmente e pesquisadas, e os controles funcionam da mesma forma em todas as páginas. A ordem e os grupos afetam apenas a exibição na interface de administração; alterá-los não reinicia instâncias em execução nem derruba conexões.
+Listas com muitas entradas podem ser agrupadas, ordenadas manualmente, pesquisadas e alteradas em lote, e os controles funcionam da mesma forma em todas as páginas. A ordem e os grupos afetam apenas a exibição na interface de administração; alterá-los não reinicia instâncias em execução nem derruba conexões.
 
 ## Listas compatíveis
 
@@ -33,7 +33,7 @@ Passe o mouse sobre o título de um grupo e clique no botão de lápis para reno
 
 ## Modo de ordenação
 
-Clique em "Ordenar" para entrar no modo de ordenação. Todas as entradas são exibidas, e a pesquisa e os filtros ficam suspensos:
+Clique em "Ordenar e lote" para entrar no modo de ordenação. Todas as entradas são exibidas, e a pesquisa e os filtros ficam suspensos:
 
 - Use as setas para mover entradas para cima ou para baixo dentro de um grupo, ou as do título do grupo para mover o grupo inteiro;
 - No desktop, é possível arrastar as entradas diretamente; soltá-las sobre uma entrada ou o título de outro grupo as adiciona a esse grupo;
@@ -41,6 +41,15 @@ Clique em "Ordenar" para entrar no modo de ordenação. Todas as entradas são e
 - A barra de ferramentas permite "Mover para o grupo" as entradas selecionadas de uma só vez; deixar em branco as remove do grupo.
 
 Celulares e outras telas estreitas não oferecem suporte a arrastar; use as setas e a barra de ferramentas para fazer o mesmo.
+
+## Operações em lote
+
+Depois de marcar entradas no modo de ordenação, a barra de ferramentas também permite:
+
+- **Ativar / Desativar**: salva todas as entradas marcadas de uma vez; as entradas que já estão no estado desejado não são reiniciadas;
+- **Excluir**: a caixa de confirmação lista as entradas que serão excluídas, e a exclusão não pode ser desfeita. Se alguma entrada não puder ser excluída (por exemplo, um certificado ainda usado por um site), nenhuma é excluída e o motivo é exibido.
+
+Uma operação em lote processa até 500 entradas. Ela só é salva quando todas as entradas passam na validação; se alguma falhar, nada é alterado. Os dispositivos de Wake-on-LAN não têm chave de ativação e oferecem apenas a exclusão em lote; os tokens de API ainda não oferecem ativação, desativação nem exclusão em lote. Os Serviços Web também permitem alterar domínios e opções em lote; veja [Serviços Web](/pt-BR/docs/modules/web#operacoes-em-lote).
 
 ## Observações por página
 
@@ -51,4 +60,4 @@ Celulares e outras telas estreitas não oferecem suporte a arrastar; use as seta
 
 ## API
 
-Todos os endpoints de listas genéricas oferecem `PUT <caminho da lista>-order` (corpo `{"keys": [...]}`, que deve conter todas as entradas) para alterar a ordem e `PUT <caminho da lista>-group` (corpo `{"keys": [...], "group": "..."}`) para definir o grupo em lote, por exemplo `PUT /api/stun/rules-group`. Os registros de uma tarefa DDNS usam `PUT /api/ddns/tasks/{key}/records-layout`, e os tokens de API usam `PUT /api/tokens/order` e `PUT /api/tokens/group`. Veja a [Referência da API](/pt-BR/docs/reference/api-reference) para mais detalhes.
+Todos os endpoints de listas genéricas oferecem `PUT <caminho da lista>-order` (corpo `{"keys": [...]}`, que deve conter todas as entradas) para alterar a ordem e `PUT <caminho da lista>-group` (corpo `{"keys": [...], "group": "..."}`) para definir o grupo em lote, `PUT <caminho da lista>-enable` (corpo `{"keys": [...], "enable": true}`) para ativar ou desativar em lote e `POST <caminho da lista>-delete` (corpo `{"keys": [...]}`) para excluir em lote, por exemplo `PUT /api/stun/rules-group` e `POST /api/portforward/rules-delete`. Os registros de uma tarefa DDNS usam `PUT /api/ddns/tasks/{key}/records-layout`, e os tokens de API usam `PUT /api/tokens/order` e `PUT /api/tokens/group`. Veja a [Referência da API](/pt-BR/docs/reference/api-reference) para mais detalhes.
