@@ -27,6 +27,7 @@
           <template v-else #actions>
             <el-switch :model-value="m.enable" size="small" @change="(v: boolean) => toggle(m, v)" />
             <el-button text size="small" :icon="Pencil" @click="openEditor(m)">{{ t('common.edit') }}</el-button>
+            <el-button text size="small" :icon="CopyPlus" @click="openEditor(m, true)">{{ t('common.duplicate') }}</el-button>
             <el-popconfirm :title="t('storage.confirmRemove')" @confirm="remove(m)">
               <template #reference>
                 <el-button text size="small" type="danger" :icon="Trash2">{{ t('storage.remove') }}</el-button>
@@ -89,6 +90,7 @@
     </div>
 
     <el-dialog v-model="editorVisible" :title="editing.key ? t('storage.editMount') : t('storage.addMount')" width="540px" :fullscreen="isMobile">
+      <CopyHint :from="copyFrom" secrets />
       <el-form :model="editing" label-width="110px" :label-position="labelPosition">
         <el-form-item :label="t('common.name')"><el-input v-model="editing.name" /></el-form-item>
         <GroupInput v-model="editing.group" :groups="gl.groupNames.value" />
@@ -108,7 +110,7 @@
             <div v-if="editing.type === 'smb'" class="form-help">{{ t('storage.smbUrlHelp') }}</div>
           </el-form-item>
           <el-form-item :label="t('storage.username')"><el-input v-model="editing.username" /></el-form-item>
-          <el-form-item :label="t('storage.password')"><SecretInput v-model="editing.password" :reveal="secretOf(editing.key && `/api/storage/mounts/${editing.key}/secrets`, 'password')" /></el-form-item>
+          <el-form-item :label="t('storage.password')"><SecretInput v-model="editing.password" :reveal="secretOf(secretKey && `/api/storage/mounts/${secretKey}/secrets`, 'password')" /></el-form-item>
           <el-form-item v-if="editing.type === 'smb'" :label="t('storage.domain')">
             <el-input v-model="editing.domain" placeholder="WORKGROUP" />
             <div class="form-help">{{ t('storage.domainHelp') }}</div>
@@ -134,7 +136,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import { Cloud, Download, File, Folder, FolderOpen, FolderPlus, HardDrive, Pencil, Plus, RefreshCw, Server, Trash2, Upload } from 'lucide-vue-next'
+import { Cloud, CopyPlus, Download, File, Folder, FolderOpen, FolderPlus, HardDrive, Pencil, Plus, RefreshCw, Server, Trash2, Upload } from 'lucide-vue-next'
 import { api } from '../api'
 import SecretInput from '../components/SecretInput.vue'
 import { secretOf } from '../secrets'
@@ -150,6 +152,8 @@ import CompactToggle from '../components/CompactToggle.vue'
 import { useCompactView } from '../composables/useCompactView'
 import Field from '../components/Field.vue'
 import StatusBadge from '../components/StatusBadge.vue'
+import CopyHint from '../components/CopyHint.vue'
+import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import { useFormLayout } from '../composables/useIsMobile'
 
 interface Mount {
@@ -190,6 +194,10 @@ const gl = useGroupedList<Mount>({
 })
 const editorVisible = ref(false)
 const editing = ref<Mount>(empty())
+// 复制条目时的模板，普通新增与编辑时为 null
+const copyFrom = ref<CopySource | null>(null)
+// 查看密钥明文时取自哪个条目：复制时为模板，提交占位符即沿用模板的密钥
+const secretKey = computed(() => editing.value.key || copyFrom.value?.key)
 
 const current = ref<Mount>()
 const cwd = ref('/')
@@ -243,8 +251,15 @@ async function load() {
   }
 }
 
-function openEditor(m?: Mount) {
+// openEditor 打开编辑框：copy 为 true 时以 m 为模板新建副本
+function openEditor(m?: Mount, copy = false) {
   editing.value = m ? JSON.parse(JSON.stringify(m)) : empty()
+  copyFrom.value = null
+  if (m && copy) {
+    copyFrom.value = { key: m.key ?? '', name: m.name }
+    editing.value.key = ''
+    editing.value.name = uniqueName(m.name, mounts.value.map((x) => x.name))
+  }
   editorVisible.value = true
 }
 
@@ -254,7 +269,7 @@ async function save() {
     if (key) {
       await api.put(`/api/storage/mounts/${key}`, body)
     } else {
-      await api.post('/api/storage/mounts', body)
+      await createItem('/api/storage/mounts', body, copyFrom.value)
     }
     editorVisible.value = false
     await load()

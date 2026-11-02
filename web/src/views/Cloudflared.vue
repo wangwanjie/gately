@@ -36,6 +36,7 @@
             <el-button text size="small" :icon="RefreshCw" :disabled="!tn.enable" @click="restart(tn)">{{ t('common.restart') }}</el-button>
             <el-button v-if="tn.mode === 'token'" text size="small" :icon="Route" :title="tn.apiToken ? '' : t('cloudflared.ingressNeedsApi')" @click="ingress?.open(tn.key!, tn.name)">{{ t('cloudflared.ingressButton') }}</el-button>
             <el-button text size="small" :icon="Pencil" @click="openEditor(tn)">{{ t('common.edit') }}</el-button>
+            <el-button text size="small" :icon="CopyPlus" @click="openEditor(tn, true)">{{ t('common.duplicate') }}</el-button>
             <el-popconfirm :title="t('cloudflared.confirmDelete')" @confirm="remove(tn)">
               <template #reference>
                 <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
@@ -67,6 +68,7 @@
     <CloudflaredIngress ref="ingress" />
 
     <el-dialog v-model="editorVisible" :title="editing.key ? t('cloudflared.editTunnel') : t('cloudflared.addTunnel')" width="540px" :fullscreen="isMobile">
+      <CopyHint :from="copyFrom" secrets />
       <el-form :model="editing" label-width="100px" :label-position="labelPosition">
         <el-form-item :label="t('common.name')"><el-input v-model="editing.name" /></el-form-item>
         <GroupInput v-model="editing.group" :groups="gl.groupNames.value" />
@@ -77,11 +79,11 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item v-if="editing.mode === 'token'" :label="t('cloudflared.token')">
-          <SecretInput v-model="editing.token" placeholder="eyJh…" :reveal="secretOf(editing.key && `/api/cloudflared/tunnels/${editing.key}/secrets`, 'token')" />
+          <SecretInput v-model="editing.token" placeholder="eyJh…" :reveal="secretOf(secretKey && `/api/cloudflared/tunnels/${secretKey}/secrets`, 'token')" />
           <div class="form-help">{{ t('cloudflared.tokenHelp') }}</div>
         </el-form-item>
         <el-form-item v-if="editing.mode === 'token'" :label="t('cloudflared.apiToken')">
-          <SecretInput v-model="editing.apiToken" :placeholder="t('cloudflared.apiTokenPh')" :reveal="secretOf(editing.key && `/api/cloudflared/tunnels/${editing.key}/secrets`, 'apiToken')" />
+          <SecretInput v-model="editing.apiToken" :placeholder="t('cloudflared.apiTokenPh')" :reveal="secretOf(secretKey && `/api/cloudflared/tunnels/${secretKey}/secrets`, 'apiToken')" />
           <div class="form-help">{{ t('cloudflared.apiTokenHelp') }} <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank" rel="noopener">dash.cloudflare.com</a></div>
         </el-form-item>
         <el-form-item v-else :label="t('cloudflared.localService')">
@@ -114,10 +116,10 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
-import { Cloud, Download, Pencil, Plus, RefreshCw, Route, Save, Terminal, Trash2 } from 'lucide-vue-next'
+import { Cloud, CopyPlus, Download, Pencil, Plus, RefreshCw, Route, Save, Terminal, Trash2 } from 'lucide-vue-next'
 import { api } from '../api'
 import SecretInput from '../components/SecretInput.vue'
 import { secretOf } from '../secrets'
@@ -134,6 +136,8 @@ import { useCompactView } from '../composables/useCompactView'
 import Field from '../components/Field.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
+import CopyHint from '../components/CopyHint.vue'
+import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import UrlLink from '../components/UrlLink.vue'
 import ProgramInstall from '../components/ProgramInstall.vue'
 import ResetConfigButton from '../components/ResetConfigButton.vue'
@@ -184,6 +188,10 @@ const installer = ref<InstanceType<typeof ProgramInstall>>()
 const ingress = ref<InstanceType<typeof CloudflaredIngress>>()
 const editorVisible = ref(false)
 const editing = ref<Tunnel>(empty())
+// 复制条目时的模板，普通新增与编辑时为 null
+const copyFrom = ref<CopySource | null>(null)
+// 查看密钥明文时取自哪个条目：复制时为模板，提交占位符即沿用模板的密钥
+const secretKey = computed(() => editing.value.key || copyFrom.value?.key)
 // 定时刷新，标签页在后台时暂停
 const polling = usePolling(loadTunnels, 4000)
 
@@ -246,11 +254,18 @@ async function saveSettings() {
   }
 }
 
-function openEditor(tn?: TunnelView) {
+// openEditor 打开编辑框：copy 为 true 时以 tn 为模板新建副本
+function openEditor(tn?: TunnelView, copy = false) {
+  copyFrom.value = null
   if (tn) {
     // 去掉运行状态、公网地址等只读字段，后端按未知字段拒绝请求
     const { state: _s, error: _e, url: _u, connections: _c, tunnelId: _i, ...tunnel } = tn
     editing.value = JSON.parse(JSON.stringify(tunnel))
+    if (copy) {
+      copyFrom.value = { key: tn.key ?? '', name: tn.name }
+      editing.value.key = ''
+      editing.value.name = uniqueName(tn.name, tunnels.value.map((x) => x.name))
+    }
   } else {
     editing.value = empty()
   }
@@ -263,7 +278,7 @@ async function save() {
     if (key) {
       await api.put(`/api/cloudflared/tunnels/${key}`, body)
     } else {
-      await api.post('/api/cloudflared/tunnels', body)
+      await createItem('/api/cloudflared/tunnels', body, copyFrom.value)
     }
     editorVisible.value = false
     await loadTunnels()

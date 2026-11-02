@@ -62,12 +62,15 @@ import SortCheck from '../SortCheck.vue'
 import SortMoves from '../SortMoves.vue'
 import { useGroupedList } from '../../composables/useGroupSort'
 import { useCompactView } from '../../composables/useCompactView'
-import { MASK, connAddr, normalizeConn, type Conn } from './types'
+import { connAddr, type Conn } from './types'
+import { isCancel, withAccess } from './security'
 
 const props = defineProps<{ conns: Conn[]; isMobile: boolean; openCounts: Record<string, number> }>()
 const emit = defineEmits<{
   connect: [c: Conn]
   edit: [c: Conn | null]
+  // copy 以该连接为模板新建连接
+  copy: [c: Conn]
   sftp: [c: Conn]
   quick: [c: Conn]
   reload: []
@@ -113,21 +116,9 @@ function onDblClick(c: Conn) {
   emit('connect', c)
 }
 
-// 复制连接：脱敏的密文不能原样提交，需要清空后让用户重新填写。
+// 复制连接：交给页面以该连接为模板打开编辑框，脱敏的密码与私钥保持占位符，保存时由后端沿用模板的值
 function duplicate(c: Conn) {
-  const copy = normalizeConn(JSON.parse(JSON.stringify(c)))
-  copy.key = ''
-  copy.name = t('termConn.list.copySuffix', { name: c.name })
-  copy.ssh.hostKey = ''
-  const clear = (v: string) => (/^\*+$/.test(v) || v === MASK ? '' : v)
-  copy.ssh.password = clear(copy.ssh.password)
-  copy.ssh.privateKey = clear(copy.ssh.privateKey)
-  copy.ssh.passphrase = clear(copy.ssh.passphrase)
-  copy.ssh.proxy.password = clear(copy.ssh.proxy.password)
-  copy.telnet.password = clear(copy.telnet.password)
-  copy.telnet.proxy.password = clear(copy.telnet.proxy.password)
-  emit('edit', copy)
-  ElMessage.info(t('termConn.list.copyHint'))
+  emit('copy', c)
 }
 
 async function onCommand(c: Conn, cmd: string) {
@@ -143,7 +134,8 @@ async function onCommand(c: Conn, cmd: string) {
     } else if (cmd === 'test') {
       const loading = ElMessage({ message: t('termConn.list.testing'), duration: 0, type: 'info' })
       try {
-        const r = await api.post<{ message?: string } | null>(`/api/webterminal/connections/${encodeURIComponent(c.key)}/test`)
+        // 测试会用已保存的密码登录，需先通过门禁（协议与二次验证）
+        const r = await withAccess(() => api.post<{ message?: string } | null>(`/api/webterminal/connections/${encodeURIComponent(c.key)}/test`))
         ElMessage.success(r?.message || t('termConn.list.testOk', { name: c.name }))
       } finally {
         loading.close()
@@ -159,7 +151,7 @@ async function onCommand(c: Conn, cmd: string) {
       emit('reload')
     }
   } catch (e) {
-    if (e !== 'cancel' && e !== 'close') {
+    if (e !== 'cancel' && e !== 'close' && !isCancel(e)) {
       ElMessage.error((e as Error).message)
     }
   }

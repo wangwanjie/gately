@@ -134,5 +134,7 @@
   "shortLivedTag": "Kurzlebig",
   "hoursLeft": "Noch {hours} Stunden",
   "renewFailedShort": "Erneuerung fehlgeschlagen",
-  "filterPlaceholder": "Notiz, Gruppe, Domain suchen"
+  "filterPlaceholder": "Notiz, Gruppe, Domain suchen",
+  "copyReissue": "Die Kopie enthält nicht das Zertifikat des Originals. Nach dem Speichern wird mit den Einstellungen der Kopie erneut ein Zertifikat ausgestellt oder eingelesen.",
+  "copyDeploysOff": "Bereitstellungsziele sind deaktiviert: Die Kopie könnte in dieselben Dateien wie das Originalzertifikat schreiben. Aktivieren Sie sie, nachdem Sie geprüft haben, dass sich die Dateinamen nicht überschneiden."
 }

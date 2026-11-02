@@ -189,5 +189,11 @@
   "userHeaderHelp": "認證通過後把使用者名稱寫入該請求標頭傳給後端，訪客自帶的同名標頭會被刪除；留空不傳遞",
   "userRoutesTag": "依使用者分流 {count} 條",
   "probeRule": "路徑探測封鎖",
-  "probeRuleHelp": "在入侵防護中為這個監聽建立 Web 路徑探測規則"
+  "probeRuleHelp": "在入侵防護中為這個監聽建立 Web 路徑探測規則",
+  "copySite": "複製站點",
+  "copyListener": "複製監聽",
+  "copySites": "站點",
+  "copySitesLabel": "同時複製其中的 {count} 個站點",
+  "copySitesHelp": "分享連結不會複製：其權杖可繞過認證，需要時在副本中重新建立。",
+  "siteListener": "所屬監聽"
 }

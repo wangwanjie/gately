@@ -182,18 +182,9 @@ func (t *Task) Validate() error {
 			return fmt.Errorf("记录 %s %s 重复", r.Type, r.Sub+"."+r.Zone)
 		}
 		seen[id] = true
-		if r.Key == "" {
-			r.Key = fmt.Sprintf("r%d", i+1)
-		}
 	}
-	// 记录 key 需唯一，用于跟踪同步状态
-	keys := map[string]bool{}
-	for i := range t.Records {
-		for keys[t.Records[i].Key] {
-			t.Records[i].Key += "_"
-		}
-		keys[t.Records[i].Key] = true
-	}
+	// 记录 key 需唯一，用于跟踪同步状态；插在中间的新记录（例如复制的记录）不能抢走已有记录的 key
+	crud.AssignKeys(len(t.Records), func(i int) *string { return &t.Records[i].Key }, "r")
 	v4, v6 := t.needs()
 	if v4 && !t.IPv4.Enable {
 		return errors.New("有记录使用 {ipv4Addr}，请启用 IPv4 获取")

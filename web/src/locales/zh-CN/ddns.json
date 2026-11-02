@@ -79,5 +79,6 @@
   "deleteRemoteHint": "只删除由 Gately 同步的那条：同名同类型（同线路）只有一条时直接删除；有多条时只删除值与最近一次同步结果相同的，无法确定时不删除并提示。",
   "deleteLocalOnly": "只删除 Gately 中的配置，服务商处的解析保留。",
   "deleteRemoteUnsupported": "{provider} 不支持通过接口删除解析，只删除 Gately 中的配置，服务商处的记录请到服务商后台手动删除。",
-  "deletedRemote": "已删除，服务商处的解析也已删除"
+  "deletedRemote": "已删除，服务商处的解析也已删除",
+  "copyRecord": "复制记录"
 }

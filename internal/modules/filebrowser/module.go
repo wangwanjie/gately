@@ -312,6 +312,7 @@ func (m *Module) Routes(r module.Router) {
 		Group:    func(i *Instance) *string { return &i.Group },
 		Validate: func(i *Instance) error { return i.Validate() },
 		Merge:    func(old, updated *Instance) { crud.KeepSecret(old.AdminPassword, &updated.AdminPassword) },
+		Copy:     func(src, dst *Instance) { crud.KeepSecret(src.AdminPassword, &dst.AdminPassword) },
 		View:     func(i *Instance) any { return m.viewLocked(i) },
 		// 查看被脱敏的管理员密码明文
 		Secrets: func(i *Instance) map[string]string { return map[string]string{"adminPassword": i.AdminPassword} },

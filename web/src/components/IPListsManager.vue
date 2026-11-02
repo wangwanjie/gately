@@ -13,6 +13,7 @@
             <span class="actions">
               <el-button text size="small" :icon="RotateCw" :loading="refreshing === l.key" :disabled="!l.enable" @click="refresh(l)">{{ t('ipLists.refresh') }}</el-button>
               <el-button text size="small" :icon="Pencil" @click="openEditor(l)">{{ t('common.edit') }}</el-button>
+              <el-button text size="small" :icon="CopyPlus" @click="openEditor(l, true)">{{ t('common.duplicate') }}</el-button>
               <el-popconfirm :title="t('ipLists.deleteConfirm')" width="240" @confirm="remove(l)">
                 <template #reference>
                   <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
@@ -34,6 +35,7 @@
     </el-form-item>
 
     <el-dialog v-model="editorVisible" :title="editing.key ? t('ipLists.edit') : t('ipLists.add')" width="560px" append-to-body :fullscreen="isMobile">
+      <CopyHint :from="copyFrom" />
       <el-form :model="editing" label-width="110px" :label-position="labelPosition">
         <el-form-item :label="t('common.name')" required><el-input v-model="editing.name" :placeholder="t('ipLists.namePlaceholder')" /></el-form-item>
         <el-form-item :label="t('ipLists.url')" required>
@@ -59,8 +61,10 @@
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
-import { Pencil, Plus, RotateCw, Trash2 } from 'lucide-vue-next'
+import { CopyPlus, Pencil, Plus, RotateCw, Trash2 } from 'lucide-vue-next'
 import { api } from '../api'
+import CopyHint from './CopyHint.vue'
+import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import { useFormLayout } from '../composables/useIsMobile'
 import { usePolling } from '../composables/usePolling'
 
@@ -92,6 +96,8 @@ const editorVisible = ref(false)
 const saving = ref(false)
 const refreshing = ref('')
 const editing = ref<IPList>(empty())
+// 复制条目时的模板，普通新增与编辑时为 null；副本保存后由系统重新下载
+const copyFrom = ref<CopySource | null>(null)
 // 定时刷新，标签页在后台时暂停
 const polling = usePolling(load, 5000)
 
@@ -127,9 +133,16 @@ async function load() {
   lists.value = await api.get<IPListView[]>('/api/webservice/iplists')
 }
 
-function openEditor(l?: IPListView) {
+// openEditor 打开编辑框：copy 为 true 时以 l 为模板新建副本
+function openEditor(l?: IPListView, copy = false) {
+  copyFrom.value = null
   if (l) {
     editing.value = { key: l.key, name: l.name, enable: l.enable, url: l.url, refreshHours: l.refreshHours, remark: l.remark }
+    if (copy) {
+      copyFrom.value = { key: l.key ?? '', name: l.name }
+      editing.value.key = ''
+      editing.value.name = uniqueName(l.name, lists.value.map((x) => x.name))
+    }
   } else {
     editing.value = empty()
   }
@@ -143,7 +156,7 @@ async function save() {
     if (key) {
       await api.put(`/api/webservice/iplists/${key}`, body)
     } else {
-      await api.post('/api/webservice/iplists', body)
+      await createItem('/api/webservice/iplists', body, copyFrom.value)
     }
     editorVisible.value = false
     ElMessage.success(t('common.saved'))

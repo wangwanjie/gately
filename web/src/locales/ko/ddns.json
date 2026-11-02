@@ -79,5 +79,6 @@
   "deleteRemoteHint": "Gately가 동기화한 레코드만 삭제합니다. 이름·유형(·회선)이 같은 레코드가 하나뿐이면 그것을 삭제하고, 여러 개이면 값이 마지막 동기화 결과와 같은 것만 삭제하며, 판단할 수 없으면 삭제하지 않고 알려 줍니다.",
   "deleteLocalOnly": "Gately 설정만 삭제하고 제공업체의 DNS 레코드는 남겨 둡니다.",
   "deleteRemoteUnsupported": "{provider}은(는) API로 레코드를 삭제할 수 없습니다. Gately 설정만 삭제되므로 제공업체 콘솔에서 레코드를 직접 삭제하세요.",
-  "deletedRemote": "삭제했습니다. 제공업체의 DNS 레코드도 삭제되었습니다"
+  "deletedRemote": "삭제했습니다. 제공업체의 DNS 레코드도 삭제되었습니다",
+  "copyRecord": "레코드 복제"
 }

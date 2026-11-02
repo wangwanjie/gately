@@ -58,5 +58,10 @@
   "expand": "Développer",
   "collapse": "Réduire",
   "expandAll": "Tout développer",
-  "collapseAll": "Tout réduire"
+  "collapseAll": "Tout réduire",
+  "duplicate": "Dupliquer",
+  "copyName": "{name} (copie)",
+  "copyNameN": "{name} (copie {n})",
+  "copyHint": "Création d'un nouvel élément à partir de « {name} ». L'enregistrement ajoute un nouvel élément sans modifier l'original.",
+  "copyHintSecrets": "Les mots de passe, jetons et autres secrets non modifiés sont repris de l'original."
 }

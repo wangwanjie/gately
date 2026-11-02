@@ -97,6 +97,7 @@
           </template>
           <template v-else #actions>
             <el-button text size="small" :icon="Pencil" @click="openRule(r)">{{ t('common.edit') }}</el-button>
+            <el-button text size="small" :icon="CopyPlus" @click="openRule(r, true)">{{ t('common.duplicate') }}</el-button>
             <el-popconfirm :title="t('perf.confirmDeleteRule')" @confirm="removeRule(r)">
               <template #reference>
                 <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
@@ -110,6 +111,7 @@
     <LogCard url="/api/perf/logs" clearable />
 
     <el-dialog v-model="ruleVisible" :title="editing.key ? t('perf.editRule') : t('perf.addRule')" width="580px" :fullscreen="isMobile">
+      <CopyHint :from="copyFrom" />
       <el-form :model="editing" label-width="110px" :label-position="labelPosition">
         <el-form-item v-if="!editing.key" :label="t('perf.template')">
           <div class="tpl-list">
@@ -176,7 +178,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import { Gauge, Pencil, Plus, Trash2 } from 'lucide-vue-next'
+import { CopyPlus, Gauge, Pencil, Plus, Trash2 } from 'lucide-vue-next'
 import { api } from '../api'
 import { moduleEnabled } from '../nav'
 import PageHeader from '../components/PageHeader.vue'
@@ -190,6 +192,8 @@ import CompactToggle from '../components/CompactToggle.vue'
 import Field from '../components/Field.vue'
 import StatusBadge from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
+import CopyHint from '../components/CopyHint.vue'
+import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import SiteStats from '../components/SiteStats.vue'
 import TrendChart, { type TrendSeries } from '../components/TrendChart.vue'
 import { useGroupedList } from '../composables/useGroupSort'
@@ -293,6 +297,8 @@ const metrics = ref<MetricDef[]>([])
 const notifyRules = ref<NotifyRule[] | null>(null)
 const ruleVisible = ref(false)
 const editing = ref<Rule>(emptyRule())
+// 复制条目时的模板，普通新增与编辑时为 null
+const copyFrom = ref<CopySource | null>(null)
 const siteStats = ref<InstanceType<typeof SiteStats>>()
 const compactRules = useCompactView('perf.rules')
 const glRules = useGroupedList<Rule>({
@@ -548,9 +554,16 @@ function applyTemplate(tpl: Partial<Rule>) {
   editing.value = { ...emptyRule(), ...tpl }
 }
 
-function openRule(r?: Rule) {
+// openRule 打开编辑框：copy 为 true 时以 r 为模板新建副本
+function openRule(r?: Rule, copy = false) {
   editing.value = r ? { ...emptyRule(), ...JSON.parse(JSON.stringify(r)) } : emptyRule()
   editing.value.sites ??= []
+  copyFrom.value = null
+  if (r && copy) {
+    copyFrom.value = { key: r.key ?? '', name: r.name }
+    editing.value.key = ''
+    editing.value.name = uniqueName(r.name, rules.value.map((x) => x.name))
+  }
   ruleVisible.value = true
 }
 
@@ -560,7 +573,7 @@ async function saveRule() {
     if (key) {
       await api.put(`/api/perf/rules/${key}`, body)
     } else {
-      await api.post('/api/perf/rules', body)
+      await createItem('/api/perf/rules', body, copyFrom.value)
     }
     ruleVisible.value = false
     await loadRules()

@@ -59,6 +59,7 @@
           <template v-else #actions>
             <el-button text size="small" :icon="RotateCw" :disabled="!r.enable || moduleOff" @click="restart(r)">{{ t('stun.reconnect') }}</el-button>
             <el-button text size="small" :icon="Pencil" @click="openEditor(r)">{{ t('common.edit') }}</el-button>
+            <el-button text size="small" :icon="CopyPlus" @click="openEditor(r, true)">{{ t('common.duplicate') }}</el-button>
             <el-popconfirm :title="t('stun.confirmDelete')" @confirm="remove(r)">
               <template #reference>
                 <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
@@ -72,6 +73,7 @@
     <LogCard url="/api/stun/logs" clearable />
 
     <el-dialog v-model="editorVisible" :title="editing.key ? t('stun.editRule') : t('stun.addRule')" width="780px" top="5vh" :fullscreen="isMobile">
+      <CopyHint :from="copyFrom" />
       <el-form :model="editing" label-width="140px" :label-position="labelPosition">
         <el-tabs v-model="tab">
           <el-tab-pane :label="t('stun.tabBasic')" name="basic">
@@ -218,7 +220,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
-import { Pencil, Plus, Radar, RotateCw, SlidersHorizontal, Trash2 } from 'lucide-vue-next'
+import { CopyPlus, Pencil, Plus, Radar, RotateCw, SlidersHorizontal, Trash2 } from 'lucide-vue-next'
 import { api, formatBytes } from '../api'
 import PageHeader from '../components/PageHeader.vue'
 import ModuleBanner from '../components/ModuleBanner.vue'
@@ -235,6 +237,8 @@ import { useCompactView } from '../composables/useCompactView'
 import Field from '../components/Field.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
+import CopyHint from '../components/CopyHint.vue'
+import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import { useFormLayout } from '../composables/useIsMobile'
 import { useListText, splitLinesOrCommas } from '../composables/useListText'
 import WebhookEditor, { type WebhookConfig } from '../components/WebhookEditor.vue'
@@ -333,6 +337,8 @@ const editorVisible = ref(false)
 const saving = ref(false)
 const tab = ref('basic')
 const editing = ref<Rule>(emptyRule())
+// 复制条目时的模板，普通新增与编辑时为 null
+const copyFrom = ref<CopySource | null>(null)
 const settingsVisible = ref(false)
 const settings = ref<Settings>()
 // 定时刷新，标签页在后台时暂停
@@ -437,7 +443,9 @@ async function load() {
   }
 }
 
-function openEditor(row?: RuleView) {
+// openEditor 打开编辑框：copy 为 true 时以 row 为模板新建副本
+function openEditor(row?: RuleView, copy = false) {
+  copyFrom.value = null
   if (row) {
     const { state: _s, ...rule } = row
     editing.value = JSON.parse(JSON.stringify(rule))
@@ -445,6 +453,11 @@ function openEditor(row?: RuleView) {
     editing.value.ipMode = editing.value.ipMode ?? ''
     editing.value.ipList = editing.value.ipList ?? []
     editing.value.ipSets = editing.value.ipSets ?? []
+    if (copy) {
+      copyFrom.value = { key: row.key ?? '', name: row.name }
+      editing.value.key = ''
+      editing.value.name = uniqueName(row.name, rules.value.map((r) => r.name))
+    }
   } else {
     editing.value = emptyRule()
   }
@@ -459,7 +472,7 @@ async function save() {
     if (key) {
       await api.put(`/api/stun/rules/${key}`, body)
     } else {
-      await api.post('/api/stun/rules', body)
+      await createItem('/api/stun/rules', body, copyFrom.value)
     }
     editorVisible.value = false
     ElMessage.success(t('common.saved'))

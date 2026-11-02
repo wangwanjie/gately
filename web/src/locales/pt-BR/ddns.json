@@ -79,5 +79,6 @@
   "deleteRemoteHint": "Só o registro sincronizado pelo Gately é excluído: se houver um único com o mesmo nome e tipo (e linha), ele é excluído; se houver vários, só os com o valor da última sincronização, e nada é excluído quando não dá para determinar.",
   "deleteLocalOnly": "Só a configuração do Gately é excluída; o registro DNS no provedor é mantido.",
   "deleteRemoteUnsupported": "{provider} não permite excluir registros pela API. Só a configuração do Gately é excluída; exclua o registro no painel do provedor.",
-  "deletedRemote": "Excluído, inclusive o registro DNS no provedor"
+  "deletedRemote": "Excluído, inclusive o registro DNS no provedor",
+  "copyRecord": "Duplicar registro"
 }

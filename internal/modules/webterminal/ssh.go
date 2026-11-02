@@ -239,8 +239,12 @@ func (m *Module) recordHostKey(key, fp string) {
 	}
 }
 
-// handleTestSaved 测试已保存的连接。
+// handleTestSaved 测试已保存的连接。已保存的密码或认证预设会发往连接中的主机，而主机可以先经修改接口改掉，
+// 因此与打开终端一样先过门禁（协议与二次验证）。
 func (m *Module) handleTestSaved(w http.ResponseWriter, r *http.Request) {
+	if !m.requireAccess(w, r) {
+		return
+	}
 	conn, ok := m.findConn(r.PathValue("key"))
 	if !ok {
 		httpx.Error(w, http.StatusNotFound, "连接不存在")
@@ -250,10 +254,15 @@ func (m *Module) handleTestSaved(w http.ResponseWriter, r *http.Request) {
 }
 
 // handleTestDraft 测试未保存的连接；body 带 key 时，被脱敏的密文字段从该已保存连接合并。
+// 合并后的密码、引用的认证预设都会发往请求指定的主机，等同于取得明文，与查看明文、复制连接一样先过门禁（协议与二次验证）；
+// 只用请求中自带密码的草稿不涉及已保存的密钥，不受门禁限制。
 func (m *Module) handleTestDraft(w http.ResponseWriter, r *http.Request) {
 	var c Connection
 	if err := httpx.ReadJSON(r, &c); err != nil {
 		httpx.Error(w, http.StatusBadRequest, "%v", err)
+		return
+	}
+	if (c.Key != "" || (c.Type == TypeSSH && c.SSH.AuthType == AuthCredential)) && !m.requireAccess(w, r) {
 		return
 	}
 	if c.Key != "" {

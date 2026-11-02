@@ -10,6 +10,7 @@
     @update:model-value="(v: boolean) => $emit('update:modelValue', v)"
     @open="onOpen"
   >
+    <CopyHint :from="copyFrom" secrets />
     <el-form :model="form" label-width="100px" :label-position="labelPosition">
       <el-form-item :label="t('termConn.editor.name')" required><el-input v-model="form.name" :placeholder="t('termConn.editor.namePlaceholder')" /></el-form-item>
       <GroupInput v-model="form.group" :groups="groups ?? []" />
@@ -145,9 +146,12 @@ import SecretInput from '../SecretInput.vue'
 import GroupInput from '../GroupInput.vue'
 import { secretOf } from '../../secrets'
 import { emptyConn, normalizeConn, type Conn, type Credential } from './types'
+import CopyHint from '../CopyHint.vue'
+import { createItem, type CopySource } from '../../copyDraft'
+import { isCancel, withAccess } from './security'
 
-// groups 为已有的连接分组，用于分组输入提示
-const props = defineProps<{ modelValue: boolean; conn: Conn | null; allowLocalShell: boolean; groups?: string[] }>()
+// groups 为已有的连接分组，用于分组输入提示；copyFrom 不为空时以该连接为模板新建（保存时调用复制接口）
+const props = defineProps<{ modelValue: boolean; conn: Conn | null; allowLocalShell: boolean; groups?: string[]; copyFrom?: CopySource | null }>()
 const emit = defineEmits<{ 'update:modelValue': [v: boolean]; saved: [] }>()
 
 const { t } = useI18n()
@@ -155,8 +159,10 @@ const { isMobile, labelPosition } = useFormLayout()
 const form = reactive<Conn>(emptyConn())
 
 // revealOf 返回取回已保存连接中密码明文的函数，field 为后端明文表的键（例如 ssh.proxy.password）
+// 复制时取模板的明文，提交占位符即沿用模板的密钥
 function revealOf(field: string) {
-  return secretOf(form.key && `/api/webterminal/connections/${form.key}/secrets`, field)
+  const key = form.key || props.copyFrom?.key
+  return secretOf(key && `/api/webterminal/connections/${key}/secrets`, field)
 }
 const envRows = ref<{ k: string; v: string }[]>([])
 const quickText = ref('')
@@ -261,8 +267,12 @@ async function save() {
   saving.value = true
   try {
     const { key, ...rest } = body
+    const from = props.copyFrom
     if (key) {
       await api.put(`/api/webterminal/connections/${encodeURIComponent(key)}`, rest)
+    } else if (from) {
+      // 复制会沿用模板的密码与私钥，后端要求先通过门禁（协议与二次验证）
+      await withAccess(() => createItem('/api/webterminal/connections', rest, from))
     } else {
       await api.post('/api/webterminal/connections', rest)
     }
@@ -270,15 +280,21 @@ async function save() {
     emit('saved')
     ElMessage.success(t('common.saved'))
   } catch (e) {
-    ElMessage.error((e as Error).message)
+    if (!isCancel(e)) {
+      ElMessage.error((e as Error).message)
+    }
   } finally {
     saving.value = false
   }
 }
 
-// test 测试当前表单中尚未保存的配置；编辑已有连接时带上 key，让后端合并已保存的密文。
+// test 测试当前表单中尚未保存的配置；编辑已有连接时带上 key，复制时带上模板的 key，让后端合并已保存的密文。
+// 合并密文需要通过门禁，遇到 403 时弹出协议或二次验证对话框后重试
 async function test() {
   const body = buildBody()
+  if (!body.key && props.copyFrom) {
+    body.key = props.copyFrom.key
+  }
   const msg = validate(body)
   if (msg) {
     ElMessage.warning(msg)
@@ -286,10 +302,12 @@ async function test() {
   }
   testing.value = true
   try {
-    const r = await api.post<{ message?: string } | null>('/api/webterminal/connections/test', body)
+    const r = await withAccess(() => api.post<{ message?: string } | null>('/api/webterminal/connections/test', body))
     ElMessage.success(r?.message || t('termConn.editor.testOk'))
   } catch (e) {
-    ElMessage.error((e as Error).message)
+    if (!isCancel(e)) {
+      ElMessage.error((e as Error).message)
+    }
   } finally {
     testing.value = false
   }

@@ -79,5 +79,6 @@
   "deleteRemoteHint": "只刪除由 Gately 同步的那一筆：同名同類型（同線路）只有一筆時直接刪除；有多筆時只刪除值與最近一次同步結果相同的，無法確定時不刪除並提示。",
   "deleteLocalOnly": "只刪除 Gately 中的設定，服務商處的解析保留。",
   "deleteRemoteUnsupported": "{provider} 不支援透過 API 刪除解析，只刪除 Gately 中的設定，服務商處的記錄請到服務商後台手動刪除。",
-  "deletedRemote": "已刪除，服務商處的解析也已刪除"
+  "deletedRemote": "已刪除，服務商處的解析也已刪除",
+  "copyRecord": "複製記錄"
 }

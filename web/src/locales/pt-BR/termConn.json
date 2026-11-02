@@ -84,8 +84,6 @@
     "quick": "Diretórios de acesso rápido",
     "test": "Testar conexão",
     "resetKey": "Redefinir impressão digital do host",
-    "copySuffix": "Cópia de {name}",
-    "copyHint": "Configuração copiada. Senhas, chaves privadas e outros segredos precisam ser preenchidos novamente.",
     "testing": "Testando conexão…",
     "testOk": "{name} conectado com sucesso",
     "resetConfirm": "Após a redefinição, a impressão digital do host é registrada novamente na próxima conexão. Faça isso depois que o host for reinstalado ou suas chaves forem trocadas.",

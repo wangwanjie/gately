@@ -402,6 +402,8 @@ func (m *Module) Routes(r module.Router) {
 				updated.Secret = old.Secret
 			}
 		},
+		// 复制时只有占位符表示沿用模板的密钥；留空表示副本不要密钥，避免改了目标地址后把模板的密钥发过去
+		Copy: func(src, dst *Channel) { crud.KeepSecret(src.Secret, &dst.Secret) },
 		View: func(c *Channel) any {
 			return channelView{Channel: *c, HasSecret: c.Secret != ""}
 		},

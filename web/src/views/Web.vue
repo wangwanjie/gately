@@ -163,6 +163,7 @@
                 <el-button v-if="l.running" text size="small" :icon="BarChart3" :title="t('web.stats')" @click="openStats(l, item.item)">{{ t('web.stats') }}</el-button>
                 <el-button v-if="l.running" text size="small" :icon="Cable" :title="t('web.connections')" @click="openConns(l, item.item)">{{ t('web.connections') }}</el-button>
                 <el-button text size="small" :icon="Pencil" :title="t('common.edit')" @click="openSite(l, item.item)">{{ t('common.edit') }}</el-button>
+                <el-button v-if="!item.item.isDefault" text size="small" :icon="CopyPlus" :title="t('web.copySite')" :aria-label="t('web.copySite')" @click="openSite(l, item.item, true)">{{ t('common.duplicate') }}</el-button>
                 <el-popconfirm v-if="item.item.isDefault" :title="t('web.resetDefaultConfirm')" width="260" @confirm="resetDefaultSite(l)">
                   <template #reference>
                     <el-button text size="small" type="danger" :icon="Trash2" :aria-label="t('common.reset')" />
@@ -189,6 +190,7 @@
           <!-- 默认站点未配置时不在站点列表中显示，这里提供配置入口 -->
           <el-button v-if="!hasDefaultRow(l)" text size="small" :icon="Shield" @click="openDefaultSite(l)">{{ t('web.setDefaultSite') }}</el-button>
           <el-button text size="small" :icon="Pencil" @click="openListener(l)">{{ t('web.editListener') }}</el-button>
+          <el-button text size="small" :icon="CopyPlus" @click="openListener(l, true)">{{ t('web.copyListener') }}</el-button>
           <!-- 规则的存储与执行都在入侵防护，这里只是带上监听跳过去创建 -->
           <el-button text size="small" :icon="ShieldBan" :title="t('web.probeRuleHelp')" @click="router.push({ name: 'guard', query: { webProbe: l.key } })">{{ t('web.probeRule') }}</el-button>
           <el-popconfirm :title="t('web.deleteListenerConfirm')" width="240" @confirm="removeListener(l)">
@@ -205,7 +207,8 @@
     <SiteConns ref="connsDialog" @changed="load" />
 
     <el-dialog v-model="listenerVisible" :title="editingListener.key ? t('web.editListener') : t('web.addListener')" width="560px" :fullscreen="isMobile">
-      <el-alert v-if="!editingListener.key" :title="t('web.newListenerHint')" type="info" :closable="false" show-icon class="listener-hint" />
+      <CopyHint :from="copyListenerFrom" />
+      <el-alert v-if="!editingListener.key && !copyListenerFrom" :title="t('web.newListenerHint')" type="info" :closable="false" show-icon class="listener-hint" />
       <el-form :model="editingListener" label-width="130px" :label-position="labelPosition">
         <el-form-item :label="t('common.name')"><el-input v-model="editingListener.name" /></el-form-item>
         <el-form-item :label="t('web.network')">
@@ -256,6 +259,11 @@
         </el-form-item>
         <el-form-item :label="t('common.remark')"><el-input v-model="editingListener.remark" /></el-form-item>
         <el-form-item :label="t('common.enable')"><el-switch v-model="editingListener.enable" /></el-form-item>
+        <!-- 复制监听时可选是否带上站点；分享链接的令牌可绕过认证，不随副本复制 -->
+        <el-form-item v-if="copyListenerFrom && copySiteCount" :label="t('web.copySites')">
+          <el-checkbox v-model="copyListenerSites">{{ t('web.copySitesLabel', { count: copySiteCount }) }}</el-checkbox>
+          <div class="form-help">{{ t('web.copySitesHelp') }}</div>
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="listenerVisible = false">{{ t('common.cancel') }}</el-button>
@@ -264,8 +272,15 @@
     </el-dialog>
 
     <el-dialog v-model="siteVisible" :title="siteIsDefault ? t('web.defaultSite') : site.key ? t('web.editSite') : t('web.addSite')" width="760px" top="5vh" :fullscreen="isMobile">
+      <CopyHint :from="copySiteFrom" />
       <el-form :model="site" label-width="130px" :label-position="labelPosition">
         <el-alert v-if="siteIsDefault" :title="t('web.defaultSiteHint')" type="info" :closable="false" show-icon class="listener-hint" />
+        <!-- 复制站点时可以放到其他监听下，例如把 HTTP 站点复制到 HTTPS 监听 -->
+        <el-form-item v-if="copySiteFrom" :label="t('web.siteListener')">
+          <el-select v-model="siteOwnerKey" class="w-full" @change="onSiteOwnerChange">
+            <el-option v-for="o in listeners" :key="o.key" :label="listenerLabel(o)" :value="o.key ?? ''" />
+          </el-select>
+        </el-form-item>
         <el-tabs v-model="siteTab">
           <el-tab-pane :label="t('web.tabBasic')" name="basic">
             <el-form-item v-if="!siteIsDefault" :label="t('web.domains')" required>
@@ -532,6 +547,7 @@ import {
   ChevronsDownUp,
   ChevronsUpDown,
   ChevronUp,
+  CopyPlus,
   FileInput,
   Globe,
   GripVertical,
@@ -571,6 +587,8 @@ import SiteConns from '../components/SiteConns.vue'
 import SiteAccess, { type PathRule, type ShareLink } from '../components/SiteAccess.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
+import CopyHint from '../components/CopyHint.vue'
+import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import UrlLink from '../components/UrlLink.vue'
 import { accessPort, accessScheme, siteLink, type SiteLink } from '../siteUrl'
 import { useFormLayout } from '../composables/useIsMobile'
@@ -717,6 +735,15 @@ let siteOwner: ListenerView | null = null
 const siteTls = ref(false)
 const sitePort = ref(0)
 let siteIndex = -1
+// 复制监听、站点时的模板，普通新增与编辑时为 null
+const copyListenerFrom = ref<CopySource | null>(null)
+const copySiteFrom = ref<CopySource | null>(null)
+// 复制监听时是否带上站点，以及模板中的站点数
+const copyListenerSites = ref(true)
+const copySiteCount = ref(0)
+// 复制站点时选择的目标监听；与模板同一监听时副本排在模板之后，否则追加到末尾
+const siteOwnerKey = ref('')
+let copySiteSource: { listener: string; index: number } | null = null
 const settingsVisible = ref(false)
 const { isMobile, labelPosition } = useFormLayout()
 // moduleEnabled 为模块全局开关，undefined 表示尚未加载
@@ -1201,17 +1228,46 @@ function withRow(lk: string, sk: string, fn: (l: ListenerView, row: SiteRow) => 
   }
 }
 
-function openListener(l?: ListenerView) {
+// openListener 打开监听编辑框：copy 为 true 时以 l 为模板新建副本，可选带上其中的站点
+function openListener(l?: ListenerView, copy = false) {
   editingListener.value = l ? plain(l) : emptyListener()
+  copyListenerFrom.value = null
+  copySiteCount.value = 0
+  copyListenerSites.value = true
+  if (l && copy) {
+    copyListenerFrom.value = { key: l.key ?? '', name: listenerLabel(l) }
+    copySiteCount.value = l.sites?.length ?? 0
+    editingListener.value.key = ''
+    editingListener.value.name = uniqueName(l.name, listeners.value.map((x) => x.name))
+  }
   listenerVisible.value = true
+}
+
+// listenerLabel 返回监听的显示名称：名称为空时显示监听地址
+function listenerLabel(l: Listener) {
+  const host = l.listenIp ? (l.listenIp.includes(':') ? `[${l.listenIp}]` : l.listenIp) : '*'
+  return l.name || `${host}:${l.port}`
+}
+
+// stripShareLinks 去掉站点的分享链接：令牌可绕过认证，复制站点或监听时不带走
+function stripShareLinks(s: Site): Site {
+  return { ...s, shareLinks: [] }
 }
 
 async function saveListener() {
   saving.value = true
   try {
     const { key, ...body } = editingListener.value
+    const from = copyListenerFrom.value
     if (key) {
       await api.put(`/api/webservice/listeners/${key}`, body)
+    } else if (from) {
+      // 副本的站点不带分享链接；不复制站点时只保留监听本身与默认站点
+      body.sites = copyListenerSites.value ? (body.sites ?? []).map(stripShareLinks) : []
+      if (body.default) {
+        body.default = stripShareLinks(body.default)
+      }
+      await createItem('/api/webservice/listeners', body, from)
     } else {
       await api.post('/api/webservice/listeners', body)
     }
@@ -1275,13 +1331,17 @@ function downCount(l: ListenerView, row: SiteRow) {
   return (l.upstreams?.[k] ?? []).filter((u) => !u.healthy).length
 }
 
-function openSite(l: ListenerView, row?: SiteRow) {
+// openSite 打开站点编辑框：copy 为 true 时以 row 为模板新建站点（默认站点不能复制）
+function openSite(l: ListenerView, row?: SiteRow, copy = false) {
   loadIPLists()
   siteOwner = l
+  siteOwnerKey.value = l.key ?? ''
   siteTls.value = l.tls
   sitePort.value = l.port
   siteIndex = row ? row.index : -1
   siteIsDefault.value = !!row?.isDefault
+  copySiteFrom.value = null
+  copySiteSource = null
   // 旧配置中新增字段为 null，合并默认值后保证数组可直接编辑
   const draft: Site = row ? JSON.parse(JSON.stringify(row.site)) : emptySite()
   draft.rules = (draft.rules ?? []).map((r) => ({ ...r, ipSets: r.ipSets ?? [] }))
@@ -1299,9 +1359,29 @@ function openSite(l: ListenerView, row?: SiteRow) {
   draft.health = { ...defaults.health, ...(draft.health ?? {}) }
   draft.rateLimit = { ...defaults.rateLimit, ...(draft.rateLimit ?? {}) }
   draft.cache = { ...defaults.cache, ...(draft.cache ?? {}) }
+  if (row && copy && !row.isDefault) {
+    copySiteFrom.value = { key: row.site.key ?? '', name: siteTitle(row) }
+    copySiteSource = { listener: l.key ?? '', index: row.index }
+    siteIndex = -1
+    delete draft.key
+    draft.shareLinks = []
+    if (draft.name) {
+      draft.name = uniqueName(draft.name, (l.sites ?? []).map((s) => s.name))
+    }
+  }
   site.value = draft
   siteTab.value = 'basic'
   siteVisible.value = true
+}
+
+// onSiteOwnerChange 复制站点时切换目标监听：分享链接地址与访问控制提示按新监听的协议与端口显示
+function onSiteOwnerChange(key: string) {
+  const l = listeners.value.find((x) => x.key === key)
+  if (l) {
+    siteOwner = l
+    siteTls.value = l.tls
+    sitePort.value = l.port
+  }
 }
 
 // openDefaultSite 打开未配置的默认站点：用户主动配置兜底规则，编辑框里默认打开启用开关
@@ -1328,6 +1408,9 @@ async function saveSite() {
     l.default = site.value
   } else if (siteIndex >= 0) {
     l.sites[siteIndex] = site.value
+  } else if (copySiteSource && copySiteSource.listener === l.key && copySiteSource.index < l.sites.length) {
+    // 复制到同一监听时副本紧跟在模板之后，便于对照修改
+    l.sites.splice(copySiteSource.index + 1, 0, site.value)
   } else {
     l.sites.push(site.value)
   }

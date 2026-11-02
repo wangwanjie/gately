@@ -162,6 +162,7 @@ func (m *Module) Init(env module.Env) error {
 		Group:    func(mt *Mount) *string { return &mt.Group },
 		Validate: func(mt *Mount) error { return mt.Validate() },
 		Merge:    func(old, updated *Mount) { crud.KeepSecret(old.Password, &updated.Password) },
+		Copy:     func(src, dst *Mount) { crud.KeepSecret(src.Password, &dst.Password) },
 		View:     func(mt *Mount) any { return mt.view() },
 		// 查看被脱敏的存储密码明文
 		Secrets: func(mt *Mount) map[string]string { return map[string]string{"password": mt.Password} },

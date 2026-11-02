@@ -79,5 +79,6 @@
   "deleteRemoteHint": "Seul l’enregistrement synchronisé par Gately est supprimé : s’il n’y en a qu’un avec le même nom et le même type (et la même ligne), il est supprimé ; s’il y en a plusieurs, seuls ceux dont la valeur correspond à la dernière synchronisation le sont, et rien n’est supprimé si on ne peut pas trancher.",
   "deleteLocalOnly": "Seule la configuration Gately est supprimée ; l’enregistrement DNS chez le fournisseur est conservé.",
   "deleteRemoteUnsupported": "{provider} ne permet pas de supprimer des enregistrements via son API. Seule la configuration Gately est supprimée ; supprimez l’enregistrement dans la console du fournisseur.",
-  "deletedRemote": "Supprimé, y compris l’enregistrement DNS chez le fournisseur"
+  "deletedRemote": "Supprimé, y compris l’enregistrement DNS chez le fournisseur",
+  "copyRecord": "Dupliquer l'enregistrement"
 }

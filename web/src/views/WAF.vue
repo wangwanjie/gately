@@ -46,6 +46,7 @@
           </template>
           <template v-else #actions>
             <el-button text size="small" :icon="Pencil" @click="openEditor(w)">{{ t('common.edit') }}</el-button>
+            <el-button text size="small" :icon="CopyPlus" @click="openEditor(w, true)">{{ t('common.duplicate') }}</el-button>
             <el-popconfirm :title="t('waf.deleteConfirm')" width="240" @confirm="remove(w)">
               <template #reference>
                 <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
@@ -59,6 +60,7 @@
     <LogCard url="/api/waf/logs" :title="t('waf.logTitle')" clearable />
 
     <el-dialog v-model="editorVisible" :title="editing.key ? t('waf.editInstance') : t('waf.addInstance')" width="760px" top="5vh" :fullscreen="isMobile">
+      <CopyHint :from="copyFrom" />
       <el-form :model="editing" label-width="120px" :label-position="labelPosition">
         <el-form-item :label="t('common.name')"><el-input v-model="editing.name" /></el-form-item>
         <GroupInput v-model="editing.group" :groups="gl.groupNames.value" />
@@ -173,7 +175,7 @@
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
-import { ChevronDown, ChevronUp, Pencil, Plus, ShieldHalf, Trash2 } from 'lucide-vue-next'
+import { ChevronDown, ChevronUp, CopyPlus, Pencil, Plus, ShieldHalf, Trash2 } from 'lucide-vue-next'
 import { api } from '../api'
 import PageHeader from '../components/PageHeader.vue'
 import CompactToggle from '../components/CompactToggle.vue'
@@ -188,6 +190,8 @@ import { useCompactView } from '../composables/useCompactView'
 import Field from '../components/Field.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
+import CopyHint from '../components/CopyHint.vue'
+import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import { useFormLayout } from '../composables/useIsMobile'
 import { usePolling } from '../composables/usePolling'
 
@@ -253,6 +257,8 @@ const editorVisible = ref(false)
 const saving = ref(false)
 const testing = ref(false)
 const editing = ref<Instance>(empty())
+// 复制条目时的模板，普通新增与编辑时为 null
+const copyFrom = ref<CopySource | null>(null)
 // 定时刷新，标签页在后台时暂停
 const polling = usePolling(load, 5000)
 
@@ -304,7 +310,8 @@ async function load() {
   instances.value = await api.get('/api/waf/instances')
 }
 
-function openEditor(row?: InstanceView) {
+// openEditor 打开编辑框：copy 为 true 时以 row 为模板新建副本
+function openEditor(row?: InstanceView, copy = false) {
   if (row) {
     const { error: _e, blocked: _b, matched: _m, safelineError: _se, safelineErrors: _sn, ...inst } = row
     editing.value = JSON.parse(JSON.stringify(inst))
@@ -316,6 +323,12 @@ function openEditor(row?: InstanceView) {
   } else {
     editing.value = empty()
   }
+  copyFrom.value = null
+  if (row && copy) {
+    copyFrom.value = { key: row.key ?? '', name: row.name }
+    editing.value.key = ''
+    editing.value.name = uniqueName(row.name, instances.value.map((x) => x.name))
+  }
   editorVisible.value = true
 }
 
@@ -326,7 +339,7 @@ async function save() {
     if (key) {
       await api.put(`/api/waf/instances/${key}`, body)
     } else {
-      await api.post('/api/waf/instances', body)
+      await createItem('/api/waf/instances', body, copyFrom.value)
     }
     editorVisible.value = false
     ElMessage.success(t('waf.savedApplied'))

@@ -189,5 +189,11 @@
   "userHeaderHelp": "Après connexion, le nom d’utilisateur est placé dans cet en-tête de requête pour le backend ; le même en-tête envoyé par le visiteur est supprimé. Laisser vide pour ne pas le transmettre",
   "userRoutesTag": "{count} règles par utilisateur",
   "probeRule": "Bannir les sondages",
-  "probeRuleHelp": "Créer une règle de sondage de chemins web pour cet écouteur dans Protection contre les intrusions"
+  "probeRuleHelp": "Créer une règle de sondage de chemins web pour cet écouteur dans Protection contre les intrusions",
+  "copySite": "Dupliquer le site",
+  "copyListener": "Dupliquer l'écouteur",
+  "copySites": "Sites",
+  "copySitesLabel": "Copier aussi ses {count} site(s)",
+  "copySitesHelp": "Les liens de partage ne sont pas copiés : leurs jetons contournent l'authentification. Créez-en de nouveaux sur la copie si besoin.",
+  "siteListener": "Écouteur"
 }

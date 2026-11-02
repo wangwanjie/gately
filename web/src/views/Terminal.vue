@@ -18,6 +18,7 @@
           :open-counts="openCounts"
           @connect="connect"
           @edit="openEditor"
+          @copy="openCopy"
           @sftp="openSftp"
           @quick="openQuick"
           @reload="loadConns"
@@ -151,7 +152,7 @@
       </div>
     </div>
 
-    <ConnectionEditor v-model="editorVisible" :conn="editingConn" :allow-local-shell="!!settings?.allowLocalShell" :groups="connGroups" @saved="loadConns" />
+    <ConnectionEditor v-model="editorVisible" :conn="editingConn" :copy-from="copyConnFrom" :allow-local-shell="!!settings?.allowLocalShell" :groups="connGroups" @saved="loadConns" />
     <QuickAccessDialog v-model="quickVisible" :conn="quickConn" @saved="loadConns" />
     <SettingsDialog v-model="settingsVisible" @saved="onSettingsSaved" />
     <ShortcutManager v-model="shortcutVisible" :shortcuts="shortcuts" @saved="(l: Shortcut[]) => (shortcuts = l)" />
@@ -196,6 +197,7 @@ import { useTermPrefs } from '../components/terminal/prefs'
 import type { KeyName } from '../components/terminal/terminalKeys'
 import { normalizeConn, type Conn, type PaneStatus, type SessionInfo, type Shortcut, type SplitLayout, type SplitMode, type TermSettings, type TermTab } from '../components/terminal/types'
 import { useVisualViewport } from '../components/terminal/useVisualViewport'
+import { uniqueName, type CopySource } from '../copyDraft'
 import '../components/terminal/terminal.css'
 
 type PaneExpose = InstanceType<typeof TermPane>
@@ -228,6 +230,8 @@ const splitIds = ref<string[]>([])
 
 const editorVisible = ref(false)
 const editingConn = ref<Conn | null>(null)
+// 复制连接时的模板，普通新增与编辑时为 null
+const copyConnFrom = ref<CopySource | null>(null)
 const quickVisible = ref(false)
 const quickConn = ref<Conn | null>(null)
 const settingsVisible = ref(false)
@@ -515,7 +519,18 @@ function onRemarkChanged(id: string, remark: string) {
 
 // ---- 连接管理 ----
 function openEditor(c: Conn | null) {
+  copyConnFrom.value = null
   editingConn.value = c
+  editorVisible.value = true
+}
+
+// openCopy 以 c 为模板新建连接：密码、私钥等保持占位符，保存时由后端沿用模板的值，明文不经过浏览器
+function openCopy(c: Conn) {
+  const draft = normalizeConn(JSON.parse(JSON.stringify(c)))
+  draft.key = ''
+  draft.name = uniqueName(c.name, conns.value.map((x) => x.name))
+  copyConnFrom.value = { key: c.key, name: c.name }
+  editingConn.value = draft
   editorVisible.value = true
 }
 

@@ -189,5 +189,11 @@
   "userHeaderHelp": "認証後、ユーザー名をこのリクエストヘッダーでバックエンドに渡します。訪問者が送った同名ヘッダーは削除されます。空欄で渡しません",
   "userRoutesTag": "ユーザー別 {count} 件",
   "probeRule": "探索ブロック",
-  "probeRuleHelp": "侵入防御でこのリスナー用の Web パス探索ルールを作成します"
+  "probeRuleHelp": "侵入防御でこのリスナー用の Web パス探索ルールを作成します",
+  "copySite": "サイトを複製",
+  "copyListener": "リスナーを複製",
+  "copySites": "サイト",
+  "copySitesLabel": "含まれる {count} 件のサイトも複製する",
+  "copySitesHelp": "共有リンクは複製されません（トークンで認証を回避できるため）。必要ならコピー側で作り直してください。",
+  "siteListener": "所属リスナー"
 }

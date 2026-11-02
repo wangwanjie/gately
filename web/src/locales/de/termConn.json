@@ -84,8 +84,6 @@
     "quick": "Schnellzugriff-Verzeichnisse",
     "test": "Verbindung testen",
     "resetKey": "Host-Fingerabdruck zurücksetzen",
-    "copySuffix": "{name} Kopie",
-    "copyHint": "Konfiguration kopiert. Passwörter, private Schlüssel und andere Geheimnisse müssen erneut eingetragen werden.",
     "testing": "Verbindung wird getestet…",
     "testOk": "{name} erfolgreich verbunden",
     "resetConfirm": "Nach dem Zurücksetzen wird der Host-Fingerabdruck bei der nächsten Verbindung erneut erfasst. Tun Sie dies, nachdem der Host neu installiert oder seine Schlüssel ersetzt wurden.",

@@ -156,7 +156,7 @@ func tagRank(tag string) int {
 func crudSummary(r routeInfo, verb string) string {
 	// 模块自定义的完整摘要原样使用，只有通用 CRUD 动作才拼接集合名称
 	switch verb {
-	case "列表", "新增", "修改", "删除", "调整排序", "批量设置分组", "启用或停用", "批量启用或停用", "批量删除":
+	case "列表", "新增", "复制", "修改", "删除", "调整排序", "批量设置分组", "启用或停用", "批量启用或停用", "批量删除":
 	default:
 		return verb
 	}
@@ -190,6 +190,8 @@ func crudSummary(r routeInfo, verb string) string {
 		return fmt.Sprintf("批量删除%s", noun)
 	case "新增":
 		return fmt.Sprintf("新增%s", noun)
+	case "复制":
+		return fmt.Sprintf("复制%s", noun)
 	case "修改":
 		return fmt.Sprintf("修改%s", noun)
 	}

@@ -319,6 +319,10 @@ func (m *Module) Routes(r module.Router) {
 			crud.KeepSecret(old.Token, &updated.Token)
 			crud.KeepSecret(old.APIToken, &updated.APIToken)
 		},
+		Copy: func(src, dst *Tunnel) {
+			crud.KeepSecret(src.Token, &dst.Token)
+			crud.KeepSecret(src.APIToken, &dst.APIToken)
+		},
 		View: func(t *Tunnel) any { return m.viewLocked(t) },
 		// 查看被脱敏的隧道令牌明文
 		Secrets: func(t *Tunnel) map[string]string { return map[string]string{"token": t.Token, "apiToken": t.APIToken} },

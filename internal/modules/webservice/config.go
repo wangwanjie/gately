@@ -254,6 +254,21 @@ func parsePrefixes(list []string) ([]netip.Prefix, error) {
 	return iplist.ParsePrefixes(list)
 }
 
+// assignSiteKeys 为没有 key 或 key 重复的站点分配新 key。站点的统计、连接与拓扑都按 key 关联，
+// 插在列表中间的新站点（例如复制的站点）不能抢走后面已有站点的 key。
+func (l *Listener) assignSiteKeys() {
+	crud.AssignKeys(len(l.Sites), func(i int) *string { return &l.Sites[i].Key }, "s")
+}
+
+// dropShareLinks 清空全部站点（含默认站点）的分享链接。复制监听时使用：分享链接的令牌可绕过认证，
+// 不应随副本扩散到新的端口上。
+func (l *Listener) dropShareLinks() {
+	for i := range l.Sites {
+		l.Sites[i].ShareLinks = nil
+	}
+	l.Default.ShareLinks = nil
+}
+
 // Validate 校验监听器及其站点。
 func (l *Listener) Validate() error {
 	l.Name = strings.TrimSpace(l.Name)
@@ -297,7 +312,6 @@ func (l *Listener) Validate() error {
 	if l.AccessPort < 0 || l.AccessPort > 65535 {
 		return errors.New("访问端口无效")
 	}
-	keys := map[string]bool{}
 	for i := range l.Sites {
 		s := &l.Sites[i]
 		if err := s.validate(false); err != nil {
@@ -307,14 +321,8 @@ func (l *Listener) Validate() error {
 			}
 			return fmt.Errorf("站点 %s: %w", label, err)
 		}
-		if s.Key == "" || keys[s.Key] {
-			s.Key = fmt.Sprintf("s%d", i+1)
-			for keys[s.Key] {
-				s.Key += "_"
-			}
-		}
-		keys[s.Key] = true
 	}
+	l.assignSiteKeys()
 	if l.Default.Enable {
 		if err := l.Default.validate(true); err != nil {
 			return fmt.Errorf("默认站点: %w", err)

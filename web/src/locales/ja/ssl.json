@@ -134,5 +134,7 @@
   "shortLivedTag": "短期",
   "hoursLeft": "残り {hours} 時間",
   "renewFailedShort": "更新失敗",
-  "filterPlaceholder": "備考・グループ・ドメインで検索"
+  "filterPlaceholder": "備考・グループ・ドメインで検索",
+  "copyReissue": "コピーには元の証明書は含まれません。保存後、コピーの設定で証明書を改めて発行または読み込みます。",
+  "copyDeploysOff": "デプロイ先は無効にしました。コピーが元の証明書と同じファイルに書き込む可能性があるため、ファイル名が重複しないことを確認してから有効にしてください。"
 }

@@ -4,6 +4,7 @@
 //
 //	GET    /<path>               列表
 //	POST   /<path>               新增
+//	POST   /<path>/{key}/copy    以已有条目为模板新增（复制），仍为占位符的密钥沿用模板的值
 //	PUT    /<path>/{key}         修改
 //	DELETE /<path>/{key}         删除
 //	PUT    /<path>/{key}/enable  启停，body {"enable": bool}
@@ -63,6 +64,10 @@ type Collection[T any] struct {
 	// Group 返回条目的分组字段指针；提供时注册批量设置分组接口。分组只影响管理界面的展示，
 	// 修改分组不调用 Changed，不会重启运行实例；可为 nil
 	Group func(*T) *string
+	// Copy 在复制条目（以已有条目为模板新增）时调用（持锁），src 为模板条目，dst 为客户端提交的新条目：
+	// 把 dst 中仍为占位符的密钥恢复为模板的值，使密钥不必经过浏览器；并清除不应随复制带走的系统维护字段，
+	// 例如已签发的证书、下载记录。只读取 src，不要让 dst 与 src 共用切片或映射；可为 nil
+	Copy func(src, dst *T)
 }
 
 // MaxGroupLen 为分组名称的最大字符数。
@@ -75,6 +80,33 @@ func NormalizeGroup(g *string) error {
 		return fmt.Errorf("分组名称不能超过 %d 个字符", MaxGroupLen)
 	}
 	return nil
+}
+
+// AssignKeys 为 n 个子条目中没有 key 或 key 重复的分配新 key（prefix 加序号，冲突时追加下划线），
+// 用于监听中的站点、DDNS 任务中的记录等嵌套列表。先登记全部已有 key 再分配，插在列表中间的新条目
+// （例如复制出的条目）不会抢走后面已有条目的 key；重复时保留第一个，后面的重新分配。
+func AssignKeys(n int, key func(i int) *string, prefix string) {
+	used := make(map[string]bool, n)
+	for i := 0; i < n; i++ {
+		if k := *key(i); k != "" {
+			used[k] = true
+		}
+	}
+	seen := make(map[string]bool, n)
+	for i := 0; i < n; i++ {
+		k := key(i)
+		if *k != "" && !seen[*k] {
+			seen[*k] = true
+			continue
+		}
+		nk := fmt.Sprintf("%s%d", prefix, i+1)
+		for used[nk] {
+			nk += "_"
+		}
+		*k = nk
+		used[nk] = true
+		seen[nk] = true
+	}
 }
 
 // NewKey 生成随机 key。
@@ -108,6 +140,7 @@ func (c *Collection[T]) view(it *T) any {
 func (c *Collection[T]) Register(r module.Router, path string) {
 	r.HandleFunc("GET "+path, c.list)
 	r.HandleFunc("POST "+path, c.create)
+	r.HandleFunc("POST "+path+"/{key}/copy", c.copyItem)
 	r.HandleFunc("PUT "+path+"/{key}", c.update)
 	r.HandleFunc("DELETE "+path+"/{key}", c.remove)
 	r.HandleFunc("PUT "+path+"/{key}/enable", c.enable)
@@ -119,6 +152,7 @@ func (c *Collection[T]) Register(r module.Router, path string) {
 	var item T
 	module.DocOf(r, "GET "+path, module.Doc{Summary: "列表", Resp: []T{}})
 	module.DocOf(r, "POST "+path, module.Doc{Summary: "新增", Req: &item, Resp: &item})
+	module.DocOf(r, "POST "+path+"/{key}/copy", module.Doc{Summary: "复制", Req: &item, Resp: &item})
 	module.DocOf(r, "PUT "+path+"/{key}", module.Doc{Summary: "修改", Req: &item, Resp: &item})
 	module.DocOf(r, "DELETE "+path+"/{key}", module.Doc{Summary: "删除"})
 	module.DocOf(r, "PUT "+path+"/{key}/enable", module.Doc{Summary: "启用或停用", Req: &enableRequest{}})
@@ -171,6 +205,42 @@ func (c *Collection[T]) create(w http.ResponseWriter, r *http.Request) {
 	}
 	c.Mu.Lock()
 	defer c.Mu.Unlock()
+	c.insertLocked(w, it, len(*c.Items))
+}
+
+// copyItem 以路径中的条目为模板新增：请求体为新条目（通常是在模板基础上修改过的内容），
+// 仍为占位符的密钥由 Copy 沿用模板的值。新条目排在模板之后，其余校验与新增相同。
+func (c *Collection[T]) copyItem(w http.ResponseWriter, r *http.Request) {
+	var it T
+	if err := httpx.ReadJSON(r, &it); err != nil {
+		httpx.Error(w, http.StatusBadRequest, "%v", err)
+		return
+	}
+	// 沿用模板的密钥等同于取得密钥的使用权（例如把副本指向别的主机），与查看明文一样先过门禁，
+	// 如 Web 终端的二次验证。门禁会读取模块配置，须在加锁前调用
+	if c.SecretsGuard != nil && !c.SecretsGuard(w, r) {
+		return
+	}
+	key := r.PathValue("key")
+	c.Mu.Lock()
+	defer c.Mu.Unlock()
+	src := c.Find(key)
+	if src == nil {
+		httpx.Error(w, http.StatusNotFound, "条目不存在")
+		return
+	}
+	if c.Copy != nil {
+		c.Copy(src, &it)
+	}
+	if err := c.Validate(&it); err != nil {
+		httpx.Error(w, http.StatusBadRequest, "%v", err)
+		return
+	}
+	c.insertLocked(w, it, c.index(key)+1)
+}
+
+// insertLocked 检查数量上限与引用后，为已校验的条目分配新 key 并插入到 at 位置，保存失败时回滚。调用方需持有 Mu。
+func (c *Collection[T]) insertLocked(w http.ResponseWriter, it T, at int) {
 	if c.Max > 0 && len(*c.Items) >= c.Max {
 		httpx.Error(w, http.StatusBadRequest, "最多只能添加 %d 条", c.Max)
 		return
@@ -183,9 +253,9 @@ func (c *Collection[T]) create(w http.ResponseWriter, r *http.Request) {
 	}
 	key := NewKey()
 	*c.Key(&it) = key
-	*c.Items = append(*c.Items, it)
+	*c.Items = slices.Insert(*c.Items, at, it)
 	if err := c.Save(); err != nil {
-		*c.Items = (*c.Items)[:len(*c.Items)-1]
+		*c.Items = slices.Delete(*c.Items, at, at+1)
 		httpx.Error(w, http.StatusInternalServerError, "保存失败: %v", err)
 		return
 	}

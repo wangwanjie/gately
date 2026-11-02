@@ -592,6 +592,7 @@ func (m *Module) Routes(r module.Router) {
 		Group:    func(c *Client) *string { return &c.Group },
 		Validate: func(c *Client) error { return c.Validate() },
 		Merge:    func(old, updated *Client) { crud.KeepSecret(old.Token, &updated.Token) },
+		Copy:     func(src, dst *Client) { crud.KeepSecret(src.Token, &dst.Token) },
 		View:     func(c *Client) any { return m.clientView(c) },
 		Secrets:  func(c *Client) map[string]string { return map[string]string{"token": c.Token} },
 		Changed:  m.applyClientLocked,
@@ -610,6 +611,10 @@ func (m *Module) Routes(r module.Router) {
 		Merge: func(old, updated *Server) {
 			crud.KeepSecret(old.Token, &updated.Token)
 			crud.KeepSecret(old.DashboardPwd, &updated.DashboardPwd)
+		},
+		Copy: func(src, dst *Server) {
+			crud.KeepSecret(src.Token, &dst.Token)
+			crud.KeepSecret(src.DashboardPwd, &dst.DashboardPwd)
 		},
 		View: func(s *Server) any { return m.serverView(s) },
 		Secrets: func(s *Server) map[string]string {
@@ -637,6 +642,7 @@ func (m *Module) Routes(r module.Router) {
 			return nil
 		},
 		Merge:   func(old, updated *Proxy) { crud.KeepSecret(old.SecretKey, &updated.SecretKey) },
+		Copy:    func(src, dst *Proxy) { crud.KeepSecret(src.SecretKey, &dst.SecretKey) },
 		View:    func(p *Proxy) any { v := *p; v.SecretKey = crud.Mask(v.SecretKey); return v },
 		Secrets: func(p *Proxy) map[string]string { return map[string]string{"secretKey": p.SecretKey} },
 		// 代理可能换了所属实例，按内容比对只重启受影响的 frpc

@@ -83,6 +83,7 @@ func (m *Module) registerCredentials(r module.Router) {
 		Enabled:  func(c *Credential) *bool { return &c.Enable },
 		Validate: func(c *Credential) error { return c.Validate() },
 		Merge:    mergeCredentialSecrets,
+		Copy:     mergeCredentialSecrets,
 		View:     viewCredential,
 		// 查看被脱敏的密码与私钥口令明文；私钥在界面上没有显示按钮，不经此接口返回
 		Secrets: func(c *Credential) map[string]string {

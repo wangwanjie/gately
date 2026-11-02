@@ -79,5 +79,6 @@
   "deleteRemoteHint": "Gelöscht wird nur der von Gately synchronisierte Eintrag: Gibt es genau einen mit gleichem Namen und Typ (und gleicher Leitung), wird er gelöscht; bei mehreren nur die, deren Wert der letzten Synchronisierung entspricht. Lässt es sich nicht bestimmen, wird nichts gelöscht.",
   "deleteLocalOnly": "Nur die Gately-Konfiguration wird gelöscht; der DNS-Eintrag beim Anbieter bleibt erhalten.",
   "deleteRemoteUnsupported": "{provider} unterstützt das Löschen von Einträgen über die API nicht. Nur die Gately-Konfiguration wird gelöscht; löschen Sie den Eintrag in der Konsole des Anbieters.",
-  "deletedRemote": "Gelöscht, auch der DNS-Eintrag beim Anbieter"
+  "deletedRemote": "Gelöscht, auch der DNS-Eintrag beim Anbieter",
+  "copyRecord": "Eintrag duplizieren"
 }

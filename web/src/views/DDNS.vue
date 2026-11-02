@@ -104,6 +104,7 @@
             <el-button text size="small" :icon="Zap" :disabled="!taskActive(tk) || !tk.state.running" @click="sync(tk, true)">{{ t('ddns.forceSync') }}</el-button>
             <el-button v-if="tk.records.length > 1" text size="small" :icon="ArrowUpDown" @click="openRecordSort(tk)">{{ t('ddns.sortRecords') }}</el-button>
             <el-button text size="small" :icon="Pencil" @click="openEditor(tk)">{{ t('common.edit') }}</el-button>
+            <el-button text size="small" :icon="CopyPlus" @click="openEditor(tk, true)">{{ t('common.duplicate') }}</el-button>
             <el-button text size="small" type="danger" :icon="Trash2" @click="remove(tk)">{{ t('common.delete') }}</el-button>
           </template>
         </EntityCard>
@@ -115,6 +116,7 @@
     <LogCard url="/api/ddns/logs" clearable />
 
     <el-dialog v-model="editorVisible" :title="editing.key ? t('ddns.editTask') : t('ddns.addTask')" width="900px" top="5vh" :fullscreen="isMobile">
+      <CopyHint :from="copyFrom" secrets />
       <el-form :model="editing" label-width="120px" :label-position="labelPosition">
         <el-tabs v-model="tab">
           <el-tab-pane :label="t('ddns.tabBasic')" name="basic">
@@ -130,7 +132,7 @@
               <el-input v-model="editing.credentials.id" />
             </el-form-item>
             <el-form-item v-if="currentProvider?.secretLabel" :label="currentProvider.secretLabel">
-              <SecretInput v-model="editing.credentials.secret" :placeholder="t('ddns.secretPlaceholder')" :reveal="secretOf(editing.key && `/api/ddns/tasks/${editing.key}/secrets`, 'secret')" />
+              <SecretInput v-model="editing.credentials.secret" :placeholder="t('ddns.secretPlaceholder')" :reveal="secretOf(secretKey && `/api/ddns/tasks/${secretKey}/secrets`, 'secret')" />
             </el-form-item>
             <el-form-item v-for="f in currentProvider?.extra ?? []" :key="f.key" :label="f.label" :required="f.required">
               <el-input v-model="extra[f.key]" :type="f.multiline ? 'textarea' : 'text'" :rows="3" :placeholder="f.placeholder" />
@@ -180,6 +182,7 @@
                 </template>
               </div>
               <div class="re-cell re-del">
+                <el-button text size="small" :icon="CopyPlus" :aria-label="t('ddns.copyRecord')" :title="t('ddns.copyRecord')" @click="copyRecord(i)" />
                 <el-button text type="danger" size="small" :icon="Trash2" :aria-label="t('ddns.deleteRecord')" @click="editing.records.splice(i, 1)" />
               </div>
             </div>
@@ -263,7 +266,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
-import { ArrowUpDown, ChevronsDownUp, ChevronsUpDown, Globe, Pencil, Plus, RefreshCw, SlidersHorizontal, Trash2, Zap } from 'lucide-vue-next'
+import { ArrowUpDown, ChevronsDownUp, ChevronsUpDown, CopyPlus, Globe, Pencil, Plus, RefreshCw, SlidersHorizontal, Trash2, Zap } from 'lucide-vue-next'
 import { api } from '../api'
 import GroupHeader from '../components/GroupHeader.vue'
 import GroupedList from '../components/GroupedList.vue'
@@ -285,6 +288,8 @@ import { useCollapsed } from '../composables/useCollapsed'
 import Field from '../components/Field.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
+import CopyHint from '../components/CopyHint.vue'
+import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import WebhookEditor, { type WebhookConfig } from '../components/WebhookEditor.vue'
 import IPSourceEditor, { type IPSource, type NetInterface } from '../components/IPSourceEditor.vue'
 import { useFormLayout } from '../composables/useIsMobile'
@@ -379,6 +384,10 @@ const saving = ref(false)
 const enabling = ref(false)
 const tab = ref('basic')
 const editing = ref<Task>(emptyTask())
+// 复制条目时的模板，普通新增与编辑时为 null
+const copyFrom = ref<CopySource | null>(null)
+// 查看密钥明文时取自哪个条目：复制时为模板，提交占位符即沿用模板的密钥
+const secretKey = computed(() => editing.value.key || copyFrom.value?.key)
 const extra = ref<Record<string, string>>({})
 // 定时刷新，标签页在后台时暂停
 const polling = usePolling(load, 5000)
@@ -591,7 +600,8 @@ async function load() {
   }
 }
 
-function openEditor(tk?: TaskView) {
+// openEditor 打开编辑框：copy 为 true 时以 tk 为模板新建副本
+function openEditor(tk?: TaskView, copy = false) {
   if (tk) {
     const { state: _state, ...task } = tk
     editing.value = JSON.parse(JSON.stringify(task))
@@ -601,11 +611,23 @@ function openEditor(tk?: TaskView) {
   }
   extra.value = { ...(editing.value.credentials.extra ?? {}) }
   tab.value = 'basic'
+  copyFrom.value = null
+  if (tk && copy) {
+    copyFrom.value = { key: tk.key ?? '', name: tk.name }
+    editing.value.key = ''
+    editing.value.name = uniqueName(tk.name, tasks.value.map((x) => x.name))
+  }
   editorVisible.value = true
 }
 
 function onProviderChange() {
   extra.value = {}
+}
+
+// copyRecord 在第 i 条记录后插入一份副本（不带 key，保存时由后端分配），主机记录需改成新的，否则保存时提示记录重复
+function copyRecord(i: number) {
+  const { key: _k, ...rec } = editing.value.records[i]
+  editing.value.records.splice(i + 1, 0, JSON.parse(JSON.stringify(rec)))
 }
 
 function addRecord(type: 'A' | 'AAAA') {
@@ -674,7 +696,7 @@ async function doSave() {
     if (key) {
       await api.put(`/api/ddns/tasks/${key}`, body)
     } else {
-      await api.post('/api/ddns/tasks', body)
+      await createItem('/api/ddns/tasks', body, copyFrom.value)
     }
     editorVisible.value = false
     ElMessage.success(body.enable && settings.enable ? t('ddns.savedChecking') : t('common.saved'))
@@ -934,7 +956,7 @@ onMounted(async () => {
 .rec-edit-head,
 .rec-edit {
   display: grid;
-  grid-template-columns: 44px 100px minmax(0, 1.2fr) 80px minmax(0, 1.1fr) 60px minmax(0, 1fr) 80px 36px;
+  grid-template-columns: 44px 100px minmax(0, 1.2fr) 80px minmax(0, 1.1fr) 60px minmax(0, 1fr) 80px 72px;
   gap: 8px;
   align-items: center;
 }
@@ -949,6 +971,13 @@ onMounted(async () => {
 }
 .re-label {
   display: none;
+}
+.re-del {
+  display: flex;
+  gap: 2px;
+}
+.re-del .el-button + .el-button {
+  margin-left: 0;
 }
 .re-ttl {
   width: 100%;
@@ -1009,6 +1038,7 @@ onMounted(async () => {
     position: absolute;
     top: 6px;
     right: 6px;
+    display: flex;
   }
   .re-del + * {
     display: none;

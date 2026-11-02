@@ -28,6 +28,7 @@
           </template>
           <template v-else #actions>
             <el-button text size="small" :icon="Pencil" @click="openEditor(d)">{{ t('common.edit') }}</el-button>
+            <el-button text size="small" :icon="CopyPlus" @click="openEditor(d, true)">{{ t('common.duplicate') }}</el-button>
             <el-popconfirm :title="t('wol.confirmDelete')" @confirm="remove(d)">
               <template #reference>
                 <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
@@ -42,6 +43,7 @@
     <LogCard url="/api/wol/logs" clearable />
 
     <el-dialog v-model="editorVisible" :title="editing.key ? t('wol.editDevice') : t('wol.addDevice')" width="540px" :fullscreen="isMobile">
+      <CopyHint :from="copyFrom" />
       <el-form :model="editing" label-width="110px" :label-position="labelPosition">
         <el-form-item :label="t('common.name')"><el-input v-model="editing.name" /></el-form-item>
         <GroupInput v-model="editing.group" :groups="gl.groupNames.value" />
@@ -67,7 +69,7 @@
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import { Monitor, Pencil, Plus, Power, Trash2, Zap } from 'lucide-vue-next'
+import { CopyPlus, Monitor, Pencil, Plus, Power, Trash2, Zap } from 'lucide-vue-next'
 import { api } from '../api'
 import PageHeader from '../components/PageHeader.vue'
 import EntityCard from '../components/EntityCard.vue'
@@ -82,6 +84,8 @@ import { useCompactView } from '../composables/useCompactView'
 import Field from '../components/Field.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
+import CopyHint from '../components/CopyHint.vue'
+import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import { useFormLayout } from '../composables/useIsMobile'
 import { useListText, splitLinesOrCommas } from '../composables/useListText'
 import { usePolling } from '../composables/usePolling'
@@ -118,6 +122,8 @@ const status = ref<Record<string, string>>({})
 const waking = reactive<Record<string, boolean>>({})
 const editorVisible = ref(false)
 const editing = ref<Device>(empty())
+// 复制条目时的模板，普通新增与编辑时为 null
+const copyFrom = ref<CopySource | null>(null)
 // 定时刷新，标签页在后台时暂停
 const polling = usePolling(load, 10000)
 
@@ -152,8 +158,15 @@ async function load() {
   status.value = await api.get('/api/wol/status')
 }
 
-function openEditor(d?: Device) {
+// openEditor 打开编辑框：copy 为 true 时以 d 为模板新建副本
+function openEditor(d?: Device, copy = false) {
   editing.value = d ? JSON.parse(JSON.stringify(d)) : empty()
+  copyFrom.value = null
+  if (d && copy) {
+    copyFrom.value = { key: d.key ?? '', name: d.name }
+    editing.value.key = ''
+    editing.value.name = uniqueName(d.name, devices.value.map((x) => x.name))
+  }
   editorVisible.value = true
 }
 
@@ -163,7 +176,7 @@ async function save() {
     if (key) {
       await api.put(`/api/wol/devices/${key}`, body)
     } else {
-      await api.post('/api/wol/devices', body)
+      await createItem('/api/wol/devices', body, copyFrom.value)
     }
     editorVisible.value = false
     await load()

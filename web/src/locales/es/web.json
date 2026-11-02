@@ -189,5 +189,11 @@
   "userHeaderHelp": "Tras iniciar sesión, el nombre de usuario se envía al backend en esta cabecera; la misma cabecera enviada por el visitante se elimina. Déjalo vacío para no pasarlo",
   "userRoutesTag": "{count} reglas por usuario",
   "probeRule": "Bloqueo de sondeos",
-  "probeRuleHelp": "Crear una regla de sondeo de rutas web para esta escucha en Protección contra intrusiones"
+  "probeRuleHelp": "Crear una regla de sondeo de rutas web para esta escucha en Protección contra intrusiones",
+  "copySite": "Duplicar sitio",
+  "copyListener": "Duplicar listener",
+  "copySites": "Sitios",
+  "copySitesLabel": "Copiar también sus {count} sitio(s)",
+  "copySitesHelp": "Los enlaces compartidos no se copian: sus tokens omiten la autenticación. Crea otros en la copia si los necesitas.",
+  "siteListener": "Listener"
 }

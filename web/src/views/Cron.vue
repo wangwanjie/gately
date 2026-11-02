@@ -40,6 +40,7 @@
             <el-button text size="small" :icon="Play" :disabled="tk.running" @click="runNow(tk)">{{ t('cron.runNow') }}</el-button>
             <el-button text size="small" :icon="History" @click="showHistory(tk)">{{ t('cron.history') }}</el-button>
             <el-button text size="small" :icon="Pencil" @click="openEditor(tk)">{{ t('common.edit') }}</el-button>
+            <el-button text size="small" :icon="CopyPlus" @click="openEditor(tk, true)">{{ t('common.duplicate') }}</el-button>
             <el-popconfirm :title="t('cron.confirmDelete')" @confirm="remove(tk)">
               <template #reference>
                 <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
@@ -53,6 +54,7 @@
     <LogCard url="/api/cron/logs" clearable />
 
     <el-dialog v-model="editorVisible" :title="editing.key ? t('cron.editTask') : t('cron.addTask')" width="680px" :fullscreen="isMobile">
+      <CopyHint :from="copyFrom" />
       <el-form :model="editing" label-width="110px" :label-position="labelPosition">
         <el-form-item :label="t('common.name')"><el-input v-model="editing.name" /></el-form-item>
         <GroupInput v-model="editing.group" :groups="gl.groupNames.value" />
@@ -100,7 +102,7 @@
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
-import { CalendarClock, History, Pencil, Play, Plus, Trash2 } from 'lucide-vue-next'
+import { CalendarClock, CopyPlus, History, Pencil, Play, Plus, Trash2 } from 'lucide-vue-next'
 import { api } from '../api'
 import PageHeader from '../components/PageHeader.vue'
 import CompactToggle from '../components/CompactToggle.vue'
@@ -115,6 +117,8 @@ import { useCompactView } from '../composables/useCompactView'
 import Field from '../components/Field.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
+import CopyHint from '../components/CopyHint.vue'
+import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import WebhookEditor, { type WebhookConfig } from '../components/WebhookEditor.vue'
 import { useFormLayout } from '../composables/useIsMobile'
 import { usePolling } from '../composables/usePolling'
@@ -161,6 +165,8 @@ const gl = useGroupedList<TaskView>({
 })
 const editorVisible = ref(false)
 const editing = ref<Task>(empty())
+// 复制条目时的模板，普通新增与编辑时为 null
+const copyFrom = ref<CopySource | null>(null)
 const nextRuns = ref<string[]>([])
 const specError = ref('')
 const historyVisible = ref(false)
@@ -215,12 +221,19 @@ async function preview() {
   }
 }
 
-function openEditor(tk?: TaskView) {
+// openEditor 打开编辑框：copy 为 true 时以 tk 为模板新建副本
+function openEditor(tk?: TaskView, copy = false) {
   if (tk) {
     const { running: _r, nextRun: _n, history: _h, ...task } = tk
     editing.value = JSON.parse(JSON.stringify(task))
   } else {
     editing.value = empty()
+  }
+  copyFrom.value = null
+  if (tk && copy) {
+    copyFrom.value = { key: tk.key ?? '', name: tk.name }
+    editing.value.key = ''
+    editing.value.name = uniqueName(tk.name, tasks.value.map((x) => x.name))
   }
   editorVisible.value = true
   preview()
@@ -232,7 +245,7 @@ async function save() {
     if (key) {
       await api.put(`/api/cron/tasks/${key}`, body)
     } else {
-      await api.post('/api/cron/tasks', body)
+      await createItem('/api/cron/tasks', body, copyFrom.value)
     }
     editorVisible.value = false
     await load()

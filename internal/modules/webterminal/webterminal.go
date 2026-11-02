@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"os"
 	"runtime"
+	"slices"
 	"strings"
 	"sync"
 
@@ -270,6 +271,13 @@ func mergeSecrets(old, updated *Connection) {
 	}
 }
 
+// copyConnection 复制连接时沿用模板的密钥；主机与端口不变时沿用已信任的主机密钥，改了则下次连接时重新信任。
+// 快速访问目录未携带时复制一份模板的，避免与模板共用切片。
+func copyConnection(src, dst *Connection) {
+	mergeSecrets(src, dst)
+	dst.QuickAccessDirs = slices.Clone(dst.QuickAccessDirs)
+}
+
 // Module 是 Web 终端模块。
 type Module struct {
 	mu    sync.Mutex
@@ -371,6 +379,7 @@ func (m *Module) Routes(r module.Router) {
 		Group:    func(c *Connection) *string { return &c.Group },
 		Validate: func(c *Connection) error { return c.Validate() },
 		Merge:    mergeSecrets,
+		Copy:     copyConnection,
 		View:     m.viewLocked,
 		Secrets:  connectionSecrets,
 		// 明文密码可直接登录目标主机，与打开终端一样需要先接受协议并通过二次验证

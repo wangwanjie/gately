@@ -52,6 +52,9 @@ func TestRequiredAndMatch(t *testing.T) {
 		// 查看密钥明文需要写权限
 		{"GET", "/api/frp/clients/abc/secrets", "frp:write"},
 		{"GET", "/api/tailscale/secrets", "tailscale:write"},
+		// 复制条目会沿用模板的密钥，需要写权限
+		{"POST", "/api/frp/clients/abc/copy", "frp:write"},
+		{"POST", "/api/webterminal/connections/abc/copy", "webterminal:write"},
 		// 文件服务共享用户由三个服务共用：读取沿用所在服务的读权限，修改需要三个服务的写权限
 		{"GET", "/api/ftp/shared-users", "ftp:read"},
 		{"PUT", "/api/webdav/shared-users", "webdav:write,ftp:write,smb:write"},

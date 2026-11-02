@@ -38,6 +38,7 @@
             <el-switch :model-value="it.enable" size="small" @change="(v: boolean | string | number) => toggle(it, Boolean(v))" />
             <el-button text size="small" :icon="RefreshCw" :disabled="!it.enable" @click="restart(it)">{{ t('common.restart') }}</el-button>
             <el-button text size="small" :icon="Pencil" @click="openEditor(it)">{{ t('common.edit') }}</el-button>
+            <el-button text size="small" :icon="CopyPlus" @click="openEditor(it, true)">{{ t('common.duplicate') }}</el-button>
             <el-popconfirm :title="t('filebrowser.confirmDelete')" width="260" @confirm="remove(it)">
               <template #reference>
                 <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
@@ -68,6 +69,7 @@
     <LogCard url="/api/filebrowser/logs" clearable />
 
     <el-dialog v-model="editorVisible" :title="editing.key ? t('filebrowser.editInstance') : t('filebrowser.addInstance')" width="640px" :fullscreen="isMobile">
+      <CopyHint :from="copyFrom" secrets />
       <el-form :model="editing" label-width="120px" :label-position="labelPosition">
         <el-form-item :label="t('common.name')"><el-input v-model="editing.name" /></el-form-item>
         <GroupInput v-model="editing.group" :groups="gl.groupNames.value" />
@@ -121,7 +123,7 @@
             <el-input v-model="editing.adminUser" placeholder="admin" />
           </el-form-item>
           <el-form-item v-if="editing.authMethod === 'password'" :label="t('filebrowser.adminPassword')">
-            <SecretInput v-model="editing.adminPassword" autocomplete="new-password" :reveal="secretOf(editing.key && `/api/filebrowser/instances/${editing.key}/secrets`, 'adminPassword')" />
+            <SecretInput v-model="editing.adminPassword" autocomplete="new-password" :reveal="secretOf(secretKey && `/api/filebrowser/instances/${secretKey}/secrets`, 'adminPassword')" />
             <div class="form-help">{{ t('filebrowser.adminPasswordHelp') }}</div>
           </el-form-item>
         </template>
@@ -153,10 +155,10 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
-import { Download, FolderOpen, FolderPlus, Pencil, Plus, RefreshCw, Save, Terminal, Trash2, X } from 'lucide-vue-next'
+import { CopyPlus, Download, FolderOpen, FolderPlus, Pencil, Plus, RefreshCw, Save, Terminal, Trash2, X } from 'lucide-vue-next'
 import { api } from '../api'
 import UrlLink from '../components/UrlLink.vue'
 import SecretInput from '../components/SecretInput.vue'
@@ -174,6 +176,8 @@ import { useCompactView } from '../composables/useCompactView'
 import Field from '../components/Field.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
+import CopyHint from '../components/CopyHint.vue'
+import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import ProgramInstall from '../components/ProgramInstall.vue'
 import ResetConfigButton from '../components/ResetConfigButton.vue'
 import { useFormLayout } from '../composables/useIsMobile'
@@ -247,6 +251,10 @@ const binError = ref('')
 const installer = ref<InstanceType<typeof ProgramInstall>>()
 const editorVisible = ref(false)
 const editing = ref<Instance>(empty())
+// 复制条目时的模板，普通新增与编辑时为 null
+const copyFrom = ref<CopySource | null>(null)
+// 查看密钥明文时取自哪个条目：复制时为模板，提交占位符即沿用模板的密钥
+const secretKey = computed(() => editing.value.key || copyFrom.value?.key)
 // 定时刷新，标签页在后台时暂停
 const polling = usePolling(loadInstances, 4000)
 
@@ -359,7 +367,8 @@ async function onInstalled() {
   await Promise.all([loadSettings(), loadInstances()])
 }
 
-function openEditor(it?: InstanceView) {
+// openEditor 打开编辑框：copy 为 true 时以 it 为模板新建副本
+function openEditor(it?: InstanceView, copy = false) {
   if (it) {
     // 去掉运行状态等只读字段，后端按未知字段拒绝请求
     const { state: _s, error: _e, ...inst } = it
@@ -379,6 +388,12 @@ function openEditor(it?: InstanceView) {
   if (!editing.value.proxyHeader) {
     editing.value.proxyHeader = 'Remote-User'
   }
+  copyFrom.value = null
+  if (it && copy) {
+    copyFrom.value = { key: it.key ?? '', name: it.name }
+    editing.value.key = ''
+    editing.value.name = uniqueName(it.name, instances.value.map((x) => x.name))
+  }
   editorVisible.value = true
 }
 
@@ -391,7 +406,7 @@ async function save() {
     if (key) {
       await api.put(`/api/filebrowser/instances/${key}`, body)
     } else {
-      await api.post('/api/filebrowser/instances', body)
+      await createItem('/api/filebrowser/instances', body, copyFrom.value)
     }
     editorVisible.value = false
     await loadInstances()

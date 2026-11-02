@@ -79,5 +79,6 @@
   "deleteRemoteHint": "Only the record synced by Gately is deleted: if there is a single record with the same name and type (and line), it is deleted; if there are several, only those whose value matches the last sync are deleted, and nothing is deleted when it cannot be determined.",
   "deleteLocalOnly": "Only the Gately configuration is deleted; the DNS record at the provider is kept.",
   "deleteRemoteUnsupported": "{provider} does not support deleting records through its API. Only the Gately configuration is deleted; delete the record in the provider's console.",
-  "deletedRemote": "Deleted, including the DNS record at the provider"
+  "deletedRemote": "Deleted, including the DNS record at the provider",
+  "copyRecord": "Duplicate record"
 }

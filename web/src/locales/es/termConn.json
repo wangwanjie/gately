@@ -84,8 +84,6 @@
     "quick": "Directorios de acceso rápido",
     "test": "Probar conexión",
     "resetKey": "Restablecer huella del host",
-    "copySuffix": "Copia de {name}",
-    "copyHint": "Configuración copiada. Las contraseñas, claves privadas y otros secretos deben volver a introducirse.",
     "testing": "Probando conexión…",
     "testOk": "{name} se conectó correctamente",
     "resetConfirm": "Tras restablecerla, la huella del host se vuelve a registrar en la próxima conexión. Hazlo después de reinstalar el host o cambiar sus claves.",

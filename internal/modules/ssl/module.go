@@ -651,6 +651,22 @@ func (m *Module) viewLocked(c *Cert) any {
 	return v
 }
 
+// copyCert 复制证书配置：DNS 凭据密钥与 EAB HMAC 为占位符时沿用模板的值。
+// 上传的证书内容就是配置本身，私钥为占位符时同样沿用；ACME 与文件来源的证书内容由系统签发或读取，
+// 副本清空后重新签发或读取，避免把模板的证书带到可能已改成其他域名的副本上。部署记录一并清空，副本首次生效时会重新部署。
+func copyCert(src, dst *Cert) {
+	crud.KeepSecret(src.ACME.Credentials.Secret, &dst.ACME.Credentials.Secret)
+	crud.KeepSecret(src.ACME.EABHMAC, &dst.ACME.EABHMAC)
+	if dst.Source == SourceUpload {
+		crud.KeepSecret(src.KeyPEM, &dst.KeyPEM)
+	} else {
+		dst.CertPEM, dst.KeyPEM, dst.IssuerPEM = "", "", ""
+		dst.IssuedProfile = ""
+	}
+	dst.UpdatedAt = time.Time{}
+	keepDeployRecords(&Cert{}, dst)
+}
+
 // changedLocked 在证书配置变化后更新运行状态。
 func (m *Module) changedLocked(key string) {
 	c := m.findLocked(key)
@@ -712,6 +728,7 @@ func (m *Module) Routes(r module.Router) {
 			}
 			keepDeployRecords(old, updated)
 		},
+		Copy: copyCert,
 		View: m.viewLocked,
 		// 查看被脱敏的 DNS 凭据密钥与 EAB HMAC 明文；私钥可通过下载接口取得，此处不返回
 		Secrets: func(c *Cert) map[string]string {

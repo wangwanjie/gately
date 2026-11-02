@@ -269,6 +269,7 @@ func (m *Module) Routes(r module.Router) {
 			}
 			return m.checkIPSetsLocked(l)
 		},
+		Copy:    func(_, dst *Listener) { dst.dropShareLinks() },
 		View:    m.viewLocked,
 		Changed: m.restartLocked,
 		Removed: m.stopLocked,

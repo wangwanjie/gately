@@ -71,6 +71,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/portforward/logs` | `portforward:write` | Modulprotokolle leeren |
 | GET | `/api/portforward/rules` | `portforward:read` | Portweiterleitungsregeln auflisten |
 | POST | `/api/portforward/rules` | `portforward:write` | Portweiterleitungsregeln hinzufügen |
+| POST | `/api/portforward/rules/{key}/copy` | `portforward:write` | Portweiterleitungsregeln duplizieren |
 | PUT | `/api/portforward/rules/{key}` | `portforward:write` | Portweiterleitungsregeln ändern |
 | DELETE | `/api/portforward/rules/{key}` | `portforward:write` | Portweiterleitungsregeln löschen |
 | PUT | `/api/portforward/rules/{key}/enable` | `portforward:write` | Portweiterleitungsregeln aktivieren oder deaktivieren |
@@ -89,6 +90,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/protoroute/logs` | `protoroute:write` | Modulprotokolle leeren |
 | GET | `/api/protoroute/rules` | `protoroute:read` | Protokoll-Routing-Regel auflisten |
 | POST | `/api/protoroute/rules` | `protoroute:write` | Protokoll-Routing-Regel hinzufügen |
+| POST | `/api/protoroute/rules/{key}/copy` | `protoroute:write` | Protokoll-Routing-Regel duplizieren |
 | PUT | `/api/protoroute/rules/{key}` | `protoroute:write` | Protokoll-Routing-Regel ändern |
 | DELETE | `/api/protoroute/rules/{key}` | `protoroute:write` | Protokoll-Routing-Regel löschen |
 | PUT | `/api/protoroute/rules/{key}/enable` | `protoroute:write` | Protokoll-Routing-Regel aktivieren oder deaktivieren |
@@ -107,6 +109,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/ddns/logs` | `ddns:write` | Modulprotokolle leeren |
 | GET | `/api/ddns/tasks` | `ddns:read` | DDNS-Aufgaben auflisten |
 | POST | `/api/ddns/tasks` | `ddns:write` | DDNS-Aufgaben hinzufügen |
+| POST | `/api/ddns/tasks/{key}/copy` | `ddns:write` | DDNS-Aufgaben duplizieren |
 | PUT | `/api/ddns/tasks/{key}` | `ddns:write` | DDNS-Aufgaben ändern |
 | DELETE | `/api/ddns/tasks/{key}` | `ddns:write` | DDNS-Aufgaben löschen |
 | PUT | `/api/ddns/tasks/{key}/enable` | `ddns:write` | DDNS-Aufgaben aktivieren oder deaktivieren |
@@ -134,6 +137,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/stun/logs` | `stun:write` | Modulprotokolle leeren |
 | GET | `/api/stun/rules` | `stun:read` | STUN-Regeln auflisten |
 | POST | `/api/stun/rules` | `stun:write` | STUN-Regeln hinzufügen |
+| POST | `/api/stun/rules/{key}/copy` | `stun:write` | STUN-Regeln duplizieren |
 | PUT | `/api/stun/rules/{key}` | `stun:write` | STUN-Regeln ändern |
 | DELETE | `/api/stun/rules/{key}` | `stun:write` | STUN-Regeln löschen |
 | PUT | `/api/stun/rules/{key}/enable` | `stun:write` | STUN-Regeln aktivieren oder deaktivieren |
@@ -174,6 +178,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/frp/logs` | `frp:write` | Modulprotokolle leeren |
 | GET | `/api/frp/clients` | `frp:read` | frp-Client auflisten |
 | POST | `/api/frp/clients` | `frp:write` | frp-Client hinzufügen |
+| POST | `/api/frp/clients/{key}/copy` | `frp:write` | frp-Client duplizieren |
 | PUT | `/api/frp/clients/{key}` | `frp:write` | frp-Client ändern |
 | DELETE | `/api/frp/clients/{key}` | `frp:write` | frp-Client löschen |
 | PUT | `/api/frp/clients/{key}/enable` | `frp:write` | frp-Client aktivieren oder deaktivieren |
@@ -184,6 +189,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | GET | `/api/frp/clients/{key}/secrets` | `frp:write` | Geheimnisse im Klartext anzeigen |
 | GET | `/api/frp/servers` | `frp:read` | frp-Server auflisten |
 | POST | `/api/frp/servers` | `frp:write` | frp-Server hinzufügen |
+| POST | `/api/frp/servers/{key}/copy` | `frp:write` | frp-Server duplizieren |
 | PUT | `/api/frp/servers/{key}` | `frp:write` | frp-Server ändern |
 | DELETE | `/api/frp/servers/{key}` | `frp:write` | frp-Server löschen |
 | PUT | `/api/frp/servers/{key}/enable` | `frp:write` | frp-Server aktivieren oder deaktivieren |
@@ -194,6 +200,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | GET | `/api/frp/servers/{key}/secrets` | `frp:write` | Geheimnisse im Klartext anzeigen |
 | GET | `/api/frp/proxies` | `frp:read` | frp-Proxys auflisten |
 | POST | `/api/frp/proxies` | `frp:write` | frp-Proxys hinzufügen |
+| POST | `/api/frp/proxies/{key}/copy` | `frp:write` | frp-Proxys duplizieren |
 | PUT | `/api/frp/proxies/{key}` | `frp:write` | frp-Proxys ändern |
 | DELETE | `/api/frp/proxies/{key}` | `frp:write` | frp-Proxys löschen |
 | PUT | `/api/frp/proxies/{key}/enable` | `frp:write` | frp-Proxys aktivieren oder deaktivieren |
@@ -223,6 +230,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/cloudflared/logs` | `cloudflared:write` | Modulprotokolle leeren |
 | GET | `/api/cloudflared/tunnels` | `cloudflared:read` | Cloudflare-Tunnel auflisten |
 | POST | `/api/cloudflared/tunnels` | `cloudflared:write` | Cloudflare-Tunnel hinzufügen |
+| POST | `/api/cloudflared/tunnels/{key}/copy` | `cloudflared:write` | Cloudflare-Tunnel duplizieren |
 | PUT | `/api/cloudflared/tunnels/{key}` | `cloudflared:write` | Cloudflare-Tunnel ändern |
 | DELETE | `/api/cloudflared/tunnels/{key}` | `cloudflared:write` | Cloudflare-Tunnel löschen |
 | PUT | `/api/cloudflared/tunnels/{key}/enable` | `cloudflared:write` | Cloudflare-Tunnel aktivieren oder deaktivieren |
@@ -252,6 +260,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/ssl/logs` | `ssl:write` | Modulprotokolle leeren |
 | GET | `/api/ssl/certs` | `ssl:read` | Zertifikate auflisten |
 | POST | `/api/ssl/certs` | `ssl:write` | Zertifikate hinzufügen |
+| POST | `/api/ssl/certs/{key}/copy` | `ssl:write` | Zertifikate duplizieren |
 | PUT | `/api/ssl/certs/{key}` | `ssl:write` | Zertifikate ändern |
 | DELETE | `/api/ssl/certs/{key}` | `ssl:write` | Zertifikate löschen |
 | PUT | `/api/ssl/certs/{key}/enable` | `ssl:write` | Zertifikate aktivieren oder deaktivieren |
@@ -276,6 +285,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/waf/logs` | `waf:write` | Modulprotokolle leeren |
 | GET | `/api/waf/instances` | `waf:read` | WAF-Instanzen auflisten |
 | POST | `/api/waf/instances` | `waf:write` | WAF-Instanzen hinzufügen |
+| POST | `/api/waf/instances/{key}/copy` | `waf:write` | WAF-Instanzen duplizieren |
 | PUT | `/api/waf/instances/{key}` | `waf:write` | WAF-Instanzen ändern |
 | DELETE | `/api/waf/instances/{key}` | `waf:write` | WAF-Instanzen löschen |
 | PUT | `/api/waf/instances/{key}/enable` | `waf:write` | WAF-Instanzen aktivieren oder deaktivieren |
@@ -295,6 +305,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/webservice/logs` | `webservice:write` | Modulprotokolle leeren |
 | GET | `/api/webservice/listeners` | `webservice:read` | Web-Dienst lauscht auflisten |
 | POST | `/api/webservice/listeners` | `webservice:write` | Web-Dienst lauscht hinzufügen |
+| POST | `/api/webservice/listeners/{key}/copy` | `webservice:write` | Web-Dienst lauscht duplizieren |
 | PUT | `/api/webservice/listeners/{key}` | `webservice:write` | Web-Dienst lauscht ändern |
 | DELETE | `/api/webservice/listeners/{key}` | `webservice:write` | Web-Dienst lauscht löschen |
 | PUT | `/api/webservice/listeners/{key}/enable` | `webservice:write` | Web-Dienst lauscht aktivieren oder deaktivieren |
@@ -303,6 +314,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | POST | `/api/webservice/listeners-delete` | `webservice:write` | Im Stapel löschen: Web-Dienst lauscht |
 | GET | `/api/webservice/iplists` | `webservice:read` | Abonnierte IP-Listen auflisten |
 | POST | `/api/webservice/iplists` | `webservice:write` | Abonnierte IP-Liste hinzufügen |
+| POST | `/api/webservice/iplists/{key}/copy` | `webservice:write` | Abonnierte IP-Liste duplizieren |
 | PUT | `/api/webservice/iplists/{key}` | `webservice:write` | Abonnierte IP-Liste ändern |
 | DELETE | `/api/webservice/iplists/{key}` | `webservice:write` | Abonnierte IP-Liste löschen |
 | PUT | `/api/webservice/iplists/{key}/enable` | `webservice:write` | Abonnierte IP-Liste aktivieren oder deaktivieren |
@@ -340,6 +352,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/guard/logs` | `guard:write` | Modulprotokolle leeren |
 | GET | `/api/guard/jails` | `guard:read` | Einbruchschutz-Regel auflisten |
 | POST | `/api/guard/jails` | `guard:write` | Einbruchschutz-Regel hinzufügen |
+| POST | `/api/guard/jails/{key}/copy` | `guard:write` | Einbruchschutz-Regel duplizieren |
 | PUT | `/api/guard/jails/{key}` | `guard:write` | Einbruchschutz-Regel ändern |
 | DELETE | `/api/guard/jails/{key}` | `guard:write` | Einbruchschutz-Regel löschen |
 | PUT | `/api/guard/jails/{key}/enable` | `guard:write` | Einbruchschutz-Regel aktivieren oder deaktivieren |
@@ -365,6 +378,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/wol/logs` | `wol:write` | Modulprotokolle leeren |
 | GET | `/api/wol/devices` | `wol:read` | Gerät aufwecken auflisten |
 | POST | `/api/wol/devices` | `wol:write` | Gerät aufwecken hinzufügen |
+| POST | `/api/wol/devices/{key}/copy` | `wol:write` | Gerät aufwecken duplizieren |
 | PUT | `/api/wol/devices/{key}` | `wol:write` | Gerät aufwecken ändern |
 | DELETE | `/api/wol/devices/{key}` | `wol:write` | Gerät aufwecken löschen |
 | PUT | `/api/wol/devices/{key}/enable` | `wol:write` | Gerät aufwecken aktivieren oder deaktivieren |
@@ -383,6 +397,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/webterminal/logs` | `webterminal:write` | Modulprotokolle leeren |
 | GET | `/api/webterminal/connections` | `webterminal:read` | Terminalverbindungen auflisten |
 | POST | `/api/webterminal/connections` | `webterminal:write` | Terminalverbindungen hinzufügen |
+| POST | `/api/webterminal/connections/{key}/copy` | `webterminal:write` | Terminalverbindungen duplizieren |
 | PUT | `/api/webterminal/connections/{key}` | `webterminal:write` | Terminalverbindungen ändern |
 | DELETE | `/api/webterminal/connections/{key}` | `webterminal:write` | Terminalverbindungen löschen |
 | PUT | `/api/webterminal/connections/{key}/enable` | `webterminal:write` | Terminalverbindungen aktivieren oder deaktivieren |
@@ -395,14 +410,15 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | POST | `/api/webterminal/connections/{key}/test` | `webterminal:write` | Gespeicherte Verbindung testen |
 | POST | `/api/webterminal/connections/test` | `webterminal:write` | Temporäre Verbindungsparameter testen |
 | PUT | `/api/webterminal/connections/{key}/quickaccess` | `webterminal:write` | Schnellzugriff für Verbindungen festlegen |
-| GET | `/api/webterminal/credentials` | `webterminal:read` | Einträge auflisten |
-| POST | `/api/webterminal/credentials` | `webterminal:write` | Einträge hinzufügen |
-| PUT | `/api/webterminal/credentials/{key}` | `webterminal:write` | Einträge ändern |
-| DELETE | `/api/webterminal/credentials/{key}` | `webterminal:write` | Einträge löschen |
-| PUT | `/api/webterminal/credentials/{key}/enable` | `webterminal:write` | Einträge aktivieren oder deaktivieren |
-| PUT | `/api/webterminal/credentials-order` | `webterminal:write` | Einträge neu anordnen |
-| PUT | `/api/webterminal/credentials-enable` | `webterminal:write` | Im Stapel aktivieren oder deaktivieren: Einträge |
-| POST | `/api/webterminal/credentials-delete` | `webterminal:write` | Im Stapel löschen: Einträge |
+| GET | `/api/webterminal/credentials` | `webterminal:read` | Terminal-Anmeldevorlage auflisten |
+| POST | `/api/webterminal/credentials` | `webterminal:write` | Terminal-Anmeldevorlage hinzufügen |
+| POST | `/api/webterminal/credentials/{key}/copy` | `webterminal:write` | Terminal-Anmeldevorlage duplizieren |
+| PUT | `/api/webterminal/credentials/{key}` | `webterminal:write` | Terminal-Anmeldevorlage ändern |
+| DELETE | `/api/webterminal/credentials/{key}` | `webterminal:write` | Terminal-Anmeldevorlage löschen |
+| PUT | `/api/webterminal/credentials/{key}/enable` | `webterminal:write` | Terminal-Anmeldevorlage aktivieren oder deaktivieren |
+| PUT | `/api/webterminal/credentials-order` | `webterminal:write` | Terminal-Anmeldevorlage neu anordnen |
+| PUT | `/api/webterminal/credentials-enable` | `webterminal:write` | Im Stapel aktivieren oder deaktivieren: Terminal-Anmeldevorlage |
+| POST | `/api/webterminal/credentials-delete` | `webterminal:write` | Im Stapel löschen: Terminal-Anmeldevorlage |
 | GET | `/api/webterminal/credentials/{key}/secrets` | `webterminal:write` | Geheimnisse im Klartext anzeigen |
 | GET | `/api/webterminal/connections/{key}/ws` | `webterminal:write` | Terminalsitzung öffnen (WebSocket) |
 | GET | `/api/webterminal/sessions/{id}/ws` | `webterminal:write` | An bestehende Terminalsitzung anbinden (WebSocket) |
@@ -448,6 +464,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/cron/logs` | `cron:write` | Modulprotokolle leeren |
 | GET | `/api/cron/tasks` | `cron:read` | Geplante Aufgaben auflisten |
 | POST | `/api/cron/tasks` | `cron:write` | Geplante Aufgaben hinzufügen |
+| POST | `/api/cron/tasks/{key}/copy` | `cron:write` | Geplante Aufgaben duplizieren |
 | PUT | `/api/cron/tasks/{key}` | `cron:write` | Geplante Aufgaben ändern |
 | DELETE | `/api/cron/tasks/{key}` | `cron:write` | Geplante Aufgaben löschen |
 | PUT | `/api/cron/tasks/{key}/enable` | `cron:write` | Geplante Aufgaben aktivieren oder deaktivieren |
@@ -573,6 +590,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/filebrowser/logs` | `filebrowser:write` | Modulprotokolle leeren |
 | GET | `/api/filebrowser/instances` | `filebrowser:read` | File-Browser-Instanz auflisten |
 | POST | `/api/filebrowser/instances` | `filebrowser:write` | File-Browser-Instanz hinzufügen |
+| POST | `/api/filebrowser/instances/{key}/copy` | `filebrowser:write` | File-Browser-Instanz duplizieren |
 | PUT | `/api/filebrowser/instances/{key}` | `filebrowser:write` | File-Browser-Instanz ändern |
 | DELETE | `/api/filebrowser/instances/{key}` | `filebrowser:write` | File-Browser-Instanz löschen |
 | PUT | `/api/filebrowser/instances/{key}/enable` | `filebrowser:write` | File-Browser-Instanz aktivieren oder deaktivieren |
@@ -600,6 +618,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/storage/logs` | `storage:write` | Modulprotokolle leeren |
 | GET | `/api/storage/mounts` | `storage:read` | Speicher-Einbindungen auflisten |
 | POST | `/api/storage/mounts` | `storage:write` | Speicher-Einbindungen hinzufügen |
+| POST | `/api/storage/mounts/{key}/copy` | `storage:write` | Speicher-Einbindungen duplizieren |
 | PUT | `/api/storage/mounts/{key}` | `storage:write` | Speicher-Einbindungen ändern |
 | DELETE | `/api/storage/mounts/{key}` | `storage:write` | Speicher-Einbindungen löschen |
 | PUT | `/api/storage/mounts/{key}/enable` | `storage:write` | Speicher-Einbindungen aktivieren oder deaktivieren |
@@ -623,6 +642,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/notify/logs` | `notify:write` | Modulprotokolle leeren |
 | GET | `/api/notify/channels` | `notify:read` | Benachrichtigungskanäle auflisten |
 | POST | `/api/notify/channels` | `notify:write` | Benachrichtigungskanäle hinzufügen |
+| POST | `/api/notify/channels/{key}/copy` | `notify:write` | Benachrichtigungskanäle duplizieren |
 | PUT | `/api/notify/channels/{key}` | `notify:write` | Benachrichtigungskanäle ändern |
 | DELETE | `/api/notify/channels/{key}` | `notify:write` | Benachrichtigungskanäle löschen |
 | PUT | `/api/notify/channels/{key}/enable` | `notify:write` | Benachrichtigungskanäle aktivieren oder deaktivieren |
@@ -633,6 +653,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | GET | `/api/notify/channels/{key}/secrets` | `notify:write` | Geheimnisse im Klartext anzeigen |
 | GET | `/api/notify/rules` | `notify:read` | Benachrichtigungsregeln auflisten |
 | POST | `/api/notify/rules` | `notify:write` | Benachrichtigungsregeln hinzufügen |
+| POST | `/api/notify/rules/{key}/copy` | `notify:write` | Benachrichtigungsregeln duplizieren |
 | PUT | `/api/notify/rules/{key}` | `notify:write` | Benachrichtigungsregeln ändern |
 | DELETE | `/api/notify/rules/{key}` | `notify:write` | Benachrichtigungsregeln löschen |
 | PUT | `/api/notify/rules/{key}/enable` | `notify:write` | Benachrichtigungsregeln aktivieren oder deaktivieren |
@@ -652,6 +673,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/perf/logs` | `perf:write` | Modulprotokolle leeren |
 | GET | `/api/perf/rules` | `perf:read` | Leistungs-Warnregeln auflisten |
 | POST | `/api/perf/rules` | `perf:write` | Leistungs-Warnregeln hinzufügen |
+| POST | `/api/perf/rules/{key}/copy` | `perf:write` | Leistungs-Warnregeln duplizieren |
 | PUT | `/api/perf/rules/{key}` | `perf:write` | Leistungs-Warnregeln ändern |
 | DELETE | `/api/perf/rules/{key}` | `perf:write` | Leistungs-Warnregeln löschen |
 | PUT | `/api/perf/rules/{key}/enable` | `perf:write` | Leistungs-Warnregeln aktivieren oder deaktivieren |
@@ -686,6 +708,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | DELETE | `/api/backup/logs` | `backup:write` | Modulprotokolle leeren |
 | GET | `/api/backup/targets` | `backup:read` | Backup-Ziele auflisten |
 | POST | `/api/backup/targets` | `backup:write` | Backup-Ziele hinzufügen |
+| POST | `/api/backup/targets/{key}/copy` | `backup:write` | Backup-Ziele duplizieren |
 | PUT | `/api/backup/targets/{key}` | `backup:write` | Backup-Ziele ändern |
 | DELETE | `/api/backup/targets/{key}` | `backup:write` | Backup-Ziele löschen |
 | PUT | `/api/backup/targets/{key}/enable` | `backup:write` | Backup-Ziele aktivieren oder deaktivieren |

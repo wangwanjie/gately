@@ -71,6 +71,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/portforward/logs` | `portforward:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/portforward/rules` | `portforward:read` | Listar Regla de reenvío de puertos |
 | POST | `/api/portforward/rules` | `portforward:write` | Añadir Regla de reenvío de puertos |
+| POST | `/api/portforward/rules/{key}/copy` | `portforward:write` | Duplicar Regla de reenvío de puertos |
 | PUT | `/api/portforward/rules/{key}` | `portforward:write` | Modificar Regla de reenvío de puertos |
 | DELETE | `/api/portforward/rules/{key}` | `portforward:write` | Eliminar Regla de reenvío de puertos |
 | PUT | `/api/portforward/rules/{key}/enable` | `portforward:write` | Activar o desactivar Regla de reenvío de puertos |
@@ -89,6 +90,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/protoroute/logs` | `protoroute:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/protoroute/rules` | `protoroute:read` | Listar regla de enrutamiento por protocolo |
 | POST | `/api/protoroute/rules` | `protoroute:write` | Añadir regla de enrutamiento por protocolo |
+| POST | `/api/protoroute/rules/{key}/copy` | `protoroute:write` | Duplicar regla de enrutamiento por protocolo |
 | PUT | `/api/protoroute/rules/{key}` | `protoroute:write` | Modificar regla de enrutamiento por protocolo |
 | DELETE | `/api/protoroute/rules/{key}` | `protoroute:write` | Eliminar regla de enrutamiento por protocolo |
 | PUT | `/api/protoroute/rules/{key}/enable` | `protoroute:write` | Activar o desactivar regla de enrutamiento por protocolo |
@@ -107,6 +109,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/ddns/logs` | `ddns:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/ddns/tasks` | `ddns:read` | Listar Tarea DDNS |
 | POST | `/api/ddns/tasks` | `ddns:write` | Añadir Tarea DDNS |
+| POST | `/api/ddns/tasks/{key}/copy` | `ddns:write` | Duplicar Tarea DDNS |
 | PUT | `/api/ddns/tasks/{key}` | `ddns:write` | Modificar Tarea DDNS |
 | DELETE | `/api/ddns/tasks/{key}` | `ddns:write` | Eliminar Tarea DDNS |
 | PUT | `/api/ddns/tasks/{key}/enable` | `ddns:write` | Activar o desactivar Tarea DDNS |
@@ -134,6 +137,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/stun/logs` | `stun:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/stun/rules` | `stun:read` | Listar Regla STUN |
 | POST | `/api/stun/rules` | `stun:write` | Añadir Regla STUN |
+| POST | `/api/stun/rules/{key}/copy` | `stun:write` | Duplicar Regla STUN |
 | PUT | `/api/stun/rules/{key}` | `stun:write` | Modificar Regla STUN |
 | DELETE | `/api/stun/rules/{key}` | `stun:write` | Eliminar Regla STUN |
 | PUT | `/api/stun/rules/{key}/enable` | `stun:write` | Activar o desactivar Regla STUN |
@@ -174,6 +178,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/frp/logs` | `frp:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/frp/clients` | `frp:read` | Listar Cliente frp |
 | POST | `/api/frp/clients` | `frp:write` | Añadir Cliente frp |
+| POST | `/api/frp/clients/{key}/copy` | `frp:write` | Duplicar Cliente frp |
 | PUT | `/api/frp/clients/{key}` | `frp:write` | Modificar Cliente frp |
 | DELETE | `/api/frp/clients/{key}` | `frp:write` | Eliminar Cliente frp |
 | PUT | `/api/frp/clients/{key}/enable` | `frp:write` | Activar o desactivar Cliente frp |
@@ -184,6 +189,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | GET | `/api/frp/clients/{key}/secrets` | `frp:write` | Ver secretos en texto plano |
 | GET | `/api/frp/servers` | `frp:read` | Listar Servidor frp |
 | POST | `/api/frp/servers` | `frp:write` | Añadir Servidor frp |
+| POST | `/api/frp/servers/{key}/copy` | `frp:write` | Duplicar Servidor frp |
 | PUT | `/api/frp/servers/{key}` | `frp:write` | Modificar Servidor frp |
 | DELETE | `/api/frp/servers/{key}` | `frp:write` | Eliminar Servidor frp |
 | PUT | `/api/frp/servers/{key}/enable` | `frp:write` | Activar o desactivar Servidor frp |
@@ -194,6 +200,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | GET | `/api/frp/servers/{key}/secrets` | `frp:write` | Ver secretos en texto plano |
 | GET | `/api/frp/proxies` | `frp:read` | Listar proxies de frp |
 | POST | `/api/frp/proxies` | `frp:write` | Añadir proxies de frp |
+| POST | `/api/frp/proxies/{key}/copy` | `frp:write` | Duplicar proxies de frp |
 | PUT | `/api/frp/proxies/{key}` | `frp:write` | Modificar proxies de frp |
 | DELETE | `/api/frp/proxies/{key}` | `frp:write` | Eliminar proxies de frp |
 | PUT | `/api/frp/proxies/{key}/enable` | `frp:write` | Activar o desactivar proxies de frp |
@@ -223,6 +230,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/cloudflared/logs` | `cloudflared:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/cloudflared/tunnels` | `cloudflared:read` | Listar Túnel de Cloudflare |
 | POST | `/api/cloudflared/tunnels` | `cloudflared:write` | Añadir Túnel de Cloudflare |
+| POST | `/api/cloudflared/tunnels/{key}/copy` | `cloudflared:write` | Duplicar Túnel de Cloudflare |
 | PUT | `/api/cloudflared/tunnels/{key}` | `cloudflared:write` | Modificar Túnel de Cloudflare |
 | DELETE | `/api/cloudflared/tunnels/{key}` | `cloudflared:write` | Eliminar Túnel de Cloudflare |
 | PUT | `/api/cloudflared/tunnels/{key}/enable` | `cloudflared:write` | Activar o desactivar Túnel de Cloudflare |
@@ -252,6 +260,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/ssl/logs` | `ssl:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/ssl/certs` | `ssl:read` | Listar Certificado |
 | POST | `/api/ssl/certs` | `ssl:write` | Añadir Certificado |
+| POST | `/api/ssl/certs/{key}/copy` | `ssl:write` | Duplicar Certificado |
 | PUT | `/api/ssl/certs/{key}` | `ssl:write` | Modificar Certificado |
 | DELETE | `/api/ssl/certs/{key}` | `ssl:write` | Eliminar Certificado |
 | PUT | `/api/ssl/certs/{key}/enable` | `ssl:write` | Activar o desactivar Certificado |
@@ -276,6 +285,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/waf/logs` | `waf:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/waf/instances` | `waf:read` | Listar Instancia WAF |
 | POST | `/api/waf/instances` | `waf:write` | Añadir Instancia WAF |
+| POST | `/api/waf/instances/{key}/copy` | `waf:write` | Duplicar Instancia WAF |
 | PUT | `/api/waf/instances/{key}` | `waf:write` | Modificar Instancia WAF |
 | DELETE | `/api/waf/instances/{key}` | `waf:write` | Eliminar Instancia WAF |
 | PUT | `/api/waf/instances/{key}/enable` | `waf:write` | Activar o desactivar Instancia WAF |
@@ -295,6 +305,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/webservice/logs` | `webservice:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/webservice/listeners` | `webservice:read` | Listar Escucha del servicio web |
 | POST | `/api/webservice/listeners` | `webservice:write` | Añadir Escucha del servicio web |
+| POST | `/api/webservice/listeners/{key}/copy` | `webservice:write` | Duplicar Escucha del servicio web |
 | PUT | `/api/webservice/listeners/{key}` | `webservice:write` | Modificar Escucha del servicio web |
 | DELETE | `/api/webservice/listeners/{key}` | `webservice:write` | Eliminar Escucha del servicio web |
 | PUT | `/api/webservice/listeners/{key}/enable` | `webservice:write` | Activar o desactivar Escucha del servicio web |
@@ -303,6 +314,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | POST | `/api/webservice/listeners-delete` | `webservice:write` | Eliminar en lote: Escucha del servicio web |
 | GET | `/api/webservice/iplists` | `webservice:read` | Listar las listas de IP suscritas |
 | POST | `/api/webservice/iplists` | `webservice:write` | Añadir Lista de IP suscrita |
+| POST | `/api/webservice/iplists/{key}/copy` | `webservice:write` | Duplicar Lista de IP suscrita |
 | PUT | `/api/webservice/iplists/{key}` | `webservice:write` | Modificar Lista de IP suscrita |
 | DELETE | `/api/webservice/iplists/{key}` | `webservice:write` | Eliminar Lista de IP suscrita |
 | PUT | `/api/webservice/iplists/{key}/enable` | `webservice:write` | Activar o desactivar Lista de IP suscrita |
@@ -340,6 +352,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/guard/logs` | `guard:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/guard/jails` | `guard:read` | Listar regla de prevención de intrusiones |
 | POST | `/api/guard/jails` | `guard:write` | Añadir regla de prevención de intrusiones |
+| POST | `/api/guard/jails/{key}/copy` | `guard:write` | Duplicar regla de prevención de intrusiones |
 | PUT | `/api/guard/jails/{key}` | `guard:write` | Modificar regla de prevención de intrusiones |
 | DELETE | `/api/guard/jails/{key}` | `guard:write` | Eliminar regla de prevención de intrusiones |
 | PUT | `/api/guard/jails/{key}/enable` | `guard:write` | Activar o desactivar regla de prevención de intrusiones |
@@ -365,6 +378,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/wol/logs` | `wol:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/wol/devices` | `wol:read` | Listar Activar un dispositivo |
 | POST | `/api/wol/devices` | `wol:write` | Añadir Activar un dispositivo |
+| POST | `/api/wol/devices/{key}/copy` | `wol:write` | Duplicar Activar un dispositivo |
 | PUT | `/api/wol/devices/{key}` | `wol:write` | Modificar Activar un dispositivo |
 | DELETE | `/api/wol/devices/{key}` | `wol:write` | Eliminar Activar un dispositivo |
 | PUT | `/api/wol/devices/{key}/enable` | `wol:write` | Activar o desactivar Activar un dispositivo |
@@ -383,6 +397,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/webterminal/logs` | `webterminal:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/webterminal/connections` | `webterminal:read` | Listar Conexión de terminal |
 | POST | `/api/webterminal/connections` | `webterminal:write` | Añadir Conexión de terminal |
+| POST | `/api/webterminal/connections/{key}/copy` | `webterminal:write` | Duplicar Conexión de terminal |
 | PUT | `/api/webterminal/connections/{key}` | `webterminal:write` | Modificar Conexión de terminal |
 | DELETE | `/api/webterminal/connections/{key}` | `webterminal:write` | Eliminar Conexión de terminal |
 | PUT | `/api/webterminal/connections/{key}/enable` | `webterminal:write` | Activar o desactivar Conexión de terminal |
@@ -395,14 +410,15 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | POST | `/api/webterminal/connections/{key}/test` | `webterminal:write` | Probar una conexión guardada |
 | POST | `/api/webterminal/connections/test` | `webterminal:write` | Probar parámetros de conexión temporales |
 | PUT | `/api/webterminal/connections/{key}/quickaccess` | `webterminal:write` | Accesos rápidos de conexión |
-| GET | `/api/webterminal/credentials` | `webterminal:read` | Listar Entrada |
-| POST | `/api/webterminal/credentials` | `webterminal:write` | Añadir Entrada |
-| PUT | `/api/webterminal/credentials/{key}` | `webterminal:write` | Modificar Entrada |
-| DELETE | `/api/webterminal/credentials/{key}` | `webterminal:write` | Eliminar Entrada |
-| PUT | `/api/webterminal/credentials/{key}/enable` | `webterminal:write` | Activar o desactivar Entrada |
-| PUT | `/api/webterminal/credentials-order` | `webterminal:write` | Reordenar Entrada |
-| PUT | `/api/webterminal/credentials-enable` | `webterminal:write` | Activar o desactivar en lote: Entrada |
-| POST | `/api/webterminal/credentials-delete` | `webterminal:write` | Eliminar en lote: Entrada |
+| GET | `/api/webterminal/credentials` | `webterminal:read` | Listar Credencial predefinida de terminal |
+| POST | `/api/webterminal/credentials` | `webterminal:write` | Añadir Credencial predefinida de terminal |
+| POST | `/api/webterminal/credentials/{key}/copy` | `webterminal:write` | Duplicar Credencial predefinida de terminal |
+| PUT | `/api/webterminal/credentials/{key}` | `webterminal:write` | Modificar Credencial predefinida de terminal |
+| DELETE | `/api/webterminal/credentials/{key}` | `webterminal:write` | Eliminar Credencial predefinida de terminal |
+| PUT | `/api/webterminal/credentials/{key}/enable` | `webterminal:write` | Activar o desactivar Credencial predefinida de terminal |
+| PUT | `/api/webterminal/credentials-order` | `webterminal:write` | Reordenar Credencial predefinida de terminal |
+| PUT | `/api/webterminal/credentials-enable` | `webterminal:write` | Activar o desactivar en lote: Credencial predefinida de terminal |
+| POST | `/api/webterminal/credentials-delete` | `webterminal:write` | Eliminar en lote: Credencial predefinida de terminal |
 | GET | `/api/webterminal/credentials/{key}/secrets` | `webterminal:write` | Ver secretos en texto plano |
 | GET | `/api/webterminal/connections/{key}/ws` | `webterminal:write` | Abrir una sesión de terminal (WebSocket) |
 | GET | `/api/webterminal/sessions/{id}/ws` | `webterminal:write` | Unirse a una sesión de terminal existente (WebSocket) |
@@ -448,6 +464,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/cron/logs` | `cron:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/cron/tasks` | `cron:read` | Listar Tarea programada |
 | POST | `/api/cron/tasks` | `cron:write` | Añadir Tarea programada |
+| POST | `/api/cron/tasks/{key}/copy` | `cron:write` | Duplicar Tarea programada |
 | PUT | `/api/cron/tasks/{key}` | `cron:write` | Modificar Tarea programada |
 | DELETE | `/api/cron/tasks/{key}` | `cron:write` | Eliminar Tarea programada |
 | PUT | `/api/cron/tasks/{key}/enable` | `cron:write` | Activar o desactivar Tarea programada |
@@ -573,6 +590,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/filebrowser/logs` | `filebrowser:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/filebrowser/instances` | `filebrowser:read` | Listar Instancia de File Browser |
 | POST | `/api/filebrowser/instances` | `filebrowser:write` | Añadir Instancia de File Browser |
+| POST | `/api/filebrowser/instances/{key}/copy` | `filebrowser:write` | Duplicar Instancia de File Browser |
 | PUT | `/api/filebrowser/instances/{key}` | `filebrowser:write` | Modificar Instancia de File Browser |
 | DELETE | `/api/filebrowser/instances/{key}` | `filebrowser:write` | Eliminar Instancia de File Browser |
 | PUT | `/api/filebrowser/instances/{key}/enable` | `filebrowser:write` | Activar o desactivar Instancia de File Browser |
@@ -600,6 +618,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/storage/logs` | `storage:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/storage/mounts` | `storage:read` | Listar Montajes de almacenamiento |
 | POST | `/api/storage/mounts` | `storage:write` | Añadir Montajes de almacenamiento |
+| POST | `/api/storage/mounts/{key}/copy` | `storage:write` | Duplicar Montajes de almacenamiento |
 | PUT | `/api/storage/mounts/{key}` | `storage:write` | Modificar Montajes de almacenamiento |
 | DELETE | `/api/storage/mounts/{key}` | `storage:write` | Eliminar Montajes de almacenamiento |
 | PUT | `/api/storage/mounts/{key}/enable` | `storage:write` | Activar o desactivar Montajes de almacenamiento |
@@ -623,6 +642,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/notify/logs` | `notify:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/notify/channels` | `notify:read` | Listar Canal de notificaciones |
 | POST | `/api/notify/channels` | `notify:write` | Añadir Canal de notificaciones |
+| POST | `/api/notify/channels/{key}/copy` | `notify:write` | Duplicar Canal de notificaciones |
 | PUT | `/api/notify/channels/{key}` | `notify:write` | Modificar Canal de notificaciones |
 | DELETE | `/api/notify/channels/{key}` | `notify:write` | Eliminar Canal de notificaciones |
 | PUT | `/api/notify/channels/{key}/enable` | `notify:write` | Activar o desactivar Canal de notificaciones |
@@ -633,6 +653,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | GET | `/api/notify/channels/{key}/secrets` | `notify:write` | Ver secretos en texto plano |
 | GET | `/api/notify/rules` | `notify:read` | Listar Regla de notificación |
 | POST | `/api/notify/rules` | `notify:write` | Añadir Regla de notificación |
+| POST | `/api/notify/rules/{key}/copy` | `notify:write` | Duplicar Regla de notificación |
 | PUT | `/api/notify/rules/{key}` | `notify:write` | Modificar Regla de notificación |
 | DELETE | `/api/notify/rules/{key}` | `notify:write` | Eliminar Regla de notificación |
 | PUT | `/api/notify/rules/{key}/enable` | `notify:write` | Activar o desactivar Regla de notificación |
@@ -652,6 +673,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/perf/logs` | `perf:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/perf/rules` | `perf:read` | Listar Reglas de alerta de rendimiento |
 | POST | `/api/perf/rules` | `perf:write` | Añadir Reglas de alerta de rendimiento |
+| POST | `/api/perf/rules/{key}/copy` | `perf:write` | Duplicar Reglas de alerta de rendimiento |
 | PUT | `/api/perf/rules/{key}` | `perf:write` | Modificar Reglas de alerta de rendimiento |
 | DELETE | `/api/perf/rules/{key}` | `perf:write` | Eliminar Reglas de alerta de rendimiento |
 | PUT | `/api/perf/rules/{key}/enable` | `perf:write` | Activar o desactivar Reglas de alerta de rendimiento |
@@ -686,6 +708,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | DELETE | `/api/backup/logs` | `backup:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/backup/targets` | `backup:read` | Listar Destino de copia de seguridad |
 | POST | `/api/backup/targets` | `backup:write` | Añadir Destino de copia de seguridad |
+| POST | `/api/backup/targets/{key}/copy` | `backup:write` | Duplicar Destino de copia de seguridad |
 | PUT | `/api/backup/targets/{key}` | `backup:write` | Modificar Destino de copia de seguridad |
 | DELETE | `/api/backup/targets/{key}` | `backup:write` | Eliminar Destino de copia de seguridad |
 | PUT | `/api/backup/targets/{key}/enable` | `backup:write` | Activar o desactivar Destino de copia de seguridad |

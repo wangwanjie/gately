@@ -134,5 +134,7 @@
   "shortLivedTag": "短期",
   "hoursLeft": "剩餘 {hours} 小時",
   "renewFailedShort": "續簽失敗",
-  "filterPlaceholder": "搜尋備註、分組、網域"
+  "filterPlaceholder": "搜尋備註、分組、網域",
+  "copyReissue": "副本不帶範本的憑證，儲存後會依副本的設定重新申請或讀取憑證。",
+  "copyDeploysOff": "部署目標已停用：副本可能寫到與原憑證相同的檔案，確認檔名不衝突後再啟用。"
 }

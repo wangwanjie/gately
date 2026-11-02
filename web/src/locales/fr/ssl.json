@@ -134,5 +134,7 @@
   "shortLivedTag": "Courte durée",
   "hoursLeft": "{hours} heures restantes",
   "renewFailedShort": "échec du renouvellement",
-  "filterPlaceholder": "Rechercher remarque, groupe, domaine"
+  "filterPlaceholder": "Rechercher remarque, groupe, domaine",
+  "copyReissue": "La copie n'inclut pas le certificat de l'original. Après l'enregistrement, un certificat est émis ou relu selon les paramètres de la copie.",
+  "copyDeploysOff": "Les cibles de déploiement sont désactivées : la copie pourrait écrire dans les mêmes fichiers que le certificat d'origine. Activez-les après avoir vérifié que les noms de fichiers ne se chevauchent pas."
 }

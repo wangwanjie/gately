@@ -62,6 +62,7 @@
               </template>
             </el-dropdown>
             <el-button text size="small" :icon="Pencil" @click="openEditor(c)">{{ t('common.edit') }}</el-button>
+            <el-button text size="small" :icon="CopyPlus" @click="openEditor(c, true)">{{ t('common.duplicate') }}</el-button>
             <el-popconfirm :title="t('ssl.confirmDelete')" width="240" @confirm="remove(c)">
               <template #reference>
                 <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
@@ -75,6 +76,9 @@
     <LogCard url="/api/ssl/logs" clearable />
 
     <el-dialog v-model="editorVisible" :title="editing.key ? t('ssl.editCert') : t('ssl.addCert')" width="760px" top="5vh" :fullscreen="isMobile">
+      <CopyHint :from="copyFrom" secrets />
+      <el-alert v-if="copyFrom && editing.source !== 'upload'" type="warning" :closable="false" show-icon :title="t('ssl.copyReissue')" class="copy-reissue" />
+      <el-alert v-if="copyFrom && editing.deploys.length" type="warning" :closable="false" show-icon :title="t('ssl.copyDeploysOff')" class="copy-reissue" />
       <el-form :model="editing" label-width="130px" :label-position="labelPosition">
         <el-form-item :label="t('common.remark')">
           <el-input v-model="editing.remark" :placeholder="t('ssl.remarkPlaceholder')" />
@@ -110,7 +114,7 @@
           </el-form-item>
           <template v-if="['zerossl', 'google', 'custom'].includes(editing.acme.ca)">
             <el-form-item label="EAB Key ID"><el-input v-model="editing.acme.eabKid" /></el-form-item>
-            <el-form-item label="EAB HMAC Key"><SecretInput v-model="editing.acme.eabHmac" :reveal="secretOf(editing.key && `/api/ssl/certs/${editing.key}/secrets`, 'eabHmac')" /></el-form-item>
+            <el-form-item label="EAB HMAC Key"><SecretInput v-model="editing.acme.eabHmac" :reveal="secretOf(secretKey && `/api/ssl/certs/${secretKey}/secrets`, 'eabHmac')" /></el-form-item>
           </template>
           <el-form-item :label="t('ssl.keyType')">
             <el-select v-model="editing.acme.keyType" class="w-160">
@@ -162,7 +166,7 @@
             <el-input v-model="editing.acme.credentials.id" />
           </el-form-item>
           <el-form-item v-if="currentProvider?.secretLabel" :label="currentProvider.secretLabel">
-            <SecretInput v-model="editing.acme.credentials.secret" :placeholder="t('ssl.secretPlaceholder')" :reveal="secretOf(editing.key && `/api/ssl/certs/${editing.key}/secrets`, 'secret')" />
+            <SecretInput v-model="editing.acme.credentials.secret" :placeholder="t('ssl.secretPlaceholder')" :reveal="secretOf(secretKey && `/api/ssl/certs/${secretKey}/secrets`, 'secret')" />
           </el-form-item>
           <el-form-item v-for="f in currentProvider?.extra ?? []" :key="f.key" :label="f.label">
             <el-input v-model="extra[f.key]" :placeholder="f.placeholder" />
@@ -281,10 +285,12 @@
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
-import { Download, Pencil, Plus, RotateCw, Send, ShieldCheck, SlidersHorizontal, Trash2, Upload } from 'lucide-vue-next'
+import { CopyPlus, Download, Pencil, Plus, RotateCw, Send, ShieldCheck, SlidersHorizontal, Trash2, Upload } from 'lucide-vue-next'
 import { api } from '../api'
 import SecretInput from '../components/SecretInput.vue'
 import { secretOf } from '../secrets'
+import CopyHint from '../components/CopyHint.vue'
+import { asciiCopyName, createItem, uniqueName, type CopySource } from '../copyDraft'
 import PageHeader from '../components/PageHeader.vue'
 import ModuleBanner from '../components/ModuleBanner.vue'
 import CompactToggle from '../components/CompactToggle.vue'
@@ -403,6 +409,10 @@ const gl = useGroupedList<CertView>({
 const editorVisible = ref(false)
 const saving = ref(false)
 const editing = ref<Cert>(emptyCert())
+// 复制证书时的模板，普通新增与编辑时为 null
+const copyFrom = ref<CopySource | null>(null)
+// 查看密钥明文时取自哪个证书：复制时为模板，提交占位符即沿用模板的密钥
+const secretKey = computed(() => editing.value.key || copyFrom.value?.key)
 const extra = ref<Record<string, string>>({})
 const settingsVisible = ref(false)
 interface RenewSettings {
@@ -641,7 +651,9 @@ async function load() {
   }
 }
 
-function openEditor(row?: CertView) {
+// openEditor 打开编辑框：copy 为 true 时以 row 为模板新建副本
+function openEditor(row?: CertView, copy = false) {
+  copyFrom.value = null
   if (row) {
     const { info: _i, state: _s, ...cert } = row
     editing.value = JSON.parse(JSON.stringify(cert))
@@ -651,6 +663,22 @@ function openEditor(row?: CertView) {
     // 自动网络在后端省略该字段，补成空串让下拉框选中「自动」
     editing.value.acme.network ??= ''
     editing.value.deploys = (editing.value.deploys ?? []).map((d) => ({ ...d, certName: d.certName ?? '', keyName: d.keyName ?? '', containers: d.containers ?? [] }))
+    if (copy) {
+      copyFrom.value = { key: row.key, name: row.remark || domainsOf(row)[0] || '' }
+      editing.value.key = ''
+      // 备注用作映射文件名，只能是 ASCII 字符；没有备注时留空
+      editing.value.remark = uniqueName(row.remark, certs.value.map((x) => x.remark), asciiCopyName)
+      // 签发记录与部署记录属于模板，副本重新签发、重新部署（上传的证书内容是配置本身，予以保留）
+      editing.value.updatedAt = undefined
+      editing.value.issuedProfile = undefined
+      // 部署目标可能写到与模板相同的远程文件，先停用，确认文件名不冲突后再启用
+      editing.value.deploys = editing.value.deploys.map(({ deployedHash: _h, deployedAt: _a, ...d }) => ({ ...d, enable: false }))
+      if (editing.value.source !== 'upload') {
+        editing.value.certPem = ''
+        editing.value.keyPem = ''
+        editing.value.issuerPem = ''
+      }
+    }
   } else {
     editing.value = emptyCert()
   }
@@ -674,7 +702,7 @@ async function save() {
     if (key) {
       await api.put(`/api/ssl/certs/${key}`, body)
     } else {
-      await api.post('/api/ssl/certs', body)
+      await createItem('/api/ssl/certs', body, copyFrom.value)
     }
     editorVisible.value = false
     ElMessage.success(body.source === 'acme' ? t('ssl.savedAcme') : t('common.saved'))
@@ -772,6 +800,9 @@ onMounted(async () => {
   font-size: 12px;
   color: var(--el-color-danger);
   word-break: break-all;
+}
+.copy-reissue {
+  margin-bottom: 16px;
 }
 .w-260 {
   width: 260px;

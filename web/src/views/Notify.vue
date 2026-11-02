@@ -29,6 +29,7 @@
           <template v-else #actions>
             <el-button text size="small" :icon="Send" :loading="testing[c.key ?? '']" @click="test(c)">{{ t('common.test') }}</el-button>
             <el-button text size="small" :icon="Pencil" @click="openChannel(c)">{{ t('common.edit') }}</el-button>
+            <el-button text size="small" :icon="CopyPlus" @click="openChannel(c, true)">{{ t('common.duplicate') }}</el-button>
             <el-popconfirm :title="t('notify.confirmDeleteChannel')" @confirm="removeChannel(c)">
               <template #reference>
                 <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
@@ -66,6 +67,7 @@
           </template>
           <template v-else #actions>
             <el-button text size="small" :icon="Pencil" @click="openRule(r)">{{ t('common.edit') }}</el-button>
+            <el-button text size="small" :icon="CopyPlus" @click="openRule(r, true)">{{ t('common.duplicate') }}</el-button>
             <el-popconfirm :title="t('notify.confirmDeleteRule')" @confirm="removeRule(r)">
               <template #reference>
                 <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
@@ -95,6 +97,7 @@
     <LogCard url="/api/notify/logs" clearable />
 
     <el-dialog v-model="channelVisible" :title="editingChannel.key ? t('notify.editChannel') : t('notify.addChannel')" width="560px" :fullscreen="isMobile">
+      <CopyHint :from="copyChannelFrom" :secrets="editingChannel.hasSecret" />
       <el-form :model="editingChannel" label-width="100px" :label-position="labelPosition">
         <el-form-item :label="t('common.name')"><el-input v-model="editingChannel.name" /></el-form-item>
         <GroupInput v-model="editingChannel.group" :groups="glChannels.groupNames.value" />
@@ -193,6 +196,7 @@
     </el-dialog>
 
     <el-dialog v-model="ruleVisible" :title="editingRule.key ? t('notify.editRule') : t('notify.addRule')" width="560px" :fullscreen="isMobile">
+      <CopyHint :from="copyRuleFrom" />
       <el-form :model="editingRule" label-width="100px" :label-position="labelPosition">
         <el-form-item v-if="!editingRule.key" :label="t('notify.template')">
           <div class="tpl-list">
@@ -239,7 +243,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import { Bell, Pencil, Plus, Send, Trash2 } from 'lucide-vue-next'
+import { Bell, CopyPlus, Pencil, Plus, Send, Trash2 } from 'lucide-vue-next'
 import { api } from '../api'
 import { SECRET_MASK, secretOf } from '../secrets'
 import SecretInput from '../components/SecretInput.vue'
@@ -256,6 +260,8 @@ import { useCompactView } from '../composables/useCompactView'
 import Field from '../components/Field.vue'
 import StatusBadge from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
+import CopyHint from '../components/CopyHint.vue'
+import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import { useFormLayout } from '../composables/useIsMobile'
 import { useListText, splitLines } from '../composables/useListText'
 import { usePolling } from '../composables/usePolling'
@@ -384,11 +390,16 @@ const channelVisible = ref(false)
 const ruleVisible = ref(false)
 const editingChannel = ref<Channel>(emptyChannel())
 const editingRule = ref<Rule>(emptyRule())
+// 复制通知渠道、通知规则时的模板，普通新增与编辑时为 null
+const copyChannelFrom = ref<CopySource | null>(null)
+const copyRuleFrom = ref<CopySource | null>(null)
 // 定时刷新，标签页在后台时暂停
 const polling = usePolling(load, 15000)
 
 // secretReveal 取回已保存渠道的密钥明文，新渠道没有可取回的内容
-const secretReveal = computed(() => secretOf(editingChannel.value.key && `/api/notify/channels/${editingChannel.value.key}/secrets`, 'secret'))
+// 查看密钥明文时取自哪个渠道：复制时为模板，提交占位符即沿用模板的密钥
+const channelSecretKey = computed(() => editingChannel.value.key || copyChannelFrom.value?.key)
+const secretReveal = computed(() => secretOf(channelSecretKey.value && `/api/notify/channels/${channelSecretKey.value}/secrets`, 'secret'))
 const secretHint = computed(() => (editingChannel.value.hasSecret ? t('notify.secretSet') : ''))
 // 输入框保留原始文本，回车可正常换行（见 useListText）
 const headersText = useListText(() => editingChannel.value.webhook.headers, (v) => (editingChannel.value.webhook.headers = v), { split: splitLines })
@@ -466,31 +477,46 @@ async function load() {
   history.value = h
 }
 
-function openChannel(c?: Channel) {
+// openChannel 打开渠道编辑框：copy 为 true 时以 c 为模板新建副本，密钥沿用模板
+function openChannel(c?: Channel, copy = false) {
   editingChannel.value = c ? { ...emptyChannel(), ...JSON.parse(JSON.stringify(c)) } : emptyChannel()
   // 接口不返回已保存的密钥（留空表示保持原值）；用占位符表示“已设置”，点击显示时再取回明文
   if (c?.hasSecret) {
     editingChannel.value.secret = SECRET_MASK
   }
+  copyChannelFrom.value = null
+  if (c && copy) {
+    copyChannelFrom.value = { key: c.key ?? '', name: c.name }
+    editingChannel.value.key = ''
+    editingChannel.value.name = uniqueName(c.name, channels.value.map((x) => x.name))
+  }
   channelVisible.value = true
 }
 
-function openRule(r?: Rule) {
+// openRule 打开规则编辑框：copy 为 true 时以 r 为模板新建副本
+function openRule(r?: Rule, copy = false) {
   editingRule.value = r ? JSON.parse(JSON.stringify(r)) : emptyRule()
+  copyRuleFrom.value = null
+  if (r && copy) {
+    copyRuleFrom.value = { key: r.key ?? '', name: r.name }
+    editingRule.value.key = ''
+    editingRule.value.name = uniqueName(r.name, rules.value.map((x) => x.name))
+  }
   ruleVisible.value = true
 }
 
 async function saveChannel() {
   try {
     const { key, hasSecret: _h, ...body } = editingChannel.value
-    // 未查看也未修改的密钥仍是占位符，按原接口约定提交空值以保持原值
-    if (body.secret === SECRET_MASK) {
+    // 未查看也未修改的密钥仍是占位符，按原接口约定提交空值以保持原值；
+    // 复制时原样提交占位符由后端沿用模板的密钥，留空则表示副本不要密钥
+    if (body.secret === SECRET_MASK && !copyChannelFrom.value) {
       body.secret = ''
     }
     if (key) {
       await api.put(`/api/notify/channels/${key}`, body)
     } else {
-      await api.post('/api/notify/channels', body)
+      await createItem('/api/notify/channels', body, copyChannelFrom.value)
     }
     channelVisible.value = false
     await load()
@@ -505,7 +531,7 @@ async function saveRule() {
     if (key) {
       await api.put(`/api/notify/rules/${key}`, body)
     } else {
-      await api.post('/api/notify/rules', body)
+      await createItem('/api/notify/rules', body, copyRuleFrom.value)
     }
     ruleVisible.value = false
     await load()

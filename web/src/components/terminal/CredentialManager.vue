@@ -27,6 +27,7 @@
           <el-button text :icon="ChevronUp" :disabled="i === 0" :aria-label="t('termConn.list.moveUp')" @click="move(i, -1)" />
           <el-button text :icon="ChevronDown" :disabled="i === list.length - 1" :aria-label="t('termConn.list.moveDown')" @click="move(i, 1)" />
           <el-button text :icon="Pencil" :aria-label="t('termConn.list.edit')" @click="edit(c)" />
+          <el-button text :icon="CopyPlus" :aria-label="t('common.duplicate')" :title="t('common.duplicate')" @click="edit(c, true)" />
           <el-button text type="danger" :icon="Trash2" :aria-label="t('common.delete')" @click="remove(c)" />
         </div>
       </div>
@@ -47,6 +48,7 @@
       append-to-body
       :close-on-click-modal="false"
     >
+      <CopyHint :from="copyFrom" secrets />
       <el-form :model="form" label-width="100px" :label-position="labelPosition">
         <el-form-item :label="t('termConn.editor.name')" required>
           <el-input v-model="form.name" :placeholder="t('termConn.credential.namePlaceholder')" />
@@ -61,7 +63,7 @@
           <el-input v-model="form.username" :placeholder="t('termConn.credential.usernamePlaceholder')" />
         </el-form-item>
         <el-form-item v-if="form.authType === 'password'" :label="t('termConn.editor.password')">
-          <SecretInput v-model="form.password" :placeholder="t('termConn.editor.passwordPlaceholder')" :reveal="secretOf(form.key && `/api/webterminal/credentials/${form.key}/secrets`, 'password')" />
+          <SecretInput v-model="form.password" :placeholder="t('termConn.editor.passwordPlaceholder')" :reveal="secretOf(secretKey && `/api/webterminal/credentials/${secretKey}/secrets`, 'password')" />
         </el-form-item>
         <template v-else>
           <el-form-item :label="t('termConn.editor.privateKey')">
@@ -73,7 +75,7 @@
             <span class="form-help">{{ t('termConn.editor.keyFileHelp') }}</span>
           </el-form-item>
           <el-form-item :label="t('termConn.editor.passphrase')">
-            <SecretInput v-model="form.passphrase" :placeholder="t('termConn.editor.passphrasePlaceholder')" :reveal="secretOf(form.key && `/api/webterminal/credentials/${form.key}/secrets`, 'passphrase')" />
+            <SecretInput v-model="form.passphrase" :placeholder="t('termConn.editor.passphrasePlaceholder')" :reveal="secretOf(secretKey && `/api/webterminal/credentials/${secretKey}/secrets`, 'passphrase')" />
           </el-form-item>
         </template>
         <el-form-item :label="t('termConn.editor.remark')"><el-input v-model="form.remark" /></el-form-item>
@@ -87,15 +89,18 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { ChevronDown, ChevronUp, Pencil, Plus, Trash2 } from 'lucide-vue-next'
+import { ChevronDown, ChevronUp, CopyPlus, Pencil, Plus, Trash2 } from 'lucide-vue-next'
 import { api } from '../../api'
 import { useFormLayout } from '../../composables/useIsMobile'
 import SecretInput from '../SecretInput.vue'
 import { secretOf } from '../../secrets'
 import { emptyCredential, type Credential } from './types'
+import CopyHint from '../CopyHint.vue'
+import { createItem, uniqueName, type CopySource } from '../../copyDraft'
+import { isCancel, withAccess } from './security'
 
 defineProps<{ modelValue: boolean }>()
 // changed 在预设列表变化后发出，供连接编辑器刷新下拉选项
@@ -108,6 +113,9 @@ const loading = ref(false)
 const editorVisible = ref(false)
 const saving = ref(false)
 const form = reactive<Credential>(emptyCredential())
+// 复制预设时的模板，普通新增与编辑时为 null；查看密钥明文时复制取自模板
+const copyFrom = ref<CopySource | null>(null)
+const secretKey = computed(() => form.key || copyFrom.value?.key)
 
 async function load() {
   loading.value = true
@@ -120,8 +128,15 @@ async function load() {
   }
 }
 
-function edit(c: Credential | null) {
+// edit 打开预设编辑框：copy 为 true 时以 c 为模板新建副本，密钥沿用模板
+function edit(c: Credential | null, copy = false) {
   Object.assign(form, emptyCredential(), c ?? {})
+  copyFrom.value = null
+  if (c && copy) {
+    copyFrom.value = { key: c.key ?? '', name: c.name }
+    form.key = ''
+    form.name = uniqueName(c.name, list.value.map((x) => x.name))
+  }
   editorVisible.value = true
 }
 
@@ -136,14 +151,18 @@ async function save() {
     if (key) {
       await api.put(`/api/webterminal/credentials/${encodeURIComponent(key)}`, body)
     } else {
-      await api.post('/api/webterminal/credentials', body)
+      // 复制会沿用模板的密码与私钥，后端要求先通过 Web 终端的门禁（协议与二次验证）
+      const from = copyFrom.value
+      await (from ? withAccess(() => createItem('/api/webterminal/credentials', body, from)) : api.post('/api/webterminal/credentials', body))
     }
     editorVisible.value = false
     ElMessage.success(t('common.saved'))
     await load()
     emit('changed', list.value)
   } catch (e) {
-    ElMessage.error((e as Error).message)
+    if (!isCancel(e)) {
+      ElMessage.error((e as Error).message)
+    }
   } finally {
     saving.value = false
   }

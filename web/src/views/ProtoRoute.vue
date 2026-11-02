@@ -67,6 +67,7 @@
           </template>
           <template v-else #actions>
             <el-button text size="small" :icon="Pencil" @click="openEditor(it.item)">{{ t('common.edit') }}</el-button>
+          <el-button text size="small" :icon="CopyPlus" @click="openEditor(it.item, true)">{{ t('common.duplicate') }}</el-button>
             <el-popconfirm :title="t('protoRoute.deleteConfirm')" @confirm="remove(it.item)">
               <template #reference>
                 <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
@@ -80,6 +81,7 @@
     <LogCard url="/api/protoroute/logs" clearable />
 
     <el-dialog v-model="editorVisible" :title="editing.key ? t('protoRoute.editRule') : t('protoRoute.addRule')" width="760px" :fullscreen="isMobile">
+      <CopyHint :from="copyFrom" />
       <el-form :model="editing" label-width="110px" :label-position="labelPosition">
         <el-form-item :label="t('common.name')">
           <el-input v-model="editing.name" :placeholder="t('protoRoute.namePlaceholder')" />
@@ -187,7 +189,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
-import { ArrowDown, ArrowUp, Pencil, Plus, SlidersHorizontal, Split, Trash2, TriangleAlert } from 'lucide-vue-next'
+import { ArrowDown, ArrowUp, CopyPlus, Pencil, Plus, SlidersHorizontal, Split, Trash2, TriangleAlert } from 'lucide-vue-next'
 import { api, formatBytes } from '../api'
 import GroupedList from '../components/GroupedList.vue'
 import GroupInput from '../components/GroupInput.vue'
@@ -204,6 +206,8 @@ import { useCompactView } from '../composables/useCompactView'
 import Field from '../components/Field.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
+import CopyHint from '../components/CopyHint.vue'
+import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import { useFormLayout } from '../composables/useIsMobile'
 import { usePolling } from '../composables/usePolling'
 
@@ -320,6 +324,8 @@ const loading = ref(true)
 const editorVisible = ref(false)
 const saving = ref(false)
 const editing = ref<Rule>(emptyRule())
+// 复制条目时的模板，普通新增与编辑时为 null
+const copyFrom = ref<CopySource | null>(null)
 const targetsText = ref('')
 const routeForms = ref<RouteForm[]>([])
 let routeSeq = 0
@@ -500,7 +506,8 @@ async function loadSettings() {
   settings.value = await api.get<Settings>('/api/protoroute/settings')
 }
 
-function openEditor(row?: RuleView) {
+// openEditor 打开编辑框：copy 为 true 时以 row 为模板新建副本
+function openEditor(row?: RuleView, copy = false) {
   if (row) {
     const { running: _r, error: _e, details: _d, stats: _s, ...rule } = row
     editing.value = JSON.parse(JSON.stringify(rule))
@@ -517,6 +524,12 @@ function openEditor(row?: RuleView) {
   // 新规则预置一条空路由
   if (!routeForms.value.length && !row) {
     addRoute()
+  }
+  copyFrom.value = null
+  if (row && copy) {
+    copyFrom.value = { key: row.key ?? '', name: row.name }
+    editing.value.key = ''
+    editing.value.name = uniqueName(row.name, rules.value.map((x) => x.name))
   }
   editorVisible.value = true
 }
@@ -542,7 +555,7 @@ async function save() {
     if (key) {
       await api.put(`/api/protoroute/rules/${key}`, body)
     } else {
-      await api.post('/api/protoroute/rules', body)
+      await createItem('/api/protoroute/rules', body, copyFrom.value)
     }
     editorVisible.value = false
     ElMessage.success(t('common.saved'))

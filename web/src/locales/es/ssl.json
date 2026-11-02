@@ -134,5 +134,7 @@
   "shortLivedTag": "Corta duración",
   "hoursLeft": "Quedan {hours} horas",
   "renewFailedShort": "renovación fallida",
-  "filterPlaceholder": "Buscar nota, grupo, dominio"
+  "filterPlaceholder": "Buscar nota, grupo, dominio",
+  "copyReissue": "La copia no incluye el certificado del original. Al guardar se emite o se lee de nuevo un certificado con la configuración de la copia.",
+  "copyDeploysOff": "Los destinos de despliegue están desactivados: la copia podría escribir en los mismos archivos que el certificado original. Actívalos tras comprobar que los nombres de archivo no coinciden."
 }

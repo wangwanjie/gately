@@ -58,5 +58,10 @@
   "expand": "Expandir",
   "collapse": "Recolher",
   "expandAll": "Expandir tudo",
-  "collapseAll": "Recolher tudo"
+  "collapseAll": "Recolher tudo",
+  "duplicate": "Duplicar",
+  "copyName": "{name} (cópia)",
+  "copyNameN": "{name} (cópia {n})",
+  "copyHint": "Criando um novo item com base em \"{name}\". Ao salvar, um novo item é adicionado e o original não é alterado.",
+  "copyHintSecrets": "Senhas, tokens e outros segredos que você não alterar são mantidos do original."
 }

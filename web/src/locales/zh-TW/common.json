@@ -58,5 +58,10 @@
   "expand": "展開",
   "collapse": "收合",
   "expandAll": "全部展開",
-  "collapseAll": "全部收合"
+  "collapseAll": "全部收合",
+  "duplicate": "複製",
+  "copyName": "{name} 副本",
+  "copyNameN": "{name} 副本 {n}",
+  "copyHint": "以「{name}」為範本新建，儲存後新增一筆，原項目不受影響。",
+  "copyHintSecrets": "未修改的密碼、權杖等金鑰沿用原項目的值。"
 }

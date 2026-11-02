@@ -71,6 +71,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/portforward/logs` | `portforward:write` | Limpar logs de execução do módulo |
 | GET | `/api/portforward/rules` | `portforward:read` | Listar Regra de encaminhamento de portas |
 | POST | `/api/portforward/rules` | `portforward:write` | Adicionar Regra de encaminhamento de portas |
+| POST | `/api/portforward/rules/{key}/copy` | `portforward:write` | Duplicar Regra de encaminhamento de portas |
 | PUT | `/api/portforward/rules/{key}` | `portforward:write` | Modificar Regra de encaminhamento de portas |
 | DELETE | `/api/portforward/rules/{key}` | `portforward:write` | Excluir Regra de encaminhamento de portas |
 | PUT | `/api/portforward/rules/{key}/enable` | `portforward:write` | Ativar ou desativar Regra de encaminhamento de portas |
@@ -89,6 +90,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/protoroute/logs` | `protoroute:write` | Limpar logs de execução do módulo |
 | GET | `/api/protoroute/rules` | `protoroute:read` | Listar regra de roteamento por protocolo |
 | POST | `/api/protoroute/rules` | `protoroute:write` | Adicionar regra de roteamento por protocolo |
+| POST | `/api/protoroute/rules/{key}/copy` | `protoroute:write` | Duplicar regra de roteamento por protocolo |
 | PUT | `/api/protoroute/rules/{key}` | `protoroute:write` | Modificar regra de roteamento por protocolo |
 | DELETE | `/api/protoroute/rules/{key}` | `protoroute:write` | Excluir regra de roteamento por protocolo |
 | PUT | `/api/protoroute/rules/{key}/enable` | `protoroute:write` | Ativar ou desativar regra de roteamento por protocolo |
@@ -107,6 +109,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/ddns/logs` | `ddns:write` | Limpar logs de execução do módulo |
 | GET | `/api/ddns/tasks` | `ddns:read` | Listar Tarefa DDNS |
 | POST | `/api/ddns/tasks` | `ddns:write` | Adicionar Tarefa DDNS |
+| POST | `/api/ddns/tasks/{key}/copy` | `ddns:write` | Duplicar Tarefa DDNS |
 | PUT | `/api/ddns/tasks/{key}` | `ddns:write` | Modificar Tarefa DDNS |
 | DELETE | `/api/ddns/tasks/{key}` | `ddns:write` | Excluir Tarefa DDNS |
 | PUT | `/api/ddns/tasks/{key}/enable` | `ddns:write` | Ativar ou desativar Tarefa DDNS |
@@ -134,6 +137,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/stun/logs` | `stun:write` | Limpar logs de execução do módulo |
 | GET | `/api/stun/rules` | `stun:read` | Listar Regra STUN |
 | POST | `/api/stun/rules` | `stun:write` | Adicionar Regra STUN |
+| POST | `/api/stun/rules/{key}/copy` | `stun:write` | Duplicar Regra STUN |
 | PUT | `/api/stun/rules/{key}` | `stun:write` | Modificar Regra STUN |
 | DELETE | `/api/stun/rules/{key}` | `stun:write` | Excluir Regra STUN |
 | PUT | `/api/stun/rules/{key}/enable` | `stun:write` | Ativar ou desativar Regra STUN |
@@ -174,6 +178,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/frp/logs` | `frp:write` | Limpar logs de execução do módulo |
 | GET | `/api/frp/clients` | `frp:read` | Listar Cliente frp |
 | POST | `/api/frp/clients` | `frp:write` | Adicionar Cliente frp |
+| POST | `/api/frp/clients/{key}/copy` | `frp:write` | Duplicar Cliente frp |
 | PUT | `/api/frp/clients/{key}` | `frp:write` | Modificar Cliente frp |
 | DELETE | `/api/frp/clients/{key}` | `frp:write` | Excluir Cliente frp |
 | PUT | `/api/frp/clients/{key}/enable` | `frp:write` | Ativar ou desativar Cliente frp |
@@ -184,6 +189,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | GET | `/api/frp/clients/{key}/secrets` | `frp:write` | Ver segredos em texto puro |
 | GET | `/api/frp/servers` | `frp:read` | Listar Servidor frp |
 | POST | `/api/frp/servers` | `frp:write` | Adicionar Servidor frp |
+| POST | `/api/frp/servers/{key}/copy` | `frp:write` | Duplicar Servidor frp |
 | PUT | `/api/frp/servers/{key}` | `frp:write` | Modificar Servidor frp |
 | DELETE | `/api/frp/servers/{key}` | `frp:write` | Excluir Servidor frp |
 | PUT | `/api/frp/servers/{key}/enable` | `frp:write` | Ativar ou desativar Servidor frp |
@@ -194,6 +200,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | GET | `/api/frp/servers/{key}/secrets` | `frp:write` | Ver segredos em texto puro |
 | GET | `/api/frp/proxies` | `frp:read` | Listar proxies do frp |
 | POST | `/api/frp/proxies` | `frp:write` | Adicionar proxies do frp |
+| POST | `/api/frp/proxies/{key}/copy` | `frp:write` | Duplicar proxies do frp |
 | PUT | `/api/frp/proxies/{key}` | `frp:write` | Modificar proxies do frp |
 | DELETE | `/api/frp/proxies/{key}` | `frp:write` | Excluir proxies do frp |
 | PUT | `/api/frp/proxies/{key}/enable` | `frp:write` | Ativar ou desativar proxies do frp |
@@ -223,6 +230,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/cloudflared/logs` | `cloudflared:write` | Limpar logs de execução do módulo |
 | GET | `/api/cloudflared/tunnels` | `cloudflared:read` | Listar Túnel Cloudflare |
 | POST | `/api/cloudflared/tunnels` | `cloudflared:write` | Adicionar Túnel Cloudflare |
+| POST | `/api/cloudflared/tunnels/{key}/copy` | `cloudflared:write` | Duplicar Túnel Cloudflare |
 | PUT | `/api/cloudflared/tunnels/{key}` | `cloudflared:write` | Modificar Túnel Cloudflare |
 | DELETE | `/api/cloudflared/tunnels/{key}` | `cloudflared:write` | Excluir Túnel Cloudflare |
 | PUT | `/api/cloudflared/tunnels/{key}/enable` | `cloudflared:write` | Ativar ou desativar Túnel Cloudflare |
@@ -252,6 +260,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/ssl/logs` | `ssl:write` | Limpar logs de execução do módulo |
 | GET | `/api/ssl/certs` | `ssl:read` | Listar Certificado |
 | POST | `/api/ssl/certs` | `ssl:write` | Adicionar Certificado |
+| POST | `/api/ssl/certs/{key}/copy` | `ssl:write` | Duplicar Certificado |
 | PUT | `/api/ssl/certs/{key}` | `ssl:write` | Modificar Certificado |
 | DELETE | `/api/ssl/certs/{key}` | `ssl:write` | Excluir Certificado |
 | PUT | `/api/ssl/certs/{key}/enable` | `ssl:write` | Ativar ou desativar Certificado |
@@ -276,6 +285,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/waf/logs` | `waf:write` | Limpar logs de execução do módulo |
 | GET | `/api/waf/instances` | `waf:read` | Listar Instância WAF |
 | POST | `/api/waf/instances` | `waf:write` | Adicionar Instância WAF |
+| POST | `/api/waf/instances/{key}/copy` | `waf:write` | Duplicar Instância WAF |
 | PUT | `/api/waf/instances/{key}` | `waf:write` | Modificar Instância WAF |
 | DELETE | `/api/waf/instances/{key}` | `waf:write` | Excluir Instância WAF |
 | PUT | `/api/waf/instances/{key}/enable` | `waf:write` | Ativar ou desativar Instância WAF |
@@ -295,6 +305,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/webservice/logs` | `webservice:write` | Limpar logs de execução do módulo |
 | GET | `/api/webservice/listeners` | `webservice:read` | Listar Escuta do serviço web |
 | POST | `/api/webservice/listeners` | `webservice:write` | Adicionar Escuta do serviço web |
+| POST | `/api/webservice/listeners/{key}/copy` | `webservice:write` | Duplicar Escuta do serviço web |
 | PUT | `/api/webservice/listeners/{key}` | `webservice:write` | Modificar Escuta do serviço web |
 | DELETE | `/api/webservice/listeners/{key}` | `webservice:write` | Excluir Escuta do serviço web |
 | PUT | `/api/webservice/listeners/{key}/enable` | `webservice:write` | Ativar ou desativar Escuta do serviço web |
@@ -303,6 +314,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | POST | `/api/webservice/listeners-delete` | `webservice:write` | Excluir em lote: Escuta do serviço web |
 | GET | `/api/webservice/iplists` | `webservice:read` | Listar as listas de IP assinadas |
 | POST | `/api/webservice/iplists` | `webservice:write` | Adicionar Lista de IP assinada |
+| POST | `/api/webservice/iplists/{key}/copy` | `webservice:write` | Duplicar Lista de IP assinada |
 | PUT | `/api/webservice/iplists/{key}` | `webservice:write` | Modificar Lista de IP assinada |
 | DELETE | `/api/webservice/iplists/{key}` | `webservice:write` | Excluir Lista de IP assinada |
 | PUT | `/api/webservice/iplists/{key}/enable` | `webservice:write` | Ativar ou desativar Lista de IP assinada |
@@ -340,6 +352,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/guard/logs` | `guard:write` | Limpar logs de execução do módulo |
 | GET | `/api/guard/jails` | `guard:read` | Listar regra de prevenção de intrusões |
 | POST | `/api/guard/jails` | `guard:write` | Adicionar regra de prevenção de intrusões |
+| POST | `/api/guard/jails/{key}/copy` | `guard:write` | Duplicar regra de prevenção de intrusões |
 | PUT | `/api/guard/jails/{key}` | `guard:write` | Modificar regra de prevenção de intrusões |
 | DELETE | `/api/guard/jails/{key}` | `guard:write` | Excluir regra de prevenção de intrusões |
 | PUT | `/api/guard/jails/{key}/enable` | `guard:write` | Ativar ou desativar regra de prevenção de intrusões |
@@ -365,6 +378,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/wol/logs` | `wol:write` | Limpar logs de execução do módulo |
 | GET | `/api/wol/devices` | `wol:read` | Listar Despertar dispositivo |
 | POST | `/api/wol/devices` | `wol:write` | Adicionar Despertar dispositivo |
+| POST | `/api/wol/devices/{key}/copy` | `wol:write` | Duplicar Despertar dispositivo |
 | PUT | `/api/wol/devices/{key}` | `wol:write` | Modificar Despertar dispositivo |
 | DELETE | `/api/wol/devices/{key}` | `wol:write` | Excluir Despertar dispositivo |
 | PUT | `/api/wol/devices/{key}/enable` | `wol:write` | Ativar ou desativar Despertar dispositivo |
@@ -383,6 +397,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/webterminal/logs` | `webterminal:write` | Limpar logs de execução do módulo |
 | GET | `/api/webterminal/connections` | `webterminal:read` | Listar Conexão de terminal |
 | POST | `/api/webterminal/connections` | `webterminal:write` | Adicionar Conexão de terminal |
+| POST | `/api/webterminal/connections/{key}/copy` | `webterminal:write` | Duplicar Conexão de terminal |
 | PUT | `/api/webterminal/connections/{key}` | `webterminal:write` | Modificar Conexão de terminal |
 | DELETE | `/api/webterminal/connections/{key}` | `webterminal:write` | Excluir Conexão de terminal |
 | PUT | `/api/webterminal/connections/{key}/enable` | `webterminal:write` | Ativar ou desativar Conexão de terminal |
@@ -395,14 +410,15 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | POST | `/api/webterminal/connections/{key}/test` | `webterminal:write` | Testar conexão salva |
 | POST | `/api/webterminal/connections/test` | `webterminal:write` | Testar parâmetros de conexão temporários |
 | PUT | `/api/webterminal/connections/{key}/quickaccess` | `webterminal:write` | Atalhos de conexão |
-| GET | `/api/webterminal/credentials` | `webterminal:read` | Listar Entrada |
-| POST | `/api/webterminal/credentials` | `webterminal:write` | Adicionar Entrada |
-| PUT | `/api/webterminal/credentials/{key}` | `webterminal:write` | Modificar Entrada |
-| DELETE | `/api/webterminal/credentials/{key}` | `webterminal:write` | Excluir Entrada |
-| PUT | `/api/webterminal/credentials/{key}/enable` | `webterminal:write` | Ativar ou desativar Entrada |
-| PUT | `/api/webterminal/credentials-order` | `webterminal:write` | Reordenar Entrada |
-| PUT | `/api/webterminal/credentials-enable` | `webterminal:write` | Ativar ou desativar em lote: Entrada |
-| POST | `/api/webterminal/credentials-delete` | `webterminal:write` | Excluir em lote: Entrada |
+| GET | `/api/webterminal/credentials` | `webterminal:read` | Listar Credencial predefinida do terminal |
+| POST | `/api/webterminal/credentials` | `webterminal:write` | Adicionar Credencial predefinida do terminal |
+| POST | `/api/webterminal/credentials/{key}/copy` | `webterminal:write` | Duplicar Credencial predefinida do terminal |
+| PUT | `/api/webterminal/credentials/{key}` | `webterminal:write` | Modificar Credencial predefinida do terminal |
+| DELETE | `/api/webterminal/credentials/{key}` | `webterminal:write` | Excluir Credencial predefinida do terminal |
+| PUT | `/api/webterminal/credentials/{key}/enable` | `webterminal:write` | Ativar ou desativar Credencial predefinida do terminal |
+| PUT | `/api/webterminal/credentials-order` | `webterminal:write` | Reordenar Credencial predefinida do terminal |
+| PUT | `/api/webterminal/credentials-enable` | `webterminal:write` | Ativar ou desativar em lote: Credencial predefinida do terminal |
+| POST | `/api/webterminal/credentials-delete` | `webterminal:write` | Excluir em lote: Credencial predefinida do terminal |
 | GET | `/api/webterminal/credentials/{key}/secrets` | `webterminal:write` | Ver segredos em texto puro |
 | GET | `/api/webterminal/connections/{key}/ws` | `webterminal:write` | Abrir sessão de terminal (WebSocket) |
 | GET | `/api/webterminal/sessions/{id}/ws` | `webterminal:write` | Anexar a uma sessão de terminal existente (WebSocket) |
@@ -448,6 +464,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/cron/logs` | `cron:write` | Limpar logs de execução do módulo |
 | GET | `/api/cron/tasks` | `cron:read` | Listar Tarefa agendada |
 | POST | `/api/cron/tasks` | `cron:write` | Adicionar Tarefa agendada |
+| POST | `/api/cron/tasks/{key}/copy` | `cron:write` | Duplicar Tarefa agendada |
 | PUT | `/api/cron/tasks/{key}` | `cron:write` | Modificar Tarefa agendada |
 | DELETE | `/api/cron/tasks/{key}` | `cron:write` | Excluir Tarefa agendada |
 | PUT | `/api/cron/tasks/{key}/enable` | `cron:write` | Ativar ou desativar Tarefa agendada |
@@ -573,6 +590,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/filebrowser/logs` | `filebrowser:write` | Limpar logs de execução do módulo |
 | GET | `/api/filebrowser/instances` | `filebrowser:read` | Listar Instância do File Browser |
 | POST | `/api/filebrowser/instances` | `filebrowser:write` | Adicionar Instância do File Browser |
+| POST | `/api/filebrowser/instances/{key}/copy` | `filebrowser:write` | Duplicar Instância do File Browser |
 | PUT | `/api/filebrowser/instances/{key}` | `filebrowser:write` | Modificar Instância do File Browser |
 | DELETE | `/api/filebrowser/instances/{key}` | `filebrowser:write` | Excluir Instância do File Browser |
 | PUT | `/api/filebrowser/instances/{key}/enable` | `filebrowser:write` | Ativar ou desativar Instância do File Browser |
@@ -600,6 +618,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/storage/logs` | `storage:write` | Limpar logs de execução do módulo |
 | GET | `/api/storage/mounts` | `storage:read` | Listar Montagens de armazenamento |
 | POST | `/api/storage/mounts` | `storage:write` | Adicionar Montagens de armazenamento |
+| POST | `/api/storage/mounts/{key}/copy` | `storage:write` | Duplicar Montagens de armazenamento |
 | PUT | `/api/storage/mounts/{key}` | `storage:write` | Modificar Montagens de armazenamento |
 | DELETE | `/api/storage/mounts/{key}` | `storage:write` | Excluir Montagens de armazenamento |
 | PUT | `/api/storage/mounts/{key}/enable` | `storage:write` | Ativar ou desativar Montagens de armazenamento |
@@ -623,6 +642,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/notify/logs` | `notify:write` | Limpar logs de execução do módulo |
 | GET | `/api/notify/channels` | `notify:read` | Listar Canais de notificação |
 | POST | `/api/notify/channels` | `notify:write` | Adicionar Canais de notificação |
+| POST | `/api/notify/channels/{key}/copy` | `notify:write` | Duplicar Canais de notificação |
 | PUT | `/api/notify/channels/{key}` | `notify:write` | Modificar Canais de notificação |
 | DELETE | `/api/notify/channels/{key}` | `notify:write` | Excluir Canais de notificação |
 | PUT | `/api/notify/channels/{key}/enable` | `notify:write` | Ativar ou desativar Canais de notificação |
@@ -633,6 +653,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | GET | `/api/notify/channels/{key}/secrets` | `notify:write` | Ver segredos em texto puro |
 | GET | `/api/notify/rules` | `notify:read` | Listar Regras de notificação |
 | POST | `/api/notify/rules` | `notify:write` | Adicionar Regras de notificação |
+| POST | `/api/notify/rules/{key}/copy` | `notify:write` | Duplicar Regras de notificação |
 | PUT | `/api/notify/rules/{key}` | `notify:write` | Modificar Regras de notificação |
 | DELETE | `/api/notify/rules/{key}` | `notify:write` | Excluir Regras de notificação |
 | PUT | `/api/notify/rules/{key}/enable` | `notify:write` | Ativar ou desativar Regras de notificação |
@@ -652,6 +673,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/perf/logs` | `perf:write` | Limpar logs de execução do módulo |
 | GET | `/api/perf/rules` | `perf:read` | Listar Regras de alerta de desempenho |
 | POST | `/api/perf/rules` | `perf:write` | Adicionar Regras de alerta de desempenho |
+| POST | `/api/perf/rules/{key}/copy` | `perf:write` | Duplicar Regras de alerta de desempenho |
 | PUT | `/api/perf/rules/{key}` | `perf:write` | Modificar Regras de alerta de desempenho |
 | DELETE | `/api/perf/rules/{key}` | `perf:write` | Excluir Regras de alerta de desempenho |
 | PUT | `/api/perf/rules/{key}/enable` | `perf:write` | Ativar ou desativar Regras de alerta de desempenho |
@@ -686,6 +708,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | DELETE | `/api/backup/logs` | `backup:write` | Limpar logs de execução do módulo |
 | GET | `/api/backup/targets` | `backup:read` | Listar Destino do backup |
 | POST | `/api/backup/targets` | `backup:write` | Adicionar Destino do backup |
+| POST | `/api/backup/targets/{key}/copy` | `backup:write` | Duplicar Destino do backup |
 | PUT | `/api/backup/targets/{key}` | `backup:write` | Modificar Destino do backup |
 | DELETE | `/api/backup/targets/{key}` | `backup:write` | Excluir Destino do backup |
 | PUT | `/api/backup/targets/{key}/enable` | `backup:write` | Ativar ou desativar Destino do backup |

@@ -189,5 +189,11 @@
   "userHeaderHelp": "Nach der Anmeldung wird der Benutzername in diesem Request-Header an das Backend übergeben; derselbe Header vom Besucher wird entfernt. Leer lassen, um ihn nicht weiterzugeben",
   "userRoutesTag": "{count} Benutzerregeln",
   "probeRule": "Sondierung sperren",
-  "probeRuleHelp": "Unter Einbruchschutz eine Web-Pfadsondierungsregel für diesen Listener anlegen"
+  "probeRuleHelp": "Unter Einbruchschutz eine Web-Pfadsondierungsregel für diesen Listener anlegen",
+  "copySite": "Site duplizieren",
+  "copyListener": "Listener duplizieren",
+  "copySites": "Sites",
+  "copySitesLabel": "Auch die {count} Site(s) kopieren",
+  "copySitesHelp": "Freigabelinks werden nicht kopiert, da ihre Token die Anmeldung umgehen. Bei Bedarf in der Kopie neu anlegen.",
+  "siteListener": "Listener"
 }

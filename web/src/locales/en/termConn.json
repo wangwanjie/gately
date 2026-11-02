@@ -84,8 +84,6 @@
     "quick": "Quick access directories",
     "test": "Test connection",
     "resetKey": "Reset host fingerprint",
-    "copySuffix": "{name} copy",
-    "copyHint": "Configuration copied. Passwords, private keys and other secrets must be filled in again.",
     "testing": "Testing connection…",
     "testOk": "{name} connected successfully",
     "resetConfirm": "After resetting, the host fingerprint is recorded again on the next connection. Do this after the host is reinstalled or its keys are replaced.",

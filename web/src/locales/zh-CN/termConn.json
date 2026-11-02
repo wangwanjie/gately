@@ -84,8 +84,6 @@
     "quick": "快速访问目录",
     "test": "测试连接",
     "resetKey": "重置主机指纹",
-    "copySuffix": "{name} 副本",
-    "copyHint": "已复制配置，密码、私钥等敏感信息需要重新填写",
     "testing": "正在测试连接…",
     "testOk": "{name} 连接成功",
     "resetConfirm": "重置后，下次连接时会重新记录主机指纹。主机重装或更换密钥后需要执行此操作。",

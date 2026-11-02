@@ -41,7 +41,8 @@
         <div class="t-name">{{ tg.name }}</div>
         <div class="t-sub mono">{{ mountName(tg.mount) }}:/{{ tg.dir }}</div>
       </div>
-      <el-button text size="small" :icon="Pencil" @click="openTarget(tg)" />
+      <el-button text size="small" :icon="Pencil" :title="t('common.edit')" :aria-label="t('common.edit')" @click="openTarget(tg)" />
+      <el-button text size="small" :icon="CopyPlus" :title="t('common.duplicate')" :aria-label="t('common.duplicate')" @click="openTarget(tg, true)" />
       <el-popconfirm :title="t('backupSchedule.confirmDeleteTarget')" @confirm="removeTarget(tg)">
         <template #reference>
           <el-button text size="small" type="danger" :icon="Trash2" />
@@ -72,6 +73,7 @@
     </div>
 
     <el-dialog v-model="targetVisible" :title="editingTarget.key ? t('backupSchedule.editTarget') : t('backupSchedule.addTarget')" width="460px" :fullscreen="isMobile" append-to-body>
+      <CopyHint :from="copyTargetFrom" />
       <el-form :model="editingTarget" label-width="90px" :label-position="labelPosition">
         <el-form-item :label="t('common.name')"><el-input v-model="editingTarget.name" /></el-form-item>
         <el-form-item :label="t('backupSchedule.mount')">
@@ -95,8 +97,10 @@
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import { CalendarClock, Download, Pencil, Play, Plus, Trash2 } from 'lucide-vue-next'
+import { CalendarClock, CopyPlus, Download, Pencil, Play, Plus, Trash2 } from 'lucide-vue-next'
 import { api } from '../api'
+import CopyHint from './CopyHint.vue'
+import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import StatusBadge from './StatusBadge.vue'
 import SecretInput from './SecretInput.vue'
 import { secretOf } from '../secrets'
@@ -156,6 +160,8 @@ const saving = ref(false)
 const running = ref(false)
 const targetVisible = ref(false)
 const editingTarget = ref<Target>(emptyTarget())
+// 复制备份目的地时的模板，普通新增与编辑时为 null
+const copyTargetFrom = ref<CopySource | null>(null)
 // 定时刷新，标签页在后台时暂停
 const polling = usePolling(loadLive, 15000)
 
@@ -236,8 +242,15 @@ async function runNow() {
   }
 }
 
-function openTarget(tg?: Target) {
+// openTarget 打开目的地编辑框：copy 为 true 时以 tg 为模板新建副本
+function openTarget(tg?: Target, copy = false) {
   editingTarget.value = tg ? { ...tg } : emptyTarget()
+  copyTargetFrom.value = null
+  if (tg && copy) {
+    copyTargetFrom.value = { key: tg.key ?? '', name: tg.name }
+    editingTarget.value.key = ''
+    editingTarget.value.name = uniqueName(tg.name, targets.value.map((x) => x.name))
+  }
   targetVisible.value = true
 }
 
@@ -247,7 +260,7 @@ async function saveTarget() {
     if (key) {
       await api.put(`/api/backup/targets/${key}`, body)
     } else {
-      await api.post('/api/backup/targets', body)
+      await createItem('/api/backup/targets', body, copyTargetFrom.value)
     }
     targetVisible.value = false
     await loadLive()

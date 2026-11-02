@@ -28,6 +28,7 @@ var crudNouns = map[string]string{
 	"webservice/iplists":      "订阅 IP 列表",
 	"wol/devices":             "唤醒设备",
 	"webterminal/connections": "终端连接",
+	"webterminal/credentials": "终端认证预设",
 	"cron/tasks":              "计划任务",
 	"frp/clients":             "frp 客户端",
 	"frp/servers":             "frp 服务端",

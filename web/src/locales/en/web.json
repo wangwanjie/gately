@@ -189,5 +189,11 @@
   "userHeaderHelp": "After sign-in, put the user name in this request header for the backend; the same header sent by visitors is removed. Leave empty to not pass it",
   "userRoutesTag": "{count} user routes",
   "probeRule": "Probe ban",
-  "probeRuleHelp": "Create a Web path probing rule for this listener in Intrusion protection"
+  "probeRuleHelp": "Create a Web path probing rule for this listener in Intrusion protection",
+  "copySite": "Duplicate site",
+  "copyListener": "Duplicate listener",
+  "copySites": "Sites",
+  "copySitesLabel": "Also copy its {count} site(s)",
+  "copySitesHelp": "Share links are not copied: their tokens bypass authentication. Create new ones on the copy if needed.",
+  "siteListener": "Listener"
 }

@@ -37,6 +37,7 @@
                     <el-switch :model-value="c.enable" size="small" @change="(v: boolean | string | number) => toggleInstance('clients', c.key, Boolean(v))" />
                     <el-button text size="small" :icon="RefreshCw" :disabled="!c.enable" @click="restart('clients', c.key)">{{ t('common.restart') }}</el-button>
                     <el-button text size="small" :icon="Pencil" @click="openClient(c)">{{ t('common.edit') }}</el-button>
+                    <el-button text size="small" :icon="CopyPlus" @click="openClient(c, true)">{{ t('common.duplicate') }}</el-button>
                     <el-popconfirm :title="proxiesOf(c.key).length ? t('frp.confirmDeleteClientProxies', { count: proxiesOf(c.key).length }) : t('frp.confirmDeleteClient')" width="260" @confirm="removeInstance('clients', c.key)">
                       <template #reference>
                         <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
@@ -93,6 +94,7 @@
                   <template v-else #actions>
                     <el-switch :model-value="p.enable" size="small" @change="(v: boolean | string | number) => toggleProxy(p, Boolean(v))" />
                     <el-button text size="small" :icon="Pencil" @click="openProxy(p)">{{ t('common.edit') }}</el-button>
+                    <el-button text size="small" :icon="CopyPlus" @click="openProxy(p, true)">{{ t('common.duplicate') }}</el-button>
                     <el-popconfirm :title="t('frp.confirmDeleteProxy')" @confirm="removeProxy(p)">
                       <template #reference>
                         <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
@@ -140,6 +142,7 @@
                     <el-switch :model-value="s.enable" size="small" @change="(v: boolean | string | number) => toggleInstance('servers', s.key, Boolean(v))" />
                     <el-button text size="small" :icon="RefreshCw" :disabled="!s.enable" @click="restart('servers', s.key)">{{ t('common.restart') }}</el-button>
                     <el-button text size="small" :icon="Pencil" @click="openServer(s)">{{ t('common.edit') }}</el-button>
+                    <el-button text size="small" :icon="CopyPlus" @click="openServer(s, true)">{{ t('common.duplicate') }}</el-button>
                     <el-popconfirm :title="t('frp.confirmDeleteServer')" @confirm="removeInstance('servers', s.key)">
                       <template #reference>
                         <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
@@ -180,6 +183,7 @@
 
     <!-- frpc 实例编辑 -->
     <el-dialog v-model="clientVisible" :title="editingClient.key ? t('frp.editClient') : t('frp.addClient')" width="560px" :fullscreen="isMobile">
+      <CopyHint :from="copyClientFrom" secrets />
       <el-form :model="editingClient" label-width="110px" :label-position="labelPosition">
         <el-form-item :label="t('common.name')"><el-input v-model="editingClient.name" :placeholder="t('frp.clientNamePlaceholder')" /></el-form-item>
         <GroupInput v-model="editingClient.group" :groups="glClients.groupNames.value" />
@@ -187,7 +191,7 @@
         <el-form-item :label="t('frp.serverAddr')"><el-input v-model="editingClient.serverAddr" :placeholder="t('frp.serverAddrPlaceholder')" /></el-form-item>
         <el-form-item :label="t('frp.serverPort')"><el-input-number v-model="editingClient.serverPort" :min="1" :max="65535" /></el-form-item>
         <el-form-item :label="t('frp.token')">
-          <SecretInput v-model="editingClient.token" :reveal="secretOf(editingClient.key && `/api/frp/clients/${editingClient.key}/secrets`, 'token')" :placeholder="t('frp.tokenClientPlaceholder')" />
+          <SecretInput v-model="editingClient.token" :reveal="secretOf(clientSecretKey && `/api/frp/clients/${clientSecretKey}/secrets`, 'token')" :placeholder="t('frp.tokenClientPlaceholder')" />
         </el-form-item>
         <el-form-item :label="t('frp.user')"><el-input v-model="editingClient.user" :placeholder="t('frp.userPlaceholder')" /></el-form-item>
         <el-form-item :label="t('frp.protocol')">
@@ -236,6 +240,7 @@
 
     <!-- frps 实例编辑 -->
     <el-dialog v-model="serverVisible" :title="editingServer.key ? t('frp.editServer') : t('frp.addServer')" width="640px" :fullscreen="isMobile">
+      <CopyHint :from="copyServerFrom" secrets />
       <el-form :model="editingServer" label-width="130px" :label-position="labelPosition">
         <el-form-item :label="t('common.name')"><el-input v-model="editingServer.name" /></el-form-item>
         <GroupInput v-model="editingServer.group" :groups="glServers.groupNames.value" />
@@ -246,7 +251,7 @@
         </el-form-item>
         <el-form-item :label="t('frp.bindPort')"><el-input-number v-model="editingServer.bindPort" :min="1" :max="65535" /></el-form-item>
         <el-form-item :label="t('frp.token')">
-          <SecretInput v-model="editingServer.token" :reveal="secretOf(editingServer.key && `/api/frp/servers/${editingServer.key}/secrets`, 'token')" :placeholder="t('frp.tokenServerPlaceholder')" />
+          <SecretInput v-model="editingServer.token" :reveal="secretOf(serverSecretKey && `/api/frp/servers/${serverSecretKey}/secrets`, 'token')" :placeholder="t('frp.tokenServerPlaceholder')" />
         </el-form-item>
         <el-form-item :label="t('frp.proxyBindAddr')">
           <el-input v-model="editingServer.proxyBindAddr" :placeholder="t('frp.allAddrs')" class="w-200 mono" />
@@ -285,7 +290,7 @@
           <el-form-item :label="t('frp.dashboardAddr')"><el-input v-model="editingServer.dashboardAddr" placeholder="127.0.0.1" class="w-200" /></el-form-item>
           <el-form-item :label="t('frp.dashboardUser')"><el-input v-model="editingServer.dashboardUser" class="w-200" /></el-form-item>
           <el-form-item :label="t('frp.dashboardPwd')">
-            <SecretInput v-model="editingServer.dashboardPwd" :reveal="secretOf(editingServer.key && `/api/frp/servers/${editingServer.key}/secrets`, 'dashboardPwd')" class="w-200" />
+            <SecretInput v-model="editingServer.dashboardPwd" :reveal="secretOf(serverSecretKey && `/api/frp/servers/${serverSecretKey}/secrets`, 'dashboardPwd')" class="w-200" />
           </el-form-item>
         </template>
         <el-form-item :label="t('common.remark')"><el-input v-model="editingServer.remark" /></el-form-item>
@@ -351,6 +356,7 @@
     </el-dialog>
 
     <el-dialog v-model="proxyVisible" :title="editingProxy.key ? t('frp.editProxy') : t('frp.addProxy')" width="540px" :fullscreen="isMobile">
+      <CopyHint :from="copyProxyFrom" :secrets="!!editingProxy.secretKey" />
       <el-form :model="editingProxy" label-width="100px" :label-position="labelPosition">
         <el-form-item :label="t('frp.owner')">
           <el-select v-model="editingProxy.client">
@@ -379,7 +385,7 @@
           <el-form-item :label="t('frp.subdomain')"><el-input v-model="editingProxy.subdomain" :placeholder="t('frp.subdomainPlaceholder')" /></el-form-item>
         </template>
         <el-form-item v-if="editingProxy.type === 'stcp' || editingProxy.type === 'xtcp'" :label="t('frp.secretKey')">
-          <SecretInput v-model="editingProxy.secretKey" :reveal="secretOf(editingProxy.key && `/api/frp/proxies/${editingProxy.key}/secrets`, 'secretKey')" />
+          <SecretInput v-model="editingProxy.secretKey" :reveal="secretOf(proxySecretKey && `/api/frp/proxies/${proxySecretKey}/secrets`, 'secretKey')" />
           <div class="form-help">{{ t('frp.secretHelp') }}</div>
         </el-form-item>
         <el-form-item :label="t('common.remark')"><el-input v-model="editingProxy.remark" /></el-form-item>
@@ -396,9 +402,11 @@
 import { computed, onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import { ArrowRightLeft, FileUp, Pencil, Plug, Plus, RefreshCw, Save, Server, Terminal, Trash2, Waypoints } from 'lucide-vue-next'
+import { ArrowRightLeft, CopyPlus, FileUp, Pencil, Plug, Plus, RefreshCw, Save, Server, Terminal, Trash2, Waypoints } from 'lucide-vue-next'
 import { api } from '../api'
 import { secretOf } from '../secrets'
+import CopyHint from '../components/CopyHint.vue'
+import { asciiCopyName, createItem, uniqueName, type CopySource } from '../copyDraft'
 import PageHeader from '../components/PageHeader.vue'
 import EntityCard from '../components/EntityCard.vue'
 import GroupedList from '../components/GroupedList.vue'
@@ -645,6 +653,11 @@ const clientVisible = ref(false)
 const editingClient = ref<Client>(emptyClient())
 const serverVisible = ref(false)
 const editingServer = ref<Server>(emptyServer())
+// 复制客户端、服务端实例时的模板，普通新增与编辑时为 null；查看密钥明文时复制取自模板
+const copyClientFrom = ref<CopySource | null>(null)
+const copyServerFrom = ref<CopySource | null>(null)
+const clientSecretKey = computed(() => editingClient.value.key || copyClientFrom.value?.key)
+const serverSecretKey = computed(() => editingServer.value.key || copyServerFrom.value?.key)
 
 function emptyAccess(): ClientAccess {
   return { httpScheme: '', httpPort: 0, httpsPort: 0, subdomainHost: '' }
@@ -753,13 +766,27 @@ function pickServer(v: Server): Server {
   return out
 }
 
-function openClient(c?: ClientView) {
+// openClient 打开客户端实例编辑框：copy 为 true 时以 c 为模板新建副本（不复制其下的代理）
+function openClient(c?: ClientView, copy = false) {
   editingClient.value = c ? pickClient(c) : emptyClient()
+  copyClientFrom.value = null
+  if (c && copy) {
+    copyClientFrom.value = { key: c.key ?? '', name: c.name }
+    editingClient.value.key = ''
+    editingClient.value.name = uniqueName(c.name, clients.value.map((x) => x.name))
+  }
   clientVisible.value = true
 }
 
-function openServer(s?: ServerView) {
+// openServer 打开服务端实例编辑框：copy 为 true 时以 s 为模板新建副本
+function openServer(s?: ServerView, copy = false) {
   editingServer.value = s ? pickServer(s) : emptyServer()
+  copyServerFrom.value = null
+  if (s && copy) {
+    copyServerFrom.value = { key: s.key ?? '', name: s.name }
+    editingServer.value.key = ''
+    editingServer.value.name = uniqueName(s.name, servers.value.map((x) => x.name))
+  }
   serverVisible.value = true
   loadIPLists()
 }
@@ -789,7 +816,7 @@ async function saveClient() {
     if (key) {
       await api.put(`/api/frp/clients/${key}`, body)
     } else {
-      await api.post('/api/frp/clients', body)
+      await createItem('/api/frp/clients', body, copyClientFrom.value)
     }
     clientVisible.value = false
     await load()
@@ -807,7 +834,7 @@ async function saveServer() {
     if (key) {
       await api.put(`/api/frp/servers/${key}`, body)
     } else {
-      await api.post('/api/frp/servers', body)
+      await createItem('/api/frp/servers', body, copyServerFrom.value)
     }
     serverVisible.value = false
     await load()
@@ -849,6 +876,9 @@ async function removeInstance(kind: 'clients' | 'servers', key: string) {
 
 const proxyVisible = ref(false)
 const editingProxy = ref<Proxy>(emptyProxy())
+// 复制代理时的模板，普通新增与编辑时为 null；查看密钥明文时复制取自模板
+const copyProxyFrom = ref<CopySource | null>(null)
+const proxySecretKey = computed(() => editingProxy.value.key || copyProxyFrom.value?.key)
 
 // 输入框保留原始文本，逗号、空格可正常输入（见 useListText）
 const domainsText = useListText(() => editingProxy.value.customDomains, (v) => (editingProxy.value.customDomains = v), {
@@ -862,8 +892,17 @@ function emptyProxy(): Proxy {
   return { client, name: '', type: 'tcp', enable: true, localIp: '127.0.0.1', localPort: 22, remotePort: 6000, customDomains: [], subdomain: '', secretKey: '', remark: '' }
 }
 
-function openProxy(p?: Proxy) {
+// openProxy 打开代理编辑框：copy 为 true 时以 p 为模板新建副本。
+// 同一 frpc 实例中的代理不能重名（重名的不会生效），副本名称按所属实例去重，并只用 ASCII 后缀
+function openProxy(p?: Proxy, copy = false) {
   editingProxy.value = p ? JSON.parse(JSON.stringify(p)) : emptyProxy()
+  copyProxyFrom.value = null
+  if (p && copy) {
+    copyProxyFrom.value = { key: p.key ?? '', name: p.name }
+    editingProxy.value.key = ''
+    const taken = proxies.value.filter((x) => x.client === p.client).map((x) => x.name)
+    editingProxy.value.name = uniqueName(p.name, taken, asciiCopyName)
+  }
   proxyVisible.value = true
 }
 
@@ -873,7 +912,7 @@ async function saveProxy() {
     if (key) {
       await api.put(`/api/frp/proxies/${key}`, body)
     } else {
-      await api.post('/api/frp/proxies', body)
+      await createItem('/api/frp/proxies', body, copyProxyFrom.value)
     }
     proxyVisible.value = false
     await load()

@@ -84,8 +84,6 @@
     "quick": "Dossiers en accès rapide",
     "test": "Tester la connexion",
     "resetKey": "Réinitialiser l'empreinte de l'hôte",
-    "copySuffix": "Copie de {name}",
-    "copyHint": "Configuration copiée. Les mots de passe, clés privées et autres secrets doivent être saisis à nouveau.",
     "testing": "Test de la connexion…",
     "testOk": "Connexion à {name} réussie",
     "resetConfirm": "Après la réinitialisation, l'empreinte de l'hôte est enregistrée à nouveau à la prochaine connexion. Faites-le après une réinstallation de l'hôte ou un remplacement de ses clés.",

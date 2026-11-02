@@ -189,5 +189,11 @@
   "userHeaderHelp": "Após o login, o nome de usuário é enviado ao backend neste cabeçalho; o mesmo cabeçalho enviado pelo visitante é removido. Deixe em branco para não passar",
   "userRoutesTag": "{count} regras por usuário",
   "probeRule": "Bloquear sondagem",
-  "probeRuleHelp": "Criar uma regra de sondagem de caminhos web para este listener em Proteção contra intrusões"
+  "probeRuleHelp": "Criar uma regra de sondagem de caminhos web para este listener em Proteção contra intrusões",
+  "copySite": "Duplicar site",
+  "copyListener": "Duplicar listener",
+  "copySites": "Sites",
+  "copySitesLabel": "Copiar também os {count} site(s)",
+  "copySitesHelp": "Links de compartilhamento não são copiados: seus tokens ignoram a autenticação. Crie novos na cópia se precisar.",
+  "siteListener": "Listener"
 }

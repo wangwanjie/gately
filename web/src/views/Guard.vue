@@ -131,6 +131,7 @@
               </template>
               <template v-else #actions>
                 <el-button text size="small" :icon="Pencil" @click="openJail(j)">{{ t('common.edit') }}</el-button>
+                <el-button text size="small" :icon="CopyPlus" @click="openJail(j, true)">{{ t('common.duplicate') }}</el-button>
                 <el-popconfirm :title="t('guard.jail.deleteConfirm')" width="240" @confirm="removeJail(j)">
                   <template #reference>
                     <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
@@ -261,6 +262,7 @@
 
     <!-- 规则编辑 -->
     <el-dialog v-model="jailVisible" :title="editing.key ? t('guard.jail.edit') : t('guard.jail.add')" width="760px" top="5vh" :fullscreen="isMobile">
+      <CopyHint :from="copyFrom" />
       <el-form :model="editing" label-width="120px" :label-position="labelPosition">
         <el-form-item :label="t('common.name')"><el-input v-model="editing.name" /></el-form-item>
         <GroupInput v-model="editing.group" :groups="gl.groupNames.value" />
@@ -373,7 +375,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Ban, Crosshair, FileCode, Flame, FlaskConical, LayoutTemplate, Pencil, Plus, Radar, RefreshCw, Save, Search, ShieldBan, SlidersHorizontal, Trash2 } from 'lucide-vue-next'
+import { Ban, CopyPlus, Crosshair, FileCode, Flame, FlaskConical, LayoutTemplate, Pencil, Plus, Radar, RefreshCw, Save, Search, ShieldBan, SlidersHorizontal, Trash2 } from 'lucide-vue-next'
 import { api } from '../api'
 import PageHeader from '../components/PageHeader.vue'
 import EntityCard from '../components/EntityCard.vue'
@@ -388,6 +390,8 @@ import { useCompactView } from '../composables/useCompactView'
 import Field from '../components/Field.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
+import CopyHint from '../components/CopyHint.vue'
+import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import ListInput from '../components/ListInput.vue'
 import DurationInput from '../components/DurationInput.vue'
 import BanTimeInput from '../components/BanTimeInput.vue'
@@ -511,6 +515,8 @@ const banVisible = ref(false)
 const banForm = ref({ key: '', seconds: 0, reason: '' })
 const jailVisible = ref(false)
 const editing = ref<Jail>(emptyJail())
+// 复制条目时的模板，普通新增与编辑时为 null
+const copyFrom = ref<CopySource | null>(null)
 const testLines = ref('')
 const testResults = ref<TestResult[]>()
 const testing = ref(false)
@@ -819,7 +825,8 @@ async function unban(key: string) {
   }
 }
 
-function openJail(j?: JailView) {
+// openJail 打开编辑框：copy 为 true 时以 j 为模板新建副本
+function openJail(j?: JailView, copy = false) {
   if (j) {
     // 去掉只读的运行状态字段，后端拒绝未知字段
     const { running: _r, matches: _m, bans: _b, active: _a, error: _e, lastSeen: _l, ...jail } = j
@@ -829,6 +836,12 @@ function openJail(j?: JailView) {
   }
   testLines.value = ''
   testResults.value = undefined
+  copyFrom.value = null
+  if (j && copy) {
+    copyFrom.value = { key: j.key ?? '', name: j.name }
+    editing.value.key = ''
+    editing.value.name = uniqueName(j.name, jails.value.map((x) => x.name))
+  }
   jailVisible.value = true
 }
 
@@ -850,7 +863,7 @@ async function saveJail() {
     if (key) {
       await api.put(`/api/guard/jails/${key}`, body)
     } else {
-      await api.post('/api/guard/jails', body)
+      await createItem('/api/guard/jails', body, copyFrom.value)
     }
     jailVisible.value = false
     ElMessage.success(t('guard.savedApplied'))

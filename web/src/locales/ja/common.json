@@ -58,5 +58,10 @@
   "expand": "展開",
   "collapse": "折りたたむ",
   "expandAll": "すべて展開",
-  "collapseAll": "すべて折りたたむ"
+  "collapseAll": "すべて折りたたむ",
+  "duplicate": "複製",
+  "copyName": "{name} のコピー",
+  "copyNameN": "{name} のコピー {n}",
+  "copyHint": "「{name}」をもとに新規作成します。保存すると新しい項目が追加され、元の項目は変更されません。",
+  "copyHintSecrets": "変更していないパスワードやトークンなどの秘密情報は元の項目の値を引き継ぎます。"
 }

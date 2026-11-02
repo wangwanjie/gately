@@ -134,5 +134,7 @@
   "shortLivedTag": "Curta duração",
   "hoursLeft": "Restam {hours} horas",
   "renewFailedShort": "falha na renovação",
-  "filterPlaceholder": "Buscar observação, grupo, domínio"
+  "filterPlaceholder": "Buscar observação, grupo, domínio",
+  "copyReissue": "A cópia não inclui o certificado do original. Ao salvar, um certificado é emitido ou lido novamente com as configurações da cópia.",
+  "copyDeploysOff": "Os destinos de implantação estão desativados: a cópia pode gravar nos mesmos arquivos do certificado original. Ative-os depois de verificar que os nomes de arquivo não coincidem."
 }

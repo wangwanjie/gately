@@ -71,6 +71,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/portforward/logs` | `portforward:write` | Очистить журнал работы модуля |
 | GET | `/api/portforward/rules` | `portforward:read` | Список: Правило проброса портов |
 | POST | `/api/portforward/rules` | `portforward:write` | Добавить: Правило проброса портов |
+| POST | `/api/portforward/rules/{key}/copy` | `portforward:write` | Дублировать: Правило проброса портов |
 | PUT | `/api/portforward/rules/{key}` | `portforward:write` | Изменить: Правило проброса портов |
 | DELETE | `/api/portforward/rules/{key}` | `portforward:write` | Удалить: Правило проброса портов |
 | PUT | `/api/portforward/rules/{key}/enable` | `portforward:write` | Включить или отключить: Правило проброса портов |
@@ -89,6 +90,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/protoroute/logs` | `protoroute:write` | Очистить журнал работы модуля |
 | GET | `/api/protoroute/rules` | `protoroute:read` | Список: правило маршрутизации по протоколу |
 | POST | `/api/protoroute/rules` | `protoroute:write` | Добавить: правило маршрутизации по протоколу |
+| POST | `/api/protoroute/rules/{key}/copy` | `protoroute:write` | Дублировать: правило маршрутизации по протоколу |
 | PUT | `/api/protoroute/rules/{key}` | `protoroute:write` | Изменить: правило маршрутизации по протоколу |
 | DELETE | `/api/protoroute/rules/{key}` | `protoroute:write` | Удалить: правило маршрутизации по протоколу |
 | PUT | `/api/protoroute/rules/{key}/enable` | `protoroute:write` | Включить или отключить: правило маршрутизации по протоколу |
@@ -107,6 +109,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/ddns/logs` | `ddns:write` | Очистить журнал работы модуля |
 | GET | `/api/ddns/tasks` | `ddns:read` | Список: Задача DDNS |
 | POST | `/api/ddns/tasks` | `ddns:write` | Добавить: Задача DDNS |
+| POST | `/api/ddns/tasks/{key}/copy` | `ddns:write` | Дублировать: Задача DDNS |
 | PUT | `/api/ddns/tasks/{key}` | `ddns:write` | Изменить: Задача DDNS |
 | DELETE | `/api/ddns/tasks/{key}` | `ddns:write` | Удалить: Задача DDNS |
 | PUT | `/api/ddns/tasks/{key}/enable` | `ddns:write` | Включить или отключить: Задача DDNS |
@@ -134,6 +137,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/stun/logs` | `stun:write` | Очистить журнал работы модуля |
 | GET | `/api/stun/rules` | `stun:read` | Список: Правило STUN |
 | POST | `/api/stun/rules` | `stun:write` | Добавить: Правило STUN |
+| POST | `/api/stun/rules/{key}/copy` | `stun:write` | Дублировать: Правило STUN |
 | PUT | `/api/stun/rules/{key}` | `stun:write` | Изменить: Правило STUN |
 | DELETE | `/api/stun/rules/{key}` | `stun:write` | Удалить: Правило STUN |
 | PUT | `/api/stun/rules/{key}/enable` | `stun:write` | Включить или отключить: Правило STUN |
@@ -174,6 +178,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/frp/logs` | `frp:write` | Очистить журнал работы модуля |
 | GET | `/api/frp/clients` | `frp:read` | Список: Клиент frp |
 | POST | `/api/frp/clients` | `frp:write` | Добавить: Клиент frp |
+| POST | `/api/frp/clients/{key}/copy` | `frp:write` | Дублировать: Клиент frp |
 | PUT | `/api/frp/clients/{key}` | `frp:write` | Изменить: Клиент frp |
 | DELETE | `/api/frp/clients/{key}` | `frp:write` | Удалить: Клиент frp |
 | PUT | `/api/frp/clients/{key}/enable` | `frp:write` | Включить или отключить: Клиент frp |
@@ -184,6 +189,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/frp/clients/{key}/secrets` | `frp:write` | Показать секреты открытым текстом |
 | GET | `/api/frp/servers` | `frp:read` | Список: Сервер frp |
 | POST | `/api/frp/servers` | `frp:write` | Добавить: Сервер frp |
+| POST | `/api/frp/servers/{key}/copy` | `frp:write` | Дублировать: Сервер frp |
 | PUT | `/api/frp/servers/{key}` | `frp:write` | Изменить: Сервер frp |
 | DELETE | `/api/frp/servers/{key}` | `frp:write` | Удалить: Сервер frp |
 | PUT | `/api/frp/servers/{key}/enable` | `frp:write` | Включить или отключить: Сервер frp |
@@ -194,6 +200,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/frp/servers/{key}/secrets` | `frp:write` | Показать секреты открытым текстом |
 | GET | `/api/frp/proxies` | `frp:read` | Список: прокси frp |
 | POST | `/api/frp/proxies` | `frp:write` | Добавить: прокси frp |
+| POST | `/api/frp/proxies/{key}/copy` | `frp:write` | Дублировать: прокси frp |
 | PUT | `/api/frp/proxies/{key}` | `frp:write` | Изменить: прокси frp |
 | DELETE | `/api/frp/proxies/{key}` | `frp:write` | Удалить: прокси frp |
 | PUT | `/api/frp/proxies/{key}/enable` | `frp:write` | Включить или отключить: прокси frp |
@@ -223,6 +230,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/cloudflared/logs` | `cloudflared:write` | Очистить журнал работы модуля |
 | GET | `/api/cloudflared/tunnels` | `cloudflared:read` | Список: Туннель Cloudflare |
 | POST | `/api/cloudflared/tunnels` | `cloudflared:write` | Добавить: Туннель Cloudflare |
+| POST | `/api/cloudflared/tunnels/{key}/copy` | `cloudflared:write` | Дублировать: Туннель Cloudflare |
 | PUT | `/api/cloudflared/tunnels/{key}` | `cloudflared:write` | Изменить: Туннель Cloudflare |
 | DELETE | `/api/cloudflared/tunnels/{key}` | `cloudflared:write` | Удалить: Туннель Cloudflare |
 | PUT | `/api/cloudflared/tunnels/{key}/enable` | `cloudflared:write` | Включить или отключить: Туннель Cloudflare |
@@ -252,6 +260,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/ssl/logs` | `ssl:write` | Очистить журнал работы модуля |
 | GET | `/api/ssl/certs` | `ssl:read` | Список: Сертификат |
 | POST | `/api/ssl/certs` | `ssl:write` | Добавить: Сертификат |
+| POST | `/api/ssl/certs/{key}/copy` | `ssl:write` | Дублировать: Сертификат |
 | PUT | `/api/ssl/certs/{key}` | `ssl:write` | Изменить: Сертификат |
 | DELETE | `/api/ssl/certs/{key}` | `ssl:write` | Удалить: Сертификат |
 | PUT | `/api/ssl/certs/{key}/enable` | `ssl:write` | Включить или отключить: Сертификат |
@@ -276,6 +285,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/waf/logs` | `waf:write` | Очистить журнал работы модуля |
 | GET | `/api/waf/instances` | `waf:read` | Список: Экземпляр WAF |
 | POST | `/api/waf/instances` | `waf:write` | Добавить: Экземпляр WAF |
+| POST | `/api/waf/instances/{key}/copy` | `waf:write` | Дублировать: Экземпляр WAF |
 | PUT | `/api/waf/instances/{key}` | `waf:write` | Изменить: Экземпляр WAF |
 | DELETE | `/api/waf/instances/{key}` | `waf:write` | Удалить: Экземпляр WAF |
 | PUT | `/api/waf/instances/{key}/enable` | `waf:write` | Включить или отключить: Экземпляр WAF |
@@ -295,6 +305,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/webservice/logs` | `webservice:write` | Очистить журнал работы модуля |
 | GET | `/api/webservice/listeners` | `webservice:read` | Список: Прослушивание веб-службы |
 | POST | `/api/webservice/listeners` | `webservice:write` | Добавить: Прослушивание веб-службы |
+| POST | `/api/webservice/listeners/{key}/copy` | `webservice:write` | Дублировать: Прослушивание веб-службы |
 | PUT | `/api/webservice/listeners/{key}` | `webservice:write` | Изменить: Прослушивание веб-службы |
 | DELETE | `/api/webservice/listeners/{key}` | `webservice:write` | Удалить: Прослушивание веб-службы |
 | PUT | `/api/webservice/listeners/{key}/enable` | `webservice:write` | Включить или отключить: Прослушивание веб-службы |
@@ -303,6 +314,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/webservice/listeners-delete` | `webservice:write` | Пакетно удалить: Прослушивание веб-службы |
 | GET | `/api/webservice/iplists` | `webservice:read` | Список подписных списков IP |
 | POST | `/api/webservice/iplists` | `webservice:write` | Добавить: Подписной список IP |
+| POST | `/api/webservice/iplists/{key}/copy` | `webservice:write` | Дублировать: Подписной список IP |
 | PUT | `/api/webservice/iplists/{key}` | `webservice:write` | Изменить: Подписной список IP |
 | DELETE | `/api/webservice/iplists/{key}` | `webservice:write` | Удалить: Подписной список IP |
 | PUT | `/api/webservice/iplists/{key}/enable` | `webservice:write` | Включить или отключить: Подписной список IP |
@@ -340,6 +352,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/guard/logs` | `guard:write` | Очистить журнал работы модуля |
 | GET | `/api/guard/jails` | `guard:read` | Список: правило защиты от вторжений |
 | POST | `/api/guard/jails` | `guard:write` | Добавить: правило защиты от вторжений |
+| POST | `/api/guard/jails/{key}/copy` | `guard:write` | Дублировать: правило защиты от вторжений |
 | PUT | `/api/guard/jails/{key}` | `guard:write` | Изменить: правило защиты от вторжений |
 | DELETE | `/api/guard/jails/{key}` | `guard:write` | Удалить: правило защиты от вторжений |
 | PUT | `/api/guard/jails/{key}/enable` | `guard:write` | Включить или отключить: правило защиты от вторжений |
@@ -365,6 +378,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/wol/logs` | `wol:write` | Очистить журнал работы модуля |
 | GET | `/api/wol/devices` | `wol:read` | Список: Разбудить устройство |
 | POST | `/api/wol/devices` | `wol:write` | Добавить: Разбудить устройство |
+| POST | `/api/wol/devices/{key}/copy` | `wol:write` | Дублировать: Разбудить устройство |
 | PUT | `/api/wol/devices/{key}` | `wol:write` | Изменить: Разбудить устройство |
 | DELETE | `/api/wol/devices/{key}` | `wol:write` | Удалить: Разбудить устройство |
 | PUT | `/api/wol/devices/{key}/enable` | `wol:write` | Включить или отключить: Разбудить устройство |
@@ -383,6 +397,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/webterminal/logs` | `webterminal:write` | Очистить журнал работы модуля |
 | GET | `/api/webterminal/connections` | `webterminal:read` | Список: Подключение терминала |
 | POST | `/api/webterminal/connections` | `webterminal:write` | Добавить: Подключение терминала |
+| POST | `/api/webterminal/connections/{key}/copy` | `webterminal:write` | Дублировать: Подключение терминала |
 | PUT | `/api/webterminal/connections/{key}` | `webterminal:write` | Изменить: Подключение терминала |
 | DELETE | `/api/webterminal/connections/{key}` | `webterminal:write` | Удалить: Подключение терминала |
 | PUT | `/api/webterminal/connections/{key}/enable` | `webterminal:write` | Включить или отключить: Подключение терминала |
@@ -395,14 +410,15 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/webterminal/connections/{key}/test` | `webterminal:write` | Проверить сохранённое подключение |
 | POST | `/api/webterminal/connections/test` | `webterminal:write` | Проверить временные параметры подключения |
 | PUT | `/api/webterminal/connections/{key}/quickaccess` | `webterminal:write` | Быстрый вход для настройки подключения |
-| GET | `/api/webterminal/credentials` | `webterminal:read` | Список: Элемент |
-| POST | `/api/webterminal/credentials` | `webterminal:write` | Добавить: Элемент |
-| PUT | `/api/webterminal/credentials/{key}` | `webterminal:write` | Изменить: Элемент |
-| DELETE | `/api/webterminal/credentials/{key}` | `webterminal:write` | Удалить: Элемент |
-| PUT | `/api/webterminal/credentials/{key}/enable` | `webterminal:write` | Включить или отключить: Элемент |
-| PUT | `/api/webterminal/credentials-order` | `webterminal:write` | Изменить порядок: Элемент |
-| PUT | `/api/webterminal/credentials-enable` | `webterminal:write` | Пакетно включить или отключить: Элемент |
-| POST | `/api/webterminal/credentials-delete` | `webterminal:write` | Пакетно удалить: Элемент |
+| GET | `/api/webterminal/credentials` | `webterminal:read` | Список: Шаблон учётных данных терминала |
+| POST | `/api/webterminal/credentials` | `webterminal:write` | Добавить: Шаблон учётных данных терминала |
+| POST | `/api/webterminal/credentials/{key}/copy` | `webterminal:write` | Дублировать: Шаблон учётных данных терминала |
+| PUT | `/api/webterminal/credentials/{key}` | `webterminal:write` | Изменить: Шаблон учётных данных терминала |
+| DELETE | `/api/webterminal/credentials/{key}` | `webterminal:write` | Удалить: Шаблон учётных данных терминала |
+| PUT | `/api/webterminal/credentials/{key}/enable` | `webterminal:write` | Включить или отключить: Шаблон учётных данных терминала |
+| PUT | `/api/webterminal/credentials-order` | `webterminal:write` | Изменить порядок: Шаблон учётных данных терминала |
+| PUT | `/api/webterminal/credentials-enable` | `webterminal:write` | Пакетно включить или отключить: Шаблон учётных данных терминала |
+| POST | `/api/webterminal/credentials-delete` | `webterminal:write` | Пакетно удалить: Шаблон учётных данных терминала |
 | GET | `/api/webterminal/credentials/{key}/secrets` | `webterminal:write` | Показать секреты открытым текстом |
 | GET | `/api/webterminal/connections/{key}/ws` | `webterminal:write` | Открыть сессию терминала (WebSocket) |
 | GET | `/api/webterminal/sessions/{id}/ws` | `webterminal:write` | Подключиться к существующей сессии терминала (WebSocket) |
@@ -448,6 +464,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/cron/logs` | `cron:write` | Очистить журнал работы модуля |
 | GET | `/api/cron/tasks` | `cron:read` | Список: Запланированная задача |
 | POST | `/api/cron/tasks` | `cron:write` | Добавить: Запланированная задача |
+| POST | `/api/cron/tasks/{key}/copy` | `cron:write` | Дублировать: Запланированная задача |
 | PUT | `/api/cron/tasks/{key}` | `cron:write` | Изменить: Запланированная задача |
 | DELETE | `/api/cron/tasks/{key}` | `cron:write` | Удалить: Запланированная задача |
 | PUT | `/api/cron/tasks/{key}/enable` | `cron:write` | Включить или отключить: Запланированная задача |
@@ -573,6 +590,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/filebrowser/logs` | `filebrowser:write` | Очистить журнал работы модуля |
 | GET | `/api/filebrowser/instances` | `filebrowser:read` | Список: Экземпляр File Browser |
 | POST | `/api/filebrowser/instances` | `filebrowser:write` | Добавить: Экземпляр File Browser |
+| POST | `/api/filebrowser/instances/{key}/copy` | `filebrowser:write` | Дублировать: Экземпляр File Browser |
 | PUT | `/api/filebrowser/instances/{key}` | `filebrowser:write` | Изменить: Экземпляр File Browser |
 | DELETE | `/api/filebrowser/instances/{key}` | `filebrowser:write` | Удалить: Экземпляр File Browser |
 | PUT | `/api/filebrowser/instances/{key}/enable` | `filebrowser:write` | Включить или отключить: Экземпляр File Browser |
@@ -600,6 +618,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/storage/logs` | `storage:write` | Очистить журнал работы модуля |
 | GET | `/api/storage/mounts` | `storage:read` | Список: Монтирование хранилищ |
 | POST | `/api/storage/mounts` | `storage:write` | Добавить: Монтирование хранилищ |
+| POST | `/api/storage/mounts/{key}/copy` | `storage:write` | Дублировать: Монтирование хранилищ |
 | PUT | `/api/storage/mounts/{key}` | `storage:write` | Изменить: Монтирование хранилищ |
 | DELETE | `/api/storage/mounts/{key}` | `storage:write` | Удалить: Монтирование хранилищ |
 | PUT | `/api/storage/mounts/{key}/enable` | `storage:write` | Включить или отключить: Монтирование хранилищ |
@@ -623,6 +642,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/notify/logs` | `notify:write` | Очистить журнал работы модуля |
 | GET | `/api/notify/channels` | `notify:read` | Список: Каналы уведомлений |
 | POST | `/api/notify/channels` | `notify:write` | Добавить: Каналы уведомлений |
+| POST | `/api/notify/channels/{key}/copy` | `notify:write` | Дублировать: Каналы уведомлений |
 | PUT | `/api/notify/channels/{key}` | `notify:write` | Изменить: Каналы уведомлений |
 | DELETE | `/api/notify/channels/{key}` | `notify:write` | Удалить: Каналы уведомлений |
 | PUT | `/api/notify/channels/{key}/enable` | `notify:write` | Включить или отключить: Каналы уведомлений |
@@ -633,6 +653,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/notify/channels/{key}/secrets` | `notify:write` | Показать секреты открытым текстом |
 | GET | `/api/notify/rules` | `notify:read` | Список: Правила уведомлений |
 | POST | `/api/notify/rules` | `notify:write` | Добавить: Правила уведомлений |
+| POST | `/api/notify/rules/{key}/copy` | `notify:write` | Дублировать: Правила уведомлений |
 | PUT | `/api/notify/rules/{key}` | `notify:write` | Изменить: Правила уведомлений |
 | DELETE | `/api/notify/rules/{key}` | `notify:write` | Удалить: Правила уведомлений |
 | PUT | `/api/notify/rules/{key}/enable` | `notify:write` | Включить или отключить: Правила уведомлений |
@@ -652,6 +673,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/perf/logs` | `perf:write` | Очистить журнал работы модуля |
 | GET | `/api/perf/rules` | `perf:read` | Список: Правила оповещений о производительности |
 | POST | `/api/perf/rules` | `perf:write` | Добавить: Правила оповещений о производительности |
+| POST | `/api/perf/rules/{key}/copy` | `perf:write` | Дублировать: Правила оповещений о производительности |
 | PUT | `/api/perf/rules/{key}` | `perf:write` | Изменить: Правила оповещений о производительности |
 | DELETE | `/api/perf/rules/{key}` | `perf:write` | Удалить: Правила оповещений о производительности |
 | PUT | `/api/perf/rules/{key}/enable` | `perf:write` | Включить или отключить: Правила оповещений о производительности |
@@ -686,6 +708,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/backup/logs` | `backup:write` | Очистить журнал работы модуля |
 | GET | `/api/backup/targets` | `backup:read` | Список: Назначение резервных копий |
 | POST | `/api/backup/targets` | `backup:write` | Добавить: Назначение резервных копий |
+| POST | `/api/backup/targets/{key}/copy` | `backup:write` | Дублировать: Назначение резервных копий |
 | PUT | `/api/backup/targets/{key}` | `backup:write` | Изменить: Назначение резервных копий |
 | DELETE | `/api/backup/targets/{key}` | `backup:write` | Удалить: Назначение резервных копий |
 | PUT | `/api/backup/targets/{key}/enable` | `backup:write` | Включить или отключить: Назначение резервных копий |

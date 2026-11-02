@@ -189,5 +189,11 @@
   "userHeaderHelp": "인증 후 사용자 이름을 이 요청 헤더에 담아 백엔드로 전달합니다. 방문자가 보낸 같은 헤더는 삭제됩니다. 비워 두면 전달하지 않습니다",
   "userRoutesTag": "사용자별 분배 {count}개",
   "probeRule": "탐색 차단",
-  "probeRuleHelp": "침입 방지에서 이 리스너용 웹 경로 탐색 규칙을 만듭니다"
+  "probeRuleHelp": "침입 방지에서 이 리스너용 웹 경로 탐색 규칙을 만듭니다",
+  "copySite": "사이트 복제",
+  "copyListener": "리스너 복제",
+  "copySites": "사이트",
+  "copySitesLabel": "포함된 사이트 {count}개도 복제",
+  "copySitesHelp": "공유 링크는 복제되지 않습니다. 토큰으로 인증을 우회할 수 있으므로 필요하면 사본에서 새로 만드세요.",
+  "siteListener": "소속 리스너"
 }

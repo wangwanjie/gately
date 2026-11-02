@@ -71,6 +71,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/portforward/logs` | `portforward:write` | 清空模組執行日誌 |
 | GET | `/api/portforward/rules` | `portforward:read` | 取得連接埠轉發規則清單 |
 | POST | `/api/portforward/rules` | `portforward:write` | 新增連接埠轉發規則 |
+| POST | `/api/portforward/rules/{key}/copy` | `portforward:write` | 複製連接埠轉發規則 |
 | PUT | `/api/portforward/rules/{key}` | `portforward:write` | 修改連接埠轉發規則 |
 | DELETE | `/api/portforward/rules/{key}` | `portforward:write` | 刪除連接埠轉發規則 |
 | PUT | `/api/portforward/rules/{key}/enable` | `portforward:write` | 啟用或停用連接埠轉發規則 |
@@ -89,6 +90,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/protoroute/logs` | `protoroute:write` | 清空模組執行日誌 |
 | GET | `/api/protoroute/rules` | `protoroute:read` | 取得協定分流規則清單 |
 | POST | `/api/protoroute/rules` | `protoroute:write` | 新增協定分流規則 |
+| POST | `/api/protoroute/rules/{key}/copy` | `protoroute:write` | 複製協定分流規則 |
 | PUT | `/api/protoroute/rules/{key}` | `protoroute:write` | 修改協定分流規則 |
 | DELETE | `/api/protoroute/rules/{key}` | `protoroute:write` | 刪除協定分流規則 |
 | PUT | `/api/protoroute/rules/{key}/enable` | `protoroute:write` | 啟用或停用協定分流規則 |
@@ -107,6 +109,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/ddns/logs` | `ddns:write` | 清空模組執行日誌 |
 | GET | `/api/ddns/tasks` | `ddns:read` | 取得DDNS 任務清單 |
 | POST | `/api/ddns/tasks` | `ddns:write` | 新增DDNS 任務 |
+| POST | `/api/ddns/tasks/{key}/copy` | `ddns:write` | 複製DDNS 任務 |
 | PUT | `/api/ddns/tasks/{key}` | `ddns:write` | 修改DDNS 任務 |
 | DELETE | `/api/ddns/tasks/{key}` | `ddns:write` | 刪除DDNS 任務 |
 | PUT | `/api/ddns/tasks/{key}/enable` | `ddns:write` | 啟用或停用DDNS 任務 |
@@ -134,6 +137,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/stun/logs` | `stun:write` | 清空模組執行日誌 |
 | GET | `/api/stun/rules` | `stun:read` | 取得STUN 規則清單 |
 | POST | `/api/stun/rules` | `stun:write` | 新增STUN 規則 |
+| POST | `/api/stun/rules/{key}/copy` | `stun:write` | 複製STUN 規則 |
 | PUT | `/api/stun/rules/{key}` | `stun:write` | 修改STUN 規則 |
 | DELETE | `/api/stun/rules/{key}` | `stun:write` | 刪除STUN 規則 |
 | PUT | `/api/stun/rules/{key}/enable` | `stun:write` | 啟用或停用STUN 規則 |
@@ -174,6 +178,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/frp/logs` | `frp:write` | 清空模組執行日誌 |
 | GET | `/api/frp/clients` | `frp:read` | 取得frp 用戶端清單 |
 | POST | `/api/frp/clients` | `frp:write` | 新增frp 用戶端 |
+| POST | `/api/frp/clients/{key}/copy` | `frp:write` | 複製frp 用戶端 |
 | PUT | `/api/frp/clients/{key}` | `frp:write` | 修改frp 用戶端 |
 | DELETE | `/api/frp/clients/{key}` | `frp:write` | 刪除frp 用戶端 |
 | PUT | `/api/frp/clients/{key}/enable` | `frp:write` | 啟用或停用frp 用戶端 |
@@ -184,6 +189,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/frp/clients/{key}/secrets` | `frp:write` | 查看金鑰明文 |
 | GET | `/api/frp/servers` | `frp:read` | 取得frp 伺服器端清單 |
 | POST | `/api/frp/servers` | `frp:write` | 新增frp 伺服器端 |
+| POST | `/api/frp/servers/{key}/copy` | `frp:write` | 複製frp 伺服器端 |
 | PUT | `/api/frp/servers/{key}` | `frp:write` | 修改frp 伺服器端 |
 | DELETE | `/api/frp/servers/{key}` | `frp:write` | 刪除frp 伺服器端 |
 | PUT | `/api/frp/servers/{key}/enable` | `frp:write` | 啟用或停用frp 伺服器端 |
@@ -194,6 +200,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/frp/servers/{key}/secrets` | `frp:write` | 查看金鑰明文 |
 | GET | `/api/frp/proxies` | `frp:read` | 取得frp 代理清單 |
 | POST | `/api/frp/proxies` | `frp:write` | 新增frp 代理 |
+| POST | `/api/frp/proxies/{key}/copy` | `frp:write` | 複製frp 代理 |
 | PUT | `/api/frp/proxies/{key}` | `frp:write` | 修改frp 代理 |
 | DELETE | `/api/frp/proxies/{key}` | `frp:write` | 刪除frp 代理 |
 | PUT | `/api/frp/proxies/{key}/enable` | `frp:write` | 啟用或停用frp 代理 |
@@ -223,6 +230,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/cloudflared/logs` | `cloudflared:write` | 清空模組執行日誌 |
 | GET | `/api/cloudflared/tunnels` | `cloudflared:read` | 取得Cloudflare 通道清單 |
 | POST | `/api/cloudflared/tunnels` | `cloudflared:write` | 新增Cloudflare 通道 |
+| POST | `/api/cloudflared/tunnels/{key}/copy` | `cloudflared:write` | 複製Cloudflare 通道 |
 | PUT | `/api/cloudflared/tunnels/{key}` | `cloudflared:write` | 修改Cloudflare 通道 |
 | DELETE | `/api/cloudflared/tunnels/{key}` | `cloudflared:write` | 刪除Cloudflare 通道 |
 | PUT | `/api/cloudflared/tunnels/{key}/enable` | `cloudflared:write` | 啟用或停用Cloudflare 通道 |
@@ -252,6 +260,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/ssl/logs` | `ssl:write` | 清空模組執行日誌 |
 | GET | `/api/ssl/certs` | `ssl:read` | 取得憑證清單 |
 | POST | `/api/ssl/certs` | `ssl:write` | 新增憑證 |
+| POST | `/api/ssl/certs/{key}/copy` | `ssl:write` | 複製憑證 |
 | PUT | `/api/ssl/certs/{key}` | `ssl:write` | 修改憑證 |
 | DELETE | `/api/ssl/certs/{key}` | `ssl:write` | 刪除憑證 |
 | PUT | `/api/ssl/certs/{key}/enable` | `ssl:write` | 啟用或停用憑證 |
@@ -276,6 +285,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/waf/logs` | `waf:write` | 清空模組執行日誌 |
 | GET | `/api/waf/instances` | `waf:read` | 取得WAF 執行個體清單 |
 | POST | `/api/waf/instances` | `waf:write` | 新增WAF 執行個體 |
+| POST | `/api/waf/instances/{key}/copy` | `waf:write` | 複製WAF 執行個體 |
 | PUT | `/api/waf/instances/{key}` | `waf:write` | 修改WAF 執行個體 |
 | DELETE | `/api/waf/instances/{key}` | `waf:write` | 刪除WAF 執行個體 |
 | PUT | `/api/waf/instances/{key}/enable` | `waf:write` | 啟用或停用WAF 執行個體 |
@@ -295,6 +305,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/webservice/logs` | `webservice:write` | 清空模組執行日誌 |
 | GET | `/api/webservice/listeners` | `webservice:read` | 取得Web 服務監聽清單 |
 | POST | `/api/webservice/listeners` | `webservice:write` | 新增Web 服務監聽 |
+| POST | `/api/webservice/listeners/{key}/copy` | `webservice:write` | 複製Web 服務監聽 |
 | PUT | `/api/webservice/listeners/{key}` | `webservice:write` | 修改Web 服務監聽 |
 | DELETE | `/api/webservice/listeners/{key}` | `webservice:write` | 刪除Web 服務監聽 |
 | PUT | `/api/webservice/listeners/{key}/enable` | `webservice:write` | 啟用或停用Web 服務監聽 |
@@ -303,6 +314,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/webservice/listeners-delete` | `webservice:write` | 批次刪除Web 服務監聽 |
 | GET | `/api/webservice/iplists` | `webservice:read` | 取得訂閱 IP 清單 |
 | POST | `/api/webservice/iplists` | `webservice:write` | 新增訂閱 IP 清單 |
+| POST | `/api/webservice/iplists/{key}/copy` | `webservice:write` | 複製訂閱 IP 清單 |
 | PUT | `/api/webservice/iplists/{key}` | `webservice:write` | 修改訂閱 IP 清單 |
 | DELETE | `/api/webservice/iplists/{key}` | `webservice:write` | 刪除訂閱 IP 清單 |
 | PUT | `/api/webservice/iplists/{key}/enable` | `webservice:write` | 啟用或停用訂閱 IP 清單 |
@@ -340,6 +352,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/guard/logs` | `guard:write` | 清空模組執行日誌 |
 | GET | `/api/guard/jails` | `guard:read` | 取得入侵防護規則清單 |
 | POST | `/api/guard/jails` | `guard:write` | 新增入侵防護規則 |
+| POST | `/api/guard/jails/{key}/copy` | `guard:write` | 複製入侵防護規則 |
 | PUT | `/api/guard/jails/{key}` | `guard:write` | 修改入侵防護規則 |
 | DELETE | `/api/guard/jails/{key}` | `guard:write` | 刪除入侵防護規則 |
 | PUT | `/api/guard/jails/{key}/enable` | `guard:write` | 啟用或停用入侵防護規則 |
@@ -365,6 +378,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/wol/logs` | `wol:write` | 清空模組執行日誌 |
 | GET | `/api/wol/devices` | `wol:read` | 取得喚醒裝置清單 |
 | POST | `/api/wol/devices` | `wol:write` | 新增喚醒裝置 |
+| POST | `/api/wol/devices/{key}/copy` | `wol:write` | 複製喚醒裝置 |
 | PUT | `/api/wol/devices/{key}` | `wol:write` | 修改喚醒裝置 |
 | DELETE | `/api/wol/devices/{key}` | `wol:write` | 刪除喚醒裝置 |
 | PUT | `/api/wol/devices/{key}/enable` | `wol:write` | 啟用或停用喚醒裝置 |
@@ -383,6 +397,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/webterminal/logs` | `webterminal:write` | 清空模組執行日誌 |
 | GET | `/api/webterminal/connections` | `webterminal:read` | 取得終端機連線清單 |
 | POST | `/api/webterminal/connections` | `webterminal:write` | 新增終端機連線 |
+| POST | `/api/webterminal/connections/{key}/copy` | `webterminal:write` | 複製終端機連線 |
 | PUT | `/api/webterminal/connections/{key}` | `webterminal:write` | 修改終端機連線 |
 | DELETE | `/api/webterminal/connections/{key}` | `webterminal:write` | 刪除終端機連線 |
 | PUT | `/api/webterminal/connections/{key}/enable` | `webterminal:write` | 啟用或停用終端機連線 |
@@ -395,14 +410,15 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/webterminal/connections/{key}/test` | `webterminal:write` | 測試已儲存連線 |
 | POST | `/api/webterminal/connections/test` | `webterminal:write` | 測試暫時連線參數 |
 | PUT | `/api/webterminal/connections/{key}/quickaccess` | `webterminal:write` | 設定連線的快捷入口 |
-| GET | `/api/webterminal/credentials` | `webterminal:read` | 取得項目清單 |
-| POST | `/api/webterminal/credentials` | `webterminal:write` | 新增項目 |
-| PUT | `/api/webterminal/credentials/{key}` | `webterminal:write` | 修改項目 |
-| DELETE | `/api/webterminal/credentials/{key}` | `webterminal:write` | 刪除項目 |
-| PUT | `/api/webterminal/credentials/{key}/enable` | `webterminal:write` | 啟用或停用項目 |
-| PUT | `/api/webterminal/credentials-order` | `webterminal:write` | 調整項目排序 |
-| PUT | `/api/webterminal/credentials-enable` | `webterminal:write` | 批次啟用或停用項目 |
-| POST | `/api/webterminal/credentials-delete` | `webterminal:write` | 批次刪除項目 |
+| GET | `/api/webterminal/credentials` | `webterminal:read` | 取得終端認證預設清單 |
+| POST | `/api/webterminal/credentials` | `webterminal:write` | 新增終端認證預設 |
+| POST | `/api/webterminal/credentials/{key}/copy` | `webterminal:write` | 複製終端認證預設 |
+| PUT | `/api/webterminal/credentials/{key}` | `webterminal:write` | 修改終端認證預設 |
+| DELETE | `/api/webterminal/credentials/{key}` | `webterminal:write` | 刪除終端認證預設 |
+| PUT | `/api/webterminal/credentials/{key}/enable` | `webterminal:write` | 啟用或停用終端認證預設 |
+| PUT | `/api/webterminal/credentials-order` | `webterminal:write` | 調整終端認證預設排序 |
+| PUT | `/api/webterminal/credentials-enable` | `webterminal:write` | 批次啟用或停用終端認證預設 |
+| POST | `/api/webterminal/credentials-delete` | `webterminal:write` | 批次刪除終端認證預設 |
 | GET | `/api/webterminal/credentials/{key}/secrets` | `webterminal:write` | 查看金鑰明文 |
 | GET | `/api/webterminal/connections/{key}/ws` | `webterminal:write` | 開啟終端機工作階段（WebSocket） |
 | GET | `/api/webterminal/sessions/{id}/ws` | `webterminal:write` | 接入既有終端機工作階段（WebSocket） |
@@ -448,6 +464,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/cron/logs` | `cron:write` | 清空模組執行日誌 |
 | GET | `/api/cron/tasks` | `cron:read` | 取得排程任務清單 |
 | POST | `/api/cron/tasks` | `cron:write` | 新增排程任務 |
+| POST | `/api/cron/tasks/{key}/copy` | `cron:write` | 複製排程任務 |
 | PUT | `/api/cron/tasks/{key}` | `cron:write` | 修改排程任務 |
 | DELETE | `/api/cron/tasks/{key}` | `cron:write` | 刪除排程任務 |
 | PUT | `/api/cron/tasks/{key}/enable` | `cron:write` | 啟用或停用排程任務 |
@@ -573,6 +590,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/filebrowser/logs` | `filebrowser:write` | 清空模組執行日誌 |
 | GET | `/api/filebrowser/instances` | `filebrowser:read` | 取得File Browser 實例清單 |
 | POST | `/api/filebrowser/instances` | `filebrowser:write` | 新增File Browser 實例 |
+| POST | `/api/filebrowser/instances/{key}/copy` | `filebrowser:write` | 複製File Browser 實例 |
 | PUT | `/api/filebrowser/instances/{key}` | `filebrowser:write` | 修改File Browser 實例 |
 | DELETE | `/api/filebrowser/instances/{key}` | `filebrowser:write` | 刪除File Browser 實例 |
 | PUT | `/api/filebrowser/instances/{key}/enable` | `filebrowser:write` | 啟用或停用File Browser 實例 |
@@ -600,6 +618,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/storage/logs` | `storage:write` | 清空模組執行日誌 |
 | GET | `/api/storage/mounts` | `storage:read` | 取得儲存掛載清單 |
 | POST | `/api/storage/mounts` | `storage:write` | 新增儲存掛載 |
+| POST | `/api/storage/mounts/{key}/copy` | `storage:write` | 複製儲存掛載 |
 | PUT | `/api/storage/mounts/{key}` | `storage:write` | 修改儲存掛載 |
 | DELETE | `/api/storage/mounts/{key}` | `storage:write` | 刪除儲存掛載 |
 | PUT | `/api/storage/mounts/{key}/enable` | `storage:write` | 啟用或停用儲存掛載 |
@@ -623,6 +642,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/notify/logs` | `notify:write` | 清空模組執行日誌 |
 | GET | `/api/notify/channels` | `notify:read` | 取得通知管道清單 |
 | POST | `/api/notify/channels` | `notify:write` | 新增通知管道 |
+| POST | `/api/notify/channels/{key}/copy` | `notify:write` | 複製通知管道 |
 | PUT | `/api/notify/channels/{key}` | `notify:write` | 修改通知管道 |
 | DELETE | `/api/notify/channels/{key}` | `notify:write` | 刪除通知管道 |
 | PUT | `/api/notify/channels/{key}/enable` | `notify:write` | 啟用或停用通知管道 |
@@ -633,6 +653,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/notify/channels/{key}/secrets` | `notify:write` | 查看金鑰明文 |
 | GET | `/api/notify/rules` | `notify:read` | 取得通知規則清單 |
 | POST | `/api/notify/rules` | `notify:write` | 新增通知規則 |
+| POST | `/api/notify/rules/{key}/copy` | `notify:write` | 複製通知規則 |
 | PUT | `/api/notify/rules/{key}` | `notify:write` | 修改通知規則 |
 | DELETE | `/api/notify/rules/{key}` | `notify:write` | 刪除通知規則 |
 | PUT | `/api/notify/rules/{key}/enable` | `notify:write` | 啟用或停用通知規則 |
@@ -652,6 +673,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/perf/logs` | `perf:write` | 清空模組執行日誌 |
 | GET | `/api/perf/rules` | `perf:read` | 取得效能告警規則清單 |
 | POST | `/api/perf/rules` | `perf:write` | 新增效能告警規則 |
+| POST | `/api/perf/rules/{key}/copy` | `perf:write` | 複製效能告警規則 |
 | PUT | `/api/perf/rules/{key}` | `perf:write` | 修改效能告警規則 |
 | DELETE | `/api/perf/rules/{key}` | `perf:write` | 刪除效能告警規則 |
 | PUT | `/api/perf/rules/{key}/enable` | `perf:write` | 啟用或停用效能告警規則 |
@@ -686,6 +708,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/backup/logs` | `backup:write` | 清空模組執行日誌 |
 | GET | `/api/backup/targets` | `backup:read` | 取得備份目的地清單 |
 | POST | `/api/backup/targets` | `backup:write` | 新增備份目的地 |
+| POST | `/api/backup/targets/{key}/copy` | `backup:write` | 複製備份目的地 |
 | PUT | `/api/backup/targets/{key}` | `backup:write` | 修改備份目的地 |
 | DELETE | `/api/backup/targets/{key}` | `backup:write` | 刪除備份目的地 |
 | PUT | `/api/backup/targets/{key}/enable` | `backup:write` | 啟用或停用備份目的地 |

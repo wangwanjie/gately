@@ -321,6 +321,8 @@ func (m *Module) registerIPLists(r module.Router) {
 				updated.UpdatedAt, updated.Count = time.Time{}, 0
 			}
 		},
+		// 下载记录属于模板条目，副本清空后由系统重新下载
+		Copy: func(_, dst *IPList) { dst.UpdatedAt, dst.Count = time.Time{}, 0 },
 		View: m.viewIPListLocked,
 		Changed: func(key string) {
 			m.publishIPListCatalogLocked()

@@ -673,3 +673,19 @@ func TestAPIDeleteRecord(t *testing.T) {
 		t.Fatalf("拒绝删除时记录应保持不变，实际 %v", got)
 	}
 }
+
+// 复制的记录插在中间时分配新 key，已有记录的 key 保持不变（同步状态按 key 跟踪）。
+func TestValidateKeepsRecordKeys(t *testing.T) {
+	task := sampleTask()
+	task.Records[0].Key, task.Records[1].Key, task.Records[2].Key = "r1", "r2", "r3"
+	cp := task.Records[0]
+	cp.Key, cp.Sub = "", "copy"
+	task.Records = append(task.Records[:1], append([]Record{cp}, task.Records[1:]...)...)
+	if err := task.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	got := []string{task.Records[0].Key, task.Records[1].Key, task.Records[2].Key, task.Records[3].Key}
+	if got[0] != "r1" || got[2] != "r2" || got[3] != "r3" || got[1] == "" || got[1] == "r1" || got[1] == "r2" || got[1] == "r3" {
+		t.Fatalf("已有记录的 key 应保持不变，新记录分配新 key: %v", got)
+	}
+}

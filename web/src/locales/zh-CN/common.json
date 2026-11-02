@@ -58,5 +58,10 @@
   "expand": "展开",
   "collapse": "收起",
   "expandAll": "全部展开",
-  "collapseAll": "全部收起"
+  "collapseAll": "全部收起",
+  "duplicate": "复制",
+  "copyName": "{name} 副本",
+  "copyNameN": "{name} 副本 {n}",
+  "copyHint": "以「{name}」为模板新建，保存后新增一条，原条目不受影响。",
+  "copyHintSecrets": "未修改的密码、令牌等密钥沿用原条目的值。"
 }

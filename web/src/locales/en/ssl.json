@@ -134,5 +134,7 @@
   "shortLivedTag": "Short-lived",
   "hoursLeft": "{hours} hours left",
   "renewFailedShort": "renewal failed",
-  "filterPlaceholder": "Search remark, group, domain"
+  "filterPlaceholder": "Search remark, group, domain",
+  "copyReissue": "The copy does not include the original's certificate. After saving, a certificate is issued or read again using the copy's settings.",
+  "copyDeploysOff": "Deploy targets are disabled: the copy could write to the same files as the original certificate. Enable them after checking the file names do not clash."
 }
