@@ -201,3 +201,60 @@ func TestCheckRoute(t *testing.T) {
 		t.Fatalf("上游失败应返回 502，实际 %d", code)
 	}
 }
+
+// 检查更新接口：请求方中途断开（关闭页面）时查询照常完成，不记成失败；查询进行中再次请求返回 409
+func TestCheckRouteDetachedFromRequest(t *testing.T) {
+	started := make(chan struct{}, 1)
+	release := make(chan struct{})
+	spec := Spec{
+		Key: "demo", Name: "demo", Files: []string{"demo"},
+		Resolve: func(ctx context.Context, _ *http.Client, _ Platform, _ string) (*Release, error) {
+			started <- struct{}{}
+			<-release
+			if err := ctx.Err(); err != nil {
+				return nil, err
+			}
+			return &Release{Version: "3.0.0"}, nil
+		},
+		Probe: func(string) (string, error) { return "", nil },
+	}
+	in := New(spec, Options{BinDir: filepath.Join(t.TempDir(), "bin"), Logs: logbuf.New(10, log.New(io.Discard, "", 0))})
+	mux := http.NewServeMux()
+	in.Register(routerFunc(func(pattern string, h http.HandlerFunc) {
+		method, path, _ := strings.Cut(pattern, " ")
+		mux.HandleFunc(method+" /api/demo"+path, h)
+	}))
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+	ctx, cancel := context.WithCancel(context.Background())
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		req, _ := http.NewRequestWithContext(ctx, http.MethodPost, srv.URL+"/api/demo/install/check", nil)
+		if resp, err := http.DefaultClient.Do(req); err == nil {
+			resp.Body.Close()
+		}
+	}()
+	<-started
+	// 查询进行中再次请求
+	resp, err := http.Post(srv.URL+"/api/demo/install/check", "application/json", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusConflict {
+		t.Fatalf("查询进行中应返回 409，实际 %d", resp.StatusCode)
+	}
+	// 请求方断开后再让查询完成
+	cancel()
+	<-done
+	time.Sleep(50 * time.Millisecond)
+	close(release)
+	deadline := time.Now().Add(2 * time.Second)
+	for in.LatestInfo().CheckedAt.IsZero() && time.Now().Before(deadline) {
+		time.Sleep(10 * time.Millisecond)
+	}
+	if l := in.LatestInfo(); l.Version != "3.0.0" || l.Error != "" {
+		t.Fatalf("请求方断开后查询应照常完成: %+v", l)
+	}
+}

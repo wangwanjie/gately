@@ -1,6 +1,7 @@
 package binstall
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"strings"
@@ -111,7 +112,8 @@ func (in *Installer) Register(r module.Router) {
 		httpx.OK(w, in.View())
 	})
 	r.HandleFunc("POST /install/check", func(w http.ResponseWriter, req *http.Request) {
-		if _, err := in.CheckLatest(req.Context()); err != nil {
+		// 查询与请求的生命周期脱钩：用户关闭页面时查询照常完成，不会把“context canceled”记成检查失败（CheckLatest 自带时限）
+		if _, err := in.CheckLatest(context.WithoutCancel(req.Context())); err != nil {
 			status := http.StatusBadGateway
 			var unsupported *UnsupportedError
 			switch {
