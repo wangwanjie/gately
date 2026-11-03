@@ -8,9 +8,13 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 )
+
+// versionPattern 为 -version 允许的写法。
+var versionPattern = regexp.MustCompile(`^v[0-9]+(\.[0-9]+){1,3}$`)
 
 // build 构建前端与各目标的安装包，产物写到 out：
 //   - tar：gately_<版本>_<profile>_<目标>.tar.gz，内含 gately（Windows 为 gately.exe）、LICENSE、README.md，与发布页同结构
@@ -19,6 +23,10 @@ import (
 //     deploy/openwrt/build.sh 打包（与发布流程相同），打包后按同样的规则命名
 //   - docker：不在这里构建，由调用方用仓库根目录的 Dockerfile 加 resolve 输出的 dockerArgs 执行 docker buildx
 func build(r resolved, version, out string, skipWeb bool) error {
+	// 版本号会拼进 -ldflags 与产物文件名，只接受 v 开头的 2~4 段数字（与在线构建器的校验一致）
+	if !versionPattern.MatchString(version) {
+		return fmt.Errorf("版本号格式不对: %q，应为 v0.6.4 这样的写法", version)
+	}
 	if len(r.Targets) == 0 {
 		return fmt.Errorf("没有指定构建目标")
 	}

@@ -78,3 +78,12 @@ func TestResolve(t *testing.T) {
 		}
 	}
 }
+
+// -version 只接受 v 开头的数字版本号，不能借此注入链接器参数或改写产物路径。
+func TestBuildRejectsBadVersion(t *testing.T) {
+	for _, v := range []string{"", "0.6.4", "v1 -X x.y=z", "../../x", "v0.6.4-rc1", "v1"} {
+		if err := build(resolved{}, v, t.TempDir(), true); err == nil || !strings.Contains(err.Error(), "版本号") {
+			t.Fatalf("%q 应被拒绝: %v", v, err)
+		}
+	}
+}
