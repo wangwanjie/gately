@@ -31,7 +31,7 @@ O botão "Restaurar padrões" no cabeçalho da página é separado da desinstala
 | --- | --- |
 | frp | Todas as instâncias de frpc / frps, os proxies e as configurações dos programas, os arquivos de configuração gerados em `frp/` |
 | Cloudflare Tunnel | Todos os túneis e as configurações do programa |
-| Tailscale | Todas as configurações e o estado de login no diretório de estado padrão; se um tailscaled gerenciado pelo Gately estiver rodando, ele faz logout antes. Diretórios de estado personalizados e um tailscaled já existente no sistema ficam intactos |
+| Tailscale | Todas as instâncias e as configurações dos programas, e o estado de login dos diretórios de estado padrão; um tailscaled gerenciado pelo Gately em execução que usa o diretório de estado padrão sai do login primeiro. Diretórios de estado personalizados e um tailscaled do sistema existente não são alterados |
 | NetBird | Todas as configurações e o estado de login e as chaves no diretório de estado padrão; se o daemon gerenciado pelo Gately estiver em execução, ele faz logout antes e esta máquina é removida da rede. Diretórios de estado personalizados e o serviço NetBird já existente no sistema não são tocados |
 | File Browser | Todas as instâncias e as configurações do programa, os usuários, links de compartilhamento e caches de cada instância; os arquivos nos diretórios compartilhados ficam intactos |
 
@@ -50,6 +50,16 @@ Com um caminho informado, a versão instalada online fica sem efeito, e o cartã
 Tokens e chaves são armazenados com permissão 0600. O token do cloudflared é passado por variável de ambiente, então não aparece na lista de processos.
 
 ## Tailscale
+
+Há suporte a várias instâncias: cada uma executa seu próprio tailscaled (diretório de estado, socket de controle, porta WireGuard e processo separados), então uma mesma máquina pode entrar em tailnets diferentes, por exemplo uma instância com TUN do kernel para um Headscale remoto e uma instância em espaço de usuário para um local.
+
+- O diretório de estado de uma instância nova é, por padrão, `tailscale/<chave da instância>` no diretório de configuração; você também pode informar um diretório de estado existente (por exemplo, o que um contêiner tailscale anterior montava) para manter a identidade do nó sem registrar de novo;
+- No máximo uma instância em modo kernel (gerenciada e sem rede em espaço de usuário) pode estar ativada por vez: o tailscaled usa uma tabela de rotas e uma marca de firewall fixas, então duas instâncias de kernel se sobrescreveriam. Socket de controle, diretório de estado e porta WireGuard fixa também não podem ser compartilhados por duas instâncias; ao salvar ou ativar, o conflito é informado;
+- Editar, ativar ou desativar uma instância reinicia apenas o tailscaled dela, e a origem nos logs leva o nome da instância (como `tailscaled:casa`);
+- Ao atualizar da 0.6.4 ou anterior, a configuração única antiga é migrada para uma instância chamada `tailscale`, com o mesmo diretório de estado, socket de controle e linha de comando;
+- Os caminhos dos programas (tailscaled, tailscale) e a instalação online são comuns a todas as instâncias.
+
+Cada instância oferece:
 
 - Gerencia o `tailscaled` (rede em espaço de usuário, adequada a contêineres) ou se conecta a um daemon já existente no sistema;
 - Chave de autenticação ou link de login, com suporte a Headscale;

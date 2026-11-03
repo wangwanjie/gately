@@ -31,7 +31,7 @@ Le bouton « Rétablir les valeurs par défaut » de l'en-tête est distinct de 
 | --- | --- |
 | frp | Toutes les instances frpc / frps, les proxys et les réglages des programmes, fichiers de configuration générés dans `frp/` |
 | Tunnel Cloudflare | Tous les tunnels et les paramètres du programme |
-| Tailscale | Tous les paramètres et l'état de connexion du répertoire d'état par défaut ; si le tailscaled géré par Gately tourne, il se déconnecte d'abord. Les répertoires d'état personnalisés et le tailscaled déjà présent sur le système restent intacts |
+| Tailscale | Toutes les instances et les paramètres des programmes, ainsi que l'état de connexion des répertoires d'état par défaut ; un tailscaled géré par Gately en cours d'exécution qui utilise le répertoire d'état par défaut se déconnecte d'abord. Les répertoires d'état personnalisés et un tailscaled système existant ne sont pas touchés |
 | NetBird | Tous les paramètres ainsi que l'état de connexion et les clés du répertoire d'état par défaut ; si le démon géré par Gately tourne, il se déconnecte d'abord, ce qui retire cette machine du réseau. Les répertoires d'état personnalisés et le service NetBird déjà présent sur le système restent intacts |
 | File Browser | Toutes les instances et les paramètres du programme, avec les utilisateurs, liens de partage et caches de chaque instance ; les fichiers des répertoires partagés restent intacts |
 
@@ -50,6 +50,16 @@ Quand un chemin est indiqué, la version installée en ligne n'est pas utilisée
 Les jetons et les clés sont stockés avec les permissions 0600. Le jeton cloudflared est transmis via une variable d'environnement, il n'apparaît donc pas dans la liste des processus.
 
 ## Tailscale
+
+Plusieurs instances sont prises en charge : chacune exécute son propre tailscaled (répertoire d'état, socket de contrôle, port WireGuard et processus distincts), si bien qu'une même machine peut rejoindre des tailnets différents, par exemple une instance TUN noyau pour un Headscale distant et une instance en espace utilisateur pour un Headscale local.
+
+- Le répertoire d'état d'une nouvelle instance est par défaut `tailscale/<clé d'instance>` dans le répertoire de configuration ; vous pouvez aussi indiquer un répertoire d'état existant (par exemple celui monté par un ancien conteneur tailscale) pour conserver l'identité du nœud sans réenregistrement ;
+- Une seule instance en mode noyau (gérée, sans réseau en espace utilisateur) peut être activée à la fois : tailscaled utilise une table de routage et une marque de pare-feu fixes, deux instances noyau s'écraseraient. Deux instances ne peuvent pas non plus partager un socket de contrôle, un répertoire d'état ou un port WireGuard fixe ; l'enregistrement ou l'activation signale le conflit ;
+- Modifier, activer ou désactiver une instance ne redémarre que son propre tailscaled, et la source des journaux porte le nom de l'instance (comme `tailscaled:maison`) ;
+- Lors d'une mise à niveau depuis la 0.6.4 ou antérieure, l'ancienne configuration unique est migrée vers une instance nommée `tailscale`, avec le même répertoire d'état, le même socket de contrôle et la même ligne de commande ;
+- Les chemins des programmes (tailscaled, tailscale) et l'installation en ligne sont communs à toutes les instances.
+
+Chaque instance prend en charge :
 
 - Gère `tailscaled` (réseau en espace utilisateur, adapté aux conteneurs) ou se rattache à un démon système existant ;
 - Clé d'authentification ou lien de connexion, Headscale pris en charge ;

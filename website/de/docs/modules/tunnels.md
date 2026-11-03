@@ -31,7 +31,7 @@ Für Tailscale gibt es unter macOS und Windows keine direkt lauffähigen Pakete.
 | --- | --- |
 | frp | Alle frpc-/frps-Instanzen, Proxys und Programmeinstellungen, die unter `frp/` erzeugten Konfigurationsdateien |
 | Cloudflare Tunnel | Alle Tunnel und Programmeinstellungen |
-| Tailscale | Alle Einstellungen, der Anmeldestatus im Standard-Statusverzeichnis; läuft ein von Gately verwalteter tailscaled, meldet er sich vorher ab. Eigene Statusverzeichnisse und ein vorhandener System-tailscaled bleiben unverändert |
+| Tailscale | Alle Instanzen und Programmeinstellungen sowie der Anmeldestatus in den Standard-Statusverzeichnissen; ein laufender, von Gately verwalteter tailscaled mit Standard-Statusverzeichnis meldet sich zuerst ab. Benutzerdefinierte Statusverzeichnisse und ein vorhandener System-tailscaled bleiben unberührt |
 | NetBird | Alle Einstellungen, Anmeldestatus und Schlüssel im Standard-Statusverzeichnis; läuft ein von Gately verwalteter Daemon, meldet er sich vorher ab, wodurch dieser Rechner aus dem Netzwerk entfernt wird. Eigene Statusverzeichnisse und ein vorhandener System-NetBird-Dienst bleiben unverändert |
 | File Browser | Alle Instanzen und Programmeinstellungen, Benutzer, Freigabelinks und Caches jeder Instanz; Dateien in den freigegebenen Verzeichnissen bleiben unverändert |
 
@@ -50,6 +50,16 @@ Ist ein Pfad eingetragen, wird die online installierte Version nicht verwendet; 
 Token und Schlüssel werden mit Rechten 0600 gespeichert. Das cloudflared-Token wird über eine Umgebungsvariable übergeben und erscheint daher nicht in der Prozessliste.
 
 ## Tailscale
+
+Mehrere Instanzen werden unterstützt: Jede Instanz führt einen eigenen tailscaled aus (eigenes Statusverzeichnis, eigener Steuersocket, WireGuard-Port und Prozess), sodass ein Rechner verschiedenen Tailnets beitreten kann, etwa mit einer Kernel-TUN-Instanz für ein entferntes Headscale und einer Userspace-Instanz für ein lokales.
+
+- Das Statusverzeichnis einer neuen Instanz ist standardmäßig `tailscale/<Instanz-Key>` im Konfigurationsverzeichnis; Sie können auch ein vorhandenes Statusverzeichnis angeben (z. B. das eines früheren tailscale-Containers), um die Knotenidentität ohne erneute Registrierung zu behalten;
+- Es kann höchstens eine Instanz im Kernel-Modus (verwaltet, ohne Userspace-Netzwerk) gleichzeitig aktiviert sein: tailscaled verwendet eine feste Routing-Tabelle und Firewall-Markierung, zwei Kernel-Instanzen würden sich gegenseitig überschreiben. Auch Steuersocket, Statusverzeichnis und fester WireGuard-Port können nicht von zwei Instanzen gemeinsam genutzt werden; Speichern oder Aktivieren meldet den Konflikt;
+- Bearbeiten, Aktivieren oder Deaktivieren einer Instanz startet nur deren eigenen tailscaled neu, und die Logquelle trägt den Instanznamen (z. B. `tailscaled:home`);
+- Beim Upgrade von 0.6.4 oder älter wird die bisherige Einzelkonfiguration in eine Instanz namens `tailscale` migriert, mit unverändertem Statusverzeichnis, Steuersocket und Befehlszeile;
+- Die Programmpfade (tailscaled, tailscale) und die Online-Installation gelten für alle Instanzen.
+
+Jede Instanz unterstützt:
 
 - Verwaltet `tailscaled` (Userspace-Networking, containerfreundlich) oder bindet sich an einen vorhandenen System-Daemon an;
 - Auth-Key oder Anmeldelink, Headscale wird unterstützt;

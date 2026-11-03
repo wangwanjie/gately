@@ -31,7 +31,7 @@ El botón «Restaurar valores predeterminados» de la cabecera es independiente 
 | --- | --- |
 | frp | Todas las instancias de frpc / frps, los proxies y los ajustes de los programas, y los archivos de configuración generados en `frp/` |
 | Cloudflare Tunnel | Todos los túneles y los ajustes del programa |
-| Tailscale | Todos los ajustes y el estado de sesión del directorio de estado predeterminado; si el tailscaled gestionado por Gately está en ejecución, primero cierra la sesión. Los directorios de estado personalizados y el tailscaled existente del sistema quedan intactos |
+| Tailscale | Todas las instancias y la configuración de programas, y el estado de inicio de sesión de los directorios de estado predeterminados; un tailscaled gestionado por Gately en ejecución que usa el directorio de estado predeterminado cierra sesión primero. Los directorios de estado personalizados y un tailscaled del sistema existente no se tocan |
 | NetBird | Todos los ajustes y el estado de sesión y las claves del directorio de estado predeterminado; si el demonio gestionado por Gately está en ejecución, primero cierra la sesión y esta máquina se elimina de la red. Los directorios de estado personalizados y el servicio NetBird existente del sistema no se tocan |
 | File Browser | Todas las instancias y los ajustes del programa, con los usuarios, enlaces compartidos y cachés de cada instancia; los archivos de los directorios compartidos quedan intactos |
 
@@ -50,6 +50,16 @@ Si se indica una ruta, la versión instalada en línea no se usa y la tarjeta lo
 Los tokens y las claves se guardan con permisos 0600. El token de cloudflared se pasa mediante una variable de entorno, por lo que no aparece en la lista de procesos.
 
 ## Tailscale
+
+Se admiten varias instancias: cada una ejecuta su propio tailscaled (directorio de estado, socket de control, puerto WireGuard y proceso separados), de modo que un mismo equipo puede unirse a tailnets distintas, por ejemplo una instancia TUN del kernel para un Headscale remoto y una instancia en espacio de usuario para uno local.
+
+- El directorio de estado de una instancia nueva es por defecto `tailscale/<clave de instancia>` dentro del directorio de configuración; también puedes indicar un directorio de estado existente (por ejemplo, el que montaba un contenedor de tailscale anterior) para conservar la identidad del nodo sin volver a registrarlo;
+- Como máximo puede haber una instancia en modo kernel (gestionada y sin red en espacio de usuario) habilitada a la vez: tailscaled usa una tabla de rutas y una marca de cortafuegos fijas, así que dos instancias de kernel se sobrescribirían. Tampoco pueden compartir dos instancias el socket de control, el directorio de estado ni un puerto WireGuard fijo; al guardar o habilitar se avisa del conflicto;
+- Editar, habilitar o deshabilitar una instancia reinicia solo su propio tailscaled, y el origen de los registros lleva el nombre de la instancia (como `tailscaled:casa`);
+- Al actualizar desde la 0.6.4 o anteriores, la configuración única anterior se migra a una instancia llamada `tailscale`, con el mismo directorio de estado, socket de control y línea de comandos;
+- Las rutas de los programas (tailscaled, tailscale) y la instalación en línea son comunes a todas las instancias.
+
+Cada instancia admite:
 
 - Gestiona `tailscaled` (red en espacio de usuario, apta para contenedores) o se conecta a un demonio del sistema existente;
 - Clave de autenticación o enlace de inicio de sesión, con compatibilidad con Headscale;

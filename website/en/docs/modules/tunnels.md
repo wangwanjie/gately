@@ -31,7 +31,7 @@ Tailscale has no ready-to-run packages for macOS and Windows; use the official i
 | --- | --- |
 | frp | All frpc / frps instances, proxies and program settings, plus the config files generated under `frp/` |
 | Cloudflare Tunnel | All tunnels and program settings |
-| Tailscale | All settings and the login state in the default state directory; a running Gately-managed tailscaled logs out first. Custom state directories and an existing system tailscaled are left alone |
+| Tailscale | All instances and program settings, and the login state in the default state directories; a running Gately-managed tailscaled that uses the default state directory logs out first. Custom state directories and an existing system tailscaled are left alone |
 | NetBird | All settings and the login state and keys in the default state directory; a running Gately-managed daemon logs out first, which removes this machine from the network. Custom state directories and an existing system NetBird service are left alone |
 | File Browser | All instances and program settings, plus each instance's users, share links and caches; files in the shared directories stay untouched |
 
@@ -50,6 +50,16 @@ When a path is set, the online-installed version is not used, and the card point
 Tokens and keys are stored with 0600 permissions. The cloudflared token is passed through an environment variable, so it does not appear in the process list.
 
 ## Tailscale
+
+Multiple instances are supported: each instance runs its own tailscaled (separate state directory, control socket, WireGuard port and process), so one machine can join different tailnets, for example a kernel TUN instance for a remote Headscale and a userspace instance for a local one.
+
+- A new instance's state directory defaults to `tailscale/<instance key>` under the configuration directory; you can also enter an existing state directory (for example the one an earlier tailscale container mounted) to keep the node identity without registering again;
+- At most one kernel-mode instance (managed, without userspace networking) can be enabled at a time: tailscaled uses a fixed routing table and firewall mark, so two kernel instances would overwrite each other. Control sockets, state directories and fixed WireGuard ports cannot be shared by two instances either; saving or enabling reports the conflict;
+- Editing, enabling or disabling an instance restarts only its own tailscaled, and log sources carry the instance name (such as `tailscaled:home`);
+- When upgrading from 0.6.4 or earlier, the old single configuration is migrated to an instance named `tailscale`, with the same state directory, control socket and command line;
+- The program paths (tailscaled, tailscale) and the online install are shared by all instances.
+
+Each instance supports:
 
 - Manages `tailscaled` (userspace networking, container-friendly) or attaches to an existing system daemon;
 - Auth key or login link, with Headscale supported;
