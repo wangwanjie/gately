@@ -1,7 +1,7 @@
 import { watch } from 'vue'
 import { createRouter, createWebHashHistory } from 'vue-router'
 import { i18n, t } from './i18n'
-import { pathEnabled, sessionRole } from './nav'
+import { disabledModules, pathEnabled, sessionRole } from './nav'
 import { clearClips } from './components/terminal/clipboard'
 
 const router = createRouter({
@@ -71,7 +71,19 @@ async function hasSession(): Promise<boolean> {
     // 直接用 fetch：api.ts 依赖本模块，这里引用它会形成循环依赖；子路径前缀由 basePath.ts 统一补上
     const resp = await fetch('/api/session', { credentials: 'same-origin' })
     // 只有明确的 401 视为未登录，网络错误等交给页面自身的接口处理
-    return resp.status !== 401
+    if (resp.status === 401) {
+      return false
+    }
+    if (resp.ok) {
+      // 先记下角色与已关闭模块再放行：只读账号直接打开管理员页面（如刷新 #/settings）时，
+      // 路由守卫即可跳回总览，避免页面先挂载、请求管理员接口得到 403
+      const s = (await resp.json().catch(() => null)) as { role?: string; disabledModules?: string[] } | null
+      if (s) {
+        sessionRole.value = s.role === 'readonly' ? 'readonly' : 'admin'
+        disabledModules.value = s.disabledModules ?? []
+      }
+    }
+    return true
   } catch {
     return true
   }
