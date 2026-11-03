@@ -1301,7 +1301,8 @@ const logSite = computed(() => {
 function openLogs(ip: string) {
   const s = logSite.value
   emit('logs', {
-    name: s && !s.default ? s.name : '',
+    // 默认站点有名称时访问日志同样带站点字段，按名称过滤；否则会把全部站点的日志当成默认站点的显示
+    name: s ? s.name : '',
     label: s ? siteName(s) : '',
     domain: s && !s.default ? s.domains[0] : undefined,
     ip: ip || undefined,
