@@ -924,6 +924,46 @@ func TestUpdateEndpointsAuth(t *testing.T) {
 	if code, _ := doJSON(t, ro, "PUT", srv.URL+"/api/system/settings", map[string]any{"disableUpdateCheck": true}); code != http.StatusForbidden {
 		t.Fatalf("只读账号不应能关闭自动检查，实际 %d", code)
 	}
+	// 只读账号与只读令牌调用“检查更新”只返回上次的结果，不访问 GitHub，避免占用匿名接口额度
+	for i := 0; i < 3; i++ {
+		if code, body := doJSON(t, ro, "GET", srv.URL+"/api/system/update", nil); code != 200 {
+			t.Fatalf("只读账号检查更新应返回上次结果: %d %s", code, body)
+		}
+	}
+	_, body := doJSON(t, admin, "POST", srv.URL+"/api/tokens", map[string]any{"name": "状态", "scopes": []string{"status:read"}})
+	var created struct {
+		Secret string `json:"secret"`
+	}
+	_ = json.Unmarshal(body, &created)
+	req, _ := http.NewRequest("GET", srv.URL+"/api/system/update", nil)
+	req.Header.Set("Authorization", "Bearer "+created.Secret)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	if resp.StatusCode != 200 {
+		t.Fatalf("只读令牌检查更新应返回上次结果: %d", resp.StatusCode)
+	}
+	if n := gh.hits.Load(); n != 0 {
+		t.Fatalf("只读身份检查更新不应访问 GitHub，实际 %d 次", n)
+	}
+	// 管理员检查时才真正访问 GitHub，之后只读账号读到的是这次的结果
+	if code, body := doJSON(t, admin, "GET", srv.URL+"/api/system/update", nil); code != 200 {
+		t.Fatalf("管理员检查更新失败: %d %s", code, body)
+	}
+	if n := gh.hits.Load(); n == 0 {
+		t.Fatal("管理员检查更新应访问 GitHub")
+	}
+	_, body = doJSON(t, ro, "GET", srv.URL+"/api/system/update", nil)
+	var v struct {
+		Latest    string `json:"latest"`
+		HasUpdate bool   `json:"hasUpdate"`
+	}
+	_ = json.Unmarshal(body, &v)
+	if v.Latest != "v0.6.3" || !v.HasUpdate {
+		t.Fatalf("只读账号应读到管理员检查的结果: %s", body)
+	}
 }
 
 // 程序退出时（ctx 取消）未检查的托管程序保留通知记录，重启后不会重复通知同一版本

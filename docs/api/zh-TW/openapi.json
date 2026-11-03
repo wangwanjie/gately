@@ -32963,7 +32963,7 @@
     },
     "/api/system/update": {
       "get": {
-        "description": "立即讀取 GitHub 上的發布列表與 Gately 已公開的安全公告（GitHub Security Advisories），存取時使用全域設定 `updateProxy` 中的代理；距上次成功檢查不足 30 秒時直接回傳上次結果。`hasUpdate` 表示有新版本；`security` 為 true 表示目前版本受已公開的安全問題影響，`advisories` 列出影響目前版本的安全公告（`id`、`summary`、`severity`、`url`、`ranges`），`securityReleases` 列出比目前版本新、更新說明帶有安全章節的版本。`selfUpgrade.supported` 表示目前部署方式能否線上升級，不能時 `reason` 為 `os`、`docker`、`fnos`、`opkg`、`apk` 或 `readonly`。讀取失敗回傳 502。\n\n所需權限：`status:read`。",
+        "description": "立即讀取 GitHub 上的發布列表與 Gately 已公開的安全公告（GitHub Security Advisories），存取時使用全域設定 `updateProxy` 中的代理；距上次成功檢查不足 30 秒時直接回傳上次結果。`hasUpdate` 表示有新版本；`security` 為 true 表示目前版本受已公開的安全問題影響，`advisories` 列出影響目前版本的安全公告（`id`、`summary`、`severity`、`url`、`ranges`），`securityReleases` 列出比目前版本新、更新說明帶有安全章節的版本。`selfUpgrade.supported` 表示目前部署方式能否線上升級，不能時 `reason` 為 `os`、`docker`、`fnos`、`opkg`、`apk` 或 `readonly`。讀取失敗回傳 502。唯讀帳號與只有讀取權限的 API 權杖只回傳上次檢查的結果（同 `/api/system/update/state`），不存取 GitHub。\n\n所需權限：`status:read`。",
         "responses": {
           "200": {
             "description": "成功"

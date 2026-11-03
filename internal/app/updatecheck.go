@@ -13,6 +13,8 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/wangwanjie/gately/internal/apitoken"
+	"github.com/wangwanjie/gately/internal/auth"
 	"github.com/wangwanjie/gately/internal/binstall"
 	"github.com/wangwanjie/gately/internal/events"
 	"github.com/wangwanjie/gately/internal/httpx"
@@ -800,6 +802,12 @@ func (a *App) wakeUpdateCheck() {
 // 距上次检查（成功或失败）不足 manualCheckMinGap 时直接返回上次结果，失败的结果同样返回 502，
 // 避免反复点击或脚本调用触发 GitHub 匿名接口的频率限制。
 func (a *App) handleCheckUpdate(w http.ResponseWriter, r *http.Request) {
+	// 只读账号与只有读权限的 API 令牌只返回上次检查的结果，不访问 GitHub：
+	// 否则它们反复调用会占用 GitHub 匿名接口的额度（每小时 60 次），挤掉自动检查与管理员的检查
+	if !auth.Allowed(r.Context(), apitoken.DomainStatus+":"+apitoken.LevelWrite) {
+		a.handleUpdateState(w, r)
+		return
+	}
 	// 检查与请求的生命周期脱钩：用户关闭页面时检查照常完成，不会被记成一次失败。
 	// 最短间隔在 checkSelf 拿到锁后判断，并发的多个请求不会各自访问 GitHub
 	v, err := a.checkSelf(context.WithoutCancel(r.Context()), manualCheckMinGap)

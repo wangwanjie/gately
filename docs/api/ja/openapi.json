@@ -32963,7 +32963,7 @@
     },
     "/api/system/update": {
       "get": {
-        "description": "GitHub のリリース一覧と Gately の公開済みセキュリティアドバイザリー（GitHub Security Advisories）を即座に読み込みます。アクセスにはグローバル設定 `updateProxy` のプロキシを使用し、前回の成功から 30 秒以内は前回の結果を返します。`hasUpdate` は新しいバージョンがあることを示し、`security` が true の場合は現在のバージョンが公開済みのセキュリティ問題の影響を受けます。`advisories` は現在のバージョンに影響するアドバイザリー（`id`、`summary`、`severity`、`url`、`ranges`）、`securityReleases` は現在より新しく、リリースノートにセキュリティの章があるバージョンです。`selfUpgrade.supported` はこのデプロイ方法でオンラインアップグレードできるかを示し、できない場合 `reason` は `os`、`docker`、`fnos`、`opkg`、`apk`、`readonly` のいずれかです。読み込みに失敗すると 502 を返します。\n\n必要な権限: `status:read`。",
+        "description": "GitHub のリリース一覧と Gately の公開済みセキュリティアドバイザリー（GitHub Security Advisories）を即座に読み込みます。アクセスにはグローバル設定 `updateProxy` のプロキシを使用し、前回の成功から 30 秒以内は前回の結果を返します。`hasUpdate` は新しいバージョンがあることを示し、`security` が true の場合は現在のバージョンが公開済みのセキュリティ問題の影響を受けます。`advisories` は現在のバージョンに影響するアドバイザリー（`id`、`summary`、`severity`、`url`、`ranges`）、`securityReleases` は現在より新しく、リリースノートにセキュリティの章があるバージョンです。`selfUpgrade.supported` はこのデプロイ方法でオンラインアップグレードできるかを示し、できない場合 `reason` は `os`、`docker`、`fnos`、`opkg`、`apk`、`readonly` のいずれかです。読み込みに失敗すると 502 を返します。読み取り専用アカウントと読み取り権限のみの API トークンは、GitHub にアクセスせず前回のチェック結果（`/api/system/update/state` と同じ）を返します。\n\n必要な権限: `status:read`。",
         "responses": {
           "200": {
             "description": "成功"

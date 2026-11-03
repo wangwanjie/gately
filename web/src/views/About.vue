@@ -21,7 +21,8 @@
         <el-button tag="a" :href="`${REPO}/releases`" target="_blank" rel="noopener" :icon="Package">{{ t('about.releases') }}</el-button>
         <el-button tag="a" :href="`${REPO}/issues`" target="_blank" rel="noopener" :icon="MessageSquare">{{ t('about.feedback') }}</el-button>
         <el-button tag="a" :href="sponsorUrl" target="_blank" rel="noopener" :icon="Heart">{{ t('about.sponsor') }}</el-button>
-        <el-button :icon="RefreshCw" :loading="checking" @click="checkUpdate">{{ t('about.checkUpdate') }}</el-button>
+        <!-- 只读身份调用检查接口只拿到上次的结果（不访问 GitHub），按钮只对管理员显示 -->
+        <el-button v-if="isAdmin" :icon="RefreshCw" :loading="checking" @click="checkUpdate">{{ t('about.checkUpdate') }}</el-button>
       </div>
       <div v-if="update?.hasUpdate" class="update-hint">
         {{ t('about.newVersion', { latest: update.latest, current: update.current }) }}

@@ -32963,7 +32963,7 @@
     },
     "/api/system/update": {
       "get": {
-        "description": "GitHub 의 릴리스 목록과 Gately 의 공개된 보안 공지(GitHub Security Advisories)를 즉시 읽습니다. 전역 설정 `updateProxy` 의 프록시를 사용하며, 마지막 성공 확인 후 30초 이내에는 이전 결과를 반환합니다. `hasUpdate` 는 새 버전이 있음을, `security` 가 true 이면 현재 버전이 공개된 보안 문제의 영향을 받음을 뜻합니다. `advisories` 는 현재 버전에 영향을 주는 보안 공지(`id`, `summary`, `severity`, `url`, `ranges`), `securityReleases` 는 현재 버전보다 새롭고 릴리스 노트에 보안 섹션이 있는 버전입니다. `selfUpgrade.supported` 는 이 배포 방식에서 온라인 업그레이드가 가능한지 나타내며, 불가능하면 `reason` 은 `os`, `docker`, `fnos`, `opkg`, `apk`, `readonly` 중 하나입니다. 읽기에 실패하면 502 를 반환합니다.\n\n필요한 권한: `status:read`.",
+        "description": "GitHub 의 릴리스 목록과 Gately 의 공개된 보안 공지(GitHub Security Advisories)를 즉시 읽습니다. 전역 설정 `updateProxy` 의 프록시를 사용하며, 마지막 성공 확인 후 30초 이내에는 이전 결과를 반환합니다. `hasUpdate` 는 새 버전이 있음을, `security` 가 true 이면 현재 버전이 공개된 보안 문제의 영향을 받음을 뜻합니다. `advisories` 는 현재 버전에 영향을 주는 보안 공지(`id`, `summary`, `severity`, `url`, `ranges`), `securityReleases` 는 현재 버전보다 새롭고 릴리스 노트에 보안 섹션이 있는 버전입니다. `selfUpgrade.supported` 는 이 배포 방식에서 온라인 업그레이드가 가능한지 나타내며, 불가능하면 `reason` 은 `os`, `docker`, `fnos`, `opkg`, `apk`, `readonly` 중 하나입니다. 읽기에 실패하면 502 를 반환합니다. 읽기 전용 계정과 읽기 권한만 있는 API 토큰은 GitHub에 접속하지 않고 마지막 확인 결과(`/api/system/update/state`와 동일)를 반환합니다.\n\n필요한 권한: `status:read`.",
         "responses": {
           "200": {
             "description": "성공"
