@@ -9,7 +9,7 @@ A interface de administração controla DNS, certificados e portas. Percorra a l
 - [ ] Quando familiares ou colegas só precisarem visualizar, crie para eles uma conta somente leitura em vez de compartilhar a senha do administrador
 - [ ] Defina um caminho de entrada seguro, para que a interface de administração só seja acessível por um caminho personalizado
 - [ ] Ative o "Acesso apenas pela rede local" e use uma VPN (como o [Tailscale](/pt-BR/docs/modules/tunnels)) quando precisar administrar remotamente
-- [ ] Se a porta do console estiver acessível pela internet, mude "Configurações → Controle de acesso → Resposta não autorizada" para página 404 simples, fechar a conexão, sem resposta ou página personalizada, para que visitantes não autorizados não percebam que é o Gately; uma varredura de portas ainda encontra a porta, então oculte-a por completo com um firewall ou removendo o redirecionamento
+- [ ] Se a porta do console estiver acessível pela internet, mude "Configurações → Controle de acesso → Resposta não autorizada" para página 404 simples, página em branco, fechar a conexão, sem resposta ou página personalizada, para que visitantes não autorizados não percebam que é o Gately; uma varredura de portas ainda encontra a porta, então oculte-a por completo com um firewall ou removendo o redirecionamento
 - [ ] Ative o HTTPS na interface de administração ao acessá-la por redes não confiáveis
 - [ ] Dê aos scripts de automação e à [CLI / MCP](/pt-BR/docs/guide/cli-mcp) [tokens de API](/pt-BR/docs/reference/api) com privilégios mínimos e data de expiração, e evite compartilhar a senha do administrador
 - [ ] Defina uma senha de criptografia para os [backups da configuração](/pt-BR/docs/modules/backup) e ative os backups agendados
