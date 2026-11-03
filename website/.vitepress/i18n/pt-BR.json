@@ -83,8 +83,8 @@
   "home": {
     "pill": "Gratuito e de código aberto · Apache-2.0",
     "announce": {
-      "text": "v0.6.3.5: rede com NetBird, verificação automática de atualizações e alertas de segurança, cópia de itens, mover sites entre listeners, com correções de segurança →",
-      "link": "/pt-BR/news/v0.6.3.5"
+      "text": "v0.6.4: build personalizado online, ocultar a porta de administração, estilos de página de erro para sites →",
+      "link": "/pt-BR/news/v0.6.4"
     },
     "titleLine1": "O gateway de rede tudo em um",
     "titleLine2": "Código aberto e pronto para usar",
@@ -173,7 +173,7 @@
       },
       {
         "title": "Reforço de segurança",
-        "text": "Passkey e autenticação em dois fatores, contas somente leitura, log de auditoria, histórico de configuração com reversão em um clique, limitação de tentativas de login, caminho de entrada seguro e acesso apenas pela rede local."
+        "text": "Passkey e autenticação em dois fatores, contas somente leitura, log de auditoria, histórico de configuração com reversão em um clique, limitação de tentativas de login, caminho de entrada seguro, acesso apenas pela rede local e ocultação da porta de administração."
       },
       {
         "title": "Controle de acesso",

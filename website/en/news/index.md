@@ -7,6 +7,10 @@ description: Release announcements and notes for each Gately version.
 
 Announcements for major releases are listed below. See [GitHub Releases](https://github.com/wangwanjie/gately/releases) for the full changes and downloads of every version.
 
+## [v0.6.4](/en/news/v0.6.4)
+
+November 3, 2026 · Custom builds: pick only the modules and UI languages you need on build.gately.cn and generate smaller packages and Docker images online; the admin console can hide the signs of unauthorized access; Web sites can choose from 10 error page styles or a custom page, and can replace backend error pages.
+
 ## [v0.6.3.5](/en/news/v0.6.3.5)
 
 November 3, 2026 · New NetBird networking; automatic checks for new versions and security advisories with alerts; every list item can be copied; Web sites can move to another listener; page headers and list toolbars stay visible while scrolling; notifications, Webhooks and IP lists can use a proxy; Docker background tasks can be stopped; includes security fixes, upgrading is recommended.

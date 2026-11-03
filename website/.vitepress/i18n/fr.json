@@ -83,8 +83,8 @@
   "home": {
     "pill": "Gratuit et open source · Apache-2.0",
     "announce": {
-      "text": "v0.6.3.5 : réseau NetBird, vérification automatique des mises à jour et alertes de sécurité, copie d’éléments, déplacement des sites entre écouteurs, avec correctifs de sécurité →",
-      "link": "/fr/news/v0.6.3.5"
+      "text": "v0.6.4 : build personnalisé en ligne, masquage du port d’administration, styles de page d’erreur pour les sites →",
+      "link": "/fr/news/v0.6.4"
     },
     "titleLine1": "La passerelle réseau tout-en-un",
     "titleLine2": "Open source, prête à l'emploi",
@@ -173,7 +173,7 @@
       },
       {
         "title": "Durcissement de la sécurité",
-        "text": "Passkeys et authentification à deux facteurs, comptes en lecture seule, journal d'audit, historique de configuration avec restauration en un clic, limitation des échecs de connexion, chemin d'accès secret et accès limité au réseau local."
+        "text": "Passkeys et authentification à deux facteurs, comptes en lecture seule, journal d'audit, historique de configuration avec restauration en un clic, limitation des échecs de connexion, chemin d'accès secret, accès limité au réseau local et masquage du port d'administration."
       },
       {
         "title": "Contrôle d'accès",

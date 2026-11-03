@@ -83,8 +83,8 @@
   "home": {
     "pill": "Kostenlos und Open Source · Apache-2.0",
     "announce": {
-      "text": "v0.6.3.5: Vernetzung mit NetBird, automatische Update-Prüfung und Sicherheitswarnungen, Einträge kopieren, Sites zwischen Listenern verschieben, mit Sicherheitskorrekturen →",
-      "link": "/de/news/v0.6.3.5"
+      "text": "v0.6.4: benutzerdefinierte Builds online, Admin-Port verbergen, Fehlerseiten-Stile für Sites →",
+      "link": "/de/news/v0.6.4"
     },
     "titleLine1": "Das All-in-one-Netzwerk-Gateway",
     "titleLine2": "Open Source, sofort einsatzbereit",
@@ -173,7 +173,7 @@
       },
       {
         "title": "Sicherheitshärtung",
-        "text": "Passkey und Zwei-Faktor-Authentifizierung, Nur-Lese-Konten, Audit-Protokoll, Konfigurationsverlauf mit Zurücksetzen per Klick, Anmeldebegrenzung, sicherer Einstiegspfad und Zugriff nur aus dem LAN."
+        "text": "Passkey und Zwei-Faktor-Authentifizierung, Nur-Lese-Konten, Audit-Protokoll, Konfigurationsverlauf mit Zurücksetzen per Klick, Anmeldebegrenzung, sicherer Einstiegspfad, Zugriff nur aus dem LAN und verborgener Admin-Port."
       },
       {
         "title": "Zugriffskontrolle",
