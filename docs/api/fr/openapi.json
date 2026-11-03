@@ -22366,7 +22366,7 @@
     },
     "/api/netbird/status": {
       "get": {
-        "description": "`daemonStatus` vaut Idle, Connecting, Connected, NeedsLogin, LoginFailed ou SessionExpired. Sans clé de configuration, `authUrl` est le lien de connexion (connexion par code d’appareil sous Linux, que l’on peut ouvrir sur n’importe quel appareil ; sous macOS et Windows la connexion doit en général se terminer dans un navigateur de cette machine) et `authCode` le code à saisir (vide si le lien le contient déjà) ; le lien est renouvelé automatiquement à son expiration. `peers` liste les autres pairs du réseau et `connType` vaut P2P ou Relayed.\n\nPermission requise : `netbird:read`.",
+        "description": "`daemonStatus` vaut Idle, Connecting, Connected, NeedsLogin, LoginFailed ou SessionExpired. Sans clé de configuration, `authUrl` est le lien de connexion (connexion par code d’appareil sous Linux, que l’on peut ouvrir sur n’importe quel appareil ; sous macOS et Windows la connexion doit en général se terminer dans un navigateur de cette machine) et `authCode` le code à saisir (vide si le lien le contient déjà) ; le lien est renouvelé automatiquement à son expiration. `peers` liste les autres pairs du réseau et `connType` vaut P2P ou Relayed. `authUrl` et `authCode` ne sont renvoyés qu'aux identités disposant de `netbird:write`.\n\nPermission requise : `netbird:read`.",
         "responses": {
           "200": {
             "description": "Succès"
@@ -34124,7 +34124,7 @@
     },
     "/api/tailscale/status": {
       "get": {
-        "description": "Permission requise : `tailscale:read`.",
+        "description": "Sans clé d'authentification et avant la connexion, `authUrl` est le lien de connexion ; il n'est renvoyé qu'aux identités disposant de `tailscale:write`.\n\nPermission requise : `tailscale:read`.",
         "responses": {
           "200": {
             "description": "Succès"

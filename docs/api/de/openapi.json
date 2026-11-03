@@ -22366,7 +22366,7 @@
     },
     "/api/netbird/status": {
       "get": {
-        "description": "`daemonStatus` ist Idle, Connecting, Connected, NeedsLogin, LoginFailed oder SessionExpired. Ohne Setup-Key ist `authUrl` der Anmeldelink (unter Linux Anmeldung per Gerätecode, auf jedem Gerät zu öffnen; unter macOS und Windows meist nur in einem Browser auf diesem Rechner abzuschließen) und `authCode` der einzugebende Code (leer, wenn der Link ihn enthält); abgelaufene Links werden automatisch erneuert. `peers` sind die anderen Peers im Netzwerk, `connType` ist P2P oder Relayed.\n\nErforderliche Berechtigung: `netbird:read`.",
+        "description": "`daemonStatus` ist Idle, Connecting, Connected, NeedsLogin, LoginFailed oder SessionExpired. Ohne Setup-Key ist `authUrl` der Anmeldelink (unter Linux Anmeldung per Gerätecode, auf jedem Gerät zu öffnen; unter macOS und Windows meist nur in einem Browser auf diesem Rechner abzuschließen) und `authCode` der einzugebende Code (leer, wenn der Link ihn enthält); abgelaufene Links werden automatisch erneuert. `peers` sind die anderen Peers im Netzwerk, `connType` ist P2P oder Relayed. `authUrl` und `authCode` werden nur an Identitäten mit `netbird:write` zurückgegeben.\n\nErforderliche Berechtigung: `netbird:read`.",
         "responses": {
           "200": {
             "description": "Erfolgreich"
@@ -34124,7 +34124,7 @@
     },
     "/api/tailscale/status": {
       "get": {
-        "description": "Erforderliche Berechtigung: `tailscale:read`.",
+        "description": "Ohne Auth-Key und vor der Anmeldung ist `authUrl` der Anmeldelink; er wird nur an Identitäten mit `tailscale:write` zurückgegeben.\n\nErforderliche Berechtigung: `tailscale:read`.",
         "responses": {
           "200": {
             "description": "Erfolgreich"

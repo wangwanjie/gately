@@ -22366,7 +22366,7 @@
     },
     "/api/netbird/status": {
       "get": {
-        "description": "`daemonStatus` は Idle、Connecting、Connected、NeedsLogin、LoginFailed、SessionExpired のいずれかです。セットアップキーがない場合、`authUrl` はログインリンク（Linux ではデバイスコードログインで、どのデバイスでも開けます。macOS と Windows では通常そのマシンのブラウザでしか完了できません）、`authCode` は入力するコード（リンクに含まれる場合は空）で、リンクは期限切れになると自動で更新されます。`peers` はネットワーク内の他のピアで、`connType` は P2P または Relayed です。\n\n必要な権限: `netbird:read`。",
+        "description": "`daemonStatus` は Idle、Connecting、Connected、NeedsLogin、LoginFailed、SessionExpired のいずれかです。セットアップキーがない場合、`authUrl` はログインリンク（Linux ではデバイスコードログインで、どのデバイスでも開けます。macOS と Windows では通常そのマシンのブラウザでしか完了できません）、`authCode` は入力するコード（リンクに含まれる場合は空）で、リンクは期限切れになると自動で更新されます。`peers` はネットワーク内の他のピアで、`connType` は P2P または Relayed です。`authUrl` と `authCode` は `netbird:write` 権限を持つ ID にのみ返されます。\n\n必要な権限: `netbird:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -34124,7 +34124,7 @@
     },
     "/api/tailscale/status": {
       "get": {
-        "description": "必要な権限: `tailscale:read`。",
+        "description": "認証キーが未入力でまだログインしていない場合、`authUrl` はログインリンクです。`tailscale:write` 権限を持つ ID にのみ返されます。\n\n必要な権限: `tailscale:read`。",
         "responses": {
           "200": {
             "description": "成功"

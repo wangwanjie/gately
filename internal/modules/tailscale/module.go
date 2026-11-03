@@ -15,6 +15,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/wangwanjie/gately/internal/auth"
 	"github.com/wangwanjie/gately/internal/binstall"
 	"github.com/wangwanjie/gately/internal/config"
 	"github.com/wangwanjie/gately/internal/crud"
@@ -197,7 +198,8 @@ func (m *Module) bringUp(ctx context.Context, cli string, s Settings, dir string
 		}
 	}
 	args := append(append([]string{}, global...), s.UpArgs()...)
-	if err := proc.Run(ctx, proc.Spec{Path: cli, Args: args}, log); err != nil && ctx.Err() == nil {
+	// 登录链接可把本机登记到任意 tailnet，日志里只保留主机部分，完整链接通过状态接口提供给有写权限的身份
+	if err := proc.Run(ctx, proc.Spec{Path: cli, Args: args, LogLine: proc.MaskURLPaths}, log); err != nil && ctx.Err() == nil {
 		m.fail("tailscale up 失败: " + err.Error())
 		return
 	}
@@ -413,7 +415,12 @@ func (m *Module) Routes(r module.Router) {
 	}))
 	module.DocOf(r, "GET /secrets", module.Doc{Summary: "查看密钥明文", Resp: map[string]string{}})
 	r.HandleFunc("GET /status", func(w http.ResponseWriter, req *http.Request) {
-		httpx.OK(w, m.status())
+		v := m.status()
+		// 登录链接可把本机登记到任意 tailnet，只提供给有写权限的身份
+		if !auth.Allowed(req.Context(), ID+":write") {
+			v.AuthURL = ""
+		}
+		httpx.OK(w, v)
 	})
 	r.HandleFunc("POST /restart", func(w http.ResponseWriter, req *http.Request) {
 		m.mu.Lock()

@@ -22366,7 +22366,7 @@
     },
     "/api/netbird/status": {
       "get": {
-        "description": "`daemonStatus` 為 Idle、Connecting、Connected、NeedsLogin、LoginFailed 或 SessionExpired。未填寫設定金鑰時 `authUrl` 為登入連結（Linux 下為裝置碼登入，可在任意裝置上開啟；macOS 與 Windows 上通常只能在本機瀏覽器完成），`authCode` 為需要輸入的代碼（連結已包含時為空），連結過期後自動更新。`peers` 為組網中的其他節點，`connType` 為 P2P 或 Relayed。\n\n所需權限：`netbird:read`。",
+        "description": "`daemonStatus` 為 Idle、Connecting、Connected、NeedsLogin、LoginFailed 或 SessionExpired。未填寫設定金鑰時 `authUrl` 為登入連結（Linux 下為裝置碼登入，可在任意裝置上開啟；macOS 與 Windows 上通常只能在本機瀏覽器完成），`authCode` 為需要輸入的代碼（連結已包含時為空），連結過期後自動更新。`peers` 為組網中的其他節點，`connType` 為 P2P 或 Relayed。`authUrl` 與 `authCode` 只回傳給具有 `netbird:write` 權限的身分。\n\n所需權限：`netbird:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -34124,7 +34124,7 @@
     },
     "/api/tailscale/status": {
       "get": {
-        "description": "所需權限：`tailscale:read`。",
+        "description": "未填寫驗證金鑰且尚未登入時 `authUrl` 為登入連結，只回傳給具有 `tailscale:write` 權限的身分。\n\n所需權限：`tailscale:read`。",
         "responses": {
           "200": {
             "description": "成功"

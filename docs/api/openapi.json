@@ -22366,7 +22366,7 @@
     },
     "/api/netbird/status": {
       "get": {
-        "description": "`daemonStatus` 为 Idle、Connecting、Connected、NeedsLogin、LoginFailed 或 SessionExpired。未填写设置密钥时 `authUrl` 为登录链接（Linux 下为设备码登录，可在任意设备上打开；macOS 与 Windows 上通常只能在本机浏览器完成），`authCode` 为需要输入的代码（链接已包含时为空），链接过期后自动更新。`peers` 为组网中的其他节点，`connType` 为 P2P 或 Relayed。\n\n所需权限：`netbird:read`。",
+        "description": "`daemonStatus` 为 Idle、Connecting、Connected、NeedsLogin、LoginFailed 或 SessionExpired。未填写设置密钥时 `authUrl` 为登录链接（Linux 下为设备码登录，可在任意设备上打开；macOS 与 Windows 上通常只能在本机浏览器完成），`authCode` 为需要输入的代码（链接已包含时为空），链接过期后自动更新；这两项只返回给有 `netbird:write` 权限的身份。`peers` 为组网中的其他节点，`connType` 为 P2P 或 Relayed。\n\n所需权限：`netbird:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -34124,7 +34124,7 @@
     },
     "/api/tailscale/status": {
       "get": {
-        "description": "所需权限：`tailscale:read`。",
+        "description": "未填写认证密钥且尚未登录时 `authUrl` 为登录链接，只返回给有 `tailscale:write` 权限的身份。\n\n所需权限：`tailscale:read`。",
         "responses": {
           "200": {
             "description": "成功"

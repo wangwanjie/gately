@@ -22366,7 +22366,7 @@
     },
     "/api/netbird/status": {
       "get": {
-        "description": "`daemonStatus` é Idle, Connecting, Connected, NeedsLogin, LoginFailed ou SessionExpired. Sem chave de configuração, `authUrl` é o link de login (no Linux, login por código de dispositivo, que pode ser aberto em qualquer dispositivo; no macOS e no Windows normalmente precisa ser concluído em um navegador daquela máquina) e `authCode` é o código a digitar (vazio quando o link já o contém); o link é renovado automaticamente ao expirar. `peers` são os demais pares da rede e `connType` é P2P ou Relayed.\n\nPermissão necessária: `netbird:read`.",
+        "description": "`daemonStatus` é Idle, Connecting, Connected, NeedsLogin, LoginFailed ou SessionExpired. Sem chave de configuração, `authUrl` é o link de login (no Linux, login por código de dispositivo, que pode ser aberto em qualquer dispositivo; no macOS e no Windows normalmente precisa ser concluído em um navegador daquela máquina) e `authCode` é o código a digitar (vazio quando o link já o contém); o link é renovado automaticamente ao expirar. `peers` são os demais pares da rede e `connType` é P2P ou Relayed. `authUrl` e `authCode` só são retornados a identidades com `netbird:write`.\n\nPermissão necessária: `netbird:read`.",
         "responses": {
           "200": {
             "description": "Sucesso"
@@ -34124,7 +34124,7 @@
     },
     "/api/tailscale/status": {
       "get": {
-        "description": "Permissão necessária: `tailscale:read`.",
+        "description": "Sem chave de autenticação e antes do login, `authUrl` é o link de login; ele só é retornado a identidades com `tailscale:write`.\n\nPermissão necessária: `tailscale:read`.",
         "responses": {
           "200": {
             "description": "Sucesso"

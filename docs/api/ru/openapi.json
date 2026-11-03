@@ -22366,7 +22366,7 @@
     },
     "/api/netbird/status": {
       "get": {
-        "description": "`daemonStatus` — Idle, Connecting, Connected, NeedsLogin, LoginFailed или SessionExpired. Без ключа настройки `authUrl` — ссылка входа (в Linux вход по коду устройства, ссылку можно открыть на любом устройстве; в macOS и Windows вход обычно можно завершить только в браузере на этой машине), а `authCode` — код для ввода (пуст, если он уже есть в ссылке); по истечении срока ссылка обновляется автоматически. `peers` — другие узлы сети, `connType` — P2P или Relayed.\n\nТребуемое разрешение: `netbird:read`.",
+        "description": "`daemonStatus` — Idle, Connecting, Connected, NeedsLogin, LoginFailed или SessionExpired. Без ключа настройки `authUrl` — ссылка входа (в Linux вход по коду устройства, ссылку можно открыть на любом устройстве; в macOS и Windows вход обычно можно завершить только в браузере на этой машине), а `authCode` — код для ввода (пуст, если он уже есть в ссылке); по истечении срока ссылка обновляется автоматически. `peers` — другие узлы сети, `connType` — P2P или Relayed. `authUrl` и `authCode` возвращаются только учётным записям с правом `netbird:write`.\n\nТребуемое разрешение: `netbird:read`.",
         "responses": {
           "200": {
             "description": "Успешно"
@@ -34124,7 +34124,7 @@
     },
     "/api/tailscale/status": {
       "get": {
-        "description": "Требуемое разрешение: `tailscale:read`.",
+        "description": "Если ключ аутентификации не задан и вход ещё не выполнен, `authUrl` — ссылка для входа; она возвращается только учётным записям с правом `tailscale:write`.\n\nТребуемое разрешение: `tailscale:read`.",
         "responses": {
           "200": {
             "description": "Успешно"

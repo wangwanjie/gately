@@ -17,6 +17,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/wangwanjie/gately/internal/auth"
 	"github.com/wangwanjie/gately/internal/binstall"
 	"github.com/wangwanjie/gately/internal/config"
 	"github.com/wangwanjie/gately/internal/crud"
@@ -271,6 +272,13 @@ func parseAuthLine(line string) (url, code string) {
 	return url, code
 }
 
+// maskAuthLine 隐藏 netbird up 输出中的登录链接与设备码后再写入日志：日志对只读身份可见，
+// 拿到链接与设备码即可把本机登记到他人的 NetBird 网络；完整内容只通过状态接口提供给有写权限的身份。
+func maskAuthLine(line string) string {
+	line = proc.MaskURLPaths(line)
+	return codeRe.ReplaceAllString(line, "enter the code "+crud.SecretMask)
+}
+
 // bringUp 等待守护进程就绪后执行 netbird up。未提供设置密钥时 up 会等待登录完成，
 // 登录链接写入日志，并可通过状态接口获取；链接过期后自动重新获取。
 // 返回 true 表示托管的守护进程需要重启：它按旧配置自动连接过，在用户态网络下断开再连接后 SOCKS5 代理失效。
@@ -319,7 +327,7 @@ func (m *Module) bringUp(ctx context.Context, cli string, s Settings, dir string
 		gotURL := false
 		// lastLine 是 netbird up 的最后一行输出，失败时作为原因展示
 		lastLine := ""
-		spec := proc.Spec{Path: cli, Args: args, Env: s.UpEnv(), OnLine: func(line string) {
+		spec := proc.Spec{Path: cli, Args: args, Env: s.UpEnv(), LogLine: maskAuthLine, OnLine: func(line string) {
 			if line = strings.TrimSpace(line); line != "" {
 				lastLine = line
 			}
@@ -646,7 +654,12 @@ func (m *Module) Routes(r module.Router) {
 	}))
 	module.DocOf(r, "GET /secrets", module.Doc{Summary: "查看密钥明文", Resp: map[string]string{}})
 	r.HandleFunc("GET /status", func(w http.ResponseWriter, req *http.Request) {
-		httpx.OK(w, m.status())
+		v := m.status()
+		// 登录链接与设备码可把本机登记到任意 NetBird 账号，只提供给有写权限的身份
+		if !auth.Allowed(req.Context(), ID+":write") {
+			v.AuthURL, v.AuthCode = "", ""
+		}
+		httpx.OK(w, v)
 	})
 	r.HandleFunc("POST /restart", func(w http.ResponseWriter, req *http.Request) {
 		m.mu.Lock()

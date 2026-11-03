@@ -22366,7 +22366,7 @@
     },
     "/api/netbird/status": {
       "get": {
-        "description": "`daemonStatus` 는 Idle, Connecting, Connected, NeedsLogin, LoginFailed, SessionExpired 중 하나입니다. 설정 키가 없으면 `authUrl` 은 로그인 링크(Linux 에서는 장치 코드 로그인으로 어느 기기에서나 열 수 있고, macOS 와 Windows 에서는 보통 해당 기기의 브라우저에서만 완료할 수 있음), `authCode` 는 입력할 코드(링크에 포함된 경우 비어 있음)이며, 링크는 만료되면 자동으로 갱신됩니다. `peers` 는 네트워크의 다른 피어이고 `connType` 은 P2P 또는 Relayed 입니다.\n\n필요한 권한: `netbird:read`.",
+        "description": "`daemonStatus` 는 Idle, Connecting, Connected, NeedsLogin, LoginFailed, SessionExpired 중 하나입니다. 설정 키가 없으면 `authUrl` 은 로그인 링크(Linux 에서는 장치 코드 로그인으로 어느 기기에서나 열 수 있고, macOS 와 Windows 에서는 보통 해당 기기의 브라우저에서만 완료할 수 있음), `authCode` 는 입력할 코드(링크에 포함된 경우 비어 있음)이며, 링크는 만료되면 자동으로 갱신됩니다. `peers` 는 네트워크의 다른 피어이고 `connType` 은 P2P 또는 Relayed 입니다. `authUrl`과 `authCode`는 `netbird:write` 권한이 있는 ID에만 반환됩니다.\n\n필요한 권한: `netbird:read`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -34124,7 +34124,7 @@
     },
     "/api/tailscale/status": {
       "get": {
-        "description": "필요한 권한: `tailscale:read`.",
+        "description": "인증 키를 입력하지 않았고 아직 로그인하지 않았으면 `authUrl`이 로그인 링크이며, `tailscale:write` 권한이 있는 ID에만 반환됩니다.\n\n필요한 권한: `tailscale:read`.",
         "responses": {
           "200": {
             "description": "성공"

@@ -177,3 +177,36 @@ func TestResolve(t *testing.T) {
 		}
 	}
 }
+
+func TestMaskURLPaths(t *testing.T) {
+	cases := map[string]string{
+		"To authenticate, visit: https://login.tailscale.com/a/1a2b3c4d5e6f": "To authenticate, visit: https://login.tailscale.com/********",
+		"https://hs.example.com:8080/register/nodekey:abc?x=1 now":           "https://hs.example.com:8080/******** now",
+		"see https://example.com/ or http://example.com":                     "see https://example.com/ or http://example.com",
+		"no url here": "no url here",
+	}
+	for in, want := range cases {
+		if got := MaskURLPaths(in); got != want {
+			t.Errorf("MaskURLPaths(%q) = %q，期望 %q", in, got, want)
+		}
+	}
+}
+
+// TestRunLogLine 验证 LogLine 只改写写入日志的内容，OnLine 收到原始输出。
+func TestRunLogLine(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("依赖 sh")
+	}
+	buf, log := newLog()
+	var raw string
+	spec := Spec{Path: "sh", Args: []string{"-c", "echo https://login.example.com/a/secret"}, LogLine: MaskURLPaths, OnLine: func(l string) { raw = l }}
+	if err := Run(context.Background(), spec, log); err != nil {
+		t.Fatal(err)
+	}
+	if hasLog(buf, logbuf.LevelInfo, "secret") || !hasLog(buf, logbuf.LevelInfo, "https://login.example.com/********") {
+		t.Error("日志应隐藏链接路径")
+	}
+	if !strings.Contains(raw, "/a/secret") {
+		t.Errorf("OnLine 应收到原始输出: %q", raw)
+	}
+}

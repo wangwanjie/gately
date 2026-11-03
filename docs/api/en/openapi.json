@@ -22366,7 +22366,7 @@
     },
     "/api/netbird/status": {
       "get": {
-        "description": "`daemonStatus` is Idle, Connecting, Connected, NeedsLogin, LoginFailed or SessionExpired. Without a setup key, `authUrl` is the login link (device code login on Linux, which can be opened on any device; on macOS and Windows the login usually has to be completed in a browser on that machine) and `authCode` is the code to enter (empty when the link already contains it); the link is renewed automatically when it expires. `peers` are the other peers in the network, and `connType` is P2P or Relayed.\n\nRequired permission: `netbird:read`.",
+        "description": "`daemonStatus` is Idle, Connecting, Connected, NeedsLogin, LoginFailed or SessionExpired. Without a setup key, `authUrl` is the login link (device code login on Linux, which can be opened on any device; on macOS and Windows the login usually has to be completed in a browser on that machine) and `authCode` is the code to enter (empty when the link already contains it); the link is renewed automatically when it expires. `peers` are the other peers in the network, and `connType` is P2P or Relayed. `authUrl` and `authCode` are only returned to identities with `netbird:write`.\n\nRequired permission: `netbird:read`.",
         "responses": {
           "200": {
             "description": "Success"
@@ -34124,7 +34124,7 @@
     },
     "/api/tailscale/status": {
       "get": {
-        "description": "Required permission: `tailscale:read`.",
+        "description": "Without an auth key and before login, `authUrl` is the login link; it is only returned to identities with `tailscale:write`.\n\nRequired permission: `tailscale:read`.",
         "responses": {
           "200": {
             "description": "Success"

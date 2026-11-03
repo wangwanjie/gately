@@ -113,6 +113,8 @@ type Spec struct {
 	OnLine func(line string)
 	// OnStart 在进程每次成功启动后调用，可为 nil
 	OnStart func()
+	// LogLine 在写入日志前改写一行输出（如隐藏登录链接），可为 nil；OnLine 收到的仍是原始内容
+	LogLine func(line string) string
 }
 
 // State 是进程运行状态。
@@ -262,7 +264,11 @@ func execOnce(ctx context.Context, spec Spec, log *logbuf.Logger, onStarted func
 	}
 	cmd.WaitDelay = stopGrace
 	w := &lineWriter{handle: func(line string) {
-		log.Log(classify(line), line)
+		logged := line
+		if spec.LogLine != nil {
+			logged = spec.LogLine(line)
+		}
+		log.Log(classify(logged), logged)
 		if spec.OnLine != nil {
 			spec.OnLine(line)
 		}
@@ -363,4 +369,20 @@ func classify(line string) (level string) {
 		level = logbuf.LevelInfo
 	}
 	return level
+}
+
+// loginURLRe 匹配输出中的网址
+var loginURLRe = regexp.MustCompile(`(https?://[^/\s]+)(/\S*)?`)
+
+// MaskURLPaths 把一行输出中网址的路径与查询部分换成 ********，只保留协议与主机。
+// 用于 tailscale up、netbird up 等只会输出登录链接的命令：日志对只读身份可见，
+// 登录链接（含设备码）可用于把本机登记到他人的网络，完整链接只通过需要写权限的状态接口提供。
+func MaskURLPaths(line string) string {
+	return loginURLRe.ReplaceAllStringFunc(line, func(u string) string {
+		m := loginURLRe.FindStringSubmatch(u)
+		if m[2] == "" || m[2] == "/" {
+			return u
+		}
+		return m[1] + "/********"
+	})
 }

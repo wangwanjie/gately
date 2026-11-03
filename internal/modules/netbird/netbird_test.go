@@ -16,6 +16,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/wangwanjie/gately/internal/auth"
 	"github.com/wangwanjie/gately/internal/binstall"
 	"github.com/wangwanjie/gately/internal/config"
 	"github.com/wangwanjie/gately/internal/logbuf"
@@ -682,6 +683,45 @@ esac
 	t.Cleanup(func() { _ = m.Stop() })
 	if logs := logText(m); !strings.Contains(logs, "0.0.0.0") {
 		t.Errorf("旧版本应提示 SOCKS5 对外暴露:\n%s", logs)
+	}
+}
+
+// TestMaskAuthLine 验证写入日志的 netbird up 输出隐藏登录链接与设备码。
+func TestMaskAuthLine(t *testing.T) {
+	got := maskAuthLine("https://login.example.com/activate and enter the code ABCD-EFGH to authenticate.")
+	if strings.Contains(got, "ABCD-EFGH") || strings.Contains(got, "/activate") || !strings.Contains(got, "https://login.example.com/") {
+		t.Errorf("设备码应被隐藏: %q", got)
+	}
+	got = maskAuthLine("https://nb.example.com/oauth2/device?user_code=WXYZ-1234")
+	if strings.Contains(got, "WXYZ-1234") {
+		t.Errorf("链接中的代码应被隐藏: %q", got)
+	}
+	if got := maskAuthLine("Connected"); got != "Connected" {
+		t.Errorf("普通输出不应改写: %q", got)
+	}
+}
+
+// TestStatusAuthNeedsWrite 验证登录链接与设备码只返回给有写权限的身份。
+func TestStatusAuthNeedsWrite(t *testing.T) {
+	m, _ := newTestModule(t)
+	m.cache = StatusView{AuthURL: "https://login.example.com/activate", AuthCode: "ABCD-EFGH"}
+	m.cacheAt = time.Now()
+	mux := http.NewServeMux()
+	m.Routes(testRouter{mux})
+	get := func(scopes ...string) string {
+		req := httptest.NewRequest("GET", "/status", nil)
+		req = req.WithContext(auth.WithScopeCheck(req.Context(), func(need string) bool {
+			return slices.Contains(scopes, need)
+		}))
+		rec := httptest.NewRecorder()
+		mux.ServeHTTP(rec, req)
+		return rec.Body.String()
+	}
+	if body := get("netbird:read"); strings.Contains(body, "ABCD-EFGH") || strings.Contains(body, "activate") {
+		t.Errorf("只读身份不应拿到登录链接与设备码: %s", body)
+	}
+	if body := get("netbird:read", "netbird:write"); !strings.Contains(body, "ABCD-EFGH") || !strings.Contains(body, "activate") {
+		t.Errorf("有写权限时应返回登录链接与设备码: %s", body)
 	}
 }
 
