@@ -665,6 +665,11 @@ func copyCert(src, dst *Cert) {
 	}
 	dst.UpdatedAt = time.Time{}
 	keepDeployRecords(&Cert{}, dst)
+	// 副本的部署目标一律先停用：否则副本签发后会按相同目录和文件名部署，覆盖原证书在目标上的文件。
+	// 界面复制时也会停用，这里兜底直接调用复制接口的情况
+	for i := range dst.Deploys {
+		dst.Deploys[i].Enable = false
+	}
 }
 
 // changedLocked 在证书配置变化后更新运行状态。
