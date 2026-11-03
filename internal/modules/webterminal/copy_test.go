@@ -102,3 +102,45 @@ func TestTestEndpointsGate(t *testing.T) {
 		t.Fatalf("引用认证预设的草稿应受门禁: %d %v", code, body)
 	}
 }
+
+// 复制认证预设同样须先通过门禁（协议与二次验证）；通过后占位符沿用模板的密码与口令，新填写的值原样保存。
+func TestCopyCredentialGate(t *testing.T) {
+	m, srv := newModule(t)
+	m.mu.Lock()
+	m.cfg.Credentials = []Credential{{Key: "k1", Name: "root", AuthType: "password", Username: "root", Password: "pw", Enable: true}}
+	m.cfg.Security.TwoFAEnable, m.cfg.Security.TwoFAKey = true, "JBSWY3DPEHPK3PXP"
+	m.mu.Unlock()
+	draft := Credential{Name: "root 副本", AuthType: "password", Username: "admin", Password: crud.SecretMask, Passphrase: "new"}
+	if code, body := call(t, srv, "POST", "/credentials/k1/copy", draft); code != 403 || body["need2fa"] != true {
+		t.Fatalf("未通过二次验证时应拒绝复制: %d %v", code, body)
+	}
+	m.mu.Lock()
+	n := len(m.cfg.Credentials)
+	m.cfg.Security.TwoFAEnable = false
+	m.mu.Unlock()
+	if n != 1 {
+		t.Fatalf("被拒绝的复制不应新增: %d", n)
+	}
+	code, body := call(t, srv, "POST", "/credentials/k1/copy", draft)
+	if code != 200 || body["password"] != crud.SecretMask {
+		t.Fatalf("复制失败或响应未脱敏: %d %v", code, body)
+	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	cp := m.cfg.Credentials[1]
+	if cp.Password != "pw" || cp.Passphrase != "new" || cp.Username != "admin" || cp.Key == "k1" {
+		t.Fatalf("副本应沿用模板密码、保存新口令: %+v", cp)
+	}
+}
+
+// 复制连接时 SSH 代理与 Telnet 代理的密码占位符同样沿用模板；新填写的代理密码原样保存。
+func TestCopyConnectionProxySecrets(t *testing.T) {
+	src := Connection{}
+	src.SSH.Proxy.Password, src.Telnet.Proxy.Password, src.SSH.Passphrase = "sp", "tp", "pass"
+	dst := Connection{}
+	dst.SSH.Proxy.Password, dst.Telnet.Proxy.Password, dst.SSH.Passphrase = crud.SecretMask, "typed", crud.SecretMask
+	copyConnection(&src, &dst)
+	if dst.SSH.Proxy.Password != "sp" || dst.Telnet.Proxy.Password != "typed" || dst.SSH.Passphrase != "pass" {
+		t.Fatalf("代理密码处理不符: ssh=%q telnet=%q passphrase=%q", dst.SSH.Proxy.Password, dst.Telnet.Proxy.Password, dst.SSH.Passphrase)
+	}
+}
