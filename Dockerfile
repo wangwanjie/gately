@@ -5,7 +5,7 @@
 #   GATELY_TAGS      go build 的 tags，例如 no_waf,no_smb,lang_zh（见 modules.json）
 #   GATELY_LOCALES   管理界面打包的语言，例如 zh-CN,zh-TW,en；留空为全部
 #   WITH_DOCKER_CLI  是否安装 docker-cli 与 compose，只有 Docker 管理模块用到
-#   WITH_NFTABLES    是否安装 nftables，只有入侵防护用到
+#   WITH_NFTABLES    是否安装 nftables，入侵防护与 STUN 的自动放行防火墙用到
 FROM --platform=$BUILDPLATFORM node:24-alpine AS web
 WORKDIR /src/web
 RUN corepack enable

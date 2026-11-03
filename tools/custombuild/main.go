@@ -186,13 +186,16 @@ func resolve(m manifest, mods, lang, targets string) (resolved, error) {
 		return resolved{}, errors.New("未知的语言档位: " + lang)
 	}
 	r.Tags = strings.Join(tags, ",")
-	flag := func(id string) string {
-		if want[id] {
-			return "1"
+	// flag 在选中任一模块时返回 "1"：nftables 由入侵防护与 STUN 的自动放行防火墙使用
+	flag := func(ids ...string) string {
+		for _, id := range ids {
+			if want[id] {
+				return "1"
+			}
 		}
 		return "0"
 	}
-	r.DockerArgs = []string{"GATELY_TAGS=" + r.Tags, "GATELY_LOCALES=" + r.Locales, "WITH_DOCKER_CLI=" + flag("docker"), "WITH_NFTABLES=" + flag("guard")}
+	r.DockerArgs = []string{"GATELY_TAGS=" + r.Tags, "GATELY_LOCALES=" + r.Locales, "WITH_DOCKER_CLI=" + flag("docker"), "WITH_NFTABLES=" + flag("guard", "stun")}
 	for _, id := range strings.Split(targets, ",") {
 		id = strings.TrimSpace(id)
 		if id == "" || slices.ContainsFunc(r.Targets, func(t target) bool { return t.ID == id }) {

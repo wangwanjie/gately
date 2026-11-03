@@ -66,6 +66,11 @@ func TestResolve(t *testing.T) {
 	if !slices.Contains(img.DockerArgs, "WITH_DOCKER_CLI=1") || !slices.Contains(img.DockerArgs, "WITH_NFTABLES=1") {
 		t.Fatalf("选了 Docker 管理与入侵防护时应安装对应工具: %v", img.DockerArgs)
 	}
+	// STUN 的自动放行防火墙同样需要 nft
+	img, _ = resolve(m, "stun", "zh", "docker")
+	if !slices.Contains(img.DockerArgs, "WITH_NFTABLES=1") {
+		t.Fatalf("选了 STUN 时应安装 nftables: %v", img.DockerArgs)
+	}
 
 	for _, bad := range [][3]string{{"nope", "all", ""}, {"", "jp", ""}, {"", "all", "linux-sparc"}} {
 		if _, err := resolve(m, bad[0], bad[1], bad[2]); err == nil {
