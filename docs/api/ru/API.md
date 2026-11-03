@@ -343,6 +343,14 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/webservice/iplists-enable` | `webservice:write` | Пакетно включить или отключить: Подписной список IP |
 | POST | `/api/webservice/iplists-delete` | `webservice:write` | Пакетно удалить: Подписной список IP |
 | POST | `/api/webservice/iplists/{key}/refresh` | `webservice:write` | Обновить подписной список IP сейчас |
+| GET | `/api/webservice/errorpages` | `webservice:read` | Список пользовательских страниц ошибок (без содержимого страниц) |
+| POST | `/api/webservice/errorpages` | `webservice:write` | Добавить пользовательскую страницу ошибки: загруженная страница очищается перед сохранением, для файловой страницы проверяется доступность файла |
+| GET | `/api/webservice/errorpages/{key}` | `webservice:read` | Получить пользовательскую страницу ошибки (вместе с содержимым страницы) |
+| PUT | `/api/webservice/errorpages/{key}` | `webservice:write` | Изменить пользовательскую страницу ошибки |
+| DELETE | `/api/webservice/errorpages/{key}` | `webservice:write` | Удалить пользовательскую страницу ошибки (отклоняется, пока её используют сайты) |
+| POST | `/api/webservice/errorpages/check` | `webservice:write` | Проверяет безопасность и работоспособность страницы и создаёт предпросмотр без сохранения |
+| GET | `/api/webservice/errorpages/styles` | `webservice:read` | Предпросмотр стиля по умолчанию и всех встроенных стилей; ?code= задаёт код состояния (по умолчанию 502) |
+| GET | `/api/webservice/errorpages/{key}/preview` | `webservice:read` | Предпросмотр пользовательской страницы ошибки; ?code= задаёт код состояния (по умолчанию 502) |
 | GET | `/api/webservice/users` | `webservice:read` | Получить общих пользователей и поставщика удостоверений OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Сохранить общих пользователей и поставщика удостоверений OIDC, массово настроить сайты |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | Пакетные операции с сайтами: включение, отключение, удаление, добавление, удаление или замена доменов, изменение некоторых опций и перенос в другой слушатель; сохраняется только если все сайты прошли проверку, при ошибке ничего не меняется |
@@ -1802,6 +1810,16 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `timeout` | integer |
 | `url` | string |
 
+### webpage.CheckReport
+
+| Поле | Тип |
+| --- | --- |
+| `pageTitle` | string |
+| `placeholders` | Массив из string |
+| `removed` | Массив из string |
+| `size` | integer |
+| `warnings` | Массив из string |
+
 ### webservice.AuthUser
 
 | Поле | Тип |
@@ -1863,6 +1881,78 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `history` | Массив из `webservice.ConnView` |
 | `matched` | integer |
 | `total` | integer |
+
+### webservice.ErrorPage
+
+| Поле | Тип |
+| --- | --- |
+| `file` | string |
+| `html` | string |
+| `key` | string |
+| `name` | string |
+| `remark` | string |
+| `source` | string |
+| `updatedAt` | Время (RFC 3339) |
+
+### webservice.ErrorPageCheckRequest
+
+| Поле | Тип |
+| --- | --- |
+| `code` | integer |
+| `file` | string |
+| `html` | string |
+| `source` | string |
+
+### webservice.ErrorPageCheckResult
+
+| Поле | Тип |
+| --- | --- |
+| `preview` | string |
+| `report` | `webpage.CheckReport` |
+
+### webservice.ErrorPageOptions
+
+| Поле | Тип |
+| --- | --- |
+| `codes` | string |
+| `intercept` | boolean |
+| `page` | string |
+| `style` | string |
+
+### webservice.ErrorPageSaved
+
+| Поле | Тип |
+| --- | --- |
+| `page` | `webservice.ErrorPageView` |
+| `report` | `webpage.CheckReport` |
+
+### webservice.ErrorPageStyle
+
+| Поле | Тип |
+| --- | --- |
+| `page` | string |
+| `style` | string |
+
+### webservice.ErrorPageView
+
+| Поле | Тип |
+| --- | --- |
+| `error` | string |
+| `file` | string |
+| `key` | string |
+| `name` | string |
+| `remark` | string |
+| `size` | integer |
+| `source` | string |
+| `updatedAt` | Время (RFC 3339) |
+| `usedBy` | Массив из string |
+
+### webservice.ErrorStylePreview
+
+| Поле | Тип |
+| --- | --- |
+| `html` | string |
+| `id` | string |
 
 ### webservice.ForwardAuth
 
@@ -2050,6 +2140,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `disableKeepAlives` | boolean |
 | `domains` | Массив из string |
 | `enable` | boolean |
+| `errorPage` | `webservice.ErrorPageOptions` |
 | `forwardAuth` | `webservice.ForwardAuth` |
 | `forwardedHeaders` | boolean |
 | `group` | string |
@@ -2099,6 +2190,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `compress` | boolean |
 | `cors` | boolean |
 | `denyClose` | boolean |
+| `errorPage` | `webservice.ErrorPageStyle` |
 | `forwardedHeaders` | boolean |
 | `waf` | string |
 

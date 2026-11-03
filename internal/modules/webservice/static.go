@@ -44,7 +44,7 @@ func (h *siteHandler) newStatic(s Site) http.Handler {
 				return
 			}
 		}
-		writeNotFound(w, r, "页面不存在", "你访问的页面不存在，可能已被移动或删除，请检查地址是否正确。")
+		writeNotFound(h.errPage, w, r, "页面不存在", "你访问的页面不存在，可能已被移动或删除，请检查地址是否正确。")
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		applyHeaders(w.Header(), s.ResponseHeaders)

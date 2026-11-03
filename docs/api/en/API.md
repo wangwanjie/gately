@@ -343,6 +343,14 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | PUT | `/api/webservice/iplists-enable` | `webservice:write` | Enable or disable in bulk: Subscribed IP list |
 | POST | `/api/webservice/iplists-delete` | `webservice:write` | Delete in bulk: Subscribed IP list |
 | POST | `/api/webservice/iplists/{key}/refresh` | `webservice:write` | Refresh a subscribed IP list now |
+| GET | `/api/webservice/errorpages` | `webservice:read` | List custom error pages (without page content) |
+| POST | `/api/webservice/errorpages` | `webservice:write` | Add a custom error page: an uploaded page is sanitized before saving; for a file page the file is checked for availability |
+| GET | `/api/webservice/errorpages/{key}` | `webservice:read` | Read a custom error page (including page content) |
+| PUT | `/api/webservice/errorpages/{key}` | `webservice:write` | Edit a custom error page |
+| DELETE | `/api/webservice/errorpages/{key}` | `webservice:write` | Delete a custom error page (rejected while sites still use it) |
+| POST | `/api/webservice/errorpages/check` | `webservice:write` | Check a page for safety and usability and generate a preview without saving |
+| GET | `/api/webservice/errorpages/styles` | `webservice:read` | Preview of the default style and all built-in styles; ?code= sets the status code (default 502) |
+| GET | `/api/webservice/errorpages/{key}/preview` | `webservice:read` | Preview of a custom error page; ?code= sets the status code (default 502) |
 | GET | `/api/webservice/users` | `webservice:read` | Read shared users and the OIDC identity provider |
 | PUT | `/api/webservice/users` | `webservice:write` | Save shared users and the OIDC identity provider, set sites in bulk |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | Bulk site operations: enable, disable, delete, add, remove or replace domains, change some options, or move to another listener; changes are saved only if every site passes validation, and nothing changes if any site fails |
@@ -1802,6 +1810,16 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `timeout` | integer |
 | `url` | string |
 
+### webpage.CheckReport
+
+| Field | Type |
+| --- | --- |
+| `pageTitle` | string |
+| `placeholders` | Array of string |
+| `removed` | Array of string |
+| `size` | integer |
+| `warnings` | Array of string |
+
 ### webservice.AuthUser
 
 | Field | Type |
@@ -1863,6 +1881,78 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `history` | Array of `webservice.ConnView` |
 | `matched` | integer |
 | `total` | integer |
+
+### webservice.ErrorPage
+
+| Field | Type |
+| --- | --- |
+| `file` | string |
+| `html` | string |
+| `key` | string |
+| `name` | string |
+| `remark` | string |
+| `source` | string |
+| `updatedAt` | Time (RFC 3339) |
+
+### webservice.ErrorPageCheckRequest
+
+| Field | Type |
+| --- | --- |
+| `code` | integer |
+| `file` | string |
+| `html` | string |
+| `source` | string |
+
+### webservice.ErrorPageCheckResult
+
+| Field | Type |
+| --- | --- |
+| `preview` | string |
+| `report` | `webpage.CheckReport` |
+
+### webservice.ErrorPageOptions
+
+| Field | Type |
+| --- | --- |
+| `codes` | string |
+| `intercept` | boolean |
+| `page` | string |
+| `style` | string |
+
+### webservice.ErrorPageSaved
+
+| Field | Type |
+| --- | --- |
+| `page` | `webservice.ErrorPageView` |
+| `report` | `webpage.CheckReport` |
+
+### webservice.ErrorPageStyle
+
+| Field | Type |
+| --- | --- |
+| `page` | string |
+| `style` | string |
+
+### webservice.ErrorPageView
+
+| Field | Type |
+| --- | --- |
+| `error` | string |
+| `file` | string |
+| `key` | string |
+| `name` | string |
+| `remark` | string |
+| `size` | integer |
+| `source` | string |
+| `updatedAt` | Time (RFC 3339) |
+| `usedBy` | Array of string |
+
+### webservice.ErrorStylePreview
+
+| Field | Type |
+| --- | --- |
+| `html` | string |
+| `id` | string |
 
 ### webservice.ForwardAuth
 
@@ -2050,6 +2140,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `disableKeepAlives` | boolean |
 | `domains` | Array of string |
 | `enable` | boolean |
+| `errorPage` | `webservice.ErrorPageOptions` |
 | `forwardAuth` | `webservice.ForwardAuth` |
 | `forwardedHeaders` | boolean |
 | `group` | string |
@@ -2099,6 +2190,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `compress` | boolean |
 | `cors` | boolean |
 | `denyClose` | boolean |
+| `errorPage` | `webservice.ErrorPageStyle` |
 | `forwardedHeaders` | boolean |
 | `waf` | string |
 

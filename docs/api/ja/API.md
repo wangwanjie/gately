@@ -343,6 +343,14 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/webservice/iplists-enable` | `webservice:write` | 購読 IP リスト の一括有効化・無効化 |
 | POST | `/api/webservice/iplists-delete` | `webservice:write` | 購読 IP リスト の一括削除 |
 | POST | `/api/webservice/iplists/{key}/refresh` | `webservice:write` | 購読 IP リストを今すぐ更新 |
+| GET | `/api/webservice/errorpages` | `webservice:read` | カスタムエラーページの一覧（ページ内容は含まない） |
+| POST | `/api/webservice/errorpages` | `webservice:write` | カスタムエラーページを追加：アップロードされたページはサニタイズして保存し、ファイルページはファイルが利用可能か確認します |
+| GET | `/api/webservice/errorpages/{key}` | `webservice:read` | カスタムエラーページを取得（ページ内容を含む） |
+| PUT | `/api/webservice/errorpages/{key}` | `webservice:write` | カスタムエラーページを変更 |
+| DELETE | `/api/webservice/errorpages/{key}` | `webservice:write` | カスタムエラーページを削除（サイトから参照されている場合は拒否） |
+| POST | `/api/webservice/errorpages/check` | `webservice:write` | ページの安全性と可用性を確認してプレビューを生成します（保存はしません） |
+| GET | `/api/webservice/errorpages/styles` | `webservice:read` | デフォルトスタイルとすべての組み込みスタイルのプレビュー。?code= でステータスコードを指定（デフォルト 502） |
+| GET | `/api/webservice/errorpages/{key}/preview` | `webservice:read` | カスタムエラーページのプレビュー。?code= でステータスコードを指定（デフォルト 502） |
 | GET | `/api/webservice/users` | `webservice:read` | 共有ユーザーと OIDC ID プロバイダーを取得 |
 | PUT | `/api/webservice/users` | `webservice:write` | 共有ユーザーと OIDC ID プロバイダーを保存し、サイトを一括設定 |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | サイトの一括操作：有効化・無効化、削除、ドメインの追加・削除・置換、一部オプションの変更、別のリスナーへの移動。すべてのサイトが検証を通過した場合のみ保存し、1 件でも失敗すると何も変更しません |
@@ -1802,6 +1810,16 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `timeout` | integer |
 | `url` | string |
 
+### webpage.CheckReport
+
+| フィールド | 型 |
+| --- | --- |
+| `pageTitle` | string |
+| `placeholders` | 配列 of string |
+| `removed` | 配列 of string |
+| `size` | integer |
+| `warnings` | 配列 of string |
+
 ### webservice.AuthUser
 
 | フィールド | 型 |
@@ -1863,6 +1881,78 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `history` | 配列 of `webservice.ConnView` |
 | `matched` | integer |
 | `total` | integer |
+
+### webservice.ErrorPage
+
+| フィールド | 型 |
+| --- | --- |
+| `file` | string |
+| `html` | string |
+| `key` | string |
+| `name` | string |
+| `remark` | string |
+| `source` | string |
+| `updatedAt` | 時刻 (RFC 3339) |
+
+### webservice.ErrorPageCheckRequest
+
+| フィールド | 型 |
+| --- | --- |
+| `code` | integer |
+| `file` | string |
+| `html` | string |
+| `source` | string |
+
+### webservice.ErrorPageCheckResult
+
+| フィールド | 型 |
+| --- | --- |
+| `preview` | string |
+| `report` | `webpage.CheckReport` |
+
+### webservice.ErrorPageOptions
+
+| フィールド | 型 |
+| --- | --- |
+| `codes` | string |
+| `intercept` | boolean |
+| `page` | string |
+| `style` | string |
+
+### webservice.ErrorPageSaved
+
+| フィールド | 型 |
+| --- | --- |
+| `page` | `webservice.ErrorPageView` |
+| `report` | `webpage.CheckReport` |
+
+### webservice.ErrorPageStyle
+
+| フィールド | 型 |
+| --- | --- |
+| `page` | string |
+| `style` | string |
+
+### webservice.ErrorPageView
+
+| フィールド | 型 |
+| --- | --- |
+| `error` | string |
+| `file` | string |
+| `key` | string |
+| `name` | string |
+| `remark` | string |
+| `size` | integer |
+| `source` | string |
+| `updatedAt` | 時刻 (RFC 3339) |
+| `usedBy` | 配列 of string |
+
+### webservice.ErrorStylePreview
+
+| フィールド | 型 |
+| --- | --- |
+| `html` | string |
+| `id` | string |
 
 ### webservice.ForwardAuth
 
@@ -2050,6 +2140,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `disableKeepAlives` | boolean |
 | `domains` | 配列 of string |
 | `enable` | boolean |
+| `errorPage` | `webservice.ErrorPageOptions` |
 | `forwardAuth` | `webservice.ForwardAuth` |
 | `forwardedHeaders` | boolean |
 | `group` | string |
@@ -2099,6 +2190,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `compress` | boolean |
 | `cors` | boolean |
 | `denyClose` | boolean |
+| `errorPage` | `webservice.ErrorPageStyle` |
 | `forwardedHeaders` | boolean |
 | `waf` | string |
 

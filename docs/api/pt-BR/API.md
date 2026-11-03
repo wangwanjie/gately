@@ -343,6 +343,14 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | PUT | `/api/webservice/iplists-enable` | `webservice:write` | Ativar ou desativar em lote: Lista de IP assinada |
 | POST | `/api/webservice/iplists-delete` | `webservice:write` | Excluir em lote: Lista de IP assinada |
 | POST | `/api/webservice/iplists/{key}/refresh` | `webservice:write` | Atualizar agora uma lista de IP assinada |
+| GET | `/api/webservice/errorpages` | `webservice:read` | Lista de páginas de erro personalizadas (sem o conteúdo das páginas) |
+| POST | `/api/webservice/errorpages` | `webservice:write` | Adicionar uma página de erro personalizada: a página enviada é higienizada antes de ser salva; para página de arquivo, verifica-se se o arquivo está disponível |
+| GET | `/api/webservice/errorpages/{key}` | `webservice:read` | Ler uma página de erro personalizada (incluindo o conteúdo da página) |
+| PUT | `/api/webservice/errorpages/{key}` | `webservice:write` | Modificar uma página de erro personalizada |
+| DELETE | `/api/webservice/errorpages/{key}` | `webservice:write` | Excluir uma página de erro personalizada (recusado enquanto sites ainda a usarem) |
+| POST | `/api/webservice/errorpages/check` | `webservice:write` | Verifica a segurança e a usabilidade de uma página e gera uma prévia, sem salvar |
+| GET | `/api/webservice/errorpages/styles` | `webservice:read` | Prévia do estilo padrão e de todos os estilos integrados; ?code= define o código de status (padrão 502) |
+| GET | `/api/webservice/errorpages/{key}/preview` | `webservice:read` | Prévia de uma página de erro personalizada; ?code= define o código de status (padrão 502) |
 | GET | `/api/webservice/users` | `webservice:read` | Ler usuários compartilhados e provedor de identidade OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Salvar usuários compartilhados e provedor de identidade OIDC, configurar sites em lote |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | Operações em lote de sites: ativar, desativar, excluir, adicionar, remover ou substituir domínios, alterar algumas opções ou mover para outro listener; só é salvo se todos os sites passarem na validação e nada muda se algum falhar |
@@ -1802,6 +1810,16 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `timeout` | integer |
 | `url` | string |
 
+### webpage.CheckReport
+
+| Campo | Tipo |
+| --- | --- |
+| `pageTitle` | string |
+| `placeholders` | Array de string |
+| `removed` | Array de string |
+| `size` | integer |
+| `warnings` | Array de string |
+
 ### webservice.AuthUser
 
 | Campo | Tipo |
@@ -1863,6 +1881,78 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `history` | Array de `webservice.ConnView` |
 | `matched` | integer |
 | `total` | integer |
+
+### webservice.ErrorPage
+
+| Campo | Tipo |
+| --- | --- |
+| `file` | string |
+| `html` | string |
+| `key` | string |
+| `name` | string |
+| `remark` | string |
+| `source` | string |
+| `updatedAt` | Hora (RFC 3339) |
+
+### webservice.ErrorPageCheckRequest
+
+| Campo | Tipo |
+| --- | --- |
+| `code` | integer |
+| `file` | string |
+| `html` | string |
+| `source` | string |
+
+### webservice.ErrorPageCheckResult
+
+| Campo | Tipo |
+| --- | --- |
+| `preview` | string |
+| `report` | `webpage.CheckReport` |
+
+### webservice.ErrorPageOptions
+
+| Campo | Tipo |
+| --- | --- |
+| `codes` | string |
+| `intercept` | boolean |
+| `page` | string |
+| `style` | string |
+
+### webservice.ErrorPageSaved
+
+| Campo | Tipo |
+| --- | --- |
+| `page` | `webservice.ErrorPageView` |
+| `report` | `webpage.CheckReport` |
+
+### webservice.ErrorPageStyle
+
+| Campo | Tipo |
+| --- | --- |
+| `page` | string |
+| `style` | string |
+
+### webservice.ErrorPageView
+
+| Campo | Tipo |
+| --- | --- |
+| `error` | string |
+| `file` | string |
+| `key` | string |
+| `name` | string |
+| `remark` | string |
+| `size` | integer |
+| `source` | string |
+| `updatedAt` | Hora (RFC 3339) |
+| `usedBy` | Array de string |
+
+### webservice.ErrorStylePreview
+
+| Campo | Tipo |
+| --- | --- |
+| `html` | string |
+| `id` | string |
 
 ### webservice.ForwardAuth
 
@@ -2050,6 +2140,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `disableKeepAlives` | boolean |
 | `domains` | Array de string |
 | `enable` | boolean |
+| `errorPage` | `webservice.ErrorPageOptions` |
 | `forwardAuth` | `webservice.ForwardAuth` |
 | `forwardedHeaders` | boolean |
 | `group` | string |
@@ -2099,6 +2190,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `compress` | boolean |
 | `cors` | boolean |
 | `denyClose` | boolean |
+| `errorPage` | `webservice.ErrorPageStyle` |
 | `forwardedHeaders` | boolean |
 | `waf` | string |
 

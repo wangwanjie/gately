@@ -91,6 +91,8 @@ type siteTable struct {
 	exact map[string]*siteHandler
 	// cancel 停止这一批站点的后台任务（健康检查）
 	cancel context.CancelFunc
+	// missPage 为没有任何站点匹配时输出 404 所用的错误页设置，取自默认站点（默认站点停用时同样生效）
+	missPage *errorPager
 }
 
 // current 返回当前生效的站点表，监听器尚未构建时返回空表。
@@ -181,7 +183,7 @@ func (l *listenerRunner) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s := l.route(r.Host)
 	if s == nil {
 		l.acts.notFound.hit(r)
-		writeNotFound(w, r, "站点不存在", "这个域名没有配置对应的站点，请检查访问地址是否正确。")
+		writeNotFound(l.current().missPage, w, r, "站点不存在", "这个域名没有配置对应的站点，请检查访问地址是否正确。")
 		// 未知域名且没有默认站点时，同样交给路径探测规则计数
 		webprobe.Report(webprobe.Hit{Addr: clientAddr(r).Addr(), Listener: l.key, Unknown: true,
 			Method: r.Method, Host: r.Host, Path: r.URL.Path, Status: http.StatusNotFound})
@@ -211,6 +213,9 @@ func buildSiteTable(cfg Listener, log *logbuf.Logger, auth *authenticator, waf W
 		}
 	}
 	t := &siteTable{exact: map[string]*siteHandler{}}
+	if auth != nil {
+		t.missPage = newErrorPager(cfg.Default, auth.errPages)
+	}
 	build := func(s Site) (*siteHandler, error) {
 		s.scope = cfg.Key + "/" + s.Key
 		h, err := newSiteHandler(s, log, auth, waf)

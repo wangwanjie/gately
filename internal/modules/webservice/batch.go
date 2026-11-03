@@ -47,10 +47,12 @@ type SiteBatchOptions struct {
 	DenyClose        *bool `json:"denyClose,omitempty"`
 	// WAF 为 WAF 实例 key，空字符串表示取消引用
 	WAF *string `json:"waf,omitempty"`
+	// ErrorPage 为错误页样式（style 与 page），站点各自的拦截后端错误设置保持不变
+	ErrorPage *ErrorPageStyle `json:"errorPage,omitempty"`
 }
 
 func (o *SiteBatchOptions) empty() bool {
-	return o == nil || (o.Compress == nil && o.AccessLog == nil && o.CORS == nil && o.ForwardedHeaders == nil && o.DenyClose == nil && o.WAF == nil)
+	return o == nil || (o.Compress == nil && o.AccessLog == nil && o.CORS == nil && o.ForwardedHeaders == nil && o.DenyClose == nil && o.WAF == nil && o.ErrorPage == nil)
 }
 
 // SiteBatchRequest 为 POST /sites/batch 的请求体。
@@ -177,6 +179,10 @@ func applyBatchOptions(s *Site, o *SiteBatchOptions) bool {
 		s.WAF = *o.WAF
 		changed = true
 	}
+	if o.ErrorPage != nil && (s.ErrorPage.Style != o.ErrorPage.Style || s.ErrorPage.Page != o.ErrorPage.Page) {
+		s.ErrorPage.Style, s.ErrorPage.Page = o.ErrorPage.Style, o.ErrorPage.Page
+		changed = true
+	}
 	return changed
 }
 
@@ -244,6 +250,15 @@ func (m *Module) handleSiteBatch(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 			}
+		}
+		// 先规范化错误页设置，与站点现有设置比较时才能识别“无需修改”；引用的页面是否存在在保存前随监听一起检查
+		if e := req.Options.ErrorPage; e != nil {
+			o := ErrorPageOptions{Style: e.Style, Page: e.Page}
+			if err := o.validate(); err != nil {
+				httpx.Error(w, http.StatusBadRequest, "%v", err)
+				return
+			}
+			e.Style, e.Page = o.Style, o.Page
 		}
 	case BatchMove:
 		if req.Move == nil || req.Move.Listener == "" {
@@ -394,6 +409,10 @@ func (m *Module) handleSiteBatch(w http.ResponseWriter, r *http.Request) {
 			}
 		case BatchSet:
 			opts := *req.Options
+			// 断开连接与固定文本站点没有错误页，不设置样式（保存时也会清空）
+			if !isDefault && (site.Type == TypeClose || site.Type == TypeText) {
+				opts.ErrorPage = nil
+			}
 			if opts.WAF != nil {
 				v := strings.TrimSpace(*opts.WAF)
 				opts.WAF = &v
@@ -463,7 +482,7 @@ func (m *Module) handleSiteBatch(w http.ResponseWriter, r *http.Request) {
 			httpx.Error(w, http.StatusBadRequest, "%v", err)
 			return
 		}
-		if err := m.checkIPSetsLocked(l); err != nil {
+		if err := m.checkRefsLocked(l); err != nil {
 			httpx.Error(w, http.StatusBadRequest, "%v", err)
 			return
 		}

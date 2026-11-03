@@ -343,6 +343,14 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | PUT | `/api/webservice/iplists-enable` | `webservice:write` | Im Stapel aktivieren oder deaktivieren: Abonnierte IP-Liste |
 | POST | `/api/webservice/iplists-delete` | `webservice:write` | Im Stapel löschen: Abonnierte IP-Liste |
 | POST | `/api/webservice/iplists/{key}/refresh` | `webservice:write` | Abonnierte IP-Liste jetzt aktualisieren |
+| GET | `/api/webservice/errorpages` | `webservice:read` | Liste der benutzerdefinierten Fehlerseiten (ohne Seiteninhalt) |
+| POST | `/api/webservice/errorpages` | `webservice:write` | Benutzerdefinierte Fehlerseite hinzufügen: Hochgeladene Seiten werden vor dem Speichern bereinigt; bei Dateiseiten wird geprüft, ob die Datei verfügbar ist |
+| GET | `/api/webservice/errorpages/{key}` | `webservice:read` | Benutzerdefinierte Fehlerseite lesen (einschließlich Seiteninhalt) |
+| PUT | `/api/webservice/errorpages/{key}` | `webservice:write` | Benutzerdefinierte Fehlerseite ändern |
+| DELETE | `/api/webservice/errorpages/{key}` | `webservice:write` | Benutzerdefinierte Fehlerseite löschen (abgelehnt, solange Seiten sie noch verwenden) |
+| POST | `/api/webservice/errorpages/check` | `webservice:write` | Prüft Sicherheit und Verwendbarkeit einer Seite und erzeugt eine Vorschau, ohne zu speichern |
+| GET | `/api/webservice/errorpages/styles` | `webservice:read` | Vorschau des Standardstils und aller integrierten Stile; ?code= legt den Statuscode fest (Standard 502) |
+| GET | `/api/webservice/errorpages/{key}/preview` | `webservice:read` | Vorschau einer benutzerdefinierten Fehlerseite; ?code= legt den Statuscode fest (Standard 502) |
 | GET | `/api/webservice/users` | `webservice:read` | Gemeinsame Benutzer und OIDC-Identitätsanbieter lesen |
 | PUT | `/api/webservice/users` | `webservice:write` | Gemeinsame Benutzer und OIDC-Identitätsanbieter speichern, Sites gesammelt einstellen |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | Sammelaktionen für Sites: aktivieren, deaktivieren, löschen, Domains hinzufügen, entfernen oder ersetzen, einige Optionen ändern oder zu einem anderen Listener verschieben; gespeichert wird nur, wenn alle Sites die Prüfung bestehen, schlägt eine fehl, wird nichts geändert |
@@ -1802,6 +1810,16 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `timeout` | integer |
 | `url` | string |
 
+### webpage.CheckReport
+
+| Feld | Typ |
+| --- | --- |
+| `pageTitle` | string |
+| `placeholders` | Array von string |
+| `removed` | Array von string |
+| `size` | integer |
+| `warnings` | Array von string |
+
 ### webservice.AuthUser
 
 | Feld | Typ |
@@ -1863,6 +1881,78 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `history` | Array von `webservice.ConnView` |
 | `matched` | integer |
 | `total` | integer |
+
+### webservice.ErrorPage
+
+| Feld | Typ |
+| --- | --- |
+| `file` | string |
+| `html` | string |
+| `key` | string |
+| `name` | string |
+| `remark` | string |
+| `source` | string |
+| `updatedAt` | Zeit (RFC 3339) |
+
+### webservice.ErrorPageCheckRequest
+
+| Feld | Typ |
+| --- | --- |
+| `code` | integer |
+| `file` | string |
+| `html` | string |
+| `source` | string |
+
+### webservice.ErrorPageCheckResult
+
+| Feld | Typ |
+| --- | --- |
+| `preview` | string |
+| `report` | `webpage.CheckReport` |
+
+### webservice.ErrorPageOptions
+
+| Feld | Typ |
+| --- | --- |
+| `codes` | string |
+| `intercept` | boolean |
+| `page` | string |
+| `style` | string |
+
+### webservice.ErrorPageSaved
+
+| Feld | Typ |
+| --- | --- |
+| `page` | `webservice.ErrorPageView` |
+| `report` | `webpage.CheckReport` |
+
+### webservice.ErrorPageStyle
+
+| Feld | Typ |
+| --- | --- |
+| `page` | string |
+| `style` | string |
+
+### webservice.ErrorPageView
+
+| Feld | Typ |
+| --- | --- |
+| `error` | string |
+| `file` | string |
+| `key` | string |
+| `name` | string |
+| `remark` | string |
+| `size` | integer |
+| `source` | string |
+| `updatedAt` | Zeit (RFC 3339) |
+| `usedBy` | Array von string |
+
+### webservice.ErrorStylePreview
+
+| Feld | Typ |
+| --- | --- |
+| `html` | string |
+| `id` | string |
 
 ### webservice.ForwardAuth
 
@@ -2050,6 +2140,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `disableKeepAlives` | boolean |
 | `domains` | Array von string |
 | `enable` | boolean |
+| `errorPage` | `webservice.ErrorPageOptions` |
 | `forwardAuth` | `webservice.ForwardAuth` |
 | `forwardedHeaders` | boolean |
 | `group` | string |
@@ -2099,6 +2190,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `compress` | boolean |
 | `cors` | boolean |
 | `denyClose` | boolean |
+| `errorPage` | `webservice.ErrorPageStyle` |
 | `forwardedHeaders` | boolean |
 | `waf` | string |
 

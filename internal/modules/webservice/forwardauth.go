@@ -104,7 +104,7 @@ func originalURL(r *http.Request) string {
 func (f *forwardAuther) check(w http.ResponseWriter, r *http.Request, h *siteHandler) bool {
 	req, err := http.NewRequestWithContext(r.Context(), http.MethodGet, f.cfg.URL, nil)
 	if err != nil {
-		writeErrorPage(w, r, http.StatusInternalServerError, "认证服务不可用", "无法连接到站点配置的认证服务，请稍后重试。")
+		writeErrorPage(h.errPage, w, r, http.StatusInternalServerError, "认证服务不可用", "无法连接到站点配置的认证服务，请稍后重试。")
 		return false
 	}
 	// 与 nginx auth_request 一样带上访客的原始请求头（Cookie、Authorization 等），但不带请求体
@@ -137,7 +137,7 @@ func (f *forwardAuther) check(w http.ResponseWriter, r *http.Request, h *siteHan
 		if r.Context().Err() == nil {
 			h.reqLog(r).Warnf("%s 转发认证失败: %v", r.Host, err)
 		}
-		writeErrorPage(w, r, http.StatusBadGateway, "认证服务不可用", "无法连接到站点配置的认证服务，请稍后重试。")
+		writeErrorPage(h.errPage, w, r, http.StatusBadGateway, "认证服务不可用", "无法连接到站点配置的认证服务，请稍后重试。")
 		return false
 	}
 	defer resp.Body.Close()

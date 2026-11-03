@@ -343,6 +343,14 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | PUT | `/api/webservice/iplists-enable` | `webservice:write` | Activer ou désactiver en lot : Liste d'IP abonnée |
 | POST | `/api/webservice/iplists-delete` | `webservice:write` | Supprimer en lot : Liste d'IP abonnée |
 | POST | `/api/webservice/iplists/{key}/refresh` | `webservice:write` | Actualiser maintenant une liste d'IP abonnée |
+| GET | `/api/webservice/errorpages` | `webservice:read` | Liste des pages d'erreur personnalisées (sans le contenu des pages) |
+| POST | `/api/webservice/errorpages` | `webservice:write` | Ajouter une page d'erreur personnalisée : la page téléversée est nettoyée avant l'enregistrement ; pour une page fichier, la disponibilité du fichier est vérifiée |
+| GET | `/api/webservice/errorpages/{key}` | `webservice:read` | Lire une page d'erreur personnalisée (contenu de la page inclus) |
+| PUT | `/api/webservice/errorpages/{key}` | `webservice:write` | Modifier une page d'erreur personnalisée |
+| DELETE | `/api/webservice/errorpages/{key}` | `webservice:write` | Supprimer une page d'erreur personnalisée (refusé tant que des sites l'utilisent) |
+| POST | `/api/webservice/errorpages/check` | `webservice:write` | Vérifie la sécurité et l'utilisabilité d'une page et génère un aperçu sans enregistrer |
+| GET | `/api/webservice/errorpages/styles` | `webservice:read` | Aperçu du style par défaut et de tous les styles intégrés ; ?code= définit le code d'état (502 par défaut) |
+| GET | `/api/webservice/errorpages/{key}/preview` | `webservice:read` | Aperçu d'une page d'erreur personnalisée ; ?code= définit le code d'état (502 par défaut) |
 | GET | `/api/webservice/users` | `webservice:read` | Lire les utilisateurs partagés et le fournisseur d'identité OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Enregistrer utilisateurs partagés et fournisseur d'identité OIDC, configurer les sites en masse |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | Opérations groupées sur les sites : activer, désactiver, supprimer, ajouter, retirer ou remplacer des domaines, modifier certaines options ou déplacer vers un autre écouteur ; l'enregistrement n'a lieu que si tous les sites passent la validation, rien n'est modifié si l'un d'eux échoue |
@@ -1802,6 +1810,16 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `timeout` | integer |
 | `url` | string |
 
+### webpage.CheckReport
+
+| Champ | Type |
+| --- | --- |
+| `pageTitle` | string |
+| `placeholders` | Tableau de string |
+| `removed` | Tableau de string |
+| `size` | integer |
+| `warnings` | Tableau de string |
+
 ### webservice.AuthUser
 
 | Champ | Type |
@@ -1863,6 +1881,78 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `history` | Tableau de `webservice.ConnView` |
 | `matched` | integer |
 | `total` | integer |
+
+### webservice.ErrorPage
+
+| Champ | Type |
+| --- | --- |
+| `file` | string |
+| `html` | string |
+| `key` | string |
+| `name` | string |
+| `remark` | string |
+| `source` | string |
+| `updatedAt` | Heure (RFC 3339) |
+
+### webservice.ErrorPageCheckRequest
+
+| Champ | Type |
+| --- | --- |
+| `code` | integer |
+| `file` | string |
+| `html` | string |
+| `source` | string |
+
+### webservice.ErrorPageCheckResult
+
+| Champ | Type |
+| --- | --- |
+| `preview` | string |
+| `report` | `webpage.CheckReport` |
+
+### webservice.ErrorPageOptions
+
+| Champ | Type |
+| --- | --- |
+| `codes` | string |
+| `intercept` | boolean |
+| `page` | string |
+| `style` | string |
+
+### webservice.ErrorPageSaved
+
+| Champ | Type |
+| --- | --- |
+| `page` | `webservice.ErrorPageView` |
+| `report` | `webpage.CheckReport` |
+
+### webservice.ErrorPageStyle
+
+| Champ | Type |
+| --- | --- |
+| `page` | string |
+| `style` | string |
+
+### webservice.ErrorPageView
+
+| Champ | Type |
+| --- | --- |
+| `error` | string |
+| `file` | string |
+| `key` | string |
+| `name` | string |
+| `remark` | string |
+| `size` | integer |
+| `source` | string |
+| `updatedAt` | Heure (RFC 3339) |
+| `usedBy` | Tableau de string |
+
+### webservice.ErrorStylePreview
+
+| Champ | Type |
+| --- | --- |
+| `html` | string |
+| `id` | string |
 
 ### webservice.ForwardAuth
 
@@ -2050,6 +2140,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `disableKeepAlives` | boolean |
 | `domains` | Tableau de string |
 | `enable` | boolean |
+| `errorPage` | `webservice.ErrorPageOptions` |
 | `forwardAuth` | `webservice.ForwardAuth` |
 | `forwardedHeaders` | boolean |
 | `group` | string |
@@ -2099,6 +2190,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `compress` | boolean |
 | `cors` | boolean |
 | `denyClose` | boolean |
+| `errorPage` | `webservice.ErrorPageStyle` |
 | `forwardedHeaders` | boolean |
 | `waf` | string |
 

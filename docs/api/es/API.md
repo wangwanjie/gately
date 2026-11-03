@@ -343,6 +343,14 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | PUT | `/api/webservice/iplists-enable` | `webservice:write` | Activar o desactivar en lote: Lista de IP suscrita |
 | POST | `/api/webservice/iplists-delete` | `webservice:write` | Eliminar en lote: Lista de IP suscrita |
 | POST | `/api/webservice/iplists/{key}/refresh` | `webservice:write` | Actualizar ahora una lista de IP suscrita |
+| GET | `/api/webservice/errorpages` | `webservice:read` | Lista de páginas de error personalizadas (sin el contenido de las páginas) |
+| POST | `/api/webservice/errorpages` | `webservice:write` | Añadir una página de error personalizada: la página subida se depura antes de guardarse; en una página de archivo se comprueba que el archivo esté disponible |
+| GET | `/api/webservice/errorpages/{key}` | `webservice:read` | Leer una página de error personalizada (incluido el contenido de la página) |
+| PUT | `/api/webservice/errorpages/{key}` | `webservice:write` | Modificar una página de error personalizada |
+| DELETE | `/api/webservice/errorpages/{key}` | `webservice:write` | Eliminar una página de error personalizada (se rechaza si algún sitio aún la usa) |
+| POST | `/api/webservice/errorpages/check` | `webservice:write` | Comprueba la seguridad y la usabilidad de una página y genera una vista previa sin guardar |
+| GET | `/api/webservice/errorpages/styles` | `webservice:read` | Vista previa del estilo predeterminado y de todos los estilos integrados; ?code= indica el código de estado (por defecto 502) |
+| GET | `/api/webservice/errorpages/{key}/preview` | `webservice:read` | Vista previa de una página de error personalizada; ?code= indica el código de estado (por defecto 502) |
 | GET | `/api/webservice/users` | `webservice:read` | Leer usuarios compartidos y proveedor de identidad OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Guardar usuarios compartidos y proveedor de identidad OIDC, configurar sitios en bloque |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | Operaciones masivas de sitios: activar, desactivar, eliminar, añadir, quitar o reemplazar dominios, cambiar algunas opciones o mover a otro listener; solo se guarda si todos los sitios pasan la validación y no se cambia nada si alguno falla |
@@ -1802,6 +1810,16 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `timeout` | integer |
 | `url` | string |
 
+### webpage.CheckReport
+
+| Campo | Tipo |
+| --- | --- |
+| `pageTitle` | string |
+| `placeholders` | Lista de string |
+| `removed` | Lista de string |
+| `size` | integer |
+| `warnings` | Lista de string |
+
 ### webservice.AuthUser
 
 | Campo | Tipo |
@@ -1863,6 +1881,78 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `history` | Lista de `webservice.ConnView` |
 | `matched` | integer |
 | `total` | integer |
+
+### webservice.ErrorPage
+
+| Campo | Tipo |
+| --- | --- |
+| `file` | string |
+| `html` | string |
+| `key` | string |
+| `name` | string |
+| `remark` | string |
+| `source` | string |
+| `updatedAt` | Hora (RFC 3339) |
+
+### webservice.ErrorPageCheckRequest
+
+| Campo | Tipo |
+| --- | --- |
+| `code` | integer |
+| `file` | string |
+| `html` | string |
+| `source` | string |
+
+### webservice.ErrorPageCheckResult
+
+| Campo | Tipo |
+| --- | --- |
+| `preview` | string |
+| `report` | `webpage.CheckReport` |
+
+### webservice.ErrorPageOptions
+
+| Campo | Tipo |
+| --- | --- |
+| `codes` | string |
+| `intercept` | boolean |
+| `page` | string |
+| `style` | string |
+
+### webservice.ErrorPageSaved
+
+| Campo | Tipo |
+| --- | --- |
+| `page` | `webservice.ErrorPageView` |
+| `report` | `webpage.CheckReport` |
+
+### webservice.ErrorPageStyle
+
+| Campo | Tipo |
+| --- | --- |
+| `page` | string |
+| `style` | string |
+
+### webservice.ErrorPageView
+
+| Campo | Tipo |
+| --- | --- |
+| `error` | string |
+| `file` | string |
+| `key` | string |
+| `name` | string |
+| `remark` | string |
+| `size` | integer |
+| `source` | string |
+| `updatedAt` | Hora (RFC 3339) |
+| `usedBy` | Lista de string |
+
+### webservice.ErrorStylePreview
+
+| Campo | Tipo |
+| --- | --- |
+| `html` | string |
+| `id` | string |
 
 ### webservice.ForwardAuth
 
@@ -2050,6 +2140,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `disableKeepAlives` | boolean |
 | `domains` | Lista de string |
 | `enable` | boolean |
+| `errorPage` | `webservice.ErrorPageOptions` |
 | `forwardAuth` | `webservice.ForwardAuth` |
 | `forwardedHeaders` | boolean |
 | `group` | string |
@@ -2099,6 +2190,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `compress` | boolean |
 | `cors` | boolean |
 | `denyClose` | boolean |
+| `errorPage` | `webservice.ErrorPageStyle` |
 | `forwardedHeaders` | boolean |
 | `waf` | string |
 

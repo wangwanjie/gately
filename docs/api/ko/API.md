@@ -343,6 +343,14 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/webservice/iplists-enable` | `webservice:write` | 구독 IP 목록 일괄 사용/사용 안 함 |
 | POST | `/api/webservice/iplists-delete` | `webservice:write` | 구독 IP 목록 일괄 삭제 |
 | POST | `/api/webservice/iplists/{key}/refresh` | `webservice:write` | 구독 IP 목록 지금 새로고침 |
+| GET | `/api/webservice/errorpages` | `webservice:read` | 사용자 지정 오류 페이지 목록(페이지 내용 제외) |
+| POST | `/api/webservice/errorpages` | `webservice:write` | 사용자 지정 오류 페이지 추가: 업로드한 페이지는 정리 후 저장하고, 파일 페이지는 파일 사용 가능 여부를 확인합니다 |
+| GET | `/api/webservice/errorpages/{key}` | `webservice:read` | 사용자 지정 오류 페이지 조회(페이지 내용 포함) |
+| PUT | `/api/webservice/errorpages/{key}` | `webservice:write` | 사용자 지정 오류 페이지 수정 |
+| DELETE | `/api/webservice/errorpages/{key}` | `webservice:write` | 사용자 지정 오류 페이지 삭제(사이트에서 참조 중이면 거부) |
+| POST | `/api/webservice/errorpages/check` | `webservice:write` | 페이지의 안전성과 사용 가능성을 검사하고 미리보기를 생성합니다(저장하지 않음) |
+| GET | `/api/webservice/errorpages/styles` | `webservice:read` | 기본 스타일과 모든 내장 스타일 미리보기. ?code= 로 상태 코드 지정(기본값 502) |
+| GET | `/api/webservice/errorpages/{key}/preview` | `webservice:read` | 사용자 지정 오류 페이지 미리보기. ?code= 로 상태 코드 지정(기본값 502) |
 | GET | `/api/webservice/users` | `webservice:read` | 공유 사용자와 OIDC ID 공급자 조회 |
 | PUT | `/api/webservice/users` | `webservice:write` | 공유 사용자와 OIDC ID 공급자 저장, 사이트 일괄 설정 |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | 사이트 일괄 작업: 활성화·비활성화, 삭제, 도메인 추가·삭제·교체, 일부 옵션 변경, 다른 리스너로 이동. 모든 사이트가 검증을 통과해야 저장되며 하나라도 실패하면 아무것도 변경하지 않습니다 |
@@ -1802,6 +1810,16 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `timeout` | integer |
 | `url` | string |
 
+### webpage.CheckReport
+
+| 필드 | 타입 |
+| --- | --- |
+| `pageTitle` | string |
+| `placeholders` | Array of string |
+| `removed` | Array of string |
+| `size` | integer |
+| `warnings` | Array of string |
+
 ### webservice.AuthUser
 
 | 필드 | 타입 |
@@ -1863,6 +1881,78 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `history` | Array of `webservice.ConnView` |
 | `matched` | integer |
 | `total` | integer |
+
+### webservice.ErrorPage
+
+| 필드 | 타입 |
+| --- | --- |
+| `file` | string |
+| `html` | string |
+| `key` | string |
+| `name` | string |
+| `remark` | string |
+| `source` | string |
+| `updatedAt` | 시간 (RFC 3339) |
+
+### webservice.ErrorPageCheckRequest
+
+| 필드 | 타입 |
+| --- | --- |
+| `code` | integer |
+| `file` | string |
+| `html` | string |
+| `source` | string |
+
+### webservice.ErrorPageCheckResult
+
+| 필드 | 타입 |
+| --- | --- |
+| `preview` | string |
+| `report` | `webpage.CheckReport` |
+
+### webservice.ErrorPageOptions
+
+| 필드 | 타입 |
+| --- | --- |
+| `codes` | string |
+| `intercept` | boolean |
+| `page` | string |
+| `style` | string |
+
+### webservice.ErrorPageSaved
+
+| 필드 | 타입 |
+| --- | --- |
+| `page` | `webservice.ErrorPageView` |
+| `report` | `webpage.CheckReport` |
+
+### webservice.ErrorPageStyle
+
+| 필드 | 타입 |
+| --- | --- |
+| `page` | string |
+| `style` | string |
+
+### webservice.ErrorPageView
+
+| 필드 | 타입 |
+| --- | --- |
+| `error` | string |
+| `file` | string |
+| `key` | string |
+| `name` | string |
+| `remark` | string |
+| `size` | integer |
+| `source` | string |
+| `updatedAt` | 시간 (RFC 3339) |
+| `usedBy` | Array of string |
+
+### webservice.ErrorStylePreview
+
+| 필드 | 타입 |
+| --- | --- |
+| `html` | string |
+| `id` | string |
 
 ### webservice.ForwardAuth
 
@@ -2050,6 +2140,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `disableKeepAlives` | boolean |
 | `domains` | Array of string |
 | `enable` | boolean |
+| `errorPage` | `webservice.ErrorPageOptions` |
 | `forwardAuth` | `webservice.ForwardAuth` |
 | `forwardedHeaders` | boolean |
 | `group` | string |
@@ -2099,6 +2190,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `compress` | boolean |
 | `cors` | boolean |
 | `denyClose` | boolean |
+| `errorPage` | `webservice.ErrorPageStyle` |
 | `forwardedHeaders` | boolean |
 | `waf` | string |
 

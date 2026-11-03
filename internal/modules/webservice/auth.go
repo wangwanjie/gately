@@ -63,6 +63,8 @@ type authenticator struct {
 	onPasswordFailed func(kind, name, ip string, err error)
 	// pwChangedAt 记录各账号最近一次自助修改密码的时间（键见 cooldownKey），用于冷却
 	pwChangedAt sync.Map
+	// errPages 为自定义错误页面库，全部监听的站点共用；页面库修改后整体替换，站点无需重建
+	errPages *errorPageStore
 }
 
 func (a *authenticator) setOAuth(env oauthEnv) {
@@ -85,7 +87,7 @@ type failCount struct {
 
 func newAuthenticator(secret string) *authenticator {
 	return &authenticator{secret: []byte(secret), fails: map[string]*failCount{}, used: map[string]int64{},
-		bans: banlist.Default, shareUses: map[string]int{}, files: fileusers.Default}
+		bans: banlist.Default, shareUses: map[string]int{}, files: fileusers.Default, errPages: newErrorPageStore()}
 }
 
 // verifyUser 校验用户名密码，密码支持明文（导入的配置）与 bcrypt 哈希。

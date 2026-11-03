@@ -134,8 +134,11 @@ type Site struct {
 	CORS            bool     `json:"cors"`
 	AccessLog       bool     `json:"accessLog"`
 	// WAF 为引用的 WAF 实例 key，留空不检查；实例不存在或停用时放行
-	WAF    string `json:"waf"`
-	Remark string `json:"remark"`
+	WAF string `json:"waf"`
+	// ErrorPage 为 404 与 5xx 错误页的样式，以及（反向代理站点）拦截后端错误的设置，见 errorpages.go。
+	// 默认站点的设置同时用于没有任何站点匹配时的 404（默认站点未启用时同样生效）
+	ErrorPage ErrorPageOptions `json:"errorPage"`
+	Remark    string           `json:"remark"`
 
 	// scope 为 监听器key/站点key，运行时用于隔离会话 Cookie，不持久化
 	scope string
@@ -224,6 +227,8 @@ type fileConfig struct {
 	Listeners []Listener `json:"listeners"`
 	// IPLists 为订阅的 IP 列表，供站点访问控制引用
 	IPLists []IPList `json:"ipLists"`
+	// ErrorPages 为自定义错误页面库，供站点的错误页设置引用
+	ErrorPages []ErrorPage `json:"errorPages"`
 }
 
 func cleanList(in []string) []string {
@@ -327,6 +332,9 @@ func (l *Listener) Validate() error {
 		if err := l.Default.validate(true); err != nil {
 			return fmt.Errorf("默认站点: %w", err)
 		}
+	} else if err := l.Default.ErrorPage.validate(); err != nil {
+		// 默认站点停用时其错误页设置仍用于未匹配任何站点的 404，单独校验
+		return fmt.Errorf("默认站点: %w", err)
 	}
 	l.Default.Key = "default"
 	// 默认站点固定排在最后，不参与分组（停用时不经过 validate，这里单独清空）
@@ -371,6 +379,11 @@ func (s *Site) validate(isDefault bool) error {
 		domains = append(domains, d)
 	}
 	s.Domains = domains
+	// 断开连接与固定文本站点不产生错误页，界面也不显示错误页设置；从其他类型切换过来时清掉，
+	// 以免看不见的自定义页面引用挡住页面删除。默认站点的设置还用于未匹配站点的 404，保留
+	if !isDefault && (s.Type == TypeClose || s.Type == TypeText) {
+		s.ErrorPage = ErrorPageOptions{}
+	}
 	if !isDefault && len(s.Domains) == 0 {
 		return errors.New("至少填写一个域名")
 	}
@@ -470,6 +483,9 @@ func (s *Site) validate(isDefault bool) error {
 		return err
 	}
 	if err := s.validateProxyExtras(); err != nil {
+		return err
+	}
+	if err := s.ErrorPage.validate(); err != nil {
 		return err
 	}
 	return s.validateAccess()

@@ -101,6 +101,8 @@ type siteHandler struct {
 	deflt    bool
 	// conns 记录进行中的请求与最近结束的长请求，供实时连接列表与断开使用
 	conns *connTracker
+	// errPage 为站点的错误页设置（样式与拦截后端错误），nil 表示默认样式且不拦截
+	errPage *errorPager
 }
 
 type ctxKeyClientAddr struct{}
@@ -137,6 +139,9 @@ func newSiteHandler(s Site, log *logbuf.Logger, auth *authenticator, waf WAFProv
 		})
 		h.pipeline = h.handler
 		return h, nil
+	}
+	if auth != nil {
+		h.errPage = newErrorPager(s, auth.errPages)
 	}
 	var err error
 	if h.rewrites, err = compileRewrites(s.Rewrites); err != nil {
@@ -185,14 +190,14 @@ func newSiteHandler(s Site, log *logbuf.Logger, auth *authenticator, waf WAFProv
 			// 目标中的 {host}、{path}、{1}、{STUN_规则名_PORT} 等变量按本次请求替换，见 redirectvars.go
 			to, err := redirectTarget(&s, r)
 			if errors.Is(err, errBadHost) {
-				writeErrorPage(w, r, http.StatusBadRequest, "请求无效", "请求的域名不合法")
+				writeErrorPage(h.errPage, w, r, http.StatusBadRequest, "请求无效", "请求的域名不合法")
 				return
 			}
 			if err != nil {
 				// 引用的 STUN 规则暂无公网地址，或变量展开后缺少主机，跳到半成品地址没有意义。
 				// 原因（含规则名）只写日志，不展示给访客
 				h.reqLog(r).Warnf("重定向目标暂不可用: %v", err)
-				writeErrorPage(w, r, http.StatusServiceUnavailable, "重定向目标暂不可用", "跳转地址暂时无法确定，请稍后重试。")
+				writeErrorPage(h.errPage, w, r, http.StatusServiceUnavailable, "重定向目标暂不可用", "跳转地址暂时无法确定，请稍后重试。")
 				return
 			}
 			applyHeaders(w.Header(), s.ResponseHeaders)
@@ -443,6 +448,10 @@ func (h *siteHandler) newProxy(s Site, p *pool) http.Handler {
 					resp.Body = &upstreamBody{ReadCloser: resp.Body, st: up.stats}
 				}
 			}
+			// 拦截后端返回的错误状态码，换成站点设置的错误页（只替换浏览器打开页面的请求）
+			if h.errPage.intercepts(resp) {
+				h.errPage.replace(resp)
+			}
 			return nil
 		},
 		ErrorHandler: func(w http.ResponseWriter, r *http.Request, err error) {
@@ -456,7 +465,7 @@ func (h *siteHandler) newProxy(s Site, p *pool) http.Handler {
 				p.fail(up, err)
 			}
 			h.reqLog(r).Warnf("%s %s%s 后端错误: %v", r.Method, r.Host, r.URL.Path, err)
-			writeErrorPage(w, r, http.StatusBadGateway, "无法连接到后端服务", "站点的后端服务没有响应，可能未启动或网络不可达。请稍后重试。")
+			writeErrorPage(h.errPage, w, r, http.StatusBadGateway, "无法连接到后端服务", "站点的后端服务没有响应，可能未启动或网络不可达。请稍后重试。")
 		},
 		// 流式响应（SSE 等）及时刷新
 		FlushInterval: -1,
@@ -476,6 +485,9 @@ func (h *siteHandler) newProxy(s Site, p *pool) http.Handler {
 		}
 		ctx := context.WithValue(r.Context(), ctxKeyClientAddr{}, client)
 		ctx = context.WithValue(ctx, ctxKeyUpstream{}, up)
+		if h.errPage != nil && h.errPage.codes != nil {
+			ctx = context.WithValue(ctx, ctxKeyVisitorReq{}, r)
+		}
 		rp.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -907,16 +919,17 @@ func (h *siteHandler) String() string {
 	return fmt.Sprintf("%s %v", h.site.Type, h.site.Domains)
 }
 
-// writeErrorPage 浏览器访问时输出样式化的错误页，其他客户端输出纯文本。
-func writeErrorPage(w http.ResponseWriter, r *http.Request, code int, title, detail string) {
-	webpage.Error(w, r, webpage.Problem{Code: code, Title: title, Detail: detail})
+// writeErrorPage 浏览器访问时输出样式化的错误页（404 与 5xx 按站点设置的样式），其他客户端输出纯文本。
+// e 为站点的错误页设置，nil 表示默认样式。
+func writeErrorPage(e *errorPager, w http.ResponseWriter, r *http.Request, code int, title, detail string) {
+	e.write(w, r, webpage.Problem{Code: code, Title: title, Detail: detail})
 }
 
 // writeNotFound 输出 404：浏览器看到错误页，其他客户端与 http.NotFound 一致。
-func writeNotFound(w http.ResponseWriter, r *http.Request, title, detail string) {
+func writeNotFound(e *errorPager, w http.ResponseWriter, r *http.Request, title, detail string) {
 	if !webpage.WantsHTML(r) {
 		http.NotFound(w, r)
 		return
 	}
-	webpage.Error(w, r, webpage.Problem{Code: http.StatusNotFound, Title: title, Detail: detail, Home: r.URL.Path != "/"})
+	e.write(w, r, webpage.Problem{Code: http.StatusNotFound, Title: title, Detail: detail, Home: r.URL.Path != "/"})
 }

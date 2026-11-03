@@ -343,6 +343,14 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/webservice/iplists-enable` | `webservice:write` | 批量启用或停用订阅 IP 列表 |
 | POST | `/api/webservice/iplists-delete` | `webservice:write` | 批量删除订阅 IP 列表 |
 | POST | `/api/webservice/iplists/{key}/refresh` | `webservice:write` | 立即刷新订阅 IP 列表 |
+| GET | `/api/webservice/errorpages` | `webservice:read` | 自定义错误页面列表（不含页面内容） |
+| POST | `/api/webservice/errorpages` | `webservice:write` | 新增自定义错误页面：上传的页面清理后保存，文件页面检查文件是否可用 |
+| GET | `/api/webservice/errorpages/{key}` | `webservice:read` | 读取自定义错误页面（含页面内容） |
+| PUT | `/api/webservice/errorpages/{key}` | `webservice:write` | 修改自定义错误页面 |
+| DELETE | `/api/webservice/errorpages/{key}` | `webservice:write` | 删除自定义错误页面（仍被站点引用时拒绝） |
+| POST | `/api/webservice/errorpages/check` | `webservice:write` | 检查页面的安全性与可用性并生成预览，不保存 |
+| GET | `/api/webservice/errorpages/styles` | `webservice:read` | 默认样式与全部内置风格的预览，?code= 指定状态码（默认 502） |
+| GET | `/api/webservice/errorpages/{key}/preview` | `webservice:read` | 自定义错误页面的预览，?code= 指定状态码（默认 502） |
 | GET | `/api/webservice/users` | `webservice:read` | 读取共享用户与 OIDC 身份提供方 |
 | PUT | `/api/webservice/users` | `webservice:write` | 保存共享用户与 OIDC 身份提供方，批量设置站点 |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | 批量操作站点：启停、删除、增删或替换域名、修改部分选项、移到其他监听器；全部校验通过才保存，任一站点失败都不修改 |
@@ -1802,6 +1810,16 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `timeout` | integer |
 | `url` | string |
 
+### webpage.CheckReport
+
+| 字段 | 类型 |
+| --- | --- |
+| `pageTitle` | string |
+| `placeholders` | 数组 of string |
+| `removed` | 数组 of string |
+| `size` | integer |
+| `warnings` | 数组 of string |
+
 ### webservice.AuthUser
 
 | 字段 | 类型 |
@@ -1863,6 +1881,78 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `history` | 数组 of `webservice.ConnView` |
 | `matched` | integer |
 | `total` | integer |
+
+### webservice.ErrorPage
+
+| 字段 | 类型 |
+| --- | --- |
+| `file` | string |
+| `html` | string |
+| `key` | string |
+| `name` | string |
+| `remark` | string |
+| `source` | string |
+| `updatedAt` | 时间 (RFC 3339) |
+
+### webservice.ErrorPageCheckRequest
+
+| 字段 | 类型 |
+| --- | --- |
+| `code` | integer |
+| `file` | string |
+| `html` | string |
+| `source` | string |
+
+### webservice.ErrorPageCheckResult
+
+| 字段 | 类型 |
+| --- | --- |
+| `preview` | string |
+| `report` | `webpage.CheckReport` |
+
+### webservice.ErrorPageOptions
+
+| 字段 | 类型 |
+| --- | --- |
+| `codes` | string |
+| `intercept` | boolean |
+| `page` | string |
+| `style` | string |
+
+### webservice.ErrorPageSaved
+
+| 字段 | 类型 |
+| --- | --- |
+| `page` | `webservice.ErrorPageView` |
+| `report` | `webpage.CheckReport` |
+
+### webservice.ErrorPageStyle
+
+| 字段 | 类型 |
+| --- | --- |
+| `page` | string |
+| `style` | string |
+
+### webservice.ErrorPageView
+
+| 字段 | 类型 |
+| --- | --- |
+| `error` | string |
+| `file` | string |
+| `key` | string |
+| `name` | string |
+| `remark` | string |
+| `size` | integer |
+| `source` | string |
+| `updatedAt` | 时间 (RFC 3339) |
+| `usedBy` | 数组 of string |
+
+### webservice.ErrorStylePreview
+
+| 字段 | 类型 |
+| --- | --- |
+| `html` | string |
+| `id` | string |
 
 ### webservice.ForwardAuth
 
@@ -2050,6 +2140,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `disableKeepAlives` | boolean |
 | `domains` | 数组 of string |
 | `enable` | boolean |
+| `errorPage` | `webservice.ErrorPageOptions` |
 | `forwardAuth` | `webservice.ForwardAuth` |
 | `forwardedHeaders` | boolean |
 | `group` | string |
@@ -2099,6 +2190,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `compress` | boolean |
 | `cors` | boolean |
 | `denyClose` | boolean |
+| `errorPage` | `webservice.ErrorPageStyle` |
 | `forwardedHeaders` | boolean |
 | `waf` | string |
 

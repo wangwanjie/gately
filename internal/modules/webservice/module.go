@@ -136,6 +136,10 @@ func (m *Module) Init(env module.Env) error {
 	}
 	// 订阅的 IP 列表先用缓存内容，启动后再按刷新间隔下载
 	m.loadIPListsLocked()
+	// 自定义错误页面库：页面不可用（文件被删、内容无效）时记录日志，引用它的站点改用默认样式
+	errLog := m.logs.Logger("")
+	m.auth.errPages.warn = errLog.Warnf
+	m.auth.errPages.set(m.cfg.ErrorPages)
 	return nil
 }
 
@@ -280,7 +284,7 @@ func (m *Module) Routes(r module.Router) {
 			if err := l.Validate(); err != nil {
 				return err
 			}
-			return m.checkIPSetsLocked(l)
+			return m.checkRefsLocked(l)
 		},
 		Copy:    func(_, dst *Listener) { dst.dropShareLinks() },
 		View:    m.viewLocked,
@@ -289,6 +293,7 @@ func (m *Module) Routes(r module.Router) {
 	}
 	listeners.Register(r, "/listeners")
 	m.registerIPLists(r)
+	m.registerErrorPages(r)
 	m.registerUsers(r)
 	m.registerBatch(r)
 	r.HandleFunc("POST /import/nginx", m.handleImportNginx)
