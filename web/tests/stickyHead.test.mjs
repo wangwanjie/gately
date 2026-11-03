@@ -46,3 +46,18 @@ test('吸住判断：顶端到达「顶栏高度 - 偏移」即为吸住', () =>
   assert.equal(isStuck(-23, 52, 76), false)
   assert.equal(isStuck(-24, 52, 76), true)
 })
+
+test('操作栏为空（插槽内容全被 v-if 隐藏）时只露出上下留白', () => {
+  // 窄屏纵向排列：标题区 10~54，空操作栏紧接在下方（高 0），下内边距 12
+  const l = headLayout({ headHeight: 10 + 44 + 12 + 0 + 12, mainTop: 10, mainHeight: 44, actionsTop: 66 })
+  assert.equal(l.offset, 56)
+  assert.equal(l.visible, HEAD_PAD_TOP + 12)
+})
+
+test('吸住判断在偏移为 0 与亚像素边界上稳定', () => {
+  assert.equal(isStuck(56.5, 56, 0), true)
+  assert.equal(isStuck(56.51, 56, 0), false)
+  // 顶栏高度变化（断点切换）后按新高度判断
+  assert.equal(isStuck(52, 52, 0), true)
+  assert.equal(isStuck(54, 52, 0), false)
+})
