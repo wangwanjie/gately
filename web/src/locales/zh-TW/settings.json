@@ -91,7 +91,7 @@
     "safePath": "安全入口",
     "safePathPlaceholder": "留空不啟用，例如 /my-entry",
     "random": "隨機產生",
-    "safePathHelp": "設定後需存取 {url} 才能開啟管理介面，直接存取其他路徑會回傳 404，可防止掃描器發現管理介面。請牢記入口位址。",
+    "safePathHelp": "設定後需存取 {url} 才能開啟管理介面，直接存取其他路徑依「未授權存取回應」處理（預設回傳 404），可防止掃描器發現管理介面。請牢記入口位址。",
     "urlPrefix": "http://IP:連接埠",
     "entryName": "入口",
     "lanOnly": "僅允許內網存取",
@@ -130,6 +130,7 @@
       "preview": "預覽",
       "previewTitle": "頁面預覽（狀態碼 {code}）",
       "warnEntry": "輸錯安全入口位址時不再顯示提示頁。忘記入口時，可在設定目錄的 gately.json 中清空 safePath 後重新啟動 Gately。",
+      "warnHttp": "已開啟強制 HTTPS：用 http:// 開啟未帶安全入口的位址時不再跳轉到 HTTPS，請收藏 https:// 位址。",
       "warnPort": "TCP 連接埠仍處於開放狀態，連接埠掃描依然能發現它；若要讓連接埠完全不可見，請用防火牆限制來源或取消公網連接埠對應。",
       "warnNoTrigger": "目前未設定安全入口，也未開啟僅允許內網存取，此設定只對被封鎖的來源生效。"
     }

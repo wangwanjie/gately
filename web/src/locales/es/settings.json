@@ -91,7 +91,7 @@
     "safePath": "Entrada segura",
     "safePathPlaceholder": "Déjalo vacío para desactivarlo, p. ej. /mi-entrada",
     "random": "Generar aleatoriamente",
-    "safePathHelp": "Una vez definida, debes visitar {url} para abrir la consola; cualquier otra ruta devuelve 404, lo que evita que los escáneres encuentren la consola. Recuerda tu dirección de entrada.",
+    "safePathHelp": "Una vez definida, debes visitar {url} para abrir la consola; cualquier otra ruta se trata según «Respuesta no autorizada» (404 por defecto), lo que evita que los escáneres encuentren la consola. Recuerda tu dirección de entrada.",
     "urlPrefix": "http://IP:puerto",
     "entryName": "entrada",
     "lanOnly": "Acceso solo desde la red local",
@@ -130,6 +130,7 @@
       "preview": "Vista previa",
       "previewTitle": "Vista previa (estado {code})",
       "warnEntry": "Si se escribe mal la entrada de seguridad ya no aparece la página de aviso. Si olvida la entrada, vacíe safePath en gately.json, en el directorio de configuración, y reinicie Gately.",
+      "warnHttp": "Forzar HTTPS está activado: abrir una dirección http:// sin la entrada de seguridad ya no redirige a HTTPS; guarde la dirección https:// en marcadores.",
       "warnPort": "El puerto TCP sigue abierto y un escaneo de puertos puede encontrarlo. Para ocultarlo por completo, limite los orígenes con un cortafuegos o quite la redirección del puerto público.",
       "warnNoTrigger": "No hay entrada de seguridad y el acceso solo LAN está desactivado, así que este ajuste solo se aplica a los orígenes bloqueados."
     }

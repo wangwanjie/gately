@@ -91,7 +91,7 @@
     "safePath": "Secure entry",
     "safePathPlaceholder": "Leave empty to disable, e.g. /my-entry",
     "random": "Generate randomly",
-    "safePathHelp": "Once set, you must visit {url} to open the console; any other path returns 404, which keeps scanners from finding the console. Remember your entry address.",
+    "safePathHelp": "Once set, you must visit {url} to open the console; any other path is handled by \"Unauthorized response\" (404 by default), which keeps scanners from finding the console. Remember your entry address.",
     "urlPrefix": "http://IP:port",
     "entryName": "entry",
     "lanOnly": "LAN access only",
@@ -130,6 +130,7 @@
       "preview": "Preview",
       "previewTitle": "Page preview (status {code})",
       "warnEntry": "A mistyped security entrance no longer shows the notice page. If you forget the entrance, clear safePath in gately.json in the config directory and restart Gately.",
+      "warnHttp": "Force HTTPS is on: opening an http:// address without the security entrance no longer redirects to HTTPS, so bookmark the https:// address.",
       "warnPort": "The TCP port is still open and port scans can still find it. To hide the port completely, restrict sources with a firewall or remove the public port mapping.",
       "warnNoTrigger": "No security entrance is set and LAN-only access is off, so this setting only applies to banned sources."
     }

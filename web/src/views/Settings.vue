@@ -753,6 +753,10 @@ const denyWarnings = computed(() => {
   const out: string[] = []
   if (f.safePath.trim()) {
     out.push(t('settings.restrict.deny.warnEntry'))
+    // 入口 Cookie 在 HTTPS 下写入带 Secure，http:// 请求不带它，隐藏方式下拦截先于强制 HTTPS 跳转
+    if (f.forceHTTPS) {
+      out.push(t('settings.restrict.deny.warnHttp'))
+    }
   }
   if (f.denyMode === 'close' || f.denyMode === 'drop') {
     out.push(t('settings.restrict.deny.warnPort'))

@@ -91,7 +91,7 @@
     "safePath": "安全入口",
     "safePathPlaceholder": "留空不启用，例如 /my-entry",
     "random": "随机生成",
-    "safePathHelp": "设置后需访问 {url} 才能打开管理界面，直接访问其他路径返回 404，可防止扫描器发现管理界面。请牢记入口地址。",
+    "safePathHelp": "设置后需访问 {url} 才能打开管理界面，直接访问其他路径按「未授权访问响应」处理（默认返回 404），可防止扫描器发现管理界面。请牢记入口地址。",
     "urlPrefix": "http://IP:端口",
     "entryName": "入口",
     "lanOnly": "仅允许内网访问",
@@ -130,6 +130,7 @@
       "preview": "预览",
       "previewTitle": "页面预览（状态码 {code}）",
       "warnEntry": "输错安全入口地址时不再显示提示页。忘记入口时，可在配置目录的 gately.json 中清空 safePath 后重启 Gately。",
+      "warnHttp": "开启了强制 HTTPS：用 http:// 打开不带安全入口的地址时不再跳转到 HTTPS，请收藏 https:// 地址。",
       "warnPort": "TCP 端口仍处于开放状态，端口扫描依然能发现它；要让端口完全不可见，请用防火墙限制来源或取消公网端口映射。",
       "warnNoTrigger": "当前未设置安全入口，也未开启仅允许内网访问，此设置只对被封禁的来源生效。"
     }

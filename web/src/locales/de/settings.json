@@ -91,7 +91,7 @@
     "safePath": "Sicherer Einstieg",
     "safePathPlaceholder": "Leer lassen zum Deaktivieren, z. B. /my-entry",
     "random": "Zufällig erzeugen",
-    "safePathHelp": "Nach dem Festlegen müssen Sie {url} aufrufen, um die Konsole zu öffnen; jeder andere Pfad liefert 404, sodass Scanner die Konsole nicht finden. Merken Sie sich Ihre Einstiegsadresse.",
+    "safePathHelp": "Nach dem Festlegen müssen Sie {url} aufrufen, um die Konsole zu öffnen; jeder andere Pfad wird gemäß „Antwort bei unbefugtem Zugriff“ behandelt (standardmäßig 404), sodass Scanner die Konsole nicht finden. Merken Sie sich Ihre Einstiegsadresse.",
     "urlPrefix": "http://IP:Port",
     "entryName": "einstieg",
     "lanOnly": "Nur LAN-Zugriff",
@@ -130,6 +130,7 @@
       "preview": "Vorschau",
       "previewTitle": "Seitenvorschau (Status {code})",
       "warnEntry": "Bei falsch eingegebenem Sicherheitseinstieg erscheint keine Hinweisseite mehr. Falls Sie den Einstieg vergessen, leeren Sie safePath in gately.json im Konfigurationsverzeichnis und starten Gately neu.",
+      "warnHttp": "HTTPS erzwingen ist aktiv: Eine http://-Adresse ohne Sicherheitseinstieg leitet nicht mehr auf HTTPS um. Speichern Sie die https://-Adresse als Lesezeichen.",
       "warnPort": "Der TCP-Port bleibt offen und ist per Portscan weiterhin auffindbar. Um ihn vollständig zu verbergen, beschränken Sie die Quellen per Firewall oder entfernen die öffentliche Portweiterleitung.",
       "warnNoTrigger": "Es ist kein Sicherheitseinstieg gesetzt und Nur-LAN-Zugriff ist aus – diese Einstellung gilt daher nur für gesperrte Quellen."
     }
