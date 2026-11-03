@@ -12,6 +12,12 @@ import (
 	"github.com/wangwanjie/gately/internal/logbuf"
 )
 
+// Info 是模块的标识与界面显示名称。
+type Info struct {
+	ID    string `json:"id"`
+	Title string `json:"title"`
+}
+
 // Env 是框架注入给模块的运行环境。
 type Env struct {
 	Store *config.Store

@@ -946,6 +946,7 @@
   "剩余 %d 小时（到期时间 %s）": "Noch %d Stunden (läuft ab am %s)",
   "功能未实现": "Nicht implementiert",
   "功能模块「%s」已关闭，请在 设置 \u003e 功能模块 中开启并重启后使用": "Das Modul „%s“ ist deaktiviert; aktiviere es unter Einstellungen \u003e Module und starte neu, um es zu verwenden",
+  "功能模块「%s」未包含在此构建中": "Das Modul „%s“ ist in diesem Build nicht enthalten",
   "功能模块「%s」被「%s」依赖，不能关闭": "Das Modul „%s“ wird von „%s“ benötigt und kann nicht deaktiviert werden",
   "功能模块「%s」被「%s」依赖，已保持开启": "Das Modul „%s“ wird von „%s“ benötigt und bleibt aktiviert",
   "加载 API 令牌失败: %w": "Laden der API-Tokens fehlgeschlagen: %w",

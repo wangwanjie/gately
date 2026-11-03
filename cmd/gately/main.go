@@ -18,7 +18,6 @@ import (
 	"github.com/wangwanjie/gately/internal/app"
 	"github.com/wangwanjie/gately/internal/ctl"
 	"github.com/wangwanjie/gately/internal/i18n"
-	"github.com/wangwanjie/gately/internal/modules/docker"
 	"github.com/wangwanjie/gately/internal/modules/registry"
 	"github.com/wangwanjie/gately/internal/systz"
 	"github.com/wangwanjie/gately/internal/version"
@@ -37,13 +36,14 @@ func main() {
 		case "reset-password", "reset-totp":
 			// 在服务器上重置管理员密码或关闭两步验证，提示按系统语言翻译
 			os.Exit(runReset(os.Args[1], os.Args[2:], os.Stdin, i18n.NewWriterFor(os.Stdout, i18n.FromEnv())))
-		case docker.SelfUpgradeCommand:
-			// Docker 管理升级 Gately 自身时，在辅助容器中重建 Gately 容器
-			os.Exit(docker.RunSelfUpgrade(os.Args[2:], os.Stdout))
 		case "version":
 			// 与 -version 等价，避免 docker exec gately gately version 误启动第二个服务实例
 			printVersion()
 			return
+		}
+		// 模块提供的子命令，例如 Docker 管理升级 Gately 自身时在辅助容器中重建 Gately 容器
+		if run, ok := registry.Subcommand(os.Args[1]); ok {
+			os.Exit(run(os.Args[2:], os.Stdout))
 		}
 	}
 	// 标准日志（含启动失败等 log.Fatalf）按服务端语言翻译

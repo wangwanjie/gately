@@ -946,6 +946,7 @@
   "剩余 %d 小时（到期时间 %s）": "%d heures restantes (expire le %s)",
   "功能未实现": "Non implémenté",
   "功能模块「%s」已关闭，请在 设置 \u003e 功能模块 中开启并重启后使用": "Le module « %s » est désactivé ; activez-le dans Paramètres \u003e Modules puis redémarrez pour l'utiliser",
+  "功能模块「%s」未包含在此构建中": "Le module « %s » n'est pas inclus dans cette version",
   "功能模块「%s」被「%s」依赖，不能关闭": "Le module « %s » est requis par « %s » et ne peut pas être désactivé",
   "功能模块「%s」被「%s」依赖，已保持开启": "Le module « %s » est requis par « %s » et a été laissé activé",
   "加载 API 令牌失败: %w": "Échec du chargement des jetons API : %w",

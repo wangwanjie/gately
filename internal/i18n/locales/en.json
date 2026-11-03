@@ -946,6 +946,7 @@
   "剩余 %d 小时（到期时间 %s）": "%d hours left (expires %s)",
   "功能未实现": "Not implemented",
   "功能模块「%s」已关闭，请在 设置 \u003e 功能模块 中开启并重启后使用": "Module \"%s\" is disabled; enable it in Settings \u003e Modules and restart to use it",
+  "功能模块「%s」未包含在此构建中": "Module \"%s\" is not included in this build",
   "功能模块「%s」被「%s」依赖，不能关闭": "Module \"%s\" is required by \"%s\" and cannot be disabled",
   "功能模块「%s」被「%s」依赖，已保持开启": "Module \"%s\" is required by \"%s\" and was kept enabled",
   "加载 API 令牌失败: %w": "Failed to load API tokens: %w",
