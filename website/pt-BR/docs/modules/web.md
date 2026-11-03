@@ -285,7 +285,7 @@ O visitante abre `https://domain/any-path?_gs=token` para resgatar uma sessão. 
 
 ### Lista de banimentos
 
-A lista de banimentos em "Configurações globais" mostra os IPs atualmente banidos, o motivo (falhas de autenticação repetidas ou banimento manual) e a hora de expiração, e cada entrada pode ser removida com "Desbanir". Você também pode banir manualmente: informe um IP e um número de horas (1 a 720, ou seja, no máximo 30 dias); a API usa 24 horas por padrão.
+A lista de banimentos em "Configurações globais" mostra os IPs atualmente banidos, o motivo (falhas de autenticação repetidas ou banimento manual) e a hora de expiração, e cada entrada pode ser removida com "Desbanir". Você também pode banir manualmente: informe um IP e um número de horas (1 a 720, ou seja, no máximo 30 dias); a API usa 24 horas por padrão. Endereços de loopback e endereços dentro dos proxies confiáveis não podem ser banidos manualmente, pelo motivo explicado em **Encerrar e bloquear** mais abaixo.
 
 A lista de bloqueio é compartilhada com a [Prevenção de intrusão](/pt-BR/docs/modules/guard): com esse módulo ligado, esta seção mostra só o número de bloqueios e leva à página dele para gerenciá-los. Os bloqueios também valem para encaminhamento de portas, STUN e outros serviços, e são descartados no firewall do sistema quando a sincronização está ligada; com "Ignorar endereços da LAN" ligado, esses endereços nunca são bloqueados automaticamente.
 

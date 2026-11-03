@@ -285,7 +285,7 @@ Ein Besucher ruft `https://domain/beliebiger-pfad?_gs=token` auf, um eine Sitzun
 
 ### Sperrliste
 
-Die Sperrliste in den „Globalen Einstellungen“ zeigt die aktuell gesperrten IPs, den Grund (wiederholte Authentifizierungsfehler oder manuelle Sperre) und den Ablaufzeitpunkt, und jeder Eintrag lässt sich mit „Entsperren“ aufheben. Sie können auch manuell sperren: Geben Sie eine IP und eine Anzahl Stunden ein (1 bis 720, also höchstens 30 Tage); die API verwendet standardmäßig 24 Stunden.
+Die Sperrliste in den „Globalen Einstellungen“ zeigt die aktuell gesperrten IPs, den Grund (wiederholte Authentifizierungsfehler oder manuelle Sperre) und den Ablaufzeitpunkt, und jeder Eintrag lässt sich mit „Entsperren“ aufheben. Sie können auch manuell sperren: Geben Sie eine IP und eine Anzahl Stunden ein (1 bis 720, also höchstens 30 Tage); die API verwendet standardmäßig 24 Stunden. Loopback-Adressen und Adressen innerhalb der vertrauenswürdigen Proxys lassen sich nicht manuell sperren; den Grund nennt **Trennen und sperren** weiter unten.
 
 Die Sperrliste wird mit dem [Einbruchschutz](/de/docs/modules/guard) geteilt: Ist dieses Modul eingeschaltet, zeigt dieser Abschnitt nur die Anzahl der Sperren und verweist zur Verwaltung auf dessen Seite. Sperren gelten auch für Portweiterleitung, STUN und andere Dienste und werden bei aktiver Firewall-Synchronisierung in der System-Firewall verworfen; mit „LAN-Adressen ignorieren“ werden LAN-Adressen nie automatisch gesperrt.
 

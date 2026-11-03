@@ -285,7 +285,7 @@ Un visiteur ouvre `https://domain/any-path?_gs=token` pour obtenir une session. 
 
 ### Liste de bannissement
 
-La liste de bannissement dans « Paramètres globaux » affiche les IP actuellement bannies, la raison (échecs d'authentification répétés ou bannissement manuel) et l'heure d'expiration, et chaque entrée peut être levée avec « Débannir ». Vous pouvez aussi bannir manuellement : saisissez une IP et un nombre d'heures (1 à 720, soit 30 jours au maximum) ; l'API utilise 24 heures par défaut.
+La liste de bannissement dans « Paramètres globaux » affiche les IP actuellement bannies, la raison (échecs d'authentification répétés ou bannissement manuel) et l'heure d'expiration, et chaque entrée peut être levée avec « Débannir ». Vous pouvez aussi bannir manuellement : saisissez une IP et un nombre d'heures (1 à 720, soit 30 jours au maximum) ; l'API utilise 24 heures par défaut. Les adresses de bouclage et celles des proxys de confiance ne peuvent pas être bannies manuellement, pour la raison indiquée plus bas sous **Fermer et bannir**.
 
 La liste de bannissement est partagée avec la [prévention d'intrusion](/fr/docs/modules/guard) : quand ce module est activé, cette section n'affiche que le nombre de bannissements et renvoie à sa page pour les gérer. Les bannissements s'appliquent aussi à la redirection de ports, à STUN et aux autres services, et sont rejetés dans le pare-feu du système quand la synchronisation est activée ; avec « Ignorer les adresses du LAN », ces adresses ne sont jamais bannies automatiquement.
 

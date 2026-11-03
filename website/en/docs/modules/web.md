@@ -285,7 +285,7 @@ A visitor opens `https://domain/any-path?_gs=token` to redeem a session. After a
 
 ### Ban list
 
-The ban list in "Global settings" shows the currently banned IPs, the reason (repeated authentication failures or manual ban) and the expiry time, and each entry can be lifted with "Unban". You can also ban manually: enter an IP and a number of hours (1 to 720, which is at most 30 days); the API defaults to 24 hours.
+The ban list in "Global settings" shows the currently banned IPs, the reason (repeated authentication failures or manual ban) and the expiry time, and each entry can be lifted with "Unban". You can also ban manually: enter an IP and a number of hours (1 to 720, which is at most 30 days); the API defaults to 24 hours. Loopback addresses and addresses within the trusted proxies cannot be banned manually, for the reason given under **Close and ban** below.
 
 The ban list is shared with [Intrusion Prevention](/en/docs/modules/guard): when the Intrusion Prevention module is on, this section only shows the number of bans and links to the Intrusion Prevention page for managing them. Bans also apply to port forwarding, STUN and other services, and are dropped in the system firewall when firewall sync is on; with "Ignore LAN addresses" on, LAN addresses are never banned automatically.
 
