@@ -83,8 +83,8 @@
   "home": {
     "pill": "Gratuit et open source · Apache-2.0",
     "announce": {
-      "text": "v0.6.3 : suivi des performances et alertes, SafeLine pour le WAF, actions groupées, ouverture automatique du pare-feu pour STUN →",
-      "link": "/fr/news/v0.6.3"
+      "text": "v0.6.3.5 : réseau NetBird, vérification automatique des mises à jour et alertes de sécurité, copie d’éléments, déplacement des sites entre écouteurs, avec correctifs de sécurité →",
+      "link": "/fr/news/v0.6.3.5"
     },
     "titleLine1": "La passerelle réseau tout-en-un",
     "titleLine2": "Open source, prête à l'emploi",

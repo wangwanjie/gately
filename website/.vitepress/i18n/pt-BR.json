@@ -83,8 +83,8 @@
   "home": {
     "pill": "Gratuito e de código aberto · Apache-2.0",
     "announce": {
-      "text": "v0.6.3: monitoramento de desempenho e alertas, SafeLine no WAF, operações em lote, abertura automática do firewall para STUN →",
-      "link": "/pt-BR/news/v0.6.3"
+      "text": "v0.6.3.5: rede com NetBird, verificação automática de atualizações e alertas de segurança, cópia de itens, mover sites entre listeners, com correções de segurança →",
+      "link": "/pt-BR/news/v0.6.3.5"
     },
     "titleLine1": "O gateway de rede tudo em um",
     "titleLine2": "Código aberto e pronto para usar",

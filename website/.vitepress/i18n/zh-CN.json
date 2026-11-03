@@ -83,8 +83,8 @@
   "home": {
     "pill": "开源免费 · Apache-2.0",
     "announce": {
-      "text": "v0.6.3 发布：性能监控与告警、WAF 接入雷池、批量操作、STUN 自动放行防火墙 →",
-      "link": "/news/v0.6.3"
+      "text": "v0.6.3.5 发布：NetBird 组网、自动检查更新与安全提醒、条目复制、站点换监听，含安全修复 →",
+      "link": "/news/v0.6.3.5"
     },
     "titleLine1": "一站式网络网关",
     "titleLine2": "开源透明，开箱即用",

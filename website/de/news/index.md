@@ -7,6 +7,10 @@ description: Release-Ankündigungen und Versionshinweise zu jeder Gately-Version
 
 Unten stehen die Ankündigungen zu wichtigen Releases. Alle Änderungen und Downloads jeder Version finden Sie unter [GitHub Releases](https://github.com/wangwanjie/gately/releases).
 
+## [v0.6.3.5](/de/news/v0.6.3.5)
+
+3. November 2026 · Neue Vernetzung mit NetBird; automatische Prüfung auf neue Versionen und Sicherheitshinweise mit Benachrichtigung; jeder Listeneintrag lässt sich kopieren; Web-Sites können zu einem anderen Listener verschoben werden; Seitenköpfe und Listen-Werkzeugleisten bleiben beim Scrollen sichtbar; Benachrichtigungen, Webhooks und IP-Listen können einen Proxy nutzen; Docker-Hintergrundaufgaben lassen sich abbrechen; enthält Sicherheitskorrekturen, ein Upgrade wird empfohlen.
+
 ## [v0.6.3](/de/news/v0.6.3)
 
 2. November 2026 · Neue Leistungsüberwachung (Verläufe, Zeit bis zum ersten Byte und Schwellenwert-Alarme); WAF kann eine selbst betriebene SafeLine-Erkennungs-Engine nutzen; Listen und Web-Dienste-Sites unterstützen Stapeloperationen; STUN-Regeln können Firewall-Ports auf diesem Rechner automatisch freigeben; behebt fehlgeschlagene DNS-01-Ausstellungen durch Wildcard-CNAMEs; Web-Dienste-Protokolle können gesperrte Quellen und die Anfragen der Konsole selbst ausblenden.

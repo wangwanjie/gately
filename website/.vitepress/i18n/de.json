@@ -83,8 +83,8 @@
   "home": {
     "pill": "Kostenlos und Open Source · Apache-2.0",
     "announce": {
-      "text": "v0.6.3: Leistungsüberwachung mit Warnungen, SafeLine für die WAF, Massenaktionen, automatische Firewall-Freigabe für STUN →",
-      "link": "/de/news/v0.6.3"
+      "text": "v0.6.3.5: Vernetzung mit NetBird, automatische Update-Prüfung und Sicherheitswarnungen, Einträge kopieren, Sites zwischen Listenern verschieben, mit Sicherheitskorrekturen →",
+      "link": "/de/news/v0.6.3.5"
     },
     "titleLine1": "Das All-in-one-Netzwerk-Gateway",
     "titleLine2": "Open Source, sofort einsatzbereit",

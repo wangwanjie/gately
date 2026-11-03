@@ -7,6 +7,10 @@ description: Gately 各版本的發布公告與更新說明。
 
 重要版本的發布公告如下，每個版本的完整變更與下載檔案見 [GitHub Releases](https://github.com/wangwanjie/gately/releases)。
 
+## [v0.6.3.5](/zh-TW/news/v0.6.3.5)
+
+2026 年 11 月 3 日 · 新增 NetBird 組網；自動檢查新版本與安全公告並提醒；所有列表條目可複製；Web 站點可移到其他監聽；頁首與列表工具列捲動時保持可見；通知、Webhook、IP 列表可走代理；Docker 背景工作可中斷；含安全修正，建議升級。
+
 ## [v0.6.3](/zh-TW/news/v0.6.3)
 
 2026 年 11 月 2 日 · 新增效能監控（趨勢、首位元組延遲與閾值告警）；WAF 可接入自建的雷池（SafeLine）偵測引擎；列表與 Web 服務站點支援批次操作；STUN 規則可自動放行本機防火牆連接埠；修正泛解析 CNAME 導致的 DNS-01 簽發失敗；Web 服務日誌可隱藏被封鎖來源與後台自身請求。

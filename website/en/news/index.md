@@ -7,6 +7,10 @@ description: Release announcements and notes for each Gately version.
 
 Announcements for major releases are listed below. See [GitHub Releases](https://github.com/wangwanjie/gately/releases) for the full changes and downloads of every version.
 
+## [v0.6.3.5](/en/news/v0.6.3.5)
+
+November 3, 2026 · New NetBird networking; automatic checks for new versions and security advisories with alerts; every list item can be copied; Web sites can move to another listener; page headers and list toolbars stay visible while scrolling; notifications, Webhooks and IP lists can use a proxy; Docker background tasks can be stopped; includes security fixes, upgrading is recommended.
+
 ## [v0.6.3](/en/news/v0.6.3)
 
 November 2, 2026 · New Performance module (trends, time to first byte and threshold alerts); WAF can use a self-hosted SafeLine detection engine; lists and Web Services sites support batch operations; STUN rules can open firewall ports on this machine automatically; fixes DNS-01 issuance failing because of wildcard CNAMEs; Web Services logs can hide banned sources and the console's own requests.

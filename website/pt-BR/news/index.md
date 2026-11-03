@@ -7,6 +7,10 @@ description: Anúncios e notas de cada versão do Gately.
 
 Abaixo estão os anúncios das versões principais. Veja as [GitHub Releases](https://github.com/wangwanjie/gately/releases) para as mudanças completas e os downloads de cada versão.
 
+## [v0.6.3.5](/pt-BR/news/v0.6.3.5)
+
+3 de novembro de 2026 · Nova rede com NetBird; verificação automática de novas versões e alertas de segurança, com aviso; qualquer item das listas pode ser copiado; sites Web podem mudar de listener; cabeçalhos de página e barras de ferramentas das listas continuam visíveis ao rolar; notificações, Webhooks e listas de IP podem usar proxy; tarefas do Docker em segundo plano podem ser interrompidas; inclui correções de segurança, a atualização é recomendada.
+
 ## [v0.6.3](/pt-BR/news/v0.6.3)
 
 2 de novembro de 2026 · Novo monitoramento de desempenho (tendências, tempo até o primeiro byte e alertas por limite); o WAF pode usar um mecanismo de detecção SafeLine próprio; listas e sites dos Serviços Web aceitam operações em lote; regras STUN podem liberar automaticamente portas no firewall desta máquina; corrige falhas de emissão DNS-01 causadas por CNAMEs curinga; os logs dos Serviços Web podem ocultar origens banidas e as requisições do próprio painel.
