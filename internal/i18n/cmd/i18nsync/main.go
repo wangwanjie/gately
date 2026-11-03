@@ -26,7 +26,7 @@ func main() {
 	}
 	dir := filepath.Join(*root, "internal", "i18n", "locales")
 	_ = os.MkdirAll(dir, 0o755)
-	for _, lang := range i18n.Langs {
+	for _, lang := range i18n.AllLangs {
 		if lang == i18n.SourceLang {
 			continue
 		}

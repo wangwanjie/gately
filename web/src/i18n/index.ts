@@ -1,16 +1,18 @@
 // 国际化入口：文案按语言目录拆分（src/locales/<语言>/<命名空间>.json），按需加载。
 import { createI18n } from 'vue-i18n'
+import { messageLoaders } from 'virtual:gately-locales'
 import { FALLBACK_LOCALE, detectLocale, isSupported } from './locales'
 
 const STORAGE_KEY = 'gately.locale'
 
-const loaders = import.meta.glob<{ default: Record<string, unknown> }>('../locales/*/*.json')
+// 只含本次构建包含的语言，见 vite.config.ts 的 gately-locales 插件
+const loaders = messageLoaders
 
 export const i18n = createI18n({
   legacy: false,
   locale: FALLBACK_LOCALE,
   fallbackLocale: FALLBACK_LOCALE,
-  // 缺失键回退英语时不刷控制台
+  // 缺失键回退到回退语言时不刷控制台
   missingWarn: false,
   fallbackWarn: false,
   messages: {},

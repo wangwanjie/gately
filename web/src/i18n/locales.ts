@@ -1,4 +1,6 @@
-// 受支持的界面语言清单：官网、README 与管理界面保持同一批语言。
+// 受支持的界面语言清单：官网、README 与管理界面保持同一批语言；定制构建只包含其中一部分。
+import { builtLocales } from 'virtual:gately-locales'
+
 export interface LocaleMeta {
   code: string
   // 语言自称，用于语言切换菜单
@@ -8,9 +10,8 @@ export interface LocaleMeta {
 }
 
 export const SOURCE_LOCALE = 'zh-CN'
-export const FALLBACK_LOCALE = 'en'
 
-export const locales: LocaleMeta[] = [
+const allLocales: LocaleMeta[] = [
   { code: 'en', name: 'English', match: ['en'] },
   { code: 'zh-CN', name: '简体中文', match: ['zh-cn', 'zh-sg', 'zh-hans', 'zh'] },
   { code: 'zh-TW', name: '繁體中文', match: ['zh-tw', 'zh-hk', 'zh-mo', 'zh-hant'] },
@@ -23,11 +24,17 @@ export const locales: LocaleMeta[] = [
   { code: 'pt-BR', name: 'Português (Brasil)', match: ['pt'] },
 ]
 
+// 本次构建包含的语言
+export const locales: LocaleMeta[] = allLocales.filter((l) => builtLocales.includes(l.code))
+
+// 回退语言：包含英语时为英语，否则为简体中文
+export const FALLBACK_LOCALE = builtLocales.includes('en') ? 'en' : SOURCE_LOCALE
+
 export function isSupported(code: string | null | undefined): code is string {
   return !!code && locales.some((l) => l.code === code)
 }
 
-// 按浏览器语言偏好挑选界面语言，命中不了时回退英语。
+// 按浏览器语言偏好挑选界面语言，命中不了时使用回退语言。
 export function detectLocale(preferred: readonly string[]): string {
   for (const raw of preferred) {
     const lang = raw.toLowerCase()

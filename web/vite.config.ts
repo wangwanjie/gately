@@ -4,6 +4,69 @@ import { readdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from '
 import { join, resolve } from 'node:path'
 import { constants, gzipSync } from 'node:zlib'
 
+// 全部界面语言及对应的 Element Plus 语言包，顺序同语言切换菜单
+const ALL_LOCALES: Record<string, string> = {
+  en: 'en',
+  'zh-CN': 'zh-cn',
+  'zh-TW': 'zh-tw',
+  ja: 'ja',
+  ko: 'ko',
+  es: 'es',
+  fr: 'fr',
+  de: 'de',
+  ru: 'ru',
+  'pt-BR': 'pt-br',
+}
+
+// 本次构建包含的界面语言：环境变量 GATELY_LOCALES 为逗号分隔的语言代码（定制构建按语言档位传入），
+// 未设置时包含全部语言。简体中文始终包含，与后端源码文案一致。
+function builtLocales(): string[] {
+  const raw = (process.env.GATELY_LOCALES || '').trim()
+  if (!raw) {
+    return Object.keys(ALL_LOCALES)
+  }
+  const want = new Set(raw.split(',').map((s) => s.trim()).filter(Boolean))
+  for (const code of want) {
+    if (!(code in ALL_LOCALES)) {
+      throw new Error(`GATELY_LOCALES 包含未知语言: ${code}`)
+    }
+  }
+  want.add('zh-CN')
+  return Object.keys(ALL_LOCALES).filter((code) => want.has(code))
+}
+
+// 虚拟模块 virtual:gately-locales 只为本次构建包含的语言生成按需加载函数，未包含的语言不会被打包。
+const localesModule = () => {
+  const id = 'virtual:gately-locales'
+  const resolved = '\0' + id
+  const localesDir = resolve(import.meta.dirname, 'src/locales')
+  return {
+    name: 'gately-locales',
+    resolveId(source: string) {
+      return source === id ? resolved : null
+    },
+    load(source: string) {
+      if (source !== resolved) {
+        return null
+      }
+      const codes = builtLocales()
+      const messages: string[] = []
+      for (const code of codes) {
+        for (const file of readdirSync(join(localesDir, code)).filter((f) => f.endsWith('.json')).sort()) {
+          // 键与 import.meta.glob 的结果保持同一格式：../locales/<语言>/<命名空间>.json
+          messages.push(`  ${JSON.stringify(`../locales/${code}/${file}`)}: () => import(${JSON.stringify(join(localesDir, code, file))}),`)
+        }
+      }
+      const element = codes.map((code) => `  ${JSON.stringify(code)}: () => import('element-plus/es/locale/lang/${ALL_LOCALES[code]}'),`)
+      return [
+        `export const builtLocales = ${JSON.stringify(codes)}`,
+        `export const messageLoaders = {\n${messages.join('\n')}\n}`,
+        `export const elementLoaders = {\n${element.join('\n')}\n}`,
+      ].join('\n')
+    },
+  }
+}
+
 // 构建后保留 dist/.gitkeep，保证未构建前端时 Go 的 go:embed 仍可编译
 const keepGitkeep = {
   name: 'keep-gitkeep',
@@ -32,7 +95,7 @@ const precompress = {
 }
 
 export default defineConfig({
-  plugins: [vue(), keepGitkeep, precompress],
+  plugins: [vue(), localesModule(), keepGitkeep, precompress],
   // 资源使用相对路径，页面位于子路径（如飞牛 fnOS 统一网关的 /app/gately/）时也能加载
   base: './',
   build: {

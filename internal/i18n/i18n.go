@@ -8,7 +8,6 @@ package i18n
 import (
 	"bytes"
 	"compress/gzip"
-	"embed"
 	"encoding/json"
 	"io"
 	"os"
@@ -22,14 +21,24 @@ import (
 // SourceLang 是源码文案使用的语言，翻译为该语言时原样返回。
 const SourceLang = "zh-CN"
 
-// FallbackLang 是无法识别语言偏好时使用的语言。
-const FallbackLang = "en"
+// AllLangs 是 Gately 支持的全部语言，顺序同官网与管理界面。
+var AllLangs = []string{"zh-CN", "en", "zh-TW", "ja", "ko", "es", "fr", "de", "ru", "pt-BR"}
 
-// Langs 是支持的语言，顺序同官网与管理界面。
-var Langs = []string{"zh-CN", "en", "zh-TW", "ja", "ko", "es", "fr", "de", "ru", "pt-BR"}
+// Langs 是本次编译包含的语言，由 locales_*.go 按语言档位的 build tag 决定：
+// 默认包含全部语言，lang_cjken 只含简体中文、繁体中文与英语，lang_zh 只含简体中文。
+var Langs = builtLangs
 
-//go:embed locales/*.json.gz
-var localeFS embed.FS
+// FallbackLang 是无法识别语言偏好时使用的语言：编译了英语时为英语，否则为简体中文。
+var FallbackLang = fallbackLang()
+
+func fallbackLang() string {
+	for _, l := range Langs {
+		if l == "en" {
+			return l
+		}
+	}
+	return SourceLang
+}
 
 var (
 	catalogMu sync.Mutex
@@ -37,8 +46,19 @@ var (
 	catalogs = map[string]*catalog{}
 )
 
-// Normalize 把任意语言标识（如 zh_CN.UTF-8、en-US、pt）规整为受支持的语言代码，无法识别时返回空串。
+// Normalize 把任意语言标识（如 zh_CN.UTF-8、en-US、pt）规整为受支持的语言代码，无法识别或该语言没有编译进来时返回空串。
 func Normalize(tag string) string {
+	l := normalizeTag(tag)
+	for _, b := range Langs {
+		if b == l {
+			return l
+		}
+	}
+	return ""
+}
+
+// normalizeTag 把语言标识规整为 AllLangs 中的语言代码，不考虑本次编译包含哪些语言。
+func normalizeTag(tag string) string {
 	tag = strings.ToLower(strings.TrimSpace(tag))
 	if i := strings.IndexAny(tag, ".@"); i >= 0 {
 		tag = tag[:i]
@@ -60,7 +80,7 @@ func Normalize(tag string) string {
 	if i := strings.Index(base, "-"); i >= 0 {
 		base = base[:i]
 	}
-	for _, l := range Langs {
+	for _, l := range AllLangs {
 		if l == base {
 			return l
 		}

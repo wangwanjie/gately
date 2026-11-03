@@ -1,5 +1,6 @@
 <template>
-  <el-dropdown trigger="click" popper-class="locale-popper" @command="onCommand" @visible-change="lockScroll">
+  <!-- 定制构建只含一种语言时没有可切换的语言，不显示 -->
+  <el-dropdown v-if="locales.length > 1" trigger="click" popper-class="locale-popper" @command="onCommand" @visible-change="lockScroll">
     <button class="picker-btn" :aria-label="t('common.language')" :title="t('common.language')">
       <Languages :size="18" />
     </button>
