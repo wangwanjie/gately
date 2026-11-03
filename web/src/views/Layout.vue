@@ -48,14 +48,17 @@
         </div>
       </header>
       <main class="content">
-        <!-- 仍在使用公开的默认密码时持续提醒，修改密码后重新登录即消失 -->
-        <div v-if="defaultPassword" class="default-pw" role="alert">
-          <TriangleAlert :size="18" class="default-pw-icon" />
-          <span class="default-pw-text">{{ t('layout.defaultPassword', { password: DEFAULT_PASSWORD }) }}</span>
-          <el-button type="warning" size="small" @click="onCommand('password')">{{ t('layout.changeNow') }}</el-button>
+        <!-- 顶部提醒区：高度写入 --g-banners-h，供一屏布局的页面（如系统日志）扣除 -->
+        <div ref="bannersEl" class="top-banners">
+          <!-- 仍在使用公开的默认密码时持续提醒，修改密码后重新登录即消失 -->
+          <div v-if="defaultPassword" class="default-pw" role="alert">
+            <TriangleAlert :size="18" class="default-pw-icon" />
+            <span class="default-pw-text">{{ t('layout.defaultPassword', { password: DEFAULT_PASSWORD }) }}</span>
+            <el-button type="warning" size="small" @click="onCommand('password')">{{ t('layout.changeNow') }}</el-button>
+          </div>
+          <!-- 自动检查发现新版本或当前版本受安全问题影响时提示 -->
+          <UpdateBanner :is-admin="role === 'admin'" />
         </div>
-        <!-- 自动检查发现新版本或当前版本受安全问题影响时提示 -->
-        <UpdateBanner :is-admin="role === 'admin'" />
         <router-view />
       </main>
     </div>
@@ -66,7 +69,7 @@
 <script setup lang="ts">
 import Onboarding from '../components/Onboarding.vue'
 import UpdateBanner from '../components/UpdateBanner.vue'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ElMessageBox } from 'element-plus'
@@ -128,6 +131,23 @@ async function onCommand(cmd: string) {
     router.push('/settings')
   }
 }
+
+// 顶部提醒区（默认密码、版本更新）高度变化时写入 CSS 变量；margin 由 flow-root 包含在内
+const bannersEl = ref<HTMLElement>()
+let bannersObserver: ResizeObserver | undefined
+onMounted(() => {
+  if (!bannersEl.value || typeof ResizeObserver === 'undefined') {
+    return
+  }
+  bannersObserver = new ResizeObserver(() => {
+    document.documentElement.style.setProperty('--g-banners-h', `${bannersEl.value?.offsetHeight ?? 0}px`)
+  })
+  bannersObserver.observe(bannersEl.value)
+})
+onBeforeUnmount(() => {
+  bannersObserver?.disconnect()
+  document.documentElement.style.removeProperty('--g-banners-h')
+})
 
 onMounted(async () => {
   const s = await api.get<{ username: string; role?: string; disabledModules?: string[]; defaultPassword?: boolean }>('/api/session')
@@ -287,6 +307,9 @@ onMounted(async () => {
   margin: 0 auto;
   padding: var(--g-content-pt) var(--g-content-px) var(--g-content-pb);
   min-width: 0;
+}
+.top-banners {
+  display: flow-root;
 }
 .default-pw {
   display: flex;

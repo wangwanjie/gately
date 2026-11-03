@@ -43,11 +43,12 @@ watch(source, (v) => router.replace({ query: v === 'system' ? {} : { source: v }
 
 <style scoped>
 /* 页面恰好占满一屏，日志在日志区内部滚动。原先按桌面端写死日志区高度，
-   移动端筛选栏折成多行后页面多出一截可滚动，滚到底时来源标签半截压在顶栏下面。 */
+   移动端筛选栏折成多行后页面多出一截可滚动，滚到底时来源标签半截压在顶栏下面。
+   顶部的默认密码、版本更新提醒占用的高度（--g-banners-h，由 Layout 写入）也要扣除。 */
 .logs-page {
   display: flex;
   flex-direction: column;
-  height: calc(100dvh - var(--g-header-h) - var(--g-content-py));
+  height: calc(100dvh - var(--g-header-h) - var(--g-content-py) - var(--g-banners-h, 0px));
   min-height: 420px;
 }
 .logs-card {
