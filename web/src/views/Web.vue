@@ -53,7 +53,7 @@
         :key="l.key"
         :off="!l.enable || moduleOff"
         collapsible
-        :collapsed="isCollapsed(l.key)"
+        :collapsed="isCollapsed(l.key) && !siteFiltering"
         :collapsed-hint="t('web.sitesCollapsed', { count: siteRows(l).length })"
         @update:collapsed="(v: boolean) => setCollapsed(l.key, v)"
       >
@@ -1042,6 +1042,8 @@ const filterText = ref('')
 // 排序模式、多选与拖动状态；站点 id 为 监听key/站点key，拖到其他监听即移动站点
 const sel = useSortSelect()
 const { sortMode } = sel
+// siteFiltering 表示正在按搜索词筛选站点，此时展开所有监听，避免匹配的站点藏在收起的卡片里
+const siteFiltering = computed(() => !sortMode.value && !!filterText.value.trim())
 // 分组的收起状态按 监听key/分组名 持久化，与监听器的收起状态分开存放
 const groupFold = useCollapsed('web.groups')
 const hasSites = computed(() => listeners.value.some((l) => siteRows(l).length > 0))
