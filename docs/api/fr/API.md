@@ -356,9 +356,9 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | GET | `/api/webservice/metrics` | `webservice:read` | Métriques au format texte Prometheus |
 | GET | `/api/webservice/topology` | `webservice:read` | Instantané de la topologie des services Web |
 | GET | `/api/webservice/connections` | `webservice:read` | Requêtes en cours et longues requêtes récemment terminées d’un site (?listener=&site=&q=) |
-| POST | `/api/webservice/connections/close` | `webservice:write` | Fermer une requête en cours sur un site, avec bannissement facultatif de son adresse source |
+| POST | `/api/webservice/connections/close` | `webservice:write` | Fermer une requête en cours sur un site, en bloquant éventuellement son adresse source (banSeconds -1 signifie permanent) |
 | GET | `/api/webservice/bans` | `webservice:read` | IP actuellement bannies |
-| POST | `/api/webservice/bans` | `webservice:write` | Bannir une IP manuellement |
+| POST | `/api/webservice/bans` | `webservice:write` | Bloquer manuellement une IP (seconds : 0 signifie 24 heures, -1 signifie permanent) |
 | DELETE | `/api/webservice/bans` | `webservice:write` | Lever un bannissement (le body est {"key": adresse}) |
 | GET | `/api/webservice/geoip` | `webservice:read` | État de la base GeoIP |
 | POST | `/api/webservice/geoip/upload` | `webservice:write` | Téléverser la base GeoIP (champ multipart file, .mmdb) |
@@ -387,7 +387,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | GET | `/api/guard/settings` | `guard:read` | Paramètres globaux |
 | PUT | `/api/guard/settings` | `guard:write` | Modifier les paramètres globaux |
 | GET | `/api/guard/bans` | `guard:read` | IP actuellement bannies |
-| POST | `/api/guard/bans` | `guard:write` | Bannir manuellement une IP ou un réseau |
+| POST | `/api/guard/bans` | `guard:write` | Bloquer manuellement une IP ou un réseau (seconds : 0 utilise la durée par défaut, -1 signifie permanent) |
 | DELETE | `/api/guard/bans` | `guard:write` | Lever un bannissement (le body est {"key": adresse}) |
 | GET | `/api/guard/firewall/rules` | `guard:read` | Règles écrites par Gately dans nftables (texte) |
 

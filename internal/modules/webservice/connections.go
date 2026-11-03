@@ -395,8 +395,8 @@ type closeConnRequest struct {
 	Listener string `json:"listener"`
 	Site     string `json:"site"`
 	ID       string `json:"id"`
-	// BanSeconds 大于 0 时同时封禁该访客地址（IPv6 为所在 /64 网段）这么多秒，
-	// 并断开该地址在全部站点上进行中的请求
+	// BanSeconds 大于 0 时同时封禁该访客地址（IPv6 为所在 /64 网段）这么多秒（最长 30 天），
+	// -1 表示永久封禁；封禁时同时断开该地址在全部站点上进行中的请求
 	BanSeconds int `json:"banSeconds"`
 }
 
@@ -431,8 +431,8 @@ func (m *Module) handleCloseConn(w http.ResponseWriter, r *http.Request) {
 		httpx.Error(w, http.StatusBadRequest, "连接编号无效")
 		return
 	}
-	if req.BanSeconds < 0 || time.Duration(req.BanSeconds)*time.Second > maxBanDuration {
-		httpx.Error(w, http.StatusBadRequest, "封禁时长不能超过 30 天")
+	if req.BanSeconds < -1 || time.Duration(req.BanSeconds)*time.Second > maxBanDuration {
+		httpx.Error(w, http.StatusBadRequest, "封禁时长不能超过 30 天（-1 表示永久）")
 		return
 	}
 	m.mu.Lock()

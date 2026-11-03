@@ -19798,7 +19798,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "手动封禁 IP 或网段",
+        "summary": "手动封禁 IP 或网段（seconds 为 0 表示默认时长，-1 表示永久）",
         "tags": [
           "入侵防护"
         ],
@@ -36316,7 +36316,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "手动封禁 IP",
+        "summary": "手动封禁 IP（seconds 为 0 表示 24 小时，-1 表示永久）",
         "tags": [
           "Web 服务"
         ],
@@ -36441,7 +36441,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "断开站点的一个进行中请求，可同时封禁其来源地址",
+        "summary": "断开站点的一个进行中请求，可同时封禁其来源地址（banSeconds 为 -1 表示永久）",
         "tags": [
           "Web 服务"
         ],

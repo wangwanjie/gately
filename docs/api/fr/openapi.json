@@ -19798,7 +19798,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Bannir manuellement une IP ou un réseau",
+        "summary": "Bloquer manuellement une IP ou un réseau (seconds : 0 utilise la durée par défaut, -1 signifie permanent)",
         "tags": [
           "Prévention d'intrusion"
         ],
@@ -36316,7 +36316,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Bannir une IP manuellement",
+        "summary": "Bloquer manuellement une IP (seconds : 0 signifie 24 heures, -1 signifie permanent)",
         "tags": [
           "Service Web"
         ],
@@ -36441,7 +36441,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Fermer une requête en cours sur un site, avec bannissement facultatif de son adresse source",
+        "summary": "Fermer une requête en cours sur un site, en bloquant éventuellement son adresse source (banSeconds -1 signifie permanent)",
         "tags": [
           "Service Web"
         ],

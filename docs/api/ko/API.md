@@ -356,9 +356,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/webservice/metrics` | `webservice:read` | Prometheus 텍스트 형식 지표 |
 | GET | `/api/webservice/topology` | `webservice:read` | Web 서비스 토폴로지 스냅숏 |
 | GET | `/api/webservice/connections` | `webservice:read` | 사이트의 진행 중인 요청과 최근 종료된 장시간 요청 (?listener=&site=&q=) |
-| POST | `/api/webservice/connections/close` | `webservice:write` | 사이트의 진행 중인 요청 하나를 끊고, 출발지 주소를 함께 차단할 수 있습니다 |
+| POST | `/api/webservice/connections/close` | `webservice:write` | 사이트에서 진행 중인 요청을 끊고 출발지 주소를 함께 차단할 수 있음(banSeconds가 -1이면 영구) |
 | GET | `/api/webservice/bans` | `webservice:read` | 현재 차단된 IP |
-| POST | `/api/webservice/bans` | `webservice:write` | IP 수동 차단 |
+| POST | `/api/webservice/bans` | `webservice:write` | IP 수동 차단(seconds가 0이면 24시간, -1이면 영구) |
 | DELETE | `/api/webservice/bans` | `webservice:write` | 차단 해제 (body는 {"key": 주소}) |
 | GET | `/api/webservice/geoip` | `webservice:read` | GeoIP 데이터베이스 상태 |
 | POST | `/api/webservice/geoip/upload` | `webservice:write` | GeoIP 데이터베이스 업로드 (multipart 필드 file, .mmdb) |
@@ -387,7 +387,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/guard/settings` | `guard:read` | 전역 설정 |
 | PUT | `/api/guard/settings` | `guard:write` | 전역 설정 변경 |
 | GET | `/api/guard/bans` | `guard:read` | 현재 차단된 IP |
-| POST | `/api/guard/bans` | `guard:write` | IP 또는 네트워크 수동 차단 |
+| POST | `/api/guard/bans` | `guard:write` | IP 또는 네트워크 수동 차단(seconds가 0이면 기본 시간, -1이면 영구) |
 | DELETE | `/api/guard/bans` | `guard:write` | 차단 해제 (body는 {"key": 주소}) |
 | GET | `/api/guard/firewall/rules` | `guard:read` | Gately가 nftables에 기록한 규칙(텍스트) |
 

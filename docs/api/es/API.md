@@ -356,9 +356,9 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | GET | `/api/webservice/metrics` | `webservice:read` | Métricas en formato de texto de Prometheus |
 | GET | `/api/webservice/topology` | `webservice:read` | Instantánea de la topología de Servicios web |
 | GET | `/api/webservice/connections` | `webservice:read` | Solicitudes en curso y solicitudes largas terminadas recientemente de un sitio (?listener=&site=&q=) |
-| POST | `/api/webservice/connections/close` | `webservice:write` | Cerrar una solicitud en curso de un sitio y, opcionalmente, bloquear su dirección de origen |
+| POST | `/api/webservice/connections/close` | `webservice:write` | Cerrar una solicitud en curso de un sitio y, opcionalmente, bloquear su dirección de origen (banSeconds -1 significa permanente) |
 | GET | `/api/webservice/bans` | `webservice:read` | IP bloqueadas actualmente |
-| POST | `/api/webservice/bans` | `webservice:write` | Bloquear IP manualmente |
+| POST | `/api/webservice/bans` | `webservice:write` | Bloquear manualmente una IP (seconds: 0 significa 24 horas, -1 significa permanente) |
 | DELETE | `/api/webservice/bans` | `webservice:write` | Quitar un bloqueo (el body es {"key": dirección}) |
 | GET | `/api/webservice/geoip` | `webservice:read` | Estado de la base de datos GeoIP |
 | POST | `/api/webservice/geoip/upload` | `webservice:write` | Subir la base de datos GeoIP (campo multipart file, .mmdb) |
@@ -387,7 +387,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | GET | `/api/guard/settings` | `guard:read` | Ajustes globales |
 | PUT | `/api/guard/settings` | `guard:write` | Modificar la configuración global |
 | GET | `/api/guard/bans` | `guard:read` | IP bloqueadas actualmente |
-| POST | `/api/guard/bans` | `guard:write` | Bloquear manualmente una IP o red |
+| POST | `/api/guard/bans` | `guard:write` | Bloquear manualmente una IP o red (seconds: 0 usa la duración predeterminada, -1 significa permanente) |
 | DELETE | `/api/guard/bans` | `guard:write` | Quitar un bloqueo (el body es {"key": dirección}) |
 | GET | `/api/guard/firewall/rules` | `guard:read` | Reglas que Gately escribió en nftables (texto) |
 

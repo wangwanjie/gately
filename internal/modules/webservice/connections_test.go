@@ -637,7 +637,7 @@ func TestConnsAPI(t *testing.T) {
 	}
 	for _, bad := range []closeConnRequest{
 		{Listener: "l1", Site: "a", ID: "abc"},
-		{Listener: "l1", Site: "a", ID: va.ID, BanSeconds: -1},
+		{Listener: "l1", Site: "a", ID: va.ID, BanSeconds: -2},
 		{Listener: "l1", Site: "a", ID: va.ID, BanSeconds: 31 * 24 * 3600},
 	} {
 		if code, _ = callJSON(t, m.handleCloseConn, "POST", "/connections/close", bad, ""); code != 400 {
@@ -652,8 +652,8 @@ func TestConnsAPI(t *testing.T) {
 		t.Fatal("封禁被拒绝时不应断开")
 	}
 
-	// 断开并封禁：三个站点上来自 203.0.113.5 的请求全部断开
-	code, out = callJSON(t, m.handleCloseConn, "POST", "/connections/close", closeConnRequest{Listener: "l1", Site: "a", ID: va.ID, BanSeconds: 60}, "192.0.2.1:5555")
+	// 断开并永久封禁：三个站点上来自 203.0.113.5 的请求全部断开
+	code, out = callJSON(t, m.handleCloseConn, "POST", "/connections/close", closeConnRequest{Listener: "l1", Site: "a", ID: va.ID, BanSeconds: -1}, "192.0.2.1:5555")
 	if code != 200 {
 		t.Fatalf("断开并封禁失败: %d %v", code, out)
 	}
@@ -666,6 +666,17 @@ func TestConnsAPI(t *testing.T) {
 	}
 	if !m.auth.banned(netip.MustParseAddr("203.0.113.5")) {
 		t.Fatal("地址应已被封禁")
+	}
+	// 封禁表在测试间共享，永久封禁要解除，免得影响其他用例
+	t.Cleanup(func() { m.auth.unban("203.0.113.5") })
+	permanent := false
+	for _, b := range m.auth.listBans() {
+		if b.Key == "203.0.113.5" {
+			permanent = b.Permanent
+		}
+	}
+	if !permanent {
+		t.Fatalf("banSeconds 为 -1 时应为永久封禁: %+v", m.auth.listBans())
 	}
 	if resp, _ := get(t, noRedirect(), addr, "a.test", "/", map[string]string{"X-Forwarded-For": "203.0.113.5"}); resp.StatusCode != http.StatusForbidden {
 		t.Fatalf("封禁后新请求应被拒绝: %d", resp.StatusCode)
@@ -819,4 +830,45 @@ func BenchmarkSiteServeHTTP(b *testing.B) {
 			h.ServeHTTP(httptest.NewRecorder(), r)
 		}
 	})
+}
+
+// 手动封禁接口：0 为 24 小时，-1 为永久，超过 30 天或小于 -1 拒绝。
+func TestAddBanDurations(t *testing.T) {
+	m, _ := newConnsModule(t, []Site{}, Site{})
+	for _, bad := range []banRequest{
+		{Key: "203.0.113.1", Seconds: -2},
+		{Key: "203.0.113.1", Seconds: 31 * 24 * 3600},
+	} {
+		if code, _ := callJSON(t, m.handleAddBan, "POST", "/bans", bad, ""); code != 400 {
+			t.Fatalf("参数错误应返回 400: %+v → %d", bad, code)
+		}
+	}
+	t.Cleanup(func() {
+		for _, k := range []string{"203.0.113.1", "203.0.113.2", "203.0.113.3"} {
+			m.auth.unban(k)
+		}
+	})
+	for _, req := range []banRequest{
+		{Key: "203.0.113.1", Seconds: -1},
+		{Key: "203.0.113.2"},
+		{Key: "203.0.113.3", Seconds: 30 * 24 * 3600},
+	} {
+		if code, out := callJSON(t, m.handleAddBan, "POST", "/bans", req, ""); code != 200 {
+			t.Fatalf("封禁失败: %+v → %d %v", req, code, out)
+		}
+	}
+	got := map[string]BanInfo{}
+	for _, b := range m.auth.listBans() {
+		got[b.Key] = b
+	}
+	if !got["203.0.113.1"].Permanent {
+		t.Fatalf("-1 应为永久封禁: %+v", got)
+	}
+	now := time.Now()
+	if b := got["203.0.113.2"]; b.Permanent || b.Until.Sub(now) < 23*time.Hour || b.Until.Sub(now) > 25*time.Hour {
+		t.Fatalf("0 应为 24 小时: %+v", b)
+	}
+	if b := got["203.0.113.3"]; b.Permanent || b.Until.Sub(now) < 29*24*time.Hour {
+		t.Fatalf("30 天封禁时长不对: %+v", b)
+	}
 }

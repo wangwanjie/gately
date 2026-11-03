@@ -19798,7 +19798,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Bloquear IP ou rede manualmente",
+        "summary": "Bloquear manualmente um IP ou rede (seconds: 0 usa a duração padrão, -1 significa permanente)",
         "tags": [
           "Prevenção de intrusão"
         ],
@@ -36316,7 +36316,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Bloquear IP manualmente",
+        "summary": "Bloquear manualmente um IP (seconds: 0 significa 24 horas, -1 significa permanente)",
         "tags": [
           "Serviço web"
         ],
@@ -36441,7 +36441,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Encerrar uma requisição em andamento de um site, podendo bloquear o endereço de origem",
+        "summary": "Encerrar uma solicitação em andamento em um site, bloqueando opcionalmente o endereço de origem (banSeconds -1 significa permanente)",
         "tags": [
           "Serviço web"
         ],

@@ -404,7 +404,7 @@ func (a *authenticator) banned(addr netip.Addr) bool {
 	return a.bans.Banned(addr)
 }
 
-// ban 封禁地址 d 时长，返回规范化后的键；manual 为 true 时不受入侵防护白名单限制。
+// ban 封禁地址 d 时长（d 小于 0 为永久），返回规范化后的键；manual 为 true 时不受入侵防护白名单限制。
 // 地址在白名单中而未被封禁时返回空字符串。
 func (a *authenticator) ban(ip string, d time.Duration, reason string, manual bool) string {
 	key := limitKey(ip)
@@ -412,7 +412,8 @@ func (a *authenticator) ban(ip string, d time.Duration, reason string, manual bo
 	if manual {
 		source = banlist.SourceManual
 	}
-	if _, _, err := a.bans.Ban(key, banlist.Options{Duration: d, Reason: reason, Source: source, Force: manual}); err != nil {
+	// d 小于 0 表示永久封禁（手动封禁接口的 -1）
+	if _, _, err := a.bans.Ban(key, banlist.Options{Duration: d, Permanent: d < 0, Reason: reason, Source: source, Force: manual}); err != nil {
 		return ""
 	}
 	return key

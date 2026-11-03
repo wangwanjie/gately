@@ -356,9 +356,9 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | GET | `/api/webservice/metrics` | `webservice:read` | Métricas em formato de texto do Prometheus |
 | GET | `/api/webservice/topology` | `webservice:read` | Instantâneo da topologia dos Serviços Web |
 | GET | `/api/webservice/connections` | `webservice:read` | Requisições em andamento e requisições longas encerradas recentemente de um site (?listener=&site=&q=) |
-| POST | `/api/webservice/connections/close` | `webservice:write` | Encerrar uma requisição em andamento de um site, podendo bloquear o endereço de origem |
+| POST | `/api/webservice/connections/close` | `webservice:write` | Encerrar uma solicitação em andamento em um site, bloqueando opcionalmente o endereço de origem (banSeconds -1 significa permanente) |
 | GET | `/api/webservice/bans` | `webservice:read` | IPs atualmente bloqueados |
-| POST | `/api/webservice/bans` | `webservice:write` | Bloquear IP manualmente |
+| POST | `/api/webservice/bans` | `webservice:write` | Bloquear manualmente um IP (seconds: 0 significa 24 horas, -1 significa permanente) |
 | DELETE | `/api/webservice/bans` | `webservice:write` | Desbloquear (body é {"key": endereço}) |
 | GET | `/api/webservice/geoip` | `webservice:read` | Status do banco de dados GeoIP |
 | POST | `/api/webservice/geoip/upload` | `webservice:write` | Enviar banco de dados GeoIP (campo multipart file, .mmdb) |
@@ -387,7 +387,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | GET | `/api/guard/settings` | `guard:read` | Configurações globais |
 | PUT | `/api/guard/settings` | `guard:write` | Alterar configurações globais |
 | GET | `/api/guard/bans` | `guard:read` | IPs bloqueados no momento |
-| POST | `/api/guard/bans` | `guard:write` | Bloquear IP ou rede manualmente |
+| POST | `/api/guard/bans` | `guard:write` | Bloquear manualmente um IP ou rede (seconds: 0 usa a duração padrão, -1 significa permanente) |
 | DELETE | `/api/guard/bans` | `guard:write` | Desbloquear (body é {"key": endereço}) |
 | GET | `/api/guard/firewall/rules` | `guard:read` | Regras que o Gately gravou no nftables (texto) |
 

@@ -356,9 +356,9 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | GET | `/api/webservice/metrics` | `webservice:read` | Metrics in Prometheus text format |
 | GET | `/api/webservice/topology` | `webservice:read` | Web Services topology snapshot |
 | GET | `/api/webservice/connections` | `webservice:read` | Requests in progress and recently ended long requests of a site (?listener=&site=&q=) |
-| POST | `/api/webservice/connections/close` | `webservice:write` | Close a request in progress on a site, optionally banning its source address |
+| POST | `/api/webservice/connections/close` | `webservice:write` | Close a request in progress on a site, optionally banning its source address (banSeconds -1 means permanent) |
 | GET | `/api/webservice/bans` | `webservice:read` | Currently banned IPs |
-| POST | `/api/webservice/bans` | `webservice:write` | Manually ban an IP |
+| POST | `/api/webservice/bans` | `webservice:write` | Manually ban an IP (seconds: 0 means 24 hours, -1 means permanent) |
 | DELETE | `/api/webservice/bans` | `webservice:write` | Remove a ban (body is {"key": address}) |
 | GET | `/api/webservice/geoip` | `webservice:read` | GeoIP database status |
 | POST | `/api/webservice/geoip/upload` | `webservice:write` | Upload a GeoIP database (multipart field file, .mmdb) |
@@ -387,7 +387,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | GET | `/api/guard/settings` | `guard:read` | Global settings |
 | PUT | `/api/guard/settings` | `guard:write` | Update global settings |
 | GET | `/api/guard/bans` | `guard:read` | Currently banned IPs |
-| POST | `/api/guard/bans` | `guard:write` | Ban an IP or network manually |
+| POST | `/api/guard/bans` | `guard:write` | Ban an IP or network manually (seconds: 0 uses the default duration, -1 means permanent) |
 | DELETE | `/api/guard/bans` | `guard:write` | Remove a ban (body is {"key": address}) |
 | GET | `/api/guard/firewall/rules` | `guard:read` | Rules Gately wrote to nftables (text) |
 

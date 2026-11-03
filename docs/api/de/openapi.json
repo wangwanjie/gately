@@ -19798,7 +19798,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "IP oder Netz manuell sperren",
+        "summary": "IP oder Netzwerk manuell sperren (seconds: 0 verwendet die Standarddauer, -1 bedeutet dauerhaft)",
         "tags": [
           "Einbruchschutz"
         ],
@@ -36316,7 +36316,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "IP manuell sperren",
+        "summary": "IP manuell sperren (seconds: 0 bedeutet 24 Stunden, -1 bedeutet dauerhaft)",
         "tags": [
           "Web-Dienst"
         ],
@@ -36441,7 +36441,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Eine laufende Anfrage einer Site trennen und optional ihre Quelladresse sperren",
+        "summary": "Eine laufende Anfrage einer Website trennen und optional ihre Quelladresse sperren (banSeconds -1 bedeutet dauerhaft)",
         "tags": [
           "Web-Dienst"
         ],

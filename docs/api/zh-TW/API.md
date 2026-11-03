@@ -356,9 +356,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/webservice/metrics` | `webservice:read` | Prometheus 文字格式指標 |
 | GET | `/api/webservice/topology` | `webservice:read` | Web 服務拓撲視圖快照 |
 | GET | `/api/webservice/connections` | `webservice:read` | 站點進行中的請求與最近結束的長請求（?listener=&site=&q=） |
-| POST | `/api/webservice/connections/close` | `webservice:write` | 中斷站點的一個進行中請求，可同時封鎖其來源位址 |
+| POST | `/api/webservice/connections/close` | `webservice:write` | 中斷站台的一個進行中請求，可同時封鎖其來源位址（banSeconds 為 -1 表示永久） |
 | GET | `/api/webservice/bans` | `webservice:read` | 目前被封鎖的 IP |
-| POST | `/api/webservice/bans` | `webservice:write` | 手動封鎖 IP |
+| POST | `/api/webservice/bans` | `webservice:write` | 手動封鎖 IP（seconds 為 0 表示 24 小時，-1 表示永久） |
 | DELETE | `/api/webservice/bans` | `webservice:write` | 解除封鎖（body 為 {"key": 位址}） |
 | GET | `/api/webservice/geoip` | `webservice:read` | GeoIP 資料庫狀態 |
 | POST | `/api/webservice/geoip/upload` | `webservice:write` | 上傳 GeoIP 資料庫（multipart 欄位 file，.mmdb） |
@@ -387,7 +387,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/guard/settings` | `guard:read` | 全域設定 |
 | PUT | `/api/guard/settings` | `guard:write` | 修改全域設定 |
 | GET | `/api/guard/bans` | `guard:read` | 目前封鎖的 IP |
-| POST | `/api/guard/bans` | `guard:write` | 手動封鎖 IP 或網段 |
+| POST | `/api/guard/bans` | `guard:write` | 手動封鎖 IP 或網段（seconds 為 0 表示預設時長，-1 表示永久） |
 | DELETE | `/api/guard/bans` | `guard:write` | 解除封鎖（body 為 {"key": 位址}） |
 | GET | `/api/guard/firewall/rules` | `guard:read` | Gately 寫入 nftables 的規則（文字） |
 

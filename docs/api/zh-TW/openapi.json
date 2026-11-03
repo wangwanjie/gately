@@ -19798,7 +19798,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "手動封鎖 IP 或網段",
+        "summary": "手動封鎖 IP 或網段（seconds 為 0 表示預設時長，-1 表示永久）",
         "tags": [
           "入侵防護"
         ],
@@ -36316,7 +36316,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "手動封鎖 IP",
+        "summary": "手動封鎖 IP（seconds 為 0 表示 24 小時，-1 表示永久）",
         "tags": [
           "Web 服務"
         ],
@@ -36441,7 +36441,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "中斷站點的一個進行中請求，可同時封鎖其來源位址",
+        "summary": "中斷站台的一個進行中請求，可同時封鎖其來源位址（banSeconds 為 -1 表示永久）",
         "tags": [
           "Web 服務"
         ],

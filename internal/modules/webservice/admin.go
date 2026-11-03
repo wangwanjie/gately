@@ -16,7 +16,7 @@ import (
 type banRequest struct {
 	// Key 为 IP 地址；解除封禁时也可使用列表返回的键（IPv6 为 /64 网段）
 	Key string `json:"key"`
-	// Seconds 为手动封禁时长，0 表示 24 小时
+	// Seconds 为手动封禁时长，0 表示 24 小时，-1 表示永久，其余最长 30 天
 	Seconds int `json:"seconds"`
 }
 
@@ -41,13 +41,14 @@ func (m *Module) handleAddBan(w http.ResponseWriter, r *http.Request) {
 		httpx.Error(w, http.StatusBadRequest, "IP 地址无效")
 		return
 	}
-	d := time.Duration(req.Seconds) * time.Second
-	if d <= 0 {
-		d = 24 * time.Hour
-	}
-	if d > maxBanDuration {
-		httpx.Error(w, http.StatusBadRequest, "封禁时长不能超过 30 天")
+	if req.Seconds < -1 || time.Duration(req.Seconds)*time.Second > maxBanDuration {
+		httpx.Error(w, http.StatusBadRequest, "封禁时长不能超过 30 天（-1 表示永久）")
 		return
+	}
+	// -1 原样传给 ban 表示永久封禁，0 沿用 24 小时
+	d := time.Duration(req.Seconds) * time.Second
+	if req.Seconds == 0 {
+		d = 24 * time.Hour
 	}
 	if p := httpx.ClientIP(r); p != "" && limitKey(p) == limitKey(addr.Unmap().String()) {
 		httpx.Error(w, http.StatusBadRequest, "不能封禁你当前使用的地址")

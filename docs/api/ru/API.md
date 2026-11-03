@@ -356,9 +356,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/webservice/metrics` | `webservice:read` | Метрики в текстовом формате Prometheus |
 | GET | `/api/webservice/topology` | `webservice:read` | Снимок топологии веб-сервисов |
 | GET | `/api/webservice/connections` | `webservice:read` | Выполняющиеся и недавно завершённые длительные запросы сайта (?listener=&site=&q=) |
-| POST | `/api/webservice/connections/close` | `webservice:write` | Разорвать выполняющийся запрос сайта, при необходимости заблокировав адрес источника |
+| POST | `/api/webservice/connections/close` | `webservice:write` | Разорвать выполняющийся запрос сайта с возможной блокировкой адреса источника (banSeconds -1 — навсегда) |
 | GET | `/api/webservice/bans` | `webservice:read` | Заблокированные в данный момент IP |
-| POST | `/api/webservice/bans` | `webservice:write` | Заблокировать IP вручную |
+| POST | `/api/webservice/bans` | `webservice:write` | Заблокировать IP вручную (seconds: 0 — 24 часа, -1 — навсегда) |
 | DELETE | `/api/webservice/bans` | `webservice:write` | Снять блокировку (body: {"key": адрес}) |
 | GET | `/api/webservice/geoip` | `webservice:read` | Состояние базы данных GeoIP |
 | POST | `/api/webservice/geoip/upload` | `webservice:write` | Загрузить базу данных GeoIP (поле multipart file, .mmdb) |
@@ -387,7 +387,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/guard/settings` | `guard:read` | Глобальные настройки |
 | PUT | `/api/guard/settings` | `guard:write` | Изменить общие настройки |
 | GET | `/api/guard/bans` | `guard:read` | Заблокированные сейчас IP |
-| POST | `/api/guard/bans` | `guard:write` | Заблокировать IP или сеть вручную |
+| POST | `/api/guard/bans` | `guard:write` | Заблокировать IP или сеть вручную (seconds: 0 — срок по умолчанию, -1 — навсегда) |
 | DELETE | `/api/guard/bans` | `guard:write` | Снять блокировку (body: {"key": адрес}) |
 | GET | `/api/guard/firewall/rules` | `guard:read` | Правила, записанные Gately в nftables (текст) |
 

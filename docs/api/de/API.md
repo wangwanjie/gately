@@ -356,9 +356,9 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | GET | `/api/webservice/metrics` | `webservice:read` | Metriken im Prometheus-Textformat |
 | GET | `/api/webservice/topology` | `webservice:read` | Topologie-Snapshot der Webdienste |
 | GET | `/api/webservice/connections` | `webservice:read` | Laufende und kürzlich beendete lange Anfragen einer Site (?listener=&site=&q=) |
-| POST | `/api/webservice/connections/close` | `webservice:write` | Eine laufende Anfrage einer Site trennen und optional ihre Quelladresse sperren |
+| POST | `/api/webservice/connections/close` | `webservice:write` | Eine laufende Anfrage einer Website trennen und optional ihre Quelladresse sperren (banSeconds -1 bedeutet dauerhaft) |
 | GET | `/api/webservice/bans` | `webservice:read` | Aktuell gesperrte IPs |
-| POST | `/api/webservice/bans` | `webservice:write` | IP manuell sperren |
+| POST | `/api/webservice/bans` | `webservice:write` | IP manuell sperren (seconds: 0 bedeutet 24 Stunden, -1 bedeutet dauerhaft) |
 | DELETE | `/api/webservice/bans` | `webservice:write` | Sperre aufheben (body ist {"key": Adresse}) |
 | GET | `/api/webservice/geoip` | `webservice:read` | GeoIP-Datenbankstatus |
 | POST | `/api/webservice/geoip/upload` | `webservice:write` | GeoIP-Datenbank hochladen (multipart-Feld file, .mmdb) |
@@ -387,7 +387,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | GET | `/api/guard/settings` | `guard:read` | Globale Einstellungen |
 | PUT | `/api/guard/settings` | `guard:write` | Globale Einstellungen ändern |
 | GET | `/api/guard/bans` | `guard:read` | Derzeit gesperrte IPs |
-| POST | `/api/guard/bans` | `guard:write` | IP oder Netz manuell sperren |
+| POST | `/api/guard/bans` | `guard:write` | IP oder Netzwerk manuell sperren (seconds: 0 verwendet die Standarddauer, -1 bedeutet dauerhaft) |
 | DELETE | `/api/guard/bans` | `guard:write` | Sperre aufheben (body ist {"key": Adresse}) |
 | GET | `/api/guard/firewall/rules` | `guard:read` | Von Gately in nftables geschriebene Regeln (Text) |
 

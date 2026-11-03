@@ -19798,7 +19798,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Ban an IP or network manually",
+        "summary": "Ban an IP or network manually (seconds: 0 uses the default duration, -1 means permanent)",
         "tags": [
           "Intrusion Prevention"
         ],
@@ -36316,7 +36316,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Manually ban an IP",
+        "summary": "Manually ban an IP (seconds: 0 means 24 hours, -1 means permanent)",
         "tags": [
           "Web service"
         ],
@@ -36441,7 +36441,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Close a request in progress on a site, optionally banning its source address",
+        "summary": "Close a request in progress on a site, optionally banning its source address (banSeconds -1 means permanent)",
         "tags": [
           "Web service"
         ],

@@ -356,9 +356,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/webservice/metrics` | `webservice:read` | Prometheus 文本格式指标 |
 | GET | `/api/webservice/topology` | `webservice:read` | Web 服务拓扑视图快照 |
 | GET | `/api/webservice/connections` | `webservice:read` | 站点进行中的请求与最近结束的长请求（?listener=&site=&q=） |
-| POST | `/api/webservice/connections/close` | `webservice:write` | 断开站点的一个进行中请求，可同时封禁其来源地址 |
+| POST | `/api/webservice/connections/close` | `webservice:write` | 断开站点的一个进行中请求，可同时封禁其来源地址（banSeconds 为 -1 表示永久） |
 | GET | `/api/webservice/bans` | `webservice:read` | 当前被封禁的 IP |
-| POST | `/api/webservice/bans` | `webservice:write` | 手动封禁 IP |
+| POST | `/api/webservice/bans` | `webservice:write` | 手动封禁 IP（seconds 为 0 表示 24 小时，-1 表示永久） |
 | DELETE | `/api/webservice/bans` | `webservice:write` | 解除封禁（body 为 {"key": 地址}） |
 | GET | `/api/webservice/geoip` | `webservice:read` | GeoIP 数据库状态 |
 | POST | `/api/webservice/geoip/upload` | `webservice:write` | 上传 GeoIP 数据库（multipart 字段 file，.mmdb） |
@@ -387,7 +387,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/guard/settings` | `guard:read` | 全局设置 |
 | PUT | `/api/guard/settings` | `guard:write` | 修改全局设置 |
 | GET | `/api/guard/bans` | `guard:read` | 当前封禁的 IP |
-| POST | `/api/guard/bans` | `guard:write` | 手动封禁 IP 或网段 |
+| POST | `/api/guard/bans` | `guard:write` | 手动封禁 IP 或网段（seconds 为 0 表示默认时长，-1 表示永久） |
 | DELETE | `/api/guard/bans` | `guard:write` | 解除封禁（body 为 {"key": 地址}） |
 | GET | `/api/guard/firewall/rules` | `guard:read` | Gately 写入 nftables 的规则（文本） |
 

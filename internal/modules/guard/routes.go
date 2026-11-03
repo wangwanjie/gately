@@ -47,7 +47,7 @@ type BanView struct {
 type banRequest struct {
 	// Key 为 IP 地址或 CIDR 网段
 	Key string `json:"key"`
-	// Seconds 为封禁时长，0 表示默认时长，-1 表示永久
+	// Seconds 为封禁时长，0 表示默认时长，-1 表示永久，其余为 1 分钟到 365 天
 	Seconds int    `json:"seconds"`
 	Reason  string `json:"reason"`
 }
@@ -100,7 +100,7 @@ func (m *Module) Routes(r module.Router) {
 	module.DocOf(r, "GET /settings", module.Doc{Summary: "全局设置", Resp: &Settings{}})
 	module.DocOf(r, "PUT /settings", module.Doc{Summary: "修改全局设置", Req: &Settings{}, Resp: &Settings{}})
 	module.DocOf(r, "GET /bans", module.Doc{Summary: "当前封禁的 IP", Resp: []BanView{}})
-	module.DocOf(r, "POST /bans", module.Doc{Summary: "手动封禁 IP 或网段", Req: &banRequest{}, Resp: &banlist.Entry{}})
+	module.DocOf(r, "POST /bans", module.Doc{Summary: "手动封禁 IP 或网段（seconds 为 0 表示默认时长，-1 表示永久）", Req: &banRequest{}, Resp: &banlist.Entry{}})
 	module.DocOf(r, "DELETE /bans", module.Doc{Summary: "解除封禁（body 为 {\"key\": 地址}）", Req: &banRequest{}})
 	module.DocOf(r, "GET /firewall/rules", module.Doc{Summary: "Gately 写入 nftables 的规则（文本）"})
 }

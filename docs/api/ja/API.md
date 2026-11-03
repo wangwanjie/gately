@@ -356,9 +356,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/webservice/metrics` | `webservice:read` | Prometheus テキスト形式のメトリクス |
 | GET | `/api/webservice/topology` | `webservice:read` | Web サービスのトポロジースナップショット |
 | GET | `/api/webservice/connections` | `webservice:read` | サイトの進行中リクエストと最近終了した長時間リクエスト（?listener=&site=&q=） |
-| POST | `/api/webservice/connections/close` | `webservice:write` | サイトの進行中リクエストを 1 件切断し、送信元アドレスを同時にブロックすることもできます |
+| POST | `/api/webservice/connections/close` | `webservice:write` | サイトで進行中のリクエストを切断し、送信元アドレスを同時にブロックできます（banSeconds が -1 で無期限） |
 | GET | `/api/webservice/bans` | `webservice:read` | 現在ブロックされている IP |
-| POST | `/api/webservice/bans` | `webservice:write` | IP を手動でブロック |
+| POST | `/api/webservice/bans` | `webservice:write` | IP を手動でブロック（seconds が 0 で 24 時間、-1 で無期限） |
 | DELETE | `/api/webservice/bans` | `webservice:write` | ブロックを解除（body は {"key": アドレス}） |
 | GET | `/api/webservice/geoip` | `webservice:read` | GeoIP データベースの状態 |
 | POST | `/api/webservice/geoip/upload` | `webservice:write` | GeoIP データベースをアップロード（multipart フィールド file、.mmdb） |
@@ -387,7 +387,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/guard/settings` | `guard:read` | グローバル設定 |
 | PUT | `/api/guard/settings` | `guard:write` | 全体設定を変更 |
 | GET | `/api/guard/bans` | `guard:read` | 現在ブロック中の IP |
-| POST | `/api/guard/bans` | `guard:write` | IP またはネットワークを手動でブロック |
+| POST | `/api/guard/bans` | `guard:write` | IP またはネットワークを手動でブロック（seconds が 0 で既定の期間、-1 で無期限） |
 | DELETE | `/api/guard/bans` | `guard:write` | ブロックを解除（body は {"key": アドレス}） |
 | GET | `/api/guard/firewall/rules` | `guard:read` | Gately が nftables に書き込んだルール（テキスト） |
 
