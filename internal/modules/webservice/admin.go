@@ -41,7 +41,7 @@ func (m *Module) handleAddBan(w http.ResponseWriter, r *http.Request) {
 		httpx.Error(w, http.StatusBadRequest, "IP 地址无效")
 		return
 	}
-	if req.Seconds < -1 || time.Duration(req.Seconds)*time.Second > maxBanDuration {
+	if req.Seconds < -1 || int64(req.Seconds) > int64(maxBanDuration/time.Second) {
 		httpx.Error(w, http.StatusBadRequest, "封禁时长不能超过 30 天（-1 表示永久）")
 		return
 	}

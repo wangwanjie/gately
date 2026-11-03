@@ -431,7 +431,7 @@ func (m *Module) handleCloseConn(w http.ResponseWriter, r *http.Request) {
 		httpx.Error(w, http.StatusBadRequest, "连接编号无效")
 		return
 	}
-	if req.BanSeconds < -1 || time.Duration(req.BanSeconds)*time.Second > maxBanDuration {
+	if req.BanSeconds < -1 || int64(req.BanSeconds) > int64(maxBanDuration/time.Second) {
 		httpx.Error(w, http.StatusBadRequest, "封禁时长不能超过 30 天（-1 表示永久）")
 		return
 	}

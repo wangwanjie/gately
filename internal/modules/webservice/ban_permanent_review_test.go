@@ -60,3 +60,23 @@ func TestAddBanPermanentGuards(t *testing.T) {
 		t.Fatal("解除后应恢复访问")
 	}
 }
+
+// 超大的封禁秒数在换算成 time.Duration 时会溢出成负数，不能因此绕过 30 天上限变成永久封禁。
+func TestBanSecondsOverflowRejected(t *testing.T) {
+	m, _ := newConnsModule(t, []Site{}, Site{})
+	t.Cleanup(func() { m.auth.unban("203.0.113.8") })
+	for _, s := range []int{10000000000, 30*86400 + 1} {
+		if code, _ := callJSON(t, m.handleAddBan, "POST", "/bans", banRequest{Key: "203.0.113.8", Seconds: s}, "192.0.2.1:4000"); code != 400 {
+			t.Fatalf("seconds=%d 应拒绝: %d", s, code)
+		}
+		if code, _ := callJSON(t, m.handleCloseConn, "POST", "/connections/close", closeConnRequest{Listener: "l1", Site: "a", ID: "1", BanSeconds: s}, "192.0.2.1:4000"); code != 400 {
+			t.Fatalf("banSeconds=%d 应拒绝: %d", s, code)
+		}
+	}
+	if m.auth.banned(mustAddr(t, "203.0.113.8")) {
+		t.Fatal("被拒绝的封禁不应生效")
+	}
+	if code, _ := callJSON(t, m.handleAddBan, "POST", "/bans", banRequest{Key: "203.0.113.8", Seconds: 30 * 86400}, "192.0.2.1:4000"); code != 200 {
+		t.Fatalf("30 天整应允许: %d", code)
+	}
+}
