@@ -9,7 +9,7 @@
   "interface": "ネットワークインターフェース",
   "interfacePlaceholder": "インターフェースを選択",
   "command": "コマンド",
-  "commandPlaceholder": "出力に IP が含まれていれば可。例: curl -s https://4.ipw.cn",
+  "commandPlaceholder": "出力に IP が含まれていれば可。例: curl -s https://ipv4.ddnspod.com",
   "regex": "抽出用正規表現",
   "regexPlaceholder": "任意。空欄の場合は最初のグローバルアドレスを自動選択します",
   "testFetch": "取得テスト",

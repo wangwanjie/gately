@@ -9,7 +9,7 @@
   "interface": "Сетевой интерфейс",
   "interfacePlaceholder": "Выберите сетевой интерфейс",
   "command": "Команда",
-  "commandPlaceholder": "В выводе должен быть IP-адрес, например curl -s https://4.ipw.cn",
+  "commandPlaceholder": "В выводе должен быть IP-адрес, например curl -s https://ipv4.ddnspod.com",
   "regex": "Регулярное выражение для фильтрации",
   "regexPlaceholder": "Необязательно; если пусто, берётся первый публичный адрес",
   "testFetch": "Проверить получение",

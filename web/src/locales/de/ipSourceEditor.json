@@ -9,7 +9,7 @@
   "interface": "Netzwerkschnittstelle",
   "interfacePlaceholder": "Netzwerkschnittstelle auswählen",
   "command": "Befehl",
-  "commandPlaceholder": "Die Ausgabe muss nur eine IP enthalten, z. B. curl -s https://4.ipw.cn",
+  "commandPlaceholder": "Die Ausgabe muss nur eine IP enthalten, z. B. curl -s https://ipv4.ddnspod.com",
   "regex": "Filter-Regex",
   "regexPlaceholder": "Optional; leer lassen, um die erste öffentliche Adresse zu verwenden",
   "testFetch": "Abruf testen",

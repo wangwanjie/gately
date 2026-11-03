@@ -9,7 +9,7 @@
   "interface": "Network interface",
   "interfacePlaceholder": "Select a network interface",
   "command": "Command",
-  "commandPlaceholder": "The output only needs to contain an IP, e.g. curl -s https://4.ipw.cn",
+  "commandPlaceholder": "The output only needs to contain an IP, e.g. curl -s https://ipv4.ddnspod.com",
   "regex": "Filter regex",
   "regexPlaceholder": "Optional; leave empty to pick the first public address",
   "testFetch": "Test fetch",

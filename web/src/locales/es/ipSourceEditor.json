@@ -9,7 +9,7 @@
   "interface": "Interfaz de red",
   "interfacePlaceholder": "Selecciona una interfaz de red",
   "command": "Comando",
-  "commandPlaceholder": "La salida solo necesita contener una IP, p. ej. curl -s https://4.ipw.cn",
+  "commandPlaceholder": "La salida solo necesita contener una IP, p. ej. curl -s https://ipv4.ddnspod.com",
   "regex": "Expresión regular de filtro",
   "regexPlaceholder": "Opcional; déjalo vacío para tomar la primera dirección pública",
   "testFetch": "Probar obtención",

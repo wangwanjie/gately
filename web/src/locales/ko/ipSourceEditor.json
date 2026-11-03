@@ -9,7 +9,7 @@
   "interface": "네트워크 인터페이스",
   "interfacePlaceholder": "네트워크 인터페이스 선택",
   "command": "명령",
-  "commandPlaceholder": "출력에 IP가 포함되면 됩니다. 예: curl -s https://4.ipw.cn",
+  "commandPlaceholder": "출력에 IP가 포함되면 됩니다. 예: curl -s https://ipv4.ddnspod.com",
   "regex": "필터 정규식",
   "regexPlaceholder": "선택 사항. 비워 두면 첫 번째 공인 주소를 자동 선택합니다",
   "testFetch": "가져오기 테스트",

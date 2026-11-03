@@ -9,7 +9,7 @@
   "interface": "网卡",
   "interfacePlaceholder": "选择网卡",
   "command": "命令",
-  "commandPlaceholder": "输出中包含 IP 即可，例如 curl -s https://4.ipw.cn",
+  "commandPlaceholder": "输出中包含 IP 即可，例如 curl -s https://ipv4.ddnspod.com",
   "regex": "筛选正则",
   "regexPlaceholder": "可选；留空自动选择第一个公网地址",
   "testFetch": "测试获取",

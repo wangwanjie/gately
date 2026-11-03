@@ -9,7 +9,7 @@
   "interface": "網路卡",
   "interfacePlaceholder": "選擇網路卡",
   "command": "命令",
-  "commandPlaceholder": "輸出中包含 IP 即可，例如 curl -s https://4.ipw.cn",
+  "commandPlaceholder": "輸出中包含 IP 即可，例如 curl -s https://ipv4.ddnspod.com",
   "regex": "篩選正規表示式",
   "regexPlaceholder": "選填；留空自動選擇第一個公網位址",
   "testFetch": "測試取得",
