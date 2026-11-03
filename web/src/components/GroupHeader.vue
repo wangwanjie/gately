@@ -6,8 +6,8 @@
     <Folder :size="14" class="group-icon" />
     <span class="group-name">{{ name || t('groupSort.ungrouped') }}</span>
     <span class="group-count">{{ countText }}</span>
-    <span v-if="name && (renamable || sorting)" class="group-ops" :class="{ 'is-hover': !sorting }" @click.stop>
-      <el-button v-if="renamable" text size="small" :icon="Pencil" :aria-label="t('groupSort.rename')" :title="t('groupSort.rename')" @click="emit('rename')" />
+    <span v-if="name && (canRename || sorting)" class="group-ops" :class="{ 'is-hover': !sorting }" @click.stop>
+      <el-button v-if="canRename" text size="small" :icon="Pencil" :aria-label="t('groupSort.rename')" :title="t('groupSort.rename')" @click="emit('rename')" />
       <template v-if="sorting">
       <el-button text size="small" :icon="ChevronUp" :disabled="!canUp" :aria-label="t('groupSort.moveGroupUp')" :title="t('groupSort.moveGroupUp')" @click="emit('up')" />
       <el-button text size="small" :icon="ChevronDown" :disabled="!canDown" :aria-label="t('groupSort.moveGroupDown')" :title="t('groupSort.moveGroupDown')" @click="emit('down')" />
@@ -17,11 +17,13 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { isReadonly } from '../nav'
 import { ChevronDown, ChevronRight, ChevronUp, Folder, Pencil } from 'lucide-vue-next'
 
 // name 为空表示“未分组”；countText 为分组内条目数的说明文字；renamable 为 false 时不显示重命名按钮（只读展示的分组）
-withDefaults(
+const props = withDefaults(
   defineProps<{
     name: string
     countText: string
@@ -35,6 +37,8 @@ withDefaults(
   }>(),
   { renamable: true },
 )
+// 只读账号不能修改分组，不显示重命名按钮
+const canRename = computed(() => props.renamable && !isReadonly.value)
 const emit = defineEmits<{ toggle: []; up: []; down: []; check: [value: boolean]; rename: [] }>()
 const { t } = useI18n()
 </script>
