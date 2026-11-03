@@ -30,6 +30,8 @@ func TestRequiredAndMatch(t *testing.T) {
 		{"GET", "/api/ddns/logs", "ddns:read"},
 		{"DELETE", "/api/ddns/logs", "ddns:write"},
 		{"GET", "/api/status", "status:read"},
+		{"GET", "/api/system/update", "status:read"},
+		{"GET", "/api/system/update/state", "status:read"},
 		{"GET", "/api/logs", "logs:read"},
 		{"POST", "/api/import/lucky", "import:write"},
 		{"GET", "/api/session", Any},

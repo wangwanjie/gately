@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"net/http/cookiejar"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
@@ -205,8 +206,10 @@ type fakeReleaseAPI struct {
 	advisories string
 	failRel    bool
 	failAdv    bool
-	hits       atomic.Int32
-	srv        *httptest.Server
+	// delay 为每个请求的响应延迟，用于模拟并发请求同时等待 GitHub
+	delay time.Duration
+	hits  atomic.Int32
+	srv   *httptest.Server
 }
 
 func newFakeReleaseAPI(t *testing.T) *fakeReleaseAPI {
@@ -214,6 +217,12 @@ func newFakeReleaseAPI(t *testing.T) *fakeReleaseAPI {
 	f := &fakeReleaseAPI{releases: "[]", advisories: "[]"}
 	f.srv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		f.hits.Add(1)
+		f.mu.Lock()
+		delay := f.delay
+		f.mu.Unlock()
+		if delay > 0 {
+			time.Sleep(delay)
+		}
 		f.mu.Lock()
 		defer f.mu.Unlock()
 		if r.Header.Get("Authorization") != "" || r.Header.Get("Cookie") != "" {
@@ -617,5 +626,343 @@ func TestCheckProgramUpdates(t *testing.T) {
 	// 托管程序的检查写回通知记录时不覆盖 Gately 本身的检查结果
 	if st := a.updateSnapshot(); st.Latest == nil || st.Latest.Version != "v0.6.3" || st.Notified.Version != "" {
 		t.Fatalf("Gately 的检查结果应保留: %+v", st)
+	}
+}
+
+// 安全章节标题的识别：功能名称（Security entrance / 安全入口）、代码块中的注释、层级过深或不带空格的标题都不算
+func TestHasSecuritySection(t *testing.T) {
+	cases := []struct {
+		body string
+		want bool
+	}{
+		{"## Security", true},
+		{"## Security / 安全修复\n- x", true},
+		{"## Security fix / 安全修复", true},
+		{"### Security updates and fixes", true},
+		{"## Security hardening", true},
+		{"## Security: CVE-2026-1", true},
+		{"## Security (安全加固)", true},
+		{"## Security-related fixes", true},
+		{"#### SECURITY", true},
+		{"## Security\r\n- windows line ending", true},
+		{"intro\n\n### 安全问题修复\n- x", true},
+		{"## 安全更新", true},
+		{"## Security entrance / 安全入口", false},
+		{"### Security entrance improvements", false},
+		{"### 安全入口改进", false},
+		{"## Securityfix", false},
+		{"##Security", false},
+		{"##### Security", false},
+		{"  text mentions ## Security inline", false},
+		{"```bash\n# security settings\n```", false},
+		{"```\n## Security\n```\n## New features", false},
+		{"~~~\n## Security\n~~~", false},
+		{"```sh\n# Security\n", false},
+		{"```\ncode\n```\n## Security / 安全修复", true},
+		{"", false},
+	}
+	for _, c := range cases {
+		if got := hasSecuritySection(c.body); got != c.want {
+			t.Errorf("%q 识别为安全章节应为 %v", c.body, c.want)
+		}
+	}
+	// 发布列表中只有真正带安全章节的版本才算安全修复版本
+	_, _, sec := parseReleases([]ghRelease{
+		{TagName: "v0.6.5", Body: "## New / 新功能\n### Security entrance / 安全入口\n- 支持自定义"},
+		{TagName: "v0.6.4", Body: "```bash\n# security: 关闭默认账号\ndocker run ...\n```"},
+		{TagName: "v0.6.3", Body: "## Security / 安全加固"},
+	})
+	if len(sec) != 1 || sec[0].Version != "v0.6.3" {
+		t.Fatalf("误判的安全修复版本: %+v", sec)
+	}
+}
+
+// 安全公告受影响版本范围的更多写法
+func TestVersionInRangeMore(t *testing.T) {
+	cases := []struct {
+		ver, rng string
+		in, ok   bool
+	}{
+		// 条件顺序与空格写法不影响结果
+		{"0.5.5", "< 0.6.1, >= 0.5", true, true},
+		{"0.4.9", "< 0.6.1, >= 0.5", false, true},
+		{"0.6.0", "<0.6.1,>=0.5.0", true, true},
+		{"0.6.0", "  >=  0.5.0 ,  <  0.6.1  ", true, true},
+		// 版本号带 v 前缀、四段版本号
+		{"0.6.0.2", ">= v0.6.0.1, <= v0.6.0.4", true, true},
+		{"0.6.0", ">= 0.6.0.1, <= 0.6.0.4", false, true},
+		{"0.6.0.5", ">= 0.6.0.1, <= 0.6.0.4", false, true},
+		// 只写 主.次 / 主 的边界按 0 补齐
+		{"0.6.0", "= 0.6", true, true},
+		{"0.6.0.1", "= 0.6", false, true},
+		{"0.9.9", "< 1", true, true},
+		{"1.0.0", "< 1", false, true},
+		// 预发布版早于正式版
+		{"0.6.1-rc1", ">= 0.6.1", false, true},
+		{"0.6.1-rc1", "<= 0.6.1-rc1", true, true},
+		// 无法解析的写法
+		{"0.6.0", "!= 0.6.0", false, false},
+		{"0.6.0", ", < 0.6.1", false, false},
+		{"0.6.0", "< 0.6.1 || >= 1.0.0", false, false},
+		{"0.6.0", "< 0.6.1.2.3", false, false},
+		{"0.6.0", "< -1.0.0", false, false},
+	}
+	for _, c := range cases {
+		in, ok := versionInRange(mustVersion(t, c.ver), c.rng)
+		if in != c.in || ok != c.ok {
+			t.Errorf("%s 在 %q 中: 得到 (%v, %v)，应为 (%v, %v)", c.ver, c.rng, in, ok, c.in, c.ok)
+		}
+	}
+}
+
+// 受影响范围为空时按修复版本判断；多段范围中有一段无法解析时其他段照常生效
+func TestAdvisoryAffectsMore(t *testing.T) {
+	empty := securityAdvisory{Ranges: []advisoryRange{{Vulnerable: "", Patched: "0.6.1"}}}
+	if !empty.affects(mustVersion(t, "0.6.0.4")) || empty.affects(mustVersion(t, "0.6.1")) || empty.affects(mustVersion(t, "0.7.0")) {
+		t.Fatal("范围为空时应以修复版本为界")
+	}
+	if (securityAdvisory{Ranges: []advisoryRange{{}}}).affects(mustVersion(t, "0.1.0")) {
+		t.Fatal("范围与修复版本都为空时不应视为受影响")
+	}
+	mixed := securityAdvisory{Ranges: []advisoryRange{{Vulnerable: "???"}, {Vulnerable: "< 0.5.0"}}}
+	if !mixed.affects(mustVersion(t, "0.4.0")) || mixed.affects(mustVersion(t, "0.5.0")) {
+		t.Fatal("可解析的范围应照常生效")
+	}
+	// 修复版本写了多个时取第一个
+	multi := securityAdvisory{Ranges: []advisoryRange{{Vulnerable: "bad", Patched: "0.6.1, 0.5.9.3"}}}
+	if !multi.affects(mustVersion(t, "0.6.0")) || multi.affects(mustVersion(t, "0.6.1")) {
+		t.Fatal("修复版本应取第一个")
+	}
+	// 范围可解析且不包含当前版本时，不再退回修复版本判断
+	if (securityAdvisory{Ranges: []advisoryRange{{Vulnerable: "< 0.3.0", Patched: "0.9.0"}}}).affects(mustVersion(t, "0.5.0")) {
+		t.Fatal("范围可解析时以范围为准")
+	}
+}
+
+// make 本地构建的版本号（git describe）按标签比较，不误报新版本与安全问题；预发布版仍早于正式版
+func TestUpdateViewDescribeVersion(t *testing.T) {
+	c := updateCache{
+		CheckedAt:        time.Now(),
+		Latest:           &releaseBrief{Version: "v0.6.3"},
+		SecurityReleases: []releaseBrief{{Version: "v0.6.3"}},
+		Advisories:       []securityAdvisory{{ID: "GHSA-m6h7-mm5r-r53q", Ranges: []advisoryRange{{Vulnerable: "< 0.6.3", Patched: "0.6.3"}}}},
+	}
+	for _, cur := range []string{"v0.6.3-5-g3cefa6e7", "v0.6.3-dirty", "v0.6.3-12-g3cefa6e-dirty", "v0.6.3"} {
+		v := c.view(cur, true)
+		if v.HasUpdate || v.Security || !v.Comparable || v.Current != cur {
+			t.Errorf("%s 构建于 v0.6.3 之后，不应提示更新: %+v", cur, v)
+		}
+	}
+	for _, cur := range []string{"v0.6.2-3-gabcdef0", "v0.6.2.1-dirty"} {
+		v := c.view(cur, true)
+		if !v.HasUpdate || !v.Security || len(v.Advisories) != 1 || len(v.SecurityReleases) != 1 {
+			t.Errorf("%s 早于 v0.6.3，应提示安全更新: %+v", cur, v)
+		}
+	}
+	if v := c.view("v0.6.3-rc1", true); !v.HasUpdate || !v.Security {
+		t.Fatalf("预发布版早于正式版: %+v", v)
+	}
+	// 只有提交哈希（没有标签）时无法比较
+	if v := c.view("3cefa6e7", true); v.HasUpdate || v.Security || v.Comparable {
+		t.Fatalf("没有标签的版本无法比较: %+v", v)
+	}
+	if releaseBase("v0.6.3-5-gXYZ") != "v0.6.3-5-gXYZ" || releaseBase(" v0.6.2.1-1-gabcd ") != "v0.6.2.1" {
+		t.Fatal("releaseBase 只识别 git describe 的格式")
+	}
+}
+
+// 并发的多个手动检查只访问一次 GitHub
+func TestManualCheckConcurrent(t *testing.T) {
+	gh := newFakeReleaseAPI(t)
+	gh.set(func(f *fakeReleaseAPI) {
+		f.releases = `[{"tag_name":"v0.6.3"}]`
+		f.delay = 100 * time.Millisecond
+	})
+	version.Version = "v0.6.3"
+	_, srv, c := loginApp(t)
+	var wg sync.WaitGroup
+	codes := make(chan int, 6)
+	for range 6 {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			code, _ := doJSON(t, c, "GET", srv.URL+"/api/system/update", nil)
+			codes <- code
+		}()
+	}
+	wg.Wait()
+	close(codes)
+	for code := range codes {
+		if code != 200 {
+			t.Fatalf("并发检查应全部成功，实际 %d", code)
+		}
+	}
+	if n := gh.hits.Load(); n != 2 {
+		t.Fatalf("并发的手动检查应只请求一次发布列表与一次安全公告，实际 %d 次", n)
+	}
+}
+
+// 畸形的 GitHub 响应：返回 HTML、JSON 结构不符时报错且不覆盖上次结果；安全公告畸形或过大时版本检查照常成功
+func TestCheckUpdatesMalformedResponses(t *testing.T) {
+	gh := newFakeReleaseAPI(t)
+	gh.set(func(f *fakeReleaseAPI) {
+		f.releases = `[{"tag_name":"v0.6.3","body":"<script>alert(1)</script>\n## Security"}]`
+		f.advisories = advisoryJSON
+	})
+	version.Version = "v0.6.0"
+	a, _, _ := loginApp(t)
+	if _, err := a.checkUpdates(context.Background(), false); err != nil {
+		t.Fatal(err)
+	}
+	// 更新说明原样保存（前端渲染时转义），不在服务端改写
+	if st := a.updateSnapshot(); !strings.Contains(st.Notes, "<script>") {
+		t.Fatalf("更新说明应原样保存: %q", st.Notes)
+	}
+	for _, body := range []string{"<html><body>captive portal</body></html>", `{"message":"Not Found"}`, `[{"tag_name":123}]`, ``} {
+		gh.set(func(f *fakeReleaseAPI) { f.releases = body })
+		if _, err := a.checkUpdates(context.Background(), false); err == nil || !strings.Contains(err.Error(), "解析") {
+			t.Fatalf("%q 应报解析错误: %v", body, err)
+		}
+		if st := a.updateSnapshot(); st.Latest == nil || st.Latest.Version != "v0.6.3" || len(st.Advisories) != 1 {
+			t.Fatalf("解析失败不应覆盖上次结果: %+v", st)
+		}
+	}
+	// 安全公告畸形：版本检查成功，沿用上次的公告
+	gh.set(func(f *fakeReleaseAPI) {
+		f.releases = `[{"tag_name":"v0.6.4"}]`
+		f.advisories = `{"message":"Not Found"}`
+	})
+	v, err := a.checkUpdates(context.Background(), false)
+	if err != nil || v.Latest != "v0.6.4" || len(v.Advisories) != 1 {
+		t.Fatalf("公告畸形时版本检查应照常成功并沿用公告: %v %+v", err, v)
+	}
+	// 安全公告过大同样只忽略公告
+	gh.set(func(f *fakeReleaseAPI) {
+		f.releases = `[{"tag_name":"v0.6.5"}]`
+		f.advisories = `[{"summary":"` + strings.Repeat("x", maxAdvisoriesBody) + `"}]`
+	})
+	v, err = a.checkUpdates(context.Background(), false)
+	if err != nil || v.Latest != "v0.6.5" || len(v.Advisories) != 1 {
+		t.Fatalf("公告过大时版本检查应照常成功并沿用公告: %v %+v", err, v)
+	}
+	// 安全公告列表为空（公告被撤回）时清空
+	gh.set(func(f *fakeReleaseAPI) { f.advisories = `[]` })
+	if v, err := a.checkUpdates(context.Background(), false); err != nil || len(v.Advisories) != 0 {
+		t.Fatalf("公告撤回后应清空: %v %+v", err, v)
+	}
+}
+
+// 保存的检查结果损坏时从空结果开始并记录日志，下次检查照常写回
+func TestUpdateCacheCorrupted(t *testing.T) {
+	gh := newFakeReleaseAPI(t)
+	gh.set(func(f *fakeReleaseAPI) { f.releases = `[{"tag_name":"v0.6.3"}]` })
+	version.Version = "v0.6.2"
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, updateCheckName+".json"), []byte(`{"latest":{"version":`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	a, err := New(Options{ConfigDir: dir, Modules: []module.Module{portforward.New()}})
+	if err != nil {
+		t.Fatalf("检查结果损坏不应影响启动: %v", err)
+	}
+	if st := a.updateSnapshot(); st.Latest != nil || !st.CheckedAt.IsZero() {
+		t.Fatalf("损坏时应从空结果开始: %+v", st)
+	}
+	warned := false
+	for _, l := range a.sysLogs.Since(0) {
+		if strings.Contains(l.Message, "读取更新检查结果失败") {
+			warned = true
+		}
+	}
+	if !warned {
+		t.Fatal("应记录读取失败的日志")
+	}
+	got := collectEvents(t, events.SystemUpdate)
+	if _, err := a.checkUpdates(context.Background(), false); err != nil {
+		t.Fatal(err)
+	}
+	if evs := got(); len(evs) != 1 {
+		t.Fatalf("损坏后重新检查应通知新版本: %+v", evs)
+	}
+	var c updateCache
+	data, err := os.ReadFile(filepath.Join(dir, updateCheckName+".json"))
+	if err != nil || json.Unmarshal(data, &c) != nil || c.Latest == nil || c.Notified.Version != "v0.6.3" {
+		t.Fatalf("应写回完整的检查结果: %v %s", err, data)
+	}
+}
+
+// 未登录不能读取检查结果，更不能触发访问 GitHub；只读账号可以读取检查结果（顶部横幅对所有账号显示）
+func TestUpdateEndpointsAuth(t *testing.T) {
+	gh := newFakeReleaseAPI(t)
+	gh.set(func(f *fakeReleaseAPI) { f.releases = `[{"tag_name":"v0.6.3"}]` })
+	version.Version = "v0.6.2"
+	_, srv, admin := loginApp(t)
+	anon := &http.Client{}
+	for _, p := range []string{"/api/system/update", "/api/system/update/state"} {
+		if code, _ := doJSON(t, anon, "GET", srv.URL+p, nil); code != http.StatusUnauthorized {
+			t.Fatalf("未登录访问 %s 应返回 401，实际 %d", p, code)
+		}
+	}
+	if n := gh.hits.Load(); n != 0 {
+		t.Fatalf("未登录不应触发访问 GitHub，实际 %d 次", n)
+	}
+	if code, body := doJSON(t, admin, "POST", srv.URL+"/api/account/users", map[string]string{"username": "viewer", "password": "viewer-pass-1"}); code != 200 {
+		t.Fatalf("创建只读账号失败 %d %s", code, body)
+	}
+	jar, _ := cookiejar.New(nil)
+	ro := &http.Client{Jar: jar}
+	if code, body := doJSON(t, ro, "POST", srv.URL+"/api/login", map[string]string{"username": "viewer", "password": "viewer-pass-1"}); code != 200 {
+		t.Fatalf("只读账号登录失败 %d %s", code, body)
+	}
+	if code, body := doJSON(t, ro, "GET", srv.URL+"/api/system/update/state", nil); code != 200 {
+		t.Fatalf("只读账号应能读取检查结果: %d %s", code, body)
+	}
+	if n := gh.hits.Load(); n != 0 {
+		t.Fatalf("读取检查结果不应访问 GitHub，实际 %d 次", n)
+	}
+	// 修改自动检查开关属于全局设置，只读账号不能修改
+	if code, _ := doJSON(t, ro, "PUT", srv.URL+"/api/system/settings", map[string]any{"disableUpdateCheck": true}); code != http.StatusForbidden {
+		t.Fatalf("只读账号不应能关闭自动检查，实际 %d", code)
+	}
+}
+
+// 程序退出时（ctx 取消）未检查的托管程序保留通知记录，重启后不会重复通知同一版本
+func TestCheckProgramsCanceledKeepsRecords(t *testing.T) {
+	gh := newFakeReleaseAPI(t)
+	gh.set(func(f *fakeReleaseAPI) { f.releases = `[{"tag_name":"v0.6.3"}]` })
+	version.Version = "v0.6.3"
+	dir := t.TempDir()
+	bin := filepath.Join(dir, "bin")
+	if err := os.MkdirAll(bin, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(bin, binstall.ExeName("fakeprog")), []byte("x"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	in := binstall.New(binstall.Spec{
+		Key: "fakeprog", Name: "FakeProg", Files: []string{"fakeprog"},
+		Resolve: func(ctx context.Context, _ *http.Client, _ binstall.Platform, _ string) (*binstall.Release, error) {
+			return &binstall.Release{Version: "v1.2.0"}, nil
+		},
+		Probe: func(string) (string, error) { return "v1.1.0", nil },
+	}, binstall.Options{BinDir: bin, Logs: logbuf.New(100, nil)})
+	a, err := New(Options{ConfigDir: dir, Modules: []module.Module{&fakeProgramModule{in: in}}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := collectEvents(t, events.ProgramUpdate)
+	a.checkAllPrograms(context.Background())
+	if evs := got(); len(evs) != 1 {
+		t.Fatalf("应通知一次: %+v", evs)
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	a.checkAllPrograms(ctx)
+	if n := a.updateSnapshot().Notified.Programs; n["fakeprog"] != "v1.2.0" {
+		t.Fatalf("取消的检查不应清除通知记录: %v", n)
+	}
+	a.checkAllPrograms(context.Background())
+	if evs := got(); len(evs) != 0 {
+		t.Fatalf("同一版本不应重复通知: %+v", evs)
 	}
 }

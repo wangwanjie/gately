@@ -89,7 +89,7 @@ func Required(method, path string) string {
 	switch path {
 	case "/api/session", "/api/openapi.json":
 		return Any
-	case "/api/status", "/api/system/info", "/api/system/update":
+	case "/api/status", "/api/system/info", "/api/system/update", "/api/system/update/state":
 		return DomainStatus + ":" + LevelRead
 	case "/api/logs":
 		return DomainLogs + ":" + LevelRead

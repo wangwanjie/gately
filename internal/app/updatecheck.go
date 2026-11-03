@@ -33,7 +33,8 @@ const updateCheckName = "update-check"
 
 // 以下变量在测试中可替换
 var (
-	releasesAPI   = "https://api.github.com/repos/wangwanjie/gately/releases?per_page=30"
+	// 发布列表取 100 个（GitHub 单页上限）：发版频繁时 30 个只覆盖约两周，落后较多的版本会漏掉其后的安全修复版本
+	releasesAPI   = "https://api.github.com/repos/wangwanjie/gately/releases?per_page=100"
 	advisoriesAPI = "https://api.github.com/repos/wangwanjie/gately/security-advisories?state=published&per_page=100"
 	// updateCheckInterval 为两次自动检查的间隔，updateCheckRetry 为检查失败后的重试间隔
 	updateCheckInterval = 12 * time.Hour
@@ -198,9 +199,35 @@ func getGitHubJSON(ctx context.Context, client *http.Client, rawURL string, limi
 }
 
 // securityHeadingRe 匹配更新说明中以“安全”开头的章节标题，例如 "## Security / 安全修复"、"### 安全修复"。
-// 只认以 Security 或“安全修复 / 安全加固 / 安全更新 / 安全问题”开头的标题，“安全入口”等功能名称不会误判。
-// 中文写成 \x{...} 转义：源码中的中文字面量会被当作待翻译的文案提取
-var securityHeadingRe = regexp.MustCompile(`(?im)^#{1,4}[ \t]+(?:security\b|\x{5B89}\x{5168}\x{4FEE}\x{590D}|\x{5B89}\x{5168}\x{52A0}\x{56FA}|\x{5B89}\x{5168}\x{66F4}\x{65B0}|\x{5B89}\x{5168}\x{95EE}\x{9898})`)
+// 英文只认单独的 Security（其后为行尾或 / : | ( - 等分隔符）或 Security fix / update / hardening / advisory / patch / issue /
+// vulnerability 开头的标题，“Security entrance（安全入口）”等功能名称不会误判；
+// 中文只认“安全修复 / 安全加固 / 安全更新 / 安全问题”开头的标题，“安全入口”等功能名称同样不会误判。
+// 按行匹配，由 hasSecuritySection 跳过代码块。中文写成 \x{...} 转义：源码中的中文字面量会被当作待翻译的文案提取
+var securityHeadingRe = regexp.MustCompile(`(?i)^#{1,4}[ \t]+(?:security(?:[ \t]+(?:fix|update|harden|advisor|patch|issue|vulnerab)|[ \t]*(?:$|[/:|(\-\x{FF08}\x{FF1A}]))|\x{5B89}\x{5168}\x{4FEE}\x{590D}|\x{5B89}\x{5168}\x{52A0}\x{56FA}|\x{5B89}\x{5168}\x{66F4}\x{65B0}|\x{5B89}\x{5168}\x{95EE}\x{9898})`)
+
+// hasSecuritySection 判断更新说明是否带有安全章节。代码块（``` 或 ~~~ 围起）中的行不算标题，
+// 避免 shell 注释 "# security ..." 之类的示例被误判为安全修复版本。
+func hasSecuritySection(body string) bool {
+	fence := ""
+	for _, line := range strings.Split(body, "\n") {
+		line = strings.TrimRight(line, "\r")
+		trimmed := strings.TrimSpace(line)
+		if fence != "" {
+			if strings.HasPrefix(trimmed, fence) {
+				fence = ""
+			}
+			continue
+		}
+		if strings.HasPrefix(trimmed, "```") || strings.HasPrefix(trimmed, "~~~") {
+			fence = trimmed[:3]
+			continue
+		}
+		if securityHeadingRe.MatchString(line) {
+			return true
+		}
+	}
+	return false
+}
 
 // ghsaIDRe 为 GitHub 安全公告编号的格式
 var ghsaIDRe = regexp.MustCompile(`^GHSA(?:-[23456789cfghjmpqrvwx]{4}){3}$`)
@@ -219,7 +246,7 @@ func parseReleases(list []ghRelease) (latest *releaseBrief, notes string, securi
 			latest = &b
 			notes = truncateUTF8(r.Body, maxNotesBytes)
 		}
-		if securityHeadingRe.MatchString(r.Body) {
+		if hasSecuritySection(r.Body) {
 			security = append(security, b)
 		}
 	}
@@ -394,9 +421,23 @@ func (adv securityAdvisory) affects(cur parsedVersion) bool {
 
 // ---- 结果 ----
 
+// describeRe 匹配 git describe --tags --dirty 生成的版本号（make 本地构建）：标签后跟 -<提交数>-g<哈希> 与 / 或 -dirty
+var describeRe = regexp.MustCompile(`^(v?\d+(?:\.\d+){2,3})(?:-\d+-g[0-9a-f]{4,40})?(?:-dirty)?$`)
+
+// releaseBase 返回比较新旧时使用的版本号：git describe 生成的版本是在标签之后构建的，按标签本身比较，
+// 否则 "v0.6.3-5-gabc1234" 会被当成 v0.6.3 的预发布版，误报“有新版本 v0.6.3”乃至安全更新。
+func releaseBase(cur string) string {
+	if m := describeRe.FindStringSubmatch(strings.TrimSpace(cur)); m != nil {
+		return m[1]
+	}
+	return cur
+}
+
 // view 按当前版本计算检查结果。
-func (c updateCache) view(cur string, autoCheck bool) updateView {
-	v := updateView{AutoCheck: autoCheck, Current: cur, Error: c.Error, Advisories: []securityAdvisory{}, SecurityReleases: []releaseBrief{}}
+func (c updateCache) view(display string, autoCheck bool) updateView {
+	v := updateView{AutoCheck: autoCheck, Current: display, Error: c.Error, Advisories: []securityAdvisory{}, SecurityReleases: []releaseBrief{}}
+	// 界面与通知显示原始版本号，比较时使用标签版本号
+	cur := releaseBase(display)
 	if !c.CheckedAt.IsZero() {
 		t := c.CheckedAt
 		v.CheckedAt = &t
@@ -517,7 +558,7 @@ func fetchUpdateInfo(ctx context.Context, client *http.Client) (c updateCache, a
 // 手动检查不检查托管程序（它们各有检查按钮）。Gately 的检查之间互斥，托管程序的检查在其后单独进行，
 // 不会让手动“检查更新”等待托管程序查询完成。
 func (a *App) checkUpdates(ctx context.Context, includePrograms bool) (updateView, error) {
-	view, err := a.checkSelf(ctx)
+	view, err := a.checkSelf(ctx, 0)
 	if includePrograms {
 		a.checkAllPrograms(ctx)
 	}
@@ -525,10 +566,17 @@ func (a *App) checkUpdates(ctx context.Context, includePrograms bool) (updateVie
 }
 
 // checkSelf 检查 Gately 本身。多个检查不会同时进行：后到的等待前一个完成。
-func (a *App) checkSelf(ctx context.Context) (updateView, error) {
+// minGap 大于 0 时（手动检查），拿到锁后若距上次检查不足 minGap 则直接返回上次结果，
+// 同时到达的多个请求因此只访问一次 GitHub。
+func (a *App) checkSelf(ctx context.Context, minGap time.Duration) (updateView, error) {
 	a.updCheckMu.Lock()
 	defer a.updCheckMu.Unlock()
 	prev := a.updateSnapshot()
+	if minGap > 0 {
+		if v, hit, err := a.recentResult(prev, minGap); hit {
+			return v, err
+		}
+	}
 	cctx, cancel := context.WithTimeout(ctx, updateCheckTimeout)
 	defer cancel()
 	fetched, advErr, err := fetchUpdateInfo(cctx, a.updateClient())
@@ -657,11 +705,15 @@ func (a *App) checkPrograms(ctx context.Context, n *updateNotified) {
 			continue
 		}
 		for _, in := range pm.ProgramInstallers() {
-			if in == nil || !in.Installed().Present || ctx.Err() != nil {
+			if in == nil || !in.Installed().Present {
 				continue
 			}
 			key := in.Key()
+			// 先登记再判断是否已取消：程序退出时未检查的程序保留通知记录，重启后不会重复通知同一版本
 			seen[key] = true
+			if ctx.Err() != nil {
+				continue
+			}
 			l, err := in.CheckLatest(ctx)
 			if err != nil {
 				if !errors.Is(err, binstall.ErrChecking) {
@@ -748,28 +800,33 @@ func (a *App) wakeUpdateCheck() {
 // 距上次检查（成功或失败）不足 manualCheckMinGap 时直接返回上次结果，失败的结果同样返回 502，
 // 避免反复点击或脚本调用触发 GitHub 匿名接口的频率限制。
 func (a *App) handleCheckUpdate(w http.ResponseWriter, r *http.Request) {
-	c := a.updateSnapshot()
-	last := c.CheckedAt
-	if c.FailedAt.After(last) {
-		last = c.FailedAt
-	}
-	if !last.IsZero() && time.Since(last) < manualCheckMinGap && time.Since(last) >= 0 {
-		if c.Error != "" && c.FailedAt.After(c.CheckedAt) {
-			httpx.Error(w, http.StatusBadGateway, "%v", c.Error)
-			return
-		}
-		v := c.view(version.Version, !a.settingsSnapshot().DisableUpdateCheck)
-		v.SelfUpgrade = a.upgradeSupport()
-		httpx.OK(w, v)
-		return
-	}
-	// 检查与请求的生命周期脱钩：用户关闭页面时检查照常完成，不会被记成一次失败
-	v, err := a.checkUpdates(context.WithoutCancel(r.Context()), false)
+	// 检查与请求的生命周期脱钩：用户关闭页面时检查照常完成，不会被记成一次失败。
+	// 最短间隔在 checkSelf 拿到锁后判断，并发的多个请求不会各自访问 GitHub
+	v, err := a.checkSelf(context.WithoutCancel(r.Context()), manualCheckMinGap)
 	if err != nil {
 		httpx.Error(w, http.StatusBadGateway, "%v", err)
 		return
 	}
 	httpx.OK(w, v)
+}
+
+// recentResult 判断距上次检查（成功或失败）是否不足 gap：是则 hit 为 true 并返回上次的结果，
+// 上次失败时以 err 返回当时的错误。系统时间往回调过（上次时间在未来）时视为已超过间隔。
+func (a *App) recentResult(c updateCache, gap time.Duration) (v updateView, hit bool, err error) {
+	last := c.CheckedAt
+	if c.FailedAt.After(last) {
+		last = c.FailedAt
+	}
+	since := time.Since(last)
+	if last.IsZero() || since < 0 || since >= gap {
+		return updateView{}, false, nil
+	}
+	v = c.view(version.Version, !a.settingsSnapshot().DisableUpdateCheck)
+	v.SelfUpgrade = a.upgradeSupport()
+	if c.Error != "" && c.FailedAt.After(c.CheckedAt) {
+		return v, true, errors.New(c.Error)
+	}
+	return v, true, nil
 }
 
 // handleUpdateState 返回上次检查的结果，不访问网络，供界面显示升级提示。

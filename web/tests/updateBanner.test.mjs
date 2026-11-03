@@ -43,3 +43,44 @@ test('安全提示不受忽略版本影响，只能暂缓 24 小时', () => {
 test('已是最新版本仍受影响（尚无修复）时也提示', () => {
   assert.equal(bannerKind({ ...sec, hasUpdate: false }, st()), 'security')
 })
+
+test('暂缓记录的边界：到期时刻即失效，格式异常时照常提示', () => {
+  const key = securityKey(sec)
+  // 截止时间恰好等于当前时间视为已到期
+  assert.equal(bannerKind(sec, st({ snooze: JSON.stringify({ key, until: now }) })), 'security')
+  // 截止时间在过去（系统时间往回调后又调回）同样已到期
+  assert.equal(bannerKind(sec, st({ snooze: JSON.stringify({ key, until: now - 1 }) })), 'security')
+  // 截止时间不是数字、记录为 null / 数组 / 数字时照常提示
+  assert.equal(bannerKind(sec, st({ snooze: JSON.stringify({ key, until: String(now + 1000) }) })), 'security')
+  assert.equal(bannerKind(sec, st({ snooze: 'null' })), 'security')
+  assert.equal(bannerKind(sec, st({ snooze: '[]' })), 'security')
+  assert.equal(bannerKind(sec, st({ snooze: '5' })), 'security')
+  // 缺少 key 的记录不能暂缓
+  assert.equal(bannerKind(sec, st({ snooze: JSON.stringify({ until: now + 1000 }) })), 'security')
+})
+
+test('安全问题减少（部分已修复）时暂缓同样失效，避免旧记录误匹配', () => {
+  const snooze = JSON.stringify({ key: securityKey(sec), until: now + 1000 })
+  const fewer = { ...sec, securityReleases: [{ version: 'v0.6.2' }] }
+  assert.equal(bannerKind(fewer, st({ snooze })), 'security')
+})
+
+test('安全提示暂缓期间不再显示普通新版本提示；暂缓过期后恢复安全提示', () => {
+  const snooze = JSON.stringify({ key: securityKey(sec), until: now + 1000 })
+  assert.equal(bannerKind({ ...sec, latest: 'v0.6.4' }, st({ snooze })), '')
+  assert.equal(bannerKind(sec, st({ snooze, now: now + 1001 })), 'security')
+})
+
+test('忽略的版本只按完整版本号匹配；开发版等无法比较时不提示', () => {
+  // 四段版本号与三段版本号不同
+  assert.equal(bannerKind({ ...base, latest: 'v0.6.3.1' }, st({ skipped: 'v0.6.3' })), 'update')
+  assert.equal(bannerKind({ ...base, latest: 'v0.6.3' }, st({ skipped: 'v0.6.3.1' })), 'update')
+  // 服务端判断无法比较时 hasUpdate 为 false，不显示
+  assert.equal(bannerKind({ ...base, current: 'dev', hasUpdate: false }, st()), '')
+})
+
+test('只有安全修复版本、没有安全公告时也提示，标识只含版本号', () => {
+  const rel = { ...base, security: true, advisories: [], securityReleases: [{ version: 'v0.6.2' }] }
+  assert.equal(bannerKind(rel, st()), 'security')
+  assert.equal(securityKey(rel), 'v0.6.2')
+})
