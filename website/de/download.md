@@ -59,6 +59,22 @@ make web      # Frontend bauen
 make build    # erzeugt bin/gately
 ```
 
+### Benutzerdefinierter Build {#custom-build}
+
+Optionale Module und Oberflächensprachen lassen sich beim Kompilieren weglassen (siehe [Modulübersicht · Benutzerdefinierter Build](/de/docs/modules/#custom-build)). Am einfachsten wählen Sie sie auf [build.gately.cn](https://build.gately.cn) aus und lassen den Build online erzeugen. Zum Selbstkompilieren:
+
+- Go entfernt Module und Sprachen per Build-Tag: Jedes optionale Modul hat ein `no_<Modul>` (etwa `no_waf`, `no_smb`), die Sprachstufen sind `lang_zh` (nur Vereinfachtes Chinesisch) und `lang_cjken` (Vereinfachtes und Traditionelles Chinesisch sowie Englisch); ohne Tags entsteht die Vollversion;
+- das Frontend bündelt über die Umgebungsvariable `GATELY_LOCALES` nur die gewählten Sprachen (etwa `zh-CN,zh-TW,en`); leer bedeutet alle;
+- `modules.json` im Wurzelverzeichnis des Repositorys listet alle optionalen Module mit Abhängigkeiten und geschätzter Größe; `go run ./tools/custombuild resolve` rechnet eine Auswahl in Tags, Sprachen und Docker-Build-Argumente um, und der Unterbefehl `build` erzeugt direkt tar.gz- oder fnOS-Pakete.
+
+```bash
+# Nur DDNS und frp behalten, Oberfläche nur auf Vereinfachtem Chinesisch
+go run ./tools/custombuild resolve -modules ddns,frp -lang zh
+go run ./tools/custombuild build -version v0.6.4 -modules ddns,frp -lang zh -targets linux-arm64 -out dist
+```
+
+Docker-Images verwenden dasselbe Dockerfile: Die Build-Argumente `GATELY_TAGS` und `GATELY_LOCALES` entsprechen den Tags und Sprachen oben, `WITH_DOCKER_CLI=0` lässt docker-cli und compose weg (wenn das Docker-Modul fehlt), `WITH_NFTABLES=0` lässt nftables weg (wenn Einbruchschutz und STUN fehlen); `resolve -targets docker` gibt die passenden Argumente aus.
+
 ## Verifizierung
 
 Jedes Release enthält eine Prüfsummendatei. Prüfen Sie nach dem Download und vor dem Start die SHA-256-Summe.

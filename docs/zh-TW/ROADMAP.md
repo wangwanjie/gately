@@ -9,7 +9,7 @@
 1. **透明**：預設不連線任何專案方伺服器；所有對外位址皆可檢視、可修改、可關閉。
 2. **可遷移**：提供 Lucky `.lkcf` 設定匯入。
 3. **可稽核的設定**：設定為明文 JSON（檔案權限 0600），可直接納入 git 做 diff 與回溯。
-4. **單一檔案部署**：一個靜態二進位檔內嵌前端，支援 Docker、systemd、OpenWrt。
+4. **單一檔案部署**：一個靜態二進位檔內嵌前端，支援 Docker、systemd、OpenWrt；可選模組與介面語言可在編譯時去掉，產生更小的自訂建置。
 
 ## 技術堆疊
 
@@ -34,6 +34,9 @@ internal/logbuf/       模組日誌環形緩衝
 internal/httpx/        HTTP 工具與中介軟體
 internal/module/       模組介面與註冊表
 internal/modules/*/    各功能模組
+internal/modules/registry/  模組註冊：可選模組各自一個 mod_<模組>.go（build tag no_<模組>），跨模組能力經注入提供
+tools/custombuild/     自訂建置：依 modules.json 換算 build tag、語言與 Docker 建置參數並打包
+modules.json           可選模組、相依、體積估算、語言檔位、建置目標與預設組合（build.gately.cn 讀取）
 internal/luckyimport/  Lucky .lkcf 解密與欄位對應
 web/                   前端專案，建置產物由 web/embed.go 嵌入
 ```
@@ -61,6 +64,6 @@ web/                   前端專案，建置產物由 web/embed.go 嵌入
 
 ## 設計取捨
 
-- 線上升級只在 Linux 二進位檔部署中提供，且只由管理員手動觸發：下載後核對 checksums.txt 的 SHA-256 並試執行新程式，替換時保留舊版本；Docker、飛牛 fnOS 與 OpenWrt 安裝套件仍由映像檔、應用中心與套件管理器負責升級。
+- 線上升級只在 Linux 二進位檔部署中提供，且只由管理員手動觸發：下載後核對 checksums.txt 的 SHA-256 並試執行新程式，替換時保留舊版本；Docker、飛牛 fnOS 與 OpenWrt 安裝套件仍由映像檔、應用中心與套件管理器負責升級。自訂建置不提供線上升級（會裝回完整版本），在 build.gately.cn 以相同選項重新產生後上傳升級包。
 - 不下發遠端設定，不回報裝置資訊。
 - 設定以明文儲存；敏感欄位在 API 輸出中遮罩。

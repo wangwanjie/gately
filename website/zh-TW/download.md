@@ -59,6 +59,22 @@ make web      # 建置前端
 make build    # 輸出 bin/gately
 ```
 
+### 自訂建置 {#custom-build}
+
+可選模組與介面語言可以在編譯時去掉（說明見 [模組總覽 · 自訂建置](/zh-TW/docs/modules/#custom-build)）。最省事的方式是在 [build.gately.cn](https://build.gately.cn) 勾選後線上產生。自行編譯時：
+
+- Go 以 build tag 去掉模組與語言：每個可選模組對應 `no_<模組>`（如 `no_waf`、`no_smb`），語言檔位為 `lang_zh`（只有簡體中文）或 `lang_cjken`（簡繁英），不帶 tag 即完整版；
+- 前端以環境變數 `GATELY_LOCALES` 只打包所選語言（如 `zh-CN,zh-TW,en`），留空為全部；
+- 儲存庫根目錄的 `modules.json` 列出全部可選模組、依賴與體積估算，`go run ./tools/custombuild resolve` 把選擇換算為 tag、語言與 Docker 建置參數，`build` 子命令直接產生 tar.gz 或飛牛安裝包。
+
+```bash
+# 只保留 DDNS 與 frp，介面只有簡體中文
+go run ./tools/custombuild resolve -modules ddns,frp -lang zh
+go run ./tools/custombuild build -version v0.6.4 -modules ddns,frp -lang zh -targets linux-arm64 -out dist
+```
+
+Docker 映像檔使用同一個 Dockerfile，建置參數 `GATELY_TAGS`、`GATELY_LOCALES` 對應上面的 tag 與語言，`WITH_DOCKER_CLI=0` 不安裝 docker-cli 與 compose（未包含 Docker 模組時），`WITH_NFTABLES=0` 不安裝 nftables（未包含入侵防護與 STUN 時）；`resolve -targets docker` 會輸出對應的參數。
+
 ## 校驗
 
 每個版本都附有校驗碼檔案，下載後請先核對 SHA-256 再執行。

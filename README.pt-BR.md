@@ -50,6 +50,8 @@ Se esquecer a senha ou perder o autenticador de dois fatores, execute `gately re
 
 Redirecionamento de portas, STUN e serviços Web precisam escutar portas do host, por isso recomenda-se `--network host`. Se você não precisa do gerenciamento do Docker, pode remover a montagem de `docker.sock`. `--cap-add NET_ADMIN` permite que a Prevenção de intrusão grave os bloqueios no firewall nftables do host; sem ele, os bloqueios continuam valendo para os serviços do Gately.
 
+Pouco espaço de armazenamento, como em um roteador? Em [build.gately.cn](https://build.gately.cn) você gera um binário, um pacote OpenWrt ou fnOS, ou uma imagem Docker multiarquitetura só com os módulos e idiomas da interface que escolher.
+
 Prefere instalar de outro jeito? Escolha uma opção abaixo.
 
 <details>
@@ -301,6 +303,8 @@ make lint     # gofmt, go vet, verificação de tipos do frontend
 ```
 
 Para desenvolver o frontend, execute `cd web && pnpm dev`; `/api` é encaminhado por proxy para o `127.0.0.1:16680` local.
+
+Módulos opcionais e idiomas da interface podem ser removidos na compilação: `go build -tags no_waf,no_smb,lang_zh` remove módulos (`no_<módulo>`) e idiomas (`lang_zh` mantém o chinês simplificado, `lang_cjken` mantém chinês simplificado, chinês tradicional e inglês), e `GATELY_LOCALES=zh-CN pnpm build` empacota só os idiomas escolhidos da interface. O [modules.json](modules.json) lista os módulos opcionais, e `go run ./tools/custombuild resolve -modules ddns,frp -lang zh` converte uma seleção em tags, idiomas e argumentos de build do Docker (`GATELY_TAGS`, `GATELY_LOCALES`, `WITH_DOCKER_CLI`, `WITH_NFTABLES`).
 
 Alguns testes são ignorados por padrão e exigem condições adicionais:
 

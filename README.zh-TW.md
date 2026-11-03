@@ -50,6 +50,8 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 
 連接埠轉發、STUN、Web 服務需要監聽主機連接埠，建議使用 `--network host`。不需要 Docker 管理時可拿掉 `docker.sock` 掛載。`--cap-add NET_ADMIN` 供入侵防護把封鎖寫入主機的 nftables 防火牆；不加時封鎖仍對 Gately 自身的服務生效。
 
+路由器等儲存空間有限的裝置，可以在 [build.gately.cn](https://build.gately.cn) 只勾選需要的模組與介面語言，線上產生更小的執行檔、OpenWrt 或飛牛安裝包，或多架構 Docker 映像檔。
+
 想換個方式安裝？從下面挑一個。
 
 <details>
@@ -301,6 +303,8 @@ make lint     # gofmt、go vet、前端型別檢查
 ```
 
 前端開發時執行 `cd web && pnpm dev`，`/api` 會代理到本機 `127.0.0.1:16680`。
+
+可選模組與介面語言可以在編譯時去掉：`go build -tags no_waf,no_smb,lang_zh` 去掉模組（`no_<模組>`）與語言（`lang_zh` 只留簡體中文，`lang_cjken` 留簡繁英），`GATELY_LOCALES=zh-CN pnpm build` 只打包所選介面語言。[modules.json](modules.json) 列出全部可選模組，`go run ./tools/custombuild resolve -modules ddns,frp -lang zh` 把選擇換算為 tag、語言與 Docker 建置參數（`GATELY_TAGS`、`GATELY_LOCALES`、`WITH_DOCKER_CLI`、`WITH_NFTABLES`）。
 
 部分測試預設跳過，需要額外條件：
 

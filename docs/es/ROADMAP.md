@@ -9,7 +9,7 @@ Principios de diseño:
 1. **Transparencia**: por defecto no se conecta a ningún servidor del proyecto; todas las direcciones externas son visibles, editables y se pueden desactivar.
 2. **Migrable**: ofrece importación de configuraciones `.lkcf` de Lucky.
 3. **Configuración auditable**: la configuración es JSON en texto plano (permisos de archivo 0600) y se puede versionar directamente en git para comparar diferencias y revertir.
-4. **Despliegue en un único archivo**: un binario estático con el frontend integrado, compatible con Docker, systemd y OpenWrt.
+4. **Despliegue en un único archivo**: un binario estático con el frontend integrado, compatible con Docker, systemd y OpenWrt; los módulos opcionales y los idiomas de la interfaz se pueden quitar al compilar para obtener una compilación personalizada más pequeña.
 
 ## Pila tecnológica
 
@@ -34,6 +34,9 @@ internal/logbuf/       Búfer circular de registros por módulo
 internal/httpx/        Utilidades y middleware HTTP
 internal/module/       Interfaz y registro de módulos
 internal/modules/*/    Módulos de funciones
+internal/modules/registry/  Registro de módulos: cada módulo opcional tiene su mod_<módulo>.go (build tag no_<módulo>); las capacidades entre módulos se ofrecen por inyección
+tools/custombuild/     Compilación personalizada: convierte según modules.json en build tags, idiomas y argumentos de compilación de Docker, y empaqueta
+modules.json           Módulos opcionales, dependencias, tamaño estimado, niveles de idioma, objetivos de compilación y preajustes (lo lee build.gately.cn)
 internal/luckyimport/  Descifrado de .lkcf de Lucky y mapeo de campos
 web/                   Proyecto frontend; web/embed.go integra el resultado de la compilación
 ```
@@ -61,6 +64,6 @@ Ordenados según el uso real de los usuarios (STUN 18, reenvío de puertos 25, p
 
 ## Decisiones de diseño
 
-- La actualización en línea solo está disponible en despliegues con binario de Linux y solo la inicia un administrador de forma manual: tras la descarga se comprueba el SHA-256 contra checksums.txt y se ejecuta el nuevo programa como prueba; al reemplazarlo se conserva la versión anterior. Docker, fnOS y los paquetes de OpenWrt siguen actualizándose mediante la imagen, el centro de aplicaciones y el gestor de paquetes.
+- La actualización en línea solo está disponible en despliegues con binario de Linux y solo la inicia un administrador de forma manual: tras la descarga se comprueba el SHA-256 contra checksums.txt y se ejecuta el nuevo programa como prueba; al reemplazarlo se conserva la versión anterior. Docker, fnOS y los paquetes de OpenWrt siguen actualizándose mediante la imagen, el centro de aplicaciones y el gestor de paquetes. Las compilaciones personalizadas no ofrecen actualización en línea (volvería a instalar la edición completa): se regeneran en build.gately.cn con las mismas opciones y se sube el paquete de actualización.
 - No se envía configuración remota ni se reporta información del dispositivo.
 - La configuración se guarda en texto plano; los campos sensibles se enmascaran en las respuestas de la API.

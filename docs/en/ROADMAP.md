@@ -9,7 +9,7 @@ Design principles:
 1. **Transparency**: by default it connects to no project-operated server; every outbound address is visible, editable, and can be turned off.
 2. **Portability**: Lucky `.lkcf` configuration import is provided.
 3. **Auditable configuration**: configuration is plain-text JSON (file mode 0600) and can be put under git directly for diffs and rollbacks.
-4. **Single-file deployment**: one static binary with the frontend embedded, supporting Docker, systemd, and OpenWrt.
+4. **Single-file deployment**: one static binary with the frontend embedded, supporting Docker, systemd, and OpenWrt; optional modules and UI languages can be left out at build time for a smaller custom build.
 
 ## Tech Stack
 
@@ -34,6 +34,9 @@ internal/logbuf/       Per-module log ring buffer
 internal/httpx/        HTTP utilities and middleware
 internal/module/       Module interface and registry
 internal/modules/*/    Feature modules
+internal/modules/registry/  Module registration: one mod_<module>.go per optional module (build tag no_<module>), cross-module features provided by injection
+tools/custombuild/     Custom builds: turn modules.json selections into build tags, languages and Docker build arguments, and package them
+modules.json           Optional modules, dependencies, size estimates, language tiers, build targets and presets (read by build.gately.cn)
 internal/luckyimport/  Lucky .lkcf decryption and field mapping
 web/                   Frontend project; build output is embedded by web/embed.go
 ```
@@ -61,6 +64,6 @@ Ordered by the user's actual usage (18 STUN, 25 port forwarding, 27 reverse prox
 
 ## Design Trade-offs
 
-- Online upgrade is offered only for Linux binary deployments and is triggered manually by an admin only: after download, the SHA-256 is checked against checksums.txt and the new program is test-run, and the old version is kept on replacement; Docker, fnOS, and OpenWrt packages continue to be upgraded through the image, the app center, and the package manager.
+- Online upgrade is offered only for Linux binary deployments and is triggered manually by an admin only: after download, the SHA-256 is checked against checksums.txt and the new program is test-run, and the old version is kept on replacement; Docker, fnOS, and OpenWrt packages continue to be upgraded through the image, the app center, and the package manager. Custom builds do not offer online upgrade (it would install the full edition); rebuild with the same options on build.gately.cn and upload the upgrade package.
 - No remote configuration is pushed, and no device information is reported.
 - Configuration is stored in plain text; sensitive fields are masked in API output.

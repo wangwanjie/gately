@@ -9,7 +9,7 @@ Princípios de design:
 1. **Transparência**: por padrão, nenhuma conexão com servidores do projeto; todos os endereços externos são visíveis, editáveis e podem ser desativados.
 2. **Migração**: importação de configurações `.lkcf` do Lucky.
 3. **Configuração auditável**: a configuração é JSON em texto puro (permissão de arquivo 0600) e pode ir direto para o git, com diff e rollback.
-4. **Implantação em um único arquivo**: um binário estático com o frontend embutido, com suporte a Docker, systemd e OpenWrt.
+4. **Implantação em um único arquivo**: um binário estático com o frontend embutido, com suporte a Docker, systemd e OpenWrt; módulos opcionais e idiomas da interface podem ser removidos na compilação, gerando builds personalizados menores.
 
 ## Stack técnica
 
@@ -34,6 +34,9 @@ internal/logbuf/       Buffer circular de logs dos módulos
 internal/httpx/        Utilitários HTTP e middleware
 internal/module/       Interface de módulo e registro
 internal/modules/*/    Módulos de recursos
+internal/modules/registry/  Registro de módulos: cada módulo opcional tem seu mod_<módulo>.go (build tag no_<módulo>); recursos entre módulos são fornecidos por injeção
+tools/custombuild/     Build personalizado: converte o modules.json em build tags, idiomas e argumentos de build do Docker, e empacota
+modules.json           Módulos opcionais, dependências, estimativa de tamanho, níveis de idioma, alvos de build e presets (lido pelo build.gately.cn)
 internal/luckyimport/  Descriptografia do .lkcf do Lucky e mapeamento de campos
 web/                   Projeto do frontend; o resultado do build é embutido por web/embed.go
 ```
@@ -61,6 +64,6 @@ Ordenados pelo volume real de uso (STUN 18, redirecionamento de portas 25, proxy
 
 ## Decisões de design
 
-- A atualização online existe só em instalações por binário Linux e só é disparada manualmente pelo administrador: após o download, o SHA-256 é conferido com o checksums.txt e o novo programa passa por uma execução de teste; na substituição, a versão anterior é mantida. Docker, fnOS e pacotes OpenWrt continuam sendo atualizados pela imagem, pela central de aplicativos e pelo gerenciador de pacotes.
+- A atualização online existe só em instalações por binário Linux e só é disparada manualmente pelo administrador: após o download, o SHA-256 é conferido com o checksums.txt e o novo programa passa por uma execução de teste; na substituição, a versão anterior é mantida. Docker, fnOS e pacotes OpenWrt continuam sendo atualizados pela imagem, pela central de aplicativos e pelo gerenciador de pacotes. Builds personalizados não têm atualização online (ela instalaria de volta a edição completa); gere-os de novo em build.gately.cn com as mesmas opções e envie o pacote de atualização.
 - Nenhuma configuração enviada remotamente, nenhum envio de informações do dispositivo.
 - A configuração é armazenada em texto puro; campos sensíveis são mascarados nas respostas da API.

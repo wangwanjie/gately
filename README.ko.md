@@ -50,6 +50,8 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 
 포트 포워딩, STUN, 웹 서비스는 호스트 포트를 수신해야 하므로 `--network host`를 권장합니다. Docker 관리가 필요 없다면 `docker.sock` 마운트를 제거해도 됩니다. `--cap-add NET_ADMIN`은 침입 방지가 차단을 호스트의 nftables 방화벽에 기록하는 데 쓰이며, 빼더라도 차단은 Gately 자체 서비스에 적용됩니다.
 
+라우터처럼 저장 공간이 부족한 기기라면 [build.gately.cn](https://build.gately.cn)에서 필요한 모듈과 UI 언어만 골라 더 작은 바이너리, OpenWrt 또는 fnOS 패키지, 멀티 아키텍처 Docker 이미지를 온라인으로 생성할 수 있습니다.
+
 다른 방법으로 설치하고 싶다면 아래에서 고르세요.
 
 <details>
@@ -301,6 +303,8 @@ make lint     # gofmt, go vet, 프런트엔드 타입 검사
 ```
 
 프런트엔드 개발 시에는 `cd web && pnpm dev`를 실행하세요. `/api`는 로컬 `127.0.0.1:16680`으로 프록시됩니다.
+
+선택 모듈과 UI 언어는 빌드할 때 뺄 수 있습니다. `go build -tags no_waf,no_smb,lang_zh`는 모듈(`no_<모듈>`)과 언어(`lang_zh`는 간체 중국어만, `lang_cjken`은 간체 중국어·번체 중국어·영어를 남김)를 빼고, `GATELY_LOCALES=zh-CN pnpm build`는 선택한 UI 언어만 묶습니다. [modules.json](modules.json)에 선택 모듈이 나열되어 있으며, `go run ./tools/custombuild resolve -modules ddns,frp -lang zh`는 선택을 tag, 언어, Docker 빌드 인수(`GATELY_TAGS`, `GATELY_LOCALES`, `WITH_DOCKER_CLI`, `WITH_NFTABLES`)로 변환합니다.
 
 일부 테스트는 기본적으로 건너뛰며 추가 조건이 필요합니다.
 

@@ -59,6 +59,22 @@ make web      # 프런트엔드 빌드
 make build    # bin/gately 출력
 ```
 
+### 사용자 지정 빌드 {#custom-build}
+
+선택 모듈과 UI 언어는 컴파일할 때 뺄 수 있습니다(설명은 [모듈 개요 · 사용자 지정 빌드](/ko/docs/modules/#custom-build) 참고). 가장 간단한 방법은 [build.gately.cn](https://build.gately.cn)에서 선택한 뒤 온라인으로 생성하는 것입니다. 직접 컴파일할 때는 다음과 같습니다.
+
+- Go는 build tag로 모듈과 언어를 뺍니다. 각 선택 모듈은 `no_<모듈>`(예: `no_waf`, `no_smb`)에 대응하고, 언어 단계는 `lang_zh`(간체 중국어만) 또는 `lang_cjken`(간체 중국어·번체 중국어·영어)이며, tag가 없으면 전체 버전입니다.
+- 프런트엔드는 환경 변수 `GATELY_LOCALES`로 선택한 언어만 묶습니다(예: `zh-CN,zh-TW,en`). 비워 두면 전체 언어입니다.
+- 저장소 루트의 `modules.json`에 모든 선택 모듈과 의존성, 크기 추정치가 나열되어 있습니다. `go run ./tools/custombuild resolve`는 선택을 tag, 언어, Docker 빌드 인수로 변환하고, `build` 하위 명령은 tar.gz나 fnOS 패키지를 바로 생성합니다.
+
+```bash
+# DDNS와 frp만 남기고 UI는 간체 중국어만
+go run ./tools/custombuild resolve -modules ddns,frp -lang zh
+go run ./tools/custombuild build -version v0.6.4 -modules ddns,frp -lang zh -targets linux-arm64 -out dist
+```
+
+Docker 이미지는 같은 Dockerfile을 사용합니다. 빌드 인수 `GATELY_TAGS`, `GATELY_LOCALES`는 위의 tag와 언어에 대응하고, `WITH_DOCKER_CLI=0`은 docker-cli와 compose를 설치하지 않으며(Docker 모듈을 포함하지 않을 때), `WITH_NFTABLES=0`은 nftables를 설치하지 않습니다(침입 방지와 STUN을 포함하지 않을 때). `resolve -targets docker`가 해당 인수를 출력합니다.
+
 ## 검증
 
 모든 릴리스에는 체크섬 파일이 포함됩니다. 내려받은 뒤 실행하기 전에 SHA-256을 확인하세요.

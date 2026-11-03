@@ -199,6 +199,8 @@ Linux 二进制部署（systemd、PVE LXC 容器、手动部署的 OpenWrt 等�
 
 无法联网时，从 [下载页](/download) 获取 tar.gz，在「关于」页点击「上传升级包」即可升级。上传不限制版本高低，也可以用来回退到旧版本。
 
+[定制构建](/docs/modules/#custom-build)不提供在线升级：在线升级下载的是完整版本，会装回去掉的模块。新版本发布后请到 [build.gately.cn](https://build.gately.cn) 用相同选项（「关于」页的链接已带上）重新生成，再上传升级包；Docker 定制镜像直接拉取新标签。
+
 在线升级只由管理员手动触发，Gately 不会自动下载或安装任何版本。新版本启动异常时，可以用保留的旧版本手动回退（以 systemd 部署为例）：
 
 ```bash

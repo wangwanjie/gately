@@ -59,6 +59,22 @@ make web      # 构建前端
 make build    # 输出 bin/gately
 ```
 
+### 定制构建 {#custom-build}
+
+可选模块与界面语言可以在编译时去掉（说明见 [模块总览 · 定制构建](/docs/modules/#custom-build)）。最省事的方式是在 [build.gately.cn](https://build.gately.cn) 勾选后在线生成。自行编译时：
+
+- Go 用 build tag 去掉模块与语言：每个可选模块对应 `no_<模块>`（如 `no_waf`、`no_smb`），语言档位为 `lang_zh`（只有简体中文）或 `lang_cjken`（简繁英），不带 tag 即完整版；
+- 前端用环境变量 `GATELY_LOCALES` 只打包所选语言（如 `zh-CN,zh-TW,en`），留空为全部；
+- 仓库根目录的 `modules.json` 列出全部可选模块、依赖与体积估算，`go run ./tools/custombuild resolve` 把选择换算为 tag、语言与 Docker 构建参数，`build` 子命令直接生成 tar.gz 或飞牛安装包。
+
+```bash
+# 只保留 DDNS 与 frp，界面只有简体中文
+go run ./tools/custombuild resolve -modules ddns,frp -lang zh
+go run ./tools/custombuild build -version v0.6.4 -modules ddns,frp -lang zh -targets linux-arm64 -out dist
+```
+
+Docker 镜像用同一个 Dockerfile，构建参数 `GATELY_TAGS`、`GATELY_LOCALES` 对应上面的 tag 与语言，`WITH_DOCKER_CLI=0` 不安装 docker-cli 与 compose（未包含 Docker 模块时），`WITH_NFTABLES=0` 不安装 nftables（未包含入侵防护与 STUN 时）；`resolve -targets docker` 会输出对应的参数。
+
 ## 校验
 
 每个版本附带校验和文件，下载后请核对 SHA-256，再运行。

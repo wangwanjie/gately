@@ -9,7 +9,7 @@ Principes de conception :
 1. **Transparence** : aucune connexion aux serveurs du projet par défaut ; toutes les adresses externes sont visibles, modifiables et désactivables.
 2. **Migration** : import des configurations Lucky `.lkcf`.
 3. **Configuration auditable** : la configuration est du JSON en clair (permissions de fichier 0600), que l'on peut placer directement dans git pour le diff et le retour en arrière.
-4. **Déploiement en un seul fichier** : un binaire statique avec le frontend intégré, compatible Docker, systemd et OpenWrt.
+4. **Déploiement en un seul fichier** : un binaire statique avec le frontend intégré, compatible Docker, systemd et OpenWrt ; les modules optionnels et les langues de l'interface peuvent être retirés à la compilation pour produire une version personnalisée plus légère.
 
 ## Pile technique
 
@@ -34,6 +34,9 @@ internal/logbuf/       Tampon circulaire des journaux de module
 internal/httpx/        Utilitaires et middlewares HTTP
 internal/module/       Interface et registre des modules
 internal/modules/*/    Modules fonctionnels
+internal/modules/registry/  Enregistrement des modules : un mod_<module>.go par module optionnel (build tag no_<module>), capacités inter-modules fournies par injection
+tools/custombuild/     Version personnalisée : convertit modules.json en build tags, langues et arguments de build Docker, puis empaquette
+modules.json           Modules optionnels, dépendances, taille estimée, niveaux de langue, cibles de build et préréglages (lu par build.gately.cn)
 internal/luckyimport/  Déchiffrement des .lkcf de Lucky et correspondance des champs
 web/                   Projet frontend, le résultat de la compilation est intégré par web/embed.go
 ```
@@ -61,6 +64,6 @@ Classés selon l'usage réel des utilisateurs (STUN 18, redirection de ports 25,
 
 ## Choix de conception
 
-- La mise à niveau en ligne est proposée uniquement pour les déploiements par binaire Linux et se déclenche seulement à la main par un administrateur : après le téléchargement, le SHA-256 est comparé à checksums.txt et le nouveau programme est lancé à l'essai ; l'ancienne version est conservée lors du remplacement. Docker, fnOS et les paquets OpenWrt restent mis à niveau par l'image, le centre d'applications et le gestionnaire de paquets.
+- La mise à niveau en ligne est proposée uniquement pour les déploiements par binaire Linux et se déclenche seulement à la main par un administrateur : après le téléchargement, le SHA-256 est comparé à checksums.txt et le nouveau programme est lancé à l'essai ; l'ancienne version est conservée lors du remplacement. Docker, fnOS et les paquets OpenWrt restent mis à niveau par l'image, le centre d'applications et le gestionnaire de paquets. Les versions personnalisées ne proposent pas la mise à niveau en ligne (elle réinstallerait l'édition complète) : régénérez-les sur build.gately.cn avec les mêmes options, puis téléversez le paquet de mise à niveau.
 - Aucune configuration n'est envoyée à distance et aucune information sur l'appareil n'est remontée.
 - La configuration est stockée en clair ; les champs sensibles sont masqués dans les réponses de l'API.

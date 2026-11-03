@@ -4,6 +4,12 @@ Cada capacidad de Gately es un módulo independiente. Cada uno se puede activar,
 
 Puedes desactivar un módulo completo en «Ajustes → Módulos». Un módulo desactivado sigue cargando su configuración, pero no inicia servicios, no ofrece API de administración (sus endpoints devuelven 403) y se oculta de la interfaz; su configuración se conserva y vuelve a aplicarse cuando lo reactivas. Los módulos de los que dependen otros no se pueden desactivar, y los cambios se aplican tras un reinicio.
 
+## Compilación personalizada {#custom-build}
+
+Salvo los tres módulos principales (Reenvío de puertos, Servicios web y Certificados SSL), todos los módulos se pueden quitar al compilar, y los idiomas de la interfaz se pueden limitar a chino simplificado o a chino simplificado, chino tradicional e inglés; el paquete y el uso de memoria se reducen en consecuencia, lo que viene bien en routers con poco almacenamiento. En [build.gately.cn](https://build.gately.cn) marcas los módulos y los idiomas y se genera en línea un binario, un paquete de OpenWrt o de fnOS, o una imagen Docker multiarquitectura, con una estimación del tamaño; también puedes compilarlo tú mismo según [Compilar desde el código fuente](/es/download#custom-build).
+
+Para los módulos que no se compilaron en una compilación personalizada, sus archivos de configuración se conservan intactos y sus interruptores en Ajustes y los permisos de los tokens de API siguen siendo válidos; sus API devuelven 404 indicando que el módulo no está incluido en esta compilación, y la interfaz oculta sus páginas y las opciones relacionadas (como el WAF de los sitios o el despliegue de certificados por SSH o en Docker); todo vuelve al pasar a la edición completa. La página Acerca de enumera los módulos que faltan en esta compilación y enlaza al generador con las mismas opciones. Una compilación personalizada no puede actualizarse en línea (la actualización en línea descarga la edición completa): cuando salga una versión nueva, vuelve a generarla en el generador con las mismas opciones y usa «Subir paquete de actualización».
+
 | Módulo | Capacidades | Documentación |
 | --- | --- | --- |
 | DNS dinámico | 11 proveedores DNS, IP obtenida por URL / interfaz de red / comando, IPv4 / IPv6, webhook | [Ver](/es/docs/modules/ddns) |

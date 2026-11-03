@@ -19,6 +19,7 @@ make lint     # gofmt、go vet、前端型別檢查
 
 - 相容性程式碼只能建立在公開可觀察的行為、介面和設定格式上，請勿提交從第三方執行檔或前端產物中複製的程式碼。
 - 新模組需要：設定結構與驗證、執行期啟停、REST 介面、單元測試；能從 Lucky 遷移的模組實作 `luckyimport.Importer`，希望在總覽頁顯示狀態的模組實作 `module.Summarizer`。
+- 可選模組在 `internal/modules/registry/mod_<模組>.go` 中註冊，檔案帶 `//go:build !no_<模組>`，同時登記到 `catalog.go` 與根目錄的 `modules.json`（`TestManifestMatchesCode` 會檢查三者一致）；模組之間的協作（站台的 WAF、憑證部署到 SSH 與 Docker 等）透過注入的函式提供，缺少對方模組時回傳「未包含在此建置中」，核心程式碼不能直接引用可選模組的套件。CI 會以三個預設的 tag 組合執行 vet 與編譯。
 - 程式碼註解使用中文；控制語句必須使用大括號。
 
 ## 額外測試

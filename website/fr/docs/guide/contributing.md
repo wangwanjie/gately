@@ -19,6 +19,7 @@ Pour le développement du frontend, lancez `cd web && pnpm dev` ; `/api` est rel
 
 - Le code de compatibilité doit reposer uniquement sur des comportements, interfaces et formats de configuration observables publiquement. Ne soumettez pas de code copié des binaires ou du frontend d'un logiciel tiers.
 - Un nouveau module requiert : une structure de configuration avec validation, un démarrage/arrêt à l'exécution, des points d'accès REST et des tests unitaires. Les modules qui prennent en charge l'import de configuration implémentent `luckyimport.Importer`, et ceux qui doivent afficher leur état sur la page de vue d'ensemble implémentent `module.Summarizer`.
+- Un module optionnel s'enregistre dans `internal/modules/registry/mod_<module>.go`, fichier marqué `//go:build !no_<module>`, et doit aussi figurer dans `catalog.go` et dans `modules.json` à la racine (`TestManifestMatchesCode` vérifie la cohérence des trois). La collaboration entre modules (WAF des sites, déploiement de certificats vers SSH et Docker, etc.) passe par des fonctions injectées qui renvoient « non inclus dans ce build » quand l'autre module manque ; le code central ne doit pas référencer directement les paquets des modules optionnels. La CI exécute vet et la compilation avec les combinaisons de tags des trois préréglages.
 - Les commentaires du code sont rédigés en chinois ; les instructions de contrôle doivent utiliser des accolades.
 
 ## Tests supplémentaires

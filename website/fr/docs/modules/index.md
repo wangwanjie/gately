@@ -4,6 +4,12 @@ Chaque fonction de Gately est un module indépendant. Chacun peut être activé,
 
 Vous pouvez désactiver un module entier dans « Paramètres → Modules ». Un module désactivé charge toujours sa configuration, mais ne démarre aucun service, n'expose aucune API d'administration (ses points d'accès renvoient 403) et est masqué dans l'interface ; sa configuration est conservée et revient dès que vous le réactivez. Les modules dont d'autres dépendent ne peuvent pas être désactivés, et les changements prennent effet après un redémarrage.
 
+## Version personnalisée {#custom-build}
+
+À l'exception des trois modules centraux (Redirection de ports, Services Web et Certificats SSL), tous les modules peuvent être retirés à la compilation, et les langues de l'interface peuvent se limiter au chinois simplifié ou au trio chinois simplifié, chinois traditionnel et anglais. Le paquet et la mémoire utilisée diminuent d'autant, ce qui convient aux routeurs à stockage limité. Sur [build.gately.cn](https://build.gately.cn), cochez les modules et les langues pour générer en ligne un binaire, un paquet OpenWrt ou fnOS, ou une image Docker multi-architecture ; la page estime la taille obtenue. Vous pouvez aussi compiler vous-même en suivant [Compiler depuis les sources](/fr/download#custom-build).
+
+Pour les modules non compilés dans une version personnalisée : leurs fichiers de configuration restent intacts, et leurs interrupteurs dans les paramètres comme les droits des jetons d'API restent valides ; leurs API renvoient 404 en indiquant que le module n'est pas inclus dans ce build, et l'interface masque leurs pages et les options associées (comme le WAF des sites ou le déploiement de certificats vers SSH ou Docker) ; tout revient en repassant à l'édition complète. La page À propos liste les modules retirés de ce build et propose un lien qui ouvre le générateur avec les mêmes options. Un build personnalisé ne peut pas être mis à niveau en ligne (la mise à niveau en ligne télécharge l'édition complète) : à chaque nouvelle version, régénérez-le avec les mêmes options dans le générateur, puis utilisez « Téléverser un paquet de mise à niveau ».
+
 | Module | Fonctions | Documentation |
 | --- | --- | --- |
 | DNS dynamique | 11 fournisseurs DNS, IP via URL / interface réseau / commande, IPv4 / IPv6, Webhook | [Consulter](/fr/docs/modules/ddns) |

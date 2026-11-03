@@ -4,6 +4,12 @@ Jede Funktion von Gately ist ein eigenständiges Modul. Jedes lässt sich einzel
 
 Unter „Einstellungen → Module“ können Sie ein ganzes Modul ausschalten. Ein deaktiviertes Modul lädt seine Konfiguration weiterhin, startet aber keine Dienste, stellt keine Verwaltungs-API bereit (seine Endpunkte antworten mit 403) und wird in der Oberfläche ausgeblendet; die Konfiguration bleibt erhalten und ist nach dem Wiedereinschalten sofort zurück. Module, von denen andere abhängen, lassen sich nicht ausschalten, und Änderungen werden nach einem Neustart wirksam.
 
+## Benutzerdefinierter Build {#custom-build}
+
+Außer den drei Kernmodulen Portweiterleitung, Webdienste und SSL-Zertifikate lässt sich jedes Modul beim Kompilieren weglassen, und die Oberflächensprachen lassen sich auf Vereinfachtes Chinesisch oder auf Vereinfachtes Chinesisch, Traditionelles Chinesisch und Englisch beschränken. Paket und Speicherbedarf werden dadurch kleiner, was Router mit wenig Speicherplatz entgegenkommt. Auf [build.gately.cn](https://build.gately.cn) wählen Sie Module und Sprachen aus und erzeugen online eine Binärdatei, ein OpenWrt- oder fnOS-Paket oder ein Multi-Arch-Docker-Image; die Seite schätzt die Größe. Alternativ kompilieren Sie selbst, wie unter [Aus dem Quellcode bauen](/de/download#custom-build) beschrieben.
+
+Für Module, die nicht in den benutzerdefinierten Build einkompiliert sind, gilt: Ihre Konfigurationsdateien bleiben unverändert, ihre Schalter in den Einstellungen und die Berechtigungen von API-Tokens bleiben gültig; ihre Endpunkte antworten mit 404 und dem Hinweis, dass das Modul in diesem Build nicht enthalten ist, und die Oberfläche blendet die zugehörigen Seiten und Optionen aus (etwa die WAF einer Site oder die Zertifikatsbereitstellung per SSH oder an Docker). Nach dem Wechsel zur Vollversion ist alles wieder da. Die Seite „Über“ listet die weggelassenen Module und verlinkt den Builder mit denselben Optionen. Benutzerdefinierte Builds lassen sich nicht online aktualisieren (ein Online-Upgrade lädt die Vollversion); erzeugen Sie nach einem neuen Release im Builder eine neue Version mit denselben Optionen und nutzen Sie „Upgrade-Paket hochladen“.
+
 | Modul | Funktionen | Doku |
 | --- | --- | --- |
 | Dynamisches DNS | 11 DNS-Anbieter, IP per URL / Netzwerkschnittstelle / Befehl, IPv4 / IPv6, Webhook | [Ansehen](/de/docs/modules/ddns) |

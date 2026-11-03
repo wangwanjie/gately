@@ -9,7 +9,7 @@ Designprinzipien:
 1. **Transparenz**: Standardmäßig keine Verbindung zu Servern des Projekts; alle externen Adressen sind sichtbar, änderbar und abschaltbar.
 2. **Migrierbarkeit**: Import von Lucky-`.lkcf`-Konfigurationen.
 3. **Prüfbare Konfiguration**: Die Konfiguration ist reines JSON (Dateirechte 0600) und lässt sich direkt in git verwalten, um Diffs zu sehen und zurückzurollen.
-4. **Bereitstellung als einzelne Datei**: Ein statisches Binary mit eingebettetem Frontend, unterstützt Docker, systemd und OpenWrt.
+4. **Bereitstellung als einzelne Datei**: Ein statisches Binary mit eingebettetem Frontend, unterstützt Docker, systemd und OpenWrt; optionale Module und Oberflächensprachen lassen sich beim Kompilieren weglassen, um einen kleineren benutzerdefinierten Build zu erzeugen.
 
 ## Technologie-Stack
 
@@ -34,6 +34,9 @@ internal/logbuf/       Log-Ringpuffer der Module
 internal/httpx/        HTTP-Hilfsfunktionen und Middleware
 internal/module/       Modulschnittstelle und Registry
 internal/modules/*/    Funktionsmodule
+internal/modules/registry/  Modulregistrierung: je optionalem Modul eine mod_<Modul>.go (Build-Tag no_<Modul>), modulübergreifende Funktionen per Injektion
+tools/custombuild/     Benutzerdefinierter Build: rechnet nach modules.json Build-Tags, Sprachen und Docker-Build-Argumente um und packt
+modules.json           Optionale Module, Abhängigkeiten, Größenschätzung, Sprachstufen, Build-Ziele und Voreinstellungen (von build.gately.cn gelesen)
 internal/luckyimport/  Entschlüsselung und Feldzuordnung für Lucky-.lkcf
 web/                   Frontend-Projekt, Build-Ergebnis wird über web/embed.go eingebettet
 ```
@@ -61,6 +64,6 @@ Geordnet nach dem tatsächlichen Nutzungsumfang der Nutzer (STUN 18, Portweiterl
 
 ## Designentscheidungen
 
-- Das Online-Upgrade gibt es nur bei Linux-Binary-Installationen und wird nur manuell von Administratoren ausgelöst: Nach dem Download wird die SHA-256 gegen checksums.txt geprüft und das neue Programm testweise gestartet; beim Austausch bleibt die alte Version erhalten. Docker, fnOS und OpenWrt-Pakete werden weiterhin über Image, App-Center und Paketmanager aktualisiert.
+- Das Online-Upgrade gibt es nur bei Linux-Binary-Installationen und wird nur manuell von Administratoren ausgelöst: Nach dem Download wird die SHA-256 gegen checksums.txt geprüft und das neue Programm testweise gestartet; beim Austausch bleibt die alte Version erhalten. Docker, fnOS und OpenWrt-Pakete werden weiterhin über Image, App-Center und Paketmanager aktualisiert. Benutzerdefinierte Builds bieten kein Online-Upgrade (es würde die Vollversion installieren); sie werden auf build.gately.cn mit denselben Optionen neu erzeugt und als Upgrade-Paket hochgeladen.
 - Keine ferngesteuerte Konfiguration, keine Übermittlung von Geräteinformationen.
 - Die Konfiguration wird im Klartext gespeichert; sensible Felder werden in API-Ausgaben maskiert.

@@ -9,7 +9,7 @@
 1. **透明**：默认不连接任何项目方服务器；所有对外地址可见、可改、可关。
 2. **可迁移**：提供 Lucky `.lkcf` 配置导入。
 3. **可审计的配置**：配置为明文 JSON（文件权限 0600），可直接纳入 git 做 diff 和回滚。
-4. **单文件部署**：一个静态二进制内嵌前端，支持 Docker、systemd、OpenWrt。
+4. **单文件部署**：一个静态二进制内嵌前端，支持 Docker、systemd、OpenWrt；可选模块与界面语言可在编译时去掉，生成更小的定制构建。
 
 ## 技术栈
 
@@ -34,6 +34,9 @@ internal/logbuf/       模块日志环形缓冲
 internal/httpx/        HTTP 工具与中间件
 internal/module/       模块接口与注册表
 internal/modules/*/    各功能模块
+internal/modules/registry/  模块注册：可选模块各自一个 mod_<模块>.go（build tag no_<模块>），跨模块能力经注入提供
+tools/custombuild/     定制构建：按 modules.json 换算 build tag、语言与 Docker 构建参数并打包
+modules.json           可选模块、依赖、体积估算、语言档位、构建目标与预设（build.gately.cn 读取）
 internal/luckyimport/  Lucky .lkcf 解密与字段映射
 web/                   前端工程，构建产物由 web/embed.go 嵌入
 ```
@@ -61,6 +64,6 @@ web/                   前端工程，构建产物由 web/embed.go 嵌入
 
 ## 设计取舍
 
-- 在线升级只在 Linux 二进制部署中提供，且只由管理员手动触发：下载后核对 checksums.txt 的 SHA-256 并试运行新程序，替换时保留旧版本；Docker、飞牛 fnOS 与 OpenWrt 安装包仍由镜像、应用中心与包管理器负责升级。
+- 在线升级只在 Linux 二进制部署中提供，且只由管理员手动触发：下载后核对 checksums.txt 的 SHA-256 并试运行新程序，替换时保留旧版本；Docker、飞牛 fnOS 与 OpenWrt 安装包仍由镜像、应用中心与包管理器负责升级。定制构建不提供在线升级（会装回完整版本），在 build.gately.cn 用相同选项重新生成后上传升级包。
 - 不下发远程配置，不上报设备信息。
 - 配置明文存储；敏感字段在 API 输出中脱敏。

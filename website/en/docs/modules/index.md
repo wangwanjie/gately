@@ -4,6 +4,12 @@ Every Gately capability is an independent module. Each can be enabled, disabled 
 
 You can turn off a whole module under "Settings → Modules". A disabled module still loads its configuration but starts no services, serves no admin API (its endpoints return 403) and is hidden from the UI; its configuration is kept and comes back when you turn it on again. Modules that others depend on cannot be turned off, and changes take effect after a restart.
 
+## Custom builds {#custom-build}
+
+Apart from the three core modules (Port Forwarding, Web Services and SSL Certificates), every module can be left out at build time, and the UI languages can be cut down to Simplified Chinese only or to Simplified Chinese, Traditional Chinese and English. The package and memory footprint shrink accordingly, which suits routers with limited storage. On [build.gately.cn](https://build.gately.cn), tick the modules and languages to build a binary, OpenWrt or fnOS package, or a multi-arch Docker image online; the page estimates the size. You can also compile it yourself as described in [Build from source](/en/download#custom-build).
+
+For modules not compiled into a custom build, the configuration files stay untouched, and their switches in settings and API token scopes stay valid; their APIs return 404 saying the module is not included in this build, and the UI hides their pages and related options (such as the site WAF, or certificate deployment to SSH or Docker); everything comes back when you switch to the full edition. The About page lists the modules left out of the build, with a link that opens the builder with the same options. Custom builds cannot use online upgrade (it downloads the full edition); when a new version is released, rebuild it with the same options in the builder, then use "Upload upgrade package".
+
 | Module | Capabilities | Docs |
 | --- | --- | --- |
 | Dynamic DNS | 11 DNS providers, IP from URL / network interface / command, IPv4 / IPv6, Webhook | [View](/en/docs/modules/ddns) |

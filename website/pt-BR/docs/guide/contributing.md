@@ -19,6 +19,7 @@ Para desenvolver o frontend, execute `cd web && pnpm dev`; o `/api` é encaminha
 
 - O código de compatibilidade deve se basear apenas em comportamentos, interfaces e formatos de configuração observáveis publicamente. Não envie código copiado de binários ou artefatos de frontend de terceiros.
 - Um novo módulo precisa de: estrutura de configuração com validação, início e parada em tempo de execução, endpoints REST e testes unitários. Módulos que podem ser migrados do Lucky implementam `luckyimport.Importer`, e módulos que devem mostrar o status na página de visão geral implementam `module.Summarizer`.
+- Módulos opcionais são registrados em `internal/modules/registry/mod_<módulo>.go`, com `//go:build !no_<módulo>` no arquivo, e também listados em `catalog.go` e no `modules.json` da raiz (o `TestManifestMatchesCode` confere que os três estão de acordo). A colaboração entre módulos (o WAF dos sites, a implantação de certificados por SSH e Docker etc.) é fornecida por funções injetadas, que retornam "não incluído neste build" quando o outro módulo está ausente; o código central não pode referenciar diretamente os pacotes de módulos opcionais. O CI executa vet e compilação com as combinações de tags dos três presets.
 - Os comentários de código são escritos em chinês; instruções de controle devem usar chaves.
 
 ## Testes extras

@@ -199,6 +199,8 @@ Linux 執行檔部署（systemd、PVE LXC 容器、手動部署的 OpenWrt 等�
 
 無法連網時，從 [下載頁](/zh-TW/download) 取得 tar.gz，在「關於」頁點擊「上傳升級包」即可升級。上傳不限制版本高低，也可以用來回退到舊版本。
 
+[自訂建置](/zh-TW/docs/modules/#custom-build)不提供線上升級：線上升級下載的是完整版本，會把去掉的模組裝回去。新版本發佈後請到 [build.gately.cn](https://build.gately.cn) 以相同選項（「關於」頁的連結已帶上）重新產生，再上傳升級包；Docker 自訂映像檔直接拉取新標籤。
+
 線上升級只由管理員手動觸發，Gately 不會自動下載或安裝任何版本。新版本啟動異常時，可以用保留的舊版本手動回退（以 systemd 部署為例）：
 
 ```bash

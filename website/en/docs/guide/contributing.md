@@ -19,6 +19,7 @@ For frontend development, run `cd web && pnpm dev`; `/api` is proxied to local `
 
 - Compatibility code must be based on publicly observable behavior, interfaces and configuration formats only. Do not submit code copied from binaries or frontend artifacts of third-party software.
 - A new module needs: a config structure with validation, runtime start/stop, REST endpoints and unit tests. Modules that support configuration import implement `luckyimport.Importer`, and modules that should show status on the overview page implement `module.Summarizer`.
+- Optional modules are registered in `internal/modules/registry/mod_<module>.go`, with `//go:build !no_<module>` in the file, and are also listed in `catalog.go` and in `modules.json` at the repository root (`TestManifestMatchesCode` checks that all three agree). Cooperation between modules (the site WAF, certificate deployment to SSH and Docker, and so on) goes through injected functions that report "not included in this build" when the other module is missing; core code must not import optional module packages directly. CI runs vet and builds with the tag combinations of the three presets.
 - Code comments are written in Chinese; control statements must use braces.
 
 ## Internationalization

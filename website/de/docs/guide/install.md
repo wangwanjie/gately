@@ -199,6 +199,8 @@ Ist GitHub schlecht erreichbar, legen Sie auf der Seite „Über“ oder unter E
 
 Ohne Internetzugang laden Sie das tar.gz von der [Download-Seite](/de/download) und klicken auf der Seite „Über“ auf „Upgrade-Paket hochladen“. Jede Version wird akzeptiert, sodass Sie auch auf eine ältere zurückgehen können.
 
+[Benutzerdefinierte Builds](/de/docs/modules/#custom-build) bieten kein Online-Upgrade: Es lädt die Vollversion herunter und würde die weggelassenen Module zurückbringen. Erzeugen Sie nach einem neuen Release auf [build.gately.cn](https://build.gately.cn) eine neue Version mit denselben Optionen (der Link auf der Seite „Über“ enthält sie bereits) und laden Sie sie als Upgrade-Paket hoch; benutzerdefinierte Docker-Images ziehen Sie einfach mit dem neuen Tag.
+
 Online-Upgrades laufen nur, wenn ein Administrator sie startet; Gately lädt oder installiert nie von selbst eine Version. Startet die neue Version nicht, gehen Sie mit der behaltenen Kopie manuell zurück (Beispiel mit systemd):
 
 ```bash

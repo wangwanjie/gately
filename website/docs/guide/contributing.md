@@ -19,6 +19,7 @@ make lint     # gofmt、go vet、前端类型检查
 
 - 兼容性代码只能基于公开可观察的行为、接口和配置格式，请勿提交从第三方二进制或前端产物中复制的代码。
 - 新模块需要：配置结构与校验、运行时启停、REST 接口、单元测试；能从 Lucky 迁移的模块实现 `luckyimport.Importer`，希望在总览页展示状态的模块实现 `module.Summarizer`。
+- 可选模块在 `internal/modules/registry/mod_<模块>.go` 中注册，文件带 `//go:build !no_<模块>`，同时登记到 `catalog.go` 与根目录的 `modules.json`（`TestManifestMatchesCode` 会检查三者一致）；模块之间的协作（站点的 WAF、证书部署到 SSH 与 Docker 等）通过注入的函数提供，缺少对方模块时返回「未包含在此构建中」，核心代码不能直接引用可选模块的包。CI 会用三个预设的 tag 组合执行 vet 与编译。
 - 代码注释使用中文；控制语句必须使用大括号。
 
 ## 额外测试

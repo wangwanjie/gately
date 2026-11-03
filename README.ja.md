@@ -50,6 +50,8 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 
 ポート転送、STUN、Web サービスはホストのポートで待ち受けるため、`--network host` を推奨します。Docker 管理が不要な場合は `docker.sock` のマウントを外せます。`--cap-add NET_ADMIN` は侵入防御がブロックをホストの nftables ファイアウォールに書き込むためのもので、付けない場合もブロックは Gately 自身のサービスに適用されます。
 
+ルーターなどストレージの限られた機器では、[build.gately.cn](https://build.gately.cn) で必要なモジュールと画面の言語だけを選び、より小さなバイナリ、OpenWrt や fnOS のパッケージ、マルチアーキテクチャの Docker イメージをオンラインで生成できます。
+
 別の方法でインストールしたい場合は、下から選んでください。
 
 <details>
@@ -301,6 +303,8 @@ make lint     # gofmt、go vet、フロントエンドの型チェック
 ```
 
 フロントエンド開発時は `cd web && pnpm dev` を実行します。`/api` はローカルの `127.0.0.1:16680` にプロキシされます。
+
+オプションのモジュールと画面の言語はコンパイル時に取り除けます：`go build -tags no_waf,no_smb,lang_zh` でモジュール（`no_<モジュール>`）と言語（`lang_zh` は簡体字中国語のみ、`lang_cjken` は簡体字中国語・繁体字中国語・英語を残す）を取り除き、`GATELY_LOCALES=zh-CN pnpm build` は選んだ画面の言語だけを同梱します。[modules.json](modules.json) にオプションのモジュールがすべて載っており、`go run ./tools/custombuild resolve -modules ddns,frp -lang zh` は選択内容をタグ、言語、Docker のビルド引数（`GATELY_TAGS`、`GATELY_LOCALES`、`WITH_DOCKER_CLI`、`WITH_NFTABLES`）に換算します。
 
 一部のテストは既定でスキップされ、追加の条件が必要です。
 

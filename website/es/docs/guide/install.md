@@ -199,6 +199,8 @@ Si cuesta acceder a GitHub, configura un **proxy de actualización** en la pági
 
 Sin acceso a internet, descarga el tar.gz desde la [página de descargas](/es/download) y pulsa «Subir paquete de actualización» en la página Acerca de. Se acepta cualquier versión, así que también sirve para volver a una anterior.
 
+Las [compilaciones personalizadas](/es/docs/modules/#custom-build) no ofrecen actualización en línea: esta descarga la edición completa y volvería a instalar los módulos que quitaste. Cuando salga una versión nueva, vuelve a generarla en [build.gately.cn](https://build.gately.cn) con las mismas opciones (el enlace de la página Acerca de ya las incluye) y sube el paquete de actualización; con una imagen Docker personalizada, basta con descargar la nueva etiqueta.
+
 La actualización en línea solo se ejecuta cuando un administrador la inicia; Gately nunca descarga ni instala versiones por su cuenta. Si la nueva versión no arranca, vuelve atrás manualmente con la copia conservada (ejemplo con systemd):
 
 ```bash

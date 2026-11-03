@@ -4,6 +4,12 @@ Cada recurso do Gately é um módulo independente. Todos podem ser ativados, des
 
 Você pode desativar um módulo inteiro em "Configurações → Módulos". Um módulo desativado continua carregando a sua configuração, mas não inicia serviços, não oferece a API de administração (os endpoints dele retornam 403) e fica oculto na interface; a configuração é mantida e volta a valer quando você o ativa de novo. Módulos dos quais outros dependem não podem ser desativados, e as alterações passam a valer depois de reiniciar.
 
+## Builds personalizados {#custom-build}
+
+Além dos três módulos principais (Redirecionamento de portas, Serviços Web e Certificados SSL), todos os módulos podem ser removidos na compilação, e os idiomas da interface podem ficar reduzidos ao chinês simplificado ou a chinês simplificado, chinês tradicional e inglês. O pacote e o uso de memória diminuem na mesma proporção, o que serve bem a roteadores com pouco armazenamento. Em [build.gately.cn](https://build.gately.cn), marque os módulos e idiomas para gerar online um binário, um pacote OpenWrt ou fnOS, ou uma imagem Docker multiarquitetura; a página estima o tamanho. Também é possível compilar por conta própria seguindo [Compilar a partir do código-fonte](/pt-BR/download#custom-build).
+
+Módulos que não entraram em um build personalizado: os arquivos de configuração deles ficam intactos, e as chaves em Configurações e as permissões dos tokens de API continuam válidas; a API deles retorna 404 informando que o módulo não está incluído neste build, e a interface oculta as páginas e opções relacionadas (como o WAF dos sites e a implantação de certificados por SSH ou Docker); tudo volta ao trocar para a edição completa. A página Sobre lista os módulos removidos deste build e traz um link que abre o construtor com as mesmas opções. Builds personalizados não podem ser atualizados online (a atualização online baixa a edição completa): quando sair uma nova versão, gere-o de novo no construtor com as mesmas opções e use "Enviar pacote de atualização".
+
 | Módulo | Recursos | Documentação |
 | --- | --- | --- |
 | DNS dinâmico | 11 provedores de DNS, IP obtido por URL / interface de rede / comando, IPv4 / IPv6, Webhook | [Ver](/pt-BR/docs/modules/ddns) |

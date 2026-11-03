@@ -59,6 +59,22 @@ make web      # フロントエンドをビルド
 make build    # bin/gately を出力
 ```
 
+### カスタムビルド {#custom-build}
+
+オプションのモジュールと画面の言語はコンパイル時に取り除けます（説明は [モジュール一覧 · カスタムビルド](/ja/docs/modules/#custom-build) を参照）。いちばん手軽なのは [build.gately.cn](https://build.gately.cn) で選んでオンラインで生成する方法です。自分でコンパイルする場合：
+
+- Go はビルドタグでモジュールと言語を取り除きます。オプションのモジュールごとに `no_<モジュール>`（例：`no_waf`、`no_smb`）があり、言語のレベルは `lang_zh`（簡体字中国語のみ）または `lang_cjken`（簡体字中国語・繁体字中国語・英語）です。タグを付けなければ完全版になります
+- フロントエンドは環境変数 `GATELY_LOCALES` で選んだ言語だけを同梱します（例：`zh-CN,zh-TW,en`）。空なら全言語です
+- リポジトリのルートにある `modules.json` にオプションのモジュール、依存関係、サイズの見積もりがすべて載っています。`go run ./tools/custombuild resolve` は選択内容をタグ、言語、Docker のビルド引数に換算し、`build` サブコマンドは tar.gz や fnOS パッケージを直接生成します
+
+```bash
+# DDNS と frp だけを残し、画面は簡体字中国語のみ
+go run ./tools/custombuild resolve -modules ddns,frp -lang zh
+go run ./tools/custombuild build -version v0.6.4 -modules ddns,frp -lang zh -targets linux-arm64 -out dist
+```
+
+Docker イメージは同じ Dockerfile を使います。ビルド引数 `GATELY_TAGS`、`GATELY_LOCALES` は上記のタグと言語に対応し、`WITH_DOCKER_CLI=0` は docker-cli と compose をインストールせず（Docker モジュールを含まない場合）、`WITH_NFTABLES=0` は nftables をインストールしません（侵入防御と STUN を含まない場合）。`resolve -targets docker` で対応する引数が出力されます。
+
 ## 検証
 
 各バージョンにはチェックサムファイルが付属しています。ダウンロード後に SHA-256 を照合してから実行してください。

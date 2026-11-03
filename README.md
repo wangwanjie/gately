@@ -50,6 +50,8 @@ If you forget the password or lose your authenticator, run `gately reset-passwor
 
 Port forwarding, STUN, and web services listen on host ports, so `--network host` is recommended. If you do not need Docker management, drop the `docker.sock` mount. `--cap-add NET_ADMIN` lets Intrusion Prevention write bans to the host's nftables firewall; without it, bans still apply to Gately's own services.
 
+Short on storage, for example on a router? [build.gately.cn](https://build.gately.cn) builds a binary, OpenWrt or fnOS package, or a multi-arch Docker image with only the modules and UI languages you pick.
+
 Prefer another way to install? Pick one below.
 
 <details>
@@ -301,6 +303,8 @@ make lint     # gofmt, go vet, frontend type check
 ```
 
 For frontend development, run `cd web && pnpm dev`; `/api` is proxied to local `127.0.0.1:16680`.
+
+Optional modules and UI languages can be left out at build time: `go build -tags no_waf,no_smb,lang_zh` removes modules (`no_<module>`) and languages (`lang_zh` keeps Simplified Chinese, `lang_cjken` keeps Simplified Chinese, Traditional Chinese and English), and `GATELY_LOCALES=zh-CN pnpm build` bundles only the chosen UI languages. [modules.json](modules.json) lists the optional modules, and `go run ./tools/custombuild resolve -modules ddns,frp -lang zh` turns a selection into tags, locales and Docker build arguments (`GATELY_TAGS`, `GATELY_LOCALES`, `WITH_DOCKER_CLI`, `WITH_NFTABLES`).
 
 Some tests are skipped by default and need extra setup:
 

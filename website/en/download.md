@@ -59,6 +59,22 @@ make web      # build the frontend
 make build    # outputs bin/gately
 ```
 
+### Custom builds {#custom-build}
+
+Optional modules and UI languages can be left out at build time (see [Modules Overview · Custom builds](/en/docs/modules/#custom-build)). The easiest way is to tick them on [build.gately.cn](https://build.gately.cn) and build online. To compile yourself:
+
+- Go uses build tags to leave out modules and languages: each optional module has a `no_<module>` tag (such as `no_waf`, `no_smb`), and the language tiers are `lang_zh` (Simplified Chinese only) or `lang_cjken` (Simplified Chinese, Traditional Chinese and English); no tags means the full edition;
+- The frontend bundles only the chosen languages with the `GATELY_LOCALES` environment variable (such as `zh-CN,zh-TW,en`); leave it empty for all;
+- `modules.json` in the repository root lists all optional modules, their dependencies and size estimates; `go run ./tools/custombuild resolve` turns a selection into tags, languages and Docker build arguments, and the `build` subcommand produces a tar.gz or fnOS package directly.
+
+```bash
+# Keep only DDNS and frp, with a Simplified Chinese-only UI
+go run ./tools/custombuild resolve -modules ddns,frp -lang zh
+go run ./tools/custombuild build -version v0.6.4 -modules ddns,frp -lang zh -targets linux-arm64 -out dist
+```
+
+The Docker image uses the same Dockerfile: the build arguments `GATELY_TAGS` and `GATELY_LOCALES` match the tags and languages above, `WITH_DOCKER_CLI=0` skips docker-cli and compose (when the Docker module is not included), and `WITH_NFTABLES=0` skips nftables (when Intrusion Prevention and STUN are not included); `resolve -targets docker` prints the matching arguments.
+
 ## Verification
 
 Every release ships with a checksum file. Verify the SHA-256 after downloading and before running.

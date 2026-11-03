@@ -199,6 +199,8 @@ If GitHub is hard to reach, set an **update proxy** on the About page or under S
 
 Without internet access, get the tar.gz from the [download page](/en/download) and click "Upload upgrade package" on the About page. Uploads accept any version, so you can also roll back to an older release.
 
+[Custom builds](/en/docs/modules/#custom-build) do not offer online upgrade: it downloads the full edition and would bring back the modules you left out. When a new version is released, rebuild with the same options on [build.gately.cn](https://build.gately.cn) (the link on the About page already carries them) and upload the upgrade package; for a custom Docker image, just pull the new tag.
+
 Online upgrades only run when an admin starts them; Gately never downloads or installs a version on its own. If the new version fails to start, roll back manually with the kept copy (systemd example):
 
 ```bash

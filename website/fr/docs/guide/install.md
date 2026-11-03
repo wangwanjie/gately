@@ -199,6 +199,8 @@ Si GitHub est difficile à joindre, définissez un **proxy de mise à jour** sur
 
 Sans accès à Internet, récupérez le tar.gz sur la [page de téléchargement](/fr/download) et cliquez sur « Téléverser un paquet de mise à niveau » dans la page À propos. Toute version est acceptée, ce qui permet aussi de revenir à une version antérieure.
 
+Les [versions personnalisées](/fr/docs/modules/#custom-build) ne proposent pas la mise à niveau en ligne : elle télécharge l'édition complète et réinstallerait les modules retirés. À chaque nouvelle version, régénérez le build sur [build.gately.cn](https://build.gately.cn) avec les mêmes options (le lien de la page À propos les reprend), puis téléversez le paquet de mise à niveau ; pour une image Docker personnalisée, tirez simplement le nouveau tag.
+
 La mise à niveau en ligne ne s'exécute que sur action d'un administrateur ; Gately ne télécharge ni n'installe jamais de version de lui-même. Si la nouvelle version ne démarre pas, revenez en arrière manuellement avec la copie conservée (exemple avec systemd) :
 
 ```bash
