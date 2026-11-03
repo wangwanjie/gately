@@ -425,6 +425,45 @@ Les règles sont évaluées dans l'ordre, et l'évaluation s'arrête à la premi
 
 Les redirections conservent les paramètres de requête d'origine. La cible d'une redirection peut contenir `{host}`, le domaine utilisé par le visiteur. Les règles de redirection s'exécutent avant l'authentification, comme `location = / { return 302 ...; }` de nginx, de sorte qu'un chemin tel que `/` peut renvoyer les visiteurs ailleurs sans leur demander de se connecter.
 
+## Pages d'erreur {#error-pages}
+
+L'onglet « Pages d'erreur » de l'éditeur de site détermine les pages 404 et 5xx que voient les visiteurs. Le style intégré de Gately est utilisé par défaut ; vous pouvez le remplacer par l'un des 10 styles intégrés (Minimal, Terminal, Néon, Ciel étoilé, Journal, Brutaliste, Aurore, Pixel, Plan, Chaîne d'état) ou utiliser votre propre page. Tous les styles s'adaptent aux écrans de téléphone, le texte suit la langue du navigateur du visiteur, et le bouton en forme d'œil en bas à droite de la carte permet de prévisualiser différents codes d'état en taille bureau et téléphone.
+
+- Portée : les pages 404 et 5xx que Gately génère pour un site, par exemple le 502 quand le backend est injoignable, le 404 quand un fichier statique n'existe pas, le 503 quand la cible d'une redirection est momentanément indisponible, et l'erreur quand le service d'authentification de transfert est indisponible. Lorsqu'un site statique a une « Page 404 », elle reste prioritaire pour les fichiers introuvables. Le 403 du contrôle d'accès et le 429 de la limitation de débit ne sont pas concernés.
+- Site par défaut : son réglage s'applique aussi au 404 affiché lorsqu'aucun site ne correspond au domaine demandé, même si le site par défaut est désactivé.
+- Les clients autres que les navigateurs (`curl`, appels d'API, etc.) reçoivent toujours une erreur en texte brut, comme avant.
+
+### Intercepter les erreurs du backend {#intercept-errors}
+
+Un site de proxy inverse peut activer « Intercepter les erreurs du backend » pour remplacer les codes d'état indiqués renvoyés par le backend par la page choisie ci-dessus, comme `proxy_intercept_errors on` avec `error_page` dans nginx. Séparez les codes par des virgules ; les plages et les notations abrégées sont prises en charge, par exemple `404, 500-599` ou `5xx`, et seules les valeurs de 400 à 599 sont acceptées.
+
+- Seules les requêtes par lesquelles le navigateur ouvre une page (`Accept` contient `text/html`) sont remplacées. Les requêtes d'API, d'images, de scripts, etc. gardent la réponse du backend, si bien que le 404 JSON d'une application monopage n'est jamais remplacé par une page web.
+- Le code d'état et les en-têtes comme `Set-Cookie` et `Retry-After` sont conservés ; les en-têtes qui décrivent le corps d'origine (encodage du contenu, `ETag`, etc.) sont retirés. Les requêtes `HEAD` ne renvoient que les en-têtes.
+- « Options en lot » permet de modifier le style de la page d'erreur de plusieurs sites à la fois ; le réglage d'interception de chaque site reste inchangé.
+
+### Pages personnalisées {#custom-error-pages}
+
+Les pages personnalisées sont conservées dans une bibliothèque de pages, gérée dans « Paramètres globaux → Pages d'erreur personnalisées » ou via « Gérer les pages personnalisées » dans l'onglet « Pages d'erreur » d'un site ; plusieurs sites peuvent partager une même page. Une page provient de l'une de ces deux sources :
+
+- Téléversement ou collage : choisissez un fichier `.html` / `.htm` (UTF-8, 256 Ko maximum) ou collez directement le code. Le contenu est stocké dans la configuration et reste modifiable.
+- Fichier du serveur : saisissez le chemin absolu d'un fichier `.html` / `.htm` (un chemin interne au conteneur avec Docker). Le fichier est vérifié à chaque utilisation pour détecter les modifications. Un lien symbolique doit lui aussi pointer vers un fichier HTML, et les fichiers dont le contenu ne ressemble pas à du HTML sont refusés. Si le fichier est supprimé ou si son contenu devient invalide, les visiteurs voient le style par défaut et la page est marquée comme indisponible dans la bibliothèque.
+
+Une page peut utiliser des espaces réservés, remplacés à la sortie par les informations de l'erreur en cours et échappés en HTML :
+
+| Espace réservé | Contenu |
+| --- | --- |
+| `{code}` | Code d'état, par exemple 502 |
+| `{status}` | Libellé d'état en anglais, par exemple Bad Gateway |
+| `{title}`, `{detail}` | Titre et description de l'erreur, dans la langue du visiteur |
+| `{host}`, `{path}` | Domaine et chemin demandés |
+| `{time}` | Heure de l'erreur (UTC) |
+
+La sécurité et l'utilisabilité sont vérifiées automatiquement avant l'enregistrement, et un aperçu est affiché :
+
+- Une page d'erreur est de même origine que le site. Pour éviter qu'elle serve à voler des cookies ou à falsifier des actions, l'enregistrement retire les scripts, les attributs d'événement comme `onclick`, les liens `javascript:`, les iframes, les objets de plugin, les formulaires, `<base>`, `<meta http-equiv>` (redirections automatiques, etc.) et les constructions de style dangereuses ; le résultat de la vérification énumère ce qui a été retiré.
+- La sortie porte `Content-Security-Policy: sandbox; default-src 'none'; ...` : la page s'exécute dans un bac à sable isolé, si bien que des scripts injectés ne peuvent pas s'exécuter, et seuls les styles en ligne et les images ou polices intégrées en `data:` sont chargés, de sorte que l'adresse du visiteur ne fuit pas vers des tiers. Les feuilles de style, images et polices externes ainsi que les adresses relatives du site ne sont pas chargées, et la vérification le signale ; placez les styles dans `<style>` et intégrez les images et polices en `data:`.
+- L'enregistrement est refusé lorsque le contenu est vide, n'est pas en UTF-8, dépasse la taille maximale ou n'est pas du HTML. L'absence de `viewport`, une déclaration d'encodage autre que UTF-8 ou l'absence d'espace réservé donnent lieu à une suggestion.
+
 ## Statistiques d'accès et supervision
 
 ### Statistiques de site {#site-stats}
@@ -525,6 +564,7 @@ Conversion des réglages nginx :
 | `return 301 https://$host$request_uri` | un site de redirection avec `https://{host}` et « Conserver le chemin et la requête » |
 | `return 302 /admin` dans `location = /` | une réécriture avec « Redirection » activée, motif `^/$` |
 | `try_files $uri $uri.html $uri/index.html` et `error_page 404` | fichiers statiques avec « URL sans extension » et « Page 404 » |
+| `error_page 502 503 504 /50x.html` et `proxy_intercept_errors on` | le réglage des [pages d'erreur](#error-pages) du site et l'interception des erreurs du backend |
 | `add_header` | en-têtes de réponse |
 | `return 444` | un site Fermer la connexion |
 | `error_page 497 https://$host:$server_port$request_uri` dans un server HTTPS | « HTTP sur le même port » d'un nouvel écouteur réglé sur « Rediriger vers HTTPS » ; en cas de fusion avec un écouteur existant, seul un avertissement s'affiche et ses réglages restent inchangés |

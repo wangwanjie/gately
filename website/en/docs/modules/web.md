@@ -425,6 +425,45 @@ Rules are matched in order, and matching stops at the first hit.
 
 Redirects keep the original query parameters. A redirect target may contain `{host}`, the domain the visitor used. Redirect rules run before authentication, like nginx `location = / { return 302 ...; }`, so a path such as `/` can send visitors on without asking them to sign in.
 
+## Error pages {#error-pages}
+
+The "Error pages" tab in the site editor controls the 404 and 5xx pages that visitors see. Gately's built-in style is used by default; you can switch to one of 10 built-in styles (Minimal, Terminal, Neon, Starry sky, Newspaper, Brutalist, Aurora, Pixel, Blueprint, Status chain) or use your own page. All styles fit phone screens, the text follows the language of the visitor's browser, and the eye button at the bottom right of the card previews different status codes at desktop and phone sizes.
+
+- Scope: the 404 and 5xx pages Gately generates for a site, such as 502 when the backend is unreachable, 404 when a static file does not exist, 503 when a redirect target is temporarily unavailable, and the error when the forwarded authentication service is unavailable. When a static site has a "404 page", it still takes priority for missing files. The 403 from access control and the 429 from rate limiting are not affected.
+- Default site: its setting also applies to the 404 shown when no site matches the requested domain, even when the default site is disabled.
+- Clients other than browsers (`curl`, API calls and so on) still get a plain-text error, as before.
+
+### Intercept backend errors {#intercept-errors}
+
+A reverse proxy site can enable "Intercept backend errors" to replace the listed status codes returned by the backend with the page selected above, like nginx `proxy_intercept_errors on` plus `error_page`. Separate status codes with commas; ranges and shorthand are supported, for example `404, 500-599` or `5xx`, and only 400 to 599 is accepted.
+
+- Only requests that open a page in a browser (`Accept` contains `text/html`) are replaced. API, image and script requests keep the backend's response, so a single-page app's JSON 404 is never swapped for a web page.
+- The status code and headers such as `Set-Cookie` and `Retry-After` are kept; headers that describe the original body (content encoding, `ETag` and so on) are removed. `HEAD` requests return headers only.
+- "Bulk options" can change the error page style of several sites at once; each site's interception setting stays as it is.
+
+### Custom pages {#custom-error-pages}
+
+Custom pages are kept in a page library, maintained under "Global settings → Custom error pages" or through "Manage custom pages" on a site's "Error pages" tab, and several sites can share one page. A page comes from one of two sources:
+
+- Upload or paste: choose a `.html` / `.htm` file (UTF-8, up to 256 KB) or paste the code directly. The content is stored in the configuration and stays editable.
+- Server file: enter the absolute path of a `.html` / `.htm` file (a path inside the container for Docker). The file is checked for changes on every use. A symbolic link must also point to an HTML file, and files whose content does not look like HTML are rejected. If the file is deleted or its content becomes invalid, visitors see the default style and the page is marked unavailable in the library.
+
+A page can use placeholders, which are replaced with the details of the current error and HTML-escaped on output:
+
+| Placeholder | Content |
+| --- | --- |
+| `{code}` | Status code, such as 502 |
+| `{status}` | English status phrase, such as Bad Gateway |
+| `{title}`, `{detail}` | Error title and description, in the visitor's language |
+| `{host}`, `{path}` | The requested domain and path |
+| `{time}` | Time of the error (UTC) |
+
+Safety and usability are checked automatically before saving, and a preview is shown:
+
+- An error page is same-origin with the site. To keep it from being used to steal cookies or forge actions, saving removes scripts, event attributes such as `onclick`, `javascript:` links, iframes, plugin objects, forms, `<base>`, `<meta http-equiv>` (automatic redirects and so on) and dangerous style constructs; the check result lists what was removed.
+- Output carries `Content-Security-Policy: sandbox; default-src 'none'; ...`: the page runs in an isolated sandbox so injected scripts cannot execute, and nothing loads except inline styles and images or fonts embedded as `data:`, so the visitor's address is not leaked to third parties. External stylesheets, images, fonts and relative addresses on the site do not load, and the check warns about them; put styles in `<style>` and embed images and fonts as `data:`.
+- Saving is rejected when the content is empty, not UTF-8, over the size limit or not HTML. A missing `viewport`, a non-UTF-8 encoding declaration, or no placeholder use produces a hint.
+
 ## Access statistics and monitoring
 
 ### Site statistics {#site-stats}
@@ -525,6 +564,7 @@ Converting nginx settings:
 | `return 301 https://$host$request_uri` | a redirect site with `https://{host}` and "Keep path" |
 | `return 302 /admin` on `location = /` | a rewrite with "Redirect" on, pattern `^/$` |
 | `try_files $uri $uri.html $uri/index.html` and `error_page 404` | static files with clean URLs and a 404 page |
+| `error_page 502 503 504 /50x.html` and `proxy_intercept_errors on` | the site's [error pages](#error-pages) setting and "Intercept backend errors" |
 | `add_header` | response headers |
 | `return 444` | a Close connection site |
 | `error_page 497 https://$host:$server_port$request_uri` in an HTTPS server | *Plain HTTP on same port* set to *Redirect to HTTPS* on a new listener; when merged into an existing listener, only a warning is shown and its settings stay unchanged |

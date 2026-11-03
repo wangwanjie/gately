@@ -425,6 +425,45 @@ Regeln werden der Reihe nach abgeglichen, und beim ersten Treffer endet der Abgl
 
 Weiterleitungen behalten die ursprünglichen Query-Parameter bei. Ein Weiterleitungsziel darf `{host}` enthalten, die vom Besucher verwendete Domain. Weiterleitungsregeln laufen vor der Authentifizierung, wie nginx `location = / { return 302 ...; }`, sodass ein Pfad wie `/` Besucher weiterschicken kann, ohne dass sie sich anmelden müssen.
 
+## Fehlerseiten {#error-pages}
+
+Der Tab „Fehlerseiten“ im Site-Editor legt die 404- und 5xx-Seiten fest, die Besucher sehen. Standardmäßig gilt der eingebaute Gately-Stil; er lässt sich durch einen von 10 eingebauten Stilen ersetzen (Minimal, Terminal, Neon, Sternenhimmel, Zeitung, Brutalistisch, Polarlicht, Pixel, Blaupause, Statuskette) oder durch eine eigene Seite. Alle Stile passen sich Handybildschirmen an, der Text folgt der Sprache des Besucher-Browsers, und mit dem Augen-Button unten rechts auf der Karte lassen sich verschiedene Statuscodes in Desktop- und Handygröße in der Vorschau ansehen.
+
+- Geltungsbereich: die 404- und 5xx-Seiten, die Gately für eine Site erzeugt, etwa 502, wenn das Backend nicht erreichbar ist, 404, wenn eine statische Datei fehlt, 503, wenn das Ziel einer Weiterleitung vorübergehend nicht verfügbar ist, und der Fehler, wenn der Authentifizierungsdienst der Weiterleitung nicht verfügbar ist. Hat eine statische Site eine „404-Seite“, hat sie bei fehlenden Dateien weiterhin Vorrang. Das 403 der Zugriffskontrolle und das 429 der Ratenbegrenzung bleiben unberührt.
+- Standard-Site: Ihre Einstellung gilt auch für das 404, das erscheint, wenn keine Site zur angefragten Domain passt, selbst wenn die Standard-Site deaktiviert ist.
+- Clients außerhalb von Browsern (`curl`, API-Aufrufe usw.) erhalten wie bisher einen Fehler als reinen Text.
+
+### Backend-Fehler abfangen {#intercept-errors}
+
+Eine Reverse-Proxy-Site kann „Backend-Fehler abfangen“ aktivieren, um die angegebenen Statuscodes des Backends durch die oben gewählte Seite zu ersetzen, wie `proxy_intercept_errors on` mit `error_page` in nginx. Statuscodes werden durch Kommas getrennt; Bereiche und Kurzschreibweisen sind möglich, etwa `404, 500-599` oder `5xx`, und nur 400 bis 599 sind erlaubt.
+
+- Ersetzt werden nur Anfragen, mit denen der Browser eine Seite öffnet (`Accept` enthält `text/html`). API-, Bild- und Skriptanfragen behalten die Antwort des Backends, sodass das JSON-404 einer Single-Page-App nie durch eine Webseite ersetzt wird.
+- Statuscode und Header wie `Set-Cookie` und `Retry-After` bleiben erhalten; Header, die den ursprünglichen Body beschreiben (Content-Encoding, `ETag` usw.), werden entfernt. `HEAD`-Anfragen liefern nur Header.
+- Über „Optionen im Stapel“ lässt sich der Stil der Fehlerseite mehrerer Sites auf einmal ändern; die Abfang-Einstellung jeder Site bleibt unverändert.
+
+### Eigene Seiten {#custom-error-pages}
+
+Eigene Seiten liegen in einer Seitenbibliothek, die unter „Globale Einstellungen → Benutzerdefinierte Fehlerseiten“ oder über „Benutzerdefinierte Seiten verwalten“ im Tab „Fehlerseiten“ einer Site gepflegt wird; mehrere Sites können dieselbe Seite nutzen. Eine Seite stammt aus einer von zwei Quellen:
+
+- Hochladen oder Einfügen: eine `.html` / `.htm`-Datei (UTF-8, bis 256 KB) auswählen oder den Code direkt einfügen. Der Inhalt wird in der Konfiguration gespeichert und bleibt bearbeitbar.
+- Serverdatei: den absoluten Pfad einer `.html` / `.htm`-Datei eintragen (bei Docker ein Pfad im Container). Bei jeder Verwendung wird geprüft, ob sich die Datei geändert hat. Auch ein symbolischer Link muss auf eine HTML-Datei zeigen, und Dateien, deren Inhalt nicht nach HTML aussieht, werden abgelehnt. Wird die Datei gelöscht oder ihr Inhalt ungültig, sehen Besucher den Standardstil, und die Seite ist in der Bibliothek als nicht verfügbar markiert.
+
+Eine Seite kann Platzhalter verwenden, die bei der Ausgabe durch die Angaben des aktuellen Fehlers ersetzt und HTML-escaped werden:
+
+| Platzhalter | Inhalt |
+| --- | --- |
+| `{code}` | Statuscode, etwa 502 |
+| `{status}` | Englische Statusbezeichnung, etwa Bad Gateway |
+| `{title}`, `{detail}` | Titel und Beschreibung des Fehlers, in der Sprache des Besuchers |
+| `{host}`, `{path}` | Angefragte Domain und angefragter Pfad |
+| `{time}` | Zeitpunkt des Fehlers (UTC) |
+
+Vor dem Speichern werden Sicherheit und Verwendbarkeit automatisch geprüft, und es wird eine Vorschau angezeigt:
+
+- Eine Fehlerseite hat denselben Origin wie die Site. Damit sie nicht zum Stehlen von Cookies oder zum Fälschen von Aktionen missbraucht werden kann, entfernt das Speichern Skripte, Ereignisattribute wie `onclick`, `javascript:`-Links, iframes, Plugin-Objekte, Formulare, `<base>`, `<meta http-equiv>` (automatische Weiterleitungen usw.) und gefährliche Stilkonstrukte; das Prüfergebnis listet das Entfernte auf.
+- Die Ausgabe trägt `Content-Security-Policy: sandbox; default-src 'none'; ...`: Die Seite läuft in einer isolierten Sandbox, sodass eingeschleuste Skripte nicht ausgeführt werden können, und es werden nur Inline-Stile sowie als `data:` eingebettete Bilder und Schriften geladen, sodass die Adresse des Besuchers nicht an Dritte gelangt. Externe Stylesheets, Bilder, Schriften und relative Adressen der Site werden nicht geladen, und die Prüfung weist darauf hin; Stile gehören in `<style>`, Bilder und Schriften werden als `data:` eingebettet.
+- Das Speichern wird abgelehnt, wenn der Inhalt leer ist, nicht UTF-8 ist, die Größe überschreitet oder kein HTML ist. Ein fehlendes `viewport`, eine Kodierungsangabe außer UTF-8 oder fehlende Platzhalter führen zu einem Hinweis.
+
 ## Zugriffsstatistik und Monitoring
 
 ### Site-Statistik {#site-stats}
@@ -525,6 +564,7 @@ nginx-Einstellungen umsetzen:
 | `return 301 https://$host$request_uri` | eine Weiterleitungs-Site mit `https://{host}` und „Pfad und Query beibehalten“ |
 | `return 302 /admin` in `location = /` | ein Umschreiben mit aktivierter „Weiterleitung“, Muster `^/$` |
 | `try_files $uri $uri.html $uri/index.html` und `error_page 404` | statische Dateien mit „URLs ohne Endung“ und „404-Seite“ |
+| `error_page 502 503 504 /50x.html` und `proxy_intercept_errors on` | die Einstellung [Fehlerseiten](#error-pages) der Site und das Abfangen von Backend-Fehlern |
 | `add_header` | Antwort-Header |
 | `return 444` | eine Site vom Typ Verbindung schließen |
 | `error_page 497 https://$host:$server_port$request_uri` in einem HTTPS-server | „HTTP auf demselben Port“ eines neuen Listeners auf „Auf HTTPS umleiten“; beim Zusammenführen mit einem vorhandenen Listener nur ein Hinweis, dessen Einstellungen bleiben unverändert |
