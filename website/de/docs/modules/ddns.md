@@ -72,7 +72,7 @@ Die Globalen Einstellungen im Seitenkopf enthalten:
 
 ## Gruppen und Sortierung
 
-Aufgaben können eine „Gruppe“ erhalten (höchstens 64 Zeichen). Die Liste zeigt Gruppen als einklappbare Abschnitte: Gruppen erscheinen in der Reihenfolge ihres ersten Auftretens, Aufgaben ohne Gruppe stehen am Ende, und der eingeklappte Zustand wird im Browser gespeichert. Das Suchfeld oben auf der Seite filtert nach Name, Gruppe, Domain oder Anbieter.
+Aufgaben können eine „Gruppe“ erhalten (höchstens 64 Zeichen). Die Liste zeigt Gruppen als einklappbare Abschnitte: Gruppen erscheinen in der Reihenfolge ihres ersten Auftretens, Aufgaben ohne Gruppe stehen am Ende, und der eingeklappte Zustand wird im Browser gespeichert. Das Suchfeld oben auf der Seite filtert Aufgaben und Einträge: Passen Name, Gruppe, Bemerkung oder Anbieter einer Aufgabe, werden alle ihre Einträge angezeigt, sonst nur die Einträge, deren Domain, Typ, Gruppe, Bemerkung oder aktueller Wert passt; während der Suche werden eingeklappte Aufgabenkarten und Eintragsgruppen automatisch aufgeklappt.
 
 Mit „Sortieren“ wechseln Sie in den Sortiermodus. Mit den Pfeilen verschieben Sie Aufgaben nach oben oder unten oder ganze Gruppen. Markieren Sie mehrere und ziehen Sie einen davon, um alle zusammen zu verschieben; auf einem Eintrag oder dem Kopf einer anderen Gruppe abgelegt, wechseln sie in diese Gruppe. Die Werkzeugleiste verschiebt die markierten Einträge in einem Schritt in eine Gruppe oder entfernt sie aus ihrer Gruppe, wenn der Name leer bleibt. Reihenfolge und Gruppen wirken sich nur auf die Liste aus; Änderungen starten die Aufgaben nicht neu.
 

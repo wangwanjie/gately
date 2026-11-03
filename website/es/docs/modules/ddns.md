@@ -72,7 +72,7 @@ Los Ajustes globales de la cabecera de la página contienen:
 
 ## Grupos y orden
 
-Puede asignar a las tareas un «Grupo» (hasta 64 caracteres). La lista muestra los grupos como secciones plegables: los grupos aparecen en el orden en que surgen por primera vez, las tareas sin grupo van al final y el estado plegado se guarda en el navegador. El cuadro de búsqueda de la parte superior filtra por nombre, grupo, dominio o proveedor.
+Puede asignar a las tareas un «Grupo» (hasta 64 caracteres). La lista muestra los grupos como secciones plegables: los grupos aparecen en el orden en que surgen por primera vez, las tareas sin grupo van al final y el estado plegado se guarda en el navegador. El cuadro de búsqueda de la parte superior filtra tareas y registros: si coincide el nombre, el grupo, la nota o el proveedor de una tarea, se muestran todos sus registros; si no, solo se listan los registros cuyo dominio, tipo, grupo, nota o valor actual coincidan. Durante la búsqueda, las tarjetas de tareas y los grupos de registros plegados se despliegan automáticamente.
 
 Pulse «Ordenar» para entrar en el modo de orden. Use las flechas para subir o bajar las tareas o mover grupos enteros. Marque varias y arrastre cualquiera de ellas para moverlas juntas; al soltarlas sobre un elemento o el encabezado de otro grupo pasan a ese grupo. La barra de herramientas mueve de una vez los elementos marcados a un grupo, o los saca de su grupo si deja el nombre vacío. El orden y los grupos solo afectan a la lista, y al cambiarlos las tareas no se reinician.
 

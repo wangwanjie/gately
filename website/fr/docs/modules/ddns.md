@@ -72,7 +72,7 @@ Les Paramètres globaux, dans l’en-tête de la page, contiennent :
 
 ## Groupes et tri
 
-Vous pouvez attribuer un « Groupe » (64 caractères au plus) à les tâches. La liste affiche les groupes sous forme de sections repliables : les groupes apparaissent dans l’ordre de leur première occurrence, les tâches sans groupe viennent en dernier, et l’état replié est conservé dans le navigateur. La zone de recherche en haut de la page filtre par nom, groupe, domaine ou fournisseur.
+Vous pouvez attribuer un « Groupe » (64 caractères au plus) à les tâches. La liste affiche les groupes sous forme de sections repliables : les groupes apparaissent dans l’ordre de leur première occurrence, les tâches sans groupe viennent en dernier, et l’état replié est conservé dans le navigateur. La zone de recherche en haut de la page filtre les tâches et les enregistrements : si le nom, le groupe, la remarque ou le fournisseur d’une tâche correspond, tous ses enregistrements s’affichent ; sinon, seuls les enregistrements dont le domaine, le type, le groupe, la remarque ou la valeur actuelle correspond sont listés. Pendant la recherche, les cartes de tâches et les groupes d’enregistrements repliés se déplient automatiquement.
 
 Cliquez sur « Trier » pour passer en mode tri. Les flèches déplacent les tâches vers le haut ou le bas, ou des groupes entiers. Cochez-en plusieurs et faites glisser l’un d’eux pour les déplacer ensemble ; déposés sur un élément ou l’en-tête d’un autre groupe, ils rejoignent ce groupe. La barre d’outils place d’un coup les éléments cochés dans un groupe, ou les retire de leur groupe si le nom est laissé vide. L’ordre et les groupes n’affectent que la liste, et les modifier signifie que les tâches ne sont pas redémarrées.
 

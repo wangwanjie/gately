@@ -72,7 +72,7 @@ As Configurações globais no cabeçalho da página contêm:
 
 ## Grupos e ordenação
 
-Você pode atribuir um "Grupo" (até 64 caracteres) às tarefas. A lista mostra os grupos como seções recolhíveis: os grupos aparecem na ordem em que surgem pela primeira vez, os itens sem grupo ficam por último e o estado recolhido é guardado no navegador. A caixa de busca no topo da página filtra por nome, grupo, domínio ou provedor.
+Você pode atribuir um "Grupo" (até 64 caracteres) às tarefas. A lista mostra os grupos como seções recolhíveis: os grupos aparecem na ordem em que surgem pela primeira vez, os itens sem grupo ficam por último e o estado recolhido é guardado no navegador. A caixa de busca no topo da página filtra tarefas e registros: quando o nome, o grupo, a observação ou o provedor de uma tarefa corresponde, todos os registros dela aparecem; caso contrário, aparecem só os registros cujo domínio, tipo, grupo, observação ou valor atual corresponde. Durante a busca, os cartões de tarefa e os grupos de registros recolhidos se expandem automaticamente.
 
 Clique em "Ordenar" para entrar no modo de ordenação. Use as setas para subir ou descer itens ou mover grupos inteiros. Marque vários e arraste qualquer um deles para movê-los juntos; ao soltá-los sobre um item ou o cabeçalho de outro grupo, eles passam para esse grupo. A barra de ferramentas move de uma vez os itens marcados para um grupo, ou os tira do grupo quando o nome fica vazio. A ordem e os grupos só afetam a lista, e ao alterá-los as tarefas não são reiniciadas.
 

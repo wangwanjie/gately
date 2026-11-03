@@ -72,7 +72,7 @@ Global settings in the page header contain:
 
 ## Groups and sorting
 
-You can give tasks a "Group" (up to 64 characters). The list shows groups as collapsible sections: groups appear in the order they first occur, ungrouped tasks come last, and the collapsed state is kept in the browser. The search box at the top of the page filters by name, group, domain or provider.
+You can give tasks a "Group" (up to 64 characters). The list shows groups as collapsible sections: groups appear in the order they first occur, ungrouped tasks come last, and the collapsed state is kept in the browser. The search box at the top of the page filters tasks and records: when a task's name, group, remark or provider matches, all its records are shown; otherwise only records whose domain, type, group, remark or current value matches are listed. Collapsed task cards and record groups expand automatically while searching.
 
 Click "Sort" to enter sort mode. Use the arrows to move tasks up and down or to move whole groups. Check several tasks and drag any one of them to move them together; dropping onto tasks or the header of another group moves them into that group. The toolbar moves the checked tasks into a group in one step, or out of their group when the name is left empty. Order and groups only affect the list, and changing them means tasks are not restarted.
 
