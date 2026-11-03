@@ -52,7 +52,7 @@ web/                   前端專案，建置產物由 web/embed.go 嵌入
 | ✅ **M5 Web 服務** | 反向代理、重新導向、靜態檔案、依網域路由、自動 TLS、BasicAuth、IP 過濾；匯入 | 涵蓋路由、4 種站台、驗證、WebSocket、HTTPS、PROXY 協定收發；真實樣本 27 個站台匯入通過 |
 | ✅ M6 維運 | 網路喚醒、Web 終端機（SSH/本機 Shell）、排程工作、管理員兩步驟驗證 | WOL 3/3、終端機連線 14/14 匯入；TOTP 通過 RFC 6238 測試向量 |
 | ✅ M7 生態（部分） | Coraza WAF、GitHub/Google/QQ/OIDC 第三方登入（站台驗證與管理後台登入，可遷移 Lucky 身分表）、Docker 管理、WebDAV、FTP 服務、儲存管理（本機/遠端 WebDAV 掛載與線上檔案管理） | WAF 以真實攻擊酬載測試；Docker 在真實環境唯讀驗證 |
-| ✅ M7.5 組網穿透 | Tailscale、frp（frpc、frps 皆可多實例）、cloudflared，以行程託管方式整合官方二進位檔 | 設定產生、行程守護與日誌收集有單元測試；不內建上游程式 |
+| ✅ M7.5 組網穿透 | Tailscale、NetBird、frp（frpc、frps 皆可多實例）、cloudflared，以行程託管方式整合官方二進位檔 | 設定產生、行程守護與日誌收集有單元測試；不內建上游程式 |
 | ✅ M8 可信與維運 | 操作稽核日誌、設定歷史與回溯、宣告式設定目錄；Passkey 登入與唯讀帳號；ACME HTTP-01；HTTP/3；全域 Prometheus 指標與 Grafana 面板；網路自我檢測與首次啟動引導；DDNS 新增 Route 53、OVH、Gandi、NS1、Bunny、Namecheap、DynDNS2；通知新增 ntfy、Gotify、Pushover、Discord、Slack、Server酱、PushPlus 與規則範本；發布產物 cosign 簽章、建置來源證明與 SBOM；systemd 與 OpenWrt 服務範本 | WebAuthn 以軟體驗證器端對端測試；Route 53 簽章經 AWS 官方 SigV4 測試向量校驗；HTTP/3 以 quic-go 用戶端實測 |
 | ✅ M8.5 安裝與升級 | 飛牛 fnOS 原生應用（.fpk，接入統一閘道與飛牛登入狀態）；Linux 二進位檔線上升級；OpenWrt 安裝套件（24.10 及以前的 .ipk、25.12 起的 .apk） | fpk 在飛牛虛擬機實測；OpenWrt 安裝套件在 24.10 / 25.12 官方 rootfs 容器與 iStoreOS 實測，CI 冒煙測試涵蓋安裝與移除 |
 | ✅ M8.6 遷移與維運 | 匯入 nginx 設定（`nginx -T`，含 include 展開、upstream、Authelia 的 `auth_request`）；憑證自動部署（經 SSH 推送並執行指令、重新啟動 Docker 容器）；WAF 請求內容檢查上限、超過上限只檢查前段與依路徑略過；訂閱 IP 清單（定時重新整理、站台與路徑規則引用）；自檢新增 HTTPS 站台憑證涵蓋與 frp 代理衝突；線上升級支援四段版本號 | nginx 匯入以真實正式環境設定（77 個站台、Authelia、upstream）驗證；SSH 推送以 SFTP 測試伺服器端對端測試；WAF 以 2 MB 請求內容驗證拒絕、只檢查前段與略過路徑 |
