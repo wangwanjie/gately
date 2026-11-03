@@ -10,6 +10,17 @@
   /* 图表第二配色：与品牌绿搭配的靛蓝，用于发送流量、内存等 */
   --g-chart-2: #6366f1;
   --g-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  /* 顶栏高度与内容区左右内边距：吸顶的页面头部与页内工具栏据此定位 */
+  --g-header-h: 56px;
+  --g-content-px: 24px;
+  /* 内容区上下内边距，一屏布局的页面（如日志）据此扣除 */
+  --g-content-pt: 20px;
+  --g-content-pb: 32px;
+  --g-content-py: calc(var(--g-content-pt) + var(--g-content-pb));
+  /* 当前页面头部吸住后露出的高度，由 PageHeader 运行时写入；没有吸顶头部时为 0 */
+  --g-page-head-h: 0px;
+  /* 吸顶区域的底边：页内工具栏吸在这里 */
+  --g-sticky-top: calc(var(--g-header-h) + var(--g-page-head-h));
 
   --el-color-primary: #0e7c66;
   --el-color-primary-light-3: #56a394;
@@ -67,6 +78,11 @@ body {
   overflow-x: hidden;
 }
 
+/* 锚点跳转、scrollIntoView 与键盘聚焦滚动时，目标停在吸顶区域下方，不被顶栏和页面头部挡住 */
+html {
+  scroll-padding-top: calc(var(--g-sticky-top) + 8px);
+}
+
 a {
   color: var(--el-color-primary);
 }
@@ -112,6 +128,26 @@ a {
 }
 .g-card-body {
   padding: 16px;
+}
+
+/* 页内列表工具栏吸顶：吸在页面头部下方，作用范围限于所在卡片或分区，滚出后随之离开。
+   卡片头用卡片底色，分区头用页面底色，都需不透明以遮住下面滚过的列表。 */
+.g-sticky-bar {
+  position: sticky;
+  top: var(--g-sticky-top);
+  z-index: 6;
+  background: var(--el-bg-color-page);
+}
+.g-card-head.g-sticky-bar {
+  background: var(--el-bg-color);
+  border-radius: var(--g-radius) var(--g-radius) 0 0;
+}
+/* 移动端会折成多行的工具栏（Docker、frp 代理、审计筛选）只在桌面端吸顶：
+   手机上和页面头部叠在一起会占去四分之一以上的屏幕，反而看不到列表 */
+@media (max-width: 767.98px) {
+  .g-sticky-bar.g-sticky-desktop {
+    position: static;
+  }
 }
 
 /* 卡片列表 */
@@ -204,6 +240,32 @@ a {
 .el-dialog__title {
   font-weight: 600;
 }
+/* 非全屏对话框：限制在视口内，标题与底部按钮固定，只有内容区滚动（长表单不用拉到底才能保存）。
+   上边距取对话框自身的 top，下边距与 Element 默认的 50px 一致；100dvh 兼容移动浏览器地址栏伸缩。 */
+.el-dialog:not(.is-fullscreen) {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - var(--el-dialog-margin-top, 15vh) - 50px);
+  max-height: calc(100dvh - var(--el-dialog-margin-top, 15vh) - 50px);
+}
+.el-dialog:not(.is-fullscreen) > .el-dialog__header,
+.el-dialog:not(.is-fullscreen) > .el-dialog__footer {
+  flex-shrink: 0;
+}
+.el-dialog:not(.is-fullscreen) > .el-dialog__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+/* 对话框内第一层标签页的标签栏在内容区里吸顶，切换分组时不用滚回顶部 */
+.el-dialog__body > .el-tabs > .el-tabs__header,
+.el-dialog__body > .el-form > .el-tabs > .el-tabs__header {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--el-dialog-bg-color, var(--el-bg-color));
+}
 .el-dialog.is-fullscreen {
   max-width: none;
   border-radius: 0;
@@ -230,6 +292,11 @@ a {
 .el-tabs__item {
   font-weight: 500;
 }
+/* Element 给标签页内容区设了 overflow: hidden，会让它成为吸顶元素的滚动容器，
+   内部的工具栏按内容区顶部而不是视口计算 top，被推到卡片底部。clip 同样裁剪溢出，但不建立滚动容器。 */
+.el-tabs__content {
+  overflow: clip;
+}
 .el-divider__text {
   font-size: 13px;
   color: var(--el-text-color-secondary);
@@ -244,6 +311,12 @@ a {
 
 /* ---------- 移动端 ---------- */
 @media (max-width: 767.98px) {
+  :root {
+    --g-header-h: 52px;
+    --g-content-px: 12px;
+    --g-content-pt: 14px;
+    --g-content-pb: 24px;
+  }
   .card-grid {
     grid-template-columns: 1fr;
   }

@@ -1,14 +1,14 @@
 <template>
-  <div>
+  <div class="logs-page">
     <PageHeader :title="t('logs.title')" :desc="t('logs.desc')" :icon="ScrollText" />
     <!-- 来源较多，单独占一行并允许横向滚动，避免被页头的 flex 布局撑出页面 -->
     <div class="sources-row">
       <el-segmented v-model="source" :options="sources" class="sources" />
     </div>
-    <div class="g-card">
+    <div class="g-card logs-card">
       <div class="g-card-body">
         <!-- 切换来源时重建组件，重新从头拉取对应日志 -->
-        <LogViewer :key="url" :url="url" :clearable="source !== 'system'" height="calc(100vh - 290px)" />
+        <LogViewer :key="url" :url="url" :clearable="source !== 'system'" fill />
       </div>
     </div>
   </div>
@@ -42,7 +42,26 @@ watch(source, (v) => router.replace({ query: v === 'system' ? {} : { source: v }
 </script>
 
 <style scoped>
+/* 页面恰好占满一屏，日志在日志区内部滚动。原先按桌面端写死日志区高度，
+   移动端筛选栏折成多行后页面多出一截可滚动，滚到底时来源标签半截压在顶栏下面。 */
+.logs-page {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - var(--g-header-h) - var(--g-content-py));
+  min-height: 420px;
+}
+.logs-card {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.logs-card > .g-card-body {
+  flex: 1 1 auto;
+  min-height: 0;
+}
 .sources-row {
+  flex-shrink: 0;
   max-width: 100%;
   overflow-x: auto;
   margin-bottom: 14px;

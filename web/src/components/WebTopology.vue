@@ -2695,12 +2695,13 @@ defineExpose({ reload })
 
 /* 详情面板 */
 .panel {
+  /* 吸在顶栏与页面头部下方 */
   position: sticky;
-  top: 72px;
+  top: calc(var(--g-sticky-top) + 16px);
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-height: calc(100vh - 210px);
+  max-height: calc(100vh - var(--g-sticky-top) - 32px);
   overflow: auto;
   padding: 14px;
   border: 1px solid var(--g-border);

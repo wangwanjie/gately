@@ -5,7 +5,7 @@
     </PageHeader>
 
     <div class="g-card">
-      <div class="g-card-head filters">
+      <div class="g-card-head filters g-sticky-bar g-sticky-desktop">
         <el-select v-model="category" clearable :placeholder="t('audit.category')" class="f-cat" @change="reload">
           <el-option v-for="c in categories" :key="c" :label="catLabel(c)" :value="c" />
         </el-select>

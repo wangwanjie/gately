@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="toolbar">
+    <div class="toolbar g-sticky-bar g-sticky-desktop">
       <el-input v-model="keyword" :placeholder="t('docker.container.list.search')" clearable :prefix-icon="Search" class="t-search" />
       <el-radio-group v-model="stateFilter" class="t-filter">
         <el-radio-button value="all">{{ t('docker.container.list.all') }}</el-radio-button>

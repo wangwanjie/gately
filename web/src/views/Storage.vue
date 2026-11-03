@@ -40,7 +40,7 @@
     </GroupedList>
 
     <div v-if="current" class="g-card">
-      <div class="g-card-head">
+      <div class="g-card-head g-sticky-bar">
         <div class="g-card-title"><FolderOpen :size="16" />{{ current.name }}</div>
         <div class="toolbar">
           <el-button size="small" :icon="RefreshCw" @click="refresh">{{ t('common.refresh') }}</el-button>

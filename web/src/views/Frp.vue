@@ -8,7 +8,7 @@
     <el-tabs v-model="tab">
       <el-tab-pane :label="t('frp.clientTab')" name="client">
         <div class="g-card">
-          <div class="g-card-head">
+          <div class="g-card-head g-sticky-bar">
             <div class="g-card-title"><Plug :size="16" />{{ t('frp.clientInstances') }} <span v-if="settings?.frpc.version" class="g-card-desc">{{ settings.frpc.version }}</span></div>
             <div class="head-actions">
               <ListTools :gl="glClients" size="small" />
@@ -51,7 +51,7 @@
         </div>
 
         <div class="g-card">
-          <div class="g-card-head">
+          <div class="g-card-head g-sticky-bar g-sticky-desktop">
             <div class="g-card-title"><ArrowRightLeft :size="16" />{{ t('frp.proxies') }} <span class="g-card-desc">{{ t('frp.proxiesDesc') }}</span></div>
             <div class="head-actions">
               <ListTools :gl="glProxies" size="small" :placeholder="t('frp.proxyFilterPlaceholder')" />
@@ -110,7 +110,7 @@
 
       <el-tab-pane :label="t('frp.serverTab')" name="server">
         <div class="g-card">
-          <div class="g-card-head">
+          <div class="g-card-head g-sticky-bar">
             <div class="g-card-title"><Server :size="16" />{{ t('frp.serverInstances') }} <span v-if="settings?.frps.version" class="g-card-desc">{{ settings.frps.version }}</span></div>
             <div class="head-actions">
               <ListTools :gl="glServers" size="small" />

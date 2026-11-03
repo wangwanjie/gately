@@ -572,14 +572,15 @@ onMounted(load)
   margin-top: 16px;
 }
 .docs-nav {
+  /* 吸在顶栏与页面头部下方，原先 top: 0 会被顶栏挡住 */
   position: sticky;
-  top: 0;
+  top: calc(var(--g-sticky-top) + 12px);
   width: 220px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: calc(100vh - 120px);
+  max-height: calc(100vh - var(--g-sticky-top) - 24px);
 }
 .nav-list {
   overflow-y: auto;

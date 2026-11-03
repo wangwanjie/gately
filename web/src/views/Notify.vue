@@ -6,79 +6,84 @@
       <el-button type="primary" :icon="Plus" @click="openChannel()">{{ t('notify.addChannel') }}</el-button>
     </PageHeader>
 
-    <div class="section-head">
-      <h3 class="section">{{ t('notify.channels') }}</h3>
-      <div class="section-tools">
-        <ListTools :gl="glChannels" size="small" />
-        <CompactToggle v-model="compactChannels" size="small" />
+    <!-- 分区头吸顶范围限于本分区（issue #64） -->
+    <section>
+      <div class="section-head g-sticky-bar">
+        <h3 class="section">{{ t('notify.channels') }}</h3>
+        <div class="section-tools">
+          <ListTools :gl="glChannels" size="small" />
+          <CompactToggle v-model="compactChannels" size="small" />
+        </div>
       </div>
-    </div>
-    <GroupedList :gl="glChannels" :compact="compactChannels" grid :empty-text="t('notify.noChannels')">
-      <template #item="{ it, item: c, sorting, bind }">
-        <EntityCard v-bind="bind" :off="!c.enable" :compact="compactChannels || sorting">
-          <template #lead>
-            <SortCheck v-if="sorting" :gl="glChannels" :id="it.id" />
-            <el-switch v-else :model-value="c.enable" @change="(v: string | number | boolean) => toggleChannel(c, Boolean(v))" />
-          </template>
-          <template #title>{{ c.name }}</template>
-          <template #sub>{{ kindLabel(c.kind) }}</template>
-          <Field :label="t('notify.target')" mono>{{ channelTarget(c) }}</Field>
-          <Field v-if="c.proxy" :label="t('notify.proxy')" mono>{{ proxyLabel(c.proxy) }}</Field>
-          <Field v-if="c.remark" :label="t('common.remark')">{{ c.remark }}</Field>
-          <template v-if="sorting" #actions>
-            <SortMoves :gl="glChannels" :it="it" />
-          </template>
-          <template v-else #actions>
-            <el-button text size="small" :icon="Send" :loading="testing[c.key ?? '']" @click="test(c)">{{ t('common.test') }}</el-button>
-            <el-button text size="small" :icon="Pencil" @click="openChannel(c)">{{ t('common.edit') }}</el-button>
-            <el-button text size="small" :icon="CopyPlus" @click="openChannel(c, true)">{{ t('common.duplicate') }}</el-button>
-            <el-popconfirm :title="t('notify.confirmDeleteChannel')" @confirm="removeChannel(c)">
-              <template #reference>
-                <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
-              </template>
-            </el-popconfirm>
-          </template>
-        </EntityCard>
-      </template>
-    </GroupedList>
+      <GroupedList :gl="glChannels" :compact="compactChannels" grid :empty-text="t('notify.noChannels')">
+        <template #item="{ it, item: c, sorting, bind }">
+          <EntityCard v-bind="bind" :off="!c.enable" :compact="compactChannels || sorting">
+            <template #lead>
+              <SortCheck v-if="sorting" :gl="glChannels" :id="it.id" />
+              <el-switch v-else :model-value="c.enable" @change="(v: string | number | boolean) => toggleChannel(c, Boolean(v))" />
+            </template>
+            <template #title>{{ c.name }}</template>
+            <template #sub>{{ kindLabel(c.kind) }}</template>
+            <Field :label="t('notify.target')" mono>{{ channelTarget(c) }}</Field>
+            <Field v-if="c.proxy" :label="t('notify.proxy')" mono>{{ proxyLabel(c.proxy) }}</Field>
+            <Field v-if="c.remark" :label="t('common.remark')">{{ c.remark }}</Field>
+            <template v-if="sorting" #actions>
+              <SortMoves :gl="glChannels" :it="it" />
+            </template>
+            <template v-else #actions>
+              <el-button text size="small" :icon="Send" :loading="testing[c.key ?? '']" @click="test(c)">{{ t('common.test') }}</el-button>
+              <el-button text size="small" :icon="Pencil" @click="openChannel(c)">{{ t('common.edit') }}</el-button>
+              <el-button text size="small" :icon="CopyPlus" @click="openChannel(c, true)">{{ t('common.duplicate') }}</el-button>
+              <el-popconfirm :title="t('notify.confirmDeleteChannel')" @confirm="removeChannel(c)">
+                <template #reference>
+                  <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
+                </template>
+              </el-popconfirm>
+            </template>
+          </EntityCard>
+        </template>
+      </GroupedList>
+    </section>
 
-    <div class="section-head">
-      <h3 class="section">{{ t('notify.rules') }}</h3>
-      <div class="section-tools">
-        <ListTools :gl="glRules" size="small" />
-        <CompactToggle v-model="compactRules" size="small" />
+    <section>
+      <div class="section-head g-sticky-bar">
+        <h3 class="section">{{ t('notify.rules') }}</h3>
+        <div class="section-tools">
+          <ListTools :gl="glRules" size="small" />
+          <CompactToggle v-model="compactRules" size="small" />
+        </div>
       </div>
-    </div>
-    <GroupedList :gl="glRules" :compact="compactRules" grid :empty-text="t('notify.noRules')">
-      <template #item="{ it, item: r, sorting, bind }">
-        <EntityCard v-bind="bind" :off="!r.enable" :compact="compactRules || sorting">
-          <template #lead>
-            <SortCheck v-if="sorting" :gl="glRules" :id="it.id" />
-            <el-switch v-else :model-value="r.enable" @change="(v: string | number | boolean) => toggleRule(r, Boolean(v))" />
-          </template>
-          <template #title>{{ r.name }}</template>
-          <template #sub>{{ t('notify.levelAtLeast', { level: levelLabel(r.minLevel) }) }}<span v-if="r.silence">{{ t('notify.silenceSuffix', { seconds: r.silence }) }}</span></template>
-          <Field :label="t('notify.events')">
-            <div class="tags">
-              <el-tag v-for="e in r.events" :key="e" size="small" effect="plain">{{ eventName(e) }}</el-tag>
-            </div>
-          </Field>
-          <Field :label="t('notify.channel')">{{ r.channels.map(channelName).join(t('notify.separator')) || '-' }}</Field>
-          <template v-if="sorting" #actions>
-            <SortMoves :gl="glRules" :it="it" />
-          </template>
-          <template v-else #actions>
-            <el-button text size="small" :icon="Pencil" @click="openRule(r)">{{ t('common.edit') }}</el-button>
-            <el-button text size="small" :icon="CopyPlus" @click="openRule(r, true)">{{ t('common.duplicate') }}</el-button>
-            <el-popconfirm :title="t('notify.confirmDeleteRule')" @confirm="removeRule(r)">
-              <template #reference>
-                <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
-              </template>
-            </el-popconfirm>
-          </template>
-        </EntityCard>
-      </template>
-    </GroupedList>
+      <GroupedList :gl="glRules" :compact="compactRules" grid :empty-text="t('notify.noRules')">
+        <template #item="{ it, item: r, sorting, bind }">
+          <EntityCard v-bind="bind" :off="!r.enable" :compact="compactRules || sorting">
+            <template #lead>
+              <SortCheck v-if="sorting" :gl="glRules" :id="it.id" />
+              <el-switch v-else :model-value="r.enable" @change="(v: string | number | boolean) => toggleRule(r, Boolean(v))" />
+            </template>
+            <template #title>{{ r.name }}</template>
+            <template #sub>{{ t('notify.levelAtLeast', { level: levelLabel(r.minLevel) }) }}<span v-if="r.silence">{{ t('notify.silenceSuffix', { seconds: r.silence }) }}</span></template>
+            <Field :label="t('notify.events')">
+              <div class="tags">
+                <el-tag v-for="e in r.events" :key="e" size="small" effect="plain">{{ eventName(e) }}</el-tag>
+              </div>
+            </Field>
+            <Field :label="t('notify.channel')">{{ r.channels.map(channelName).join(t('notify.separator')) || '-' }}</Field>
+            <template v-if="sorting" #actions>
+              <SortMoves :gl="glRules" :it="it" />
+            </template>
+            <template v-else #actions>
+              <el-button text size="small" :icon="Pencil" @click="openRule(r)">{{ t('common.edit') }}</el-button>
+              <el-button text size="small" :icon="CopyPlus" @click="openRule(r, true)">{{ t('common.duplicate') }}</el-button>
+              <el-popconfirm :title="t('notify.confirmDeleteRule')" @confirm="removeRule(r)">
+                <template #reference>
+                  <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
+                </template>
+              </el-popconfirm>
+            </template>
+          </EntityCard>
+        </template>
+      </GroupedList>
+    </section>
 
     <h3 class="section">{{ t('notify.recentDeliveries') }}</h3>
     <el-table :data="history" size="small" stripe :empty-text="t('notify.noDeliveries')">

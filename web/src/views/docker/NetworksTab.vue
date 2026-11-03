@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="toolbar">
+    <div class="toolbar g-sticky-bar g-sticky-desktop">
       <el-input v-model="keyword" :placeholder="t('docker.network.search')" clearable :prefix-icon="Search" class="t-search" />
       <CompactToggle v-model="compact" />
       <div class="t-ops">

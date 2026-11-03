@@ -43,7 +43,7 @@
     <el-tabs v-model="tab" class="guard-tabs">
       <!-- 封禁列表 -->
       <el-tab-pane :label="t('guard.tabs.bans', { count: bans.length })" name="bans">
-        <div class="toolbar">
+        <div class="toolbar g-sticky-bar">
           <el-input v-model="filter" :placeholder="t('guard.ban.search')" clearable class="search" :prefix-icon="Search" />
         </div>
         <el-table :data="filteredBans" :empty-text="t('guard.ban.empty')" size="small" class="ban-table">
@@ -78,7 +78,7 @@
 
       <!-- 日志规则 -->
       <el-tab-pane :label="t('guard.tabs.jails')" name="jails">
-        <div class="toolbar">
+        <div class="toolbar g-sticky-bar">
           <span class="help">{{ t('guard.jail.intro') }}</span>
           <div class="toolbar-actions">
             <ListTools :gl="gl" :placeholder="t('groupSort.search')" />

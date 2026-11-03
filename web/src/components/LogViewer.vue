@@ -1,5 +1,5 @@
 <template>
-  <div class="log-viewer">
+  <div class="log-viewer" :class="{ fill }">
     <div class="toolbar">
       <el-select v-model="filters.level" size="small" class="f-level">
         <el-option :label="t('components.logViewer.levelAll')" value="all" />
@@ -113,9 +113,9 @@ import { usePolling } from '../composables/usePolling'
 
 const { t } = useI18n()
 
-// height 可覆盖默认高度，例如独立日志页填满可视区域；
+// height 可覆盖默认高度；fill 时组件撑满父容器，日志区占据工具栏以外的全部高度（独立日志页用）；
 // initial 为打开时的过滤条件，例如拓扑页按站点与访客 IP 查看访问日志（site 为站点名称，完整匹配）
-const props = defineProps<{ url: string; clearable?: boolean; height?: string; initial?: { ip?: string; site?: string; host?: string } }>()
+const props = defineProps<{ url: string; clearable?: boolean; height?: string; fill?: boolean; initial?: { ip?: string; site?: string; host?: string } }>()
 
 // 首次只拉最近 PAGE 条，更早的日志点“加载更早的日志”按页补充；轮询追加后最多保留 MAX 条
 const PAGE = 200
@@ -655,6 +655,18 @@ mark {
 }
 .empty {
   color: var(--el-text-color-secondary);
+}
+/* 撑满父容器：工具栏高度随筛选条件换行变化，日志区自动占据剩余空间，页面本身不再滚动 */
+.log-viewer.fill {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.log-viewer.fill .box {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 160px;
 }
 @media (max-width: 767.98px) {
   .box {

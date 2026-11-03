@@ -5,7 +5,7 @@
     </PageHeader>
 
     <div class="g-card">
-      <div class="g-card-head filters">
+      <div class="g-card-head filters g-sticky-bar">
         <el-select v-model="current" :placeholder="t('history.pickConfig')" class="f-name" filterable>
           <el-option v-for="f in files" :key="f.name" :label="f.title ? `${f.title} (${f.name}.json)` : `${f.name}.json`" :value="f.name" />
         </el-select>

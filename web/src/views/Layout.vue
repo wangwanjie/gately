@@ -196,7 +196,7 @@ onMounted(async () => {
   position: sticky;
   top: 0;
   z-index: 10;
-  height: 56px;
+  height: var(--g-header-h);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -285,7 +285,7 @@ onMounted(async () => {
   width: 100%;
   max-width: 1440px;
   margin: 0 auto;
-  padding: 20px 24px 32px;
+  padding: var(--g-content-pt) var(--g-content-px) var(--g-content-pb);
   min-width: 0;
 }
 .default-pw {
@@ -314,10 +314,6 @@ onMounted(async () => {
   }
   .header {
     padding: 0 8px 0 4px;
-    height: 52px;
-  }
-  .content {
-    padding: 14px 12px 24px;
   }
 }
 </style>

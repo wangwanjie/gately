@@ -65,48 +65,51 @@
       <div class="form-help">{{ t('perf.sitesHelp') }}</div>
     </template>
 
-    <div class="section-head">
-      <h3 class="section">{{ t('perf.rules') }}</h3>
-      <div class="section-tools">
-        <ListTools :gl="glRules" size="small" />
-        <CompactToggle v-model="compactRules" size="small" />
+    <!-- 分区头吸顶范围限于本分区（issue #64） -->
+    <section>
+      <div class="section-head g-sticky-bar">
+        <h3 class="section">{{ t('perf.rules') }}</h3>
+        <div class="section-tools">
+          <ListTools :gl="glRules" size="small" />
+          <CompactToggle v-model="compactRules" size="small" />
+        </div>
       </div>
-    </div>
-    <el-alert v-if="notifyHint" :type="notifyHint.type" :closable="false" show-icon class="notify-hint">
-      <template #title>
-        {{ notifyHint.text }}
-        <router-link v-if="notifyHint.link" to="/notify">{{ t('perf.goNotify') }}</router-link>
-      </template>
-    </el-alert>
-    <GroupedList :gl="glRules" :compact="compactRules" grid :empty-text="t('perf.noRules')">
-      <template #item="{ it, item: r, sorting, bind }">
-        <EntityCard v-bind="bind" :off="!r.enable" :compact="compactRules || sorting">
-          <template #lead>
-            <SortCheck v-if="sorting" :gl="glRules" :id="it.id" />
-            <el-switch v-else :model-value="r.enable" @change="(v: string | number | boolean) => toggleRule(r, Boolean(v))" />
-          </template>
-          <template #title>{{ r.name }}</template>
-          <template #sub>
-            <el-tag size="small" :type="r.level === 'error' ? 'danger' : 'warning'" effect="plain">{{ r.level === 'error' ? t('perf.levelError') : t('perf.levelWarn') }}</el-tag>
-          </template>
-          <Field :label="t('perf.condition')">{{ conditionText(r) }}</Field>
-          <Field v-if="isSiteMetric(r.metric)" :label="t('perf.scope')">{{ r.sites?.length ? r.sites.map(siteName).join(t('perf.separator')) : t('perf.allSites') }}</Field>
-          <Field v-if="r.remark" :label="t('common.remark')">{{ r.remark }}</Field>
-          <template v-if="sorting" #actions>
-            <SortMoves :gl="glRules" :it="it" />
-          </template>
-          <template v-else #actions>
-            <el-button text size="small" :icon="Pencil" @click="openRule(r)">{{ t('common.edit') }}</el-button>
-            <el-button text size="small" :icon="CopyPlus" @click="openRule(r, true)">{{ t('common.duplicate') }}</el-button>
-            <el-popconfirm :title="t('perf.confirmDeleteRule')" @confirm="removeRule(r)">
-              <template #reference>
-                <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
-              </template>
-            </el-popconfirm>
-          </template>
-        </EntityCard>
-      </template>
-    </GroupedList>
+      <el-alert v-if="notifyHint" :type="notifyHint.type" :closable="false" show-icon class="notify-hint">
+        <template #title>
+          {{ notifyHint.text }}
+          <router-link v-if="notifyHint.link" to="/notify">{{ t('perf.goNotify') }}</router-link>
+        </template>
+      </el-alert>
+      <GroupedList :gl="glRules" :compact="compactRules" grid :empty-text="t('perf.noRules')">
+        <template #item="{ it, item: r, sorting, bind }">
+          <EntityCard v-bind="bind" :off="!r.enable" :compact="compactRules || sorting">
+            <template #lead>
+              <SortCheck v-if="sorting" :gl="glRules" :id="it.id" />
+              <el-switch v-else :model-value="r.enable" @change="(v: string | number | boolean) => toggleRule(r, Boolean(v))" />
+            </template>
+            <template #title>{{ r.name }}</template>
+            <template #sub>
+              <el-tag size="small" :type="r.level === 'error' ? 'danger' : 'warning'" effect="plain">{{ r.level === 'error' ? t('perf.levelError') : t('perf.levelWarn') }}</el-tag>
+            </template>
+            <Field :label="t('perf.condition')">{{ conditionText(r) }}</Field>
+            <Field v-if="isSiteMetric(r.metric)" :label="t('perf.scope')">{{ r.sites?.length ? r.sites.map(siteName).join(t('perf.separator')) : t('perf.allSites') }}</Field>
+            <Field v-if="r.remark" :label="t('common.remark')">{{ r.remark }}</Field>
+            <template v-if="sorting" #actions>
+              <SortMoves :gl="glRules" :it="it" />
+            </template>
+            <template v-else #actions>
+              <el-button text size="small" :icon="Pencil" @click="openRule(r)">{{ t('common.edit') }}</el-button>
+              <el-button text size="small" :icon="CopyPlus" @click="openRule(r, true)">{{ t('common.duplicate') }}</el-button>
+              <el-popconfirm :title="t('perf.confirmDeleteRule')" @confirm="removeRule(r)">
+                <template #reference>
+                  <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
+                </template>
+              </el-popconfirm>
+            </template>
+          </EntityCard>
+        </template>
+      </GroupedList>
+    </section>
 
     <LogCard url="/api/perf/logs" clearable />
 

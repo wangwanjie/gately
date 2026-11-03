@@ -14,7 +14,7 @@
     </el-alert>
 
     <div class="g-card">
-      <div class="g-card-head">
+      <div class="g-card-head g-sticky-bar">
         <div class="g-card-title"><ShieldCheck :size="16" />{{ t('apiTokens.listTitle') }} <span class="g-card-desc">{{ t('apiTokens.total', { count: tokens.length }) }}</span></div>
         <div class="head-actions">
           <ListTools :gl="gl" size="small" :placeholder="t('groupSort.search')" />

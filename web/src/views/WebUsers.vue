@@ -31,7 +31,7 @@
         </div>
         <div class="g-card-body">
           <div class="notice">{{ t('webUsers.sites.help') }}</div>
-          <div v-if="sites.length" class="toolbar">
+          <div v-if="sites.length" class="toolbar g-sticky-bar">
             <el-input v-model="keyword" clearable :prefix-icon="Search" :placeholder="t('webUsers.sites.search')" class="w-260" />
             <el-button size="small" :disabled="!selectable.length" @click="setVisible(true)">{{ t('webUsers.sites.checkVisible') }}</el-button>
             <el-button size="small" :disabled="!selectable.length" @click="setVisible(false)">{{ t('webUsers.sites.uncheckVisible') }}</el-button>
