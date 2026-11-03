@@ -684,3 +684,26 @@ esac
 		t.Errorf("旧版本应提示 SOCKS5 对外暴露:\n%s", logs)
 	}
 }
+
+// TestCustomStateDirKeepsMode 验证托管守护进程时已有的自定义状态目录不会被改成 0700。
+func TestCustomStateDirKeepsMode(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("需要 sh")
+	}
+	m, dir := newTestModule(t)
+	fakeNetbird(t, dir, false, false)
+	custom := filepath.Join(t.TempDir(), "nb")
+	if err := os.Mkdir(custom, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	_ = os.Chmod(custom, 0o755)
+	m.settings.Enable, m.settings.ManageDaemon, m.settings.StateDir = true, true, custom
+	if err := m.Start(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = m.Stop() })
+	waitFile(t, dir, "starts", "start")
+	if fi, err := os.Stat(custom); err != nil || fi.Mode().Perm() != 0o755 {
+		t.Fatalf("已有的自定义状态目录权限不应改变: %v %v", fi.Mode().Perm(), err)
+	}
+}

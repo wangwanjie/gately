@@ -136,7 +136,12 @@ func (m *Module) applyLocked() {
 			m.fail(err.Error())
 			return
 		}
-		if err := fsperm.MkdirAll(s.stateDir(dir), 0o700); err != nil {
+		// 默认状态目录在配置目录内，收紧为 0700；自定义状态目录可能是已有的其他目录，只在不存在时创建，不改动已有目录的权限
+		mkdir := os.MkdirAll
+		if s.StateDir == "" {
+			mkdir = fsperm.MkdirAll
+		}
+		if err := mkdir(s.stateDir(dir), 0o700); err != nil {
 			m.fail("创建状态目录失败: " + err.Error())
 			return
 		}
