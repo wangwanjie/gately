@@ -7,6 +7,7 @@
       "id": "network",
       "title": {
         "zh-CN": "网络",
+        "zh-TW": "網路",
         "en": "Network"
       }
     },
@@ -14,6 +15,7 @@
       "id": "tunnel",
       "title": {
         "zh-CN": "组网与穿透",
+        "zh-TW": "組網與穿透",
         "en": "Networking & Tunnels"
       }
     },
@@ -21,6 +23,7 @@
       "id": "web",
       "title": {
         "zh-CN": "Web",
+        "zh-TW": "Web",
         "en": "Web"
       }
     },
@@ -28,6 +31,7 @@
       "id": "storage",
       "title": {
         "zh-CN": "文件服务",
+        "zh-TW": "檔案服務",
         "en": "File Services"
       }
     },
@@ -35,6 +39,7 @@
       "id": "tools",
       "title": {
         "zh-CN": "工具",
+        "zh-TW": "工具",
         "en": "Tools"
       }
     },
@@ -42,6 +47,7 @@
       "id": "system",
       "title": {
         "zh-CN": "系统",
+        "zh-TW": "系統",
         "en": "System"
       }
     }
@@ -53,10 +59,12 @@
       "core": true,
       "title": {
         "zh-CN": "端口转发",
+        "zh-TW": "連接埠轉發",
         "en": "Port Forwarding"
       },
       "desc": {
         "zh-CN": "TCP / UDP 端口转发与负载均衡",
+        "zh-TW": "TCP / UDP 連接埠轉發與負載平衡",
         "en": "TCP / UDP port forwarding and load balancing"
       },
       "requires": []
@@ -68,10 +76,12 @@
       "tag": "no_protoroute",
       "title": {
         "zh-CN": "协议分流",
+        "zh-TW": "協定分流",
         "en": "Protocol Routing"
       },
       "desc": {
         "zh-CN": "按协议、SNI 与 Host 共用端口，替代 sslh 与 haproxy SNI 分流",
+        "zh-TW": "依協定、SNI 與 Host 共用連接埠，取代 sslh 與 haproxy SNI 分流",
         "en": "Share ports by protocol, SNI and Host, replacing sslh and haproxy SNI routing"
       },
       "requires": [],
@@ -84,10 +94,12 @@
       "tag": "no_ddns",
       "title": {
         "zh-CN": "动态域名",
+        "zh-TW": "動態網域",
         "en": "Dynamic DNS"
       },
       "desc": {
         "zh-CN": "公网 IP 变化时自动更新解析",
+        "zh-TW": "公網 IP 變動時自動更新解析",
         "en": "Update DNS records automatically when your public IP changes"
       },
       "requires": [],
@@ -100,10 +112,12 @@
       "tag": "no_stun",
       "title": {
         "zh-CN": "STUN 穿透",
+        "zh-TW": "STUN 穿透",
         "en": "STUN Traversal"
       },
       "desc": {
         "zh-CN": "NAT1 网络下无公网 IP 穿透",
+        "zh-TW": "NAT1 網路下無公網 IP 穿透",
         "en": "Reach services behind NAT1 without a public IP"
       },
       "requires": [],
@@ -116,10 +130,12 @@
       "tag": "no_tailscale",
       "title": {
         "zh-CN": "Tailscale",
+        "zh-TW": "Tailscale",
         "en": "Tailscale"
       },
       "desc": {
         "zh-CN": "加入 Tailscale / Headscale 组网",
+        "zh-TW": "加入 Tailscale / Headscale 組網",
         "en": "Join a Tailscale / Headscale network"
       },
       "requires": [],
@@ -132,10 +148,12 @@
       "tag": "no_netbird",
       "title": {
         "zh-CN": "NetBird",
+        "zh-TW": "NetBird",
         "en": "NetBird"
       },
       "desc": {
         "zh-CN": "加入 NetBird 官方云或自建组网",
+        "zh-TW": "加入 NetBird 官方雲或自建組網",
         "en": "Join a NetBird network (cloud or self-hosted)"
       },
       "requires": [],
@@ -148,10 +166,12 @@
       "tag": "no_frp",
       "title": {
         "zh-CN": "frp",
+        "zh-TW": "frp",
         "en": "frp"
       },
       "desc": {
         "zh-CN": "frpc / frps 内网穿透",
+        "zh-TW": "frpc / frps 內網穿透",
         "en": "frpc / frps NAT traversal"
       },
       "requires": [],
@@ -164,10 +184,12 @@
       "tag": "no_cloudflared",
       "title": {
         "zh-CN": "Cloudflare 隧道",
+        "zh-TW": "Cloudflare 通道",
         "en": "Cloudflare Tunnel"
       },
       "desc": {
         "zh-CN": "无需公网 IP 发布内网服务",
+        "zh-TW": "無需公網 IP 發佈內網服務",
         "en": "Publish internal services without a public IP"
       },
       "requires": [],
@@ -179,10 +201,12 @@
       "core": true,
       "title": {
         "zh-CN": "SSL 证书",
+        "zh-TW": "SSL 憑證",
         "en": "SSL Certificates"
       },
       "desc": {
         "zh-CN": "ACME 自动申请与续签",
+        "zh-TW": "ACME 自動申請與續簽",
         "en": "Automatic ACME issuance and renewal"
       },
       "requires": []
@@ -194,10 +218,12 @@
       "tag": "no_waf",
       "title": {
         "zh-CN": "WAF 防火墙",
+        "zh-TW": "WAF 防火牆",
         "en": "WAF Firewall"
       },
       "desc": {
         "zh-CN": "基于 OWASP CRS 的应用防火墙",
+        "zh-TW": "基於 OWASP CRS 的應用程式防火牆",
         "en": "Web application firewall based on OWASP CRS"
       },
       "requires": [],
@@ -209,10 +235,12 @@
       "core": true,
       "title": {
         "zh-CN": "Web 服务",
+        "zh-TW": "Web 服務",
         "en": "Web Services"
       },
       "desc": {
         "zh-CN": "反向代理、重定向与静态站点",
+        "zh-TW": "反向代理、重新導向與靜態網站",
         "en": "Reverse proxy, redirects and static sites"
       },
       "requires": []
@@ -224,10 +252,12 @@
       "tag": "no_guard",
       "title": {
         "zh-CN": "入侵防护",
+        "zh-TW": "入侵防護",
         "en": "Intrusion Prevention"
       },
       "desc": {
         "zh-CN": "封禁恶意 IP，联动系统防火墙",
+        "zh-TW": "封鎖惡意 IP，聯動系統防火牆",
         "en": "Ban malicious IPs at the system firewall"
       },
       "requires": [],
@@ -240,10 +270,12 @@
       "tag": "no_wol",
       "title": {
         "zh-CN": "网络唤醒",
+        "zh-TW": "網路喚醒",
         "en": "Wake-on-LAN"
       },
       "desc": {
         "zh-CN": "远程唤醒局域网设备",
+        "zh-TW": "遠端喚醒區域網路裝置",
         "en": "Wake up devices on your LAN remotely"
       },
       "requires": [],
@@ -256,10 +288,12 @@
       "tag": "no_webterminal",
       "title": {
         "zh-CN": "Web 终端",
+        "zh-TW": "Web 終端機",
         "en": "Web Terminal"
       },
       "desc": {
         "zh-CN": "浏览器中的 SSH 与本机 Shell",
+        "zh-TW": "瀏覽器中的 SSH 與本機 Shell",
         "en": "SSH and local shell in your browser"
       },
       "requires": [],
@@ -272,10 +306,12 @@
       "tag": "no_cron",
       "title": {
         "zh-CN": "计划任务",
+        "zh-TW": "排程工作",
         "en": "Scheduled Tasks"
       },
       "desc": {
         "zh-CN": "定时执行命令或 HTTP 请求",
+        "zh-TW": "定時執行命令或 HTTP 請求",
         "en": "Run commands or HTTP requests on a schedule"
       },
       "requires": [],
@@ -288,10 +324,12 @@
       "tag": "no_docker",
       "title": {
         "zh-CN": "Docker 管理",
+        "zh-TW": "Docker 管理",
         "en": "Docker Management"
       },
       "desc": {
         "zh-CN": "容器管理与镜像更新",
+        "zh-TW": "容器管理與映像檔更新",
         "en": "Container management and image updates"
       },
       "requires": [],
@@ -304,10 +342,12 @@
       "tag": "no_webdav",
       "title": {
         "zh-CN": "WebDAV 服务",
+        "zh-TW": "WebDAV 服務",
         "en": "WebDAV Service"
       },
       "desc": {
         "zh-CN": "WebDAV 文件共享服务",
+        "zh-TW": "WebDAV 檔案分享服務",
         "en": "WebDAV file sharing service"
       },
       "requires": [],
@@ -320,10 +360,12 @@
       "tag": "no_ftp",
       "title": {
         "zh-CN": "FTP 服务",
+        "zh-TW": "FTP 服務",
         "en": "FTP Service"
       },
       "desc": {
         "zh-CN": "FTP / FTPS 文件共享服务",
+        "zh-TW": "FTP / FTPS 檔案分享服務",
         "en": "FTP / FTPS file sharing service"
       },
       "requires": [],
@@ -336,10 +378,12 @@
       "tag": "no_smb",
       "title": {
         "zh-CN": "SMB 服务",
+        "zh-TW": "SMB 服務",
         "en": "SMB Service"
       },
       "desc": {
         "zh-CN": "SMB 文件共享服务",
+        "zh-TW": "SMB 檔案分享服務",
         "en": "SMB file sharing service"
       },
       "requires": [],
@@ -352,10 +396,12 @@
       "tag": "no_filebrowser",
       "title": {
         "zh-CN": "File Browser",
+        "zh-TW": "File Browser",
         "en": "File Browser"
       },
       "desc": {
         "zh-CN": "网页文件管理器，支持预览与分享",
+        "zh-TW": "網頁檔案管理器，支援預覽與分享",
         "en": "Web file manager with previews and sharing"
       },
       "requires": [],
@@ -368,10 +414,12 @@
       "tag": "no_storage",
       "title": {
         "zh-CN": "存储挂载",
+        "zh-TW": "儲存掛載",
         "en": "Storage Mounts"
       },
       "desc": {
         "zh-CN": "挂载本地目录、远程 WebDAV 或 SMB 共享，在线管理文件",
+        "zh-TW": "掛載本機目錄、遠端 WebDAV 或 SMB 共用，線上管理檔案",
         "en": "Mount local directories, remote WebDAV or SMB shares and manage files online"
       },
       "requires": [],
@@ -384,10 +432,12 @@
       "tag": "no_notify",
       "title": {
         "zh-CN": "通知中心",
+        "zh-TW": "通知中心",
         "en": "Notifications"
       },
       "desc": {
         "zh-CN": "事件推送到 Telegram、邮件、企业微信等",
+        "zh-TW": "事件推送到 Telegram、電子郵件、企業微信等",
         "en": "Push events to Telegram, email, WeCom and more"
       },
       "requires": [],
@@ -400,10 +450,12 @@
       "tag": "no_perf",
       "title": {
         "zh-CN": "性能监控",
+        "zh-TW": "效能監控",
         "en": "Performance"
       },
       "desc": {
         "zh-CN": "性能趋势与阈值告警",
+        "zh-TW": "效能趨勢與門檻告警",
         "en": "Performance trends and threshold alerts"
       },
       "requires": [],
@@ -416,10 +468,12 @@
       "tag": "no_nettools",
       "title": {
         "zh-CN": "网络诊断",
+        "zh-TW": "網路診斷",
         "en": "Network Diagnostics"
       },
       "desc": {
         "zh-CN": "Ping、路由追踪、端口探测、DNS 与局域网扫描",
+        "zh-TW": "Ping、路由追蹤、連接埠探測、DNS 與區域網路掃描",
         "en": "Ping, traceroute, port probe, DNS and LAN scan"
       },
       "requires": [],
@@ -432,10 +486,12 @@
       "tag": "no_backup",
       "title": {
         "zh-CN": "配置备份",
+        "zh-TW": "設定備份",
         "en": "Configuration Backup"
       },
       "desc": {
         "zh-CN": "定时把全部配置备份到本地或存储挂载",
+        "zh-TW": "依排程把全部設定備份到本機或儲存掛載",
         "en": "Back up all configuration to local disk or mounted storage on a schedule"
       },
       "requires": [
@@ -455,6 +511,7 @@
       ],
       "title": {
         "zh-CN": "简体中文",
+        "zh-TW": "簡體中文",
         "en": "Simplified Chinese"
       },
       "sizeKB": 896
@@ -471,6 +528,7 @@
       ],
       "title": {
         "zh-CN": "简体中文、繁体中文、英语",
+        "zh-TW": "簡體中文、繁體中文、英文",
         "en": "Simplified Chinese, Traditional Chinese, English"
       },
       "sizeKB": 704
@@ -492,6 +550,7 @@
       ],
       "title": {
         "zh-CN": "全部 10 种语言",
+        "zh-TW": "全部 10 種語言",
         "en": "All 10 languages"
       },
       "sizeKB": 0
@@ -614,6 +673,7 @@
       "id": "minimal",
       "title": {
         "zh-CN": "仅核心",
+        "zh-TW": "僅核心",
         "en": "Core only"
       },
       "modules": []
@@ -622,6 +682,7 @@
       "id": "router",
       "title": {
         "zh-CN": "路由器",
+        "zh-TW": "路由器",
         "en": "Router"
       },
       "modules": [
@@ -640,6 +701,7 @@
       "id": "nas",
       "title": {
         "zh-CN": "NAS",
+        "zh-TW": "NAS",
         "en": "NAS"
       },
       "modules": [
