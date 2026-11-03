@@ -110,6 +110,8 @@
     }
   },
   "settings": "通知设置",
+  "serverName": "服务器名称",
+  "serverNameHelp": "显示在每条通知的标题与正文中，用于区分多台服务器发出的通知；留空使用主机名（本机：{host}）。Webhook 模板中可用 {'{'}server{'}'} 变量。",
   "proxy": "代理",
   "proxyGlobalHelp": "各渠道默认使用的代理，渠道中可以单独设置或改为直连。支持 http://、https:// 与 socks5:// 代理；「使用全局更新代理」复用系统设置中的更新代理。不使用代理时 HTTP 渠道遵循 HTTPS_PROXY 等环境变量，邮件直连。",
   "proxyChannelHelp": "用于通知服务直连不通、只能经代理访问的网络。默认跟随通知设置中的全局代理。",

@@ -206,9 +206,13 @@
       </template>
     </el-dialog>
 
-    <!-- 通知中心的全局设置：目前只有各渠道默认使用的代理 -->
+    <!-- 通知中心的全局设置：服务器名称与各渠道默认使用的代理 -->
     <el-dialog v-model="settingsVisible" :title="t('notify.settings')" width="560px" :fullscreen="isMobile">
       <el-form label-width="110px" :label-position="labelPosition">
+        <el-form-item :label="t('notify.serverName')">
+          <el-input v-model="settingsDraft.serverName" maxlength="64" clearable :placeholder="settingsHostname" />
+          <div class="form-help">{{ t('notify.serverNameHelp', { host: settingsHostname || '-' }) }}</div>
+        </el-form-item>
         <el-form-item :label="t('notify.proxy')">
           <ProxyInput v-model="settingsDraft.proxy" :owner="settingsDraft" />
           <div class="form-help">{{ t('notify.proxyGlobalHelp') }}</div>
@@ -499,12 +503,15 @@ function channelTarget(c: Channel) {
 // ---- 通知设置 ----
 const settingsVisible = ref(false)
 const savingSettings = ref(false)
-const settingsDraft = ref({ proxy: '' })
+const settingsDraft = ref({ proxy: '', serverName: '' })
+// 本机主机名：服务器名称留空时通知中使用它
+const settingsHostname = ref('')
 
 async function openSettings() {
   try {
-    const s = await api.get<{ proxy?: string }>('/api/notify/settings')
-    settingsDraft.value = { proxy: s.proxy ?? '' }
+    const s = await api.get<{ proxy?: string; serverName?: string; hostname?: string }>('/api/notify/settings')
+    settingsDraft.value = { proxy: s.proxy ?? '', serverName: s.serverName ?? '' }
+    settingsHostname.value = s.hostname ?? ''
     settingsVisible.value = true
   } catch (e) {
     ElMessage.error((e as Error).message)
@@ -514,7 +521,7 @@ async function openSettings() {
 async function saveSettings() {
   savingSettings.value = true
   try {
-    await api.put('/api/notify/settings', { proxy: settingsDraft.value.proxy.trim() })
+    await api.put('/api/notify/settings', { proxy: settingsDraft.value.proxy.trim(), serverName: settingsDraft.value.serverName.trim() })
     settingsVisible.value = false
     ElMessage.success(t('common.saved'))
   } catch (e) {

@@ -110,6 +110,8 @@
     }
   },
   "settings": "Paramètres de notification",
+  "serverName": "Nom du serveur",
+  "serverNameHelp": "Affiché dans le titre et le corps de chaque notification pour savoir quel serveur l'a envoyée ; laissez vide pour utiliser le nom d'hôte (cette machine : {host}). Les modèles Webhook peuvent utiliser la variable {'{'}server{'}'}.",
   "proxy": "Proxy",
   "proxyGlobalHelp": "Proxy par défaut de tous les canaux ; chaque canal peut définir le sien ou se connecter directement. Proxies http://, https:// et socks5:// pris en charge ; « Utiliser le proxy global de mise à jour » reprend le proxy de mise à jour des paramètres système. Sans proxy, les canaux HTTP suivent HTTPS_PROXY et les variables similaires et l'e-mail se connecte directement.",
   "proxyChannelHelp": "Pour les réseaux où le service de notification n'est joignable que via un proxy. Suit par défaut le proxy global des paramètres de notification.",

@@ -110,6 +110,8 @@
     }
   },
   "settings": "Benachrichtigungseinstellungen",
+  "serverName": "Servername",
+  "serverNameHelp": "Wird in Titel und Text jeder Benachrichtigung angezeigt, damit erkennbar ist, welcher Server sie gesendet hat; leer lassen, um den Hostnamen zu verwenden (dieser Rechner: {host}). Webhook-Vorlagen können die Variable {'{'}server{'}'} verwenden.",
   "proxy": "Proxy",
   "proxyGlobalHelp": "Standard-Proxy für alle Kanäle; jeder Kanal kann einen eigenen festlegen oder direkt verbinden. Unterstützt http://-, https://- und socks5://-Proxys; „Globalen Update-Proxy verwenden“ übernimmt den Update-Proxy aus den Systemeinstellungen. Ohne Proxy folgen HTTP-Kanäle HTTPS_PROXY und ähnlichen Umgebungsvariablen, E-Mail verbindet direkt.",
   "proxyChannelHelp": "Für Netzwerke, in denen der Benachrichtigungsdienst nur über einen Proxy erreichbar ist. Folgt standardmäßig dem globalen Proxy der Benachrichtigungseinstellungen.",

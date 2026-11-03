@@ -110,6 +110,8 @@
     }
   },
   "settings": "Notification settings",
+  "serverName": "Server name",
+  "serverNameHelp": "Shown in the title and body of every notification so you can tell which server sent it; leave empty to use the hostname (this machine: {host}). Webhook templates can use the {'{'}server{'}'} variable.",
   "proxy": "Proxy",
   "proxyGlobalHelp": "Default proxy for all channels; each channel can set its own or connect directly. Supports http://, https:// and socks5:// proxies; \"Use the global update proxy\" reuses the update proxy from System Settings. Without a proxy, HTTP channels follow HTTPS_PROXY and similar environment variables and email connects directly.",
   "proxyChannelHelp": "For networks where the notification service is only reachable through a proxy. Follows the global proxy in notification settings by default.",
