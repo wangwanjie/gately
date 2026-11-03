@@ -125,7 +125,8 @@
             <b>{{ t('about.stepImport') }}</b>
             <span>
               <i18n-t keypath="about.stepImportDesc" tag="span">
-                <template #link><router-link to="/settings?tab=backup">{{ t('about.backupLink') }}</router-link></template>
+                <!-- 设置页只对管理员开放，只读账号只显示文字 -->
+                <template #link><router-link v-if="isAdmin" to="/settings?tab=backup">{{ t('about.backupLink') }}</router-link><span v-else>{{ t('about.backupLink') }}</span></template>
               </i18n-t>
             </span>
           </li>
@@ -154,7 +155,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import {
@@ -188,6 +189,7 @@ import {
   WifiOff,
 } from 'lucide-vue-next'
 import { api, type SystemSettings, type SystemInfo, type UpdateInfo, type UpgradeStatus } from '../api'
+import { sessionRole } from '../nav'
 import AppLogo from '../components/AppLogo.vue'
 import UpdateDialog from '../components/UpdateDialog.vue'
 import SecurityNotice from '../components/SecurityNotice.vue'
@@ -281,8 +283,9 @@ async function toggleAutoCheck(v: string | number | boolean) {
 
 // ---- 在线升级 ----
 
-// 能读取全局设置即为管理员，可以设置更新代理与执行升级
-const isAdmin = ref(false)
+// 管理员可以设置更新代理、手动检查更新与执行升级；角色来自 /api/session（Layout 读取），
+// 只读账号不请求这些管理员接口，避免控制台出现 403
+const isAdmin = computed(() => sessionRole.value === 'admin')
 const proxy = ref('')
 const proxyDialog = ref(false)
 const proxyDraft = ref('')
@@ -294,9 +297,8 @@ async function loadProxy() {
   try {
     const s = await api.get<SystemSettings>('/api/system/settings')
     proxy.value = s.updateProxy ?? ''
-    isAdmin.value = true
   } catch {
-    // 只读账号无权读取设置，不显示升级工具
+    // 读取失败时不显示升级进度
     return
   }
   // 有进行中的在线升级（例如升级时刷新了页面）则直接显示进度
@@ -355,8 +357,18 @@ async function upgradeUpload(ev: Event) {
 // 安装命令所在的 pre，自动复制失败时选中它供手动复制
 const dockerCmdEl = ref<HTMLElement>()
 
+// 角色读取完成且为管理员时才加载更新代理与升级状态（直接打开关于页时 Layout 可能稍后才读到角色）
+watch(
+  isAdmin,
+  (v) => {
+    if (v) {
+      loadProxy()
+    }
+  },
+  { immediate: true },
+)
+
 onMounted(async () => {
-  loadProxy()
   loadUpdateState()
   try {
     info.value = await api.get<SystemInfo>('/api/system/info')

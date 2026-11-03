@@ -39,9 +39,10 @@
             </button>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item command="password" :icon="KeyRound">{{ t('layout.changePassword') }}</el-dropdown-item>
-                <el-dropdown-item command="settings" :icon="Settings">{{ t('layout.systemSettings') }}</el-dropdown-item>
-                <el-dropdown-item command="logout" :icon="LogOut" divided>{{ t('layout.logout') }}</el-dropdown-item>
+                <!-- 修改密码与系统设置只对管理员开放 -->
+                <el-dropdown-item v-if="role === 'admin'" command="password" :icon="KeyRound">{{ t('layout.changePassword') }}</el-dropdown-item>
+                <el-dropdown-item v-if="role === 'admin'" command="settings" :icon="Settings">{{ t('layout.systemSettings') }}</el-dropdown-item>
+                <el-dropdown-item command="logout" :icon="LogOut" :divided="role === 'admin'">{{ t('layout.logout') }}</el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
@@ -62,7 +63,8 @@
         <router-view />
       </main>
     </div>
-    <Onboarding />
+    <!-- 首次使用引导的接口只对管理员开放，读取到角色后才挂载 -->
+    <Onboarding v-if="sessionRole === 'admin'" />
   </div>
 </template>
 
@@ -79,7 +81,7 @@ import SideNav from '../components/SideNav.vue'
 import AppLogo from '../components/AppLogo.vue'
 import ThemePicker from '../components/ThemePicker.vue'
 import LocaleSwitcher from '../components/LocaleSwitcher.vue'
-import { disabledModules, groupByPath, pathEnabled } from '../nav'
+import { disabledModules, groupByPath, pathEnabled, sessionRole } from '../nav'
 import { useIsMobile } from '../composables/useIsMobile'
 import { useScrollLock } from '../composables/useScrollLock'
 
@@ -153,6 +155,7 @@ onMounted(async () => {
   const s = await api.get<{ username: string; role?: string; disabledModules?: string[]; defaultPassword?: boolean }>('/api/session')
   username.value = s.username
   role.value = s.role ?? 'admin'
+  sessionRole.value = role.value
   defaultPassword.value = s.defaultPassword ?? false
   disabledModules.value = s.disabledModules ?? []
   if (role.value === 'admin') {

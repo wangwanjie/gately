@@ -49,6 +49,8 @@ export interface NavItem {
   anyModule?: string[]
   // 总览页卡片上的一句话说明
   descKey?: string
+  // 只有管理员可用的页面（接口全部需要管理员权限），只读账号不显示也不能进入
+  adminOnly?: boolean
 }
 
 export interface NavGroup {
@@ -118,11 +120,11 @@ export const navGroups: NavGroup[] = [
       { path: '/notify', titleKey: 'nav.items.notify.title', icon: Bell, moduleId: 'notify', descKey: 'nav.items.notify.desc' },
       { path: '/perf', titleKey: 'nav.items.perf.title', icon: Gauge, moduleId: 'perf', descKey: 'nav.items.perf.desc' },
       { path: '/logs', titleKey: 'nav.items.logs.title', icon: ScrollText },
-      { path: '/audit', titleKey: 'nav.items.audit.title', icon: ClipboardList },
-      { path: '/history', titleKey: 'nav.items.history.title', icon: History },
-      { path: '/api-tokens', titleKey: 'nav.items.apiTokens.title', icon: KeyRound },
+      { path: '/audit', titleKey: 'nav.items.audit.title', icon: ClipboardList, adminOnly: true },
+      { path: '/history', titleKey: 'nav.items.history.title', icon: History, adminOnly: true },
+      { path: '/api-tokens', titleKey: 'nav.items.apiTokens.title', icon: KeyRound, adminOnly: true },
       { path: '/api-docs', titleKey: 'nav.items.apiDocs.title', icon: BookOpen },
-      { path: '/settings', titleKey: 'nav.items.settings.title', icon: Settings },
+      { path: '/settings', titleKey: 'nav.items.settings.title', icon: Settings, adminOnly: true },
       { path: '/about', titleKey: 'nav.items.about.title', icon: Info },
     ],
   },
@@ -133,13 +135,22 @@ export const navItems: NavItem[] = navGroups.flatMap((g) => g.items)
 // 本次启动中已关闭的功能模块 ID（来自 /api/session，重启后才会变化），对应的导航与页面全部隐藏
 export const disabledModules = ref<string[]>([])
 
+// 当前登录身份的角色（来自 /api/session）：'' 表示尚未读取，'admin' 或 'readonly'
+export const sessionRole = ref('')
+
+// isReadonly 为当前身份是否为只读账号；角色未读取时按管理员处理，避免误隐藏页面
+export const isReadonly = computed(() => sessionRole.value === 'readonly')
+
 // moduleEnabled 判断模块是否开启；不属于任何模块的页面视为开启。
 export function moduleEnabled(id?: string): boolean {
   return !id || !disabledModules.value.includes(id)
 }
 
-// itemEnabled 判断导航项是否显示：所属模块开启，多个模块共用的页面只要其中一个开启。
+// itemEnabled 判断导航项是否显示：所属模块开启，多个模块共用的页面只要其中一个开启；只读账号不显示管理员页面。
 function itemEnabled(i: NavItem): boolean {
+  if (i.adminOnly && isReadonly.value) {
+    return false
+  }
   if (i.anyModule) {
     return i.anyModule.some((id) => moduleEnabled(id))
   }
@@ -151,7 +162,7 @@ export const visibleNavGroups = computed(() =>
   navGroups.map((g) => ({ ...g, items: g.items.filter(itemEnabled) })).filter((g) => g.items.length > 0),
 )
 
-// pathEnabled 判断路由所属模块是否开启。
+// pathEnabled 判断路由是否可以进入：所属模块开启，且只读账号不能进入管理员页面。
 export function pathEnabled(path: string): boolean {
   const item = navByPath(path)
   return !item || itemEnabled(item)

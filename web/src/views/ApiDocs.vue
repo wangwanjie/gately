@@ -1,7 +1,8 @@
 <template>
   <div>
     <PageHeader :title="t('apiDocs.title')" :desc="t('apiDocs.desc')" :icon="BookOpen">
-      <router-link to="/api-tokens"><el-button :icon="KeyRound">{{ t('apiDocs.tokens') }}</el-button></router-link>
+      <!-- 令牌管理只对管理员开放 -->
+      <router-link v-if="!isReadonly" to="/api-tokens"><el-button :icon="KeyRound">{{ t('apiDocs.tokens') }}</el-button></router-link>
       <el-button :icon="Download" :disabled="!doc" @click="download">{{ t('apiDocs.downloadSpec') }}</el-button>
     </PageHeader>
 
@@ -26,7 +27,7 @@
               <span class="intro-text">
                 <i18n-t keypath="apiDocs.authDesc" tag="span">
                   <template #header><code class="mono code-pill">Authorization: Bearer gtl_…</code></template>
-                  <template #link><router-link to="/api-tokens">{{ t('apiDocs.tokensPage') }}</router-link></template>
+                  <template #link><router-link v-if="!isReadonly" to="/api-tokens">{{ t('apiDocs.tokensPage') }}</router-link><span v-else>{{ t('apiDocs.tokensPage') }}</span></template>
                 </i18n-t>
               </span>
             </div>
@@ -135,6 +136,7 @@ import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { BookOpen, ChevronDown, Copy, Download, KeyRound, Search } from 'lucide-vue-next'
 import { api } from '../api'
+import { isReadonly } from '../nav'
 import { apiOrigin } from '../basePath'
 import PageHeader from '../components/PageHeader.vue'
 import { useIsMobile } from '../composables/useIsMobile'
