@@ -29,6 +29,7 @@
   "banDesc": "{ip} をブロックし、全サイトで進行中の接続を切断します。",
   "banIpv6": "IPv6 アドレスは所属する /64 範囲でブロックされます。",
   "hours": "時間",
+  "permanent": "永久",
   "banConfirm": "切断してブロック",
   "closedMsg": "切断しました",
   "bannedMsg": "{key} をブロックし、{count} 件の接続を切断しました"

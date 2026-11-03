@@ -29,6 +29,7 @@
   "banDesc": "封禁 {ip}，并断开它在所有站点上进行中的连接。",
   "banIpv6": "IPv6 地址按所在的 /64 网段封禁。",
   "hours": "小时",
+  "permanent": "永久",
   "banConfirm": "断开并封禁",
   "closedMsg": "已断开",
   "bannedMsg": "已封禁 {key}，断开 {count} 个连接"

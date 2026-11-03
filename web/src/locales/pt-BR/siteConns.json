@@ -29,6 +29,7 @@
   "banDesc": "Bloquear {ip} e encerrar suas conexões ativas em todos os sites.",
   "banIpv6": "Endereços IPv6 são bloqueados pela faixa /64.",
   "hours": "horas",
+  "permanent": "Permanente",
   "banConfirm": "Encerrar e bloquear",
   "closedMsg": "Encerrada",
   "bannedMsg": "{key} bloqueado e {count} conexões encerradas"

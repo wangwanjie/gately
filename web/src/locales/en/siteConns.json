@@ -29,6 +29,7 @@
   "banDesc": "Ban {ip} and close its active connections on all sites.",
   "banIpv6": "IPv6 addresses are banned by their /64 range.",
   "hours": "hours",
+  "permanent": "Permanent",
   "banConfirm": "Close and ban",
   "closedMsg": "Closed",
   "bannedMsg": "Banned {key} and closed {count} connections"

@@ -29,6 +29,7 @@
   "banDesc": "{ip}을(를) 차단하고 모든 사이트에서 진행 중인 연결을 끊습니다.",
   "banIpv6": "IPv6 주소는 해당 /64 대역 단위로 차단됩니다.",
   "hours": "시간",
+  "permanent": "영구",
   "banConfirm": "끊고 차단",
   "closedMsg": "연결을 끊었습니다",
   "bannedMsg": "{key}을(를) 차단하고 연결 {count}개를 끊었습니다"

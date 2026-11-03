@@ -21,8 +21,10 @@
         </div>
         <div class="row">
           <el-input v-model="newIp" :placeholder="t('accessSettings.manualBanIp')" class="mono ip" />
-          <el-input-number v-model="newHours" :min="1" :max="720" />
+          <!-- 勾选永久时不限时长（接口 seconds 为 -1） -->
+          <el-input-number v-model="newHours" :min="1" :max="720" :disabled="newPermanent" />
           <span class="meta">{{ t('accessSettings.hours') }}</span>
+          <el-checkbox v-model="newPermanent">{{ t('accessSettings.permanent') }}</el-checkbox>
           <el-button size="small" :disabled="!newIp" @click="addBan">{{ t('accessSettings.ban') }}</el-button>
         </div>
       </div>
@@ -86,6 +88,7 @@ const guardOn = computed(() => moduleEnabled('guard'))
 const geo = ref<GeoInfo>({ loaded: false, size: 0 })
 const newIp = ref('')
 const newHours = ref(24)
+const newPermanent = ref(false)
 const geoUrl = ref('')
 // geoProxy 为下载数据库使用的代理，默认复用全局更新代理（未设置更新代理时等同直连）
 const geoProxy = ref('update')
@@ -101,7 +104,7 @@ async function loadGeo() {
 
 async function addBan() {
   try {
-    await api.post('/api/webservice/bans', { key: newIp.value, seconds: newHours.value * 3600 })
+    await api.post('/api/webservice/bans', { key: newIp.value, seconds: newPermanent.value ? -1 : newHours.value * 3600 })
     newIp.value = ''
     await loadBans()
   } catch (e) {
@@ -166,6 +169,7 @@ onMounted(() => {
 }
 .row {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   align-items: center;
 }

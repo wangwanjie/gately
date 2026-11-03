@@ -29,6 +29,7 @@
   "banDesc": "Bloquear {ip} y cerrar sus conexiones activas en todos los sitios.",
   "banIpv6": "Las direcciones IPv6 se bloquean por su rango /64.",
   "hours": "horas",
+  "permanent": "Permanente",
   "banConfirm": "Cerrar y bloquear",
   "closedMsg": "Cerrada",
   "bannedMsg": "{key} bloqueada y {count} conexiones cerradas"

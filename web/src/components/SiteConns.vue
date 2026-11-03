@@ -99,8 +99,10 @@
       <p v-if="banRow">{{ t('siteConns.banDesc', { ip: banRow.ip }) }}</p>
       <p v-if="banRow?.ip.includes(':')" class="meta">{{ t('siteConns.banIpv6') }}</p>
       <div class="ban-hours">
-        <el-input-number v-model="banHours" :min="1" :max="720" />
+        <!-- 勾选永久时不限时长（接口 banSeconds 为 -1） -->
+        <el-input-number v-model="banHours" :min="1" :max="720" :disabled="banPermanent" />
         <span>{{ t('siteConns.hours') }}</span>
+        <el-checkbox v-model="banPermanent">{{ t('siteConns.permanent') }}</el-checkbox>
       </div>
       <template #footer>
         <el-button @click="banVisible = false">{{ t('common.cancel') }}</el-button>
@@ -162,6 +164,7 @@ let seq = 0
 const banVisible = ref(false)
 const banRow = ref<Conn>()
 const banHours = ref(24)
+const banPermanent = ref(false)
 const banning = ref(false)
 
 function hostPort(c: Conn) {
@@ -265,6 +268,7 @@ async function closeConn(row: Conn, banSeconds: number): Promise<boolean> {
 function openBan(row: Conn) {
   banRow.value = row
   banHours.value = 24
+  banPermanent.value = false
   banVisible.value = true
 }
 
@@ -275,7 +279,7 @@ async function confirmBan() {
   banning.value = true
   try {
     // 封禁失败（如封禁时长超出范围、地址是管理员自己）时保留对话框，便于修改后重试
-    if (await closeConn(banRow.value, banHours.value * 3600)) {
+    if (await closeConn(banRow.value, banPermanent.value ? -1 : banHours.value * 3600)) {
       banVisible.value = false
     }
   } finally {
@@ -329,6 +333,7 @@ defineExpose({ open })
 }
 .ban-hours {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }

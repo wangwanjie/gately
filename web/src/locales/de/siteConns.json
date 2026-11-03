@@ -29,6 +29,7 @@
   "banDesc": "{ip} sperren und seine aktiven Verbindungen auf allen Sites trennen.",
   "banIpv6": "IPv6-Adressen werden nach ihrem /64-Bereich gesperrt.",
   "hours": "Stunden",
+  "permanent": "Dauerhaft",
   "banConfirm": "Trennen und sperren",
   "closedMsg": "Getrennt",
   "bannedMsg": "{key} gesperrt, {count} Verbindungen getrennt"
