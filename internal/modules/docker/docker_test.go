@@ -36,6 +36,8 @@ type fakeDocker struct {
 	// extraList 追加到容器列表中（如升级辅助容器），logText 非空时作为日志的 stdout 输出
 	extraList []map[string]any
 	logText   string
+	// stopped 中的容器在列表中显示为已停止
+	stopped map[string]bool
 }
 
 func (f *fakeDocker) handler(w http.ResponseWriter, r *http.Request) {
@@ -52,7 +54,7 @@ func (f *fakeDocker) handler(w http.ResponseWriter, r *http.Request) {
 		for id, c := range f.containers {
 			cfg := c["Config"].(map[string]any)
 			list = append(list, map[string]any{"Id": id, "Names": []string{c["Name"].(string)}, "Image": cfg["Image"], "ImageID": c["Image"],
-				"State": "running", "Status": "Up", "Labels": map[string]string{"com.docker.compose.project": "web"},
+				"State": map[bool]string{false: "running", true: "exited"}[f.stopped[id]], "Status": "Up", "Labels": map[string]string{"com.docker.compose.project": "web"},
 				"Ports": []map[string]any{{"PrivatePort": 80, "PublicPort": 8080, "Type": "tcp"}, {"PrivatePort": 80, "PublicPort": 8080, "Type": "tcp"}}})
 		}
 		list = append(list, f.extraList...)
@@ -414,5 +416,47 @@ func TestAutoCheckKeepsRecordOnFailure(t *testing.T) {
 	m.autoCheckOnce(context.Background())
 	if got := count(); got != 0 {
 		t.Fatalf("检查恢复后同一个新镜像不应重复通知，实际 %d 次", got)
+	}
+}
+
+// 定时检查只检查运行中的容器：容器停止一轮再启动后，同一个新镜像不重复通知
+func TestAutoCheckStopped(t *testing.T) {
+	f, host := startFake(t)
+	m := newModule(t, host)
+	var mu sync.Mutex
+	n := 0
+	unsub := events.Subscribe(func(e events.Event) {
+		if e.Type == events.DockerUpdate {
+			mu.Lock()
+			n++
+			mu.Unlock()
+		}
+	})
+	defer unsub()
+	count := func() int {
+		time.Sleep(50 * time.Millisecond)
+		mu.Lock()
+		defer mu.Unlock()
+		out := n
+		n = 0
+		return out
+	}
+	m.autoCheckOnce(context.Background())
+	if got := count(); got != 1 {
+		t.Fatalf("应通知一次镜像更新，实际 %d 次", got)
+	}
+	f.mu.Lock()
+	f.stopped = map[string]bool{}
+	for id := range f.containers {
+		f.stopped[id] = true
+	}
+	f.mu.Unlock()
+	m.autoCheckOnce(context.Background())
+	f.mu.Lock()
+	f.stopped = nil
+	f.mu.Unlock()
+	m.autoCheckOnce(context.Background())
+	if got := count(); got != 0 {
+		t.Fatalf("容器重新启动后同一个新镜像不应重复通知，实际 %d 次", got)
 	}
 }

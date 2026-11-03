@@ -961,6 +961,8 @@ func (m *Module) autoCheckOnce(ctx context.Context) {
 	}
 	cctx, cancel := context.WithTimeout(ctx, waitTimeout)
 	defer cancel()
+	// start 用于区分本轮检查过的容器：checkAll 只检查运行中的容器，记录时间晚于 start 的才是本轮结果
+	start := time.Now()
 	found := 0
 	// 本轮有更新的容器（容器 ID -> 最新镜像 ID）与其中尚未通知过的容器
 	current := map[string]string{}
@@ -984,11 +986,15 @@ func (m *Module) autoCheckOnce(ctx context.Context) {
 		return
 	}
 	m.logs.Add(logbuf.LevelInfo, "", fmt.Sprintf("定时检查更新完成，%d 个容器有新版本", found))
-	// 只保留本轮仍有更新的容器：升级或删除后的容器不再占用记录，以后再出现新镜像时重新通知。
-	// 本轮检查失败的容器（如镜像仓库限流）沿用原记录，否则下次检查成功时会重复通知同一个新镜像
+	// 只保留本轮仍有更新的容器：检查后已是最新（升级过）的容器不再占用记录，以后再出现新镜像时重新通知。
+	// 本轮检查失败（如镜像仓库限流）或没有检查（已停止，只检查运行中的容器）的容器沿用原记录，
+	// 否则下次检查成功或容器重新启动后会重复通知同一个新镜像
 	m.mu.Lock()
 	for id, img := range m.notified {
-		if _, ok := current[id]; !ok && m.updates[id].Error != "" {
+		if _, ok := current[id]; ok {
+			continue
+		}
+		if info, ok := m.updates[id]; !ok || info.Error != "" || info.Checked.Before(start) {
 			current[id] = img
 		}
 	}
