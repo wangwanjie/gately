@@ -288,6 +288,12 @@ func (m *Module) handleSiteBatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 移动站点串行执行，回调结束后才允许下一次移动，保证各次移动的回调按先后顺序执行；
+	// 先于下面的 defer 注册，在回调全部执行完之后才解锁
+	if req.Action == BatchMove {
+		m.moveMu.Lock()
+		defer m.moveMu.Unlock()
+	}
 	// 移动站点后要通知引用站点标识的其他模块（性能监控告警规则）。回调在释放模块锁之后执行，
 	// 避免与对方模块读取站点快照时的加锁顺序相反而死锁；这个 defer 先注册，晚于解锁执行
 	var renamed map[string]string

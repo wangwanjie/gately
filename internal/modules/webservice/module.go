@@ -46,6 +46,9 @@ type Module struct {
 	ipListStates map[string]*ipListState
 	// sitesMoved 为站点移到其他监听后的回调，参数把旧标识“监听key/站点key”映射到新标识
 	sitesMoved []func(map[string]string)
+	// moveMu 串行化站点移动及其回调：回调在释放 mu 之后执行，若不串行，相邻两次移动的回调可能乱序，
+	// 引用方（性能监控告警规则）先处理后一次的映射，最终停在已不存在的站点标识上。加锁顺序固定为 moveMu → mu
+	moveMu sync.Mutex
 }
 
 // New 创建模块。certs 为证书来源，可为 nil（此时不能启用 HTTPS）；waf 可为 nil（站点的 WAF 设置不生效）。
