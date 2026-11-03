@@ -8,7 +8,7 @@ Permisos: cada token solo tiene los permisos marcados al crearlo, con el formato
 
 El cuerpo de la solicitud usa `Content-Type: application/json`; los errores se devuelven siempre como `{"error": "descripción"}`.
 
-Los módulos desactivados en «Ajustes → Módulos» no ofrecen API: sus endpoints devuelven 403 y dejan de aparecer en la documentación de la API de la instancia en ejecución.
+Los módulos desactivados en «Ajustes → Módulos» no ofrecen API: sus endpoints devuelven 403 y dejan de aparecer en la documentación de la API de la instancia en ejecución. Los módulos no incluidos en una compilación personalizada (build.gately.cn) devuelven 404 en sus endpoints, indicando que el módulo no está incluido en esta compilación, y tampoco aparecen en la documentación de la API de la instancia en ejecución.
 
 Sitio web: https://gately.cn
 

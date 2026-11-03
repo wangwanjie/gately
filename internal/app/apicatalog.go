@@ -12,7 +12,8 @@ const apiIntro = "Gately 管理 API 用于脚本与自动化批量管理。\n\n"
 	"认证：在管理后台的“API 令牌”页创建令牌，请求头携带 `Authorization: Bearer gtl_xxxx`。\n\n" +
 	"权限：每个令牌只拥有创建时勾选的权限，格式为 `<模块>:read` 或 `<模块>:write`，写权限包含读权限。账号、两步验证、令牌管理以及备份、恢复、重启、系统设置接口只能使用登录会话。\n\n" +
 	"请求体使用 `Content-Type: application/json`，错误统一返回 `{\"error\": \"说明\"}`。\n\n" +
-	"在「设置 → 功能模块」中关闭的模块不提供接口，请求其接口返回 403，运行中实例的接口文档也不再列出这些接口。"
+	"在「设置 → 功能模块」中关闭的模块不提供接口，请求其接口返回 403，运行中实例的接口文档也不再列出这些接口。" +
+	"定制构建（build.gately.cn）中没有编译进来的模块，请求其接口返回 404，说明为该模块未包含在此构建中，运行中实例的接口文档同样不列出。"
 
 // crudNouns 把“模块/集合路径”映射到中文名称，用于生成通用增删改查接口的摘要。
 var crudNouns = map[string]string{
@@ -224,18 +225,18 @@ var apiCatalog = map[string]epDoc{
 	"POST /api/storage/files/{key}/mkdir":                {Summary: "创建存储目录", Body: true},
 	"POST /api/storage/files/{key}/rename":               {Summary: "重命名或移动存储文件", Body: true},
 	"DELETE /api/storage/files/{key}":                    {Summary: "删除存储文件"},
-	"GET /api/session":                                   {Summary: "查看当前认证身份", Desc: "返回 `username`、`role`（`admin` 或 `readonly`）、`disabledModules`（已关闭的功能模块 ID）与 `defaultPassword`（管理员仍在使用默认密码 `gately.cn` 时为 true，管理界面据此提醒修改）。"},
-	"GET /api/status":                                    {Summary: "查看系统与各模块状态", Desc: "包含主机资源、版本与模块摘要。"},
+	"GET /api/session":                                   {Summary: "查看当前认证身份", Desc: "返回 `username`、`role`（`admin` 或 `readonly`）、`disabledModules`（已关闭的功能模块 ID）、`absentModules`（定制构建中没有编译进来的模块 ID，完整版为空）与 `defaultPassword`（管理员仍在使用默认密码 `gately.cn` 时为 true，管理界面据此提醒修改）。"},
+	"GET /api/status":                                    {Summary: "查看系统与各模块状态", Desc: "包含主机资源、版本与模块摘要。`build` 为构建信息：`custom`（是否为去掉了部分模块或语言的定制构建）、`modules`（编译进来的模块 ID）、`absent`（没有编译进来的模块）、`languages`（编译进来的界面语言）。"},
 	"GET /api/logs":                                      {Summary: "查看系统日志", Desc: "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名（部分匹配），`site` 站点名称（完整匹配，只返回该站点的访问日志），`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。"},
-	"GET /api/system/settings":                           {Summary: "读取全局设置", Desc: "仅登录会话可用。只读字段 `modules` 列出全部功能模块及依赖关系，`gatewayAvailable` 表示以飞牛统一网关方式运行。`updateProxy` 为检查更新与在线升级访问 GitHub 时使用的代理。"},
-	"PUT /api/system/settings":                           {Summary: "保存全局设置", Desc: "`disabledModules` 为关闭的功能模块 ID 列表，被其他模块依赖的模块不能关闭，修改后重启生效；`gatewaySSO` 开启飞牛登录态自动登录，仅飞牛安装包有效。", Body: true},
-	"GET /api/system/info":                               {Summary: "查看系统信息"},
+	"GET /api/system/settings":                           {Summary: "读取全局设置", Desc: "仅登录会话可用。只读字段 `modules` 列出全部功能模块及依赖关系，`gatewayAvailable` 表示以飞牛统一网关方式运行。`updateProxy` 为检查更新与在线升级访问 GitHub 时使用的代理。`denyMode` 为未授权访问（被封禁、仅内网时的外网访问、未经过安全入口）的响应方式：空为默认提示页，`notfound` 纯 404，`blank` 空白页，`close` 断开连接，`drop` 不响应直到超时，`custom` 自定义页面；`denyStatus` 为自定义页面的状态码（200、403、404、410、500、502、503），`denyPage` 为自定义页面 HTML（上限 64 KB，在禁止脚本与外部资源的沙箱 CSP 下显示）。"},
+	"PUT /api/system/settings":                           {Summary: "保存全局设置", Desc: "`disabledModules` 为关闭的功能模块 ID 列表，被其他模块依赖的模块不能关闭，修改后重启生效，定制构建中没有编译进来的模块的开关保存时原样保留；`gatewaySSO` 开启飞牛登录态自动登录，仅飞牛安装包有效。`denyMode`、`denyStatus`、`denyPage` 见读取接口说明。", Body: true},
+	"GET /api/system/info":                               {Summary: "查看系统信息", Desc: "包含版本、平台、运行环境与在线升级支持情况。`build` 为构建信息，字段同 `GET /api/status`；`selfUpgrade.custom` 为 true 时是定制构建，不提供在线升级，可上传升级包。"},
 	"GET /api/system/update":                             {Summary: "检查新版本与安全公告", Desc: "立即读取 GitHub 上的发布列表与 Gately 已公开的安全公告（GitHub Security Advisories），访问时使用全局设置 `updateProxy` 中的代理；距上次成功检查不足 30 秒时直接返回上次结果。`hasUpdate` 表示有新版本；`security` 为 true 表示当前版本受已公开的安全问题影响，`advisories` 列出影响当前版本的安全公告（`id`、`summary`、`severity`、`url`、`ranges`），`securityReleases` 列出比当前版本新、更新说明带有安全章节的版本。`selfUpgrade.supported` 表示当前部署方式能否在线升级，不能时 `reason` 为 `os`、`docker`、`fnos`、`opkg`、`apk` 或 `readonly`。读取失败返回 502。只读账号与只有读权限的 API 令牌只返回上次检查的结果（同 `/api/system/update/state`），不访问 GitHub。"},
 	"GET /api/system/update/state":                       {Summary: "查看上次检查更新的结果", Desc: "不访问网络，返回自动检查或手动检查保存的最近一次结果，字段同 `GET /api/system/update`，另有 `autoCheck`（是否开启自动检查）、`checkedAt`（最近一次成功检查的时间）以及最近一次失败的 `error` 与 `failedAt`。从未成功检查过时 `latest` 为空。"},
-	"POST /api/system/upgrade":                           {Summary: "在线升级到最新版本", Desc: "仅登录会话（管理员）可用，只支持 Linux 二进制部署。在后台下载与本机平台对应的发布包，核对 checksums.txt 中的 SHA-256 并试运行新程序，替换可执行文件后重启；旧版本保留为同目录下的 `<文件名>.old`。立即返回 202，进度见 `GET /api/system/upgrade/status`。"},
+	"POST /api/system/upgrade":                           {Summary: "在线升级到最新版本", Desc: "仅登录会话（管理员）可用，只支持 Linux 二进制部署。在后台下载与本机平台对应的发布包，核对 checksums.txt 中的 SHA-256 并试运行新程序，替换可执行文件后重启；旧版本保留为同目录下的 `<文件名>.old`。立即返回 202，进度见 `GET /api/system/upgrade/status`。定制构建返回 409：在线升级下载的是完整版本，请到 https://build.gately.cn 用相同选项生成新版本后用上传接口升级。"},
 	"GET /api/system/upgrade/status":                     {Summary: "查看在线升级进度", Desc: "仅登录会话可用。`state` 依次为 `checking`、`downloading`、`verifying`、`installing`、`restarting`；失败时为 `failed` 并在 `error` 中说明原因，被取消时为 `canceled`。`downloaded` / `total` 为升级包已下载与总字节数。"},
 	"POST /api/system/upgrade/cancel":                    {Summary: "取消在线升级", Desc: "仅登录会话（管理员）可用。只能在替换可执行文件之前（`checking`、`downloading`、`verifying`）取消，安装阶段或没有进行中的升级时返回 409。"},
-	"POST /api/system/upgrade/upload":                    {Summary: "上传升级包升级", Desc: "仅登录会话（管理员）可用。表单字段 `file` 为发布页的 `gately_<版本>_linux_<架构>.tar.gz` 或解压后的 `gately` 程序，不限制版本高低，可用于离线升级或回退。"},
+	"POST /api/system/upgrade/upload":                    {Summary: "上传升级包升级", Desc: "仅登录会话（管理员）可用。表单字段 `file` 为发布页的 `gately_<版本>_linux_<架构>.tar.gz` 或解压后的 `gately` 程序，不限制版本高低，可用于离线升级或回退。定制构建也可以用此接口上传 build.gately.cn 生成的安装包。"},
 	"GET /api/audit":                                     {Summary: "查询操作审计日志", Desc: "仅登录会话可用。支持 `category`（login/change/access）、`module`、`actor`、`q`、`limit`、`offset` 参数，按时间倒序返回。"},
 	"GET /api/history":                                   {Summary: "列出配置历史版本", Desc: "仅登录会话可用。每次覆盖配置前自动保存旧版本，每个配置保留最近 30 个。"},
 	"GET /api/history/{name}/{id}/diff":                  {Summary: "比较历史版本与当前配置", Desc: "仅登录会话可用。"},

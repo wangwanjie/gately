@@ -8,7 +8,7 @@ Berechtigungen: Jedes Token besitzt nur die bei der Erstellung ausgewählten Ber
 
 Der Anfragekörper verwendet `Content-Type: application/json`, Fehler werden einheitlich als `{"error": "Beschreibung"}` zurückgegeben.
 
-Unter „Einstellungen → Module“ deaktivierte Module stellen keine API bereit: Ihre Endpunkte liefern 403 und erscheinen nicht mehr in der API-Dokumentation der laufenden Instanz.
+Unter „Einstellungen → Module“ deaktivierte Module stellen keine API bereit: Ihre Endpunkte liefern 403 und erscheinen nicht mehr in der API-Dokumentation der laufenden Instanz. Module, die nicht in einen benutzerdefinierten Build (build.gately.cn) einkompiliert sind, liefern an ihren Endpunkten 404 mit dem Hinweis, dass das Modul in diesem Build nicht enthalten ist, und erscheinen ebenfalls nicht in der API-Dokumentation der laufenden Instanz.
 
 Website: https://gately.cn
 

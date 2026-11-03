@@ -8,7 +8,7 @@ Permissions: each token has only the permissions selected at creation, in the fo
 
 Send the request body with `Content-Type: application/json`; errors are returned uniformly as `{"error": "message"}`.
 
-Modules turned off under "Settings → Modules" serve no API: their endpoints return 403 and no longer appear in the API docs of the running instance.
+Modules turned off under "Settings → Modules" serve no API: their endpoints return 403 and no longer appear in the API docs of the running instance. Modules not compiled into a custom build (build.gately.cn) return 404 on their endpoints, saying the module is not included in this build, and are likewise left out of the API docs of the running instance.
 
 Website: https://gately.cn
 

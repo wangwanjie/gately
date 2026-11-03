@@ -8,7 +8,7 @@ Permissions : chaque jeton ne possède que les permissions cochées à sa créat
 
 Le corps de la requête utilise `Content-Type: application/json` ; les erreurs sont renvoyées au format `{"error": "description"}`.
 
-Les modules désactivés dans « Paramètres → Modules » n’exposent aucune API : leurs points de terminaison renvoient 403 et n’apparaissent plus dans la documentation de l’API de l’instance en cours d’exécution.
+Les modules désactivés dans « Paramètres → Modules » n’exposent aucune API : leurs points de terminaison renvoient 403 et n’apparaissent plus dans la documentation de l’API de l’instance en cours d’exécution. Les modules non compilés dans une version personnalisée (build.gately.cn) renvoient 404 sur leurs points de terminaison, en indiquant que le module n’est pas inclus dans cette version, et n’apparaissent pas non plus dans la documentation de l’API de l’instance en cours d’exécution.
 
 Site officiel : https://gately.cn
 

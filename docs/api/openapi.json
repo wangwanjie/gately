@@ -4189,7 +4189,7 @@
     "url": "https://gately.cn"
   },
   "info": {
-    "description": "Gately 管理 API 用于脚本与自动化批量管理。\n\n认证：在管理后台的“API 令牌”页创建令牌，请求头携带 `Authorization: Bearer gtl_xxxx`。\n\n权限：每个令牌只拥有创建时勾选的权限，格式为 `\u003c模块\u003e:read` 或 `\u003c模块\u003e:write`，写权限包含读权限。账号、两步验证、令牌管理以及备份、恢复、重启、系统设置接口只能使用登录会话。\n\n请求体使用 `Content-Type: application/json`，错误统一返回 `{\"error\": \"说明\"}`。\n\n在「设置 → 功能模块」中关闭的模块不提供接口，请求其接口返回 403，运行中实例的接口文档也不再列出这些接口。",
+    "description": "Gately 管理 API 用于脚本与自动化批量管理。\n\n认证：在管理后台的“API 令牌”页创建令牌，请求头携带 `Authorization: Bearer gtl_xxxx`。\n\n权限：每个令牌只拥有创建时勾选的权限，格式为 `\u003c模块\u003e:read` 或 `\u003c模块\u003e:write`，写权限包含读权限。账号、两步验证、令牌管理以及备份、恢复、重启、系统设置接口只能使用登录会话。\n\n请求体使用 `Content-Type: application/json`，错误统一返回 `{\"error\": \"说明\"}`。\n\n在「设置 → 功能模块」中关闭的模块不提供接口，请求其接口返回 403，运行中实例的接口文档也不再列出这些接口。定制构建（build.gately.cn）中没有编译进来的模块，请求其接口返回 404，说明为该模块未包含在此构建中，运行中实例的接口文档同样不列出。",
     "title": "Gately 管理 API",
     "version": "dev"
   },
@@ -28264,7 +28264,7 @@
     },
     "/api/session": {
       "get": {
-        "description": "返回 `username`、`role`（`admin` 或 `readonly`）、`disabledModules`（已关闭的功能模块 ID）与 `defaultPassword`（管理员仍在使用默认密码 `gately.cn` 时为 true，管理界面据此提醒修改）。\n\n任何有效的 API 令牌均可访问，无需特定权限。",
+        "description": "返回 `username`、`role`（`admin` 或 `readonly`）、`disabledModules`（已关闭的功能模块 ID）、`absentModules`（定制构建中没有编译进来的模块 ID，完整版为空）与 `defaultPassword`（管理员仍在使用默认密码 `gately.cn` 时为 true，管理界面据此提醒修改）。\n\n任何有效的 API 令牌均可访问，无需特定权限。",
         "responses": {
           "200": {
             "description": "成功"
@@ -30142,7 +30142,7 @@
     },
     "/api/status": {
       "get": {
-        "description": "包含主机资源、版本与模块摘要。\n\n所需权限：`status:read`。",
+        "description": "包含主机资源、版本与模块摘要。`build` 为构建信息：`custom`（是否为去掉了部分模块或语言的定制构建）、`modules`（编译进来的模块 ID）、`absent`（没有编译进来的模块）、`languages`（编译进来的界面语言）。\n\n所需权限：`status:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -32703,7 +32703,7 @@
     },
     "/api/system/info": {
       "get": {
-        "description": "所需权限：`status:read`。",
+        "description": "包含版本、平台、运行环境与在线升级支持情况。`build` 为构建信息，字段同 `GET /api/status`；`selfUpgrade.custom` 为 true 时是定制构建，不提供在线升级，可上传升级包。\n\n所需权限：`status:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -32984,7 +32984,7 @@
     },
     "/api/system/settings": {
       "get": {
-        "description": "仅登录会话可用。只读字段 `modules` 列出全部功能模块及依赖关系，`gatewayAvailable` 表示以飞牛统一网关方式运行。`updateProxy` 为检查更新与在线升级访问 GitHub 时使用的代理。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
+        "description": "仅登录会话可用。只读字段 `modules` 列出全部功能模块及依赖关系，`gatewayAvailable` 表示以飞牛统一网关方式运行。`updateProxy` 为检查更新与在线升级访问 GitHub 时使用的代理。`denyMode` 为未授权访问（被封禁、仅内网时的外网访问、未经过安全入口）的响应方式：空为默认提示页，`notfound` 纯 404，`blank` 空白页，`close` 断开连接，`drop` 不响应直到超时，`custom` 自定义页面；`denyStatus` 为自定义页面的状态码（200、403、404、410、500、502、503），`denyPage` 为自定义页面 HTML（上限 64 KB，在禁止脚本与外部资源的沙箱 CSP 下显示）。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
         "responses": {
           "200": {
             "description": "成功"
@@ -33028,7 +33028,7 @@
         "x-token-allowed": false
       },
       "put": {
-        "description": "`disabledModules` 为关闭的功能模块 ID 列表，被其他模块依赖的模块不能关闭，修改后重启生效；`gatewaySSO` 开启飞牛登录态自动登录，仅飞牛安装包有效。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
+        "description": "`disabledModules` 为关闭的功能模块 ID 列表，被其他模块依赖的模块不能关闭，修改后重启生效，定制构建中没有编译进来的模块的开关保存时原样保留；`gatewaySSO` 开启飞牛登录态自动登录，仅飞牛安装包有效。`denyMode`、`denyStatus`、`denyPage` 见读取接口说明。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
         "requestBody": {
           "content": {
             "application/json": {
@@ -33241,7 +33241,7 @@
     },
     "/api/system/upgrade": {
       "post": {
-        "description": "仅登录会话（管理员）可用，只支持 Linux 二进制部署。在后台下载与本机平台对应的发布包，核对 checksums.txt 中的 SHA-256 并试运行新程序，替换可执行文件后重启；旧版本保留为同目录下的 `\u003c文件名\u003e.old`。立即返回 202，进度见 `GET /api/system/upgrade/status`。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
+        "description": "仅登录会话（管理员）可用，只支持 Linux 二进制部署。在后台下载与本机平台对应的发布包，核对 checksums.txt 中的 SHA-256 并试运行新程序，替换可执行文件后重启；旧版本保留为同目录下的 `\u003c文件名\u003e.old`。立即返回 202，进度见 `GET /api/system/upgrade/status`。定制构建返回 409：在线升级下载的是完整版本，请到 https://build.gately.cn 用相同选项生成新版本后用上传接口升级。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
         "responses": {
           "200": {
             "description": "成功"
@@ -33379,7 +33379,7 @@
     },
     "/api/system/upgrade/upload": {
       "post": {
-        "description": "仅登录会话（管理员）可用。表单字段 `file` 为发布页的 `gately_\u003c版本\u003e_linux_\u003c架构\u003e.tar.gz` 或解压后的 `gately` 程序，不限制版本高低，可用于离线升级或回退。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
+        "description": "仅登录会话（管理员）可用。表单字段 `file` 为发布页的 `gately_\u003c版本\u003e_linux_\u003c架构\u003e.tar.gz` 或解压后的 `gately` 程序，不限制版本高低，可用于离线升级或回退。定制构建也可以用此接口上传 build.gately.cn 生成的安装包。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
         "responses": {
           "200": {
             "description": "成功"

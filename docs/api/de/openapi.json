@@ -4189,7 +4189,7 @@
     "url": "https://gately.cn"
   },
   "info": {
-    "description": "Die Gately Verwaltungs-API dient der Stapelverwaltung per Skript und Automatisierung.\n\nAuthentifizierung: Erstellen Sie auf der Seite „API-Tokens“ der Verwaltungsoberfläche ein Token und senden Sie im Request-Header `Authorization: Bearer gtl_xxxx`.\n\nBerechtigungen: Jedes Token besitzt nur die bei der Erstellung ausgewählten Berechtigungen im Format `\u003cModul\u003e:read` oder `\u003cModul\u003e:write`, wobei Schreibrechte Leserechte einschließen. Schnittstellen für Konto, Zwei-Faktor-Authentifizierung, Token-Verwaltung sowie Backup, Wiederherstellung, Neustart und Systemeinstellungen sind nur mit einer Anmeldesitzung nutzbar.\n\nDer Anfragekörper verwendet `Content-Type: application/json`, Fehler werden einheitlich als `{\"error\": \"Beschreibung\"}` zurückgegeben.\n\nUnter „Einstellungen → Module“ deaktivierte Module stellen keine API bereit: Ihre Endpunkte liefern 403 und erscheinen nicht mehr in der API-Dokumentation der laufenden Instanz.",
+    "description": "Die Gately Verwaltungs-API dient der Stapelverwaltung per Skript und Automatisierung.\n\nAuthentifizierung: Erstellen Sie auf der Seite „API-Tokens“ der Verwaltungsoberfläche ein Token und senden Sie im Request-Header `Authorization: Bearer gtl_xxxx`.\n\nBerechtigungen: Jedes Token besitzt nur die bei der Erstellung ausgewählten Berechtigungen im Format `\u003cModul\u003e:read` oder `\u003cModul\u003e:write`, wobei Schreibrechte Leserechte einschließen. Schnittstellen für Konto, Zwei-Faktor-Authentifizierung, Token-Verwaltung sowie Backup, Wiederherstellung, Neustart und Systemeinstellungen sind nur mit einer Anmeldesitzung nutzbar.\n\nDer Anfragekörper verwendet `Content-Type: application/json`, Fehler werden einheitlich als `{\"error\": \"Beschreibung\"}` zurückgegeben.\n\nUnter „Einstellungen → Module“ deaktivierte Module stellen keine API bereit: Ihre Endpunkte liefern 403 und erscheinen nicht mehr in der API-Dokumentation der laufenden Instanz. Module, die nicht in einen benutzerdefinierten Build (build.gately.cn) einkompiliert sind, liefern an ihren Endpunkten 404 mit dem Hinweis, dass das Modul in diesem Build nicht enthalten ist, und erscheinen ebenfalls nicht in der API-Dokumentation der laufenden Instanz.",
     "title": "Gately Verwaltungs-API",
     "version": "dev"
   },
@@ -28264,7 +28264,7 @@
     },
     "/api/session": {
       "get": {
-        "description": "Liefert `username`, `role` (`admin` oder `readonly`), `disabledModules` (IDs abgeschalteter Module) und `defaultPassword` (true, solange der Administrator noch das Standardpasswort `gately.cn` verwendet; die Admin-Oberfläche fordert dann zur Änderung auf).\n\nJedes gültige API-Token hat Zugriff; eine bestimmte Berechtigung ist nicht erforderlich.",
+        "description": "Liefert `username`, `role` (`admin` oder `readonly`), `disabledModules` (IDs abgeschalteter Module), `absentModules` (IDs der nicht in einen benutzerdefinierten Build einkompilierten Module; in der Vollversion leer) und `defaultPassword` (true, solange der Administrator noch das Standardpasswort `gately.cn` verwendet; die Admin-Oberfläche fordert dann zur Änderung auf).\n\nJedes gültige API-Token hat Zugriff; eine bestimmte Berechtigung ist nicht erforderlich.",
         "responses": {
           "200": {
             "description": "Erfolgreich"
@@ -30142,7 +30142,7 @@
     },
     "/api/status": {
       "get": {
-        "description": "Enthält Host-Ressourcen, Version und Modulübersicht.\n\nErforderliche Berechtigung: `status:read`.",
+        "description": "Enthält Host-Ressourcen, Version und Modulübersicht. `build` enthält die Build-Informationen: `custom` (ob es ein benutzerdefinierter Build ohne einige Module oder Sprachen ist), `modules` (IDs der einkompilierten Module), `absent` (nicht einkompilierte Module), `languages` (einkompilierte Oberflächensprachen).\n\nErforderliche Berechtigung: `status:read`.",
         "responses": {
           "200": {
             "description": "Erfolgreich"
@@ -32703,7 +32703,7 @@
     },
     "/api/system/info": {
       "get": {
-        "description": "Erforderliche Berechtigung: `status:read`.",
+        "description": "Enthält Version, Plattform, Laufzeitumgebung und Unterstützung für Online-Upgrades. `build` enthält die Build-Informationen mit denselben Feldern wie `GET /api/status`; ist `selfUpgrade.custom` true, handelt es sich um einen benutzerdefinierten Build ohne Online-Upgrade, Upgrade-Pakete können aber hochgeladen werden.\n\nErforderliche Berechtigung: `status:read`.",
         "responses": {
           "200": {
             "description": "Erfolgreich"
@@ -32984,7 +32984,7 @@
     },
     "/api/system/settings": {
       "get": {
-        "description": "Nur mit Sitzung. Das schreibgeschützte Feld `modules` listet alle Funktionsmodule und ihre Abhängigkeiten; `gatewayAvailable` bedeutet, dass Gately hinter dem einheitlichen fnOS-Gateway läuft. `updateProxy` ist der Proxy für den Zugriff auf GitHub bei Update-Prüfung und Online-Upgrade.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "description": "Nur mit Sitzung. Das schreibgeschützte Feld `modules` listet alle Funktionsmodule und ihre Abhängigkeiten; `gatewayAvailable` bedeutet, dass Gately hinter dem einheitlichen fnOS-Gateway läuft. `updateProxy` ist der Proxy für den Zugriff auf GitHub bei Update-Prüfung und Online-Upgrade. `denyMode` legt fest, wie auf unbefugten Zugriff (gesperrte Clients, Zugriff von außen bei „nur LAN“, Zugriff ohne den sicheren Einstiegspunkt) geantwortet wird: leer für die Standard-Hinweisseite, `notfound` für ein einfaches 404, `blank` für eine leere Seite, `close` zum Schließen der Verbindung, `drop` für keine Antwort bis zum Timeout, `custom` für eine eigene Seite. `denyStatus` ist der Statuscode der eigenen Seite (200, 403, 404, 410, 500, 502, 503), `denyPage` das HTML der eigenen Seite (höchstens 64 KB, angezeigt unter einer Sandbox-CSP, die Skripte und externe Ressourcen blockiert).\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
         "responses": {
           "200": {
             "description": "Erfolgreich"
@@ -33028,7 +33028,7 @@
         "x-token-allowed": false
       },
       "put": {
-        "description": "`disabledModules` ist die Liste der IDs deaktivierter Module; ein Modul, von dem andere abhängen, kann nicht deaktiviert werden, und Änderungen gelten nach einem Neustart. `gatewaySSO` aktiviert „Mit fnOS anmelden“ und wirkt nur im fnOS-Paket.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "description": "`disabledModules` ist die Liste der IDs deaktivierter Module; ein Modul, von dem andere abhängen, kann nicht deaktiviert werden, und Änderungen gelten nach einem Neustart. In einem benutzerdefinierten Build bleiben die Schalter nicht einkompilierter Module beim Speichern unverändert erhalten. `gatewaySSO` aktiviert „Mit fnOS anmelden“ und wirkt nur im fnOS-Paket. Zu `denyMode`, `denyStatus` und `denyPage` siehe den Lese-Endpunkt.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
         "requestBody": {
           "content": {
             "application/json": {
@@ -33241,7 +33241,7 @@
     },
     "/api/system/upgrade": {
       "post": {
-        "description": "Nur mit Sitzung (Administrator) und nur für Linux-Binärinstallationen. Lädt das Release-Paket für diese Plattform im Hintergrund, prüft die SHA-256 gegen checksums.txt, startet die neue Binärdatei testweise, ersetzt die ausführbare Datei und startet neu. Die vorherige Version bleibt als `\u003cDateiname\u003e.old` im selben Verzeichnis erhalten. Gibt sofort 202 zurück; den Fortschritt liefert `GET /api/system/upgrade/status`.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "description": "Nur mit Sitzung (Administrator) und nur für Linux-Binärinstallationen. Lädt das Release-Paket für diese Plattform im Hintergrund, prüft die SHA-256 gegen checksums.txt, startet die neue Binärdatei testweise, ersetzt die ausführbare Datei und startet neu. Die vorherige Version bleibt als `\u003cDateiname\u003e.old` im selben Verzeichnis erhalten. Gibt sofort 202 zurück; den Fortschritt liefert `GET /api/system/upgrade/status`. Benutzerdefinierte Builds erhalten 409: Das Online-Upgrade lädt die Vollversion herunter. Erzeuge daher auf https://build.gately.cn eine neue Version mit denselben Optionen und aktualisiere über den Upload-Endpunkt.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
         "responses": {
           "200": {
             "description": "Erfolgreich"
@@ -33379,7 +33379,7 @@
     },
     "/api/system/upgrade/upload": {
       "post": {
-        "description": "Nur mit Sitzung (Administrator). Das Formularfeld `file` ist das `gately_\u003cVersion\u003e_linux_\u003cArchitektur\u003e.tar.gz` von der Release-Seite oder die entpackte `gately`-Binärdatei. Jede Version wird akzeptiert, daher auch für Offline-Upgrades oder Rückstufungen geeignet.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "description": "Nur mit Sitzung (Administrator). Das Formularfeld `file` ist das `gately_\u003cVersion\u003e_linux_\u003cArchitektur\u003e.tar.gz` von der Release-Seite oder die entpackte `gately`-Binärdatei. Jede Version wird akzeptiert, daher auch für Offline-Upgrades oder Rückstufungen geeignet. Benutzerdefinierte Builds können über diesen Endpunkt auch ein auf build.gately.cn erzeugtes Paket hochladen.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
         "responses": {
           "200": {
             "description": "Erfolgreich"

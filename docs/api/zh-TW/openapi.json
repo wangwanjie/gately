@@ -4189,7 +4189,7 @@
     "url": "https://gately.cn"
   },
   "info": {
-    "description": "Gately 管理 API 用於指令碼與自動化批次管理。\n\n驗證：在管理後台的「API 權杖」頁建立權杖，請求標頭攜帶 `Authorization: Bearer gtl_xxxx`。\n\n權限：每個權杖只擁有建立時勾選的權限，格式為 `\u003c模組\u003e:read` 或 `\u003c模組\u003e:write`，寫入權限包含讀取權限。帳號、兩步驟驗證、權杖管理以及備份、還原、重新啟動、系統設定介面只能使用登入工作階段。\n\n請求本文使用 `Content-Type: application/json`，錯誤統一回傳 `{\"error\": \"說明\"}`。\n\n在「設定 → 功能模組」中關閉的模組不提供介面，請求其介面回傳 403，執行中執行個體的介面文件也不再列出這些介面。",
+    "description": "Gately 管理 API 用於指令碼與自動化批次管理。\n\n驗證：在管理後台的「API 權杖」頁建立權杖，請求標頭攜帶 `Authorization: Bearer gtl_xxxx`。\n\n權限：每個權杖只擁有建立時勾選的權限，格式為 `\u003c模組\u003e:read` 或 `\u003c模組\u003e:write`，寫入權限包含讀取權限。帳號、兩步驟驗證、權杖管理以及備份、還原、重新啟動、系統設定介面只能使用登入工作階段。\n\n請求本文使用 `Content-Type: application/json`，錯誤統一回傳 `{\"error\": \"說明\"}`。\n\n在「設定 → 功能模組」中關閉的模組不提供介面，請求其介面回傳 403，執行中執行個體的介面文件也不再列出這些介面。自訂建置（build.gately.cn）中沒有編譯進來的模組，請求其介面回傳 404，說明為該模組未包含在此建置中，執行中執行個體的介面文件同樣不列出。",
     "title": "Gately 管理 API",
     "version": "dev"
   },
@@ -28264,7 +28264,7 @@
     },
     "/api/session": {
       "get": {
-        "description": "回傳 `username`、`role`（`admin` 或 `readonly`）、`disabledModules`（已關閉的功能模組 ID）與 `defaultPassword`（管理員仍在使用預設密碼 `gately.cn` 時為 true，管理介面據此提醒修改）。\n\n任何有效的 API 權杖皆可存取，無需特定權限。",
+        "description": "回傳 `username`、`role`（`admin` 或 `readonly`）、`disabledModules`（已關閉的功能模組 ID）、`absentModules`（自訂建置中沒有編譯進來的模組 ID，完整版為空）與 `defaultPassword`（管理員仍在使用預設密碼 `gately.cn` 時為 true，管理介面據此提醒修改）。\n\n任何有效的 API 權杖皆可存取，無需特定權限。",
         "responses": {
           "200": {
             "description": "成功"
@@ -30142,7 +30142,7 @@
     },
     "/api/status": {
       "get": {
-        "description": "包含主機資源、版本與模組摘要。\n\n所需權限：`status:read`。",
+        "description": "包含主機資源、版本與模組摘要。`build` 為建置資訊：`custom`（是否為去掉了部分模組或語言的自訂建置）、`modules`（編譯進來的模組 ID）、`absent`（沒有編譯進來的模組）、`languages`（編譯進來的介面語言）。\n\n所需權限：`status:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -32703,7 +32703,7 @@
     },
     "/api/system/info": {
       "get": {
-        "description": "所需權限：`status:read`。",
+        "description": "包含版本、平台、執行環境與線上升級支援情況。`build` 為建置資訊，欄位同 `GET /api/status`；`selfUpgrade.custom` 為 true 時是自訂建置，不提供線上升級，可上傳升級套件。\n\n所需權限：`status:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -32984,7 +32984,7 @@
     },
     "/api/system/settings": {
       "get": {
-        "description": "僅登入工作階段可用。唯讀欄位 `modules` 列出全部功能模組及相依關係，`gatewayAvailable` 表示以飛牛統一閘道方式執行。`updateProxy` 為檢查更新與線上升級存取 GitHub 時使用的代理。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
+        "description": "僅登入工作階段可用。唯讀欄位 `modules` 列出全部功能模組及相依關係，`gatewayAvailable` 表示以飛牛統一閘道方式執行。`updateProxy` 為檢查更新與線上升級存取 GitHub 時使用的代理。`denyMode` 為未授權存取（被封鎖、僅內網時的外網存取、未經過安全入口）的回應方式：空為預設提示頁，`notfound` 純 404，`blank` 空白頁，`close` 中斷連線，`drop` 不回應直到逾時，`custom` 自訂頁面；`denyStatus` 為自訂頁面的狀態碼（200、403、404、410、500、502、503），`denyPage` 為自訂頁面 HTML（上限 64 KB，在禁止指令碼與外部資源的沙箱 CSP 下顯示）。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
         "responses": {
           "200": {
             "description": "成功"
@@ -33028,7 +33028,7 @@
         "x-token-allowed": false
       },
       "put": {
-        "description": "`disabledModules` 為關閉的功能模組 ID 清單，被其他模組相依的模組不能關閉，修改後重新啟動生效；`gatewaySSO` 開啟飛牛登入狀態自動登入，僅飛牛安裝套件有效。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
+        "description": "`disabledModules` 為關閉的功能模組 ID 清單，被其他模組相依的模組不能關閉，修改後重新啟動生效，自訂建置中沒有編譯進來的模組的開關儲存時原樣保留；`gatewaySSO` 開啟飛牛登入狀態自動登入，僅飛牛安裝套件有效。`denyMode`、`denyStatus`、`denyPage` 見讀取介面說明。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
         "requestBody": {
           "content": {
             "application/json": {
@@ -33241,7 +33241,7 @@
     },
     "/api/system/upgrade": {
       "post": {
-        "description": "僅登入工作階段（管理員）可用，只支援 Linux 二進位部署。在背景下載與本機平台對應的發佈包，核對 checksums.txt 中的 SHA-256 並試執行新程式，替換執行檔後重新啟動；舊版本保留為同目錄下的 `\u003c檔名\u003e.old`。立即回傳 202，進度見 `GET /api/system/upgrade/status`。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
+        "description": "僅登入工作階段（管理員）可用，只支援 Linux 二進位部署。在背景下載與本機平台對應的發佈包，核對 checksums.txt 中的 SHA-256 並試執行新程式，替換執行檔後重新啟動；舊版本保留為同目錄下的 `\u003c檔名\u003e.old`。立即回傳 202，進度見 `GET /api/system/upgrade/status`。自訂建置回傳 409：線上升級下載的是完整版本，請到 https://build.gately.cn 用相同選項產生新版本後用上傳介面升級。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
         "responses": {
           "200": {
             "description": "成功"
@@ -33379,7 +33379,7 @@
     },
     "/api/system/upgrade/upload": {
       "post": {
-        "description": "僅登入工作階段（管理員）可用。表單欄位 `file` 為發佈頁的 `gately_\u003c版本\u003e_linux_\u003c架構\u003e.tar.gz` 或解壓後的 `gately` 程式，不限制版本高低，可用於離線升級或回退。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
+        "description": "僅登入工作階段（管理員）可用。表單欄位 `file` 為發佈頁的 `gately_\u003c版本\u003e_linux_\u003c架構\u003e.tar.gz` 或解壓後的 `gately` 程式，不限制版本高低，可用於離線升級或回退。自訂建置也可以用此介面上傳 build.gately.cn 產生的安裝套件。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
         "responses": {
           "200": {
             "description": "成功"

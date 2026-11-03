@@ -4189,7 +4189,7 @@
     "url": "https://gately.cn"
   },
   "info": {
-    "description": "Gately 관리 API는 스크립트와 자동화를 통한 일괄 관리에 사용합니다.\n\n인증: 관리 콘솔의 \"API 토큰\" 페이지에서 토큰을 생성하고 요청 헤더에 `Authorization: Bearer gtl_xxxx`를 포함하세요.\n\n권한: 각 토큰은 생성 시 선택한 권한만 가지며 형식은 `\u003c모듈\u003e:read` 또는 `\u003c모듈\u003e:write`입니다. 쓰기 권한은 읽기 권한을 포함합니다. 계정, 2단계 인증, 토큰 관리, 백업, 복원, 재시작, 시스템 설정 인터페이스는 로그인 세션으로만 사용할 수 있습니다.\n\n요청 본문은 `Content-Type: application/json`을 사용하며, 오류는 `{\"error\": \"설명\"}` 형식으로 반환됩니다.\n\n「설정 → 기능 모듈」에서 끈 모듈은 API를 제공하지 않으며, 해당 엔드포인트는 403을 반환하고 실행 중인 인스턴스의 API 문서에도 더 이상 표시되지 않습니다.",
+    "description": "Gately 관리 API는 스크립트와 자동화를 통한 일괄 관리에 사용합니다.\n\n인증: 관리 콘솔의 \"API 토큰\" 페이지에서 토큰을 생성하고 요청 헤더에 `Authorization: Bearer gtl_xxxx`를 포함하세요.\n\n권한: 각 토큰은 생성 시 선택한 권한만 가지며 형식은 `\u003c모듈\u003e:read` 또는 `\u003c모듈\u003e:write`입니다. 쓰기 권한은 읽기 권한을 포함합니다. 계정, 2단계 인증, 토큰 관리, 백업, 복원, 재시작, 시스템 설정 인터페이스는 로그인 세션으로만 사용할 수 있습니다.\n\n요청 본문은 `Content-Type: application/json`을 사용하며, 오류는 `{\"error\": \"설명\"}` 형식으로 반환됩니다.\n\n「설정 → 기능 모듈」에서 끈 모듈은 API를 제공하지 않으며, 해당 엔드포인트는 403을 반환하고 실행 중인 인스턴스의 API 문서에도 더 이상 표시되지 않습니다. 사용자 지정 빌드(build.gately.cn)에 포함되지 않은 모듈의 엔드포인트는 404를 반환하며 해당 모듈이 이 빌드에 포함되어 있지 않다고 안내하고, 실행 중인 인스턴스의 API 문서에도 마찬가지로 표시되지 않습니다.",
     "title": "Gately 관리 API",
     "version": "dev"
   },
@@ -28264,7 +28264,7 @@
     },
     "/api/session": {
       "get": {
-        "description": "`username`, `role`(`admin` 또는 `readonly`), `disabledModules`(꺼진 기능 모듈 ID), `defaultPassword`(관리자가 아직 기본 비밀번호 `gately.cn`를 사용 중이면 true이며, 관리 화면은 이를 보고 변경을 안내합니다)를 반환합니다.\n\n유효한 API 토큰이면 특정 권한 없이 접근할 수 있습니다.",
+        "description": "`username`, `role`(`admin` 또는 `readonly`), `disabledModules`(꺼진 기능 모듈 ID), `absentModules`(사용자 지정 빌드에 포함되지 않은 모듈 ID, 전체 버전에서는 비어 있음), `defaultPassword`(관리자가 아직 기본 비밀번호 `gately.cn`를 사용 중이면 true이며, 관리 화면은 이를 보고 변경을 안내합니다)를 반환합니다.\n\n유효한 API 토큰이면 특정 권한 없이 접근할 수 있습니다.",
         "responses": {
           "200": {
             "description": "성공"
@@ -30142,7 +30142,7 @@
     },
     "/api/status": {
       "get": {
-        "description": "호스트 리소스, 버전 및 모듈 요약을 포함합니다.\n\n필요한 권한: `status:read`.",
+        "description": "호스트 리소스, 버전 및 모듈 요약을 포함합니다. `build`는 빌드 정보입니다: `custom`(일부 모듈이나 언어를 뺀 사용자 지정 빌드인지 여부), `modules`(포함된 모듈 ID), `absent`(포함되지 않은 모듈), `languages`(포함된 인터페이스 언어).\n\n필요한 권한: `status:read`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -32703,7 +32703,7 @@
     },
     "/api/system/info": {
       "get": {
-        "description": "필요한 권한: `status:read`.",
+        "description": "버전, 플랫폼, 실행 환경과 온라인 업그레이드 지원 여부를 포함합니다. `build`는 빌드 정보이며 필드는 `GET /api/status`와 같습니다. `selfUpgrade.custom`이 true이면 사용자 지정 빌드로, 온라인 업그레이드는 제공되지 않고 업그레이드 패키지를 업로드할 수 있습니다.\n\n필요한 권한: `status:read`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -32984,7 +32984,7 @@
     },
     "/api/system/settings": {
       "get": {
-        "description": "로그인 세션에서만 사용할 수 있습니다. 읽기 전용 필드 `modules`는 모든 기능 모듈과 의존 관계를 나열하며, `gatewayAvailable`은 fnOS 통합 게이트웨이 방식으로 실행 중임을 뜻합니다. `updateProxy`는 업데이트 확인과 온라인 업그레이드 시 GitHub 접속에 쓰는 프록시입니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "description": "로그인 세션에서만 사용할 수 있습니다. 읽기 전용 필드 `modules`는 모든 기능 모듈과 의존 관계를 나열하며, `gatewayAvailable`은 fnOS 통합 게이트웨이 방식으로 실행 중임을 뜻합니다. `updateProxy`는 업데이트 확인과 온라인 업그레이드 시 GitHub 접속에 쓰는 프록시입니다. `denyMode`는 미승인 접근(차단된 경우, 내부망 전용일 때의 외부 접근, 보안 진입점을 거치지 않은 접근)에 대한 응답 방식입니다. 비어 있으면 기본 안내 페이지, `notfound`는 단순 404, `blank`는 빈 페이지, `close`는 연결 끊기, `drop`은 시간 초과까지 응답하지 않음, `custom`은 사용자 지정 페이지입니다. `denyStatus`는 사용자 지정 페이지의 상태 코드(200, 403, 404, 410, 500, 502, 503)이고, `denyPage`는 사용자 지정 페이지 HTML(최대 64 KB, 스크립트와 외부 리소스를 금지하는 샌드박스 CSP 아래에서 표시)입니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
         "responses": {
           "200": {
             "description": "성공"
@@ -33028,7 +33028,7 @@
         "x-token-allowed": false
       },
       "put": {
-        "description": "`disabledModules`는 끌 기능 모듈 ID 목록입니다. 다른 모듈이 의존하는 모듈은 끌 수 없으며 변경 사항은 재시작 후 적용됩니다. `gatewaySSO`는 fnOS 로그인 상태로 자동 로그인을 켜며 fnOS 패키지에서만 동작합니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "description": "`disabledModules`는 끌 기능 모듈 ID 목록입니다. 다른 모듈이 의존하는 모듈은 끌 수 없으며 변경 사항은 재시작 후 적용됩니다. 사용자 지정 빌드에 포함되지 않은 모듈의 스위치는 저장할 때 그대로 유지됩니다. `gatewaySSO`는 fnOS 로그인 상태로 자동 로그인을 켜며 fnOS 패키지에서만 동작합니다. `denyMode`, `denyStatus`, `denyPage`는 읽기 API 설명을 참고하세요.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
         "requestBody": {
           "content": {
             "application/json": {
@@ -33241,7 +33241,7 @@
     },
     "/api/system/upgrade": {
       "post": {
-        "description": "로그인 세션(관리자)에서만 사용할 수 있으며 Linux 바이너리 설치만 지원합니다. 이 플랫폼용 릴리스 패키지를 백그라운드에서 내려받아 checksums.txt의 SHA-256을 대조하고 새 바이너리를 시험 실행한 뒤 실행 파일을 교체하고 재시작합니다. 이전 버전은 같은 디렉터리에 `\u003c파일 이름\u003e.old`로 보관됩니다. 즉시 202를 반환하며 진행 상황은 `GET /api/system/upgrade/status`로 확인합니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "description": "로그인 세션(관리자)에서만 사용할 수 있으며 Linux 바이너리 설치만 지원합니다. 이 플랫폼용 릴리스 패키지를 백그라운드에서 내려받아 checksums.txt의 SHA-256을 대조하고 새 바이너리를 시험 실행한 뒤 실행 파일을 교체하고 재시작합니다. 이전 버전은 같은 디렉터리에 `\u003c파일 이름\u003e.old`로 보관됩니다. 즉시 202를 반환하며 진행 상황은 `GET /api/system/upgrade/status`로 확인합니다. 사용자 지정 빌드는 409를 반환합니다. 온라인 업그레이드는 전체 버전을 내려받으므로 https://build.gately.cn에서 같은 옵션으로 새 버전을 생성한 뒤 업로드 API로 업그레이드하세요.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
         "responses": {
           "200": {
             "description": "성공"
@@ -33379,7 +33379,7 @@
     },
     "/api/system/upgrade/upload": {
       "post": {
-        "description": "로그인 세션(관리자)에서만 사용할 수 있습니다. 폼 필드 `file`은 릴리스 페이지의 `gately_\u003c버전\u003e_linux_\u003c아키텍처\u003e.tar.gz` 또는 압축을 푼 `gately` 바이너리입니다. 버전 높낮이에 제한이 없어 오프라인 업그레이드나 롤백에도 쓸 수 있습니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "description": "로그인 세션(관리자)에서만 사용할 수 있습니다. 폼 필드 `file`은 릴리스 페이지의 `gately_\u003c버전\u003e_linux_\u003c아키텍처\u003e.tar.gz` 또는 압축을 푼 `gately` 바이너리입니다. 버전 높낮이에 제한이 없어 오프라인 업그레이드나 롤백에도 쓸 수 있습니다. 사용자 지정 빌드도 이 API로 build.gately.cn에서 생성한 패키지를 업로드할 수 있습니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
         "responses": {
           "200": {
             "description": "성공"

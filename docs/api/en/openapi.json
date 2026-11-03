@@ -4189,7 +4189,7 @@
     "url": "https://gately.cn"
   },
   "info": {
-    "description": "The Gately Admin API supports scripting and bulk automation.\n\nAuthentication: create a token on the \"API Tokens\" page of the admin console and send the header `Authorization: Bearer gtl_xxxx`.\n\nPermissions: each token has only the permissions selected at creation, in the form `\u003cmodule\u003e:read` or `\u003cmodule\u003e:write`; write permission includes read. Account, two-factor authentication and token management endpoints, as well as backup, restore, restart and system settings endpoints, can be used by login sessions only.\n\nSend the request body with `Content-Type: application/json`; errors are returned uniformly as `{\"error\": \"message\"}`.\n\nModules turned off under \"Settings → Modules\" serve no API: their endpoints return 403 and no longer appear in the API docs of the running instance.",
+    "description": "The Gately Admin API supports scripting and bulk automation.\n\nAuthentication: create a token on the \"API Tokens\" page of the admin console and send the header `Authorization: Bearer gtl_xxxx`.\n\nPermissions: each token has only the permissions selected at creation, in the form `\u003cmodule\u003e:read` or `\u003cmodule\u003e:write`; write permission includes read. Account, two-factor authentication and token management endpoints, as well as backup, restore, restart and system settings endpoints, can be used by login sessions only.\n\nSend the request body with `Content-Type: application/json`; errors are returned uniformly as `{\"error\": \"message\"}`.\n\nModules turned off under \"Settings → Modules\" serve no API: their endpoints return 403 and no longer appear in the API docs of the running instance. Modules not compiled into a custom build (build.gately.cn) return 404 on their endpoints, saying the module is not included in this build, and are likewise left out of the API docs of the running instance.",
     "title": "Gately Admin API",
     "version": "dev"
   },
@@ -28264,7 +28264,7 @@
     },
     "/api/session": {
       "get": {
-        "description": "Returns `username`, `role` (`admin` or `readonly`), `disabledModules` (IDs of turned-off modules) and `defaultPassword` (true while the admin still uses the default password `gately.cn`; the admin UI uses it to prompt a change).\n\nAny valid API token can access this endpoint; no specific permission is required.",
+        "description": "Returns `username`, `role` (`admin` or `readonly`), `disabledModules` (IDs of turned-off modules), `absentModules` (IDs of modules not compiled into a custom build; empty in the full edition) and `defaultPassword` (true while the admin still uses the default password `gately.cn`; the admin UI uses it to prompt a change).\n\nAny valid API token can access this endpoint; no specific permission is required.",
         "responses": {
           "200": {
             "description": "Success"
@@ -30142,7 +30142,7 @@
     },
     "/api/status": {
       "get": {
-        "description": "Includes host resources, version and module summaries.\n\nRequired permission: `status:read`.",
+        "description": "Includes host resources, version and module summaries. `build` is the build information: `custom` (whether this is a custom build with some modules or languages left out), `modules` (IDs of the compiled-in modules), `absent` (modules not compiled in), `languages` (compiled-in interface languages).\n\nRequired permission: `status:read`.",
         "responses": {
           "200": {
             "description": "Success"
@@ -32703,7 +32703,7 @@
     },
     "/api/system/info": {
       "get": {
-        "description": "Required permission: `status:read`.",
+        "description": "Includes version, platform, runtime environment and online upgrade support. `build` is the build information, with the same fields as `GET /api/status`; when `selfUpgrade.custom` is true this is a custom build, which offers no online upgrade but accepts uploaded upgrade packages.\n\nRequired permission: `status:read`.",
         "responses": {
           "200": {
             "description": "Success"
@@ -32984,7 +32984,7 @@
     },
     "/api/system/settings": {
       "get": {
-        "description": "Session only. The read-only field `modules` lists all feature modules and their dependencies; `gatewayAvailable` means Gately runs behind the fnOS unified gateway. `updateProxy` is the proxy used to reach GitHub when checking for updates and upgrading online.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "description": "Session only. The read-only field `modules` lists all feature modules and their dependencies; `gatewayAvailable` means Gately runs behind the fnOS unified gateway. `updateProxy` is the proxy used to reach GitHub when checking for updates and upgrading online. `denyMode` is how unauthorized access (banned clients, access from outside while LAN only is on, or requests that skip the security entrance) is answered: empty for the default notice page, `notfound` for a plain 404, `blank` for a blank page, `close` to close the connection, `drop` to not respond until timeout, `custom` for a custom page. `denyStatus` is the status code of the custom page (200, 403, 404, 410, 500, 502, 503), and `denyPage` is the custom page HTML (up to 64 KB, shown under a sandboxed CSP that blocks scripts and external resources).\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
         "responses": {
           "200": {
             "description": "Success"
@@ -33028,7 +33028,7 @@
         "x-token-allowed": false
       },
       "put": {
-        "description": "`disabledModules` lists the IDs of modules to turn off; a module that others depend on cannot be turned off, and changes take effect after a restart. `gatewaySSO` turns on Sign in with fnOS and only works in the fnOS package.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "description": "`disabledModules` lists the IDs of modules to turn off; a module that others depend on cannot be turned off, and changes take effect after a restart. In a custom build, the switches of modules that were not compiled in are kept as they are on save. `gatewaySSO` turns on Sign in with fnOS and only works in the fnOS package. For `denyMode`, `denyStatus` and `denyPage`, see the read endpoint.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
         "requestBody": {
           "content": {
             "application/json": {
@@ -33241,7 +33241,7 @@
     },
     "/api/system/upgrade": {
       "post": {
-        "description": "Session (admin) only, Linux binary installs only. Downloads the release package for this platform in the background, checks its SHA-256 against checksums.txt, test-runs the new binary, replaces the executable and restarts. The previous version is kept as `\u003cfile name\u003e.old` in the same directory. Returns 202 immediately; see `GET /api/system/upgrade/status` for progress.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "description": "Session (admin) only, Linux binary installs only. Downloads the release package for this platform in the background, checks its SHA-256 against checksums.txt, test-runs the new binary, replaces the executable and restarts. The previous version is kept as `\u003cfile name\u003e.old` in the same directory. Returns 202 immediately; see `GET /api/system/upgrade/status` for progress. Custom builds get 409: online upgrade downloads the full edition, so generate a new version with the same options at https://build.gately.cn and upgrade through the upload endpoint.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
         "responses": {
           "200": {
             "description": "Success"
@@ -33379,7 +33379,7 @@
     },
     "/api/system/upgrade/upload": {
       "post": {
-        "description": "Session (admin) only. Form field `file` is the release `gately_\u003cversion\u003e_linux_\u003carch\u003e.tar.gz` or the extracted `gately` binary. Any version is accepted, so it also works for offline upgrades or rollbacks.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "description": "Session (admin) only. Form field `file` is the release `gately_\u003cversion\u003e_linux_\u003carch\u003e.tar.gz` or the extracted `gately` binary. Any version is accepted, so it also works for offline upgrades or rollbacks. Custom builds can also use this endpoint to upload a package generated at build.gately.cn.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
         "responses": {
           "200": {
             "description": "Success"

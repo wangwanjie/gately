@@ -4189,7 +4189,7 @@
     "url": "https://gately.cn"
   },
   "info": {
-    "description": "La API de administración de Gately permite la gestión por lotes mediante scripts y automatización.\n\nAutenticación: cree un token en la página «Tokens de API» del panel de administración e incluya en la cabecera de la solicitud `Authorization: Bearer gtl_xxxx`.\n\nPermisos: cada token solo tiene los permisos marcados al crearlo, con el formato `\u003cmódulo\u003e:read` o `\u003cmódulo\u003e:write`; el permiso de escritura incluye el de lectura. Los endpoints de cuenta, verificación en dos pasos, administración de tokens, y los de copia de seguridad, restauración, reinicio y ajustes del sistema solo pueden usarse con una sesión iniciada.\n\nEl cuerpo de la solicitud usa `Content-Type: application/json`; los errores se devuelven siempre como `{\"error\": \"descripción\"}`.\n\nLos módulos desactivados en «Ajustes → Módulos» no ofrecen API: sus endpoints devuelven 403 y dejan de aparecer en la documentación de la API de la instancia en ejecución.",
+    "description": "La API de administración de Gately permite la gestión por lotes mediante scripts y automatización.\n\nAutenticación: cree un token en la página «Tokens de API» del panel de administración e incluya en la cabecera de la solicitud `Authorization: Bearer gtl_xxxx`.\n\nPermisos: cada token solo tiene los permisos marcados al crearlo, con el formato `\u003cmódulo\u003e:read` o `\u003cmódulo\u003e:write`; el permiso de escritura incluye el de lectura. Los endpoints de cuenta, verificación en dos pasos, administración de tokens, y los de copia de seguridad, restauración, reinicio y ajustes del sistema solo pueden usarse con una sesión iniciada.\n\nEl cuerpo de la solicitud usa `Content-Type: application/json`; los errores se devuelven siempre como `{\"error\": \"descripción\"}`.\n\nLos módulos desactivados en «Ajustes → Módulos» no ofrecen API: sus endpoints devuelven 403 y dejan de aparecer en la documentación de la API de la instancia en ejecución. Los módulos no incluidos en una compilación personalizada (build.gately.cn) devuelven 404 en sus endpoints, indicando que el módulo no está incluido en esta compilación, y tampoco aparecen en la documentación de la API de la instancia en ejecución.",
     "title": "API de administración de Gately",
     "version": "dev"
   },
@@ -28264,7 +28264,7 @@
     },
     "/api/session": {
       "get": {
-        "description": "Devuelve `username`, `role` (`admin` o `readonly`), `disabledModules` (ID de los módulos desactivados) y `defaultPassword` (true mientras el administrador siga usando la contraseña predeterminada `gately.cn`; la interfaz lo usa para pedir que se cambie).\n\nCualquier token de API válido puede acceder; no se requiere un permiso específico.",
+        "description": "Devuelve `username`, `role` (`admin` o `readonly`), `disabledModules` (ID de los módulos desactivados), `absentModules` (ID de los módulos no incluidos en una compilación personalizada; vacío en la edición completa) y `defaultPassword` (true mientras el administrador siga usando la contraseña predeterminada `gately.cn`; la interfaz lo usa para pedir que se cambie).\n\nCualquier token de API válido puede acceder; no se requiere un permiso específico.",
         "responses": {
           "200": {
             "description": "Correcto"
@@ -30142,7 +30142,7 @@
     },
     "/api/status": {
       "get": {
-        "description": "Incluye recursos del host, versión y resumen de módulos.\n\nPermiso necesario: `status:read`.",
+        "description": "Incluye recursos del host, versión y resumen de módulos. `build` es la información de compilación: `custom` (si es una compilación personalizada sin algunos módulos o idiomas), `modules` (ID de los módulos incluidos), `absent` (módulos no incluidos), `languages` (idiomas de interfaz incluidos).\n\nPermiso necesario: `status:read`.",
         "responses": {
           "200": {
             "description": "Correcto"
@@ -32703,7 +32703,7 @@
     },
     "/api/system/info": {
       "get": {
-        "description": "Permiso necesario: `status:read`.",
+        "description": "Incluye versión, plataforma, entorno de ejecución y compatibilidad con la actualización en línea. `build` es la información de compilación, con los mismos campos que `GET /api/status`; si `selfUpgrade.custom` es true, es una compilación personalizada: no ofrece actualización en línea, pero admite subir paquetes de actualización.\n\nPermiso necesario: `status:read`.",
         "responses": {
           "200": {
             "description": "Correcto"
@@ -32984,7 +32984,7 @@
     },
     "/api/system/settings": {
       "get": {
-        "description": "Solo sesión. El campo de solo lectura `modules` lista todos los módulos y sus dependencias; `gatewayAvailable` indica que Gately se ejecuta tras la pasarela unificada de fnOS. `updateProxy` es el proxy usado para acceder a GitHub al buscar actualizaciones y actualizar en línea.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
+        "description": "Solo sesión. El campo de solo lectura `modules` lista todos los módulos y sus dependencias; `gatewayAvailable` indica que Gately se ejecuta tras la pasarela unificada de fnOS. `updateProxy` es el proxy usado para acceder a GitHub al buscar actualizaciones y actualizar en línea. `denyMode` es la forma de responder al acceso no autorizado (clientes bloqueados, acceso desde fuera con solo red local activado o sin pasar por la entrada segura): vacío para la página de aviso predeterminada, `notfound` para un 404 simple, `blank` para una página en blanco, `close` para cerrar la conexión, `drop` para no responder hasta que expire, `custom` para una página personalizada. `denyStatus` es el código de estado de la página personalizada (200, 403, 404, 410, 500, 502, 503) y `denyPage` es el HTML de la página personalizada (hasta 64 KB, mostrado bajo una CSP de sandbox que bloquea scripts y recursos externos).\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
         "responses": {
           "200": {
             "description": "Correcto"
@@ -33028,7 +33028,7 @@
         "x-token-allowed": false
       },
       "put": {
-        "description": "`disabledModules` es la lista de ID de módulos desactivados; un módulo del que dependen otros no se puede desactivar, y los cambios se aplican tras reiniciar. `gatewaySSO` activa el inicio de sesión con fnOS y solo funciona en el paquete de fnOS.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
+        "description": "`disabledModules` es la lista de ID de módulos desactivados; un módulo del que dependen otros no se puede desactivar, y los cambios se aplican tras reiniciar. En una compilación personalizada, los interruptores de los módulos no compilados se conservan tal cual al guardar. `gatewaySSO` activa el inicio de sesión con fnOS y solo funciona en el paquete de fnOS. Para `denyMode`, `denyStatus` y `denyPage`, consulta el endpoint de lectura.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
         "requestBody": {
           "content": {
             "application/json": {
@@ -33241,7 +33241,7 @@
     },
     "/api/system/upgrade": {
       "post": {
-        "description": "Solo sesión (administrador) y solo instalaciones binarias en Linux. Descarga en segundo plano el paquete de esta plataforma, verifica su SHA-256 con checksums.txt, prueba el nuevo binario, reemplaza el ejecutable y reinicia. La versión anterior se conserva como `\u003cnombre de archivo\u003e.old` en el mismo directorio. Devuelve 202 de inmediato; el progreso está en `GET /api/system/upgrade/status`.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
+        "description": "Solo sesión (administrador) y solo instalaciones binarias en Linux. Descarga en segundo plano el paquete de esta plataforma, verifica su SHA-256 con checksums.txt, prueba el nuevo binario, reemplaza el ejecutable y reinicia. La versión anterior se conserva como `\u003cnombre de archivo\u003e.old` en el mismo directorio. Devuelve 202 de inmediato; el progreso está en `GET /api/system/upgrade/status`. Las compilaciones personalizadas devuelven 409: la actualización en línea descarga la edición completa, así que genera una nueva versión con las mismas opciones en https://build.gately.cn y actualiza con el endpoint de subida.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
         "responses": {
           "200": {
             "description": "Correcto"
@@ -33379,7 +33379,7 @@
     },
     "/api/system/upgrade/upload": {
       "post": {
-        "description": "Solo sesión (administrador). El campo de formulario `file` es el `gately_\u003cversión\u003e_linux_\u003carquitectura\u003e.tar.gz` de la página de versiones o el binario `gately` extraído. Se acepta cualquier versión, así que también sirve para actualizar sin conexión o volver atrás.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
+        "description": "Solo sesión (administrador). El campo de formulario `file` es el `gately_\u003cversión\u003e_linux_\u003carquitectura\u003e.tar.gz` de la página de versiones o el binario `gately` extraído. Se acepta cualquier versión, así que también sirve para actualizar sin conexión o volver atrás. Las compilaciones personalizadas también pueden usar este endpoint para subir un paquete generado en build.gately.cn.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
         "responses": {
           "200": {
             "description": "Correcto"

@@ -4189,7 +4189,7 @@
     "url": "https://gately.cn"
   },
   "info": {
-    "description": "L'API d'administration de Gately permet la gestion en masse par scripts et automatisation.\n\nAuthentification : créez un jeton dans la page « Jetons API » de l'interface d'administration et ajoutez l'en-tête de requête `Authorization: Bearer gtl_xxxx`.\n\nPermissions : chaque jeton ne possède que les permissions cochées à sa création, au format `\u003cmodule\u003e:read` ou `\u003cmodule\u003e:write` ; l'écriture inclut la lecture. Les interfaces de compte, d'authentification à deux facteurs, de gestion des jetons, de sauvegarde, de restauration, de redémarrage et de paramètres système exigent une session connectée.\n\nLe corps de la requête utilise `Content-Type: application/json` ; les erreurs sont renvoyées au format `{\"error\": \"description\"}`.\n\nLes modules désactivés dans « Paramètres → Modules » n’exposent aucune API : leurs points de terminaison renvoient 403 et n’apparaissent plus dans la documentation de l’API de l’instance en cours d’exécution.",
+    "description": "L'API d'administration de Gately permet la gestion en masse par scripts et automatisation.\n\nAuthentification : créez un jeton dans la page « Jetons API » de l'interface d'administration et ajoutez l'en-tête de requête `Authorization: Bearer gtl_xxxx`.\n\nPermissions : chaque jeton ne possède que les permissions cochées à sa création, au format `\u003cmodule\u003e:read` ou `\u003cmodule\u003e:write` ; l'écriture inclut la lecture. Les interfaces de compte, d'authentification à deux facteurs, de gestion des jetons, de sauvegarde, de restauration, de redémarrage et de paramètres système exigent une session connectée.\n\nLe corps de la requête utilise `Content-Type: application/json` ; les erreurs sont renvoyées au format `{\"error\": \"description\"}`.\n\nLes modules désactivés dans « Paramètres → Modules » n’exposent aucune API : leurs points de terminaison renvoient 403 et n’apparaissent plus dans la documentation de l’API de l’instance en cours d’exécution. Les modules non compilés dans une version personnalisée (build.gately.cn) renvoient 404 sur leurs points de terminaison, en indiquant que le module n’est pas inclus dans cette version, et n’apparaissent pas non plus dans la documentation de l’API de l’instance en cours d’exécution.",
     "title": "API d'administration de Gately",
     "version": "dev"
   },
@@ -28264,7 +28264,7 @@
     },
     "/api/session": {
       "get": {
-        "description": "Renvoie `username`, `role` (`admin` ou `readonly`), `disabledModules` (ID des modules désactivés) et `defaultPassword` (true tant que l'administrateur utilise le mot de passe par défaut `gately.cn` ; l'interface s'en sert pour inviter à le changer).\n\nTout jeton d'API valide peut y accéder, sans permission spécifique.",
+        "description": "Renvoie `username`, `role` (`admin` ou `readonly`), `disabledModules` (ID des modules désactivés), `absentModules` (ID des modules non compilés dans une version personnalisée ; vide dans l’édition complète) et `defaultPassword` (true tant que l'administrateur utilise le mot de passe par défaut `gately.cn` ; l'interface s'en sert pour inviter à le changer).\n\nTout jeton d'API valide peut y accéder, sans permission spécifique.",
         "responses": {
           "200": {
             "description": "Succès"
@@ -30142,7 +30142,7 @@
     },
     "/api/status": {
       "get": {
-        "description": "Inclut les ressources de l'hôte, la version et le résumé des modules.\n\nPermission requise : `status:read`.",
+        "description": "Inclut les ressources de l'hôte, la version et le résumé des modules. `build` contient les informations de version : `custom` (s’il s’agit d’une version personnalisée sans certains modules ou langues), `modules` (ID des modules compilés), `absent` (modules non compilés), `languages` (langues d’interface compilées).\n\nPermission requise : `status:read`.",
         "responses": {
           "200": {
             "description": "Succès"
@@ -32703,7 +32703,7 @@
     },
     "/api/system/info": {
       "get": {
-        "description": "Permission requise : `status:read`.",
+        "description": "Inclut la version, la plateforme, l’environnement d’exécution et la prise en charge de la mise à niveau en ligne. `build` contient les informations de version, avec les mêmes champs que `GET /api/status` ; si `selfUpgrade.custom` vaut true, il s’agit d’une version personnalisée : pas de mise à niveau en ligne, mais le téléversement de paquets de mise à niveau est possible.\n\nPermission requise : `status:read`.",
         "responses": {
           "200": {
             "description": "Succès"
@@ -32984,7 +32984,7 @@
     },
     "/api/system/settings": {
       "get": {
-        "description": "Session uniquement. Le champ en lecture seule `modules` liste tous les modules et leurs dépendances ; `gatewayAvailable` indique que Gately fonctionne derrière la passerelle unifiée de fnOS. `updateProxy` est le proxy utilisé pour joindre GitHub lors de la recherche de mises à jour et de la mise à niveau en ligne.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "description": "Session uniquement. Le champ en lecture seule `modules` liste tous les modules et leurs dépendances ; `gatewayAvailable` indique que Gately fonctionne derrière la passerelle unifiée de fnOS. `updateProxy` est le proxy utilisé pour joindre GitHub lors de la recherche de mises à jour et de la mise à niveau en ligne. `denyMode` est la façon de répondre aux accès non autorisés (clients bannis, accès depuis l’extérieur en mode réseau local uniquement, accès sans passer par le point d’entrée sécurisé) : vide pour la page d’avertissement par défaut, `notfound` pour un simple 404, `blank` pour une page vierge, `close` pour fermer la connexion, `drop` pour ne pas répondre jusqu’au délai d’expiration, `custom` pour une page personnalisée. `denyStatus` est le code d’état de la page personnalisée (200, 403, 404, 410, 500, 502, 503) et `denyPage` le HTML de la page personnalisée (64 Ko maximum, affiché sous une CSP en bac à sable qui bloque les scripts et les ressources externes).\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
         "responses": {
           "200": {
             "description": "Succès"
@@ -33028,7 +33028,7 @@
         "x-token-allowed": false
       },
       "put": {
-        "description": "`disabledModules` liste les identifiants des modules désactivés ; un module dont d’autres dépendent ne peut pas être désactivé, et les changements prennent effet après un redémarrage. `gatewaySSO` active la connexion via fnOS et ne fonctionne que dans le paquet fnOS.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "description": "`disabledModules` liste les identifiants des modules désactivés ; un module dont d’autres dépendent ne peut pas être désactivé, et les changements prennent effet après un redémarrage. Dans une version personnalisée, les interrupteurs des modules non compilés sont conservés tels quels à l’enregistrement. `gatewaySSO` active la connexion via fnOS et ne fonctionne que dans le paquet fnOS. Pour `denyMode`, `denyStatus` et `denyPage`, voir le point de terminaison de lecture.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
         "requestBody": {
           "content": {
             "application/json": {
@@ -33241,7 +33241,7 @@
     },
     "/api/system/upgrade": {
       "post": {
-        "description": "Session (administrateur) uniquement, installations binaires Linux uniquement. Télécharge en arrière-plan le paquet de cette plateforme, vérifie son SHA-256 avec checksums.txt, teste le nouveau binaire, remplace l’exécutable puis redémarre. La version précédente est conservée sous `\u003cnom de fichier\u003e.old` dans le même répertoire. Renvoie 202 immédiatement ; la progression est disponible via `GET /api/system/upgrade/status`.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "description": "Session (administrateur) uniquement, installations binaires Linux uniquement. Télécharge en arrière-plan le paquet de cette plateforme, vérifie son SHA-256 avec checksums.txt, teste le nouveau binaire, remplace l’exécutable puis redémarre. La version précédente est conservée sous `\u003cnom de fichier\u003e.old` dans le même répertoire. Renvoie 202 immédiatement ; la progression est disponible via `GET /api/system/upgrade/status`. Les versions personnalisées renvoient 409 : la mise à niveau en ligne télécharge l’édition complète ; générez une nouvelle version avec les mêmes options sur https://build.gately.cn puis mettez à niveau via le point de terminaison de téléversement.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
         "responses": {
           "200": {
             "description": "Succès"
@@ -33379,7 +33379,7 @@
     },
     "/api/system/upgrade/upload": {
       "post": {
-        "description": "Session (administrateur) uniquement. Le champ de formulaire `file` est le `gately_\u003cversion\u003e_linux_\u003carchitecture\u003e.tar.gz` de la page des versions ou le binaire `gately` extrait. Toute version est acceptée, ce qui convient aussi aux mises à niveau hors ligne ou aux retours en arrière.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "description": "Session (administrateur) uniquement. Le champ de formulaire `file` est le `gately_\u003cversion\u003e_linux_\u003carchitecture\u003e.tar.gz` de la page des versions ou le binaire `gately` extrait. Toute version est acceptée, ce qui convient aussi aux mises à niveau hors ligne ou aux retours en arrière. Les versions personnalisées peuvent aussi utiliser ce point de terminaison pour téléverser un paquet généré sur build.gately.cn.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
         "responses": {
           "200": {
             "description": "Succès"
