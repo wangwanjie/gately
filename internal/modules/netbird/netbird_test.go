@@ -431,3 +431,256 @@ func TestUpRetriesAfterFailure(t *testing.T) {
 		t.Errorf("重试成功后应清除错误: %q", e)
 	}
 }
+
+// TestValidateOptionLike 验证以 - 开头或带空白的主机名、管理服务地址被拒绝，不会被 netbird 当作选项或拆成多个参数。
+func TestValidateOptionLike(t *testing.T) {
+	bad := []Settings{
+		{Hostname: "-x"},
+		{Hostname: "a b"},
+		{ManagementURL: "-https://nb.example.com"},
+		{ManagementURL: "--setup-key=abc"},
+		{ManagementURL: "https://nb example.com"},
+		{ManagementURL: "ftp://nb.example.com"},
+		{Socks5: "0.0.0.0:70000"},
+		{Port: -1},
+	}
+	for i, s := range bad {
+		if err := s.Validate(); err == nil {
+			t.Errorf("用例 %d 应被拒绝: %+v", i, s)
+		}
+	}
+	// 管理服务地址作为 --management-url= 的取值整体传递
+	s := Settings{ManagementURL: " https://nb.example.com:33073/ "}
+	if err := s.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	if up := s.UpArgs(); !slices.Contains(up, "--management-url=https://nb.example.com:33073") {
+		t.Errorf("管理服务地址应去掉空白与末尾斜杠: %v", up)
+	}
+}
+
+// TestSocksAlwaysPublic 验证识别 0.75.0 之前总把 SOCKS5 监听在 0.0.0.0 的 NetBird 版本。
+func TestSocksAlwaysPublic(t *testing.T) {
+	cases := map[string]bool{
+		"0.74.3":      true,
+		"0.60.0":      true,
+		"v0.74.0\n":   true,
+		"0.75.0":      false,
+		"0.82.0":      false,
+		"1.0.0":       false,
+		"development": false,
+		"":            false,
+	}
+	for in, want := range cases {
+		if got := socksAlwaysPublic(in); got != want {
+			t.Errorf("%q: %v，期望 %v", in, got, want)
+		}
+	}
+}
+
+// writeScript 在 dir/bin 下写入模拟的 netbird 脚本，脚本中的 $D 为 dir。
+func writeScript(t *testing.T, dir, body string) {
+	t.Helper()
+	if runtime.GOOS == "windows" {
+		t.Skip("需要 sh")
+	}
+	bin := filepath.Join(dir, "bin")
+	if err := os.MkdirAll(bin, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	script := "#!/bin/sh\nD=\"" + dir + "\"\n" + body
+	if err := os.WriteFile(filepath.Join(bin, "netbird"), []byte(script), 0o755); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// waitFor 轮询直到 cond 成立，超时则失败。
+func waitFor(t *testing.T, what string, cond func() bool) {
+	t.Helper()
+	deadline := time.Now().Add(10 * time.Second)
+	for !cond() {
+		if time.Now().After(deadline) {
+			t.Fatalf("等待超时: %s", what)
+		}
+		time.Sleep(50 * time.Millisecond)
+	}
+}
+
+// logText 返回模块日志缓冲中的全部内容。
+func logText(m *Module) string {
+	var b strings.Builder
+	for _, e := range m.logBuf.Since(0) {
+		b.WriteString(e.Message)
+		b.WriteByte('\n')
+	}
+	return b.String()
+}
+
+// TestSetupKeyOnlyInEnv 验证设置密钥经 NB_SETUP_KEY 传给 netbird up，命令行参数与日志中都不出现，
+// 并清空图形会话变量让 Linux 使用设备码登录。
+func TestSetupKeyOnlyInEnv(t *testing.T) {
+	m, dir := newTestModule(t)
+	writeScript(t, dir, `case " $* " in
+*" status --json "*) echo '{"daemonStatus":"Idle","peers":{"details":[]}}' ;;
+*" up "*)
+  printf '%s' "$NB_SETUP_KEY" > "$D/key"
+  printf '[%s]' "$DISPLAY" > "$D/display"
+  echo "up args: $*" ;;
+esac
+`)
+	t.Setenv("DISPLAY", ":0")
+	m.settings.Enable, m.settings.ManageDaemon, m.settings.SetupKey = true, false, "NB-SECRET-123"
+	if err := m.Start(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = m.Stop() })
+	waitFile(t, dir, "key", "NB-SECRET-123")
+	waitFile(t, dir, "display", "[]")
+	waitFor(t, "up 完成", func() bool { return strings.Contains(logText(m), "up args:") })
+	if logs := logText(m); strings.Contains(logs, "NB-SECRET-123") {
+		t.Errorf("日志中不应出现设置密钥:\n%s", logs)
+	}
+}
+
+// TestReadyTimeoutClearedWhenReady 验证等待守护进程超时的提示在守护进程就绪后清除，
+// 即使 up 仍在等待登录；登录链接与设备码可从状态中取得，停止模块时一并清空。
+func TestReadyTimeoutClearedWhenReady(t *testing.T) {
+	old := readyTimeout
+	readyTimeout = 200 * time.Millisecond
+	defer func() { readyTimeout = old }()
+	m, dir := newTestModule(t)
+	writeScript(t, dir, `case " $* " in
+*" status --json "*)
+  [ -f "$D/ready" ] || { echo 'failed to connect to daemon'; exit 1; }
+  echo '{"daemonStatus":"NeedsLogin","peers":{"details":[]}}' ;;
+*" up "*)
+  echo "Please do the SSO login in your browser."
+  echo "https://login.example.com/activate and enter the code ABCD-EFGH to authenticate."
+  exec sleep 30 ;;
+esac
+`)
+	m.settings.Enable, m.settings.ManageDaemon = true, false
+	if err := m.Start(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = m.Stop() })
+	waitFor(t, "超时提示", func() bool { return strings.Contains(m.getErr(), "超时") })
+	if err := os.WriteFile(filepath.Join(dir, "ready"), nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	waitFor(t, "登录链接", func() bool { u, _ := m.getAuth(); return u != "" })
+	if u, c := m.getAuth(); u != "https://login.example.com/activate" || c != "ABCD-EFGH" {
+		t.Errorf("登录链接错误: %q %q", u, c)
+	}
+	if e := m.getErr(); e != "" {
+		t.Errorf("守护进程就绪后应清除超时提示: %q", e)
+	}
+	v := m.queryStatus()
+	if v.AuthURL == "" || v.DaemonStatus != "NeedsLogin" {
+		t.Errorf("状态应带登录链接: %+v", v)
+	}
+
+	// 停止时取消阻塞中的 up，并清空登录链接
+	start := time.Now()
+	_ = m.Stop()
+	if d := time.Since(start); d > 8*time.Second {
+		t.Errorf("停止耗时过长: %s", d)
+	}
+	m.mu.Lock()
+	pending := m.upCancel != nil
+	m.mu.Unlock()
+	if u, _ := m.getAuth(); u != "" || pending {
+		t.Errorf("停止后应清空登录链接并结束 up 协程: %q %v", u, pending)
+	}
+}
+
+// TestUpBackoffDoubles 验证 up 持续失败时重试间隔逐次加倍。
+func TestUpBackoffDoubles(t *testing.T) {
+	old := upRetryMin
+	upRetryMin = 100 * time.Millisecond
+	defer func() { upRetryMin = old }()
+	m, dir := newTestModule(t)
+	writeScript(t, dir, `case " $* " in
+*" status --json "*) echo '{"daemonStatus":"Idle","peers":{"details":[]}}' ;;
+*" up "*) echo up >> "$D/calls"; echo "management unreachable"; exit 1 ;;
+esac
+`)
+	m.settings.Enable, m.settings.ManageDaemon = true, false
+	if err := m.Start(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = m.Stop() })
+	for _, want := range []string{"100ms 后重试", "200ms 后重试", "400ms 后重试"} {
+		waitFor(t, want, func() bool { return strings.Contains(logText(m), want) })
+	}
+	if e := m.getErr(); !strings.Contains(e, "management unreachable") {
+		t.Errorf("错误应带 netbird 输出: %q", e)
+	}
+}
+
+// TestLogout 验证退出登录接口带上控制地址调用 netbird logout，失败时返回 netbird 的输出。
+func TestLogout(t *testing.T) {
+	m, dir := newTestModule(t)
+	writeScript(t, dir, `case " $* " in
+*" logout "*)
+  echo "$*" >> "$D/calls"
+  [ -f "$D/fail" ] && { echo "not logged in"; exit 1; }
+  exit 0 ;;
+esac
+`)
+	mux := http.NewServeMux()
+	m.Routes(testRouter{mux})
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, httptest.NewRequest("POST", "/logout", nil))
+	if rec.Code != 200 {
+		t.Fatalf("退出登录失败: %d %s", rec.Code, rec.Body.String())
+	}
+	waitFile(t, dir, "calls", "--daemon-addr=unix://"+filepath.Join(dir, "netbird", "netbird.sock")+" logout")
+
+	_ = os.WriteFile(filepath.Join(dir, "fail"), nil, 0o600)
+	rec = httptest.NewRecorder()
+	mux.ServeHTTP(rec, httptest.NewRequest("POST", "/logout", nil))
+	if rec.Code != http.StatusInternalServerError || !strings.Contains(rec.Body.String(), "not logged in") {
+		t.Errorf("失败时应返回 netbird 的输出: %d %s", rec.Code, rec.Body.String())
+	}
+}
+
+// TestSummaryConnected 验证已连接时总览显示在线节点数与节点总数。
+func TestSummaryConnected(t *testing.T) {
+	m, dir := newTestModule(t)
+	writeScript(t, dir, `echo '{"daemonStatus":"Connected","netbirdIp":"100.92.0.1/16","peers":{"total":2,"connected":1,"details":[
+{"fqdn":"a.netbird.cloud.","netbirdIp":"100.92.0.2","status":"Idle"},{"fqdn":"b.netbird.cloud.","netbirdIp":"100.92.0.3","status":"Connected","connectionType":"Relayed","relayAddress":"rels://r"}]}}'
+`)
+	m.settings.Enable, m.settings.ManageDaemon = true, false
+	got := m.Summary()
+	if len(got) != 2 || got[0].Value != "已连接" || got[1].Value != "1/2" {
+		t.Fatalf("摘要错误: %+v", got)
+	}
+	v := m.status()
+	// 在线节点排在前面，中继连接带中继地址，FQDN 去掉末尾的点
+	if len(v.Peers) != 2 || v.Peers[0].Name != "b" || v.Peers[0].Relay != "rels://r" || v.Peers[1].FQDN != "a.netbird.cloud" {
+		t.Errorf("节点排序或视图错误: %+v", v.Peers)
+	}
+	if v.Self == nil || v.Self.IPs[0] != "100.92.0.1" {
+		t.Errorf("本机信息错误: %+v", v.Self)
+	}
+}
+
+// TestOldVersionWarnsPublicSocks 验证托管守护进程使用用户态网络且 NetBird 版本过旧时在日志中提示 SOCKS5 对外暴露。
+func TestOldVersionWarnsPublicSocks(t *testing.T) {
+	m, dir := newTestModule(t)
+	writeScript(t, dir, `case " $* " in
+*" version "*) echo 0.70.0 ;;
+*" service run "*) exec sleep 30 ;;
+*" status --json "*) echo '{"daemonStatus":"Idle","peers":{"details":[]}}' ;;
+esac
+`)
+	m.settings.Enable = true
+	if err := m.Start(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = m.Stop() })
+	if logs := logText(m); !strings.Contains(logs, "0.0.0.0") {
+		t.Errorf("旧版本应提示 SOCKS5 对外暴露:\n%s", logs)
+	}
+}

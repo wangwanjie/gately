@@ -301,6 +301,7 @@
   "NAT-PMP 错误码 %d": "NAT-PMP 오류 코드 %d",
   "Namecheap 动态 DNS 仅支持 A 记录（IPv4）": "Namecheap 동적 DNS는 A 레코드(IPv4)만 지원함",
   "Namecheap: 无法解析响应: %s": "Namecheap: 응답을 파싱할 수 없음: %s",
+  "NetBird %s 在用户态网络下总是在 0.0.0.0 上提供无认证的 SOCKS5 代理（0.75.0 起才默认只监听本机），其他设备可经它访问组网，请升级 NetBird": "NetBird %s는 사용자 공간 네트워킹에서 항상 0.0.0.0에 인증 없는 SOCKS5 프록시를 엽니다(0.75.0부터 기본값이 로컬 전용). 다른 기기가 이를 통해 네트워크에 접근할 수 있으니 NetBird를 업그레이드하세요",
   "NetBird 没有提供 %s 的程序": "NetBird 는 %s 용 프로그램을 제공하지 않습니다",
   "NetBird 组网": "NetBird 네트워크",
   "OIDC 发现文档不完整": "OIDC 디스커버리 문서가 불완전함",

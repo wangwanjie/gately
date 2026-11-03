@@ -62,6 +62,11 @@ func TestClassify(t *testing.T) {
 		"ERRO client/iface/netstack/tun.go:65: error": logbuf.LevelError,
 		"WARN client/internal/engine.go:965: failed":  logbuf.LevelWarn,
 		"DEBU client/internal/peer/conn.go:1: x":      logbuf.LevelDebug,
+		"FATA failed to start daemon":                 logbuf.LevelError,
+		"PANI runtime error":                          logbuf.LevelError,
+		"TRAC client/internal/engine.go:1: x":         logbuf.LevelDebug,
+		"FATAL boom":                                  logbuf.LevelError,
+		"DEBUG verbose":                               logbuf.LevelDebug,
 		"[I] ok":                                      logbuf.LevelInfo,
 		"plain line":                                  logbuf.LevelInfo,
 	}

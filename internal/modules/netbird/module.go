@@ -30,9 +30,10 @@ import (
 // ID 是模块标识。
 const ID = "netbird"
 
+// readyTimeout 是等待守护进程就绪多久后提示超时（之后继续等待）；测试中缩短
+var readyTimeout = 30 * time.Second
+
 const (
-	// readyTimeout 是等待守护进程就绪的最长时间
-	readyTimeout  = 30 * time.Second
 	statusTimeout = 8 * time.Second
 	// loginRetryDelay 是登录链接过期后重新获取的间隔
 	loginRetryDelay = 3 * time.Second
@@ -145,6 +146,9 @@ func (m *Module) applyLocked() {
 		m.fail(err.Error())
 		return
 	}
+	if s.ManageDaemon && s.Userspace {
+		m.warnPublicSocks(cli)
+	}
 	// started 在托管的守护进程每次启动（包括异常退出后被重启）时收到信号，触发一次 netbird up：
 	// 托管时关闭了守护进程的自动连接，由 Gately 负责连接
 	started := make(chan struct{}, 1)
@@ -187,6 +191,34 @@ func (m *Module) applyLocked() {
 			}
 		}
 	}()
+}
+
+// socksAlwaysPublic 判断 NetBird 版本 ver 在用户态网络下是否总把 SOCKS5 代理监听在 0.0.0.0：
+// 0.75.0 之前的版本忽略 NB_SOCKS5_LISTENER_ADDRESS，固定监听所有地址且没有认证。无法识别的版本返回 false。
+func socksAlwaysPublic(ver string) bool {
+	m := nbVersionRe.FindStringSubmatch(ver)
+	if m == nil {
+		return false
+	}
+	parts := strings.SplitN(m[1], ".", 3)
+	major, err1 := strconv.Atoi(parts[0])
+	minor, err2 := strconv.Atoi(parts[1])
+	if err1 != nil || err2 != nil {
+		return false
+	}
+	return major == 0 && minor < 75
+}
+
+// warnPublicSocks 在托管的守护进程使用用户态网络且 NetBird 版本过旧时提示 SOCKS5 代理对外暴露；调用方持有 mu。
+func (m *Module) warnPublicSocks(cli string) {
+	ver, ok := m.versions[cli]
+	if !ok {
+		ver = proc.Version(cli, "version")
+		m.versions[cli] = ver
+	}
+	if socksAlwaysPublic(ver) {
+		m.logs.Warnf("NetBird %s 在用户态网络下总是在 0.0.0.0 上提供无认证的 SOCKS5 代理（0.75.0 起才默认只监听本机），其他设备可经它访问组网，请升级 NetBird", ver)
+	}
 }
 
 func (m *Module) putErr(msg string) {
@@ -240,6 +272,8 @@ func parseAuthLine(line string) (url, code string) {
 func (m *Module) bringUp(ctx context.Context, cli string, s Settings, dir string) (restartDaemon bool) {
 	global := s.CLIArgs(dir)
 	deadline := time.Now().Add(readyTimeout)
+	// timedOut 表示已经提示过等待超时，守护进程随后就绪时要清除该提示
+	timedOut := false
 	var st *rawStatus
 	for {
 		var err error
@@ -250,15 +284,19 @@ func (m *Module) bringUp(ctx context.Context, cli string, s Settings, dir string
 			return false
 		}
 		// 超时后提示错误但继续等待：守护进程可能在慢速设备上启动较慢，或由外部服务稍后启动
-		if !deadline.IsZero() && time.Now().After(deadline) {
+		if !timedOut && time.Now().After(deadline) {
 			m.fail("等待 NetBird 守护进程就绪超时，请检查日志")
-			deadline = time.Time{}
+			timedOut = true
 		}
 		select {
 		case <-ctx.Done():
 			return false
 		case <-time.After(time.Second):
 		}
+	}
+	// 守护进程已就绪，超时提示不再成立；否则等待登录期间（up 阻塞到登录完成）页面会一直显示异常
+	if timedOut {
+		m.putErr("")
 	}
 	// 已连接（守护进程按上次保存的配置自动连接）时 netbird up 只会提示 Already connected，
 	// 既不应用也不保存新的配置，所以先断开。托管时 up 会保存“关闭自动连接”，之后守护进程启动后保持空闲，

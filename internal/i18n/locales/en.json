@@ -301,6 +301,7 @@
   "NAT-PMP 错误码 %d": "NAT-PMP error code %d",
   "Namecheap 动态 DNS 仅支持 A 记录（IPv4）": "Namecheap dynamic DNS only supports A records (IPv4)",
   "Namecheap: 无法解析响应: %s": "Namecheap: cannot parse response: %s",
+  "NetBird %s 在用户态网络下总是在 0.0.0.0 上提供无认证的 SOCKS5 代理（0.75.0 起才默认只监听本机），其他设备可经它访问组网，请升级 NetBird": "NetBird %s always serves an unauthenticated SOCKS5 proxy on 0.0.0.0 in userspace networking (it listens on localhost only by default since 0.75.0), so other devices can reach the network through it; please upgrade NetBird",
   "NetBird 没有提供 %s 的程序": "NetBird does not provide a program for %s",
   "NetBird 组网": "NetBird network",
   "OIDC 发现文档不完整": "OIDC discovery document is incomplete",
