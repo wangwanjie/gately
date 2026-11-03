@@ -57,6 +57,12 @@ func TestRequiredAndMatch(t *testing.T) {
 		// 登录链接在接口内按写权限隐藏，查看状态只需读权限
 		{"GET", "/api/tailscale/instances/abc/status", "tailscale:read"},
 		{"POST", "/api/tailscale/instances/abc/logout", "tailscale:write"},
+		{"GET", "/api/netbird/instances/abc/secrets", "netbird:write"},
+		{"GET", "/api/netbird/instances/abc/status", "netbird:read"},
+		{"GET", "/api/netbird/status", "netbird:read"},
+		{"POST", "/api/netbird/instances/abc/logout", "netbird:write"},
+		{"POST", "/api/netbird/instances/abc/restart", "netbird:write"},
+		{"POST", "/api/netbird/instances/abc/copy", "netbird:write"},
 		// 复制条目会沿用模板的密钥，需要写权限
 		{"POST", "/api/frp/clients/abc/copy", "frp:write"},
 		{"POST", "/api/webterminal/connections/abc/copy", "webterminal:write"},

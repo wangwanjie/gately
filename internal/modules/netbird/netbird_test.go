@@ -2,7 +2,6 @@ package netbird
 
 import (
 	"context"
-	"encoding/json"
 	"io"
 	"log"
 	"net/http"
@@ -19,12 +18,14 @@ import (
 	"github.com/wangwanjie/gately/internal/auth"
 	"github.com/wangwanjie/gately/internal/binstall"
 	"github.com/wangwanjie/gately/internal/config"
+	"github.com/wangwanjie/gately/internal/crud"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
+	"github.com/wangwanjie/gately/internal/proc"
 )
 
 func TestArgs(t *testing.T) {
-	s := DefaultSettings()
+	s := DefaultOptions()
 	s.SetupKey = "A1B2C3"
 	s.Hostname = "gately"
 	s.ManagementURL = "https://nb.example.com/"
@@ -53,20 +54,30 @@ func TestArgs(t *testing.T) {
 		t.Errorf("up 环境变量错误: %v", env)
 	}
 
-	d := s.DaemonArgs("/etc/gately")
+	// 迁移自旧版的实例沿用 <配置目录>/netbird，参数与升级前一致
+	legacy := Instance{Key: "k1", Options: s, LegacyStateDir: true}
+	d := legacy.DaemonArgs("/etc/gately")
 	if want := []string{"service", "run", "--daemon-addr=unix:///etc/gately/netbird/netbird.sock", "--log-file=console"}; !slices.Equal(d, want) {
 		t.Errorf("守护进程参数错误: %v", d)
 	}
 	wantEnv := []string{"NB_STATE_DIR=/etc/gately/netbird", "NB_USE_NETSTACK_MODE=true", "NB_ENABLE_NETSTACK_LOCAL_FORWARDING=true", "NB_SOCKS5_LISTENER_ADDRESS=0.0.0.0", "NB_SOCKS5_LISTENER_PORT=1081", "NB_LOG_LEVEL=debug"}
-	if env := s.DaemonEnvList("/etc/gately"); !slices.Equal(env, wantEnv) {
+	if env := legacy.DaemonEnvList("/etc/gately"); !slices.Equal(env, wantEnv) {
 		t.Errorf("守护进程环境变量错误: %v", env)
 	}
-	if got := s.CLIArgs("/etc/gately"); !slices.Equal(got, []string{"--daemon-addr=unix:///etc/gately/netbird/netbird.sock"}) {
+	if got := legacy.CLIArgs("/etc/gately"); !slices.Equal(got, []string{"--daemon-addr=unix:///etc/gately/netbird/netbird.sock"}) {
 		t.Errorf("CLI 参数错误: %v", got)
+	}
+	// 新实例使用 <配置目录>/netbird/<key>
+	fresh := Instance{Key: "k2", Options: s}
+	if got := fresh.CLIArgs("/etc/gately"); !slices.Equal(got, []string{"--daemon-addr=unix:///etc/gately/netbird/k2/netbird.sock"}) {
+		t.Errorf("新实例 CLI 参数错误: %v", got)
+	}
+	if env := fresh.DaemonEnvList("/etc/gately"); env[0] != "NB_STATE_DIR=/etc/gately/netbird/k2" {
+		t.Errorf("新实例状态目录错误: %v", env)
 	}
 
 	// 默认：官方云地址、不固定端口、不带 SOCKS5 变量；未填设置密钥时没有 NB_SETUP_KEY
-	def := DefaultSettings()
+	def := Instance{Key: "k3", Options: DefaultOptions(), LegacyStateDir: true}
 	if up := def.UpArgs(); !slices.Contains(up, "--management-url="+DefaultManagementURL) || slices.ContainsFunc(up, func(a string) bool { return strings.HasPrefix(a, "--wireguard-port") }) {
 		t.Errorf("默认 up 参数错误: %v", up)
 	}
@@ -79,7 +90,7 @@ func TestArgs(t *testing.T) {
 	}
 
 	// 使用外部守护进程时不指定控制地址，沿用 netbird 的系统默认值；关闭用户态网络时不带 netstack 变量
-	ext := Settings{ManageDaemon: false}
+	ext := Instance{Key: "k4"}
 	if got := ext.CLIArgs("/x"); got != nil {
 		t.Errorf("外部守护进程默认不应带 --daemon-addr: %v", got)
 	}
@@ -87,14 +98,14 @@ func TestArgs(t *testing.T) {
 	if up := ext.UpArgs(); slices.ContainsFunc(up, func(a string) bool { return strings.HasPrefix(a, "--disable-auto-connect") }) {
 		t.Errorf("外部守护进程不应修改自动连接: %v", up)
 	}
-	kernel := Settings{ManageDaemon: true, StateDir: "/data/nb"}
+	kernel := Instance{Key: "k5", Options: Options{ManageDaemon: true, StateDir: "/data/nb"}}
 	if env := kernel.DaemonEnvList("/x"); !slices.Equal(env, []string{"NB_STATE_DIR=/data/nb"}) {
 		t.Errorf("内核模式环境变量错误: %v", env)
 	}
 }
 
 func TestValidate(t *testing.T) {
-	bad := []Settings{
+	bad := []Options{
 		{StateDir: "relative/dir"},
 		{Socks5: "no-port"},
 		{Socks5: "localhost:1080"},
@@ -112,9 +123,19 @@ func TestValidate(t *testing.T) {
 			t.Errorf("用例 %d 应被拒绝: %+v", i, s)
 		}
 	}
-	good := Settings{DaemonAddr: "tcp://127.0.0.1:41731", Socks5: "[::1]:1080", ManagementURL: "http://192.168.1.2"}
+	good := Options{DaemonAddr: "tcp://127.0.0.1:41731", Socks5: "[::1]:1080", ManagementURL: "http://192.168.1.2"}
 	if err := good.Validate(); err != nil {
 		t.Errorf("合法配置被拒绝: %v", err)
+	}
+	// unix 控制地址与状态目录规范化后再比较冲突
+	norm := Options{DaemonAddr: "unix:///run//nb/./a.sock", StateDir: "/data/nb/"}
+	if err := norm.Validate(); err != nil || norm.DaemonAddr != "unix:///run/nb/a.sock" || norm.StateDir != "/data/nb" {
+		t.Errorf("路径应规范化: %v %+v", err, norm)
+	}
+	// 名称不能为空
+	in := Instance{Name: "  ", Options: DefaultOptions()}
+	if err := in.Validate(); err == nil {
+		t.Error("空名称应被拒绝")
 	}
 }
 
@@ -210,87 +231,45 @@ func newTestModule(t *testing.T) (*Module, string) {
 		t.Fatal(err)
 	}
 	m := New()
-	if err := m.Init(module.Env{Store: store, Logs: logbuf.New(100, log.New(io.Discard, "", 0))}); err != nil {
+	if err := m.Init(testEnv(store)); err != nil {
 		t.Fatal(err)
 	}
 	return m, dir
 }
 
-// TestReset 验证恢复默认配置会恢复默认设置并删除默认状态目录，自定义状态目录保留。
-func TestReset(t *testing.T) {
-	m, dir := newTestModule(t)
-	state := filepath.Join(dir, "netbird")
-	if err := os.MkdirAll(state, 0o700); err != nil {
-		t.Fatal(err)
-	}
-	_ = os.WriteFile(filepath.Join(state, "default.json"), []byte("{}"), 0o600)
-	m.settings.Hostname, m.settings.SetupKey, m.settings.InstallProxy, m.settings.ServerRoutes = "nas", "key", "http://127.0.0.1:7890", false
+// testEnv 返回测试用的模块环境，日志丢弃输出但保留在缓冲中供检查。
+func testEnv(store *config.Store) module.Env {
+	return module.Env{Store: store, Logs: logbuf.New(500, log.New(io.Discard, "", 0))}
+}
 
+// setInstance 把模块配置设为一个 key 为 a 的实例：默认参数，沿用旧版默认状态目录 <配置目录>/netbird，
+// 与单实例时的路径一致，便于沿用原有的脚本化用例；edit 修改实例字段。
+func setInstance(m *Module, edit func(in *Instance)) {
+	in := Instance{Key: "a", Name: "nb", Enable: true, Options: DefaultOptions(), LegacyStateDir: true}
+	edit(&in)
 	m.mu.Lock()
-	err := m.resetLocked()
+	m.cfg.Instances = []Instance{in}
 	m.mu.Unlock()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if m.settings != DefaultSettings() {
-		t.Errorf("设置未恢复默认: %+v", m.settings)
-	}
-	if _, err := os.Stat(state); !os.IsNotExist(err) {
-		t.Errorf("默认状态目录应被删除: %v", err)
-	}
+}
 
-	custom := filepath.Join(t.TempDir(), "nb")
-	_ = os.MkdirAll(custom, 0o700)
-	m.settings.StateDir = custom
+// runOf 在持锁状态下读取实例的运行时，测试中的接口请求与启动协程会替换它们
+func runOf(m *Module, key string) *instRuntime {
 	m.mu.Lock()
-	err = m.resetLocked()
-	m.mu.Unlock()
-	if err != nil {
-		t.Fatal(err)
+	defer m.mu.Unlock()
+	return m.runs[key]
+}
+
+// errOf 返回实例 a 当前的错误提示，实例未运行时为空
+func errOf(m *Module) string {
+	if rt := runOf(m, "a"); rt != nil {
+		return rt.getErr()
 	}
-	if _, err := os.Stat(custom); err != nil {
-		t.Errorf("自定义状态目录应保留: %v", err)
-	}
+	return ""
 }
 
 type testRouter struct{ mux *http.ServeMux }
 
 func (r testRouter) HandleFunc(pattern string, h http.HandlerFunc) { r.mux.HandleFunc(pattern, h) }
-
-// TestSettingsSecret 验证读取设置时密钥脱敏、保存脱敏值时沿用原密钥，以及查看明文接口。
-func TestSettingsSecret(t *testing.T) {
-	m, _ := newTestModule(t)
-	m.settings.SetupKey = "SECRET-KEY"
-	mux := http.NewServeMux()
-	m.Routes(testRouter{mux})
-
-	rec := httptest.NewRecorder()
-	mux.ServeHTTP(rec, httptest.NewRequest("GET", "/settings", nil))
-	if strings.Contains(rec.Body.String(), "SECRET-KEY") {
-		t.Fatalf("读取设置不应返回密钥明文: %s", rec.Body.String())
-	}
-	var got struct {
-		Settings Settings `json:"settings"`
-	}
-	_ = json.Unmarshal(rec.Body.Bytes(), &got)
-	got.Settings.Hostname = "nas"
-	body, _ := json.Marshal(got.Settings)
-	rec = httptest.NewRecorder()
-	req := httptest.NewRequest("PUT", "/settings", strings.NewReader(string(body)))
-	req.Header.Set("Content-Type", "application/json")
-	mux.ServeHTTP(rec, req)
-	if rec.Code != 200 || m.settings.SetupKey != "SECRET-KEY" || m.settings.Hostname != "nas" {
-		t.Fatalf("保存脱敏值应沿用原密钥: %d %s %+v", rec.Code, rec.Body.String(), m.settings)
-	}
-
-	rec = httptest.NewRecorder()
-	mux.ServeHTTP(rec, httptest.NewRequest("GET", "/secrets", nil))
-	var secrets map[string]string
-	_ = json.Unmarshal(rec.Body.Bytes(), &secrets)
-	if rec.Code != 200 || secrets["setupKey"] != "SECRET-KEY" {
-		t.Fatalf("应返回设置密钥明文: %d %s", rec.Code, rec.Body.String())
-	}
-}
 
 // TestStatusNotEnabled 验证未启用且守护进程不可达时不报错。
 func TestStatusNotEnabled(t *testing.T) {
@@ -298,7 +277,8 @@ func TestStatusNotEnabled(t *testing.T) {
 	bin := filepath.Join(dir, "bin")
 	_ = os.MkdirAll(bin, 0o755)
 	_ = os.WriteFile(filepath.Join(bin, "netbird"), []byte("#!/bin/sh\necho 'connection refused'\nexit 1\n"), 0o755)
-	v := m.queryStatus()
+	setInstance(m, func(in *Instance) { in.Enable = false })
+	v := m.queryStatus("a")
 	if v.Error != "" || v.CLI == "" {
 		t.Errorf("未启用时不应报错: %+v", v)
 	}
@@ -364,7 +344,7 @@ func startFake(t *testing.T, managed, crash, firstConnected bool) (*Module, stri
 	}
 	m, dir := newTestModule(t)
 	fakeNetbird(t, dir, crash, firstConnected)
-	m.settings.Enable, m.settings.ManageDaemon = true, managed
+	setInstance(m, func(in *Instance) { in.ManageDaemon = managed })
 	if err := m.Start(context.Background()); err != nil {
 		t.Fatal(err)
 	}
@@ -410,32 +390,32 @@ func TestUpRetriesAfterFailure(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(dir, "upfail"), nil, 0o600); err != nil {
 		t.Fatal(err)
 	}
-	m.settings.Enable = true
+	setInstance(m, func(*Instance) {})
 	if err := m.Start(context.Background()); err != nil {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { _ = m.Stop() })
 	waitFile(t, dir, "calls", "fail")
 	deadline := time.Now().Add(5 * time.Second)
-	for !strings.Contains(m.getErr(), "connection refused") && time.Now().Before(deadline) {
+	for !strings.Contains(errOf(m), "connection refused") && time.Now().Before(deadline) {
 		time.Sleep(50 * time.Millisecond)
 	}
-	if e := m.getErr(); !strings.Contains(e, "connection refused") || !strings.Contains(e, "后重试") {
+	if e := errOf(m); !strings.Contains(e, "connection refused") || !strings.Contains(e, "后重试") {
 		t.Errorf("失败时应提示原因与重试: %q", e)
 	}
 	waitFile(t, dir, "calls", "fail\nup")
 	deadline = time.Now().Add(3 * time.Second)
-	for m.getErr() != "" && time.Now().Before(deadline) {
+	for errOf(m) != "" && time.Now().Before(deadline) {
 		time.Sleep(50 * time.Millisecond)
 	}
-	if e := m.getErr(); e != "" {
+	if e := errOf(m); e != "" {
 		t.Errorf("重试成功后应清除错误: %q", e)
 	}
 }
 
 // TestValidateOptionLike 验证以 - 开头或带空白的主机名、管理服务地址被拒绝，不会被 netbird 当作选项或拆成多个参数。
 func TestValidateOptionLike(t *testing.T) {
-	bad := []Settings{
+	bad := []Options{
 		{Hostname: "-x"},
 		{Hostname: "a b"},
 		{ManagementURL: "-https://nb.example.com"},
@@ -451,7 +431,7 @@ func TestValidateOptionLike(t *testing.T) {
 		}
 	}
 	// 管理服务地址作为 --management-url= 的取值整体传递
-	s := Settings{ManagementURL: " https://nb.example.com:33073/ "}
+	s := Options{ManagementURL: " https://nb.example.com:33073/ "}
 	if err := s.Validate(); err != nil {
 		t.Fatal(err)
 	}
@@ -510,7 +490,7 @@ func waitFor(t *testing.T, what string, cond func() bool) {
 // logText 返回模块日志缓冲中的全部内容。
 func logText(m *Module) string {
 	var b strings.Builder
-	for _, e := range m.logBuf.Since(0) {
+	for _, e := range m.logs.Since(0) {
 		b.WriteString(e.Message)
 		b.WriteByte('\n')
 	}
@@ -530,7 +510,7 @@ func TestSetupKeyOnlyInEnv(t *testing.T) {
 esac
 `)
 	t.Setenv("DISPLAY", ":0")
-	m.settings.Enable, m.settings.ManageDaemon, m.settings.SetupKey = true, false, "NB-SECRET-123"
+	setInstance(m, func(in *Instance) { in.ManageDaemon, in.SetupKey = false, "NB-SECRET-123" })
 	if err := m.Start(context.Background()); err != nil {
 		t.Fatal(err)
 	}
@@ -560,23 +540,24 @@ func TestReadyTimeoutClearedWhenReady(t *testing.T) {
   exec sleep 30 ;;
 esac
 `)
-	m.settings.Enable, m.settings.ManageDaemon = true, false
+	setInstance(m, func(in *Instance) { in.ManageDaemon = false })
 	if err := m.Start(context.Background()); err != nil {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { _ = m.Stop() })
-	waitFor(t, "超时提示", func() bool { return strings.Contains(m.getErr(), "超时") })
+	waitFor(t, "超时提示", func() bool { return strings.Contains(errOf(m), "超时") })
 	if err := os.WriteFile(filepath.Join(dir, "ready"), nil, 0o600); err != nil {
 		t.Fatal(err)
 	}
-	waitFor(t, "登录链接", func() bool { u, _ := m.getAuth(); return u != "" })
-	if u, c := m.getAuth(); u != "https://login.example.com/activate" || c != "ABCD-EFGH" {
+	rt := runOf(m, "a")
+	waitFor(t, "登录链接", func() bool { u, _ := rt.getAuth(); return u != "" })
+	if u, c := rt.getAuth(); u != "https://login.example.com/activate" || c != "ABCD-EFGH" {
 		t.Errorf("登录链接错误: %q %q", u, c)
 	}
-	if e := m.getErr(); e != "" {
+	if e := errOf(m); e != "" {
 		t.Errorf("守护进程就绪后应清除超时提示: %q", e)
 	}
-	v := m.queryStatus()
+	v := m.queryStatus("a")
 	if v.AuthURL == "" || v.DaemonStatus != "NeedsLogin" {
 		t.Errorf("状态应带登录链接: %+v", v)
 	}
@@ -588,9 +569,9 @@ esac
 		t.Errorf("停止耗时过长: %s", d)
 	}
 	m.mu.Lock()
-	pending := m.upCancel != nil
+	pending := rt.upCancel != nil
 	m.mu.Unlock()
-	if u, _ := m.getAuth(); u != "" || pending {
+	if u, _ := rt.getAuth(); u != "" || pending {
 		t.Errorf("停止后应清空登录链接并结束 up 协程: %q %v", u, pending)
 	}
 }
@@ -606,7 +587,7 @@ func TestUpBackoffDoubles(t *testing.T) {
 *" up "*) echo up >> "$D/calls"; echo "management unreachable"; exit 1 ;;
 esac
 `)
-	m.settings.Enable, m.settings.ManageDaemon = true, false
+	setInstance(m, func(in *Instance) { in.ManageDaemon = false })
 	if err := m.Start(context.Background()); err != nil {
 		t.Fatal(err)
 	}
@@ -614,7 +595,7 @@ esac
 	for _, want := range []string{"100ms 后重试", "200ms 后重试", "400ms 后重试"} {
 		waitFor(t, want, func() bool { return strings.Contains(logText(m), want) })
 	}
-	if e := m.getErr(); !strings.Contains(e, "management unreachable") {
+	if e := errOf(m); !strings.Contains(e, "management unreachable") {
 		t.Errorf("错误应带 netbird 输出: %q", e)
 	}
 }
@@ -629,10 +610,11 @@ func TestLogout(t *testing.T) {
   exit 0 ;;
 esac
 `)
+	setInstance(m, func(*Instance) {})
 	mux := http.NewServeMux()
 	m.Routes(testRouter{mux})
 	rec := httptest.NewRecorder()
-	mux.ServeHTTP(rec, httptest.NewRequest("POST", "/logout", nil))
+	mux.ServeHTTP(rec, httptest.NewRequest("POST", "/instances/a/logout", nil))
 	if rec.Code != 200 {
 		t.Fatalf("退出登录失败: %d %s", rec.Code, rec.Body.String())
 	}
@@ -640,7 +622,7 @@ esac
 
 	_ = os.WriteFile(filepath.Join(dir, "fail"), nil, 0o600)
 	rec = httptest.NewRecorder()
-	mux.ServeHTTP(rec, httptest.NewRequest("POST", "/logout", nil))
+	mux.ServeHTTP(rec, httptest.NewRequest("POST", "/instances/a/logout", nil))
 	if rec.Code != http.StatusInternalServerError || !strings.Contains(rec.Body.String(), "not logged in") {
 		t.Errorf("失败时应返回 netbird 的输出: %d %s", rec.Code, rec.Body.String())
 	}
@@ -652,12 +634,12 @@ func TestSummaryConnected(t *testing.T) {
 	writeScript(t, dir, `echo '{"daemonStatus":"Connected","netbirdIp":"100.92.0.1/16","peers":{"total":2,"connected":1,"details":[
 {"fqdn":"a.netbird.cloud.","netbirdIp":"100.92.0.2","status":"Idle"},{"fqdn":"b.netbird.cloud.","netbirdIp":"100.92.0.3","status":"Connected","connectionType":"Relayed","relayAddress":"rels://r"}]}}'
 `)
-	m.settings.Enable, m.settings.ManageDaemon = true, false
+	setInstance(m, func(in *Instance) { in.ManageDaemon = false })
 	got := m.Summary()
 	if len(got) != 2 || got[0].Value != "已连接" || got[1].Value != "1/2" {
 		t.Fatalf("摘要错误: %+v", got)
 	}
-	v := m.status()
+	v, _ := m.status("a")
 	// 在线节点排在前面，中继连接带中继地址，FQDN 去掉末尾的点
 	if len(v.Peers) != 2 || v.Peers[0].Name != "b" || v.Peers[0].Relay != "rels://r" || v.Peers[1].FQDN != "a.netbird.cloud" {
 		t.Errorf("节点排序或视图错误: %+v", v.Peers)
@@ -676,7 +658,7 @@ func TestOldVersionWarnsPublicSocks(t *testing.T) {
 *" status --json "*) echo '{"daemonStatus":"Idle","peers":{"details":[]}}' ;;
 esac
 `)
-	m.settings.Enable = true
+	setInstance(m, func(*Instance) {})
 	if err := m.Start(context.Background()); err != nil {
 		t.Fatal(err)
 	}
@@ -701,15 +683,17 @@ func TestMaskAuthLine(t *testing.T) {
 	}
 }
 
-// TestStatusAuthNeedsWrite 验证登录链接与设备码只返回给有写权限的身份。
+// TestStatusAuthNeedsWrite 验证登录链接与设备码只返回给有写权限的身份，全部实例状态与单个实例状态接口都如此；
+// 查看设置密钥明文的接口按写权限鉴权由 apitoken.Required 保证（路径含 secrets 片段），见 TestScopes。
 func TestStatusAuthNeedsWrite(t *testing.T) {
 	m, _ := newTestModule(t)
-	m.cache = StatusView{AuthURL: "https://login.example.com/activate", AuthCode: "ABCD-EFGH"}
-	m.cacheAt = time.Now()
+	setInstance(m, func(in *Instance) { in.SetupKey = "NB-SECRET-KEY" })
+	m.runs["a"] = &instRuntime{daemon: proc.New(m.logs.Logger("t")), cacheAt: time.Now(),
+		cache: StatusView{Key: "a", Name: "nb", AuthURL: "https://login.example.com/activate", AuthCode: "ABCD-EFGH"}}
 	mux := http.NewServeMux()
 	m.Routes(testRouter{mux})
-	get := func(scopes ...string) string {
-		req := httptest.NewRequest("GET", "/status", nil)
+	get := func(path string, scopes ...string) string {
+		req := httptest.NewRequest("GET", path, nil)
 		req = req.WithContext(auth.WithScopeCheck(req.Context(), func(need string) bool {
 			return slices.Contains(scopes, need)
 		}))
@@ -717,11 +701,22 @@ func TestStatusAuthNeedsWrite(t *testing.T) {
 		mux.ServeHTTP(rec, req)
 		return rec.Body.String()
 	}
-	if body := get("netbird:read"); strings.Contains(body, "ABCD-EFGH") || strings.Contains(body, "activate") {
-		t.Errorf("只读身份不应拿到登录链接与设备码: %s", body)
+	for _, path := range []string{"/status", "/instances/a/status"} {
+		if body := get(path, "netbird:read"); strings.Contains(body, "ABCD-EFGH") || strings.Contains(body, "activate") {
+			t.Errorf("%s: 只读身份不应拿到登录链接与设备码: %s", path, body)
+		}
+		if body := get(path, "netbird:read", "netbird:write"); !strings.Contains(body, "ABCD-EFGH") || !strings.Contains(body, "activate") {
+			t.Errorf("%s: 有写权限时应返回登录链接与设备码: %s", path, body)
+		}
 	}
-	if body := get("netbird:read", "netbird:write"); !strings.Contains(body, "ABCD-EFGH") || !strings.Contains(body, "activate") {
-		t.Errorf("有写权限时应返回登录链接与设备码: %s", body)
+	// 实例列表中的设置密钥已脱敏，只读身份也看不到明文
+	for _, path := range []string{"/instances"} {
+		if body := get(path, "netbird:read"); strings.Contains(body, "NB-SECRET-KEY") || !strings.Contains(body, crud.SecretMask) {
+			t.Errorf("%s: 设置密钥应脱敏: %s", path, body)
+		}
+	}
+	if body := get("/instances/a/secrets", "netbird:read", "netbird:write"); !strings.Contains(body, "NB-SECRET-KEY") {
+		t.Errorf("查看明文接口应返回设置密钥: %s", body)
 	}
 }
 
@@ -737,7 +732,7 @@ func TestCustomStateDirKeepsMode(t *testing.T) {
 		t.Fatal(err)
 	}
 	_ = os.Chmod(custom, 0o755)
-	m.settings.Enable, m.settings.ManageDaemon, m.settings.StateDir = true, true, custom
+	setInstance(m, func(in *Instance) { in.StateDir = custom })
 	if err := m.Start(context.Background()); err != nil {
 		t.Fatal(err)
 	}
