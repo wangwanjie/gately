@@ -533,6 +533,9 @@ func TestDiagnosticsBundle(t *testing.T) {
 		}
 	}
 	content := all.String()
+	if !strings.Contains(content, `"build"`) || !strings.Contains(content, `"languages"`) {
+		t.Errorf("summary.json 应包含构建信息")
+	}
 	for _, leak := range []string{"secret-name", "myhome-secret", "203.0.113.9", "192.168.77.88", "hunter2", "test-password", "authSecret\": \"a", a.opts.ConfigDir, "$2a$"} {
 		if strings.Contains(content, leak) {
 			t.Errorf("诊断包泄露了 %q", leak)

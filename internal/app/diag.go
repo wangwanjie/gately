@@ -183,6 +183,8 @@ func (a *App) diagSummary(red *diag.Redactor, now time.Time) map[string]any {
 		"runtime":     map[string]any{"goroutines": runtime.NumGoroutine(), "heapAlloc": ms.Alloc, "sys": ms.Sys, "numCPU": runtime.NumCPU(), "maxProcs": runtime.GOMAXPROCS(0)},
 		"adminListen": map[string]any{"httpPort": portOf(s.Listen), "httpsPort": portOf(s.HTTPSListen), "httpsReady": a.httpsReady.Load()},
 		"host":        host,
+		// build 标明是否为定制构建、去掉了哪些模块与包含哪些语言，排查定制版的问题时用
+		"build": a.buildProfile(),
 	}
 }
 
