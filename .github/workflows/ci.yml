@@ -37,6 +37,24 @@ jobs:
           for target in linux/amd64 linux/arm64 linux/arm linux/mipsle linux/mips linux/riscv64 windows/amd64 darwin/arm64 freebsd/amd64; do
             GOOS=${target%/*} GOARCH=${target#*/} GOMIPS=softfloat CGO_ENABLED=0 go build -o /dev/null ./cmd/gately
           done
+      - name: 定制构建编译检查（build tag 组合）
+        run: |
+          # 三个预设分别搭配三档语言，确认带 no_<模块> / lang_* tag 时仍能通过 vet 与编译
+          for combo in "minimal zh" "router cjk-en" "nas all"; do
+            set -- $combo
+            mods=$(jq -r --arg p "$1" '.presets[] | select(.id == $p) | .modules | join(",")' modules.json)
+            tags=$(go run ./tools/custombuild resolve -modules "$mods" -lang "$2" | jq -r .tags)
+            echo "== $1 / $2: $tags"
+            go vet -tags "$tags" ./...
+            CGO_ENABLED=0 go build -tags "$tags" -o /dev/null ./cmd/gately
+          done
+          # 只留核心时，依赖中的模块包只能是核心模块与注册表
+          tags=$(go run ./tools/custombuild resolve -modules "" -lang zh | jq -r .tags)
+          extra=$(go list -deps -tags "$tags" ./cmd/gately | grep '/internal/modules/' | grep -vE '/internal/modules/(portforward|ssl|webservice|registry)(/|$)' || true)
+          test -z "$extra" || { echo "核心构建引入了可选模块: $extra"; exit 1; }
+          # 精简语言档位
+          go test -tags lang_zh -run TestLangTier ./internal/i18n/
+          go test -tags lang_cjken -run TestLangTier ./internal/i18n/
       - name: OpenWrt 安装包冒烟测试（opkg / apk）
         run: |
           GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o "$RUNNER_TEMP/gately" ./cmd/gately
