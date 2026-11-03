@@ -169,7 +169,7 @@
     "done": "Valores predeterminados restaurados",
     "frp": "Detiene todas las instancias de frpc y frps, borra las instancias, los proxies, las rutas de los programas y el proxy de descarga, y elimina los archivos de configuración generados.",
     "cloudflared": "Se detienen y eliminan todos los túneles y se borran la ruta del programa y el proxy de descarga.",
-    "tailscale": "Se detiene Tailscale (el tailscaled gestionado por Gately cierra sesión antes), se restauran los ajustes predeterminados y se elimina el estado de sesión del directorio de estado predeterminado.",
+    "tailscale": "Detiene todas las instancias de Tailscale (un tailscaled gestionado por Gately con el directorio de estado predeterminado cierra sesión primero), elimina todas las instancias y la configuración de programas, y borra el estado de inicio de sesión de los directorios de estado predeterminados; los directorios de estado personalizados se conservan.",
     "netbird": "Se detiene NetBird (el demonio gestionado por Gately cierra sesión antes y esta máquina se elimina de la red), se restauran los ajustes predeterminados y se eliminan el estado de sesión y las claves del directorio de estado predeterminado.",
     "filebrowser": "Se detienen y eliminan todas las instancias junto con sus usuarios, enlaces compartidos y cachés (los archivos de los directorios compartidos no se tocan), y se borran la ruta del programa y el proxy de descarga."
   },

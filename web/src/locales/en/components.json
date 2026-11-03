@@ -169,7 +169,7 @@
     "done": "Default settings restored",
     "frp": "This stops all frpc and frps instances, clears the instances, proxies, program paths and the download proxy, and deletes the generated config files.",
     "cloudflared": "This stops and deletes all tunnels and clears the program path and the download proxy.",
-    "tailscale": "This stops Tailscale (the tailscaled managed by Gately logs out first), restores the default settings and deletes the login state in the default state directory.",
+    "tailscale": "This stops all Tailscale instances (a Gately-managed tailscaled using the default state directory logs out first), deletes all instances and program settings, and deletes the login state in the default state directories; custom state directories are kept.",
     "netbird": "This stops NetBird (the daemon managed by Gately logs out first, removing this machine from the network), restores the default settings and deletes the login state and keys in the default state directory.",
     "filebrowser": "This stops and deletes all instances together with their users, share links and caches (files in the shared directories are not touched), and clears the program path and the download proxy."
   },
