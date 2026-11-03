@@ -19,7 +19,7 @@
           :compact="compact || sorting"
           :off="!tk.enable || moduleOff"
           :collapsible="!sorting"
-          :collapsed="isCollapsed(tk.key)"
+          :collapsed="isCollapsed(tk.key) && !recordsFiltered(tk)"
           :collapsed-hint="t('ddns.recordsCollapsed', { count: tk.records.length })"
           @update:collapsed="(v: boolean) => setCollapsed(tk.key, v)"
         >
@@ -398,9 +398,28 @@ const gl = useGroupedList<TaskView>({
   items: () => tasks.value,
   base: '/api/ddns/tasks',
   reload: load,
-  matches: (tk, q) =>
-    [tk.name, tk.group ?? '', tk.remark, providerTitle(tk.provider), ...tk.records.map(fqdn)].join('\n').toLowerCase().includes(q),
+  matches: (tk, q) => taskSelfMatches(tk, q) || tk.records.some((r) => recordMatches(tk, r, q)),
 })
+
+// recordQuery 为当前生效的搜索词（已转小写）；排序模式下不筛选
+const recordQuery = computed(() => (gl.sortMode.value ? '' : gl.filterText.value.trim().toLowerCase()))
+
+// taskSelfMatches 判断任务自身的名称、分组、备注或服务商是否符合搜索内容
+function taskSelfMatches(tk: TaskView, q: string) {
+  return [tk.name, tk.group ?? '', tk.remark, providerTitle(tk.provider)].join('\n').toLowerCase().includes(q)
+}
+
+// recordMatches 判断单条解析记录的域名、类型、分组、备注或当前解析值是否符合搜索内容
+function recordMatches(tk: TaskView, r: DNSRecord, q: string) {
+  const value = (r.key && tk.state.records?.[r.key]?.value) || ''
+  return [fqdn(r), r.type, r.group ?? '', r.remark ?? '', value].join('\n').toLowerCase().includes(q)
+}
+
+// recordsFiltered 表示该任务的记录正按搜索词筛选：任务自身匹配时显示全部记录，否则只显示匹配的记录
+function recordsFiltered(tk: TaskView) {
+  const q = recordQuery.value
+  return !!q && !taskSelfMatches(tk, q)
+}
 
 // 任务内解析记录的分组：分组的收起状态按 任务key/分组名 持久化
 const recordFold = useCollapsed('ddns.records')
@@ -414,13 +433,22 @@ const recordSort = reactive<{ visible: boolean; title: string; entries: SortEntr
 })
 
 // recordSections 把任务的记录按分组归类；没有任何分组时只有一节且不显示标题
-function recordSections(tk: Task) {
+// 搜索时只保留匹配的记录，没有匹配记录的分组不显示；分组标题按完整记录判断，筛选后标题保持一致
+function recordSections(tk: TaskView) {
   const secs = buildSections(tk.records, (r) => r.group ?? '')
   const grouped = secs.some((s) => s.name)
-  return secs.map((s) => ({ ...s, grouped }))
+  if (!recordsFiltered(tk)) {
+    return secs.map((s) => ({ ...s, grouped }))
+  }
+  const q = recordQuery.value
+  return secs.map((s) => ({ ...s, items: s.items.filter((r) => recordMatches(tk, r, q)), grouped })).filter((s) => s.items.length)
 }
 
+// 筛选记录时展开分组，避免匹配的记录藏在收起的分组里
 function recordGroupCollapsed(tk: TaskView, name: string) {
+  if (recordsFiltered(tk)) {
+    return false
+  }
   return recordFold.isCollapsed(`${tk.key}/${name}`)
 }
 
