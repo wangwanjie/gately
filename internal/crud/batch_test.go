@@ -18,6 +18,8 @@ type batchFixture struct {
 	guard   map[string]bool
 	mux     *http.ServeMux
 	saves   int
+	// checkEnable 为启用时的检查，nil 表示不检查
+	checkEnable func(it *groupItem) error
 }
 
 func newBatchFixture() *batchFixture {
@@ -35,6 +37,12 @@ func newBatchFixture() *batchFixture {
 		Validate: func(*groupItem) error { return nil },
 		Changed:  func(k string) { f.changed = append(f.changed, k) },
 		Removed:  func(k string) { f.removed = append(f.removed, k) },
+		CheckEnable: func(it *groupItem) error {
+			if f.checkEnable != nil {
+				return f.checkEnable(it)
+			}
+			return nil
+		},
 		BeforeRemove: func(it *groupItem) error {
 			if f.guard[it.Key] {
 				return fmt.Errorf("%s 仍被引用", it.Key)
@@ -107,6 +115,40 @@ func TestBatchEnableRejected(t *testing.T) {
 	}
 	if fmt.Sprint(f.items) != snapshot || len(f.changed) != 0 {
 		t.Fatalf("失败后应原样保留: %+v changed=%v", f.items, f.changed)
+	}
+}
+
+// 启用检查：检查时同批条目都已标记为启用，拒绝时单个与批量启用都撤销、不保存、不调用 Changed；停用不检查。
+func TestCheckEnable(t *testing.T) {
+	f := newBatchFixture()
+	// 规则：同时启用的条目最多 2 个（初始 a、c 已启用）
+	f.checkEnable = func(*groupItem) error {
+		n := 0
+		for _, it := range f.items {
+			if it.On {
+				n++
+			}
+		}
+		if n > 2 {
+			return errors.New("最多同时启用 2 个")
+		}
+		return nil
+	}
+	snapshot := fmt.Sprint(f.items)
+	if code := f.call("PUT", "/items/b/enable", `{"enable":true}`); code != 400 {
+		t.Fatalf("单个启用应被拒绝，实际 %d", code)
+	}
+	if code := f.call("PUT", "/items-enable", `{"keys":["b","d"],"enable":true}`); code != 400 {
+		t.Fatalf("批量启用应被拒绝，实际 %d", code)
+	}
+	if fmt.Sprint(f.items) != snapshot || f.saves != 0 || len(f.changed) != 0 {
+		t.Fatalf("拒绝后应原样保留: %+v saves=%d changed=%v", f.items, f.saves, f.changed)
+	}
+	if code := f.call("PUT", "/items/a/enable", `{"enable":false}`); code != 200 {
+		t.Fatalf("停用不应检查，实际 %d", code)
+	}
+	if code := f.call("PUT", "/items/b/enable", `{"enable":true}`); code != 200 || !f.items[1].On {
+		t.Fatalf("腾出名额后应能启用，实际 %d", code)
 	}
 }
 

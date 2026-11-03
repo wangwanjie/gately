@@ -43,6 +43,9 @@ type Collection[T any] struct {
 	Validate func(*T) error
 	// Check 在持锁状态下做依赖其他配置的校验，例如引用的条目是否存在；在 Validate 之后调用，可为 nil
 	Check func(*T) error
+	// CheckEnable 在启用条目时（单个与批量启用）持锁调用，此时条目及同批要启用的条目都已标记为启用，
+	// 用于检查“同时启用的条目之间不能冲突”一类规则；返回错误时撤销本次启用并拒绝。停用不调用；可为 nil
+	CheckEnable func(*T) error
 	// Merge 在修改时合并旧值，例如保留被脱敏的密钥；可为 nil
 	Merge func(old, updated *T)
 	// View 把条目转换为输出结构（附加运行状态、脱敏）；可为 nil
@@ -356,6 +359,13 @@ func (c *Collection[T]) enable(w http.ResponseWriter, r *http.Request) {
 	en := c.Enabled(it)
 	prev := *en
 	*en = req.Enable
+	if req.Enable && c.CheckEnable != nil {
+		if err := c.CheckEnable(it); err != nil {
+			*en = prev
+			httpx.Error(w, http.StatusBadRequest, "%v", err)
+			return
+		}
+	}
 	if err := c.Save(); err != nil {
 		*en = prev
 		httpx.Error(w, http.StatusInternalServerError, "保存失败: %v", err)
@@ -512,11 +522,24 @@ func (c *Collection[T]) batchEnable(w http.ResponseWriter, r *http.Request) {
 			*en = req.Enable
 		}
 	}
+	// restore 撤销本次批量启停
+	restore := func() {
+		for i, k := range changed {
+			*c.Enabled(c.Find(k)) = prev[i]
+		}
+	}
+	if req.Enable && c.CheckEnable != nil {
+		for _, k := range changed {
+			if err := c.CheckEnable(c.Find(k)); err != nil {
+				restore()
+				httpx.Error(w, http.StatusBadRequest, "%v", err)
+				return
+			}
+		}
+	}
 	if len(changed) > 0 {
 		if err := c.Save(); err != nil {
-			for i, k := range changed {
-				*c.Enabled(c.Find(k)) = prev[i]
-			}
+			restore()
 			httpx.Error(w, http.StatusInternalServerError, "保存失败: %v", err)
 			return
 		}
