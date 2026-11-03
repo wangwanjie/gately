@@ -27,6 +27,7 @@ type fakeDocker struct {
 	containers map[string]map[string]any // id -> inspect
 	images     map[string]string         // ref -> image id
 	pullTo     string                    // 拉取后镜像变为该 ID
+	failPull   bool                      // 拉取镜像时返回错误（模拟镜像仓库限流）
 	failStart  string                    // 启动该 ID 时失败
 	calls      []string
 	created    map[string]any
@@ -94,6 +95,10 @@ func (f *fakeDocker) handler(w http.ResponseWriter, r *http.Request) {
 			_, _ = w.Write(append(h, s...))
 		}
 	case p == "/images/create":
+		if f.failPull {
+			http.Error(w, `{"message":"toomanyrequests"}`, http.StatusInternalServerError)
+			return
+		}
 		ref := r.URL.Query().Get("fromImage") + ":" + r.URL.Query().Get("tag")
 		_, _ = w.Write([]byte(`{"status":"Pulling"}` + "\n" + `{"status":"Done"}` + "\n"))
 		f.images[ref] = f.pullTo
@@ -367,5 +372,47 @@ func TestPublishImageUpdatesLimit(t *testing.T) {
 		}
 	case <-time.After(time.Second):
 		t.Fatal("没有收到通知")
+	}
+}
+
+// 定时检查中某个容器检查失败（如镜像仓库限流）时保留它的通知记录，下次检查成功不重复通知同一个新镜像
+func TestAutoCheckKeepsRecordOnFailure(t *testing.T) {
+	f, host := startFake(t)
+	m := newModule(t, host)
+	var mu sync.Mutex
+	n := 0
+	unsub := events.Subscribe(func(e events.Event) {
+		if e.Type == events.DockerUpdate {
+			mu.Lock()
+			n++
+			mu.Unlock()
+		}
+	})
+	defer unsub()
+	count := func() int {
+		time.Sleep(50 * time.Millisecond)
+		mu.Lock()
+		defer mu.Unlock()
+		out := n
+		n = 0
+		return out
+	}
+	m.autoCheckOnce(context.Background())
+	if got := count(); got != 1 {
+		t.Fatalf("应通知一次镜像更新，实际 %d 次", got)
+	}
+	f.mu.Lock()
+	f.failPull = true
+	f.mu.Unlock()
+	m.autoCheckOnce(context.Background())
+	if got := count(); got != 0 {
+		t.Fatalf("检查失败时不应通知，实际 %d 次", got)
+	}
+	f.mu.Lock()
+	f.failPull = false
+	f.mu.Unlock()
+	m.autoCheckOnce(context.Background())
+	if got := count(); got != 0 {
+		t.Fatalf("检查恢复后同一个新镜像不应重复通知，实际 %d 次", got)
 	}
 }

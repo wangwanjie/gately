@@ -984,8 +984,14 @@ func (m *Module) autoCheckOnce(ctx context.Context) {
 		return
 	}
 	m.logs.Add(logbuf.LevelInfo, "", fmt.Sprintf("定时检查更新完成，%d 个容器有新版本", found))
-	// 只保留本轮仍有更新的容器：升级或删除后的容器不再占用记录，以后再出现新镜像时重新通知
+	// 只保留本轮仍有更新的容器：升级或删除后的容器不再占用记录，以后再出现新镜像时重新通知。
+	// 本轮检查失败的容器（如镜像仓库限流）沿用原记录，否则下次检查成功时会重复通知同一个新镜像
 	m.mu.Lock()
+	for id, img := range m.notified {
+		if _, ok := current[id]; !ok && m.updates[id].Error != "" {
+			current[id] = img
+		}
+	}
 	m.notified = current
 	m.mu.Unlock()
 	if len(fresh) > 0 {
