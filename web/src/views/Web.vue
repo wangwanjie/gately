@@ -482,6 +482,10 @@
           <el-tab-pane v-if="site.type !== 'close'" :label="t('web.tabTraffic')" name="traffic">
             <SiteTraffic v-model:site="site" />
           </el-tab-pane>
+          <!-- 错误页：断开连接与固定文本站点不产生错误页；默认站点的设置同时用于未匹配任何站点的 404，始终显示 -->
+          <el-tab-pane v-if="siteIsDefault || (site.type !== 'close' && site.type !== 'text')" :label="t('errorPages.tab')" name="errorPage" lazy>
+            <ErrorPagePicker v-model="site.errorPage" :site-type="site.type" :is-default="siteIsDefault" :not-found-page="site.notFoundPage" />
+          </el-tab-pane>
           <el-tab-pane v-if="site.type !== 'close'" :label="t('web.tabHeaders')" name="headers">
             <el-form-item :label="t('web.requestHeaders')">
               <HeaderEditor v-model="site.requestHeaders" direction="request" :placeholder="t('web.requestHeadersPlaceholder')" />
@@ -544,6 +548,12 @@
         </el-form-item>
         <AccessSettings v-if="settings" v-model:auto-ban-seconds="settings.autoBanSeconds" />
         <IPListsManager v-if="settings" @changed="loadIPLists" />
+        <!-- 自定义错误页面库：各站点在「错误页」页签中引用 -->
+        <el-divider content-position="left">{{ t('errorPages.managerTitle') }}</el-divider>
+        <el-form-item :label="t('errorPages.library')">
+          <el-button size="small" :icon="FileCode" data-test="settings-error-pages" @click="errorPagesVisible = true">{{ t('errorPages.manage') }}</el-button>
+          <div class="form-help">{{ t('errorPages.managerHelp') }}</div>
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="settingsVisible = false">{{ t('common.cancel') }}</el-button>
@@ -551,11 +561,12 @@
       </template>
     </el-dialog>
     <NginxImport ref="nginxImport" @imported="load" />
+    <ErrorPagesManager v-model="errorPagesVisible" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -568,6 +579,7 @@ import {
   ChevronsUpDown,
   ChevronUp,
   CopyPlus,
+  FileCode,
   FileInput,
   FileText,
   Globe,
@@ -621,6 +633,9 @@ import ListInput from '../components/ListInput.vue'
 import HeaderEditor from '../components/HeaderEditor.vue'
 import ContentTypeInput from '../components/ContentTypeInput.vue'
 import ProxyOptionsHelp from '../components/ProxyOptionsHelp.vue'
+import ErrorPagePicker from '../components/ErrorPagePicker.vue'
+import ErrorPagesManager from '../components/ErrorPagesManager.vue'
+import { emptyErrorPage, normalizeErrorPage, type ErrorPageOptions } from '../errorPages'
 import { usePolling } from '../composables/usePolling'
 
 interface Site {
@@ -684,6 +699,8 @@ interface Site {
   rateLimit: { enable: boolean; rate: number; burst: number; maxConns: number }
   cache: { enable: boolean; ttl: number; maxMb: number }
   rewrites: Rewrite[]
+  // errorPage 为 404 与 5xx 错误页的样式与拦截后端错误的设置
+  errorPage: ErrorPageOptions
 }
 
 // Location 把某个路径前缀分到另一组后端
@@ -756,6 +773,8 @@ const saving = ref(false)
 const listenerVisible = ref(false)
 const editingListener = ref<Listener>(emptyListener())
 const siteVisible = ref(false)
+// errorPagesVisible 为自定义错误页面库对话框（从设置中打开）
+const errorPagesVisible = ref(false)
 const siteTab = ref('basic')
 const site = ref<Site>(emptySite())
 const siteIsDefault = ref(false)
@@ -917,6 +936,7 @@ function emptySite(): Site {
     rateLimit: { enable: false, rate: 10, burst: 20, maxConns: 0 },
     cache: { enable: false, ttl: 0, maxMb: 64 },
     rewrites: [],
+    errorPage: emptyErrorPage(),
   }
 }
 
@@ -1466,6 +1486,7 @@ function openSite(l: ListenerView, row?: SiteRow, copy = false) {
   draft.health = { ...defaults.health, ...(draft.health ?? {}) }
   draft.rateLimit = { ...defaults.rateLimit, ...(draft.rateLimit ?? {}) }
   draft.cache = { ...defaults.cache, ...(draft.cache ?? {}) }
+  draft.errorPage = normalizeErrorPage(draft.errorPage)
   if (row && copy && !row.isDefault) {
     copySiteFrom.value = { key: row.site.key ?? '', name: siteTitle(row) }
     copySiteSource = { listener: l.key ?? '', index: row.index }
@@ -1480,6 +1501,17 @@ function openSite(l: ListenerView, row?: SiteRow, copy = false) {
   siteTab.value = 'basic'
   siteVisible.value = true
 }
+
+// 切换站点类型后当前页签可能不再显示（如改成断开连接或固定文本），回到基本设置
+watch(
+  () => site.value.type,
+  (type) => {
+    const hidden = type === 'close' ? siteTab.value !== 'basic' : siteTab.value === 'errorPage' && type === 'text' && !siteIsDefault.value
+    if (hidden) {
+      siteTab.value = 'basic'
+    }
+  },
+)
 
 // onSiteOwnerChange 切换所属监听：分享链接地址与访问控制提示按所选监听的协议与端口显示；
 // 新建与复制时站点直接建在所选监听下，编辑已有站点时 siteOwner 仍为当前所在监听，保存时再移动

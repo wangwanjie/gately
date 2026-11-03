@@ -59,6 +59,16 @@
             <el-option v-for="w in wafInstances" :key="w.key" :value="w.key" :label="w.name || w.key" />
           </el-select>
         </el-form-item>
+        <!-- 错误页样式：只改样式与自定义页面，各站点的拦截后端错误设置保持不变 -->
+        <el-form-item :label="t('errorPages.batchLabel')">
+          <el-select v-model="errorStyle" class="choice" :empty-values="[null, undefined]" data-test="batch-error-style" @visible-change="(v: boolean) => v && loadCustomPages()">
+            <el-option value="__keep" :label="t('webBatch.keep')" />
+            <el-option value="" :label="t('errorPages.styles.default')" />
+            <el-option v-for="id in builtinStyles" :key="id" :value="id" :label="t(`errorPages.styles.${id}`)" />
+            <el-option v-for="p in customPages" :key="p.key" :value="`custom:${p.key}`" :label="p.name" />
+          </el-select>
+          <div class="form-help">{{ t('errorPages.batchHelp') }}</div>
+        </el-form-item>
       </el-form>
     </template>
 
@@ -75,6 +85,7 @@ import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { api } from '../api'
 import { useIsMobile } from '../composables/useIsMobile'
+import { builtinStyles, errorPagesApi, type ErrorPageView } from '../errorPages'
 import { movePlainRisk, type MoveListener, type MoveTarget, type SiteRef } from '../siteMove'
 
 
@@ -103,6 +114,16 @@ const switches = computed(() => [
 ])
 const choice = reactive<Record<string, Choice>>({ compress: 'keep', accessLog: 'keep', cors: 'keep', forwardedHeaders: 'keep', denyClose: 'keep' })
 const waf = ref('__keep')
+// errorStyle 为 __keep 时不修改；custom:key 为页面库中的自定义页面
+const errorStyle = ref('__keep')
+const customPages = ref<ErrorPageView[]>([])
+async function loadCustomPages() {
+  try {
+    customPages.value = await errorPagesApi.list()
+  } catch {
+    customPages.value = []
+  }
+}
 const moveListener = ref('')
 // moveGroup 为 __keep 时保留各站点原有分组
 const moveGroup = ref('__keep')
@@ -136,7 +157,7 @@ const canSubmit = computed(() => {
     return false
   }
   if (mode.value === 'options') {
-    return waf.value !== '__keep' || Object.values(choice).some((c) => c !== 'keep')
+    return waf.value !== '__keep' || errorStyle.value !== '__keep' || Object.values(choice).some((c) => c !== 'keep')
   }
   if (mode.value === 'move') {
     return !!moveListener.value
@@ -153,6 +174,7 @@ function reset() {
   to.value = ''
   action.value = 'addDomains'
   waf.value = '__keep'
+  errorStyle.value = '__keep'
   moveListener.value = ''
   moveGroup.value = '__keep'
   for (const k of Object.keys(choice)) {
@@ -165,6 +187,9 @@ function open(m: 'domains' | 'options' | 'move', r: SiteRef[]) {
   mode.value = m
   refs.value = r
   visible.value = true
+  if (m === 'options') {
+    loadCustomPages()
+  }
 }
 
 function summary(res: { changed: number; unchanged: number }) {
@@ -201,6 +226,10 @@ async function submit() {
     }
     if (waf.value !== '__keep') {
       options.waf = waf.value
+    }
+    if (errorStyle.value !== '__keep') {
+      const custom = errorStyle.value.startsWith('custom:')
+      options.errorPage = { style: custom ? 'custom' : errorStyle.value, page: custom ? errorStyle.value.slice(7) : '' }
     }
     body.action = 'set'
     body.options = options
