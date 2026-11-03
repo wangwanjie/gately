@@ -21,6 +21,7 @@ func TestGroupedListRoutes(t *testing.T) {
 		"/api/frp/clients",
 		"/api/frp/servers",
 		"/api/frp/proxies",
+		"/api/tailscale/instances",
 		"/api/cloudflared/tunnels",
 		"/api/filebrowser/instances",
 		"/api/waf/instances",

@@ -82,7 +82,7 @@ func installSpec() binstall.Spec {
 	}
 }
 
-// newInstaller 创建 Tailscale 的安装器，安装或回滚后用新程序重启。
+// newInstaller 创建 Tailscale 的安装器，安装或回滚后用新程序重启全部实例。
 func (m *Module) newInstaller() *binstall.Installer {
 	return binstall.New(installSpec(), binstall.Options{
 		BinDir: filepath.Join(m.store.Dir(), "bin"),
@@ -91,17 +91,17 @@ func (m *Module) newInstaller() *binstall.Installer {
 		GetProxy: func() string {
 			m.mu.Lock()
 			defer m.mu.Unlock()
-			return m.settings.InstallProxy
+			return m.cfg.Settings.InstallProxy
 		},
 		SetProxy: func(proxy string) error {
 			m.mu.Lock()
 			defer m.mu.Unlock()
-			s := m.settings
-			s.InstallProxy = proxy
-			if err := m.store.Save(ID, s); err != nil {
+			old := m.cfg.Settings
+			m.cfg.Settings.InstallProxy = proxy
+			if err := m.saveLocked(); err != nil {
+				m.cfg.Settings = old
 				return err
 			}
-			m.settings = s
 			return nil
 		},
 		OnChange: func() {
@@ -109,7 +109,7 @@ func (m *Module) newInstaller() *binstall.Installer {
 			defer m.mu.Unlock()
 			// 文件路径不变，清空版本缓存以重新探测
 			m.versions = map[string]string{}
-			m.applyLocked()
+			m.syncLocked(func(string) bool { return true })
 		},
 	})
 }

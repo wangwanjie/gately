@@ -8,7 +8,8 @@ import (
 )
 
 func TestArgs(t *testing.T) {
-	s := DefaultSettings()
+	in := Instance{Key: "k1", Name: "nas", Options: DefaultOptions(), LegacyStateDir: true}
+	s := &in.Options
 	s.AuthKey = "tskey-abc"
 	s.Hostname = "gately"
 	s.LoginServer = "https://hs.example.com"
@@ -29,29 +30,30 @@ func TestArgs(t *testing.T) {
 			t.Errorf("up 参数缺少 %s: %v", want, up)
 		}
 	}
-	d := s.DaemonArgs("/etc/gately")
+	d := in.DaemonArgs("/etc/gately")
 	want := []string{"--statedir=/etc/gately/tailscale", "--socket=/etc/gately/tailscale/tailscaled.sock", "--tun=userspace-networking", "--socks5-server=localhost:1055"}
 	if !slices.Equal(d, want) {
 		t.Errorf("tailscaled 参数错误: %v", d)
 	}
-	if got := s.CLIArgs("/etc/gately"); !slices.Equal(got, []string{"--socket=/etc/gately/tailscale/tailscaled.sock"}) {
+	if got := in.CLIArgs("/etc/gately"); !slices.Equal(got, []string{"--socket=/etc/gately/tailscale/tailscaled.sock"}) {
 		t.Errorf("CLI 参数错误: %v", got)
 	}
 
 	// 使用外部守护进程时不指定套接字，沿用 tailscale 的系统默认值
-	ext := Settings{ManageDaemon: false}
+	ext := Instance{Key: "k2"}
 	if got := ext.CLIArgs("/x"); got != nil {
 		t.Errorf("外部守护进程默认不应带 --socket: %v", got)
 	}
 }
 
 func TestValidate(t *testing.T) {
-	bad := []Settings{
+	bad := []Options{
 		{StateDir: "relative/dir"},
 		{Socks5: "no-port"},
 		{Hostname: "bad_name"},
 		{LoginServer: "headscale.example.com"},
 		{AdvertiseRoutes: []string{"not-a-cidr"}},
+		{Socket: "relative.sock"},
 	}
 	for i, s := range bad {
 		if err := s.Validate(); err == nil {
@@ -85,7 +87,8 @@ func TestPeerViewAndStatusParse(t *testing.T) {
 func jsonUnmarshal(s string, v any) error { return json.Unmarshal([]byte(s), v) }
 
 func TestDaemonPortArgsAndEnv(t *testing.T) {
-	s := DefaultSettings()
+	in := Instance{Key: "k1", Options: DefaultOptions(), LegacyStateDir: true}
+	s := &in.Options
 	s.Userspace = false
 	s.Port = 41641
 	s.DaemonExtraArgs = "--no-logs-no-support  --verbose=1"
@@ -94,7 +97,7 @@ func TestDaemonPortArgsAndEnv(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := []string{"--statedir=/etc/gately/tailscale", "--socket=/etc/gately/tailscale/tailscaled.sock", "--port=41641", "--no-logs-no-support", "--verbose=1"}
-	if got := s.DaemonArgs("/etc/gately"); !slices.Equal(got, want) {
+	if got := in.DaemonArgs("/etc/gately"); !slices.Equal(got, want) {
 		t.Errorf("tailscaled 参数错误: %v", got)
 	}
 	if got := s.DaemonEnvList(); !slices.Equal(got, []string{"TS_DEBUG_FIREWALL_MODE=nftables", "FOO=bar baz"}) {
@@ -102,7 +105,7 @@ func TestDaemonPortArgsAndEnv(t *testing.T) {
 	}
 
 	// 默认不带 --port，也没有额外环境变量
-	def := DefaultSettings()
+	def := Instance{Key: "k1", Options: DefaultOptions()}
 	if got := def.DaemonArgs("/x"); slices.ContainsFunc(got, func(a string) bool { return strings.HasPrefix(a, "--port") }) {
 		t.Errorf("默认不应固定端口: %v", got)
 	}
@@ -110,7 +113,7 @@ func TestDaemonPortArgsAndEnv(t *testing.T) {
 		t.Errorf("默认不应有环境变量: %v", got)
 	}
 
-	for i, bad := range []Settings{{Port: 70000}, {Port: -1}, {DaemonEnv: "NOEQUALS"}, {DaemonEnv: "1BAD=x"}} {
+	for i, bad := range []Options{{Port: 70000}, {Port: -1}, {DaemonEnv: "NOEQUALS"}, {DaemonEnv: "1BAD=x"}} {
 		if err := bad.Validate(); err == nil {
 			t.Errorf("用例 %d 应被拒绝: %+v", i, bad)
 		}

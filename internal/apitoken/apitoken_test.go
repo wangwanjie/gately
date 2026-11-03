@@ -53,7 +53,10 @@ func TestRequiredAndMatch(t *testing.T) {
 		{"GET", "/api/docker/containers/abc/secrets", "docker:write"},
 		// 查看密钥明文需要写权限
 		{"GET", "/api/frp/clients/abc/secrets", "frp:write"},
-		{"GET", "/api/tailscale/secrets", "tailscale:write"},
+		{"GET", "/api/tailscale/instances/abc/secrets", "tailscale:write"},
+		// 登录链接在接口内按写权限隐藏，查看状态只需读权限
+		{"GET", "/api/tailscale/instances/abc/status", "tailscale:read"},
+		{"POST", "/api/tailscale/instances/abc/logout", "tailscale:write"},
 		// 复制条目会沿用模板的密钥，需要写权限
 		{"POST", "/api/frp/clients/abc/copy", "frp:write"},
 		{"POST", "/api/webterminal/connections/abc/copy", "webterminal:write"},
