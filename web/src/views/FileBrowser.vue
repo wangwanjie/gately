@@ -136,7 +136,7 @@
           <div class="form-help">{{ t('filebrowser.webdavHelp') }}</div>
         </el-form-item>
         <el-form-item :label="t('filebrowser.locale')">
-          <el-select v-model="editing.locale" clearable :placeholder="t('filebrowser.localeDefault')">
+          <el-select v-model="editing.locale" clearable value-on-clear="" :placeholder="t('filebrowser.localeDefault')">
             <el-option v-for="l in fbLocales" :key="l.value" :label="l.label" :value="l.value" />
           </el-select>
           <div class="form-help">{{ t('filebrowser.localeHelp') }}</div>

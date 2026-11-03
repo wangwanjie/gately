@@ -472,7 +472,7 @@
               <div class="form-help">{{ t('web.denyActionHelp') }}</div>
             </el-form-item>
             <el-form-item :label="t('web.wafInstance')">
-              <el-select v-model="site.waf" clearable :placeholder="t('web.wafNone')" class="w-260">
+              <el-select v-model="site.waf" clearable value-on-clear="" :placeholder="t('web.wafNone')" class="w-260">
                 <el-option v-for="w in wafInstances" :key="w.key" :label="w.name" :value="w.key" />
                 <el-option v-if="site.waf && !wafInstances.some((w) => w.key === site.waf)" :label="site.waf + t('web.wafMissingSuffix')" :value="site.waf" />
               </el-select>

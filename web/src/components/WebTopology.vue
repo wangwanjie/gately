@@ -11,6 +11,7 @@
           allow-create
           default-first-option
           clearable
+          value-on-clear=""
           :placeholder="t('webTopology.filterPlaceholder')"
           :no-data-text="t('webTopology.ipNone')"
           :filter-method="(q: string) => (ipQuery = q)"

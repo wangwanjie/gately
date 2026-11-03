@@ -7,12 +7,13 @@
         <el-option :label="t('components.logViewer.levelWarn')" value="warn" />
         <el-option :label="t('components.logViewer.levelError')" value="error" />
       </el-select>
-      <!-- 来源取自已加载的日志，也可以直接输入 -->
+      <!-- 来源取自已加载的日志，也可以直接输入；清除时置为空串（默认是 undefined，拼查询参数时会出错） -->
       <el-select
         v-model="filters.source"
         size="small"
         class="f-source"
         clearable
+        value-on-clear=""
         filterable
         allow-create
         default-first-option

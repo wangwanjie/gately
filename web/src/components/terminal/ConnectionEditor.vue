@@ -97,7 +97,7 @@
         <el-divider content-position="left">{{ t('termConn.editor.localShell') }}</el-divider>
         <el-alert v-if="!allowLocalShell" type="warning" :closable="false" class="gap" :title="t('termConn.editor.localShellDisabled')" />
         <el-form-item :label="t('termConn.editor.shell')">
-          <el-select v-model="form.local.shell" filterable allow-create default-first-option clearable :placeholder="t('termConn.editor.shellPlaceholder')" class="full">
+          <el-select v-model="form.local.shell" filterable allow-create default-first-option clearable value-on-clear="" :placeholder="t('termConn.editor.shellPlaceholder')" class="full">
             <el-option v-for="s in shells" :key="s" :label="s" :value="s" />
           </el-select>
         </el-form-item>

@@ -275,7 +275,7 @@
                 <div class="form-help">{{ t('settings.network.updateProxyHelp') }}</div>
               </el-form-item>
               <el-form-item :label="t('settings.network.timeZone')">
-                <el-select v-model="form.timeZone" filterable allow-create default-first-option clearable :placeholder="t('settings.network.timeZonePlaceholder')" class="w-280">
+                <el-select v-model="form.timeZone" filterable allow-create default-first-option clearable value-on-clear="" :placeholder="t('settings.network.timeZonePlaceholder')" class="w-280">
                   <el-option v-for="z in timeZones" :key="z.value" :label="`${z.label}  ${z.value}`" :value="z.value" />
                 </el-select>
                 <div class="form-help">{{ t('settings.network.timeZoneHelp', { zone: info?.timeZone || '-' }) }}</div>

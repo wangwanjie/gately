@@ -46,7 +46,7 @@
           <el-form-item :label="t('netTools.duration')"><el-input-number v-model="form.seconds" :min="2" :max="30" /></el-form-item>
         </template>
         <el-form-item v-if="tool === 'scan'" :label="t('netTools.cidr')">
-          <el-select v-model="form.cidr" filterable allow-create default-first-option clearable :placeholder="t('netTools.cidrPlaceholder')" class="w-260">
+          <el-select v-model="form.cidr" filterable allow-create default-first-option clearable value-on-clear="" :placeholder="t('netTools.cidrPlaceholder')" class="w-260">
             <el-option v-for="n in networks" :key="n" :label="n" :value="n" />
           </el-select>
         </el-form-item>
