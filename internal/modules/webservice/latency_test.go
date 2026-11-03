@@ -306,7 +306,16 @@ func TestPerfSites(t *testing.T) {
 	for _, p := range []string{"/", "/", "/boom"} {
 		get(t, http.DefaultClient, addr, "s.test", p, nil)
 	}
-	got := m.PerfSites()
+	// 客户端收到响应时服务端可能还没登记完最后一个请求（响应写出后才计入完成数），等到计数稳定再检查
+	var got []PerfSite
+	deadline := time.Now().Add(2 * time.Second)
+	for {
+		got = m.PerfSites()
+		if len(got) != 1 || got[0].Done == 3 || time.Now().After(deadline) {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
 	if len(got) != 1 {
 		t.Fatalf("应有 1 个站点: %+v", got)
 	}
