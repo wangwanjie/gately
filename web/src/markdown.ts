@@ -20,7 +20,8 @@ function link(href: string, text: string): string {
 function inline(raw: string): string {
   const slots: string[] = []
   const hold = (html: string) => `\u0000${slots.push(html) - 1}\u0000`
-  let s = escapeHTML(raw)
+  // 去掉原文中的 \u0000，避免与占位符混淆（原文写出 \u00000\u0000 会重复取出已保存的链接或得到 undefined）
+  let s = escapeHTML(raw.replace(/\u0000/g, ''))
   s = s.replace(/`([^`]+)`/g, (_, code: string) => hold(`<code>${code}</code>`))
   s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (m, text: string, url: string) => {
     const href = safeURL(url)
