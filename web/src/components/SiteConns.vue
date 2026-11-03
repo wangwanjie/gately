@@ -238,7 +238,7 @@ function onSearch() {
   searchTimer = window.setTimeout(load, 300)
 }
 
-// closeConn 断开（banSeconds > 0 时同时封禁）一条请求，返回是否成功，供封禁对话框决定是否关闭。
+// closeConn 断开（banSeconds 非 0 时同时封禁，-1 为永久）一条请求，返回是否成功，供封禁对话框决定是否关闭。
 async function closeConn(row: Conn, banSeconds: number): Promise<boolean> {
   let ok = false
   try {
@@ -248,7 +248,7 @@ async function closeConn(row: Conn, banSeconds: number): Promise<boolean> {
       id: row.id,
       banSeconds,
     })
-    if (banSeconds > 0) {
+    if (banSeconds !== 0) {
       ElMessage.success(t('siteConns.bannedMsg', { key: r.banKey ?? row.ip, count: r.closed }))
     } else {
       ElMessage.success(t('siteConns.closedMsg'))

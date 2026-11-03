@@ -475,7 +475,7 @@ func (m *Module) handleCloseConn(w http.ResponseWriter, r *http.Request) {
 	httpx.OK(w, closeConnResult{Closed: n, BanKey: key})
 }
 
-// unbannableReason 返回不能从实时连接封禁该地址的原因，可以封禁时返回空串。
+// unbannableReason 返回不能手动封禁（从实时连接或手动封禁接口）该地址的原因，可以封禁时返回空串。
 // 手动封禁会绕过入侵防护的白名单，这里挡住封禁后会拦截一大批无关访客的地址：
 // 回环与未指定地址（经 frp、未带 PROXY 协议的本机转发进来的请求都显示为它），以及可信代理（取不到真实 IP 时列表里显示的是代理地址）。
 // IPv6 按 /64 封禁，只要与可信代理网段有重叠也拒绝。

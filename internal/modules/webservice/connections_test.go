@@ -838,6 +838,11 @@ func TestAddBanDurations(t *testing.T) {
 	for _, bad := range []banRequest{
 		{Key: "203.0.113.1", Seconds: -2},
 		{Key: "203.0.113.1", Seconds: 31 * 24 * 3600},
+		// 回环与未指定地址封禁后会拦截经本机转发进来的全部访客
+		{Key: "127.0.0.1", Seconds: -1},
+		{Key: "::1"},
+		{Key: "0.0.0.0"},
+		{Key: "::ffff:127.0.0.1"},
 	} {
 		if code, _ := callJSON(t, m.handleAddBan, "POST", "/bans", bad, ""); code != 400 {
 			t.Fatalf("参数错误应返回 400: %+v → %d", bad, code)
@@ -870,5 +875,23 @@ func TestAddBanDurations(t *testing.T) {
 	}
 	if b := got["203.0.113.3"]; b.Permanent || b.Until.Sub(now) < 29*24*time.Hour {
 		t.Fatalf("30 天封禁时长不对: %+v", b)
+	}
+}
+
+// 手动封禁接口同样拒绝可信代理（IPv6 按 /64 与代理网段有重叠也拒绝），其他地址照常封禁。
+func TestAddBanRejectsTrustedProxy(t *testing.T) {
+	m, _ := newConnsModule(t, []Site{}, Site{})
+	m.realIP.set([]string{"198.51.100.0/24", "2001:db8:1::/48"}, nil)
+	t.Cleanup(func() {
+		m.realIP.set(nil, nil)
+		m.auth.unban("203.0.113.9")
+	})
+	for _, key := range []string{"198.51.100.7", "2001:db8:1:2::5"} {
+		if code, _ := callJSON(t, m.handleAddBan, "POST", "/bans", banRequest{Key: key, Seconds: -1}, ""); code != 400 {
+			t.Fatalf("可信代理地址 %s 应拒绝封禁: %d", key, code)
+		}
+	}
+	if code, out := callJSON(t, m.handleAddBan, "POST", "/bans", banRequest{Key: "203.0.113.9", Seconds: 3600}, ""); code != 200 {
+		t.Fatalf("普通地址应能封禁: %d %v", code, out)
 	}
 }

@@ -54,6 +54,11 @@ func (m *Module) handleAddBan(w http.ResponseWriter, r *http.Request) {
 		httpx.Error(w, http.StatusBadRequest, "不能封禁你当前使用的地址")
 		return
 	}
+	// 与从实时连接封禁相同：回环地址与可信代理封禁后会拦截一大批无关访客（永久封禁时后果更重），一律拒绝
+	if msg := m.unbannableReason(addr); msg != "" {
+		httpx.Error(w, http.StatusBadRequest, "%s", msg)
+		return
+	}
 	key := m.auth.ban(addr.Unmap().String(), d, "手动封禁", true)
 	httpx.OK(w, map[string]string{"key": key})
 }
