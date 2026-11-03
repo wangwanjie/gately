@@ -1699,6 +1699,30 @@
         },
         "type": "object"
       },
+      "proc.State": {
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "lastExit": {
+            "type": "string"
+          },
+          "pid": {
+            "type": "integer"
+          },
+          "restarts": {
+            "type": "integer"
+          },
+          "running": {
+            "type": "boolean"
+          },
+          "since": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "protoroute.Route": {
         "properties": {
           "alpn": {
@@ -2191,6 +2215,212 @@
           },
           "webhookOnlyOnChange": {
             "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "tailscale.Instance": {
+        "properties": {
+          "acceptDns": {
+            "type": "boolean"
+          },
+          "acceptRoutes": {
+            "type": "boolean"
+          },
+          "advertiseExitNode": {
+            "type": "boolean"
+          },
+          "advertiseRoutes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "authKey": {
+            "type": "string"
+          },
+          "daemonEnv": {
+            "type": "string"
+          },
+          "daemonExtraArgs": {
+            "type": "string"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "extraUpArgs": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "hostname": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "legacyStateDir": {
+            "type": "boolean"
+          },
+          "loginServer": {
+            "type": "string"
+          },
+          "manageDaemon": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "port": {
+            "type": "integer"
+          },
+          "remark": {
+            "type": "string"
+          },
+          "socket": {
+            "type": "string"
+          },
+          "socks5": {
+            "type": "string"
+          },
+          "stateDir": {
+            "type": "string"
+          },
+          "userspace": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "tailscale.PeerView": {
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "curAddr": {
+            "type": "string"
+          },
+          "dnsName": {
+            "type": "string"
+          },
+          "exitNode": {
+            "type": "boolean"
+          },
+          "exitNodeOption": {
+            "type": "boolean"
+          },
+          "ips": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "lastSeen": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "online": {
+            "type": "boolean"
+          },
+          "os": {
+            "type": "string"
+          },
+          "relay": {
+            "type": "string"
+          },
+          "routes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "rxBytes": {
+            "type": "integer"
+          },
+          "txBytes": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "tailscale.Settings": {
+        "properties": {
+          "installProxy": {
+            "type": "string"
+          },
+          "tailscalePath": {
+            "type": "string"
+          },
+          "tailscaledPath": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "tailscale.SettingsView": {
+        "properties": {
+          "cli": {
+            "type": "string"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/tailscale.Settings"
+          }
+        },
+        "type": "object"
+      },
+      "tailscale.StatusView": {
+        "properties": {
+          "authUrl": {
+            "type": "string"
+          },
+          "backendState": {
+            "type": "string"
+          },
+          "cli": {
+            "type": "string"
+          },
+          "daemon": {
+            "$ref": "#/components/schemas/proc.State"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "health": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "key": {
+            "type": "string"
+          },
+          "magicDnsSuffix": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "peers": {
+            "items": {
+              "$ref": "#/components/schemas/tailscale.PeerView"
+            },
+            "type": "array"
+          },
+          "self": {
+            "$ref": "#/components/schemas/tailscale.PeerView"
+          },
+          "tailnet": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
           }
         },
         "type": "object"
@@ -33770,9 +34000,144 @@
         "x-token-allowed": true
       }
     },
-    "/api/tailscale/logout": {
+    "/api/tailscale/instances": {
+      "get": {
+        "description": "必要な権限: `tailscale:read`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/tailscale.Instance"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale インスタンス の一覧を取得",
+        "tags": [
+          "Tailscale ネットワーク"
+        ],
+        "x-required-scope": "tailscale:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "各インスタンスは独立した tailscaled を実行し、それぞれ別の tailnet に参加できます。リクエストボディのフィールド：`name` 名前（重複不可）、`enable` 有効にするか、`manageDaemon` が true なら Gately が tailscaled を実行し、false ならシステム既存の tailscaled に接続します（`tailscale up` のみ実行）。`userspace` が true ならユーザースペースネットワーク（`--tun=userspace-networking`）、false ならカーネル TUN を使用します。この 2 つには既定値がなく、省略すると false になるため明示的に指定してください。`stateDir` は状態ディレクトリで、空なら設定ディレクトリ下の `tailscale/\u003cインスタンス key\u003e` です。既存の状態ディレクトリを指定すると、ノード ID をそのまま使え再登録は不要です。`socket` は制御ソケットで、管理時に空なら状態ディレクトリ内の `tailscaled.sock` です。`authKey`、`hostname`、`loginServer`、`advertiseRoutes`、`advertiseExitNode`、`acceptRoutes`、`acceptDns`、`extraUpArgs` は `tailscale up` のオプションに対応します。`port` は WireGuard の UDP ポート（0 は自動）、`socks5` はユーザースペースネットワークでの SOCKS5 待ち受けアドレスで、`daemonExtraArgs`、`daemonEnv`（1 行に 1 つの `KEY=VALUE`）は tailscaled に渡されます。同時に有効にできるカーネルモード（管理対象かつユーザースペースでない）インスタンスは 1 つまでです。制御ソケット、状態ディレクトリ、0 以外のポートは 2 つのインスタンスで共有できず、競合時は 400 を返します。`legacyStateDir` はサーバーが管理し、旧バージョンの単一インスタンス設定から移行したインスタンスを示します。`stateDir` が空のときは `\u003c設定ディレクトリ\u003e/tailscale` を使用します。\n\n必要な権限: `tailscale:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/tailscale.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tailscale.Instance"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale インスタンスを追加",
+        "tags": [
+          "Tailscale ネットワーク"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances-delete": {
       "post": {
         "description": "必要な権限: `tailscale:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchDeleteRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "成功"
@@ -33813,11 +34178,735 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Tailscale からログアウト",
+        "summary": "Tailscale インスタンス の一括削除",
         "tags": [
           "Tailscale ネットワーク"
         ],
         "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances-enable": {
+      "put": {
+        "description": "必要な権限: `tailscale:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchEnableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale インスタンス の一括有効化・無効化",
+        "tags": [
+          "Tailscale ネットワーク"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances-group": {
+      "put": {
+        "description": "必要な権限: `tailscale:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale インスタンス のグループを一括設定",
+        "tags": [
+          "Tailscale ネットワーク"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances-order": {
+      "put": {
+        "description": "必要な権限: `tailscale:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.orderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale インスタンス の並び順を変更",
+        "tags": [
+          "Tailscale ネットワーク"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}": {
+      "delete": {
+        "description": "必要な権限: `tailscale:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale インスタンス を削除",
+        "tags": [
+          "Tailscale ネットワーク"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "必要な権限: `tailscale:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/tailscale.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tailscale.Instance"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale インスタンス を更新",
+        "tags": [
+          "Tailscale ネットワーク"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}/copy": {
+      "post": {
+        "description": "必要な権限: `tailscale:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/tailscale.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tailscale.Instance"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale インスタンス を複製",
+        "tags": [
+          "Tailscale ネットワーク"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}/enable": {
+      "put": {
+        "description": "必要な権限: `tailscale:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.enableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale インスタンス の有効/無効を切り替え",
+        "tags": [
+          "Tailscale ネットワーク"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}/logout": {
+      "post": {
+        "description": "このインスタンスで `tailscale logout` を実行します。このマシンのノードは tailnet から削除され、再参加するには再ログインまたは認証キーが必要です。\n\n必要な権限: `tailscale:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale インスタンスをログアウト",
+        "tags": [
+          "Tailscale ネットワーク"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}/restart": {
+      "post": {
+        "description": "このインスタンスが管理する tailscaled を再起動し、`tailscale up` を再実行します。他のインスタンスには影響しません。\n\n必要な権限: `tailscale:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale インスタンスを再起動",
+        "tags": [
+          "Tailscale ネットワーク"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}/secrets": {
+      "get": {
+        "description": "必要な権限: `tailscale:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "シークレットを平文で表示",
+        "tags": [
+          "Tailscale ネットワーク"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}/status": {
+      "get": {
+        "description": "`backendState` は tailscale のバックエンド状態（Running、NeedsLogin、NeedsMachineAuth、Stopped など）、`peers` は tailnet 内の他のノードです。認証キーが未入力でまだログインしていない場合、`authUrl` はログインリンクで、`tailscale:write` 権限を持つ ID にのみ返されます。\n\n必要な権限: `tailscale:read`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tailscale.StatusView"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale インスタンスの接続状態を表示",
+        "tags": [
+          "Tailscale ネットワーク"
+        ],
+        "x-required-scope": "tailscale:read",
         "x-token-allowed": true
       }
     },
@@ -34094,123 +35183,18 @@
         "x-token-allowed": true
       }
     },
-    "/api/tailscale/restart": {
-      "post": {
-        "description": "必要な権限: `tailscale:write`。",
-        "responses": {
-          "200": {
-            "description": "成功"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "リクエストパラメーターが不正です"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "トークンが無効、期限切れ、または未ログインです"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "トークンに必要な権限がありません"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Tailscale を再起動",
-        "tags": [
-          "Tailscale ネットワーク"
-        ],
-        "x-required-scope": "tailscale:write",
-        "x-token-allowed": true
-      }
-    },
-    "/api/tailscale/secrets": {
-      "get": {
-        "description": "必要な権限: `tailscale:write`。",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "type": "object"
-                }
-              }
-            },
-            "description": "成功"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "リクエストパラメーターが不正です"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "トークンが無効、期限切れ、または未ログインです"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "トークンに必要な権限がありません"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "シークレットを平文で表示",
-        "tags": [
-          "Tailscale ネットワーク"
-        ],
-        "x-required-scope": "tailscale:write",
-        "x-token-allowed": true
-      }
-    },
     "/api/tailscale/settings": {
       "get": {
-        "description": "必要な権限: `tailscale:read`。",
+        "description": "`settings`（`tailscaledPath`、`tailscalePath` とダウンロードプロキシ `installProxy`。全インスタンスで共通）と、実際に使用する tailscale コマンドのパス `cli` を返します。\n\n必要な権限: `tailscale:read`。",
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tailscale.SettingsView"
+                }
+              }
+            },
             "description": "成功"
           },
           "400": {
@@ -34249,7 +35233,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Tailscale 設定を読み取り",
+        "summary": "Tailscale のプログラム設定を取得",
         "tags": [
           "Tailscale ネットワーク"
         ],
@@ -34257,12 +35241,12 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "必要な権限: `tailscale:write`。",
+        "description": "リクエストボディ `{\"tailscaledPath\": \"\", \"tailscalePath\": \"\"}`。空の場合は設定ディレクトリの bin、次に PATH の順で探します。`installProxy` はインストール API でのみ変更します。パスが変わると有効なインスタンスを再起動します。\n\n必要な権限: `tailscale:write`。",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "type": "object"
+                "$ref": "#/components/schemas/tailscale.Settings"
               }
             }
           }
@@ -34307,7 +35291,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Tailscale 設定を保存",
+        "summary": "Tailscale のプログラム設定を保存",
         "tags": [
           "Tailscale ネットワーク"
         ],
@@ -34317,9 +35301,19 @@
     },
     "/api/tailscale/status": {
       "get": {
-        "description": "認証キーが未入力でまだログインしていない場合、`authUrl` はログインリンクです。`tailscale:write` 権限を持つ ID にのみ返されます。\n\n必要な権限: `tailscale:read`。",
+        "description": "インスタンス一覧と同じ順の配列を返します。各要素はインスタンスの `key`、`name` とその状態を含み、フィールドは `GET /api/tailscale/instances/{key}/status` と同じです。無効なインスタンスはプロセス状態のみを返し、接続状態は照会しません。\n\n必要な権限: `tailscale:read`。",
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/tailscale.StatusView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
             "description": "成功"
           },
           "400": {
@@ -34358,7 +35352,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Tailscale の接続状態を表示",
+        "summary": "すべての Tailscale インスタンスの接続状態を表示",
         "tags": [
           "Tailscale ネットワーク"
         ],

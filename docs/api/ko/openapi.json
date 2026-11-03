@@ -1699,6 +1699,30 @@
         },
         "type": "object"
       },
+      "proc.State": {
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "lastExit": {
+            "type": "string"
+          },
+          "pid": {
+            "type": "integer"
+          },
+          "restarts": {
+            "type": "integer"
+          },
+          "running": {
+            "type": "boolean"
+          },
+          "since": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "protoroute.Route": {
         "properties": {
           "alpn": {
@@ -2191,6 +2215,212 @@
           },
           "webhookOnlyOnChange": {
             "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "tailscale.Instance": {
+        "properties": {
+          "acceptDns": {
+            "type": "boolean"
+          },
+          "acceptRoutes": {
+            "type": "boolean"
+          },
+          "advertiseExitNode": {
+            "type": "boolean"
+          },
+          "advertiseRoutes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "authKey": {
+            "type": "string"
+          },
+          "daemonEnv": {
+            "type": "string"
+          },
+          "daemonExtraArgs": {
+            "type": "string"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "extraUpArgs": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "hostname": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "legacyStateDir": {
+            "type": "boolean"
+          },
+          "loginServer": {
+            "type": "string"
+          },
+          "manageDaemon": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "port": {
+            "type": "integer"
+          },
+          "remark": {
+            "type": "string"
+          },
+          "socket": {
+            "type": "string"
+          },
+          "socks5": {
+            "type": "string"
+          },
+          "stateDir": {
+            "type": "string"
+          },
+          "userspace": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "tailscale.PeerView": {
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "curAddr": {
+            "type": "string"
+          },
+          "dnsName": {
+            "type": "string"
+          },
+          "exitNode": {
+            "type": "boolean"
+          },
+          "exitNodeOption": {
+            "type": "boolean"
+          },
+          "ips": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "lastSeen": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "online": {
+            "type": "boolean"
+          },
+          "os": {
+            "type": "string"
+          },
+          "relay": {
+            "type": "string"
+          },
+          "routes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "rxBytes": {
+            "type": "integer"
+          },
+          "txBytes": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "tailscale.Settings": {
+        "properties": {
+          "installProxy": {
+            "type": "string"
+          },
+          "tailscalePath": {
+            "type": "string"
+          },
+          "tailscaledPath": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "tailscale.SettingsView": {
+        "properties": {
+          "cli": {
+            "type": "string"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/tailscale.Settings"
+          }
+        },
+        "type": "object"
+      },
+      "tailscale.StatusView": {
+        "properties": {
+          "authUrl": {
+            "type": "string"
+          },
+          "backendState": {
+            "type": "string"
+          },
+          "cli": {
+            "type": "string"
+          },
+          "daemon": {
+            "$ref": "#/components/schemas/proc.State"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "health": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "key": {
+            "type": "string"
+          },
+          "magicDnsSuffix": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "peers": {
+            "items": {
+              "$ref": "#/components/schemas/tailscale.PeerView"
+            },
+            "type": "array"
+          },
+          "self": {
+            "$ref": "#/components/schemas/tailscale.PeerView"
+          },
+          "tailnet": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
           }
         },
         "type": "object"
@@ -33770,9 +34000,144 @@
         "x-token-allowed": true
       }
     },
-    "/api/tailscale/logout": {
+    "/api/tailscale/instances": {
+      "get": {
+        "description": "필요한 권한: `tailscale:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/tailscale.Instance"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale 인스턴스 목록 조회",
+        "tags": [
+          "Tailscale 네트워킹"
+        ],
+        "x-required-scope": "tailscale:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "각 인스턴스는 독립된 tailscaled를 실행하며 서로 다른 tailnet에 참여할 수 있습니다. 요청 본문 필드: `name` 이름(중복 불가), `enable` 활성화 여부, `manageDaemon`이 true이면 Gately가 tailscaled를 실행하고 false이면 시스템의 기존 tailscaled에 연결합니다(`tailscale up`만 실행). `userspace`가 true이면 사용자 공간 네트워크(`--tun=userspace-networking`), false이면 커널 TUN을 사용합니다. 이 두 항목은 기본값이 없어 생략하면 false가 되므로 명시적으로 지정하세요. `stateDir`는 상태 디렉터리로, 비우면 설정 디렉터리 아래의 `tailscale/\u003c인스턴스 key\u003e`입니다. 기존 상태 디렉터리를 지정하면 노드 ID를 그대로 유지해 다시 등록할 필요가 없습니다. `socket`은 제어 소켓으로, 관리 모드에서 비우면 상태 디렉터리의 `tailscaled.sock`입니다. `authKey`, `hostname`, `loginServer`, `advertiseRoutes`, `advertiseExitNode`, `acceptRoutes`, `acceptDns`, `extraUpArgs`는 `tailscale up` 옵션에 대응합니다. `port`는 WireGuard UDP 포트(0은 자동), `socks5`는 사용자 공간 네트워크의 SOCKS5 수신 주소이며, `daemonExtraArgs`, `daemonEnv`(한 줄에 하나의 `KEY=VALUE`)는 tailscaled에 전달됩니다. 동시에 활성화할 수 있는 커널 모드(관리 대상이며 사용자 공간이 아님) 인스턴스는 하나뿐입니다. 제어 소켓, 상태 디렉터리, 0이 아닌 포트는 두 인스턴스가 공유할 수 없으며 충돌하면 400을 반환합니다. `legacyStateDir`는 서버가 관리하며, 이전 버전의 단일 인스턴스 설정에서 마이그레이션된 인스턴스로 `stateDir`가 비어 있으면 `\u003c설정 디렉터리\u003e/tailscale`을 사용함을 나타냅니다.\n\n필요한 권한: `tailscale:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/tailscale.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tailscale.Instance"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale 인스턴스 추가",
+        "tags": [
+          "Tailscale 네트워킹"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances-delete": {
       "post": {
         "description": "필요한 권한: `tailscale:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchDeleteRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "성공"
@@ -33813,11 +34178,735 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Tailscale 로그아웃",
+        "summary": "Tailscale 인스턴스 일괄 삭제",
         "tags": [
           "Tailscale 네트워킹"
         ],
         "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances-enable": {
+      "put": {
+        "description": "필요한 권한: `tailscale:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchEnableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale 인스턴스 일괄 사용/사용 안 함",
+        "tags": [
+          "Tailscale 네트워킹"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances-group": {
+      "put": {
+        "description": "필요한 권한: `tailscale:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale 인스턴스 그룹 일괄 설정",
+        "tags": [
+          "Tailscale 네트워킹"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances-order": {
+      "put": {
+        "description": "필요한 권한: `tailscale:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.orderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale 인스턴스 순서 변경",
+        "tags": [
+          "Tailscale 네트워킹"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}": {
+      "delete": {
+        "description": "필요한 권한: `tailscale:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale 인스턴스 삭제",
+        "tags": [
+          "Tailscale 네트워킹"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "필요한 권한: `tailscale:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/tailscale.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tailscale.Instance"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale 인스턴스 수정",
+        "tags": [
+          "Tailscale 네트워킹"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}/copy": {
+      "post": {
+        "description": "필요한 권한: `tailscale:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/tailscale.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tailscale.Instance"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale 인스턴스 복제",
+        "tags": [
+          "Tailscale 네트워킹"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}/enable": {
+      "put": {
+        "description": "필요한 권한: `tailscale:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.enableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale 인스턴스 사용 설정/해제",
+        "tags": [
+          "Tailscale 네트워킹"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}/logout": {
+      "post": {
+        "description": "이 인스턴스에 대해 `tailscale logout`을 실행합니다. 이 장치의 노드가 tailnet에서 제거되며, 다시 참여하려면 다시 로그인하거나 인증 키를 사용해야 합니다.\n\n필요한 권한: `tailscale:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale 인스턴스 로그아웃",
+        "tags": [
+          "Tailscale 네트워킹"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}/restart": {
+      "post": {
+        "description": "이 인스턴스가 관리하는 tailscaled를 다시 시작하고 `tailscale up`을 다시 실행합니다. 다른 인스턴스에는 영향이 없습니다.\n\n필요한 권한: `tailscale:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale 인스턴스 다시 시작",
+        "tags": [
+          "Tailscale 네트워킹"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}/secrets": {
+      "get": {
+        "description": "필요한 권한: `tailscale:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "비밀 값 평문 보기",
+        "tags": [
+          "Tailscale 네트워킹"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}/status": {
+      "get": {
+        "description": "`backendState`는 tailscale 백엔드 상태(Running, NeedsLogin, NeedsMachineAuth, Stopped 등)이고 `peers`는 tailnet의 다른 노드입니다. 인증 키가 없고 아직 로그인하지 않았으면 `authUrl`이 로그인 링크이며, `tailscale:write` 권한이 있는 ID에만 반환됩니다.\n\n필요한 권한: `tailscale:read`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tailscale.StatusView"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale 인스턴스의 연결 상태 보기",
+        "tags": [
+          "Tailscale 네트워킹"
+        ],
+        "x-required-scope": "tailscale:read",
         "x-token-allowed": true
       }
     },
@@ -34094,123 +35183,18 @@
         "x-token-allowed": true
       }
     },
-    "/api/tailscale/restart": {
-      "post": {
-        "description": "필요한 권한: `tailscale:write`.",
-        "responses": {
-          "200": {
-            "description": "성공"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "요청 매개변수 오류"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "토큰에 필요한 권한이 없음"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Tailscale 재시작",
-        "tags": [
-          "Tailscale 네트워킹"
-        ],
-        "x-required-scope": "tailscale:write",
-        "x-token-allowed": true
-      }
-    },
-    "/api/tailscale/secrets": {
-      "get": {
-        "description": "필요한 권한: `tailscale:write`.",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "type": "object"
-                }
-              }
-            },
-            "description": "성공"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "요청 매개변수 오류"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "토큰에 필요한 권한이 없음"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "비밀 값 평문 보기",
-        "tags": [
-          "Tailscale 네트워킹"
-        ],
-        "x-required-scope": "tailscale:write",
-        "x-token-allowed": true
-      }
-    },
     "/api/tailscale/settings": {
       "get": {
-        "description": "필요한 권한: `tailscale:read`.",
+        "description": "`settings`(`tailscaledPath`, `tailscalePath`와 다운로드 프록시 `installProxy`, 모든 인스턴스 공통)와 실제로 사용하는 tailscale 명령 경로 `cli`를 반환합니다.\n\n필요한 권한: `tailscale:read`.",
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tailscale.SettingsView"
+                }
+              }
+            },
             "description": "성공"
           },
           "400": {
@@ -34249,7 +35233,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Tailscale 설정 읽기",
+        "summary": "Tailscale 프로그램 설정 읽기",
         "tags": [
           "Tailscale 네트워킹"
         ],
@@ -34257,12 +35241,12 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "필요한 권한: `tailscale:write`.",
+        "description": "요청 본문 `{\"tailscaledPath\": \"\", \"tailscalePath\": \"\"}`. 비우면 설정 디렉터리의 bin, 그다음 PATH 순서로 찾습니다. `installProxy`는 설치 API로만 변경합니다. 경로가 바뀌면 활성화된 인스턴스를 다시 시작합니다.\n\n필요한 권한: `tailscale:write`.",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "type": "object"
+                "$ref": "#/components/schemas/tailscale.Settings"
               }
             }
           }
@@ -34307,7 +35291,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Tailscale 설정 저장",
+        "summary": "Tailscale 프로그램 설정 저장",
         "tags": [
           "Tailscale 네트워킹"
         ],
@@ -34317,9 +35301,19 @@
     },
     "/api/tailscale/status": {
       "get": {
-        "description": "인증 키를 입력하지 않았고 아직 로그인하지 않았으면 `authUrl`이 로그인 링크이며, `tailscale:write` 권한이 있는 ID에만 반환됩니다.\n\n필요한 권한: `tailscale:read`.",
+        "description": "인스턴스 목록 순서의 배열을 반환합니다. 각 항목에는 인스턴스 `key`, `name`과 해당 인스턴스의 상태가 있으며 필드는 `GET /api/tailscale/instances/{key}/status`와 같습니다. 비활성화된 인스턴스는 프로세스 상태만 반환하고 연결 상태는 조회하지 않습니다.\n\n필요한 권한: `tailscale:read`.",
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/tailscale.StatusView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
             "description": "성공"
           },
           "400": {
@@ -34358,7 +35352,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Tailscale 연결 상태 보기",
+        "summary": "모든 Tailscale 인스턴스의 연결 상태 보기",
         "tags": [
           "Tailscale 네트워킹"
         ],

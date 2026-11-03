@@ -1699,6 +1699,30 @@
         },
         "type": "object"
       },
+      "proc.State": {
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "lastExit": {
+            "type": "string"
+          },
+          "pid": {
+            "type": "integer"
+          },
+          "restarts": {
+            "type": "integer"
+          },
+          "running": {
+            "type": "boolean"
+          },
+          "since": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "protoroute.Route": {
         "properties": {
           "alpn": {
@@ -2191,6 +2215,212 @@
           },
           "webhookOnlyOnChange": {
             "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "tailscale.Instance": {
+        "properties": {
+          "acceptDns": {
+            "type": "boolean"
+          },
+          "acceptRoutes": {
+            "type": "boolean"
+          },
+          "advertiseExitNode": {
+            "type": "boolean"
+          },
+          "advertiseRoutes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "authKey": {
+            "type": "string"
+          },
+          "daemonEnv": {
+            "type": "string"
+          },
+          "daemonExtraArgs": {
+            "type": "string"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "extraUpArgs": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "hostname": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "legacyStateDir": {
+            "type": "boolean"
+          },
+          "loginServer": {
+            "type": "string"
+          },
+          "manageDaemon": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "port": {
+            "type": "integer"
+          },
+          "remark": {
+            "type": "string"
+          },
+          "socket": {
+            "type": "string"
+          },
+          "socks5": {
+            "type": "string"
+          },
+          "stateDir": {
+            "type": "string"
+          },
+          "userspace": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "tailscale.PeerView": {
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "curAddr": {
+            "type": "string"
+          },
+          "dnsName": {
+            "type": "string"
+          },
+          "exitNode": {
+            "type": "boolean"
+          },
+          "exitNodeOption": {
+            "type": "boolean"
+          },
+          "ips": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "lastSeen": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "online": {
+            "type": "boolean"
+          },
+          "os": {
+            "type": "string"
+          },
+          "relay": {
+            "type": "string"
+          },
+          "routes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "rxBytes": {
+            "type": "integer"
+          },
+          "txBytes": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "tailscale.Settings": {
+        "properties": {
+          "installProxy": {
+            "type": "string"
+          },
+          "tailscalePath": {
+            "type": "string"
+          },
+          "tailscaledPath": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "tailscale.SettingsView": {
+        "properties": {
+          "cli": {
+            "type": "string"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/tailscale.Settings"
+          }
+        },
+        "type": "object"
+      },
+      "tailscale.StatusView": {
+        "properties": {
+          "authUrl": {
+            "type": "string"
+          },
+          "backendState": {
+            "type": "string"
+          },
+          "cli": {
+            "type": "string"
+          },
+          "daemon": {
+            "$ref": "#/components/schemas/proc.State"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "health": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "key": {
+            "type": "string"
+          },
+          "magicDnsSuffix": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "peers": {
+            "items": {
+              "$ref": "#/components/schemas/tailscale.PeerView"
+            },
+            "type": "array"
+          },
+          "self": {
+            "$ref": "#/components/schemas/tailscale.PeerView"
+          },
+          "tailnet": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
           }
         },
         "type": "object"
@@ -33770,9 +34000,144 @@
         "x-token-allowed": true
       }
     },
-    "/api/tailscale/logout": {
+    "/api/tailscale/instances": {
+      "get": {
+        "description": "所需權限：`tailscale:read`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/tailscale.Instance"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "取得Tailscale 實例清單",
+        "tags": [
+          "Tailscale 組網"
+        ],
+        "x-required-scope": "tailscale:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "每個實例執行一個獨立的 tailscaled，可分別加入不同的 tailnet。請求本文欄位：`name` 名稱（不能重複）；`enable` 是否啟用；`manageDaemon` 為 true 時由 Gately 執行 tailscaled，為 false 時接入系統已有的 tailscaled（只執行 `tailscale up`）；`userspace` 為 true 時使用使用者態網路（`--tun=userspace-networking`），為 false 時使用核心 TUN；這兩項沒有預設值，省略即為 false，請明確填寫。`stateDir` 為狀態目錄，留空為設定目錄下的 `tailscale/\u003c實例 key\u003e`，填寫已有的狀態目錄可沿用原節點身分、無需重新註冊；`socket` 為控制通訊端，託管時留空為狀態目錄下的 `tailscaled.sock`。`authKey`、`hostname`、`loginServer`、`advertiseRoutes`、`advertiseExitNode`、`acceptRoutes`、`acceptDns`、`extraUpArgs` 對應 `tailscale up` 的參數；`port` 為 WireGuard UDP 連接埠（0 為自動），`socks5` 為使用者態網路下的 SOCKS5 監聽位址，`daemonExtraArgs`、`daemonEnv`（每行一個 `KEY=VALUE`）傳給 tailscaled。同時啟用的核心模式（託管且非使用者態）實例最多一個；控制通訊端、狀態目錄與非 0 連接埠不能被兩個實例共用，衝突時回傳 400。`legacyStateDir` 由伺服器維護，表示實例遷移自舊版單一實例設定、留空 `stateDir` 時沿用 `\u003c設定目錄\u003e/tailscale`。\n\n所需權限：`tailscale:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/tailscale.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tailscale.Instance"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "新增 Tailscale 實例",
+        "tags": [
+          "Tailscale 組網"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances-delete": {
       "post": {
         "description": "所需權限：`tailscale:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchDeleteRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "成功"
@@ -33813,11 +34178,735 @@
             "bearerAuth": []
           }
         ],
-        "summary": "登出 Tailscale",
+        "summary": "批次刪除Tailscale 實例",
         "tags": [
           "Tailscale 組網"
         ],
         "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances-enable": {
+      "put": {
+        "description": "所需權限：`tailscale:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchEnableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "批次啟用或停用Tailscale 實例",
+        "tags": [
+          "Tailscale 組網"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances-group": {
+      "put": {
+        "description": "所需權限：`tailscale:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "批次設定Tailscale 實例分組",
+        "tags": [
+          "Tailscale 組網"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances-order": {
+      "put": {
+        "description": "所需權限：`tailscale:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.orderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "調整Tailscale 實例排序",
+        "tags": [
+          "Tailscale 組網"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}": {
+      "delete": {
+        "description": "所需權限：`tailscale:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "刪除Tailscale 實例",
+        "tags": [
+          "Tailscale 組網"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "所需權限：`tailscale:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/tailscale.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tailscale.Instance"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "修改Tailscale 實例",
+        "tags": [
+          "Tailscale 組網"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}/copy": {
+      "post": {
+        "description": "所需權限：`tailscale:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/tailscale.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tailscale.Instance"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "複製Tailscale 實例",
+        "tags": [
+          "Tailscale 組網"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}/enable": {
+      "put": {
+        "description": "所需權限：`tailscale:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.enableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "啟用或停用Tailscale 實例",
+        "tags": [
+          "Tailscale 組網"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}/logout": {
+      "post": {
+        "description": "對該實例執行 `tailscale logout`，本機的這個節點會從 tailnet 中移除，再次加入需要重新登入或使用認證金鑰。\n\n所需權限：`tailscale:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "登出 Tailscale 實例",
+        "tags": [
+          "Tailscale 組網"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}/restart": {
+      "post": {
+        "description": "重新啟動該實例託管的 tailscaled 並重新執行 `tailscale up`，其他實例不受影響。\n\n所需權限：`tailscale:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "重新啟動 Tailscale 實例",
+        "tags": [
+          "Tailscale 組網"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}/secrets": {
+      "get": {
+        "description": "所需權限：`tailscale:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "查看金鑰明文",
+        "tags": [
+          "Tailscale 組網"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}/status": {
+      "get": {
+        "description": "`backendState` 為 tailscale 後端狀態（Running、NeedsLogin、NeedsMachineAuth、Stopped 等），`peers` 為 tailnet 中的其他節點。未填寫認證金鑰且尚未登入時 `authUrl` 為登入連結，只回傳給有 `tailscale:write` 權限的身分。\n\n所需權限：`tailscale:read`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tailscale.StatusView"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "查看 Tailscale 實例的連線狀態",
+        "tags": [
+          "Tailscale 組網"
+        ],
+        "x-required-scope": "tailscale:read",
         "x-token-allowed": true
       }
     },
@@ -34094,123 +35183,18 @@
         "x-token-allowed": true
       }
     },
-    "/api/tailscale/restart": {
-      "post": {
-        "description": "所需權限：`tailscale:write`。",
-        "responses": {
-          "200": {
-            "description": "成功"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "請求參數錯誤"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "權杖無效、已過期或未登入"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "權杖缺少所需權限"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "重新啟動 Tailscale",
-        "tags": [
-          "Tailscale 組網"
-        ],
-        "x-required-scope": "tailscale:write",
-        "x-token-allowed": true
-      }
-    },
-    "/api/tailscale/secrets": {
-      "get": {
-        "description": "所需權限：`tailscale:write`。",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "type": "object"
-                }
-              }
-            },
-            "description": "成功"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "請求參數錯誤"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "權杖無效、已過期或未登入"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "權杖缺少所需權限"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "查看金鑰明文",
-        "tags": [
-          "Tailscale 組網"
-        ],
-        "x-required-scope": "tailscale:write",
-        "x-token-allowed": true
-      }
-    },
     "/api/tailscale/settings": {
       "get": {
-        "description": "所需權限：`tailscale:read`。",
+        "description": "回傳 `settings`（`tailscaledPath`、`tailscalePath` 與下載代理 `installProxy`，所有實例共用）與實際使用的 tailscale 指令路徑 `cli`。\n\n所需權限：`tailscale:read`。",
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tailscale.SettingsView"
+                }
+              }
+            },
             "description": "成功"
           },
           "400": {
@@ -34249,7 +35233,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "讀取 Tailscale 設定",
+        "summary": "讀取 Tailscale 程式設定",
         "tags": [
           "Tailscale 組網"
         ],
@@ -34257,12 +35241,12 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "所需權限：`tailscale:write`。",
+        "description": "請求本文 `{\"tailscaledPath\": \"\", \"tailscalePath\": \"\"}`，留空時依序在設定目錄 bin 與 PATH 下尋找；`installProxy` 只由安裝介面修改。路徑變更後重新啟動已啟用的實例。\n\n所需權限：`tailscale:write`。",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "type": "object"
+                "$ref": "#/components/schemas/tailscale.Settings"
               }
             }
           }
@@ -34307,7 +35291,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "儲存 Tailscale 設定",
+        "summary": "儲存 Tailscale 程式設定",
         "tags": [
           "Tailscale 組網"
         ],
@@ -34317,9 +35301,19 @@
     },
     "/api/tailscale/status": {
       "get": {
-        "description": "未填寫驗證金鑰且尚未登入時 `authUrl` 為登入連結，只回傳給具有 `tailscale:write` 權限的身分。\n\n所需權限：`tailscale:read`。",
+        "description": "回傳陣列，順序同實例列表，每項含實例 `key`、`name` 與該實例的狀態，欄位同 `GET /api/tailscale/instances/{key}/status`。停用的實例只回傳行程狀態，不查詢連線狀態。\n\n所需權限：`tailscale:read`。",
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/tailscale.StatusView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
             "description": "成功"
           },
           "400": {
@@ -34358,7 +35352,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "檢視 Tailscale 連線狀態",
+        "summary": "查看全部 Tailscale 實例的連線狀態",
         "tags": [
           "Tailscale 組網"
         ],

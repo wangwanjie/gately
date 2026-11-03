@@ -157,12 +157,23 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | --- | --- | --- | --- |
 | GET | `/api/tailscale/logs` | `tailscale:read` | Ver los registros de ejecución del módulo |
 | DELETE | `/api/tailscale/logs` | `tailscale:write` | Vaciar los registros de ejecución del módulo |
-| GET | `/api/tailscale/settings` | `tailscale:read` | Leer los ajustes de Tailscale |
-| PUT | `/api/tailscale/settings` | `tailscale:write` | Guardar los ajustes de Tailscale |
-| GET | `/api/tailscale/secrets` | `tailscale:write` | Ver secretos en texto plano |
-| GET | `/api/tailscale/status` | `tailscale:read` | Ver el estado de conexión de Tailscale |
-| POST | `/api/tailscale/restart` | `tailscale:write` | Reiniciar Tailscale |
-| POST | `/api/tailscale/logout` | `tailscale:write` | Cerrar sesión de Tailscale |
+| GET | `/api/tailscale/instances` | `tailscale:read` | Listar instancia de Tailscale |
+| POST | `/api/tailscale/instances` | `tailscale:write` | Añadir una instancia de Tailscale |
+| POST | `/api/tailscale/instances/{key}/copy` | `tailscale:write` | Duplicar instancia de Tailscale |
+| PUT | `/api/tailscale/instances/{key}` | `tailscale:write` | Modificar instancia de Tailscale |
+| DELETE | `/api/tailscale/instances/{key}` | `tailscale:write` | Eliminar instancia de Tailscale |
+| PUT | `/api/tailscale/instances/{key}/enable` | `tailscale:write` | Activar o desactivar instancia de Tailscale |
+| PUT | `/api/tailscale/instances-order` | `tailscale:write` | Reordenar instancia de Tailscale |
+| PUT | `/api/tailscale/instances-enable` | `tailscale:write` | Activar o desactivar en lote: instancia de Tailscale |
+| POST | `/api/tailscale/instances-delete` | `tailscale:write` | Eliminar en lote: instancia de Tailscale |
+| PUT | `/api/tailscale/instances-group` | `tailscale:write` | Asignar grupo a varios elementos: instancia de Tailscale |
+| GET | `/api/tailscale/instances/{key}/secrets` | `tailscale:write` | Ver secretos en texto plano |
+| GET | `/api/tailscale/status` | `tailscale:read` | Ver el estado de conexión de todas las instancias de Tailscale |
+| GET | `/api/tailscale/instances/{key}/status` | `tailscale:read` | Ver el estado de conexión de una instancia de Tailscale |
+| POST | `/api/tailscale/instances/{key}/restart` | `tailscale:write` | Reiniciar una instancia de Tailscale |
+| POST | `/api/tailscale/instances/{key}/logout` | `tailscale:write` | Cerrar la sesión de una instancia de Tailscale |
+| GET | `/api/tailscale/settings` | `tailscale:read` | Leer la configuración del programa Tailscale |
+| PUT | `/api/tailscale/settings` | `tailscale:write` | Guardar la configuración del programa Tailscale |
 | GET | `/api/tailscale/install` | `tailscale:read` | Ver la información de instalación y el progreso de un programa gestionado |
 | POST | `/api/tailscale/install` | `tailscale:write` | Instalar o actualizar en línea un programa gestionado |
 | POST | `/api/tailscale/install/check` | `tailscale:write` | Buscar actualizaciones de un programa gestionado |
@@ -1573,6 +1584,17 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `targetPorts` | string |
 | `udpSessionTimeout` | integer |
 
+### proc.State
+
+| Campo | Tipo |
+| --- | --- |
+| `error` | string |
+| `lastExit` | string |
+| `pid` | integer |
+| `restarts` | integer |
+| `running` | boolean |
+| `since` | Hora (RFC 3339) |
+
 ### protoroute.Route
 
 | Campo | Tipo |
@@ -1753,6 +1775,86 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `useGlobalWebhook` | boolean |
 | `webhook` | `webhook.Config` |
 | `webhookOnlyOnChange` | boolean |
+
+### tailscale.Instance
+
+| Campo | Tipo |
+| --- | --- |
+| `acceptDns` | boolean |
+| `acceptRoutes` | boolean |
+| `advertiseExitNode` | boolean |
+| `advertiseRoutes` | Lista de string |
+| `authKey` | string |
+| `daemonEnv` | string |
+| `daemonExtraArgs` | string |
+| `enable` | boolean |
+| `extraUpArgs` | string |
+| `group` | string |
+| `hostname` | string |
+| `key` | string |
+| `legacyStateDir` | boolean |
+| `loginServer` | string |
+| `manageDaemon` | boolean |
+| `name` | string |
+| `port` | integer |
+| `remark` | string |
+| `socket` | string |
+| `socks5` | string |
+| `stateDir` | string |
+| `userspace` | boolean |
+
+### tailscale.PeerView
+
+| Campo | Tipo |
+| --- | --- |
+| `active` | boolean |
+| `curAddr` | string |
+| `dnsName` | string |
+| `exitNode` | boolean |
+| `exitNodeOption` | boolean |
+| `ips` | Lista de string |
+| `lastSeen` | Hora (RFC 3339) |
+| `name` | string |
+| `online` | boolean |
+| `os` | string |
+| `relay` | string |
+| `routes` | Lista de string |
+| `rxBytes` | integer |
+| `txBytes` | integer |
+
+### tailscale.Settings
+
+| Campo | Tipo |
+| --- | --- |
+| `installProxy` | string |
+| `tailscalePath` | string |
+| `tailscaledPath` | string |
+
+### tailscale.SettingsView
+
+| Campo | Tipo |
+| --- | --- |
+| `cli` | string |
+| `settings` | `tailscale.Settings` |
+
+### tailscale.StatusView
+
+| Campo | Tipo |
+| --- | --- |
+| `authUrl` | string |
+| `backendState` | string |
+| `cli` | string |
+| `daemon` | `proc.State` |
+| `enable` | boolean |
+| `error` | string |
+| `health` | Lista de string |
+| `key` | string |
+| `magicDnsSuffix` | string |
+| `name` | string |
+| `peers` | Lista de `tailscale.PeerView` |
+| `self` | `tailscale.PeerView` |
+| `tailnet` | string |
+| `version` | string |
 
 ### thirdauth.Provider
 

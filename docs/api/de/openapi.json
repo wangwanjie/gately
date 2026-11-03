@@ -1699,6 +1699,30 @@
         },
         "type": "object"
       },
+      "proc.State": {
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "lastExit": {
+            "type": "string"
+          },
+          "pid": {
+            "type": "integer"
+          },
+          "restarts": {
+            "type": "integer"
+          },
+          "running": {
+            "type": "boolean"
+          },
+          "since": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "protoroute.Route": {
         "properties": {
           "alpn": {
@@ -2191,6 +2215,212 @@
           },
           "webhookOnlyOnChange": {
             "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "tailscale.Instance": {
+        "properties": {
+          "acceptDns": {
+            "type": "boolean"
+          },
+          "acceptRoutes": {
+            "type": "boolean"
+          },
+          "advertiseExitNode": {
+            "type": "boolean"
+          },
+          "advertiseRoutes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "authKey": {
+            "type": "string"
+          },
+          "daemonEnv": {
+            "type": "string"
+          },
+          "daemonExtraArgs": {
+            "type": "string"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "extraUpArgs": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "hostname": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "legacyStateDir": {
+            "type": "boolean"
+          },
+          "loginServer": {
+            "type": "string"
+          },
+          "manageDaemon": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "port": {
+            "type": "integer"
+          },
+          "remark": {
+            "type": "string"
+          },
+          "socket": {
+            "type": "string"
+          },
+          "socks5": {
+            "type": "string"
+          },
+          "stateDir": {
+            "type": "string"
+          },
+          "userspace": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "tailscale.PeerView": {
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "curAddr": {
+            "type": "string"
+          },
+          "dnsName": {
+            "type": "string"
+          },
+          "exitNode": {
+            "type": "boolean"
+          },
+          "exitNodeOption": {
+            "type": "boolean"
+          },
+          "ips": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "lastSeen": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "online": {
+            "type": "boolean"
+          },
+          "os": {
+            "type": "string"
+          },
+          "relay": {
+            "type": "string"
+          },
+          "routes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "rxBytes": {
+            "type": "integer"
+          },
+          "txBytes": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "tailscale.Settings": {
+        "properties": {
+          "installProxy": {
+            "type": "string"
+          },
+          "tailscalePath": {
+            "type": "string"
+          },
+          "tailscaledPath": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "tailscale.SettingsView": {
+        "properties": {
+          "cli": {
+            "type": "string"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/tailscale.Settings"
+          }
+        },
+        "type": "object"
+      },
+      "tailscale.StatusView": {
+        "properties": {
+          "authUrl": {
+            "type": "string"
+          },
+          "backendState": {
+            "type": "string"
+          },
+          "cli": {
+            "type": "string"
+          },
+          "daemon": {
+            "$ref": "#/components/schemas/proc.State"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "health": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "key": {
+            "type": "string"
+          },
+          "magicDnsSuffix": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "peers": {
+            "items": {
+              "$ref": "#/components/schemas/tailscale.PeerView"
+            },
+            "type": "array"
+          },
+          "self": {
+            "$ref": "#/components/schemas/tailscale.PeerView"
+          },
+          "tailnet": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
           }
         },
         "type": "object"
@@ -33770,9 +34000,144 @@
         "x-token-allowed": true
       }
     },
-    "/api/tailscale/logout": {
+    "/api/tailscale/instances": {
+      "get": {
+        "description": "Erforderliche Berechtigung: `tailscale:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/tailscale.Instance"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale-Instanz auflisten",
+        "tags": [
+          "Tailscale-Netzwerk"
+        ],
+        "x-required-scope": "tailscale:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "Jede Instanz führt einen eigenen tailscaled aus und kann einem anderen Tailnet beitreten. Felder im Body: `name` (eindeutig); `enable`; `manageDaemon` true lässt Gately tailscaled ausführen, false bindet einen vorhandenen System-tailscaled an (nur `tailscale up` wird ausgeführt); `userspace` true verwendet Userspace-Netzwerk (`--tun=userspace-networking`), false Kernel-TUN. Diese beiden haben keinen Standardwert und sind ohne Angabe false, geben Sie sie daher ausdrücklich an. `stateDir` ist das Statusverzeichnis, leer für `tailscale/\u003cInstanz-Key\u003e` im Konfigurationsverzeichnis; verweisen Sie auf ein vorhandenes Statusverzeichnis, um die Knotenidentität ohne erneute Registrierung zu behalten. `socket` ist der Steuersocket, leer für `tailscaled.sock` im Statusverzeichnis bei verwaltetem Daemon. `authKey`, `hostname`, `loginServer`, `advertiseRoutes`, `advertiseExitNode`, `acceptRoutes`, `acceptDns` und `extraUpArgs` entsprechen Optionen von `tailscale up`; `port` ist der WireGuard-UDP-Port (0 für automatisch), `socks5` die SOCKS5-Adresse im Userspace-Netzwerk, und `daemonExtraArgs` und `daemonEnv` (ein `KEY=VALUE` pro Zeile) werden an tailscaled übergeben. Es kann höchstens eine Instanz im Kernel-Modus (verwaltet, nicht Userspace) gleichzeitig aktiviert sein; Steuersockets, Statusverzeichnisse und Ports ungleich 0 können nicht von zwei Instanzen gemeinsam genutzt werden, Konflikte liefern 400. `legacyStateDir` wird vom Server gepflegt und kennzeichnet eine aus der alten Einzelinstanz-Konfiguration migrierte Instanz, die bei leerem `stateDir` `\u003cKonfigurationsverzeichnis\u003e/tailscale` verwendet.\n\nErforderliche Berechtigung: `tailscale:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/tailscale.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tailscale.Instance"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale-Instanz hinzufügen",
+        "tags": [
+          "Tailscale-Netzwerk"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances-delete": {
       "post": {
         "description": "Erforderliche Berechtigung: `tailscale:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchDeleteRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Erfolgreich"
@@ -33813,11 +34178,735 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Von Tailscale abmelden",
+        "summary": "Im Stapel löschen: Tailscale-Instanz",
         "tags": [
           "Tailscale-Netzwerk"
         ],
         "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances-enable": {
+      "put": {
+        "description": "Erforderliche Berechtigung: `tailscale:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchEnableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Im Stapel aktivieren oder deaktivieren: Tailscale-Instanz",
+        "tags": [
+          "Tailscale-Netzwerk"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances-group": {
+      "put": {
+        "description": "Erforderliche Berechtigung: `tailscale:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Gruppe mehrerer Einträge festlegen: Tailscale-Instanz",
+        "tags": [
+          "Tailscale-Netzwerk"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances-order": {
+      "put": {
+        "description": "Erforderliche Berechtigung: `tailscale:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.orderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale-Instanz neu anordnen",
+        "tags": [
+          "Tailscale-Netzwerk"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}": {
+      "delete": {
+        "description": "Erforderliche Berechtigung: `tailscale:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale-Instanz löschen",
+        "tags": [
+          "Tailscale-Netzwerk"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Erforderliche Berechtigung: `tailscale:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/tailscale.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tailscale.Instance"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale-Instanz ändern",
+        "tags": [
+          "Tailscale-Netzwerk"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}/copy": {
+      "post": {
+        "description": "Erforderliche Berechtigung: `tailscale:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/tailscale.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tailscale.Instance"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale-Instanz duplizieren",
+        "tags": [
+          "Tailscale-Netzwerk"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}/enable": {
+      "put": {
+        "description": "Erforderliche Berechtigung: `tailscale:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.enableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale-Instanz aktivieren oder deaktivieren",
+        "tags": [
+          "Tailscale-Netzwerk"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}/logout": {
+      "post": {
+        "description": "Führt `tailscale logout` für diese Instanz aus: Der Knoten dieses Rechners wird aus dem Tailnet entfernt; zum erneuten Beitritt ist eine neue Anmeldung oder ein Auth-Key nötig.\n\nErforderliche Berechtigung: `tailscale:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale-Instanz abmelden",
+        "tags": [
+          "Tailscale-Netzwerk"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}/restart": {
+      "post": {
+        "description": "Startet den von dieser Instanz verwalteten tailscaled neu und führt `tailscale up` erneut aus; andere Instanzen sind nicht betroffen.\n\nErforderliche Berechtigung: `tailscale:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Tailscale-Instanz neu starten",
+        "tags": [
+          "Tailscale-Netzwerk"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}/secrets": {
+      "get": {
+        "description": "Erforderliche Berechtigung: `tailscale:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Geheimnisse im Klartext anzeigen",
+        "tags": [
+          "Tailscale-Netzwerk"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}/status": {
+      "get": {
+        "description": "`backendState` ist der Backend-Status von tailscale (Running, NeedsLogin, NeedsMachineAuth, Stopped usw.), `peers` sind die anderen Knoten im Tailnet. Ohne Auth-Key und vor der Anmeldung ist `authUrl` der Anmeldelink; er wird nur Identitäten mit `tailscale:write` zurückgegeben.\n\nErforderliche Berechtigung: `tailscale:read`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tailscale.StatusView"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Verbindungsstatus einer Tailscale-Instanz anzeigen",
+        "tags": [
+          "Tailscale-Netzwerk"
+        ],
+        "x-required-scope": "tailscale:read",
         "x-token-allowed": true
       }
     },
@@ -34094,123 +35183,18 @@
         "x-token-allowed": true
       }
     },
-    "/api/tailscale/restart": {
-      "post": {
-        "description": "Erforderliche Berechtigung: `tailscale:write`.",
-        "responses": {
-          "200": {
-            "description": "Erfolgreich"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "Anfrageparameter fehlerhaft"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "Dem Token fehlt die erforderliche Berechtigung"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Tailscale neu starten",
-        "tags": [
-          "Tailscale-Netzwerk"
-        ],
-        "x-required-scope": "tailscale:write",
-        "x-token-allowed": true
-      }
-    },
-    "/api/tailscale/secrets": {
-      "get": {
-        "description": "Erforderliche Berechtigung: `tailscale:write`.",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Erfolgreich"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "Anfrageparameter fehlerhaft"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "Dem Token fehlt die erforderliche Berechtigung"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Geheimnisse im Klartext anzeigen",
-        "tags": [
-          "Tailscale-Netzwerk"
-        ],
-        "x-required-scope": "tailscale:write",
-        "x-token-allowed": true
-      }
-    },
     "/api/tailscale/settings": {
       "get": {
-        "description": "Erforderliche Berechtigung: `tailscale:read`.",
+        "description": "Gibt `settings` (`tailscaledPath`, `tailscalePath` und den Download-Proxy `installProxy`, für alle Instanzen gemeinsam) und `cli`, den Pfad des verwendeten tailscale-Befehls, zurück.\n\nErforderliche Berechtigung: `tailscale:read`.",
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tailscale.SettingsView"
+                }
+              }
+            },
             "description": "Erfolgreich"
           },
           "400": {
@@ -34249,7 +35233,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Tailscale-Einstellungen lesen",
+        "summary": "Tailscale-Programmeinstellungen lesen",
         "tags": [
           "Tailscale-Netzwerk"
         ],
@@ -34257,12 +35241,12 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "Erforderliche Berechtigung: `tailscale:write`.",
+        "description": "Body `{\"tailscaledPath\": \"\", \"tailscalePath\": \"\"}`; leer werden die Programme in bin im Konfigurationsverzeichnis und danach im PATH gesucht. `installProxy` wird nur über den Installations-Endpunkt geändert. Aktivierte Instanzen werden neu gestartet, wenn sich ein Pfad ändert.\n\nErforderliche Berechtigung: `tailscale:write`.",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "type": "object"
+                "$ref": "#/components/schemas/tailscale.Settings"
               }
             }
           }
@@ -34307,7 +35291,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Tailscale-Einstellungen speichern",
+        "summary": "Tailscale-Programmeinstellungen speichern",
         "tags": [
           "Tailscale-Netzwerk"
         ],
@@ -34317,9 +35301,19 @@
     },
     "/api/tailscale/status": {
       "get": {
-        "description": "Ohne Auth-Key und vor der Anmeldung ist `authUrl` der Anmeldelink; er wird nur an Identitäten mit `tailscale:write` zurückgegeben.\n\nErforderliche Berechtigung: `tailscale:read`.",
+        "description": "Gibt ein Array in der Reihenfolge der Instanzliste zurück; jeder Eintrag enthält `key`, `name` und den Status der Instanz mit denselben Feldern wie `GET /api/tailscale/instances/{key}/status`. Deaktivierte Instanzen melden nur den Prozessstatus; ihr Verbindungsstatus wird nicht abgefragt.\n\nErforderliche Berechtigung: `tailscale:read`.",
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/tailscale.StatusView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
             "description": "Erfolgreich"
           },
           "400": {
@@ -34358,7 +35352,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Tailscale-Verbindungsstatus anzeigen",
+        "summary": "Verbindungsstatus aller Tailscale-Instanzen anzeigen",
         "tags": [
           "Tailscale-Netzwerk"
         ],

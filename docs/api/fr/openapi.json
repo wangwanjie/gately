@@ -1699,6 +1699,30 @@
         },
         "type": "object"
       },
+      "proc.State": {
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "lastExit": {
+            "type": "string"
+          },
+          "pid": {
+            "type": "integer"
+          },
+          "restarts": {
+            "type": "integer"
+          },
+          "running": {
+            "type": "boolean"
+          },
+          "since": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "protoroute.Route": {
         "properties": {
           "alpn": {
@@ -2191,6 +2215,212 @@
           },
           "webhookOnlyOnChange": {
             "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "tailscale.Instance": {
+        "properties": {
+          "acceptDns": {
+            "type": "boolean"
+          },
+          "acceptRoutes": {
+            "type": "boolean"
+          },
+          "advertiseExitNode": {
+            "type": "boolean"
+          },
+          "advertiseRoutes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "authKey": {
+            "type": "string"
+          },
+          "daemonEnv": {
+            "type": "string"
+          },
+          "daemonExtraArgs": {
+            "type": "string"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "extraUpArgs": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "hostname": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "legacyStateDir": {
+            "type": "boolean"
+          },
+          "loginServer": {
+            "type": "string"
+          },
+          "manageDaemon": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "port": {
+            "type": "integer"
+          },
+          "remark": {
+            "type": "string"
+          },
+          "socket": {
+            "type": "string"
+          },
+          "socks5": {
+            "type": "string"
+          },
+          "stateDir": {
+            "type": "string"
+          },
+          "userspace": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "tailscale.PeerView": {
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "curAddr": {
+            "type": "string"
+          },
+          "dnsName": {
+            "type": "string"
+          },
+          "exitNode": {
+            "type": "boolean"
+          },
+          "exitNodeOption": {
+            "type": "boolean"
+          },
+          "ips": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "lastSeen": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "online": {
+            "type": "boolean"
+          },
+          "os": {
+            "type": "string"
+          },
+          "relay": {
+            "type": "string"
+          },
+          "routes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "rxBytes": {
+            "type": "integer"
+          },
+          "txBytes": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "tailscale.Settings": {
+        "properties": {
+          "installProxy": {
+            "type": "string"
+          },
+          "tailscalePath": {
+            "type": "string"
+          },
+          "tailscaledPath": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "tailscale.SettingsView": {
+        "properties": {
+          "cli": {
+            "type": "string"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/tailscale.Settings"
+          }
+        },
+        "type": "object"
+      },
+      "tailscale.StatusView": {
+        "properties": {
+          "authUrl": {
+            "type": "string"
+          },
+          "backendState": {
+            "type": "string"
+          },
+          "cli": {
+            "type": "string"
+          },
+          "daemon": {
+            "$ref": "#/components/schemas/proc.State"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "health": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "key": {
+            "type": "string"
+          },
+          "magicDnsSuffix": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "peers": {
+            "items": {
+              "$ref": "#/components/schemas/tailscale.PeerView"
+            },
+            "type": "array"
+          },
+          "self": {
+            "$ref": "#/components/schemas/tailscale.PeerView"
+          },
+          "tailnet": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
           }
         },
         "type": "object"
@@ -33770,9 +34000,144 @@
         "x-token-allowed": true
       }
     },
-    "/api/tailscale/logout": {
+    "/api/tailscale/instances": {
+      "get": {
+        "description": "Permission requise : `tailscale:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/tailscale.Instance"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Lister instance Tailscale",
+        "tags": [
+          "Réseau Tailscale"
+        ],
+        "x-required-scope": "tailscale:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "Chaque instance exécute son propre tailscaled et peut rejoindre un tailnet différent. Champs du corps : `name` (unique) ; `enable` ; `manageDaemon` à true laisse Gately exécuter tailscaled, à false se connecte à un tailscaled système existant (seul `tailscale up` est exécuté) ; `userspace` à true utilise le réseau en espace utilisateur (`--tun=userspace-networking`), à false le TUN du noyau. Ces deux champs n'ont pas de valeur par défaut et valent false s'ils sont omis : renseignez-les explicitement. `stateDir` est le répertoire d'état, vide pour `tailscale/\u003cclé d'instance\u003e` dans le répertoire de configuration ; indiquez un répertoire d'état existant pour conserver l'identité du nœud sans réenregistrement. `socket` est le socket de contrôle, vide pour `tailscaled.sock` dans le répertoire d'état en mode géré. `authKey`, `hostname`, `loginServer`, `advertiseRoutes`, `advertiseExitNode`, `acceptRoutes`, `acceptDns` et `extraUpArgs` correspondent aux options de `tailscale up` ; `port` est le port UDP WireGuard (0 pour automatique), `socks5` l'adresse d'écoute SOCKS5 en réseau en espace utilisateur, et `daemonExtraArgs` et `daemonEnv` (un `KEY=VALUE` par ligne) sont transmis à tailscaled. Une seule instance en mode noyau (gérée et hors espace utilisateur) peut être activée à la fois ; les sockets de contrôle, les répertoires d'état et les ports non nuls ne peuvent pas être partagés par deux instances, et les conflits renvoient 400. `legacyStateDir` est maintenu par le serveur et signale une instance migrée depuis l'ancienne configuration à instance unique, qui utilise `\u003crépertoire de configuration\u003e/tailscale` quand `stateDir` est vide.\n\nPermission requise : `tailscale:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/tailscale.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tailscale.Instance"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ajouter une instance Tailscale",
+        "tags": [
+          "Réseau Tailscale"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances-delete": {
       "post": {
         "description": "Permission requise : `tailscale:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchDeleteRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Succès"
@@ -33813,11 +34178,735 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Se déconnecter de Tailscale",
+        "summary": "Supprimer en lot : instance Tailscale",
         "tags": [
           "Réseau Tailscale"
         ],
         "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances-enable": {
+      "put": {
+        "description": "Permission requise : `tailscale:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchEnableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Activer ou désactiver en lot : instance Tailscale",
+        "tags": [
+          "Réseau Tailscale"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances-group": {
+      "put": {
+        "description": "Permission requise : `tailscale:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Définir le groupe de plusieurs éléments : instance Tailscale",
+        "tags": [
+          "Réseau Tailscale"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances-order": {
+      "put": {
+        "description": "Permission requise : `tailscale:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.orderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Réordonner instance Tailscale",
+        "tags": [
+          "Réseau Tailscale"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}": {
+      "delete": {
+        "description": "Permission requise : `tailscale:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Supprimer instance Tailscale",
+        "tags": [
+          "Réseau Tailscale"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Permission requise : `tailscale:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/tailscale.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tailscale.Instance"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Modifier instance Tailscale",
+        "tags": [
+          "Réseau Tailscale"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}/copy": {
+      "post": {
+        "description": "Permission requise : `tailscale:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/tailscale.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tailscale.Instance"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Dupliquer instance Tailscale",
+        "tags": [
+          "Réseau Tailscale"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}/enable": {
+      "put": {
+        "description": "Permission requise : `tailscale:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.enableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Activer ou désactiver instance Tailscale",
+        "tags": [
+          "Réseau Tailscale"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}/logout": {
+      "post": {
+        "description": "Exécute `tailscale logout` pour cette instance : le nœud de cette machine est retiré du tailnet, et pour le rejoindre il faut se reconnecter ou utiliser une clé d'authentification.\n\nPermission requise : `tailscale:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Déconnecter une instance Tailscale",
+        "tags": [
+          "Réseau Tailscale"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}/restart": {
+      "post": {
+        "description": "Redémarre le tailscaled géré par cette instance et relance `tailscale up` ; les autres instances ne sont pas affectées.\n\nPermission requise : `tailscale:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Redémarrer une instance Tailscale",
+        "tags": [
+          "Réseau Tailscale"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}/secrets": {
+      "get": {
+        "description": "Permission requise : `tailscale:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Afficher les secrets en clair",
+        "tags": [
+          "Réseau Tailscale"
+        ],
+        "x-required-scope": "tailscale:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/instances/{key}/status": {
+      "get": {
+        "description": "`backendState` est l'état du backend tailscale (Running, NeedsLogin, NeedsMachineAuth, Stopped, etc.) ; `peers` sont les autres nœuds du tailnet. Sans clé d'authentification et avant la connexion, `authUrl` est le lien de connexion ; il n'est renvoyé qu'aux identités disposant de `tailscale:write`.\n\nPermission requise : `tailscale:read`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tailscale.StatusView"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Voir l'état de connexion d'une instance Tailscale",
+        "tags": [
+          "Réseau Tailscale"
+        ],
+        "x-required-scope": "tailscale:read",
         "x-token-allowed": true
       }
     },
@@ -34094,123 +35183,18 @@
         "x-token-allowed": true
       }
     },
-    "/api/tailscale/restart": {
-      "post": {
-        "description": "Permission requise : `tailscale:write`.",
-        "responses": {
-          "200": {
-            "description": "Succès"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "Paramètres de requête incorrects"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "Jeton invalide, expiré ou non connecté"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "Il manque au jeton la permission requise"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Redémarrer Tailscale",
-        "tags": [
-          "Réseau Tailscale"
-        ],
-        "x-required-scope": "tailscale:write",
-        "x-token-allowed": true
-      }
-    },
-    "/api/tailscale/secrets": {
-      "get": {
-        "description": "Permission requise : `tailscale:write`.",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Succès"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "Paramètres de requête incorrects"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "Jeton invalide, expiré ou non connecté"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "Il manque au jeton la permission requise"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Afficher les secrets en clair",
-        "tags": [
-          "Réseau Tailscale"
-        ],
-        "x-required-scope": "tailscale:write",
-        "x-token-allowed": true
-      }
-    },
     "/api/tailscale/settings": {
       "get": {
-        "description": "Permission requise : `tailscale:read`.",
+        "description": "Renvoie `settings` (`tailscaledPath`, `tailscalePath` et le proxy de téléchargement `installProxy`, communs à toutes les instances) et `cli`, le chemin de la commande tailscale utilisée.\n\nPermission requise : `tailscale:read`.",
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tailscale.SettingsView"
+                }
+              }
+            },
             "description": "Succès"
           },
           "400": {
@@ -34249,7 +35233,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Lire les paramètres Tailscale",
+        "summary": "Lire les paramètres du programme Tailscale",
         "tags": [
           "Réseau Tailscale"
         ],
@@ -34257,12 +35241,12 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "Permission requise : `tailscale:write`.",
+        "description": "Corps `{\"tailscaledPath\": \"\", \"tailscalePath\": \"\"}` ; vides, les programmes sont cherchés dans bin du répertoire de configuration puis dans PATH. `installProxy` ne se modifie que via l'API d'installation. Les instances activées redémarrent quand un chemin change.\n\nPermission requise : `tailscale:write`.",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "type": "object"
+                "$ref": "#/components/schemas/tailscale.Settings"
               }
             }
           }
@@ -34307,7 +35291,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Enregistrer les paramètres Tailscale",
+        "summary": "Enregistrer les paramètres du programme Tailscale",
         "tags": [
           "Réseau Tailscale"
         ],
@@ -34317,9 +35301,19 @@
     },
     "/api/tailscale/status": {
       "get": {
-        "description": "Sans clé d'authentification et avant la connexion, `authUrl` est le lien de connexion ; il n'est renvoyé qu'aux identités disposant de `tailscale:write`.\n\nPermission requise : `tailscale:read`.",
+        "description": "Renvoie un tableau dans l'ordre de la liste des instances ; chaque élément contient `key`, `name` et l'état de l'instance, avec les mêmes champs que `GET /api/tailscale/instances/{key}/status`. Les instances désactivées ne renvoient que l'état du processus ; leur état de connexion n'est pas interrogé.\n\nPermission requise : `tailscale:read`.",
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/tailscale.StatusView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
             "description": "Succès"
           },
           "400": {
@@ -34358,7 +35352,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Consulter l'état de connexion Tailscale",
+        "summary": "Voir l'état de connexion de toutes les instances Tailscale",
         "tags": [
           "Réseau Tailscale"
         ],

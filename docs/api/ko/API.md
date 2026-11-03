@@ -157,12 +157,23 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- | --- | --- |
 | GET | `/api/tailscale/logs` | `tailscale:read` | 모듈 실행 로그 보기 |
 | DELETE | `/api/tailscale/logs` | `tailscale:write` | 모듈 실행 로그 비우기 |
-| GET | `/api/tailscale/settings` | `tailscale:read` | Tailscale 설정 읽기 |
-| PUT | `/api/tailscale/settings` | `tailscale:write` | Tailscale 설정 저장 |
-| GET | `/api/tailscale/secrets` | `tailscale:write` | 비밀 값 평문 보기 |
-| GET | `/api/tailscale/status` | `tailscale:read` | Tailscale 연결 상태 보기 |
-| POST | `/api/tailscale/restart` | `tailscale:write` | Tailscale 재시작 |
-| POST | `/api/tailscale/logout` | `tailscale:write` | Tailscale 로그아웃 |
+| GET | `/api/tailscale/instances` | `tailscale:read` | Tailscale 인스턴스 목록 조회 |
+| POST | `/api/tailscale/instances` | `tailscale:write` | Tailscale 인스턴스 추가 |
+| POST | `/api/tailscale/instances/{key}/copy` | `tailscale:write` | Tailscale 인스턴스 복제 |
+| PUT | `/api/tailscale/instances/{key}` | `tailscale:write` | Tailscale 인스턴스 수정 |
+| DELETE | `/api/tailscale/instances/{key}` | `tailscale:write` | Tailscale 인스턴스 삭제 |
+| PUT | `/api/tailscale/instances/{key}/enable` | `tailscale:write` | Tailscale 인스턴스 사용 설정/해제 |
+| PUT | `/api/tailscale/instances-order` | `tailscale:write` | Tailscale 인스턴스 순서 변경 |
+| PUT | `/api/tailscale/instances-enable` | `tailscale:write` | Tailscale 인스턴스 일괄 사용/사용 안 함 |
+| POST | `/api/tailscale/instances-delete` | `tailscale:write` | Tailscale 인스턴스 일괄 삭제 |
+| PUT | `/api/tailscale/instances-group` | `tailscale:write` | Tailscale 인스턴스 그룹 일괄 설정 |
+| GET | `/api/tailscale/instances/{key}/secrets` | `tailscale:write` | 비밀 값 평문 보기 |
+| GET | `/api/tailscale/status` | `tailscale:read` | 모든 Tailscale 인스턴스의 연결 상태 보기 |
+| GET | `/api/tailscale/instances/{key}/status` | `tailscale:read` | Tailscale 인스턴스의 연결 상태 보기 |
+| POST | `/api/tailscale/instances/{key}/restart` | `tailscale:write` | Tailscale 인스턴스 다시 시작 |
+| POST | `/api/tailscale/instances/{key}/logout` | `tailscale:write` | Tailscale 인스턴스 로그아웃 |
+| GET | `/api/tailscale/settings` | `tailscale:read` | Tailscale 프로그램 설정 읽기 |
+| PUT | `/api/tailscale/settings` | `tailscale:write` | Tailscale 프로그램 설정 저장 |
 | GET | `/api/tailscale/install` | `tailscale:read` | 관리 프로그램의 설치 정보와 진행 상태 보기 |
 | POST | `/api/tailscale/install` | `tailscale:write` | 관리 프로그램 온라인 설치 또는 업데이트 |
 | POST | `/api/tailscale/install/check` | `tailscale:write` | 관리 프로그램 업데이트 확인 |
@@ -1573,6 +1584,17 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `targetPorts` | string |
 | `udpSessionTimeout` | integer |
 
+### proc.State
+
+| 필드 | 타입 |
+| --- | --- |
+| `error` | string |
+| `lastExit` | string |
+| `pid` | integer |
+| `restarts` | integer |
+| `running` | boolean |
+| `since` | 시간 (RFC 3339) |
+
 ### protoroute.Route
 
 | 필드 | 타입 |
@@ -1753,6 +1775,86 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `useGlobalWebhook` | boolean |
 | `webhook` | `webhook.Config` |
 | `webhookOnlyOnChange` | boolean |
+
+### tailscale.Instance
+
+| 필드 | 타입 |
+| --- | --- |
+| `acceptDns` | boolean |
+| `acceptRoutes` | boolean |
+| `advertiseExitNode` | boolean |
+| `advertiseRoutes` | Array of string |
+| `authKey` | string |
+| `daemonEnv` | string |
+| `daemonExtraArgs` | string |
+| `enable` | boolean |
+| `extraUpArgs` | string |
+| `group` | string |
+| `hostname` | string |
+| `key` | string |
+| `legacyStateDir` | boolean |
+| `loginServer` | string |
+| `manageDaemon` | boolean |
+| `name` | string |
+| `port` | integer |
+| `remark` | string |
+| `socket` | string |
+| `socks5` | string |
+| `stateDir` | string |
+| `userspace` | boolean |
+
+### tailscale.PeerView
+
+| 필드 | 타입 |
+| --- | --- |
+| `active` | boolean |
+| `curAddr` | string |
+| `dnsName` | string |
+| `exitNode` | boolean |
+| `exitNodeOption` | boolean |
+| `ips` | Array of string |
+| `lastSeen` | 시간 (RFC 3339) |
+| `name` | string |
+| `online` | boolean |
+| `os` | string |
+| `relay` | string |
+| `routes` | Array of string |
+| `rxBytes` | integer |
+| `txBytes` | integer |
+
+### tailscale.Settings
+
+| 필드 | 타입 |
+| --- | --- |
+| `installProxy` | string |
+| `tailscalePath` | string |
+| `tailscaledPath` | string |
+
+### tailscale.SettingsView
+
+| 필드 | 타입 |
+| --- | --- |
+| `cli` | string |
+| `settings` | `tailscale.Settings` |
+
+### tailscale.StatusView
+
+| 필드 | 타입 |
+| --- | --- |
+| `authUrl` | string |
+| `backendState` | string |
+| `cli` | string |
+| `daemon` | `proc.State` |
+| `enable` | boolean |
+| `error` | string |
+| `health` | Array of string |
+| `key` | string |
+| `magicDnsSuffix` | string |
+| `name` | string |
+| `peers` | Array of `tailscale.PeerView` |
+| `self` | `tailscale.PeerView` |
+| `tailnet` | string |
+| `version` | string |
 
 ### thirdauth.Provider
 

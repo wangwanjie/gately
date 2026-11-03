@@ -157,12 +157,23 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- | --- | --- |
 | GET | `/api/tailscale/logs` | `tailscale:read` | Просмотр журнала работы модуля |
 | DELETE | `/api/tailscale/logs` | `tailscale:write` | Очистить журнал работы модуля |
-| GET | `/api/tailscale/settings` | `tailscale:read` | Чтение настроек Tailscale |
-| PUT | `/api/tailscale/settings` | `tailscale:write` | Сохранить настройки Tailscale |
-| GET | `/api/tailscale/secrets` | `tailscale:write` | Показать секреты открытым текстом |
-| GET | `/api/tailscale/status` | `tailscale:read` | Просмотр состояния подключения Tailscale |
-| POST | `/api/tailscale/restart` | `tailscale:write` | Перезапустить Tailscale |
-| POST | `/api/tailscale/logout` | `tailscale:write` | Выйти из Tailscale |
+| GET | `/api/tailscale/instances` | `tailscale:read` | Список: экземпляр Tailscale |
+| POST | `/api/tailscale/instances` | `tailscale:write` | Добавить экземпляр Tailscale |
+| POST | `/api/tailscale/instances/{key}/copy` | `tailscale:write` | Дублировать: экземпляр Tailscale |
+| PUT | `/api/tailscale/instances/{key}` | `tailscale:write` | Изменить: экземпляр Tailscale |
+| DELETE | `/api/tailscale/instances/{key}` | `tailscale:write` | Удалить: экземпляр Tailscale |
+| PUT | `/api/tailscale/instances/{key}/enable` | `tailscale:write` | Включить или отключить: экземпляр Tailscale |
+| PUT | `/api/tailscale/instances-order` | `tailscale:write` | Изменить порядок: экземпляр Tailscale |
+| PUT | `/api/tailscale/instances-enable` | `tailscale:write` | Пакетно включить или отключить: экземпляр Tailscale |
+| POST | `/api/tailscale/instances-delete` | `tailscale:write` | Пакетно удалить: экземпляр Tailscale |
+| PUT | `/api/tailscale/instances-group` | `tailscale:write` | Задать группу сразу для нескольких: экземпляр Tailscale |
+| GET | `/api/tailscale/instances/{key}/secrets` | `tailscale:write` | Показать секреты открытым текстом |
+| GET | `/api/tailscale/status` | `tailscale:read` | Состояние подключения всех экземпляров Tailscale |
+| GET | `/api/tailscale/instances/{key}/status` | `tailscale:read` | Состояние подключения экземпляра Tailscale |
+| POST | `/api/tailscale/instances/{key}/restart` | `tailscale:write` | Перезапустить экземпляр Tailscale |
+| POST | `/api/tailscale/instances/{key}/logout` | `tailscale:write` | Выйти из учётной записи в экземпляре Tailscale |
+| GET | `/api/tailscale/settings` | `tailscale:read` | Получить настройки программы Tailscale |
+| PUT | `/api/tailscale/settings` | `tailscale:write` | Сохранить настройки программы Tailscale |
 | GET | `/api/tailscale/install` | `tailscale:read` | Просмотр сведений об установке и хода установки управляемой программы |
 | POST | `/api/tailscale/install` | `tailscale:write` | Установить или обновить управляемую программу онлайн |
 | POST | `/api/tailscale/install/check` | `tailscale:write` | Проверить обновления управляемой программы |
@@ -1573,6 +1584,17 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `targetPorts` | string |
 | `udpSessionTimeout` | integer |
 
+### proc.State
+
+| Поле | Тип |
+| --- | --- |
+| `error` | string |
+| `lastExit` | string |
+| `pid` | integer |
+| `restarts` | integer |
+| `running` | boolean |
+| `since` | Время (RFC 3339) |
+
 ### protoroute.Route
 
 | Поле | Тип |
@@ -1753,6 +1775,86 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `useGlobalWebhook` | boolean |
 | `webhook` | `webhook.Config` |
 | `webhookOnlyOnChange` | boolean |
+
+### tailscale.Instance
+
+| Поле | Тип |
+| --- | --- |
+| `acceptDns` | boolean |
+| `acceptRoutes` | boolean |
+| `advertiseExitNode` | boolean |
+| `advertiseRoutes` | Массив из string |
+| `authKey` | string |
+| `daemonEnv` | string |
+| `daemonExtraArgs` | string |
+| `enable` | boolean |
+| `extraUpArgs` | string |
+| `group` | string |
+| `hostname` | string |
+| `key` | string |
+| `legacyStateDir` | boolean |
+| `loginServer` | string |
+| `manageDaemon` | boolean |
+| `name` | string |
+| `port` | integer |
+| `remark` | string |
+| `socket` | string |
+| `socks5` | string |
+| `stateDir` | string |
+| `userspace` | boolean |
+
+### tailscale.PeerView
+
+| Поле | Тип |
+| --- | --- |
+| `active` | boolean |
+| `curAddr` | string |
+| `dnsName` | string |
+| `exitNode` | boolean |
+| `exitNodeOption` | boolean |
+| `ips` | Массив из string |
+| `lastSeen` | Время (RFC 3339) |
+| `name` | string |
+| `online` | boolean |
+| `os` | string |
+| `relay` | string |
+| `routes` | Массив из string |
+| `rxBytes` | integer |
+| `txBytes` | integer |
+
+### tailscale.Settings
+
+| Поле | Тип |
+| --- | --- |
+| `installProxy` | string |
+| `tailscalePath` | string |
+| `tailscaledPath` | string |
+
+### tailscale.SettingsView
+
+| Поле | Тип |
+| --- | --- |
+| `cli` | string |
+| `settings` | `tailscale.Settings` |
+
+### tailscale.StatusView
+
+| Поле | Тип |
+| --- | --- |
+| `authUrl` | string |
+| `backendState` | string |
+| `cli` | string |
+| `daemon` | `proc.State` |
+| `enable` | boolean |
+| `error` | string |
+| `health` | Массив из string |
+| `key` | string |
+| `magicDnsSuffix` | string |
+| `name` | string |
+| `peers` | Массив из `tailscale.PeerView` |
+| `self` | `tailscale.PeerView` |
+| `tailnet` | string |
+| `version` | string |
 
 ### thirdauth.Provider
 

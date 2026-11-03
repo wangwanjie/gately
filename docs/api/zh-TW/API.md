@@ -157,12 +157,23 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- | --- | --- |
 | GET | `/api/tailscale/logs` | `tailscale:read` | 檢視模組執行日誌 |
 | DELETE | `/api/tailscale/logs` | `tailscale:write` | 清空模組執行日誌 |
-| GET | `/api/tailscale/settings` | `tailscale:read` | 讀取 Tailscale 設定 |
-| PUT | `/api/tailscale/settings` | `tailscale:write` | 儲存 Tailscale 設定 |
-| GET | `/api/tailscale/secrets` | `tailscale:write` | 查看金鑰明文 |
-| GET | `/api/tailscale/status` | `tailscale:read` | 檢視 Tailscale 連線狀態 |
-| POST | `/api/tailscale/restart` | `tailscale:write` | 重新啟動 Tailscale |
-| POST | `/api/tailscale/logout` | `tailscale:write` | 登出 Tailscale |
+| GET | `/api/tailscale/instances` | `tailscale:read` | 取得Tailscale 實例清單 |
+| POST | `/api/tailscale/instances` | `tailscale:write` | 新增 Tailscale 實例 |
+| POST | `/api/tailscale/instances/{key}/copy` | `tailscale:write` | 複製Tailscale 實例 |
+| PUT | `/api/tailscale/instances/{key}` | `tailscale:write` | 修改Tailscale 實例 |
+| DELETE | `/api/tailscale/instances/{key}` | `tailscale:write` | 刪除Tailscale 實例 |
+| PUT | `/api/tailscale/instances/{key}/enable` | `tailscale:write` | 啟用或停用Tailscale 實例 |
+| PUT | `/api/tailscale/instances-order` | `tailscale:write` | 調整Tailscale 實例排序 |
+| PUT | `/api/tailscale/instances-enable` | `tailscale:write` | 批次啟用或停用Tailscale 實例 |
+| POST | `/api/tailscale/instances-delete` | `tailscale:write` | 批次刪除Tailscale 實例 |
+| PUT | `/api/tailscale/instances-group` | `tailscale:write` | 批次設定Tailscale 實例分組 |
+| GET | `/api/tailscale/instances/{key}/secrets` | `tailscale:write` | 查看金鑰明文 |
+| GET | `/api/tailscale/status` | `tailscale:read` | 查看全部 Tailscale 實例的連線狀態 |
+| GET | `/api/tailscale/instances/{key}/status` | `tailscale:read` | 查看 Tailscale 實例的連線狀態 |
+| POST | `/api/tailscale/instances/{key}/restart` | `tailscale:write` | 重新啟動 Tailscale 實例 |
+| POST | `/api/tailscale/instances/{key}/logout` | `tailscale:write` | 登出 Tailscale 實例 |
+| GET | `/api/tailscale/settings` | `tailscale:read` | 讀取 Tailscale 程式設定 |
+| PUT | `/api/tailscale/settings` | `tailscale:write` | 儲存 Tailscale 程式設定 |
 | GET | `/api/tailscale/install` | `tailscale:read` | 檢視託管程式的安裝資訊與進度 |
 | POST | `/api/tailscale/install` | `tailscale:write` | 線上安裝或更新託管程式 |
 | POST | `/api/tailscale/install/check` | `tailscale:write` | 檢查託管程式的更新 |
@@ -1573,6 +1584,17 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `targetPorts` | string |
 | `udpSessionTimeout` | integer |
 
+### proc.State
+
+| 欄位 | 類型 |
+| --- | --- |
+| `error` | string |
+| `lastExit` | string |
+| `pid` | integer |
+| `restarts` | integer |
+| `running` | boolean |
+| `since` | 時間 (RFC 3339) |
+
 ### protoroute.Route
 
 | 欄位 | 類型 |
@@ -1753,6 +1775,86 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `useGlobalWebhook` | boolean |
 | `webhook` | `webhook.Config` |
 | `webhookOnlyOnChange` | boolean |
+
+### tailscale.Instance
+
+| 欄位 | 類型 |
+| --- | --- |
+| `acceptDns` | boolean |
+| `acceptRoutes` | boolean |
+| `advertiseExitNode` | boolean |
+| `advertiseRoutes` | 陣列 of string |
+| `authKey` | string |
+| `daemonEnv` | string |
+| `daemonExtraArgs` | string |
+| `enable` | boolean |
+| `extraUpArgs` | string |
+| `group` | string |
+| `hostname` | string |
+| `key` | string |
+| `legacyStateDir` | boolean |
+| `loginServer` | string |
+| `manageDaemon` | boolean |
+| `name` | string |
+| `port` | integer |
+| `remark` | string |
+| `socket` | string |
+| `socks5` | string |
+| `stateDir` | string |
+| `userspace` | boolean |
+
+### tailscale.PeerView
+
+| 欄位 | 類型 |
+| --- | --- |
+| `active` | boolean |
+| `curAddr` | string |
+| `dnsName` | string |
+| `exitNode` | boolean |
+| `exitNodeOption` | boolean |
+| `ips` | 陣列 of string |
+| `lastSeen` | 時間 (RFC 3339) |
+| `name` | string |
+| `online` | boolean |
+| `os` | string |
+| `relay` | string |
+| `routes` | 陣列 of string |
+| `rxBytes` | integer |
+| `txBytes` | integer |
+
+### tailscale.Settings
+
+| 欄位 | 類型 |
+| --- | --- |
+| `installProxy` | string |
+| `tailscalePath` | string |
+| `tailscaledPath` | string |
+
+### tailscale.SettingsView
+
+| 欄位 | 類型 |
+| --- | --- |
+| `cli` | string |
+| `settings` | `tailscale.Settings` |
+
+### tailscale.StatusView
+
+| 欄位 | 類型 |
+| --- | --- |
+| `authUrl` | string |
+| `backendState` | string |
+| `cli` | string |
+| `daemon` | `proc.State` |
+| `enable` | boolean |
+| `error` | string |
+| `health` | 陣列 of string |
+| `key` | string |
+| `magicDnsSuffix` | string |
+| `name` | string |
+| `peers` | 陣列 of `tailscale.PeerView` |
+| `self` | `tailscale.PeerView` |
+| `tailnet` | string |
+| `version` | string |
 
 ### thirdauth.Provider
 

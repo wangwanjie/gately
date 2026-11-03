@@ -157,12 +157,23 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- | --- | --- |
 | GET | `/api/tailscale/logs` | `tailscale:read` | モジュールの実行ログを表示 |
 | DELETE | `/api/tailscale/logs` | `tailscale:write` | モジュールの実行ログを消去 |
-| GET | `/api/tailscale/settings` | `tailscale:read` | Tailscale 設定を読み取り |
-| PUT | `/api/tailscale/settings` | `tailscale:write` | Tailscale 設定を保存 |
-| GET | `/api/tailscale/secrets` | `tailscale:write` | シークレットを平文で表示 |
-| GET | `/api/tailscale/status` | `tailscale:read` | Tailscale の接続状態を表示 |
-| POST | `/api/tailscale/restart` | `tailscale:write` | Tailscale を再起動 |
-| POST | `/api/tailscale/logout` | `tailscale:write` | Tailscale からログアウト |
+| GET | `/api/tailscale/instances` | `tailscale:read` | Tailscale インスタンス の一覧を取得 |
+| POST | `/api/tailscale/instances` | `tailscale:write` | Tailscale インスタンスを追加 |
+| POST | `/api/tailscale/instances/{key}/copy` | `tailscale:write` | Tailscale インスタンス を複製 |
+| PUT | `/api/tailscale/instances/{key}` | `tailscale:write` | Tailscale インスタンス を更新 |
+| DELETE | `/api/tailscale/instances/{key}` | `tailscale:write` | Tailscale インスタンス を削除 |
+| PUT | `/api/tailscale/instances/{key}/enable` | `tailscale:write` | Tailscale インスタンス の有効/無効を切り替え |
+| PUT | `/api/tailscale/instances-order` | `tailscale:write` | Tailscale インスタンス の並び順を変更 |
+| PUT | `/api/tailscale/instances-enable` | `tailscale:write` | Tailscale インスタンス の一括有効化・無効化 |
+| POST | `/api/tailscale/instances-delete` | `tailscale:write` | Tailscale インスタンス の一括削除 |
+| PUT | `/api/tailscale/instances-group` | `tailscale:write` | Tailscale インスタンス のグループを一括設定 |
+| GET | `/api/tailscale/instances/{key}/secrets` | `tailscale:write` | シークレットを平文で表示 |
+| GET | `/api/tailscale/status` | `tailscale:read` | すべての Tailscale インスタンスの接続状態を表示 |
+| GET | `/api/tailscale/instances/{key}/status` | `tailscale:read` | Tailscale インスタンスの接続状態を表示 |
+| POST | `/api/tailscale/instances/{key}/restart` | `tailscale:write` | Tailscale インスタンスを再起動 |
+| POST | `/api/tailscale/instances/{key}/logout` | `tailscale:write` | Tailscale インスタンスをログアウト |
+| GET | `/api/tailscale/settings` | `tailscale:read` | Tailscale のプログラム設定を取得 |
+| PUT | `/api/tailscale/settings` | `tailscale:write` | Tailscale のプログラム設定を保存 |
 | GET | `/api/tailscale/install` | `tailscale:read` | 管理プログラムのインストール情報と進捗を表示 |
 | POST | `/api/tailscale/install` | `tailscale:write` | 管理プログラムをオンラインでインストールまたは更新 |
 | POST | `/api/tailscale/install/check` | `tailscale:write` | 管理プログラムの更新を確認 |
@@ -1573,6 +1584,17 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `targetPorts` | string |
 | `udpSessionTimeout` | integer |
 
+### proc.State
+
+| フィールド | 型 |
+| --- | --- |
+| `error` | string |
+| `lastExit` | string |
+| `pid` | integer |
+| `restarts` | integer |
+| `running` | boolean |
+| `since` | 時刻 (RFC 3339) |
+
 ### protoroute.Route
 
 | フィールド | 型 |
@@ -1753,6 +1775,86 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `useGlobalWebhook` | boolean |
 | `webhook` | `webhook.Config` |
 | `webhookOnlyOnChange` | boolean |
+
+### tailscale.Instance
+
+| フィールド | 型 |
+| --- | --- |
+| `acceptDns` | boolean |
+| `acceptRoutes` | boolean |
+| `advertiseExitNode` | boolean |
+| `advertiseRoutes` | 配列 of string |
+| `authKey` | string |
+| `daemonEnv` | string |
+| `daemonExtraArgs` | string |
+| `enable` | boolean |
+| `extraUpArgs` | string |
+| `group` | string |
+| `hostname` | string |
+| `key` | string |
+| `legacyStateDir` | boolean |
+| `loginServer` | string |
+| `manageDaemon` | boolean |
+| `name` | string |
+| `port` | integer |
+| `remark` | string |
+| `socket` | string |
+| `socks5` | string |
+| `stateDir` | string |
+| `userspace` | boolean |
+
+### tailscale.PeerView
+
+| フィールド | 型 |
+| --- | --- |
+| `active` | boolean |
+| `curAddr` | string |
+| `dnsName` | string |
+| `exitNode` | boolean |
+| `exitNodeOption` | boolean |
+| `ips` | 配列 of string |
+| `lastSeen` | 時刻 (RFC 3339) |
+| `name` | string |
+| `online` | boolean |
+| `os` | string |
+| `relay` | string |
+| `routes` | 配列 of string |
+| `rxBytes` | integer |
+| `txBytes` | integer |
+
+### tailscale.Settings
+
+| フィールド | 型 |
+| --- | --- |
+| `installProxy` | string |
+| `tailscalePath` | string |
+| `tailscaledPath` | string |
+
+### tailscale.SettingsView
+
+| フィールド | 型 |
+| --- | --- |
+| `cli` | string |
+| `settings` | `tailscale.Settings` |
+
+### tailscale.StatusView
+
+| フィールド | 型 |
+| --- | --- |
+| `authUrl` | string |
+| `backendState` | string |
+| `cli` | string |
+| `daemon` | `proc.State` |
+| `enable` | boolean |
+| `error` | string |
+| `health` | 配列 of string |
+| `key` | string |
+| `magicDnsSuffix` | string |
+| `name` | string |
+| `peers` | 配列 of `tailscale.PeerView` |
+| `self` | `tailscale.PeerView` |
+| `tailnet` | string |
+| `version` | string |
 
 ### thirdauth.Provider
 
