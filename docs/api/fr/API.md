@@ -1450,6 +1450,15 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Champ | Type |
 | --- | --- |
 | `proxy` | string |
+| `serverName` | string |
+
+### notify.settingsView
+
+| Champ | Type |
+| --- | --- |
+| `hostname` | string |
+| `proxy` | string |
+| `serverName` | string |
 
 ### perf.AlertState
 

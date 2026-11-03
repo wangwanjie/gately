@@ -15,6 +15,10 @@ Um único envio expira em 45 segundos.
 
 O conteúdo das notificações e os logs usam o idioma do servidor definido em "Configurações do sistema". Quando o idioma do servidor é "Seguir o sistema", o Gately usa o idioma indicado pela variável de ambiente `GATELY_LANG` e depois por `LANG`. Serviços no Docker, fnOS e OpenWrt normalmente não definem nenhuma das duas; nesse caso vale o idioma da interface que o administrador usou no último login ou na última troca pela barra superior, e o inglês é usado quando não há nenhum. Logins de contas somente leitura não alteram esse idioma. A "Origem" de uma notificação é traduzida quando é um nome gerado pelo programa (como "Administração"); nomes de tarefas e outros nomes digitados pelo usuário são mantidos como estão.
 
+## Nome do servidor {#server-name}
+
+Cada notificação traz o nome do servidor que a enviou: o título fica no formato `[Gately · fnOS-B760] Certificado prestes a expirar` e o corpo contém a linha "Servidor: fnOS-B760", então notificações de vários servidores na mesma caixa de e-mail ou grupo são fáceis de distinguir. Defina o nome em **Nome do servidor** nas **Configurações de notificação** no cabeçalho da página; se ficar vazio, é usado o nome de host da máquina (o do host quando o Docker usa a rede host), e o título continua `[Gately]` se não houver nome de host. O nome tem no máximo 64 caracteres e não pode conter caracteres de controle como quebras de linha.
+
 ## Canais
 
 Clique em "Adicionar canal", escolha um tipo e preencha os campos. Todo canal tem um nome (obrigatório), uma observação e uma chave de ativação. Campos secretos não são exibidos de novo após salvar; deixá-los em branco ao editar mantém o valor original.
@@ -44,7 +48,8 @@ As variáveis abaixo podem ser usadas na URL da requisição e no corpo, escrita
 
 | Variável | Conteúdo |
 | --- | --- |
-| `title` | Título, no formato `[Gately] Título do evento` |
+| `title` | Título, no formato `[Gately · nome do servidor] Título do evento` |
+| `server` | Nome do servidor, veja [Nome do servidor](#server-name) |
 | `message` | Descrição detalhada do evento |
 | `text` | Corpo completo, incluindo descrição, origem, nível e hora |
 | `type` | Tipo do evento, como `ddns.changed` |

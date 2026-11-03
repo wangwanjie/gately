@@ -1450,6 +1450,15 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 필드 | 타입 |
 | --- | --- |
 | `proxy` | string |
+| `serverName` | string |
+
+### notify.settingsView
+
+| 필드 | 타입 |
+| --- | --- |
+| `hostname` | string |
+| `proxy` | string |
+| `serverName` | string |
 
 ### perf.AlertState
 

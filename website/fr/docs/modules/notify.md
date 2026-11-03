@@ -15,6 +15,10 @@ Un envoi unique expire après 45 secondes.
 
 Le contenu des notifications et les journaux utilisent la langue du serveur définie dans « Paramètres système ». Lorsque la langue du serveur est « Suivre le système », Gately utilise la langue indiquée par la variable d'environnement `GATELY_LANG`, puis par `LANG`. Les services sous Docker, fnOS et OpenWrt ne définissent généralement aucune de ces deux variables ; la langue suit alors celle de l'interface utilisée par l'administrateur lors de sa dernière connexion ou de son dernier changement dans la barre supérieure, et l'anglais est utilisé à défaut. Les connexions des comptes en lecture seule ne modifient pas cette langue. La « Source » d'une notification est traduite lorsqu'il s'agit d'un nom généré par le programme (comme « Interface d'administration ») ; les noms de tâches et autres noms saisis par l'utilisateur restent tels quels.
 
+## Nom du serveur {#server-name}
+
+Chaque notification indique le nom du serveur qui l'a envoyée : le titre prend la forme `[Gately · fnOS-B760] Certificat bientôt expiré` et le corps contient la ligne « Serveur : fnOS-B760 », ce qui permet de distinguer les notifications de plusieurs serveurs arrivant dans la même boîte ou le même groupe. Le nom se règle dans **Nom du serveur** sous **Paramètres de notification** dans l'en-tête de la page ; s'il est vide, le nom d'hôte de la machine est utilisé (celui de l'hôte lorsque Docker utilise le réseau host), et le titre reste `[Gately]` si aucun nom d'hôte n'est disponible. Le nom compte au plus 64 caractères et ne peut pas contenir de caractères de contrôle comme des retours à la ligne.
+
 ## Canaux
 
 Cliquez sur « Ajouter un canal », choisissez un type et renseignez les champs. Chaque canal possède un nom (obligatoire), une remarque et un interrupteur d'activation. Les champs secrets ne sont plus affichés après l'enregistrement ; les laisser vides lors d'une modification conserve la valeur d'origine.
@@ -44,7 +48,8 @@ Les variables suivantes peuvent être utilisées dans l'URL de la requête et da
 
 | Variable | Contenu |
 | --- | --- |
-| `title` | Titre, sous la forme `[Gately] Titre de l'événement` |
+| `title` | Titre, sous la forme `[Gately · nom du serveur] Titre de l'événement` |
+| `server` | Nom du serveur, voir [Nom du serveur](#server-name) |
 | `message` | Description détaillée de l'événement |
 | `text` | Corps complet, incluant la description, la source, le niveau et l'heure |
 | `type` | Type d'événement, par exemple `ddns.changed` |

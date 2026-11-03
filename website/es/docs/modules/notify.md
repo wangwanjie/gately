@@ -15,6 +15,10 @@ Una entrega individual agota el tiempo a los 45 segundos.
 
 El contenido de las notificaciones y los registros usan el idioma del servidor definido en «Ajustes del sistema». Cuando el idioma del servidor es «Seguir el sistema», se toma el idioma indicado por la variable de entorno `GATELY_LANG` y después por `LANG`. Los servicios en Docker, fnOS y OpenWrt normalmente no definen ninguna de las dos; en ese caso se sigue el idioma de la interfaz que el administrador usó en su último inicio de sesión o al cambiarlo en la barra superior, y si no hay ninguno se usa el inglés. Los inicios de sesión de cuentas de solo lectura no cambian este idioma. El «Origen» de una notificación se traduce cuando es un nombre generado por el programa (como «Panel de administración»); los nombres de tareas y otros nombres escritos por el usuario se mantienen tal cual.
 
+## Nombre del servidor {#server-name}
+
+Cada notificación incluye el nombre del servidor que la envió: el título tiene la forma `[Gately · fnOS-B760] Certificado a punto de caducar` y el cuerpo incluye la línea «Servidor: fnOS-B760», de modo que las notificaciones de varios servidores que llegan al mismo buzón o grupo se distinguen fácilmente. El nombre se define en **Nombre del servidor** dentro de **Configuración de notificaciones** en la cabecera de la página; si se deja vacío se usa el nombre de host de la máquina (el del host cuando Docker usa la red host), y si no se puede obtener el título sigue siendo `[Gately]`. El nombre admite hasta 64 caracteres y no puede contener caracteres de control como saltos de línea.
+
 ## Canales
 
 Pulsa «Añadir canal», elige un tipo y rellena los campos. Todos los canales tienen un nombre (obligatorio), una nota y un interruptor de activación. Los campos secretos no se vuelven a mostrar tras guardar; si los dejas vacíos al editar, se conserva el valor original.
@@ -44,7 +48,8 @@ Las siguientes variables se pueden usar en la URL de la petición y en el cuerpo
 
 | Variable | Contenido |
 | --- | --- |
-| `title` | Título, con la forma `[Gately] Título del evento` |
+| `title` | Título, con la forma `[Gately · nombre del servidor] Título del evento` |
+| `server` | Nombre del servidor, consulte [Nombre del servidor](#server-name) |
 | `message` | Descripción detallada del evento |
 | `text` | Cuerpo completo, con descripción, origen, nivel y hora |
 | `type` | Tipo de evento, como `ddns.changed` |

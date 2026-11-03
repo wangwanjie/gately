@@ -1450,6 +1450,15 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Campo | Tipo |
 | --- | --- |
 | `proxy` | string |
+| `serverName` | string |
+
+### notify.settingsView
+
+| Campo | Tipo |
+| --- | --- |
+| `hostname` | string |
+| `proxy` | string |
+| `serverName` | string |
 
 ### perf.AlertState
 

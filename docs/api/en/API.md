@@ -1450,6 +1450,15 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Field | Type |
 | --- | --- |
 | `proxy` | string |
+| `serverName` | string |
+
+### notify.settingsView
+
+| Field | Type |
+| --- | --- |
+| `hostname` | string |
+| `proxy` | string |
+| `serverName` | string |
 
 ### perf.AlertState
 

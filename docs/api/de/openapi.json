@@ -1398,6 +1398,23 @@
         "properties": {
           "proxy": {
             "type": "string"
+          },
+          "serverName": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "notify.settingsView": {
+        "properties": {
+          "hostname": {
+            "type": "string"
+          },
+          "proxy": {
+            "type": "string"
+          },
+          "serverName": {
+            "type": "string"
           }
         },
         "type": "object"
@@ -25034,7 +25051,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/notify.Settings"
+                  "$ref": "#/components/schemas/notify.settingsView"
                 }
               }
             },

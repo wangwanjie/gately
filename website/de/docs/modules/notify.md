@@ -15,6 +15,10 @@ Eine einzelne Zustellung läuft nach 45 Sekunden in ein Timeout.
 
 Benachrichtigungen und Logs verwenden die Serversprache aus den „Systemeinstellungen“. Steht die Serversprache auf „Systemeinstellung folgen“, nimmt Gately die Sprache aus der Umgebungsvariable `GATELY_LANG`, danach aus `LANG`. Dienste unter Docker, fnOS und OpenWrt setzen meist keine der beiden Variablen; dann gilt die Oberflächensprache, die der Administrator bei der letzten Anmeldung oder beim letzten Umschalten in der oberen Leiste verwendet hat, und fehlt auch diese, Englisch. Anmeldungen mit Nur-Lese-Konten ändern diese Sprache nicht. Die „Quelle“ einer Benachrichtigung wird übersetzt, wenn es sich um einen vom Programm erzeugten Namen handelt (etwa „Verwaltungsoberfläche“); Aufgabennamen und andere vom Benutzer eingegebene Namen bleiben unverändert.
 
+## Servername {#server-name}
+
+Jede Benachrichtigung enthält den Namen des sendenden Servers: Der Titel lautet etwa `[Gately · fnOS-B760] Zertifikat läuft bald ab`, und der Text enthält die Zeile „Server: fnOS-B760“. So lassen sich Benachrichtigungen mehrerer Server im selben Postfach oder Chat leicht unterscheiden. Der Name wird unter **Servername** in den **Benachrichtigungseinstellungen** im Seitenkopf festgelegt; bleibt er leer, wird der Hostname des Rechners verwendet (bei Docker mit Host-Netzwerk der Hostname des Hosts), und ohne Hostnamen bleibt der Titel `[Gately]`. Der Name darf höchstens 64 Zeichen lang sein und keine Steuerzeichen wie Zeilenumbrüche enthalten.
+
 ## Kanäle
 
 Klicken Sie auf „Kanal hinzufügen“, wählen Sie einen Typ und füllen Sie die Felder aus. Jeder Kanal hat einen Namen (Pflicht), eine Bemerkung und einen Aktivierungsschalter. Geheime Felder werden nach dem Speichern nicht erneut angezeigt; lassen Sie sie beim Bearbeiten leer, bleibt der ursprüngliche Wert erhalten.
@@ -44,7 +48,8 @@ In Anfrage-URL und Body lassen sich die folgenden Variablen verwenden, geschrieb
 
 | Variable | Inhalt |
 | --- | --- |
-| `title` | Titel in der Form `[Gately] Ereignistitel` |
+| `title` | Titel in der Form `[Gately · Servername] Ereignistitel` |
+| `server` | Servername, siehe [Servername](#server-name) |
 | `message` | Ausführliche Beschreibung des Ereignisses |
 | `text` | Vollständiger Text einschließlich Beschreibung, Quelle, Stufe und Zeit |
 | `type` | Ereignistyp, etwa `ddns.changed` |
