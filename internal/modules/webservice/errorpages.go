@@ -427,6 +427,11 @@ func (e *errorPager) write(w http.ResponseWriter, r *http.Request, p webpage.Pro
 	webpage.WriteErrorHTML(w, r, p.Code, e.render(r, p))
 }
 
+// drainLimit 与 drainTimeout 为替换后端错误响应时读掉原响应体的上限与时限（时限为变量，便于测试缩短）。
+const drainLimit = 64 << 10
+
+var drainTimeout = 2 * time.Second
+
 // ctxKeyVisitorReq 在请求上下文中保存访客的原始请求。拦截后端错误时 resp.Request 是发往后端的请求：
 // Host、路径与请求头都可能已按后端地址与站点设置改写，判断是否拦截与生成页面都要用访客的原始请求。
 type ctxKeyVisitorReq struct{}
@@ -452,10 +457,15 @@ func (e *errorPager) intercepts(resp *http.Response) bool {
 }
 
 // replace 把后端的错误响应换成错误页，保留状态码与其余响应头（Set-Cookie、Retry-After 等），
-// 去掉描述原响应体的头。原响应体读取有限的一段后关闭，较小的响应体读完后连接还能复用。
+// 去掉描述原响应体的头。声明了长度且不超过 64KB 的原响应体读完后关闭，连接还能复用；
+// 读取限时 2 秒（后端声明了长度却不发或慢发正文时不让访客一直等），其余情况直接关闭。
 func (e *errorPager) replace(resp *http.Response) {
 	if resp.Body != nil {
-		_, _ = io.CopyN(io.Discard, resp.Body, 64<<10)
+		if resp.ContentLength >= 0 && resp.ContentLength <= drainLimit {
+			t := time.AfterFunc(drainTimeout, func() { _ = resp.Body.Close() })
+			_, _ = io.CopyN(io.Discard, resp.Body, drainLimit)
+			t.Stop()
+		}
 		_ = resp.Body.Close()
 	}
 	r := visitorRequest(resp)

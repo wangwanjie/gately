@@ -9,6 +9,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -675,5 +677,46 @@ func TestErrorPageCleanups(t *testing.T) {
 	m.cfg.Listeners[0].Default.ErrorPage = ErrorPageOptions{Style: ErrorStyleCustom, Page: "p"}
 	if users := m.errorPageUsersLocked("p"); len(users) != 1 || users[0] != "main / "+defaultSiteMarker {
 		t.Fatalf("引用方: %v", users)
+	}
+}
+
+// slowBody 模拟声明了长度却迟迟不发正文的后端：Read 阻塞到 Close 为止。
+type slowBody struct {
+	done   chan struct{}
+	once   sync.Once
+	closed atomic.Bool
+}
+
+func (b *slowBody) Read([]byte) (int, error) {
+	<-b.done
+	return 0, io.ErrUnexpectedEOF
+}
+
+func (b *slowBody) Close() error {
+	b.once.Do(func() { close(b.done) })
+	b.closed.Store(true)
+	return nil
+}
+
+// 替换后端错误响应时，原响应体不发正文也不会让访客一直等：限时读完或直接关闭。
+func TestErrorPagerReplaceSlowBody(t *testing.T) {
+	old := drainTimeout
+	drainTimeout = 100 * time.Millisecond
+	defer func() { drainTimeout = old }()
+	e := newErrorPager(Site{Type: TypeProxy, ErrorPage: ErrorPageOptions{Intercept: true, Codes: "502"}}, newErrorPageStore())
+	for _, cl := range []int64{100, -1, 1 << 20} {
+		body := &slowBody{done: make(chan struct{})}
+		resp := &http.Response{StatusCode: 502, Header: http.Header{}, ContentLength: cl, Body: body, Request: httptest.NewRequest("GET", "/", nil)}
+		start := time.Now()
+		e.replace(resp)
+		if d := time.Since(start); d > time.Second {
+			t.Fatalf("长度 %d: 替换耗时 %v", cl, d)
+		}
+		if !body.closed.Load() {
+			t.Fatalf("长度 %d: 原响应体应关闭", cl)
+		}
+		if b, _ := io.ReadAll(resp.Body); len(b) == 0 || resp.ContentLength != int64(len(b)) {
+			t.Fatalf("长度 %d: 替换后的正文 %d/%d", cl, len(b), resp.ContentLength)
+		}
 	}
 }
