@@ -39,7 +39,7 @@ type Collection[T any] struct {
 	// Key 与 Enabled 返回字段指针，用于读写
 	Key     func(*T) *string
 	Enabled func(*T) *bool
-	// Validate 校验并规范化输入
+	// Validate 校验并规范化输入，在持锁状态下调用（新增、修改、复制均如此），不要在其中再次加 Mu
 	Validate func(*T) error
 	// Check 在持锁状态下做依赖其他配置的校验，例如引用的条目是否存在；在 Validate 之后调用，可为 nil
 	Check func(*T) error
@@ -199,12 +199,13 @@ func (c *Collection[T]) create(w http.ResponseWriter, r *http.Request) {
 		httpx.Error(w, http.StatusBadRequest, "%v", err)
 		return
 	}
+	// 与修改、复制一样持锁校验：部分模块的校验会读取模块配置（例如 Web 服务检查引用的 IP 列表是否存在）
+	c.Mu.Lock()
+	defer c.Mu.Unlock()
 	if err := c.Validate(&it); err != nil {
 		httpx.Error(w, http.StatusBadRequest, "%v", err)
 		return
 	}
-	c.Mu.Lock()
-	defer c.Mu.Unlock()
 	c.insertLocked(w, it, len(*c.Items))
 }
 

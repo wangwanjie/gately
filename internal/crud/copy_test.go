@@ -247,3 +247,113 @@ func TestAssignKeys(t *testing.T) {
 		}
 	}
 }
+
+// 请求体中的 key 被忽略：副本总是分配新 key，不能借复制覆盖或冒用已有条目的 key。
+func TestCopyIgnoresBodyKey(t *testing.T) {
+	f := newCopyFixture()
+	if rec := f.post("/items/a/copy", `{"key":"b","name":"A2","token":"********"}`); rec.Code != 200 {
+		t.Fatalf("复制失败: %d %s", rec.Code, rec.Body.String())
+	}
+	if len(f.items) != 3 || f.items[1].Key == "a" || f.items[1].Key == "b" {
+		t.Fatalf("副本应分配新 key: %+v", f.items)
+	}
+	if f.items[2] != (copyItem{Key: "b", Name: "B", Token: "secret-b"}) {
+		t.Fatalf("已有条目不应被改动: %+v", f.items[2])
+	}
+}
+
+// Check 拒绝时不新增，也不调用 Changed；Copy 钩子在 Check 之前执行。
+func TestCopyCheckRejects(t *testing.T) {
+	f := newCopyFixture()
+	var checked copyItem
+	f.coll.Check = func(it *copyItem) error {
+		checked = *it
+		return errors.New("引用的条目不存在")
+	}
+	rec := f.post("/items/a/copy", `{"name":"A2","token":"********","stamp":"x"}`)
+	if rec.Code != 400 || !strings.Contains(rec.Body.String(), "引用的条目不存在") {
+		t.Fatalf("Check 拒绝时应返回 400: %d %s", rec.Code, rec.Body.String())
+	}
+	if checked.Token != "secret-a" || checked.Stamp != "" {
+		t.Fatalf("Check 应看到 Copy 处理后的条目: %+v", checked)
+	}
+	if got := f.names(); got != "A,B" || len(f.changed) != 0 {
+		t.Fatalf("Check 拒绝时不应新增: %s %v", got, f.changed)
+	}
+}
+
+// 门禁在加锁前调用：门禁需要读取模块配置（例如 Web 终端的 requireAccess 会加同一把锁），持锁调用会死锁。
+func TestCopyGuardRunsUnlocked(t *testing.T) {
+	f := newCopyFixture()
+	f.coll.SecretsGuard = func(w http.ResponseWriter, _ *http.Request) bool {
+		if !f.coll.Mu.TryLock() {
+			http.Error(w, "门禁调用时已持锁", http.StatusConflict)
+			return false
+		}
+		f.coll.Mu.Unlock()
+		return true
+	}
+	if rec := f.post("/items/a/copy", `{"name":"A2","token":"********"}`); rec.Code != 200 {
+		t.Fatalf("门禁应在未持锁时调用: %d %s", rec.Code, rec.Body.String())
+	}
+}
+
+// 门禁拒绝时不读取模板：模板不存在也返回门禁的结果，不泄露条目是否存在。
+func TestCopyGuardBeforeLookup(t *testing.T) {
+	f := newCopyFixture()
+	f.guardOK = false
+	if rec := f.post("/items/missing/copy", `{"name":"X","token":"t"}`); rec.Code != 403 {
+		t.Fatalf("门禁拒绝应先于模板查找: %d %s", rec.Code, rec.Body.String())
+	}
+}
+
+// 并发复制同一模板：全部成功、key 互不相同，副本都排在模板之后，后面的条目顺序不变。
+func TestCopyConcurrent(t *testing.T) {
+	f := newCopyFixture()
+	// 夹具的门禁计数不是并发安全的，这里换成无状态的门禁
+	f.coll.SecretsGuard = func(http.ResponseWriter, *http.Request) bool { return true }
+	const n = 20
+	var wg sync.WaitGroup
+	codes := make([]int, n)
+	for i := 0; i < n; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			codes[i] = f.post("/items/a/copy", `{"name":"A2","token":"********"}`).Code
+		}(i)
+	}
+	wg.Wait()
+	for i, c := range codes {
+		if c != 200 {
+			t.Fatalf("第 %d 次复制失败: %d", i, c)
+		}
+	}
+	if len(f.items) != n+2 || f.items[0].Key != "a" || f.items[n+1].Key != "b" {
+		t.Fatalf("副本应都在模板与 B 之间: %s", f.names())
+	}
+	seen := map[string]bool{}
+	for _, it := range f.items {
+		if seen[it.Key] {
+			t.Fatalf("key 重复: %s", it.Key)
+		}
+		seen[it.Key] = true
+		if it.Token != "secret-a" && it.Key != "b" {
+			t.Fatalf("副本应沿用模板密钥: %+v", it)
+		}
+	}
+	if len(f.changed) != n {
+		t.Fatalf("应对每个副本调用一次 Changed: %d", len(f.changed))
+	}
+}
+
+// 复制模板为最后一项时保存失败回滚，不影响其他条目。
+func TestCopyLastSaveFailureRollsBack(t *testing.T) {
+	f := newCopyFixture()
+	f.saveErr = errors.New("disk full")
+	if rec := f.post("/items/b/copy", `{"name":"B2","token":"********"}`); rec.Code != 500 {
+		t.Fatalf("保存失败应返回 500: %d", rec.Code)
+	}
+	if got := f.names(); got != "A,B" {
+		t.Fatalf("保存失败应回滚: %s", got)
+	}
+}
