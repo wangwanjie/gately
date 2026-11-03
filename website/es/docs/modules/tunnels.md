@@ -32,7 +32,7 @@ El botón «Restaurar valores predeterminados» de la cabecera es independiente 
 | frp | Todas las instancias de frpc / frps, los proxies y los ajustes de los programas, y los archivos de configuración generados en `frp/` |
 | Cloudflare Tunnel | Todos los túneles y los ajustes del programa |
 | Tailscale | Todas las instancias y la configuración de programas, y el estado de inicio de sesión de los directorios de estado predeterminados; un tailscaled gestionado por Gately en ejecución que usa el directorio de estado predeterminado cierra sesión primero. Los directorios de estado personalizados y un tailscaled del sistema existente no se tocan |
-| NetBird | Todos los ajustes y el estado de sesión y las claves del directorio de estado predeterminado; si el demonio gestionado por Gately está en ejecución, primero cierra la sesión y esta máquina se elimina de la red. Los directorios de estado personalizados y el servicio NetBird existente del sistema no se tocan |
+| NetBird | Todas las instancias y los ajustes del programa, y el estado de sesión y las claves de los directorios de estado predeterminados; si un demonio gestionado por Gately que usa el directorio de estado predeterminado está en ejecución, primero cierra la sesión y esta máquina se elimina de la red. Los directorios de estado personalizados y el servicio NetBird existente del sistema no se tocan |
 | File Browser | Todas las instancias y los ajustes del programa, con los usuarios, enlaces compartidos y cachés de cada instancia; los archivos de los directorios compartidos quedan intactos |
 
 La configuración anterior queda guardada en el [historial de configuración](/es/docs/guide/audit) y se puede recuperar tras un error. Para eliminarlo todo, desinstala primero el programa y después restaura los valores predeterminados. Las API son `DELETE /api/{module}/install` (desinstalar) y `POST /api/{module}/reset` (restaurar valores predeterminados).
@@ -70,6 +70,17 @@ Cada instancia admite:
 
 ## NetBird
 
+Se admiten varias instancias: cada instancia ejecuta su propio demonio de NetBird (directorio de estado, dirección del demonio, puerto de WireGuard y proceso independientes), así que una misma máquina puede unirse a distintas redes NetBird, por ejemplo una instancia en modo kernel para NetBird Cloud y una instancia en espacio de usuario para un servidor de gestión propio.
+
+- El directorio de estado de una instancia nueva es por defecto `netbird/<clave de la instancia>` dentro del directorio de configuración, y su dirección del demonio `netbird.sock` dentro del directorio de estado; también puedes indicar un directorio de estado existente (por ejemplo `/var/lib/netbird` montado por un contenedor de NetBird anterior) para conservar la identidad del par sin volver a registrarlo;
+- Solo puede haber una instancia en modo kernel (gestionada y sin red en espacio de usuario) habilitada a la vez: el modo kernel de NetBird usa una tabla de rutas, una marca de cortafuegos y una tabla de nftables fijas, y el nombre de interfaz predeterminado siempre es `wt0`, así que dos instancias en modo kernel se sobrescribirían. Dos instancias no pueden compartir directorio de estado ni dirección del demonio; las instancias gestionadas no pueden usar el mismo puerto de WireGuard (0 cuenta como el predeterminado 51820, y NetBird cambia en silencio a un puerto aleatorio si el puerto está ocupado); las instancias gestionadas en espacio de usuario no pueden usar la misma dirección SOCKS5 (vacía cuenta como `127.0.0.1:1080`). Al guardar, habilitar, habilitar en lote y copiar se avisa del conflicto, y en una configuración editada a mano con conflicto, la instancia conflictiva posterior no se inicia y muestra el motivo;
+- Editar, habilitar o deshabilitar una instancia solo reinicia su propio demonio, y los orígenes de registro llevan el nombre de la instancia (como `daemon:casa` y `netbird:casa`); el enlace de inicio de sesión, el código de dispositivo, la lista de pares y el cierre de sesión también se muestran por instancia;
+- Al eliminar una instancia gestionada que usa el directorio de estado predeterminado, primero cierra la sesión y después se elimina ese directorio; los directorios de estado personalizados y el directorio antiguo migrado se conservan para reutilizarlos en una instancia nueva;
+- Al actualizar desde 0.6.4 o anterior, la configuración única anterior se migra a una instancia llamada `netbird`, con el mismo directorio de estado (`netbird` dentro del directorio de configuración), dirección del demonio, línea de comandos y variables de entorno;
+- La ruta del programa y la instalación en línea son comunes a todas las instancias.
+
+Cada instancia admite:
+
 - Unirse a una red NetBird en NetBird Cloud o en tu propio servidor de gestión (indicando su URL);
 - Autenticación con clave de configuración o enlace de inicio de sesión. En Linux el enlace usa inicio de sesión con código de dispositivo y se puede abrir en cualquier dispositivo; en macOS y Windows el inicio de sesión normalmente debe completarse en un navegador de la máquina donde corre Gately, así que usa una clave de configuración para gestionarla en remoto. El enlace se renueva automáticamente al caducar;
 - Demonio `netbird` gestionado (red en espacio de usuario, apta para contenedores) o conexión al servicio NetBird ya instalado en el sistema;
@@ -80,7 +91,7 @@ Cada instancia admite:
 - Puerto WireGuard fijo, argumentos adicionales del demonio y variables de entorno (las opciones avanzadas `NB_` de la documentación de NetBird);
 - Con la red en espacio de usuario desactivada se usa WireGuard del kernel: necesita root y un dispositivo TUN, crea la interfaz `wt0` y añade sus propias reglas de cortafuegos (en OpenWrt también permite el tráfico entrante de `wt0` en fw4), y los servicios locales deben escuchar en todas las direcciones o en la dirección de NetBird para que otros pares lleguen a ellos;
 - El programa `netbird` ocupa unos 41 MB y usa unos 60 MB de memoria, y la instalación en línea guarda hasta 3 versiones antiguas en `bin/.versions/`. En routers con poca flash vigila el espacio libre: elimina versiones antiguas en la tarjeta de instalación o coloca el programa en un almacenamiento externo e indica su ruta en los ajustes;
-- Restaurar valores predeterminados y `POST /api/netbird/logout` dan de baja esta máquina en el servidor de gestión y la eliminan de la red; para volver a unirse hay que autenticarse de nuevo.
+- Restaurar valores predeterminados y `POST /api/netbird/instances/{key}/logout` dan de baja esta máquina en el servidor de gestión y la eliminan de la red; para volver a unirse hay que autenticarse de nuevo.
 
 ## frp
 

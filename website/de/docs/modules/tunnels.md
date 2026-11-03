@@ -32,7 +32,7 @@ Für Tailscale gibt es unter macOS und Windows keine direkt lauffähigen Pakete.
 | frp | Alle frpc-/frps-Instanzen, Proxys und Programmeinstellungen, die unter `frp/` erzeugten Konfigurationsdateien |
 | Cloudflare Tunnel | Alle Tunnel und Programmeinstellungen |
 | Tailscale | Alle Instanzen und Programmeinstellungen sowie der Anmeldestatus in den Standard-Statusverzeichnissen; ein laufender, von Gately verwalteter tailscaled mit Standard-Statusverzeichnis meldet sich zuerst ab. Benutzerdefinierte Statusverzeichnisse und ein vorhandener System-tailscaled bleiben unberührt |
-| NetBird | Alle Einstellungen, Anmeldestatus und Schlüssel im Standard-Statusverzeichnis; läuft ein von Gately verwalteter Daemon, meldet er sich vorher ab, wodurch dieser Rechner aus dem Netzwerk entfernt wird. Eigene Statusverzeichnisse und ein vorhandener System-NetBird-Dienst bleiben unverändert |
+| NetBird | Alle Instanzen und Programmeinstellungen, Anmeldestatus und Schlüssel in den Standard-Statusverzeichnissen; läuft ein von Gately verwalteter Daemon mit dem Standard-Statusverzeichnis, meldet er sich vorher ab, wodurch dieser Rechner aus dem Netzwerk entfernt wird. Eigene Statusverzeichnisse und ein vorhandener System-NetBird-Dienst bleiben unverändert |
 | File Browser | Alle Instanzen und Programmeinstellungen, Benutzer, Freigabelinks und Caches jeder Instanz; Dateien in den freigegebenen Verzeichnissen bleiben unverändert |
 
 Die alte Konfiguration bleibt im [Konfigurationsverlauf](/de/docs/guide/audit) und lässt sich nach einem Versehen wiederherstellen. Für eine vollständige Entfernung deinstallieren Sie zuerst das Programm und stellen dann die Standardeinstellungen wieder her. Die API-Endpunkte sind `DELETE /api/{module}/install` (Deinstallieren) und `POST /api/{module}/reset` (Standardeinstellungen wiederherstellen).
@@ -70,6 +70,17 @@ Jede Instanz unterstützt:
 
 ## NetBird
 
+Mehrere Instanzen werden unterstützt: Jede Instanz betreibt einen eigenen NetBird-Daemon (eigenes Statusverzeichnis, eigene Daemon-Adresse, eigener WireGuard-Port und Prozess), sodass ein Rechner verschiedenen NetBird-Netzwerken beitreten kann, etwa eine Kernel-Instanz für die NetBird Cloud und eine Userspace-Instanz für einen selbst gehosteten Management-Server.
+
+- Das Statusverzeichnis einer neuen Instanz ist standardmäßig `netbird/<Instanz-Key>` im Konfigurationsverzeichnis, die Daemon-Adresse `netbird.sock` im Statusverzeichnis; Sie können auch ein vorhandenes Statusverzeichnis angeben (z. B. `/var/lib/netbird` eines früheren NetBird-Containers), um die Peer-Identität ohne erneute Registrierung zu behalten;
+- Es kann nur eine Kernel-Instanz (verwaltet, ohne Userspace-Netzwerk) gleichzeitig aktiviert sein: Der NetBird-Kernel-Modus verwendet eine feste Routing-Tabelle, Firewall-Markierung und nftables-Tabelle, und der Standard-Schnittstellenname ist immer `wt0`, daher würden sich zwei Kernel-Instanzen gegenseitig überschreiben. Statusverzeichnisse und Daemon-Adressen können nicht von zwei Instanzen geteilt werden; verwaltete Instanzen können nicht denselben WireGuard-Port verwenden (0 gilt als Standardport 51820, und NetBird weicht bei belegtem Port stillschweigend auf einen zufälligen Port aus); verwaltete Userspace-Instanzen können nicht dieselbe SOCKS5-Adresse verwenden (leer gilt als `127.0.0.1:1080`). Speichern, Aktivieren, Sammelaktivieren und Kopieren melden den Konflikt, und in einer von Hand bearbeiteten Konfiguration mit Konflikt startet die spätere kollidierende Instanz nicht und zeigt den Grund an;
+- Das Bearbeiten, Aktivieren oder Deaktivieren einer Instanz startet nur ihren eigenen Daemon neu, und Protokollquellen tragen den Instanznamen (etwa `daemon:zuhause` und `netbird:zuhause`); Anmeldelink, Gerätecode, Peer-Liste und Abmelden werden ebenfalls pro Instanz angezeigt;
+- Beim Löschen einer verwalteten Instanz mit dem Standard-Statusverzeichnis meldet sie sich zuerst ab, danach wird dieses Verzeichnis gelöscht; eigene Statusverzeichnisse und das migrierte alte Verzeichnis bleiben erhalten, damit eine neue Instanz sie weiterverwenden kann;
+- Beim Upgrade von 0.6.4 oder älter wird die alte Einzelkonfiguration in eine Instanz namens `netbird` migriert, mit unverändertem Statusverzeichnis (`netbird` im Konfigurationsverzeichnis), unveränderter Daemon-Adresse, Befehlszeile und Umgebungsvariablen;
+- Programmpfad und Online-Installation gelten für alle Instanzen gemeinsam.
+
+Jede Instanz unterstützt:
+
 - Einem NetBird-Netzwerk in der NetBird Cloud oder auf einem eigenen Management-Server beitreten (dessen URL eintragen);
 - Authentifizierung per Setup-Key oder Anmeldelink. Unter Linux nutzt der Link die Anmeldung per Gerätecode und lässt sich auf jedem Gerät öffnen; unter macOS und Windows lässt sich die Anmeldung meist nur in einem Browser auf dem Rechner abschließen, auf dem Gately läuft, daher für die Fernverwaltung einen Setup-Key verwenden. Abgelaufene Links werden automatisch erneuert;
 - Verwalteter `netbird`-Daemon (Userspace-Netzwerk, containerfreundlich) oder Anbindung an den bereits installierten NetBird-Dienst des Systems;
@@ -80,7 +91,7 @@ Jede Instanz unterstützt:
 - Fester WireGuard-Port, zusätzliche Daemon-Argumente und Umgebungsvariablen (die erweiterten `NB_`-Optionen aus der NetBird-Dokumentation);
 - Ohne Userspace-Netzwerk wird Kernel-WireGuard verwendet: Es braucht root und ein TUN-Gerät, legt die Schnittstelle `wt0` an und fügt eigene Firewall-Regeln hinzu (unter OpenWrt erlaubt es auch eingehenden `wt0`-Verkehr in fw4); lokale Dienste müssen auf allen Adressen oder auf der NetBird-Adresse lauschen, damit andere Peers sie erreichen;
 - Das Programm `netbird` ist etwa 41 MB groß und belegt etwa 60 MB Arbeitsspeicher; die Online-Installation behält bis zu 3 alte Versionen in `bin/.versions/`. Auf Routern mit wenig Flash auf den freien Speicher achten: alte Versionen in der Installationskarte löschen oder das Programm auf externen Speicher legen und den Pfad in den Einstellungen eintragen;
-- Standardeinstellungen wiederherstellen und `POST /api/netbird/logout` melden diesen Rechner beim Management-Server ab und entfernen ihn aus dem Netzwerk; für einen erneuten Beitritt ist eine neue Authentifizierung nötig.
+- Standardeinstellungen wiederherstellen und `POST /api/netbird/instances/{key}/logout` melden diesen Rechner beim Management-Server ab und entfernen ihn aus dem Netzwerk; für einen erneuten Beitritt ist eine neue Authentifizierung nötig.
 
 ## frp
 

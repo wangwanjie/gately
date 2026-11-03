@@ -32,7 +32,7 @@ Tailscale has no ready-to-run packages for macOS and Windows; use the official i
 | frp | All frpc / frps instances, proxies and program settings, plus the config files generated under `frp/` |
 | Cloudflare Tunnel | All tunnels and program settings |
 | Tailscale | All instances and program settings, and the login state in the default state directories; a running Gately-managed tailscaled that uses the default state directory logs out first. Custom state directories and an existing system tailscaled are left alone |
-| NetBird | All settings and the login state and keys in the default state directory; a running Gately-managed daemon logs out first, which removes this machine from the network. Custom state directories and an existing system NetBird service are left alone |
+| NetBird | All instances and program settings, and the login state and keys in the default state directories; a running Gately-managed daemon that uses the default state directory logs out first, which removes this machine from the network. Custom state directories and an existing system NetBird service are left alone |
 | File Browser | All instances and program settings, plus each instance's users, share links and caches; files in the shared directories stay untouched |
 
 The old settings are kept in the [config history](/en/docs/guide/audit), so you can restore them after a mistake. To remove a module completely, uninstall the program first, then restore defaults. The API endpoints are `DELETE /api/{module}/install` (uninstall) and `POST /api/{module}/reset` (restore defaults).
@@ -70,6 +70,17 @@ Each instance supports:
 
 ## NetBird
 
+Multiple instances are supported: each instance runs its own NetBird daemon (separate state directory, daemon address, WireGuard port and process), so one machine can join different NetBird networks, for example a kernel-mode instance for NetBird Cloud and a userspace instance for a self-hosted management server.
+
+- A new instance's state directory defaults to `netbird/<instance key>` under the configuration directory, and its daemon address to `netbird.sock` in the state directory; you can also enter an existing state directory (for example `/var/lib/netbird` mounted by an earlier NetBird container) to keep the peer identity without registering again;
+- At most one kernel-mode instance (managed, without userspace networking) can be enabled at a time: NetBird kernel mode uses a fixed routing table, firewall mark and nftables table, and the default interface name is always `wt0`, so two kernel instances would overwrite each other. State directories and daemon addresses cannot be shared by two instances; managed instances cannot use the same WireGuard port (0 counts as the default 51820, and NetBird silently switches to a random port when the port is taken); managed userspace instances cannot use the same SOCKS5 address (empty counts as `127.0.0.1:1080`). Saving, enabling, batch enabling and copying report the conflict, and in a hand-edited configuration with a conflict, the later conflicting instance does not start and shows the reason;
+- Editing, enabling or disabling an instance restarts only its own daemon, and log sources carry the instance name (such as `daemon:home` and `netbird:home`); the login link, device code, peer list and log out are shown per instance too;
+- Deleting a managed instance that uses the default state directory logs it out first and then deletes that directory; custom state directories and the migrated old directory are kept so a new instance can reuse them;
+- When upgrading from 0.6.4 or earlier, the old single configuration is migrated to an instance named `netbird`, with the same state directory (`netbird` under the configuration directory), daemon address, command line and environment variables;
+- The program path and the online install are shared by all instances.
+
+Each instance supports:
+
 - Join a NetBird network on NetBird Cloud or on your own management server (enter its URL);
 - Authenticate with a setup key or a login link. On Linux the login link uses device code login and can be opened on any device; on macOS and Windows the login usually has to be completed in a browser on the machine running Gately, so use a setup key when managing it remotely. The link is renewed automatically when it expires;
 - Managed `netbird` daemon (userspace networking, container-friendly) or attach to the NetBird service already installed on the system;
@@ -80,7 +91,7 @@ Each instance supports:
 - Fixed WireGuard port, extra daemon arguments and environment variables (the advanced `NB_` options in the NetBird docs);
 - With userspace networking off, kernel WireGuard is used: it needs root and a TUN device, creates the `wt0` interface and adds its own firewall rules (on OpenWrt it also allows inbound `wt0` traffic in fw4), and local services must listen on all addresses or on the NetBird address to be reachable from other peers;
 - The `netbird` program is about 41 MB and uses about 60 MB of memory, and online install keeps up to 3 old versions in `bin/.versions/`. On routers with little flash, watch the free space: delete old versions in the install card, or put the program on external storage and enter its path in the settings;
-- Restore defaults and `POST /api/netbird/logout` deregister this machine from the management server and remove it from the network; joining again requires authenticating again.
+- Restore defaults and `POST /api/netbird/instances/{key}/logout` deregister this machine from the management server and remove it from the network; joining again requires authenticating again.
 
 ## frp
 

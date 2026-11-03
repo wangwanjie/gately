@@ -32,7 +32,7 @@ O botão "Restaurar padrões" no cabeçalho da página é separado da desinstala
 | frp | Todas as instâncias de frpc / frps, os proxies e as configurações dos programas, os arquivos de configuração gerados em `frp/` |
 | Cloudflare Tunnel | Todos os túneis e as configurações do programa |
 | Tailscale | Todas as instâncias e as configurações dos programas, e o estado de login dos diretórios de estado padrão; um tailscaled gerenciado pelo Gately em execução que usa o diretório de estado padrão sai do login primeiro. Diretórios de estado personalizados e um tailscaled do sistema existente não são alterados |
-| NetBird | Todas as configurações e o estado de login e as chaves no diretório de estado padrão; se o daemon gerenciado pelo Gately estiver em execução, ele faz logout antes e esta máquina é removida da rede. Diretórios de estado personalizados e o serviço NetBird já existente no sistema não são tocados |
+| NetBird | Todas as instâncias e configurações do programa, e o estado de login e as chaves nos diretórios de estado padrão; se um daemon gerenciado pelo Gately que usa o diretório de estado padrão estiver em execução, ele faz logout antes e esta máquina é removida da rede. Diretórios de estado personalizados e o serviço NetBird já existente no sistema não são tocados |
 | File Browser | Todas as instâncias e as configurações do programa, os usuários, links de compartilhamento e caches de cada instância; os arquivos nos diretórios compartilhados ficam intactos |
 
 A configuração antiga fica guardada no [histórico de configuração](/pt-BR/docs/guide/audit) e pode ser restaurada em caso de engano. Para remover tudo, desinstale primeiro o programa e depois restaure os padrões. Os endpoints da API são `DELETE /api/{module}/install` (desinstalar) e `POST /api/{module}/reset` (restaurar padrões).
@@ -70,6 +70,17 @@ Cada instância oferece:
 
 ## NetBird
 
+Há suporte a várias instâncias: cada instância executa seu próprio daemon do NetBird (diretório de estado, endereço do daemon, porta do WireGuard e processo separados), então uma mesma máquina pode entrar em redes NetBird diferentes, por exemplo uma instância em modo kernel para o NetBird Cloud e uma instância em espaço de usuário para um servidor de gerenciamento próprio.
+
+- O diretório de estado de uma instância nova é por padrão `netbird/<chave da instância>` no diretório de configuração, e o endereço do daemon é `netbird.sock` no diretório de estado; você também pode informar um diretório de estado existente (por exemplo `/var/lib/netbird` montado por um contêiner NetBird anterior) para manter a identidade do peer sem registrar de novo;
+- Só pode haver uma instância em modo kernel (gerenciada e sem rede em espaço de usuário) ativada por vez: o modo kernel do NetBird usa tabela de rotas, marca de firewall e tabela nftables fixas, e o nome padrão da interface é sempre `wt0`, então duas instâncias em modo kernel se sobrescreveriam. Duas instâncias não podem compartilhar diretório de estado nem endereço do daemon; instâncias gerenciadas não podem usar a mesma porta do WireGuard (0 conta como a padrão 51820, e o NetBird troca silenciosamente para uma porta aleatória se a porta estiver ocupada); instâncias gerenciadas em espaço de usuário não podem usar o mesmo endereço SOCKS5 (vazio conta como `127.0.0.1:1080`). Salvar, ativar, ativar em lote e copiar avisam do conflito, e numa configuração editada à mão com conflito, a instância conflitante posterior não inicia e mostra o motivo;
+- Editar, ativar ou desativar uma instância reinicia apenas o daemon dela, e as origens de log levam o nome da instância (como `daemon:casa` e `netbird:casa`); o link de login, o código do dispositivo, a lista de peers e o logout também são mostrados por instância;
+- Ao excluir uma instância gerenciada que usa o diretório de estado padrão, ela faz logout primeiro e depois esse diretório é excluído; diretórios de estado personalizados e o diretório antigo migrado são mantidos para que uma instância nova possa reutilizá-los;
+- Ao atualizar a partir da 0.6.4 ou anterior, a configuração única antiga é migrada para uma instância chamada `netbird`, com o mesmo diretório de estado (`netbird` no diretório de configuração), endereço do daemon, linha de comando e variáveis de ambiente;
+- O caminho do programa e a instalação online são compartilhados por todas as instâncias.
+
+Cada instância oferece:
+
 - Entrar em uma rede NetBird no NetBird Cloud ou no seu próprio servidor de gerenciamento (informando a URL);
 - Autenticação por chave de configuração ou link de login. No Linux o link usa login por código de dispositivo e pode ser aberto em qualquer dispositivo; no macOS e no Windows o login normalmente precisa ser concluído em um navegador da máquina que executa o Gately, então use uma chave de configuração para gerenciá-la remotamente. O link é renovado automaticamente ao expirar;
 - Daemon `netbird` gerenciado (rede em espaço de usuário, compatível com contêineres) ou conexão ao serviço NetBird já instalado no sistema;
@@ -80,7 +91,7 @@ Cada instância oferece:
 - Porta WireGuard fixa, argumentos extras do daemon e variáveis de ambiente (as opções avançadas `NB_` da documentação do NetBird);
 - Com a rede em espaço de usuário desligada, usa-se o WireGuard do kernel: requer root e um dispositivo TUN, cria a interface `wt0` e adiciona as próprias regras de firewall (no OpenWrt também libera a entrada de `wt0` no fw4), e os serviços locais precisam escutar em todos os endereços ou no endereço do NetBird para outros pares os alcançarem;
 - O programa `netbird` tem cerca de 41 MB e usa cerca de 60 MB de memória, e a instalação online guarda até 3 versões antigas em `bin/.versions/`. Em roteadores com pouca flash, fique de olho no espaço livre: exclua versões antigas no cartão de instalação ou coloque o programa em um armazenamento externo e informe o caminho nas configurações;
-- Restaurar o padrão e `POST /api/netbird/logout` cancelam o registro desta máquina no servidor de gerenciamento e a removem da rede; para entrar de novo é preciso autenticar novamente.
+- Restaurar o padrão e `POST /api/netbird/instances/{key}/logout` cancelam o registro desta máquina no servidor de gerenciamento e a removem da rede; para entrar de novo é preciso autenticar novamente.
 
 ## frp
 

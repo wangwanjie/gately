@@ -32,7 +32,7 @@ Le bouton « Rétablir les valeurs par défaut » de l'en-tête est distinct de 
 | frp | Toutes les instances frpc / frps, les proxys et les réglages des programmes, fichiers de configuration générés dans `frp/` |
 | Tunnel Cloudflare | Tous les tunnels et les paramètres du programme |
 | Tailscale | Toutes les instances et les paramètres des programmes, ainsi que l'état de connexion des répertoires d'état par défaut ; un tailscaled géré par Gately en cours d'exécution qui utilise le répertoire d'état par défaut se déconnecte d'abord. Les répertoires d'état personnalisés et un tailscaled système existant ne sont pas touchés |
-| NetBird | Tous les paramètres ainsi que l'état de connexion et les clés du répertoire d'état par défaut ; si le démon géré par Gately tourne, il se déconnecte d'abord, ce qui retire cette machine du réseau. Les répertoires d'état personnalisés et le service NetBird déjà présent sur le système restent intacts |
+| NetBird | Toutes les instances et les paramètres du programme, ainsi que l'état de connexion et les clés des répertoires d'état par défaut ; si un démon géré par Gately qui utilise le répertoire d'état par défaut tourne, il se déconnecte d'abord, ce qui retire cette machine du réseau. Les répertoires d'état personnalisés et le service NetBird déjà présent sur le système restent intacts |
 | File Browser | Toutes les instances et les paramètres du programme, avec les utilisateurs, liens de partage et caches de chaque instance ; les fichiers des répertoires partagés restent intacts |
 
 L'ancienne configuration est conservée dans l'[historique de configuration](/fr/docs/guide/audit) et peut être restaurée en cas d'erreur. Pour tout retirer, désinstallez d'abord le programme, puis rétablissez les valeurs par défaut. Les API sont `DELETE /api/{module}/install` (désinstallation) et `POST /api/{module}/reset` (rétablissement des valeurs par défaut).
@@ -70,6 +70,17 @@ Chaque instance prend en charge :
 
 ## NetBird
 
+Plusieurs instances sont prises en charge : chaque instance exécute son propre démon NetBird (répertoire d'état, adresse du démon, port WireGuard et processus distincts), si bien qu'une même machine peut rejoindre plusieurs réseaux NetBird, par exemple une instance en mode noyau pour NetBird Cloud et une instance en espace utilisateur pour un serveur de gestion auto-hébergé.
+
+- Le répertoire d'état d'une nouvelle instance est par défaut `netbird/<clé de l'instance>` dans le répertoire de configuration, et son adresse du démon `netbird.sock` dans le répertoire d'état ; vous pouvez aussi indiquer un répertoire d'état existant (par exemple `/var/lib/netbird` monté par un ancien conteneur NetBird) pour conserver l'identité du pair sans réenregistrement ;
+- Une seule instance en mode noyau (gérée, sans réseau en espace utilisateur) peut être activée à la fois : le mode noyau de NetBird utilise une table de routage, une marque de pare-feu et une table nftables fixes, et le nom d'interface par défaut est toujours `wt0`, si bien que deux instances en mode noyau s'écraseraient. Deux instances ne peuvent pas partager un répertoire d'état ni une adresse du démon ; les instances gérées ne peuvent pas utiliser le même port WireGuard (0 compte comme le port par défaut 51820, et NetBird bascule sans prévenir sur un port aléatoire si le port est occupé) ; les instances gérées en espace utilisateur ne peuvent pas utiliser la même adresse SOCKS5 (vide compte comme `127.0.0.1:1080`). L'enregistrement, l'activation, l'activation groupée et la copie signalent le conflit, et dans une configuration modifiée à la main qui en contient un, l'instance en conflit placée plus loin ne démarre pas et affiche la raison ;
+- Modifier, activer ou désactiver une instance ne redémarre que son propre démon, et les sources de journal portent le nom de l'instance (comme `daemon:maison` et `netbird:maison`) ; le lien de connexion, le code d'appareil, la liste des pairs et la déconnexion sont aussi affichés par instance ;
+- La suppression d'une instance gérée qui utilise le répertoire d'état par défaut la déconnecte d'abord puis supprime ce répertoire ; les répertoires d'état personnalisés et l'ancien répertoire migré sont conservés pour qu'une nouvelle instance puisse les réutiliser ;
+- Lors d'une mise à niveau depuis la 0.6.4 ou antérieure, l'ancienne configuration unique est migrée vers une instance nommée `netbird`, avec le même répertoire d'état (`netbird` dans le répertoire de configuration), la même adresse du démon, la même ligne de commande et les mêmes variables d'environnement ;
+- Le chemin du programme et l'installation en ligne sont communs à toutes les instances.
+
+Chaque instance prend en charge :
+
 - Rejoindre un réseau NetBird sur NetBird Cloud ou sur votre propre serveur de gestion (en indiquant son URL) ;
 - Authentification par clé de configuration ou par lien de connexion. Sous Linux, le lien utilise la connexion par code d'appareil et peut s'ouvrir sur n'importe quel appareil ; sous macOS et Windows, la connexion doit en général se terminer dans un navigateur de la machine qui exécute Gately : utilisez une clé de configuration pour la gérer à distance. Le lien est renouvelé automatiquement à son expiration ;
 - Démon `netbird` géré (réseau en espace utilisateur, adapté aux conteneurs) ou connexion au service NetBird déjà installé sur le système ;
@@ -80,7 +91,7 @@ Chaque instance prend en charge :
 - Port WireGuard fixe, arguments supplémentaires du démon et variables d'environnement (les options avancées `NB_` de la documentation NetBird) ;
 - Sans réseau en espace utilisateur, WireGuard du noyau est utilisé : il faut root et un périphérique TUN, l'interface `wt0` est créée avec ses propres règles de pare-feu (sous OpenWrt, le trafic entrant de `wt0` est aussi autorisé dans fw4), et les services locaux doivent écouter sur toutes les adresses ou sur l'adresse NetBird pour être joignables par les autres pairs ;
 - Le programme `netbird` pèse environ 41 Mo et utilise environ 60 Mo de mémoire, et l'installation en ligne conserve jusqu'à 3 anciennes versions dans `bin/.versions/`. Sur les routeurs avec peu de flash, surveillez l'espace libre : supprimez les anciennes versions dans la carte d'installation, ou placez le programme sur un stockage externe et indiquez son chemin dans les paramètres ;
-- Rétablir les valeurs par défaut et `POST /api/netbird/logout` désinscrivent cette machine du serveur de gestion et la retirent du réseau ; pour la rejoindre il faut s'authentifier de nouveau.
+- Rétablir les valeurs par défaut et `POST /api/netbird/instances/{key}/logout` désinscrivent cette machine du serveur de gestion et la retirent du réseau ; pour la rejoindre il faut s'authentifier de nouveau.
 
 ## frp
 
