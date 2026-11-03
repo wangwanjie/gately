@@ -12,7 +12,8 @@ Lang laufende Vorgänge (Images ziehen/pushen/bauen, compose up usw.) liefern `{
 | POST | `/prune` | `{target:"containers"|"images"|"networks"|"volumes"|"buildcache", all?:bool}` → `{deleted:number,spaceReclaimed:number}`; bei Images entfernt `all=true` alle ungenutzten Images, sonst nur verwaiste (dangling) Images |
 | GET/PUT | `/settings` | `{host, mirrors:string[], registries:[{server,username,password}], autoCheckHours:number}`. GET liefert registries[].password als `"******"`; erhält PUT `"******"`, bleibt der bisherige Wert erhalten |
 | GET | `/tasks` | Aufgabenliste (ohne lines) |
-| GET | `/tasks/{id}` | Aufgabendetails `{id,kind,title,status:"running"|"done"|"error",error,lines[],started,finished}` |
+| GET | `/tasks/{id}` | Aufgabendetails `{id,kind,title,status:"running"|"done"|"error"|"cancelled",cancelling?,error,lines[],started,finished}`; `cancelling` ist true, wenn ein Abbruch angefordert wurde und die Aufgabe gerade beendet wird |
+| POST | `/tasks/{id}/cancel` | Bricht eine laufende Aufgabe ab und liefert ihre Details (`cancelling:true`); nach dem Ende lautet der Status `cancelled`. Pull, Push und Build enden, sobald ihre Docker-Anfragen getrennt werden; compose erhält zuerst ein Interrupt-Signal (wie Strg+C) und wird beendet, wenn es nach 30 Sekunden noch läuft; ein Batch-Upgrade stoppt nach dem aktuellen Container. Liefert 404, wenn die Aufgabe nicht existiert, und 409, wenn sie bereits beendet ist |
 | DELETE | `/tasks` | Abgeschlossene Aufgaben löschen |
 | GET | `/logs` | Betriebsprotokoll des Moduls (bestehend) |
 

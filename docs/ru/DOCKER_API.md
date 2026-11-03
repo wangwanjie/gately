@@ -12,7 +12,8 @@
 | POST | `/prune` | `{target:"containers"|"images"|"networks"|"volumes"|"buildcache", all?:bool}` → `{deleted:number,spaceReclaimed:number}`; для образов `all=true` удаляет все неиспользуемые образы, иначе только висячие (dangling) |
 | GET/PUT | `/settings` | `{host, mirrors:string[], registries:[{server,username,password}], autoCheckHours:number}`. GET возвращает registries[].password как `"******"`; если PUT получает `"******"`, сохраняется прежнее значение |
 | GET | `/tasks` | Список задач (без lines) |
-| GET | `/tasks/{id}` | Сведения о задаче `{id,kind,title,status:"running"|"done"|"error",error,lines[],started,finished}` |
+| GET | `/tasks/{id}` | Сведения о задаче `{id,kind,title,status:"running"|"done"|"error"|"cancelled",cancelling?,error,lines[],started,finished}`; `cancelling` равен true, когда прерывание запрошено и задача завершается |
+| POST | `/tasks/{id}/cancel` | Прерывает выполняющуюся задачу и возвращает её сведения (`cancelling:true`); после завершения её статус — `cancelled`. Скачивание, отправка и сборка останавливаются вместе с закрытием запросов к Docker; compose сначала получает сигнал прерывания (как Ctrl+C) и принудительно завершается, если не вышел за 30 секунд; пакетное обновление останавливается после текущего контейнера. Возвращает 404, если задачи нет, и 409, если она уже завершена |
 | DELETE | `/tasks` | Очистить завершённые задачи |
 | GET | `/logs` | Журнал операций модуля (существующий) |
 

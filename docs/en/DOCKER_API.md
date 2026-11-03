@@ -12,7 +12,8 @@ Long-running operations (pulling/pushing/building images, compose up, and so on)
 | POST | `/prune` | `{target:"containers"|"images"|"networks"|"volumes"|"buildcache", all?:bool}` → `{deleted:number,spaceReclaimed:number}`; for images, `all=true` removes all unused images, otherwise only dangling images |
 | GET/PUT | `/settings` | `{host, mirrors:string[], registries:[{server,username,password}], autoCheckHours:number}`. GET returns registries[].password as `"******"`; when PUT receives `"******"`, the existing value is kept |
 | GET | `/tasks` | Task list (without lines) |
-| GET | `/tasks/{id}` | Task details `{id,kind,title,status:"running"|"done"|"error",error,lines[],started,finished}` |
+| GET | `/tasks/{id}` | Task details `{id,kind,title,status:"running"|"done"|"error"|"cancelled",cancelling?,error,lines[],started,finished}`; `cancelling` is true when an interrupt has been requested and the task is winding down |
+| POST | `/tasks/{id}/cancel` | Interrupt a running task and return its details (`cancelling:true`); once it ends, its status is `cancelled`. Pulls, pushes and builds stop as their Docker requests are closed; compose first receives an interrupt signal (like Ctrl+C) and is killed if it has not exited within 30 seconds; a batch upgrade stops after the current container. Returns 404 if the task does not exist and 409 if it has already finished |
 | DELETE | `/tasks` | Clear finished tasks |
 | GET | `/logs` | Module operation log (existing) |
 

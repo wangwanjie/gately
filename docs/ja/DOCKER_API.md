@@ -12,7 +12,8 @@
 | POST | `/prune` | `{target:"containers"|"images"|"networks"|"volumes"|"buildcache", all?:bool}` → `{deleted:number,spaceReclaimed:number}`。イメージの場合、`all=true` で未使用のイメージをすべて削除し、指定しなければ dangling イメージのみを削除します |
 | GET/PUT | `/settings` | `{host, mirrors:string[], registries:[{server,username,password}], autoCheckHours:number}`。GET は registries[].password を `"******"` として返し、PUT で `"******"` を受け取った場合は既存の値を保持します |
 | GET | `/tasks` | タスク一覧（lines を含まない） |
-| GET | `/tasks/{id}` | タスクの詳細 `{id,kind,title,status:"running"|"done"|"error",error,lines[],started,finished}` |
+| GET | `/tasks/{id}` | タスクの詳細 `{id,kind,title,status:"running"|"done"|"error"|"cancelled",cancelling?,error,lines[],started,finished}`。`cancelling` が true の場合は中断が要求され、タスクが終了処理中であることを示します |
+| POST | `/tasks/{id}/cancel` | 実行中のタスクを中断し、タスクの詳細（`cancelling:true`）を返します。終了後のステータスは `cancelled` になります。pull / push / ビルドはリクエストの切断とともに中止されます。compose にはまず割り込みシグナル（Ctrl+C 相当）を送り、30 秒以内に終了しなければ強制終了します。一括アップグレードは処理中のコンテナが終わった時点で停止します。タスクが存在しない場合は 404、すでに終了している場合は 409 を返します |
 | DELETE | `/tasks` | 完了したタスクを消去 |
 | GET | `/logs` | モジュールの操作ログ（既存） |
 

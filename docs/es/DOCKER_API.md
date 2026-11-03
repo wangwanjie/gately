@@ -12,7 +12,8 @@ Las operaciones largas (descargar, subir o compilar imágenes, compose up, etc.)
 | POST | `/prune` | `{target:"containers"|"images"|"networks"|"volumes"|"buildcache", all?:bool}` → `{deleted:number,spaceReclaimed:number}`; para las imágenes, `all=true` elimina todas las imágenes sin usar y, en caso contrario, solo las imágenes colgantes (dangling) |
 | GET/PUT | `/settings` | `{host, mirrors:string[], registries:[{server,username,password}], autoCheckHours:number}`. GET devuelve registries[].password como `"******"`; cuando PUT recibe `"******"`, se conserva el valor existente |
 | GET | `/tasks` | Lista de tareas (sin las líneas) |
-| GET | `/tasks/{id}` | Detalles de la tarea `{id,kind,title,status:"running"|"done"|"error",error,lines[],started,finished}` |
+| GET | `/tasks/{id}` | Detalles de la tarea `{id,kind,title,status:"running"|"done"|"error"|"cancelled",cancelling?,error,lines[],started,finished}`; `cancelling` es true cuando se ha solicitado la interrupción y la tarea está terminando |
+| POST | `/tasks/{id}/cancel` | Interrumpe una tarea en curso y devuelve sus detalles (`cancelling:true`); al terminar, su estado es `cancelled`. Las descargas, subidas y compilaciones se detienen al cerrarse sus peticiones a Docker; compose recibe primero una señal de interrupción (como Ctrl+C) y se fuerza su cierre si no ha salido en 30 segundos; una actualización por lotes se detiene tras el contenedor en curso. Devuelve 404 si la tarea no existe y 409 si ya ha terminado |
 | DELETE | `/tasks` | Borra las tareas terminadas |
 | GET | `/logs` | Registro de operaciones del módulo (ya existente) |
 

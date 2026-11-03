@@ -12,7 +12,8 @@
 | POST | `/prune` | `{target:"containers"|"images"|"networks"|"volumes"|"buildcache", all?:bool}` → `{deleted:number,spaceReclaimed:number}`; images에서 `all=true`이면 사용하지 않는 이미지를 모두 정리하고, 그렇지 않으면 dangling 이미지만 정리합니다 |
 | GET/PUT | `/settings` | `{host, mirrors:string[], registries:[{server,username,password}], autoCheckHours:number}`. GET은 registries[].password를 `"******"`로 반환하고, PUT에서 `"******"`를 받으면 기존 값을 유지합니다 |
 | GET | `/tasks` | 작업 목록(lines 제외) |
-| GET | `/tasks/{id}` | 작업 상세 `{id,kind,title,status:"running"|"done"|"error",error,lines[],started,finished}` |
+| GET | `/tasks/{id}` | 작업 상세 `{id,kind,title,status:"running"|"done"|"error"|"cancelled",cancelling?,error,lines[],started,finished}`. `cancelling`이 true이면 중단이 요청되어 작업이 마무리 중임을 뜻합니다 |
+| POST | `/tasks/{id}/cancel` | 진행 중인 작업을 중단하고 작업 상세(`cancelling:true`)를 반환합니다. 작업이 끝나면 상태는 `cancelled`가 됩니다. 풀/푸시/빌드는 요청이 끊기면서 중지됩니다. compose는 먼저 인터럽트 신호(Ctrl+C와 같음)를 받고, 30초 안에 종료되지 않으면 강제 종료됩니다. 일괄 업그레이드는 현재 컨테이너를 마친 뒤 멈춥니다. 작업이 없으면 404, 이미 끝났으면 409를 반환합니다 |
 | DELETE | `/tasks` | 끝난 작업 지우기 |
 | GET | `/logs` | 모듈 작업 로그(기존) |
 

@@ -12,7 +12,8 @@
 | POST | `/prune` | `{target:"containers"|"images"|"networks"|"volumes"|"buildcache", all?:bool}` → `{deleted:number,spaceReclaimed:number}`；images 的 all=true 清理全部未使用镜像，否则仅悬空镜像 |
 | GET/PUT | `/settings` | `{host, mirrors:string[], registries:[{server,username,password}], autoCheckHours:number}`。GET 时 registries[].password 以 `"******"` 返回，PUT 收到 `"******"` 表示保留原值 |
 | GET | `/tasks` | 任务列表（不含 lines） |
-| GET | `/tasks/{id}` | 任务详情 `{id,kind,title,status:"running"|"done"|"error",error,lines[],started,finished}` |
+| GET | `/tasks/{id}` | 任务详情 `{id,kind,title,status:"running"|"done"|"error"|"cancelled",cancelling?,error,lines[],started,finished}`；`cancelling` 为 true 表示已请求中断、任务正在收尾 |
+| POST | `/tasks/{id}/cancel` | 中断进行中的任务，返回任务详情（`cancelling:true`）；任务结束后状态为 `cancelled`。拉取/推送/构建随请求断开而中止；compose 先收到中断信号（相当于 Ctrl+C），30 秒内未退出则强制结束；批量升级在当前容器完成后停止。任务不存在返回 404，已结束返回 409 |
 | DELETE | `/tasks` | 清除已结束任务 |
 | GET | `/logs` | 模块操作日志（已有） |
 

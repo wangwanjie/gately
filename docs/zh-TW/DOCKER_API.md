@@ -12,7 +12,8 @@
 | POST | `/prune` | `{target:"containers"|"images"|"networks"|"volumes"|"buildcache", all?:bool}` → `{deleted:number,spaceReclaimed:number}`；images 的 all=true 清理全部未使用的映像檔，否則僅清理懸空映像檔 |
 | GET/PUT | `/settings` | `{host, mirrors:string[], registries:[{server,username,password}], autoCheckHours:number}`。GET 時 registries[].password 以 `"******"` 回傳，PUT 收到 `"******"` 表示保留原值 |
 | GET | `/tasks` | 任務清單（不含 lines） |
-| GET | `/tasks/{id}` | 任務詳情 `{id,kind,title,status:"running"|"done"|"error",error,lines[],started,finished}` |
+| GET | `/tasks/{id}` | 任務詳情 `{id,kind,title,status:"running"|"done"|"error"|"cancelled",cancelling?,error,lines[],started,finished}`；`cancelling` 為 true 表示已請求中斷、任務正在收尾 |
+| POST | `/tasks/{id}/cancel` | 中斷進行中的任務，回傳任務詳情（`cancelling:true`）；任務結束後狀態為 `cancelled`。拉取/推送/建置隨請求斷開而中止；compose 先收到中斷訊號（相當於 Ctrl+C），30 秒內未結束則強制終止；批次升級在目前的容器完成後停止。任務不存在回傳 404，已結束回傳 409 |
 | DELETE | `/tasks` | 清除已結束的任務 |
 | GET | `/logs` | 模組操作日誌（既有） |
 

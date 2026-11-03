@@ -12,7 +12,8 @@ Les opérations longues (récupération/envoi/construction d'images, compose up,
 | POST | `/prune` | `{target:"containers"|"images"|"networks"|"volumes"|"buildcache", all?:bool}` → `{deleted:number,spaceReclaimed:number}` ; pour les images, `all=true` supprime toutes les images inutilisées, sinon seulement les images orphelines (dangling) |
 | GET/PUT | `/settings` | `{host, mirrors:string[], registries:[{server,username,password}], autoCheckHours:number}`. GET renvoie registries[].password sous la forme `"******"` ; quand PUT reçoit `"******"`, la valeur existante est conservée |
 | GET | `/tasks` | Liste des tâches (sans les lignes) |
-| GET | `/tasks/{id}` | Détails de la tâche `{id,kind,title,status:"running"|"done"|"error",error,lines[],started,finished}` |
+| GET | `/tasks/{id}` | Détails de la tâche `{id,kind,title,status:"running"|"done"|"error"|"cancelled",cancelling?,error,lines[],started,finished}` ; `cancelling` vaut true quand une interruption a été demandée et que la tâche est en train de se terminer |
+| POST | `/tasks/{id}/cancel` | Interrompt une tâche en cours et renvoie ses détails (`cancelling:true`) ; une fois terminée, son statut est `cancelled`. Les récupérations, envois et constructions s'arrêtent avec la fermeture de leurs requêtes Docker ; compose reçoit d'abord un signal d'interruption (comme Ctrl+C) et est tué s'il n'est pas sorti au bout de 30 secondes ; une mise à niveau groupée s'arrête après le conteneur en cours. Renvoie 404 si la tâche n'existe pas et 409 si elle est déjà terminée |
 | DELETE | `/tasks` | Effacer les tâches terminées |
 | GET | `/logs` | Journal des opérations du module (existant) |
 
