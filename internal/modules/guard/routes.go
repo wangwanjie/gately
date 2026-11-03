@@ -243,6 +243,11 @@ func (m *Module) handleAddBan(w http.ResponseWriter, r *http.Request) {
 	httpx.OK(w, i18n.Localize(r, e))
 }
 
+var (
+	loopback4 = netip.MustParsePrefix("127.0.0.0/8")
+	loopback6 = netip.MustParsePrefix("::1/128")
+)
+
 // ManualBan 校验并执行一次手动封禁：不能封禁当前访问者自己的地址；seconds 为 0 时沿用默认时长，-1 表示永久。
 func ManualBan(input string, seconds int, reason, requester string, s Settings) (banlist.Entry, error) {
 	key, err := banlist.ParseKey(input)
@@ -252,6 +257,10 @@ func ManualBan(input string, seconds int, reason, requester string, s Settings) 
 	if p, ok := banlist.KeyPrefix(key); ok {
 		if a, err := netip.ParseAddr(requester); err == nil && p.Contains(a.Unmap()) {
 			return banlist.Entry{}, errors.New("不能封禁你当前使用的地址")
+		}
+		// 手动封禁不受白名单限制，回环地址要单独拦下：经本机转发（frp、端口转发等）进来的连接都显示为回环地址
+		if p.Overlaps(loopback4) || p.Overlaps(loopback6) || p.Addr().IsUnspecified() {
+			return banlist.Entry{}, errors.New("不能封禁回环地址或未指定地址：经本机转发进来的连接都显示为回环地址，封禁会拦截全部这类访客")
 		}
 	}
 	if seconds != -1 && seconds != 0 && (seconds < 60 || seconds > maxBanSeconds) {

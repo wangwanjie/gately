@@ -9,7 +9,7 @@ Prevenção de intrusão no estilo fail2ban: o Gately encontra tentativas de for
 - **Sondagem de caminhos web**: conta diretamente as requisições tratadas pelo serviço web por listener, caminho e código de status, sem ler logs; origens que pedem caminhos isca como `/.env` ou `/.git`, ou que varrem domínios desconhecidos sem parar, são bloqueadas;
 - **Portas armadilha**: armadilhas em portas que este host não usa (por padrão 23, 135, 1433, 3389, 5900, 6379 e outras). Qualquer origem que se conecte é bloqueada;
 - **Detecção de varredura de portas**: a origem que se conecta a portas fechadas deste host mais vezes por minuto que o limite é bloqueada;
-- **Uma única lista de bloqueio**: aqui ficam os bloqueios manuais (incluindo redes CIDR e bloqueios permanentes) e os bloqueios automáticos por falhas de autenticação do serviço web. Os bloqueios são salvos e restaurados após reiniciar;
+- **Uma única lista de bloqueio**: aqui ficam os bloqueios manuais (incluindo redes CIDR e bloqueios permanentes) e os bloqueios automáticos por falhas de autenticação do serviço web. Bloqueios manuais não podem incluir endereços de loopback, pois todas as conexões encaminhadas por esta máquina aparecem com esse endereço. Os bloqueios são salvos e restaurados após reiniciar;
 - **Bloqueios progressivos**: se um endereço for bloqueado de novo em 30 dias, a duração dobra até um máximo;
 - **Lista de permissões**: endereços da LAN, de loopback, de 100.64.0.0/10 (Tailscale) e as redes IPv6 /64 das interfaces deste host são ignorados por padrão (o bloqueio é por /64, então dispositivos com IPv6 público da mesma LAN não são bloqueados junto com o infrator), e você pode adicionar IPs ou redes. Um único endereço IPv6 na lista protege todo o seu /64.
 

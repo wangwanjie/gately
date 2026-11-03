@@ -750,3 +750,17 @@ func TestFirewallCountsSurviveStop(t *testing.T) {
 		t.Fatalf("重新启动后计数应保留: %+v", st)
 	}
 }
+
+// 手动封禁拒绝回环与未指定地址（含覆盖它们的网段），其他地址照常封禁。
+func TestManualBanRefusesLoopback(t *testing.T) {
+	m := newTestModule(t)
+	for _, k := range []string{"127.0.0.1", "127.8.0.0/16", "::1", "0.0.0.0", "::", "64.0.0.0/2"} {
+		if _, err := ManualBan(k, 3600, "", "203.0.113.1", m.cur()); err == nil {
+			t.Errorf("%s 应拒绝封禁", k)
+		}
+	}
+	if _, err := ManualBan("198.51.100.9", 3600, "", "203.0.113.1", m.cur()); err != nil {
+		t.Fatalf("普通地址应可封禁: %v", err)
+	}
+	banlist.Default.Unban("198.51.100.9")
+}

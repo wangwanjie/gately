@@ -576,6 +576,7 @@
   "不能对 Gately 自身所在的容器执行 %s": "Cannot run %s on the container Gately itself runs in",
   "不能封禁你当前使用的地址": "You cannot ban the address you are currently using",
   "不能封禁全部地址": "Cannot ban all addresses",
+  "不能封禁回环地址或未指定地址：经本机转发进来的连接都显示为回环地址，封禁会拦截全部这类访客": "Cannot ban loopback or unspecified addresses: connections forwarded through this machine all show a loopback address, so banning it would block all such visitors",
   "不能封禁回环地址：经本机转发（如 frp、未带 PROXY 协议的端口转发）进来的请求都显示为该地址，封禁会拦截全部这类访客": "Loopback addresses cannot be banned: requests coming in through local forwarding (such as frp or port forwarding without PROXY protocol) all show this address, so banning it would block all of those visitors",
   "不能把目录复制到自身内部: ": "Cannot copy a directory into itself: ",
   "不能把目录移动到自身内部": "Cannot move a directory into itself",

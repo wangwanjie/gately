@@ -576,6 +576,7 @@
   "不能对 Gately 自身所在的容器执行 %s": "%s kann nicht auf dem Container ausgeführt werden, in dem Gately selbst läuft",
   "不能封禁你当前使用的地址": "Die Adresse, die Sie gerade verwenden, kann nicht gesperrt werden",
   "不能封禁全部地址": "Es können nicht alle Adressen gesperrt werden",
+  "不能封禁回环地址或未指定地址：经本机转发进来的连接都显示为回环地址，封禁会拦截全部这类访客": "Loopback- und unspezifizierte Adressen können nicht gesperrt werden: Über diesen Rechner weitergeleitete Verbindungen erscheinen alle mit einer Loopback-Adresse, eine Sperre würde alle diese Besucher aussperren",
   "不能封禁回环地址：经本机转发（如 frp、未带 PROXY 协议的端口转发）进来的请求都显示为该地址，封禁会拦截全部这类访客": "Loopback-Adressen können nicht gesperrt werden: Anfragen über eine lokale Weiterleitung (etwa frp oder Portweiterleitung ohne PROXY-Protokoll) zeigen alle diese Adresse, eine Sperre würde all diese Besucher blockieren",
   "不能把目录复制到自身内部: ": "Ein Verzeichnis kann nicht in sich selbst kopiert werden: ",
   "不能把目录移动到自身内部": "Ein Verzeichnis kann nicht in sich selbst verschoben werden",

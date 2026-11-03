@@ -9,7 +9,7 @@ fail2ban-style intrusion prevention: Gately finds brute-force attempts in logs, 
 - **Web path probing**: counts requests handled by the web service by listener, path and status code, without reading logs; sources that request decoy paths such as `/.env` or `/.git`, or keep scanning unknown domains, are banned;
 - **Trap ports**: traps on ports this host does not use (23, 135, 1433, 3389, 5900, 6379 and others by default). Any source that connects is banned;
 - **Port-scan detection**: a source that connects to closed ports on this host more often than the threshold per minute is banned;
-- **One ban list**: manual bans (CIDR networks and permanent bans included) and the web service's authentication-failure bans are managed here. Bans are persisted and restored after a restart;
+- **One ban list**: manual bans (CIDR networks and permanent bans included) and the web service's authentication-failure bans are managed here. Manual bans cannot cover loopback addresses, since connections forwarded through this machine all show that address. Bans are persisted and restored after a restart;
 - **Escalating bans**: when an address is banned again within 30 days, the duration doubles up to a maximum;
 - **Whitelist**: LAN, loopback, 100.64.0.0/10 (Tailscale) and the IPv6 /64 networks of this host's interfaces are ignored by default (bans are per /64, so public IPv6 devices on the same LAN are not banned along with an offender), and you can add IPs or networks. A single whitelisted IPv6 address protects its whole /64.
 

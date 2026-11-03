@@ -576,6 +576,7 @@
   "不能对 Gately 自身所在的容器执行 %s": "Impossible d'exécuter %s sur le conteneur dans lequel Gately s'exécute",
   "不能封禁你当前使用的地址": "Vous ne pouvez pas bannir l'adresse que vous utilisez",
   "不能封禁全部地址": "Impossible de bannir toutes les adresses",
+  "不能封禁回环地址或未指定地址：经本机转发进来的连接都显示为回环地址，封禁会拦截全部这类访客": "Impossible de bannir une adresse de bouclage ou non spécifiée : toutes les connexions relayées par cette machine apparaissent avec une adresse de bouclage, la bannir bloquerait tous ces visiteurs",
   "不能封禁回环地址：经本机转发（如 frp、未带 PROXY 协议的端口转发）进来的请求都显示为该地址，封禁会拦截全部这类访客": "Les adresses de bouclage ne peuvent pas être bannies : les requêtes arrivant par un relais local (frp ou redirection de ports sans protocole PROXY, par exemple) affichent toutes cette adresse, la bannir bloquerait tous ces visiteurs",
   "不能把目录复制到自身内部: ": "Impossible de copier un répertoire dans lui-même : ",
   "不能把目录移动到自身内部": "Impossible de déplacer un répertoire dans lui-même",
