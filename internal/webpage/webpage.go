@@ -173,7 +173,7 @@ const errorSrc = `{{define "body"}}<section class="card err">
 {{if .Hint}}<div class="hint">{{.Hint}}</div>{{end}}
 {{if or .Retry .Home .Action}}<div class="actions">
 {{if .Action}}<a class="btn primary" href="{{.Action}}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>{{.ActionText}}</a>{{end}}
-{{if .Retry}}<a class="btn primary" href="" onclick="location.reload();return false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>{{.T.retry}}</a>{{end}}
+{{if .Retry}}<a class="btn primary" href=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>{{.T.retry}}</a>{{end}}
 {{if .Home}}<a class="btn {{if or .Retry .Action}}ghost{{else}}primary{{end}}" href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>{{.T.home}}</a>{{end}}
 </div>{{end}}
 <div class="meta"><span>{{.T.status}} {{.Code}} {{.Status}}</span><span>{{.Time}}</span></div>
@@ -201,9 +201,15 @@ func Error(w http.ResponseWriter, r *http.Request, p Problem) {
 		http.Error(w, fmt.Sprintf("%d %s", p.Code, http.StatusText(p.Code)), p.Code)
 		return
 	}
+	lang, data := problemData(r, p)
+	Render(w, p.Code, "error", lang, errorTexts, data)
+}
+
+// problemData 返回渲染错误页所需的访客语言与模板数据（文案已按访客语言翻译）。
+func problemData(r *http.Request, p Problem) (string, map[string]any) {
 	lang := i18n.RequestLang(r)
 	title := i18n.Tr(lang, p.Title)
-	Render(w, p.Code, "error", lang, errorTexts, map[string]any{
+	return lang, map[string]any{
 		"PageTitle":  fmt.Sprintf("%d · %s", p.Code, title),
 		"Code":       p.Code,
 		"Icon":       p.icon(),
@@ -217,5 +223,5 @@ func Error(w http.ResponseWriter, r *http.Request, p Problem) {
 		"Retry":      p.Retry || p.Code >= 500,
 		"Host":       r.Host,
 		"Time":       time.Now().UTC().Format("2006-01-02 15:04:05 UTC"),
-	})
+	}
 }
