@@ -52,7 +52,7 @@
             <el-option value="off" :label="t('webBatch.off')" />
           </el-select>
         </el-form-item>
-        <el-form-item label="WAF">
+        <el-form-item v-if="moduleEnabled('waf')" label="WAF">
           <el-select v-model="waf" class="choice" :empty-values="[null, undefined]">
             <el-option value="__keep" :label="t('webBatch.keep')" />
             <el-option value="" :label="t('webBatch.wafNone')" />
@@ -84,6 +84,7 @@ import { computed, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { api } from '../api'
+import { moduleEnabled } from '../nav'
 import { useIsMobile } from '../composables/useIsMobile'
 import { builtinStyles, errorPagesApi, type ErrorPageView } from '../errorPages'
 import { movePlainRisk, type MoveListener, type MoveTarget, type SiteRef } from '../siteMove'

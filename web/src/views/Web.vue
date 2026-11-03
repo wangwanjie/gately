@@ -142,7 +142,7 @@
                 <el-tag v-if="item.item.site.sendProxyProtocol" size="small" type="info">PROXY v2</el-tag>
                 <el-tag v-if="downCount(l, item.item) > 0" size="small" type="danger">{{ t('web.upstreamsDown', { count: downCount(l, item.item) }) }}</el-tag>
                 <el-tag v-if="item.item.site.insecureSkipVerify" size="small" type="info">{{ t('web.skipVerifyTag') }}</el-tag>
-                <el-tag v-if="item.item.site.waf" size="small" :type="wafInstances.some((w) => w.key === item.item.site.waf) ? 'danger' : 'info'">
+                <el-tag v-if="item.item.site.waf && wafAvailable" size="small" :type="wafInstances.some((w) => w.key === item.item.site.waf) ? 'danger' : 'info'">
                   WAF{{ wafInstances.some((w) => w.key === item.item.site.waf) ? '' : t('web.wafMissingSuffix') }}
                 </el-tag>
               </div>
@@ -471,7 +471,7 @@
               </el-radio-group>
               <div class="form-help">{{ t('web.denyActionHelp') }}</div>
             </el-form-item>
-            <el-form-item :label="t('web.wafInstance')">
+            <el-form-item v-if="wafAvailable" :label="t('web.wafInstance')">
               <el-select v-model="site.waf" clearable value-on-clear="" :placeholder="t('web.wafNone')" class="w-260">
                 <el-option v-for="w in wafInstances" :key="w.key" :label="w.name" :value="w.key" />
                 <el-option v-if="site.waf && !wafInstances.some((w) => w.key === site.waf)" :label="site.waf + t('web.wafMissingSuffix')" :value="site.waf" />
@@ -597,6 +597,7 @@ import {
   ArrowRightLeft,
 } from 'lucide-vue-next'
 import { api, type OAuthProvider } from '../api'
+import { moduleEnabled as navModuleEnabled } from '../nav'
 import GroupHeader from '../components/GroupHeader.vue'
 import SortToolbar from '../components/SortToolbar.vue'
 import WebBatch from '../components/WebBatch.vue'
@@ -800,6 +801,8 @@ const { isMobile, labelPosition } = useFormLayout()
 // moduleEnabled 为模块全局开关，undefined 表示尚未加载
 const moduleEnabled = ref<boolean>()
 const moduleOff = computed(() => moduleEnabled.value === false)
+// WAF 模块是否可用：定制构建可能没有编译 WAF，此时不读取实例，站点中也不显示 WAF 选项
+const wafAvailable = computed(() => navModuleEnabled('waf'))
 const enabling = ref(false)
 interface WebSettings {
   enable: boolean
@@ -1721,7 +1724,7 @@ function prepare() {
   if (!prepared) {
     prepared = (async () => {
       fetchSettings()
-      wafInstances.value = await api.get('/api/waf/instances')
+      wafInstances.value = wafAvailable.value ? await api.get('/api/waf/instances') : []
     })()
     // 加载失败时允许下次重试
     prepared.catch(() => (prepared = undefined))

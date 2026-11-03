@@ -231,6 +231,18 @@ export interface SystemInfo {
   timeZone: string
   inDocker: boolean
   selfUpgrade: SelfUpgrade
+  build?: BuildProfile
+}
+
+// BuildProfile 描述程序的构建内容：定制构建去掉了部分功能模块或界面语言。
+export interface BuildProfile {
+  custom: boolean
+  // 编译进来的功能模块 ID
+  modules: string[]
+  // 没有编译进来的功能模块
+  absent: { id: string; title: string }[]
+  // 编译进来的语言
+  languages: string[]
 }
 
 // SelfUpgrade 表示当前部署方式能否在线升级；不能时 reason 为 os / docker / fnos / opkg / apk / readonly。
@@ -239,6 +251,8 @@ export interface SelfUpgrade {
   reason?: 'os' | 'docker' | 'fnos' | 'opkg' | 'apk' | 'readonly'
   // 将被替换的可执行文件路径
   executable?: string
+  // 定制构建：可以上传升级包，但不提供在线下载升级（发布页的完整版本会装回全部功能）
+  custom?: boolean
 }
 
 // UpgradeStatus 对应 GET /api/system/upgrade/status：在线升级任务的进度。

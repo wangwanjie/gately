@@ -152,7 +152,7 @@ func (a *App) handleSystemInfo(w http.ResponseWriter, r *http.Request) {
 		"hostname": host, "pid": os.Getpid(), "startTime": a.startTime, "configDir": a.opts.ConfigDir,
 		"goroutines": runtime.NumGoroutine(), "memSys": ms.Sys, "memAlloc": ms.Alloc,
 		"numCPU": runtime.NumCPU(), "maxProcs": runtime.GOMAXPROCS(0), "timeZone": time.Local.String(),
-		"inDocker": fileExists("/.dockerenv"), "selfUpgrade": a.upgradeSupport(),
+		"inDocker": fileExists("/.dockerenv"), "selfUpgrade": a.upgradeSupport(), "build": a.buildProfile(),
 	})
 }
 

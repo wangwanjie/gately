@@ -38,8 +38,8 @@
       <div v-if="info.notes" class="notes md" v-html="notesHTML" />
       <div v-else class="notes empty">{{ t('about.upgrade.noNotes') }}</div>
       <div v-if="canUpgrade" class="note">{{ t('about.upgrade.confirm', { latest: info.latest, exe: info.selfUpgrade?.executable ?? 'gately' }) }}</div>
-      <el-alert v-else-if="info.selfUpgrade?.reason" type="info" :closable="false" show-icon class="reason">
-        {{ t(`about.upgrade.reason.${info.selfUpgrade.reason}`) }}
+      <el-alert v-else-if="info.selfUpgrade?.reason || info.selfUpgrade?.custom" type="info" :closable="false" show-icon class="reason">
+        {{ t(`about.upgrade.reason.${info.selfUpgrade.reason || 'custom'}`) }}
       </el-alert>
     </template>
 
@@ -114,7 +114,7 @@ let xhr: XMLHttpRequest | null = null
 let lastSample = { at: 0, bytes: 0 }
 
 const notesHTML = computed(() => renderMarkdown(info.value?.notes ?? ''))
-const canUpgrade = computed(() => props.isAdmin && !!info.value?.hasUpdate && !!info.value.selfUpgrade?.supported)
+const canUpgrade = computed(() => props.isAdmin && !!info.value?.hasUpdate && !!info.value.selfUpgrade?.supported && !info.value.selfUpgrade.custom)
 // 升级进行中不允许关闭弹窗
 const busy = computed(() => mode.value === 'progress' && phase.value !== 'failed')
 // 替换可执行文件之前都可以取消：在线升级到校验为止，上传升级包在上传完成之前

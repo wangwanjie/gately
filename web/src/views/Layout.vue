@@ -81,7 +81,7 @@ import SideNav from '../components/SideNav.vue'
 import AppLogo from '../components/AppLogo.vue'
 import ThemePicker from '../components/ThemePicker.vue'
 import LocaleSwitcher from '../components/LocaleSwitcher.vue'
-import { disabledModules, groupByPath, pathEnabled, sessionRole } from '../nav'
+import { absentModules, disabledModules, groupByPath, pathEnabled, sessionRole } from '../nav'
 import { useIsMobile } from '../composables/useIsMobile'
 import { useScrollLock } from '../composables/useScrollLock'
 
@@ -152,12 +152,13 @@ onBeforeUnmount(() => {
 })
 
 onMounted(async () => {
-  const s = await api.get<{ username: string; role?: string; disabledModules?: string[]; defaultPassword?: boolean }>('/api/session')
+  const s = await api.get<{ username: string; role?: string; disabledModules?: string[]; absentModules?: string[]; defaultPassword?: boolean }>('/api/session')
   username.value = s.username
   role.value = s.role ?? 'admin'
   sessionRole.value = role.value
   defaultPassword.value = s.defaultPassword ?? false
   disabledModules.value = s.disabledModules ?? []
+  absentModules.value = s.absentModules ?? []
   if (role.value === 'admin') {
     // 第三方登录、飞牛桌面入口等整页跳转进入时后端拿不到界面语言，这里上报一次；语言没变时后端不写文件
     api.put('/api/account/ui-language', { language: locale.value }).catch(() => undefined)

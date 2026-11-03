@@ -45,6 +45,7 @@ const (
 	upgradeReasonOpkg     = "opkg"     // OpenWrt 24.10 及以前的 ipk 安装包
 	upgradeReasonApk      = "apk"      // OpenWrt 25.12 起的 apk 安装包
 	upgradeReasonReadonly = "readonly" // 可执行文件所在目录不可写
+	upgradeReasonCustom   = "custom"   // 定制构建（去掉了部分模块或语言），在线升级下载的发布页完整包会装回全部功能
 )
 
 const (
@@ -77,6 +78,7 @@ var upgradeReasonText = map[string]string{
 	upgradeReasonOpkg:     "通过 OpenWrt 安装包安装，请下载新版 .ipk 后用 opkg install 升级",
 	upgradeReasonApk:      "通过 OpenWrt 安装包安装，请下载新版 .apk 后用 apk add --allow-untrusted 升级",
 	upgradeReasonReadonly: "程序所在目录不可写，无法在线升级",
+	upgradeReasonCustom:   "这是定制构建，在线升级会装回完整版本；请到 https://build.gately.cn 用相同选项生成新版本后上传升级包",
 }
 
 // upgradeSupport 描述当前部署方式能否在线升级。
@@ -85,9 +87,19 @@ type upgradeSupport struct {
 	Reason    string `json:"reason,omitempty"`
 	// Executable 为将被替换的可执行文件路径
 	Executable string `json:"executable,omitempty"`
+	// Custom 为定制构建：可以上传升级包，但不提供在线下载升级
+	Custom bool `json:"custom,omitempty"`
 }
 
 func (a *App) upgradeSupport() upgradeSupport {
+	sup := a.deployUpgradeSupport()
+	// 在线升级下载的是发布页的完整版本，定制构建升级后会变回完整版本，因此只允许上传升级包
+	sup.Custom = a.buildProfile().Custom
+	return sup
+}
+
+// deployUpgradeSupport 按部署方式判断能否替换可执行文件。
+func (a *App) deployUpgradeSupport() upgradeSupport {
 	if upgradeGOOS != "linux" {
 		return upgradeSupport{Reason: upgradeReasonOS}
 	}
@@ -428,11 +440,15 @@ func copyFile(src, dst string, mode os.FileMode) error {
 	return out.Close()
 }
 
-// beginUpgrade 检查能否升级并占用升级锁；返回 false 时已写出错误响应。
-func (a *App) beginUpgrade(w http.ResponseWriter) (upgradeSupport, bool) {
+// beginUpgrade 检查能否升级并占用升级锁；online 为在线下载升级。返回 false 时已写出错误响应。
+func (a *App) beginUpgrade(w http.ResponseWriter, online bool) (upgradeSupport, bool) {
 	sup := a.upgradeSupport()
 	if !sup.Supported {
 		httpx.Error(w, http.StatusConflict, "%s", upgradeReasonText[sup.Reason])
+		return sup, false
+	}
+	if online && sup.Custom {
+		httpx.Error(w, http.StatusConflict, "%s", upgradeReasonText[upgradeReasonCustom])
 		return sup, false
 	}
 	if !a.upgrading.CompareAndSwap(false, true) {
@@ -482,7 +498,7 @@ func (a *App) setUpgradeStatus(fn func(st *upgradeStatus)) {
 
 // handleUpgrade 在后台开始在线升级到 GitHub 上的最新版本，立即返回；进度见 handleUpgradeStatus。
 func (a *App) handleUpgrade(w http.ResponseWriter, r *http.Request) {
-	sup, ok := a.beginUpgrade(w)
+	sup, ok := a.beginUpgrade(w, true)
 	if !ok {
 		return
 	}
@@ -623,7 +639,7 @@ func (a *App) downloadAndInstall(ctx context.Context, exe string) (string, error
 // handleUpgradeUpload 用上传的升级包（发布页的 tar.gz 或解压后的 gately 二进制）升级。
 // 不限制版本高低，可用于离线环境或回退到旧版本；能否在本机运行由试运行确认。
 func (a *App) handleUpgradeUpload(w http.ResponseWriter, r *http.Request) {
-	sup, ok := a.beginUpgrade(w)
+	sup, ok := a.beginUpgrade(w, false)
 	if !ok {
 		return
 	}

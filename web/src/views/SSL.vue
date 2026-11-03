@@ -218,8 +218,9 @@
             <el-switch v-model="d.enable" size="small" />
             <el-radio-group v-model="d.type" size="small">
               <el-radio-button value="local">{{ t('ssl.deployLocal') }}</el-radio-button>
-              <el-radio-button value="ssh">{{ t('ssl.deploySSH') }}</el-radio-button>
-              <el-radio-button value="docker">{{ t('ssl.deployDocker') }}</el-radio-button>
+              <!-- 经 SSH 部署依赖 Web 终端的连接，重启容器依赖 Docker 管理；定制构建没有对应模块时不提供，已保存的部署仍然显示 -->
+              <el-radio-button v-if="moduleBuilt('webterminal') || d.type === 'ssh'" value="ssh">{{ t('ssl.deploySSH') }}</el-radio-button>
+              <el-radio-button v-if="moduleBuilt('docker') || d.type === 'docker'" value="docker">{{ t('ssl.deployDocker') }}</el-radio-button>
             </el-radio-group>
             <el-input v-model="d.remark" size="small" :placeholder="t('common.remark')" class="deploy-remark" />
             <el-button text type="danger" size="small" :icon="Trash2" :aria-label="t('ssl.deleteDeploy')" @click="editing.deploys.splice(i, 1)" />
@@ -287,6 +288,7 @@ import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { CopyPlus, Download, Pencil, Plus, RotateCw, Send, ShieldCheck, SlidersHorizontal, Trash2, Upload } from 'lucide-vue-next'
 import { api } from '../api'
+import { moduleBuilt } from '../nav'
 import SecretInput from '../components/SecretInput.vue'
 import { secretOf } from '../secrets'
 import CopyHint from '../components/CopyHint.vue'

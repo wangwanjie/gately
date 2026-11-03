@@ -304,6 +304,8 @@ func (a *App) handlePutSettings(w http.ResponseWriter, r *http.Request) {
 		httpx.Error(w, http.StatusBadRequest, "%v", err)
 		return
 	}
+	// 没有编译进来的模块不在设置页中，保留它们原来的开关
+	a.keepAbsentDisabled(old.DisabledModules, &next)
 	// 令牌不再通过全局设置管理，忽略客户端提交的旧字段
 	next.LegacyAPIToken = old.LegacyAPIToken
 	// 界面语言只由登录记录，不随表单提交改变

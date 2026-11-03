@@ -27,7 +27,8 @@
       "fnos": "Para o pacote do fnOS, instale manualmente o novo .fpk na Central de Aplicativos; a configuração é mantida.",
       "opkg": "Instalado pelo pacote .ipk do OpenWrt. Baixe o novo .ipk e atualize com opkg install; a configuração é mantida.",
       "apk": "Instalado pelo pacote .apk do OpenWrt. Baixe o novo .apk e atualize com apk add --allow-untrusted; a configuração é mantida.",
-      "readonly": "O diretório do executável não permite gravação, então a atualização online está indisponível. Substitua o binário manualmente."
+      "readonly": "O diretório do executável não permite gravação, então a atualização online está indisponível. Substitua o binário manualmente.",
+      "custom": "Esta é uma compilação personalizada, e a atualização online instalaria a edição completa. Gere a nova versão com as mesmas opções em build.gately.cn e envie-a na página Sobre."
     },
     "found": "Nova versão disponível",
     "currentVersion": "Versão atual {current}",
@@ -186,5 +187,11 @@
     "releases": "Estas versões mais recentes contêm correções de segurança: {versions}",
     "advice": "Atualize para {latest} o quanto antes.",
     "noFix": "Você já está na versão mais recente. Até sair uma versão corrigida, aplique as mitigações do aviso."
+  },
+  "build": {
+    "custom": "personalizada",
+    "absent": "Módulos não incluídos: {list}",
+    "languages": "Idiomas da interface: {list}",
+    "rebuild": "Gerar uma nova versão com estas opções"
   }
 }

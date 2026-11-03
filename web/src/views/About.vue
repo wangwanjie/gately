@@ -15,7 +15,14 @@
         <span class="badge"><span class="bk">go</span><span class="bv mono">{{ info?.goVersion?.replace(/^go/, '') ?? '-' }}</span></span>
         <span class="badge"><span class="bk">platform</span><span class="bv mono">{{ info ? `${info.os}/${info.arch}` : '-' }}</span></span>
         <span class="badge"><span class="bk">docker</span><span class="bv">amd64 · arm64 · arm/v7</span></span>
+        <span v-if="info?.build?.custom" class="badge"><span class="bk">build</span><span class="bv">{{ t('about.build.custom') }}</span></span>
       </div>
+      <!-- 定制构建：列出没有编译进来的功能模块与包含的界面语言 -->
+      <p v-if="info?.build?.custom" class="build-note">
+        <span v-if="absentTitles">{{ t('about.build.absent', { list: absentTitles }) }}</span>
+        <span>{{ t('about.build.languages', { list: languageNames }) }}</span>
+        <a :href="rebuildUrl" target="_blank" rel="noopener">{{ t('about.build.rebuild') }}</a>
+      </p>
       <div class="actions">
         <el-button type="primary" tag="a" :href="REPO" target="_blank" rel="noopener" :icon="Github">{{ t('about.repo') }}</el-button>
         <el-button tag="a" :href="`${REPO}/releases`" target="_blank" rel="noopener" :icon="Package">{{ t('about.releases') }}</el-button>
@@ -189,7 +196,8 @@ import {
   WifiOff,
 } from 'lucide-vue-next'
 import { api, type SystemSettings, type SystemInfo, type UpdateInfo, type UpgradeStatus } from '../api'
-import { sessionRole } from '../nav'
+import { navByModule, sessionRole } from '../nav'
+import { locales } from '../i18n/locales'
 import AppLogo from '../components/AppLogo.vue'
 import UpdateDialog from '../components/UpdateDialog.vue'
 import SecurityNotice from '../components/SecurityNotice.vue'
@@ -286,6 +294,23 @@ async function toggleAutoCheck(v: string | number | boolean) {
 // 管理员可以设置更新代理、手动检查更新与执行升级；角色来自 /api/session（Layout 读取），
 // 只读账号不请求这些管理员接口，避免控制台出现 403
 const isAdmin = computed(() => sessionRole.value === 'admin')
+// 定制构建中没有编译进来的模块名称，优先用导航中的译名
+const absentTitles = computed(() =>
+  (info.value?.build?.absent ?? [])
+    .map((m) => {
+      const n = navByModule(m.id)
+      return n ? t(n.titleKey) : m.title
+    })
+    .join(' · '),
+)
+const languageNames = computed(() => locales.map((l) => l.name).join(' · '))
+// 在构建器中按本程序的模块与语言档位生成新版本（语言档位：只有简体中文、简繁英三种、全部）
+const rebuildUrl = computed(() => {
+  const b = info.value?.build
+  const lang = locales.length === 1 ? 'zh' : locales.length === 3 ? 'cjk-en' : 'all'
+  const q = new URLSearchParams({ modules: (b?.modules ?? []).join(','), lang })
+  return `https://build.gately.cn/?${q}`
+})
 const proxy = ref('')
 const proxyDialog = ref(false)
 const proxyDraft = ref('')
@@ -432,6 +457,15 @@ h1 {
   font-size: 14px;
   line-height: 1.8;
   color: var(--el-text-color-regular);
+}
+.build-note {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 12px auto 0;
+  max-width: 640px;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
 }
 .badges {
   display: flex;

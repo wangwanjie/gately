@@ -75,7 +75,7 @@
         <el-table-column :label="t('netTools.openPorts')" min-width="140"><template #default="{ row }">{{ (row.ports ?? []).join(', ') || '-' }}</template></el-table-column>
         <el-table-column label="" width="120">
           <template #default="{ row }">
-            <el-button v-if="row.mac" text size="small" :icon="Power" @click="addWol(row)">{{ t('netTools.addWol') }}</el-button>
+            <el-button v-if="row.mac && moduleEnabled('wol')" text size="small" :icon="Power" @click="addWol(row)">{{ t('netTools.addWol') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -107,6 +107,7 @@ import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { Activity, Play, Power, ShieldBan, Square } from 'lucide-vue-next'
 import { api } from '../api'
+import { moduleEnabled } from '../nav'
 import PageHeader from '../components/PageHeader.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import { useFormLayout } from '../composables/useIsMobile'

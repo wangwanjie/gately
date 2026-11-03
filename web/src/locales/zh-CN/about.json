@@ -27,7 +27,8 @@
       "fnos": "飞牛 fnOS 安装包请在应用中心手动安装新版 .fpk，配置会自动保留。",
       "opkg": "通过 OpenWrt 的 ipk 安装包安装，请下载新版 .ipk 后执行 opkg install 升级，配置会自动保留。",
       "apk": "通过 OpenWrt 的 apk 安装包安装，请下载新版 .apk 后执行 apk add --allow-untrusted 升级，配置会自动保留。",
-      "readonly": "程序所在目录不可写，无法在线升级，请手动替换程序。"
+      "readonly": "程序所在目录不可写，无法在线升级，请手动替换程序。",
+      "custom": "这是定制构建，在线升级会装回完整版本。请到 build.gately.cn 用相同选项生成新版本，再在关于页上传升级包。"
     },
     "found": "发现新版本",
     "currentVersion": "当前版本 {current}",
@@ -186,5 +187,11 @@
     "releases": "以下新版本包含安全修复：{versions}",
     "advice": "请尽快升级到 {latest}。",
     "noFix": "当前已是最新版本，修复版本发布前请按公告中的缓解措施处理。"
+  },
+  "build": {
+    "custom": "定制构建",
+    "absent": "未包含的功能模块：{list}",
+    "languages": "界面语言：{list}",
+    "rebuild": "按当前选项生成新版本"
   }
 }

@@ -87,6 +87,7 @@ func main() {
 		Certs:     certs,
 		Modules:   mods,
 		Requires:  registry.Requires(),
+		Absent:    registry.Absent(),
 		ApplyDir:  *applyDir,
 		// 自动化部署时用环境变量指定初始密码，不指定时使用默认密码 gately.cn
 		InitialPassword: os.Getenv("GATELY_INITIAL_PASSWORD"),

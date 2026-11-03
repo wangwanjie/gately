@@ -1,7 +1,7 @@
 import { watch } from 'vue'
 import { createRouter, createWebHashHistory } from 'vue-router'
 import { i18n, t } from './i18n'
-import { disabledModules, pathEnabled, sessionRole } from './nav'
+import { absentModules, disabledModules, pathEnabled, sessionRole } from './nav'
 import { clearClips } from './components/terminal/clipboard'
 
 const router = createRouter({
@@ -77,10 +77,11 @@ async function hasSession(): Promise<boolean> {
     if (resp.ok) {
       // 先记下角色与已关闭模块再放行：只读账号直接打开管理员页面（如刷新 #/settings）时，
       // 路由守卫即可跳回总览，避免页面先挂载、请求管理员接口得到 403
-      const s = (await resp.json().catch(() => null)) as { role?: string; disabledModules?: string[] } | null
+      const s = (await resp.json().catch(() => null)) as { role?: string; disabledModules?: string[]; absentModules?: string[] } | null
       if (s) {
         sessionRole.value = s.role === 'readonly' ? 'readonly' : 'admin'
         disabledModules.value = s.disabledModules ?? []
+        absentModules.value = s.absentModules ?? []
       }
     }
     return true

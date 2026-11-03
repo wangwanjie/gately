@@ -135,15 +135,23 @@ export const navItems: NavItem[] = navGroups.flatMap((g) => g.items)
 // 本次启动中已关闭的功能模块 ID（来自 /api/session，重启后才会变化），对应的导航与页面全部隐藏
 export const disabledModules = ref<string[]>([])
 
+// 定制构建中没有编译进来的功能模块 ID（来自 /api/session），与已关闭的模块一样隐藏
+export const absentModules = ref<string[]>([])
+
 // 当前登录身份的角色（来自 /api/session）：'' 表示尚未读取，'admin' 或 'readonly'
 export const sessionRole = ref('')
 
 // isReadonly 为当前身份是否为只读账号；角色未读取时按管理员处理，避免误隐藏页面
 export const isReadonly = computed(() => sessionRole.value === 'readonly')
 
-// moduleEnabled 判断模块是否开启；不属于任何模块的页面视为开启。
+// moduleBuilt 判断模块是否编译进来（不论是否开启）。
+export function moduleBuilt(id: string): boolean {
+  return !absentModules.value.includes(id)
+}
+
+// moduleEnabled 判断模块是否编译进来且已开启；不属于任何模块的页面视为开启。
 export function moduleEnabled(id?: string): boolean {
-  return !id || !disabledModules.value.includes(id)
+  return !id || (!disabledModules.value.includes(id) && !absentModules.value.includes(id))
 }
 
 // itemEnabled 判断导航项是否显示：所属模块开启，多个模块共用的页面只要其中一个开启；只读账号不显示管理员页面。

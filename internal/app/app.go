@@ -59,6 +59,9 @@ type Options struct {
 	Modules []module.Module
 	// Requires 为模块间的依赖关系（模块 ID → 它依赖的模块 ID），依赖方开启时被依赖的模块不能关闭；可为 nil
 	Requires map[string][]string
+	// Absent 为定制构建中没有编译进来的模块。它们的配置文件、设置中的开关与令牌权限原样保留，
+	// 换回包含它们的构建后继续生效；接口统一返回“未包含在此构建中”
+	Absent []module.Info
 	// Certs 为管理界面 HTTPS 提供证书，可为 nil
 	Certs CertProvider
 	// ApplyDir 非空时，每次启动把该目录下的 <名称>.json 覆盖到配置目录（声明式配置，适合 GitOps、Docker 与 Kubernetes）
@@ -338,6 +341,9 @@ func (a *App) Handler() http.Handler {
 		}, e.mod.ID())
 		e.mod.Routes(prefixRouter{rec: rec, prefix: prefix, module: e.mod.ID()})
 	}
+	for _, m := range a.opts.Absent {
+		rec.add("/api/"+m.ID+"/", a.moduleAbsentHandler(m), m.ID)
+	}
 	rec.add("GET /api/fileusers", fileusers.Default.HandleGet(a.fileUsersExtra), "")
 	rec.add("PUT /api/fileusers", fileusers.Default.HandlePut(a.fileUsersExtra), "")
 	// 查看共享用户密码明文，路径含 secrets 片段，按 fileusers 写权限鉴权
@@ -548,10 +554,10 @@ func (a *App) handleSession(w http.ResponseWriter, r *http.Request) {
 	if role == "" {
 		role = auth.RoleAdmin
 	}
-	// disabledModules 为已关闭的功能模块，前端据此隐藏导航与页面
+	// disabledModules 为已关闭的功能模块，absentModules 为没有编译进来的模块，前端据此隐藏导航与页面
 	// defaultPassword 为主账号仍在使用默认密码，前端据此提醒管理员修改
 	httpx.OK(w, map[string]any{"username": auth.UserFromContext(r.Context()), "role": role, "disabledModules": a.disabledModuleIDs(),
-		"defaultPassword": role == auth.RoleAdmin && a.auth.UsingDefaultPassword()})
+		"absentModules": a.absentModuleIDs(), "defaultPassword": role == auth.RoleAdmin && a.auth.UsingDefaultPassword()})
 }
 
 type moduleInfo struct {
@@ -584,6 +590,7 @@ func (a *App) handleStatus(w http.ResponseWriter, r *http.Request) {
 		"goroutines": runtime.NumGoroutine(),
 		"memAlloc":   mem.Alloc,
 		"modules":    mods,
+		"build":      a.buildProfile(),
 		"timeZone":   zoneLabel(),
 		"configDir":  a.opts.ConfigDir,
 		"host":       a.hostStats.Snapshot(),

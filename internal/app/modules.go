@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/wangwanjie/gately/internal/httpx"
+	"github.com/wangwanjie/gately/internal/i18n"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/luckyimport"
 	"github.com/wangwanjie/gately/internal/module"
@@ -95,6 +96,7 @@ func (a *App) requiredBy(id string, enabled map[string]bool, httpsListen string)
 }
 
 // validateDisabledModules 校验要关闭的模块：必须是已知模块，且不能被仍开启的模块依赖。
+// 没有编译进来的模块也是已知模块，它们的开关原样保存，不参与依赖检查。
 func (a *App) validateDisabledModules(s Settings) error {
 	known := map[string]bool{}
 	for _, e := range a.modules {
@@ -102,6 +104,9 @@ func (a *App) validateDisabledModules(s Settings) error {
 	}
 	off := map[string]bool{}
 	for _, id := range s.DisabledModules {
+		if a.isAbsent(id) {
+			continue
+		}
 		if !known[id] {
 			return fmt.Errorf("未知的功能模块: %s", id)
 		}
@@ -114,6 +119,9 @@ func (a *App) validateDisabledModules(s Settings) error {
 		}
 	}
 	for _, id := range s.DisabledModules {
+		if a.isAbsent(id) {
+			continue
+		}
 		if by := a.requiredBy(id, enabled, s.HTTPSListen); len(by) > 0 {
 			return fmt.Errorf("功能模块「%s」被「%s」依赖，不能关闭", a.moduleTitle(id), strings.Join(by, "、"))
 		}
@@ -130,6 +138,73 @@ func (a *App) disabledModuleIDs() []string {
 		}
 	}
 	return out
+}
+
+// isAbsent 判断模块是否属于没有编译进来的模块。
+func (a *App) isAbsent(id string) bool {
+	for _, m := range a.opts.Absent {
+		if m.ID == id {
+			return true
+		}
+	}
+	return false
+}
+
+// absentModuleIDs 返回没有编译进来的模块 ID，始终为非 nil 切片，便于前端直接使用。
+func (a *App) absentModuleIDs() []string {
+	out := []string{}
+	for _, m := range a.opts.Absent {
+		out = append(out, m.ID)
+	}
+	return out
+}
+
+// keepAbsentDisabled 把旧设置中没有编译进来、且处于关闭状态的模块并入新设置。
+// 设置页只列出本次编译的模块，提交的开关里不会有它们；不合并的话，换回完整构建后这些模块会被意外开启。
+func (a *App) keepAbsentDisabled(old []string, next *Settings) {
+	for _, id := range old {
+		if a.isAbsent(id) && !slices.Contains(next.DisabledModules, id) {
+			next.DisabledModules = append(next.DisabledModules, id)
+		}
+	}
+	next.normalize()
+}
+
+// buildInfo 描述本程序的构建内容，供关于页展示与在线升级判断。
+type buildInfo struct {
+	// Custom 为定制构建（去掉了部分模块或语言）
+	Custom bool `json:"custom"`
+	// Modules 为编译进来的模块 ID
+	Modules []string `json:"modules"`
+	// Absent 为没有编译进来的模块
+	Absent []module.Info `json:"absent"`
+	// Languages 为编译进来的语言
+	Languages []string `json:"languages"`
+}
+
+// buildProfile 返回本程序的构建内容。
+func (a *App) buildProfile() buildInfo {
+	absent := a.opts.Absent
+	if absent == nil {
+		absent = []module.Info{}
+	}
+	built := []string{}
+	for _, e := range a.modules {
+		built = append(built, e.mod.ID())
+	}
+	return buildInfo{
+		Custom:    len(absent) > 0 || len(i18n.Langs) < len(i18n.AllLangs),
+		Modules:   built,
+		Absent:    absent,
+		Languages: i18n.Langs,
+	}
+}
+
+// moduleAbsentHandler 响应没有编译进来的模块的全部接口。
+func (a *App) moduleAbsentHandler(m module.Info) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		httpx.Error(w, http.StatusNotFound, "功能模块「%s」未包含在此构建中，如需使用请换用包含该模块的安装包", m.Title)
+	}
 }
 
 // moduleDisabledHandler 响应已关闭模块的全部接口。

@@ -29,7 +29,7 @@
         <el-input v-model="model.regex" :placeholder="t('ipSourceEditor.regexPlaceholder')" class="mono" />
       </el-form-item>
       <el-form-item>
-        <el-button size="small" :loading="testing" @click="test">{{ t('ipSourceEditor.testFetch') }}</el-button>
+        <el-button v-if="moduleBuilt('ddns')" size="small" :loading="testing" @click="test">{{ t('ipSourceEditor.testFetch') }}</el-button>
         <span v-if="result" class="result" :class="{ err: resultError }">{{ result }}</span>
       </el-form-item>
     </template>
@@ -40,6 +40,7 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api'
+import { moduleBuilt } from '../nav'
 import { useListText, splitLines } from '../composables/useListText'
 
 export interface IPSource {

@@ -59,6 +59,10 @@ func (a *App) initTokens() error {
 	for _, d := range a.scopeDomains() {
 		ids = append(ids, d.ID)
 	}
+	// 没有编译进来的模块仍是合法的权限域：已有令牌中针对它们的权限保持有效，编辑令牌时不会因此报错
+	for _, m := range a.opts.Absent {
+		ids = append(ids, m.ID)
+	}
 	m, err := apitoken.Open(a.store, ids)
 	if err != nil {
 		return fmt.Errorf("加载 API 令牌失败: %w", err)

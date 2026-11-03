@@ -27,7 +27,8 @@
       "fnos": "For the fnOS package, install the new .fpk manually in the App Center; your configuration is kept.",
       "opkg": "Installed from the OpenWrt .ipk package. Download the new .ipk and upgrade with opkg install; your config is kept.",
       "apk": "Installed from the OpenWrt .apk package. Download the new .apk and upgrade with apk add --allow-untrusted; your config is kept.",
-      "readonly": "The directory of the executable is not writable, so online upgrade is unavailable. Replace the binary manually."
+      "readonly": "The directory of the executable is not writable, so online upgrade is unavailable. Replace the binary manually.",
+      "custom": "This is a custom build, and online upgrade would install the full edition. Generate the new version with the same options at build.gately.cn, then upload it on the About page."
     },
     "found": "New version available",
     "currentVersion": "Current version {current}",
@@ -186,5 +187,11 @@
     "releases": "These newer versions contain security fixes: {versions}",
     "advice": "Please upgrade to {latest} as soon as possible.",
     "noFix": "You are already on the latest version. Until a fixed version is released, follow the mitigations in the advisory."
+  },
+  "build": {
+    "custom": "custom",
+    "absent": "Modules not included: {list}",
+    "languages": "UI languages: {list}",
+    "rebuild": "Build a new version with these options"
   }
 }
