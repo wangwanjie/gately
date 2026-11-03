@@ -48,6 +48,7 @@
   "socks5": "SOCKS5 代理",
   "socks5Placeholder": "IP:端口，留空为 127.0.0.1:1080",
   "socks5Help": "用户态网络下，本机程序通过该代理访问组网内的设备",
+  "socks5Public": "该代理没有认证。监听在非本机地址时，能访问这个地址的设备都可以经它进入组网，建议只监听 127.0.0.1",
   "wgPort": "WireGuard 端口",
   "wgPortHelp": "0 表示默认的 51820；可在防火墙放行该 UDP 端口以便直连",
   "stateDir": "状态目录",

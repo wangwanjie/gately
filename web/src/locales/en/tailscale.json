@@ -34,6 +34,7 @@
   "socks5": "SOCKS5 proxy",
   "socks5Placeholder": "e.g. localhost:1055; leave empty to disable",
   "socks5Help": "With userspace networking, local programs reach tailnet devices through this proxy",
+  "socks5Public": "This proxy has no authentication. When it listens on a non-local address, any device that can reach that address can use it to enter the network; listening on 127.0.0.1 only is recommended",
   "wgPort": "WireGuard port",
   "wgPortHelp": "0 picks one automatically; once fixed, open this UDP port in your firewall to allow direct connections",
   "stateDir": "State directory",

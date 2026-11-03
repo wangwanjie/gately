@@ -48,6 +48,7 @@
   "socks5": "Proxy SOCKS5",
   "socks5Placeholder": "IP:port, vide pour 127.0.0.1:1080",
   "socks5Help": "En réseau espace utilisateur, les programmes locaux atteignent les appareils du réseau via ce proxy",
+  "socks5Public": "Ce proxy n'a pas d'authentification. S'il écoute sur une adresse non locale, tout appareil pouvant joindre cette adresse peut l'utiliser pour entrer dans le réseau ; il est recommandé d'écouter uniquement sur 127.0.0.1",
   "wgPort": "Port WireGuard",
   "wgPortHelp": "0 utilise le port par défaut 51820 ; autorisez ce port UDP dans le pare-feu pour les connexions directes",
   "stateDir": "Répertoire d’état",

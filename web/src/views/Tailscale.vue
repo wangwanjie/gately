@@ -99,6 +99,8 @@
             <el-form-item v-if="settings.userspace" :label="t('tailscale.socks5')">
               <el-input v-model="settings.socks5" :placeholder="t('tailscale.socks5Placeholder')" class="mono" />
               <div class="form-help">{{ t('tailscale.socks5Help') }}</div>
+              <!-- SOCKS5 代理没有认证，监听到本机以外时提醒 -->
+              <el-alert v-if="listensBeyondLocal(settings.socks5)" class="socks-warn" type="warning" :closable="false" show-icon :title="t('tailscale.socks5Public')" />
             </el-form-item>
             <el-form-item :label="t('tailscale.wgPort')">
               <el-input-number v-model="settings.port" :min="0" :max="65535" controls-position="right" />
@@ -142,6 +144,7 @@ import { secretOf } from '../secrets'
 import PageHeader from '../components/PageHeader.vue'
 import UrlLink from '../components/UrlLink.vue'
 import Field from '../components/Field.vue'
+import { listensBeyondLocal } from '../netaddr'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
 import ProgramInstall from '../components/ProgramInstall.vue'
@@ -369,5 +372,8 @@ onMounted(() => {
 .peer-os {
   font-size: 12px;
   color: var(--el-text-color-secondary);
+}
+.socks-warn {
+  margin-top: 6px;
 }
 </style>

@@ -34,6 +34,7 @@
   "socks5": "SOCKS5 代理",
   "socks5Placeholder": "如 localhost:1055，留空不开启",
   "socks5Help": "用户态网络下，本机程序通过该代理访问 tailnet 内的设备",
+  "socks5Public": "该代理没有认证。监听在非本机地址时，能访问这个地址的设备都可以经它进入组网，建议只监听 127.0.0.1",
   "wgPort": "WireGuard 端口",
   "wgPortHelp": "0 表示自动选择；固定后可在防火墙放行该 UDP 端口以便直连",
   "stateDir": "状态目录",

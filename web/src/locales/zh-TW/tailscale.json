@@ -34,6 +34,7 @@
   "socks5": "SOCKS5 代理",
   "socks5Placeholder": "如 localhost:1055，留空不開啟",
   "socks5Help": "使用者空間網路下，本機程式透過該代理存取 tailnet 內的裝置",
+  "socks5Public": "此代理沒有認證。監聽在非本機位址時，能存取這個位址的裝置都可以經由它進入組網，建議只監聽 127.0.0.1",
   "wgPort": "WireGuard 連接埠",
   "wgPortHelp": "0 表示自動選擇；固定後可在防火牆放行該 UDP 連接埠以便直連",
   "stateDir": "狀態目錄",

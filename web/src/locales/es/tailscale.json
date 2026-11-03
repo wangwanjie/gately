@@ -34,6 +34,7 @@
   "socks5": "Proxy SOCKS5",
   "socks5Placeholder": "p. ej. localhost:1055; déjalo vacío para desactivarlo",
   "socks5Help": "Con la red en espacio de usuario, los programas locales acceden a los dispositivos de la tailnet a través de este proxy",
+  "socks5Public": "Este proxy no tiene autenticación. Si escucha en una dirección no local, cualquier dispositivo que alcance esa dirección puede usarlo para entrar en la red; se recomienda escuchar solo en 127.0.0.1",
   "wgPort": "Puerto de WireGuard",
   "wgPortHelp": "0 lo elige automáticamente; una vez fijado, abre este puerto UDP en tu cortafuegos para permitir conexiones directas",
   "stateDir": "Directorio de estado",
