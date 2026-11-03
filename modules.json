@@ -1,0 +1,668 @@
+{
+  "$comment": "Gately 定制构建清单：可选功能模块、语言档位与构建目标。build.gately.cn 按各版本 tag 下的这份文件生成选项；internal/modules/registry 的测试校验它与代码一致。baseSizeKB 为 linux/arm64 完整版的体积，sizeKB 为 linux/arm64 去掉该模块后的体积减少量（估算）。",
+  "schema": 1,
+  "baseSizeKB": 34432,
+  "groups": [
+    {
+      "id": "network",
+      "title": {
+        "zh-CN": "网络",
+        "en": "Network"
+      }
+    },
+    {
+      "id": "tunnel",
+      "title": {
+        "zh-CN": "组网与穿透",
+        "en": "Networking & Tunnels"
+      }
+    },
+    {
+      "id": "web",
+      "title": {
+        "zh-CN": "Web",
+        "en": "Web"
+      }
+    },
+    {
+      "id": "storage",
+      "title": {
+        "zh-CN": "文件服务",
+        "en": "File Services"
+      }
+    },
+    {
+      "id": "tools",
+      "title": {
+        "zh-CN": "工具",
+        "en": "Tools"
+      }
+    },
+    {
+      "id": "system",
+      "title": {
+        "zh-CN": "系统",
+        "en": "System"
+      }
+    }
+  ],
+  "modules": [
+    {
+      "id": "portforward",
+      "group": "network",
+      "core": true,
+      "title": {
+        "zh-CN": "端口转发",
+        "en": "Port Forwarding"
+      },
+      "desc": {
+        "zh-CN": "TCP / UDP 端口转发与负载均衡",
+        "en": "TCP / UDP port forwarding and load balancing"
+      },
+      "requires": []
+    },
+    {
+      "id": "protoroute",
+      "group": "network",
+      "core": false,
+      "tag": "no_protoroute",
+      "title": {
+        "zh-CN": "协议分流",
+        "en": "Protocol Routing"
+      },
+      "desc": {
+        "zh-CN": "按协议、SNI 与 Host 共用端口，替代 sslh 与 haproxy SNI 分流",
+        "en": "Share ports by protocol, SNI and Host, replacing sslh and haproxy SNI routing"
+      },
+      "requires": [],
+      "sizeKB": 128
+    },
+    {
+      "id": "ddns",
+      "group": "network",
+      "core": false,
+      "tag": "no_ddns",
+      "title": {
+        "zh-CN": "动态域名",
+        "en": "Dynamic DNS"
+      },
+      "desc": {
+        "zh-CN": "公网 IP 变化时自动更新解析",
+        "en": "Update DNS records automatically when your public IP changes"
+      },
+      "requires": [],
+      "sizeKB": 192
+    },
+    {
+      "id": "stun",
+      "group": "tunnel",
+      "core": false,
+      "tag": "no_stun",
+      "title": {
+        "zh-CN": "STUN 穿透",
+        "en": "STUN Traversal"
+      },
+      "desc": {
+        "zh-CN": "NAT1 网络下无公网 IP 穿透",
+        "en": "Reach services behind NAT1 without a public IP"
+      },
+      "requires": [],
+      "sizeKB": 256
+    },
+    {
+      "id": "tailscale",
+      "group": "tunnel",
+      "core": false,
+      "tag": "no_tailscale",
+      "title": {
+        "zh-CN": "Tailscale",
+        "en": "Tailscale"
+      },
+      "desc": {
+        "zh-CN": "加入 Tailscale / Headscale 组网",
+        "en": "Join a Tailscale / Headscale network"
+      },
+      "requires": [],
+      "sizeKB": 0
+    },
+    {
+      "id": "netbird",
+      "group": "tunnel",
+      "core": false,
+      "tag": "no_netbird",
+      "title": {
+        "zh-CN": "NetBird",
+        "en": "NetBird"
+      },
+      "desc": {
+        "zh-CN": "加入 NetBird 官方云或自建组网",
+        "en": "Join a NetBird network (cloud or self-hosted)"
+      },
+      "requires": [],
+      "sizeKB": 64
+    },
+    {
+      "id": "frp",
+      "group": "tunnel",
+      "core": false,
+      "tag": "no_frp",
+      "title": {
+        "zh-CN": "frp",
+        "en": "frp"
+      },
+      "desc": {
+        "zh-CN": "frpc / frps 内网穿透",
+        "en": "frpc / frps NAT traversal"
+      },
+      "requires": [],
+      "sizeKB": 384
+    },
+    {
+      "id": "cloudflared",
+      "group": "tunnel",
+      "core": false,
+      "tag": "no_cloudflared",
+      "title": {
+        "zh-CN": "Cloudflare 隧道",
+        "en": "Cloudflare Tunnel"
+      },
+      "desc": {
+        "zh-CN": "无需公网 IP 发布内网服务",
+        "en": "Publish internal services without a public IP"
+      },
+      "requires": [],
+      "sizeKB": 128
+    },
+    {
+      "id": "ssl",
+      "group": "web",
+      "core": true,
+      "title": {
+        "zh-CN": "SSL 证书",
+        "en": "SSL Certificates"
+      },
+      "desc": {
+        "zh-CN": "ACME 自动申请与续签",
+        "en": "Automatic ACME issuance and renewal"
+      },
+      "requires": []
+    },
+    {
+      "id": "waf",
+      "group": "web",
+      "core": false,
+      "tag": "no_waf",
+      "title": {
+        "zh-CN": "WAF 防火墙",
+        "en": "WAF Firewall"
+      },
+      "desc": {
+        "zh-CN": "基于 OWASP CRS 的应用防火墙",
+        "en": "Web application firewall based on OWASP CRS"
+      },
+      "requires": [],
+      "sizeKB": 7296
+    },
+    {
+      "id": "webservice",
+      "group": "web",
+      "core": true,
+      "title": {
+        "zh-CN": "Web 服务",
+        "en": "Web Services"
+      },
+      "desc": {
+        "zh-CN": "反向代理、重定向与静态站点",
+        "en": "Reverse proxy, redirects and static sites"
+      },
+      "requires": []
+    },
+    {
+      "id": "guard",
+      "group": "network",
+      "core": false,
+      "tag": "no_guard",
+      "title": {
+        "zh-CN": "入侵防护",
+        "en": "Intrusion Prevention"
+      },
+      "desc": {
+        "zh-CN": "封禁恶意 IP，联动系统防火墙",
+        "en": "Ban malicious IPs at the system firewall"
+      },
+      "requires": [],
+      "sizeKB": 256
+    },
+    {
+      "id": "wol",
+      "group": "tools",
+      "core": false,
+      "tag": "no_wol",
+      "title": {
+        "zh-CN": "网络唤醒",
+        "en": "Wake-on-LAN"
+      },
+      "desc": {
+        "zh-CN": "远程唤醒局域网设备",
+        "en": "Wake up devices on your LAN remotely"
+      },
+      "requires": [],
+      "sizeKB": 128
+    },
+    {
+      "id": "webterminal",
+      "group": "tools",
+      "core": false,
+      "tag": "no_webterminal",
+      "title": {
+        "zh-CN": "Web 终端",
+        "en": "Web Terminal"
+      },
+      "desc": {
+        "zh-CN": "浏览器中的 SSH 与本机 Shell",
+        "en": "SSH and local shell in your browser"
+      },
+      "requires": [],
+      "sizeKB": 1088
+    },
+    {
+      "id": "cron",
+      "group": "tools",
+      "core": false,
+      "tag": "no_cron",
+      "title": {
+        "zh-CN": "计划任务",
+        "en": "Scheduled Tasks"
+      },
+      "desc": {
+        "zh-CN": "定时执行命令或 HTTP 请求",
+        "en": "Run commands or HTTP requests on a schedule"
+      },
+      "requires": [],
+      "sizeKB": 128
+    },
+    {
+      "id": "docker",
+      "group": "tools",
+      "core": false,
+      "tag": "no_docker",
+      "title": {
+        "zh-CN": "Docker 管理",
+        "en": "Docker Management"
+      },
+      "desc": {
+        "zh-CN": "容器管理与镜像更新",
+        "en": "Container management and image updates"
+      },
+      "requires": [],
+      "sizeKB": 512
+    },
+    {
+      "id": "webdav",
+      "group": "storage",
+      "core": false,
+      "tag": "no_webdav",
+      "title": {
+        "zh-CN": "WebDAV 服务",
+        "en": "WebDAV Service"
+      },
+      "desc": {
+        "zh-CN": "WebDAV 文件共享服务",
+        "en": "WebDAV file sharing service"
+      },
+      "requires": [],
+      "sizeKB": 128
+    },
+    {
+      "id": "ftp",
+      "group": "storage",
+      "core": false,
+      "tag": "no_ftp",
+      "title": {
+        "zh-CN": "FTP 服务",
+        "en": "FTP Service"
+      },
+      "desc": {
+        "zh-CN": "FTP / FTPS 文件共享服务",
+        "en": "FTP / FTPS file sharing service"
+      },
+      "requires": [],
+      "sizeKB": 320
+    },
+    {
+      "id": "smb",
+      "group": "storage",
+      "core": false,
+      "tag": "no_smb",
+      "title": {
+        "zh-CN": "SMB 服务",
+        "en": "SMB Service"
+      },
+      "desc": {
+        "zh-CN": "SMB 文件共享服务",
+        "en": "SMB file sharing service"
+      },
+      "requires": [],
+      "sizeKB": 832
+    },
+    {
+      "id": "filebrowser",
+      "group": "storage",
+      "core": false,
+      "tag": "no_filebrowser",
+      "title": {
+        "zh-CN": "File Browser",
+        "en": "File Browser"
+      },
+      "desc": {
+        "zh-CN": "网页文件管理器，支持预览与分享",
+        "en": "Web file manager with previews and sharing"
+      },
+      "requires": [],
+      "sizeKB": 128
+    },
+    {
+      "id": "storage",
+      "group": "storage",
+      "core": false,
+      "tag": "no_storage",
+      "title": {
+        "zh-CN": "存储挂载",
+        "en": "Storage Mounts"
+      },
+      "desc": {
+        "zh-CN": "挂载本地目录、远程 WebDAV 或 SMB 共享，在线管理文件",
+        "en": "Mount local directories, remote WebDAV or SMB shares and manage files online"
+      },
+      "requires": [],
+      "sizeKB": 640
+    },
+    {
+      "id": "notify",
+      "group": "system",
+      "core": false,
+      "tag": "no_notify",
+      "title": {
+        "zh-CN": "通知中心",
+        "en": "Notifications"
+      },
+      "desc": {
+        "zh-CN": "事件推送到 Telegram、邮件、企业微信等",
+        "en": "Push events to Telegram, email, WeCom and more"
+      },
+      "requires": [],
+      "sizeKB": 256
+    },
+    {
+      "id": "perf",
+      "group": "system",
+      "core": false,
+      "tag": "no_perf",
+      "title": {
+        "zh-CN": "性能监控",
+        "en": "Performance"
+      },
+      "desc": {
+        "zh-CN": "性能趋势与阈值告警",
+        "en": "Performance trends and threshold alerts"
+      },
+      "requires": [],
+      "sizeKB": 128
+    },
+    {
+      "id": "nettools",
+      "group": "tools",
+      "core": false,
+      "tag": "no_nettools",
+      "title": {
+        "zh-CN": "网络诊断",
+        "en": "Network Diagnostics"
+      },
+      "desc": {
+        "zh-CN": "Ping、路由追踪、端口探测、DNS 与局域网扫描",
+        "en": "Ping, traceroute, port probe, DNS and LAN scan"
+      },
+      "requires": [],
+      "sizeKB": 128
+    },
+    {
+      "id": "backup",
+      "group": "storage",
+      "core": false,
+      "tag": "no_backup",
+      "title": {
+        "zh-CN": "配置备份",
+        "en": "Configuration Backup"
+      },
+      "desc": {
+        "zh-CN": "定时把全部配置备份到本地或存储挂载",
+        "en": "Back up all configuration to local disk or mounted storage on a schedule"
+      },
+      "requires": [
+        "storage"
+      ],
+      "sizeKB": 128
+    }
+  ],
+  "languages": [
+    {
+      "id": "zh",
+      "tags": [
+        "lang_zh"
+      ],
+      "locales": [
+        "zh-CN"
+      ],
+      "title": {
+        "zh-CN": "简体中文",
+        "en": "Simplified Chinese"
+      },
+      "sizeKB": 896
+    },
+    {
+      "id": "cjk-en",
+      "tags": [
+        "lang_cjken"
+      ],
+      "locales": [
+        "zh-CN",
+        "zh-TW",
+        "en"
+      ],
+      "title": {
+        "zh-CN": "简体中文、繁体中文、英语",
+        "en": "Simplified Chinese, Traditional Chinese, English"
+      },
+      "sizeKB": 704
+    },
+    {
+      "id": "all",
+      "tags": [],
+      "locales": [
+        "zh-CN",
+        "en",
+        "zh-TW",
+        "ja",
+        "ko",
+        "es",
+        "fr",
+        "de",
+        "ru",
+        "pt-BR"
+      ],
+      "title": {
+        "zh-CN": "全部 10 种语言",
+        "en": "All 10 languages"
+      },
+      "sizeKB": 0
+    }
+  ],
+  "targets": [
+    {
+      "id": "linux-amd64",
+      "kind": "tar",
+      "goos": "linux",
+      "goarch": "amd64"
+    },
+    {
+      "id": "linux-arm64",
+      "kind": "tar",
+      "goos": "linux",
+      "goarch": "arm64"
+    },
+    {
+      "id": "linux-arm",
+      "kind": "tar",
+      "goos": "linux",
+      "goarch": "arm"
+    },
+    {
+      "id": "linux-mipsle",
+      "kind": "tar",
+      "goos": "linux",
+      "goarch": "mipsle"
+    },
+    {
+      "id": "linux-mips",
+      "kind": "tar",
+      "goos": "linux",
+      "goarch": "mips"
+    },
+    {
+      "id": "linux-riscv64",
+      "kind": "tar",
+      "goos": "linux",
+      "goarch": "riscv64"
+    },
+    {
+      "id": "windows-amd64",
+      "kind": "tar",
+      "goos": "windows",
+      "goarch": "amd64"
+    },
+    {
+      "id": "darwin-amd64",
+      "kind": "tar",
+      "goos": "darwin",
+      "goarch": "amd64"
+    },
+    {
+      "id": "darwin-arm64",
+      "kind": "tar",
+      "goos": "darwin",
+      "goarch": "arm64"
+    },
+    {
+      "id": "freebsd-amd64",
+      "kind": "tar",
+      "goos": "freebsd",
+      "goarch": "amd64"
+    },
+    {
+      "id": "fnos-x86",
+      "kind": "fpk",
+      "goos": "linux",
+      "goarch": "amd64",
+      "platform": "x86"
+    },
+    {
+      "id": "fnos-arm",
+      "kind": "fpk",
+      "goos": "linux",
+      "goarch": "arm64",
+      "platform": "arm"
+    },
+    {
+      "id": "openwrt-amd64",
+      "kind": "openwrt",
+      "goos": "linux",
+      "goarch": "amd64"
+    },
+    {
+      "id": "openwrt-arm64",
+      "kind": "openwrt",
+      "goos": "linux",
+      "goarch": "arm64"
+    },
+    {
+      "id": "openwrt-arm",
+      "kind": "openwrt",
+      "goos": "linux",
+      "goarch": "arm"
+    },
+    {
+      "id": "openwrt-mipsle",
+      "kind": "openwrt",
+      "goos": "linux",
+      "goarch": "mipsle"
+    },
+    {
+      "id": "openwrt-mips",
+      "kind": "openwrt",
+      "goos": "linux",
+      "goarch": "mips"
+    },
+    {
+      "id": "openwrt-riscv64",
+      "kind": "openwrt",
+      "goos": "linux",
+      "goarch": "riscv64"
+    }
+  ],
+  "presets": [
+    {
+      "id": "minimal",
+      "title": {
+        "zh-CN": "仅核心",
+        "en": "Core only"
+      },
+      "modules": []
+    },
+    {
+      "id": "router",
+      "title": {
+        "zh-CN": "路由器",
+        "en": "Router"
+      },
+      "modules": [
+        "protoroute",
+        "ddns",
+        "stun",
+        "frp",
+        "guard",
+        "wol",
+        "cron",
+        "notify",
+        "nettools"
+      ]
+    },
+    {
+      "id": "nas",
+      "title": {
+        "zh-CN": "NAS",
+        "en": "NAS"
+      },
+      "modules": [
+        "protoroute",
+        "ddns",
+        "stun",
+        "tailscale",
+        "frp",
+        "cloudflared",
+        "guard",
+        "wol",
+        "webterminal",
+        "cron",
+        "docker",
+        "webdav",
+        "smb",
+        "filebrowser",
+        "storage",
+        "notify",
+        "perf",
+        "nettools",
+        "backup"
+      ]
+    }
+  ]
+}
