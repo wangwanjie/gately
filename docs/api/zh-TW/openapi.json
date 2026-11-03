@@ -1201,6 +1201,249 @@
         },
         "type": "object"
       },
+      "netbird.ConnView": {
+        "properties": {
+          "connected": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "netbird.Instance": {
+        "properties": {
+          "acceptDns": {
+            "type": "boolean"
+          },
+          "acceptRoutes": {
+            "type": "boolean"
+          },
+          "blockInbound": {
+            "type": "boolean"
+          },
+          "daemonAddr": {
+            "type": "string"
+          },
+          "daemonEnv": {
+            "type": "string"
+          },
+          "daemonExtraArgs": {
+            "type": "string"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "extraUpArgs": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "hostname": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "legacyStateDir": {
+            "type": "boolean"
+          },
+          "localForwarding": {
+            "type": "boolean"
+          },
+          "manageDaemon": {
+            "type": "boolean"
+          },
+          "managementUrl": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "port": {
+            "type": "integer"
+          },
+          "remark": {
+            "type": "string"
+          },
+          "serverRoutes": {
+            "type": "boolean"
+          },
+          "setupKey": {
+            "type": "string"
+          },
+          "socks5": {
+            "type": "string"
+          },
+          "stateDir": {
+            "type": "string"
+          },
+          "userspace": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "netbird.PeerView": {
+        "properties": {
+          "connType": {
+            "type": "string"
+          },
+          "fqdn": {
+            "type": "string"
+          },
+          "ips": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "lastSeen": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "latencyMs": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "online": {
+            "type": "boolean"
+          },
+          "relay": {
+            "type": "string"
+          },
+          "routes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "rxBytes": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string"
+          },
+          "txBytes": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "netbird.SelfView": {
+        "properties": {
+          "fqdn": {
+            "type": "string"
+          },
+          "ips": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "kernel": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "wgPort": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "netbird.Settings": {
+        "properties": {
+          "installProxy": {
+            "type": "string"
+          },
+          "netbirdPath": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "netbird.SettingsView": {
+        "properties": {
+          "cli": {
+            "type": "string"
+          },
+          "defaultManagementUrl": {
+            "type": "string"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/netbird.Settings"
+          }
+        },
+        "type": "object"
+      },
+      "netbird.StatusView": {
+        "properties": {
+          "authCode": {
+            "type": "string"
+          },
+          "authUrl": {
+            "type": "string"
+          },
+          "cli": {
+            "type": "string"
+          },
+          "daemon": {
+            "$ref": "#/components/schemas/proc.State"
+          },
+          "daemonStatus": {
+            "type": "string"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "management": {
+            "$ref": "#/components/schemas/netbird.ConnView"
+          },
+          "name": {
+            "type": "string"
+          },
+          "peers": {
+            "items": {
+              "$ref": "#/components/schemas/netbird.PeerView"
+            },
+            "type": "array"
+          },
+          "peersConnected": {
+            "type": "integer"
+          },
+          "relaysTotal": {
+            "type": "integer"
+          },
+          "relaysUp": {
+            "type": "integer"
+          },
+          "self": {
+            "$ref": "#/components/schemas/netbird.SelfView"
+          },
+          "signal": {
+            "$ref": "#/components/schemas/netbird.ConnView"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "nettools.Request": {
         "properties": {
           "cidr": {
@@ -22242,9 +22485,144 @@
         "x-token-allowed": true
       }
     },
-    "/api/netbird/logout": {
+    "/api/netbird/instances": {
+      "get": {
+        "description": "所需權限：`netbird:read`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/netbird.Instance"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "取得NetBird 執行個體清單",
+        "tags": [
+          "NetBird 組網"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      },
       "post": {
-        "description": "執行 `netbird logout`：從管理服務註銷本機並刪除本機登入資訊，本機會從組網的節點清單中移除，再次加入需要重新登入或使用設定金鑰。\n\n所需權限：`netbird:write`。",
+        "description": "每個執行個體執行一個獨立的 NetBird 常駐程式，可分別加入不同的 NetBird 網路。請求內容欄位：`name` 名稱（不能重複）；`enable` 是否啟用；`manageDaemon` 為 true 時由 Gately 執行 `netbird service run`，為 false 時接入系統已安裝的 NetBird 服務（只執行 `netbird up`）；`userspace` 為 true 時使用使用者態網路（netstack），為 false 時使用核心 WireGuard 網卡；這兩項沒有預設值，省略即為 false，請明確填寫。`stateDir` 為狀態目錄（經 `NB_STATE_DIR` 傳給常駐程式），留空為設定目錄下的 `netbird/\u003c執行個體 key\u003e`，填寫已有的狀態目錄可沿用原節點身分；`daemonAddr` 為控制位址，託管時留空為狀態目錄下的 `netbird.sock`。`setupKey` 經環境變數 `NB_SETUP_KEY` 傳給 `netbird up`，不會出現在程序參數中；`managementUrl`、`hostname`、`acceptRoutes`、`serverRoutes`、`acceptDns`、`blockInbound`、`extraUpArgs` 對應 `netbird up` 的參數；`port` 為 WireGuard UDP 連接埠（0 為預設的 51820），`localForwarding` 與 `socks5`（留空為 127.0.0.1:1080）只在使用者態網路下生效，`daemonExtraArgs`、`daemonEnv`（每行一個 `KEY=VALUE`）傳給常駐程式。以下情況回傳 400：同時啟用兩個核心模式（託管且非使用者態）執行個體（核心模式使用固定的路由表、防火牆標記與 nftables 表，預設網卡名稱都是 wt0）；兩個執行個體共用狀態目錄或控制位址；兩個託管執行個體的有效 WireGuard 連接埠相同（0 視為 51820）；兩個託管的使用者態執行個體的 SOCKS5 監聽搶同一連接埠（留空視為 127.0.0.1:1080）；名稱重複。啟用、批次啟用與複製時同樣檢查。`legacyStateDir` 由伺服器維護，表示執行個體遷移自舊版單一執行個體設定、留空 `stateDir` 時沿用 `\u003c設定目錄\u003e/netbird`。\n\n所需權限：`netbird:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/netbird.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/netbird.Instance"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "新增 NetBird 執行個體",
+        "tags": [
+          "NetBird 組網"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances-delete": {
+      "post": {
+        "description": "所需權限：`netbird:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchDeleteRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "成功"
@@ -22285,11 +22663,735 @@
             "bearerAuth": []
           }
         ],
-        "summary": "登出 NetBird",
+        "summary": "批次刪除NetBird 執行個體",
         "tags": [
           "NetBird 組網"
         ],
         "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances-enable": {
+      "put": {
+        "description": "所需權限：`netbird:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchEnableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "批次啟用或停用NetBird 執行個體",
+        "tags": [
+          "NetBird 組網"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances-group": {
+      "put": {
+        "description": "所需權限：`netbird:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "批次設定NetBird 執行個體分組",
+        "tags": [
+          "NetBird 組網"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances-order": {
+      "put": {
+        "description": "所需權限：`netbird:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.orderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "調整NetBird 執行個體排序",
+        "tags": [
+          "NetBird 組網"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}": {
+      "delete": {
+        "description": "所需權限：`netbird:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "刪除NetBird 執行個體",
+        "tags": [
+          "NetBird 組網"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "所需權限：`netbird:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/netbird.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/netbird.Instance"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "修改NetBird 執行個體",
+        "tags": [
+          "NetBird 組網"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}/copy": {
+      "post": {
+        "description": "所需權限：`netbird:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/netbird.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/netbird.Instance"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "複製NetBird 執行個體",
+        "tags": [
+          "NetBird 組網"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}/enable": {
+      "put": {
+        "description": "所需權限：`netbird:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.enableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "啟用或停用NetBird 執行個體",
+        "tags": [
+          "NetBird 組網"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}/logout": {
+      "post": {
+        "description": "對該執行個體執行 `netbird logout`：從管理服務登出本機的這個節點並刪除本機登入資訊，節點會從組網的節點清單中移除，再次加入需要重新登入或使用設定金鑰。\n\n所需權限：`netbird:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "登出 NetBird 執行個體",
+        "tags": [
+          "NetBird 組網"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}/restart": {
+      "post": {
+        "description": "重新啟動該執行個體託管的常駐程式並重新執行 `netbird up`，其他執行個體不受影響。\n\n所需權限：`netbird:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "重新啟動 NetBird 執行個體",
+        "tags": [
+          "NetBird 組網"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}/secrets": {
+      "get": {
+        "description": "所需權限：`netbird:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "查看金鑰明文",
+        "tags": [
+          "NetBird 組網"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}/status": {
+      "get": {
+        "description": "`daemonStatus` 為 Idle、Connecting、Connected、NeedsLogin、LoginFailed 或 SessionExpired。未填寫設定金鑰時 `authUrl` 為登入連結（Linux 下為裝置碼登入，可在任意裝置上開啟；macOS 與 Windows 上通常只能在本機瀏覽器完成），`authCode` 為需要輸入的代碼（連結已包含時為空），連結過期後自動更新。`peers` 為組網中的其他節點，`connType` 為 P2P 或 Relayed。`authUrl` 與 `authCode` 只回傳給具有 `netbird:write` 權限的身分。\n\n所需權限：`netbird:read`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/netbird.StatusView"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "檢視 NetBird 執行個體的連線狀態",
+        "tags": [
+          "NetBird 組網"
+        ],
+        "x-required-scope": "netbird:read",
         "x-token-allowed": true
       }
     },
@@ -22566,123 +23668,18 @@
         "x-token-allowed": true
       }
     },
-    "/api/netbird/restart": {
-      "post": {
-        "description": "所需權限：`netbird:write`。",
-        "responses": {
-          "200": {
-            "description": "成功"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "請求參數錯誤"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "權杖無效、已過期或未登入"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "權杖缺少所需權限"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "重新啟動 NetBird",
-        "tags": [
-          "NetBird 組網"
-        ],
-        "x-required-scope": "netbird:write",
-        "x-token-allowed": true
-      }
-    },
-    "/api/netbird/secrets": {
-      "get": {
-        "description": "所需權限：`netbird:write`。",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "type": "object"
-                }
-              }
-            },
-            "description": "成功"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "請求參數錯誤"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "權杖無效、已過期或未登入"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "權杖缺少所需權限"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "查看金鑰明文",
-        "tags": [
-          "NetBird 組網"
-        ],
-        "x-required-scope": "netbird:write",
-        "x-token-allowed": true
-      }
-    },
     "/api/netbird/settings": {
       "get": {
-        "description": "傳回 `settings`（設定金鑰 `setupKey` 已遮蔽）、`defaultStateDir`（`stateDir` 留空時使用的狀態目錄）與 `defaultManagementUrl`（`managementUrl` 留空時使用的 NetBird 官方雲位址）。\n\n所需權限：`netbird:read`。",
+        "description": "回傳 `settings`（`netbirdPath` 與下載代理 `installProxy`，所有執行個體共用）、實際使用的 netbird 程式路徑 `cli` 與 `defaultManagementUrl`（執行個體 `managementUrl` 留空時使用的 NetBird 官方雲位址）。\n\n所需權限：`netbird:read`。",
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/netbird.SettingsView"
+                }
+              }
+            },
             "description": "成功"
           },
           "400": {
@@ -22721,7 +23718,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "讀取 NetBird 設定",
+        "summary": "讀取 NetBird 程式設定",
         "tags": [
           "NetBird 組網"
         ],
@@ -22729,12 +23726,12 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "儲存後依新設定重新啟動：託管常駐程式時重新啟動 `netbird service run` 後執行 `netbird up`，託管時關閉常駐程式自身的自動連線，常駐程式異常結束被重新啟動後會再次執行 up；使用外部常駐程式且已連線時先中斷連線再執行 `netbird up`，讓新設定生效。`setupKey` 為 `********` 時沿用已儲存的金鑰；`installProxy` 只由安裝介面修改。開關類設定都會明確傳給 netbird up：`acceptRoutes` 對應 `--disable-client-routes` 取反，`serverRoutes` 對應 `--disable-server-routes` 取反，`acceptDns` 對應 `--disable-dns` 取反，`blockInbound` 對應 `--block-inbound`。\n\n所需權限：`netbird:write`。",
+        "description": "請求內容 `{\"netbirdPath\": \"\"}`，留空時依次在設定目錄 bin 與 PATH 下尋找；`installProxy` 只由安裝介面修改。路徑變更後重新啟動已啟用的執行個體。\n\n所需權限：`netbird:write`。",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "type": "object"
+                "$ref": "#/components/schemas/netbird.Settings"
               }
             }
           }
@@ -22779,7 +23776,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "儲存 NetBird 設定",
+        "summary": "儲存 NetBird 程式設定",
         "tags": [
           "NetBird 組網"
         ],
@@ -22789,9 +23786,19 @@
     },
     "/api/netbird/status": {
       "get": {
-        "description": "`daemonStatus` 為 Idle、Connecting、Connected、NeedsLogin、LoginFailed 或 SessionExpired。未填寫設定金鑰時 `authUrl` 為登入連結（Linux 下為裝置碼登入，可在任意裝置上開啟；macOS 與 Windows 上通常只能在本機瀏覽器完成），`authCode` 為需要輸入的代碼（連結已包含時為空），連結過期後自動更新。`peers` 為組網中的其他節點，`connType` 為 P2P 或 Relayed。`authUrl` 與 `authCode` 只回傳給具有 `netbird:write` 權限的身分。\n\n所需權限：`netbird:read`。",
+        "description": "回傳陣列，順序同執行個體清單，每項含執行個體 `key`、`name` 與該執行個體的狀態，欄位同 `GET /api/netbird/instances/{key}/status`。停用的執行個體只回傳程序狀態，不查詢連線狀態。\n\n所需權限：`netbird:read`。",
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/netbird.StatusView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
             "description": "成功"
           },
           "400": {
@@ -22830,7 +23837,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "查看 NetBird 連線狀態",
+        "summary": "檢視全部 NetBird 執行個體的連線狀態",
         "tags": [
           "NetBird 組網"
         ],

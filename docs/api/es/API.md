@@ -188,12 +188,23 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | --- | --- | --- | --- |
 | GET | `/api/netbird/logs` | `netbird:read` | Ver los registros de ejecución del módulo |
 | DELETE | `/api/netbird/logs` | `netbird:write` | Vaciar los registros de ejecución del módulo |
-| GET | `/api/netbird/settings` | `netbird:read` | Leer los ajustes de NetBird |
-| PUT | `/api/netbird/settings` | `netbird:write` | Guardar los ajustes de NetBird |
-| GET | `/api/netbird/secrets` | `netbird:write` | Ver secretos en texto plano |
-| GET | `/api/netbird/status` | `netbird:read` | Ver el estado de conexión de NetBird |
-| POST | `/api/netbird/restart` | `netbird:write` | Reiniciar NetBird |
-| POST | `/api/netbird/logout` | `netbird:write` | Cerrar sesión en NetBird |
+| GET | `/api/netbird/instances` | `netbird:read` | Listar Instancia de NetBird |
+| POST | `/api/netbird/instances` | `netbird:write` | Añadir una instancia de NetBird |
+| POST | `/api/netbird/instances/{key}/copy` | `netbird:write` | Duplicar Instancia de NetBird |
+| PUT | `/api/netbird/instances/{key}` | `netbird:write` | Modificar Instancia de NetBird |
+| DELETE | `/api/netbird/instances/{key}` | `netbird:write` | Eliminar Instancia de NetBird |
+| PUT | `/api/netbird/instances/{key}/enable` | `netbird:write` | Activar o desactivar Instancia de NetBird |
+| PUT | `/api/netbird/instances-order` | `netbird:write` | Reordenar Instancia de NetBird |
+| PUT | `/api/netbird/instances-enable` | `netbird:write` | Activar o desactivar en lote: Instancia de NetBird |
+| POST | `/api/netbird/instances-delete` | `netbird:write` | Eliminar en lote: Instancia de NetBird |
+| PUT | `/api/netbird/instances-group` | `netbird:write` | Asignar grupo a varios elementos: Instancia de NetBird |
+| GET | `/api/netbird/instances/{key}/secrets` | `netbird:write` | Ver secretos en texto plano |
+| GET | `/api/netbird/status` | `netbird:read` | Ver el estado de conexión de todas las instancias de NetBird |
+| GET | `/api/netbird/instances/{key}/status` | `netbird:read` | Ver el estado de conexión de una instancia de NetBird |
+| POST | `/api/netbird/instances/{key}/restart` | `netbird:write` | Reiniciar una instancia de NetBird |
+| POST | `/api/netbird/instances/{key}/logout` | `netbird:write` | Cerrar sesión en una instancia de NetBird |
+| GET | `/api/netbird/settings` | `netbird:read` | Leer los ajustes del programa NetBird |
+| PUT | `/api/netbird/settings` | `netbird:write` | Guardar los ajustes del programa NetBird |
 | GET | `/api/netbird/install` | `netbird:read` | Ver la información de instalación y el progreso de un programa gestionado |
 | POST | `/api/netbird/install` | `netbird:write` | Instalar o actualizar en línea un programa gestionado |
 | POST | `/api/netbird/install/check` | `netbird:write` | Buscar actualizaciones de un programa gestionado |
@@ -1375,6 +1386,106 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `regex` | string |
 | `type` | string |
 | `urls` | Lista de string |
+
+### netbird.ConnView
+
+| Campo | Tipo |
+| --- | --- |
+| `connected` | boolean |
+| `error` | string |
+| `url` | string |
+
+### netbird.Instance
+
+| Campo | Tipo |
+| --- | --- |
+| `acceptDns` | boolean |
+| `acceptRoutes` | boolean |
+| `blockInbound` | boolean |
+| `daemonAddr` | string |
+| `daemonEnv` | string |
+| `daemonExtraArgs` | string |
+| `enable` | boolean |
+| `extraUpArgs` | string |
+| `group` | string |
+| `hostname` | string |
+| `key` | string |
+| `legacyStateDir` | boolean |
+| `localForwarding` | boolean |
+| `manageDaemon` | boolean |
+| `managementUrl` | string |
+| `name` | string |
+| `port` | integer |
+| `remark` | string |
+| `serverRoutes` | boolean |
+| `setupKey` | string |
+| `socks5` | string |
+| `stateDir` | string |
+| `userspace` | boolean |
+
+### netbird.PeerView
+
+| Campo | Tipo |
+| --- | --- |
+| `connType` | string |
+| `fqdn` | string |
+| `ips` | Lista de string |
+| `lastSeen` | Hora (RFC 3339) |
+| `latencyMs` | number |
+| `name` | string |
+| `online` | boolean |
+| `relay` | string |
+| `routes` | Lista de string |
+| `rxBytes` | integer |
+| `status` | string |
+| `txBytes` | integer |
+
+### netbird.SelfView
+
+| Campo | Tipo |
+| --- | --- |
+| `fqdn` | string |
+| `ips` | Lista de string |
+| `kernel` | boolean |
+| `name` | string |
+| `wgPort` | integer |
+
+### netbird.Settings
+
+| Campo | Tipo |
+| --- | --- |
+| `installProxy` | string |
+| `netbirdPath` | string |
+
+### netbird.SettingsView
+
+| Campo | Tipo |
+| --- | --- |
+| `cli` | string |
+| `defaultManagementUrl` | string |
+| `settings` | `netbird.Settings` |
+
+### netbird.StatusView
+
+| Campo | Tipo |
+| --- | --- |
+| `authCode` | string |
+| `authUrl` | string |
+| `cli` | string |
+| `daemon` | `proc.State` |
+| `daemonStatus` | string |
+| `enable` | boolean |
+| `error` | string |
+| `key` | string |
+| `management` | `netbird.ConnView` |
+| `name` | string |
+| `peers` | Lista de `netbird.PeerView` |
+| `peersConnected` | integer |
+| `relaysTotal` | integer |
+| `relaysUp` | integer |
+| `self` | `netbird.SelfView` |
+| `signal` | `netbird.ConnView` |
+| `version` | string |
 
 ### nettools.Request
 

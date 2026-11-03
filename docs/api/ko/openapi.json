@@ -1201,6 +1201,249 @@
         },
         "type": "object"
       },
+      "netbird.ConnView": {
+        "properties": {
+          "connected": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "netbird.Instance": {
+        "properties": {
+          "acceptDns": {
+            "type": "boolean"
+          },
+          "acceptRoutes": {
+            "type": "boolean"
+          },
+          "blockInbound": {
+            "type": "boolean"
+          },
+          "daemonAddr": {
+            "type": "string"
+          },
+          "daemonEnv": {
+            "type": "string"
+          },
+          "daemonExtraArgs": {
+            "type": "string"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "extraUpArgs": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "hostname": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "legacyStateDir": {
+            "type": "boolean"
+          },
+          "localForwarding": {
+            "type": "boolean"
+          },
+          "manageDaemon": {
+            "type": "boolean"
+          },
+          "managementUrl": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "port": {
+            "type": "integer"
+          },
+          "remark": {
+            "type": "string"
+          },
+          "serverRoutes": {
+            "type": "boolean"
+          },
+          "setupKey": {
+            "type": "string"
+          },
+          "socks5": {
+            "type": "string"
+          },
+          "stateDir": {
+            "type": "string"
+          },
+          "userspace": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "netbird.PeerView": {
+        "properties": {
+          "connType": {
+            "type": "string"
+          },
+          "fqdn": {
+            "type": "string"
+          },
+          "ips": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "lastSeen": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "latencyMs": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "online": {
+            "type": "boolean"
+          },
+          "relay": {
+            "type": "string"
+          },
+          "routes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "rxBytes": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string"
+          },
+          "txBytes": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "netbird.SelfView": {
+        "properties": {
+          "fqdn": {
+            "type": "string"
+          },
+          "ips": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "kernel": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "wgPort": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "netbird.Settings": {
+        "properties": {
+          "installProxy": {
+            "type": "string"
+          },
+          "netbirdPath": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "netbird.SettingsView": {
+        "properties": {
+          "cli": {
+            "type": "string"
+          },
+          "defaultManagementUrl": {
+            "type": "string"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/netbird.Settings"
+          }
+        },
+        "type": "object"
+      },
+      "netbird.StatusView": {
+        "properties": {
+          "authCode": {
+            "type": "string"
+          },
+          "authUrl": {
+            "type": "string"
+          },
+          "cli": {
+            "type": "string"
+          },
+          "daemon": {
+            "$ref": "#/components/schemas/proc.State"
+          },
+          "daemonStatus": {
+            "type": "string"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "management": {
+            "$ref": "#/components/schemas/netbird.ConnView"
+          },
+          "name": {
+            "type": "string"
+          },
+          "peers": {
+            "items": {
+              "$ref": "#/components/schemas/netbird.PeerView"
+            },
+            "type": "array"
+          },
+          "peersConnected": {
+            "type": "integer"
+          },
+          "relaysTotal": {
+            "type": "integer"
+          },
+          "relaysUp": {
+            "type": "integer"
+          },
+          "self": {
+            "$ref": "#/components/schemas/netbird.SelfView"
+          },
+          "signal": {
+            "$ref": "#/components/schemas/netbird.ConnView"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "nettools.Request": {
         "properties": {
           "cidr": {
@@ -22242,9 +22485,144 @@
         "x-token-allowed": true
       }
     },
-    "/api/netbird/logout": {
+    "/api/netbird/instances": {
+      "get": {
+        "description": "필요한 권한: `netbird:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/netbird.Instance"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "NetBird 인스턴스 목록 조회",
+        "tags": [
+          "NetBird 네트워크"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      },
       "post": {
-        "description": "`netbird logout` 을 실행합니다: 관리 서버에서 이 기기의 등록을 해제하고 로컬 로그인 정보를 삭제하여 네트워크 피어 목록에서 제거합니다. 다시 참여하려면 재로그인하거나 설정 키를 사용해야 합니다.\n\n필요한 권한: `netbird:write`.",
+        "description": "각 인스턴스는 독립된 NetBird 데몬을 실행하며 서로 다른 NetBird 네트워크에 참여할 수 있습니다. 요청 본문 필드: `name` 이름(중복 불가), `enable` 활성화 여부, `manageDaemon`이 true이면 Gately가 `netbird service run`을 실행하고 false이면 설치된 시스템 NetBird 서비스에 연결합니다(`netbird up`만 실행). `userspace`가 true이면 사용자 공간 네트워크(netstack)를, false이면 커널 WireGuard 인터페이스를 사용합니다. 이 두 항목은 기본값이 없어 생략하면 false이므로 명시적으로 지정하세요. `stateDir`은 상태 디렉터리(`NB_STATE_DIR`로 데몬에 전달)이며 비워 두면 설정 디렉터리 아래 `netbird/\u003c인스턴스 key\u003e`입니다. 기존 상태 디렉터리를 지정하면 원래 피어 ID를 유지할 수 있습니다. `daemonAddr`은 제어 주소이며 관리할 때 비워 두면 상태 디렉터리의 `netbird.sock`입니다. `setupKey`는 환경 변수 `NB_SETUP_KEY`로 `netbird up`에 전달되어 프로세스 인수에 나타나지 않습니다. `managementUrl`, `hostname`, `acceptRoutes`, `serverRoutes`, `acceptDns`, `blockInbound`, `extraUpArgs`는 `netbird up` 옵션에 대응합니다. `port`는 WireGuard UDP 포트(0은 기본값 51820), `localForwarding`과 `socks5`(비워 두면 127.0.0.1:1080)는 사용자 공간 네트워크에서만 적용되며, `daemonExtraArgs`와 `daemonEnv`(한 줄에 하나의 `KEY=VALUE`)는 데몬에 전달됩니다. 다음 경우 400을 반환합니다: 커널 모드(관리되고 사용자 공간이 아닌) 인스턴스 두 개를 동시에 활성화하는 경우(커널 모드는 고정된 라우팅 테이블, 방화벽 마크, nftables 테이블을 사용하고 기본 인터페이스 이름도 모두 wt0), 두 인스턴스가 상태 디렉터리나 제어 주소를 공유하는 경우, 관리되는 두 인스턴스의 실제 WireGuard 포트가 같은 경우(0은 51820으로 간주), 관리되는 두 사용자 공간 인스턴스의 SOCKS5 리스너가 같은 포트를 쓰는 경우(비워 두면 127.0.0.1:1080으로 간주), 이름이 중복되는 경우. 활성화, 일괄 활성화, 복제할 때도 같은 검사를 합니다. `legacyStateDir`은 서버가 관리하며 이전 버전의 단일 인스턴스 설정에서 마이그레이션한 인스턴스임을 나타내고, 이때 `stateDir`을 비워 두면 `\u003c설정 디렉터리\u003e/netbird`를 사용합니다.\n\n필요한 권한: `netbird:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/netbird.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/netbird.Instance"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "NetBird 인스턴스 추가",
+        "tags": [
+          "NetBird 네트워크"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances-delete": {
+      "post": {
+        "description": "필요한 권한: `netbird:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchDeleteRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "성공"
@@ -22285,11 +22663,735 @@
             "bearerAuth": []
           }
         ],
-        "summary": "NetBird 로그아웃",
+        "summary": "NetBird 인스턴스 일괄 삭제",
         "tags": [
           "NetBird 네트워크"
         ],
         "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances-enable": {
+      "put": {
+        "description": "필요한 권한: `netbird:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchEnableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "NetBird 인스턴스 일괄 사용/사용 안 함",
+        "tags": [
+          "NetBird 네트워크"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances-group": {
+      "put": {
+        "description": "필요한 권한: `netbird:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "NetBird 인스턴스 그룹 일괄 설정",
+        "tags": [
+          "NetBird 네트워크"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances-order": {
+      "put": {
+        "description": "필요한 권한: `netbird:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.orderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "NetBird 인스턴스 순서 변경",
+        "tags": [
+          "NetBird 네트워크"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}": {
+      "delete": {
+        "description": "필요한 권한: `netbird:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "NetBird 인스턴스 삭제",
+        "tags": [
+          "NetBird 네트워크"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "필요한 권한: `netbird:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/netbird.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/netbird.Instance"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "NetBird 인스턴스 수정",
+        "tags": [
+          "NetBird 네트워크"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}/copy": {
+      "post": {
+        "description": "필요한 권한: `netbird:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/netbird.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/netbird.Instance"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "NetBird 인스턴스 복제",
+        "tags": [
+          "NetBird 네트워크"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}/enable": {
+      "put": {
+        "description": "필요한 권한: `netbird:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.enableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "NetBird 인스턴스 사용 설정/해제",
+        "tags": [
+          "NetBird 네트워크"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}/logout": {
+      "post": {
+        "description": "이 인스턴스에서 `netbird logout`을 실행합니다. 이 기기의 피어를 관리 서비스에서 등록 해제하고 로컬 로그인 정보를 삭제하므로 피어가 네트워크의 피어 목록에서 사라집니다. 다시 참여하려면 다시 로그인하거나 설정 키를 사용해야 합니다.\n\n필요한 권한: `netbird:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "NetBird 인스턴스 로그아웃",
+        "tags": [
+          "NetBird 네트워크"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}/restart": {
+      "post": {
+        "description": "이 인스턴스가 관리하는 데몬을 다시 시작하고 `netbird up`을 다시 실행합니다. 다른 인스턴스에는 영향을 주지 않습니다.\n\n필요한 권한: `netbird:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "NetBird 인스턴스 다시 시작",
+        "tags": [
+          "NetBird 네트워크"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}/secrets": {
+      "get": {
+        "description": "필요한 권한: `netbird:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "비밀 값 평문 보기",
+        "tags": [
+          "NetBird 네트워크"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}/status": {
+      "get": {
+        "description": "`daemonStatus` 는 Idle, Connecting, Connected, NeedsLogin, LoginFailed, SessionExpired 중 하나입니다. 설정 키가 없으면 `authUrl` 은 로그인 링크(Linux 에서는 장치 코드 로그인으로 어느 기기에서나 열 수 있고, macOS 와 Windows 에서는 보통 해당 기기의 브라우저에서만 완료할 수 있음), `authCode` 는 입력할 코드(링크에 포함된 경우 비어 있음)이며, 링크는 만료되면 자동으로 갱신됩니다. `peers` 는 네트워크의 다른 피어이고 `connType` 은 P2P 또는 Relayed 입니다. `authUrl`과 `authCode`는 `netbird:write` 권한이 있는 ID에만 반환됩니다.\n\n필요한 권한: `netbird:read`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/netbird.StatusView"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "NetBird 인스턴스의 연결 상태 보기",
+        "tags": [
+          "NetBird 네트워크"
+        ],
+        "x-required-scope": "netbird:read",
         "x-token-allowed": true
       }
     },
@@ -22566,123 +23668,18 @@
         "x-token-allowed": true
       }
     },
-    "/api/netbird/restart": {
-      "post": {
-        "description": "필요한 권한: `netbird:write`.",
-        "responses": {
-          "200": {
-            "description": "성공"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "요청 매개변수 오류"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "토큰에 필요한 권한이 없음"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "NetBird 재시작",
-        "tags": [
-          "NetBird 네트워크"
-        ],
-        "x-required-scope": "netbird:write",
-        "x-token-allowed": true
-      }
-    },
-    "/api/netbird/secrets": {
-      "get": {
-        "description": "필요한 권한: `netbird:write`.",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "type": "object"
-                }
-              }
-            },
-            "description": "성공"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "요청 매개변수 오류"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "토큰에 필요한 권한이 없음"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "비밀 값 평문 보기",
-        "tags": [
-          "NetBird 네트워크"
-        ],
-        "x-required-scope": "netbird:write",
-        "x-token-allowed": true
-      }
-    },
     "/api/netbird/settings": {
       "get": {
-        "description": "`settings`(설정 키 `setupKey` 는 가려짐), `defaultStateDir`(`stateDir` 가 비어 있을 때 쓰는 상태 디렉터리), `defaultManagementUrl`(`managementUrl` 이 비어 있을 때 쓰는 NetBird 클라우드 주소)을 반환합니다.\n\n필요한 권한: `netbird:read`.",
+        "description": "`settings`(`netbirdPath`와 다운로드 프록시 `installProxy`, 모든 인스턴스 공용), 실제로 사용하는 netbird 프로그램 경로 `cli`, `defaultManagementUrl`(인스턴스의 `managementUrl`을 비워 두었을 때 사용하는 NetBird 공식 클라우드 주소)을 반환합니다.\n\n필요한 권한: `netbird:read`.",
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/netbird.SettingsView"
+                }
+              }
+            },
             "description": "성공"
           },
           "400": {
@@ -22721,7 +23718,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "NetBird 설정 조회",
+        "summary": "NetBird 프로그램 설정 읽기",
         "tags": [
           "NetBird 네트워크"
         ],
@@ -22729,12 +23726,12 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "새 설정으로 다시 시작합니다. 데몬을 관리하는 경우 `netbird service run` 을 다시 시작한 뒤 `netbird up` 을 실행하며, 관리 중에는 데몬 자체의 자동 연결을 끄고 데몬이 비정상 종료 후 다시 시작될 때마다 up 을 다시 실행합니다. 외부 데몬이 이미 연결되어 있으면 연결을 끊은 뒤 `netbird up` 을 실행해 새 설정을 적용합니다. `setupKey` 가 `********` 이면 저장된 키를 그대로 씁니다. `installProxy` 는 설치 API로만 변경됩니다. 스위치 설정은 항상 netbird up 에 명시적으로 전달됩니다: `acceptRoutes` 는 `--disable-client-routes` 의 반대, `serverRoutes` 는 `--disable-server-routes` 의 반대, `acceptDns` 는 `--disable-dns` 의 반대, `blockInbound` 는 `--block-inbound` 에 대응합니다.\n\n필요한 권한: `netbird:write`.",
+        "description": "요청 본문 `{\"netbirdPath\": \"\"}`. 비워 두면 설정 디렉터리의 bin, 그다음 PATH에서 찾습니다. `installProxy`는 설치 API로만 변경합니다. 경로가 바뀌면 활성화된 인스턴스를 다시 시작합니다.\n\n필요한 권한: `netbird:write`.",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "type": "object"
+                "$ref": "#/components/schemas/netbird.Settings"
               }
             }
           }
@@ -22779,7 +23776,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "NetBird 설정 저장",
+        "summary": "NetBird 프로그램 설정 저장",
         "tags": [
           "NetBird 네트워크"
         ],
@@ -22789,9 +23786,19 @@
     },
     "/api/netbird/status": {
       "get": {
-        "description": "`daemonStatus` 는 Idle, Connecting, Connected, NeedsLogin, LoginFailed, SessionExpired 중 하나입니다. 설정 키가 없으면 `authUrl` 은 로그인 링크(Linux 에서는 장치 코드 로그인으로 어느 기기에서나 열 수 있고, macOS 와 Windows 에서는 보통 해당 기기의 브라우저에서만 완료할 수 있음), `authCode` 는 입력할 코드(링크에 포함된 경우 비어 있음)이며, 링크는 만료되면 자동으로 갱신됩니다. `peers` 는 네트워크의 다른 피어이고 `connType` 은 P2P 또는 Relayed 입니다. `authUrl`과 `authCode`는 `netbird:write` 권한이 있는 ID에만 반환됩니다.\n\n필요한 권한: `netbird:read`.",
+        "description": "인스턴스 목록과 같은 순서의 배열을 반환합니다. 각 항목에는 인스턴스 `key`, `name`과 해당 인스턴스의 상태가 들어 있으며 필드는 `GET /api/netbird/instances/{key}/status`와 같습니다. 비활성화된 인스턴스는 프로세스 상태만 반환하고 연결 상태는 조회하지 않습니다.\n\n필요한 권한: `netbird:read`.",
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/netbird.StatusView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
             "description": "성공"
           },
           "400": {
@@ -22830,7 +23837,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "NetBird 연결 상태 조회",
+        "summary": "모든 NetBird 인스턴스의 연결 상태 보기",
         "tags": [
           "NetBird 네트워크"
         ],

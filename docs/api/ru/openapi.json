@@ -1201,6 +1201,249 @@
         },
         "type": "object"
       },
+      "netbird.ConnView": {
+        "properties": {
+          "connected": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "netbird.Instance": {
+        "properties": {
+          "acceptDns": {
+            "type": "boolean"
+          },
+          "acceptRoutes": {
+            "type": "boolean"
+          },
+          "blockInbound": {
+            "type": "boolean"
+          },
+          "daemonAddr": {
+            "type": "string"
+          },
+          "daemonEnv": {
+            "type": "string"
+          },
+          "daemonExtraArgs": {
+            "type": "string"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "extraUpArgs": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "hostname": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "legacyStateDir": {
+            "type": "boolean"
+          },
+          "localForwarding": {
+            "type": "boolean"
+          },
+          "manageDaemon": {
+            "type": "boolean"
+          },
+          "managementUrl": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "port": {
+            "type": "integer"
+          },
+          "remark": {
+            "type": "string"
+          },
+          "serverRoutes": {
+            "type": "boolean"
+          },
+          "setupKey": {
+            "type": "string"
+          },
+          "socks5": {
+            "type": "string"
+          },
+          "stateDir": {
+            "type": "string"
+          },
+          "userspace": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "netbird.PeerView": {
+        "properties": {
+          "connType": {
+            "type": "string"
+          },
+          "fqdn": {
+            "type": "string"
+          },
+          "ips": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "lastSeen": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "latencyMs": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "online": {
+            "type": "boolean"
+          },
+          "relay": {
+            "type": "string"
+          },
+          "routes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "rxBytes": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string"
+          },
+          "txBytes": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "netbird.SelfView": {
+        "properties": {
+          "fqdn": {
+            "type": "string"
+          },
+          "ips": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "kernel": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "wgPort": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "netbird.Settings": {
+        "properties": {
+          "installProxy": {
+            "type": "string"
+          },
+          "netbirdPath": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "netbird.SettingsView": {
+        "properties": {
+          "cli": {
+            "type": "string"
+          },
+          "defaultManagementUrl": {
+            "type": "string"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/netbird.Settings"
+          }
+        },
+        "type": "object"
+      },
+      "netbird.StatusView": {
+        "properties": {
+          "authCode": {
+            "type": "string"
+          },
+          "authUrl": {
+            "type": "string"
+          },
+          "cli": {
+            "type": "string"
+          },
+          "daemon": {
+            "$ref": "#/components/schemas/proc.State"
+          },
+          "daemonStatus": {
+            "type": "string"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "management": {
+            "$ref": "#/components/schemas/netbird.ConnView"
+          },
+          "name": {
+            "type": "string"
+          },
+          "peers": {
+            "items": {
+              "$ref": "#/components/schemas/netbird.PeerView"
+            },
+            "type": "array"
+          },
+          "peersConnected": {
+            "type": "integer"
+          },
+          "relaysTotal": {
+            "type": "integer"
+          },
+          "relaysUp": {
+            "type": "integer"
+          },
+          "self": {
+            "$ref": "#/components/schemas/netbird.SelfView"
+          },
+          "signal": {
+            "$ref": "#/components/schemas/netbird.ConnView"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "nettools.Request": {
         "properties": {
           "cidr": {
@@ -22242,9 +22485,144 @@
         "x-token-allowed": true
       }
     },
-    "/api/netbird/logout": {
+    "/api/netbird/instances": {
+      "get": {
+        "description": "Требуемое разрешение: `netbird:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/netbird.Instance"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Список: Экземпляр NetBird",
+        "tags": [
+          "Сеть NetBird"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      },
       "post": {
-        "description": "Выполняет `netbird logout`: снимает эту машину с регистрации на сервере управления и удаляет локальные данные входа, убирая её из списка узлов сети; для повторного подключения нужен новый вход или ключ настройки.\n\nТребуемое разрешение: `netbird:write`.",
+        "description": "Каждый экземпляр запускает собственный демон NetBird и может подключаться к отдельной сети NetBird. Поля тела запроса: `name` (уникальное); `enable`; `manageDaemon` = true — Gately запускает `netbird service run`, false — подключение к уже установленной системной службе NetBird (выполняется только `netbird up`); `userspace` = true — сеть в пространстве пользователя (netstack), false — интерфейс WireGuard ядра. У этих двух полей нет значения по умолчанию, при отсутствии они равны false, поэтому задавайте их явно. `stateDir` — каталог состояния (передаётся демону как `NB_STATE_DIR`), пусто — `netbird/\u003cключ экземпляра\u003e` в каталоге конфигурации; укажите существующий каталог состояния, чтобы сохранить идентичность узла. `daemonAddr` — адрес управления, пусто — `netbird.sock` в каталоге состояния при управлении Gately. `setupKey` передаётся `netbird up` в переменной окружения `NB_SETUP_KEY` и никогда не появляется в аргументах процесса; `managementUrl`, `hostname`, `acceptRoutes`, `serverRoutes`, `acceptDns`, `blockInbound` и `extraUpArgs` соответствуют параметрам `netbird up`; `port` — UDP-порт WireGuard (0 — порт по умолчанию 51820); `localForwarding` и `socks5` (пусто — 127.0.0.1:1080) действуют только в сети пространства пользователя; `daemonExtraArgs` и `daemonEnv` (по одному `KEY=VALUE` в строке) передаются демону. Возвращается 400, если одновременно были бы включены два экземпляра в режиме ядра (управляемые и не в пространстве пользователя; режим ядра использует фиксированные таблицу маршрутизации, метку брандмауэра и таблицу nftables, а имя интерфейса по умолчанию всегда wt0); если два экземпляра используют общий каталог состояния или адрес управления; если у двух управляемых экземпляров совпадает действующий порт WireGuard (0 считается как 51820); если слушатели SOCKS5 двух управляемых экземпляров в пространстве пользователя заняли бы один порт (пусто считается как 127.0.0.1:1080); или если имя повторяется. Включение, пакетное включение и копирование проверяются так же. `legacyStateDir` поддерживается сервером и отмечает экземпляр, перенесённый из старой конфигурации с одним экземпляром; при пустом `stateDir` он использует `\u003cкаталог конфигурации\u003e/netbird`.\n\nТребуемое разрешение: `netbird:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/netbird.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/netbird.Instance"
+                }
+              }
+            },
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Добавить экземпляр NetBird",
+        "tags": [
+          "Сеть NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances-delete": {
+      "post": {
+        "description": "Требуемое разрешение: `netbird:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchDeleteRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Успешно"
@@ -22285,11 +22663,735 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Выйти из NetBird",
+        "summary": "Пакетно удалить: Экземпляр NetBird",
         "tags": [
           "Сеть NetBird"
         ],
         "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances-enable": {
+      "put": {
+        "description": "Требуемое разрешение: `netbird:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchEnableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Пакетно включить или отключить: Экземпляр NetBird",
+        "tags": [
+          "Сеть NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances-group": {
+      "put": {
+        "description": "Требуемое разрешение: `netbird:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Задать группу сразу для нескольких: Экземпляр NetBird",
+        "tags": [
+          "Сеть NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances-order": {
+      "put": {
+        "description": "Требуемое разрешение: `netbird:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.orderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Изменить порядок: Экземпляр NetBird",
+        "tags": [
+          "Сеть NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}": {
+      "delete": {
+        "description": "Требуемое разрешение: `netbird:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Удалить: Экземпляр NetBird",
+        "tags": [
+          "Сеть NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Требуемое разрешение: `netbird:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/netbird.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/netbird.Instance"
+                }
+              }
+            },
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Изменить: Экземпляр NetBird",
+        "tags": [
+          "Сеть NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}/copy": {
+      "post": {
+        "description": "Требуемое разрешение: `netbird:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/netbird.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/netbird.Instance"
+                }
+              }
+            },
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Дублировать: Экземпляр NetBird",
+        "tags": [
+          "Сеть NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}/enable": {
+      "put": {
+        "description": "Требуемое разрешение: `netbird:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.enableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Включить или отключить: Экземпляр NetBird",
+        "tags": [
+          "Сеть NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}/logout": {
+      "post": {
+        "description": "Выполняет `netbird logout` для этого экземпляра: узел этой машины снимается с регистрации в службе управления, локальный вход удаляется, и узел исчезает из списка узлов сети; чтобы присоединиться снова, нужно снова войти или использовать ключ настройки.\n\nТребуемое разрешение: `netbird:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Выйти из экземпляра NetBird",
+        "tags": [
+          "Сеть NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}/restart": {
+      "post": {
+        "description": "Перезапускает управляемый демон этого экземпляра и снова выполняет `netbird up`; другие экземпляры не затрагиваются.\n\nТребуемое разрешение: `netbird:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Перезапустить экземпляр NetBird",
+        "tags": [
+          "Сеть NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}/secrets": {
+      "get": {
+        "description": "Требуемое разрешение: `netbird:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Показать секреты открытым текстом",
+        "tags": [
+          "Сеть NetBird"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}/status": {
+      "get": {
+        "description": "`daemonStatus` — Idle, Connecting, Connected, NeedsLogin, LoginFailed или SessionExpired. Без ключа настройки `authUrl` — ссылка входа (в Linux вход по коду устройства, ссылку можно открыть на любом устройстве; в macOS и Windows вход обычно можно завершить только в браузере на этой машине), а `authCode` — код для ввода (пуст, если он уже есть в ссылке); по истечении срока ссылка обновляется автоматически. `peers` — другие узлы сети, `connType` — P2P или Relayed. `authUrl` и `authCode` возвращаются только учётным записям с правом `netbird:write`.\n\nТребуемое разрешение: `netbird:read`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/netbird.StatusView"
+                }
+              }
+            },
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Просмотреть состояние подключения экземпляра NetBird",
+        "tags": [
+          "Сеть NetBird"
+        ],
+        "x-required-scope": "netbird:read",
         "x-token-allowed": true
       }
     },
@@ -22566,123 +23668,18 @@
         "x-token-allowed": true
       }
     },
-    "/api/netbird/restart": {
-      "post": {
-        "description": "Требуемое разрешение: `netbird:write`.",
-        "responses": {
-          "200": {
-            "description": "Успешно"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "Ошибка параметров запроса"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "Токен недействителен, истёк или вход не выполнен"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "У токена нет необходимого права"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Перезапустить NetBird",
-        "tags": [
-          "Сеть NetBird"
-        ],
-        "x-required-scope": "netbird:write",
-        "x-token-allowed": true
-      }
-    },
-    "/api/netbird/secrets": {
-      "get": {
-        "description": "Требуемое разрешение: `netbird:write`.",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Успешно"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "Ошибка параметров запроса"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "Токен недействителен, истёк или вход не выполнен"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "У токена нет необходимого права"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Показать секреты открытым текстом",
-        "tags": [
-          "Сеть NetBird"
-        ],
-        "x-required-scope": "netbird:write",
-        "x-token-allowed": true
-      }
-    },
     "/api/netbird/settings": {
       "get": {
-        "description": "Возвращает `settings` (ключ настройки `setupKey` скрыт), `defaultStateDir` (каталог состояния, если `stateDir` пуст) и `defaultManagementUrl` (адрес NetBird Cloud, если `managementUrl` пуст).\n\nТребуемое разрешение: `netbird:read`.",
+        "description": "Возвращает `settings` (`netbirdPath` и прокси загрузки `installProxy`, общие для всех экземпляров), фактически используемый путь к программе netbird в `cli` и `defaultManagementUrl` (адрес облака NetBird, используемый, когда у экземпляра пустой `managementUrl`).\n\nТребуемое разрешение: `netbird:read`.",
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/netbird.SettingsView"
+                }
+              }
+            },
             "description": "Успешно"
           },
           "400": {
@@ -22721,7 +23718,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Получить настройки NetBird",
+        "summary": "Прочитать настройки программы NetBird",
         "tags": [
           "Сеть NetBird"
         ],
@@ -22729,12 +23726,12 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "Перезапускает с новыми настройками: если демон управляется Gately, перезапускается `netbird service run` и выполняется `netbird up`; собственное автоподключение демона отключается, а после каждого перезапуска демона после сбоя up выполняется снова. Если внешний демон уже подключён, соединение сначала разрывается, затем выполняется `netbird up`, чтобы новые настройки вступили в силу. При `setupKey`, равном `********`, сохраняется прежний ключ; `installProxy` меняется только через API установки. Переключатели всегда явно передаются в netbird up: `acceptRoutes` — инверсия `--disable-client-routes`, `serverRoutes` — инверсия `--disable-server-routes`, `acceptDns` — инверсия `--disable-dns`, `blockInbound` соответствует `--block-inbound`.\n\nТребуемое разрешение: `netbird:write`.",
+        "description": "Тело `{\"netbirdPath\": \"\"}`; если пусто, программа ищется в каталоге bin каталога конфигурации, затем в PATH. `installProxy` изменяется только через эндпоинты установки. При изменении пути включённые экземпляры перезапускаются.\n\nТребуемое разрешение: `netbird:write`.",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "type": "object"
+                "$ref": "#/components/schemas/netbird.Settings"
               }
             }
           }
@@ -22779,7 +23776,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Сохранить настройки NetBird",
+        "summary": "Сохранить настройки программы NetBird",
         "tags": [
           "Сеть NetBird"
         ],
@@ -22789,9 +23786,19 @@
     },
     "/api/netbird/status": {
       "get": {
-        "description": "`daemonStatus` — Idle, Connecting, Connected, NeedsLogin, LoginFailed или SessionExpired. Без ключа настройки `authUrl` — ссылка входа (в Linux вход по коду устройства, ссылку можно открыть на любом устройстве; в macOS и Windows вход обычно можно завершить только в браузере на этой машине), а `authCode` — код для ввода (пуст, если он уже есть в ссылке); по истечении срока ссылка обновляется автоматически. `peers` — другие узлы сети, `connType` — P2P или Relayed. `authUrl` и `authCode` возвращаются только учётным записям с правом `netbird:write`.\n\nТребуемое разрешение: `netbird:read`.",
+        "description": "Возвращает массив в порядке списка экземпляров; каждый элемент содержит `key` и `name` экземпляра и его состояние, поля те же, что у `GET /api/netbird/instances/{key}/status`. Для отключённых экземпляров возвращается только состояние процесса, состояние подключения не запрашивается.\n\nТребуемое разрешение: `netbird:read`.",
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/netbird.StatusView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
             "description": "Успешно"
           },
           "400": {
@@ -22830,7 +23837,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Получить состояние подключения NetBird",
+        "summary": "Просмотреть состояние подключения всех экземпляров NetBird",
         "tags": [
           "Сеть NetBird"
         ],

@@ -188,12 +188,23 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- | --- | --- |
 | GET | `/api/netbird/logs` | `netbird:read` | 檢視模組執行日誌 |
 | DELETE | `/api/netbird/logs` | `netbird:write` | 清空模組執行日誌 |
-| GET | `/api/netbird/settings` | `netbird:read` | 讀取 NetBird 設定 |
-| PUT | `/api/netbird/settings` | `netbird:write` | 儲存 NetBird 設定 |
-| GET | `/api/netbird/secrets` | `netbird:write` | 查看金鑰明文 |
-| GET | `/api/netbird/status` | `netbird:read` | 查看 NetBird 連線狀態 |
-| POST | `/api/netbird/restart` | `netbird:write` | 重新啟動 NetBird |
-| POST | `/api/netbird/logout` | `netbird:write` | 登出 NetBird |
+| GET | `/api/netbird/instances` | `netbird:read` | 取得NetBird 執行個體清單 |
+| POST | `/api/netbird/instances` | `netbird:write` | 新增 NetBird 執行個體 |
+| POST | `/api/netbird/instances/{key}/copy` | `netbird:write` | 複製NetBird 執行個體 |
+| PUT | `/api/netbird/instances/{key}` | `netbird:write` | 修改NetBird 執行個體 |
+| DELETE | `/api/netbird/instances/{key}` | `netbird:write` | 刪除NetBird 執行個體 |
+| PUT | `/api/netbird/instances/{key}/enable` | `netbird:write` | 啟用或停用NetBird 執行個體 |
+| PUT | `/api/netbird/instances-order` | `netbird:write` | 調整NetBird 執行個體排序 |
+| PUT | `/api/netbird/instances-enable` | `netbird:write` | 批次啟用或停用NetBird 執行個體 |
+| POST | `/api/netbird/instances-delete` | `netbird:write` | 批次刪除NetBird 執行個體 |
+| PUT | `/api/netbird/instances-group` | `netbird:write` | 批次設定NetBird 執行個體分組 |
+| GET | `/api/netbird/instances/{key}/secrets` | `netbird:write` | 查看金鑰明文 |
+| GET | `/api/netbird/status` | `netbird:read` | 檢視全部 NetBird 執行個體的連線狀態 |
+| GET | `/api/netbird/instances/{key}/status` | `netbird:read` | 檢視 NetBird 執行個體的連線狀態 |
+| POST | `/api/netbird/instances/{key}/restart` | `netbird:write` | 重新啟動 NetBird 執行個體 |
+| POST | `/api/netbird/instances/{key}/logout` | `netbird:write` | 登出 NetBird 執行個體 |
+| GET | `/api/netbird/settings` | `netbird:read` | 讀取 NetBird 程式設定 |
+| PUT | `/api/netbird/settings` | `netbird:write` | 儲存 NetBird 程式設定 |
 | GET | `/api/netbird/install` | `netbird:read` | 檢視託管程式的安裝資訊與進度 |
 | POST | `/api/netbird/install` | `netbird:write` | 線上安裝或更新託管程式 |
 | POST | `/api/netbird/install/check` | `netbird:write` | 檢查託管程式的更新 |
@@ -1375,6 +1386,106 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `regex` | string |
 | `type` | string |
 | `urls` | 陣列 of string |
+
+### netbird.ConnView
+
+| 欄位 | 類型 |
+| --- | --- |
+| `connected` | boolean |
+| `error` | string |
+| `url` | string |
+
+### netbird.Instance
+
+| 欄位 | 類型 |
+| --- | --- |
+| `acceptDns` | boolean |
+| `acceptRoutes` | boolean |
+| `blockInbound` | boolean |
+| `daemonAddr` | string |
+| `daemonEnv` | string |
+| `daemonExtraArgs` | string |
+| `enable` | boolean |
+| `extraUpArgs` | string |
+| `group` | string |
+| `hostname` | string |
+| `key` | string |
+| `legacyStateDir` | boolean |
+| `localForwarding` | boolean |
+| `manageDaemon` | boolean |
+| `managementUrl` | string |
+| `name` | string |
+| `port` | integer |
+| `remark` | string |
+| `serverRoutes` | boolean |
+| `setupKey` | string |
+| `socks5` | string |
+| `stateDir` | string |
+| `userspace` | boolean |
+
+### netbird.PeerView
+
+| 欄位 | 類型 |
+| --- | --- |
+| `connType` | string |
+| `fqdn` | string |
+| `ips` | 陣列 of string |
+| `lastSeen` | 時間 (RFC 3339) |
+| `latencyMs` | number |
+| `name` | string |
+| `online` | boolean |
+| `relay` | string |
+| `routes` | 陣列 of string |
+| `rxBytes` | integer |
+| `status` | string |
+| `txBytes` | integer |
+
+### netbird.SelfView
+
+| 欄位 | 類型 |
+| --- | --- |
+| `fqdn` | string |
+| `ips` | 陣列 of string |
+| `kernel` | boolean |
+| `name` | string |
+| `wgPort` | integer |
+
+### netbird.Settings
+
+| 欄位 | 類型 |
+| --- | --- |
+| `installProxy` | string |
+| `netbirdPath` | string |
+
+### netbird.SettingsView
+
+| 欄位 | 類型 |
+| --- | --- |
+| `cli` | string |
+| `defaultManagementUrl` | string |
+| `settings` | `netbird.Settings` |
+
+### netbird.StatusView
+
+| 欄位 | 類型 |
+| --- | --- |
+| `authCode` | string |
+| `authUrl` | string |
+| `cli` | string |
+| `daemon` | `proc.State` |
+| `daemonStatus` | string |
+| `enable` | boolean |
+| `error` | string |
+| `key` | string |
+| `management` | `netbird.ConnView` |
+| `name` | string |
+| `peers` | 陣列 of `netbird.PeerView` |
+| `peersConnected` | integer |
+| `relaysTotal` | integer |
+| `relaysUp` | integer |
+| `self` | `netbird.SelfView` |
+| `signal` | `netbird.ConnView` |
+| `version` | string |
 
 ### nettools.Request
 

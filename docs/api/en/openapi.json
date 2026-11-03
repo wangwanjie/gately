@@ -1201,6 +1201,249 @@
         },
         "type": "object"
       },
+      "netbird.ConnView": {
+        "properties": {
+          "connected": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "netbird.Instance": {
+        "properties": {
+          "acceptDns": {
+            "type": "boolean"
+          },
+          "acceptRoutes": {
+            "type": "boolean"
+          },
+          "blockInbound": {
+            "type": "boolean"
+          },
+          "daemonAddr": {
+            "type": "string"
+          },
+          "daemonEnv": {
+            "type": "string"
+          },
+          "daemonExtraArgs": {
+            "type": "string"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "extraUpArgs": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "hostname": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "legacyStateDir": {
+            "type": "boolean"
+          },
+          "localForwarding": {
+            "type": "boolean"
+          },
+          "manageDaemon": {
+            "type": "boolean"
+          },
+          "managementUrl": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "port": {
+            "type": "integer"
+          },
+          "remark": {
+            "type": "string"
+          },
+          "serverRoutes": {
+            "type": "boolean"
+          },
+          "setupKey": {
+            "type": "string"
+          },
+          "socks5": {
+            "type": "string"
+          },
+          "stateDir": {
+            "type": "string"
+          },
+          "userspace": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "netbird.PeerView": {
+        "properties": {
+          "connType": {
+            "type": "string"
+          },
+          "fqdn": {
+            "type": "string"
+          },
+          "ips": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "lastSeen": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "latencyMs": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "online": {
+            "type": "boolean"
+          },
+          "relay": {
+            "type": "string"
+          },
+          "routes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "rxBytes": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string"
+          },
+          "txBytes": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "netbird.SelfView": {
+        "properties": {
+          "fqdn": {
+            "type": "string"
+          },
+          "ips": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "kernel": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "wgPort": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "netbird.Settings": {
+        "properties": {
+          "installProxy": {
+            "type": "string"
+          },
+          "netbirdPath": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "netbird.SettingsView": {
+        "properties": {
+          "cli": {
+            "type": "string"
+          },
+          "defaultManagementUrl": {
+            "type": "string"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/netbird.Settings"
+          }
+        },
+        "type": "object"
+      },
+      "netbird.StatusView": {
+        "properties": {
+          "authCode": {
+            "type": "string"
+          },
+          "authUrl": {
+            "type": "string"
+          },
+          "cli": {
+            "type": "string"
+          },
+          "daemon": {
+            "$ref": "#/components/schemas/proc.State"
+          },
+          "daemonStatus": {
+            "type": "string"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "management": {
+            "$ref": "#/components/schemas/netbird.ConnView"
+          },
+          "name": {
+            "type": "string"
+          },
+          "peers": {
+            "items": {
+              "$ref": "#/components/schemas/netbird.PeerView"
+            },
+            "type": "array"
+          },
+          "peersConnected": {
+            "type": "integer"
+          },
+          "relaysTotal": {
+            "type": "integer"
+          },
+          "relaysUp": {
+            "type": "integer"
+          },
+          "self": {
+            "$ref": "#/components/schemas/netbird.SelfView"
+          },
+          "signal": {
+            "$ref": "#/components/schemas/netbird.ConnView"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "nettools.Request": {
         "properties": {
           "cidr": {
@@ -22242,9 +22485,144 @@
         "x-token-allowed": true
       }
     },
-    "/api/netbird/logout": {
+    "/api/netbird/instances": {
+      "get": {
+        "description": "Required permission: `netbird:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/netbird.Instance"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List NetBird instance",
+        "tags": [
+          "NetBird network"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      },
       "post": {
-        "description": "Runs `netbird logout`: deregisters this machine from the management server and deletes the local login, removing it from the peer list of the network; joining again needs a new login or a setup key.\n\nRequired permission: `netbird:write`.",
+        "description": "Each instance runs its own NetBird daemon and can join a different NetBird network. Body fields: `name` (must be unique); `enable`; `manageDaemon` true lets Gately run `netbird service run`, false connects to an installed system NetBird service (only `netbird up` is run); `userspace` true uses userspace networking (netstack), false uses a kernel WireGuard interface. These two have no default and are false when omitted, so set them explicitly. `stateDir` is the state directory (passed to the daemon as `NB_STATE_DIR`), empty for `netbird/\u003cinstance key\u003e` under the config directory; point it at an existing state directory to keep the peer identity. `daemonAddr` is the daemon address, empty for `netbird.sock` in the state directory when managed. `setupKey` is passed to `netbird up` in the `NB_SETUP_KEY` environment variable and never appears in process arguments; `managementUrl`, `hostname`, `acceptRoutes`, `serverRoutes`, `acceptDns`, `blockInbound` and `extraUpArgs` map to `netbird up` options; `port` is the WireGuard UDP port (0 for the default 51820); `localForwarding` and `socks5` (empty for 127.0.0.1:1080) only apply to userspace networking; `daemonExtraArgs` and `daemonEnv` (one `KEY=VALUE` per line) are passed to the daemon. 400 is returned when two kernel-mode (managed, not userspace) instances would be enabled at the same time (kernel mode uses a fixed routing table, firewall mark and nftables table, and the default interface name is always wt0); when two instances share a state directory or daemon address; when two managed instances have the same effective WireGuard port (0 counts as 51820); when the SOCKS5 listeners of two managed userspace instances would take the same port (empty counts as 127.0.0.1:1080); or when the name is a duplicate. Enabling, batch enabling and copying are checked the same way. `legacyStateDir` is maintained by the server and marks an instance migrated from the old single-instance configuration, which uses `\u003cconfig dir\u003e/netbird` when `stateDir` is empty.\n\nRequired permission: `netbird:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/netbird.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/netbird.Instance"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Add a NetBird instance",
+        "tags": [
+          "NetBird network"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances-delete": {
+      "post": {
+        "description": "Required permission: `netbird:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchDeleteRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success"
@@ -22285,11 +22663,735 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Log out of NetBird",
+        "summary": "Delete in bulk: NetBird instance",
         "tags": [
           "NetBird network"
         ],
         "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances-enable": {
+      "put": {
+        "description": "Required permission: `netbird:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchEnableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Enable or disable in bulk: NetBird instance",
+        "tags": [
+          "NetBird network"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances-group": {
+      "put": {
+        "description": "Required permission: `netbird:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Set group in bulk: NetBird instance",
+        "tags": [
+          "NetBird network"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances-order": {
+      "put": {
+        "description": "Required permission: `netbird:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.orderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Reorder NetBird instance",
+        "tags": [
+          "NetBird network"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}": {
+      "delete": {
+        "description": "Required permission: `netbird:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete NetBird instance",
+        "tags": [
+          "NetBird network"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Required permission: `netbird:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/netbird.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/netbird.Instance"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update NetBird instance",
+        "tags": [
+          "NetBird network"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}/copy": {
+      "post": {
+        "description": "Required permission: `netbird:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/netbird.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/netbird.Instance"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Duplicate NetBird instance",
+        "tags": [
+          "NetBird network"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}/enable": {
+      "put": {
+        "description": "Required permission: `netbird:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.enableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Enable or disable NetBird instance",
+        "tags": [
+          "NetBird network"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}/logout": {
+      "post": {
+        "description": "Runs `netbird logout` for this instance: this machine's peer is deregistered from the management service and the local login is removed, so the peer disappears from the network's peer list; joining again requires logging in again or a setup key.\n\nRequired permission: `netbird:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Log out of a NetBird instance",
+        "tags": [
+          "NetBird network"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}/restart": {
+      "post": {
+        "description": "Restarts the daemon managed for this instance and runs `netbird up` again; other instances are not affected.\n\nRequired permission: `netbird:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Restart a NetBird instance",
+        "tags": [
+          "NetBird network"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}/secrets": {
+      "get": {
+        "description": "Required permission: `netbird:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "View secrets in plain text",
+        "tags": [
+          "NetBird network"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}/status": {
+      "get": {
+        "description": "`daemonStatus` is Idle, Connecting, Connected, NeedsLogin, LoginFailed or SessionExpired. Without a setup key, `authUrl` is the login link (device code login on Linux, which can be opened on any device; on macOS and Windows the login usually has to be completed in a browser on that machine) and `authCode` is the code to enter (empty when the link already contains it); the link is renewed automatically when it expires. `peers` are the other peers in the network, and `connType` is P2P or Relayed. `authUrl` and `authCode` are only returned to identities with `netbird:write`.\n\nRequired permission: `netbird:read`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/netbird.StatusView"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "View the connection status of a NetBird instance",
+        "tags": [
+          "NetBird network"
+        ],
+        "x-required-scope": "netbird:read",
         "x-token-allowed": true
       }
     },
@@ -22566,123 +23668,18 @@
         "x-token-allowed": true
       }
     },
-    "/api/netbird/restart": {
-      "post": {
-        "description": "Required permission: `netbird:write`.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "Invalid request parameters"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "Token is invalid, expired or not signed in"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "Token lacks the required permission"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Restart NetBird",
-        "tags": [
-          "NetBird network"
-        ],
-        "x-required-scope": "netbird:write",
-        "x-token-allowed": true
-      }
-    },
-    "/api/netbird/secrets": {
-      "get": {
-        "description": "Required permission: `netbird:write`.",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Success"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "Invalid request parameters"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "Token is invalid, expired or not signed in"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "Token lacks the required permission"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "View secrets in plain text",
-        "tags": [
-          "NetBird network"
-        ],
-        "x-required-scope": "netbird:write",
-        "x-token-allowed": true
-      }
-    },
     "/api/netbird/settings": {
       "get": {
-        "description": "Returns `settings` (the setup key `setupKey` is masked), `defaultStateDir` (the state directory used when `stateDir` is empty) and `defaultManagementUrl` (the NetBird Cloud address used when `managementUrl` is empty).\n\nRequired permission: `netbird:read`.",
+        "description": "Returns `settings` (`netbirdPath` and the download proxy `installProxy`, shared by all instances), the netbird program actually used in `cli`, and `defaultManagementUrl` (the NetBird cloud address used when an instance leaves `managementUrl` empty).\n\nRequired permission: `netbird:read`.",
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/netbird.SettingsView"
+                }
+              }
+            },
             "description": "Success"
           },
           "400": {
@@ -22721,7 +23718,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Get NetBird settings",
+        "summary": "Get NetBird program settings",
         "tags": [
           "NetBird network"
         ],
@@ -22729,12 +23726,12 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "Restarts with the new settings: when the daemon is managed, `netbird service run` is restarted and `netbird up` runs; the daemon's own auto-connect is turned off and up runs again whenever the daemon is restarted after a crash. With an external daemon that is already connected, the connection is brought down first and then `netbird up` runs so the new settings take effect. A `setupKey` of `********` keeps the saved key; `installProxy` is only changed through the install endpoints. Switches are always passed to netbird up explicitly: `acceptRoutes` is the inverse of `--disable-client-routes`, `serverRoutes` the inverse of `--disable-server-routes`, `acceptDns` the inverse of `--disable-dns`, and `blockInbound` maps to `--block-inbound`.\n\nRequired permission: `netbird:write`.",
+        "description": "Body `{\"netbirdPath\": \"\"}`; when empty, the program is looked up in the bin directory of the config directory and then in PATH. `installProxy` is only changed by the install endpoints. Enabled instances restart when the path changes.\n\nRequired permission: `netbird:write`.",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "type": "object"
+                "$ref": "#/components/schemas/netbird.Settings"
               }
             }
           }
@@ -22779,7 +23776,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Save NetBird settings",
+        "summary": "Save NetBird program settings",
         "tags": [
           "NetBird network"
         ],
@@ -22789,9 +23786,19 @@
     },
     "/api/netbird/status": {
       "get": {
-        "description": "`daemonStatus` is Idle, Connecting, Connected, NeedsLogin, LoginFailed or SessionExpired. Without a setup key, `authUrl` is the login link (device code login on Linux, which can be opened on any device; on macOS and Windows the login usually has to be completed in a browser on that machine) and `authCode` is the code to enter (empty when the link already contains it); the link is renewed automatically when it expires. `peers` are the other peers in the network, and `connType` is P2P or Relayed. `authUrl` and `authCode` are only returned to identities with `netbird:write`.\n\nRequired permission: `netbird:read`.",
+        "description": "Returns an array in instance list order; each item has the instance `key` and `name` plus that instance's status, with the same fields as `GET /api/netbird/instances/{key}/status`. Disabled instances only report the process state and are not queried for the connection status.\n\nRequired permission: `netbird:read`.",
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/netbird.StatusView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
             "description": "Success"
           },
           "400": {
@@ -22830,7 +23837,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Get NetBird connection status",
+        "summary": "View the connection status of all NetBird instances",
         "tags": [
           "NetBird network"
         ],

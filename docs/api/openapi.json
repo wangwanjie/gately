@@ -1201,6 +1201,249 @@
         },
         "type": "object"
       },
+      "netbird.ConnView": {
+        "properties": {
+          "connected": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "netbird.Instance": {
+        "properties": {
+          "acceptDns": {
+            "type": "boolean"
+          },
+          "acceptRoutes": {
+            "type": "boolean"
+          },
+          "blockInbound": {
+            "type": "boolean"
+          },
+          "daemonAddr": {
+            "type": "string"
+          },
+          "daemonEnv": {
+            "type": "string"
+          },
+          "daemonExtraArgs": {
+            "type": "string"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "extraUpArgs": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "hostname": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "legacyStateDir": {
+            "type": "boolean"
+          },
+          "localForwarding": {
+            "type": "boolean"
+          },
+          "manageDaemon": {
+            "type": "boolean"
+          },
+          "managementUrl": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "port": {
+            "type": "integer"
+          },
+          "remark": {
+            "type": "string"
+          },
+          "serverRoutes": {
+            "type": "boolean"
+          },
+          "setupKey": {
+            "type": "string"
+          },
+          "socks5": {
+            "type": "string"
+          },
+          "stateDir": {
+            "type": "string"
+          },
+          "userspace": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "netbird.PeerView": {
+        "properties": {
+          "connType": {
+            "type": "string"
+          },
+          "fqdn": {
+            "type": "string"
+          },
+          "ips": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "lastSeen": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "latencyMs": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "online": {
+            "type": "boolean"
+          },
+          "relay": {
+            "type": "string"
+          },
+          "routes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "rxBytes": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string"
+          },
+          "txBytes": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "netbird.SelfView": {
+        "properties": {
+          "fqdn": {
+            "type": "string"
+          },
+          "ips": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "kernel": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "wgPort": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "netbird.Settings": {
+        "properties": {
+          "installProxy": {
+            "type": "string"
+          },
+          "netbirdPath": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "netbird.SettingsView": {
+        "properties": {
+          "cli": {
+            "type": "string"
+          },
+          "defaultManagementUrl": {
+            "type": "string"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/netbird.Settings"
+          }
+        },
+        "type": "object"
+      },
+      "netbird.StatusView": {
+        "properties": {
+          "authCode": {
+            "type": "string"
+          },
+          "authUrl": {
+            "type": "string"
+          },
+          "cli": {
+            "type": "string"
+          },
+          "daemon": {
+            "$ref": "#/components/schemas/proc.State"
+          },
+          "daemonStatus": {
+            "type": "string"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "management": {
+            "$ref": "#/components/schemas/netbird.ConnView"
+          },
+          "name": {
+            "type": "string"
+          },
+          "peers": {
+            "items": {
+              "$ref": "#/components/schemas/netbird.PeerView"
+            },
+            "type": "array"
+          },
+          "peersConnected": {
+            "type": "integer"
+          },
+          "relaysTotal": {
+            "type": "integer"
+          },
+          "relaysUp": {
+            "type": "integer"
+          },
+          "self": {
+            "$ref": "#/components/schemas/netbird.SelfView"
+          },
+          "signal": {
+            "$ref": "#/components/schemas/netbird.ConnView"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "nettools.Request": {
         "properties": {
           "cidr": {
@@ -22242,9 +22485,144 @@
         "x-token-allowed": true
       }
     },
-    "/api/netbird/logout": {
+    "/api/netbird/instances": {
+      "get": {
+        "description": "所需权限：`netbird:read`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/netbird.Instance"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "获取NetBird 实例列表",
+        "tags": [
+          "NetBird 组网"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      },
       "post": {
-        "description": "执行 `netbird logout`：从管理服务注销本机并删除本地登录信息，本机会从组网的节点列表中移除，再次加入需要重新登录或使用设置密钥。\n\n所需权限：`netbird:write`。",
+        "description": "每个实例运行一个独立的 NetBird 守护进程，可分别加入不同的 NetBird 网络。请求体字段：`name` 名称（不能重复）；`enable` 是否启用；`manageDaemon` 为 true 时由 Gately 运行 `netbird service run`，为 false 时接入系统已安装的 NetBird 服务（只执行 `netbird up`）；`userspace` 为 true 时使用用户态网络（netstack），为 false 时使用内核 WireGuard 网卡；这两项没有默认值，省略即为 false，请显式填写。`stateDir` 为状态目录（经 `NB_STATE_DIR` 传给守护进程），留空为配置目录下的 `netbird/\u003c实例 key\u003e`，填写已有的状态目录可沿用原节点身份；`daemonAddr` 为控制地址，托管时留空为状态目录下的 `netbird.sock`。`setupKey` 经环境变量 `NB_SETUP_KEY` 传给 `netbird up`，不出现在进程参数中；`managementUrl`、`hostname`、`acceptRoutes`、`serverRoutes`、`acceptDns`、`blockInbound`、`extraUpArgs` 对应 `netbird up` 的参数；`port` 为 WireGuard UDP 端口（0 为默认的 51820），`localForwarding` 与 `socks5`（留空为 127.0.0.1:1080）只在用户态网络下生效，`daemonExtraArgs`、`daemonEnv`（每行一个 `KEY=VALUE`）传给守护进程。以下情况返回 400：同时启用两个内核模式（托管且非用户态）实例（内核模式使用固定的路由表、防火墙标记与 nftables 表，默认网卡名都是 wt0）；两个实例共用状态目录或控制地址；两个托管实例的有效 WireGuard 端口相同（0 视为 51820）；两个托管的用户态实例的 SOCKS5 监听抢同一端口（留空视为 127.0.0.1:1080）；名称重复。启用、批量启用与复制时同样检查。`legacyStateDir` 由服务端维护，表示实例迁移自旧版单实例配置、留空 `stateDir` 时沿用 `\u003c配置目录\u003e/netbird`。\n\n所需权限：`netbird:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/netbird.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/netbird.Instance"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "新增 NetBird 实例",
+        "tags": [
+          "NetBird 组网"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances-delete": {
+      "post": {
+        "description": "所需权限：`netbird:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchDeleteRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "成功"
@@ -22285,11 +22663,735 @@
             "bearerAuth": []
           }
         ],
-        "summary": "退出 NetBird 登录",
+        "summary": "批量删除NetBird 实例",
         "tags": [
           "NetBird 组网"
         ],
         "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances-enable": {
+      "put": {
+        "description": "所需权限：`netbird:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchEnableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "批量启用或停用NetBird 实例",
+        "tags": [
+          "NetBird 组网"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances-group": {
+      "put": {
+        "description": "所需权限：`netbird:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "批量设置NetBird 实例分组",
+        "tags": [
+          "NetBird 组网"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances-order": {
+      "put": {
+        "description": "所需权限：`netbird:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.orderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "调整NetBird 实例排序",
+        "tags": [
+          "NetBird 组网"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}": {
+      "delete": {
+        "description": "所需权限：`netbird:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "删除NetBird 实例",
+        "tags": [
+          "NetBird 组网"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "所需权限：`netbird:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/netbird.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/netbird.Instance"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "修改NetBird 实例",
+        "tags": [
+          "NetBird 组网"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}/copy": {
+      "post": {
+        "description": "所需权限：`netbird:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/netbird.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/netbird.Instance"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "复制NetBird 实例",
+        "tags": [
+          "NetBird 组网"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}/enable": {
+      "put": {
+        "description": "所需权限：`netbird:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.enableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "启用或停用NetBird 实例",
+        "tags": [
+          "NetBird 组网"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}/logout": {
+      "post": {
+        "description": "对该实例执行 `netbird logout`：从管理服务注销本机的这个节点并删除本地登录信息，节点会从组网的节点列表中移除，再次加入需要重新登录或使用设置密钥。\n\n所需权限：`netbird:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "退出 NetBird 实例的登录",
+        "tags": [
+          "NetBird 组网"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}/restart": {
+      "post": {
+        "description": "重启该实例托管的守护进程并重新执行 `netbird up`，其他实例不受影响。\n\n所需权限：`netbird:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "重启 NetBird 实例",
+        "tags": [
+          "NetBird 组网"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}/secrets": {
+      "get": {
+        "description": "所需权限：`netbird:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "查看密钥明文",
+        "tags": [
+          "NetBird 组网"
+        ],
+        "x-required-scope": "netbird:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/instances/{key}/status": {
+      "get": {
+        "description": "`daemonStatus` 为 Idle、Connecting、Connected、NeedsLogin、LoginFailed 或 SessionExpired。未填写设置密钥时 `authUrl` 为登录链接（Linux 下为设备码登录，可在任意设备上打开；macOS 与 Windows 上通常只能在本机浏览器完成），`authCode` 为需要输入的代码（链接已包含时为空），链接过期后自动更新；这两项只返回给有 `netbird:write` 权限的身份。`peers` 为组网中的其他节点，`connType` 为 P2P 或 Relayed。\n\n所需权限：`netbird:read`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/netbird.StatusView"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "查看 NetBird 实例的连接状态",
+        "tags": [
+          "NetBird 组网"
+        ],
+        "x-required-scope": "netbird:read",
         "x-token-allowed": true
       }
     },
@@ -22566,123 +23668,18 @@
         "x-token-allowed": true
       }
     },
-    "/api/netbird/restart": {
-      "post": {
-        "description": "所需权限：`netbird:write`。",
-        "responses": {
-          "200": {
-            "description": "成功"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "请求参数错误"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "令牌无效、已过期或未登录"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "令牌缺少所需权限"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "重启 NetBird",
-        "tags": [
-          "NetBird 组网"
-        ],
-        "x-required-scope": "netbird:write",
-        "x-token-allowed": true
-      }
-    },
-    "/api/netbird/secrets": {
-      "get": {
-        "description": "所需权限：`netbird:write`。",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "type": "object"
-                }
-              }
-            },
-            "description": "成功"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "请求参数错误"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "令牌无效、已过期或未登录"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "令牌缺少所需权限"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "查看密钥明文",
-        "tags": [
-          "NetBird 组网"
-        ],
-        "x-required-scope": "netbird:write",
-        "x-token-allowed": true
-      }
-    },
     "/api/netbird/settings": {
       "get": {
-        "description": "返回 `settings`（设置密钥 `setupKey` 已脱敏）、`defaultStateDir`（`stateDir` 留空时使用的状态目录）与 `defaultManagementUrl`（`managementUrl` 留空时使用的 NetBird 官方云地址）。\n\n所需权限：`netbird:read`。",
+        "description": "返回 `settings`（`netbirdPath` 与下载代理 `installProxy`，所有实例共用）、实际使用的 netbird 程序路径 `cli` 与 `defaultManagementUrl`（实例 `managementUrl` 留空时使用的 NetBird 官方云地址）。\n\n所需权限：`netbird:read`。",
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/netbird.SettingsView"
+                }
+              }
+            },
             "description": "成功"
           },
           "400": {
@@ -22721,7 +23718,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "读取 NetBird 设置",
+        "summary": "读取 NetBird 程序设置",
         "tags": [
           "NetBird 组网"
         ],
@@ -22729,12 +23726,12 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "保存后按新配置重启：托管守护进程时重启 `netbird service run` 后执行 `netbird up`，托管时关闭守护进程自身的自动连接，守护进程异常退出被重启后会再次执行 up；使用外部守护进程且已连接时先断开再执行 `netbird up`，让新配置生效。`setupKey` 为 `********` 时沿用已保存的密钥；`installProxy` 只由安装接口修改。开关类设置都会显式传给 netbird up：`acceptRoutes` 对应 `--disable-client-routes` 取反，`serverRoutes` 对应 `--disable-server-routes` 取反，`acceptDns` 对应 `--disable-dns` 取反，`blockInbound` 对应 `--block-inbound`。\n\n所需权限：`netbird:write`。",
+        "description": "请求体 `{\"netbirdPath\": \"\"}`，留空时依次在配置目录 bin 与 PATH 下查找；`installProxy` 只由安装接口修改。路径变化后重启已启用的实例。\n\n所需权限：`netbird:write`。",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "type": "object"
+                "$ref": "#/components/schemas/netbird.Settings"
               }
             }
           }
@@ -22779,7 +23776,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "保存 NetBird 设置",
+        "summary": "保存 NetBird 程序设置",
         "tags": [
           "NetBird 组网"
         ],
@@ -22789,9 +23786,19 @@
     },
     "/api/netbird/status": {
       "get": {
-        "description": "`daemonStatus` 为 Idle、Connecting、Connected、NeedsLogin、LoginFailed 或 SessionExpired。未填写设置密钥时 `authUrl` 为登录链接（Linux 下为设备码登录，可在任意设备上打开；macOS 与 Windows 上通常只能在本机浏览器完成），`authCode` 为需要输入的代码（链接已包含时为空），链接过期后自动更新；这两项只返回给有 `netbird:write` 权限的身份。`peers` 为组网中的其他节点，`connType` 为 P2P 或 Relayed。\n\n所需权限：`netbird:read`。",
+        "description": "返回数组，顺序同实例列表，每项含实例 `key`、`name` 与该实例的状态，字段同 `GET /api/netbird/instances/{key}/status`。停用的实例只返回进程状态，不查询连接状态。\n\n所需权限：`netbird:read`。",
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/netbird.StatusView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
             "description": "成功"
           },
           "400": {
@@ -22830,7 +23837,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "查看 NetBird 连接状态",
+        "summary": "查看全部 NetBird 实例的连接状态",
         "tags": [
           "NetBird 组网"
         ],

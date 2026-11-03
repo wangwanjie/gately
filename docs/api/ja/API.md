@@ -188,12 +188,23 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- | --- | --- |
 | GET | `/api/netbird/logs` | `netbird:read` | モジュールの実行ログを表示 |
 | DELETE | `/api/netbird/logs` | `netbird:write` | モジュールの実行ログを消去 |
-| GET | `/api/netbird/settings` | `netbird:read` | NetBird の設定を取得 |
-| PUT | `/api/netbird/settings` | `netbird:write` | NetBird の設定を保存 |
-| GET | `/api/netbird/secrets` | `netbird:write` | シークレットを平文で表示 |
-| GET | `/api/netbird/status` | `netbird:read` | NetBird の接続状態を取得 |
-| POST | `/api/netbird/restart` | `netbird:write` | NetBird を再起動 |
-| POST | `/api/netbird/logout` | `netbird:write` | NetBird からログアウト |
+| GET | `/api/netbird/instances` | `netbird:read` | NetBird インスタンス の一覧を取得 |
+| POST | `/api/netbird/instances` | `netbird:write` | NetBird インスタンスを追加 |
+| POST | `/api/netbird/instances/{key}/copy` | `netbird:write` | NetBird インスタンス を複製 |
+| PUT | `/api/netbird/instances/{key}` | `netbird:write` | NetBird インスタンス を更新 |
+| DELETE | `/api/netbird/instances/{key}` | `netbird:write` | NetBird インスタンス を削除 |
+| PUT | `/api/netbird/instances/{key}/enable` | `netbird:write` | NetBird インスタンス の有効/無効を切り替え |
+| PUT | `/api/netbird/instances-order` | `netbird:write` | NetBird インスタンス の並び順を変更 |
+| PUT | `/api/netbird/instances-enable` | `netbird:write` | NetBird インスタンス の一括有効化・無効化 |
+| POST | `/api/netbird/instances-delete` | `netbird:write` | NetBird インスタンス の一括削除 |
+| PUT | `/api/netbird/instances-group` | `netbird:write` | NetBird インスタンス のグループを一括設定 |
+| GET | `/api/netbird/instances/{key}/secrets` | `netbird:write` | シークレットを平文で表示 |
+| GET | `/api/netbird/status` | `netbird:read` | すべての NetBird インスタンスの接続状態を表示 |
+| GET | `/api/netbird/instances/{key}/status` | `netbird:read` | NetBird インスタンスの接続状態を表示 |
+| POST | `/api/netbird/instances/{key}/restart` | `netbird:write` | NetBird インスタンスを再起動 |
+| POST | `/api/netbird/instances/{key}/logout` | `netbird:write` | NetBird インスタンスからログアウト |
+| GET | `/api/netbird/settings` | `netbird:read` | NetBird のプログラム設定を読み取る |
+| PUT | `/api/netbird/settings` | `netbird:write` | NetBird のプログラム設定を保存 |
 | GET | `/api/netbird/install` | `netbird:read` | 管理プログラムのインストール情報と進捗を表示 |
 | POST | `/api/netbird/install` | `netbird:write` | 管理プログラムをオンラインでインストールまたは更新 |
 | POST | `/api/netbird/install/check` | `netbird:write` | 管理プログラムの更新を確認 |
@@ -1375,6 +1386,106 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `regex` | string |
 | `type` | string |
 | `urls` | 配列 of string |
+
+### netbird.ConnView
+
+| フィールド | 型 |
+| --- | --- |
+| `connected` | boolean |
+| `error` | string |
+| `url` | string |
+
+### netbird.Instance
+
+| フィールド | 型 |
+| --- | --- |
+| `acceptDns` | boolean |
+| `acceptRoutes` | boolean |
+| `blockInbound` | boolean |
+| `daemonAddr` | string |
+| `daemonEnv` | string |
+| `daemonExtraArgs` | string |
+| `enable` | boolean |
+| `extraUpArgs` | string |
+| `group` | string |
+| `hostname` | string |
+| `key` | string |
+| `legacyStateDir` | boolean |
+| `localForwarding` | boolean |
+| `manageDaemon` | boolean |
+| `managementUrl` | string |
+| `name` | string |
+| `port` | integer |
+| `remark` | string |
+| `serverRoutes` | boolean |
+| `setupKey` | string |
+| `socks5` | string |
+| `stateDir` | string |
+| `userspace` | boolean |
+
+### netbird.PeerView
+
+| フィールド | 型 |
+| --- | --- |
+| `connType` | string |
+| `fqdn` | string |
+| `ips` | 配列 of string |
+| `lastSeen` | 時刻 (RFC 3339) |
+| `latencyMs` | number |
+| `name` | string |
+| `online` | boolean |
+| `relay` | string |
+| `routes` | 配列 of string |
+| `rxBytes` | integer |
+| `status` | string |
+| `txBytes` | integer |
+
+### netbird.SelfView
+
+| フィールド | 型 |
+| --- | --- |
+| `fqdn` | string |
+| `ips` | 配列 of string |
+| `kernel` | boolean |
+| `name` | string |
+| `wgPort` | integer |
+
+### netbird.Settings
+
+| フィールド | 型 |
+| --- | --- |
+| `installProxy` | string |
+| `netbirdPath` | string |
+
+### netbird.SettingsView
+
+| フィールド | 型 |
+| --- | --- |
+| `cli` | string |
+| `defaultManagementUrl` | string |
+| `settings` | `netbird.Settings` |
+
+### netbird.StatusView
+
+| フィールド | 型 |
+| --- | --- |
+| `authCode` | string |
+| `authUrl` | string |
+| `cli` | string |
+| `daemon` | `proc.State` |
+| `daemonStatus` | string |
+| `enable` | boolean |
+| `error` | string |
+| `key` | string |
+| `management` | `netbird.ConnView` |
+| `name` | string |
+| `peers` | 配列 of `netbird.PeerView` |
+| `peersConnected` | integer |
+| `relaysTotal` | integer |
+| `relaysUp` | integer |
+| `self` | `netbird.SelfView` |
+| `signal` | `netbird.ConnView` |
+| `version` | string |
 
 ### nettools.Request
 

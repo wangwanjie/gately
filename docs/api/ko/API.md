@@ -188,12 +188,23 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- | --- | --- |
 | GET | `/api/netbird/logs` | `netbird:read` | 모듈 실행 로그 보기 |
 | DELETE | `/api/netbird/logs` | `netbird:write` | 모듈 실행 로그 비우기 |
-| GET | `/api/netbird/settings` | `netbird:read` | NetBird 설정 조회 |
-| PUT | `/api/netbird/settings` | `netbird:write` | NetBird 설정 저장 |
-| GET | `/api/netbird/secrets` | `netbird:write` | 비밀 값 평문 보기 |
-| GET | `/api/netbird/status` | `netbird:read` | NetBird 연결 상태 조회 |
-| POST | `/api/netbird/restart` | `netbird:write` | NetBird 재시작 |
-| POST | `/api/netbird/logout` | `netbird:write` | NetBird 로그아웃 |
+| GET | `/api/netbird/instances` | `netbird:read` | NetBird 인스턴스 목록 조회 |
+| POST | `/api/netbird/instances` | `netbird:write` | NetBird 인스턴스 추가 |
+| POST | `/api/netbird/instances/{key}/copy` | `netbird:write` | NetBird 인스턴스 복제 |
+| PUT | `/api/netbird/instances/{key}` | `netbird:write` | NetBird 인스턴스 수정 |
+| DELETE | `/api/netbird/instances/{key}` | `netbird:write` | NetBird 인스턴스 삭제 |
+| PUT | `/api/netbird/instances/{key}/enable` | `netbird:write` | NetBird 인스턴스 사용 설정/해제 |
+| PUT | `/api/netbird/instances-order` | `netbird:write` | NetBird 인스턴스 순서 변경 |
+| PUT | `/api/netbird/instances-enable` | `netbird:write` | NetBird 인스턴스 일괄 사용/사용 안 함 |
+| POST | `/api/netbird/instances-delete` | `netbird:write` | NetBird 인스턴스 일괄 삭제 |
+| PUT | `/api/netbird/instances-group` | `netbird:write` | NetBird 인스턴스 그룹 일괄 설정 |
+| GET | `/api/netbird/instances/{key}/secrets` | `netbird:write` | 비밀 값 평문 보기 |
+| GET | `/api/netbird/status` | `netbird:read` | 모든 NetBird 인스턴스의 연결 상태 보기 |
+| GET | `/api/netbird/instances/{key}/status` | `netbird:read` | NetBird 인스턴스의 연결 상태 보기 |
+| POST | `/api/netbird/instances/{key}/restart` | `netbird:write` | NetBird 인스턴스 다시 시작 |
+| POST | `/api/netbird/instances/{key}/logout` | `netbird:write` | NetBird 인스턴스 로그아웃 |
+| GET | `/api/netbird/settings` | `netbird:read` | NetBird 프로그램 설정 읽기 |
+| PUT | `/api/netbird/settings` | `netbird:write` | NetBird 프로그램 설정 저장 |
 | GET | `/api/netbird/install` | `netbird:read` | 관리 프로그램의 설치 정보와 진행 상태 보기 |
 | POST | `/api/netbird/install` | `netbird:write` | 관리 프로그램 온라인 설치 또는 업데이트 |
 | POST | `/api/netbird/install/check` | `netbird:write` | 관리 프로그램 업데이트 확인 |
@@ -1375,6 +1386,106 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `regex` | string |
 | `type` | string |
 | `urls` | Array of string |
+
+### netbird.ConnView
+
+| 필드 | 타입 |
+| --- | --- |
+| `connected` | boolean |
+| `error` | string |
+| `url` | string |
+
+### netbird.Instance
+
+| 필드 | 타입 |
+| --- | --- |
+| `acceptDns` | boolean |
+| `acceptRoutes` | boolean |
+| `blockInbound` | boolean |
+| `daemonAddr` | string |
+| `daemonEnv` | string |
+| `daemonExtraArgs` | string |
+| `enable` | boolean |
+| `extraUpArgs` | string |
+| `group` | string |
+| `hostname` | string |
+| `key` | string |
+| `legacyStateDir` | boolean |
+| `localForwarding` | boolean |
+| `manageDaemon` | boolean |
+| `managementUrl` | string |
+| `name` | string |
+| `port` | integer |
+| `remark` | string |
+| `serverRoutes` | boolean |
+| `setupKey` | string |
+| `socks5` | string |
+| `stateDir` | string |
+| `userspace` | boolean |
+
+### netbird.PeerView
+
+| 필드 | 타입 |
+| --- | --- |
+| `connType` | string |
+| `fqdn` | string |
+| `ips` | Array of string |
+| `lastSeen` | 시간 (RFC 3339) |
+| `latencyMs` | number |
+| `name` | string |
+| `online` | boolean |
+| `relay` | string |
+| `routes` | Array of string |
+| `rxBytes` | integer |
+| `status` | string |
+| `txBytes` | integer |
+
+### netbird.SelfView
+
+| 필드 | 타입 |
+| --- | --- |
+| `fqdn` | string |
+| `ips` | Array of string |
+| `kernel` | boolean |
+| `name` | string |
+| `wgPort` | integer |
+
+### netbird.Settings
+
+| 필드 | 타입 |
+| --- | --- |
+| `installProxy` | string |
+| `netbirdPath` | string |
+
+### netbird.SettingsView
+
+| 필드 | 타입 |
+| --- | --- |
+| `cli` | string |
+| `defaultManagementUrl` | string |
+| `settings` | `netbird.Settings` |
+
+### netbird.StatusView
+
+| 필드 | 타입 |
+| --- | --- |
+| `authCode` | string |
+| `authUrl` | string |
+| `cli` | string |
+| `daemon` | `proc.State` |
+| `daemonStatus` | string |
+| `enable` | boolean |
+| `error` | string |
+| `key` | string |
+| `management` | `netbird.ConnView` |
+| `name` | string |
+| `peers` | Array of `netbird.PeerView` |
+| `peersConnected` | integer |
+| `relaysTotal` | integer |
+| `relaysUp` | integer |
+| `self` | `netbird.SelfView` |
+| `signal` | `netbird.ConnView` |
+| `version` | string |
 
 ### nettools.Request
 

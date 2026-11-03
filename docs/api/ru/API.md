@@ -188,12 +188,23 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- | --- | --- |
 | GET | `/api/netbird/logs` | `netbird:read` | Просмотр журнала работы модуля |
 | DELETE | `/api/netbird/logs` | `netbird:write` | Очистить журнал работы модуля |
-| GET | `/api/netbird/settings` | `netbird:read` | Получить настройки NetBird |
-| PUT | `/api/netbird/settings` | `netbird:write` | Сохранить настройки NetBird |
-| GET | `/api/netbird/secrets` | `netbird:write` | Показать секреты открытым текстом |
-| GET | `/api/netbird/status` | `netbird:read` | Получить состояние подключения NetBird |
-| POST | `/api/netbird/restart` | `netbird:write` | Перезапустить NetBird |
-| POST | `/api/netbird/logout` | `netbird:write` | Выйти из NetBird |
+| GET | `/api/netbird/instances` | `netbird:read` | Список: Экземпляр NetBird |
+| POST | `/api/netbird/instances` | `netbird:write` | Добавить экземпляр NetBird |
+| POST | `/api/netbird/instances/{key}/copy` | `netbird:write` | Дублировать: Экземпляр NetBird |
+| PUT | `/api/netbird/instances/{key}` | `netbird:write` | Изменить: Экземпляр NetBird |
+| DELETE | `/api/netbird/instances/{key}` | `netbird:write` | Удалить: Экземпляр NetBird |
+| PUT | `/api/netbird/instances/{key}/enable` | `netbird:write` | Включить или отключить: Экземпляр NetBird |
+| PUT | `/api/netbird/instances-order` | `netbird:write` | Изменить порядок: Экземпляр NetBird |
+| PUT | `/api/netbird/instances-enable` | `netbird:write` | Пакетно включить или отключить: Экземпляр NetBird |
+| POST | `/api/netbird/instances-delete` | `netbird:write` | Пакетно удалить: Экземпляр NetBird |
+| PUT | `/api/netbird/instances-group` | `netbird:write` | Задать группу сразу для нескольких: Экземпляр NetBird |
+| GET | `/api/netbird/instances/{key}/secrets` | `netbird:write` | Показать секреты открытым текстом |
+| GET | `/api/netbird/status` | `netbird:read` | Просмотреть состояние подключения всех экземпляров NetBird |
+| GET | `/api/netbird/instances/{key}/status` | `netbird:read` | Просмотреть состояние подключения экземпляра NetBird |
+| POST | `/api/netbird/instances/{key}/restart` | `netbird:write` | Перезапустить экземпляр NetBird |
+| POST | `/api/netbird/instances/{key}/logout` | `netbird:write` | Выйти из экземпляра NetBird |
+| GET | `/api/netbird/settings` | `netbird:read` | Прочитать настройки программы NetBird |
+| PUT | `/api/netbird/settings` | `netbird:write` | Сохранить настройки программы NetBird |
 | GET | `/api/netbird/install` | `netbird:read` | Просмотр сведений об установке и хода установки управляемой программы |
 | POST | `/api/netbird/install` | `netbird:write` | Установить или обновить управляемую программу онлайн |
 | POST | `/api/netbird/install/check` | `netbird:write` | Проверить обновления управляемой программы |
@@ -1375,6 +1386,106 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `regex` | string |
 | `type` | string |
 | `urls` | Массив из string |
+
+### netbird.ConnView
+
+| Поле | Тип |
+| --- | --- |
+| `connected` | boolean |
+| `error` | string |
+| `url` | string |
+
+### netbird.Instance
+
+| Поле | Тип |
+| --- | --- |
+| `acceptDns` | boolean |
+| `acceptRoutes` | boolean |
+| `blockInbound` | boolean |
+| `daemonAddr` | string |
+| `daemonEnv` | string |
+| `daemonExtraArgs` | string |
+| `enable` | boolean |
+| `extraUpArgs` | string |
+| `group` | string |
+| `hostname` | string |
+| `key` | string |
+| `legacyStateDir` | boolean |
+| `localForwarding` | boolean |
+| `manageDaemon` | boolean |
+| `managementUrl` | string |
+| `name` | string |
+| `port` | integer |
+| `remark` | string |
+| `serverRoutes` | boolean |
+| `setupKey` | string |
+| `socks5` | string |
+| `stateDir` | string |
+| `userspace` | boolean |
+
+### netbird.PeerView
+
+| Поле | Тип |
+| --- | --- |
+| `connType` | string |
+| `fqdn` | string |
+| `ips` | Массив из string |
+| `lastSeen` | Время (RFC 3339) |
+| `latencyMs` | number |
+| `name` | string |
+| `online` | boolean |
+| `relay` | string |
+| `routes` | Массив из string |
+| `rxBytes` | integer |
+| `status` | string |
+| `txBytes` | integer |
+
+### netbird.SelfView
+
+| Поле | Тип |
+| --- | --- |
+| `fqdn` | string |
+| `ips` | Массив из string |
+| `kernel` | boolean |
+| `name` | string |
+| `wgPort` | integer |
+
+### netbird.Settings
+
+| Поле | Тип |
+| --- | --- |
+| `installProxy` | string |
+| `netbirdPath` | string |
+
+### netbird.SettingsView
+
+| Поле | Тип |
+| --- | --- |
+| `cli` | string |
+| `defaultManagementUrl` | string |
+| `settings` | `netbird.Settings` |
+
+### netbird.StatusView
+
+| Поле | Тип |
+| --- | --- |
+| `authCode` | string |
+| `authUrl` | string |
+| `cli` | string |
+| `daemon` | `proc.State` |
+| `daemonStatus` | string |
+| `enable` | boolean |
+| `error` | string |
+| `key` | string |
+| `management` | `netbird.ConnView` |
+| `name` | string |
+| `peers` | Массив из `netbird.PeerView` |
+| `peersConnected` | integer |
+| `relaysTotal` | integer |
+| `relaysUp` | integer |
+| `self` | `netbird.SelfView` |
+| `signal` | `netbird.ConnView` |
+| `version` | string |
 
 ### nettools.Request
 

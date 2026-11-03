@@ -188,12 +188,23 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- | --- | --- |
 | GET | `/api/netbird/logs` | `netbird:read` | 查看模块运行日志 |
 | DELETE | `/api/netbird/logs` | `netbird:write` | 清空模块运行日志 |
-| GET | `/api/netbird/settings` | `netbird:read` | 读取 NetBird 设置 |
-| PUT | `/api/netbird/settings` | `netbird:write` | 保存 NetBird 设置 |
-| GET | `/api/netbird/secrets` | `netbird:write` | 查看密钥明文 |
-| GET | `/api/netbird/status` | `netbird:read` | 查看 NetBird 连接状态 |
-| POST | `/api/netbird/restart` | `netbird:write` | 重启 NetBird |
-| POST | `/api/netbird/logout` | `netbird:write` | 退出 NetBird 登录 |
+| GET | `/api/netbird/instances` | `netbird:read` | 获取NetBird 实例列表 |
+| POST | `/api/netbird/instances` | `netbird:write` | 新增 NetBird 实例 |
+| POST | `/api/netbird/instances/{key}/copy` | `netbird:write` | 复制NetBird 实例 |
+| PUT | `/api/netbird/instances/{key}` | `netbird:write` | 修改NetBird 实例 |
+| DELETE | `/api/netbird/instances/{key}` | `netbird:write` | 删除NetBird 实例 |
+| PUT | `/api/netbird/instances/{key}/enable` | `netbird:write` | 启用或停用NetBird 实例 |
+| PUT | `/api/netbird/instances-order` | `netbird:write` | 调整NetBird 实例排序 |
+| PUT | `/api/netbird/instances-enable` | `netbird:write` | 批量启用或停用NetBird 实例 |
+| POST | `/api/netbird/instances-delete` | `netbird:write` | 批量删除NetBird 实例 |
+| PUT | `/api/netbird/instances-group` | `netbird:write` | 批量设置NetBird 实例分组 |
+| GET | `/api/netbird/instances/{key}/secrets` | `netbird:write` | 查看密钥明文 |
+| GET | `/api/netbird/status` | `netbird:read` | 查看全部 NetBird 实例的连接状态 |
+| GET | `/api/netbird/instances/{key}/status` | `netbird:read` | 查看 NetBird 实例的连接状态 |
+| POST | `/api/netbird/instances/{key}/restart` | `netbird:write` | 重启 NetBird 实例 |
+| POST | `/api/netbird/instances/{key}/logout` | `netbird:write` | 退出 NetBird 实例的登录 |
+| GET | `/api/netbird/settings` | `netbird:read` | 读取 NetBird 程序设置 |
+| PUT | `/api/netbird/settings` | `netbird:write` | 保存 NetBird 程序设置 |
 | GET | `/api/netbird/install` | `netbird:read` | 查看托管程序的安装信息与进度 |
 | POST | `/api/netbird/install` | `netbird:write` | 在线安装或更新托管程序 |
 | POST | `/api/netbird/install/check` | `netbird:write` | 检查托管程序的更新 |
@@ -1375,6 +1386,106 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `regex` | string |
 | `type` | string |
 | `urls` | 数组 of string |
+
+### netbird.ConnView
+
+| 字段 | 类型 |
+| --- | --- |
+| `connected` | boolean |
+| `error` | string |
+| `url` | string |
+
+### netbird.Instance
+
+| 字段 | 类型 |
+| --- | --- |
+| `acceptDns` | boolean |
+| `acceptRoutes` | boolean |
+| `blockInbound` | boolean |
+| `daemonAddr` | string |
+| `daemonEnv` | string |
+| `daemonExtraArgs` | string |
+| `enable` | boolean |
+| `extraUpArgs` | string |
+| `group` | string |
+| `hostname` | string |
+| `key` | string |
+| `legacyStateDir` | boolean |
+| `localForwarding` | boolean |
+| `manageDaemon` | boolean |
+| `managementUrl` | string |
+| `name` | string |
+| `port` | integer |
+| `remark` | string |
+| `serverRoutes` | boolean |
+| `setupKey` | string |
+| `socks5` | string |
+| `stateDir` | string |
+| `userspace` | boolean |
+
+### netbird.PeerView
+
+| 字段 | 类型 |
+| --- | --- |
+| `connType` | string |
+| `fqdn` | string |
+| `ips` | 数组 of string |
+| `lastSeen` | 时间 (RFC 3339) |
+| `latencyMs` | number |
+| `name` | string |
+| `online` | boolean |
+| `relay` | string |
+| `routes` | 数组 of string |
+| `rxBytes` | integer |
+| `status` | string |
+| `txBytes` | integer |
+
+### netbird.SelfView
+
+| 字段 | 类型 |
+| --- | --- |
+| `fqdn` | string |
+| `ips` | 数组 of string |
+| `kernel` | boolean |
+| `name` | string |
+| `wgPort` | integer |
+
+### netbird.Settings
+
+| 字段 | 类型 |
+| --- | --- |
+| `installProxy` | string |
+| `netbirdPath` | string |
+
+### netbird.SettingsView
+
+| 字段 | 类型 |
+| --- | --- |
+| `cli` | string |
+| `defaultManagementUrl` | string |
+| `settings` | `netbird.Settings` |
+
+### netbird.StatusView
+
+| 字段 | 类型 |
+| --- | --- |
+| `authCode` | string |
+| `authUrl` | string |
+| `cli` | string |
+| `daemon` | `proc.State` |
+| `daemonStatus` | string |
+| `enable` | boolean |
+| `error` | string |
+| `key` | string |
+| `management` | `netbird.ConnView` |
+| `name` | string |
+| `peers` | 数组 of `netbird.PeerView` |
+| `peersConnected` | integer |
+| `relaysTotal` | integer |
+| `relaysUp` | integer |
+| `self` | `netbird.SelfView` |
+| `signal` | `netbird.ConnView` |
+| `version` | string |
 
 ### nettools.Request
 
