@@ -1,8 +1,8 @@
 {
   "label": "Español",
   "lang": "es",
-  "description": "Conjunto de herramientas de pasarela de red de código abierto y auditable: DDNS, traversal NAT con STUN, reenvío de puertos, proxy inverso, certificados, WAF, Tailscale y frp en un único binario.",
-  "keywords": "Gately,DDNS,DNS dinámico,STUN,traversal NAT,reenvío de puertos,proxy inverso,ACME,WAF,Tailscale,frp,NAS,homelab,autoalojado,fnOS",
+  "description": "Conjunto de herramientas de pasarela de red de código abierto y auditable: DDNS, traversal NAT con STUN, reenvío de puertos, proxy inverso, certificados, WAF, Tailscale, NetBird y frp en un único binario.",
+  "keywords": "Gately,DDNS,DNS dinámico,STUN,traversal NAT,reenvío de puertos,proxy inverso,ACME,WAF,Tailscale,NetBird,frp,NAS,homelab,autoalojado,fnOS",
   "ogTitle": "Gately - Herramientas de pasarela de red de código abierto y auditables",
   "nav": {
     "home": "Inicio",

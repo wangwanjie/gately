@@ -1,8 +1,8 @@
 {
   "label": "Deutsch",
   "lang": "de",
-  "description": "Quelloffenes, prüfbares Toolkit für Netzwerk-Gateways: DDNS, STUN-NAT-Traversal, Portweiterleitung, Reverse Proxy, Zertifikate, WAF, Tailscale und frp in einer einzigen Binärdatei.",
-  "keywords": "Gately,DDNS,STUN,NAT-Traversal,Portweiterleitung,Reverse Proxy,ACME,WAF,Tailscale,frp,NAS,Homelab,Selfhosting,fnOS",
+  "description": "Quelloffenes, prüfbares Toolkit für Netzwerk-Gateways: DDNS, STUN-NAT-Traversal, Portweiterleitung, Reverse Proxy, Zertifikate, WAF, Tailscale, NetBird und frp in einer einzigen Binärdatei.",
+  "keywords": "Gately,DDNS,STUN,NAT-Traversal,Portweiterleitung,Reverse Proxy,ACME,WAF,Tailscale,NetBird,frp,NAS,Homelab,Selfhosting,fnOS",
   "ogTitle": "Gately - Quelloffenes, prüfbares Toolkit für Netzwerk-Gateways",
   "nav": {
     "home": "Start",

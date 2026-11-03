@@ -2,7 +2,7 @@
   "label": "日本語",
   "lang": "ja",
   "description": "オープンソースで監査可能なネットワークゲートウェイツールキット。DDNS、STUN 穿孔、ポート転送、リバースプロキシ、証明書、WAF、Tailscale、NetBird、frp を単一バイナリに統合した。",
-  "keywords": "Gately,DDNS,ダイナミック DNS,STUN,NAT 越え,ポート転送,リバースプロキシ,ACME,WAF,Tailscale,frp,NAS,自宅サーバー,fnOS",
+  "keywords": "Gately,DDNS,ダイナミック DNS,STUN,NAT 越え,ポート転送,リバースプロキシ,ACME,WAF,Tailscale,NetBird,frp,NAS,自宅サーバー,fnOS",
   "ogTitle": "Gately - オープンソースで監査可能なネットワークゲートウェイツールキット",
   "nav": {
     "home": "ホーム",
@@ -153,7 +153,7 @@
       },
       {
         "title": "ネットワーク接続と NAT 越え",
-        "text": "Tailscale、frp（frpc / frps）、cloudflared トンネルをプロセス管理方式で統合し、オンラインでのインストール、更新、ロールバック、アンインストールに対応します。"
+        "text": "Tailscale、NetBird、frp（frpc / frps）、cloudflared トンネルをプロセス管理方式で統合し、オンラインでのインストール、更新、ロールバック、アンインストールに対応します。"
       },
       {
         "title": "Docker 管理",

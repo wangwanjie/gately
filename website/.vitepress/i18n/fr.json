@@ -1,8 +1,8 @@
 {
   "label": "Français",
   "lang": "fr",
-  "description": "Boîte à outils de passerelle réseau open source et auditable : DDNS, traversée NAT STUN, redirection de ports, proxy inverse, certificats, WAF, Tailscale et frp dans un seul binaire.",
-  "keywords": "Gately,DDNS,DNS dynamique,STUN,traversée NAT,redirection de ports,proxy inverse,ACME,WAF,Tailscale,frp,NAS,homelab,auto-hébergé,fnOS",
+  "description": "Boîte à outils de passerelle réseau open source et auditable : DDNS, traversée NAT STUN, redirection de ports, proxy inverse, certificats, WAF, Tailscale, NetBird et frp dans un seul binaire.",
+  "keywords": "Gately,DDNS,DNS dynamique,STUN,traversée NAT,redirection de ports,proxy inverse,ACME,WAF,Tailscale,NetBird,frp,NAS,homelab,auto-hébergé,fnOS",
   "ogTitle": "Gately - Boîte à outils de passerelle réseau open source et auditable",
   "nav": {
     "home": "Accueil",

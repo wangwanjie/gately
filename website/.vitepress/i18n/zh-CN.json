@@ -2,7 +2,7 @@
   "label": "简体中文",
   "lang": "zh-CN",
   "description": "开源、可审计的网络网关工具集：DDNS、STUN 穿透、端口转发、反向代理、证书、WAF、Tailscale、NetBird、frp 集成在一个单文件中。",
-  "keywords": "Gately,DDNS,STUN,内网穿透,端口转发,反向代理,ACME,WAF,Tailscale,frp,NAS,飞牛,fnOS",
+  "keywords": "Gately,DDNS,STUN,内网穿透,端口转发,反向代理,ACME,WAF,Tailscale,NetBird,frp,NAS,飞牛,fnOS",
   "ogTitle": "Gately - 开源可审计的网络网关工具集",
   "nav": {
     "home": "首页",
@@ -153,7 +153,7 @@
       },
       {
         "title": "组网与穿透",
-        "text": "以进程托管方式集成 Tailscale、frp（frpc / frps）与 cloudflared 隧道，支持在线安装、更新、回滚与卸载。"
+        "text": "以进程托管方式集成 Tailscale、NetBird、frp（frpc / frps）与 cloudflared 隧道，支持在线安装、更新、回滚与卸载。"
       },
       {
         "title": "Docker 管理",

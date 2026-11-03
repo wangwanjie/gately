@@ -1,8 +1,8 @@
 {
   "label": "Português (Brasil)",
   "lang": "pt-BR",
-  "description": "Um kit de ferramentas de gateway de rede de código aberto e auditável: DDNS, travessia de NAT com STUN, redirecionamento de portas, proxy reverso, certificados, WAF, Tailscale e frp em um único binário.",
-  "keywords": "Gately,DDNS,STUN,travessia de NAT,redirecionamento de portas,proxy reverso,ACME,WAF,Tailscale,frp,NAS,homelab,self-hosted,autohospedado,fnOS",
+  "description": "Um kit de ferramentas de gateway de rede de código aberto e auditável: DDNS, travessia de NAT com STUN, redirecionamento de portas, proxy reverso, certificados, WAF, Tailscale, NetBird e frp em um único binário.",
+  "keywords": "Gately,DDNS,STUN,travessia de NAT,redirecionamento de portas,proxy reverso,ACME,WAF,Tailscale,NetBird,frp,NAS,homelab,self-hosted,autohospedado,fnOS",
   "ogTitle": "Gately - Kit de gateway de rede de código aberto e auditável",
   "nav": {
     "home": "Início",

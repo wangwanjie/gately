@@ -1,8 +1,8 @@
 {
   "label": "Русский",
   "lang": "ru",
-  "description": "Открытый и проверяемый набор инструментов сетевого шлюза: DDNS, STUN-обход NAT, проброс портов, обратный прокси, сертификаты, WAF, Tailscale и frp в одном бинарном файле.",
-  "keywords": "Gately,DDNS,STUN,обход NAT,проброс портов,обратный прокси,ACME,WAF,Tailscale,frp,NAS,homelab,self-hosted,fnOS",
+  "description": "Открытый и проверяемый набор инструментов сетевого шлюза: DDNS, STUN-обход NAT, проброс портов, обратный прокси, сертификаты, WAF, Tailscale, NetBird и frp в одном бинарном файле.",
+  "keywords": "Gately,DDNS,STUN,обход NAT,проброс портов,обратный прокси,ACME,WAF,Tailscale,NetBird,frp,NAS,homelab,self-hosted,fnOS",
   "ogTitle": "Gately — открытый и проверяемый набор инструментов сетевого шлюза",
   "nav": {
     "home": "Главная",

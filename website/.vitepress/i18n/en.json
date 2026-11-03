@@ -1,8 +1,8 @@
 {
   "label": "English",
   "lang": "en",
-  "description": "An open-source, auditable network gateway toolkit: DDNS, STUN NAT traversal, port forwarding, reverse proxy, certificates, WAF, Tailscale and frp in a single binary.",
-  "keywords": "Gately,DDNS,STUN,NAT traversal,port forwarding,reverse proxy,ACME,WAF,Tailscale,frp,NAS,homelab,self-hosted,fnOS",
+  "description": "An open-source, auditable network gateway toolkit: DDNS, STUN NAT traversal, port forwarding, reverse proxy, certificates, WAF, Tailscale, NetBird and frp in a single binary.",
+  "keywords": "Gately,DDNS,STUN,NAT traversal,port forwarding,reverse proxy,ACME,WAF,Tailscale,NetBird,frp,NAS,homelab,self-hosted,fnOS",
   "ogTitle": "Gately - Open-source, auditable network gateway toolkit",
   "nav": {
     "home": "Home",
