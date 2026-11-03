@@ -176,7 +176,7 @@ Sin `-c`, el comando busca por orden en `GATELY_CONFIG_DIR`, en `data` dentro de
 
 ### Comprobación automática de actualizaciones y avisos de seguridad {#update-check}
 
-Por defecto, Gately consulta GitHub cada 12 horas para leer la lista de versiones de Gately y los [avisos de seguridad publicados](https://github.com/wangwanjie/gately/security/advisories), y comprueba la última versión de los programas gestionados instalados en línea (frp, túnel de Cloudflare, Tailscale, File Browser). Todas las solicitudes son GET anónimas y no incluyen información del dispositivo, la configuración ni el uso.
+Por defecto, Gately consulta GitHub cada 12 horas para leer la lista de versiones de Gately y los [avisos de seguridad publicados](https://github.com/wangwanjie/gately/security/advisories), y comprueba la última versión de los programas gestionados instalados en línea (frp, túnel de Cloudflare, Tailscale, NetBird, File Browser). Todas las solicitudes son GET anónimas y no incluyen información del dispositivo, la configuración ni el uso.
 
 - **Nueva versión**: aparece un aviso en la parte superior de la interfaz; puedes ver las novedades u omitir esa versión;
 - **Actualización de seguridad**: si la versión actual está dentro del rango afectado de un aviso, o una versión más reciente incluye en sus notas una sección de correcciones de seguridad, un aviso rojo en la parte superior enumera los avisos y versiones. El aviso de seguridad solo se puede posponer 24 horas y vuelve de inmediato si aparece un problema de seguridad nuevo;

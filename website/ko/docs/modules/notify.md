@@ -138,7 +138,7 @@ WAF 차단과 업스트림 상태 변화는 자주 발생할 수 있으므로 �
 | `perf.recovered` | 성능 모니터링: 경보 복구 | 정보 | 발생 중인 성능 경보의 조건이 해제됨. 필드는 위와 같음 |
 | `system.update` | Gately: 새 버전 발견 | 정보 | 자동 또는 수동 업데이트 확인에서 새 버전을 발견. `current`, `latest`, `url` 필드 포함, 같은 버전은 한 번만 알림, [자동 업데이트 확인](/ko/docs/guide/install#update-check) 참고 |
 | `system.security` | Gately: 보안 업데이트 | 오류 | 현재 버전이 공개된 보안 공지의 영향을 받거나 더 새로운 버전에 보안 수정이 포함됨. `current`, `latest`, `url`, `advisories`, `securityReleases` 필드 포함, 새 보안 문제가 나오면 다시 알림 |
-| `program.update` | 관리 프로그램: 새 버전 발견 | 정보 | 자동 확인에서 설치된 frp, cloudflared, Tailscale, File Browser 의 새 버전을 발견. 출처는 프로그램 이름, `program`, `current`, `latest` 필드 포함 |
+| `program.update` | 관리 프로그램: 새 버전 발견 | 정보 | 자동 확인에서 설치된 frp, cloudflared, Tailscale, NetBird, File Browser 의 새 버전을 발견. 출처는 프로그램 이름, `program`, `current`, `latest` 필드 포함 |
 | `docker.update` | Docker: 새 이미지 있음 | 정보 | Docker 정기 확인에서 컨테이너의 새 이미지를 발견. 한 번의 확인을 한 건으로 묶고 같은 새 이미지는 한 번만 알림, `count` 필드 포함 |
 | `notify.test` | 테스트 알림 | 정보 | 채널의 「테스트」 버튼이 만들며 규칙 매칭에는 참여하지 않음 |
 

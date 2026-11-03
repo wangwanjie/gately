@@ -176,7 +176,7 @@ apk add --allow-untrusted ./luci-app-gately_<版本>_openwrt_all.apk
 
 ### 自动检查更新与安全提醒 {#update-check}
 
-Gately 默认每 12 小时访问一次 GitHub，读取 Gately 的发布列表与[已公开的安全公告](https://github.com/wangwanjie/gately/security/advisories)，并为已在线安装的托管程序（frp、Cloudflare 隧道、Tailscale、File Browser）查询上游最新版本。请求都是匿名 GET，不携带设备、配置或使用情况等任何信息。
+Gately 默认每 12 小时访问一次 GitHub，读取 Gately 的发布列表与[已公开的安全公告](https://github.com/wangwanjie/gately/security/advisories)，并为已在线安装的托管程序（frp、Cloudflare 隧道、Tailscale、NetBird、File Browser）查询上游最新版本。请求都是匿名 GET，不携带设备、配置或使用情况等任何信息。
 
 - **新版本**：管理界面顶部显示提示，可以查看更新内容，或忽略这个版本；
 - **安全更新**：当前版本落在某个安全公告的受影响版本范围内，或者比当前版本新的发布说明带有安全修复章节时，顶部以红色提示并列出相关公告与版本。安全提示只能暂缓 24 小时，出现新的安全问题时立即重新提示；

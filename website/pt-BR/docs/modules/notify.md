@@ -138,7 +138,7 @@ Ao criar uma regra, clique em um modelo para preencher eventos, nível e tempo d
 | `perf.recovered` | Desempenho: alerta recuperado | Informação | A condição de um alerta de desempenho disparado deixou de valer; mesmos campos |
 | `system.update` | Gately: nova versão disponível | Info | Uma verificação automática ou manual encontrou uma nova versão; campos `current`, `latest`, `url`; cada versão é notificada uma vez, veja [Verificação automática de atualizações](/pt-BR/docs/guide/install#update-check) |
 | `system.security` | Gately: atualização de segurança | Erro | A versão atual é afetada por um aviso de segurança publicado, ou uma versão mais nova contém correções de segurança; campos `current`, `latest`, `url`, `advisories`, `securityReleases`; nova notificação quando surge um novo problema |
-| `program.update` | Programas gerenciados: nova versão disponível | Info | A verificação automática encontrou uma nova versão de frp, cloudflared, Tailscale ou File Browser instalados; a origem é o nome do programa; campos `program`, `current`, `latest` |
+| `program.update` | Programas gerenciados: nova versão disponível | Info | A verificação automática encontrou uma nova versão de frp, cloudflared, Tailscale, NetBird ou File Browser instalados; a origem é o nome do programa; campos `program`, `current`, `latest` |
 | `docker.update` | Docker: imagem mais recente disponível | Info | A verificação agendada do Docker encontrou imagens mais recentes; uma notificação por verificação, uma vez por imagem nova; campo `count` |
 | `notify.test` | Notificação de teste | Info | Gerada pelo botão "Testar" do canal; não participa da correspondência de regras |
 

@@ -176,7 +176,7 @@ apk add --allow-untrusted ./luci-app-gately_<バージョン>_openwrt_all.apk
 
 ### 自動更新チェックとセキュリティ通知 {#update-check}
 
-Gately はデフォルトで 12 時間ごとに GitHub にアクセスし、Gately のリリース一覧と[公開済みのセキュリティアドバイザリー](https://github.com/wangwanjie/gately/security/advisories)を読み込み、オンラインインストール済みの管理プログラム（frp、Cloudflare トンネル、Tailscale、File Browser）の最新バージョンも照会します。リクエストはすべて匿名の GET で、端末・設定・利用状況などの情報は一切含みません。
+Gately はデフォルトで 12 時間ごとに GitHub にアクセスし、Gately のリリース一覧と[公開済みのセキュリティアドバイザリー](https://github.com/wangwanjie/gately/security/advisories)を読み込み、オンラインインストール済みの管理プログラム（frp、Cloudflare トンネル、Tailscale、NetBird、File Browser）の最新バージョンも照会します。リクエストはすべて匿名の GET で、端末・設定・利用状況などの情報は一切含みません。
 
 - **新しいバージョン**：管理画面の上部に表示され、更新内容を確認したり、そのバージョンをスキップしたりできます；
 - **セキュリティ更新**：現在のバージョンがアドバイザリーの影響範囲に含まれる場合や、現在より新しいリリースのノートにセキュリティ修正の章がある場合、上部に赤い通知で該当するアドバイザリーとバージョンを表示します。セキュリティ通知は 24 時間までしか延期できず、新しいセキュリティ問題が出るとすぐに再表示されます；

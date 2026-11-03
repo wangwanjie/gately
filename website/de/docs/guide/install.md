@@ -176,7 +176,7 @@ Ohne `-c` sucht der Befehl nacheinander in `GATELY_CONFIG_DIR`, im Verzeichnis `
 
 ### Automatische Update-Prüfung und Sicherheitswarnungen {#update-check}
 
-Standardmäßig ruft Gately alle 12 Stunden GitHub ab, liest die Release-Liste von Gately und die [veröffentlichten Sicherheitshinweise](https://github.com/wangwanjie/gately/security/advisories) und fragt die neueste Version der online installierten verwalteten Programme ab (frp, Cloudflare-Tunnel, Tailscale, File Browser). Alle Anfragen sind anonyme GET-Anfragen ohne Geräte-, Konfigurations- oder Nutzungsdaten.
+Standardmäßig ruft Gately alle 12 Stunden GitHub ab, liest die Release-Liste von Gately und die [veröffentlichten Sicherheitshinweise](https://github.com/wangwanjie/gately/security/advisories) und fragt die neueste Version der online installierten verwalteten Programme ab (frp, Cloudflare-Tunnel, Tailscale, NetBird, File Browser). Alle Anfragen sind anonyme GET-Anfragen ohne Geräte-, Konfigurations- oder Nutzungsdaten.
 
 - **Neue Version**: Oben in der Oberfläche erscheint ein Hinweis; Sie können die Änderungen ansehen oder diese Version überspringen;
 - **Sicherheitsupdate**: Liegt die aktuelle Version im betroffenen Bereich eines Hinweises oder enthält eine neuere Version in ihren Release Notes einen Abschnitt mit Sicherheitskorrekturen, listet ein roter Hinweis oben die Hinweise und Versionen auf. Ein Sicherheitshinweis lässt sich nur um 24 Stunden verschieben und erscheint sofort wieder, wenn ein neues Sicherheitsproblem auftaucht;

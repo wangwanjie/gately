@@ -176,7 +176,7 @@ Without `-c`, the command looks in `GATELY_CONFIG_DIR`, `data` in the current di
 
 ### Automatic update checks and security alerts {#update-check}
 
-By default Gately contacts GitHub every 12 hours to read Gately's release list and [published security advisories](https://github.com/wangwanjie/gately/security/advisories), and queries the latest upstream version of managed programs installed online (frp, Cloudflare Tunnel, Tailscale, File Browser). All requests are anonymous GETs and carry no device, configuration or usage information.
+By default Gately contacts GitHub every 12 hours to read Gately's release list and [published security advisories](https://github.com/wangwanjie/gately/security/advisories), and queries the latest upstream version of managed programs installed online (frp, Cloudflare Tunnel, Tailscale, NetBird, File Browser). All requests are anonymous GETs and carry no device, configuration or usage information.
 
 - **New version**: a notice appears at the top of the admin UI; you can view the release notes or skip that version;
 - **Security update**: when the current version falls within the affected range of an advisory, or a release newer than the current version has a security-fix section in its notes, a red notice at the top lists the advisories and versions. A security notice can only be postponed for 24 hours, and it returns immediately when a new security issue appears;

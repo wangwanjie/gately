@@ -138,7 +138,7 @@ When creating a rule, click a template to prefill the events, level and silence 
 | `perf.recovered` | Performance: alert recovered | Info | The condition of a firing performance alert has cleared; same fields as above |
 | `system.update` | Gately: new version available | Info | An automatic or manual update check found a new version; fields `current`, `latest`, `url`; each version is notified once, see [Automatic update checks](/en/docs/guide/install#update-check) |
 | `system.security` | Gately: security update | Error | The current version is affected by a published security advisory, or a newer version contains security fixes; fields `current`, `latest`, `url`, `advisories`, `securityReleases`; notified again when a new security issue appears |
-| `program.update` | Managed programs: new version available | Info | The automatic check found a new version of the installed frp, cloudflared, Tailscale or File Browser; the source is the program name; fields `program`, `current`, `latest` |
+| `program.update` | Managed programs: new version available | Info | The automatic check found a new version of the installed frp, cloudflared, Tailscale, NetBird or File Browser; the source is the program name; fields `program`, `current`, `latest` |
 | `docker.update` | Docker: newer image available | Info | The scheduled Docker check found newer container images; one notice per check, each new image notified once; field `count` |
 | `notify.test` | Test notification | Info | Produced by the channel's "Test" button; it does not take part in rule matching |
 

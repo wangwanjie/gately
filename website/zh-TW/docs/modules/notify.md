@@ -138,7 +138,7 @@ WAF 攔截和上游狀態變動可能頻繁發生，建議為這類規則設定 
 | `perf.recovered` | 效能監控：告警恢復 | 資訊 | 已觸發的效能告警條件解除，欄位同上 |
 | `system.update` | Gately：發現新版本 | 資訊 | 自動或手動檢查更新發現新版本，附帶 `current`、`latest`、`url` 欄位，同一版本只通知一次，見[自動檢查更新](/zh-TW/docs/guide/install#update-check) |
 | `system.security` | Gately：安全更新 | 錯誤 | 目前版本受已公開的安全公告影響，或有更新的版本帶有安全修正，附帶 `current`、`latest`、`url`、`advisories`、`securityReleases` 欄位，出現新的安全問題時再次通知 |
-| `program.update` | 託管程式：發現新版本 | 資訊 | 自動檢查發現已安裝的 frp、cloudflared、Tailscale 或 File Browser 有新版本，來源為程式名稱，附帶 `program`、`current`、`latest` 欄位 |
+| `program.update` | 託管程式：發現新版本 | 資訊 | 自動檢查發現已安裝的 frp、cloudflared、Tailscale、NetBird 或 File Browser 有新版本，來源為程式名稱，附帶 `program`、`current`、`latest` 欄位 |
 | `docker.update` | Docker：映像有新版本 | 資訊 | Docker 定時檢查發現容器映像有新版本，一次檢查彙總為一則，同一個新映像只通知一次，附帶 `count` 欄位 |
 | `notify.test` | 測試通知 | 資訊 | 管道的「測試」按鈕產生，不參與規則比對 |
 

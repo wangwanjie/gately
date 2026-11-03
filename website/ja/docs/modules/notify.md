@@ -138,7 +138,7 @@ WAF のブロックやアップストリームの状態変化は頻繁に起こ�
 | `perf.recovered` | パフォーマンス監視：アラート復旧 | 情報 | 発報中のパフォーマンスアラートの条件が解消した。フィールドは同上 |
 | `system.update` | Gately：新しいバージョン | 情報 | 自動または手動の更新チェックで新しいバージョンが見つかった。`current`、`latest`、`url` フィールド付き。同じバージョンの通知は 1 回だけ。[自動更新チェック](/ja/docs/guide/install#update-check)を参照 |
 | `system.security` | Gately：セキュリティ更新 | エラー | 現在のバージョンが公開済みのセキュリティアドバイザリーの影響を受ける、または新しいバージョンにセキュリティ修正が含まれる。`current`、`latest`、`url`、`advisories`、`securityReleases` フィールド付き。新しいセキュリティ問題が出ると再通知 |
-| `program.update` | 管理プログラム：新しいバージョン | 情報 | 自動チェックでインストール済みの frp、cloudflared、Tailscale、File Browser の新しいバージョンが見つかった。発生元はプログラム名。`program`、`current`、`latest` フィールド付き |
+| `program.update` | 管理プログラム：新しいバージョン | 情報 | 自動チェックでインストール済みの frp、cloudflared、Tailscale、NetBird、File Browser の新しいバージョンが見つかった。発生元はプログラム名。`program`、`current`、`latest` フィールド付き |
 | `docker.update` | Docker：新しいイメージがあります | 情報 | Docker の定期チェックでコンテナの新しいイメージが見つかった。1 回のチェックで 1 件にまとめ、同じ新しいイメージの通知は 1 回だけ。`count` フィールド付き |
 | `notify.test` | テスト通知 | 情報 | チャネルの「テスト」ボタンで発生する。ルールの照合には関与しない |
 
