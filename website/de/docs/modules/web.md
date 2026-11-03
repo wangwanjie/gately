@@ -20,6 +20,16 @@ Im Sortiermodus können Sie auch mehrere Sites markieren (das Kontrollkästchen 
 
 Fahren Sie über einen Gruppenkopf und klicken Sie auf den Stift, um die Gruppe umzubenennen: Alle Einträge erhalten den neuen Namen und behalten Position und Reihenfolge. Ein bereits verwendeter Name führt die beiden Gruppen nach einer Bestätigung zusammen.
 
+### Sites verschieben {#move-sites}
+
+Eine Site lässt sich mit allen Einstellungen in einen anderen Listener verschieben:
+
+- Beim Bearbeiten einer Site **Listener** ändern; beim Speichern werden zuerst die Änderungen gespeichert, dann wird verschoben. Beim Anlegen einer Site wählt das Feld, in welchem Listener sie entsteht.
+- Im Sortiermodus Sites ankreuzen (auch über Listener hinweg), in der Werkzeugleiste **Zu Listener verschieben** wählen und Ziel-Listener sowie Gruppe festlegen (standardmäßig behält jede Site ihre Gruppe). Die Sites landen am Ende des Ziel-Listeners oder am Ende der gewählten Gruppe; Sites, die schon im Ziel-Listener sind, bleiben unverändert.
+- Im Sortiermodus Sites über oder unter eine Site eines anderen Listeners ziehen, um sie dort einzufügen und in deren Gruppe aufzunehmen, oder auf eine Gruppenüberschrift, um sie ans Ende dieser Gruppe zu stellen. Listener ohne normale Sites zeigen beim Ziehen eine Ablagefläche. Nach dem Ablegen wird nachgefragt.
+
+Jede Verschiebung ist eine einzige Anfrage: Quell- und Ziel-Listener werden je einmal neu geladen und ihre Site-Listen direkt ersetzt, Verbindungen zu anderen Sites bleiben bestehen. Hat der Ziel-Listener bereits eine Site mit derselben Domain, wird die Verschiebung abgelehnt und kein Listener geändert; die Standard-Site gehört zu ihrem Listener und lässt sich nicht verschieben. Ist der Schlüssel einer Site im Ziel-Listener schon vergeben, erhält sie einen neuen Schlüssel, und Alarmregeln der Leistungsüberwachung, die auf die Site verweisen, werden angepasst. Anmeldesitzungen sind pro Listener und Site getrennt, angemeldete Besucher müssen sich nach dem Verschieben erneut anmelden; die Einlösezähler von Freigabelinks wandern mit der Site, ein begrenzter Link wird also nicht wieder nutzbar; Statistik und Live-Verbindungen der Site beginnen neu. Wird eine Site mit Anmeldung von einem HTTPS-Listener in einen unverschlüsselten HTTP-Listener verschoben, erscheint ein Hinweis, dass Passwörter und Anmelde-Cookies im Klartext übertragen werden.
+
 ### Stapelverarbeitung
 
 Markieren Sie im Sortiermodus Sites (auch über mehrere Listener hinweg), bietet die Werkzeugleiste die folgenden Stapeloperationen. Jede Operation wird in einem Schritt übermittelt: Gespeichert wird nur, wenn alle Sites die Prüfung bestehen; schlägt eine fehl, bleibt alles unverändert, und die betroffene Site wird genannt. Jeder betroffene Listener lädt nur einmal neu und tauscht seine Site-Liste an Ort und Stelle aus, ohne Verbindungen zu trennen.
@@ -33,8 +43,9 @@ Markieren Sie im Sortiermodus Sites (auch über mehrere Listener hinweg), bietet
 
   Eine neu hinzugefügte Domain wird abgelehnt, wenn sie auf mehreren Sites desselben Listeners vorkäme, da innerhalb eines Listeners nur die erste dieser Sites sie jemals treffen würde; verschiedene Listener können dieselbe Domain verwenden.
 - **Optionen im Stapel**: schaltet Kompression, Zugriffslog, CORS, Weitergeleitete Header und Verbindung bei Ablehnung trennen gesammelt ein oder aus und setzt oder entfernt den WAF. Punkte, die auf „Unverändert“ stehen, behalten die Einstellung jeder Site. Einstellungen, die den Zugriff betreffen, etwa Authentifizierung, Zugriffskontrolle und Backend-Adressen, ändern Sie Site für Site.
+- **Zu Listener verschieben**: verschiebt die angekreuzten Sites in einen anderen Listener, siehe [Sites verschieben](#move-sites).
 
-Der zugehörige Endpunkt ist `POST /api/webservice/sites/batch` mit dem Body `{"sites": [{"listener": "Listener-Key", "site": "Site-Key"}], "action": "...", ...}`. `action` ist `enable`, `disable`, `delete`, `addDomains`, `removeDomains` (mit `domains`), `replaceDomain` (mit `from` und `to`) oder `set` (mit `options`, das nur die oben genannten Optionsfelder annimmt). Die Antwort nennt die Zahl der geänderten Sites und die Zahl der Sites, die keine Änderung brauchten. Eine Anfrage verarbeitet bis zu 500 Sites und 100 Domains. Listener selbst unterstützen außerdem die allgemeinen Endpunkte `PUT /api/webservice/listeners-enable` und `POST /api/webservice/listeners-delete`.
+Der zugehörige Endpunkt ist `POST /api/webservice/sites/batch` mit dem Body `{"sites": [{"listener": "Listener-Key", "site": "Site-Key"}], "action": "...", ...}`. `action` ist `enable`, `disable`, `delete`, `addDomains`, `removeDomains` (mit `domains`), `replaceDomain` (mit `from` und `to`) oder `set` (mit `options`, das nur die oben genannten Optionsfelder annimmt). Die Antwort nennt die Zahl der geänderten Sites und die Zahl der Sites, die keine Änderung brauchten. Eine Anfrage verarbeitet bis zu 500 Sites und 100 Domains. Listener selbst unterstützen außerdem die allgemeinen Endpunkte `PUT /api/webservice/listeners-enable` und `POST /api/webservice/listeners-delete`. Bei `move` gibt `move` das Ziel an, etwa `{"listener": "Schlüssel des Ziel-Listeners"}`, optional mit `group` (Gruppe für die Sites; leere Zeichenkette bedeutet ohne Gruppe, weglassen behält die Gruppe jeder Site) oder `before` / `after` (Site-Schlüssel im Ziel-Listener, davor bzw. danach einfügen und dessen Gruppe übernehmen). `moved` in der Antwort listet die Schlüssel jeder Site vor und nach dem Verschieben.
 
 ## Site-Typen
 

@@ -25,5 +25,18 @@
   "apply": "{count} 件のサイトに適用",
   "result": "{changed} 件のサイトを変更しました",
   "resultSome": "{changed} 件のサイトを変更しました（{unchanged} 件は既に一致）",
-  "removeConfirm": "選択した {count} 件のサイト（{names}）を削除しますか？元に戻せません。"
+  "removeConfirm": "選択した {count} 件のサイト（{names}）を削除しますか？元に戻せません。",
+  "move": "リスナーへ移動",
+  "moveTitle": "サイトを別のリスナーへ移動",
+  "moveTarget": "移動先リスナー",
+  "moveTargetPlaceholder": "リスナーを選択",
+  "moveGroup": "グループ",
+  "moveGroupKeep": "現在のグループのまま",
+  "moveGroupNone": "グループなし",
+  "moveHelp": "サイトはすべての設定ごと移動し、末尾または選択したグループの末尾に配置されます。移動先にすでにあるサイトはそのままです。移動先に同じドメインのサイトがある場合は移動しません。ログイン中の訪問者は再ログインが必要になり、統計はリセットされます。",
+  "movePlainWarn": "認証を有効にしたサイトが含まれ、移動先リスナーは平文 HTTP です。移動後はパスワードとログイン Cookie が暗号化されずに送信されます。",
+  "moved": "{count} 件のサイトを移動しました",
+  "moveNothing": "選択したサイトはすでに移動先リスナーにあります",
+  "moveConfirm": "{count} 件のサイト（{names}）を「{target}」へ移動しますか？ログイン中の訪問者は再ログインが必要になり、統計はリセットされます。",
+  "moveOk": "移動"
 }

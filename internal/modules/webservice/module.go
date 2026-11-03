@@ -44,11 +44,21 @@ type Module struct {
 	realIP *realIPSource
 	// ipListStates 为订阅 IP 列表的运行状态
 	ipListStates map[string]*ipListState
+	// sitesMoved 为站点移到其他监听后的回调，参数把旧标识“监听key/站点key”映射到新标识
+	sitesMoved []func(map[string]string)
 }
 
 // New 创建模块。certs 为证书来源，可为 nil（此时不能启用 HTTPS）；waf 可为 nil（站点的 WAF 设置不生效）。
 func New(certs CertSource, waf WAFProvider) *Module {
 	return &Module{certs: certs, waf: waf, runners: map[string]*listenerRunner{}, errors: map[string]string{}, realIP: &realIPSource{}, ipListStates: map[string]*ipListState{}}
+}
+
+// OnSitesMoved 注册站点移到其他监听后的回调，供按“监听key/站点key”引用站点的模块同步改写引用。
+// 回调在 Web 服务模块释放锁之后同步调用，可以在其中调用本模块的只读接口。
+func (m *Module) OnSitesMoved(fn func(renamed map[string]string)) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.sitesMoved = append(m.sitesMoved, fn)
 }
 
 // ID 实现 module.Module。

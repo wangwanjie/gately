@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"slices"
 	"sync"
 	"time"
 
@@ -53,8 +54,49 @@ func New(web *webservice.Module) *Module {
 	m := &Module{eng: newEngine(), publish: events.Publish, now: time.Now}
 	if web != nil {
 		m.src.Sites = web.PerfSites
+		web.OnSitesMoved(m.renameSites)
 	}
 	return m
+}
+
+// renameSites 在站点移到其他监听后改写告警规则中引用的站点标识，renamed 把旧标识映射到新标识。
+// 规则内容变化后，按旧标识触发中的告警会照常发出收尾的恢复通知，新标识重新计时。
+func (m *Module) renameSites(renamed map[string]string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	changed := false
+	rules := slices.Clone(m.cfg.Rules)
+	for i := range rules {
+		r := &rules[i]
+		var next []string
+		hit := false
+		for _, s := range r.Sites {
+			if to, ok := renamed[s]; ok {
+				s, hit = to, true
+			}
+			if !slices.Contains(next, s) {
+				next = append(next, s)
+			}
+		}
+		if hit {
+			r.Sites = next
+			changed = true
+		}
+	}
+	if !changed {
+		return
+	}
+	old := m.cfg.Rules
+	m.cfg.Rules = rules
+	if m.store == nil {
+		return
+	}
+	if err := m.saveLocked(); err != nil {
+		m.cfg.Rules = old
+		if m.log != nil {
+			m.log.Errorf("站点移动后更新告警规则失败: %v", err)
+		}
+	}
 }
 
 // ID 实现 module.Module。

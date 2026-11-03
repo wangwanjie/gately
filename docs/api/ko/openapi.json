@@ -3124,6 +3124,9 @@
           "from": {
             "type": "string"
           },
+          "move": {
+            "$ref": "#/components/schemas/webservice.SiteMoveTarget"
+          },
           "options": {
             "$ref": "#/components/schemas/webservice.SiteBatchOptions"
           },
@@ -3144,8 +3147,42 @@
           "changed": {
             "type": "integer"
           },
+          "moved": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.SiteMoved"
+            },
+            "type": "array"
+          },
           "unchanged": {
             "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.SiteMoveTarget": {
+        "properties": {
+          "after": {
+            "type": "string"
+          },
+          "before": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "listener": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.SiteMoved": {
+        "properties": {
+          "from": {
+            "$ref": "#/components/schemas/webservice.SiteRef"
+          },
+          "to": {
+            "$ref": "#/components/schemas/webservice.SiteRef"
           }
         },
         "type": "object"
@@ -38513,7 +38550,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "사이트 일괄 작업: 사용·사용 안 함, 삭제, 도메인 추가·제거·교체, 일부 옵션 변경. 모든 사이트가 검증을 통과해야 저장하며 하나라도 실패하면 아무것도 바꾸지 않습니다",
+        "summary": "사이트 일괄 작업: 활성화·비활성화, 삭제, 도메인 추가·삭제·교체, 일부 옵션 변경, 다른 리스너로 이동. 모든 사이트가 검증을 통과해야 저장되며 하나라도 실패하면 아무것도 변경하지 않습니다",
         "tags": [
           "Web 서비스"
         ],

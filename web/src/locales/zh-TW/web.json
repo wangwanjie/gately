@@ -197,5 +197,10 @@
   "copySitesHelp": "分享連結不會複製：其權杖可繞過認證，需要時在副本中重新建立。",
   "siteListener": "所屬監聽",
   "siteLogs": "記錄",
-  "siteGone": "找不到該站點，可能已被刪除或移動，請重新整理後再試"
+  "siteGone": "找不到該站點，可能已被刪除或移動，請重新整理後再試",
+  "siteListenerMoveHelp": "儲存後站點移到所選監聽，已登入的訪客需要重新登入，統計資料重新開始。",
+  "siteMoveConfirm": "儲存修改並將站點移到「{target}」？",
+  "siteMoveFailed": "修改已儲存，但移動失敗：{error}",
+  "siteMoved": "已儲存並移到所選監聽",
+  "dropHere": "放到這裡，移入此監聽"
 }

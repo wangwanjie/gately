@@ -42,8 +42,9 @@
     >
       <el-button size="small" :icon="Globe" :disabled="!sel.selected.value.size || busy" @click="openBatch('domains')">{{ t('webBatch.domains') }}</el-button>
       <el-button size="small" :icon="ListChecks" :disabled="!sel.selected.value.size || busy" @click="openBatch('options')">{{ t('webBatch.options') }}</el-button>
+      <el-button v-if="listeners.length > 1" size="small" :icon="ArrowRightLeft" :disabled="!sel.selected.value.size || busy" @click="openBatch('move')">{{ t('webBatch.move') }}</el-button>
     </SortToolbar>
-    <WebBatch ref="batchDialog" :waf-instances="wafInstances" @done="onBatchDone" />
+    <WebBatch ref="batchDialog" :waf-instances="wafInstances" :listeners="moveListeners" @done="onBatchDone" />
 
     <div v-loading="loading" class="card-list">
       <el-empty v-if="!loading && !listeners.length" :description="t('web.empty')" />
@@ -105,7 +106,7 @@
               @dragover.prevent="!item.item.isDefault && sel.dragOver(item.id, $event)"
               @dragleave="sel.dragLeave(item.id)"
               @drop.prevent="onDrop(l)"
-              @dragend="sel.resetDrag()"
+              @dragend="onDragEnd"
             >
               <div class="site-switch">
                 <el-checkbox
@@ -180,6 +181,17 @@
               </div>
             </div>
             </template>
+            <!-- 拖动其他监听的站点时，没有普通站点的监听显示放置区，放下即移入该监听 -->
+            <div
+              v-if="sortMode && dragFrom && dragFrom !== l.key && !(l.sites ?? []).length"
+              class="drop-zone"
+              :class="{ 'is-over': sel.over.value?.id === `${l.key}/g:` }"
+              @dragover.prevent="sel.dragOver(`${l.key}/g:`, $event, false)"
+              @dragleave="sel.dragLeave(`${l.key}/g:`)"
+              @drop.prevent="onDrop(l)"
+            >
+              {{ t('web.dropHere') }}
+            </div>
             <div v-if="!siteRows(l).length" class="meta empty-sites">{{ t('web.noSites') }}</div>
             <div v-else-if="!displayItems(l).length" class="meta empty-sites">{{ t('web.noMatchedSites') }}</div>
           </div>
@@ -232,7 +244,7 @@
         <!-- 仅用于生成站点链接：经协议分流、端口映射或 CDN 访问时，对外的协议与端口可能与监听不同 -->
         <el-form-item :label="t('web.accessAddr')">
           <div class="access-row">
-            <el-select v-model="editingListener.accessScheme" class="w-120">
+            <el-select v-model="editingListener.accessScheme" class="w-120" :empty-values="[null, undefined]">
               <el-option :label="t('web.accessSchemeAuto', { scheme: editingListener.tls ? 'https' : 'http' })" value="" />
               <el-option label="http" value="http" />
               <el-option label="https" value="https" />
@@ -280,11 +292,14 @@
       <CopyHint :from="copySiteFrom" />
       <el-form :model="site" label-width="130px" :label-position="labelPosition">
         <el-alert v-if="siteIsDefault" :title="t('web.defaultSiteHint')" type="info" :closable="false" show-icon class="listener-hint" />
-        <!-- 复制站点时可以放到其他监听下，例如把 HTTP 站点复制到 HTTPS 监听 -->
-        <el-form-item v-if="copySiteFrom" :label="t('web.siteListener')">
+        <!-- 所属监听：新建或复制时决定建在哪个监听下（例如把 HTTP 站点复制到 HTTPS 监听），编辑已有站点时改动即在保存后移到该监听；
+             默认站点属于所在监听，不能移动 -->
+        <el-form-item v-if="!siteIsDefault && listeners.length > 1" :label="t('web.siteListener')">
           <el-select v-model="siteOwnerKey" class="w-full" @change="onSiteOwnerChange">
-            <el-option v-for="o in listeners" :key="o.key" :label="listenerLabel(o)" :value="o.key ?? ''" />
+            <el-option v-for="o in listeners" :key="o.key" :label="listenerOption(o)" :value="o.key ?? ''" />
           </el-select>
+          <div v-if="siteIndex >= 0 && siteOwnerKey !== siteFromKey" class="form-help">{{ t('web.siteListenerMoveHelp') }}</div>
+          <div v-if="siteMovePlainRisk" class="form-help warn">{{ t('webBatch.movePlainWarn') }}</div>
         </el-form-item>
         <el-tabs v-model="siteTab">
           <el-tab-pane :label="t('web.tabBasic')" name="basic">
@@ -543,7 +558,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   ArrowUpDown,
   BarChart3,
@@ -567,11 +582,13 @@ import {
   SlidersHorizontal,
   Trash2,
   Workflow,
+  ArrowRightLeft,
 } from 'lucide-vue-next'
 import { api, type OAuthProvider } from '../api'
 import GroupHeader from '../components/GroupHeader.vue'
 import SortToolbar from '../components/SortToolbar.vue'
-import WebBatch, { type SiteRef } from '../components/WebBatch.vue'
+import WebBatch from '../components/WebBatch.vue'
+import { crossListenerDrop, type MoveListener, type SiteRef } from '../siteMove'
 import GroupInput from '../components/GroupInput.vue'
 import { useGroupRename, useSortSelect } from '../composables/useGroupSort'
 import { buildSections, displayItems as displayGroupItems, dropTarget, flatten, moveInto, moveSection, moveStep, renameSection, type GroupItem, type Section } from '../groupSort'
@@ -743,18 +760,21 @@ const siteTab = ref('basic')
 const site = ref<Site>(emptySite())
 const siteIsDefault = ref(false)
 let siteOwner: ListenerView | null = null
-// 分享链接地址需要所属监听器的协议与端口
+// 分享链接地址需要所属监听器的协议与端口，随所选的所属监听变化
 const siteTls = ref(false)
 const sitePort = ref(0)
-let siteIndex = -1
+// siteIndex 为编辑中的站点在所属监听中的下标，新建与复制为 -1
+const siteIndex = ref(-1)
 // 复制监听、站点时的模板，普通新增与编辑时为 null
 const copyListenerFrom = ref<CopySource | null>(null)
 const copySiteFrom = ref<CopySource | null>(null)
 // 复制监听时是否带上站点，以及模板中的站点数
 const copyListenerSites = ref(true)
 const copySiteCount = ref(0)
-// 复制站点时选择的目标监听；与模板同一监听时副本排在模板之后，否则追加到末尾
+// siteOwnerKey 为编辑框中选择的所属监听：新建与复制时就是站点要建在的监听（复制到同一监听时副本排在模板之后，否则追加到末尾）；
+// 编辑已有站点时 siteFromKey 为站点当前所在的监听，二者不同即在保存后移到所选监听
 const siteOwnerKey = ref('')
+const siteFromKey = ref('')
 let copySiteSource: { listener: string; index: number } | null = null
 const settingsVisible = ref(false)
 const { isMobile, labelPosition } = useFormLayout()
@@ -999,7 +1019,7 @@ function siteRows(l: ListenerView): SiteRow[] {
 
 // filterText 按域名、名称、分组、后端与备注筛选站点（排序模式下不筛选，避免只调整到部分站点的顺序）
 const filterText = ref('')
-// 排序模式、多选与拖动状态；站点 id 为 监听key/站点key，拖动只在同一监听器内生效
+// 排序模式、多选与拖动状态；站点 id 为 监听key/站点key，拖到其他监听即移动站点
 const sel = useSortSelect()
 const { sortMode } = sel
 // 分组的收起状态按 监听key/分组名 持久化，与监听器的收起状态分开存放
@@ -1016,6 +1036,27 @@ function siteId(l: ListenerView, row: SiteRow) {
 function siteSections(l: ListenerView): Section<SiteRow>[] {
   const rows = (l.sites ?? []).map((s, i) => ({ site: s, index: i, isDefault: false }))
   return buildSections(rows, (r) => r.site.group ?? '')
+}
+
+// siteHasAuth 判断站点是否开启了认证（移到明文 HTTP 监听时需要提醒）
+function siteHasAuth(s: Site) {
+  return !!(s.basicAuth || s.webAuth || s.forwardAuth?.url)
+}
+
+// moveListeners 为移动站点时可选的目标监听
+const moveListeners = computed<MoveListener[]>(() =>
+  listeners.value.map((l) => ({
+    key: l.key,
+    name: l.name,
+    tls: l.tls,
+    port: l.port,
+    groups: [...new Set((l.sites ?? []).map((s) => s.group ?? '').filter(Boolean))],
+    authSites: (l.sites ?? []).filter(siteHasAuth).map((s) => s.key ?? ''),
+  })),
+)
+
+function listenerOption(l: { name: string; tls: boolean; port: number }) {
+  return `${l.name || t('web.unnamedListener')} (${l.tls ? 'https' : 'http'} :${l.port})`
 }
 
 const allSiteIds = computed(() => listeners.value.flatMap((l) => flatten(siteSections(l)).map((r) => siteId(l, r))))
@@ -1130,16 +1171,22 @@ async function runBatch(fn: (refs: SiteRef[], names: string[]) => Promise<boolea
 const batchEnable = (on: boolean) => runBatch((refs) => batchDialog.value!.enable(refs, on))
 const batchRemove = () => runBatch((refs, names) => batchDialog.value!.remove(refs, names))
 
-function openBatch(mode: 'domains' | 'options') {
+function openBatch(mode: 'domains' | 'options' | 'move') {
   const { refs } = selectedSites()
   if (refs.length) {
     batchDialog.value?.open(mode, refs)
   }
 }
 
-// onBatchDone 在批量操作成功后刷新列表；修改域名与选项后保留选择，方便继续操作其他项
+// onBatchDone 在批量操作成功后刷新列表；修改域名与选项后保留选择，方便继续操作其他项；
+// 移到其他监听的站点 id 已变化，从选择中去掉
 async function onBatchDone() {
   await load()
+  const valid = new Set(allSiteIds.value)
+  const stale = [...sel.selected.value].filter((id) => !valid.has(id))
+  if (stale.length) {
+    sel.setSelected(stale, false)
+  }
 }
 
 // renameGroup 重命名监听器下的一个分组：组内站点一起改名，位置与顺序不变；新名称已存在时并入该分组
@@ -1174,24 +1221,64 @@ async function moveListener(i: number, d: number) {
   await load()
 }
 
+// dragFrom 为正在拖动的站点所在的监听，用于在没有普通站点的其他监听中显示放置区
+const dragFrom = ref('')
+
 // onDragStart 开始拖动：拖动选中的站点时同一监听器内的全部选中站点一起移动
 function onDragStart(l: ListenerView, id: string, e: DragEvent) {
+  dragFrom.value = l.key
   sel.dragStart(id, allSiteIds.value.filter((x) => x.startsWith(`${l.key}/`)), e)
 }
 
-// onDrop 放下站点：放到站点上方或下方即插入该位置并加入其分组，放到分组标题上即移到该分组末尾
+function onDragEnd() {
+  dragFrom.value = ''
+  sel.resetDrag()
+}
+
+// onDrop 放下站点：放到站点上方或下方即插入该位置并加入其分组，放到分组标题上即移到该分组末尾；
+// 放到其他监听中时确认后移到该监听的对应位置
 async function onDrop(l: ListenerView) {
   const d = sel.takeDrop()
+  dragFrom.value = ''
   const prefix = `${l.key}/`
-  if (!d || !d.over.id.startsWith(prefix) || ![...d.ids].every((id) => id.startsWith(prefix))) {
+  if (!d || !d.over.id.startsWith(prefix)) {
     return
   }
-  const sections = siteSections(l)
-  const idOf = (r: SiteRow) => siteId(l, r)
-  const target = dropTarget(sections, idOf, d.over, prefix)
-  if (target) {
-    await saveSiteOrder(l, moveInto(sections, idOf, d.ids, target))
-    await load()
+  const ids = [...d.ids]
+  if (ids.every((id) => id.startsWith(prefix))) {
+    const sections = siteSections(l)
+    const idOf = (r: SiteRow) => siteId(l, r)
+    const target = dropTarget(sections, idOf, d.over, prefix)
+    if (target) {
+      await saveSiteOrder(l, moveInto(sections, idOf, d.ids, target))
+      await load()
+    }
+    return
+  }
+  // 跨监听：拖动的站点都来自同一个其他监听（dragStart 只带上同一监听内的选中项），按显示顺序提交
+  const drop = crossListenerDrop(ids, d.over, l.key, listeners.value.map((x) => x.key))
+  const src = drop && listeners.value.find((x) => x.key === drop.from)
+  if (!drop || !src) {
+    return
+  }
+  const refs: SiteRef[] = []
+  const names: string[] = []
+  for (const row of flatten(siteSections(src))) {
+    if (row.site.key && d.ids.has(siteId(src, row))) {
+      refs.push({ listener: src.key, site: row.site.key })
+      names.push(row.site.name || row.site.domains?.[0] || row.site.key)
+    }
+  }
+  if (!refs.length || busy.value) {
+    return
+  }
+  busy.value = true
+  try {
+    if (await batchDialog.value!.move(refs, names, drop.target)) {
+      sel.clearSelection()
+    }
+  } finally {
+    busy.value = false
   }
 }
 
@@ -1355,9 +1442,10 @@ function openSite(l: ListenerView, row?: SiteRow, copy = false) {
   loadIPLists()
   siteOwner = l
   siteOwnerKey.value = l.key ?? ''
+  siteFromKey.value = l.key ?? ''
   siteTls.value = l.tls
   sitePort.value = l.port
-  siteIndex = row ? row.index : -1
+  siteIndex.value = row ? row.index : -1
   siteIsDefault.value = !!row?.isDefault
   copySiteFrom.value = null
   copySiteSource = null
@@ -1381,7 +1469,7 @@ function openSite(l: ListenerView, row?: SiteRow, copy = false) {
   if (row && copy && !row.isDefault) {
     copySiteFrom.value = { key: row.site.key ?? '', name: siteTitle(row) }
     copySiteSource = { listener: l.key ?? '', index: row.index }
-    siteIndex = -1
+    siteIndex.value = -1
     delete draft.key
     draft.shareLinks = []
     if (draft.name) {
@@ -1393,11 +1481,14 @@ function openSite(l: ListenerView, row?: SiteRow, copy = false) {
   siteVisible.value = true
 }
 
-// onSiteOwnerChange 复制站点时切换目标监听：分享链接地址与访问控制提示按新监听的协议与端口显示
+// onSiteOwnerChange 切换所属监听：分享链接地址与访问控制提示按所选监听的协议与端口显示；
+// 新建与复制时站点直接建在所选监听下，编辑已有站点时 siteOwner 仍为当前所在监听，保存时再移动
 function onSiteOwnerChange(key: string) {
   const l = listeners.value.find((x) => x.key === key)
   if (l) {
-    siteOwner = l
+    if (siteIndex.value < 0) {
+      siteOwner = l
+    }
     siteTls.value = l.tls
     sitePort.value = l.port
   }
@@ -1409,9 +1500,38 @@ function openDefaultSite(l: ListenerView) {
   site.value.enable = true
 }
 
+// siteMovePlainRisk 判断编辑中的站点开启了认证、且要从 HTTPS 监听移到明文 HTTP 监听
+const siteMovePlainRisk = computed(() => {
+  if (siteIndex.value < 0 || siteOwnerKey.value === siteFromKey.value) {
+    return false
+  }
+  const from = listeners.value.find((x) => x.key === siteFromKey.value)
+  const to = listeners.value.find((x) => x.key === siteOwnerKey.value)
+  return !!from && !!to && from.tls && !to.tls && siteHasAuth(site.value)
+})
+
 async function saveSite() {
   if (!siteOwner) {
     return
+  }
+  // 编辑已有站点并换了所属监听：先保存修改，再移到所选监听（新建与复制时 siteOwner 已随选择切换）
+  const moveTo = !siteIsDefault.value && siteIndex.value >= 0 && siteOwnerKey.value !== siteFromKey.value ? siteOwnerKey.value : ''
+  if (moveTo) {
+    const target = listeners.value.find((x) => x.key === moveTo)
+    let msg = t('web.siteMoveConfirm', { target: target ? listenerOption(target) : moveTo })
+    if (siteMovePlainRisk.value) {
+      msg += '\n\n' + t('webBatch.movePlainWarn')
+    }
+    try {
+      await ElMessageBox.confirm(msg, t('webBatch.moveTitle'), {
+        type: 'warning',
+        confirmButtonText: t('webBatch.moveOk'),
+        cancelButtonText: t('common.cancel'),
+        customStyle: { whiteSpace: 'pre-line' },
+      })
+    } catch {
+      return
+    }
   }
   if (!forwardAuthOn.value) {
     site.value.forwardAuth = { url: '', loginUrl: '', copyHeaders: [] }
@@ -1425,8 +1545,8 @@ async function saveSite() {
   l.sites = l.sites ?? []
   if (siteIsDefault.value) {
     l.default = site.value
-  } else if (siteIndex >= 0) {
-    l.sites[siteIndex] = site.value
+  } else if (siteIndex.value >= 0) {
+    l.sites[siteIndex.value] = site.value
   } else if (copySiteSource && copySiteSource.listener === l.key && copySiteSource.index < l.sites.length) {
     // 复制到同一监听时副本紧跟在模板之后，便于对照修改
     l.sites.splice(copySiteSource.index + 1, 0, site.value)
@@ -1436,15 +1556,30 @@ async function saveSite() {
   saving.value = true
   try {
     await putListener(l)
-    siteVisible.value = false
-    ElMessage.success(t('web.savedReloaded'))
-    emit('saved')
-    await load()
   } catch (e) {
     ElMessage.error((e as Error).message)
-  } finally {
     saving.value = false
+    return
   }
+  // 先保存站点内容，再整体移到目标监听（保留站点分组，放在末尾）；移动失败时修改已保存，编辑框保持打开以便调整后重试
+  if (moveTo) {
+    try {
+      await api.post('/api/webservice/sites/batch', { sites: [{ listener: l.key, site: site.value.key }], action: 'move', move: { listener: moveTo } })
+    } catch (e) {
+      ElMessage.error(t('web.siteMoveFailed', { error: (e as Error).message }))
+      // 修改已保存，通知外层（如网络拓扑页）刷新
+      emit('saved')
+      await load()
+      siteOwner = listeners.value.find((x) => x.key === l.key) ?? siteOwner
+      saving.value = false
+      return
+    }
+  }
+  siteVisible.value = false
+  ElMessage.success(moveTo ? t('web.siteMoved') : t('web.savedReloaded'))
+  saving.value = false
+  emit('saved')
+  await load()
 }
 
 async function toggleSite(lv: ListenerView, row: SiteRow, enable: boolean) {
@@ -1702,6 +1837,23 @@ onMounted(async () => {
 /* 拖动时的插入位置：上方或下方显示一条主题色线 */
 .site.drop-before {
   box-shadow: inset 0 2px 0 var(--el-color-primary);
+}
+.form-help.warn {
+  color: var(--el-color-warning);
+}
+.drop-zone {
+  margin: 6px 0;
+  padding: 14px;
+  border: 1px dashed var(--el-border-color);
+  border-radius: 6px;
+  text-align: center;
+  color: var(--el-text-color-secondary);
+  font-size: 13px;
+}
+.drop-zone.is-over {
+  border-color: var(--el-color-primary);
+  color: var(--el-color-primary);
+  background: var(--el-color-primary-light-9);
 }
 .site.drop-after {
   box-shadow: inset 0 -2px 0 var(--el-color-primary);

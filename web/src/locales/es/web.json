@@ -197,5 +197,10 @@
   "copySitesHelp": "Los enlaces compartidos no se copian: sus tokens omiten la autenticación. Crea otros en la copia si los necesitas.",
   "siteListener": "Listener",
   "siteLogs": "Registros",
-  "siteGone": "No se encontró el sitio. Puede que se haya eliminado o movido; actualiza e inténtalo de nuevo"
+  "siteGone": "No se encontró el sitio. Puede que se haya eliminado o movido; actualiza e inténtalo de nuevo",
+  "siteListenerMoveHelp": "Al guardar, el sitio se mueve al listener elegido. Los visitantes con sesión iniciada deberán volver a iniciarla y las estadísticas empiezan de cero.",
+  "siteMoveConfirm": "¿Guardar los cambios y mover el sitio a «{target}»?",
+  "siteMoveFailed": "Cambios guardados, pero no se pudo mover: {error}",
+  "siteMoved": "Guardado y movido al listener elegido",
+  "dropHere": "Suelta aquí para mover a este listener"
 }

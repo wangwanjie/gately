@@ -25,5 +25,18 @@
   "apply": "Appliquer à {count} sites",
   "result": "{changed} sites modifiés",
   "resultSome": "{changed} sites modifiés ; {unchanged} déjà conformes",
-  "removeConfirm": "Supprimer les {count} sites sélectionnés ({names}) ? Cette action est irréversible."
+  "removeConfirm": "Supprimer les {count} sites sélectionnés ({names}) ? Cette action est irréversible.",
+  "move": "Déplacer vers un écouteur",
+  "moveTitle": "Déplacer des sites vers un autre écouteur",
+  "moveTarget": "Écouteur cible",
+  "moveTargetPlaceholder": "Choisir un écouteur",
+  "moveGroup": "Groupe",
+  "moveGroupKeep": "Conserver le groupe actuel",
+  "moveGroupNone": "Sans groupe",
+  "moveHelp": "Les sites sont déplacés avec tous leurs réglages et placés à la fin, ou à la fin du groupe choisi. Les sites déjà présents dans l'écouteur cible ne bougent pas. Rien n'est déplacé si l'écouteur cible a déjà un site avec le même domaine. Les visiteurs connectés devront se reconnecter et les statistiques repartent de zéro.",
+  "movePlainWarn": "Certains de ces sites exigent une connexion et l'écouteur cible est en HTTP non chiffré : les mots de passe et cookies de connexion circuleront en clair.",
+  "moved": "{count} sites déplacés",
+  "moveNothing": "Les sites sélectionnés sont déjà dans l'écouteur cible",
+  "moveConfirm": "Déplacer {count} sites ({names}) vers « {target} » ? Les visiteurs connectés devront se reconnecter et les statistiques repartent de zéro.",
+  "moveOk": "Déplacer"
 }

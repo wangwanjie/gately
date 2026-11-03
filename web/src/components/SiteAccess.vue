@@ -8,12 +8,12 @@
       <div class="rows">
         <div v-for="(r, i) in site.rules" :key="i" class="row">
           <el-input v-model="r.prefix" placeholder="/admin" class="w-prefix mono" />
-          <el-select v-model="r.auth" class="w-auth">
+          <el-select v-model="r.auth" class="w-auth" :empty-values="[null, undefined]">
             <el-option :label="t('siteAccess.authInherit')" value="" />
             <el-option :label="t('siteAccess.authOff')" value="off" />
             <el-option :label="t('siteAccess.authOn')" value="on" />
           </el-select>
-          <el-select v-model="r.ipMode" class="w-ip">
+          <el-select v-model="r.ipMode" class="w-ip" :empty-values="[null, undefined]">
             <el-option :label="t('siteAccess.ipInherit')" value="" />
             <el-option :label="t('siteAccess.ipWhitelist')" value="whitelist" />
             <el-option :label="t('siteAccess.ipBlacklist')" value="blacklist" />

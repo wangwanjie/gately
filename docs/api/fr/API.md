@@ -345,7 +345,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | POST | `/api/webservice/iplists/{key}/refresh` | `webservice:write` | Actualiser maintenant une liste d'IP abonnée |
 | GET | `/api/webservice/users` | `webservice:read` | Lire les utilisateurs partagés et le fournisseur d'identité OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Enregistrer utilisateurs partagés et fournisseur d'identité OIDC, configurer les sites en masse |
-| POST | `/api/webservice/sites/batch` | `webservice:write` | Opérations en lot sur les sites : activer, désactiver, supprimer, ajouter, retirer ou remplacer des domaines et modifier certaines options ; rien n'est enregistré tant que tous les sites ne passent pas la validation |
+| POST | `/api/webservice/sites/batch` | `webservice:write` | Opérations groupées sur les sites : activer, désactiver, supprimer, ajouter, retirer ou remplacer des domaines, modifier certaines options ou déplacer vers un autre écouteur ; l'enregistrement n'a lieu que si tous les sites passent la validation, rien n'est modifié si l'un d'eux échoue |
 | POST | `/api/webservice/import/nginx` | `webservice:write` | Importer une configuration nginx |
 | GET | `/api/webservice/settings` | `webservice:read` | Lire les paramètres globaux du service Web |
 | GET | `/api/webservice/settings/secrets/totp` | `webservice:write` | Afficher en clair les secrets TOTP des utilisateurs partagés (indexés par nom d'utilisateur) |
@@ -2109,6 +2109,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `action` | string |
 | `domains` | Tableau de string |
 | `from` | string |
+| `move` | `webservice.SiteMoveTarget` |
 | `options` | `webservice.SiteBatchOptions` |
 | `sites` | Tableau de `webservice.SiteRef` |
 | `to` | string |
@@ -2118,7 +2119,24 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Champ | Type |
 | --- | --- |
 | `changed` | integer |
+| `moved` | Tableau de `webservice.SiteMoved` |
 | `unchanged` | integer |
+
+### webservice.SiteMoveTarget
+
+| Champ | Type |
+| --- | --- |
+| `after` | string |
+| `before` | string |
+| `group` | string |
+| `listener` | string |
+
+### webservice.SiteMoved
+
+| Champ | Type |
+| --- | --- |
+| `from` | `webservice.SiteRef` |
+| `to` | `webservice.SiteRef` |
 
 ### webservice.SiteRef
 

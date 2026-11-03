@@ -197,5 +197,10 @@
   "copySitesHelp": "Links de compartilhamento não são copiados: seus tokens ignoram a autenticação. Crie novos na cópia se precisar.",
   "siteListener": "Listener",
   "siteLogs": "Logs",
-  "siteGone": "Site não encontrado. Pode ter sido excluído ou movido; atualize e tente de novo"
+  "siteGone": "Site não encontrado. Pode ter sido excluído ou movido; atualize e tente de novo",
+  "siteListenerMoveHelp": "Ao salvar, o site é movido para o listener escolhido. Visitantes conectados precisarão entrar novamente e as estatísticas recomeçam do zero.",
+  "siteMoveConfirm": "Salvar as alterações e mover o site para \"{target}\"?",
+  "siteMoveFailed": "Alterações salvas, mas a movimentação falhou: {error}",
+  "siteMoved": "Salvo e movido para o listener escolhido",
+  "dropHere": "Solte aqui para mover para este listener"
 }

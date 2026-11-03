@@ -3124,6 +3124,9 @@
           "from": {
             "type": "string"
           },
+          "move": {
+            "$ref": "#/components/schemas/webservice.SiteMoveTarget"
+          },
           "options": {
             "$ref": "#/components/schemas/webservice.SiteBatchOptions"
           },
@@ -3144,8 +3147,42 @@
           "changed": {
             "type": "integer"
           },
+          "moved": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.SiteMoved"
+            },
+            "type": "array"
+          },
           "unchanged": {
             "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.SiteMoveTarget": {
+        "properties": {
+          "after": {
+            "type": "string"
+          },
+          "before": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "listener": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.SiteMoved": {
+        "properties": {
+          "from": {
+            "$ref": "#/components/schemas/webservice.SiteRef"
+          },
+          "to": {
+            "$ref": "#/components/schemas/webservice.SiteRef"
           }
         },
         "type": "object"
@@ -38513,7 +38550,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "批次操作站點：啟停、刪除、增刪或取代網域、修改部分選項；全部驗證通過才儲存，任一站點失敗都不修改",
+        "summary": "批次操作站點：啟停、刪除、增刪或取代網域、修改部分選項、移到其他監聽；全部驗證通過才儲存，任一站點失敗都不修改",
         "tags": [
           "Web 服務"
         ],

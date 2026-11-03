@@ -197,5 +197,10 @@
   "copySitesHelp": "Freigabelinks werden nicht kopiert, da ihre Token die Anmeldung umgehen. Bei Bedarf in der Kopie neu anlegen.",
   "siteListener": "Listener",
   "siteLogs": "Protokolle",
-  "siteGone": "Site nicht gefunden. Sie wurde möglicherweise gelöscht oder verschoben; bitte neu laden und erneut versuchen"
+  "siteGone": "Site nicht gefunden. Sie wurde möglicherweise gelöscht oder verschoben; bitte neu laden und erneut versuchen",
+  "siteListenerMoveHelp": "Beim Speichern wird die Site zum gewählten Listener verschoben. Angemeldete Besucher müssen sich erneut anmelden, die Statistik beginnt neu.",
+  "siteMoveConfirm": "Änderungen speichern und die Site nach „{target}“ verschieben?",
+  "siteMoveFailed": "Änderungen gespeichert, aber das Verschieben ist fehlgeschlagen: {error}",
+  "siteMoved": "Gespeichert und zum gewählten Listener verschoben",
+  "dropHere": "Hier ablegen, um in diesen Listener zu verschieben"
 }

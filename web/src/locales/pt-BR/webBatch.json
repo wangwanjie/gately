@@ -25,5 +25,18 @@
   "apply": "Aplicar a {count} sites",
   "result": "{changed} sites alterados",
   "resultSome": "{changed} sites alterados; {unchanged} já correspondiam",
-  "removeConfirm": "Excluir os {count} sites selecionados ({names})? Isso não pode ser desfeito."
+  "removeConfirm": "Excluir os {count} sites selecionados ({names})? Isso não pode ser desfeito.",
+  "move": "Mover para listener",
+  "moveTitle": "Mover sites para outro listener",
+  "moveTarget": "Listener de destino",
+  "moveTargetPlaceholder": "Escolha um listener",
+  "moveGroup": "Grupo",
+  "moveGroupKeep": "Manter o grupo atual",
+  "moveGroupNone": "Sem grupo",
+  "moveHelp": "Os sites são movidos com todas as configurações e colocados no fim, ou no fim do grupo escolhido. Sites que já estão no listener de destino não mudam. Nada é movido se o listener de destino já tiver um site com o mesmo domínio. Visitantes conectados precisarão entrar novamente e as estatísticas recomeçam do zero.",
+  "movePlainWarn": "Alguns destes sites exigem login e o listener de destino é HTTP sem criptografia: senhas e cookies de login trafegarão em texto puro.",
+  "moved": "{count} sites movidos",
+  "moveNothing": "Os sites selecionados já estão no listener de destino",
+  "moveConfirm": "Mover {count} sites ({names}) para \"{target}\"? Visitantes conectados precisarão entrar novamente e as estatísticas recomeçam do zero.",
+  "moveOk": "Mover"
 }

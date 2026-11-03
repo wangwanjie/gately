@@ -20,6 +20,16 @@ In sort mode you can also check several sites (the checkbox on a group header se
 
 Hover over a group header and click the pencil button to rename the group: everything in it moves to the new name and keeps its position and order. Choosing a name that is already in use merges the two groups after a confirmation.
 
+### Moving sites {#move-sites}
+
+A site can be moved to another listener together with all of its settings:
+
+- When editing a site, change **Listener**; on save the changes are saved first and the site is then moved. When adding a site, it chooses which listener the site is created in.
+- In sort mode, check sites (across listeners if needed) and click **Move to listener** in the toolbar, then choose the target listener and group (by default each site keeps its own group). Sites are placed at the end of the target listener or at the end of the chosen group; sites already in the target listener stay where they are.
+- In sort mode, drag sites above or below a site of another listener to insert them there and join its group, or onto a group header to put them at the end of that group. While dragging, listeners without regular sites show a drop area. Dropping asks for confirmation.
+
+Each move is a single request: the source and target listeners are each reloaded once and their site lists are replaced in place, so connections to other sites stay open. If the target listener already has a site with the same domain, the move is rejected and no listener changes; the default site belongs to its listener and cannot be moved. If a site's key is already taken in the target listener, the site gets a new key, and Performance monitoring alert rules that reference the site are updated. Sign-in sessions are isolated per listener and site, so signed-in visitors have to sign in again after a move; the redemption counts of share links move with the site, so a limited link does not become usable again; the site's statistics and live connections start over. Moving a site that requires sign-in from an HTTPS listener to a plain HTTP listener warns that passwords and sign-in cookies will be sent unencrypted.
+
 ### Bulk operations
 
 Check sites in sort mode (across listeners if needed) and the toolbar offers the bulk operations below. Each operation is submitted in one go: it is saved only when every site passes validation, and if any site fails nothing changes and the failing site is named. Each affected listener reloads once and swaps its site list in place without dropping connections.
@@ -33,8 +43,9 @@ Check sites in sort mode (across listeners if needed) and the toolbar offers the
 
   A newly added domain is rejected if it would appear on several sites of the same listener, since only the first of those sites could ever match it; different listeners can use the same domain.
 - **Bulk options**: turn Compression, Access log, CORS, Forwarded headers and Close connection when denied on or off, and set or clear the WAF. Items left at "Keep" retain each site's own setting. Settings that affect access, such as authentication, access control and backend addresses, are changed site by site.
+- **Move to listener**: moves the checked sites to another listener, see [Moving sites](#move-sites).
 
-The matching endpoint is `POST /api/webservice/sites/batch` with the body `{"sites": [{"listener": "listener key", "site": "site key"}], "action": "...", ...}`. `action` is `enable`, `disable`, `delete`, `addDomains`, `removeDomains` (with `domains`), `replaceDomain` (with `from` and `to`) or `set` (with `options`, which accepts only the option fields above). The response gives the number of sites changed and the number that needed no change. One request handles up to 500 sites and 100 domains. Listeners themselves also support the general `PUT /api/webservice/listeners-enable` and `POST /api/webservice/listeners-delete`.
+The matching endpoint is `POST /api/webservice/sites/batch` with the body `{"sites": [{"listener": "listener key", "site": "site key"}], "action": "...", ...}`. `action` is `enable`, `disable`, `delete`, `addDomains`, `removeDomains` (with `domains`), `replaceDomain` (with `from` and `to`) or `set` (with `options`, which accepts only the option fields above). The response gives the number of sites changed and the number that needed no change. One request handles up to 500 sites and 100 domains. Listeners themselves also support the general `PUT /api/webservice/listeners-enable` and `POST /api/webservice/listeners-delete`. For `move`, `move` names the target, for example `{"listener": "target listener key"}`, optionally with `group` (the group to put the sites in; an empty string means ungrouped, omit it to keep each site's group) or `before` / `after` (a site key in the target listener to insert before or after, joining its group). `moved` in the response lists each site's key before and after the move.
 
 ## Site types
 

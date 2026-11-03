@@ -345,7 +345,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | POST | `/api/webservice/iplists/{key}/refresh` | `webservice:write` | Atualizar agora uma lista de IP assinada |
 | GET | `/api/webservice/users` | `webservice:read` | Ler usuários compartilhados e provedor de identidade OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Salvar usuários compartilhados e provedor de identidade OIDC, configurar sites em lote |
-| POST | `/api/webservice/sites/batch` | `webservice:write` | Operações em lote nos sites: ativar, desativar, excluir, adicionar, remover ou substituir domínios e alterar algumas opções; só salva se todos os sites passarem na validação |
+| POST | `/api/webservice/sites/batch` | `webservice:write` | Operações em lote de sites: ativar, desativar, excluir, adicionar, remover ou substituir domínios, alterar algumas opções ou mover para outro listener; só é salvo se todos os sites passarem na validação e nada muda se algum falhar |
 | POST | `/api/webservice/import/nginx` | `webservice:write` | Importar configuração do nginx |
 | GET | `/api/webservice/settings` | `webservice:read` | Ler configurações globais do serviço web |
 | GET | `/api/webservice/settings/secrets/totp` | `webservice:write` | Ver segredos TOTP dos usuários compartilhados em texto puro (por nome de usuário) |
@@ -2109,6 +2109,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `action` | string |
 | `domains` | Array de string |
 | `from` | string |
+| `move` | `webservice.SiteMoveTarget` |
 | `options` | `webservice.SiteBatchOptions` |
 | `sites` | Array de `webservice.SiteRef` |
 | `to` | string |
@@ -2118,7 +2119,24 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Campo | Tipo |
 | --- | --- |
 | `changed` | integer |
+| `moved` | Array de `webservice.SiteMoved` |
 | `unchanged` | integer |
+
+### webservice.SiteMoveTarget
+
+| Campo | Tipo |
+| --- | --- |
+| `after` | string |
+| `before` | string |
+| `group` | string |
+| `listener` | string |
+
+### webservice.SiteMoved
+
+| Campo | Tipo |
+| --- | --- |
+| `from` | `webservice.SiteRef` |
+| `to` | `webservice.SiteRef` |
 
 ### webservice.SiteRef
 

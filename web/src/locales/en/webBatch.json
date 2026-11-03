@@ -25,5 +25,18 @@
   "apply": "Apply to {count} sites",
   "result": "Changed {changed} sites",
   "resultSome": "Changed {changed} sites; {unchanged} already matched",
-  "removeConfirm": "Delete the {count} selected sites ({names})? This cannot be undone."
+  "removeConfirm": "Delete the {count} selected sites ({names})? This cannot be undone.",
+  "move": "Move to listener",
+  "moveTitle": "Move sites to another listener",
+  "moveTarget": "Target listener",
+  "moveTargetPlaceholder": "Choose a listener",
+  "moveGroup": "Group",
+  "moveGroupKeep": "Keep current group",
+  "moveGroupNone": "Ungrouped",
+  "moveHelp": "Sites move with all their settings and are placed at the end, or at the end of the chosen group. Sites already in the target listener stay where they are. Nothing is moved if the target listener already has a site with the same domain. Signed-in visitors have to sign in again and statistics start over.",
+  "movePlainWarn": "Some of these sites require sign-in and the target listener is plain HTTP: passwords and sign-in cookies will be sent unencrypted.",
+  "moved": "Moved {count} sites",
+  "moveNothing": "The selected sites are already in the target listener",
+  "moveConfirm": "Move {count} sites ({names}) to \"{target}\"? Signed-in visitors have to sign in again and statistics start over.",
+  "moveOk": "Move"
 }

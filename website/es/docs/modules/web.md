@@ -20,6 +20,16 @@ En el modo de orden también puede marcar varios sitios (la casilla del encabeza
 
 Pase el ratón por el encabezado de un grupo y pulse el lápiz para renombrarlo: todos sus elementos pasan al nuevo nombre y conservan su posición y orden. Si elige un nombre ya usado, tras confirmar se fusionan los dos grupos.
 
+### Mover sitios {#move-sites}
+
+Un sitio se puede mover a otro listener con toda su configuración:
+
+- Al editar un sitio, cambia **Listener**; al guardar se guardan primero los cambios y luego se mueve el sitio. Al añadir un sitio, este campo elige en qué listener se crea.
+- En el modo de orden, marca sitios (también de varios listeners), pulsa **Mover a listener** en la barra de herramientas y elige el listener y el grupo de destino (por defecto cada sitio conserva su grupo). Los sitios se colocan al final del listener de destino o al final del grupo elegido; los que ya están en el listener de destino no cambian.
+- En el modo de orden, arrastra sitios encima o debajo de un sitio de otro listener para insertarlos ahí y unirlos a su grupo, o sobre el título de un grupo para ponerlos al final de ese grupo. Al arrastrar, los listeners sin sitios normales muestran una zona para soltar. Al soltar se pide confirmación.
+
+Cada movimiento es una sola petición: el listener de origen y el de destino se recargan una vez cada uno y su lista de sitios se reemplaza en el sitio, de modo que las conexiones a otros sitios siguen abiertas. Si el listener de destino ya tiene un sitio con el mismo dominio, el movimiento se rechaza y no se modifica ningún listener; el sitio predeterminado pertenece a su listener y no se puede mover. Si la clave de un sitio ya está ocupada en el listener de destino, recibe una clave nueva, y las reglas de alerta de la monitorización de rendimiento que lo referencian se actualizan. Las sesiones están aisladas por listener y sitio, así que los visitantes con sesión iniciada deberán volver a iniciarla tras el movimiento; los contadores de uso de los enlaces compartidos se trasladan con el sitio, por lo que un enlace limitado no vuelve a ser utilizable; las estadísticas y conexiones en vivo del sitio empiezan de cero. Al mover un sitio con inicio de sesión de un listener HTTPS a uno HTTP sin cifrar se avisa de que las contraseñas y cookies de sesión se enviarán en texto plano.
+
 ### Operaciones en lote
 
 Al marcar sitios en el modo de ordenación (también de distintos listeners), la barra de herramientas ofrece las operaciones en lote siguientes. Cada operación se envía de una vez: solo se guarda cuando todos los sitios superan la validación, y si alguno falla no se modifica nada y se indica qué sitio ha fallado. Cada listener afectado se recarga una sola vez y sustituye su lista de sitios en caliente, sin cortar conexiones.
@@ -33,8 +43,9 @@ Al marcar sitios en el modo de ordenación (también de distintos listeners), la
 
   Un dominio recién añadido se rechaza si aparece en varios sitios del mismo listener, ya que dentro de un listener solo el primer sitio puede coincidir con él; listeners distintos pueden usar el mismo dominio.
 - **Opciones en lote**: activa o desactiva en lote Compresión, Registro de acceso, CORS, Cabeceras reenviadas y Cerrar la conexión al denegar, y asigna o quita el WAF. Los elementos que se dejan en «No cambiar» conservan la configuración propia de cada sitio. Los ajustes que afectan al acceso, como la autenticación, el control de acceso o las direcciones de backend, se cambian sitio por sitio.
+- **Mover a listener**: mueve los sitios marcados a otro listener, consulta [Mover sitios](#move-sites).
 
-El endpoint correspondiente es `POST /api/webservice/sites/batch`, con el cuerpo `{"sites": [{"listener": "clave del listener", "site": "clave del sitio"}], "action": "...", ...}`. `action` es `enable`, `disable`, `delete`, `addDomains`, `removeDomains` (con `domains`), `replaceDomain` (con `from` y `to`) o `set` (con `options`, que solo acepta los campos de opciones anteriores). La respuesta indica cuántos sitios se modificaron y cuántos no necesitaban cambios. Una petición admite hasta 500 sitios y 100 dominios. Los listeners también admiten los endpoints genéricos `PUT /api/webservice/listeners-enable` y `POST /api/webservice/listeners-delete`.
+El endpoint correspondiente es `POST /api/webservice/sites/batch`, con el cuerpo `{"sites": [{"listener": "clave del listener", "site": "clave del sitio"}], "action": "...", ...}`. `action` es `enable`, `disable`, `delete`, `addDomains`, `removeDomains` (con `domains`), `replaceDomain` (con `from` y `to`) o `set` (con `options`, que solo acepta los campos de opciones anteriores). La respuesta indica cuántos sitios se modificaron y cuántos no necesitaban cambios. Una petición admite hasta 500 sitios y 100 dominios. Los listeners también admiten los endpoints genéricos `PUT /api/webservice/listeners-enable` y `POST /api/webservice/listeners-delete`. Con `move`, `move` indica el destino, por ejemplo `{"listener": "clave del listener de destino"}`, y opcionalmente `group` (grupo donde poner los sitios; una cadena vacía significa sin grupo, omitirlo conserva el grupo de cada sitio) o `before` / `after` (clave de un sitio del listener de destino antes o después del cual insertar, uniéndose a su grupo). `moved` en la respuesta enumera la clave de cada sitio antes y después del movimiento.
 
 ## Tipos de sitio
 

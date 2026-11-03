@@ -20,6 +20,16 @@ No modo de ordenação você também pode marcar vários sites (a caixa no cabe�
 
 Passe o mouse sobre o cabeçalho de um grupo e clique no lápis para renomeá-lo: todos os itens passam para o novo nome e mantêm posição e ordem. Escolher um nome já usado junta os dois grupos após uma confirmação.
 
+### Mover sites {#move-sites}
+
+Um site pode ser movido para outro listener com todas as suas configurações:
+
+- Ao editar um site, altere **Listener**; ao salvar, as alterações são salvas primeiro e depois o site é movido. Ao adicionar um site, o campo escolhe em qual listener ele é criado.
+- No modo de ordenação, marque sites (inclusive de listeners diferentes), clique em **Mover para listener** na barra de ferramentas e escolha o listener e o grupo de destino (por padrão cada site mantém seu grupo). Os sites ficam no fim do listener de destino ou no fim do grupo escolhido; os que já estão no listener de destino não mudam.
+- No modo de ordenação, arraste sites para cima ou para baixo de um site de outro listener para inseri-los ali e entrar no grupo dele, ou sobre o título de um grupo para colocá-los no fim desse grupo. Durante o arraste, listeners sem sites comuns mostram uma área para soltar. Ao soltar, é pedida confirmação.
+
+Cada movimentação é uma única requisição: os listeners de origem e de destino são recarregados uma vez cada e suas listas de sites são substituídas no lugar, então as conexões com outros sites continuam abertas. Se o listener de destino já tiver um site com o mesmo domínio, a movimentação é recusada e nenhum listener muda; o site padrão pertence ao seu listener e não pode ser movido. Se a chave de um site já estiver em uso no listener de destino, ele recebe uma chave nova, e as regras de alerta do monitoramento de desempenho que o referenciam são atualizadas. As sessões de login são isoladas por listener e site, então visitantes conectados precisarão entrar novamente após a movimentação; os contadores de uso dos links de compartilhamento acompanham o site, então um link limitado não volta a ser utilizável; as estatísticas e conexões ao vivo do site recomeçam do zero. Mover um site com login de um listener HTTPS para um listener HTTP sem criptografia exibe um aviso de que senhas e cookies de login trafegarão em texto puro.
+
 ### Operações em lote
 
 Marque sites no modo de ordenação (inclusive de listeners diferentes) e a barra de ferramentas oferece as operações em lote abaixo. Cada operação é enviada de uma só vez: só é salva quando todos os sites passam na validação; se algum falhar, nada é alterado e o site com problema é indicado. Cada listener afetado é recarregado uma única vez e troca sua lista de sites em tempo real, sem derrubar conexões.
@@ -33,8 +43,9 @@ Marque sites no modo de ordenação (inclusive de listeners diferentes) e a barr
 
   Um domínio recém-adicionado é recusado se aparecer em vários sites do mesmo listener, já que dentro de um listener só o primeiro desses sites poderia corresponder a ele; listeners diferentes podem usar o mesmo domínio.
 - **Opções em lote**: liga ou desliga em lote Compressão, Log de acesso, CORS, Cabeçalhos encaminhados e Encerrar a conexão ao negar, e define ou remove o WAF. Os itens deixados em "Não alterar" mantêm a configuração própria de cada site. Configurações que afetam o acesso, como autenticação, controle de acesso e endereços de backend, são alteradas site a site.
+- **Mover para listener**: move os sites marcados para outro listener, veja [Mover sites](#move-sites).
 
-O endpoint correspondente é `POST /api/webservice/sites/batch`, com o corpo `{"sites": [{"listener": "chave do listener", "site": "chave do site"}], "action": "...", ...}`. `action` é `enable`, `disable`, `delete`, `addDomains`, `removeDomains` (com `domains`), `replaceDomain` (com `from` e `to`) ou `set` (com `options`, que aceita apenas os campos de opções acima). A resposta informa quantos sites foram alterados e quantos não precisaram de alteração. Uma requisição processa até 500 sites e 100 domínios. Os próprios listeners também aceitam os endpoints genéricos `PUT /api/webservice/listeners-enable` e `POST /api/webservice/listeners-delete`.
+O endpoint correspondente é `POST /api/webservice/sites/batch`, com o corpo `{"sites": [{"listener": "chave do listener", "site": "chave do site"}], "action": "...", ...}`. `action` é `enable`, `disable`, `delete`, `addDomains`, `removeDomains` (com `domains`), `replaceDomain` (com `from` e `to`) ou `set` (com `options`, que aceita apenas os campos de opções acima). A resposta informa quantos sites foram alterados e quantos não precisaram de alteração. Uma requisição processa até 500 sites e 100 domínios. Os próprios listeners também aceitam os endpoints genéricos `PUT /api/webservice/listeners-enable` e `POST /api/webservice/listeners-delete`. Com `move`, `move` indica o destino, por exemplo `{"listener": "chave do listener de destino"}`, opcionalmente com `group` (grupo onde colocar os sites; string vazia significa sem grupo, omitir mantém o grupo de cada site) ou `before` / `after` (chave de um site do listener de destino antes ou depois do qual inserir, entrando no grupo dele). `moved` na resposta lista a chave de cada site antes e depois da movimentação.
 
 ## Tipos de site
 

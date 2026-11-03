@@ -25,5 +25,18 @@
   "apply": "Auf {count} Sites anwenden",
   "result": "{changed} Sites geändert",
   "resultSome": "{changed} Sites geändert; {unchanged} entsprachen bereits",
-  "removeConfirm": "Die {count} ausgewählten Sites ({names}) löschen? Das lässt sich nicht rückgängig machen."
+  "removeConfirm": "Die {count} ausgewählten Sites ({names}) löschen? Das lässt sich nicht rückgängig machen.",
+  "move": "Zu Listener verschieben",
+  "moveTitle": "Sites zu einem anderen Listener verschieben",
+  "moveTarget": "Ziel-Listener",
+  "moveTargetPlaceholder": "Listener auswählen",
+  "moveGroup": "Gruppe",
+  "moveGroupKeep": "Aktuelle Gruppe behalten",
+  "moveGroupNone": "Ohne Gruppe",
+  "moveHelp": "Sites werden mit allen Einstellungen verschoben und ans Ende bzw. ans Ende der gewählten Gruppe gestellt. Sites, die schon im Ziel-Listener sind, bleiben unverändert. Hat der Ziel-Listener bereits eine Site mit derselben Domain, wird nichts verschoben. Angemeldete Besucher müssen sich erneut anmelden, die Statistik beginnt neu.",
+  "movePlainWarn": "Einige dieser Sites verlangen eine Anmeldung und der Ziel-Listener ist unverschlüsseltes HTTP: Passwörter und Anmelde-Cookies werden danach im Klartext übertragen.",
+  "moved": "{count} Sites verschoben",
+  "moveNothing": "Die ausgewählten Sites sind bereits im Ziel-Listener",
+  "moveConfirm": "{count} Sites ({names}) nach „{target}“ verschieben? Angemeldete Besucher müssen sich erneut anmelden, die Statistik beginnt neu.",
+  "moveOk": "Verschieben"
 }

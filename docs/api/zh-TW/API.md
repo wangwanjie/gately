@@ -345,7 +345,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/webservice/iplists/{key}/refresh` | `webservice:write` | 立即重新整理訂閱 IP 清單 |
 | GET | `/api/webservice/users` | `webservice:read` | 讀取共用使用者與 OIDC 身分提供者 |
 | PUT | `/api/webservice/users` | `webservice:write` | 儲存共用使用者與 OIDC 身分提供者，批次設定站點 |
-| POST | `/api/webservice/sites/batch` | `webservice:write` | 批次操作站點：啟停、刪除、增刪或取代網域、修改部分選項；全部驗證通過才儲存，任一站點失敗都不修改 |
+| POST | `/api/webservice/sites/batch` | `webservice:write` | 批次操作站點：啟停、刪除、增刪或取代網域、修改部分選項、移到其他監聽；全部驗證通過才儲存，任一站點失敗都不修改 |
 | POST | `/api/webservice/import/nginx` | `webservice:write` | 匯入 nginx 設定 |
 | GET | `/api/webservice/settings` | `webservice:read` | 讀取 Web 服務全域設定 |
 | GET | `/api/webservice/settings/secrets/totp` | `webservice:write` | 查看共用使用者的 TOTP 金鑰明文（依使用者名稱索引） |
@@ -2109,6 +2109,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `action` | string |
 | `domains` | 陣列 of string |
 | `from` | string |
+| `move` | `webservice.SiteMoveTarget` |
 | `options` | `webservice.SiteBatchOptions` |
 | `sites` | 陣列 of `webservice.SiteRef` |
 | `to` | string |
@@ -2118,7 +2119,24 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 欄位 | 類型 |
 | --- | --- |
 | `changed` | integer |
+| `moved` | 陣列 of `webservice.SiteMoved` |
 | `unchanged` | integer |
+
+### webservice.SiteMoveTarget
+
+| 欄位 | 類型 |
+| --- | --- |
+| `after` | string |
+| `before` | string |
+| `group` | string |
+| `listener` | string |
+
+### webservice.SiteMoved
+
+| 欄位 | 類型 |
+| --- | --- |
+| `from` | `webservice.SiteRef` |
+| `to` | `webservice.SiteRef` |
 
 ### webservice.SiteRef
 

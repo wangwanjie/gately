@@ -292,7 +292,7 @@
           />
         </el-form-item>
         <el-form-item v-if="editing.source === 'web' && !editing.key" :label="t('guard.jail.webPreset')">
-          <el-select :model-value="editing.preset ?? ''" class="w-420" @update:model-value="applyWebPreset">
+          <el-select :model-value="editing.preset ?? ''" class="w-420" @update:model-value="applyWebPreset" :empty-values="[null, undefined]">
             <el-option :label="t('guard.jail.webPresetNone')" value="" />
             <el-option v-for="p in webPresets" :key="p.preset" :label="presetName(p)" :value="p.preset!" />
           </el-select>

@@ -197,5 +197,10 @@
   "copySitesHelp": "Share links are not copied: their tokens bypass authentication. Create new ones on the copy if needed.",
   "siteListener": "Listener",
   "siteLogs": "Logs",
-  "siteGone": "The site was not found. It may have been deleted or moved; refresh and try again"
+  "siteGone": "The site was not found. It may have been deleted or moved; refresh and try again",
+  "siteListenerMoveHelp": "The site moves to the chosen listener when saved. Signed-in visitors have to sign in again and statistics start over.",
+  "siteMoveConfirm": "Save the changes and move the site to \"{target}\"?",
+  "siteMoveFailed": "Changes saved, but the move failed: {error}",
+  "siteMoved": "Saved and moved to the chosen listener",
+  "dropHere": "Drop here to move into this listener"
 }

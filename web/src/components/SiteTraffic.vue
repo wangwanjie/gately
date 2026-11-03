@@ -2,7 +2,7 @@
   <div>
     <template v-if="site.type === 'proxy'">
       <el-form-item :label="t('siteTraffic.loadBalance')">
-        <el-select v-model="site.lbPolicy" class="w-200">
+        <el-select v-model="site.lbPolicy" class="w-200" :empty-values="[null, undefined]">
           <el-option :label="t('siteTraffic.lbRoundRobin')" value="" />
           <el-option :label="t('siteTraffic.lbRandom')" value="random" />
           <el-option :label="t('siteTraffic.lbIpHash')" value="ip_hash" />

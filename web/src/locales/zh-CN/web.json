@@ -197,5 +197,10 @@
   "copySitesHelp": "分享链接不会复制：其令牌可绕过认证，需要时在副本中重新创建。",
   "siteListener": "所属监听",
   "siteLogs": "日志",
-  "siteGone": "没有找到该站点，可能已被删除或移动，请刷新后重试"
+  "siteGone": "没有找到该站点，可能已被删除或移动，请刷新后重试",
+  "siteListenerMoveHelp": "保存后站点移到所选监听，已登录的访客需要重新登录，统计数据重新开始。",
+  "siteMoveConfirm": "保存修改并把站点移到「{target}」？",
+  "siteMoveFailed": "修改已保存，但移动失败：{error}",
+  "siteMoved": "已保存并移到所选监听",
+  "dropHere": "放到这里，移入此监听"
 }

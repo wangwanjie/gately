@@ -3124,6 +3124,9 @@
           "from": {
             "type": "string"
           },
+          "move": {
+            "$ref": "#/components/schemas/webservice.SiteMoveTarget"
+          },
           "options": {
             "$ref": "#/components/schemas/webservice.SiteBatchOptions"
           },
@@ -3144,8 +3147,42 @@
           "changed": {
             "type": "integer"
           },
+          "moved": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.SiteMoved"
+            },
+            "type": "array"
+          },
           "unchanged": {
             "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.SiteMoveTarget": {
+        "properties": {
+          "after": {
+            "type": "string"
+          },
+          "before": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "listener": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.SiteMoved": {
+        "properties": {
+          "from": {
+            "$ref": "#/components/schemas/webservice.SiteRef"
+          },
+          "to": {
+            "$ref": "#/components/schemas/webservice.SiteRef"
           }
         },
         "type": "object"
@@ -38513,7 +38550,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Operaciones en lote sobre sitios: activar, desactivar, eliminar, añadir, quitar o reemplazar dominios y cambiar algunas opciones; solo se guarda si todos los sitios pasan la validación",
+        "summary": "Operaciones masivas de sitios: activar, desactivar, eliminar, añadir, quitar o reemplazar dominios, cambiar algunas opciones o mover a otro listener; solo se guarda si todos los sitios pasan la validación y no se cambia nada si alguno falla",
         "tags": [
           "Servicio web"
         ],

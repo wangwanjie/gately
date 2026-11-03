@@ -3124,6 +3124,9 @@
           "from": {
             "type": "string"
           },
+          "move": {
+            "$ref": "#/components/schemas/webservice.SiteMoveTarget"
+          },
           "options": {
             "$ref": "#/components/schemas/webservice.SiteBatchOptions"
           },
@@ -3144,8 +3147,42 @@
           "changed": {
             "type": "integer"
           },
+          "moved": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.SiteMoved"
+            },
+            "type": "array"
+          },
           "unchanged": {
             "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.SiteMoveTarget": {
+        "properties": {
+          "after": {
+            "type": "string"
+          },
+          "before": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "listener": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.SiteMoved": {
+        "properties": {
+          "from": {
+            "$ref": "#/components/schemas/webservice.SiteRef"
+          },
+          "to": {
+            "$ref": "#/components/schemas/webservice.SiteRef"
           }
         },
         "type": "object"
@@ -38513,7 +38550,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "批量操作站点：启停、删除、增删或替换域名、修改部分选项；全部校验通过才保存，任一站点失败都不修改",
+        "summary": "批量操作站点：启停、删除、增删或替换域名、修改部分选项、移到其他监听器；全部校验通过才保存，任一站点失败都不修改",
         "tags": [
           "Web 服务"
         ],

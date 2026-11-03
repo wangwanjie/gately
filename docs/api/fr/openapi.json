@@ -3124,6 +3124,9 @@
           "from": {
             "type": "string"
           },
+          "move": {
+            "$ref": "#/components/schemas/webservice.SiteMoveTarget"
+          },
           "options": {
             "$ref": "#/components/schemas/webservice.SiteBatchOptions"
           },
@@ -3144,8 +3147,42 @@
           "changed": {
             "type": "integer"
           },
+          "moved": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.SiteMoved"
+            },
+            "type": "array"
+          },
           "unchanged": {
             "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.SiteMoveTarget": {
+        "properties": {
+          "after": {
+            "type": "string"
+          },
+          "before": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "listener": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.SiteMoved": {
+        "properties": {
+          "from": {
+            "$ref": "#/components/schemas/webservice.SiteRef"
+          },
+          "to": {
+            "$ref": "#/components/schemas/webservice.SiteRef"
           }
         },
         "type": "object"
@@ -38513,7 +38550,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Opérations en lot sur les sites : activer, désactiver, supprimer, ajouter, retirer ou remplacer des domaines et modifier certaines options ; rien n'est enregistré tant que tous les sites ne passent pas la validation",
+        "summary": "Opérations groupées sur les sites : activer, désactiver, supprimer, ajouter, retirer ou remplacer des domaines, modifier certaines options ou déplacer vers un autre écouteur ; l'enregistrement n'a lieu que si tous les sites passent la validation, rien n'est modifié si l'un d'eux échoue",
         "tags": [
           "Service Web"
         ],

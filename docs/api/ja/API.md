@@ -345,7 +345,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/webservice/iplists/{key}/refresh` | `webservice:write` | 購読 IP リストを今すぐ更新 |
 | GET | `/api/webservice/users` | `webservice:read` | 共有ユーザーと OIDC ID プロバイダーを取得 |
 | PUT | `/api/webservice/users` | `webservice:write` | 共有ユーザーと OIDC ID プロバイダーを保存し、サイトを一括設定 |
-| POST | `/api/webservice/sites/batch` | `webservice:write` | サイトの一括操作：有効化・無効化、削除、ドメインの追加・削除・置換、一部オプションの変更。すべてのサイトが検証を通過した場合のみ保存し、1 件でも失敗すると何も変更しません |
+| POST | `/api/webservice/sites/batch` | `webservice:write` | サイトの一括操作：有効化・無効化、削除、ドメインの追加・削除・置換、一部オプションの変更、別のリスナーへの移動。すべてのサイトが検証を通過した場合のみ保存し、1 件でも失敗すると何も変更しません |
 | POST | `/api/webservice/import/nginx` | `webservice:write` | nginx 設定をインポート |
 | GET | `/api/webservice/settings` | `webservice:read` | Web サービスのグローバル設定を読み取り |
 | GET | `/api/webservice/settings/secrets/totp` | `webservice:write` | 共有ユーザーの TOTP シークレットを平文で表示（ユーザー名で索引） |
@@ -2109,6 +2109,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `action` | string |
 | `domains` | 配列 of string |
 | `from` | string |
+| `move` | `webservice.SiteMoveTarget` |
 | `options` | `webservice.SiteBatchOptions` |
 | `sites` | 配列 of `webservice.SiteRef` |
 | `to` | string |
@@ -2118,7 +2119,24 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | フィールド | 型 |
 | --- | --- |
 | `changed` | integer |
+| `moved` | 配列 of `webservice.SiteMoved` |
 | `unchanged` | integer |
+
+### webservice.SiteMoveTarget
+
+| フィールド | 型 |
+| --- | --- |
+| `after` | string |
+| `before` | string |
+| `group` | string |
+| `listener` | string |
+
+### webservice.SiteMoved
+
+| フィールド | 型 |
+| --- | --- |
+| `from` | `webservice.SiteRef` |
+| `to` | `webservice.SiteRef` |
 
 ### webservice.SiteRef
 

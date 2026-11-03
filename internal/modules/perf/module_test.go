@@ -294,3 +294,93 @@ func TestToHostSampleMissingFields(t *testing.T) {
 		t.Fatalf("缺失字段应为 unknown: %+v", s)
 	}
 }
+
+// 站点移到其他监听后，告警规则中引用的站点标识随之改写并保存，未引用的规则不变。
+func TestRenameSites(t *testing.T) {
+	h := newHarness(t)
+	for _, r := range []Rule{
+		{Name: "慢", Enable: true, Metric: MetricSiteP95, Op: OpGT, Threshold: 500, Duration: 1, Sites: []string{"l1/a", "l2/b", "l3/c"}},
+		{Name: "全部", Enable: true, Metric: MetricSiteP95, Op: OpGT, Threshold: 500, Duration: 1},
+	} {
+		if code, body := h.call(t, "POST", "/api/perf/rules", r); code != 200 {
+			t.Fatalf("新增规则失败: %d %s", code, body)
+		}
+	}
+	// l1/a 移入 l2 后与已引用的 l2/b 同名时去重
+	h.m.renameSites(map[string]string{"l1/a": "l2/b", "l3/c": "l4/c"})
+	var saved fileConfig
+	if _, err := h.m.store.Load(ID, &saved); err != nil {
+		t.Fatal(err)
+	}
+	if got := saved.Rules[0].Sites; strings.Join(got, ",") != "l2/b,l4/c" {
+		t.Fatalf("规则站点应被改写并保存: %v", got)
+	}
+	if len(saved.Rules[1].Sites) != 0 {
+		t.Fatalf("不限站点的规则不应变化: %v", saved.Rules[1].Sites)
+	}
+}
+
+// 与真实的 Web 服务模块联动：通过批量接口移动站点后，性能监控规则中的站点标识同步更新。
+func TestRenameSitesWiredToWebService(t *testing.T) {
+	st, err := config.Open(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	env := module.Env{Store: st, Logs: logbuf.New(50, log.New(io.Discard, "", 0))}
+	web := webservice.New(nil, nil)
+	if err := web.Init(env); err != nil {
+		t.Fatal(err)
+	}
+	m := New(web)
+	m.src.Host = (&fakeHost{cpu: 10}).snapshot
+	if err := m.Init(env); err != nil {
+		t.Fatal(err)
+	}
+	mux := http.NewServeMux()
+	web.Routes(prefixRouter{mux, "/api/webservice"})
+	m.Routes(muxRouter{mux})
+	call := func(method, path string, body any) (int, string) {
+		b, _ := json.Marshal(body)
+		req := httptest.NewRequest(method, path, strings.NewReader(string(b)))
+		req.Header.Set("Content-Type", "application/json")
+		rec := httptest.NewRecorder()
+		mux.ServeHTTP(rec, req)
+		return rec.Code, rec.Body.String()
+	}
+	// 新增监听时 key 由接口生成，从响应中取得
+	var keys []string
+	for _, l := range []webservice.Listener{
+		{Port: 18091, Sites: []webservice.Site{{Key: "a", Enable: true, Domains: []string{"a.test"}, Type: webservice.TypeText, Text: "a"}}},
+		{Port: 18092},
+	} {
+		code, body := call("POST", "/api/webservice/listeners", l)
+		var out struct{ Key string }
+		if code != 200 || json.Unmarshal([]byte(body), &out) != nil || out.Key == "" {
+			t.Fatalf("新增监听失败: %d %s", code, body)
+		}
+		keys = append(keys, out.Key)
+	}
+	if code, body := call("POST", "/api/perf/rules", Rule{Name: "慢", Enable: true, Metric: MetricSiteP95, Op: OpGT, Threshold: 500, Duration: 1, Sites: []string{keys[0] + "/a"}}); code != 200 {
+		t.Fatalf("新增规则失败: %d %s", code, body)
+	}
+	req := webservice.SiteBatchRequest{Sites: []webservice.SiteRef{{Listener: keys[0], Site: "a"}}, Action: webservice.BatchMove, Move: &webservice.SiteMoveTarget{Listener: keys[1]}}
+	if code, body := call("POST", "/api/webservice/sites/batch", req); code != 200 {
+		t.Fatalf("移动站点失败: %d %s", code, body)
+	}
+	m.mu.Lock()
+	got := strings.Join(m.cfg.Rules[0].Sites, ",")
+	m.mu.Unlock()
+	if got != keys[1]+"/a" {
+		t.Fatalf("规则站点应同步为 %s/a，实际 %s", keys[1], got)
+	}
+}
+
+type prefixRouter struct {
+	mux    *http.ServeMux
+	prefix string
+}
+
+func (r prefixRouter) HandleFunc(p string, h http.HandlerFunc) {
+	method, path, _ := strings.Cut(p, " ")
+	r.mux.HandleFunc(method+" "+r.prefix+path, h)
+}

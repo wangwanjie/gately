@@ -354,6 +354,27 @@ func (a *authenticator) takeShareUse(key string, max int) bool {
 	return true
 }
 
+// moveShareUses 把分享链接的已兑换次数从旧的站点作用域迁到新的作用域，renamed 的键与值为“监听key/站点key”。
+func (a *authenticator) moveShareUses(renamed map[string]string) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	// 先收集再改写，避免遍历中新增的键被再次处理
+	moved := map[string]int{}
+	for k, n := range a.shareUses {
+		scope, link, ok := strings.Cut(k, "|")
+		if !ok {
+			continue
+		}
+		if to, hit := renamed[scope]; hit {
+			delete(a.shareUses, k)
+			moved[to+"|"+link] += n
+		}
+	}
+	for k, n := range moved {
+		a.shareUses[k] += n
+	}
+}
+
 // ---- IP 封禁 ----
 // 封禁记录保存在进程共享的封禁表（internal/banlist）中：同一张表也对端口转发、STUN 等服务生效，
 // 入侵防护模块开启时负责持久化并同步到系统防火墙。

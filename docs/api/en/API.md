@@ -345,7 +345,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | POST | `/api/webservice/iplists/{key}/refresh` | `webservice:write` | Refresh a subscribed IP list now |
 | GET | `/api/webservice/users` | `webservice:read` | Read shared users and the OIDC identity provider |
 | PUT | `/api/webservice/users` | `webservice:write` | Save shared users and the OIDC identity provider, set sites in bulk |
-| POST | `/api/webservice/sites/batch` | `webservice:write` | Bulk site operations: enable, disable, delete, add, remove or replace domains and change some options; nothing is saved unless every site passes validation |
+| POST | `/api/webservice/sites/batch` | `webservice:write` | Bulk site operations: enable, disable, delete, add, remove or replace domains, change some options, or move to another listener; changes are saved only if every site passes validation, and nothing changes if any site fails |
 | POST | `/api/webservice/import/nginx` | `webservice:write` | Import nginx config |
 | GET | `/api/webservice/settings` | `webservice:read` | Read Web service global settings |
 | GET | `/api/webservice/settings/secrets/totp` | `webservice:write` | View the TOTP secrets of shared users in plain text (indexed by username) |
@@ -2109,6 +2109,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `action` | string |
 | `domains` | Array of string |
 | `from` | string |
+| `move` | `webservice.SiteMoveTarget` |
 | `options` | `webservice.SiteBatchOptions` |
 | `sites` | Array of `webservice.SiteRef` |
 | `to` | string |
@@ -2118,7 +2119,24 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Field | Type |
 | --- | --- |
 | `changed` | integer |
+| `moved` | Array of `webservice.SiteMoved` |
 | `unchanged` | integer |
+
+### webservice.SiteMoveTarget
+
+| Field | Type |
+| --- | --- |
+| `after` | string |
+| `before` | string |
+| `group` | string |
+| `listener` | string |
+
+### webservice.SiteMoved
+
+| Field | Type |
+| --- | --- |
+| `from` | `webservice.SiteRef` |
+| `to` | `webservice.SiteRef` |
 
 ### webservice.SiteRef
 

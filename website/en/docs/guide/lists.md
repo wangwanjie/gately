@@ -49,7 +49,7 @@ After checking entries in sort mode, the toolbar can also:
 - **Enable / Disable**: saves all checked entries at once; entries already in the target state are not restarted;
 - **Delete**: the confirmation dialog lists the entries to be deleted, and deletion cannot be undone. If any entry cannot be deleted (for example a certificate still used by a site), nothing is deleted and the reason is shown.
 
-A bulk operation handles up to 500 entries. It is saved only when every entry passes validation; if any entry fails, nothing changes. Wake-on-LAN devices have no enable switch and only support bulk delete; API tokens do not offer bulk enable, disable or delete yet. Web Services also has bulk domain and option changes, see [Web Services](/en/docs/modules/web#bulk-operations).
+A bulk operation handles up to 500 entries. It is saved only when every entry passes validation; if any entry fails, nothing changes. Wake-on-LAN devices have no enable switch and only support bulk delete; API tokens do not offer bulk enable, disable or delete yet. Web Services also has bulk domain and option changes, see [Web Services](/en/docs/modules/web#bulk-operations). Sites can also be moved to another listener, see [Moving sites](/en/docs/modules/web#move-sites).
 
 ## Duplicating entries
 

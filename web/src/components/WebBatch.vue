@@ -1,7 +1,7 @@
 <template>
-  <!-- Web 服务站点的批量操作：批量增删或替换域名、批量修改部分选项；启停与删除通过 enable / remove 方法直接执行。
+  <!-- Web 服务站点的批量操作：批量增删或替换域名、批量修改部分选项、移到其他监听；启停、删除与拖拽移动通过 enable / remove / move 方法直接执行。
        所有操作一次请求提交，后端全部校验通过才保存，任一站点失败都不修改 -->
-  <el-dialog v-model="visible" :title="mode === 'domains' ? t('webBatch.domainsTitle') : t('webBatch.optionsTitle')" width="560px" :fullscreen="isMobile" @closed="reset">
+  <el-dialog v-model="visible" :title="titles[mode]" width="560px" :fullscreen="isMobile" @closed="reset">
     <el-alert :title="t('webBatch.scope', { count: refs.length })" type="info" :closable="false" show-icon class="scope" />
 
     <template v-if="mode === 'domains'">
@@ -23,6 +23,25 @@
       </template>
     </template>
 
+    <template v-else-if="mode === 'move'">
+      <el-form label-width="110px" label-position="left" @submit.prevent>
+        <el-form-item :label="t('webBatch.moveTarget')">
+          <el-select v-model="moveListener" class="choice-wide" :placeholder="t('webBatch.moveTargetPlaceholder')">
+            <el-option v-for="l in listeners" :key="l.key" :value="l.key" :label="listenerLabel(l)" />
+          </el-select>
+        </el-form-item>
+        <el-form-item :label="t('webBatch.moveGroup')">
+          <el-select v-model="moveGroup" class="choice-wide" filterable allow-create default-first-option :empty-values="[null, undefined]">
+            <el-option value="__keep" :label="t('webBatch.moveGroupKeep')" />
+            <el-option value="" :label="t('webBatch.moveGroupNone')" />
+            <el-option v-for="g in targetGroups" :key="g" :value="g" :label="g" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div class="form-help">{{ t('webBatch.moveHelp') }}</div>
+      <el-alert v-if="moveListener && plainRisk(refs, moveListener)" :title="t('webBatch.movePlainWarn')" type="warning" :closable="false" show-icon class="warn" />
+    </template>
+
     <template v-else>
       <div class="form-help intro">{{ t('webBatch.optionsHelp') }}</div>
       <el-form label-width="150px" label-position="left" @submit.prevent>
@@ -34,7 +53,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="WAF">
-          <el-select v-model="waf" class="choice">
+          <el-select v-model="waf" class="choice" :empty-values="[null, undefined]">
             <el-option value="__keep" :label="t('webBatch.keep')" />
             <el-option value="" :label="t('webBatch.wafNone')" />
             <el-option v-for="w in wafInstances" :key="w.key" :value="w.key" :label="w.name || w.key" />
@@ -56,13 +75,10 @@ import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { api } from '../api'
 import { useIsMobile } from '../composables/useIsMobile'
+import { movePlainRisk, type MoveListener, type MoveTarget, type SiteRef } from '../siteMove'
 
-export interface SiteRef {
-  listener: string
-  site: string
-}
 
-defineProps<{ wafInstances: { key: string; name: string }[] }>()
+const props = defineProps<{ wafInstances: { key: string; name: string }[]; listeners?: MoveListener[] }>()
 const emit = defineEmits<{ done: [] }>()
 const { t } = useI18n()
 const isMobile = useIsMobile()
@@ -70,7 +86,8 @@ const isMobile = useIsMobile()
 const BATCH_URL = '/api/webservice/sites/batch'
 const visible = ref(false)
 const busy = ref(false)
-const mode = ref<'domains' | 'options'>('domains')
+const mode = ref<'domains' | 'options' | 'move'>('domains')
+const titles = computed(() => ({ domains: t('webBatch.domainsTitle'), options: t('webBatch.optionsTitle'), move: t('webBatch.moveTitle') }))
 const refs = ref<SiteRef[]>([])
 const action = ref<'addDomains' | 'removeDomains' | 'replaceDomain'>('addDomains')
 const domainText = ref('')
@@ -86,6 +103,20 @@ const switches = computed(() => [
 ])
 const choice = reactive<Record<string, Choice>>({ compress: 'keep', accessLog: 'keep', cors: 'keep', forwardedHeaders: 'keep', denyClose: 'keep' })
 const waf = ref('__keep')
+const moveListener = ref('')
+// moveGroup 为 __keep 时保留各站点原有分组
+const moveGroup = ref('__keep')
+const listeners = computed(() => props.listeners ?? [])
+const targetGroups = computed(() => listeners.value.find((l) => l.key === moveListener.value)?.groups ?? [])
+
+function listenerLabel(l: MoveListener) {
+  return `${l.name || t('web.unnamedListener')} (${l.tls ? 'https' : 'http'} :${l.port})`
+}
+
+// plainRisk 判断是否要把开启了认证的站点从 HTTPS 监听移到明文 HTTP 监听
+function plainRisk(r: SiteRef[], target: string) {
+  return movePlainRisk(r, target, listeners.value)
+}
 
 // parseDomains 按换行、逗号、分号拆分域名；行内空格不作分隔，含空格的写法交给后端报错，避免把错误写法拆成多个域名
 function parseDomains(text: string) {
@@ -102,6 +133,9 @@ const canSubmit = computed(() => {
   if (mode.value === 'options') {
     return waf.value !== '__keep' || Object.values(choice).some((c) => c !== 'keep')
   }
+  if (mode.value === 'move') {
+    return !!moveListener.value
+  }
   if (action.value === 'replaceDomain') {
     return !!from.value.trim() && !!to.value.trim()
   }
@@ -114,13 +148,15 @@ function reset() {
   to.value = ''
   action.value = 'addDomains'
   waf.value = '__keep'
+  moveListener.value = ''
+  moveGroup.value = '__keep'
   for (const k of Object.keys(choice)) {
     choice[k] = 'keep'
   }
 }
 
-// open 打开批量修改域名或选项的对话框，r 为选中的站点
-function open(m: 'domains' | 'options', r: SiteRef[]) {
+// open 打开批量修改域名、选项或移动站点的对话框，r 为选中的站点
+function open(m: 'domains' | 'options' | 'move', r: SiteRef[]) {
   mode.value = m
   refs.value = r
   visible.value = true
@@ -131,6 +167,17 @@ function summary(res: { changed: number; unchanged: number }) {
 }
 
 async function submit() {
+  if (mode.value === 'move') {
+    const target: MoveTarget = { listener: moveListener.value }
+    if (moveGroup.value !== '__keep') {
+      target.group = moveGroup.value
+    }
+    // 对话框中已显示明文传输警告，这里直接提交
+    if (await post(refs.value, target)) {
+      visible.value = false
+    }
+    return
+  }
   const body: Record<string, unknown> = { sites: refs.value }
   if (mode.value === 'domains') {
     body.action = action.value
@@ -203,7 +250,44 @@ async function remove(r: SiteRef[], names: string[]) {
   }
 }
 
-defineExpose({ open, enable, remove })
+// post 提交移动请求并提示结果，返回是否成功
+async function post(r: SiteRef[], target: MoveTarget) {
+  busy.value = true
+  try {
+    const res = await api.post<{ changed: number; unchanged: number }>(BATCH_URL, { sites: r, action: 'move', move: target })
+    ElMessage.success(res.changed ? t('webBatch.moved', { count: res.changed }) : t('webBatch.moveNothing'))
+    emit('done')
+    return true
+  } catch (e) {
+    ElMessage.error((e as Error).message)
+    return false
+  } finally {
+    busy.value = false
+  }
+}
+
+// move 确认后把站点移到其他监听（拖拽时使用），names 为用于确认提示的站点名称；返回是否已移动
+async function move(r: SiteRef[], names: string[], target: MoveTarget) {
+  const to = listeners.value.find((l) => l.key === target.listener)
+  const shown = names.slice(0, 5).join('、') + (names.length > 5 ? t('groupSort.batchRemoveMore', { count: names.length - 5 }) : '')
+  let msg = t('webBatch.moveConfirm', { count: r.length, names: shown, target: to ? listenerLabel(to) : target.listener })
+  if (plainRisk(r, target.listener)) {
+    msg += '\n\n' + t('webBatch.movePlainWarn')
+  }
+  try {
+    await ElMessageBox.confirm(msg, t('webBatch.moveTitle'), {
+      type: 'warning',
+      confirmButtonText: t('webBatch.moveOk'),
+      cancelButtonText: t('common.cancel'),
+      customStyle: { whiteSpace: 'pre-line' },
+    })
+  } catch {
+    return false
+  }
+  return post(r, target)
+}
+
+defineExpose({ open, enable, remove, move })
 </script>
 
 <style scoped>
@@ -216,5 +300,11 @@ defineExpose({ open, enable, remove })
 }
 .choice {
   width: 220px;
+}
+.choice-wide {
+  width: 100%;
+}
+.warn {
+  margin-top: 12px;
 }
 </style>

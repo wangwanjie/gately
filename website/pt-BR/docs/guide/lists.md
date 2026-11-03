@@ -49,7 +49,7 @@ Depois de marcar entradas no modo de ordenação, a barra de ferramentas também
 - **Ativar / Desativar**: salva todas as entradas marcadas de uma vez; as entradas que já estão no estado desejado não são reiniciadas;
 - **Excluir**: a caixa de confirmação lista as entradas que serão excluídas, e a exclusão não pode ser desfeita. Se alguma entrada não puder ser excluída (por exemplo, um certificado ainda usado por um site), nenhuma é excluída e o motivo é exibido.
 
-Uma operação em lote processa até 500 entradas. Ela só é salva quando todas as entradas passam na validação; se alguma falhar, nada é alterado. Os dispositivos de Wake-on-LAN não têm chave de ativação e oferecem apenas a exclusão em lote; os tokens de API ainda não oferecem ativação, desativação nem exclusão em lote. Os Serviços Web também permitem alterar domínios e opções em lote; veja [Serviços Web](/pt-BR/docs/modules/web#operacoes-em-lote).
+Uma operação em lote processa até 500 entradas. Ela só é salva quando todas as entradas passam na validação; se alguma falhar, nada é alterado. Os dispositivos de Wake-on-LAN não têm chave de ativação e oferecem apenas a exclusão em lote; os tokens de API ainda não oferecem ativação, desativação nem exclusão em lote. Os Serviços Web também permitem alterar domínios e opções em lote; veja [Serviços Web](/pt-BR/docs/modules/web#operacoes-em-lote). Os sites também podem ser movidos para outro listener, veja [Mover sites](/pt-BR/docs/modules/web#move-sites).
 
 ## Duplicar itens
 

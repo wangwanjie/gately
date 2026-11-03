@@ -20,6 +20,16 @@ En mode tri, vous pouvez aussi cocher plusieurs sites (la case de l’en-tête d
 
 Survolez l’en-tête d’un groupe et cliquez sur le crayon pour le renommer : tous ses éléments passent sous le nouveau nom et gardent leur position et leur ordre. Un nom déjà utilisé fusionne les deux groupes après confirmation.
 
+### Déplacer des sites {#move-sites}
+
+Un site peut être déplacé vers un autre écouteur avec tous ses réglages :
+
+- En modifiant un site, changez **Écouteur** ; à l'enregistrement, les modifications sont d'abord enregistrées puis le site est déplacé. À l'ajout d'un site, ce champ choisit l'écouteur dans lequel il est créé.
+- En mode tri, cochez des sites (y compris sur plusieurs écouteurs), cliquez sur **Déplacer vers un écouteur** dans la barre d'outils, puis choisissez l'écouteur cible et le groupe (par défaut chaque site garde son groupe). Les sites sont placés à la fin de l'écouteur cible ou à la fin du groupe choisi ; ceux déjà présents dans l'écouteur cible ne bougent pas.
+- En mode tri, faites glisser des sites au-dessus ou au-dessous d'un site d'un autre écouteur pour les insérer à cet endroit dans son groupe, ou sur un titre de groupe pour les placer à la fin de ce groupe. Pendant le glissement, les écouteurs sans site ordinaire affichent une zone de dépôt. Le dépôt demande une confirmation.
+
+Chaque déplacement est une seule requête : l'écouteur source et l'écouteur cible sont rechargés une fois chacun et leur liste de sites est remplacée sur place, les connexions aux autres sites restent ouvertes. Si l'écouteur cible a déjà un site avec le même domaine, le déplacement est refusé et aucun écouteur n'est modifié ; le site par défaut appartient à son écouteur et ne peut pas être déplacé. Si la clé d'un site est déjà prise dans l'écouteur cible, il reçoit une nouvelle clé, et les règles d'alerte de la surveillance des performances qui le référencent sont mises à jour. Les sessions de connexion sont isolées par écouteur et par site : les visiteurs connectés devront se reconnecter après le déplacement ; les compteurs d'utilisation des liens de partage suivent le site, un lien limité ne redevient donc pas utilisable ; les statistiques et connexions en direct du site repartent de zéro. Déplacer un site protégé par connexion d'un écouteur HTTPS vers un écouteur HTTP non chiffré affiche un avertissement : mots de passe et cookies de connexion circuleront en clair.
+
 ### Opérations en lot
 
 Cochez des sites en mode tri (y compris sous plusieurs écouteurs) et la barre d'outils propose les opérations en lot ci-dessous. Chaque opération est soumise en une fois : elle n'est enregistrée que si tous les sites passent la validation ; si l'un échoue, rien n'est modifié et le site en cause est indiqué. Chaque écouteur concerné est rechargé une seule fois et remplace sa liste de sites sur place, sans couper les connexions.
@@ -33,8 +43,9 @@ Cochez des sites en mode tri (y compris sous plusieurs écouteurs) et la barre d
 
   Un domaine nouvellement ajouté est refusé s'il apparaît sur plusieurs sites du même écouteur, car seul le premier de ces sites pourrait lui correspondre ; des écouteurs différents peuvent utiliser le même domaine.
 - **Options en lot** : active ou désactive en lot Compression, Journal d'accès, CORS, En-têtes de transfert et Fermer la connexion en cas de refus, et définit ou retire le WAF. Les éléments laissés sur « Ne pas modifier » conservent le réglage propre à chaque site. Les réglages qui touchent à l'accès, comme l'authentification, le contrôle d'accès et les adresses de backend, se modifient site par site.
+- **Déplacer vers un écouteur** : déplace les sites cochés vers un autre écouteur, voir [Déplacer des sites](#move-sites).
 
-Le point de terminaison correspondant est `POST /api/webservice/sites/batch`, avec le corps `{"sites": [{"listener": "clé de l'écouteur", "site": "clé du site"}], "action": "...", ...}`. `action` vaut `enable`, `disable`, `delete`, `addDomains`, `removeDomains` (avec `domains`), `replaceDomain` (avec `from` et `to`) ou `set` (avec `options`, qui n'accepte que les champs d'options ci-dessus). La réponse donne le nombre de sites modifiés et le nombre de sites déjà conformes. Une requête traite jusqu'à 500 sites et 100 domaines. Les écouteurs eux-mêmes prennent aussi en charge les points de terminaison génériques `PUT /api/webservice/listeners-enable` et `POST /api/webservice/listeners-delete`.
+Le point de terminaison correspondant est `POST /api/webservice/sites/batch`, avec le corps `{"sites": [{"listener": "clé de l'écouteur", "site": "clé du site"}], "action": "...", ...}`. `action` vaut `enable`, `disable`, `delete`, `addDomains`, `removeDomains` (avec `domains`), `replaceDomain` (avec `from` et `to`) ou `set` (avec `options`, qui n'accepte que les champs d'options ci-dessus). La réponse donne le nombre de sites modifiés et le nombre de sites déjà conformes. Une requête traite jusqu'à 500 sites et 100 domaines. Les écouteurs eux-mêmes prennent aussi en charge les points de terminaison génériques `PUT /api/webservice/listeners-enable` et `POST /api/webservice/listeners-delete`. Pour `move`, `move` désigne la cible, par exemple `{"listener": "clé de l'écouteur cible"}`, avec en option `group` (groupe où placer les sites ; une chaîne vide signifie sans groupe, l'omettre conserve le groupe de chaque site) ou `before` / `after` (clé d'un site de l'écouteur cible avant ou après lequel insérer, en rejoignant son groupe). `moved` dans la réponse liste la clé de chaque site avant et après le déplacement.
 
 ## Types de sites
 

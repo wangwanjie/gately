@@ -49,7 +49,7 @@ Après avoir coché des entrées en mode de tri, la barre d'outils permet aussi 
 - **Activer / Désactiver** : enregistre toutes les entrées cochées en une fois ; les entrées déjà dans l'état visé ne sont pas redémarrées ;
 - **Supprimer** : la boîte de confirmation liste les entrées à supprimer, et la suppression est définitive. Si une entrée ne peut pas être supprimée (par exemple un certificat encore utilisé par un site), aucune n'est supprimée et la raison est affichée.
 
-Une opération en lot traite jusqu'à 500 entrées. Elle n'est enregistrée que si toutes les entrées passent la validation ; si l'une échoue, rien n'est modifié. Les appareils Wake-on-LAN n'ont pas d'interrupteur d'activation et ne proposent que la suppression en lot ; les jetons d'API ne proposent pas encore l'activation, la désactivation ni la suppression en lot. Services Web propose aussi la modification en lot des domaines et des options, voir [Services Web](/fr/docs/modules/web#operations-en-lot).
+Une opération en lot traite jusqu'à 500 entrées. Elle n'est enregistrée que si toutes les entrées passent la validation ; si l'une échoue, rien n'est modifié. Les appareils Wake-on-LAN n'ont pas d'interrupteur d'activation et ne proposent que la suppression en lot ; les jetons d'API ne proposent pas encore l'activation, la désactivation ni la suppression en lot. Services Web propose aussi la modification en lot des domaines et des options, voir [Services Web](/fr/docs/modules/web#operations-en-lot). Les sites peuvent aussi être déplacés vers un autre écouteur, voir [Déplacer des sites](/fr/docs/modules/web#move-sites).
 
 ## Dupliquer des éléments
 

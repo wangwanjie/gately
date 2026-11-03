@@ -49,7 +49,7 @@ Tras marcar entradas en el modo de ordenación, la barra de herramientas tambié
 - **Activar / Desactivar**: guarda todas las entradas marcadas de una vez; las que ya están en el estado deseado no se reinician;
 - **Eliminar**: el diálogo de confirmación enumera las entradas que se van a eliminar, y la eliminación no se puede deshacer. Si alguna entrada no se puede eliminar (por ejemplo, un certificado que aún usa un sitio), no se elimina ninguna y se muestra el motivo.
 
-Una operación en lote procesa hasta 500 entradas. Solo se guarda cuando todas las entradas superan la validación; si alguna falla, no se modifica nada. Los dispositivos de Wake-on-LAN no tienen interruptor de activación y solo admiten la eliminación en lote; los tokens de API todavía no admiten activar, desactivar ni eliminar en lote. Servicios web ofrece además cambios en lote de dominios y opciones; consulta [Servicios web](/es/docs/modules/web#operaciones-en-lote).
+Una operación en lote procesa hasta 500 entradas. Solo se guarda cuando todas las entradas superan la validación; si alguna falla, no se modifica nada. Los dispositivos de Wake-on-LAN no tienen interruptor de activación y solo admiten la eliminación en lote; los tokens de API todavía no admiten activar, desactivar ni eliminar en lote. Servicios web ofrece además cambios en lote de dominios y opciones; consulta [Servicios web](/es/docs/modules/web#operaciones-en-lote). Los sitios también se pueden mover a otro listener, consulta [Mover sitios](/es/docs/modules/web#move-sites).
 
 ## Duplicar elementos
 

@@ -1,6 +1,7 @@
 package webservice
 
 import (
+	"cmp"
 	"fmt"
 	"net/http"
 	"slices"
@@ -23,6 +24,8 @@ const (
 	// BatchReplaceDomain 把域名中的后缀 From 换成 To（From 本身及其子域名，通配写法随之替换），用于整体更换主域名
 	BatchReplaceDomain = "replaceDomain"
 	BatchSet           = "set"
+	// BatchMove 把站点移到另一个监听器
+	BatchMove = "move"
 )
 
 // maxBatchDomains 为一次批量增删域名最多提交的域名数。
@@ -60,17 +63,37 @@ type SiteBatchRequest struct {
 	From    string            `json:"from,omitempty"`
 	To      string            `json:"to,omitempty"`
 	Options *SiteBatchOptions `json:"options,omitempty"`
+	// Move 用于 move：目标监听器与放置位置
+	Move *SiteMoveTarget `json:"move,omitempty"`
+}
+
+// SiteMoveTarget 为移动站点的目标。站点按提交顺序连续放置；已在目标监听器中的站点保持不动。
+type SiteMoveTarget struct {
+	Listener string `json:"listener"`
+	// Group 非 nil 时把站点放入该分组（空字符串为未分组）并排在该分组末尾；nil 时保留各站点原有分组，放在目标监听器末尾
+	Group *string `json:"group,omitempty"`
+	// Before 与 After 为目标监听器中的站点 key，把站点插到它之前或之后并加入它的分组（优先于 Group），二者最多填一个
+	Before string `json:"before,omitempty"`
+	After  string `json:"after,omitempty"`
+}
+
+// SiteMoved 记录一个站点移动前后的位置；目标监听器中已有相同 key 时站点会换用新 key。
+type SiteMoved struct {
+	From SiteRef `json:"from"`
+	To   SiteRef `json:"to"`
 }
 
 // SiteBatchResult 为批量操作的结果：Changed 为实际发生变化的站点数，Unchanged 为已经符合要求而无需修改的站点数。
 type SiteBatchResult struct {
 	Changed   int `json:"changed"`
 	Unchanged int `json:"unchanged"`
+	// Moved 为 move 动作中实际移动的站点
+	Moved []SiteMoved `json:"moved,omitempty"`
 }
 
 func (m *Module) registerBatch(r module.Router) {
 	r.HandleFunc("POST /sites/batch", m.handleSiteBatch)
-	module.DocOf(r, "POST /sites/batch", module.Doc{Summary: "批量操作站点：启停、删除、增删或替换域名、修改部分选项；全部校验通过才保存，任一站点失败都不修改", Req: &SiteBatchRequest{}, Resp: &SiteBatchResult{}})
+	module.DocOf(r, "POST /sites/batch", module.Doc{Summary: "批量操作站点：启停、删除、增删或替换域名、修改部分选项、移到其他监听器；全部校验通过才保存，任一站点失败都不修改", Req: &SiteBatchRequest{}, Resp: &SiteBatchResult{}})
 }
 
 // normalizeBatchDomains 规范化并去重批量提交的域名，写法错误时整体报错。
@@ -222,6 +245,23 @@ func (m *Module) handleSiteBatch(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
+	case BatchMove:
+		if req.Move == nil || req.Move.Listener == "" {
+			httpx.Error(w, http.StatusBadRequest, "请选择目标监听")
+			return
+		}
+		if req.Move.Before != "" && req.Move.After != "" {
+			httpx.Error(w, http.StatusBadRequest, "插入位置只能指定一个")
+			return
+		}
+		if req.Move.Group != nil {
+			g := *req.Move.Group
+			if err := crud.NormalizeGroup(&g); err != nil {
+				httpx.Error(w, http.StatusBadRequest, "%v", err)
+				return
+			}
+			req.Move.Group = &g
+		}
 	default:
 		httpx.Error(w, http.StatusBadRequest, "未知的批量操作 %q", req.Action)
 		return
@@ -248,6 +288,15 @@ func (m *Module) handleSiteBatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 移动站点后要通知引用站点标识的其他模块（性能监控告警规则）。回调在释放模块锁之后执行，
+	// 避免与对方模块读取站点快照时的加锁顺序相反而死锁；这个 defer 先注册，晚于解锁执行
+	var renamed map[string]string
+	var hooks []func(map[string]string)
+	defer func() {
+		for _, fn := range hooks {
+			fn(renamed)
+		}
+	}()
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	// 修改先作用在监听器副本上，全部校验通过后再保存，任一失败都不做任何修改
@@ -255,10 +304,33 @@ func (m *Module) handleSiteBatch(w http.ResponseWriter, r *http.Request) {
 	listeners := slices.Clone(oldListeners)
 	touched := map[string]bool{}
 	cloned := map[string]bool{}
+	// ensureCloned 在首次修改监听器时复制站点列表，避免改到当前配置；
+	// 校验会原地规范化路径规则与按用户分流，这两个切片也要复制，校验失败时当前配置保持原样
+	ensureCloned := func(l *Listener) {
+		if cloned[l.Key] {
+			return
+		}
+		l.Sites = slices.Clone(l.Sites)
+		for k := range l.Sites {
+			cloneSiteSlices(&l.Sites[k])
+		}
+		cloneSiteSlices(&l.Default)
+		cloned[l.Key] = true
+	}
 	// drop 记录各监听器要删除的站点 key
 	drop := map[string]map[string]bool{}
 	// introduced 记录各监听器中本次新加到站点上的域名，用于检查与同一监听器其他站点冲突
 	introduced := map[string]map[string]bool{}
+	// moving 为要移到目标监听器的站点（按提交顺序），movedFrom 为它们原来所在的监听器
+	var moving []Site
+	var movedFrom []string
+	target := -1
+	if req.Action == BatchMove {
+		if target = slices.IndexFunc(listeners, func(l Listener) bool { return l.Key == req.Move.Listener }); target < 0 {
+			httpx.Error(w, http.StatusNotFound, "目标监听 %s 不存在", req.Move.Listener)
+			return
+		}
+	}
 	res := SiteBatchResult{}
 	for _, ref := range refs {
 		i := slices.IndexFunc(listeners, func(l Listener) bool { return l.Key == ref.Listener })
@@ -267,16 +339,7 @@ func (m *Module) handleSiteBatch(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		l := &listeners[i]
-		if !cloned[l.Key] {
-			// 首次修改该监听器时复制站点列表，避免改到当前配置；
-			// 校验会原地规范化路径规则与按用户分流，这两个切片也要复制，校验失败时当前配置保持原样
-			l.Sites = slices.Clone(l.Sites)
-			for k := range l.Sites {
-				cloneSiteSlices(&l.Sites[k])
-			}
-			cloneSiteSlices(&l.Default)
-			cloned[l.Key] = true
-		}
+		ensureCloned(l)
 		var site *Site
 		isDefault := ref.Site == "default"
 		if isDefault {
@@ -330,6 +393,21 @@ func (m *Module) handleSiteBatch(w http.ResponseWriter, r *http.Request) {
 				opts.WAF = &v
 			}
 			changed = applyBatchOptions(site, &opts)
+		case BatchMove:
+			if isDefault {
+				httpx.Error(w, http.StatusBadRequest, "默认站点属于所在监听，不能移到其他监听")
+				return
+			}
+			// 已在目标监听器中的站点不动（调整同一监听内的顺序走排序接口）
+			if i != target {
+				if drop[l.Key] == nil {
+					drop[l.Key] = map[string]bool{}
+				}
+				drop[l.Key][site.Key] = true
+				moving = append(moving, *site)
+				movedFrom = append(movedFrom, l.Key)
+				changed = true
+			}
 		}
 		if changed {
 			res.Changed++
@@ -341,6 +419,31 @@ func (m *Module) handleSiteBatch(w http.ResponseWriter, r *http.Request) {
 	if res.Changed == 0 {
 		httpx.OK(w, res)
 		return
+	}
+	if len(moving) > 0 {
+		tl := &listeners[target]
+		ensureCloned(tl)
+		moved, err := placeMovedSites(tl, moving, req.Move)
+		if err != nil {
+			httpx.Error(w, http.StatusBadRequest, "%v", err)
+			return
+		}
+		touched[tl.Key] = true
+		// 移入的站点的全部域名都算新引入的，与目标监听器中已有站点重复时拒绝：同一监听内只有第一个站点生效
+		added := map[string]bool{}
+		for _, s := range moving {
+			for _, d := range s.Domains {
+				added[d] = true
+			}
+		}
+		introduced[tl.Key] = added
+		renamed = map[string]string{}
+		for k, s := range moving {
+			from := SiteRef{Listener: movedFrom[k], Site: s.Key}
+			to := SiteRef{Listener: tl.Key, Site: moved[k]}
+			res.Moved = append(res.Moved, SiteMoved{From: from, To: to})
+			renamed[from.Listener+"/"+from.Site] = to.Listener + "/" + to.Site
+		}
 	}
 	for i := range listeners {
 		l := &listeners[i]
@@ -375,7 +478,73 @@ func (m *Module) handleSiteBatch(w http.ResponseWriter, r *http.Request) {
 			m.restartLocked(l.Key)
 		}
 	}
+	if len(renamed) > 0 {
+		// 站点的会话作用域随“监听/站点”变化，已登录的访客需要重新登录；
+		// 分享链接的已兑换次数随站点迁移，避免限次链接因移动而重新可用
+		m.auth.moveShareUses(renamed)
+		hooks = slices.Clone(m.sitesMoved)
+	}
 	httpx.OK(w, res)
+}
+
+// placeMovedSites 把移入的站点放进目标监听器 l，返回各站点在目标监听器中的 key（与 moving 一一对应）。
+// 目标中已有相同 key 时换用随机新 key：自动编号的 key 容易在之后新建站点时被复用，随机 key 不会。
+func placeMovedSites(l *Listener, moving []Site, to *SiteMoveTarget) ([]string, error) {
+	used := map[string]bool{}
+	for _, s := range l.Sites {
+		used[s.Key] = true
+	}
+	keys := make([]string, len(moving))
+	in := make([]Site, len(moving))
+	for k, s := range moving {
+		for s.Key == "" || s.Key == "default" || used[s.Key] {
+			s.Key = crud.NewKey()
+		}
+		used[s.Key] = true
+		keys[k] = s.Key
+		in[k] = s
+	}
+	// 确定插入位置与分组：指定了相邻站点时插到它前后并加入它的分组；只指定分组时排在该分组末尾
+	at := len(l.Sites)
+	group := to.Group
+	if anchor := cmp.Or(to.Before, to.After); anchor != "" {
+		j := slices.IndexFunc(l.Sites, func(s Site) bool { return s.Key == anchor })
+		if j < 0 {
+			return nil, fmt.Errorf("目标监听中的站点 %s 不存在", anchor)
+		}
+		at = j
+		if to.After != "" {
+			at = j + 1
+		}
+		g := l.Sites[j].Group
+		group = &g
+	} else if group != nil {
+		if last := lastIndexOfGroup(l.Sites, *group); last >= 0 {
+			at = last + 1
+		} else if *group != "" {
+			// 目标中还没有这个分组时放在未分组站点之前，与管理界面拖入新分组的显示顺序一致
+			if first := slices.IndexFunc(l.Sites, func(s Site) bool { return s.Group == "" }); first >= 0 {
+				at = first
+			}
+		}
+	}
+	if group != nil {
+		for k := range in {
+			in[k].Group = *group
+		}
+	}
+	l.Sites = slices.Insert(l.Sites, at, in...)
+	return keys, nil
+}
+
+// lastIndexOfGroup 返回分组中最后一个站点的下标，没有时返回 -1。
+func lastIndexOfGroup(sites []Site, group string) int {
+	for i := len(sites) - 1; i >= 0; i-- {
+		if sites[i].Group == group {
+			return i
+		}
+	}
+	return -1
 }
 
 // cloneSiteSlices 复制站点中会被校验原地改写的切片。

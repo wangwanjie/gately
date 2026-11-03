@@ -49,7 +49,7 @@ Nachdem Sie im Sortiermodus Einträge markiert haben, bietet die Werkzeugleiste 
 - **Aktivieren / Deaktivieren**: speichert alle markierten Einträge auf einmal; Einträge, die bereits den Zielzustand haben, werden nicht neu gestartet;
 - **Löschen**: Der Bestätigungsdialog listet die zu löschenden Einträge auf; das Löschen lässt sich nicht rückgängig machen. Lässt sich ein Eintrag nicht löschen (etwa ein Zertifikat, das noch von einer Site verwendet wird), wird keiner gelöscht und der Grund angezeigt.
 
-Eine Stapeloperation verarbeitet bis zu 500 Einträge. Gespeichert wird nur, wenn alle Einträge die Prüfung bestehen; schlägt einer fehl, bleibt alles unverändert. Wake-on-LAN-Geräte haben keinen Aktivierungsschalter und bieten nur das Löschen im Stapel; API-Tokens bieten Aktivieren, Deaktivieren und Löschen im Stapel noch nicht an. Die Web-Dienste können zusätzlich Domains und Optionen im Stapel ändern, siehe [Web-Dienste](/de/docs/modules/web#stapelverarbeitung).
+Eine Stapeloperation verarbeitet bis zu 500 Einträge. Gespeichert wird nur, wenn alle Einträge die Prüfung bestehen; schlägt einer fehl, bleibt alles unverändert. Wake-on-LAN-Geräte haben keinen Aktivierungsschalter und bieten nur das Löschen im Stapel; API-Tokens bieten Aktivieren, Deaktivieren und Löschen im Stapel noch nicht an. Die Web-Dienste können zusätzlich Domains und Optionen im Stapel ändern, siehe [Web-Dienste](/de/docs/modules/web#stapelverarbeitung). Sites lassen sich außerdem in einen anderen Listener verschieben, siehe [Sites verschieben](/de/docs/modules/web#move-sites).
 
 ## Einträge duplizieren
 
