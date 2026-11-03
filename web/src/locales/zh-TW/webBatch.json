@@ -35,6 +35,7 @@
   "moveGroupNone": "未分組",
   "moveHelp": "站點連同全部設定移到目標監聽，排在最後或所選群組的最後；已在目標監聽中的站點不動。目標監聽中已有相同網域的站點時不會移動。移動後已登入的訪客需要重新登入，統計資料重新開始。",
   "movePlainWarn": "部分站點開啟了驗證，目標監聽是明文 HTTP，移動後密碼與登入 Cookie 將以明文傳輸。",
+  "movePlainWarnOne": "此站點開啟了驗證，目標監聽是明文 HTTP，移動後密碼與登入 Cookie 將以明文傳輸。",
   "moved": "已移動 {count} 個站點",
   "moveNothing": "所選站點已在目標監聽中",
   "moveConfirm": "將 {count} 個站點（{names}）移到「{target}」？移動後已登入的訪客需要重新登入，統計資料重新開始。",

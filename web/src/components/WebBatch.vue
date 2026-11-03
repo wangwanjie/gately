@@ -39,7 +39,7 @@
         </el-form-item>
       </el-form>
       <div class="form-help">{{ t('webBatch.moveHelp') }}</div>
-      <el-alert v-if="moveListener && plainRisk(refs, moveListener)" :title="t('webBatch.movePlainWarn')" type="warning" :closable="false" show-icon class="warn" />
+      <el-alert v-if="moveListener && plainRisk(refs, moveListener)" :title="plainWarn(refs.length)" type="warning" :closable="false" show-icon class="warn" />
     </template>
 
     <template v-else>
@@ -116,6 +116,11 @@ function listenerLabel(l: MoveListener) {
 // plainRisk 判断是否要把开启了认证的站点从 HTTPS 监听移到明文 HTTP 监听
 function plainRisk(r: SiteRef[], target: string) {
   return movePlainRisk(r, target, listeners.value)
+}
+
+// plainWarn 返回移到明文监听的认证提醒：只移动一个站点时说“该站点”，多个时说“部分站点”
+function plainWarn(count: number) {
+  return count === 1 ? t('webBatch.movePlainWarnOne') : t('webBatch.movePlainWarn')
 }
 
 // parseDomains 按换行、逗号、分号拆分域名；行内空格不作分隔，含空格的写法交给后端报错，避免把错误写法拆成多个域名
@@ -272,7 +277,7 @@ async function move(r: SiteRef[], names: string[], target: MoveTarget) {
   const shown = names.slice(0, 5).join('、') + (names.length > 5 ? t('groupSort.batchRemoveMore', { count: names.length - 5 }) : '')
   let msg = t('webBatch.moveConfirm', { count: r.length, names: shown, target: to ? listenerLabel(to) : target.listener })
   if (plainRisk(r, target.listener)) {
-    msg += '\n\n' + t('webBatch.movePlainWarn')
+    msg += '\n\n' + plainWarn(r.length)
   }
   try {
     await ElMessageBox.confirm(msg, t('webBatch.moveTitle'), {

@@ -35,6 +35,7 @@
   "moveGroupNone": "未分组",
   "moveHelp": "站点连同全部设置移到目标监听，排在末尾或所选分组末尾；已在目标监听中的站点不动。目标监听中已有相同域名的站点时不会移动。移动后已登录的访客需要重新登录，统计数据重新开始。",
   "movePlainWarn": "部分站点开启了认证，目标监听是明文 HTTP，移动后密码与登录 Cookie 将以明文传输。",
+  "movePlainWarnOne": "该站点开启了认证，目标监听是明文 HTTP，移动后密码与登录 Cookie 将以明文传输。",
   "moved": "已移动 {count} 个站点",
   "moveNothing": "所选站点已在目标监听中",
   "moveConfirm": "把 {count} 个站点（{names}）移到「{target}」？移动后已登录的访客需要重新登录，统计数据重新开始。",

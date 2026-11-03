@@ -35,6 +35,7 @@
   "moveGroupNone": "Ohne Gruppe",
   "moveHelp": "Sites werden mit allen Einstellungen verschoben und ans Ende bzw. ans Ende der gewählten Gruppe gestellt. Sites, die schon im Ziel-Listener sind, bleiben unverändert. Hat der Ziel-Listener bereits eine Site mit derselben Domain, wird nichts verschoben. Angemeldete Besucher müssen sich erneut anmelden, die Statistik beginnt neu.",
   "movePlainWarn": "Einige dieser Sites verlangen eine Anmeldung und der Ziel-Listener ist unverschlüsseltes HTTP: Passwörter und Anmelde-Cookies werden danach im Klartext übertragen.",
+  "movePlainWarnOne": "Diese Site erfordert eine Anmeldung und der Ziel-Listener ist unverschlüsseltes HTTP: Passwörter und Anmelde-Cookies werden danach im Klartext übertragen.",
   "moved": "{count} Sites verschoben",
   "moveNothing": "Die ausgewählten Sites sind bereits im Ziel-Listener",
   "moveConfirm": "{count} Sites ({names}) nach „{target}“ verschieben? Angemeldete Besucher müssen sich erneut anmelden, die Statistik beginnt neu.",

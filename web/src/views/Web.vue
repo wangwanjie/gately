@@ -299,7 +299,7 @@
             <el-option v-for="o in listeners" :key="o.key" :label="listenerOption(o)" :value="o.key ?? ''" />
           </el-select>
           <div v-if="siteIndex >= 0 && siteOwnerKey !== siteFromKey" class="form-help">{{ t('web.siteListenerMoveHelp') }}</div>
-          <div v-if="siteMovePlainRisk" class="form-help warn">{{ t('webBatch.movePlainWarn') }}</div>
+          <div v-if="siteMovePlainRisk" class="form-help warn">{{ t('webBatch.movePlainWarnOne') }}</div>
         </el-form-item>
         <el-tabs v-model="siteTab">
           <el-tab-pane :label="t('web.tabBasic')" name="basic">
@@ -1520,7 +1520,7 @@ async function saveSite() {
     const target = listeners.value.find((x) => x.key === moveTo)
     let msg = t('web.siteMoveConfirm', { target: target ? listenerOption(target) : moveTo })
     if (siteMovePlainRisk.value) {
-      msg += '\n\n' + t('webBatch.movePlainWarn')
+      msg += '\n\n' + t('webBatch.movePlainWarnOne')
     }
     try {
       await ElMessageBox.confirm(msg, t('webBatch.moveTitle'), {
