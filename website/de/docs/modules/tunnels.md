@@ -54,7 +54,7 @@ Token und Schlüssel werden mit Rechten 0600 gespeichert. Das cloudflared-Token 
 - Verwaltet `tailscaled` (Userspace-Networking, containerfreundlich) oder bindet sich an einen vorhandenen System-Daemon an;
 - Auth-Key oder Anmeldelink, Headscale wird unterstützt;
 - Subnetz-Routen und Exit-Nodes;
-- Knotenliste und SOCKS5-Proxy;
+- Knotenliste und SOCKS5-Proxy. Der Proxy hat keine Authentifizierung; die Oberfläche warnt, wenn seine Lauschadresse über diesen Rechner hinaus erreichbar ist (etwa `0.0.0.0` oder eine LAN-IP). Empfohlen ist, nur auf `127.0.0.1` zu lauschen;
 - Fester WireGuard-UDP-Port, der das Zulassen direkter Verbindungen durch eine Firewall erleichtert;
 - Zusätzliche tailscaled-Argumente und Umgebungsvariablen. Nutzt iptables des Hosts das nf_tables-Backend, fügen Sie `TS_DEBUG_FIREWALL_MODE=nftables` zu den Umgebungsvariablen hinzu, sonst funktioniert die Subnetz-Weiterleitung nicht.
 
@@ -64,6 +64,7 @@ Token und Schlüssel werden mit Rechten 0600 gespeichert. Das cloudflared-Token 
 - Authentifizierung per Setup-Key oder Anmeldelink. Unter Linux nutzt der Link die Anmeldung per Gerätecode und lässt sich auf jedem Gerät öffnen; unter macOS und Windows lässt sich die Anmeldung meist nur in einem Browser auf dem Rechner abschließen, auf dem Gately läuft, daher für die Fernverwaltung einen Setup-Key verwenden. Abgelaufene Links werden automatisch erneuert;
 - Verwalteter `netbird`-Daemon (Userspace-Netzwerk, containerfreundlich) oder Anbindung an den bereits installierten NetBird-Dienst des Systems;
 - Im Userspace-Netzwerk erreichen andere Peers standardmäßig Dienste dieses Rechners (auch solche, die nur auf 127.0.0.1 lauschen; die Zugriffsrichtlinien des Management-Servers gelten weiterhin), lokale Programme erreichen Geräte im Netzwerk über einen SOCKS5-Proxy (Standard `127.0.0.1:1080`);
+- Der SOCKS5-Proxy hat keine Authentifizierung; die Oberfläche warnt, wenn seine Lauschadresse über diesen Rechner hinaus erreichbar ist. NetBird vor 0.75 ignoriert im Userspace-Netzwerk die eingestellte Adresse und stellt immer einen SOCKS5-Proxy ohne Authentifizierung auf `0.0.0.0` bereit, über den andere Geräte ins Netzwerk gelangen; verwaltet Gately den Daemon und erkennt eine solche Version, schreibt es eine Warnung ins Protokoll. Aktualisieren Sie auf 0.75 oder neuer;
 - Netzwerkrouten, Exit-Nodes und Zugriffsrichtlinien werden im NetBird-Dashboard konfiguriert; in Gately wählen Sie, ob Routen angenommen werden, der Rechner als Routing-Peer arbeitet, DNS angenommen und eingehende Verbindungen blockiert werden;
 - Peer-Liste mit direkter oder Relay-Verbindung, Latenz und Netzwerkrouten;
 - Fester WireGuard-Port, zusätzliche Daemon-Argumente und Umgebungsvariablen (die erweiterten `NB_`-Optionen aus der NetBird-Dokumentation);

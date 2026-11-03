@@ -54,7 +54,7 @@ Les jetons et les clés sont stockés avec les permissions 0600. Le jeton cloudf
 - Gère `tailscaled` (réseau en espace utilisateur, adapté aux conteneurs) ou se rattache à un démon système existant ;
 - Clé d'authentification ou lien de connexion, Headscale pris en charge ;
 - Routes de sous-réseau et nœuds de sortie ;
-- Liste des nœuds et proxy SOCKS5 ;
+- Liste des nœuds et proxy SOCKS5. Ce proxy n'a pas d'authentification : l'interface avertit quand son adresse d'écoute est joignable au-delà de cette machine (par exemple `0.0.0.0` ou une IP du réseau local). Il est conseillé de n'écouter que sur `127.0.0.1` ;
 - Port UDP WireGuard fixe, pratique pour autoriser les connexions directes à travers un pare-feu ;
 - Arguments supplémentaires de tailscaled et variables d'environnement. Si iptables de l'hôte utilise le backend nf_tables, ajoutez `TS_DEBUG_FIREWALL_MODE=nftables` aux variables d'environnement, faute de quoi le transfert des sous-réseaux ne fonctionnera pas.
 
@@ -64,6 +64,7 @@ Les jetons et les clés sont stockés avec les permissions 0600. Le jeton cloudf
 - Authentification par clé de configuration ou par lien de connexion. Sous Linux, le lien utilise la connexion par code d'appareil et peut s'ouvrir sur n'importe quel appareil ; sous macOS et Windows, la connexion doit en général se terminer dans un navigateur de la machine qui exécute Gately : utilisez une clé de configuration pour la gérer à distance. Le lien est renouvelé automatiquement à son expiration ;
 - Démon `netbird` géré (réseau en espace utilisateur, adapté aux conteneurs) ou connexion au service NetBird déjà installé sur le système ;
 - En réseau espace utilisateur, les autres pairs peuvent par défaut atteindre les services de cette machine (y compris ceux qui n'écoutent que sur 127.0.0.1 ; les politiques d'accès du serveur de gestion s'appliquent toujours), et les programmes locaux atteignent les appareils du réseau via un proxy SOCKS5 (par défaut `127.0.0.1:1080`) ;
+- Le proxy SOCKS5 n'a pas d'authentification, et l'interface avertit quand son adresse d'écoute est joignable au-delà de cette machine. Les versions de NetBird antérieures à 0.75 ignorent l'adresse configurée en réseau espace utilisateur et exposent toujours un proxy SOCKS5 sans authentification sur `0.0.0.0`, par lequel d'autres appareils peuvent accéder au réseau ; quand Gately gère le démon et détecte une telle version, il écrit un avertissement dans le journal. Passez à la version 0.75 ou ultérieure ;
 - Les routes réseau, nœuds de sortie et politiques d'accès se configurent dans le tableau de bord NetBird ; dans Gately vous choisissez d'accepter les routes, de servir de pair de routage, d'accepter le DNS et de bloquer les connexions entrantes ;
 - Liste des pairs avec connexion directe ou relayée, latence et routes réseau ;
 - Port WireGuard fixe, arguments supplémentaires du démon et variables d'environnement (les options avancées `NB_` de la documentation NetBird) ;

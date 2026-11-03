@@ -54,7 +54,7 @@ Tokens and keys are stored with 0600 permissions. The cloudflared token is passe
 - Manages `tailscaled` (userspace networking, container-friendly) or attaches to an existing system daemon;
 - Auth key or login link, with Headscale supported;
 - Subnet routes and exit nodes;
-- Node list and SOCKS5 proxy;
+- Node list and SOCKS5 proxy. The proxy has no authentication, so the UI warns when its listen address reaches beyond this machine (such as `0.0.0.0` or a LAN IP); listening on `127.0.0.1` only is recommended;
 - Fixed WireGuard UDP port, making it easy to allow direct connections through a firewall;
 - Extra tailscaled arguments and environment variables. If the host's iptables uses the nf_tables backend, add `TS_DEBUG_FIREWALL_MODE=nftables` to the environment variables, otherwise subnet forwarding will not work.
 
@@ -64,6 +64,7 @@ Tokens and keys are stored with 0600 permissions. The cloudflared token is passe
 - Authenticate with a setup key or a login link. On Linux the login link uses device code login and can be opened on any device; on macOS and Windows the login usually has to be completed in a browser on the machine running Gately, so use a setup key when managing it remotely. The link is renewed automatically when it expires;
 - Managed `netbird` daemon (userspace networking, container-friendly) or attach to the NetBird service already installed on the system;
 - With userspace networking, other peers can reach services on this machine by default (including services listening only on 127.0.0.1; the access policies of the management server still apply), and local programs reach devices in the network through a SOCKS5 proxy (default `127.0.0.1:1080`);
+- The SOCKS5 proxy has no authentication, and the UI warns when its listen address reaches beyond this machine. NetBird older than 0.75 ignores the configured address in userspace mode and always serves an unauthenticated SOCKS5 proxy on `0.0.0.0`, through which other devices can reach the network; when Gately manages the daemon and detects such a version it logs a warning. Upgrade to 0.75 or later;
 - Network routes, exit nodes and access policies are configured in the NetBird dashboard; in Gately you choose whether to accept routes, act as a routing peer, accept DNS and block inbound connections;
 - Peer list with direct or relayed connections, latency and network routes;
 - Fixed WireGuard port, extra daemon arguments and environment variables (the advanced `NB_` options in the NetBird docs);

@@ -54,7 +54,7 @@ Tokens e chaves são armazenados com permissão 0600. O token do cloudflared é 
 - Gerencia o `tailscaled` (rede em espaço de usuário, adequada a contêineres) ou se conecta a um daemon já existente no sistema;
 - Chave de autenticação ou link de login, com suporte a Headscale;
 - Rotas de sub-rede e exit nodes;
-- Lista de nós e proxy SOCKS5;
+- Lista de nós e proxy SOCKS5. O proxy não tem autenticação, então a interface avisa quando o endereço de escuta é acessível fora desta máquina (como `0.0.0.0` ou um IP da LAN); o recomendado é escutar só em `127.0.0.1`;
 - Porta UDP fixa do WireGuard, facilitando liberar conexões diretas no firewall;
 - Argumentos extras e variáveis de ambiente do tailscaled. Se o iptables do host usa o backend nf_tables, adicione `TS_DEBUG_FIREWALL_MODE=nftables` às variáveis de ambiente; sem isso, o encaminhamento de sub-rede não funciona.
 
@@ -64,6 +64,7 @@ Tokens e chaves são armazenados com permissão 0600. O token do cloudflared é 
 - Autenticação por chave de configuração ou link de login. No Linux o link usa login por código de dispositivo e pode ser aberto em qualquer dispositivo; no macOS e no Windows o login normalmente precisa ser concluído em um navegador da máquina que executa o Gately, então use uma chave de configuração para gerenciá-la remotamente. O link é renovado automaticamente ao expirar;
 - Daemon `netbird` gerenciado (rede em espaço de usuário, compatível com contêineres) ou conexão ao serviço NetBird já instalado no sistema;
 - Com rede em espaço de usuário, por padrão outros pares alcançam os serviços desta máquina (inclusive os que escutam só em 127.0.0.1; as políticas de acesso do servidor de gerenciamento continuam valendo), e programas locais alcançam os dispositivos da rede por um proxy SOCKS5 (padrão `127.0.0.1:1080`);
+- O proxy SOCKS5 não tem autenticação, e a interface avisa quando o endereço de escuta é acessível fora desta máquina. O NetBird anterior à 0.75 ignora o endereço configurado na rede em espaço de usuário e sempre oferece um proxy SOCKS5 sem autenticação em `0.0.0.0`, pelo qual outros dispositivos podem entrar na rede; quando o Gately gerencia o daemon e detecta uma dessas versões, registra um aviso no log. Atualize para a 0.75 ou posterior;
 - Rotas de rede, nós de saída e políticas de acesso são configurados no painel do NetBird; no Gately você escolhe se aceita rotas, atua como par de roteamento, aceita DNS e bloqueia conexões de entrada;
 - Lista de pares com conexão direta ou via relay, latência e rotas de rede;
 - Porta WireGuard fixa, argumentos extras do daemon e variáveis de ambiente (as opções avançadas `NB_` da documentação do NetBird);
