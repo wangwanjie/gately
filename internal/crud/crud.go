@@ -249,6 +249,8 @@ func (c *Collection[T]) insertLocked(w http.ResponseWriter, it T, at int) {
 		httpx.Error(w, http.StatusBadRequest, "最多只能添加 %d 条", c.Max)
 		return
 	}
+	// 新条目的 key 由服务端分配，请求体中的 key 不参与检查，免得 Check 把新条目当成已有条目而跳过比较
+	*c.Key(&it) = ""
 	if c.Check != nil {
 		if err := c.Check(&it); err != nil {
 			httpx.Error(w, http.StatusBadRequest, "%v", err)
@@ -284,6 +286,8 @@ func (c *Collection[T]) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	old := (*c.Items)[i]
+	// 以路径中的 key 为准（请求体通常不带 key），校验与检查时条目已带上自己的 key，可以据此排除自身
+	*c.Key(&it) = key
 	if c.Merge != nil {
 		c.Merge(&old, &it)
 	}
