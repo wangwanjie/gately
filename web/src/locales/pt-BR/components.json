@@ -170,7 +170,7 @@
     "frp": "Para todas as instâncias do frpc e frps, limpa as instâncias, proxies, caminhos dos programas e o proxy de download e exclui os arquivos de configuração gerados.",
     "cloudflared": "Para e exclui todos os túneis e limpa o caminho do programa e o proxy de download.",
     "tailscale": "Para todas as instâncias do Tailscale (um tailscaled gerenciado pelo Gately com o diretório de estado padrão sai do login primeiro), exclui todas as instâncias e as configurações dos programas, e apaga o estado de login dos diretórios de estado padrão; diretórios de estado personalizados são mantidos.",
-    "netbird": "O NetBird é parado (o daemon gerenciado pelo Gately faz logout antes, removendo esta máquina da rede), as configurações padrão são restauradas e o estado de login e as chaves do diretório de estado padrão são excluídos.",
+    "netbird": "Todas as instâncias do NetBird são paradas (um daemon gerenciado pelo Gately que usa o diretório de estado padrão faz logout antes, removendo esta máquina da rede), todas as instâncias e configurações do programa são excluídas, assim como o estado de login e as chaves dos diretórios de estado padrão; diretórios de estado personalizados são mantidos.",
     "filebrowser": "Para e exclui todas as instâncias com seus usuários, links de compartilhamento e caches (os arquivos dos diretórios compartilhados não são afetados), e limpa o caminho do programa e o proxy de download."
   },
   "secretInput": {

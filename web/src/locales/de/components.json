@@ -170,7 +170,7 @@
     "frp": "Stoppt alle frpc- und frps-Instanzen, leert Instanzen, Proxys, Programmpfade und den Download-Proxy und löscht die erzeugten Konfigurationsdateien.",
     "cloudflared": "Alle Tunnel werden gestoppt und gelöscht, Programmpfad und Download-Proxy werden geleert.",
     "tailscale": "Stoppt alle Tailscale-Instanzen (ein von Gately verwalteter tailscaled mit Standard-Statusverzeichnis meldet sich zuerst ab), löscht alle Instanzen und Programmeinstellungen sowie den Anmeldestatus in den Standard-Statusverzeichnissen; benutzerdefinierte Statusverzeichnisse bleiben erhalten.",
-    "netbird": "NetBird wird gestoppt (der von Gately verwaltete Daemon meldet sich zuerst ab, wodurch dieser Rechner aus dem Netzwerk entfernt wird), die Standardeinstellungen werden wiederhergestellt und Anmeldestatus und Schlüssel im Standard-Statusverzeichnis werden gelöscht.",
+    "netbird": "Alle NetBird-Instanzen werden gestoppt (ein von Gately verwalteter Daemon mit dem Standard-Statusverzeichnis meldet sich zuerst ab, wodurch dieser Rechner aus dem Netzwerk entfernt wird), alle Instanzen und Programmeinstellungen werden gelöscht, ebenso Anmeldestatus und Schlüssel in den Standard-Statusverzeichnissen; benutzerdefinierte Statusverzeichnisse bleiben erhalten.",
     "filebrowser": "Alle Instanzen werden gestoppt und mit ihren Benutzern, Freigabelinks und Caches gelöscht (Dateien in den freigegebenen Verzeichnissen bleiben unberührt); Programmpfad und Download-Proxy werden geleert."
   },
   "secretInput": {

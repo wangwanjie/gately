@@ -170,7 +170,7 @@
     "frp": "Arrête toutes les instances frpc et frps, efface les instances, les proxys, les chemins des programmes et le proxy de téléchargement, et supprime les fichiers de configuration générés.",
     "cloudflared": "Tous les tunnels sont arrêtés et supprimés, le chemin du programme et le proxy de téléchargement sont effacés.",
     "tailscale": "Arrête toutes les instances Tailscale (un tailscaled géré par Gately utilisant le répertoire d'état par défaut se déconnecte d'abord), supprime toutes les instances et les paramètres des programmes, et efface l'état de connexion des répertoires d'état par défaut ; les répertoires d'état personnalisés sont conservés.",
-    "netbird": "NetBird est arrêté (le démon géré par Gately se déconnecte d’abord, ce qui retire cette machine du réseau), les paramètres par défaut sont restaurés et l’état de connexion ainsi que les clés du répertoire d’état par défaut sont supprimés.",
+    "netbird": "Toutes les instances NetBird sont arrêtées (un démon géré par Gately qui utilise le répertoire d’état par défaut se déconnecte d’abord, ce qui retire cette machine du réseau), toutes les instances et les paramètres du programme sont supprimés, ainsi que l’état de connexion et les clés des répertoires d’état par défaut ; les répertoires d’état personnalisés sont conservés.",
     "filebrowser": "Toutes les instances sont arrêtées et supprimées avec leurs utilisateurs, liens de partage et caches (les fichiers des répertoires partagés ne sont pas touchés), et le chemin du programme et le proxy de téléchargement sont effacés."
   },
   "secretInput": {
