@@ -1223,7 +1223,10 @@ const detail = computed<Detail | undefined>(() => {
         d.actions.push({ key: 'stats', label: t('webTopology.openStats'), icon: BarChart3, run: () => emit('stats', lk, s.key, siteName(s)) })
         d.actions.push({ key: 'conns', label: t('webTopology.openConns'), icon: ArrowRightLeft, run: () => emit('conns', lk, s.key, siteName(s)) })
       }
-      d.actions.push({ key: 'logs', label: ipFilter.value ? t('webTopology.openLogsIp') : t('webTopology.openLogs'), icon: FileText, run: () => openLogs(ipFilter.value) })
+      // 未命名默认站点无法按站点过滤，只在已按 IP 筛选时提供（查看该 IP 在全部站点的日志）
+      if (logSite.value || ipFilter.value) {
+        d.actions.push({ key: 'logs', label: ipFilter.value ? t('webTopology.openLogsIp') : t('webTopology.openLogs'), icon: FileText, run: () => openLogs(ipFilter.value) })
+      }
       d.actions.push({ key: 'edit', label: t('common.edit'), icon: Pencil, run: () => emit('edit', lk, s.key) })
       break
     }
@@ -1270,7 +1273,10 @@ const detail = computed<Detail | undefined>(() => {
       ]
       d.rows.push({ label: t('webTopology.weight'), value: String(u.weight) })
       // 访问日志只记录到站点，按后端所属站点查看
-      d.actions.push({ key: 'logs', label: ipFilter.value ? t('webTopology.openLogsIp') : t('webTopology.openLogs'), icon: FileText, run: () => openLogs(ipFilter.value) })
+      // 未命名默认站点无法按站点过滤，只在已按 IP 筛选时提供（查看该 IP 在全部站点的日志）
+      if (logSite.value || ipFilter.value) {
+        d.actions.push({ key: 'logs', label: ipFilter.value ? t('webTopology.openLogsIp') : t('webTopology.openLogs'), icon: FileText, run: () => openLogs(ipFilter.value) })
+      }
       d.actions.push({ key: 'edit', label: t('common.edit'), icon: Pencil, run: () => emit('edit', n.site!.id.slice(2).split('/')[0], n.site!.key) })
       break
     }
@@ -1291,10 +1297,12 @@ const panelIps = computed<(TopoIP & { n: number })[]>(() => {
 
 // ---- 查看访问日志 ----
 
-// logSite 为当前选中节点所属的站点：站点、后端与终点节点都对应一个站点，其余节点没有
+// logSite 为当前选中节点所属的站点：站点、后端与终点节点都对应一个站点，其余节点没有。
+// 未命名的默认站点在访问日志里没有站点字段，也没有域名可匹配，无法单独过滤，按未选中站点处理
 const logSite = computed(() => {
   const n = selectedNode.value
-  return n && (n.kind === 'site' || n.kind === 'upstream' || n.kind === 'terminal') ? n.site : undefined
+  const s = n && (n.kind === 'site' || n.kind === 'upstream' || n.kind === 'terminal') ? n.site : undefined
+  return s && s.default && !s.name ? undefined : s
 })
 
 // openLogs 打开访问日志：选中站点类节点时按该站点过滤，ip 非空时再按访客地址过滤；
