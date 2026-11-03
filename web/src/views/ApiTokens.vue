@@ -176,6 +176,7 @@ import { useI18n } from 'vue-i18n'
 import { BookOpen, Check, Copy, KeyRound, Pencil, Plus, RefreshCw, ShieldCheck, Trash2 } from 'lucide-vue-next'
 import { api, type ScopeDomain, type TokenInput, type TokenSecret, type TokenView } from '../api'
 import { apiOrigin } from '../basePath'
+import { absentModules } from '../nav'
 import PageHeader from '../components/PageHeader.vue'
 import ScopeTags from '../components/ScopeTags.vue'
 import EntityCard from '../components/EntityCard.vue'
@@ -299,11 +300,23 @@ function applyPreset(p: 'read' | 'write' | 'none') {
   }
 }
 
+// 定制构建（缺少部分模块）时，矩阵只列出已编译的模块：
+// keptScopes 保存编辑的令牌中属于缺失模块的权限，保存时原样并回，避免改个名字就丢掉；
+// origWildcards 记录令牌原有的通配权限，只有原本就是通配的令牌才继续保存为通配，
+// 新勾满的矩阵逐项列出，换回完整版时不会悄悄获得当初没有显示的模块权限
+const keptScopes = ref<string[]>([])
+const origWildcards = ref<string[]>([])
+
 // scopesToLevels 把后端 scopes 数组还原为矩阵，能识别 `*`、`*:read`、`*:write` 通配
 function scopesToLevels(scopes: string[]) {
   applyPreset('none')
+  keptScopes.value = []
+  origWildcards.value = []
   for (const raw of scopes) {
     const s = raw.trim()
+    if (s.startsWith('*')) {
+      origWildcards.value.push(s)
+    }
     if (s === '*' || s === '*:write') {
       for (const d of domains.value) {
         levels[d.id] = higher(levels[d.id], maxLevel(d))
@@ -323,6 +336,7 @@ function scopesToLevels(scopes: string[]) {
     const mode = idx > 0 ? s.slice(idx + 1) : 'write'
     const d = domains.value.find((x) => x.id === id)
     if (!d) {
+      keptScopes.value.push(s)
       continue
     }
     // 写含读；对只读域的 write 视为 read
@@ -337,13 +351,16 @@ function levelsToScopes(): string[] {
   if (!ds.length) {
     return []
   }
-  if (ds.every((d) => levels[d.id] === maxLevel(d))) {
+  // 完整构建可以直接用通配；定制构建只在令牌原本就是对应通配时沿用
+  const partial = absentModules.value.length > 0
+  const wildOK = (w: string) => !partial || origWildcards.value.includes(w) || (w === '*' && origWildcards.value.includes('*:write'))
+  if (ds.every((d) => levels[d.id] === maxLevel(d)) && wildOK('*')) {
     return ['*']
   }
-  if (ds.every((d) => (d.writeOnly ? levels[d.id] === 'none' : levels[d.id] === 'read'))) {
+  if (ds.every((d) => (d.writeOnly ? levels[d.id] === 'none' : levels[d.id] === 'read')) && wildOK('*:read')) {
     return ['*:read']
   }
-  const out: string[] = []
+  const out: string[] = [...keptScopes.value]
   for (const d of ds) {
     const lv = levels[d.id]
     if (lv === 'read') {
@@ -392,6 +409,8 @@ function openCreate() {
   form.enabled = true
   // 新建时默认不授予任何权限，避免误给过大权限
   applyPreset('none')
+  keptScopes.value = []
+  origWildcards.value = []
   formVisible.value = true
 }
 
