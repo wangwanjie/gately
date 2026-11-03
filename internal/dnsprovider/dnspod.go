@@ -8,6 +8,8 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/wangwanjie/gately/internal/version"
 )
 
 // DNSPod 传统 Token 接口（dnsapi.cn / api.dnspod.com），ID 与 Token 拼接为 login_token。
@@ -42,6 +44,11 @@ func init() {
 	})
 }
 
+// dnspodUserAgent 返回发给 DNSPod 的 UA，形如 Gately/0.6.4 (+https://gately.cn)
+func dnspodUserAgent() string {
+	return "Gately/" + strings.TrimPrefix(version.Version, "v") + " (+https://gately.cn)"
+}
+
 type dnspod struct {
 	token       string
 	hc          *http.Client
@@ -63,8 +70,9 @@ func (d *dnspod) call(ctx context.Context, action string, form url.Values, out a
 		return dnspodStatus{}, err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	// 官方要求设置可识别的 UA
-	req.Header.Set("User-Agent", "Gately DDNS Client/1.0 (https://github.com/wangwanjie/gately)")
+	// 官方要求设置可识别的 UA（程序名/版本 + 联系方式）。
+	// dnsapi.cn 的网关会对含「DDNS Client」字样的 UA 直接返回 nginx 403，不能再用这类写法。
+	req.Header.Set("User-Agent", dnspodUserAgent())
 	var env struct {
 		Status dnspodStatus `json:"status"`
 	}
