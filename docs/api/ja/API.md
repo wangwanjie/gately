@@ -768,7 +768,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/system/settings/secrets` | ログインセッションのみ | サードパーティログインの Client Secret を平文で表示 |
 | GET | `/api/system/info` | `status:read` | システム情報を表示 |
 | GET | `/api/system/update` | `status:read` | 新しいバージョンとセキュリティアドバイザリーを確認 |
-| GET | `/api/system/update/state` | `system:read` | 前回の更新チェックの結果を表示 |
+| GET | `/api/system/update/state` | `status:read` | 前回の更新チェックの結果を表示 |
 | POST | `/api/system/upgrade` | ログインセッションのみ | 最新バージョンへオンラインアップグレード |
 | GET | `/api/system/upgrade/status` | ログインセッションのみ | オンラインアップグレードの進捗を確認 |
 | POST | `/api/system/upgrade/cancel` | ログインセッションのみ | オンラインアップグレードを取消 |

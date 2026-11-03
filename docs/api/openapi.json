@@ -33014,7 +33014,7 @@
     },
     "/api/system/update/state": {
       "get": {
-        "description": "不访问网络，返回自动检查或手动检查保存的最近一次结果，字段同 `GET /api/system/update`，另有 `autoCheck`（是否开启自动检查）、`checkedAt`（最近一次成功检查的时间）以及最近一次失败的 `error` 与 `failedAt`。从未成功检查过时 `latest` 为空。\n\n所需权限：`system:read`。",
+        "description": "不访问网络，返回自动检查或手动检查保存的最近一次结果，字段同 `GET /api/system/update`，另有 `autoCheck`（是否开启自动检查）、`checkedAt`（最近一次成功检查的时间）以及最近一次失败的 `error` 与 `failedAt`。从未成功检查过时 `latest` 为空。\n\n所需权限：`status:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -33059,7 +33059,7 @@
         "tags": [
           "系统"
         ],
-        "x-required-scope": "system:read",
+        "x-required-scope": "status:read",
         "x-token-allowed": true
       }
     },

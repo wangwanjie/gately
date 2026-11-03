@@ -33014,7 +33014,7 @@
     },
     "/api/system/update/state": {
       "get": {
-        "description": "No accede a la red. Devuelve el resultado más reciente guardado por la comprobación automática o manual, con los mismos campos que `GET /api/system/update` más `autoCheck` (si la comprobación automática está activada), `checkedAt` (hora de la última comprobación correcta) y `error` y `failedAt` del último fallo. `latest` está vacío si ninguna comprobación ha tenido éxito.\n\nPermiso necesario: `system:read`.",
+        "description": "No accede a la red. Devuelve el resultado más reciente guardado por la comprobación automática o manual, con los mismos campos que `GET /api/system/update` más `autoCheck` (si la comprobación automática está activada), `checkedAt` (hora de la última comprobación correcta) y `error` y `failedAt` del último fallo. `latest` está vacío si ninguna comprobación ha tenido éxito.\n\nPermiso necesario: `status:read`.",
         "responses": {
           "200": {
             "description": "Correcto"
@@ -33059,7 +33059,7 @@
         "tags": [
           "Sistema"
         ],
-        "x-required-scope": "system:read",
+        "x-required-scope": "status:read",
         "x-token-allowed": true
       }
     },

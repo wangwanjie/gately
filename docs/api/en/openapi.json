@@ -33014,7 +33014,7 @@
     },
     "/api/system/update/state": {
       "get": {
-        "description": "Does not access the network. Returns the most recent result saved by the automatic or manual check, with the same fields as `GET /api/system/update` plus `autoCheck` (whether automatic checks are on), `checkedAt` (time of the last successful check) and `error` and `failedAt` of the last failure. `latest` is empty if no check has ever succeeded.\n\nRequired permission: `system:read`.",
+        "description": "Does not access the network. Returns the most recent result saved by the automatic or manual check, with the same fields as `GET /api/system/update` plus `autoCheck` (whether automatic checks are on), `checkedAt` (time of the last successful check) and `error` and `failedAt` of the last failure. `latest` is empty if no check has ever succeeded.\n\nRequired permission: `status:read`.",
         "responses": {
           "200": {
             "description": "Success"
@@ -33059,7 +33059,7 @@
         "tags": [
           "System"
         ],
-        "x-required-scope": "system:read",
+        "x-required-scope": "status:read",
         "x-token-allowed": true
       }
     },

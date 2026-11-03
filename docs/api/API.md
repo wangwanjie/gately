@@ -768,7 +768,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/system/settings/secrets` | 仅登录会话 | 查看第三方登录 Client Secret 明文 |
 | GET | `/api/system/info` | `status:read` | 查看系统信息 |
 | GET | `/api/system/update` | `status:read` | 检查新版本与安全公告 |
-| GET | `/api/system/update/state` | `system:read` | 查看上次检查更新的结果 |
+| GET | `/api/system/update/state` | `status:read` | 查看上次检查更新的结果 |
 | POST | `/api/system/upgrade` | 仅登录会话 | 在线升级到最新版本 |
 | GET | `/api/system/upgrade/status` | 仅登录会话 | 查看在线升级进度 |
 | POST | `/api/system/upgrade/cancel` | 仅登录会话 | 取消在线升级 |

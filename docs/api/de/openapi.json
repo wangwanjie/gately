@@ -33014,7 +33014,7 @@
     },
     "/api/system/update/state": {
       "get": {
-        "description": "Greift nicht auf das Netzwerk zu. Liefert das zuletzt von der automatischen oder manuellen Prüfung gespeicherte Ergebnis mit denselben Feldern wie `GET /api/system/update` sowie `autoCheck` (ob die automatische Prüfung aktiv ist), `checkedAt` (Zeit der letzten erfolgreichen Prüfung) und `error` und `failedAt` des letzten Fehlschlags. `latest` ist leer, solange noch keine Prüfung erfolgreich war.\n\nErforderliche Berechtigung: `system:read`.",
+        "description": "Greift nicht auf das Netzwerk zu. Liefert das zuletzt von der automatischen oder manuellen Prüfung gespeicherte Ergebnis mit denselben Feldern wie `GET /api/system/update` sowie `autoCheck` (ob die automatische Prüfung aktiv ist), `checkedAt` (Zeit der letzten erfolgreichen Prüfung) und `error` und `failedAt` des letzten Fehlschlags. `latest` ist leer, solange noch keine Prüfung erfolgreich war.\n\nErforderliche Berechtigung: `status:read`.",
         "responses": {
           "200": {
             "description": "Erfolgreich"
@@ -33059,7 +33059,7 @@
         "tags": [
           "System"
         ],
-        "x-required-scope": "system:read",
+        "x-required-scope": "status:read",
         "x-token-allowed": true
       }
     },

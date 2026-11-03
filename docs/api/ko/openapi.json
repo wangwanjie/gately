@@ -33014,7 +33014,7 @@
     },
     "/api/system/update/state": {
       "get": {
-        "description": "네트워크에 접근하지 않습니다. 자동 또는 수동 확인으로 저장된 최근 결과를 반환하며, 필드는 `GET /api/system/update` 와 같고 `autoCheck`(자동 확인 여부), `checkedAt`(마지막 성공 확인 시각), 마지막 실패의 `error` 와 `failedAt` 이 추가됩니다. 한 번도 성공하지 않았다면 `latest` 는 비어 있습니다.\n\n필요한 권한: `system:read`.",
+        "description": "네트워크에 접근하지 않습니다. 자동 또는 수동 확인으로 저장된 최근 결과를 반환하며, 필드는 `GET /api/system/update` 와 같고 `autoCheck`(자동 확인 여부), `checkedAt`(마지막 성공 확인 시각), 마지막 실패의 `error` 와 `failedAt` 이 추가됩니다. 한 번도 성공하지 않았다면 `latest` 는 비어 있습니다.\n\n필요한 권한: `status:read`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -33059,7 +33059,7 @@
         "tags": [
           "시스템"
         ],
-        "x-required-scope": "system:read",
+        "x-required-scope": "status:read",
         "x-token-allowed": true
       }
     },

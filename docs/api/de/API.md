@@ -768,7 +768,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | GET | `/api/system/settings/secrets` | Nur Anmeldesitzung | Client Secrets der Drittanbieter-Anmeldung im Klartext anzeigen |
 | GET | `/api/system/info` | `status:read` | Systeminformationen anzeigen |
 | GET | `/api/system/update` | `status:read` | Nach neuen Versionen und Sicherheitshinweisen suchen |
-| GET | `/api/system/update/state` | `system:read` | Ergebnis der letzten Update-Prüfung anzeigen |
+| GET | `/api/system/update/state` | `status:read` | Ergebnis der letzten Update-Prüfung anzeigen |
 | POST | `/api/system/upgrade` | Nur Anmeldesitzung | Online auf die neueste Version aktualisieren |
 | GET | `/api/system/upgrade/status` | Nur Anmeldesitzung | Fortschritt des Online-Upgrades anzeigen |
 | POST | `/api/system/upgrade/cancel` | Nur Anmeldesitzung | Online-Upgrade abbrechen |

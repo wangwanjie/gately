@@ -768,7 +768,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | GET | `/api/system/settings/secrets` | Session connectée uniquement | Afficher en clair les Client Secret de la connexion tierce |
 | GET | `/api/system/info` | `status:read` | Consulter les informations système |
 | GET | `/api/system/update` | `status:read` | Rechercher les nouvelles versions et les avis de sécurité |
-| GET | `/api/system/update/state` | `system:read` | Afficher le résultat de la dernière vérification des mises à jour |
+| GET | `/api/system/update/state` | `status:read` | Afficher le résultat de la dernière vérification des mises à jour |
 | POST | `/api/system/upgrade` | Session connectée uniquement | Mettre à niveau en ligne vers la dernière version |
 | GET | `/api/system/upgrade/status` | Session connectée uniquement | Voir la progression de la mise à niveau en ligne |
 | POST | `/api/system/upgrade/cancel` | Session connectée uniquement | Annuler la mise à niveau en ligne |

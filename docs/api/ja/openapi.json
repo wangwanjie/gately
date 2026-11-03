@@ -33014,7 +33014,7 @@
     },
     "/api/system/update/state": {
       "get": {
-        "description": "ネットワークにはアクセスしません。自動または手動チェックで保存された最新の結果を返します。フィールドは `GET /api/system/update` と同じで、ほかに `autoCheck`（自動チェックが有効か）、`checkedAt`（最後に成功したチェックの時刻）、直近の失敗の `error` と `failedAt` があります。一度も成功していない場合 `latest` は空です。\n\n必要な権限: `system:read`。",
+        "description": "ネットワークにはアクセスしません。自動または手動チェックで保存された最新の結果を返します。フィールドは `GET /api/system/update` と同じで、ほかに `autoCheck`（自動チェックが有効か）、`checkedAt`（最後に成功したチェックの時刻）、直近の失敗の `error` と `failedAt` があります。一度も成功していない場合 `latest` は空です。\n\n必要な権限: `status:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -33059,7 +33059,7 @@
         "tags": [
           "システム"
         ],
-        "x-required-scope": "system:read",
+        "x-required-scope": "status:read",
         "x-token-allowed": true
       }
     },

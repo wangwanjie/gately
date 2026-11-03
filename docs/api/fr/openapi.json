@@ -33014,7 +33014,7 @@
     },
     "/api/system/update/state": {
       "get": {
-        "description": "N'accède pas au réseau. Renvoie le dernier résultat enregistré par la vérification automatique ou manuelle, avec les mêmes champs que `GET /api/system/update` plus `autoCheck` (vérification automatique activée ou non), `checkedAt` (heure de la dernière vérification réussie) ainsi que `error` et `failedAt` du dernier échec. `latest` est vide si aucune vérification n'a jamais réussi.\n\nPermission requise : `system:read`.",
+        "description": "N'accède pas au réseau. Renvoie le dernier résultat enregistré par la vérification automatique ou manuelle, avec les mêmes champs que `GET /api/system/update` plus `autoCheck` (vérification automatique activée ou non), `checkedAt` (heure de la dernière vérification réussie) ainsi que `error` et `failedAt` du dernier échec. `latest` est vide si aucune vérification n'a jamais réussi.\n\nPermission requise : `status:read`.",
         "responses": {
           "200": {
             "description": "Succès"
@@ -33059,7 +33059,7 @@
         "tags": [
           "Système"
         ],
-        "x-required-scope": "system:read",
+        "x-required-scope": "status:read",
         "x-token-allowed": true
       }
     },

@@ -768,7 +768,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/system/settings/secrets` | Только сессия входа | Показать Client Secret стороннего входа открытым текстом |
 | GET | `/api/system/info` | `status:read` | Просмотр информации о системе |
 | GET | `/api/system/update` | `status:read` | Проверить новые версии и бюллетени безопасности |
-| GET | `/api/system/update/state` | `system:read` | Результат последней проверки обновлений |
+| GET | `/api/system/update/state` | `status:read` | Результат последней проверки обновлений |
 | POST | `/api/system/upgrade` | Только сессия входа | Обновить онлайн до последней версии |
 | GET | `/api/system/upgrade/status` | Только сессия входа | Показать ход онлайн-обновления |
 | POST | `/api/system/upgrade/cancel` | Только сессия входа | Отменить онлайн-обновление |

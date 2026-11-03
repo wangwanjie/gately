@@ -33014,7 +33014,7 @@
     },
     "/api/system/update/state": {
       "get": {
-        "description": "不存取網路，回傳自動檢查或手動檢查儲存的最近一次結果，欄位同 `GET /api/system/update`，另有 `autoCheck`（是否開啟自動檢查）、`checkedAt`（最近一次成功檢查的時間）以及最近一次失敗的 `error` 與 `failedAt`。從未成功檢查過時 `latest` 為空。\n\n所需權限：`system:read`。",
+        "description": "不存取網路，回傳自動檢查或手動檢查儲存的最近一次結果，欄位同 `GET /api/system/update`，另有 `autoCheck`（是否開啟自動檢查）、`checkedAt`（最近一次成功檢查的時間）以及最近一次失敗的 `error` 與 `failedAt`。從未成功檢查過時 `latest` 為空。\n\n所需權限：`status:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -33059,7 +33059,7 @@
         "tags": [
           "系統"
         ],
-        "x-required-scope": "system:read",
+        "x-required-scope": "status:read",
         "x-token-allowed": true
       }
     },

@@ -768,7 +768,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/system/settings/secrets` | 로그인 세션 전용 | 서드파티 로그인 Client Secret 평문 보기 |
 | GET | `/api/system/info` | `status:read` | 시스템 정보 보기 |
 | GET | `/api/system/update` | `status:read` | 새 버전과 보안 공지 확인 |
-| GET | `/api/system/update/state` | `system:read` | 마지막 업데이트 확인 결과 보기 |
+| GET | `/api/system/update/state` | `status:read` | 마지막 업데이트 확인 결과 보기 |
 | POST | `/api/system/upgrade` | 로그인 세션 전용 | 최신 버전으로 온라인 업그레이드 |
 | GET | `/api/system/upgrade/status` | 로그인 세션 전용 | 온라인 업그레이드 진행 상황 보기 |
 | POST | `/api/system/upgrade/cancel` | 로그인 세션 전용 | 온라인 업그레이드 취소 |
