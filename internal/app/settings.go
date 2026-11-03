@@ -22,7 +22,6 @@ import (
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/resolver"
 	"github.com/wangwanjie/gately/internal/thirdauth"
-	"github.com/wangwanjie/gately/internal/webpage"
 )
 
 // Settings 是全局设置（settings.json）。
@@ -37,6 +36,12 @@ type Settings struct {
 	SafePath string `json:"safePath"`
 	// LANOnly 只允许内网地址（含 Tailscale 等 CGNAT 地址）访问管理界面
 	LANOnly bool `json:"lanOnly"`
+	// DenyMode 为未授权访问（来源地址被封禁、仅内网访问拦截、未通过安全入口）时的响应方式，取值见 deny.go；
+	// 为空时保持默认：安全入口返回 404 提示页，封禁与仅内网返回 403
+	DenyMode string `json:"denyMode"`
+	// DenyStatus / DenyPage 为 DenyMode 为 custom 时返回的状态码与 HTML 内容
+	DenyStatus int    `json:"denyStatus"`
+	DenyPage   string `json:"denyPage"`
 	// GatewaySSO 为 true 时，经飞牛 fnOS 统一网关访问的飞牛管理员自动以 Gately 管理员身份登录（跳过两步验证）
 	GatewaySSO bool `json:"gatewaySSO"`
 	// DisableProxyHeaders 为 true 时不再信任本机反向代理传来的 X-Real-IP / X-Forwarded-For，一律以 TCP 对端为客户端地址。
@@ -101,6 +106,11 @@ func (s *Settings) normalize() {
 		s.SafePath = "/" + s.SafePath
 	}
 	s.SafePath = strings.TrimRight(s.SafePath, "/")
+	s.DenyMode = strings.ToLower(strings.TrimSpace(s.DenyMode))
+	// 状态码只在自定义页面下使用；其他方式下的无效值（例如手工改坏的配置文件）恢复为 200，不影响保存其他设置
+	if s.DenyStatus == 0 || (s.DenyMode != denyModeCustom && !slices.Contains(denyStatuses, s.DenyStatus)) {
+		s.DenyStatus = http.StatusOK
+	}
 	var proxies []string
 	for _, p := range s.TrustedProxies {
 		if p = strings.TrimSpace(p); p != "" {
@@ -157,6 +167,9 @@ func (s *Settings) Validate() error {
 		if len(s.SafePath) < 4 {
 			return errors.New("安全入口至少 3 个字符")
 		}
+	}
+	if err := validateDeny(s); err != nil {
+		return err
 	}
 	if s.MaxLoginFailures < 0 || s.MaxLoginFailures > 100 {
 		return errors.New("连续登录失败上限应在 1~100 之间")
@@ -360,11 +373,23 @@ func (a *App) accessControl(next http.Handler) http.Handler {
 		// 被封禁的地址（入侵防护、Web 服务认证失败等）不能访问管理后台；内网与回环地址除外，
 		// 避免在 Web 站点上输错几次密码就把管理员自己锁在外面
 		if ip, err := netip.ParseAddr(httpx.ClientIP(r)); err == nil && !isPrivate(ip.String()) && banlist.Default.Banned(ip) {
-			http.Error(w, "403 Forbidden", http.StatusForbidden)
+			a.deny(w, r, s, deny403)
 			return
 		}
 		if s.LANOnly && !isPrivate(httpx.ClientIP(r)) {
-			http.Error(w, "403 Forbidden", http.StatusForbidden)
+			a.deny(w, r, s, deny403)
+			return
+		}
+		// 安全入口：isEntry 为访问入口路径本身，passed 为已越过入口（未设置入口时恒为 true）
+		isEntry, passed := false, true
+		if s.SafePath != "" {
+			isEntry = isEntryPath(r, s.SafePath)
+			passed = isEntry || a.entryPassed(r, s.SafePath)
+		}
+		// 隐藏管理端口的响应方式下先拦截未越过入口的请求：未授权的访客不能收到强制 HTTPS 的跳转，那会暴露 HTTPS 端口与服务的存在。
+		// 入口路径本身照常跳转到 HTTPS，由 HTTPS 端写入入口 Cookie
+		if !passed && s.DenyMode != denyModeDefault {
+			a.deny(w, r, s, denyEntryHint)
 			return
 		}
 		if s.ForceHTTPS && r.TLS == nil && a.httpsReady.Load() && a.hasCert(r.Host) {
@@ -376,36 +401,37 @@ func (a *App) accessControl(next http.Handler) http.Handler {
 			http.Redirect(w, r, target+r.URL.RequestURI(), http.StatusFound)
 			return
 		}
-		if s.SafePath != "" {
-			if r.URL.Path == s.SafePath || r.URL.Path == s.SafePath+"/" {
-				http.SetCookie(w, &http.Cookie{Name: entryCookie, Value: a.entryValue(s.SafePath), Path: "/", HttpOnly: true,
-					SameSite: http.SameSiteLaxMode, Secure: r.TLS != nil, MaxAge: 365 * 24 * 3600})
-				http.Redirect(w, r, "/", http.StatusFound)
-				return
-			}
-			c, err := r.Cookie(entryCookie)
-			passed := err == nil && hmac.Equal([]byte(c.Value), []byte(a.entryValue(s.SafePath)))
-			// 主屏幕图标请求不带 Cookie，凭页面中签过名的地址放行（见 webclip.go）
-			if !passed && a.iconKeyValid(r, s.SafePath) {
-				passed = true
-			}
-			if !passed && !a.tokenPeek(r) {
-				// 已登录的会话（例如修改安全入口之前登录）仍可访问
-				if _, ok := a.auth.Verify(auth.TokenFromRequest(r)); !ok {
-					// 浏览器访问时给出提示页（仍返回 404），接口等其他请求保持纯文本 404
-					webpage.Error(w, r, webpage.Problem{
-						Code:   http.StatusNotFound,
-						Lock:   true,
-						Title:  "请通过安全入口访问",
-						Detail: "当前地址未通过安全入口验证，无法打开管理后台。",
-						Hint:   "请使用完整的安全入口地址（例如 http://域名:端口/入口路径）访问；忘记入口时，可在配置目录的 gately.json 中清空 safePath 后重启 Gately。",
-					})
-					return
-				}
-			}
+		if isEntry {
+			http.SetCookie(w, &http.Cookie{Name: entryCookie, Value: a.entryValue(s.SafePath), Path: "/", HttpOnly: true,
+				SameSite: http.SameSiteLaxMode, Secure: r.TLS != nil, MaxAge: 365 * 24 * 3600})
+			http.Redirect(w, r, "/", http.StatusFound)
+			return
+		}
+		if !passed {
+			a.deny(w, r, s, denyEntryHint)
+			return
 		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+// isEntryPath 判断请求的是否为安全入口路径本身。
+func isEntryPath(r *http.Request, safePath string) bool {
+	return r.URL.Path == safePath || r.URL.Path == safePath+"/"
+}
+
+// entryPassed 判断请求能否越过安全入口：带有效的入口 Cookie、签过名的主屏幕图标地址、API 令牌或已登录的会话。
+func (a *App) entryPassed(r *http.Request, safePath string) bool {
+	if c, err := r.Cookie(entryCookie); err == nil && hmac.Equal([]byte(c.Value), []byte(a.entryValue(safePath))) {
+		return true
+	}
+	// 主屏幕图标请求不带 Cookie，凭页面中签过名的地址放行（见 webclip.go）
+	if a.iconKeyValid(r, safePath) || a.tokenPeek(r) {
+		return true
+	}
+	// 已登录的会话（例如修改安全入口之前登录）仍可访问
+	_, ok := a.auth.Verify(auth.TokenFromRequest(r))
+	return ok
 }
 
 // hasCert 判断证书模块是否有该域名的证书。

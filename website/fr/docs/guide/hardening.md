@@ -9,6 +9,7 @@ L'interface d'administration contrôle le DNS, les certificats et les ports. Par
 - [ ] Créer un compte en lecture seule pour les proches ou collègues qui n'ont besoin que de consulter, au lieu de partager le mot de passe administrateur
 - [ ] Définir un chemin d'accès secret pour que l'interface ne soit joignable que par un chemin personnalisé
 - [ ] Activer « l'accès limité au réseau local » et utiliser un VPN (comme [Tailscale](/fr/docs/modules/tunnels)) pour l'administration à distance
+- [ ] Si le port de la console est joignable depuis Internet, régler « Paramètres → Contrôle d'accès → Réponse non autorisée » sur une page 404 simple, la fermeture de la connexion, aucune réponse ou une page personnalisée, pour que les visiteurs non autorisés ne reconnaissent pas Gately ; un balayage de ports trouve encore le port, à masquer complètement par un pare-feu ou en supprimant la redirection
 - [ ] Activer le HTTPS de l'interface d'administration pour un accès via des réseaux non fiables
 - [ ] Donner aux scripts d'automatisation et à la [CLI / MCP](/fr/docs/guide/cli-mcp) des [jetons d'API](/fr/docs/reference/api) aux privilèges minimaux, avec une date d'expiration, et éviter de partager le mot de passe administrateur
 - [ ] Définir une phrase secrète de chiffrement pour les [sauvegardes de configuration](/fr/docs/modules/backup) et activer les sauvegardes planifiées

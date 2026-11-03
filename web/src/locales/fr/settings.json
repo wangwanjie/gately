@@ -102,7 +102,37 @@
     "trustProxyHelp": "Si l’interface d’administration se trouve derrière nginx, haproxy ou le service Web Gately sur cet hôte, l’adresse réelle du client est lue dans les en-têtes X-Real-IP / X-Forwarded-For qu’ils ajoutent. Sert à l’accès réservé au LAN, à la limitation des connexions et au journal d’audit. Seuls les en-têtes provenant des adresses de cet hôte sont pris en compte.",
     "trustedProxies": "Proxys de confiance supplémentaires",
     "trustedProxiesPlaceholder": "IP ou CIDR, ex. 172.17.0.1",
-    "trustedProxiesHelp": "Adresses de proxys hors de cet hôte, comme la passerelle du pont Docker ou un autre proxy inverse."
+    "trustedProxiesHelp": "Adresses de proxys hors de cet hôte, comme la passerelle du pont Docker ou un autre proxy inverse.",
+    "deny": {
+      "label": "Réponse non autorisée",
+      "modes": {
+        "default": "Par défaut (page d’avertissement / 403)",
+        "notfound": "Page 404 simple",
+        "blank": "Page vide",
+        "close": "Fermer la connexion",
+        "drop": "Aucune réponse (jusqu’au délai d’attente)",
+        "custom": "Page personnalisée"
+      },
+      "help": {
+        "default": "Les requêtes qui ne passent pas par l’entrée sécurisée reçoivent une page d’avertissement à l’effigie de Gately (404) ; celles bloquées par l’accès réseau local uniquement ou venant d’une source bannie reçoivent 403.",
+        "notfound": "Renvoie une page 404 générique sans aucune information sur le produit, comme un serveur web ordinaire sans contenu.",
+        "blank": "Renvoie une page vide avec le statut 200.",
+        "close": "Ferme la connexion sans rien envoyer. Lorsqu’une source publique est bloquée par l’accès réseau local uniquement ou par un bannissement, la connexion est fermée dès son acceptation : le port HTTPS n’envoie même pas son certificat. Les requêtes transmises par un reverse proxy reçoivent la page 404 simple, pour que le proxy n’affiche pas sa propre page d’erreur.",
+        "drop": "Ne répond jamais : le client attend jusqu’à expiration du délai (chaque connexion est retenue 2 minutes au plus, 256 à la fois au maximum ; les autres sont fermées). Lorsqu’une source publique est bloquée par l’accès réseau local uniquement ou par un bannissement, le port HTTPS n’envoie pas non plus son certificat. Les requêtes transmises par un reverse proxy reçoivent la page 404 simple, pour que le proxy n’affiche pas sa propre page d’erreur.",
+        "custom": "Renvoie la page HTML et le code de statut ci-dessous, par exemple la page par défaut d’un autre type de site."
+      },
+      "status": "Code de statut",
+      "page": "Contenu de la page",
+      "pagePlaceholder": "Contenu HTML, 64 Ko maximum",
+      "pageHelp": "La page s’affiche dans un bac à sable du navigateur : scripts, formulaires et ressources externes (images, feuilles de style, fichiers de polices) ne se chargent pas. Intégrez images et polices en URL data: et placez les styles dans une balise style.",
+      "sample": "Utiliser l’exemple",
+      "sampleConfirm": "Remplacer le contenu actuel par la page d’exemple ?",
+      "preview": "Aperçu",
+      "previewTitle": "Aperçu de la page (statut {code})",
+      "warnEntry": "Une entrée sécurisée mal saisie n’affiche plus la page d’avertissement. En cas d’oubli, videz safePath dans gately.json, dans le répertoire de configuration, puis redémarrez Gately.",
+      "warnPort": "Le port TCP reste ouvert et un balayage de ports peut toujours le trouver. Pour le masquer complètement, limitez les sources avec un pare-feu ou supprimez la redirection du port public.",
+      "warnNoTrigger": "Aucune entrée sécurisée n’est définie et l’accès réseau local uniquement est désactivé : ce réglage ne s’applique qu’aux sources bannies."
+    }
   },
   "network": {
     "title": "Réseau",

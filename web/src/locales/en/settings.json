@@ -102,7 +102,37 @@
     "trustProxyHelp": "When the admin UI sits behind nginx, haproxy or Gately Web Services on this host, take the real client address from the X-Real-IP / X-Forwarded-For headers they set. Used for LAN-only access, sign-in rate limiting and the audit log. Headers are only trusted from addresses of this host.",
     "trustedProxies": "Additional trusted proxies",
     "trustedProxiesPlaceholder": "IP or CIDR, e.g. 172.17.0.1",
-    "trustedProxiesHelp": "Proxy addresses outside this host, such as a Docker bridge gateway or another reverse proxy server."
+    "trustedProxiesHelp": "Proxy addresses outside this host, such as a Docker bridge gateway or another reverse proxy server.",
+    "deny": {
+      "label": "Unauthorized response",
+      "modes": {
+        "default": "Default (notice page / 403)",
+        "notfound": "Plain 404 page",
+        "blank": "Blank page",
+        "close": "Close connection",
+        "drop": "No response (until timeout)",
+        "custom": "Custom page"
+      },
+      "help": {
+        "default": "Requests that miss the security entrance get a Gately-branded notice page (404); requests blocked by LAN-only access or from banned sources get 403.",
+        "notfound": "Returns a generic 404 page with no product information, like an ordinary web server with nothing on it.",
+        "blank": "Returns an empty page with status 200.",
+        "close": "Closes the connection without sending anything. When a public source is blocked by LAN-only access or a ban, the connection is closed right after it is accepted, so the HTTPS port does not even send its certificate. Requests forwarded by a reverse proxy get the plain 404 instead, so the proxy does not show its own error page.",
+        "drop": "Never answers the request; the client waits until it times out (each connection is held for at most 2 minutes, up to 256 at a time; extra ones are closed). When a public source is blocked by LAN-only access or a ban, the HTTPS port does not send its certificate either. Requests forwarded by a reverse proxy get the plain 404 instead, so the proxy does not show its own error page.",
+        "custom": "Returns the HTML page and status code below, for example the default page of some other kind of website."
+      },
+      "status": "Status code",
+      "page": "Page content",
+      "pagePlaceholder": "HTML content, up to 64 KB",
+      "pageHelp": "The page is shown in a browser sandbox: scripts, forms and external resources (images, stylesheets, font files) do not load. Inline images and fonts as data: URLs and put styles in a style tag.",
+      "sample": "Use sample",
+      "sampleConfirm": "Replace the current content with the sample page?",
+      "preview": "Preview",
+      "previewTitle": "Page preview (status {code})",
+      "warnEntry": "A mistyped security entrance no longer shows the notice page. If you forget the entrance, clear safePath in gately.json in the config directory and restart Gately.",
+      "warnPort": "The TCP port is still open and port scans can still find it. To hide the port completely, restrict sources with a firewall or remove the public port mapping.",
+      "warnNoTrigger": "No security entrance is set and LAN-only access is off, so this setting only applies to banned sources."
+    }
   },
   "network": {
     "title": "Network",

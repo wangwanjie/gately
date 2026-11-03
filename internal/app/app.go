@@ -105,6 +105,9 @@ type App struct {
 	updProgMu  sync.Mutex
 	updWake    chan struct{}
 	restartCh  chan struct{}
+	// holdCtx 在服务停止时取消，结束“不响应”方式挂起的未授权连接，不拖慢重启与退出
+	holdCtx    context.Context
+	holdCancel context.CancelFunc
 	auth       *auth.Manager
 	tokens     *apitoken.Manager
 	// audit 记录管理后台的操作审计日志
@@ -156,17 +159,20 @@ func New(opts Options) (*App, error) {
 	}
 	// 标准日志按服务端语言翻译后输出
 	logger := log.New(i18n.NewWriter(os.Stderr), "", log.LstdFlags)
+	holdCtx, holdCancel := context.WithCancel(context.Background())
 	a := &App{
-		opts:      opts,
-		store:     store,
-		settings:  Settings{Listen: DefaultListen},
-		sysLogs:   logbuf.New(defaultLogLines, logger),
-		startTime: time.Now(),
-		hostStats: sysstat.New(opts.ConfigDir),
-		logger:    logger,
-		restartCh: make(chan struct{}, 1),
-		updWake:   make(chan struct{}, 1),
-		audit:     audit.New(opts.ConfigDir),
+		holdCtx:    holdCtx,
+		holdCancel: holdCancel,
+		opts:       opts,
+		store:      store,
+		settings:   Settings{Listen: DefaultListen},
+		sysLogs:    logbuf.New(defaultLogLines, logger),
+		startTime:  time.Now(),
+		hostStats:  sysstat.New(opts.ConfigDir),
+		logger:     logger,
+		restartCh:  make(chan struct{}, 1),
+		updWake:    make(chan struct{}, 1),
+		audit:      audit.New(opts.ConfigDir),
 	}
 	if _, err := store.Load(settingsName, &a.settings); err != nil {
 		return nil, err
@@ -377,15 +383,22 @@ func (a *App) Run(parent context.Context) error {
 	go a.runUpdateCheck(ctx)
 	s := a.settingsSnapshot()
 	handler := a.Handler()
-	servers := []*http.Server{{Addr: s.Listen, Handler: handler, ReadHeaderTimeout: 10 * time.Second}}
+	servers := []*http.Server{{Addr: s.Listen, Handler: handler, ReadHeaderTimeout: 10 * time.Second, ConnContext: denyConnContext}}
 	errCh := make(chan error, 2)
+	httpLn, err := net.Listen("tcp", s.Listen)
+	if err != nil {
+		cancelModules()
+		a.stopModules()
+		a.closeLogs()
+		return err
+	}
 	go func() {
 		a.sysLogs.Add(logbuf.LevelInfo, "", "管理界面监听 "+s.Listen)
-		errCh <- servers[0].ListenAndServe()
+		errCh <- servers[0].Serve(&denyListener{Listener: httpLn, a: a})
 	}()
 	if s.HTTPSListen != "" && a.opts.Certs != nil {
 		tlsSrv := &http.Server{
-			Addr: s.HTTPSListen, Handler: handler, ReadHeaderTimeout: 10 * time.Second,
+			Addr: s.HTTPSListen, Handler: handler, ReadHeaderTimeout: 10 * time.Second, ConnContext: denyConnContext,
 			TLSConfig: &tls.Config{GetCertificate: a.opts.Certs.GetCertificate, MinVersion: tls.VersionTLS12},
 		}
 		servers = append(servers, tlsSrv)
@@ -397,7 +410,7 @@ func (a *App) Run(parent context.Context) error {
 			a.httpsReady.Store(true)
 			a.sysLogs.Add(logbuf.LevelInfo, "", "HTTPS 管理界面监听 "+s.HTTPSListen)
 			go func() {
-				if err := tlsSrv.ServeTLS(ln, "", ""); err != nil && !errors.Is(err, http.ErrServerClosed) {
+				if err := tlsSrv.ServeTLS(&denyListener{Listener: ln, a: a}, "", ""); err != nil && !errors.Is(err, http.ErrServerClosed) {
 					a.sysLogs.Add(logbuf.LevelError, "", "HTTPS 管理界面退出: "+err.Error())
 				}
 			}()
@@ -427,6 +440,7 @@ func (a *App) Run(parent context.Context) error {
 		restart = true
 	case err := <-errCh:
 		if !errors.Is(err, http.ErrServerClosed) {
+			a.holdCancel()
 			for _, srv := range servers[1:] {
 				_ = srv.Close()
 			}
@@ -436,6 +450,8 @@ func (a *App) Run(parent context.Context) error {
 			return err
 		}
 	}
+	// 先结束挂起的未授权连接，Shutdown 不必等它们超时
+	a.holdCancel()
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	for _, srv := range servers {

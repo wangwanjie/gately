@@ -9,6 +9,7 @@ Die Verwaltungsoberfläche steuert DNS, Zertifikate und Ports. Arbeiten Sie die 
 - [ ] Familienmitgliedern oder Kollegen, die nur etwas einsehen müssen, ein Nur-Lese-Konto anlegen, statt das Administratorpasswort weiterzugeben
 - [ ] Einen sicheren Einstiegspfad festlegen, sodass die Verwaltungsoberfläche nur über einen eigenen Pfad erreichbar ist
 - [ ] „Zugriff nur aus dem LAN“ aktivieren und für die Fernverwaltung ein VPN (etwa [Tailscale](/de/docs/modules/tunnels)) verwenden
+- [ ] Ist der Konsolenport aus dem Internet erreichbar, „Einstellungen → Zugriffskontrolle → Antwort bei unbefugtem Zugriff“ auf einfache 404-Seite, Verbindung schließen, keine Antwort oder eigene Seite stellen, damit unbefugte Besucher Gately nicht erkennen; per Portscan bleibt der Port auffindbar, vollständig verbergen lässt er sich nur per Firewall oder durch Entfernen der Portweiterleitung
 - [ ] HTTPS für die Verwaltungsoberfläche aktivieren, wenn Sie über nicht vertrauenswürdige Netzwerke zugreifen
 - [ ] Automatisierungsskripten und der [CLI / MCP](/de/docs/guide/cli-mcp) [API-Token](/de/docs/reference/api) mit minimalen Rechten und Ablaufdatum geben und das Administratorpasswort nicht weitergeben
 - [ ] Eine Verschlüsselungs-Passphrase für [Konfigurationssicherungen](/de/docs/modules/backup) setzen und geplante Sicherungen aktivieren

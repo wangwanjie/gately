@@ -159,6 +159,11 @@ export interface SystemSettings {
   forceHTTPS: boolean
   safePath: string
   lanOnly: boolean
+  // 未授权访问的响应方式：'' 默认、notfound、blank、close、drop、custom
+  denyMode: '' | 'notfound' | 'blank' | 'close' | 'drop' | 'custom'
+  // denyMode 为 custom 时返回的状态码与 HTML
+  denyStatus: number
+  denyPage: string
   // 经飞牛统一网关访问时，飞牛管理员自动登录
   gatewaySSO: boolean
   // 以统一网关方式运行（飞牛 fpk 包）时为 true，只读

@@ -102,7 +102,37 @@
     "trustProxyHelp": "Si la interfaz de administración está detrás de nginx, haproxy o el servicio web de Gately en este equipo, toma la dirección real del cliente de las cabeceras X-Real-IP / X-Forwarded-For que añaden. Se usa para el acceso solo LAN, el límite de inicios de sesión y el registro de auditoría. Solo se confía en cabeceras procedentes de direcciones de este equipo.",
     "trustedProxies": "Proxies de confianza adicionales",
     "trustedProxiesPlaceholder": "IP o CIDR, p. ej. 172.17.0.1",
-    "trustedProxiesHelp": "Direcciones de proxies fuera de este equipo, como la pasarela del puente de Docker u otro proxy inverso."
+    "trustedProxiesHelp": "Direcciones de proxies fuera de este equipo, como la pasarela del puente de Docker u otro proxy inverso.",
+    "deny": {
+      "label": "Respuesta no autorizada",
+      "modes": {
+        "default": "Predeterminada (página de aviso / 403)",
+        "notfound": "Página 404 simple",
+        "blank": "Página en blanco",
+        "close": "Cerrar la conexión",
+        "drop": "Sin respuesta (hasta agotar el tiempo)",
+        "custom": "Página personalizada"
+      },
+      "help": {
+        "default": "Las solicitudes que no pasan por la entrada de seguridad reciben una página de aviso con la marca Gately (404); las bloqueadas por el acceso solo LAN o procedentes de orígenes bloqueados reciben 403.",
+        "notfound": "Devuelve una página 404 genérica sin información del producto, como un servidor web corriente sin contenido.",
+        "blank": "Devuelve una página vacía con estado 200.",
+        "close": "Cierra la conexión sin enviar nada. Cuando un origen público queda bloqueado por el acceso solo LAN o por un bloqueo, la conexión se cierra justo después de aceptarla, así que el puerto HTTPS ni siquiera envía su certificado. Las solicitudes reenviadas por un proxy inverso reciben la página 404 simple, para que el proxy no muestre su propia página de error.",
+        "drop": "No responde nunca y el cliente espera hasta agotar el tiempo (cada conexión se retiene 2 minutos como máximo, hasta 256 a la vez; las demás se cierran). Cuando un origen público queda bloqueado por el acceso solo LAN o por un bloqueo, el puerto HTTPS tampoco envía su certificado. Las solicitudes reenviadas por un proxy inverso reciben la página 404 simple, para que el proxy no muestre su propia página de error.",
+        "custom": "Devuelve la página HTML y el código de estado de abajo, por ejemplo la página predeterminada de otro tipo de sitio web."
+      },
+      "status": "Código de estado",
+      "page": "Contenido de la página",
+      "pagePlaceholder": "Contenido HTML, hasta 64 KB",
+      "pageHelp": "La página se muestra en un sandbox del navegador: no se cargan scripts, formularios ni recursos externos (imágenes, hojas de estilo, archivos de fuentes). Incruste imágenes y fuentes como URL data: y ponga los estilos en una etiqueta style.",
+      "sample": "Usar ejemplo",
+      "sampleConfirm": "¿Reemplazar el contenido actual por la página de ejemplo?",
+      "preview": "Vista previa",
+      "previewTitle": "Vista previa (estado {code})",
+      "warnEntry": "Si se escribe mal la entrada de seguridad ya no aparece la página de aviso. Si olvida la entrada, vacíe safePath en gately.json, en el directorio de configuración, y reinicie Gately.",
+      "warnPort": "El puerto TCP sigue abierto y un escaneo de puertos puede encontrarlo. Para ocultarlo por completo, limite los orígenes con un cortafuegos o quite la redirección del puerto público.",
+      "warnNoTrigger": "No hay entrada de seguridad y el acceso solo LAN está desactivado, así que este ajuste solo se aplica a los orígenes bloqueados."
+    }
   },
   "network": {
     "title": "Red",

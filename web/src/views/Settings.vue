@@ -236,6 +236,37 @@
                 <el-select v-model="trustedProxies" multiple filterable allow-create default-first-option :reserve-keyword="false" :placeholder="t('settings.restrict.trustedProxiesPlaceholder')" class="w-480" />
                 <div class="help">{{ t('settings.restrict.trustedProxiesHelp') }}</div>
               </el-form-item>
+              <!-- 未授权访问（封禁、仅内网拦截、未通过安全入口）的响应方式，用于隐藏管理端口 -->
+              <el-form-item :label="t('settings.restrict.deny.label')">
+                <el-select v-model="denyModeSel" class="w-280" data-test="deny-mode">
+                  <el-option v-for="m in denyModes" :key="m.value" :value="m.value" :label="m.label" />
+                </el-select>
+                <div class="form-help">{{ denyModeHelp }}</div>
+                <div v-if="denyWarnings.length" class="deny-warns">
+                  <div v-for="w in denyWarnings" :key="w" class="deny-warn"><TriangleAlert :size="13" /><span>{{ w }}</span></div>
+                </div>
+              </el-form-item>
+              <template v-if="form.denyMode === 'custom'">
+                <el-form-item :label="t('settings.restrict.deny.status')">
+                  <el-select v-model="form.denyStatus" class="w-280" data-test="deny-status">
+                    <el-option v-for="c in denyStatuses" :key="c.value" :value="c.value" :label="c.label" />
+                  </el-select>
+                </el-form-item>
+                <el-form-item :label="t('settings.restrict.deny.page')">
+                  <!-- 输入框与大小栏放在同一容器，大小栏始终贴在输入框下方 -->
+                  <div class="w-480">
+                    <el-input v-model="form.denyPage" type="textarea" :rows="8" class="mono deny-page" spellcheck="false" :placeholder="t('settings.restrict.deny.pagePlaceholder')" data-test="deny-page" />
+                    <div class="deny-page-bar">
+                      <span :class="['deny-size', { over: denyPageBytes > denyPageMax }]">{{ formatKB(denyPageBytes) }} / {{ formatKB(denyPageMax) }}</span>
+                      <span class="deny-page-ops">
+                        <el-button size="small" link type="primary" @click="fillDenySample">{{ t('settings.restrict.deny.sample') }}</el-button>
+                        <el-button size="small" link type="primary" :icon="Eye" :disabled="!form.denyPage" @click="denyPreview = true">{{ t('settings.restrict.deny.preview') }}</el-button>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="form-help">{{ t('settings.restrict.deny.pageHelp') }}</div>
+                </el-form-item>
+              </template>
             </el-form>
           </div>
         </div>
@@ -466,6 +497,11 @@
 
     </el-tabs>
 
+    <!-- 自定义页面预览：iframe 不带任何 sandbox 许可，页面中的脚本、表单与外部资源都不会执行 -->
+    <el-dialog v-model="denyPreview" :title="t('settings.restrict.deny.previewTitle', { code: form?.denyStatus ?? 200 })" width="760px" class="deny-preview-dialog" append-to-body>
+      <iframe v-if="denyPreview" class="deny-preview" sandbox="" referrerpolicy="no-referrer" :srcdoc="denyPreviewDoc" :title="t('settings.restrict.deny.preview')" />
+    </el-dialog>
+
     <RestartOverlay ref="overlay" />
   </div>
 </template>
@@ -506,6 +542,7 @@ import {
   Smartphone,
   Sparkles,
   Stethoscope,
+  TriangleAlert,
   UploadCloud,
   UserRound,
 } from 'lucide-vue-next'
@@ -668,6 +705,104 @@ function resetSettings() {
     form.value = { ...JSON.parse(savedJSON.value), restartRequired: form.value?.restartRequired ?? false }
   }
 }
+
+// ---------- 未授权访问的响应方式 ----------
+// 与后端 deny.go 一致：自定义页面可选的状态码与大小上限（按 UTF-8 字节计）
+const denyPageMax = 64 * 1024
+const denyPreview = ref(false)
+const denyModes = computed(() =>
+  ['default', 'notfound', 'blank', 'close', 'drop', 'custom'].map((value) => ({ value, label: t(`settings.restrict.deny.modes.${value}`) })),
+)
+// 默认方式在配置中是空串，el-select 会把空串当作未选择而显示占位文字，界面上用 default 代替
+const denyModeSel = computed({
+  get: () => form.value?.denyMode || 'default',
+  set: (v: string) => {
+    if (form.value) {
+      form.value.denyMode = (v === 'default' ? '' : v) as SystemSettings['denyMode']
+    }
+  },
+})
+// 状态码说明用 HTTP 标准原因短语，不随界面语言变化
+const denyStatuses = [
+  [200, 'OK'],
+  [403, 'Forbidden'],
+  [404, 'Not Found'],
+  [410, 'Gone'],
+  [500, 'Internal Server Error'],
+  [502, 'Bad Gateway'],
+  [503, 'Service Unavailable'],
+].map(([value, reason]) => ({ value: value as number, label: `${value} ${reason}` }))
+const denyModeHelp = computed(() => t(`settings.restrict.deny.help.${form.value?.denyMode || 'default'}`))
+// 预览时加上与服务端相同的 CSP（deny.go 的 denyPageCSP，sandbox 由 iframe 属性提供），
+// 外部图片、样式表等不会加载，预览效果与访客所见一致，也不会让第三方得知管理员的地址；
+// meta 放在 doctype 之后，避免页面退回怪异模式
+const denyPreviewCSP = `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:; font-src data:; media-src data:; form-action 'none'; base-uri 'none'">`
+const denyPreviewDoc = computed(() => {
+  const page = form.value?.denyPage ?? ''
+  const m = /^\s*<!doctype[^>]*>/i.exec(page)
+  return m ? m[0] + denyPreviewCSP + page.slice(m[0].length) : denyPreviewCSP + page
+})
+const denyPageBytes = computed(() => new TextEncoder().encode(form.value?.denyPage ?? '').length)
+
+// denyWarnings 提示所选方式的边界：入口输错时不再有提示、端口本身仍然开放
+const denyWarnings = computed(() => {
+  const f = form.value
+  if (!f || !f.denyMode) {
+    return []
+  }
+  const out: string[] = []
+  if (f.safePath.trim()) {
+    out.push(t('settings.restrict.deny.warnEntry'))
+  }
+  if (f.denyMode === 'close' || f.denyMode === 'drop') {
+    out.push(t('settings.restrict.deny.warnPort'))
+  }
+  if (!f.safePath.trim() && !f.lanOnly) {
+    out.push(t('settings.restrict.deny.warnNoTrigger'))
+  }
+  return out
+})
+
+// formatKB 按 0.1 KB 向上取整，刚超出上限时不会显示成与上限相同的数值
+function formatKB(n: number) {
+  if (n < 1024) {
+    return `${n} B`
+  }
+  return `${(Math.ceil((n / 1024) * 10) / 10).toFixed(1).replace(/\.0$/, '')} KB`
+}
+
+async function fillDenySample() {
+  const f = form.value
+  if (!f) {
+    return
+  }
+  if (f.denyPage.trim()) {
+    try {
+      await ElMessageBox.confirm(t('settings.restrict.deny.sampleConfirm'), { type: 'warning' })
+    } catch {
+      return
+    }
+  }
+  f.denyPage = denySample
+}
+
+// 示例页面：仿照常见 Web 服务器的默认欢迎页，不含任何产品信息
+const denySample = `<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Welcome</title>
+<style>
+body { margin: 0; padding: 48px 24px; font-family: sans-serif; color: #333; }
+h1 { font-size: 28px; font-weight: normal; }
+</style>
+</head>
+<body>
+<h1>It works!</h1>
+<p>This is the default web page for this server.</p>
+</body>
+</html>
+`
 
 function randomEntry() {
   if (form.value) {
@@ -1223,6 +1358,59 @@ onMounted(async () => {
   padding-top: 6px;
   padding-bottom: 6px;
   line-height: 20px;
+}
+.deny-warns {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  margin-top: 6px;
+}
+.deny-warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--el-color-warning-dark-2, var(--el-color-warning));
+}
+.deny-warn svg {
+  flex: none;
+  margin-top: 2px;
+}
+.deny-page :deep(textarea) {
+  font-size: 12px;
+  line-height: 1.5;
+}
+.deny-page-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 4px;
+}
+.deny-page-ops {
+  display: inline-flex;
+  gap: 4px;
+}
+.deny-page-ops .el-button + .el-button {
+  margin-left: 0;
+}
+.deny-size {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.deny-size.over {
+  color: var(--el-color-danger);
+  font-weight: 600;
+}
+.deny-preview {
+  display: block;
+  width: 100%;
+  height: min(60vh, 520px);
+  border: 1px solid var(--g-border);
+  border-radius: 8px;
+  background: #fff;
 }
 .w-480 {
   width: 480px;

@@ -102,7 +102,37 @@
     "trustProxyHelp": "Liegt die Verwaltungsoberfläche hinter nginx, haproxy oder dem Gately-Webdienst auf diesem Host, wird die echte Client-Adresse aus deren X-Real-IP- / X-Forwarded-For-Headern übernommen – für den Nur-LAN-Zugriff, die Anmeldebegrenzung und das Audit-Protokoll. Header werden nur von Adressen dieses Hosts akzeptiert.",
     "trustedProxies": "Weitere vertrauenswürdige Proxys",
     "trustedProxiesPlaceholder": "IP oder CIDR, z. B. 172.17.0.1",
-    "trustedProxiesHelp": "Proxy-Adressen außerhalb dieses Hosts, etwa das Docker-Bridge-Gateway oder ein weiterer Reverse-Proxy."
+    "trustedProxiesHelp": "Proxy-Adressen außerhalb dieses Hosts, etwa das Docker-Bridge-Gateway oder ein weiterer Reverse-Proxy.",
+    "deny": {
+      "label": "Antwort bei unbefugtem Zugriff",
+      "modes": {
+        "default": "Standard (Hinweisseite / 403)",
+        "notfound": "Einfache 404-Seite",
+        "blank": "Leere Seite",
+        "close": "Verbindung schließen",
+        "drop": "Keine Antwort (bis zum Timeout)",
+        "custom": "Eigene Seite"
+      },
+      "help": {
+        "default": "Anfragen ohne Sicherheitseinstieg erhalten eine Hinweisseite mit Gately-Branding (404); durch Nur-LAN-Zugriff blockierte Anfragen und gesperrte Quellen erhalten 403.",
+        "notfound": "Liefert eine generische 404-Seite ohne Produktinformationen, wie ein gewöhnlicher Webserver ohne Inhalt.",
+        "blank": "Liefert eine leere Seite mit Status 200.",
+        "close": "Schließt die Verbindung, ohne etwas zu senden. Wird eine öffentliche Quelle durch Nur-LAN-Zugriff oder eine Sperre blockiert, wird die Verbindung direkt nach dem Annehmen geschlossen – der HTTPS-Port sendet nicht einmal sein Zertifikat. Über einen Reverse-Proxy weitergeleitete Anfragen erhalten stattdessen die einfache 404-Seite, damit der Proxy keine eigene Fehlerseite zeigt.",
+        "drop": "Antwortet nie; der Client wartet bis zum Timeout (jede Verbindung wird höchstens 2 Minuten gehalten, maximal 256 gleichzeitig, weitere werden geschlossen). Wird eine öffentliche Quelle durch Nur-LAN-Zugriff oder eine Sperre blockiert, sendet der HTTPS-Port ebenfalls kein Zertifikat. Über einen Reverse-Proxy weitergeleitete Anfragen erhalten stattdessen die einfache 404-Seite, damit der Proxy keine eigene Fehlerseite zeigt.",
+        "custom": "Liefert die unten eingegebene HTML-Seite mit dem gewählten Statuscode, zum Beispiel die Standardseite einer anderen Art von Website."
+      },
+      "status": "Statuscode",
+      "page": "Seiteninhalt",
+      "pagePlaceholder": "HTML-Inhalt, höchstens 64 KB",
+      "pageHelp": "Die Seite wird in einer Browser-Sandbox angezeigt: Skripte, Formulare und externe Ressourcen (Bilder, Stylesheets, Schriftdateien) werden nicht geladen. Bilder und Schriften als data:-URLs einbetten, Styles in ein style-Tag schreiben.",
+      "sample": "Beispiel einfügen",
+      "sampleConfirm": "Aktuellen Inhalt durch die Beispielseite ersetzen?",
+      "preview": "Vorschau",
+      "previewTitle": "Seitenvorschau (Status {code})",
+      "warnEntry": "Bei falsch eingegebenem Sicherheitseinstieg erscheint keine Hinweisseite mehr. Falls Sie den Einstieg vergessen, leeren Sie safePath in gately.json im Konfigurationsverzeichnis und starten Gately neu.",
+      "warnPort": "Der TCP-Port bleibt offen und ist per Portscan weiterhin auffindbar. Um ihn vollständig zu verbergen, beschränken Sie die Quellen per Firewall oder entfernen die öffentliche Portweiterleitung.",
+      "warnNoTrigger": "Es ist kein Sicherheitseinstieg gesetzt und Nur-LAN-Zugriff ist aus – diese Einstellung gilt daher nur für gesperrte Quellen."
+    }
   },
   "network": {
     "title": "Netzwerk",

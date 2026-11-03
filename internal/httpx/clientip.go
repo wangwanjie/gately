@@ -63,6 +63,12 @@ func PeerIP(r *http.Request) string {
 	return strings.Trim(host, "[]")
 }
 
+// TrustsPeer 判断是否会采信该 TCP 对端传来的客户端地址请求头，即对端是否为可信代理。
+func TrustsPeer(ip string) bool {
+	t := trust.Load()
+	return t.enable && trustedProxy(ip, t)
+}
+
 // ClientIP 返回请求的客户端地址。对端为可信代理时，从 X-Forwarded-For（自右向左跳过可信代理）与 X-Real-IP 中取得真实地址；
 // 否则返回对端地址。
 //

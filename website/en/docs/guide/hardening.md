@@ -9,6 +9,7 @@ The admin UI controls DNS, certificates and ports. Work through the following ch
 - [ ] When family members or colleagues only need to view things, create read-only accounts for them instead of sharing the administrator password
 - [ ] Set a secure entrance path so the admin UI is reachable only through a custom path
 - [ ] Enable "LAN-only access", and use a VPN (such as [Tailscale](/en/docs/modules/tunnels)) when you need remote administration
+- [ ] If the console port is reachable from the internet, set "Settings → Access Control → Unauthorized response" to a plain 404, closing the connection, no response or a custom page so unauthorized visitors cannot tell it is Gately; port scans can still find the port, so hide it completely with a firewall or by removing the port mapping
 - [ ] Enable admin UI HTTPS when accessing it over untrusted networks
 - [ ] Give automation scripts and the [CLI / MCP](/en/docs/guide/cli-mcp) least-privilege [API tokens](/en/docs/reference/api) with an expiry time, and avoid sharing the administrator password
 - [ ] Set an encryption passphrase for [configuration backups](/en/docs/modules/backup) and enable scheduled backups

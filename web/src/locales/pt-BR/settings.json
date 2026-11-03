@@ -102,7 +102,37 @@
     "trustProxyHelp": "Quando a interface de administração fica atrás de nginx, haproxy ou do serviço Web do Gately neste host, o endereço real do cliente é lido dos cabeçalhos X-Real-IP / X-Forwarded-For que eles definem. Usado no acesso somente LAN, no limite de logins e no log de auditoria. Só são aceitos cabeçalhos vindos de endereços deste host.",
     "trustedProxies": "Proxies confiáveis adicionais",
     "trustedProxiesPlaceholder": "IP ou CIDR, ex.: 172.17.0.1",
-    "trustedProxiesHelp": "Endereços de proxy fora deste host, como o gateway da bridge do Docker ou outro proxy reverso."
+    "trustedProxiesHelp": "Endereços de proxy fora deste host, como o gateway da bridge do Docker ou outro proxy reverso.",
+    "deny": {
+      "label": "Resposta não autorizada",
+      "modes": {
+        "default": "Padrão (página de aviso / 403)",
+        "notfound": "Página 404 simples",
+        "blank": "Página em branco",
+        "close": "Fechar a conexão",
+        "drop": "Sem resposta (até esgotar o tempo)",
+        "custom": "Página personalizada"
+      },
+      "help": {
+        "default": "Solicitações que não passam pela entrada de segurança recebem uma página de aviso com a marca Gately (404); as bloqueadas pelo acesso somente LAN ou vindas de origens banidas recebem 403.",
+        "notfound": "Retorna uma página 404 genérica sem informações do produto, como um servidor web comum sem conteúdo.",
+        "blank": "Retorna uma página vazia com status 200.",
+        "close": "Fecha a conexão sem enviar nada. Quando uma origem pública é bloqueada pelo acesso somente LAN ou por banimento, a conexão é fechada logo após ser aceita, e a porta HTTPS nem chega a enviar o certificado. Solicitações encaminhadas por um proxy reverso recebem a página 404 simples, para que o proxy não mostre a própria página de erro.",
+        "drop": "Nunca responde; o cliente espera até esgotar o tempo (cada conexão fica retida por no máximo 2 minutos, até 256 ao mesmo tempo; as demais são fechadas). Quando uma origem pública é bloqueada pelo acesso somente LAN ou por banimento, a porta HTTPS também não envia o certificado. Solicitações encaminhadas por um proxy reverso recebem a página 404 simples, para que o proxy não mostre a própria página de erro.",
+        "custom": "Retorna a página HTML e o código de status abaixo, por exemplo a página padrão de outro tipo de site."
+      },
+      "status": "Código de status",
+      "page": "Conteúdo da página",
+      "pagePlaceholder": "Conteúdo HTML, até 64 KB",
+      "pageHelp": "A página é exibida em um sandbox do navegador: scripts, formulários e recursos externos (imagens, folhas de estilo, arquivos de fonte) não carregam. Incorpore imagens e fontes como URLs data: e coloque os estilos em uma tag style.",
+      "sample": "Usar exemplo",
+      "sampleConfirm": "Substituir o conteúdo atual pela página de exemplo?",
+      "preview": "Pré-visualizar",
+      "previewTitle": "Pré-visualização (status {code})",
+      "warnEntry": "Uma entrada de segurança digitada errado não mostra mais a página de aviso. Se esquecer a entrada, limpe safePath em gately.json no diretório de configuração e reinicie o Gately.",
+      "warnPort": "A porta TCP continua aberta e uma varredura de portas ainda a encontra. Para ocultá-la por completo, restrinja as origens com um firewall ou remova o redirecionamento da porta pública.",
+      "warnNoTrigger": "Nenhuma entrada de segurança está definida e o acesso somente LAN está desativado, então esta configuração só vale para origens banidas."
+    }
   },
   "network": {
     "title": "Rede",
