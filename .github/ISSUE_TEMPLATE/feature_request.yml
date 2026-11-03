@@ -1,0 +1,68 @@
+name: Feature request / 功能建议
+description: Suggest a new feature or an improvement / 建议新功能或改进
+title: "[Feature] "
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        One feature per issue; split unrelated ideas into separate issues. Check the [roadmap](https://github.com/wangwanjie/gately/blob/main/docs/en/ROADMAP.md) first.
+        每个 issue 只提一个功能，互不相关的想法请分开提。提交前请先看[路线图](https://github.com/wangwanjie/gately/blob/main/docs/ROADMAP.md)。
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you submit / 提交前确认
+      options:
+        - label: I searched existing issues and found no duplicate. / 已搜索现有 issue，没有重复。
+          required: true
+        - label: I checked the latest release and it does not already do this. / 已确认最新版本还没有这个功能。
+          required: true
+  - type: dropdown
+    id: module
+    attributes:
+      label: Related module / 相关模块
+      multiple: true
+      options:
+        - Web services, reverse proxy / Web 服务、反向代理
+        - Port forwarding / 端口转发
+        - Protocol sniffing / 协议分流
+        - Certificates / 证书
+        - Dynamic DNS
+        - STUN
+        - frp / Tailscale / Cloudflare Tunnel / NetBird
+        - Intrusion prevention, WAF / 入侵防护、WAF
+        - File services (WebDAV / SMB / FTP / File Browser) / 文件服务
+        - Authentication, OIDC / 认证、OIDC
+        - Docker, Web terminal / Docker、Web 终端
+        - Topology, monitoring, logs / 拓扑、监控、日志
+        - Lucky import / Lucky 导入
+        - Admin UI, settings / 管理界面、设置
+        - New module / 新模块
+        - Other / 其他
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Use case / 使用场景
+      description: What are you trying to do, and what gets in the way today? / 你想做什么，现在卡在哪里？
+      placeholder: "I expose Jellyfin through a site and want ... but currently I have to ..."
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution / 期望的做法
+      description: How you would like it to work, ideally from the admin UI's point of view. / 你希望它怎么工作，最好从管理界面的操作角度描述。
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Current workaround / 目前的替代做法
+      description: What you do now, or how other tools (nginx, Caddy, etc.) handle it. / 现在怎么绕过，或其他工具（nginx、Caddy 等）怎么做。
+  - type: textarea
+    id: extra
+    attributes:
+      label: Other context / 其他信息
+      description: Screenshots, mockups, links. / 截图、草图、链接。

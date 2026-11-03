@@ -1,21 +1,108 @@
 name: Bug report / 问题反馈
-description: Report a problem with Gately / 反馈 Gately 使用中遇到的问题
+description: Something in Gately is broken or behaves wrongly / Gately 出现错误或行为不符合预期
+title: "[Bug] "
 labels: [bug]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        **Usage questions** (how to configure, which option to use) go to the [Telegram group](https://t.me/gately_chat) for a faster answer. **Security vulnerabilities** go to [private reporting](https://github.com/wangwanjie/gately/security/advisories/new).
+        **使用问题**（怎么配置、该用哪个选项）请到 [Telegram 群](https://t.me/gately_chat)，回复更快。**安全漏洞**请走[私密报告](https://github.com/wangwanjie/gately/security/advisories/new)。
+
+        One problem per issue. / 每个 issue 只写一个问题。
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you submit / 提交前确认
+      options:
+        - label: I searched existing issues and found no duplicate. / 已搜索现有 issue，没有重复。
+          required: true
+        - label: The problem still happens on the latest release. / 最新版本上问题仍然存在。
+          required: true
+  - type: input
+    id: version
+    attributes:
+      label: Gately version / Gately 版本
+      description: Shown on the About page in the admin UI. / 见管理界面的「关于」页面。
+      placeholder: v0.6.4
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: Install method / 安装方式
+      options:
+        - Docker
+        - fnOS package / 飞牛 fpk
+        - OpenWrt / iStoreOS (ipk / apk / LuCI)
+        - Linux binary / Linux 二进制
+        - Windows
+        - macOS
+        - Custom build (build.gately.cn) / 在线构建器定制版
+        - Other / 其他
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: System and architecture / 系统与架构
+      placeholder: "Debian 12 amd64 / fnOS 0.9 / ImmortalWrt 24.10 aarch64 / Docker host network"
+    validations:
+      required: true
+  - type: dropdown
+    id: module
+    attributes:
+      label: Affected module / 涉及模块
+      multiple: true
+      options:
+        - Web services, reverse proxy / Web 服务、反向代理
+        - Port forwarding / 端口转发
+        - Protocol sniffing / 协议分流
+        - Certificates / 证书
+        - Dynamic DNS
+        - STUN
+        - frp / Tailscale / Cloudflare Tunnel / NetBird
+        - Intrusion prevention, WAF / 入侵防护、WAF
+        - File services (WebDAV / SMB / FTP / File Browser) / 文件服务
+        - Authentication, OIDC / 认证、OIDC
+        - Docker, Web terminal / Docker、Web 终端
+        - Topology, monitoring, logs / 拓扑、监控、日志
+        - Lucky import / Lucky 导入
+        - Admin UI, settings / 管理界面、设置
+        - Other / 其他
+    validations:
+      required: true
   - type: textarea
     id: what
     attributes:
       label: What happened? / 发生了什么？
-      description: What you did, what you expected, and what you saw instead. / 你做了什么、期望什么、实际看到什么。
+      description: Describe what you saw. Paste error messages as text. / 描述实际现象，报错请贴文字。
     validations:
       required: true
-  - type: input
-    id: version
+  - type: textarea
+    id: steps
     attributes:
-      label: Version and install method / 版本与安装方式
-      placeholder: "v0.1.0, Docker (host network) / binary on OpenWrt"
+      label: Steps to reproduce / 复现步骤
+      description: Exact steps from a clean state. Include relevant config (mask domains, IPs and secrets). / 从头开始的具体步骤，附上相关配置（域名、IP、密钥请打码）。
+      placeholder: |
+        1. Add a web service on port 443 ...
+        2. Add a site with domain a.example.com → http://192.168.1.10:8080
+        3. Open https://a.example.com
+        4. See 502
     validations:
       required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior / 期望结果
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / 日志
+      description: Relevant lines from the module's log page or `docker logs gately`. / 对应模块日志页或 `docker logs gately` 中的相关行。
+      render: text
   - type: textarea
     id: diagnostics
     attributes:
@@ -24,3 +111,8 @@ body:
         Settings → Diagnostics, then drag the zip here. It is generated locally, contains no passwords, tokens, domains or real IP addresses, and you can preview it before downloading. Details: [DIAGNOSTICS.md](https://github.com/wangwanjie/gately/blob/main/docs/en/DIAGNOSTICS.md)
         设置 → 诊断，然后把 zip 拖到这里。诊断包在本机生成，不含密码、令牌、域名和真实 IP，下载前可预览。详见 [DIAGNOSTICS.md](https://github.com/wangwanjie/gately/blob/main/docs/DIAGNOSTICS.md)
       placeholder: Drag the zip file here / 把 zip 文件拖到这里
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots and other context / 截图与其他信息
+      description: Network setup (NAT, CDN, upstream proxy), browser, screenshots. / 网络环境（NAT、CDN、前置代理）、浏览器、截图等。

@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Usage questions / 使用问题
+    url: https://t.me/gately_chat
+    about: How to configure something, which option to use. Ask in the Telegram group for a faster answer. / 怎么配置、该用哪个选项，到 Telegram 群提问回复更快。
+  - name: Security vulnerability / 安全漏洞
+    url: https://github.com/wangwanjie/gately/security/advisories/new
+    about: Report privately; do not open a public issue. / 请私密报告，不要公开提 issue。
+  - name: Documentation / 文档
+    url: https://gately.cn
+    about: Guides, migration from Lucky, diagnostics. / 使用说明、从 Lucky 迁移、诊断包说明。
