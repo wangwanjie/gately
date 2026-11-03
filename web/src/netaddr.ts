@@ -22,3 +22,22 @@ export function listensBeyondLocal(addr: string): boolean {
   }
   return true
 }
+
+// maskProxyPassword 把代理地址 “协议://用户名:密码@主机:端口” 中的密码换成 ***，没有密码时原样返回。
+// 代理地址不带路径，按最后一个 @ 划分用户信息，密码里含未编码的 @、/、: 时也能整体隐藏
+export function maskProxyPassword(p: string): string {
+  const m = /^([a-z0-9+.-]+:\/\/)(.*)$/i.exec(p)
+  if (!m) {
+    return p
+  }
+  const rest = m[2]
+  const at = rest.lastIndexOf('@')
+  if (at < 0) {
+    return p
+  }
+  const colon = rest.indexOf(':')
+  if (colon < 0 || colon > at) {
+    return p
+  }
+  return `${m[1]}${rest.slice(0, colon)}:***${rest.slice(at)}`
+}
