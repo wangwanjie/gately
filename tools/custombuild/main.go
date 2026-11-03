@@ -5,7 +5,7 @@
 // 用法（在仓库根目录执行）：
 //
 //	go run ./tools/custombuild resolve -modules ddns,frp,guard -lang cjk-en -targets linux-arm64
-//	go run ./tools/custombuild build -version v0.7.0 -modules ddns,frp -lang zh -targets linux-arm64,fnos-arm -out dist
+//	go run ./tools/custombuild build -version v0.6.4 -modules ddns,frp -lang zh -targets linux-arm64,fnos-arm -out dist
 //
 // -modules 为要包含的可选模块（逗号分隔，all 表示全部，留空表示只有核心模块），核心模块总是包含。
 // resolve 输出一行 JSON，字段见 resolved；build 的产物见 build.go。
@@ -39,13 +39,15 @@ type manifest struct {
 	Targets []target `json:"targets"`
 }
 
-// target 是一个构建目标：kind 为 tar（二进制压缩包）、fpk（飞牛安装包）或 openwrt（ipk 与 apk）。
+// target 是一个构建目标：kind 为 tar（二进制压缩包）、fpk（飞牛安装包）、openwrt（ipk 与 apk）
+// 或 docker（多架构镜像，Platforms 为 buildx 的 --platform）。
 type target struct {
-	ID       string `json:"id"`
-	Kind     string `json:"kind"`
-	GOOS     string `json:"goos"`
-	GOARCH   string `json:"goarch"`
-	Platform string `json:"platform,omitempty"`
+	ID        string `json:"id"`
+	Kind      string `json:"kind"`
+	GOOS      string `json:"goos"`
+	GOARCH    string `json:"goarch,omitempty"`
+	Platform  string `json:"platform,omitempty"`
+	Platforms string `json:"platforms,omitempty"`
 }
 
 // resolved 是解析结果。
@@ -64,6 +66,9 @@ type resolved struct {
 	Profile string `json:"profile"`
 	// Targets 为要构建的目标，按传入顺序
 	Targets []target `json:"targets"`
+	// DockerArgs 为用仓库根目录 Dockerfile 构建定制镜像时的 --build-arg：
+	// 没有 Docker 管理模块时不装 docker-cli，没有入侵防护时不装 nftables
+	DockerArgs []string `json:"dockerArgs"`
 }
 
 func main() {
@@ -77,7 +82,7 @@ func main() {
 	mods := fs.String("modules", "", "要包含的可选模块，逗号分隔；all 表示全部，留空表示只有核心模块")
 	lang := fs.String("lang", "all", "语言档位：zh / cjk-en / all")
 	targets := fs.String("targets", "", "构建目标 ID，逗号分隔，见 modules.json 的 targets")
-	version := fs.String("version", "", "build：版本号，例如 v0.7.0")
+	version := fs.String("version", "", "build：版本号，例如 v0.6.4")
 	out := fs.String("out", "dist", "build：产物目录")
 	skipWeb := fs.Bool("skip-web", false, "build：跳过前端构建（web/dist 已按同一语言档位构建过）")
 	_ = fs.Parse(os.Args[2:])
@@ -181,6 +186,13 @@ func resolve(m manifest, mods, lang, targets string) (resolved, error) {
 		return resolved{}, errors.New("未知的语言档位: " + lang)
 	}
 	r.Tags = strings.Join(tags, ",")
+	flag := func(id string) string {
+		if want[id] {
+			return "1"
+		}
+		return "0"
+	}
+	r.DockerArgs = []string{"GATELY_TAGS=" + r.Tags, "GATELY_LOCALES=" + r.Locales, "WITH_DOCKER_CLI=" + flag("docker"), "WITH_NFTABLES=" + flag("guard")}
 	for _, id := range strings.Split(targets, ",") {
 		id = strings.TrimSpace(id)
 		if id == "" || slices.ContainsFunc(r.Targets, func(t target) bool { return t.ID == id }) {

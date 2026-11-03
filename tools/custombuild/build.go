@@ -17,12 +17,25 @@ import (
 //   - fpk：调用 deploy/fnos/build.sh（需要 fnpack），输出 gately_<版本>_<profile>_<目标>.fpk
 //   - openwrt：只生成裸二进制 out/bin/<目标>/gately，ipk / apk 由调用方在带 apk-tools 的 Alpine 环境中用
 //     deploy/openwrt/build.sh 打包（与发布流程相同），打包后按同样的规则命名
+//   - docker：不在这里构建，由调用方用仓库根目录的 Dockerfile 加 resolve 输出的 dockerArgs 执行 docker buildx
 func build(r resolved, version, out string, skipWeb bool) error {
 	if len(r.Targets) == 0 {
 		return fmt.Errorf("没有指定构建目标")
 	}
 	if err := os.MkdirAll(filepath.Join(out, "bin"), 0o755); err != nil {
 		return err
+	}
+	// 镜像由 Dockerfile 自己构建前端与二进制，这里跳过
+	var bins []target
+	for _, t := range r.Targets {
+		if t.Kind == "docker" {
+			fmt.Println("跳过 docker 目标：请用 Dockerfile 与 resolve 输出的 dockerArgs 构建镜像")
+			continue
+		}
+		bins = append(bins, t)
+	}
+	if len(bins) == 0 {
+		return nil
 	}
 	if !skipWeb {
 		fmt.Printf("构建前端，语言 %s\n", r.Locales)
@@ -39,7 +52,7 @@ func build(r resolved, version, out string, skipWeb bool) error {
 	}
 	ldflags := fmt.Sprintf("-s -w -X github.com/wangwanjie/gately/internal/version.Version=%s -X github.com/wangwanjie/gately/internal/version.Commit=%s -X github.com/wangwanjie/gately/internal/version.BuildDate=%s",
 		version, commit, time.Now().UTC().Format(time.RFC3339))
-	for _, t := range r.Targets {
+	for _, t := range bins {
 		name := fmt.Sprintf("gately_%s_%s_%s", version, r.Profile, t.ID)
 		exe := "gately"
 		if t.GOOS == "windows" {

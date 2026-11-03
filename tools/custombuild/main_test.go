@@ -53,6 +53,20 @@ func TestResolve(t *testing.T) {
 		t.Fatalf("完整构建不应带 tag: %s", full.Tags)
 	}
 
+	// 定制镜像：没有 Docker 管理与入侵防护时不装 docker-cli 与 nftables
+	img, _ := resolve(m, "frp", "cjk-en", "docker")
+	if img.Targets[0].Kind != "docker" || img.Targets[0].Platforms == "" {
+		t.Fatalf("docker 目标不对: %+v", img.Targets)
+	}
+	want := []string{"GATELY_TAGS=" + img.Tags, "GATELY_LOCALES=zh-CN,zh-TW,en", "WITH_DOCKER_CLI=0", "WITH_NFTABLES=0"}
+	if !slices.Equal(img.DockerArgs, want) {
+		t.Fatalf("dockerArgs 不对: %v", img.DockerArgs)
+	}
+	img, _ = resolve(m, "docker,guard", "all", "docker")
+	if !slices.Contains(img.DockerArgs, "WITH_DOCKER_CLI=1") || !slices.Contains(img.DockerArgs, "WITH_NFTABLES=1") {
+		t.Fatalf("选了 Docker 管理与入侵防护时应安装对应工具: %v", img.DockerArgs)
+	}
+
 	for _, bad := range [][3]string{{"nope", "all", ""}, {"", "jp", ""}, {"", "all", "linux-sparc"}} {
 		if _, err := resolve(m, bad[0], bad[1], bad[2]); err == nil {
 			t.Fatalf("非法选项应报错: %v", bad)

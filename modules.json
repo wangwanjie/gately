@@ -1,5 +1,5 @@
 {
-  "$comment": "Gately 定制构建清单：可选功能模块、语言档位与构建目标。build.gately.cn 按各版本 tag 下的这份文件生成选项；internal/modules/registry 的测试校验它与代码一致。baseSizeKB 为 linux/arm64 完整版的体积，sizeKB 为 linux/arm64 去掉该模块后的体积减少量（估算）。",
+  "$comment": "Gately 定制构建清单：可选功能模块、语言档位与构建目标。docker 目标为多架构镜像，用仓库根目录的 Dockerfile 加 custombuild 输出的 dockerArgs 构建。build.gately.cn 按各版本 tag 下的这份文件生成选项；internal/modules/registry 的测试校验它与代码一致。baseSizeKB 为 linux/arm64 完整版的体积，sizeKB 为 linux/arm64 去掉该模块后的体积减少量（估算）。",
   "schema": 1,
   "baseSizeKB": 34432,
   "groups": [
@@ -557,6 +557,12 @@
     }
   ],
   "targets": [
+    {
+      "id": "docker",
+      "kind": "docker",
+      "goos": "linux",
+      "platforms": "linux/amd64,linux/arm64,linux/arm/v7"
+    },
     {
       "id": "linux-amd64",
       "kind": "tar",
