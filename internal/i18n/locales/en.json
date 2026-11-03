@@ -1797,6 +1797,7 @@
   "查询操作审计日志": "Query the audit log",
   "查询网关外网地址失败，按单层 NAT 处理: %v": "Failed to query the gateway's external address, treating it as a single NAT: %v",
   "校验终端两步验证码": "Verify a terminal two-factor code",
+  "样式中的 {host}、{path} 占位符": "Placeholders {host} and {path} in styles",
   "根目录已存在": "Root directory already exists",
   "格式错误": "Invalid format",
   "检查 %s 更新失败: %v": "Failed to check for %s updates: %v",

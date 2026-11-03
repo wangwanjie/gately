@@ -118,11 +118,46 @@ func loadsResource(v string) bool {
 	return c != "" && !strings.HasPrefix(c, "data:") && !strings.HasPrefix(c, "#")
 }
 
+// cssEscape 匹配 CSS 的反斜杠转义：1~6 位十六进制（可带一个空白结尾）或单个其他字符。
+var cssEscape = regexp.MustCompile(`\\([0-9A-Fa-f]{1,6}[ \t\r\n\f]?|[^0-9A-Fa-f\r\n\f])`)
+
+// cssComment 匹配 CSS 注释。
+var cssComment = regexp.MustCompile(`(?s)/\*.*?(\*/|$)`)
+
+// normalizeCSS 去掉注释并解码反斜杠转义，用于识别 "\65xpression("、"expr/**/ession(" 一类的绕过写法。
+func normalizeCSS(css string) string {
+	css = cssComment.ReplaceAllString(css, "")
+	return cssEscape.ReplaceAllStringFunc(css, func(m string) string {
+		v := strings.TrimRight(m[1:], " \t\r\n\f")
+		if n, err := strconv.ParseUint(v, 16, 32); err == nil {
+			if n == 0 || n > 0x10ffff {
+				return "\uFFFD"
+			}
+			return string(rune(n))
+		}
+		return v
+	})
+}
+
+// visitorPlaceholders 为内容由访客请求决定的占位符。它们只做了 HTML 转义，放进样式里时访客可以借 ; { } 等写入任意样式，
+// 所以样式（<style> 与 style 属性）中的这类占位符会被去掉。
+var visitorPlaceholders = []string{"{host}", "{path}"}
+
+// stripVisitorPlaceholders 去掉样式文本中由访客决定的占位符，返回去掉后的文本与是否有改动。
+func stripVisitorPlaceholders(css string) (string, bool) {
+	out := css
+	for _, p := range visitorPlaceholders {
+		out = strings.ReplaceAll(out, p, "")
+	}
+	return out, out != css
+}
+
 // scanCSS 检查样式文本：含危险写法时返回 false；不会加载的资源引用（url(…) 与 @import）记为提示。
 func (s *sanitizer) scanCSS(css string) bool {
 	c := compact(css)
+	nc := compact(normalizeCSS(css))
 	for _, d := range cssDanger {
-		if strings.Contains(c, d) {
+		if strings.Contains(c, d) || strings.Contains(nc, d) {
 			return false
 		}
 	}
@@ -173,6 +208,11 @@ func (s *sanitizer) cleanAttrs(n *xhtml.Node) {
 		case key == "style" && !s.scanCSS(a.Val):
 			s.remove("含有危险写法的样式")
 			continue
+		case key == "style":
+			if v, changed := stripVisitorPlaceholders(a.Val); changed {
+				a.Val = v
+				s.remove("样式中的 {host}、{path} 占位符")
+			}
 		}
 		c := compact(a.Val)
 		bad := false
@@ -311,6 +351,15 @@ func (s *sanitizer) cleanElement(parent, c *xhtml.Node) {
 			parent.RemoveChild(c)
 			return
 		}
+		for t := c.FirstChild; t != nil; t = t.NextSibling {
+			if t.Type != xhtml.TextNode {
+				continue
+			}
+			if v, changed := stripVisitorPlaceholders(t.Data); changed {
+				t.Data = v
+				s.remove("样式中的 {host}、{path} 占位符")
+			}
+		}
 	case "title":
 		if s.title == "" && c.FirstChild != nil {
 			s.title = strings.TrimSpace(c.FirstChild.Data)
@@ -398,8 +447,15 @@ func shownHost(h string) string {
 
 // shownPath 让路径以单个 / 开头：请求行写成 //evil.example/x 时路径也以 // 开头，
 // 页面把 {path} 写进链接（如 href="{path}"）会变成指向其他网站的协议相对地址。
+// 浏览器解析地址时把 \ 当作 /、并忽略 TAB 与换行，所以先去掉控制字符，开头的 \ 也按斜杠去掉。
 func shownPath(p string) string {
-	return "/" + strings.TrimLeft(p, "/")
+	p = strings.Map(func(r rune) rune {
+		if r < ' ' || r == 0x7f {
+			return -1
+		}
+		return r
+	}, p)
+	return "/" + strings.TrimLeft(p, "/\\")
 }
 
 // RenderCustom 用本次错误的信息替换自定义页面中的占位符，返回要输出的 HTML。page 须为 SanitizeCustom 的结果。

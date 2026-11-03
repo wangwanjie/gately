@@ -1797,6 +1797,7 @@
   "查询操作审计日志": "Audit-Protokoll abfragen",
   "查询网关外网地址失败，按单层 NAT 处理: %v": "Externe Adresse des Gateways konnte nicht abgefragt werden, wird als einfaches NAT behandelt: %v",
   "校验终端两步验证码": "Code der Zwei-Faktor-Authentifizierung des Terminals prüfen",
+  "样式中的 {host}、{path} 占位符": "Platzhalter {host} und {path} in Stilen",
   "根目录已存在": "Stammverzeichnis existiert bereits",
   "格式错误": "Format fehlerhaft",
   "检查 %s 更新失败: %v": "Update-Prüfung für %s fehlgeschlagen: %v",

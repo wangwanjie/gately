@@ -254,7 +254,7 @@ func TestShownHostPath(t *testing.T) {
 			t.Fatalf("host %q => %q", in, got)
 		}
 	}
-	for in, want := range map[string]string{"//evil.example/x": "/evil.example/x", "/a/b": "/a/b", "": "/", "///": "/"} {
+	for in, want := range map[string]string{"//evil.example/x": "/evil.example/x", "/a/b": "/a/b", "": "/", "///": "/", `/\evil.example`: "/evil.example", "/\t/evil.example": "/evil.example", "/\r\n//evil.example": "/evil.example", `/\/\evil.example`: "/evil.example", `/a\b`: `/a\b`} {
 		if got := shownPath(in); got != want {
 			t.Fatalf("path %q => %q", in, got)
 		}
@@ -297,4 +297,49 @@ func FuzzSanitizeCustom(f *testing.F) {
 			t.Fatalf("再次清理后仍有危险内容 %v", bad)
 		}
 	})
+}
+
+// 用 CSS 转义或注释拆开的危险写法同样被识别。
+func TestSanitizeCustomCSSEscapes(t *testing.T) {
+	for _, css := range []string{
+		`width:\65xpression(alert(1))`,
+		`width:\000065 xpression(alert(1))`,
+		`width:expr/**/ession(alert(1))`,
+		`background:url("java\73 cript:alert(1)")`,
+		`background:url("j\61 va\script:alert(1)")`,
+		`-moz-bind\ing:url(x)`,
+	} {
+		page, rep := mustSanitize(t, `<h1 style='`+css+`'>{code}</h1><style>a{`+css+`}</style>`)
+		if strings.Contains(page, "style=") || strings.Contains(page, "<style") {
+			t.Errorf("%s 未被去掉:\n%s", css, page)
+		}
+		if len(rep.Removed) == 0 {
+			t.Errorf("%s 未记入报告", css)
+		}
+	}
+	// 普通的转义写法（如 content 中的符号）保留
+	page, _ := mustSanitize(t, `<style>.x::before{content:"\2014"}</style><h1>{code}</h1>`)
+	if !strings.Contains(page, `\2014`) {
+		t.Fatalf("普通转义被误删:\n%s", page)
+	}
+}
+
+// 样式中的 {host}、{path} 被去掉：它们只做了 HTML 转义，访客可借 ; { } 写入任意样式。其余位置保留。
+func TestSanitizeCustomStripsVisitorPlaceholdersInCSS(t *testing.T) {
+	page, rep := mustSanitize(t, `<style>.a{color:{path}}.b::after{content:"{host} {code}"}</style><h1 style="color:{path};margin:0" title="{path}">{host}{path}</h1>`)
+	if strings.Count(page, "{path}") != 2 || strings.Count(page, "{host}") != 1 || !strings.Contains(page, "{code}") {
+		t.Fatalf("样式中的占位符应去掉、其余保留:\n%s", page)
+	}
+	if !strings.Contains(page, "margin:0") {
+		t.Fatalf("样式的其余部分应保留:\n%s", page)
+	}
+	if len(rep.Removed) == 0 {
+		t.Fatalf("应记入报告")
+	}
+	r := httptest.NewRequest("GET", "http://x/", nil)
+	r.URL.Path = "/x;}body{background:red}"
+	out := string(RenderCustom(page, r, Problem{Code: 404}))
+	if strings.Contains(out, "background:red}</style>") || strings.Contains(out, "color:/x") {
+		t.Fatalf("访客路径进入了样式:\n%s", out)
+	}
 }

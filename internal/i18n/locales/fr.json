@@ -1797,6 +1797,7 @@
   "查询操作审计日志": "Consulter le journal d'audit",
   "查询网关外网地址失败，按单层 NAT 处理: %v": "Impossible d'obtenir l'adresse externe de la passerelle, traitée comme un seul NAT : %v",
   "校验终端两步验证码": "Vérifier le code d'authentification à deux facteurs du terminal",
+  "样式中的 {host}、{path} 占位符": "Espaces réservés {host} et {path} dans les styles",
   "根目录已存在": "La racine existe déjà",
   "格式错误": "Format incorrect",
   "检查 %s 更新失败: %v": "Échec de la vérification des mises à jour de %s : %v",
