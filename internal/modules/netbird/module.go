@@ -346,7 +346,12 @@ func (m *Module) runInstanceLocked(in *Instance, sig, conflict string) {
 			default:
 			}
 		}}
-		rt.daemon.Start(daemonSpec)
+	}
+	// 内核模式实例启动前检测系统中另外运行的内核模式 NetBird（见 external.go）；检测要执行外部命令，放到协程里，
+	// 外部实例列表在持锁时取得
+	var targets []externalTarget
+	if inst.kernel() {
+		targets = m.externalTargetsLocked(&inst)
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan struct{})
@@ -357,6 +362,16 @@ func (m *Module) runInstanceLocked(in *Instance, sig, conflict string) {
 			bringUp(ctx, rt, log, cli, inst, dir)
 			return
 		}
+		if inst.kernel() {
+			if msg := detectExternalKernel(ctx, cli, targets); msg != "" {
+				fail(msg)
+				return
+			}
+			if ctx.Err() != nil {
+				return
+			}
+		}
+		rt.daemon.Start(daemonSpec)
 		restarted := false
 		for {
 			select {
@@ -562,7 +577,12 @@ type rawStatus struct {
 }
 
 func runStatus(cli string, global []string) (*rawStatus, error) {
-	out, err := proc.Output(statusTimeout, cli, append(append([]string{}, global...), "status", "--json"), nil)
+	return runStatusTimeout(cli, global, statusTimeout)
+}
+
+// runStatusTimeout 执行 netbird status --json 并解析结果，超时后放弃。
+func runStatusTimeout(cli string, global []string, timeout time.Duration) (*rawStatus, error) {
+	out, err := proc.Output(timeout, cli, append(append([]string{}, global...), "status", "--json"), nil)
 	var st rawStatus
 	// 输出中可能夹带日志行，从第一个 { 开始解析
 	text := string(out)
@@ -869,10 +889,16 @@ func (m *Module) Routes(r module.Router) {
 				// 请求体不能借它让新实例使用旧版的 <配置目录>/netbird
 				in.LegacyStateDir = false
 			}
-			return checkConflicts(m.cfg.Instances, in, m.store.Dir(), false)
+			if err := checkConflicts(m.cfg.Instances, in, m.store.Dir(), false); err != nil {
+				return err
+			}
+			return m.foreignIfaceErr(in)
 		},
 		CheckEnable: func(in *Instance) error {
-			return checkConflicts(m.cfg.Instances, in, m.store.Dir(), false)
+			if err := checkConflicts(m.cfg.Instances, in, m.store.Dir(), false); err != nil {
+				return err
+			}
+			return m.foreignIfaceErr(in)
 		},
 		Merge: func(old, updated *Instance) {
 			crud.KeepSecret(old.SetupKey, &updated.SetupKey)
