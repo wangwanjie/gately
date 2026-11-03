@@ -14,7 +14,7 @@ import (
 )
 
 func testMsg() Message {
-	return NewMessage(events.Event{Type: events.DDNSChanged, Title: "解析已更新", Message: "1.2.3.4", Level: events.LevelInfo})
+	return NewMessage(events.Event{Type: events.DDNSChanged, Title: "解析已更新", Message: "1.2.3.4", Level: events.LevelInfo}, "")
 }
 
 func TestTelegramSend(t *testing.T) {
@@ -166,19 +166,19 @@ func TestNewChannelValidation(t *testing.T) {
 func TestNewMessageTranslatesSource(t *testing.T) {
 	i18n.SetServerLang("en")
 	t.Cleanup(func() { i18n.SetServerLang("") })
-	msg := NewMessage(events.Event{Type: events.LoginSuccessful, Source: "管理后台", Level: events.LevelInfo, Title: "管理后台登录成功"})
+	msg := NewMessage(events.Event{Type: events.LoginSuccessful, Source: "管理后台", Level: events.LevelInfo, Title: "管理后台登录成功"}, "")
 	if !strings.Contains(msg.Text, "Source: Admin console") {
 		t.Fatalf("来源未翻译: %q", msg.Text)
 	}
 	if strings.ContainsFunc(msg.Title+msg.Text, func(r rune) bool { return r >= 0x4e00 && r <= 0x9fff }) {
 		t.Fatalf("英文通知中不应残留中文: %q %q", msg.Title, msg.Text)
 	}
-	msg = NewMessage(events.Event{Type: events.BackupDone, Source: "家里的配置备份", Level: events.LevelInfo, Title: "配置备份完成"})
+	msg = NewMessage(events.Event{Type: events.BackupDone, Source: "家里的配置备份", Level: events.LevelInfo, Title: "配置备份完成"}, "")
 	if !strings.Contains(msg.Text, "家里的配置备份") {
 		t.Fatalf("用户填写的来源应保持原样: %q", msg.Text)
 	}
 	i18n.SetServerLang("zh-CN")
-	msg = NewMessage(events.Event{Type: events.LoginSuccessful, Source: "管理后台", Level: events.LevelInfo, Title: "管理后台登录成功"})
+	msg = NewMessage(events.Event{Type: events.LoginSuccessful, Source: "管理后台", Level: events.LevelInfo, Title: "管理后台登录成功"}, "")
 	if msg.Title != "[Gately] 管理后台登录成功" || !strings.Contains(msg.Text, "来源：管理后台") {
 		t.Fatalf("中文通知内容不对: %q %q", msg.Title, msg.Text)
 	}

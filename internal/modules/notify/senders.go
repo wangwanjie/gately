@@ -51,6 +51,8 @@ type Message struct {
 	// Title 与 Text 已经过格式化，可直接展示
 	Title string
 	Text  string
+	// Server 为发出通知的服务器名称，为空时不显示
+	Server string
 }
 
 var levelLabel = map[string]string{
@@ -59,8 +61,8 @@ var levelLabel = map[string]string{
 	events.LevelError: "错误",
 }
 
-// NewMessage 把事件格式化为人可读的消息。
-func NewMessage(e events.Event) Message {
+// NewMessage 把事件格式化为人可读的消息。server 为服务器名称，非空时写进标题与正文，便于区分多台服务器发出的通知。
+func NewMessage(e events.Event, server string) Message {
 	// 通知内容按服务端语言翻译（事件文案由程序生成，用户自定义的内容不在翻译表中，会原样保留）
 	lang := i18n.ServerLang()
 	tr := func(s string) string { return i18n.Tr(lang, s) }
@@ -79,19 +81,27 @@ func NewMessage(e events.Event) Message {
 		b.WriteString(e.Message)
 		b.WriteString("\n")
 	}
+	if server != "" {
+		b.WriteString(tr("服务器：") + server + "\n")
+	}
 	if e.Source != "" {
 		// 来源可能是程序文案（“管理后台”“配置备份”），也可能是用户填写的任务名，只做整句匹配翻译，避免改写用户名称
 		b.WriteString(tr("来源：") + i18n.TrExact(lang, e.Source) + "\n")
 	}
 	b.WriteString(tr("级别：") + label + "\n")
 	b.WriteString(tr("时间：") + e.Time.Format("2006-01-02 15:04:05"))
-	return Message{Event: e, Title: "[Gately] " + title, Text: b.String()}
+	prefix := "[Gately] "
+	if server != "" {
+		prefix = "[Gately · " + server + "] "
+	}
+	return Message{Event: e, Title: prefix + title, Text: b.String(), Server: server}
 }
 
 // vars 返回 Webhook 模板变量。
 func (m Message) vars() map[string]string {
 	v := map[string]string{
 		"title":   m.Title,
+		"server":  m.Server,
 		"message": m.Event.Message,
 		"text":    m.Text,
 		"type":    m.Event.Type,

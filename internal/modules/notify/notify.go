@@ -7,10 +7,13 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"path"
 	"strings"
 	"sync"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/wangwanjie/gately/internal/config"
 	"github.com/wangwanjie/gately/internal/crud"
@@ -69,16 +72,44 @@ type Settings struct {
 	// Proxy 为各渠道默认使用的代理：留空时 HTTP 渠道遵循 HTTPS_PROXY 等环境变量、邮件直连；
 	// update 为复用全局设置中的更新代理；也可以填写 http://、https://、socks5:// 开头的代理地址
 	Proxy string `json:"proxy"`
+	// ServerName 为通知中显示的服务器名称，用于区分多台服务器发出的通知；留空使用主机名
+	ServerName string `json:"serverName"`
 }
+
+// maxServerNameLen 为服务器名称的最大字符数
+const maxServerNameLen = 64
 
 // Validate 校验并规范化全局设置。
 func (s *Settings) Validate() error {
+	s.ServerName = strings.TrimSpace(s.ServerName)
+	if utf8.RuneCountInString(s.ServerName) > maxServerNameLen {
+		return fmt.Errorf("服务器名称不能超过 %d 个字符", maxServerNameLen)
+	}
+	// 名称会写进邮件标题等头部，拒绝换行等控制字符，防止头部注入
+	if strings.IndexFunc(s.ServerName, unicode.IsControl) >= 0 {
+		return errors.New("服务器名称不能包含控制字符")
+	}
 	s.Proxy = proxyx.Normalize(s.Proxy)
 	// 全局设置没有上一级可以跟随，direct 与留空含义相同，统一保存为留空
 	if s.Proxy == proxyx.Direct {
 		s.Proxy = ""
 	}
 	return proxyx.Validate(s.Proxy)
+}
+
+// hostname 返回本机主机名；测试可替换。
+var hostname = os.Hostname
+
+// serverName 返回通知中显示的服务器名称：设置了名称时用设置值，否则用主机名，都取不到时为空。
+func serverName(s Settings) string {
+	if s.ServerName != "" {
+		return s.ServerName
+	}
+	h, err := hostname()
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(h)
 }
 
 // effectiveProxy 返回渠道实际使用的代理设置：渠道未设置时跟随全局设置。
@@ -395,7 +426,10 @@ func (m *Module) process(e events.Event, async bool) {
 	if e.Type == events.NotifyTest {
 		return
 	}
-	msg := NewMessage(e)
+	m.mu.Lock()
+	server := serverName(m.cfg.Settings)
+	m.mu.Unlock()
+	msg := NewMessage(e, server)
 	for _, d := range m.plan(e) {
 		if async {
 			go m.deliver(d.rule, d.ch, msg)
@@ -462,17 +496,25 @@ func (m *Module) Routes(r module.Router) {
 	r.HandleFunc("GET /event-types", m.handleEventTypes)
 	r.HandleFunc("GET /history", m.handleHistory)
 	r.HandleFunc("POST /channels/{key}/test", m.handleTest)
-	module.DocOf(r, "GET /settings", module.Doc{Summary: "读取通知设置", Resp: Settings{}})
+	module.DocOf(r, "GET /settings", module.Doc{Summary: "读取通知设置", Resp: settingsView{}})
 	module.DocOf(r, "PUT /settings", module.Doc{Summary: "保存通知设置", Req: Settings{}, Resp: Settings{}})
 	module.DocOf(r, "GET /event-types", module.Doc{Summary: "可订阅的事件类型", Resp: []events.TypeInfo{}})
 	module.DocOf(r, "GET /history", module.Doc{Summary: "最近的投递记录", Resp: []Record{}})
 	module.DocOf(r, "POST /channels/{key}/test", module.Doc{Summary: "向渠道发送测试通知"})
 }
 
+// settingsView 是读取通知设置的响应：附带本机主机名，供界面提示服务器名称留空时的取值。
+type settingsView struct {
+	Settings
+	Hostname string `json:"hostname"`
+}
+
 func (m *Module) handleGetSettings(w http.ResponseWriter, _ *http.Request) {
 	m.mu.Lock()
-	defer m.mu.Unlock()
-	httpx.OK(w, m.cfg.Settings)
+	s := m.cfg.Settings
+	m.mu.Unlock()
+	h, _ := hostname()
+	httpx.OK(w, settingsView{Settings: s, Hostname: h})
 }
 
 func (m *Module) handlePutSettings(w http.ResponseWriter, r *http.Request) {
@@ -524,6 +566,7 @@ func (m *Module) handleTest(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 	}
+	server := serverName(m.cfg.Settings)
 	m.mu.Unlock()
 	if ch == nil {
 		httpx.Error(w, http.StatusNotFound, "渠道不存在")
@@ -536,7 +579,7 @@ func (m *Module) handleTest(w http.ResponseWriter, r *http.Request) {
 		Title:   "测试通知",
 		Message: "这是一条来自 Gately 的测试通知。",
 		Time:    m.now(),
-	})
+	}, server)
 	if err := m.deliver("测试", *ch, msg); err != nil {
 		httpx.Error(w, http.StatusBadGateway, "发送失败: %v", err)
 		return
