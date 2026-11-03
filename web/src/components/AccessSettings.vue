@@ -106,6 +106,7 @@ async function addBan() {
   try {
     await api.post('/api/webservice/bans', { key: newIp.value, seconds: newPermanent.value ? -1 : newHours.value * 3600 })
     newIp.value = ''
+    newPermanent.value = false
     await loadBans()
   } catch (e) {
     ElMessage.error((e as Error).message)
