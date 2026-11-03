@@ -17,6 +17,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/wangwanjie/gately/internal/module"
 	"github.com/wangwanjie/gately/internal/version"
 )
 
@@ -306,6 +307,30 @@ func TestUpgradeUnsupported(t *testing.T) {
 	code, body := doJSON(t, c, "GET", srv.URL+"/api/system/info", nil)
 	if code != 200 || !bytes.Contains(body, []byte(`"reason":"docker"`)) {
 		t.Fatalf("容器中应提示不支持在线升级: %d %s", code, body)
+	}
+}
+
+// 定制构建拒绝在线升级（会装回完整版本），提示到 build.gately.cn 生成；上传升级包仍然可用。
+func TestUpgradeCustomBuild(t *testing.T) {
+	exe := setupUpgrade(t)
+	a, srv, c := loginApp(t)
+	a.opts.Absent = []module.Info{{ID: "waf", Title: "WAF"}}
+	fakeRelease(t, "v0.2.0", tarGz(t, map[string][]byte{"gately": fakeBinary("v0.2.0")}), "")
+	code, body := doJSON(t, c, "GET", srv.URL+"/api/system/info", nil)
+	if code != 200 || !bytes.Contains(body, []byte(`"custom":true`)) {
+		t.Fatalf("系统信息应标明定制构建: %d %s", code, body)
+	}
+	code, body = doJSON(t, c, "POST", srv.URL+"/api/system/upgrade", nil)
+	if code != http.StatusConflict || !bytes.Contains(body, []byte("build.gately.cn")) {
+		t.Fatalf("定制构建在线升级应返回 409 并给出构建器地址: %d %s", code, body)
+	}
+	if got, _ := os.ReadFile(exe); string(got) != "old-binary" {
+		t.Fatal("拒绝在线升级时不应改动可执行文件")
+	}
+	newBin := fakeBinary("v0.2.0")
+	code, body = uploadFiles(t, c, srv.URL+"/api/system/upgrade/upload", "file", map[string][]byte{"gately": newBin})
+	if code != 200 || !bytes.Contains(body, []byte(`"to":"v0.2.0"`)) {
+		t.Fatalf("定制构建应能上传升级包: %d %s", code, body)
 	}
 }
 
