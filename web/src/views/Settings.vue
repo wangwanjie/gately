@@ -1215,6 +1215,15 @@ onMounted(async () => {
 .w-280 {
   width: 280px;
 }
+/* 右对齐标签在德语、俄语等长文案下会换成多行：去掉固定的 32px 行高让标签随内容增高，避免压到下一项；
+   单行标签 6px 上边距 + 20px 行高，文字中线仍与 32px 高的输入框对齐 */
+.settings-tabs :deep(.el-form--label-right .el-form-item__label) {
+  height: auto;
+  min-height: 32px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  line-height: 20px;
+}
 .w-480 {
   width: 480px;
 }
