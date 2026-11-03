@@ -48,6 +48,7 @@
   "operationFailed": "Error en la operación",
   "confirmDelete": "¿Eliminar este elemento?",
   "requestFailed": "Error en la solicitud ({status})",
+  "unexpectedResponse": "El servidor devolvió una respuesta inesperada. Recargue la página; si hay una entrada de seguridad, vuelva a abrirla desde su dirección",
   "notLoggedIn": "Sin sesión iniciada",
   "durationDaysHours": "{d} d {h} h",
   "durationHoursMinutes": "{h} h {m} min",

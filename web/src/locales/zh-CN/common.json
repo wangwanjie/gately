@@ -48,6 +48,7 @@
   "operationFailed": "操作失败",
   "confirmDelete": "确认删除？",
   "requestFailed": "请求失败 ({status})",
+  "unexpectedResponse": "服务器返回了非预期的内容，请刷新页面；设置了安全入口时请重新通过入口地址访问",
   "notLoggedIn": "未登录",
   "durationDaysHours": "{d} 天 {h} 小时",
   "durationHoursMinutes": "{h} 小时 {m} 分",

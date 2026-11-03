@@ -48,6 +48,7 @@
   "operationFailed": "Vorgang fehlgeschlagen",
   "confirmDelete": "Diesen Eintrag löschen?",
   "requestFailed": "Anfrage fehlgeschlagen ({status})",
+  "unexpectedResponse": "Der Server hat eine unerwartete Antwort geliefert. Laden Sie die Seite neu; ist ein Sicherheitseinstieg gesetzt, öffnen Sie ihn erneut über dessen Adresse",
   "notLoggedIn": "Nicht angemeldet",
   "durationDaysHours": "{d} T {h} Std.",
   "durationHoursMinutes": "{h} Std. {m} Min.",

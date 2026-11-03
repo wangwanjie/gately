@@ -48,6 +48,7 @@
   "operationFailed": "操作に失敗しました",
   "confirmDelete": "削除しますか？",
   "requestFailed": "リクエストに失敗しました ({status})",
+  "unexpectedResponse": "サーバーから想定外の応答が返されました。ページを再読み込みしてください。セキュリティ入口を設定している場合は、入口のアドレスから開き直してください",
   "notLoggedIn": "未ログイン",
   "durationDaysHours": "{d} 日 {h} 時間",
   "durationHoursMinutes": "{h} 時間 {m} 分",

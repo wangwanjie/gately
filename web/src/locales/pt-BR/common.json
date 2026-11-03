@@ -48,6 +48,7 @@
   "operationFailed": "Falha na operação",
   "confirmDelete": "Excluir este item?",
   "requestFailed": "Falha na requisição ({status})",
+  "unexpectedResponse": "O servidor retornou uma resposta inesperada. Recarregue a página; se houver uma entrada de segurança, abra-a novamente pelo endereço dela",
   "notLoggedIn": "Sem login",
   "durationDaysHours": "{d}d {h}h",
   "durationHoursMinutes": "{h}h {m}min",

@@ -48,6 +48,7 @@
   "operationFailed": "작업에 실패했습니다",
   "confirmDelete": "삭제하시겠습니까?",
   "requestFailed": "요청 실패 ({status})",
+  "unexpectedResponse": "서버가 예상하지 못한 응답을 반환했습니다. 페이지를 새로 고치고, 보안 입구를 설정했다면 입구 주소로 다시 접속하세요",
   "notLoggedIn": "로그인되지 않음",
   "durationDaysHours": "{d}일 {h}시간",
   "durationHoursMinutes": "{h}시간 {m}분",

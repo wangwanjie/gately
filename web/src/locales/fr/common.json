@@ -48,6 +48,7 @@
   "operationFailed": "Échec de l'opération",
   "confirmDelete": "Supprimer cet élément ?",
   "requestFailed": "Échec de la requête ({status})",
+  "unexpectedResponse": "Le serveur a renvoyé une réponse inattendue. Rechargez la page ; si une entrée sécurisée est définie, rouvrez-la par son adresse",
   "notLoggedIn": "Non connecté",
   "durationDaysHours": "{d} j {h} h",
   "durationHoursMinutes": "{h} h {m} min",

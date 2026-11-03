@@ -23,7 +23,11 @@ async function request<T>(method: string, url: string, body?: unknown): Promise<
   }
   const resp = await fetch(url, init)
   const text = await resp.text()
-  const data = text ? JSON.parse(text) : null
+  // 接口只返回 JSON；收到 HTML 等其他内容说明请求被安全入口或“未授权访问响应”拦截（例如会话过期后入口 Cookie 也已失效），
+  // 自定义页面与空白页的状态码可能是 200，不能当作成功
+  const contentType = resp.headers.get('Content-Type') ?? ''
+  const unexpected = text ? !contentType.includes('json') : resp.ok && contentType.startsWith('text/html')
+  const data = text && !unexpected ? JSON.parse(text) : null
   if (resp.status === 401 && url !== '/api/login') {
     if (router.currentRoute.value.name !== 'login') {
       router.push({ name: 'login', query: { redirect: router.currentRoute.value.fullPath } })
@@ -32,6 +36,9 @@ async function request<T>(method: string, url: string, body?: unknown): Promise<
   }
   if (!resp.ok) {
     throw new ApiError(data?.error ?? t('common.requestFailed', { status: resp.status }), resp.status, data)
+  }
+  if (unexpected) {
+    throw new ApiError(t('common.unexpectedResponse'), resp.status)
   }
   return data as T
 }

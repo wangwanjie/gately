@@ -48,6 +48,7 @@
   "operationFailed": "操作失敗",
   "confirmDelete": "確認刪除？",
   "requestFailed": "請求失敗 ({status})",
+  "unexpectedResponse": "伺服器回傳了非預期的內容，請重新整理頁面；設定了安全入口時請重新透過入口位址存取",
   "notLoggedIn": "未登入",
   "durationDaysHours": "{d} 天 {h} 小時",
   "durationHoursMinutes": "{h} 小時 {m} 分",

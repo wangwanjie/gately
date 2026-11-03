@@ -48,6 +48,7 @@
   "operationFailed": "Operation failed",
   "confirmDelete": "Delete this item?",
   "requestFailed": "Request failed ({status})",
+  "unexpectedResponse": "The server returned an unexpected response. Reload the page; if a security entrance is set, open it again through the entrance address",
   "notLoggedIn": "Not signed in",
   "durationDaysHours": "{d}d {h}h",
   "durationHoursMinutes": "{h}h {m}m",

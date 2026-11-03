@@ -48,6 +48,7 @@
   "operationFailed": "Не удалось выполнить операцию",
   "confirmDelete": "Удалить этот элемент?",
   "requestFailed": "Ошибка запроса ({status})",
+  "unexpectedResponse": "Сервер вернул неожиданный ответ. Перезагрузите страницу; если задан защищённый вход, откройте панель заново по его адресу",
   "notLoggedIn": "Вход не выполнен",
   "durationDaysHours": "{d} д {h} ч",
   "durationHoursMinutes": "{h} ч {m} мин",
