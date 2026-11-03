@@ -100,6 +100,8 @@ func convertSource(enable bool, typ, urls, iface, reg, script string, fam ipsour
 	if removed > 0 && enable {
 		warns = append(warns, fmt.Sprintf("IPv%d 查询地址中移除了 %d 个 Lucky 官方服务器地址", fam, removed))
 	}
+	// Lucky 配置里常见的 ipw.cn 等地址已停止服务，导入时换成替代地址
+	s.URLs, _ = ipsource.ReplaceRetiredURLs(s.URLs)
 	if len(s.URLs) == 0 {
 		if fam == ipsource.IPv4 {
 			s.URLs = append([]string{}, ipsource.DefaultIPv4URLs...)

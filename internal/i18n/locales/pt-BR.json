@@ -1299,6 +1299,7 @@
   "已导出诊断包": "Pacote de diagnóstico exportado",
   "已导出配置备份": "Backup da configuração exportado",
   "已将 %s 回滚到 %s": "%s revertido para %s",
+  "已将停止服务的 IP 查询地址（ipw.cn）替换为 ddnspod.com": "Os endereços de consulta de IP descontinuados (ipw.cn) foram substituídos por ddnspod.com",
   "已开启两步验证时填写": "Obrigatório se a verificação em duas etapas estiver ativada",
   "已开启基本认证并使用共享用户，nginx 的用户文件不会被读取，请在全局设置中添加共享用户，或在站点中填写用户（用户名:密码，密码可为 bcrypt 哈希）": "A autenticação básica foi ativada com usuários compartilhados. O arquivo de usuários do nginx não é lido; adicione usuários compartilhados nas configurações globais ou informe usuários no site (usuário:senha; a senha pode ser um hash bcrypt)",
   "已开启接收 PROXY 协议，但未配置可信来源": "O recebimento do protocolo PROXY foi ativado, mas nenhuma origem confiável foi configurada",

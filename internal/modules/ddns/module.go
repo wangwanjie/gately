@@ -51,8 +51,31 @@ func (m *Module) Init(env module.Env) error {
 	m.store = env.Store
 	m.logs = env.Logs
 	m.cfg = fileConfig{Settings: Settings{Enable: true}}
-	_, err := m.store.Load(ID, &m.cfg)
-	return err
+	if _, err := m.store.Load(ID, &m.cfg); err != nil {
+		return err
+	}
+	if replaceRetiredSources(m.cfg.Tasks) {
+		if err := m.store.Save(ID, m.cfg); err != nil {
+			return err
+		}
+		m.logs.Add(logbuf.LevelInfo, "", "已将停止服务的 IP 查询地址（ipw.cn）替换为 ddnspod.com")
+	}
+	return nil
+}
+
+// replaceRetiredSources 把各任务 IP 来源中已停止服务的查询地址换成替代地址，返回是否有改动。
+func replaceRetiredSources(tasks []Task) bool {
+	changed := false
+	for i := range tasks {
+		for _, src := range []*ipsource.Source{&tasks[i].IPv4, &tasks[i].IPv6} {
+			urls, ok := ipsource.ReplaceRetiredURLs(src.URLs)
+			if ok {
+				src.URLs = urls
+				changed = true
+			}
+		}
+	}
+	return changed
 }
 
 // Start 实现 module.Module。

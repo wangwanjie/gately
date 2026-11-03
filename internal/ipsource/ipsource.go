@@ -36,7 +36,7 @@ const (
 
 // DefaultIPv4URLs 是默认的 IPv4 查询地址，均为第三方公共服务，用户可在界面修改。
 var DefaultIPv4URLs = []string{
-	"https://4.ipw.cn",
+	"https://ipv4.ddnspod.com",
 	"https://api.ipify.org",
 	"https://ipv4.icanhazip.com",
 	"https://myip.ipip.net",
@@ -44,10 +44,44 @@ var DefaultIPv4URLs = []string{
 
 // DefaultIPv6URLs 是默认的 IPv6 查询地址。
 var DefaultIPv6URLs = []string{
-	"https://6.ipw.cn",
+	"https://ipv6.ddnspod.com",
 	"https://api6.ipify.org",
 	"https://ipv6.icanhazip.com",
 	"https://v6.ident.me",
+}
+
+// retiredURLs 记录已停止服务的查询地址及其替代地址。
+// ipw.cn 在 2026-11 已不再解析，域名一旦被他人接手就可能返回伪造的 IP，旧配置里的地址需要换掉。
+var retiredURLs = map[string]string{
+	"https://4.ipw.cn": "https://ipv4.ddnspod.com",
+	"http://4.ipw.cn":  "https://ipv4.ddnspod.com",
+	"https://6.ipw.cn": "https://ipv6.ddnspod.com",
+	"http://6.ipw.cn":  "https://ipv6.ddnspod.com",
+}
+
+// ReplaceRetiredURLs 把已停止服务的查询地址换成替代地址，替代地址已在列表中时直接去掉旧地址。
+// 返回新列表以及是否有改动。
+func ReplaceRetiredURLs(urls []string) ([]string, bool) {
+	present := make(map[string]bool, len(urls))
+	for _, u := range urls {
+		present[strings.TrimSpace(u)] = true
+	}
+	changed := false
+	out := make([]string, 0, len(urls))
+	for _, u := range urls {
+		repl, ok := retiredURLs[strings.TrimRight(strings.TrimSpace(u), "/")]
+		if !ok {
+			out = append(out, u)
+			continue
+		}
+		changed = true
+		if present[repl] {
+			continue
+		}
+		present[repl] = true
+		out = append(out, repl)
+	}
+	return out, changed
 }
 
 // Source 描述一种获取方式。

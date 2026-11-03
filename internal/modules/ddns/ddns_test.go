@@ -386,7 +386,7 @@ func TestConvertLucky(t *testing.T) {
 		t.Fatalf("found=%d imported=%d warns=%v", found, len(tasks), warns)
 	}
 	a := tasks[0]
-	if !a.Enable || a.Interval != 36 || len(a.IPv4.URLs) != 1 || a.IPv4.URLs[0] != "https://4.ipw.cn" {
+	if !a.Enable || a.Interval != 36 || len(a.IPv4.URLs) != 1 || a.IPv4.URLs[0] != "https://ipv4.ddnspod.com" {
 		t.Fatalf("任务 1 映射错误: %+v", a)
 	}
 	if a.Records[0].Sub != "www" || a.Records[0].Value != VarIPv4 || !a.Webhook.Enable || a.Webhook.SuccessContent[0] != "ok" {
@@ -687,5 +687,36 @@ func TestValidateKeepsRecordKeys(t *testing.T) {
 	got := []string{task.Records[0].Key, task.Records[1].Key, task.Records[2].Key, task.Records[3].Key}
 	if got[0] != "r1" || got[2] != "r2" || got[3] != "r3" || got[1] == "" || got[1] == "r1" || got[1] == "r2" || got[1] == "r3" {
 		t.Fatalf("已有记录的 key 应保持不变，新记录分配新 key: %v", got)
+	}
+}
+
+// 启动时把已保存的 ipw.cn 查询地址换成替代地址并写回配置
+func TestInitReplacesRetiredIPSources(t *testing.T) {
+	st, err := config.Open(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg := fileConfig{Settings: Settings{Enable: true}, Tasks: []Task{{
+		Key:  "t1",
+		IPv4: ipsource.Source{Enable: true, Type: ipsource.TypeURL, URLs: []string{"https://4.ipw.cn", "https://api.ipify.org"}},
+		IPv6: ipsource.Source{Type: ipsource.TypeURL, URLs: []string{"https://6.ipw.cn"}},
+	}}}
+	if err := st.Save(ID, cfg); err != nil {
+		t.Fatal(err)
+	}
+	m := New()
+	if err := m.Init(module.Env{Store: st, Logs: logbuf.New(10, log.New(io.Discard, "", 0))}); err != nil {
+		t.Fatal(err)
+	}
+	var saved fileConfig
+	if _, err := st.Load(ID, &saved); err != nil {
+		t.Fatal(err)
+	}
+	v4, v6 := saved.Tasks[0].IPv4.URLs, saved.Tasks[0].IPv6.URLs
+	if len(v4) != 2 || v4[0] != "https://ipv4.ddnspod.com" || v4[1] != "https://api.ipify.org" {
+		t.Fatalf("IPv4 地址未替换: %v", v4)
+	}
+	if len(v6) != 1 || v6[0] != "https://ipv6.ddnspod.com" {
+		t.Fatalf("IPv6 地址未替换: %v", v6)
 	}
 }

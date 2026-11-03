@@ -135,3 +135,21 @@ func TestValidate(t *testing.T) {
 		t.Fatal("非法正则应报错")
 	}
 }
+
+func TestReplaceRetiredURLs(t *testing.T) {
+	got, changed := ReplaceRetiredURLs([]string{"https://4.ipw.cn/", "https://api.ipify.org", "http://4.ipw.cn"})
+	if !changed || len(got) != 2 || got[0] != "https://ipv4.ddnspod.com" || got[1] != "https://api.ipify.org" {
+		t.Fatalf("替换结果错误: %v %v", got, changed)
+	}
+	// 替代地址已存在时只去掉旧地址
+	got, changed = ReplaceRetiredURLs([]string{"https://ipv6.ddnspod.com", "https://6.ipw.cn"})
+	if !changed || len(got) != 1 || got[0] != "https://ipv6.ddnspod.com" {
+		t.Fatalf("去重结果错误: %v %v", got, changed)
+	}
+	// 没有停用地址时保持原样，包括用户自己写的重复地址
+	in := []string{"https://a.example/ip", "https://a.example/ip"}
+	got, changed = ReplaceRetiredURLs(in)
+	if changed || len(got) != 2 {
+		t.Fatalf("不应改动: %v %v", got, changed)
+	}
+}
