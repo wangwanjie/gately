@@ -92,7 +92,7 @@
     },
     "visibleAddr": {
       "title": "Endereços de saída visíveis",
-      "desc": "Todo endereço de saída, como a consulta do IP público e os servidores STUN, é visível, editável e pode ser desligado."
+      "desc": "Todo endereço de saída, como a consulta do IP público, os servidores STUN e a verificação de atualizações no GitHub, é visível, editável e pode ser desligado."
     },
     "plainConfig": {
       "title": "Configuração em texto simples",

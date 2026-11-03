@@ -92,7 +92,7 @@
     },
     "visibleAddr": {
       "title": "외부 주소 공개",
-      "desc": "공인 IP 조회, STUN 서버 등 모든 외부 주소를 확인하고, 변경하고, 끌 수 있습니다."
+      "desc": "공인 IP 조회, STUN 서버, GitHub 업데이트 확인 등 모든 외부 주소를 확인하고, 변경하고, 끌 수 있습니다."
     },
     "plainConfig": {
       "title": "평문 설정",

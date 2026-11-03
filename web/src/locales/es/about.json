@@ -92,7 +92,7 @@
     },
     "visibleAddr": {
       "title": "Direcciones de salida visibles",
-      "desc": "Cada dirección de salida, como la consulta de IP pública y los servidores STUN, es visible, editable y se puede desactivar."
+      "desc": "Cada dirección de salida, como la consulta de IP pública, los servidores STUN y la comprobación de actualizaciones en GitHub, es visible, editable y se puede desactivar."
     },
     "plainConfig": {
       "title": "Configuración en texto plano",

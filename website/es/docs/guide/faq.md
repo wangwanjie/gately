@@ -2,7 +2,7 @@
 
 ## ¿Necesita conectarse a los servidores del proyecto?
 
-No. Gately no se conecta a ningún servidor del proyecto por defecto y no envía información del dispositivo. Las direcciones salientes, como la consulta de IP pública, usan servicios públicos de terceros y se pueden cambiar en las tareas correspondientes.
+No. Gately no se conecta a ningún servidor del proyecto y no envía información del dispositivo; por defecto consulta de forma anónima en GitHub las versiones y los avisos de seguridad, algo que se puede desactivar, consulta [Comprobación automática de actualizaciones](/es/docs/guide/install#update-check). Las direcciones salientes, como la consulta de IP pública, usan servicios públicos de terceros y se pueden cambiar en las tareas correspondientes.
 
 ## ¿Cuáles son el usuario y la contraseña predeterminados?
 

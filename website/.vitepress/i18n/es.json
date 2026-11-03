@@ -248,7 +248,7 @@
     "faqs": [
       {
         "q": "¿Necesita conectarse a vuestros servidores?",
-        "a": "No. Gately no se conecta a ningún servidor del proyecto por defecto y no envía ningún dato."
+        "a": "No. Gately no se conecta a ningún servidor del proyecto y no envía ningún dato; por defecto consulta de forma anónima en GitHub las versiones nuevas y los avisos de seguridad, algo que se puede desactivar."
       },
       {
         "q": "¿En qué dispositivos funciona?",

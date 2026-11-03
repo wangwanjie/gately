@@ -2,7 +2,7 @@
 
 ## Faut-il se connecter aux serveurs du projet ?
 
-Non. Par défaut, Gately ne se connecte à aucun serveur du projet et ne remonte aucune information sur l'appareil. Les adresses externes, comme la recherche de l'IP publique, utilisent des services publics tiers et se modifient dans les tâches correspondantes.
+Non. Gately ne se connecte à aucun serveur du projet et ne remonte aucune information sur l'appareil ; par défaut, il interroge anonymement GitHub pour les versions et les avis de sécurité, ce qui est désactivable, voir [Vérification automatique des mises à jour](/fr/docs/guide/install#update-check). Les adresses externes, comme la recherche de l'IP publique, utilisent des services publics tiers et se modifient dans les tâches correspondantes.
 
 ## Quels sont le compte et le mot de passe par défaut ?
 

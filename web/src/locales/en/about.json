@@ -92,7 +92,7 @@
     },
     "visibleAddr": {
       "title": "Visible outbound addresses",
-      "desc": "Every outbound address, such as public IP lookup and STUN servers, is visible, editable and can be turned off."
+      "desc": "Every outbound address, such as public IP lookup, STUN servers and the GitHub update check, is visible, editable and can be turned off."
     },
     "plainConfig": {
       "title": "Plain-text config",

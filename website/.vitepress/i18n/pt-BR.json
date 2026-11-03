@@ -248,7 +248,7 @@
     "faqs": [
       {
         "q": "Ele precisa se conectar aos servidores de vocês?",
-        "a": "Não. Por padrão, o Gately não se conecta a nenhum servidor do projeto e não envia nenhuma informação."
+        "a": "Não. O Gately não se conecta a nenhum servidor do projeto e não envia nenhuma informação; por padrão, consulta anonimamente no GitHub novas versões e avisos de segurança, o que pode ser desativado."
       },
       {
         "q": "Em quais dispositivos ele roda?",

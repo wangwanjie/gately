@@ -92,7 +92,7 @@
     },
     "visibleAddr": {
       "title": "Sichtbare ausgehende Adressen",
-      "desc": "Jede ausgehende Adresse, etwa für die Abfrage der öffentlichen IP und STUN-Server, ist sichtbar, änderbar und abschaltbar."
+      "desc": "Jede ausgehende Adresse, etwa für die Abfrage der öffentlichen IP, STUN-Server und die Update-Prüfung über GitHub, ist sichtbar, änderbar und abschaltbar."
     },
     "plainConfig": {
       "title": "Konfiguration im Klartext",

@@ -92,7 +92,7 @@
     },
     "visibleAddr": {
       "title": "Adresses sortantes visibles",
-      "desc": "Chaque adresse sortante, comme la recherche d'IP publique et les serveurs STUN, est visible, modifiable et peut être désactivée."
+      "desc": "Chaque adresse sortante, comme la recherche d'IP publique, les serveurs STUN et la vérification des mises à jour sur GitHub, est visible, modifiable et peut être désactivée."
     },
     "plainConfig": {
       "title": "Configuration en texte brut",

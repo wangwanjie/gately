@@ -248,7 +248,7 @@
     "faqs": [
       {
         "q": "Muss Gately sich mit Ihren Servern verbinden?",
-        "a": "Nein. Gately verbindet sich standardmäßig mit keinem Projektserver und übermittelt keine Daten."
+        "a": "Nein. Gately verbindet sich mit keinem Projektserver und übermittelt keine Daten; standardmäßig prüft es anonym bei GitHub auf neue Releases und Sicherheitshinweise, was sich abschalten lässt."
       },
       {
         "q": "Auf welchen Geräten läuft Gately?",

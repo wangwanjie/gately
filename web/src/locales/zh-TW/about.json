@@ -92,7 +92,7 @@
     },
     "visibleAddr": {
       "title": "對外位址可見",
-      "desc": "公網 IP 查詢、STUN 伺服器等所有對外位址都可見、可改、可關。"
+      "desc": "公網 IP 查詢、STUN 伺服器、GitHub 檢查更新等所有對外位址都可見、可改、可關。"
     },
     "plainConfig": {
       "title": "設定為純文字",

@@ -248,7 +248,7 @@
     "faqs": [
       {
         "q": "Does it need to connect to your servers?",
-        "a": "No. Gately does not connect to any project servers by default and reports nothing."
+        "a": "No. Gately does not connect to any project servers and reports nothing; by default it anonymously checks GitHub for new releases and security advisories, which can be turned off."
       },
       {
         "q": "Which devices can it run on?",

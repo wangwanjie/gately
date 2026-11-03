@@ -2,7 +2,7 @@
 
 ## Muss Gately sich mit den Servern des Projekts verbinden?
 
-Nein. Gately verbindet sich standardmäßig mit keinem Projektserver und übermittelt keine Geräteinformationen. Ausgehende Adressen wie die Abfrage der öffentlichen IP nutzen öffentliche Drittanbieter-Dienste und lassen sich in den jeweiligen Aufgaben ändern.
+Nein. Gately verbindet sich mit keinem Projektserver und übermittelt keine Geräteinformationen; standardmäßig fragt es anonym Releases und Sicherheitshinweise bei GitHub ab, was sich abschalten lässt, siehe [Automatische Update-Prüfung](/de/docs/guide/install#update-check). Ausgehende Adressen wie die Abfrage der öffentlichen IP nutzen öffentliche Drittanbieter-Dienste und lassen sich in den jeweiligen Aufgaben ändern.
 
 ## Wie lauten Standardkonto und Standardpasswort?
 

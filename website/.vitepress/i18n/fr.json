@@ -248,7 +248,7 @@
     "faqs": [
       {
         "q": "Faut-il se connecter à vos serveurs ?",
-        "a": "Non. Par défaut, Gately ne se connecte à aucun serveur du projet et ne remonte aucune information."
+        "a": "Non. Gately ne se connecte à aucun serveur du projet et ne remonte aucune information ; par défaut, il consulte anonymement GitHub pour les nouvelles versions et les avis de sécurité, ce qui est désactivable."
       },
       {
         "q": "Sur quels appareils fonctionne-t-il ?",

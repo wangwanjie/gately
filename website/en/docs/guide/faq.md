@@ -2,7 +2,7 @@
 
 ## Does it need to connect to the project's servers?
 
-No. Gately does not connect to any project servers by default and does not report device information. Outbound addresses such as public IP lookup use third-party public services and can be changed in the corresponding tasks.
+No. Gately does not connect to any project servers and does not report device information; by default it anonymously queries GitHub for releases and security advisories, which can be turned off, see [Automatic update checks](/en/docs/guide/install#update-check). Outbound addresses such as public IP lookup use third-party public services and can be changed in the corresponding tasks.
 
 ## What are the default username and password?
 
