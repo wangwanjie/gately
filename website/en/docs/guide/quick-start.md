@@ -13,6 +13,8 @@ docker run -d --name gately --network host \
 
 If you do not need Docker management, drop the `docker.sock` mount. Port forwarding, STUN and web services listen on host ports, so `--network host` is recommended.
 
+If GHCR is slow for you, use `vanjayak/gately:latest` from Docker Hub instead; it is the same image.
+
 ::: tip fnOS users
 Install the native app instead: it opens from the desktop icon through the fnOS unified gateway and can sign fnOS administrators in with their fnOS session. See [fnOS native app](/en/docs/guide/install#fnos).
 :::

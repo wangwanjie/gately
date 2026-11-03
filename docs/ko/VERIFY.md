@@ -35,6 +35,14 @@ cosign verify ghcr.io/wangwanjie/gately:latest \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
 
+Docker Hub의 `vanjayak/gately`는 같은 이미지이며 서명 신원도 같습니다.
+
+```bash
+cosign verify docker.io/vanjayak/gately:latest \
+  --certificate-identity-regexp '^https://github.com/wangwanjie/gately/\.github/workflows/release\.yml@refs/tags/v' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+```
+
 레지스트리에는 이미지의 SBOM과 빌드 출처 증명도 저장되어 있습니다. SBOM은 다음 명령으로 확인합니다.
 
 ```bash

@@ -13,6 +13,8 @@ docker run -d --name gately --network host \
 
 不需要 Docker 管理功能時，可以移除 `docker.sock` 掛載。連接埠轉發、STUN、Web 服務需要監聽主機的連接埠，建議使用 `--network host`。
 
+存取 GHCR 較慢時，可以把映像檔換成 Docker Hub 上的 `vanjayak/gately:latest`，兩者是同一份映像檔。
+
 ::: tip 飛牛 fnOS 使用者
 可以直接安裝原生應用：經飛牛統一閘道從桌面圖示開啟，並支援飛牛管理員登入狀態直接登入，見 [飛牛 fnOS 原生應用](/zh-TW/docs/guide/install#fnos)。
 :::

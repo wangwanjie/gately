@@ -35,6 +35,14 @@ cosign verify ghcr.io/wangwanjie/gately:latest \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
 
+`vanjayak/gately` на Docker Hub — тот же образ, подписанный тем же рабочим процессом выпуска:
+
+```bash
+cosign verify docker.io/vanjayak/gately:latest \
+  --certificate-identity-regexp '^https://github.com/wangwanjie/gately/\.github/workflows/release\.yml@refs/tags/v' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+```
+
 В реестре образов также хранятся SBOM и аттестация происхождения образа. Посмотреть SBOM можно так:
 
 ```bash

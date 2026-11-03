@@ -35,6 +35,14 @@ cosign verify ghcr.io/wangwanjie/gately:latest \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
 
+Docker Hub 上的 `vanjayak/gately` 是同一份镜像，签名身份相同：
+
+```bash
+cosign verify docker.io/vanjayak/gately:latest \
+  --certificate-identity-regexp '^https://github.com/wangwanjie/gately/\.github/workflows/release\.yml@refs/tags/v' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+```
+
 镜像仓库中还附带 SBOM 与构建来源证明，可以这样查看：
 
 ```bash

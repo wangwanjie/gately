@@ -35,6 +35,14 @@ cosign verify ghcr.io/wangwanjie/gately:latest \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
 
+`vanjayak/gately` en Docker Hub es la misma imagen, con la misma identidad de firma:
+
+```bash
+cosign verify docker.io/vanjayak/gately:latest \
+  --certificate-identity-regexp '^https://github.com/wangwanjie/gately/\.github/workflows/release\.yml@refs/tags/v' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+```
+
 El registro también guarda un SBOM y una atestación de procedencia para la imagen. Inspecciona el SBOM con:
 
 ```bash

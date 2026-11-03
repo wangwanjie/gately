@@ -13,6 +13,8 @@ docker run -d --name gately --network host \
 
 Docker 管理機能が不要な場合は、`docker.sock` のマウントを外せます。ポート転送、STUN、Web サービスはホストのポートを待ち受ける必要があるため、`--network host` を推奨します。
 
+GHCR へのアクセスが遅い場合は、Docker Hub の `vanjayak/gately:latest` を使えます。中身は同じイメージです。
+
 ::: tip fnOS ユーザーの方へ
 代わりにネイティブアプリをインストールしてください。fnOS 統一ゲートウェイ経由でデスクトップのアイコンから開け、fnOS 管理者は fnOS のログイン状態でそのままログインできます。詳しくは [fnOS ネイティブアプリ](/ja/docs/guide/install#fnos) を参照してください。
 :::

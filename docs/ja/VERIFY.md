@@ -35,6 +35,14 @@ cosign verify ghcr.io/wangwanjie/gately:latest \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
 
+Docker Hub の `vanjayak/gately` は同じイメージで、署名の ID も同じです。
+
+```bash
+cosign verify docker.io/vanjayak/gately:latest \
+  --certificate-identity-regexp '^https://github.com/wangwanjie/gately/\.github/workflows/release\.yml@refs/tags/v' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+```
+
 レジストリにはイメージの SBOM と来歴証明も保存されています。SBOM は次のコマンドで確認できます。
 
 ```bash
