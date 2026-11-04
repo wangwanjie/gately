@@ -228,11 +228,13 @@ export function siteMatches(s: TopoSite, q: string): boolean {
 }
 
 // TopoFilter 为拓扑筛选条件：listeners 只显示这些监听（key，为空时显示全部），
-// issues 只看运行异常（监听启动失败、站点未运行、后端不健康），blocked 只看出现过这些原因拦截的站点（自启动以来计数）。
+// issues 只看运行异常（监听启动失败、站点未运行、后端不健康），blocked 只看出现过这些原因拦截的站点（自启动以来计数），
+// active 只看活动中的站点、监听级动作与后端（见 siteActive）。
 export interface TopoFilter {
   listeners?: string[]
   issues?: boolean
   blocked?: string[]
+  active?: boolean
 }
 
 // rateActive 判断速率是否表示近期有流量：60 秒均值覆盖“最近 60 秒有过请求”，与活动 IP 的时间窗口一致，
@@ -263,12 +265,31 @@ export function upstreamActive(u: TopoUpstream, seen?: Set<string>): boolean {
   return u.conns > 0 || rateActive(u.rate) || !!seen?.has(u.id)
 }
 
+// actionActive 判断监听级动作（跳转 HTTPS、未匹配站点）最近 60 秒是否处理过请求。
+export function actionActive(a: TopoAction, seen?: Set<string>): boolean {
+  return rateActive(a.rate) || !!seen?.has(a.id)
+}
+
+// countActive 统计视图中活动中的站点数（用于“聚焦活动”按钮上的计数），query 为站点搜索词。
+export function countActive(v: TopologyView, query = ''): number {
+  const seen = seenNodes(v)
+  let n = 0
+  for (const l of v.listeners) {
+    for (const s of l.sites) {
+      if (siteMatches(s, query) && siteActive(s, seen)) {
+        n++
+      }
+    }
+  }
+  return n
+}
+
 // BLOCK_REASONS 为站点拦截计数的原因，与后端 SiteStats.blocked 的键一致
 export const BLOCK_REASONS = ['ban', 'ip', 'country', 'rateLimit', 'waf']
 
 // filterActive 判断筛选条件是否生效（用于按钮高亮与空结果提示）。
 export function filterActive(f: TopoFilter): boolean {
-  return !!(f.listeners?.length || f.issues || f.blocked?.length)
+  return !!(f.listeners?.length || f.issues || f.blocked?.length || f.active)
 }
 
 // listenerFailed 判断监听是否启动失败（已启用但未运行或有错误）。
@@ -287,8 +308,32 @@ export function siteIssue(s: TopoSite): boolean {
 // filterView 按筛选条件裁剪拓扑数据，返回新的视图（不修改原数据），再交给 buildLayout 排版。
 // 各条件同时生效：先按监听筛选；只看异常时，启动失败的监听保留全部站点，其余监听只保留异常站点；
 // 按拦截原因筛选时只保留出现过所选原因拦截的站点。站点被筛掉的监听连同监听级动作一起隐藏。
+// 只看活动时只保留活动中的站点与监听级动作，代理站点只保留活动中的后端（都不活动时站点作为末端显示），
+// 没有活动的监听隐藏；与其他条件同时生效。
 export function filterView(v: TopologyView, f: TopoFilter): TopologyView {
   if (!filterActive(f)) {
+    return v
+  }
+  const out = filterStatic(v, f)
+  if (!f.active) {
+    return out
+  }
+  const seen = seenNodes(v)
+  const listeners: TopoListener[] = []
+  for (const l of out.listeners) {
+    const sites = l.sites.filter((s) => siteActive(s, seen)).map((s) => (s.type === 'proxy' ? { ...s, upstreams: s.upstreams.filter((u) => upstreamActive(u, seen)) } : s))
+    const actions = l.actions.filter((a) => actionActive(a, seen))
+    if (!sites.length && !actions.length) {
+      continue
+    }
+    listeners.push({ ...l, sites, actions })
+  }
+  return { ...out, listeners }
+}
+
+// filterStatic 按监听、运行异常与拦截原因筛选（filterView 的前半部分）。
+function filterStatic(v: TopologyView, f: TopoFilter): TopologyView {
+  if (!(f.listeners?.length || f.issues || f.blocked?.length)) {
     return v
   }
   const only = f.listeners?.length ? new Set(f.listeners) : undefined

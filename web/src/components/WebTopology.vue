@@ -38,6 +38,13 @@
           <span class="kpi" :title="t('webTopology.activeHelp')"><b>{{ data.active }}</b> {{ t('webTopology.active') }}</span>
           <span class="kpi" :title="t('webTopology.activeIpsHelp')"><b>{{ data.ipTotal }}</b> IP</span>
         </div>
+        <!-- 聚焦活动：一键只看最近 60 秒有请求或有进行中请求的站点与后端，忽略折叠与收起，计数为当前活动中的站点数 -->
+        <!-- 触屏轻点会触发悬停提示且不会自动关闭，挡住相邻按钮，触屏上不显示 -->
+        <el-tooltip :content="activeOnly ? t('webTopology.activeOnlyOff') : t('webTopology.activeOnlyHelp')" placement="bottom" :disabled="noHover">
+          <el-button class="active-btn" :class="{ on: activeOnly }" :type="activeOnly ? 'primary' : 'default'" :aria-pressed="activeOnly" @click="toggleActiveOnly">
+            <Activity :size="14" class="btn-ic" />{{ t('webTopology.activeOnly') }}<span class="active-count" :class="{ zero: !activeCount }">{{ activeCount > 999 ? '999+' : activeCount }}</span>
+          </el-button>
+        </el-tooltip>
         <!-- 筛选：按监听、运行异常与拦截原因裁剪拓扑，各条件同时生效 -->
         <el-dropdown trigger="click" placement="bottom-end" :hide-on-click="false" :max-height="460" @command="onFilterCommand">
           <el-button :type="filtering ? 'primary' : 'default'">
@@ -119,7 +126,7 @@
             </el-dropdown-menu>
           </template>
         </el-dropdown>
-        <el-button v-if="listenerKeys.length" :icon="allCollapsed ? ChevronsUpDown : ChevronsDownUp" @click="toggleAll">
+        <el-button v-if="listenerKeys.length && !activeOnly" :icon="allCollapsed ? ChevronsUpDown : ChevronsDownUp" @click="toggleAll">
           {{ allCollapsed ? t('common.expandAll') : t('common.collapseAll') }}
         </el-button>
       </div>
@@ -266,7 +273,7 @@
                   </text>
                   <use v-else :href="'#gtopo-' + nodeIcon(n)" :x="n.w * 0.22" :y="n.h * 0.22" :width="n.w * 0.56" :height="n.h * 0.56" class="node-icon" />
                   <text class="rlabel" v-bind="radialLabel(n)" dominant-baseline="central">{{ fit(nodeTitle(n), radialLabel(n).max) }}</text>
-                  <g v-if="n.kind === 'listener'" class="fold" @click.stop="toggleListener(n)">
+                  <g v-if="n.kind === 'listener' && !activeOnly" class="fold" @click.stop="toggleListener(n)">
                     <circle :cx="n.w + 1" :cy="-1" r="7" />
                     <use :href="n.collapsed ? '#gtopo-right' : '#gtopo-down'" :x="n.w - 5" :y="-7" width="12" height="12" />
                   </g>
@@ -283,7 +290,7 @@
                   <text class="title" x="44" y="19">{{ fit(nodeTitle(n), n.w - 64) }}</text>
                   <text class="sub" x="44" y="35">{{ fit(nodeSub(n), n.w - 54) }}</text>
                   <circle v-if="n.kind !== 'more'" class="dot" :cx="n.w - 10" cy="10" r="4" />
-                  <g v-if="n.kind === 'listener'" class="fold" @click.stop="toggleListener(n)">
+                  <g v-if="n.kind === 'listener' && !activeOnly" class="fold" @click.stop="toggleListener(n)">
                     <rect :x="n.w - 26" :y="n.h - 22" width="20" height="18" rx="5" />
                     <use :href="n.collapsed ? '#gtopo-right' : '#gtopo-down'" :x="n.w - 23" :y="n.h - 20" width="14" height="14" />
                   </g>
@@ -296,7 +303,13 @@
             </svg>
             </Transition>
           </div>
-          <div v-if="!layout.nodes.some((n) => n.kind === 'listener')" class="canvas-hint">{{ query || filtering ? t('webTopology.noMatch') : t('webTopology.empty') }}</div>
+          <div v-if="!layout.nodes.some((n) => n.kind === 'listener')" class="canvas-hint">
+            <template v-if="activeOnly && data?.listeners.length">
+              <div>{{ query || filtering ? t('webTopology.activeNoMatch') : t('webTopology.activeNone') }}</div>
+              <el-button class="hint-btn" size="small" @click.stop="toggleActiveOnly" @pointerdown.stop>{{ t('webTopology.activeShowAll') }}</el-button>
+            </template>
+            <template v-else>{{ query || filtering ? t('webTopology.noMatch') : t('webTopology.empty') }}</template>
+          </div>
           <!-- 缩放控件 -->
           <div class="zoom" @click.stop @pointerdown.stop @wheel.stop>
             <el-tooltip :content="t('webTopology.zoomOut')" placement="top">
@@ -405,6 +418,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch, type Compon
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import {
+  Activity,
   AppWindow,
   ArrowRightLeft,
   BarChart3,
@@ -469,6 +483,7 @@ import {
   aliasText,
   aliasURL,
   buildLayout,
+  countActive,
   edgeWidth,
   filterActive,
   filterView,
@@ -626,7 +641,7 @@ function toggleListener(n: LayoutNode) {
 const query = computed(() => props.query.trim())
 
 // 筛选条件只在本页内存中保存，离开页面后恢复为显示全部
-const filter = ref<Required<TopoFilter>>({ listeners: [], issues: false, blocked: [] })
+const filter = ref<Required<Omit<TopoFilter, 'active'>>>({ listeners: [], issues: false, blocked: [] })
 const filtering = computed(() => filterActive(filter.value))
 const filterCount = computed(() => filter.value.listeners.length + filter.value.blocked.length + (filter.value.issues ? 1 : 0))
 // onFilterCommand 处理筛选菜单：issues 切换只看异常，blocked:/listener: 前缀切换对应项，clear 清除全部
@@ -653,6 +668,19 @@ watch(listenerKeys, (keys) => {
     filter.value = { ...filter.value, listeners: kept }
   }
 })
+
+// activeOnly 为“聚焦活动”：只看最近 60 秒有请求或有进行中请求的站点、动作与后端，按设备记住
+const activeOnlyKey = 'gately.topology.activeOnly'
+const activeOnly = ref(readFlag(activeOnlyKey))
+watch(activeOnly, (v) => writeFlag(activeOnlyKey, v))
+// activeCount 为按监听等筛选与搜索后活动中的站点数，未开启聚焦时也显示，提示有多少服务正在被访问
+const activeCount = computed(() => (data.value ? countActive(filterView(data.value, filter.value), query.value) : 0))
+// toggleActiveOnly 切换聚焦活动，并重新适应画布，让留下的节点完整显示
+async function toggleActiveOnly() {
+  activeOnly.value = !activeOnly.value
+  await nextTick()
+  refit()
+}
 
 // 布局方式（树形 / 径向），记住上次的选择
 const layoutKey = 'gately.topology.layout'
@@ -707,8 +735,20 @@ function toggleMore(n: LayoutNode) {
   expanded.value = next
 }
 
-const layout = computed(() => (data.value ? buildLayout(filterView(data.value, filter.value), collapsedSet.value, query.value, { mode: layoutMode.value, expanded: expanded.value }) : undefined))
+// 聚焦活动时只保留活动中的节点，并忽略监听折叠与“还有 N 个”收起，活动中的服务全部直接显示
+const layout = computed(() => {
+  if (!data.value) {
+    return undefined
+  }
+  const v = filterView(data.value, { ...filter.value, active: activeOnly.value })
+  if (activeOnly.value) {
+    return buildLayout(v, new Set(), query.value, { mode: layoutMode.value, limit: Infinity, upstreamLimit: Infinity })
+  }
+  return buildLayout(v, collapsedSet.value, query.value, { mode: layoutMode.value, expanded: expanded.value })
+})
 
+// noHover 为触屏等没有悬停的设备
+const noHover = typeof window !== 'undefined' && !!window.matchMedia?.('(hover: none)').matches
 // 系统开启“减少动态效果”时不播放连线动画
 const reduceMotion = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 // 连线很多时只给高亮链路播放动画，减少重绘
@@ -1187,7 +1227,9 @@ const detail = computed<Detail | undefined>(() => {
         { label: t('webTopology.sites'), value: String(l.sites.length) },
       ]
       // 桑基、旭日、矩形树图与气泡布局的画布上没有折叠按钮，在面板中提供
-      d.actions.push({ key: 'fold', label: n.collapsed ? t('common.expand') : t('common.collapse'), icon: n.collapsed ? ChevronsUpDown : ChevronsDownUp, run: () => toggleListener(n) })
+      if (!activeOnly.value) {
+        d.actions.push({ key: 'fold', label: n.collapsed ? t('common.expand') : t('common.collapse'), icon: n.collapsed ? ChevronsUpDown : ChevronsDownUp, run: () => toggleListener(n) })
+      }
       d.actions.push({ key: 'edit', label: t('webTopology.editListener'), icon: Pencil, run: () => emit('editListener', n.id.slice(2)) })
       break
     }
@@ -1534,6 +1576,12 @@ function fitView(all = false, smooth = false) {
   if (smooth) {
     animate()
   }
+  // 聚焦活动时节点通常不多，各布局都尽量完整显示，不必再滚动查找；树形等布局最小 0.5 倍，避免文字太小
+  if (!all && activeOnly.value) {
+    const floor = mode && (isColumnar(mode) || mode === 'vertical') ? 0.5 : MIN_SCALE
+    setView(Math.min(1, Math.max(floor, Math.min(sw, sh))), 0, 0)
+    return
+  }
   if (!all && mode === 'vertical') {
     const s = Math.min(1, Math.max(0.5, sh))
     const g = layout.value!.byId.get('gately')
@@ -1720,10 +1768,13 @@ watch(layoutMode, async () => {
   await nextTick()
   refit()
 })
-watch([viewW, viewH], () => {
+// 视口或内容尺寸变化（展开、聚焦活动时服务出现或消失）时，未手动平移缩放过就重新适应，否则只修正平移范围
+watch([box, viewW, viewH], () => {
   if (!userMoved && layout.value) {
     fitView()
+    return
   }
+  setView(scale.value, tx.value, ty.value)
 })
 
 // ---- 调整高度 ----
@@ -1795,9 +1846,6 @@ function onKeydown(e: KeyboardEvent) {
     toggleFull()
   }
 }
-watch([box, viewW, viewH], () => {
-  setView(scale.value, tx.value, ty.value)
-})
 
 function setIp(ip: string) {
   ipFilter.value = ip
@@ -2423,7 +2471,37 @@ defineExpose({ reload })
 .canvas-hint {
   position: absolute;
   inset: 40% 0 auto;
+  /* 聚焦活动没有结果时文字下方还有“显示全部”按钮，上下排列 */
+  flex-direction: column;
+  padding: 0 16px;
+  text-align: center;
   pointer-events: none;
+}
+.hint-btn {
+  margin-top: 10px;
+  pointer-events: auto;
+}
+/* 聚焦活动按钮右侧的活动站点数：有活动时用主色，没有时灰色 */
+.active-count {
+  min-width: 18px;
+  height: 18px;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--el-color-primary-light-8);
+  color: var(--el-color-primary);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+  font-variant-numeric: tabular-nums;
+}
+.active-count.zero {
+  background: var(--el-fill-color);
+  color: var(--el-text-color-secondary);
+}
+.active-btn.on .active-count {
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
 }
 .cols text {
   font-size: 10.5px;

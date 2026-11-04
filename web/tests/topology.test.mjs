@@ -1,7 +1,7 @@
 // 拓扑视图纯函数的单元测试：node --test tests/（Node 22.18+ 可直接加载 .ts）
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { ROW, PAD_Y, Aliases, activeAt, aliasDomain, aliasDomainText, aliasIP, aliasText, aliasURL, filterActive, filterView, buildLayout, resolveId, isColumnar, maskDomain, maskDomainText, edgeWidth, flowLevel, formatCount, formatQps, ipPath, isValidIP, maskIP, maskText, maskURL, nodeCovers, pathOf, siteMatches, terminalId } from '../src/topology.ts'
+import { ROW, PAD_Y, Aliases, activeAt, actionActive, countActive, seenNodes, siteActive, upstreamActive, aliasDomain, aliasDomainText, aliasIP, aliasText, aliasURL, filterActive, filterView, buildLayout, resolveId, isColumnar, maskDomain, maskDomainText, edgeWidth, flowLevel, formatCount, formatQps, ipPath, isValidIP, maskIP, maskText, maskURL, nodeCovers, pathOf, siteMatches, terminalId } from '../src/topology.ts'
 
 const rate = (qps = 0, bps = 0) => ({ qps, bps, qps60: qps })
 const up = (id, url, healthy = true) => ({ id, url, weight: 1, healthy, conns: 0, requests: 0, bytes: 0, rate: rate(1, 10) })
@@ -441,6 +441,66 @@ test('代号打码：同值同号、不同值不同号、不保留片段', () =>
   assert.equal(aliasIP(new Aliases(), '203.0.113.46', 'Visitor'), 'Visitor-01')
 })
 
+test('siteActive 等按 60 秒均值、进行中请求与活动 IP 判断活动', () => {
+  const idle = site('s:a/q', { rate: rate() })
+  assert.equal(siteActive(idle), false)
+  // 只有 60 秒均值（10 秒均值已归零）仍算活动，避免偶发请求的站点反复出现、消失
+  assert.equal(siteActive({ ...idle, rate: { qps: 0, bps: 0, qps60: 0.02 } }), true)
+  assert.equal(siteActive({ ...idle, active: 1 }), true)
+  // 长连接只有下行流量时同样算活动
+  assert.equal(siteActive({ ...idle, rate: { qps: 0, bps: 512, qps60: 0 } }), true)
+  assert.equal(siteActive(idle, new Set(['s:a/q'])), true)
+  const u = idleUp('u:a/q/0', 'http://10.0.0.1')
+  assert.equal(upstreamActive(u), false)
+  assert.equal(upstreamActive({ ...u, conns: 2 }), true)
+  assert.equal(upstreamActive(u, new Set(['u:a/q/0'])), true)
+  const a = { id: 'a:a/notFound', kind: 'notFound', requests: 9, rate: rate() }
+  assert.equal(actionActive(a), false)
+  assert.equal(actionActive(a, new Set(['a:a/notFound'])), true)
+  const v = view()
+  v.ips = [{ ip: '1.1.1.1', nodes: ['s:a/app', 'u:a/app/1'], active: 1, last: 99 }]
+  assert.deepEqual([...seenNodes(v)].sort(), ['s:a/app', 'u:a/app/1'])
+})
+
+test('filterView 只看活动：保留活动中的站点、动作与后端，隐藏没有活动的监听', () => {
+  const v = view()
+  const [la, lb] = v.listeners
+  la.sites.push(idleSite('s:a/idle', 'u:a/idle/0'))
+  // app 只有一个后端活动中；默认站点（断开连接）空闲；跳转动作空闲
+  la.sites[0].upstreams[1] = idleUp('u:a/app/1', 'http://10.0.0.2:80')
+  la.sites[1] = { ...la.sites[1], rate: rate() }
+  la.actions = [{ id: 'a:a/redirect', kind: 'redirect', requests: 3, rate: rate() }, { id: 'a:a/notFound', kind: 'notFound', requests: 1, rate: rate(0.5) }]
+  lb.sites = [idleSite('s:b/nas', 'u:b/nas/0')]
+  // 低频请求的站点均值为 0，但活动 IP 经过它
+  la.sites.push(site('s:a/rare', { rate: rate(), upstreams: [idleUp('u:a/rare/0', 'http://10.0.0.9')] }))
+  v.ips = [{ ip: '1.1.1.1', nodes: ['s:a/rare'], active: 0, last: 90 }]
+
+  const f = filterView(v, { active: true })
+  assert.ok(filterActive({ active: true }))
+  assert.deepEqual(f.listeners.map((l) => l.key), ['a'])
+  const a = f.listeners[0]
+  assert.deepEqual(a.sites.map((s) => s.id), ['s:a/app', 's:a/rare'])
+  assert.deepEqual(a.sites[0].upstreams.map((u) => u.id), ['u:a/app/0'])
+  // 站点活动但后端都没有记录到请求（如被访问控制拦截）时，站点作为末端显示
+  assert.deepEqual(a.sites[1].upstreams, [])
+  assert.deepEqual(a.actions.map((x) => x.id), ['a:a/notFound'])
+  // 不修改原数据
+  assert.equal(v.listeners[0].sites[0].upstreams.length, 2)
+  assert.equal(v.listeners.length, 2)
+
+  const l = buildLayout(f, new Set(), '')
+  assert.ok(l.byId.has('u:a/app/0') && !l.byId.has('u:a/app/1') && !l.byId.has('s:a/idle'))
+  assert.equal(l.byId.get('s:a/rare').leaf, true)
+
+  // 与监听筛选同时生效
+  assert.equal(filterView(v, { active: true, listeners: ['b'] }).listeners.length, 0)
+  // 与只看异常同时生效：异常但空闲的站点不显示
+  la.sites[0].upstreams[0] = { ...la.sites[0].upstreams[0], healthy: false }
+  assert.deepEqual(filterView(v, { active: true, issues: true }).listeners[0].sites.map((s) => s.id), ['s:a/app'])
+  la.sites[0] = { ...la.sites[0], rate: rate(), upstreams: [idleUp('u:a/app/0', 'http://10.0.0.1:80')] }
+  assert.equal(filterView(v, { active: true, issues: true }).listeners.length, 0)
+})
+
 test('buildLayout 收起多余节点时活动中的站点与后端始终显示', () => {
   const v = view()
   const l0 = v.listeners[0]
@@ -468,4 +528,19 @@ test('buildLayout 收起多余节点时活动中的站点与后端始终显示',
   const ul = buildLayout(v, new Set(), '', { upstreamLimit: 1 })
   assert.deepEqual(ul.children.get('s:a/x3'), ['u:a/x3/0', 'u:a/x3/5', 'm:s:a/x3'])
   assert.equal(ul.byId.get('m:s:a/x3').more.count, 4)
+})
+
+test('countActive 统计活动中的站点并按搜索词过滤', () => {
+  const v = view()
+  v.listeners[0].sites.push(idleSite('s:a/idle', 'u:a/idle/0'))
+  // app、默认站点、nas（未运行但速率非零）计入
+  assert.equal(countActive(v), 3)
+  assert.equal(countActive(v, 'app.example'), 1)
+  assert.equal(countActive(v, 'nomatch'), 0)
+  for (const l of v.listeners) {
+    l.sites = l.sites.map((s) => ({ ...s, rate: rate() }))
+  }
+  assert.equal(countActive(v), 0)
+  v.ips = [{ ip: '1.1.1.1', nodes: ['s:b/nas'], active: 1, last: 99 }]
+  assert.equal(countActive(v), 1)
 })
