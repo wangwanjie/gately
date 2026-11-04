@@ -46,6 +46,10 @@ Rotas TLS também podem listar valores ALPN: a rota só corresponde quando o cli
 
 Estas conexões vão para o destino padrão: nenhuma rota corresponde; os dados não pertencem a nenhum dos protocolos acima (por exemplo, protocolos sem assinatura como Shadowsocks, VMess ou BitTorrent criptografado, e protocolos cujo primeiro pacote é só um campo de comprimento e se confunde facilmente com outros, como MongoDB ou DNS over TCP); o ClientHello não pode ser interpretado; ou o cliente não envia nada e não há rota Tempo de espera. Sem destino padrão, essas conexões são encerradas e contadas como "encerradas". Um cliente que se desconecta antes de a detecção terminar é descartado.
 
+## Desativar temporariamente uma rota
+
+Cada rota tem um interruptor à esquerda, e as linhas de rota no cartão da regra também podem ser alternadas diretamente. Uma rota desativada mantém toda a configuração, mas deixa de corresponder; as conexões que cairiam nela passam para rotas mais amplas ou para o destino padrão conforme as regras acima. Rotas desativadas ficam fora da verificação de conflitos de domínio, ALPN e protocolo, então você pode manter uma rota ativa e várias alternativas desativadas para o mesmo domínio ou protocolo e trocar de backend só pelos interruptores. Rotas desativadas continuam sendo validadas. A troca é uma atualização a quente: a escuta não é interrompida e as contagens de acertos são mantidas e continuam ao reativar. Na API, é o campo `disabled` da rota, ativada por padrão.
+
 ## Observações
 
 - Somente TCP. O tráfego UDP, como HTTP/3 (QUIC) ou WireGuard, fica fora do roteamento; use uma regra separada para ele;

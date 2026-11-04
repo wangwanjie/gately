@@ -46,6 +46,10 @@ Las rutas TLS también pueden indicar valores ALPN: la ruta coincide solo cuando
 
 Estas conexiones van al destino predeterminado: ninguna ruta coincide; los datos no pertenecen a ninguno de los protocolos anteriores (por ejemplo, protocolos sin firma como Shadowsocks, VMess o BitTorrent cifrado, y protocolos cuyo primer paquete es solo un campo de longitud y se confunde fácilmente con otros, como MongoDB o DNS over TCP); no se puede analizar el ClientHello; o el cliente no envía nada y no hay ruta Tiempo de espera. Sin destino predeterminado, estas conexiones se cierran y se cuentan como «cerradas». Un cliente que se desconecta antes de que termine la detección se descarta.
 
+## Desactivar temporalmente una ruta
+
+Cada ruta tiene un interruptor a la izquierda, y las líneas de ruta de la tarjeta de la regla también se pueden alternar directamente. Una ruta desactivada conserva toda su configuración pero deja de coincidir; las conexiones que le correspondían pasan a rutas más amplias o al destino predeterminado según las reglas anteriores. Las rutas desactivadas no participan en la comprobación de conflictos de dominio, ALPN y protocolo, así que puede mantener una ruta activa y varias alternativas desactivadas para el mismo dominio o protocolo y cambiar de backend solo con los interruptores. Las rutas desactivadas se siguen validando. El cambio es una actualización en caliente: la escucha no se interrumpe y los contadores de aciertos se conservan y siguen sumando al reactivar la ruta. En la API corresponde al campo `disabled` de la ruta, que por defecto está activada.
+
 ## Notas
 
 - Solo TCP. El tráfico UDP, como HTTP/3 (QUIC) o WireGuard, queda fuera del enrutamiento; usa una regla aparte para él;

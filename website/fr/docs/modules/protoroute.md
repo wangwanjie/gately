@@ -46,6 +46,10 @@ Les routes TLS peuvent aussi lister des valeurs ALPN : la route correspond seule
 
 Ces connexions vont vers la cible par défaut : aucune route ne correspond ; les données n'appartiennent à aucun des protocoles ci-dessus (par exemple des protocoles sans signature comme Shadowsocks, VMess ou BitTorrent chiffré, et des protocoles dont le premier paquet se résume à un champ de longueur et se confond facilement avec d'autres, comme MongoDB ou DNS over TCP) ; le ClientHello ne peut pas être analysé ; ou le client n'envoie rien et il n'existe aucune route Délai d'attente. Sans cible par défaut, ces connexions sont fermées et comptées comme « coupées ». Un client qui se déconnecte avant la fin de la détection est abandonné.
 
+## Désactiver temporairement une route
+
+Chaque route a un interrupteur à gauche, et les lignes de route de la carte de la règle peuvent aussi être basculées directement. Une route désactivée conserve toute sa configuration mais ne correspond plus ; les connexions qui lui revenaient passent aux routes plus larges ou à la cible par défaut selon les règles ci-dessus. Les routes désactivées sont exclues de la vérification des conflits de domaine, d'ALPN et de protocole : vous pouvez donc garder une route active et plusieurs routes alternatives désactivées pour le même domaine ou protocole, et changer de backend en basculant les interrupteurs. Une route désactivée reste validée. Le basculement est une mise à jour à chaud : l'écoute n'est pas interrompue et les compteurs sont conservés et reprennent après réactivation. Dans l'API, il s'agit du champ `disabled` de la route, activée par défaut.
+
 ## Remarques
 
 - TCP uniquement. Le trafic UDP tel que HTTP/3 (QUIC) ou WireGuard passe par une règle distincte ;

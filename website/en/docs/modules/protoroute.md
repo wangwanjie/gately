@@ -46,6 +46,10 @@ TLS routes can also list ALPN values: the route matches only when the client off
 
 These connections go to the default target: no route matches; the data belongs to none of the protocols above (for example protocols without a signature such as Shadowsocks, VMess or encrypted BitTorrent, and protocols whose first packet is only a length field and easily mistaken for others, such as MongoDB or DNS over TCP); the ClientHello cannot be parsed; or the client sends nothing and there is no Wait timeout route. Without a default target these connections are closed and counted as "dropped" on the rule card. A client that disconnects before detection finishes is dropped.
 
+## Temporarily disabling a route
+
+Each route has a switch on its left, and the route lines on the rule card can be toggled directly. A disabled route keeps all its settings but no longer matches; connections that would have hit it fall through to broader routes or the default target as described above. Disabled routes are excluded from domain, ALPN and protocol conflict checks, so you can keep one enabled and several disabled alternative routes for the same domain or protocol and switch backends by flipping the switches. A disabled route is still validated. Toggling is a hot update: listeners are not interrupted and hit counts are kept and continue after the route is re-enabled. In the API this is the route's `disabled` field, which defaults to enabled.
+
 ## Notes
 
 - TCP only. UDP traffic such as HTTP/3 (QUIC) or WireGuard is not routed; use a separate rule for it;

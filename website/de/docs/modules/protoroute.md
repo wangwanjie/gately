@@ -46,6 +46,10 @@ TLS-Routen können außerdem ALPN-Werte enthalten: Die Route passt dann nur, wen
 
 Diese Verbindungen gehen an das Standardziel: Keine Route passt; die Daten gehören zu keinem der obigen Protokolle (zum Beispiel Protokolle ohne Signatur wie Shadowsocks, VMess oder verschlüsseltes BitTorrent sowie Protokolle, deren erstes Paket nur aus einem Längenfeld besteht und sich leicht mit anderen verwechseln lässt, etwa MongoDB oder DNS over TCP); das ClientHello lässt sich nicht parsen; oder der Client sendet nichts und es gibt keine Route „Warte-Timeout“. Ohne Standardziel werden diese Verbindungen geschlossen und als „getrennt“ gezählt. Ein Client, der die Verbindung vor Abschluss der Erkennung abbricht, wird verworfen.
 
+## Routen vorübergehend deaktivieren
+
+Jede Route hat links einen Schalter, und die Routenzeilen auf der Regelkarte lassen sich direkt umschalten. Eine deaktivierte Route behält alle Einstellungen, passt aber nicht mehr; Verbindungen, die sie getroffen hätten, gehen nach den obigen Regeln an allgemeinere Routen oder das Standardziel. Deaktivierte Routen werden bei der Konfliktprüfung für Domains, ALPN und Protokolle ignoriert, sodass Sie für dieselbe Domain oder dasselbe Protokoll eine aktive und mehrere deaktivierte Ausweichrouten behalten und das Backend nur per Schalter wechseln können. Deaktivierte Routen werden weiterhin validiert. Das Umschalten ist ein Hot-Update: Listener werden nicht unterbrochen, Trefferzahlen bleiben erhalten und zählen nach dem erneuten Aktivieren weiter. In der API ist dies das Feld `disabled` der Route, standardmäßig aktiviert.
+
 ## Hinweise
 
 - Nur TCP. UDP-Verkehr wie HTTP/3 (QUIC) oder WireGuard wird nicht geroutet; verwenden Sie dafür eine eigene Regel;
