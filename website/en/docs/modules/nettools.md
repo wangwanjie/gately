@@ -104,7 +104,7 @@ The "Self-check" button on the overview page (also offered in the first-start on
 | NAT | Whether this machine holds a public IPv4 / IPv6 address directly; a 100.64.0.0/10 address on a network interface suggests carrier-grade NAT (overlay interfaces such as Tailscale are excluded) |
 | System time | Estimates clock offset from the response time of the lookup services; more than 60 seconds breaks two-factor codes and certificate validation |
 | Ports 80 / 443 | Whether each port is free, already in use, or cannot be listened on due to missing permission |
-| DDNS resolution | For records that use a dynamic address, whether the domain currently resolves to this machine's outbound address |
+| DDNS resolution | For records that use a dynamic address, whether the domain currently resolves to this machine's outbound address. The local DNS is asked first; if it does not return this machine's address, public DNS (223.5.5.5, 119.29.29.29, 1.1.1.1, 8.8.8.8) is asked as well, and the check passes if either returns it, so an occasional local DNS timeout or stale cache does not cause a false warning. When no DNS answers, it reports a failed lookup, separate from a missing record |
 | Certificates | Certificates that have expired or expire within 14 days |
 | HTTPS site certificates | Sites on enabled HTTPS listeners whose domains have no matching certificate (these domains fail during the TLS handshake) |
 | frp conflicts | Duplicate proxy names in frpc, and proxy name, domain or remote port conflicts reported by frps in the last 30 minutes of logs (common when several devices copy the same frpc config) |

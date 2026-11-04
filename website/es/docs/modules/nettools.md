@@ -104,7 +104,7 @@ El botón «Autodiagnóstico» de la página «Resumen» (también disponible en
 | NAT | Si el equipo tiene directamente una IPv4 / IPv6 pública; si una interfaz tiene una dirección de 100.64.0.0/10, avisa de que puede estar detrás de un NAT de operador (se excluyen las interfaces de redes superpuestas como Tailscale) |
 | Hora del sistema | Estima el desfase del reloj a partir de la hora de respuesta de los servicios de consulta; más de 60 segundos hace fallar los códigos de dos factores y la validación de certificados |
 | Puertos 80 / 443 | Si están libres, ya ocupados o sin permiso para escuchar |
-| Resolución DDNS | Si el dominio de cada registro con dirección dinámica resuelve ahora a la dirección de salida de este equipo |
+| Resolución DDNS | Si el dominio de cada registro con dirección dinámica resuelve ahora a la dirección de salida de este equipo. Primero se consulta el DNS local; si no devuelve la dirección de este equipo, se consulta también DNS público (223.5.5.5, 119.29.29.29, 1.1.1.1, 8.8.8.8) y la comprobación pasa si cualquiera la devuelve, para que un tiempo de espera ocasional o una caché antigua del DNS local no generen avisos falsos. Si ningún DNS responde, se indica una consulta fallida, distinta de un registro inexistente |
 | Certificados | Certificados caducados o que caducan en los próximos 14 días |
 | Certificados de sitios HTTPS | En los listeners HTTPS activados, qué dominios de sitio no tienen un certificado que los cubra (esos dominios fallan en el handshake TLS) |
 | Conflictos de frp | Proxies de frpc con nombres repetidos, y conflictos de nombre de proxy, dominio o puerto remoto que frps haya notificado en los registros de los últimos 30 minutos (habitual cuando varios equipos copian la misma configuración de frpc) |
