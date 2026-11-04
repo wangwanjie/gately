@@ -187,6 +187,8 @@
   "userRoutesHelp": "Após o login, cada usuário é enviado para seu próprio backend. Usuários não listados e visitantes sem login em caminhos públicos usam os backends do site. Use o nome do usuário do site ou compartilhado, provedor-key:identificador para login de terceiros, ou o Remote-User retornado pela autenticação encaminhada. Regras de caminho com backends próprios têm prioridade; as que só adicionam cabeçalhos usam os backends do usuário. Equivale a map $remote_user $backend do nginx",
   "userHeader": "Passar nome de usuário",
   "userHeaderHelp": "Após o login, o nome de usuário é enviado ao backend neste cabeçalho; o mesmo cabeçalho enviado pelo visitante é removido. Deixe em branco para não passar",
+  "emailHeader": "Passar e-mail",
+  "emailHeaderHelp": "Após o login, o e-mail do usuário é enviado ao backend neste cabeçalho (para apps que usam o e-mail como conta, como o Firefly III); o mesmo cabeçalho enviado pelo visitante é removido. O e-mail vem das configurações do usuário compartilhado ou do Remote-Email retornado pela autenticação encaminhada; usuários do site e login de terceiros não o passam. Deixe em branco para não passar",
   "userRoutesTag": "{count} regras por usuário",
   "probeRule": "Bloquear sondagem",
   "probeRuleHelp": "Criar uma regra de sondagem de caminhos web para este listener em Proteção contra intrusões",

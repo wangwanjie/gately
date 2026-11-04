@@ -2362,6 +2362,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `denyClose` | boolean |
 | `disableKeepAlives` | boolean |
 | `domains` | Lista de string |
+| `emailHeader` | string |
 | `enable` | boolean |
 | `errorPage` | `webservice.ErrorPageOptions` |
 | `forwardAuth` | `webservice.ForwardAuth` |

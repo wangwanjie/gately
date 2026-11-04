@@ -274,20 +274,30 @@ func sessionNames(sess *siteSession) []string {
 	return names
 }
 
+// sessionVisitor 返回会话对应的访客身份。只有共享用户会话带邮箱，取当前配置中的邮箱，修改后立即生效；
+// 站点用户与第三方登录没有可信的邮箱
+func (a *authenticator) sessionVisitor(sess *siteSession) visitor {
+	v := visitor{names: sessionNames(sess)}
+	if sess.Shared {
+		v.email = a.shared.get().users[sess.User].Email
+	}
+	return v
+}
+
 // sessionIdentity 只读取已登录的会话（站点 Cookie 或单点登录 Cookie），不要求登录，用于无需认证的路径识别用户
-func (a *authenticator) sessionIdentity(r *http.Request, s Site) []string {
+func (a *authenticator) sessionIdentity(r *http.Request, s Site) visitor {
 	if !s.WebAuth {
-		return nil
+		return visitor{}
 	}
 	if sess, ok := a.cookieSession(r, s); ok {
-		return sessionNames(sess)
+		return a.sessionVisitor(sess)
 	}
 	if s.SharedUsers {
 		if sess, ok := a.ssoSession(r, s); ok {
-			return sessionNames(sess)
+			return a.sessionVisitor(sess)
 		}
 	}
-	return nil
+	return visitor{}
 }
 
 // isBrowser 粗略判断是否为浏览器访问，非浏览器回退到基本认证。
@@ -302,62 +312,65 @@ func (a *authenticator) check(w http.ResponseWriter, r *http.Request, s Site) bo
 	return ok
 }
 
-// checkUser 与 check 相同，放行时同时返回访客的身份标识（见 sessionNames），基本认证为用户名。
-func (a *authenticator) checkUser(w http.ResponseWriter, r *http.Request, s Site) ([]string, bool) {
+// checkUser 与 check 相同，放行时同时返回访客的身份（见 visitor），基本认证为用户名。
+func (a *authenticator) checkUser(w http.ResponseWriter, r *http.Request, s Site) (visitor, bool) {
 	ip := clientAddr(r).Addr().String()
 	if s.WebAuth {
 		switch r.URL.Path {
 		case oauthStart:
 			a.handleOAuthStart(w, r, s, a.oauthEnv())
-			return nil, false
+			return visitor{}, false
 		case oauthFinish:
 			a.handleOAuthFinish(w, r, s)
-			return nil, false
+			return visitor{}, false
 		}
 		if strings.HasPrefix(r.URL.Path, authPath) {
 			a.handleLogin(w, r, s, ip)
-			return nil, false
+			return visitor{}, false
 		}
 		if sess, ok := a.cookieSession(r, s); ok {
-			return sessionNames(sess), true
+			return a.sessionVisitor(sess), true
 		}
 		if s.SharedUsers {
 			if sess, ok := a.ssoSession(r, s); ok {
-				return sessionNames(sess), true
+				return a.sessionVisitor(sess), true
 			}
 		}
 		if isBrowser(r) {
 			target := authPath + "/login?next=" + url.QueryEscape(r.URL.RequestURI())
 			http.Redirect(w, r, target, http.StatusFound)
-			return nil, false
+			return visitor{}, false
 		}
 	}
 	// 基本认证（网页认证对非浏览器的回退）；只配置了第三方身份时非浏览器无法登录
 	if len(s.Users) == 0 && !s.SharedUsers {
 		http.Error(w, "401 Unauthorized", http.StatusUnauthorized)
-		return nil, false
+		return visitor{}, false
 	}
 	if name, pass, ok := r.BasicAuth(); ok {
 		key := limitKey(ip)
 		if !a.reserve(key) {
 			http.Error(w, "429 Too Many Requests", http.StatusTooManyRequests)
-			return nil, false
+			return visitor{}, false
 		}
 		valid := verifyUser(s.Users, name, pass)
+		v := visitor{names: []string{name}}
 		if !valid && s.SharedUsers {
 			// 基本认证无法输入动态验证码，启用了 TOTP 的共享用户只能通过网页登录
 			if u, ok := a.shared.get().checkPassword(name, pass); ok && u.TOTPSecret == "" {
 				valid = true
+				// 只有按共享用户通过时才带邮箱：与共享用户同名的站点用户优先，不能拿到共享用户的邮箱
+				v.email = u.Email
 			}
 		}
 		a.release(key, valid)
 		if valid {
-			return []string{name}, true
+			return v, true
 		}
 	}
 	w.Header().Set("WWW-Authenticate", `Basic realm="Gately", charset="UTF-8"`)
 	http.Error(w, "401 Unauthorized", http.StatusUnauthorized)
-	return nil, false
+	return visitor{}, false
 }
 
 // loginSrc 是网页认证登录页的主体（外壳与样式见 webpage 包）。设置了 Pending 时在登录卡片上弹出动态验证码对话框。

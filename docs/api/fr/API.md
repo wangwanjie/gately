@@ -2362,6 +2362,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `denyClose` | boolean |
 | `disableKeepAlives` | boolean |
 | `domains` | Tableau de string |
+| `emailHeader` | string |
 | `enable` | boolean |
 | `errorPage` | `webservice.ErrorPageOptions` |
 | `forwardAuth` | `webservice.ForwardAuth` |

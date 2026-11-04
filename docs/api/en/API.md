@@ -2362,6 +2362,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `denyClose` | boolean |
 | `disableKeepAlives` | boolean |
 | `domains` | Array of string |
+| `emailHeader` | string |
 | `enable` | boolean |
 | `errorPage` | `webservice.ErrorPageOptions` |
 | `forwardAuth` | `webservice.ForwardAuth` |

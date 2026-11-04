@@ -2362,6 +2362,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `denyClose` | boolean |
 | `disableKeepAlives` | boolean |
 | `domains` | Array von string |
+| `emailHeader` | string |
 | `enable` | boolean |
 | `errorPage` | `webservice.ErrorPageOptions` |
 | `forwardAuth` | `webservice.ForwardAuth` |

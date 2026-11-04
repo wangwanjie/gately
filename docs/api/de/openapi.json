@@ -3588,6 +3588,9 @@
             },
             "type": "array"
           },
+          "emailHeader": {
+            "type": "string"
+          },
           "enable": {
             "type": "boolean"
           },

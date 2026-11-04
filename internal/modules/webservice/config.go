@@ -71,6 +71,9 @@ type Site struct {
 	UserRoutes []UserRoute `json:"userRoutes"`
 	// UserHeader 非空时把认证用户名写入该请求头传给后端（如 X-Remote-User），访客自带的同名头会被删除
 	UserHeader string `json:"userHeader"`
+	// EmailHeader 非空时把认证用户的邮箱写入该请求头传给后端（如 Remote-Email），访客自带的同名头会被删除；
+	// 邮箱只来自填写了邮箱的共享用户或转发认证返回的 Remote-Email，站点用户与第三方登录不传
+	EmailHeader string `json:"emailHeader"`
 
 	// 重定向：RedirectTo 为目标地址前缀，可用 {host} 代表访客请求的域名；KeepPath 时附加原路径与查询串
 	RedirectTo   string `json:"redirectTo"`

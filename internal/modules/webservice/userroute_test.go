@@ -154,7 +154,7 @@ func TestValidateUserRoutes(t *testing.T) {
 func TestUserRouteCacheKey(t *testing.T) {
 	h := &siteHandler{site: Site{UserHeader: "X-Remote-User"}, userRoutes: []*userRouteHandler{{users: map[string]bool{"admin": true}}}}
 	key := func(names ...string) string {
-		r := h.withIdentity(httptest.NewRequest("GET", "http://a.test/x", nil), names)
+		r := h.withIdentity(httptest.NewRequest("GET", "http://a.test/x", nil), visitor{names: names})
 		return cacheKey(r)
 	}
 	if key("admin") == key("bob") || key("bob") == key("carol") || key() == key("bob") {
@@ -199,5 +199,192 @@ func TestDelHeaderVariants(t *testing.T) {
 	f.stripIdentity(r)
 	if len(r.Header) != 0 {
 		t.Fatalf("转发认证应删除伪造身份头的下划线变体: %v", r.Header)
+	}
+}
+
+// emailBackend 返回后端收到的所有邮箱头（含下划线写法的变体），便于检查伪造的头是否都被删除。
+func emailBackend(t *testing.T, header string) *httptest.Server {
+	t.Helper()
+	want := strings.ReplaceAll(header, "_", "-")
+	b := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var got []string
+		for k, vs := range r.Header {
+			if strings.EqualFold(strings.ReplaceAll(k, "_", "-"), want) {
+				got = append(got, vs...)
+			}
+		}
+		_, _ = w.Write([]byte(strings.Join(got, ",")))
+	}))
+	t.Cleanup(b.Close)
+	return b
+}
+
+// TestEmailHeaderSharedUsers 覆盖网页认证下传递邮箱：只有共享用户带邮箱，同名站点用户与第三方登录不带，
+// 访客伪造的邮箱头（含下划线变体）在任何路径上都被删除，修改共享用户邮箱后立即生效。
+func TestEmailHeaderSharedUsers(t *testing.T) {
+	backend := emailBackend(t, "Remote-Email")
+	l := Listener{Sites: []Site{{
+		Enable: true, Key: "fx", Domains: []string{"fx.test"}, Targets: []string{backend.URL},
+		WebAuth: true, SharedUsers: true, Users: []string{"bob:site-pw"}, OAuthUsers: []string{"github:alice"},
+		AuthOptional: true, Rules: []PathRule{{Prefix: "/", Auth: RuleAuthOn}, {Prefix: "/public/", Auth: RuleAuthOff}},
+		EmailHeader: "remote-email",
+	}}}
+	addr, rn := startRunner(t, l, nil, nil)
+	setUsers := func(users ...AuthUser) []AuthUser {
+		t.Helper()
+		out, err := normalizeAuthUsers(users, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		rn.auth.shared.set(out, "")
+		return out
+	}
+	users := setUsers(
+		AuthUser{Name: "alice", Password: "alice-pw", Email: "alice@example.com"},
+		AuthUser{Name: "bob", Password: "shared-pw", Email: "bob@example.com"},
+		AuthUser{Name: "carol", Password: "carol-pw"},
+	)
+	h := rn.route("fx.test")
+	cookieFor := func(issue func(w http.ResponseWriter, r *http.Request)) string {
+		rec := httptest.NewRecorder()
+		issue(rec, httptest.NewRequest("GET", "http://fx.test/", nil))
+		c := rec.Result().Cookies()[0]
+		return c.Name + "=" + c.Value
+	}
+	alice := cookieFor(func(w http.ResponseWriter, r *http.Request) { h.auth.issueSharedSession(w, r, h.site, users[0]) })
+	carol := cookieFor(func(w http.ResponseWriter, r *http.Request) { h.auth.issueSharedSession(w, r, h.site, users[2]) })
+	github := cookieFor(func(w http.ResponseWriter, r *http.Request) {
+		h.auth.issueSession(w, r, h.site, "github:1001", "alice")
+	})
+	forged := func(hdr map[string]string) map[string]string {
+		hdr["Remote-Email"] = "admin@example.com"
+		hdr["Remote_Email"] = "admin@example.com"
+		return hdr
+	}
+	cases := []struct {
+		name, path string
+		hdr        map[string]string
+		want       string
+	}{
+		{"共享用户会话", "/", forged(map[string]string{"Cookie": alice}), "alice@example.com"},
+		{"共享用户会话访问公开路径", "/public/x", forged(map[string]string{"Cookie": alice}), "alice@example.com"},
+		{"未填写邮箱的共享用户", "/", forged(map[string]string{"Cookie": carol}), ""},
+		{"第三方登录", "/", forged(map[string]string{"Cookie": github}), ""},
+		{"同名站点用户的基本认证", "/", forged(basicHeader("bob", "site-pw")), ""},
+		{"共享用户的基本认证", "/", forged(basicHeader("bob", "shared-pw")), "bob@example.com"},
+		{"未登录访问公开路径", "/public/x", forged(map[string]string{}), ""},
+	}
+	for _, c := range cases {
+		resp, body := get(t, noRedirect(), addr, "fx.test", c.path, c.hdr)
+		if resp.StatusCode != http.StatusOK || body != c.want {
+			t.Fatalf("%s: 状态 %d，后端收到邮箱 %q，期望 %q", c.name, resp.StatusCode, body, c.want)
+		}
+	}
+	// 未登录访问需要认证的路径被拦下，伪造的邮箱头到不了后端
+	if resp, _ := get(t, noRedirect(), addr, "fx.test", "/", forged(map[string]string{})); resp.StatusCode != http.StatusUnauthorized {
+		t.Fatalf("未登录应 401，实际 %d", resp.StatusCode)
+	}
+	// 修改共享用户的邮箱后，已登录的会话立即传新邮箱
+	users[0].Email = "alice@new.example.com"
+	rn.auth.shared.set(users, "")
+	if _, body := get(t, noRedirect(), addr, "fx.test", "/", map[string]string{"Cookie": alice}); body != "alice@new.example.com" {
+		t.Fatalf("修改邮箱后得到 %q", body)
+	}
+}
+
+// TestEmailHeaderForwardAuth 覆盖转发认证：认证服务返回的 Remote-Email 写入邮箱头；
+// 未复制 Remote-Email 时访客自带的不可信，不写入；认证服务没给用户名时也不传邮箱。
+func TestEmailHeaderForwardAuth(t *testing.T) {
+	authz := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.Header.Get("Cookie") {
+		case "session=ok":
+			w.Header().Set("Remote-User", "alice")
+			w.Header().Set("Remote-Email", "alice@example.com")
+		case "session=nouser":
+			w.Header().Set("Remote-Email", "alice@example.com")
+		default:
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	}))
+	t.Cleanup(authz.Close)
+	backend := emailBackend(t, "X-Email")
+	l := Listener{Sites: []Site{
+		{Enable: true, Domains: []string{"fa.test"}, Targets: []string{backend.URL}, ForwardAuth: ForwardAuth{URL: authz.URL}, EmailHeader: "X-Email"},
+		{Enable: true, Domains: []string{"user-only.test"}, Targets: []string{backend.URL},
+			ForwardAuth: ForwardAuth{URL: authz.URL, CopyHeaders: []string{"Remote-User"}}, EmailHeader: "X-Email"},
+	}}
+	addr, _ := startRunner(t, l, nil, nil)
+	cases := []struct {
+		host, cookie, want string
+	}{
+		{"fa.test", "session=ok", "alice@example.com"},
+		{"fa.test", "session=nouser", ""},
+		{"user-only.test", "session=ok", ""},
+	}
+	for _, c := range cases {
+		hdr := map[string]string{"Cookie": c.cookie, "Remote-Email": "admin@example.com", "X-Email": "admin@example.com", "X_Email": "admin@example.com"}
+		resp, body := get(t, noRedirect(), addr, c.host, "/", hdr)
+		if resp.StatusCode != http.StatusOK || body != c.want {
+			t.Fatalf("%s %s: 状态 %d，后端收到邮箱 %q，期望 %q", c.host, c.cookie, resp.StatusCode, body, c.want)
+		}
+	}
+}
+
+// TestValidateEmailHeader 覆盖邮箱请求头的整理与校验。
+func TestValidateEmailHeader(t *testing.T) {
+	base := func() Site {
+		return Site{Domains: []string{"a.test"}, Targets: []string{"http://127.0.0.1:1"}, WebAuth: true, SharedUsers: true, EmailHeader: " remote-email "}
+	}
+	ok := base()
+	if err := ok.validate(false); err != nil {
+		t.Fatal(err)
+	}
+	if ok.EmailHeader != "Remote-Email" {
+		t.Fatalf("请求头未规范化: %q", ok.EmailHeader)
+	}
+	fwd := Site{Domains: []string{"a.test"}, Targets: []string{"http://127.0.0.1:1"}, ForwardAuth: ForwardAuth{URL: "http://127.0.0.1:9091/"}, EmailHeader: "X-Email"}
+	if err := fwd.validate(false); err != nil {
+		t.Fatalf("转发认证应可传递邮箱: %v", err)
+	}
+	bad := map[string]func(s *Site){
+		"未启用认证":       func(s *Site) { s.WebAuth, s.SharedUsers = false, false },
+		"只有站点用户":      func(s *Site) { s.SharedUsers, s.Users = false, []string{"a:b"} },
+		"非反向代理":       func(s *Site) { s.Type, s.Targets, s.Root = TypeStatic, nil, "/tmp" },
+		"非法名称":        func(s *Site) { s.EmailHeader = "Remote Email" },
+		"禁止的头":        func(s *Site) { s.EmailHeader = "authorization" },
+		"与用户名头相同":     func(s *Site) { s.UserHeader, s.EmailHeader = "X-User", "x-user" },
+		"与用户名头仅下划线不同": func(s *Site) { s.UserHeader, s.EmailHeader = "X-User", "X_User" },
+	}
+	for name, mod := range bad {
+		s := base()
+		mod(&s)
+		if err := s.validate(false); err == nil {
+			t.Errorf("%s 应校验失败", name)
+		}
+	}
+}
+
+// TestEmailHeaderCacheKeyAndValue 覆盖缓存键按邮箱区分（同名的站点用户与共享用户不串用），非法邮箱值不写入请求头。
+func TestEmailHeaderCacheKeyAndValue(t *testing.T) {
+	h := &siteHandler{site: Site{UserHeader: "X-Remote-User", EmailHeader: "Remote-Email"}}
+	do := func(v visitor) *http.Request {
+		return h.withIdentity(httptest.NewRequest("GET", "http://a.test/x", nil), v)
+	}
+	bob := visitor{names: []string{"bob"}}
+	sharedBob := visitor{names: []string{"bob"}, email: "bob@example.com"}
+	if cacheKey(do(bob)) == cacheKey(do(sharedBob)) {
+		t.Fatal("邮箱不同的同名用户缓存键应不同")
+	}
+	if got := do(sharedBob).Header.Get("Remote-Email"); got != "bob@example.com" {
+		t.Fatalf("邮箱头为 %q", got)
+	}
+	r := do(visitor{names: []string{"bob"}, email: "bob@example.com\r\nX-Admin: 1"})
+	if _, ok := r.Header["Remote-Email"]; ok || r.Header.Get("X-Admin") != "" {
+		t.Fatalf("非法邮箱不应写入请求头: %v", r.Header)
+	}
+	if _, ok := do(visitor{email: "x@example.com"}).Header["Remote-Email"]; ok {
+		t.Fatal("未识别出用户时不应传邮箱")
 	}
 }

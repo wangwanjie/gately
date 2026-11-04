@@ -39,6 +39,14 @@ type requestIdentity struct {
 
 type ctxKeyIdentity struct{}
 
+// visitor 是认证识别出的访客身份。
+type visitor struct {
+	// names 为身份标识，第一项为主标识，见 sessionNames；为空表示未识别出身份
+	names []string
+	// email 为来源可信的邮箱：共享用户配置的邮箱，或转发认证服务返回的 Remote-Email；其他情况为空
+	email string
+}
+
 // forbiddenUserHeaders 是不能用来传递用户名的请求头：会影响转发本身或与认证冲突
 var forbiddenUserHeaders = map[string]bool{
 	"Host": true, "Cookie": true, "Authorization": true, "Proxy-Authorization": true,
@@ -47,10 +55,11 @@ var forbiddenUserHeaders = map[string]bool{
 	"X-Forwarded-For": true, "X-Forwarded-Host": true, "X-Forwarded-Proto": true, "X-Forwarded-Port": true, "X-Real-Ip": true,
 }
 
-// validateUserRoutes 校验按用户分流规则与用户名请求头。
+// validateUserRoutes 校验按用户分流规则、用户名请求头与邮箱请求头。
 func (s *Site) validateUserRoutes() error {
 	s.UserHeader = strings.TrimSpace(s.UserHeader)
-	if len(s.UserRoutes) == 0 && s.UserHeader == "" {
+	s.EmailHeader = strings.TrimSpace(s.EmailHeader)
+	if len(s.UserRoutes) == 0 && s.UserHeader == "" && s.EmailHeader == "" {
 		return nil
 	}
 	if s.Type != TypeProxy {
@@ -66,6 +75,23 @@ func (s *Site) validateUserRoutes() error {
 		s.UserHeader = textproto.CanonicalMIMEHeaderKey(s.UserHeader)
 		if forbiddenUserHeaders[s.UserHeader] {
 			return fmt.Errorf("不能用 %s 传递用户名", s.UserHeader)
+		}
+	}
+	if s.EmailHeader != "" {
+		// 邮箱只来自共享用户或转发认证，站点用户与第三方登录没有邮箱，提前提示避免配置了却始终收不到
+		if !s.SharedUsers && s.ForwardAuth.URL == "" {
+			return errors.New("传递邮箱需要启用共享用户或转发认证")
+		}
+		if !httpguts.ValidHeaderFieldName(s.EmailHeader) {
+			return fmt.Errorf("邮箱请求头 %q 无效", s.EmailHeader)
+		}
+		s.EmailHeader = textproto.CanonicalMIMEHeaderKey(s.EmailHeader)
+		if forbiddenUserHeaders[s.EmailHeader] {
+			return fmt.Errorf("不能用 %s 传递邮箱", s.EmailHeader)
+		}
+		// 与用户名请求头同名时其中一个会被覆盖；- 与 _ 在部分后端视为同一个头，一并比较
+		if s.UserHeader != "" && strings.EqualFold(strings.ReplaceAll(s.UserHeader, "_", "-"), strings.ReplaceAll(s.EmailHeader, "_", "-")) {
+			return errors.New("邮箱请求头不能与用户名请求头相同")
 		}
 	}
 	seen := map[string]bool{}
@@ -142,13 +168,16 @@ func (h *siteHandler) dispatchUserRoutes(fallback http.Handler) http.Handler {
 
 // usesIdentity 判断站点是否需要在认证后识别访客身份。
 func (h *siteHandler) usesIdentity() bool {
-	return len(h.userRoutes) > 0 || h.site.UserHeader != ""
+	return len(h.userRoutes) > 0 || h.site.UserHeader != "" || h.site.EmailHeader != ""
 }
 
-// stripUserHeader 删除访客自带的用户名请求头，防止伪造身份。无论路径是否需要认证都执行
+// stripUserHeader 删除访客自带的用户名与邮箱请求头，防止伪造身份。无论路径是否需要认证都执行
 func (h *siteHandler) stripUserHeader(r *http.Request) {
 	if h.site.UserHeader != "" {
 		delHeaderVariants(r.Header, h.site.UserHeader)
+	}
+	if h.site.EmailHeader != "" {
+		delHeaderVariants(r.Header, h.site.EmailHeader)
 	}
 }
 
@@ -163,9 +192,10 @@ func delHeaderVariants(h http.Header, name string) {
 	}
 }
 
-// withIdentity 按访客身份选择分流规则、写入用户名请求头，并把结果放入请求上下文。
-// names 为空表示未识别出身份（未登录或经分享链接访问），使用站点后端且不传用户名。
-func (h *siteHandler) withIdentity(r *http.Request, names []string) *http.Request {
+// withIdentity 按访客身份选择分流规则、写入用户名与邮箱请求头，并把结果放入请求上下文。
+// v.names 为空表示未识别出身份（未登录或经分享链接访问），使用站点后端且不传用户名和邮箱。
+func (h *siteHandler) withIdentity(r *http.Request, v visitor) *http.Request {
+	names := v.names
 	id := requestIdentity{route: -1}
 	for i, ur := range h.userRoutes {
 		if matchUserRoute(ur.users, names) {
@@ -178,6 +208,12 @@ func (h *siteHandler) withIdentity(r *http.Request, names []string) *http.Reques
 		r.Header.Set(h.site.UserHeader, names[0])
 		// 后端可能按用户名返回不同内容，缓存也按用户区分
 		id.cacheTag += "|u:" + names[0]
+	}
+	// 邮箱含控制字符等非法值时不传，避免写出非法请求头导致转发失败
+	if h.site.EmailHeader != "" && len(names) > 0 && v.email != "" && httpguts.ValidHeaderFieldValue(v.email) {
+		r.Header.Set(h.site.EmailHeader, v.email)
+		// 同名的站点用户与共享用户邮箱不同，缓存再按邮箱区分
+		id.cacheTag += "|e:" + v.email
 	}
 	return r.WithContext(context.WithValue(r.Context(), ctxKeyIdentity{}, id))
 }
@@ -200,14 +236,22 @@ func matchUserRoute(users map[string]bool, names []string) bool {
 	return false
 }
 
-// forwardIdentity 返回转发认证通过后认证服务给出的用户名：仅当 Remote-User 在复制的响应头中时可信（访客自带的已被删除）
-func (f *forwardAuther) forwardIdentity(r *http.Request) []string {
+// forwardIdentity 返回转发认证通过后认证服务给出的身份：Remote-User、Remote-Email 仅当在复制的响应头中时可信
+// （访客自带的已被删除，未复制的头可能是访客伪造的）；没有用户名时不认邮箱
+func (f *forwardAuther) forwardIdentity(r *http.Request) visitor {
+	var v visitor
 	for _, h := range f.headers {
-		if textproto.CanonicalMIMEHeaderKey(h) == "Remote-User" {
-			if v := strings.TrimSpace(r.Header.Get(h)); v != "" {
-				return []string{v}
+		switch textproto.CanonicalMIMEHeaderKey(h) {
+		case "Remote-User":
+			if name := strings.TrimSpace(r.Header.Get(h)); name != "" {
+				v.names = []string{name}
 			}
+		case "Remote-Email":
+			v.email = strings.TrimSpace(r.Header.Get(h))
 		}
 	}
-	return nil
+	if len(v.names) == 0 {
+		return visitor{}
+	}
+	return v
 }

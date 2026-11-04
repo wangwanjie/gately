@@ -2362,6 +2362,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `denyClose` | boolean |
 | `disableKeepAlives` | boolean |
 | `domains` | 数组 of string |
+| `emailHeader` | string |
 | `enable` | boolean |
 | `errorPage` | `webservice.ErrorPageOptions` |
 | `forwardAuth` | `webservice.ForwardAuth` |

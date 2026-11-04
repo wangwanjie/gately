@@ -443,6 +443,11 @@
                 <el-input v-model="site.userHeader" class="mono w-260" placeholder="X-Remote-User" />
                 <div class="form-help">{{ t('web.userHeaderHelp') }}</div>
               </el-form-item>
+              <!-- 邮箱只来自共享用户或转发认证，其他认证方式没有邮箱可传，不显示 -->
+              <el-form-item v-if="emailHeaderOn" :label="t('web.emailHeader')">
+                <el-input v-model="site.emailHeader" class="mono w-260" placeholder="Remote-Email" />
+                <div class="form-help">{{ t('web.emailHeaderHelp') }}</div>
+              </el-form-item>
             </template>
             <el-form-item :label="t('web.ipAccess')">
               <el-radio-group v-model="site.ipMode">
@@ -660,6 +665,8 @@ interface Site {
   locations: Location[]
   userRoutes: UserRoute[]
   userHeader: string
+  // 认证用户的邮箱写入该请求头，仅共享用户与转发认证有邮箱
+  emailHeader: string
   redirectTo: string
   redirectCode: number
   keepPath: boolean
@@ -856,6 +863,8 @@ const fwdHeadersText = useListText(() => site.value.forwardAuth?.copyHeaders, (v
 const forwardAuthOn = ref(false)
 // 本站点是否启用了任一认证方式，启用时不能转发 Gately 登录 Cookie
 const localAuthOn = computed(() => site.value.webAuth || site.value.basicAuth || forwardAuthOn.value)
+// 能传递邮箱的认证方式：使用共享用户的基本/网页认证，或转发认证
+const emailHeaderOn = computed(() => forwardAuthOn.value || ((site.value.webAuth || site.value.basicAuth) && site.value.sharedUsers))
 const trustedText = bind(
   () => settings.value?.trustedProxies,
   (v) => {
@@ -902,6 +911,7 @@ function emptySite(): Site {
     locations: [],
     userRoutes: [],
     userHeader: '',
+    emailHeader: '',
     redirectTo: '',
     redirectCode: 302,
     keepPath: true,
@@ -1484,6 +1494,7 @@ function openSite(l: ListenerView, row?: SiteRow, copy = false) {
   draft.locations = draft.locations ?? []
   draft.userRoutes = draft.userRoutes ?? []
   draft.userHeader = draft.userHeader ?? ''
+  draft.emailHeader = draft.emailHeader ?? ''
   draft.forwardAuth = Object.assign({ url: '', loginUrl: '', copyHeaders: [] }, draft.forwardAuth)
   forwardAuthOn.value = !!draft.forwardAuth.url
   // 旧配置没有这些对象，补全默认值后可直接编辑
@@ -1577,6 +1588,9 @@ async function saveSite() {
   if (site.value.type !== 'proxy' || !localAuthOn.value) {
     site.value.userRoutes = []
     site.value.userHeader = ''
+  }
+  if (site.value.type !== 'proxy' || !emailHeaderOn.value) {
+    site.value.emailHeader = ''
   }
   const l = plain(siteOwner)
   l.sites = l.sites ?? []

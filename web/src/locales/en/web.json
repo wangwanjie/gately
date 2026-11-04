@@ -187,6 +187,8 @@
   "userRoutesHelp": "After sign-in, send each user to a different backend. Users not listed, and visitors who are not signed in on public paths, use the site backends. Use the site user or shared user name, provider-key:id for third-party sign-in, or the Remote-User returned by forward auth. Path rules with their own backends take priority; path rules that only add headers use the user's backends. Like nginx map $remote_user $backend",
   "userHeader": "Pass user name",
   "userHeaderHelp": "After sign-in, put the user name in this request header for the backend; the same header sent by visitors is removed. Leave empty to not pass it",
+  "emailHeader": "Pass email",
+  "emailHeaderHelp": "After sign-in, put the user's email in this request header for the backend (for apps that use email as the account, such as Firefly III); the same header sent by visitors is removed. The email comes from the shared user's settings or the Remote-Email returned by forward auth; site users and third-party sign-in pass none. Leave empty to not pass it",
   "userRoutesTag": "{count} user routes",
   "probeRule": "Probe ban",
   "probeRuleHelp": "Create a Web path probing rule for this listener in Intrusion protection",

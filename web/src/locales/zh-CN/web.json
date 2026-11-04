@@ -187,6 +187,8 @@
   "userRoutesHelp": "认证通过后按用户把请求分到不同后端，未列出的用户和公开路径上的未登录访客使用站点后端；用户名为站点用户或共享用户的用户名，第三方登录写 提供方key:标识，转发认证按认证服务返回的 Remote-User 匹配。填写了后端的分路径规则优先，只追加请求头的分路径规则改用该用户的后端。相当于 nginx 的 map $remote_user $backend",
   "userHeader": "传递用户名",
   "userHeaderHelp": "认证通过后把用户名写入该请求头传给后端，访客自带的同名请求头会被删除；留空不传递",
+  "emailHeader": "传递邮箱",
+  "emailHeaderHelp": "认证通过后把用户的邮箱写入该请求头传给后端（如 Firefly III 等以邮箱为账号的应用），访客自带的同名请求头会被删除；邮箱来自共享用户的设置或转发认证返回的 Remote-Email，站点用户和第三方登录不传；留空不传递",
   "userRoutesTag": "按用户分流 {count} 条",
   "probeRule": "路径探测封禁",
   "probeRuleHelp": "在入侵防护中为这个监听创建 Web 路径探测规则",

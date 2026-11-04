@@ -2362,6 +2362,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `denyClose` | boolean |
 | `disableKeepAlives` | boolean |
 | `domains` | Array de string |
+| `emailHeader` | string |
 | `enable` | boolean |
 | `errorPage` | `webservice.ErrorPageOptions` |
 | `forwardAuth` | `webservice.ForwardAuth` |

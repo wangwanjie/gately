@@ -187,6 +187,8 @@
   "userRoutesHelp": "Tras iniciar sesión, cada usuario se envía a su propio backend. Los usuarios no listados y los visitantes sin sesión en rutas públicas usan los backends del sitio. Usa el nombre del usuario del sitio o compartido, proveedor-key:identificador para inicio de sesión de terceros, o el Remote-User devuelto por la autenticación delegada. Las reglas de ruta con backends propios tienen prioridad; las que solo añaden cabeceras usan los backends del usuario. Equivale a map $remote_user $backend de nginx",
   "userHeader": "Pasar nombre de usuario",
   "userHeaderHelp": "Tras iniciar sesión, el nombre de usuario se envía al backend en esta cabecera; la misma cabecera enviada por el visitante se elimina. Déjalo vacío para no pasarlo",
+  "emailHeader": "Pasar correo",
+  "emailHeaderHelp": "Tras iniciar sesión, el correo del usuario se envía al backend en esta cabecera (para apps que usan el correo como cuenta, como Firefly III); la misma cabecera enviada por el visitante se elimina. El correo proviene de la configuración del usuario compartido o del Remote-Email devuelto por la autenticación reenviada; los usuarios del sitio y el inicio de sesión de terceros no lo pasan. Déjalo vacío para no pasarlo",
   "userRoutesTag": "{count} reglas por usuario",
   "probeRule": "Bloqueo de sondeos",
   "probeRuleHelp": "Crear una regla de sondeo de rutas web para esta escucha en Protección contra intrusiones",

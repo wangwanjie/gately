@@ -858,8 +858,8 @@ func (h *siteHandler) serveInner(rec http.ResponseWriter, r *http.Request) {
 	if len(h.rewrites) > 0 && h.redirectBeforeAuth(rec, r) {
 		return
 	}
-	// names 为认证识别出的访客身份，用于按用户分流与传递用户名
-	var names []string
+	// id 为认证识别出的访客身份，用于按用户分流与传递用户名、邮箱
+	var id visitor
 	if h.needAuth(h.matchRule(r.URL.Path)) {
 		handled, allowed := h.tryShare(rec, r)
 		if handled {
@@ -870,20 +870,20 @@ func (h *siteHandler) serveInner(rec http.ResponseWriter, r *http.Request) {
 				if !h.fwd.check(rec, r, h) {
 					return
 				}
-				names = h.fwd.forwardIdentity(r)
+				id = h.fwd.forwardIdentity(r)
 			} else {
 				var ok bool
-				if names, ok = h.auth.checkUser(rec, r, h.site); !ok {
+				if id, ok = h.auth.checkUser(rec, r, h.site); !ok {
 					return
 				}
 			}
 		}
 	} else if h.usesIdentity() && h.fwd == nil {
 		// 无需认证的路径上，已网页登录的访客仍按身份分流，同一应用的页面不会落到不同后端
-		names = h.auth.sessionIdentity(r, h.site)
+		id = h.auth.sessionIdentity(r, h.site)
 	}
 	if h.usesIdentity() {
-		r = h.withIdentity(r, names)
+		r = h.withIdentity(r, id)
 	}
 	if len(h.rewrites) > 0 && h.applyRewrite(rec, r) {
 		return
