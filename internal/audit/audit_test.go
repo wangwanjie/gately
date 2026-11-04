@@ -66,9 +66,11 @@ func TestMiddleware(t *testing.T) {
 	do("PUT", "/api/account/ui-language") // 界面语言偏好不记录
 	do("GET", "/api/webterminal/connections/x/ws")
 	do("GET", "/api/ddns/tasks/x/secrets") // 取回密码明文
+	do("GET", "/api/backup/local")         // 备份文件列表会被轮询，不记录
+	do("GET", "/api/backup/local/a.zip")   // 下载备份文件
 	res := l.Search(Query{})
-	if res.Total != 4 {
-		t.Fatalf("应记录 4 条，实际 %d: %+v", res.Total, res.Entries)
+	if res.Total != 5 {
+		t.Fatalf("应记录 5 条，实际 %d: %+v", res.Total, res.Entries)
 	}
 	e := l.Search(Query{Category: CategoryChange}).Entries[0]
 	if e.Actor != "tester" || e.IP != "9.9.9.9" || e.Module != "ddns" || e.Status != http.StatusCreated {

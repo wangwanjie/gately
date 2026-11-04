@@ -260,7 +260,9 @@ func sensitiveRead(path string) bool {
 	case "/api/system/backup", "/api/system/diagnostics":
 		return true
 	}
-	if strings.HasPrefix(path, "/api/backup/local") {
+	// 只有下载本地备份文件才算敏感读取；备份页会轮询文件列表 /api/backup/local，
+	// 列表只含文件名与大小，记录它会持续刷审计并不断触发敏感访问通知
+	if strings.HasPrefix(path, "/api/backup/local/") {
 		return true
 	}
 	for _, seg := range strings.Split(path, "/") {
