@@ -24,6 +24,9 @@ const site = (id, extra = {}) => ({
   upstreams: [],
   ...extra,
 })
+// idleUp、idleSite 生成最近 60 秒没有请求的后端与站点
+const idleUp = (id, url) => ({ ...up(id, url), rate: rate() })
+const idleSite = (id, upId) => site(id, { rate: rate(), upstreams: [idleUp(upId, 'http://10.0.9.' + id.length)] })
 const view = () => ({
   time: 100,
   window: 10,
@@ -226,7 +229,8 @@ test('maskText 打码错误信息里的地址，通配地址与时间不变', ()
 test('buildLayout 子节点超过上限时收进汇总节点，展开后在末尾提供收起入口', () => {
   const v = view()
   const l0 = v.listeners[0]
-  const many = Array.from({ length: 12 }, (_, i) => site(`s:a/x${i}`, { active: 1, upstreams: [up(`u:a/x${i}/0`, 'http://10.0.1.' + i)] }))
+  // 前 8 个站点活动中，其余空闲
+  const many = Array.from({ length: 12 }, (_, i) => site(`s:a/x${i}`, i < 8 ? { active: 1, upstreams: [up(`u:a/x${i}/0`, 'http://10.0.1.' + i)] } : idleSite(`s:a/x${i}`, `u:a/x${i}/0`)))
   l0.sites = many
   const l = buildLayout(v, new Set(), '', { limit: 8 })
   const m = l.byId.get('m:l:a')
@@ -234,8 +238,8 @@ test('buildLayout 子节点超过上限时收进汇总节点，展开后在末�
   assert.equal(m.more.count, 4)
   assert.equal(m.more.expanded, false)
   assert.equal(m.more.childKind, 'site')
-  assert.equal(m.more.active, 4)
-  assert.equal(m.more.rate.qps, 8)
+  assert.equal(m.more.active, 0)
+  assert.equal(m.more.rate.qps, 0)
   assert.equal(l.byId.has('s:a/x8'), false)
   // 监听级动作不收起，排在汇总节点之后
   assert.deepEqual(l.children.get('l:a').slice(-2), ['m:l:a', 'a:a/redirect'])
@@ -260,7 +264,7 @@ test('buildLayout 子节点超过上限时收进汇总节点，展开后在末�
 test('buildLayout 站点后端过多时收起，嵌套收起沿映射找到显示的节点', () => {
   const v = view()
   const s = v.listeners[0].sites[0]
-  s.upstreams = Array.from({ length: 10 }, (_, i) => up(`u:a/app/${i}`, 'http://10.0.0.' + i))
+  s.upstreams = Array.from({ length: 10 }, (_, i) => idleUp(`u:a/app/${i}`, 'http://10.0.0.' + i))
   const l = buildLayout(v, new Set(), '', { upstreamLimit: 6 })
   assert.equal(l.byId.get('m:s:a/app').more.childKind, 'upstream')
   assert.equal(l.byId.get('m:s:a/app').more.count, 4)
@@ -435,4 +439,33 @@ test('代号打码：同值同号、不同值不同号、不保留片段', () =>
   assert.equal(aliasText(a, 'listen tcp [fd00::5]:443: bind', 'Listen'), 'listen tcp [Listen-02]:443: bind')
   // 新的映射表重新编号
   assert.equal(aliasIP(new Aliases(), '203.0.113.46', 'Visitor'), 'Visitor-01')
+})
+
+test('buildLayout 收起多余节点时活动中的站点与后端始终显示', () => {
+  const v = view()
+  const l0 = v.listeners[0]
+  // 12 个站点只有 x3 与 x10 活动中，上限 2：x0、x1 按顺序显示，x3、x10 超出上限仍显示
+  l0.sites = Array.from({ length: 12 }, (_, i) => (i === 3 || i === 10 ? site(`s:a/x${i}`, { upstreams: [up(`u:a/x${i}/0`, 'http://10.0.1.' + i)] }) : idleSite(`s:a/x${i}`, `u:a/x${i}/0`)))
+  const l = buildLayout(v, new Set(), '', { limit: 2 })
+  assert.deepEqual(l.children.get('l:a'), ['s:a/x0', 's:a/x1', 's:a/x3', 's:a/x10', 'm:l:a', 'a:a/redirect'])
+  const m = l.byId.get('m:l:a').more
+  assert.equal(m.count, 8)
+  assert.ok(!m.ids.includes('s:a/x3') && !m.ids.includes('s:a/x10'))
+  assert.equal(resolveId(l, 's:a/x10'), 's:a/x10')
+  assert.equal(resolveId(l, 'u:a/x11/0'), 'm:l:a')
+  // 活动 IP 经过的站点也算活动
+  v.ips = [{ ip: '1.1.1.1', nodes: ['s:a/x7'], active: 0, last: 90 }]
+  assert.ok(buildLayout(v, new Set(), '', { limit: 2 }).byId.has('s:a/x7'))
+  // 超出上限的只剩一个空闲节点时直接显示，不出现“还有 1 个”
+  l0.sites = l0.sites.slice(0, 4)
+  v.ips = []
+  const few = buildLayout(v, new Set(), '', { limit: 2 })
+  assert.equal(few.byId.has('m:l:a'), false)
+  assert.equal(few.byId.has('s:a/x2'), true)
+  // 后端同理
+  const s = l0.sites[3]
+  s.upstreams = Array.from({ length: 6 }, (_, i) => (i === 5 ? up(`u:a/x3/${i}`, 'http://10.0.2.' + i) : idleUp(`u:a/x3/${i}`, 'http://10.0.2.' + i)))
+  const ul = buildLayout(v, new Set(), '', { upstreamLimit: 1 })
+  assert.deepEqual(ul.children.get('s:a/x3'), ['u:a/x3/0', 'u:a/x3/5', 'm:s:a/x3'])
+  assert.equal(ul.byId.get('m:s:a/x3').more.count, 4)
 })

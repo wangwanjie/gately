@@ -137,6 +137,7 @@
   "lessHint": "クリックで折りたたむ",
   "expandHint": "クリックで展開",
   "moreTotal": "合計 {qps}/s · 処理中 {n}",
+  "moreIdle": "直近 60 秒リクエストなし",
   "zoomIn": "拡大",
   "zoomOut": "縮小",
   "zoomReset": "100% に戻す",

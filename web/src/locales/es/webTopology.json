@@ -137,6 +137,7 @@
   "lessHint": "Clic para contraer",
   "expandHint": "Clic para expandir",
   "moreTotal": "Total {qps}/s · {n} en curso",
+  "moreIdle": "Sin solicitudes en los últimos 60 segundos",
   "zoomIn": "Acercar",
   "zoomOut": "Alejar",
   "zoomReset": "Volver al 100 %",

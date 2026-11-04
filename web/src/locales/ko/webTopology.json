@@ -137,6 +137,7 @@
   "lessHint": "클릭하여 접기",
   "expandHint": "클릭하여 펼치기",
   "moreTotal": "합계 {qps}/s · 처리 중 {n}",
+  "moreIdle": "최근 60초 동안 요청 없음",
   "zoomIn": "확대",
   "zoomOut": "축소",
   "zoomReset": "100%로 되돌리기",

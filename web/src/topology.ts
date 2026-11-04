@@ -235,6 +235,34 @@ export interface TopoFilter {
   blocked?: string[]
 }
 
+// rateActive 判断速率是否表示近期有流量：60 秒均值覆盖“最近 60 秒有过请求”，与活动 IP 的时间窗口一致，
+// 只看 10 秒均值时偶发请求的服务会在画面上反复出现、消失
+function rateActive(r: Rate): boolean {
+  return r.qps > 0 || r.qps60 > 0 || r.bps > 0
+}
+
+// seenNodes 返回活动 IP 经过的节点编号（站点、监听级动作与进行中请求所在的后端）。
+// 地址列表可能被截断，只作为速率之外的补充：低频请求的 60 秒均值可能被四舍五入为 0
+export function seenNodes(v: TopologyView): Set<string> {
+  const out = new Set<string>()
+  for (const ip of v.ips) {
+    for (const n of ip.nodes) {
+      out.add(n)
+    }
+  }
+  return out
+}
+
+// siteActive 判断站点是否活动中：最近 60 秒有请求、有进行中的请求，或有活动 IP 经过。
+export function siteActive(s: TopoSite, seen?: Set<string>): boolean {
+  return s.active > 0 || rateActive(s.rate) || !!seen?.has(s.id)
+}
+
+// upstreamActive 判断后端是否活动中：最近 60 秒有转发、有进行中的连接，或有进行中的请求经过。
+export function upstreamActive(u: TopoUpstream, seen?: Set<string>): boolean {
+  return u.conns > 0 || rateActive(u.rate) || !!seen?.has(u.id)
+}
+
 // BLOCK_REASONS 为站点拦截计数的原因，与后端 SiteStats.blocked 的键一致
 export const BLOCK_REASONS = ['ban', 'ip', 'country', 'rateLimit', 'waf']
 
@@ -328,12 +356,19 @@ function buildTree(v: TopologyView, collapsed: Set<string>, query: string, opts:
       aliasAll(k, to)
     }
   }
-  // cap 在子节点超过上限时只保留前 limit 个，其余收进汇总节点；只多出一个时直接显示，避免出现“还有 1 个”
+  const seen = seenNodes(v)
+  // busy 判断站点或后端是否活动中，收起多余节点时活动中的始终显示
+  const busy = (t: TNode) => (t.kind === 'upstream' ? upstreamActive(t.upstream!, seen) : t.kind === 'site' ? siteActive(t.site!, seen) : false)
+  // cap 在子节点超过上限时只保留前 limit 个，其余空闲的收进汇总节点（活动中的仍按原顺序显示，不必展开查找）；
+  // 只多出一个时直接显示，避免出现“还有 1 个”
   const cap = (owner: string, list: TNode[], max: number, childKind: MoreInfo['childKind']): TNode[] => {
     if (list.length <= max + 1) {
       return list
     }
-    const rest = list.slice(max)
+    const rest = list.slice(max).filter((t) => !busy(t))
+    if (rest.length <= 1) {
+      return list
+    }
     const sum = rest.reduce((a, t) => {
       const r = nodeRate(t)
       return { qps: a.qps + r.qps, bps: a.bps + r.bps, qps60: a.qps60 + r.qps60 }
@@ -350,10 +385,11 @@ function buildTree(v: TopologyView, collapsed: Set<string>, query: string, opts:
     if (isOpen) {
       return [...list, m]
     }
+    const hidden = new Set(rest)
     for (const t of rest) {
       aliasAll(t, m.id)
     }
-    return [...list.slice(0, max), m]
+    return [...list.filter((t) => !hidden.has(t)), m]
   }
 
   const roots: TNode[] = []

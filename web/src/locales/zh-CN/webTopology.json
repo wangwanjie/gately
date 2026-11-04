@@ -137,6 +137,7 @@
   "lessHint": "点击收起",
   "expandHint": "点击展开",
   "moreTotal": "合计 {qps}/s · 进行中 {n}",
+  "moreIdle": "最近 60 秒无请求",
   "zoomIn": "放大",
   "zoomOut": "缩小",
   "zoomReset": "恢复 100%",

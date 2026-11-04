@@ -137,6 +137,7 @@
   "lessHint": "Zum Einklappen klicken",
   "expandHint": "Zum Ausklappen klicken",
   "moreTotal": "Gesamt {qps}/s · {n} laufend",
+  "moreIdle": "Keine Anfragen in den letzten 60 Sekunden",
   "zoomIn": "Vergrößern",
   "zoomOut": "Verkleinern",
   "zoomReset": "Auf 100 % zurücksetzen",

@@ -137,6 +137,7 @@
   "lessHint": "點擊收合",
   "expandHint": "點擊展開",
   "moreTotal": "合計 {qps}/s · 進行中 {n}",
+  "moreIdle": "最近 60 秒無請求",
   "zoomIn": "放大",
   "zoomOut": "縮小",
   "zoomReset": "恢復 100%",

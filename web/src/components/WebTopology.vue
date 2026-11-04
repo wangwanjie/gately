@@ -1064,6 +1064,10 @@ function nodeSub(n: LayoutNode): string {
       if (m.expanded) {
         return t('webTopology.lessHint')
       }
+      // 活动中的节点不会被收起，汇总节点里通常都是空闲的
+      if (!m.active && !m.rate.qps && !m.rate.qps60) {
+        return t('webTopology.moreIdle')
+      }
       return t('webTopology.moreTotal', { qps: formatQps(m.rate.qps), n: m.active })
     }
   }

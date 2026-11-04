@@ -137,6 +137,7 @@
   "lessHint": "Click to collapse",
   "expandHint": "Click to expand",
   "moreTotal": "Total {qps}/s · {n} in flight",
+  "moreIdle": "No requests in the last 60 seconds",
   "zoomIn": "Zoom in",
   "zoomOut": "Zoom out",
   "zoomReset": "Reset to 100%",

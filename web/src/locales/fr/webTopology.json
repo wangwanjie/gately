@@ -137,6 +137,7 @@
   "lessHint": "Cliquer pour replier",
   "expandHint": "Cliquer pour déplier",
   "moreTotal": "Total {qps}/s · {n} en cours",
+  "moreIdle": "Aucune requête au cours des 60 dernières secondes",
   "zoomIn": "Zoom avant",
   "zoomOut": "Zoom arrière",
   "zoomReset": "Revenir à 100 %",
