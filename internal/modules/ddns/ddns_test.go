@@ -720,3 +720,56 @@ func TestInitReplacesRetiredIPSources(t *testing.T) {
 		t.Fatalf("IPv6 地址未替换: %v", v6)
 	}
 }
+
+// 任务在同步途中被停止（例如逐条删除记录时每次都重启任务）时，被取消的请求不应记为失败或发出失败通知。
+func TestCanceledSyncIsNotFailure(t *testing.T) {
+	fp, ips := setupFakes(t)
+	task := sampleTask()
+	_ = task.Validate()
+	logs := logbuf.New(200, log.New(io.Discard, "", 0))
+	r := newRunner(task, logs.Logger("t"), nil, nil)
+
+	var failedEvents int
+	unsub := events.Subscribe(func(e events.Event) {
+		if e.Type == events.DDNSFailed {
+			failedEvents++
+		}
+	})
+	defer unsub()
+
+	// 获取 IP 时被取消
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	ips.mu.Lock()
+	ips.err = context.Canceled
+	ips.mu.Unlock()
+	r.syncOnce(ctx, false)
+	if fp.callCount() != 0 || r.snapshot().IPError != "" {
+		t.Fatalf("取消的 IP 查询不应记为错误: calls=%d err=%q", fp.callCount(), r.snapshot().IPError)
+	}
+
+	// 调用服务商时被取消
+	ips.mu.Lock()
+	ips.err = nil
+	ips.mu.Unlock()
+	ctx2, cancel2 := context.WithCancel(context.Background())
+	fp.mu.Lock()
+	fp.fail = context.Canceled
+	fp.mu.Unlock()
+	providerFactory = func(string, dnsprovider.Credentials, *http.Client) (dnsprovider.Provider, error) {
+		cancel2()
+		return fp, nil
+	}
+	r.syncOnce(ctx2, false)
+	if fp.callCount() != 1 || r.snapshot().Records["a"].LastError != "" {
+		t.Fatalf("取消的同步不应记录失败: calls=%d st=%+v", fp.callCount(), r.snapshot().Records["a"])
+	}
+	for _, e := range logs.Query(0, 0, 100, nil) {
+		if e.Level == logbuf.LevelError {
+			t.Fatalf("不应记录错误日志: %s", e.Message)
+		}
+	}
+	if failedEvents != 0 {
+		t.Fatalf("不应发出失败通知: %d", failedEvents)
+	}
+}

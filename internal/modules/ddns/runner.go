@@ -191,6 +191,10 @@ func (r *runner) syncOnce(ctx context.Context, force bool) {
 	}
 	v4 := fetch(needV4, t.IPv4, ipsource.IPv4, "IPv4")
 	v6 := fetch(needV6, t.IPv6, ipsource.IPv6, "IPv6")
+	if ctx.Err() != nil {
+		// 任务被停止或因修改配置重启（例如逐条删除记录时每次都会重启），本轮作废，不算失败
+		return
+	}
 	if v4 != "" {
 		vars["ipv4Addr"] = v4
 	}
@@ -264,6 +268,10 @@ func (r *runner) syncOnce(ctx context.Context, force bool) {
 			Zone: rec.Zone, Sub: rec.Sub, Type: rec.Type, Value: value, TTL: rec.TTL, Line: rec.Line, Remark: t.remarkOf(rec),
 		})
 		cancel()
+		if err != nil && ctx.Err() != nil {
+			// 同步途中任务被停止：不记录失败、不发通知，重启后的任务会重新同步这条记录
+			return
+		}
 		if err != nil {
 			failed = append(failed, fqdn)
 			r.setRecord(rec.Key, func(s *RecordState) { s.LastError = err.Error(); s.LastCheck = time.Now() })
