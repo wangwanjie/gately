@@ -2211,6 +2211,13 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `updatedAt` | 시간 (RFC 3339) |
 | `url` | string |
 
+### webservice.IdentityHeader
+
+| 필드 | 타입 |
+| --- | --- |
+| `field` | string |
+| `header` | string |
+
 ### webservice.Listener
 
 | 필드 | 타입 |
@@ -2362,13 +2369,13 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `denyClose` | boolean |
 | `disableKeepAlives` | boolean |
 | `domains` | Array of string |
-| `emailHeader` | string |
 | `enable` | boolean |
 | `errorPage` | `webservice.ErrorPageOptions` |
 | `forwardAuth` | `webservice.ForwardAuth` |
 | `forwardedHeaders` | boolean |
 | `group` | string |
 | `health` | `webservice.HealthCheck` |
+| `identityHeaders` | Array of `webservice.IdentityHeader` |
 | `insecureSkipVerify` | boolean |
 | `ipList` | Array of string |
 | `ipMode` | string |

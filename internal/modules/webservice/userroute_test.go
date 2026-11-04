@@ -4,6 +4,9 @@ import (
 	"encoding/base64"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
+	"sort"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -119,7 +122,9 @@ func TestValidateUserRoutes(t *testing.T) {
 	if err := ok.validate(false); err != nil {
 		t.Fatal(err)
 	}
-	if ok.UserHeader != "X-Remote-User" || len(ok.UserRoutes[0].Users) != 1 || ok.UserRoutes[0].Users[0] != "a" {
+	// 旧版的用户名请求头保存时并入身份请求头
+	if ok.UserHeader != "" || len(ok.IdentityHeaders) != 1 || ok.IdentityHeaders[0] != (IdentityHeader{Header: "X-Remote-User", Field: IdentityUser}) ||
+		len(ok.UserRoutes[0].Users) != 1 || ok.UserRoutes[0].Users[0] != "a" {
 		t.Fatalf("整理结果错误: %+v", ok)
 	}
 	bad := map[string]func(s *Site){
@@ -202,48 +207,62 @@ func TestDelHeaderVariants(t *testing.T) {
 	}
 }
 
-// emailBackend 返回后端收到的所有邮箱头（含下划线写法的变体），便于检查伪造的头是否都被删除。
-func emailBackend(t *testing.T, header string) *httptest.Server {
+// identityBackend 返回后端收到的身份请求头（含下划线写法的变体），按请求头名排序，形如 Remote-Email=a@x|Remote-User=a。
+func identityBackend(t *testing.T, headers ...string) *httptest.Server {
 	t.Helper()
-	want := strings.ReplaceAll(header, "_", "-")
 	b := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var got []string
 		for k, vs := range r.Header {
-			if strings.EqualFold(strings.ReplaceAll(k, "_", "-"), want) {
-				got = append(got, vs...)
+			for _, h := range headers {
+				if headerVariantKey(k) == headerVariantKey(h) {
+					for _, v := range vs {
+						got = append(got, k+"="+v)
+					}
+				}
 			}
 		}
-		_, _ = w.Write([]byte(strings.Join(got, ",")))
+		sort.Strings(got)
+		_, _ = w.Write([]byte(strings.Join(got, "|")))
 	}))
 	t.Cleanup(b.Close)
 	return b
 }
 
-// TestEmailHeaderSharedUsers 覆盖网页认证下传递邮箱：只有共享用户带邮箱，同名站点用户与第三方登录不带，
-// 访客伪造的邮箱头（含下划线变体）在任何路径上都被删除，修改共享用户邮箱后立即生效。
-func TestEmailHeaderSharedUsers(t *testing.T) {
-	backend := emailBackend(t, "Remote-Email")
+// allIdentityHeaders 为四种字段各一条的身份请求头。
+var allIdentityHeaders = []IdentityHeader{
+	{Header: "remote-user", Field: IdentityUser}, {Header: "Remote-Email", Field: IdentityEmail},
+	{Header: "Remote-Name", Field: IdentityName}, {Header: "Remote-Groups", Field: IdentityGroups},
+}
+
+// forgedIdentity 在 hdr 中加入访客伪造的身份头，含下划线写法的变体。
+func forgedIdentity(hdr map[string]string) map[string]string {
+	for _, h := range []string{"Remote-User", "Remote-Email", "Remote-Name", "Remote-Groups", "Remote_Email", "Remote_Groups"} {
+		hdr[h] = "forged"
+	}
+	return hdr
+}
+
+// TestIdentityHeadersSharedUsers 覆盖网页认证下传递身份信息：共享用户传用户名、邮箱、显示名与分组，
+// 同名站点用户与第三方登录只传用户名，未填写的信息不传；访客伪造的身份头（含下划线变体）在任何路径上都被删除；
+// 修改共享用户的信息后已登录的会话立即传新值。
+func TestIdentityHeadersSharedUsers(t *testing.T) {
+	backend := identityBackend(t, "Remote-User", "Remote-Email", "Remote-Name", "Remote-Groups")
 	l := Listener{Sites: []Site{{
 		Enable: true, Key: "fx", Domains: []string{"fx.test"}, Targets: []string{backend.URL},
 		WebAuth: true, SharedUsers: true, Users: []string{"bob:site-pw"}, OAuthUsers: []string{"github:alice"},
 		AuthOptional: true, Rules: []PathRule{{Prefix: "/", Auth: RuleAuthOn}, {Prefix: "/public/", Auth: RuleAuthOff}},
-		EmailHeader: "remote-email",
+		IdentityHeaders: allIdentityHeaders,
 	}}}
 	addr, rn := startRunner(t, l, nil, nil)
-	setUsers := func(users ...AuthUser) []AuthUser {
-		t.Helper()
-		out, err := normalizeAuthUsers(users, nil)
-		if err != nil {
-			t.Fatal(err)
-		}
-		rn.auth.shared.set(out, "")
-		return out
+	users, err := normalizeAuthUsers([]AuthUser{
+		{Name: "alice", Password: "alice-pw", Email: "alice@example.com", DisplayName: "Alice Liddell", Groups: []string{"admins", "dev"}},
+		{Name: "bob", Password: "shared-pw", Email: "bob@example.com", Groups: []string{"users"}},
+		{Name: "carol", Password: "carol-pw"},
+	}, nil)
+	if err != nil {
+		t.Fatal(err)
 	}
-	users := setUsers(
-		AuthUser{Name: "alice", Password: "alice-pw", Email: "alice@example.com"},
-		AuthUser{Name: "bob", Password: "shared-pw", Email: "bob@example.com"},
-		AuthUser{Name: "carol", Password: "carol-pw"},
-	)
+	rn.auth.shared.set(users, "")
 	h := rn.route("fx.test")
 	cookieFor := func(issue func(w http.ResponseWriter, r *http.Request)) string {
 		rec := httptest.NewRecorder()
@@ -256,106 +275,148 @@ func TestEmailHeaderSharedUsers(t *testing.T) {
 	github := cookieFor(func(w http.ResponseWriter, r *http.Request) {
 		h.auth.issueSession(w, r, h.site, "github:1001", "alice")
 	})
-	forged := func(hdr map[string]string) map[string]string {
-		hdr["Remote-Email"] = "admin@example.com"
-		hdr["Remote_Email"] = "admin@example.com"
-		return hdr
-	}
+	aliceWant := "Remote-Email=alice@example.com|Remote-Groups=admins,dev|Remote-Name=Alice Liddell|Remote-User=alice"
 	cases := []struct {
 		name, path string
 		hdr        map[string]string
 		want       string
 	}{
-		{"共享用户会话", "/", forged(map[string]string{"Cookie": alice}), "alice@example.com"},
-		{"共享用户会话访问公开路径", "/public/x", forged(map[string]string{"Cookie": alice}), "alice@example.com"},
-		{"未填写邮箱的共享用户", "/", forged(map[string]string{"Cookie": carol}), ""},
-		{"第三方登录", "/", forged(map[string]string{"Cookie": github}), ""},
-		{"同名站点用户的基本认证", "/", forged(basicHeader("bob", "site-pw")), ""},
-		{"共享用户的基本认证", "/", forged(basicHeader("bob", "shared-pw")), "bob@example.com"},
-		{"未登录访问公开路径", "/public/x", forged(map[string]string{}), ""},
+		{"共享用户会话", "/", map[string]string{"Cookie": alice}, aliceWant},
+		{"共享用户会话访问公开路径", "/public/x", map[string]string{"Cookie": alice}, aliceWant},
+		{"未填写信息的共享用户", "/", map[string]string{"Cookie": carol}, "Remote-User=carol"},
+		{"第三方登录", "/", map[string]string{"Cookie": github}, "Remote-User=github:1001"},
+		{"同名站点用户的基本认证", "/", basicHeader("bob", "site-pw"), "Remote-User=bob"},
+		{"共享用户的基本认证", "/", basicHeader("bob", "shared-pw"), "Remote-Email=bob@example.com|Remote-Groups=users|Remote-User=bob"},
+		{"未登录访问公开路径", "/public/x", map[string]string{}, ""},
 	}
 	for _, c := range cases {
-		resp, body := get(t, noRedirect(), addr, "fx.test", c.path, c.hdr)
+		resp, body := get(t, noRedirect(), addr, "fx.test", c.path, forgedIdentity(c.hdr))
 		if resp.StatusCode != http.StatusOK || body != c.want {
-			t.Fatalf("%s: 状态 %d，后端收到邮箱 %q，期望 %q", c.name, resp.StatusCode, body, c.want)
+			t.Fatalf("%s: 状态 %d，后端收到 %q，期望 %q", c.name, resp.StatusCode, body, c.want)
 		}
 	}
-	// 未登录访问需要认证的路径被拦下，伪造的邮箱头到不了后端
-	if resp, _ := get(t, noRedirect(), addr, "fx.test", "/", forged(map[string]string{})); resp.StatusCode != http.StatusUnauthorized {
+	// 未登录访问需要认证的路径被拦下，伪造的身份头到不了后端
+	if resp, _ := get(t, noRedirect(), addr, "fx.test", "/", forgedIdentity(map[string]string{})); resp.StatusCode != http.StatusUnauthorized {
 		t.Fatalf("未登录应 401，实际 %d", resp.StatusCode)
 	}
-	// 修改共享用户的邮箱后，已登录的会话立即传新邮箱
-	users[0].Email = "alice@new.example.com"
+	// 修改共享用户的信息后，已登录的会话立即传新值；清空的信息不再传
+	users[0].Email, users[0].DisplayName, users[0].Groups = "alice@new.example.com", "", []string{"ops"}
 	rn.auth.shared.set(users, "")
-	if _, body := get(t, noRedirect(), addr, "fx.test", "/", map[string]string{"Cookie": alice}); body != "alice@new.example.com" {
-		t.Fatalf("修改邮箱后得到 %q", body)
+	if _, body := get(t, noRedirect(), addr, "fx.test", "/", forgedIdentity(map[string]string{"Cookie": alice})); body != "Remote-Email=alice@new.example.com|Remote-Groups=ops|Remote-User=alice" {
+		t.Fatalf("修改信息后得到 %q", body)
 	}
 }
 
-// TestEmailHeaderForwardAuth 覆盖转发认证：认证服务返回的 Remote-Email 写入邮箱头；
-// 未复制 Remote-Email 时访客自带的不可信，不写入；认证服务没给用户名时也不传邮箱。
-func TestEmailHeaderForwardAuth(t *testing.T) {
+// TestIdentityHeadersForwardAuth 覆盖转发认证：认证服务返回的 Remote-* 写入身份请求头；
+// 未复制的 Remote-* 是访客自带的，不可信，不写入；认证服务没给用户名时其他信息也不传。
+func TestIdentityHeadersForwardAuth(t *testing.T) {
 	authz := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Header.Get("Cookie") {
 		case "session=ok":
 			w.Header().Set("Remote-User", "alice")
-			w.Header().Set("Remote-Email", "alice@example.com")
 		case "session=nouser":
-			w.Header().Set("Remote-Email", "alice@example.com")
 		default:
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
+		w.Header().Set("Remote-Email", "alice@example.com")
+		w.Header().Set("Remote-Name", "Alice")
+		w.Header().Set("Remote-Groups", "admins,dev")
 		w.WriteHeader(http.StatusOK)
 	}))
 	t.Cleanup(authz.Close)
-	backend := emailBackend(t, "X-Email")
+	backend := identityBackend(t, "X-User", "X-Email", "X-Name", "X-Groups")
+	ids := []IdentityHeader{{Header: "X-User", Field: IdentityUser}, {Header: "X-Email", Field: IdentityEmail}, {Header: "X-Name", Field: IdentityName}, {Header: "X-Groups", Field: IdentityGroups}}
 	l := Listener{Sites: []Site{
-		{Enable: true, Domains: []string{"fa.test"}, Targets: []string{backend.URL}, ForwardAuth: ForwardAuth{URL: authz.URL}, EmailHeader: "X-Email"},
+		{Enable: true, Domains: []string{"fa.test"}, Targets: []string{backend.URL}, ForwardAuth: ForwardAuth{URL: authz.URL}, IdentityHeaders: ids},
 		{Enable: true, Domains: []string{"user-only.test"}, Targets: []string{backend.URL},
-			ForwardAuth: ForwardAuth{URL: authz.URL, CopyHeaders: []string{"Remote-User"}}, EmailHeader: "X-Email"},
+			ForwardAuth: ForwardAuth{URL: authz.URL, CopyHeaders: []string{"Remote-User"}}, IdentityHeaders: ids},
 	}}
 	addr, _ := startRunner(t, l, nil, nil)
 	cases := []struct {
 		host, cookie, want string
 	}{
-		{"fa.test", "session=ok", "alice@example.com"},
+		{"fa.test", "session=ok", "X-Email=alice@example.com|X-Groups=admins,dev|X-Name=Alice|X-User=alice"},
 		{"fa.test", "session=nouser", ""},
-		{"user-only.test", "session=ok", ""},
+		{"user-only.test", "session=ok", "X-User=alice"},
 	}
 	for _, c := range cases {
-		hdr := map[string]string{"Cookie": c.cookie, "Remote-Email": "admin@example.com", "X-Email": "admin@example.com", "X_Email": "admin@example.com"}
+		hdr := forgedIdentity(map[string]string{"Cookie": c.cookie, "X-Email": "forged", "X_Groups": "forged", "X-Name": "forged"})
 		resp, body := get(t, noRedirect(), addr, c.host, "/", hdr)
 		if resp.StatusCode != http.StatusOK || body != c.want {
-			t.Fatalf("%s %s: 状态 %d，后端收到邮箱 %q，期望 %q", c.host, c.cookie, resp.StatusCode, body, c.want)
+			t.Fatalf("%s %s: 状态 %d，后端收到 %q，期望 %q", c.host, c.cookie, resp.StatusCode, body, c.want)
 		}
 	}
 }
 
-// TestValidateEmailHeader 覆盖邮箱请求头的整理与校验。
-func TestValidateEmailHeader(t *testing.T) {
+// TestValidateIdentityHeaders 覆盖身份请求头的整理、旧配置合并与校验。
+func TestValidateIdentityHeaders(t *testing.T) {
 	base := func() Site {
-		return Site{Domains: []string{"a.test"}, Targets: []string{"http://127.0.0.1:1"}, WebAuth: true, SharedUsers: true, EmailHeader: " remote-email "}
+		return Site{Domains: []string{"a.test"}, Targets: []string{"http://127.0.0.1:1"}, WebAuth: true, SharedUsers: true,
+			IdentityHeaders: []IdentityHeader{{Header: " remote-email ", Field: " email "}}}
 	}
 	ok := base()
+	ok.UserHeader = "x-remote-user"
 	if err := ok.validate(false); err != nil {
 		t.Fatal(err)
 	}
-	if ok.EmailHeader != "Remote-Email" {
-		t.Fatalf("请求头未规范化: %q", ok.EmailHeader)
+	want := []IdentityHeader{{Header: "X-Remote-User", Field: IdentityUser}, {Header: "Remote-Email", Field: IdentityEmail}}
+	if ok.UserHeader != "" || !reflect.DeepEqual(ok.IdentityHeaders, want) {
+		t.Fatalf("整理结果错误: %q %+v", ok.UserHeader, ok.IdentityHeaders)
 	}
-	fwd := Site{Domains: []string{"a.test"}, Targets: []string{"http://127.0.0.1:1"}, ForwardAuth: ForwardAuth{URL: "http://127.0.0.1:9091/"}, EmailHeader: "X-Email"}
+	// 旧版用户名请求头已作为用户名行在列表中时不重复添加
+	dup := base()
+	dup.UserHeader = "x_remote_user"
+	dup.IdentityHeaders = append(dup.IdentityHeaders, IdentityHeader{Header: "X-Remote-User", Field: IdentityUser})
+	if err := dup.validate(false); err != nil || len(dup.IdentityHeaders) != 2 {
+		t.Fatalf("不应重复添加: %v %+v", err, dup.IdentityHeaders)
+	}
+	// 只传用户名时站点用户即可，邮箱等需要共享用户或转发认证
+	siteOnly := Site{Domains: []string{"a.test"}, Targets: []string{"http://127.0.0.1:1"}, BasicAuth: true, Users: []string{"a:b"},
+		IdentityHeaders: []IdentityHeader{{Header: "X-User", Field: IdentityUser}}}
+	if err := siteOnly.validate(false); err != nil {
+		t.Fatal(err)
+	}
+	fwd := Site{Domains: []string{"a.test"}, Targets: []string{"http://127.0.0.1:1"}, ForwardAuth: ForwardAuth{URL: "http://127.0.0.1:9091/"},
+		IdentityHeaders: []IdentityHeader{{Header: "X-Groups", Field: IdentityGroups}}}
 	if err := fwd.validate(false); err != nil {
-		t.Fatalf("转发认证应可传递邮箱: %v", err)
+		t.Fatalf("转发认证应可传递分组: %v", err)
+	}
+	empty := base()
+	empty.IdentityHeaders = []IdentityHeader{}
+	if err := empty.validate(false); err != nil || empty.IdentityHeaders != nil {
+		t.Fatalf("空列表应整理为 nil: %v %+v", err, empty.IdentityHeaders)
+	}
+	add := func(s *Site, h, f string) {
+		s.IdentityHeaders = append(s.IdentityHeaders, IdentityHeader{Header: h, Field: f})
 	}
 	bad := map[string]func(s *Site){
-		"未启用认证":       func(s *Site) { s.WebAuth, s.SharedUsers = false, false },
-		"只有站点用户":      func(s *Site) { s.SharedUsers, s.Users = false, []string{"a:b"} },
-		"非反向代理":       func(s *Site) { s.Type, s.Targets, s.Root = TypeStatic, nil, "/tmp" },
-		"非法名称":        func(s *Site) { s.EmailHeader = "Remote Email" },
-		"禁止的头":        func(s *Site) { s.EmailHeader = "authorization" },
-		"与用户名头相同":     func(s *Site) { s.UserHeader, s.EmailHeader = "X-User", "x-user" },
-		"与用户名头仅下划线不同": func(s *Site) { s.UserHeader, s.EmailHeader = "X-User", "X_User" },
+		"未启用认证":      func(s *Site) { s.WebAuth, s.SharedUsers = false, false },
+		"非反向代理":      func(s *Site) { s.Type, s.Targets, s.Root = TypeStatic, nil, "/tmp" },
+		"只有站点用户时传邮箱": func(s *Site) { s.SharedUsers, s.Users = false, []string{"a:b"} },
+		"只有站点用户时传分组": func(s *Site) {
+			s.SharedUsers, s.Users, s.IdentityHeaders = false, []string{"a:b"}, nil
+			add(s, "X-G", IdentityGroups)
+		},
+		"缺少请求头名":      func(s *Site) { add(s, " ", IdentityUser) },
+		"非法名称":        func(s *Site) { add(s, "Remote User", IdentityUser) },
+		"禁止的头":        func(s *Site) { add(s, "authorization", IdentityUser) },
+		"禁止的头的下划线写法":  func(s *Site) { add(s, "X_Forwarded_For", IdentityUser) },
+		"未知字段":        func(s *Site) { add(s, "X-Role", "role") },
+		"缺少字段":        func(s *Site) { add(s, "X-Role", "") },
+		"重复请求头":       func(s *Site) { add(s, "REMOTE-EMAIL", IdentityName) },
+		"重复请求头的下划线写法": func(s *Site) { add(s, "Remote_Email", IdentityName) },
+		"与旧版用户名请求头冲突": func(s *Site) { s.UserHeader = "X-User"; add(s, "x_user", IdentityName) },
+		"与站点请求头设置冲突":  func(s *Site) { s.RequestHeaders = []string{"Remote-Email: admin@example.com"} },
+		"与站点删除请求头冲突":  func(s *Site) { s.RequestHeaders = []string{"remote_email:"} },
+		"与分路径规则请求头冲突": func(s *Site) {
+			s.Locations = []Location{{Prefix: "/api/", RequestHeaders: []string{"Remote-Email: x"}}}
+		},
+		"超过条数上限": func(s *Site) {
+			for i := 0; i < maxIdentityHeaders; i++ {
+				add(s, "X-Id-"+strconv.Itoa(i), IdentityUser)
+			}
+		},
 	}
 	for name, mod := range bad {
 		s := base()
@@ -366,9 +427,10 @@ func TestValidateEmailHeader(t *testing.T) {
 	}
 }
 
-// TestEmailHeaderCacheKeyAndValue 覆盖缓存键按邮箱区分（同名的站点用户与共享用户不串用），非法邮箱值不写入请求头。
-func TestEmailHeaderCacheKeyAndValue(t *testing.T) {
-	h := &siteHandler{site: Site{UserHeader: "X-Remote-User", EmailHeader: "Remote-Email"}}
+// TestIdentityHeaderCacheTagAndValues 覆盖缓存键按传出的值区分且不会被含分隔符的值拼成相同的标记，
+// 非法值不写入请求头，未识别出身份时不传任何信息，以及未重新保存的旧配置在运行时仍传递并删除用户名头。
+func TestIdentityHeaderCacheTagAndValues(t *testing.T) {
+	h := &siteHandler{site: Site{IdentityHeaders: []IdentityHeader{{Header: "Remote-User", Field: IdentityUser}, {Header: "Remote-Email", Field: IdentityEmail}, {Header: "Remote-Groups", Field: IdentityGroups}}}}
 	do := func(v visitor) *http.Request {
 		return h.withIdentity(httptest.NewRequest("GET", "http://a.test/x", nil), v)
 	}
@@ -377,14 +439,29 @@ func TestEmailHeaderCacheKeyAndValue(t *testing.T) {
 	if cacheKey(do(bob)) == cacheKey(do(sharedBob)) {
 		t.Fatal("邮箱不同的同名用户缓存键应不同")
 	}
-	if got := do(sharedBob).Header.Get("Remote-Email"); got != "bob@example.com" {
-		t.Fatalf("邮箱头为 %q", got)
+	// 值里含有标记的分隔符时也不能与其他身份拼出相同的标记
+	a := visitor{names: []string{"a"}, email: "x|2:y"}
+	b := visitor{names: []string{"a"}, email: "x", groups: "y"}
+	if cacheKey(do(a)) == cacheKey(do(b)) {
+		t.Fatal("含分隔符的值不应与其他身份的缓存键相同")
 	}
-	r := do(visitor{names: []string{"bob"}, email: "bob@example.com\r\nX-Admin: 1"})
-	if _, ok := r.Header["Remote-Email"]; ok || r.Header.Get("X-Admin") != "" {
-		t.Fatalf("非法邮箱不应写入请求头: %v", r.Header)
+	r := do(visitor{names: []string{"bob"}, email: "bob@example.com\r\nX-Admin: 1", groups: "g1,g2"})
+	if _, ok := r.Header["Remote-Email"]; ok || r.Header.Get("X-Admin") != "" || r.Header.Get("Remote-Groups") != "g1,g2" || r.Header.Get("Remote-User") != "bob" {
+		t.Fatalf("非法值不应写入请求头，其他值照常: %v", r.Header)
 	}
-	if _, ok := do(visitor{email: "x@example.com"}).Header["Remote-Email"]; ok {
-		t.Fatal("未识别出用户时不应传邮箱")
+	if r := do(visitor{email: "x@example.com"}); len(r.Header) != 0 {
+		t.Fatalf("未识别出用户时不应传身份信息: %v", r.Header)
+	}
+	// 旧配置只有 UserHeader 且未经校验（加载配置不校验）时仍生效
+	legacy := &siteHandler{site: Site{UserHeader: "X-Remote-User"}}
+	if !legacy.usesIdentity() {
+		t.Fatal("旧版用户名请求头应启用身份识别")
+	}
+	req := httptest.NewRequest("GET", "http://a.test/x", nil)
+	req.Header["X_remote_user"] = []string{"mallory"}
+	legacy.stripIdentityHeaders(req)
+	req = legacy.withIdentity(req, bob)
+	if len(req.Header) != 1 || req.Header.Get("X-Remote-User") != "bob" {
+		t.Fatalf("旧版用户名请求头处理错误: %v", req.Header)
 	}
 }

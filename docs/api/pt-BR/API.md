@@ -2211,6 +2211,13 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `updatedAt` | Hora (RFC 3339) |
 | `url` | string |
 
+### webservice.IdentityHeader
+
+| Campo | Tipo |
+| --- | --- |
+| `field` | string |
+| `header` | string |
+
 ### webservice.Listener
 
 | Campo | Tipo |
@@ -2362,13 +2369,13 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `denyClose` | boolean |
 | `disableKeepAlives` | boolean |
 | `domains` | Array de string |
-| `emailHeader` | string |
 | `enable` | boolean |
 | `errorPage` | `webservice.ErrorPageOptions` |
 | `forwardAuth` | `webservice.ForwardAuth` |
 | `forwardedHeaders` | boolean |
 | `group` | string |
 | `health` | `webservice.HealthCheck` |
+| `identityHeaders` | Array de `webservice.IdentityHeader` |
 | `insecureSkipVerify` | boolean |
 | `ipList` | Array de string |
 | `ipMode` | string |

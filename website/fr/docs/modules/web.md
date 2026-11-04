@@ -326,11 +326,27 @@ Répartition :
 
 - Les utilisateurs non listés, ainsi que les visiteurs non connectés sur les chemins publics (chemins qui ne demandent aucune authentification), utilisent les backends du site. Sur les chemins publics, un visiteur déjà connecté par l'authentification web est lui aussi réparti selon son identité, si bien que les pages d'une même application arrivent sur le même backend ;
 - Les backends par chemin qui ont leurs propres backends (voir la section précédente) sont prioritaires ; ceux qui ajoutent seulement des en-têtes utilisent les backends de l'utilisateur ;
-- Lorsque « Transmettre le nom d’utilisateur » contient un nom d'en-tête comme `X-Remote-User`, le nom de l'utilisateur connecté est placé dans cet en-tête pour le backend. Le même en-tête envoyé par les visiteurs est toujours supprimé, il ne peut donc pas être falsifié ;
-- Lorsque « Transmettre l’e-mail » contient un nom d'en-tête comme `Remote-Email`, l’e-mail de l'utilisateur connecté est placé dans cet en-tête pour le backend, pour les applications qui utilisent l’e-mail comme compte, comme Firefly III. L’e-mail provient de celui de l'[utilisateur partagé](#shared-users) (les modifications s'appliquent aussitôt) ou du `Remote-Email` recopié par l'authentification déléguée ; les utilisateurs du site, la connexion tierce et les utilisateurs partagés sans e-mail n'en transmettent pas. Comme pour « Transmettre le nom d’utilisateur », le même en-tête envoyé par les visiteurs est toujours supprimé, et la clé de cache inclut aussi l’e-mail. L'option n'apparaît que pour les sites utilisant des utilisateurs partagés ou l'authentification déléguée, et son en-tête doit différer de celui de « Transmettre le nom d’utilisateur » ;
-- Avec le cache de réponses en mémoire activé, la clé de cache inclut la règle utilisateur choisie, ainsi que le nom d'utilisateur lorsque « Transmettre le nom d’utilisateur » est actif ; les réponses de backends différents ou destinées à des utilisateurs différents restent ainsi séparées.
+- Avec le cache de réponses en mémoire activé, la clé de cache inclut la règle utilisateur choisie et, si [Transmettre l’identité](#identity-headers) est configuré, l'identité transmise au backend, afin que les réponses de backends ou d'utilisateurs différents ne se mélangent pas.
 
-L'enregistrement vérifie que l'authentification est activée sur le site, que chaque règle comporte au moins un utilisateur et des backends valides, qu'aucun utilisateur ne figure dans deux règles, et que le nom d'en-tête est valide et ne fait pas partie des en-têtes qui influent sur la transmission ou l'authentification, comme `Host`, `Cookie`, `Authorization` ou `X-Forwarded-For`. Dans la liste des sites, un site doté de règles par utilisateur affiche une étiquette avec le nombre de règles.
+L'enregistrement vérifie que l'authentification est activée sur le site, que chaque règle comporte au moins un utilisateur et des backends valides, et qu'aucun utilisateur ne figure dans deux règles. Dans la liste des sites, un site doté de règles par utilisateur affiche une étiquette avec le nombre de règles.
+
+### Transmettre l’identité {#identity-headers}
+
+« Transmettre l’identité » place l'identité de l'utilisateur connecté dans des en-têtes de requête pour le backend, pour les applications qui identifient les utilisateurs par en-tête ; Firefly III, par exemple, identifie les comptes par `Remote-Email`. Chaque ligne choisit un champ et un nom d'en-tête :
+
+| Champ | En-tête courant | Source |
+|---|---|---|
+| Nom d’utilisateur | `Remote-User` | Le nom de l'utilisateur du site ou de l'utilisateur partagé ; `clé-fournisseur:id` pour la connexion tierce ; `Remote-User` pour l'authentification déléguée |
+| E-mail | `Remote-Email` | L'e-mail de l'utilisateur partagé, ou le `Remote-Email` recopié par l'authentification déléguée |
+| Nom affiché | `Remote-Name` | Le nom affiché de l'utilisateur partagé, ou le `Remote-Name` recopié par l'authentification déléguée |
+| Groupes | `Remote-Groups` | Les groupes de l'utilisateur partagé (séparés par des virgules), ou le `Remote-Groups` recopié par l'authentification déléguée |
+
+- « Ajouter les en-têtes Remote-* courants » ajoute en une fois les lignes du tableau pour les champs que fournit la méthode de connexion actuelle ;
+- L'e-mail, le nom affiché et les groupes ne peuvent être choisis que sur les sites utilisant des [utilisateurs partagés](#shared-users) ou l'authentification déléguée ; les utilisateurs du site et la connexion tierce n'ont qu'un nom d'utilisateur. Quand les informations d'un utilisateur partagé changent, les sessions ouvertes transmettent aussitôt les nouvelles valeurs ; un utilisateur du site portant le même nom qu'un utilisateur partagé ne transmet que le nom d'utilisateur lorsqu'il se connecte avec le mot de passe de l'utilisateur du site ;
+- L'authentification déléguée ne fait confiance qu'aux en-têtes qu'elle recopie : si `Remote-Email` et consorts ne figurent pas dans la liste de copie, les mêmes en-têtes envoyés par le visiteur ne sont jamais pris comme identité ; si le service d'authentification ne renvoie pas `Remote-User`, rien d'autre n'est transmis ;
+- Les mêmes en-têtes envoyés par le visiteur sont toujours supprimés, y compris les écritures avec un tiret bas à la place du tiret (comme `Remote_Email`), ils ne peuvent donc pas être falsifiés ; les visiteurs non connectés ou arrivant par un lien de partage ne reçoivent aucune identité, et un en-tête n'est pas envoyé si sa valeur est vide ;
+- L'enregistrement vérifie que les noms d'en-tête sont valides et uniques (sans tenir compte de la casse, `-` et `_` étant considérés comme identiques), qu'ils ne font pas partie des en-têtes qui influent sur la transmission ou l'authentification, comme `Host`, `Cookie`, `Authorization` ou `X-Forwarded-For`, et qu'ils ne reprennent pas un en-tête de requête du site ou d'une règle de chemin, qui écraserait le résultat de l'authentification ; 16 lignes au plus ;
+- « Transmettre le nom d’utilisateur » des versions précédentes apparaît comme une ligne de nom d'utilisateur lors de la modification du site et rejoint cette liste à l'enregistrement.
 
 ## Améliorations du proxy inverse
 
@@ -411,7 +427,7 @@ Règles de mise en cache :
 - `s-maxage` est respecté en priorité, puis `max-age` ;
 - Une entrée unique est limitée à 4 Mo et à au plus un quart de la capacité totale ;
 - Un succès (hit) renvoie les en-têtes `X-Cache: HIT` et `Age`, et un échec (miss) renvoie `X-Cache: MISS` ;
-- La clé de cache inclut Host, l'URI complète de la requête et `Accept-Encoding` ; avec la [répartition par utilisateur](#user-routes), elle inclut aussi la règle utilisateur choisie, ainsi que le nom d'utilisateur lorsque « Transmettre le nom d’utilisateur » est actif.
+- La clé de cache inclut Host, l'URI complète de la requête et `Accept-Encoding` ; avec la [répartition par utilisateur](#user-routes), elle inclut aussi la règle utilisateur choisie, ainsi que l'identité transmise au backend lorsque [Transmettre l’identité](#identity-headers) est configuré.
 
 ### Réécriture et redirection de chemin
 

@@ -853,12 +853,12 @@ func (h *siteHandler) serveInner(rec http.ResponseWriter, r *http.Request) {
 		// 无论该路径是否需要认证，都不允许访客自带身份头
 		h.fwd.stripIdentity(r)
 	}
-	h.stripUserHeader(r)
+	h.stripIdentityHeaders(r)
 	// 跳转类重写不返回任何内容，先于认证执行，与 nginx 中 location = / { return 302 ...; } 不经认证的行为一致
 	if len(h.rewrites) > 0 && h.redirectBeforeAuth(rec, r) {
 		return
 	}
-	// id 为认证识别出的访客身份，用于按用户分流与传递用户名、邮箱
+	// id 为认证识别出的访客身份，用于按用户分流与传递身份信息
 	var id visitor
 	if h.needAuth(h.matchRule(r.URL.Path)) {
 		handled, allowed := h.tryShare(rec, r)

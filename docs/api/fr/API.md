@@ -2211,6 +2211,13 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `updatedAt` | Heure (RFC 3339) |
 | `url` | string |
 
+### webservice.IdentityHeader
+
+| Champ | Type |
+| --- | --- |
+| `field` | string |
+| `header` | string |
+
 ### webservice.Listener
 
 | Champ | Type |
@@ -2362,13 +2369,13 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `denyClose` | boolean |
 | `disableKeepAlives` | boolean |
 | `domains` | Tableau de string |
-| `emailHeader` | string |
 | `enable` | boolean |
 | `errorPage` | `webservice.ErrorPageOptions` |
 | `forwardAuth` | `webservice.ForwardAuth` |
 | `forwardedHeaders` | boolean |
 | `group` | string |
 | `health` | `webservice.HealthCheck` |
+| `identityHeaders` | Tableau de `webservice.IdentityHeader` |
 | `insecureSkipVerify` | boolean |
 | `ipList` | Tableau de string |
 | `ipMode` | string |

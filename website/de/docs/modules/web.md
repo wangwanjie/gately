@@ -326,11 +326,27 @@ Verteilung:
 
 - Nicht aufgeführte Benutzer sowie nicht angemeldete Besucher auf öffentlichen Pfaden (Pfaden ohne Authentifizierung) nutzen die Backends der Site. Ein bereits per Web-Authentifizierung angemeldeter Besucher wird auch auf öffentlichen Pfaden nach seiner Identität verteilt, sodass die Seiten derselben Anwendung beim selben Backend landen;
 - Backends pro Pfad mit eigenen Backends (siehe vorigen Abschnitt) haben Vorrang; Pfadregeln, die nur Header hinzufügen, nutzen die Backends des Benutzers;
-- Ist unter „Benutzernamen weitergeben“ ein Header-Name wie `X-Remote-User` eingetragen, wird der angemeldete Benutzername in diesem Header an das Backend übergeben. Derselbe Header vom Besucher wird immer entfernt und lässt sich daher nicht fälschen;
-- Ist unter „E-Mail weitergeben“ ein Header-Name wie `Remote-Email` eingetragen, wird die E-Mail des angemeldeten Benutzers in diesem Header an das Backend übergeben, passend für Apps, die die E-Mail als Konto nutzen, etwa Firefly III. Die E-Mail stammt aus der E-Mail des [gemeinsamen Benutzers](#shared-users) (Änderungen gelten sofort) oder aus dem von der Forward-Auth zurückkopierten `Remote-Email`; Site-Benutzer, Drittanbieter-Anmeldung und gemeinsame Benutzer ohne E-Mail geben keine weiter. Wie bei „Benutzernamen weitergeben“ wird derselbe Header vom Besucher immer entfernt, und der Cache-Schlüssel enthält zusätzlich die E-Mail. Die Option erscheint nur bei Sites mit gemeinsamen Benutzern oder Forward-Auth, und ihr Header-Name muss sich von „Benutzernamen weitergeben“ unterscheiden;
-- Bei aktiviertem In-Memory-Antwort-Cache enthält der Cache-Schlüssel die gewählte Benutzerroute und bei eingeschaltetem „Benutzernamen weitergeben“ zusätzlich den Benutzernamen, sodass Antworten verschiedener Backends und verschiedener Benutzer getrennt bleiben.
+- Bei eingeschaltetem In-Memory-Antwortcache enthält der Cache-Schlüssel die gewählte Benutzerroute und, wenn [Identität weitergeben](#identity-headers) eingerichtet ist, auch die an das Backend übergebene Identität, sodass Antworten verschiedener Backends oder Benutzer getrennt bleiben.
 
-Beim Speichern wird geprüft, dass die Site eine Authentifizierung aktiviert hat, jede Regel mindestens einen Benutzer und gültige Backends enthält, kein Benutzer in zwei Regeln vorkommt und der Header-Name gültig ist und keinen Header betrifft, der Weiterleitung oder Authentifizierung beeinflusst, etwa `Host`, `Cookie`, `Authorization` oder `X-Forwarded-For`. In der Site-Liste zeigt eine Site mit Benutzerrouten ein Tag mit der Anzahl der Regeln.
+Beim Speichern wird geprüft, dass die Site eine Authentifizierung aktiviert hat, jede Regel mindestens einen Benutzer und gültige Backends enthält und kein Benutzer in zwei Regeln vorkommt. In der Site-Liste zeigt eine Site mit Benutzerrouten ein Tag mit der Anzahl der Regeln.
+
+### Identität weitergeben {#identity-headers}
+
+„Identität weitergeben“ übergibt die Identität des angemeldeten Benutzers in Request-Headern an das Backend, für Apps, die Benutzer per Header erkennen; Firefly III etwa erkennt Konten an `Remote-Email`. Jede Zeile wählt ein Feld und einen Header-Namen:
+
+| Feld | Üblicher Header | Quelle |
+|---|---|---|
+| Benutzername | `Remote-User` | Der Name des Site-Benutzers oder gemeinsamen Benutzers; `Anbieterschlüssel:ID` bei Drittanbieter-Anmeldung; `Remote-User` bei Forward-Auth |
+| E-Mail | `Remote-Email` | Die E-Mail des gemeinsamen Benutzers oder das von der Forward-Auth zurückkopierte `Remote-Email` |
+| Anzeigename | `Remote-Name` | Der Anzeigename des gemeinsamen Benutzers oder das von der Forward-Auth zurückkopierte `Remote-Name` |
+| Gruppen | `Remote-Groups` | Die Gruppen des gemeinsamen Benutzers (durch Kommas getrennt) oder das von der Forward-Auth zurückkopierte `Remote-Groups` |
+
+- „Übliche Remote-*-Header hinzufügen“ ergänzt auf einmal die Zeilen aus der Tabelle für die Felder, die die aktuelle Anmeldeart liefert;
+- E-Mail, Anzeigename und Gruppen lassen sich nur bei Sites mit [gemeinsamen Benutzern](#shared-users) oder Forward-Auth wählen; Site-Benutzer und Drittanbieter-Anmeldung haben nur einen Benutzernamen. Ändern sich die Angaben eines gemeinsamen Benutzers, übergeben angemeldete Sitzungen sofort die neuen Werte; ein Site-Benutzer mit demselben Namen wie ein gemeinsamer Benutzer übergibt bei Anmeldung mit dem Site-Benutzer-Passwort nur den Benutzernamen;
+- Forward-Auth vertraut nur den Headern, die sie zurückkopiert: Stehen `Remote-Email` und Co. nicht in der Kopierliste, werden dieselben Header vom Besucher nie als Identität übernommen; liefert der Authentifizierungsdienst kein `Remote-User`, wird auch nichts anderes übergeben;
+- Dieselben Header vom Besucher werden immer entfernt, auch in Schreibweisen mit Unterstrich statt Bindestrich (etwa `Remote_Email`), und lassen sich daher nicht fälschen; nicht angemeldete Besucher und Zugriffe über einen Freigabelink erhalten keinerlei Identität, und ein Header wird nicht gesendet, wenn sein Wert leer ist;
+- Beim Speichern wird geprüft, dass Header-Namen gültig und eindeutig sind (ohne Groß-/Kleinschreibung, `-` und `_` gelten als gleich), keine Header sind, die Weiterleitung oder Authentifizierung beeinflussen, etwa `Host`, `Cookie`, `Authorization` oder `X-Forwarded-For`, und nicht mit den Request-Headern der Site oder einer Pfadregel übereinstimmen, die das Anmeldeergebnis überschreiben würden; höchstens 16 Zeilen;
+- „Benutzernamen weitergeben“ aus früheren Versionen erscheint beim Bearbeiten der Site als Benutzernamen-Zeile und wird beim Speichern in diese Liste übernommen.
 
 ## Erweiterungen für den Reverse Proxy
 
@@ -411,7 +427,7 @@ Cache-Regeln:
 - `s-maxage` wird zuerst berücksichtigt, danach `max-age`;
 - Ein einzelner Eintrag ist auf 4 MB und zugleich auf höchstens ein Viertel der Gesamtkapazität begrenzt;
 - Ein Treffer liefert die Header `X-Cache: HIT` und `Age`, ein Fehlschlag liefert `X-Cache: MISS`;
-- Der Cache-Schlüssel enthält Host, die vollständige Anfrage-URI und `Accept-Encoding`; mit [Verteilung nach Benutzer](#user-routes) zusätzlich die gewählte Benutzerroute und bei eingeschaltetem „Benutzernamen weitergeben“ auch den Benutzernamen.
+- Der Cache-Schlüssel enthält Host, die vollständige Anfrage-URI und `Accept-Encoding`; mit [Verteilung nach Benutzer](#user-routes) zusätzlich die gewählte Benutzerroute und, wenn [Identität weitergeben](#identity-headers) eingerichtet ist, auch die an das Backend übergebene Identität.
 
 ### Pfad umschreiben und weiterleiten
 

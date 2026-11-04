@@ -3219,6 +3219,17 @@
         },
         "type": "object"
       },
+      "webservice.IdentityHeader": {
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "header": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "webservice.Listener": {
         "properties": {
           "acceptProxyProtocol": {
@@ -3588,9 +3599,6 @@
             },
             "type": "array"
           },
-          "emailHeader": {
-            "type": "string"
-          },
           "enable": {
             "type": "boolean"
           },
@@ -3608,6 +3616,12 @@
           },
           "health": {
             "$ref": "#/components/schemas/webservice.HealthCheck"
+          },
+          "identityHeaders": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.IdentityHeader"
+            },
+            "type": "array"
           },
           "insecureSkipVerify": {
             "type": "boolean"

@@ -326,11 +326,27 @@ Reparto:
 
 - Los usuarios no listados, y los visitantes sin sesión en rutas públicas (rutas que no requieren autenticación), usan los backends del sitio. En las rutas públicas, un visitante que ya inició sesión con la autenticación web también se reparte según su identidad, de modo que las páginas de una misma aplicación llegan al mismo backend;
 - Los backends por ruta con backends propios (consulta la sección anterior) tienen prioridad; los que solo añaden cabeceras usan los backends del usuario;
-- Cuando «Pasar nombre de usuario» contiene un nombre de cabecera como `X-Remote-User`, el nombre del usuario con sesión iniciada se envía al backend en esa cabecera. La misma cabecera enviada por los visitantes se elimina siempre, así que no se puede falsificar;
-- Cuando «Pasar correo» contiene un nombre de cabecera como `Remote-Email`, el correo del usuario con sesión iniciada se envía al backend en esa cabecera, útil para apps que usan el correo como cuenta, como Firefly III. El correo proviene del correo del [usuario compartido](#shared-users) (los cambios se aplican al instante) o del `Remote-Email` copiado por la autenticación reenviada; los usuarios del sitio, el inicio de sesión de terceros y los usuarios compartidos sin correo no lo pasan. Igual que con «Pasar nombre de usuario», la misma cabecera enviada por los visitantes se elimina siempre, y la clave de caché también incluye el correo. La opción solo aparece en sitios con usuarios compartidos o autenticación reenviada, y su cabecera debe ser distinta de la de «Pasar nombre de usuario»;
-- Con la caché de respuestas en memoria activada, la clave de caché incluye la regla de usuario elegida, y también el nombre de usuario cuando «Pasar nombre de usuario» está activo, de modo que las respuestas de backends distintos o para usuarios distintos se mantienen separadas.
+- Con la caché de respuestas en memoria activada, la clave de caché incluye la regla de usuario elegida y, si se configura [Pasar identidad](#identity-headers), también la identidad enviada al backend, de modo que no se mezclan respuestas de backends o usuarios distintos.
 
-Al guardar se comprueba que el sitio tiene la autenticación activada, que cada regla tiene al menos un usuario y backends válidos, que ningún usuario aparece en dos reglas y que el nombre de cabecera es válido y no es una de las cabeceras que afectan al reenvío o a la autenticación, como `Host`, `Cookie`, `Authorization` o `X-Forwarded-For`. En la lista de sitios, un sitio con reglas por usuario muestra una etiqueta con el número de reglas.
+Al guardar se comprueba que el sitio tiene la autenticación activada, que cada regla tiene al menos un usuario y backends válidos y que ningún usuario aparece en dos reglas. En la lista de sitios, un sitio con reglas por usuario muestra una etiqueta con el número de reglas.
+
+### Pasar identidad {#identity-headers}
+
+«Pasar identidad» envía la identidad del usuario con sesión iniciada al backend en cabeceras de petición, para apps que identifican a los usuarios por cabecera; Firefly III, por ejemplo, identifica las cuentas por `Remote-Email`. Cada fila elige un campo y un nombre de cabecera:
+
+| Campo | Cabecera habitual | Origen |
+|---|---|---|
+| Nombre de usuario | `Remote-User` | El nombre del usuario del sitio o del usuario compartido; `clave-de-proveedor:id` para el inicio de sesión de terceros; `Remote-User` para la autenticación reenviada |
+| Correo | `Remote-Email` | El correo del usuario compartido, o el `Remote-Email` copiado por la autenticación reenviada |
+| Nombre visible | `Remote-Name` | El nombre visible del usuario compartido, o el `Remote-Name` copiado por la autenticación reenviada |
+| Grupos | `Remote-Groups` | Los grupos del usuario compartido (separados por comas), o el `Remote-Groups` copiado por la autenticación reenviada |
+
+- «Añadir cabeceras Remote-* habituales» añade de una vez las filas de la tabla para los campos que aporta el método de inicio de sesión actual;
+- El correo, el nombre visible y los grupos solo se pueden elegir en sitios con [usuarios compartidos](#shared-users) o autenticación reenviada; los usuarios del sitio y el inicio de sesión de terceros solo tienen nombre de usuario. Al cambiar los datos de un usuario compartido, las sesiones abiertas envían los valores nuevos al instante; un usuario del sitio con el mismo nombre que un usuario compartido solo envía el nombre de usuario cuando inicia sesión con la contraseña del usuario del sitio;
+- La autenticación reenviada solo confía en las cabeceras que copia: si `Remote-Email` y similares no están en la lista de copia, las mismas cabeceras enviadas por el visitante nunca se toman como identidad; si el servicio de autenticación no devuelve `Remote-User`, tampoco se envía nada más;
+- Las mismas cabeceras enviadas por el visitante se eliminan siempre, también las escritas con guion bajo en lugar de guion (como `Remote_Email`), así que no se pueden falsificar; los visitantes sin sesión o que llegan por un enlace compartido no reciben ninguna identidad, y una cabecera no se envía si su valor está vacío;
+- Al guardar se comprueba que los nombres de cabecera son válidos y no se repiten (sin distinguir mayúsculas, `-` y `_` cuentan como iguales), que no son cabeceras que afectan al reenvío o a la autenticación, como `Host`, `Cookie`, `Authorization` o `X-Forwarded-For`, y que no coinciden con las cabeceras de petición del sitio o de una regla de ruta, que sobrescribirían el resultado de la autenticación; como máximo 16 filas;
+- «Pasar nombre de usuario» de versiones anteriores aparece como una fila de nombre de usuario al editar el sitio y pasa a esta lista al guardar.
 
 ## Mejoras del proxy inverso
 
@@ -411,7 +427,7 @@ Reglas de caché:
 - Se respeta primero `s-maxage` y después `max-age`;
 - Una entrada individual está limitada a 4 MB y también a un máximo de una cuarta parte de la capacidad total;
 - Un acierto devuelve las cabeceras `X-Cache: HIT` y `Age`, y un fallo devuelve `X-Cache: MISS`;
-- La clave de caché incluye el Host, la URI completa de la petición y `Accept-Encoding`; con el [reparto por usuario](#user-routes), incluye también la regla de usuario elegida, y el nombre de usuario cuando «Pasar nombre de usuario» está activo.
+- La clave de caché incluye el Host, la URI completa de la petición y `Accept-Encoding`; con el [reparto por usuario](#user-routes), incluye también la regla de usuario elegida, y la identidad enviada al backend cuando se configura [Pasar identidad](#identity-headers).
 
 ### Reescritura y redirección de rutas
 

@@ -2211,6 +2211,13 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `updatedAt` | Zeit (RFC 3339) |
 | `url` | string |
 
+### webservice.IdentityHeader
+
+| Feld | Typ |
+| --- | --- |
+| `field` | string |
+| `header` | string |
+
 ### webservice.Listener
 
 | Feld | Typ |
@@ -2362,13 +2369,13 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `denyClose` | boolean |
 | `disableKeepAlives` | boolean |
 | `domains` | Array von string |
-| `emailHeader` | string |
 | `enable` | boolean |
 | `errorPage` | `webservice.ErrorPageOptions` |
 | `forwardAuth` | `webservice.ForwardAuth` |
 | `forwardedHeaders` | boolean |
 | `group` | string |
 | `health` | `webservice.HealthCheck` |
+| `identityHeaders` | Array von `webservice.IdentityHeader` |
 | `insecureSkipVerify` | boolean |
 | `ipList` | Array von string |
 | `ipMode` | string |

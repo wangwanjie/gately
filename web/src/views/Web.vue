@@ -424,7 +424,7 @@
               <el-input v-model="oauthUsersText" type="textarea" :rows="2" class="mono" :placeholder="t('web.oauthUsersPlaceholder')" />
               <div class="form-help">{{ t('web.providerHelp') }}</div>
             </el-form-item>
-            <!-- 按用户分流与传递用户名依赖认证结果，只在反向代理站点启用认证后显示 -->
+            <!-- 按用户分流与传递身份信息依赖认证结果，只在反向代理站点启用认证后显示 -->
             <template v-if="site.type === 'proxy' && localAuthOn">
               <el-form-item :label="t('web.userRoutes')">
                 <div class="locations">
@@ -439,14 +439,29 @@
                   <div class="form-help">{{ t('web.userRoutesHelp') }}</div>
                 </div>
               </el-form-item>
-              <el-form-item :label="t('web.userHeader')">
-                <el-input v-model="site.userHeader" class="mono w-260" placeholder="X-Remote-User" />
-                <div class="form-help">{{ t('web.userHeaderHelp') }}</div>
-              </el-form-item>
-              <!-- 邮箱只来自共享用户或转发认证，其他认证方式没有邮箱可传，不显示 -->
-              <el-form-item v-if="emailHeaderOn" :label="t('web.emailHeader')">
-                <el-input v-model="site.emailHeader" class="mono w-260" placeholder="Remote-Email" />
-                <div class="form-help">{{ t('web.emailHeaderHelp') }}</div>
+              <!-- 身份请求头：每行把一项身份信息写入一个请求头；邮箱、显示名、分组只有共享用户或转发认证才有 -->
+              <el-form-item :label="t('web.identityHeaders')">
+                <div class="locations">
+                  <div v-for="(ih, i) in site.identityHeaders" :key="locKey(ih)" class="location-row">
+                    <el-select v-model="ih.field" class="identity-field" :aria-label="t('web.identityField')">
+                      <el-option
+                        v-for="f in identityFields"
+                        :key="f"
+                        :value="f"
+                        :label="t(identityFieldLabels[f])"
+                        :disabled="f !== 'user' && !richIdentityOn"
+                      />
+                    </el-select>
+                    <el-input v-model="ih.header" class="mono location-targets" :placeholder="identityPlaceholders[ih.field]" :aria-label="t('web.identityHeaderName')" />
+                    <el-button text type="danger" :icon="Trash2" :aria-label="t('common.delete')" @click="site.identityHeaders.splice(i, 1)" />
+                  </div>
+                  <div class="identity-actions">
+                    <el-button size="small" :icon="Plus" @click="addIdentityHeader">{{ t('web.addIdentityHeader') }}</el-button>
+                    <el-button v-if="missingIdentityPresets.length" size="small" @click="addIdentityPresets">{{ t('web.addIdentityPresets') }}</el-button>
+                  </div>
+                  <div class="form-help">{{ t('web.identityHeadersHelp') }}</div>
+                  <div v-if="!richIdentityOn" class="form-help">{{ t('web.identityFieldsHint') }}</div>
+                </div>
               </el-form-item>
             </template>
             <el-form-item :label="t('web.ipAccess')">
@@ -664,9 +679,10 @@ interface Site {
   passAuthCookies: boolean
   locations: Location[]
   userRoutes: UserRoute[]
-  userHeader: string
-  // 认证用户的邮箱写入该请求头，仅共享用户与转发认证有邮箱
-  emailHeader: string
+  // 把认证用户的身份信息写入请求头传给后端
+  identityHeaders: IdentityHeader[]
+  // 旧版“传递用户名”，编辑时并入 identityHeaders，保存时不再提交
+  userHeader?: string
   redirectTo: string
   redirectCode: number
   keepPath: boolean
@@ -716,6 +732,15 @@ interface Location {
   prefix: string
   targets: string[] | null
   requestHeaders: string[] | null
+}
+
+// IdentityField 为身份请求头可传递的字段
+type IdentityField = 'user' | 'email' | 'name' | 'groups'
+
+// IdentityHeader 把认证用户的一项身份信息写入请求头
+interface IdentityHeader {
+  header: string
+  field: IdentityField
 }
 
 // UserRoute 把列出的认证用户分到另一组后端
@@ -863,8 +888,43 @@ const fwdHeadersText = useListText(() => site.value.forwardAuth?.copyHeaders, (v
 const forwardAuthOn = ref(false)
 // 本站点是否启用了任一认证方式，启用时不能转发 Gately 登录 Cookie
 const localAuthOn = computed(() => site.value.webAuth || site.value.basicAuth || forwardAuthOn.value)
-// 能传递邮箱的认证方式：使用共享用户的基本/网页认证，或转发认证
-const emailHeaderOn = computed(() => forwardAuthOn.value || ((site.value.webAuth || site.value.basicAuth) && site.value.sharedUsers))
+// 有邮箱、显示名、分组可传的认证方式：使用共享用户的基本/网页认证，或转发认证
+const richIdentityOn = computed(() => forwardAuthOn.value || ((site.value.webAuth || site.value.basicAuth) && site.value.sharedUsers))
+const identityFields: IdentityField[] = ['user', 'email', 'name', 'groups']
+const identityFieldLabels: Record<IdentityField, string> = {
+  user: 'web.identityFieldUser',
+  email: 'web.identityFieldEmail',
+  name: 'web.identityFieldName',
+  groups: 'web.identityFieldGroups',
+}
+// 常用请求头名与 Authelia 等认证服务一致，也用作输入框的占位提示
+const identityPlaceholders: Record<IdentityField, string> = {
+  user: 'Remote-User',
+  email: 'Remote-Email',
+  name: 'Remote-Name',
+  groups: 'Remote-Groups',
+}
+// 当前认证方式可传、但列表中还没有的字段
+const missingIdentityPresets = computed(() =>
+  identityFields.filter((f) => (f === 'user' || richIdentityOn.value) && !site.value.identityHeaders.some((ih) => ih.field === f)),
+)
+// 新增一行，字段默认取第一个还没用到的可传字段
+function addIdentityHeader() {
+  site.value.identityHeaders.push({ header: '', field: missingIdentityPresets.value[0] ?? 'user' })
+}
+// 一次补齐常用的 Remote-* 请求头，已用到的请求头名不再添加
+function addIdentityPresets() {
+  const used = new Set(site.value.identityHeaders.map((ih) => headerKey(ih.header)))
+  for (const f of missingIdentityPresets.value) {
+    if (!used.has(headerKey(identityPlaceholders[f]))) {
+      site.value.identityHeaders.push({ header: identityPlaceholders[f], field: f })
+    }
+  }
+}
+// headerKey 与后端一致：不区分大小写，- 与 _ 视为相同
+function headerKey(name: string) {
+  return name.trim().toLowerCase().replaceAll('_', '-')
+}
 const trustedText = bind(
   () => settings.value?.trustedProxies,
   (v) => {
@@ -910,8 +970,7 @@ function emptySite(): Site {
     passAuthCookies: false,
     locations: [],
     userRoutes: [],
-    userHeader: '',
-    emailHeader: '',
+    identityHeaders: [],
     redirectTo: '',
     redirectCode: 302,
     keepPath: true,
@@ -1493,8 +1552,12 @@ function openSite(l: ListenerView, row?: SiteRow, copy = false) {
   draft.rewrites = draft.rewrites ?? []
   draft.locations = draft.locations ?? []
   draft.userRoutes = draft.userRoutes ?? []
-  draft.userHeader = draft.userHeader ?? ''
-  draft.emailHeader = draft.emailHeader ?? ''
+  draft.identityHeaders = draft.identityHeaders ?? []
+  // 旧版“传递用户名”并入身份请求头列表，与后端保存时的处理一致
+  if (draft.userHeader && !draft.identityHeaders.some((ih) => headerKey(ih.header) === headerKey(draft.userHeader ?? ''))) {
+    draft.identityHeaders.unshift({ header: draft.userHeader, field: 'user' })
+  }
+  delete draft.userHeader
   draft.forwardAuth = Object.assign({ url: '', loginUrl: '', copyHeaders: [] }, draft.forwardAuth)
   forwardAuthOn.value = !!draft.forwardAuth.url
   // 旧配置没有这些对象，补全默认值后可直接编辑
@@ -1587,11 +1650,10 @@ async function saveSite() {
   // 关闭认证或改为其他类型后，按用户分流不再显示，也不再生效，一并清空，避免保存时被隐藏的设置拦住
   if (site.value.type !== 'proxy' || !localAuthOn.value) {
     site.value.userRoutes = []
-    site.value.userHeader = ''
+    site.value.identityHeaders = []
   }
-  if (site.value.type !== 'proxy' || !emailHeaderOn.value) {
-    site.value.emailHeader = ''
-  }
+  // 未填写请求头名的行视为不传；当前认证方式没有邮箱等信息时，这些行已不可选，一并去掉
+  site.value.identityHeaders = site.value.identityHeaders.filter((ih) => ih.header.trim() !== '' && (ih.field === 'user' || richIdentityOn.value))
   const l = plain(siteOwner)
   l.sites = l.sites ?? []
   if (siteIsDefault.value) {
@@ -1851,6 +1913,18 @@ onMounted(async () => {
   flex: 1;
   min-width: 0;
 }
+.identity-field {
+  width: 140px;
+  flex: none;
+}
+.identity-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.identity-actions .el-button + .el-button {
+  margin-left: 0;
+}
 .sites {
   border: 1px solid var(--g-border);
   border-radius: 8px;
@@ -2029,6 +2103,10 @@ onMounted(async () => {
   }
   .user-route-users {
     width: 120px;
+  }
+  /* 手机上给字段留够宽度，德语、俄语等较长的字段名不被截断；请求头名输入框仍有约 140px */
+  .identity-field {
+    width: 140px;
   }
   .site {
     grid-template-columns: auto minmax(0, 1fr) auto;

@@ -326,11 +326,27 @@ Routing:
 
 - Users not listed, and visitors who are not signed in on public paths (paths that need no authentication), use the site's backends. A visitor already signed in through web auth is routed by identity on public paths too, so pages of the same app reach the same backend;
 - Path backends with their own backends (see the previous section) take priority; path backends that only add headers use the user's backends;
-- When "Pass user name" is set to a header name such as `X-Remote-User`, the signed-in user name is put in that header for the backend. The same header sent by visitors is always removed, so it cannot be forged;
-- When "Pass email" is set to a header name such as `Remote-Email`, the signed-in user's email is put in that header for the backend, for apps that use email as the account, such as Firefly III. The email comes from the [shared user](#shared-users)'s email (changes apply immediately) or the `Remote-Email` copied back by forward auth; site users, third-party sign-in and shared users without an email pass none. As with "Pass user name", the same header sent by visitors is always removed, and the cache key also includes the email. The option is shown only for sites using shared users or forward auth, and its header name must differ from "Pass user name";
-- With the in-memory response cache enabled, the cache key includes the chosen user route, and also the user name when "Pass user name" is on, so responses from different backends or for different users are kept apart.
+- With the in-memory response cache enabled, the cache key includes the chosen user route, and also the identity passed to the backend when [Pass identity](#identity-headers) is set, so responses from different backends or for different users are kept apart.
 
-Saving checks that the site has authentication enabled, that each rule has at least one user and valid backends, that no user appears in two rules, and that the header name is valid and is not one that affects forwarding or authentication, such as `Host`, `Cookie`, `Authorization` or `X-Forwarded-For`. In the site list, a site with user routes shows a tag with the number of rules.
+Saving checks that the site has authentication enabled, that each rule has at least one user and valid backends, and that no user appears in two rules. In the site list, a site with user routes shows a tag with the number of rules.
+
+### Pass identity {#identity-headers}
+
+"Pass identity" puts the signed-in user's identity in request headers for the backend, for apps that identify users by header; Firefly III, for example, identifies accounts by `Remote-Email`. Each row picks a field and a header name:
+
+| Field | Common header | Source |
+|---|---|---|
+| User name | `Remote-User` | The site user or shared user name; `provider-key:id` for third-party sign-in; `Remote-User` for forward auth |
+| Email | `Remote-Email` | The shared user's email, or the `Remote-Email` copied back by forward auth |
+| Display name | `Remote-Name` | The shared user's display name, or the `Remote-Name` copied back by forward auth |
+| Groups | `Remote-Groups` | The shared user's groups (comma-separated), or the `Remote-Groups` copied back by forward auth |
+
+- "Add common Remote-* headers" adds the rows from the table above for the fields the current sign-in method provides;
+- Email, display name and groups can be chosen only on sites using [shared users](#shared-users) or forward auth; site users and third-party sign-in only have a user name. After a shared user's details change, signed-in sessions pass the new values at once; a site user with the same name as a shared user passes only the user name when signing in with the site user's password;
+- Forward auth only trusts the headers it copies back: if `Remote-Email` and the like are not in the copy list, the same headers sent by visitors are never taken as identity; when the auth service returns no `Remote-User`, nothing else is passed either;
+- The same headers sent by visitors are always removed, including spellings with underscores instead of hyphens (such as `Remote_Email`), so they cannot be forged; visitors who are not signed in or come through a share link get no identity at all, and a header is not sent when its value is empty;
+- Saving checks that header names are valid and unique (case-insensitive, `-` and `_` count as the same), are not headers that affect forwarding or authentication such as `Host`, `Cookie`, `Authorization` or `X-Forwarded-For`, and do not clash with the site's or a path rule's request headers, which would override the sign-in result; at most 16 rows;
+- "Pass user name" from earlier versions shows up as a user name row when editing the site and moves into this list on save.
 
 ## Reverse proxy enhancements
 
@@ -411,7 +427,7 @@ Caching rules:
 - `s-maxage` is honored first, then `max-age`;
 - A single entry is limited to 4 MB and also to at most a quarter of the total capacity;
 - A hit returns the `X-Cache: HIT` and `Age` headers, and a miss returns `X-Cache: MISS`;
-- The cache key includes Host, the full request URI and `Accept-Encoding`; with [route by user](#user-routes), it also includes the chosen user route, and the user name when "Pass user name" is on.
+- The cache key includes Host, the full request URI and `Accept-Encoding`; with [route by user](#user-routes), it also includes the chosen user route, and the identity passed to the backend when [Pass identity](#identity-headers) is set.
 
 ### Path rewrite and redirect
 

@@ -2211,6 +2211,13 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `updatedAt` | Time (RFC 3339) |
 | `url` | string |
 
+### webservice.IdentityHeader
+
+| Field | Type |
+| --- | --- |
+| `field` | string |
+| `header` | string |
+
 ### webservice.Listener
 
 | Field | Type |
@@ -2362,13 +2369,13 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `denyClose` | boolean |
 | `disableKeepAlives` | boolean |
 | `domains` | Array of string |
-| `emailHeader` | string |
 | `enable` | boolean |
 | `errorPage` | `webservice.ErrorPageOptions` |
 | `forwardAuth` | `webservice.ForwardAuth` |
 | `forwardedHeaders` | boolean |
 | `group` | string |
 | `health` | `webservice.HealthCheck` |
+| `identityHeaders` | Array of `webservice.IdentityHeader` |
 | `insecureSkipVerify` | boolean |
 | `ipList` | Array of string |
 | `ipMode` | string |

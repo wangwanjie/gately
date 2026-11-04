@@ -274,14 +274,15 @@ func sessionNames(sess *siteSession) []string {
 	return names
 }
 
-// sessionVisitor 返回会话对应的访客身份。只有共享用户会话带邮箱，取当前配置中的邮箱，修改后立即生效；
-// 站点用户与第三方登录没有可信的邮箱
+// sessionVisitor 返回会话对应的访客身份。只有共享用户会话带邮箱、显示名与分组，取当前配置中的值，修改后立即生效；
+// 站点用户与第三方登录只有身份标识
 func (a *authenticator) sessionVisitor(sess *siteSession) visitor {
-	v := visitor{names: sessionNames(sess)}
 	if sess.Shared {
-		v.email = a.shared.get().users[sess.User].Email
+		if u, ok := a.shared.get().users[sess.User]; ok {
+			return sharedVisitor(u)
+		}
 	}
-	return v
+	return visitor{names: sessionNames(sess)}
 }
 
 // sessionIdentity 只读取已登录的会话（站点 Cookie 或单点登录 Cookie），不要求登录，用于无需认证的路径识别用户
@@ -359,8 +360,8 @@ func (a *authenticator) checkUser(w http.ResponseWriter, r *http.Request, s Site
 			// 基本认证无法输入动态验证码，启用了 TOTP 的共享用户只能通过网页登录
 			if u, ok := a.shared.get().checkPassword(name, pass); ok && u.TOTPSecret == "" {
 				valid = true
-				// 只有按共享用户通过时才带邮箱：与共享用户同名的站点用户优先，不能拿到共享用户的邮箱
-				v.email = u.Email
+				// 只有按共享用户通过时才带邮箱等信息：与共享用户同名的站点用户优先，不能拿到共享用户的信息
+				v = sharedVisitor(u)
 			}
 		}
 		a.release(key, valid)

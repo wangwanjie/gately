@@ -326,11 +326,27 @@ Encaminhamento:
 
 - Usuários fora das regras e visitantes sem login em caminhos públicos (caminhos que dispensam autenticação) usam os backends do site. Um visitante que já entrou pela autenticação web também é distribuído pela identidade nos caminhos públicos, para que as páginas do mesmo aplicativo cheguem ao mesmo backend;
 - Os backends por caminho com backends próprios (veja a seção anterior) têm prioridade; os backends por caminho que só adicionam cabeçalhos usam os backends do usuário;
-- Quando "Passar nome de usuário" recebe um nome de cabeçalho, como `X-Remote-User`, o nome do usuário autenticado é enviado ao backend nesse cabeçalho. O mesmo cabeçalho enviado por visitantes é sempre removido, para que não possa ser forjado;
-- Quando "Passar e-mail" recebe um nome de cabeçalho, como `Remote-Email`, o e-mail do usuário autenticado é enviado ao backend nesse cabeçalho, útil para apps que usam o e-mail como conta, como o Firefly III. O e-mail vem do e-mail do [usuário compartilhado](#shared-users) (alterações valem na hora) ou do `Remote-Email` copiado pela autenticação encaminhada; usuários do site, login de terceiros e usuários compartilhados sem e-mail não o passam. Como em "Passar nome de usuário", o mesmo cabeçalho enviado por visitantes é sempre removido, e a chave de cache também inclui o e-mail. A opção só aparece em sites com usuários compartilhados ou autenticação encaminhada, e o nome do cabeçalho deve ser diferente do de "Passar nome de usuário";
-- Com o cache de respostas em memória ativado, a chave do cache inclui a regra de usuário escolhida e, quando "Passar nome de usuário" está ativo, também o nome do usuário, de modo que respostas de backends diferentes ou de usuários diferentes ficam separadas.
+- Com o cache de respostas em memória ativado, a chave do cache inclui a regra de usuário escolhida e, quando [Passar identidade](#identity-headers) está configurado, também a identidade enviada ao backend, para que respostas de backends ou usuários diferentes não se misturem.
 
-Ao salvar, verifica-se que o site tem autenticação ativada, que cada regra tem pelo menos um usuário e backends válidos, que nenhum usuário aparece em duas regras e que o nome do cabeçalho é válido e não é um cabeçalho que afete o encaminhamento ou a autenticação, como `Host`, `Cookie`, `Authorization` ou `X-Forwarded-For`. Na lista de sites, um site com regras por usuário mostra uma etiqueta com o número de regras.
+Ao salvar, verifica-se que o site tem autenticação ativada, que cada regra tem pelo menos um usuário e backends válidos e que nenhum usuário aparece em duas regras. Na lista de sites, um site com regras por usuário mostra uma etiqueta com o número de regras.
+
+### Passar identidade {#identity-headers}
+
+"Passar identidade" envia a identidade do usuário autenticado ao backend em cabeçalhos de requisição, para apps que identificam usuários por cabeçalho; o Firefly III, por exemplo, identifica contas pelo `Remote-Email`. Cada linha escolhe um campo e um nome de cabeçalho:
+
+| Campo | Cabeçalho comum | Origem |
+|---|---|---|
+| Nome de usuário | `Remote-User` | O nome do usuário do site ou do usuário compartilhado; `chave-do-provedor:id` no login de terceiros; `Remote-User` na autenticação encaminhada |
+| E-mail | `Remote-Email` | O e-mail do usuário compartilhado, ou o `Remote-Email` copiado pela autenticação encaminhada |
+| Nome de exibição | `Remote-Name` | O nome de exibição do usuário compartilhado, ou o `Remote-Name` copiado pela autenticação encaminhada |
+| Grupos | `Remote-Groups` | Os grupos do usuário compartilhado (separados por vírgulas), ou o `Remote-Groups` copiado pela autenticação encaminhada |
+
+- "Adicionar cabeçalhos Remote-* comuns" adiciona de uma vez as linhas da tabela para os campos que o método de login atual fornece;
+- E-mail, nome de exibição e grupos só podem ser escolhidos em sites com [usuários compartilhados](#shared-users) ou autenticação encaminhada; usuários do site e login de terceiros têm apenas o nome de usuário. Ao alterar os dados de um usuário compartilhado, as sessões abertas passam os novos valores na hora; um usuário do site com o mesmo nome de um usuário compartilhado passa só o nome de usuário ao entrar com a senha do usuário do site;
+- A autenticação encaminhada só confia nos cabeçalhos que copia: se `Remote-Email` e semelhantes não estiverem na lista de cópia, os mesmos cabeçalhos enviados pelo visitante nunca são tomados como identidade; se o serviço de autenticação não devolver `Remote-User`, nada mais é passado;
+- Os mesmos cabeçalhos enviados pelo visitante são sempre removidos, inclusive grafias com sublinhado no lugar do hífen (como `Remote_Email`), para que não possam ser forjados; visitantes sem login ou que chegam por um link de compartilhamento não recebem identidade nenhuma, e um cabeçalho não é enviado quando seu valor está vazio;
+- Ao salvar, verifica-se que os nomes de cabeçalho são válidos e não se repetem (sem diferenciar maiúsculas, `-` e `_` contam como iguais), não são cabeçalhos que afetam o encaminhamento ou a autenticação, como `Host`, `Cookie`, `Authorization` ou `X-Forwarded-For`, e não coincidem com os cabeçalhos de requisição do site ou de uma regra de caminho, que sobrescreveriam o resultado da autenticação; no máximo 16 linhas;
+- "Passar nome de usuário" de versões anteriores aparece como uma linha de nome de usuário ao editar o site e passa para esta lista ao salvar.
 
 ## Melhorias do proxy reverso
 
@@ -411,7 +427,7 @@ Regras de cache:
 - O `s-maxage` é respeitado primeiro, depois o `max-age`;
 - Uma única entrada é limitada a 4 MB e também a no máximo um quarto da capacidade total;
 - Um acerto retorna os cabeçalhos `X-Cache: HIT` e `Age`, e uma falha retorna `X-Cache: MISS`;
-- A chave do cache inclui o Host, a URI completa da requisição e o `Accept-Encoding`; com a [distribuição por usuário](#user-routes), inclui também a regra de usuário escolhida e, quando "Passar nome de usuário" está ativo, o nome do usuário.
+- A chave do cache inclui o Host, a URI completa da requisição e o `Accept-Encoding`; com a [distribuição por usuário](#user-routes), inclui também a regra de usuário escolhida e, quando [Passar identidade](#identity-headers) está configurado, a identidade enviada ao backend.
 
 ### Reescrita e redirecionamento de caminho
 

@@ -2211,6 +2211,13 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `updatedAt` | Hora (RFC 3339) |
 | `url` | string |
 
+### webservice.IdentityHeader
+
+| Campo | Tipo |
+| --- | --- |
+| `field` | string |
+| `header` | string |
+
 ### webservice.Listener
 
 | Campo | Tipo |
@@ -2362,13 +2369,13 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `denyClose` | boolean |
 | `disableKeepAlives` | boolean |
 | `domains` | Lista de string |
-| `emailHeader` | string |
 | `enable` | boolean |
 | `errorPage` | `webservice.ErrorPageOptions` |
 | `forwardAuth` | `webservice.ForwardAuth` |
 | `forwardedHeaders` | boolean |
 | `group` | string |
 | `health` | `webservice.HealthCheck` |
+| `identityHeaders` | Lista de `webservice.IdentityHeader` |
 | `insecureSkipVerify` | boolean |
 | `ipList` | Lista de string |
 | `ipMode` | string |

@@ -2211,6 +2211,13 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `updatedAt` | Время (RFC 3339) |
 | `url` | string |
 
+### webservice.IdentityHeader
+
+| Поле | Тип |
+| --- | --- |
+| `field` | string |
+| `header` | string |
+
 ### webservice.Listener
 
 | Поле | Тип |
@@ -2362,13 +2369,13 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `denyClose` | boolean |
 | `disableKeepAlives` | boolean |
 | `domains` | Массив из string |
-| `emailHeader` | string |
 | `enable` | boolean |
 | `errorPage` | `webservice.ErrorPageOptions` |
 | `forwardAuth` | `webservice.ForwardAuth` |
 | `forwardedHeaders` | boolean |
 | `group` | string |
 | `health` | `webservice.HealthCheck` |
+| `identityHeaders` | Массив из `webservice.IdentityHeader` |
 | `insecureSkipVerify` | boolean |
 | `ipList` | Массив из string |
 | `ipMode` | string |
