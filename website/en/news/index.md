@@ -7,6 +7,10 @@ description: Release announcements and notes for each Gately version.
 
 Announcements for major releases are listed below. See [GitHub Releases](https://github.com/wangwanjie/gately/releases) for the full changes and downloads of every version.
 
+## [v0.6.4.1](/en/news/v0.6.4.1)
+
+November 4, 2026 · Tailscale and NetBird support multiple instances; notifications include the server name; protocol routing routes can be disabled temporarily; fixes DNSPod record sync and certificate validation failures and public IP lookups failing after ipw.cn went offline.
+
 ## [v0.6.4](/en/news/v0.6.4)
 
 November 3, 2026 · Custom builds: pick only the modules and UI languages you need on build.gately.cn and generate smaller packages and Docker images online; the admin console can hide the signs of unauthorized access; Web sites can choose from 10 error page styles or a custom page, and can replace backend error pages.

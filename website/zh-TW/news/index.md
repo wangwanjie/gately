@@ -7,6 +7,10 @@ description: Gately 各版本的發布公告與更新說明。
 
 重要版本的發布公告如下，每個版本的完整變更與下載檔案見 [GitHub Releases](https://github.com/wangwanjie/gately/releases)。
 
+## [v0.6.4.1](/zh-TW/news/v0.6.4.1)
+
+2026 年 11 月 4 日 · Tailscale 與 NetBird 支援多實例；通知帶上伺服器名稱；協定分流的路由可暫時停用；修正 DNSPod 解析同步與憑證驗證失敗、ipw.cn 停用導致的公網 IP 取得失敗。
+
 ## [v0.6.4](/zh-TW/news/v0.6.4)
 
 2026 年 11 月 3 日 · 自訂建置：在 build.gately.cn 只勾選需要的模組與介面語言，線上產生更小的安裝包與 Docker 映像；管理後台可隱藏未授權存取的特徵；Web 站點可選 10 種錯誤頁風格或自訂頁面，並能替換後端的錯誤頁。

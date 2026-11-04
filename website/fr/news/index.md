@@ -7,6 +7,10 @@ description: Annonces et notes de version de chaque version de Gately.
 
 Les annonces des versions majeures sont listées ci-dessous. Consultez [GitHub Releases](https://github.com/wangwanjie/gately/releases) pour la liste complète des changements et les téléchargements de chaque version.
 
+## [v0.6.4.1](/fr/news/v0.6.4.1)
+
+4 novembre 2026 · Plusieurs instances Tailscale et NetBird ; les notifications indiquent le nom du serveur ; les routes du routage par protocole peuvent être désactivées ; corrige la synchronisation et la validation des certificats DNSPod et l'IP publique depuis l'arrêt d'ipw.cn.
+
 ## [v0.6.4](/fr/news/v0.6.4)
 
 3 novembre 2026 · Builds personnalisés : sur build.gately.cn, cochez seulement les modules et les langues d’interface utiles pour générer en ligne des paquets et des images Docker plus légers ; la console d’administration peut masquer les signes qui trahissent un accès non autorisé ; les sites Web peuvent choisir parmi 10 styles de page d’erreur ou une page personnalisée, et remplacer les pages d’erreur du backend.
