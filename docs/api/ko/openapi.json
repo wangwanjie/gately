@@ -1974,6 +1974,9 @@
             },
             "type": "array"
           },
+          "disabled": {
+            "type": "boolean"
+          },
           "domains": {
             "items": {
               "type": "string"

@@ -1711,6 +1711,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Feld | Typ |
 | --- | --- |
 | `alpn` | Array von string |
+| `disabled` | boolean |
 | `domains` | Array von string |
 | `name` | string |
 | `protocol` | string |

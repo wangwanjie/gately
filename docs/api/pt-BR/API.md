@@ -1711,6 +1711,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Campo | Tipo |
 | --- | --- |
 | `alpn` | Array de string |
+| `disabled` | boolean |
 | `domains` | Array de string |
 | `name` | string |
 | `protocol` | string |
