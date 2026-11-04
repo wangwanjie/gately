@@ -54,6 +54,10 @@
   "filterPlaceholder": "Rechercher nom, groupe, port, cible, domaine ou protocole",
   "routes": "Routes",
   "routesHelp": "Les routes TLS, HTTP et Minecraft correspondent par domaine : d'abord les domaines exacts, puis le joker *. le plus long, puis *, enfin les routes sans domaine. Insensible à la casse. Pour un même domaine, les routes TLS avec ALPN sont prioritaires. Les autres protocoles n'acceptent qu'une route chacun. Un port cible vide équivaut au port d'écoute. Le protocole PROXY se règle par route",
+  "routeSwitchHelp": "L'interrupteur à gauche désactive temporairement une route : sa configuration est conservée mais elle ne correspond plus, et ses connexions vont vers d'autres routes ou la cible par défaut. Les routes désactivées sont exclues de la vérification des conflits de domaine et de protocole, vous pouvez donc garder des routes alternatives et basculer entre elles",
+  "routeDisabled": "Désactivée",
+  "routeEnableTip": "Activer cette route",
+  "routeDisableTip": "Désactiver temporairement cette route en conservant sa configuration",
   "hits": "{hits} au total",
   "proto": {
     "tls": "TLS (SNI / ALPN)",

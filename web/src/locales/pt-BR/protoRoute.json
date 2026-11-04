@@ -54,6 +54,10 @@
   "filterPlaceholder": "Buscar nome, grupo, porta, destino, domínio ou protocolo",
   "routes": "Rotas",
   "routesHelp": "Rotas TLS, HTTP e Minecraft correspondem por domínio: primeiro domínios exatos, depois o curinga *. mais longo, depois * e por fim rotas sem domínio. Não diferencia maiúsculas. No mesmo domínio, rotas TLS com ALPN têm prioridade. Os demais protocolos admitem uma rota cada. Porta de destino vazia = porta de escuta. O protocolo PROXY é definido por rota",
+  "routeSwitchHelp": "O interruptor à esquerda desativa temporariamente uma rota: a configuração é mantida, mas ela deixa de corresponder e suas conexões vão para outras rotas ou para o destino padrão. Rotas desativadas ficam fora da verificação de conflitos de domínio e protocolo, então você pode manter rotas alternativas e alternar entre elas",
+  "routeDisabled": "Desativada",
+  "routeEnableTip": "Ativar esta rota",
+  "routeDisableTip": "Desativar temporariamente esta rota mantendo a configuração",
   "hits": "{hits} no total",
   "proto": {
     "tls": "TLS (SNI / ALPN)",

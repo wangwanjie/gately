@@ -48,6 +48,7 @@
   "%s %s 已创建 -\u003e %s": "%s %s créé -\u003e %s",
   "%s %s 已启动（SNI 分流，%d 条路由）": "%s %s démarré (routage SNI, %d routes)",
   "%s %s 已启动（协议分流，%d 条路由）": "%s %s démarré (routage par protocole, %d routes)",
+  "%s %s 已启动（协议分流，%d 条路由，%d 条已停用）": "%s %s démarré (routage par protocole, %d routes, %d désactivées)",
   "%s %s 已更新 -\u003e %s": "%s %s mis à jour -\u003e %s",
   "%s %s 无需更新 (%s)": "%s %s aucune mise à jour nécessaire (%s)",
   "%s %s 未命中路由且未设置默认目标，已断开": "%s %s ne correspond à aucune route et aucune cible par défaut n'est définie, connexion fermée",

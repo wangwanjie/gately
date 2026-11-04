@@ -54,6 +54,10 @@
   "filterPlaceholder": "Search name, group, port, target, domain or protocol",
   "routes": "Routes",
   "routesHelp": "TLS, HTTP and Minecraft routes match by domain: exact domains first, then the longest *. wildcard, then *, then routes without domains. Case-insensitive. Under the same domain, TLS routes with ALPN take precedence. Other protocols allow one route each. An empty target port means the same as the listening port. PROXY protocol is set per route",
+  "routeSwitchHelp": "The switch on the left temporarily disables a route: its settings are kept but it no longer matches, so its connections go to other routes or the default target. Disabled routes are excluded from domain and protocol conflict checks, so you can keep alternative routes and switch between them",
+  "routeDisabled": "Disabled",
+  "routeEnableTip": "Enable this route",
+  "routeDisableTip": "Temporarily disable this route and keep its settings",
   "hits": "{hits} total",
   "proto": {
     "tls": "TLS (SNI / ALPN)",

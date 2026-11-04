@@ -162,7 +162,11 @@ func (r *runner) start(parent context.Context) error {
 				continue
 			}
 			okCount++
-			log.Infof("%s %s 已启动（协议分流，%d 条路由）", proto, addr, len(r.rule.Routes))
+			if disabled := disabledRoutes(r.rule.Routes); disabled > 0 {
+				log.Infof("%s %s 已启动（协议分流，%d 条路由，%d 条已停用）", proto, addr, len(r.rule.Routes), disabled)
+			} else {
+				log.Infof("%s %s 已启动（协议分流，%d 条路由）", proto, addr, len(r.rule.Routes))
+			}
 		}
 	}
 	if okCount == 0 {
@@ -245,4 +249,15 @@ func describeSniff(res sniffResult) string {
 		return fmt.Sprintf("%s Host %q", proto, res.Host)
 	}
 	return proto
+}
+
+// disabledRoutes 返回停用的路由数量，用于启动日志。
+func disabledRoutes(routes []Route) int {
+	n := 0
+	for _, rt := range routes {
+		if rt.Disabled {
+			n++
+		}
+	}
+	return n
 }

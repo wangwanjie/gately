@@ -54,6 +54,10 @@
   "filterPlaceholder": "Buscar nombre, grupo, puerto, destino, dominio o protocolo",
   "routes": "Rutas",
   "routesHelp": "Las rutas TLS, HTTP y Minecraft coinciden por dominio: primero los dominios exactos, luego el comodín *. más largo, luego * y por último las rutas sin dominio. Sin distinguir mayúsculas. En un mismo dominio, las rutas TLS con ALPN tienen prioridad. Los demás protocolos admiten una ruta cada uno. Un puerto de destino vacío equivale al puerto de escucha. El protocolo PROXY se configura por ruta",
+  "routeSwitchHelp": "El interruptor de la izquierda desactiva temporalmente una ruta: se conserva su configuración pero deja de coincidir, y sus conexiones van a otras rutas o al destino predeterminado. Las rutas desactivadas no participan en la comprobación de conflictos de dominio y protocolo, así que puede mantener rutas alternativas y alternar entre ellas",
+  "routeDisabled": "Desactivada",
+  "routeEnableTip": "Activar esta ruta",
+  "routeDisableTip": "Desactivar temporalmente esta ruta conservando su configuración",
   "hits": "{hits} en total",
   "proto": {
     "tls": "TLS (SNI / ALPN)",

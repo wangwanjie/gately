@@ -196,7 +196,11 @@ func newRouter(rule Rule) *router {
 			match:         routeMatchKey(route),
 			conns:         new(atomic.Int64),
 		}
+		// 停用的路由保留在 targets 中，让统计与路由一一对应、重新启用后沿用原计数，但不加入匹配表
 		rt.targets = append(rt.targets, t)
+		if route.Disabled {
+			continue
+		}
 		proto := routeProtocol(route)
 		if !protocolUsesDomains(proto) {
 			// 校验保证同一协议只有一条路由；未经校验的配置以第一条为准

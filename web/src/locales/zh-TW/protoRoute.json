@@ -54,6 +54,10 @@
   "filterPlaceholder": "搜尋名稱、分組、連接埠、目標、網域或協定",
   "routes": "分流路由",
   "routesHelp": "TLS、HTTP 與 Minecraft 路由依網域比對：精確網域優先，其次最長的 *. 萬用字元，再次 *，最後是未填網域的路由；不區分大小寫。同一網域下填寫了 ALPN 的 TLS 路由優先。其他協定每種只能有一條路由。目標連接埠留空與監聽連接埠相同，PROXY 協定依路由個別設定",
+  "routeSwitchHelp": "左側開關可暫時停用路由：設定保留但不參與比對，命中它的連線改走其他路由或預設目標；停用的路由不參與網域與協定衝突檢查，可保留備選路由來回切換",
+  "routeDisabled": "已停用",
+  "routeEnableTip": "啟用這條路由",
+  "routeDisableTip": "暫時停用這條路由，設定保留",
   "hits": "累計 {hits}",
   "proto": {
     "tls": "TLS（SNI / ALPN）",

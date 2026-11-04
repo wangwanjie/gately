@@ -48,12 +48,20 @@
           <Field v-if="it.item.ipMode" :label="t('ipAccessEditor.title')">{{ it.item.ipMode === 'whitelist' ? t('ipAccessEditor.whitelist') : t('ipAccessEditor.blacklist') }}</Field>
           <Field v-if="it.item.stats.denied" :label="t('ipAccessEditor.denied')" mono>{{ it.item.stats.denied }}</Field>
           <Field :label="t('protoRoute.routes')" wide>
-            <div v-for="(rt, i) in it.item.routes" :key="i" class="route-line">
+            <div v-for="(rt, i) in it.item.routes" :key="i" class="route-line" :class="{ 'route-off': rt.disabled }">
+              <el-switch
+                size="small"
+                :model-value="!rt.disabled"
+                :disabled="sorting || routeToggling === it.item.key"
+                :title="rt.disabled ? t('protoRoute.routeEnableTip') : t('protoRoute.routeDisableTip')"
+                @change="(v: string | number | boolean) => toggleRoute(it.item, i, Boolean(v))"
+              />
               <el-tag size="small" type="info" effect="plain">{{ protoShort(rt.protocol) }}</el-tag>
               <span class="route-name">{{ routeTitle(rt) }}</span>
               <span class="mono">→ {{ routeTargetText(it.item, rt) }}</span>
               <el-tag v-if="rt.proxyProtocol" size="small" effect="plain">{{ rt.proxyProtocol }}</el-tag>
               <el-tag v-for="a in rt.alpn ?? []" :key="a" size="small" effect="plain">{{ a }}</el-tag>
+              <el-tag v-if="rt.disabled" size="small" type="info">{{ t('protoRoute.routeDisabled') }}</el-tag>
               <span class="route-meta">{{
                 rt.domains?.length
                   ? t('protoRoute.routeMeta', { domains: rt.domains.length, hits: it.item.stats.routeConns?.[i] ?? 0 })
@@ -101,9 +109,10 @@
         </el-form-item>
         <el-form-item :label="t('protoRoute.routes')">
           <div class="routes">
-            <div v-for="(rt, i) in routeForms" :key="rt.id" class="route-card">
+            <div v-for="(rt, i) in routeForms" :key="rt.id" class="route-card" :class="{ 'route-off': !rt.enabled }">
               <div class="route-head">
                 <span class="route-index">{{ i + 1 }}</span>
+                <el-switch v-model="rt.enabled" size="small" :title="rt.enabled ? t('protoRoute.routeDisableTip') : t('protoRoute.routeEnableTip')" />
                 <el-select v-model="rt.protocol" size="small" class="route-proto">
                   <el-option v-for="p in routeProtocols" :key="p" :label="protoLabel(p)" :value="p" />
                 </el-select>
@@ -133,6 +142,7 @@
             </div>
             <el-button :icon="Plus" size="small" @click="addRoute">{{ t('protoRoute.addRoute') }}</el-button>
             <div class="form-help">{{ t('protoRoute.routesHelp') }}</div>
+            <div class="form-help">{{ t('protoRoute.routeSwitchHelp') }}</div>
           </div>
         </el-form-item>
         <el-form-item :label="t('protoRoute.defaultTarget')">
@@ -237,6 +247,8 @@ interface Rule {
 
 interface Route {
   name: string
+  // 为 true 时路由临时停用：配置保留但不参与匹配；缺省为启用
+  disabled?: boolean
   // 路由匹配的协议，见 routeProtocols
   protocol: string
   // 仅 tls（SNI）与 http（Host）使用，留空匹配该协议的全部连接
@@ -252,6 +264,8 @@ interface Route {
 // RouteForm 是编辑中的路由，域名、ALPN 与目标以文本形式编辑
 interface RouteForm {
   id: number
+  // 路由开关，保存时转换为 disabled
+  enabled: boolean
   name: string
   protocol: string
   domainsText: string
@@ -328,6 +342,8 @@ const editing = ref<Rule>(emptyRule())
 const copyFrom = ref<CopySource | null>(null)
 const targetsText = ref('')
 const routeForms = ref<RouteForm[]>([])
+// 正在切换路由开关的规则 key，期间禁用该规则的路由开关，避免连续点击以旧数据覆盖
+const routeToggling = ref('')
 let routeSeq = 0
 const settings = ref<Settings>()
 const settingsForm = ref<Settings>()
@@ -447,6 +463,7 @@ function splitList(text: string) {
 function toRouteForm(rt?: Route): RouteForm {
   return {
     id: ++routeSeq,
+    enabled: !rt?.disabled,
     name: rt?.name ?? '',
     protocol: rt?.protocol || 'tls',
     domainsText: (rt?.domains ?? []).join('\n'),
@@ -541,6 +558,7 @@ async function save() {
     .filter(Boolean)
   editing.value.routes = routeForms.value.map((f) => ({
     name: f.name.trim(),
+    disabled: !f.enabled,
     protocol: f.protocol,
     // 不按域名匹配的协议不提交域名与 ALPN，避免切换协议后残留的输入导致校验失败
     domains: usesDomains(f.protocol) ? splitList(f.domainsText) : [],
@@ -573,6 +591,22 @@ async function toggle(row: RuleView, enable: boolean) {
     await load()
   } catch (e) {
     ElMessage.error((e as Error).message)
+  }
+}
+
+// toggleRoute 在列表中直接启用或停用规则的第 i 条路由：以卡片上的规则为底提交整条规则，其他字段保持不变
+async function toggleRoute(row: RuleView, i: number, enable: boolean) {
+  const { key, running: _r, error: _e, details: _d, stats: _s, ...rule } = row
+  const body: Rule = JSON.parse(JSON.stringify(rule))
+  body.routes[i].disabled = !enable
+  routeToggling.value = key ?? ''
+  try {
+    await api.put(`/api/protoroute/rules/${key}`, body)
+    await load()
+  } catch (e) {
+    ElMessage.error((e as Error).message)
+  } finally {
+    routeToggling.value = ''
   }
 }
 
@@ -643,6 +677,12 @@ onMounted(() => {
 .route-meta {
   color: var(--el-text-color-secondary);
   font-size: 12px;
+}
+/* 停用的路由淡化显示，开关保持原样便于重新启用 */
+.route-line.route-off > :not(.el-switch),
+.route-card.route-off > :not(.route-head),
+.route-card.route-off .route-head > :not(.el-switch) {
+  opacity: 0.5;
 }
 .routes {
   display: flex;

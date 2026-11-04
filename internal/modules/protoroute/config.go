@@ -51,6 +51,9 @@ type Rule struct {
 // Route 是分流规则中的一条路由，作用相当于 haproxy 的一个 backend。
 type Route struct {
 	Name string `json:"name"`
+	// Disabled 为 true 时路由临时停用：配置保留，但不参与匹配，命中它的连接按其他路由或默认目标处理。
+	// 缺省为启用，旧配置与不带该字段的 API 请求都视为启用
+	Disabled bool `json:"disabled,omitempty"`
 	// Protocol 为路由匹配的协议（tls、http、ssh、rdp、socks、openvpn、xmpp、mqtt、postgresql、timeout），空按 tls 处理
 	Protocol string `json:"protocol"`
 	// Domains 仅 TLS（匹配 SNI）与 HTTP（匹配 Host）路由使用：精确域名、*.example.com 通配（匹配任意层级子域名）
@@ -179,7 +182,9 @@ func (r *Rule) validateRoutes() error {
 		rt.Domains = domains
 		rt.ALPN = alpn
 
-		if protocolUsesDomains(rt.Protocol) {
+		// 停用的路由不参与匹配，因此不参与冲突检查：同一域名或协议可以保留一条启用、若干条停用的备选路由，
+		// 切换时只改开关；内容仍照常校验，重新启用时不会因格式问题保存失败
+		if !rt.Disabled && protocolUsesDomains(rt.Protocol) {
 			keys := domains
 			if len(keys) == 0 {
 				keys = []string{""}
@@ -204,7 +209,7 @@ func (r *Rule) validateRoutes() error {
 					o.alpn[p] = label
 				}
 			}
-		} else {
+		} else if !rt.Disabled {
 			if prev, ok := protoOwner[rt.Protocol]; ok {
 				return fmt.Errorf("%s 与 %s 匹配同一协议，每种协议只能有一条路由", prev, label)
 			}

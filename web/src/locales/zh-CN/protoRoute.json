@@ -54,6 +54,10 @@
   "filterPlaceholder": "搜索名称、分组、端口、目标、域名或协议",
   "routes": "分流路由",
   "routesHelp": "TLS、HTTP 与 Minecraft 路由按域名匹配：精确域名优先，其次最长的 *. 通配，再次 *，最后是未填域名的路由；不区分大小写。同一域名下填写了 ALPN 的 TLS 路由优先。其他协议每种只能有一条路由。目标端口留空与监听端口相同，PROXY 协议按路由单独设置",
+  "routeSwitchHelp": "左侧开关可临时停用路由：配置保留但不参与匹配，命中它的连接改走其他路由或默认目标；停用的路由不参与域名与协议冲突检查，可保留备选路由来回切换",
+  "routeDisabled": "已停用",
+  "routeEnableTip": "启用这条路由",
+  "routeDisableTip": "临时停用这条路由，配置保留",
   "hits": "累计 {hits}",
   "proto": {
     "tls": "TLS（SNI / ALPN）",

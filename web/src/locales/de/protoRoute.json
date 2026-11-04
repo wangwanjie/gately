@@ -54,6 +54,10 @@
   "filterPlaceholder": "Name, Gruppe, Port, Ziel, Domain oder Protokoll suchen",
   "routes": "Routen",
   "routesHelp": "TLS-, HTTP- und Minecraft-Routen passen per Domain: zuerst exakte Domains, dann der längste *.-Platzhalter, dann *, zuletzt Routen ohne Domain. Groß-/Kleinschreibung egal. Bei gleicher Domain haben TLS-Routen mit ALPN Vorrang. Andere Protokolle erlauben je eine Route. Leerer Zielport = Listen-Port. Das PROXY-Protokoll wird pro Route eingestellt",
+  "routeSwitchHelp": "Der Schalter links deaktiviert eine Route vorübergehend: Die Einstellungen bleiben erhalten, aber sie passt nicht mehr, und ihre Verbindungen gehen an andere Routen oder das Standardziel. Deaktivierte Routen werden bei der Domain- und Protokoll-Konfliktprüfung ignoriert, sodass Sie Ausweichrouten behalten und zwischen ihnen wechseln können",
+  "routeDisabled": "Deaktiviert",
+  "routeEnableTip": "Diese Route aktivieren",
+  "routeDisableTip": "Diese Route vorübergehend deaktivieren, Einstellungen bleiben erhalten",
   "hits": "{hits} gesamt",
   "proto": {
     "tls": "TLS (SNI / ALPN)",
