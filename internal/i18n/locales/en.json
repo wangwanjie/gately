@@ -287,6 +287,7 @@
   "IPv%d 网卡地址选择 %q（按序号）暂不支持，已改为自动选择公网地址": "IPv%d NIC address selection %q (by index) is not supported yet, switched to automatic public address selection",
   "IPv4 地址: %s -\u003e %s": "IPv4 address: %s -\u003e %s",
   "IPv4 获取: %w": "IPv4 lookup: %w",
+  "IPv6 严格模式已启用：IPv6 来源连接开放端口以外的端口即被封禁": "IPv6 strict mode is on: an IPv6 source is banned as soon as it connects to a port that is not open",
   "IPv6 地址: %s -\u003e %s": "IPv6 address: %s -\u003e %s",
   "IPv6 地址属性过短": "IPv6 address attribute too short",
   "IPv6 获取: %w": "IPv6 lookup: %w",

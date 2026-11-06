@@ -287,6 +287,7 @@
   "IPv%d 网卡地址选择 %q（按序号）暂不支持，已改为自动选择公网地址": "A seleção do endereço da placa de rede IPv%d %q (por índice) ainda não é suportada, alterado para seleção automática de endereço público",
   "IPv4 地址: %s -\u003e %s": "Endereço IPv4: %s -\u003e %s",
   "IPv4 获取: %w": "Obtenção de IPv4: %w",
+  "IPv6 严格模式已启用：IPv6 来源连接开放端口以外的端口即被封禁": "Modo estrito de IPv6 ativado: uma origem IPv6 é banida assim que se conecta a uma porta que não está aberta",
   "IPv6 地址: %s -\u003e %s": "Endereço IPv6: %s -\u003e %s",
   "IPv6 地址属性过短": "Atributo de endereço IPv6 curto demais",
   "IPv6 获取: %w": "Obtenção de IPv6: %w",
