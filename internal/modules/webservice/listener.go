@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"net/netip"
 	"net/url"
 	"strconv"
 	"strings"
@@ -257,6 +258,53 @@ func buildSiteTable(cfg Listener, log *logbuf.Logger, auth *authenticator, waf W
 	return t, nil
 }
 
+// isUnservedCertError 判断握手失败原因是否为访客请求了本监听器不提供的域名而缺少证书。
+// 证书模块的错误格式为「没有匹配 %q 的证书」（见 internal/modules/ssl/module.go 的 GetCertificate）。
+// 不带 SNI、用 IP 或别人的域名握手多为公网扫描，与配置无关；站点中填写了该域名却没有证书时仍是配置问题，返回 false。
+func (l *listenerRunner) isUnservedCertError(reason string) bool {
+	rest, ok := strings.CutPrefix(reason, "没有匹配 ")
+	if !ok {
+		return false
+	}
+	quoted, ok := strings.CutSuffix(rest, " 的证书")
+	if !ok {
+		return false
+	}
+	name, err := strconv.Unquote(quoted)
+	if err != nil {
+		return false
+	}
+	return !l.current().servesSNI(name)
+}
+
+// servesSNI 判断 TLS 握手中的 SNI 是否属于某个已启用站点明确填写的域名（精确或 *.example.com 通配）。
+// 默认站点与填写 * 的站点接收任意域名，但不能为任意域名准备证书，因此不算。
+func (t *siteTable) servesSNI(name string) bool {
+	name = strings.TrimSuffix(strings.ToLower(name), ".")
+	if name == "" {
+		// 不带 SNI（按 IP 访问）：只有站点域名中填写了 IP 地址时，缺少 IP 证书才是配置问题
+		for _, s := range t.sites {
+			for _, d := range s.site.Domains {
+				if _, err := netip.ParseAddr(strings.Trim(d, "[]")); err == nil {
+					return true
+				}
+			}
+		}
+		return false
+	}
+	if _, ok := t.exact[name]; ok {
+		return true
+	}
+	for _, s := range t.sites {
+		for _, d := range s.site.Domains {
+			if d != "*" && matchDomain(d, name) > 0 {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // startTable 启动站点表的后台任务。
 func startTable(t *siteTable, parent context.Context) {
 	ctx, cancel := context.WithCancel(parent)
@@ -333,8 +381,9 @@ func (l *listenerRunner) start(certs CertSource, trusted []string) error {
 			MaxReceiveBufferPerConnection: 8 << 20,
 			MaxReceiveBufferPerStream:     4 << 20,
 		},
-		// net/http 内部错误（TLS 握手失败、缺少证书等）写入本监听器的运行日志
-		ErrorLog: l.log.ServerErrorLog(),
+		// net/http 内部错误（TLS 握手失败、缺少证书等）写入本监听器的运行日志；
+		// 扫描器用不属于任何站点的域名握手导致的缺少证书只记调试级别，见 isUnservedCertError
+		ErrorLog: l.log.ServerErrorLogWith(l.isUnservedCertError),
 	}
 	if l.cfg.TLS {
 		if certs == nil {

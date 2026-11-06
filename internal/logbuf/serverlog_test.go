@@ -37,3 +37,59 @@ func TestServerErrorLog(t *testing.T) {
 		t.Errorf("应提示被合并的次数: %s", last.Message)
 	}
 }
+
+// TestServerErrorLogClientNoise 验证访客侧原因（旧协议、无共同套件、明文请求等）记调试级别并节流，
+// 对端拒绝证书等可能反映服务端问题的原因仍为警告。
+func TestServerErrorLogClientNoise(t *testing.T) {
+	noise := []string{
+		"tls: client offered only unsupported versions: [302 301]",
+		"remote error: tls: protocol version not supported",
+		"tls: unsupported SSLv2 handshake received",
+		"tls: no cipher suite supported by both client and server; client offered: [16 33 67]",
+		"tls: no key exchanges supported by both client and server",
+		"tls: no supported elliptic curves offered",
+		`tls: client requested unsupported application protocols (["spdy/3" "h2c"])`,
+		"client sent an HTTP request to an HTTPS server",
+		"tls: first record does not look like a TLS handshake",
+		"unexpected EOF",
+	}
+	for _, r := range noise {
+		if lv, _, _ := classifyServerLog("http: TLS handshake error from 1.2.3.4:5: " + r); lv != LevelDebug {
+			t.Errorf("%q 应为调试级别，实际 %s", r, lv)
+		}
+	}
+	for _, r := range []string{"remote error: tls: bad certificate", `没有匹配 "a.test" 的证书`} {
+		if lv, _, _ := classifyServerLog("http: TLS handshake error from 1.2.3.4:5: " + r); lv != LevelWarn {
+			t.Errorf("%q 应为警告，实际 %s", r, lv)
+		}
+	}
+
+	// 噪声同样节流：同一原因一分钟内只记一条
+	b := New(100, nil)
+	lg := b.Logger("site").ServerErrorLog()
+	for i := 0; i < 5; i++ {
+		lg.Printf("http: TLS handshake error from 1.2.3.%d:5: tls: unsupported SSLv2 handshake received", i)
+	}
+	if es := b.Since(0); len(es) != 1 || es[0].Level != LevelDebug {
+		t.Fatalf("同类噪声应合并为一条调试日志: %+v", es)
+	}
+}
+
+// TestServerErrorLogWithHook 验证调用方判定的噪声按调试级别记录，且不同原因共用一个节流键。
+func TestServerErrorLogWithHook(t *testing.T) {
+	b := New(100, nil)
+	lg := b.Logger("site").ServerErrorLogWith(func(reason string) bool {
+		return !strings.Contains(reason, "mine.test")
+	})
+	for i := 0; i < 5; i++ {
+		lg.Printf(`http: TLS handshake error from 1.2.3.4:5: 没有匹配 "scan%d.example" 的证书`, i)
+	}
+	lg.Printf(`http: TLS handshake error from 1.2.3.4:5: 没有匹配 "mine.test" 的证书`)
+	es := b.Since(0)
+	if len(es) != 2 {
+		t.Fatalf("应有 1 条噪声与 1 条警告，实际 %+v", es)
+	}
+	if es[0].Level != LevelDebug || es[1].Level != LevelWarn || !strings.Contains(es[1].Message, "mine.test") {
+		t.Fatalf("级别不正确: %+v", es)
+	}
+}
