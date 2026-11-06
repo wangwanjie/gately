@@ -79,6 +79,9 @@ type Options struct {
 type Change struct {
 	Added   []Entry
 	Removed []Entry
+	// Expired 为 true 表示这次变化只是到期记录被清除（Prune）。持久化方可以不为此立即写文件：
+	// 加载时本来就会跳过到期的记录，等下一次真正的变化或停止时再一并写入即可。
+	Expired bool
 }
 
 // Store 是封禁表，可并发使用。
@@ -355,7 +358,7 @@ func (s *Store) Prune() []Entry {
 		s.rebuildNetsLocked()
 	}
 	s.mu.Unlock()
-	s.notify(Change{Removed: removed})
+	s.notify(Change{Removed: removed, Expired: true})
 	return removed
 }
 

@@ -63,8 +63,39 @@ func TestBanLookupAndUnban(t *testing.T) {
 	if !s.Unban("10.1.0.0/16") || s.Banned(netip.MustParseAddr("10.1.200.3")) {
 		t.Fatal("解除网段封禁失败")
 	}
-	if len(changes) != 4 || len(changes[3].Removed) != 1 {
-		t.Fatalf("解除封禁应通知一次: %+v", changes)
+	if len(changes) != 4 || len(changes[3].Removed) != 1 || changes[3].Expired {
+		t.Fatalf("解除封禁应通知一次，且不算到期清除: %+v", changes)
+	}
+}
+
+// 到期清除的通知带 Expired 标记，供持久化方区分；封禁与解封的通知不带
+func TestPruneMarksExpired(t *testing.T) {
+	s := New()
+	var changes []Change
+	s.Subscribe(func(c Change) { changes = append(changes, c) })
+	if _, _, err := s.Ban("1.2.3.4", Options{Duration: 20 * time.Millisecond}); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err := s.Ban("5.6.7.8", Options{Duration: time.Hour}); err != nil {
+		t.Fatal(err)
+	}
+	if len(changes) != 2 || changes[0].Expired || changes[1].Expired {
+		t.Fatalf("封禁通知不应带到期标记: %+v", changes)
+	}
+	// 没有到期记录时不通知
+	if got := s.Prune(); len(got) != 0 || len(changes) != 2 {
+		t.Fatalf("没有到期记录时不应通知: %v %+v", got, changes)
+	}
+	time.Sleep(40 * time.Millisecond)
+	got := s.Prune()
+	if len(got) != 1 || got[0].Key != "1.2.3.4" {
+		t.Fatalf("应清除到期记录: %+v", got)
+	}
+	if len(changes) != 3 || !changes[2].Expired || len(changes[2].Removed) != 1 || len(changes[2].Added) != 0 {
+		t.Fatalf("到期清除应通知一次并带到期标记: %+v", changes)
+	}
+	if !s.Unban("5.6.7.8") || changes[3].Expired {
+		t.Fatalf("手动解封不应带到期标记: %+v", changes)
 	}
 }
 

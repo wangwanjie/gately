@@ -346,7 +346,8 @@ func (m *Module) saveBans() {
 	m.fileMu.Lock()
 	defer m.fileMu.Unlock()
 	bans, offenses := banlist.Default.Export()
-	data, err := json.MarshalIndent(bansFile{Bans: bans, Offenses: offenses}, "", "  ")
+	// 不缩进：封禁多的机器上文件有数百 KB，每次封禁都整份重写，缩进会让写入量多出约三分之一
+	data, err := json.Marshal(bansFile{Bans: bans, Offenses: offenses})
 	if err != nil {
 		return
 	}
@@ -365,14 +366,17 @@ func (m *Module) saveBans() {
 	}
 }
 
-// scheduleSave 在 2 秒后保存封禁表，期间的变化合并为一次写入。
+// saveDelay 是封禁表变化后延迟写文件的时间，期间的变化合并为一次写入；测试中缩短。
+var saveDelay = 2 * time.Second
+
+// scheduleSave 在 saveDelay 后保存封禁表，期间的变化合并为一次写入。
 func (m *Module) scheduleSave() {
 	m.saveMu.Lock()
 	defer m.saveMu.Unlock()
 	if m.saveTimer != nil {
 		return
 	}
-	m.saveTimer = time.AfterFunc(2*time.Second, func() {
+	m.saveTimer = time.AfterFunc(saveDelay, func() {
 		m.saveMu.Lock()
 		m.saveTimer = nil
 		m.saveMu.Unlock()
@@ -493,6 +497,11 @@ func (m *Module) onFirewallActive() {
 // onBanChange 在封禁表变化时同步防火墙、保存文件。
 func (m *Module) onBanChange(c banlist.Change) {
 	m.fw.change(c)
+	if c.Expired && len(c.Added) == 0 {
+		// 只是到期清除：文件里留着到期记录无害（加载时会跳过），不为此单独重写文件，
+		// 等下一次封禁、解封或模块停止时一并写入
+		return
+	}
 	m.scheduleSave()
 }
 

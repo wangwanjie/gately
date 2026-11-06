@@ -2,6 +2,7 @@ package guard
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/netip"
@@ -647,6 +648,128 @@ func TestBansPersisted(t *testing.T) {
 	}
 	if !banlist.Default.Banned(netip.MustParseAddr("198.51.100.77")) || !banlist.Default.Banned(netip.MustParseAddr("10.0.0.1")) {
 		t.Fatalf("重启后应恢复封禁: %+v", banlist.Default.List())
+	}
+}
+
+// 封禁表写入：紧凑 JSON；封禁、解封会写文件，只是到期清除不单独写，留到下一次变化或停止时
+func TestBansSaveSkipsExpiryOnly(t *testing.T) {
+	old := saveDelay
+	saveDelay = 20 * time.Millisecond
+	t.Cleanup(func() { saveDelay = old })
+	m := newTestModule(t)
+	stat := func() (time.Time, string) {
+		t.Helper()
+		st, err := os.Stat(m.bansPath())
+		if err != nil {
+			return time.Time{}, ""
+		}
+		data, _ := os.ReadFile(m.bansPath())
+		return st.ModTime(), string(data)
+	}
+	// banned 解析文件中的封禁记录（累计次数会保留，只看封禁列表）
+	banned := func(data string) map[string]bool {
+		t.Helper()
+		var f bansFile
+		if data != "" {
+			if err := json.Unmarshal([]byte(data), &f); err != nil {
+				t.Fatalf("文件内容应可解析: %v %q", err, data)
+			}
+		}
+		out := map[string]bool{}
+		for _, e := range f.Bans {
+			out[e.Key] = true
+		}
+		return out
+	}
+	// 等待延迟写入完成：文件内容满足条件
+	waitFor := func(cond func(string) bool, what string) {
+		t.Helper()
+		deadline := time.Now().Add(3 * time.Second)
+		for time.Now().Before(deadline) {
+			if _, data := stat(); cond(data) {
+				return
+			}
+			time.Sleep(10 * time.Millisecond)
+		}
+		_, data := stat()
+		t.Fatalf("%s: %s", what, data)
+	}
+	if _, _, err := banlist.Default.Ban("198.51.100.9", banlist.Options{Duration: 50 * time.Millisecond, Source: banlist.SourceTrap, Force: true}); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err := banlist.Default.Ban("203.0.113.50", banlist.Options{Duration: time.Hour, Source: banlist.SourceTrap, Force: true}); err != nil {
+		t.Fatal(err)
+	}
+	waitFor(func(d string) bool { b := banned(d); return b["198.51.100.9"] && b["203.0.113.50"] }, "封禁后应写入文件")
+	mod1, data1 := stat()
+	if strings.Contains(data1, "\n") || strings.Contains(data1, "  ") {
+		t.Fatalf("封禁表应为不缩进的紧凑 JSON: %q", data1)
+	}
+
+	// 到期清除：防火墙照常同步（内存中已移除），但不重写文件
+	time.Sleep(80 * time.Millisecond)
+	if got := banlist.Default.Prune(); len(got) != 1 || got[0].Key != "198.51.100.9" {
+		t.Fatalf("应清除到期记录: %+v", got)
+	}
+	time.Sleep(10 * saveDelay)
+	m.saveMu.Lock()
+	pending := m.saveTimer != nil
+	m.saveMu.Unlock()
+	if mod2, data2 := stat(); pending || !mod2.Equal(mod1) || data2 != data1 {
+		t.Fatalf("只是到期清除不应重写文件: pending=%v %s", pending, data2)
+	}
+
+	// 下一次真正的变化（手动解封）写入文件，到期记录也随之去掉
+	if !banlist.Default.Unban("203.0.113.50") {
+		t.Fatal("解封失败")
+	}
+	waitFor(func(d string) bool { return d != "" && !banned(d)["203.0.113.50"] }, "解封后应写入文件")
+	if _, data := stat(); banned(data)["198.51.100.9"] {
+		t.Fatalf("再次写入时不应保留已清除的到期记录: %s", data)
+	}
+
+	// 停止时把到期清除也写进去
+	if _, _, err := banlist.Default.Ban("198.51.100.10", banlist.Options{Duration: 50 * time.Millisecond, Source: banlist.SourceTrap, Force: true}); err != nil {
+		t.Fatal(err)
+	}
+	waitFor(func(d string) bool { return banned(d)["198.51.100.10"] }, "封禁后应写入文件")
+	time.Sleep(80 * time.Millisecond)
+	banlist.Default.Prune()
+	if err := m.Stop(); err != nil {
+		t.Fatal(err)
+	}
+	if _, data := stat(); banned(data)["198.51.100.10"] {
+		t.Fatalf("停止时应写入最新的封禁表: %s", data)
+	}
+}
+
+// 旧版本写入的带缩进的封禁表仍能读取，到期记录在加载时跳过
+func TestLoadIndentedBans(t *testing.T) {
+	m := newTestModule(t)
+	if err := m.Stop(); err != nil {
+		t.Fatal(err)
+	}
+	cleanDefault(t)
+	now := time.Now()
+	old := bansFile{
+		Bans: []banlist.Entry{
+			{Key: "198.51.100.20", Until: now.Add(time.Hour), Created: now, Source: banlist.SourceTrap, Count: 1},
+			{Key: "198.51.100.21", Until: now.Add(-time.Minute), Created: now.Add(-time.Hour), Source: banlist.SourceTrap, Count: 1},
+		},
+		Offenses: map[string]banlist.Offense{"198.51.100.20": {Count: 1, Last: now}},
+	}
+	data, err := json.MarshalIndent(old, "", "  ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(m.bansPath(), data, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := m.Start(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if !banlist.Default.Banned(netip.MustParseAddr("198.51.100.20")) || banlist.Default.Banned(netip.MustParseAddr("198.51.100.21")) {
+		t.Fatalf("应恢复未到期的封禁并跳过到期记录: %+v", banlist.Default.List())
 	}
 }
 
