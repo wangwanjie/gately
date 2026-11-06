@@ -29,16 +29,17 @@ func (unsupported) targets(context.Context) ([]target, map[string][]existing, er
 func (unsupported) add(context.Context, target, string, Port) error { return errUnsupported{} }
 func (unsupported) del(context.Context, target, existing) error     { return errUnsupported{} }
 
-// cmdBackend 通过 nft / iptables 命令读写防火墙。
+// cmdBackend 通过 nft / iptables / ip6tables 命令读写防火墙。
 type cmdBackend struct {
-	nft, iptables string
-	// iptNFT 表示 iptables 是 nf_tables 版本（iptables-nft），其规则也会出现在 nft 中
-	iptNFT bool
+	nft, iptables, ip6tables string
+	// iptNFT / ip6tNFT 表示 iptables / ip6tables 是 nf_tables 版本（iptables-nft），其规则也会出现在 nft 中
+	iptNFT, ip6tNFT bool
 }
 
 var (
-	nftPaths      = []string{"/usr/sbin/nft", "/sbin/nft", "/usr/bin/nft"}
-	iptablesPaths = []string{"/usr/sbin/iptables", "/sbin/iptables", "/usr/bin/iptables"}
+	nftPaths       = []string{"/usr/sbin/nft", "/sbin/nft", "/usr/bin/nft"}
+	iptablesPaths  = []string{"/usr/sbin/iptables", "/sbin/iptables", "/usr/bin/iptables"}
+	ip6tablesPaths = []string{"/usr/sbin/ip6tables", "/sbin/ip6tables", "/usr/bin/ip6tables"}
 	// safeName 限制写入命令的表名与链名，防止异常名称破坏 nft 语句
 	safeName = regexp.MustCompile(`^[A-Za-z0-9_.\-]+$`)
 )
@@ -89,12 +90,26 @@ func classify(msg string) error {
 func (b *cmdBackend) detect(ctx context.Context) {
 	b.nft = lookPath("nft", nftPaths)
 	b.iptables = lookPath("iptables", iptablesPaths)
-	b.iptNFT = false
+	b.ip6tables = lookPath("ip6tables", ip6tablesPaths)
+	b.iptNFT, b.ip6tNFT = false, false
 	if b.iptables != "" {
 		if v, err := run(ctx, "", b.iptables, "-V"); err == nil {
 			b.iptNFT = strings.Contains(v, "nf_tables")
 		}
 	}
+	if b.ip6tables != "" {
+		if v, err := run(ctx, "", b.ip6tables, "-V"); err == nil {
+			b.ip6tNFT = strings.Contains(v, "nf_tables")
+		}
+	}
+}
+
+// bin 返回 iptables 类链对应的命令。
+func (b *cmdBackend) bin(t target) string {
+	if t.Kind == "ip6tables" {
+		return b.ip6tables
+	}
+	return b.iptables
 }
 
 func (b *cmdBackend) targets(ctx context.Context) ([]target, map[string][]existing, error) {
@@ -104,8 +119,8 @@ func (b *cmdBackend) targets(ctx context.Context) ([]target, map[string][]existi
 	}
 	var list []target
 	have := map[string][]existing{}
-	// hasIPFilter 表示 nft 中存在 iptables-nft 的 ip filter 表 INPUT 链
-	hasIPFilter := false
+	// hasIPFilter / hasIP6Filter 表示 nft 中存在 iptables-nft / ip6tables-nft 的 filter 表 INPUT 链
+	hasIPFilter, hasIP6Filter := false, false
 	if b.nft != "" {
 		out, err := run(ctx, "", b.nft, "-j", "list", "chains")
 		if err != nil {
@@ -122,6 +137,10 @@ func (b *cmdBackend) targets(ctx context.Context) ([]target, map[string][]existi
 				hasIPFilter = true
 				continue
 			}
+			if c.Family == "ip6" && c.Table == "filter" && c.Chain == "INPUT" && b.ip6tNFT {
+				hasIP6Filter = true
+				continue
+			}
 			rout, err := run(ctx, "", b.nft, "-j", "-a", "list", "chain", c.Family, c.Table, c.Chain)
 			if err != nil {
 				return nil, nil, err
@@ -135,7 +154,7 @@ func (b *cmdBackend) targets(ctx context.Context) ([]target, map[string][]existi
 			have[c.String()] = rules
 		}
 	}
-	// iptables-legacy 的规则不在 nft 中，总是检查；iptables-nft 只在 ip filter 表已存在时使用，避免凭空创建表
+	// iptables-legacy 的规则不在 nft 中，总是检查；iptables-nft 只在 filter 表已存在时使用，避免凭空创建表
 	if b.iptables != "" && (!b.iptNFT || hasIPFilter || b.nft == "") {
 		out, err := run(ctx, "", b.iptables, "-w", "-S", "INPUT")
 		if err != nil {
@@ -145,30 +164,69 @@ func (b *cmdBackend) targets(ctx context.Context) ([]target, map[string][]existi
 		list = append(list, t)
 		have[t.String()] = rules
 	}
+	if b.ip6tables != "" && (!b.ip6tNFT || hasIP6Filter || b.nft == "") {
+		out, err := run(ctx, "", b.ip6tables, "-w", "-S", "INPUT")
+		if err != nil {
+			// 内核未启用 IPv6 时 ip6tables 会报错，不影响 IPv4 的放行
+			if b.iptables != "" || b.nft != "" {
+				return list, have, nil
+			}
+			return nil, nil, err
+		}
+		t, rules := parseIPTables(out)
+		t.Kind, t.Family = "ip6tables", "ip6"
+		list = append(list, t)
+		have[t.String()] = rules
+	}
 	return list, have, nil
 }
 
-func (b *cmdBackend) add(ctx context.Context, t target, c string, p Port) error {
+// nftMatch 生成 nft 规则的匹配部分：地址族、目标地址与端口（区间）。
+func nftMatch(t target, p Port) string {
+	var parts []string
+	switch {
+	case p.Addr != "" && p.Family == "6":
+		parts = append(parts, "ip6 daddr "+p.Addr)
+	case p.Addr != "":
+		parts = append(parts, "ip daddr "+p.Addr)
+	case t.Family == "inet" && p.Family == "4":
+		parts = append(parts, "meta nfproto ipv4")
+	case t.Family == "inet" && p.Family == "6":
+		parts = append(parts, "meta nfproto ipv6")
+	}
+	parts = append(parts, p.Proto+" dport "+p.portText())
+	return strings.Join(parts, " ")
+}
+
+// iptArgs 生成 iptables / ip6tables 规则的匹配参数。
+func iptArgs(p Port) []string {
 	port := strconv.Itoa(p.Port)
-	if t.Kind == "iptables" {
-		_, err := run(ctx, "", b.iptables, "-w", "-I", "INPUT", "1", "-p", p.Proto, "--dport", port,
-			"-m", "comment", "--comment", c, "-j", "ACCEPT")
+	if p.last() > p.Port {
+		port += ":" + strconv.Itoa(p.last())
+	}
+	args := []string{"-p", p.Proto, "--dport", port}
+	if p.Addr != "" {
+		args = append(args, "-d", p.Addr)
+	}
+	return args
+}
+
+func (b *cmdBackend) add(ctx context.Context, t target, c string, p Port) error {
+	if t.Kind == "iptables" || t.Kind == "ip6tables" {
+		args := append([]string{"-w", "-I", "INPUT", "1"}, iptArgs(p)...)
+		args = append(args, "-m", "comment", "--comment", c, "-j", "ACCEPT")
+		_, err := run(ctx, "", b.bin(t), args...)
 		return err
 	}
-	match := p.Proto + " dport " + port
-	if t.Family == "inet" {
-		// 穿透通道只用 IPv4
-		match = "meta nfproto ipv4 " + match
-	}
-	stmt := fmt.Sprintf("insert rule %s %s %s %s counter accept comment %q\n", t.Family, t.Table, t.Chain, match, c)
+	stmt := fmt.Sprintf("insert rule %s %s %s %s counter accept comment %q\n", t.Family, t.Table, t.Chain, nftMatch(t, p), c)
 	_, err := run(ctx, stmt, b.nft, "-f", "-")
 	return err
 }
 
 func (b *cmdBackend) del(ctx context.Context, t target, e existing) error {
-	if t.Kind == "iptables" {
+	if t.Kind == "iptables" || t.Kind == "ip6tables" {
 		args := append([]string{"-w", "-D", "INPUT"}, strings.Fields(e.Ref)...)
-		_, err := run(ctx, "", b.iptables, args...)
+		_, err := run(ctx, "", b.bin(t), args...)
 		return err
 	}
 	stmt := fmt.Sprintf("delete rule %s %s %s handle %s\n", t.Family, t.Table, t.Chain, e.Ref)
@@ -176,7 +234,7 @@ func (b *cmdBackend) del(ctx context.Context, t target, e existing) error {
 	return err
 }
 
-// parseNFTChains 从 `nft -j list chains` 中取出 IPv4 可用的 filter 类型 input 基础链，跳过入侵防护使用的 inet gately 表。
+// parseNFTChains 从 `nft -j list chains` 中取出 ip / ip6 / inet 的 filter 类型 input 基础链，跳过入侵防护使用的 inet gately 表。
 func parseNFTChains(raw []byte) ([]target, error) {
 	var doc struct {
 		Nftables []struct {
@@ -199,7 +257,7 @@ func parseNFTChains(raw []byte) ([]target, error) {
 		if c == nil || c.Hook != "input" || c.Type != "filter" {
 			continue
 		}
-		if c.Family != "ip" && c.Family != "inet" {
+		if c.Family != "ip" && c.Family != "ip6" && c.Family != "inet" {
 			continue
 		}
 		if c.Family == "inet" && c.Table == "gately" {

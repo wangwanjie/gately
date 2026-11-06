@@ -150,9 +150,10 @@ func (r *runner) openFirewall() {
 	if r.rule.Protocol == ProtoUDP4 {
 		proto = "udp"
 	}
-	ports := []fwopen.Port{{Proto: proto, Port: r.port}}
+	// 穿透通道只用 IPv4
+	ports := []fwopen.Port{{Proto: proto, Port: r.port, Family: "4"}}
 	if (r.rule.UPnP || r.rule.NATPMP) && r.rule.UPnPInternalPort > 0 {
-		ports = append(ports, fwopen.Port{Proto: proto, Port: r.rule.UPnPInternalPort})
+		ports = append(ports, fwopen.Port{Proto: proto, Port: r.rule.UPnPInternalPort, Family: "4"})
 	}
 	status, ok := fwopen.Set(r.firewallOwner(), ports, r.log)
 	r.mu.Lock()
