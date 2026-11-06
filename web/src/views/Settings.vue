@@ -348,6 +348,10 @@
                 <el-input-number v-model="form.accessLogMB" :min="0" :max="102400" :step="16" />
                 <span class="help">{{ t('settings.runtime.accessLogMBHelp') }}</span>
               </el-form-item>
+              <el-form-item v-if="logPersist" :label="t('settings.runtime.logDir')">
+                <el-input v-model="form.logDir" class="w-480 mono" clearable :placeholder="t('settings.runtime.logDirPlaceholder')" />
+                <div class="form-help">{{ t('settings.runtime.logDirHelp') }}</div>
+              </el-form-item>
               <el-form-item :label="t('settings.runtime.gcPercent')">
                 <el-input-number v-model="form.gcPercent" :min="0" :max="1000" :step="10" />
                 <span class="help">{{ t('settings.runtime.gcPercentHelp') }}</span>

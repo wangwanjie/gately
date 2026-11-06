@@ -13,6 +13,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/wangwanjie/gately/internal/fsperm"
@@ -141,11 +142,12 @@ func (b *Buffer) PersistWith(path string, opt PersistOptions) error {
 		b.sink.close()
 		b.sink = nil
 	}
-	if err := fsperm.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+	if err := ensureDir(filepath.Dir(path)); err != nil {
 		return err
 	}
 	s := &fileSink{path: path, opt: opt, sources: map[string]struct{}{}}
-	if st, err := os.Stat(path); err == nil {
+	// 只认普通文件：同名的符号链接不会被写入（见 oNoFollow），也不计入大小
+	if st, err := os.Lstat(path); err == nil && st.Mode().IsRegular() {
 		s.size = st.Size()
 		s.start = firstEntryTime(path)
 	}
@@ -200,6 +202,18 @@ func (b *Buffer) PersistWith(path string, opt PersistOptions) error {
 		s.goMaintain()
 	}
 	return nil
+}
+
+// ensureDir 确保日志目录存在：不存在时创建并设为 0700；已存在的目录（可能是用户指定的共享目录）不改权限，
+// 日志文件本身总是 0600。配置目录下默认的 logs/ 由启动时的权限收紧处理。
+func ensureDir(dir string) error {
+	if st, err := os.Stat(dir); err == nil {
+		if !st.IsDir() {
+			return &os.PathError{Op: "mkdir", Path: dir, Err: syscall.ENOTDIR}
+		}
+		return nil
+	}
+	return fsperm.MkdirAll(dir, 0o700)
 }
 
 // ClosePersist 把未写盘的日志写入文件并停止落盘，之后日志只保留在内存。未开启时什么也不做。
@@ -340,7 +354,7 @@ func (s *fileSink) flushLocked() {
 // appendLocked 把 data 追加到当前文件，调用方持有 ioMu；first 为其中第一条日志的时间，新文件以它为开始时间。
 // 写入失败时记录日志并返回 false（这批日志丢弃）。
 func (s *fileSink) appendLocked(data []byte, first time.Time) bool {
-	f, err := os.OpenFile(s.path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
+	f, err := os.OpenFile(s.path, os.O_APPEND|os.O_CREATE|os.O_WRONLY|oNoFollow, 0o600)
 	if err != nil {
 		log.Printf("写入日志文件 %s 失败: %v", s.path, err)
 		return false
@@ -421,14 +435,45 @@ func (s *fileSink) writeSources(list []string) {
 	}
 	path := s.sourcesPath()
 	tmp := path + ".tmp"
-	if err := fsperm.WriteFile(tmp, data, 0o600); err != nil {
+	if err := writeNewFile(tmp, data); err != nil {
 		log.Printf("写入日志来源记录 %s 失败: %v", path, err)
 		return
 	}
+	// 改名替换的是目录项本身，目标是符号链接时替换链接，不会写到链接指向的文件
 	if err := os.Rename(tmp, path); err != nil {
 		_ = os.Remove(tmp)
 		log.Printf("写入日志来源记录 %s 失败: %v", path, err)
 	}
+}
+
+// createNew 新建文件用于写入：先删除同名的残留（包括符号链接本身），再以 O_EXCL 创建，
+// 不会跟随别人放好的符号链接截断或写入其他文件。权限显式设为 0600（部分文件系统忽略创建权限）。
+func createNew(path string) (*os.File, error) {
+	_ = os.Remove(path)
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_EXCL|os.O_WRONLY|oNoFollow, 0o600)
+	if err != nil {
+		return nil, err
+	}
+	_ = f.Chmod(0o600)
+	return f, nil
+}
+
+// writeNewFile 用 createNew 新建文件并写入 data。
+func writeNewFile(path string, data []byte) error {
+	f, err := createNew(path)
+	if err != nil {
+		return err
+	}
+	if _, err := f.Write(data); err != nil {
+		_ = f.Close()
+		_ = os.Remove(path)
+		return err
+	}
+	if err := f.Close(); err != nil {
+		_ = os.Remove(path)
+		return err
+	}
+	return nil
 }
 
 // readSources 读取来源记录文件，文件不存在或内容无效时返回 nil。

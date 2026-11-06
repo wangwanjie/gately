@@ -210,6 +210,8 @@ export interface SystemSettings {
   // 访问日志（Web 服务）归档的保留天数与总大小（MB），0 为默认值
   accessLogDays: number
   accessLogMB: number
+  // 运行日志目录（绝对路径），为空时使用配置目录下的 logs/
+  logDir: string
   gcPercent: number
   maxProcs: number
   thirdLogin: ThirdLogin

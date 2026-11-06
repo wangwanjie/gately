@@ -1,9 +1,12 @@
 package app
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 	"net/netip"
 	"net/url"
+	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -20,7 +23,7 @@ import (
 )
 
 // logsDir 是配置目录下保存运行日志的子目录：logs/<模块 ID>.log，系统日志为 logs/gately.log。
-// 备份只收集配置目录顶层的 *.json，不会包含日志。
+// 设置了日志目录（Settings.LogDir）时改用该目录。备份只收集配置目录顶层的 *.json，不会包含日志。
 const logsDir = "logs"
 
 // 访问日志（Web 服务）归档的默认保留策略
@@ -32,6 +35,14 @@ const (
 	accessLogDiskShare = 20
 )
 
+// logDirPath 返回运行日志的保存目录。
+func (a *App) logDirPath(s Settings) string {
+	if s.LogDir != "" {
+		return s.LogDir
+	}
+	return filepath.Join(a.opts.ConfigDir, logsDir)
+}
+
 // persistLogs 按设置开启或关闭一个日志缓冲的落盘；source 为模块 ID，系统日志使用 settingsName。
 // access 为 true 表示访问日志，按天归档并压缩，按访问日志的保留天数与总大小清理。
 func (a *App) persistLogs(buf *logbuf.Buffer, source string, access bool, s Settings) {
@@ -39,7 +50,7 @@ func (a *App) persistLogs(buf *logbuf.Buffer, source string, access bool, s Sett
 		buf.ClosePersist()
 		return
 	}
-	dir := filepath.Join(a.opts.ConfigDir, logsDir)
+	dir := a.logDirPath(s)
 	path := filepath.Join(dir, source+".log")
 	opt := logbuf.PersistOptions{FileBytes: int64(s.LogFileMB) << 20}
 	if access {
@@ -87,6 +98,47 @@ func (a *App) closeLogs() {
 	for _, e := range a.modules {
 		e.logs.ClosePersist()
 	}
+}
+
+// validateLogDir 校验日志目录的格式：必须是绝对路径，不能是根目录，不能含控制字符。
+func validateLogDir(dir string) error {
+	if dir == "" {
+		return nil
+	}
+	if len(dir) > maxLogDirLen || strings.ContainsFunc(dir, func(r rune) bool { return r < 0x20 || r == 0x7f }) {
+		return errors.New("日志目录无效")
+	}
+	if !filepath.IsAbs(dir) {
+		return errors.New("日志目录必须是绝对路径")
+	}
+	if filepath.Dir(dir) == dir {
+		return errors.New("日志目录不能是根目录")
+	}
+	return nil
+}
+
+// checkLogDir 确认日志目录可用：不是配置目录本身（日志与配置文件混在一起，备份与权限收紧都会受影响），
+// 不是已有的普通文件，能创建并写入。会按需创建目录（权限 0700）。
+func (a *App) checkLogDir(dir string) error {
+	if abs, err := filepath.Abs(a.opts.ConfigDir); err == nil && filepath.Clean(abs) == dir {
+		return errors.New("日志目录不能是配置目录本身，可以使用其中的子目录")
+	}
+	if st, err := os.Stat(dir); err == nil {
+		if !st.IsDir() {
+			return errors.New("日志目录已存在同名文件")
+		}
+	} else if err := fsperm.MkdirAll(dir, 0o700); err != nil {
+		// 新建的目录设为 0700；已存在的目录不改权限，日志文件本身总是 0600
+		return fmt.Errorf("无法创建日志目录: %v", err)
+	}
+	f, err := os.CreateTemp(dir, ".gately-write-test-*")
+	if err != nil {
+		return fmt.Errorf("日志目录不可写: %v", err)
+	}
+	name := f.Name()
+	_ = f.Close()
+	_ = os.Remove(name)
+	return nil
 }
 
 // privatePaths 是配置目录下保存敏感内容的文件与子目录（支持通配符）：配置、令牌、配置历史、

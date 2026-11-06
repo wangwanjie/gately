@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"net/netip"
+	"path/filepath"
 	"runtime"
 	"runtime/debug"
 	"slices"
@@ -83,6 +84,9 @@ type Settings struct {
 	// AccessLogMB 为访问日志当前文件与全部压缩归档的总大小上限（MB），0 表示默认：32 MB，
 	// 但不超过日志所在分区容量的 5%，闪存很小的路由器上自动调低
 	AccessLogMB int `json:"accessLogMB"`
+	// LogDir 为运行日志的保存目录（绝对路径），为空时使用配置目录下的 logs/。
+	// 修改后新日志写入新目录，原目录中的日志文件保留不动
+	LogDir string `json:"logDir"`
 	// GCPercent / MaxProcs 为运行时调优参数，0 表示默认
 	GCPercent int `json:"gcPercent"`
 	MaxProcs  int `json:"maxProcs"`
@@ -102,6 +106,8 @@ const (
 	maxAccessLogDays = 3650
 	minAccessLogMB   = 4
 	maxAccessLogMB   = 100 << 10
+	// maxLogDirLen 限制日志目录路径长度
+	maxLogDirLen = 1024
 )
 
 func (s *Settings) normalize() {
@@ -136,6 +142,9 @@ func (s *Settings) normalize() {
 	}
 	s.DNSServers = dns
 	s.UpdateProxy = strings.TrimSpace(s.UpdateProxy)
+	if s.LogDir = strings.TrimSpace(s.LogDir); s.LogDir != "" && filepath.IsAbs(s.LogDir) {
+		s.LogDir = filepath.Clean(s.LogDir)
+	}
 	s.ThirdLogin.Normalize()
 	s.Language = i18n.Normalize(s.Language)
 	s.UILanguage = i18n.Normalize(s.UILanguage)
@@ -211,6 +220,9 @@ func (s *Settings) Validate() error {
 	}
 	if s.AccessLogMB != 0 && (s.AccessLogMB < minAccessLogMB || s.AccessLogMB > maxAccessLogMB) {
 		return fmt.Errorf("访问日志总大小应在 %d~%d MB 之间", minAccessLogMB, maxAccessLogMB)
+	}
+	if err := validateLogDir(s.LogDir); err != nil {
+		return err
 	}
 	if s.GCPercent < 0 || s.GCPercent > 1000 || s.MaxProcs < 0 || s.MaxProcs > 1024 {
 		return errors.New("运行时参数超出范围")
@@ -305,6 +317,13 @@ func (a *App) handlePutSettings(w http.ResponseWriter, r *http.Request) {
 	if err := a.validateDisabledModules(next); err != nil {
 		httpx.Error(w, http.StatusBadRequest, "%v", err)
 		return
+	}
+	// 新填写的日志目录要能创建、能写入，否则保存后日志只能留在内存里，用户却不知道
+	if next.LogDir != "" && !next.DisableLogPersist && next.LogDir != a.settingsSnapshot().LogDir {
+		if err := a.checkLogDir(next.LogDir); err != nil {
+			httpx.Error(w, http.StatusBadRequest, "%v", err)
+			return
+		}
 	}
 	if req.SessionHours != 0 {
 		if err := a.auth.SetTokenTTL(req.SessionHours); err != nil {

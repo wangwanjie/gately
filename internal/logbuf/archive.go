@@ -165,7 +165,7 @@ func (s *fileSink) maintain() {
 
 // compressFile 把 path 压缩为 path.gz：先写临时文件，完成后改名并删除原文件，修改时间沿用原文件。
 func compressFile(path string) (err error) {
-	src, err := os.Open(path)
+	src, err := os.OpenFile(path, os.O_RDONLY|oNoFollow, 0)
 	if err != nil {
 		return err
 	}
@@ -174,8 +174,11 @@ func compressFile(path string) (err error) {
 	if err != nil {
 		return err
 	}
+	if !st.Mode().IsRegular() {
+		return fmt.Errorf("%s 不是普通文件", path)
+	}
 	tmp := path + gzSuffix + tmpSuffix
-	dst, err := os.OpenFile(tmp, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o600)
+	dst, err := createNew(tmp)
 	if err != nil {
 		return err
 	}
@@ -185,7 +188,6 @@ func compressFile(path string) (err error) {
 			_ = os.Remove(tmp)
 		}
 	}()
-	_ = dst.Chmod(0o600)
 	zw := gzip.NewWriter(dst)
 	if _, err = io.Copy(zw, src); err != nil {
 		return err
