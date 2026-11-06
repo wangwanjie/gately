@@ -32,7 +32,19 @@ type procTracker struct {
 	mu    sync.Mutex
 	items map[string]*procTrack
 	order []string
+	// gone 暂存刚从采样中消失的实例：进程退出到被重新拉起之间可能恰好错过一次采样，
+	// 若立即丢弃，重启后的曲线会从头开始；在 goneGrace 内重新出现就沿用原来的采样
+	gone map[string]goneTrack
 }
+
+type goneTrack struct {
+	track *procTrack
+	until time.Time
+}
+
+// goneGrace 是消失的实例保留采样的时间：进程退出后自动重启的等待时间最长 60 秒（1、2、4……秒递增），
+// 与曲线保留的时长一致，连续崩溃重启时曲线也不会中断
+const goneGrace = time.Duration(shortSlots) * SampleInterval
 
 type procTrack struct {
 	last    sysstat.ManagedProcess
@@ -57,6 +69,12 @@ func (t *procTracker) add(now time.Time, list []sysstat.ManagedProcess) {
 		}
 		tr := t.items[k]
 		if tr == nil {
+			if g, ok := t.gone[k]; ok && !now.After(g.until) {
+				tr = g.track
+			}
+			delete(t.gone, k)
+		}
+		if tr == nil {
 			tr = &procTrack{}
 		}
 		tr.last = c
@@ -75,6 +93,20 @@ func (t *procTracker) add(now time.Time, list []sysstat.ManagedProcess) {
 		}
 		next[k] = tr
 		order = append(order, k)
+	}
+	// 本次没有出现的实例暂存起来，超时的清除
+	for k, tr := range t.items {
+		if _, still := next[k]; !still {
+			if t.gone == nil {
+				t.gone = make(map[string]goneTrack)
+			}
+			t.gone[k] = goneTrack{track: tr, until: now.Add(goneGrace)}
+		}
+	}
+	for k, g := range t.gone {
+		if now.After(g.until) {
+			delete(t.gone, k)
+		}
 	}
 	t.items, t.order = next, order
 }

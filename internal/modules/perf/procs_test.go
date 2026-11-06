@@ -106,6 +106,35 @@ func TestProcTracker(t *testing.T) {
 	}
 }
 
+// 进程退出到重启之间恰好错过一次采样时，重启后的曲线仍然延续；错过太久则从头开始
+func TestProcTrackerRestartGap(t *testing.T) {
+	var tr procTracker
+	now := t0
+	for i := 0; i < 5; i++ {
+		tr.add(now, []sysstat.ManagedProcess{managedOf("frp", "a", "frpc", 10, fp(1), 30)})
+		now = now.Add(SampleInterval)
+	}
+	// 错过一次采样：视图里暂时没有该进程
+	tr.add(now, nil)
+	now = now.Add(SampleInterval)
+	if len(tr.views()) != 0 {
+		t.Fatal("消失的进程不应出现在视图中")
+	}
+	tr.add(now, []sysstat.ManagedProcess{managedOf("frp", "a", "frpc", 11, fp(2), 30)})
+	if v := tr.views(); len(v) != 1 || v[0].PID != 11 || len(v[0].Samples) != 6 {
+		t.Fatalf("错过一次采样后应延续原有 5 个点再加 1 个: %+v", v)
+	}
+	// 消失超过保留时间则重新开始
+	tr.add(now.Add(SampleInterval), nil)
+	tr.add(now.Add(goneGrace+SampleInterval*2), []sysstat.ManagedProcess{managedOf("frp", "a", "frpc", 12, fp(3), 30)})
+	if v := tr.views(); len(v) != 1 || len(v[0].Samples) != 1 {
+		t.Fatalf("消失过久应重新开始: %+v", v)
+	}
+	if len(tr.gone) != 0 {
+		t.Fatalf("过期的暂存应被清除: %d", len(tr.gone))
+	}
+}
+
 // asScopes 以指定权限的 API 令牌身份请求接口
 func (h *harness) asScopes(t *testing.T, path string, allow func(string) bool) []ProcessView {
 	t.Helper()
