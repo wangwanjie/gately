@@ -44,6 +44,10 @@ Ao importar do Lucky, o modo de segurança da regra também é convertido: o mod
 - Fazer a ponte entre tráfego IPv6 e IPv4;
 - Configurar um backend principal e outro em espera para um serviço.
 
+## Liberar porta no firewall {#auto-firewall}
+
+Com «Liberar porta no firewall» ativado, o Gately libera no firewall deste host apenas as portas em que a regra está escutando: portas consecutivas viram uma única regra, TCP / UDP e IPv4 / IPv6 seguem os protocolos da regra e, com um endereço de escuta definido, só as conexões para esse endereço são liberadas. A liberação é removida quando a regra é desativada ou excluída. Veja [Serviços Web · Liberar porta no firewall](/pt-BR/docs/modules/web#auto-firewall) para quando usar, firewalls suportados e como liberar portas manualmente.
+
 ## Dica de implantação
 
 O redirecionamento de portas escuta diretamente nas portas do host. Em implantações com Docker, recomendamos `--network host`.

@@ -1704,6 +1704,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 
 | Feld | Typ |
 | --- | --- |
+| `autoFirewall` | boolean |
 | `enable` | boolean |
 | `group` | string |
 | `ipList` | Array von string |

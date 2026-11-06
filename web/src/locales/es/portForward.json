@@ -43,5 +43,6 @@
   "proxyProtocolHelp": "Solo TCP. Envía una cabecera PROXY tras conectar con el destino para que el siguiente salto conozca la dirección real del cliente (accept-proxy de haproxy, proxy_protocol de nginx o \"Aceptar protocolo PROXY\" en el servicio web de Gately). La conexión falla si el destino no lo admite.",
   "filterPlaceholder": "Buscar nombre, grupo, puerto o destino",
   "groupCount": "{count} reglas",
-  "ipAccessNote": "UDP se comprueba por paquete, así que los paquetes de sesiones existentes siguen al instante la lista modificada. Editar la lista no interrumpe la escucha."
+  "ipAccessNote": "UDP se comprueba por paquete, así que los paquetes de sesiones existentes siguen al instante la lista modificada. Editar la lista no interrumpe la escucha.",
+  "autoFirewallHelp": "Permite en el cortafuegos local (nftables / iptables / ip6tables) solo los puertos en los que esta regla escucha, con los puertos consecutivos unidos en una sola regla y limitado a la dirección de escucha si se indica; se retira al desactivar o eliminar la regla. Para Gately en un router como OpenWrt o en un host Linux con cortafuegos"
 }

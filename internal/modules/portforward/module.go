@@ -9,6 +9,7 @@ import (
 
 	"github.com/wangwanjie/gately/internal/config"
 	"github.com/wangwanjie/gately/internal/crud"
+	"github.com/wangwanjie/gately/internal/fwopen"
 	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/iplist"
 	"github.com/wangwanjie/gately/internal/logbuf"
@@ -28,11 +29,13 @@ type Module struct {
 	runners map[string]*runner
 	// errors 记录规则级启动错误（规则 key -> 错误信息）
 	errors map[string]string
+	// fw 管理各规则的自动放行防火墙，key 为规则 key
+	fw *fwopen.Group
 }
 
 // New 创建模块实例。
 func New() *Module {
-	return &Module{runners: map[string]*runner{}, errors: map[string]string{}}
+	return &Module{runners: map[string]*runner{}, errors: map[string]string{}, fw: fwopen.NewGroup("pf")}
 }
 
 // ID 实现 module.Module。
@@ -45,6 +48,8 @@ func (m *Module) Title() string { return "端口转发" }
 func (m *Module) Init(env module.Env) error {
 	m.store = env.Store
 	m.logs = env.Logs
+	// 自动放行防火墙按配置目录区分实例，并清理上次运行遗留的放行规则
+	fwopen.Setup(m.store.Dir())
 	m.cfg = fileConfig{Settings: defaultSettings()}
 	if _, err := m.store.Load(ID, &m.cfg); err != nil {
 		return err
@@ -79,6 +84,8 @@ func (m *Module) Stop() error {
 	for key := range m.runners {
 		m.stopRuleLocked(key)
 	}
+	// 同步撤销自动放行，进程退出前关闭端口
+	m.fw.ClearAll()
 	return nil
 }
 
@@ -94,6 +101,7 @@ func (m *Module) startRuleLocked(rule Rule) {
 	r := newRunner(rule, m.cfg.Settings, m.logs.Logger(ruleLabel(rule)))
 	if err := r.start(m.ctx); err != nil {
 		m.errors[rule.Key] = err.Error()
+		m.fw.Want(rule.Key, nil, nil)
 		return
 	}
 	delete(m.errors, rule.Key)
@@ -101,6 +109,16 @@ func (m *Module) startRuleLocked(rule Rule) {
 		m.errors[rule.Key] = fmt.Sprintf("%d 个监听失败", len(r.listenErrors))
 	}
 	m.runners[rule.Key] = r
+	m.syncFirewallLocked(rule, r)
+}
+
+// syncFirewallLocked 按规则当前的开关登记自动放行，只放行 r 中监听成功的端口。
+func (m *Module) syncFirewallLocked(rule Rule, r *runner) {
+	if !rule.AutoFirewall {
+		m.fw.Want(rule.Key, nil, nil)
+		return
+	}
+	m.fw.Want(rule.Key, r.firewallPorts(), r.current().log)
 }
 
 func (m *Module) stopRuleLocked(key string) {
@@ -110,6 +128,7 @@ func (m *Module) stopRuleLocked(key string) {
 		r.current().log.Infof("已停止")
 	}
 	delete(m.errors, key)
+	m.fw.Want(key, nil, nil)
 }
 
 // restartLocked 按当前配置重启一条规则（规则不存在或已禁用时只停止）。
@@ -120,6 +139,8 @@ func (m *Module) restartLocked(key string) {
 		for _, rule := range m.cfg.Rules {
 			if rule.Key == key && rule.Enable && r.canUpdate(rule, m.cfg.Settings) {
 				r.update(rule, m.cfg.Settings, m.logs.Logger(ruleLabel(rule)))
+				// 自动放行开关不影响监听，在热更新时同步
+				m.syncFirewallLocked(rule, r)
 				return
 			}
 		}
@@ -161,6 +182,10 @@ type RuleView struct {
 	Error   string        `json:"error,omitempty"`
 	Details []string      `json:"details,omitempty"`
 	Stats   StatsSnapshot `json:"stats"`
+	// Firewall 为自动放行防火墙的结果说明，未开启或规则未运行时为空
+	Firewall string `json:"firewall,omitempty"`
+	// FirewallFailed 表示自动放行有端口放行失败（例如没有权限），界面据此提示
+	FirewallFailed bool `json:"firewallFailed,omitempty"`
 }
 
 func (m *Module) viewLocked(rule Rule) RuleView {
@@ -169,6 +194,13 @@ func (m *Module) viewLocked(rule Rule) RuleView {
 		v.Running = true
 		v.Stats = r.snapshot()
 		v.Details = r.listenErrors
+		if rule.AutoFirewall {
+			v.Firewall = m.fw.Status(rule.Key)
+			v.FirewallFailed = m.fw.Failed(rule.Key)
+			if v.Firewall == "" && fwopen.IsLoopback(rule.ListenAddress) {
+				v.Firewall = fwopen.LoopbackNote
+			}
+		}
 	}
 	return v
 }

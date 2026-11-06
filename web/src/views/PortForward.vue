@@ -24,6 +24,7 @@
           <span>{{ it.item.name || t('portForward.unnamed') }}</span>
           <span class="tags">
             <el-tag v-for="p in it.item.protocols" :key="p" size="small" effect="plain" class="mono">{{ p.toUpperCase() }}</el-tag>
+            <el-tag v-if="it.item.autoFirewall" size="small" :type="it.item.firewallFailed ? 'warning' : 'info'">{{ t('common.firewallTag') }}</el-tag>
           </span>
         </template>
         <template v-if="it.item.remark" #sub>{{ it.item.remark }}</template>
@@ -37,6 +38,10 @@
           <StatusBadge v-bind="ruleStatus(it.item)" />
         </template>
         <Field :label="t('portForward.listen')" mono>{{ listenText(it.item) }}</Field>
+        <!-- 自动放行防火墙的结果：放行失败（如没有权限）时用警告色 -->
+        <Field v-if="it.item.enable && it.item.autoFirewall && it.item.firewall" :label="t('common.firewallTag')" wide>
+          <span class="fw-status" :class="{ 'is-failed': it.item.firewallFailed }">{{ it.item.firewall }}</span>
+        </Field>
         <Field :label="t('portForward.target')" mono>
           <div v-for="addr in it.item.targetAddresses" :key="addr">{{ addr }}:{{ it.item.targetPorts || it.item.listenPorts }}</div>
         </Field>
@@ -86,6 +91,10 @@
         </el-form-item>
         <el-form-item :label="t('portForward.targetPorts')">
           <el-input v-model="editing.targetPorts" :placeholder="t('portForward.targetPortsPlaceholder')" />
+        </el-form-item>
+        <el-form-item :label="t('common.autoFirewall')">
+          <el-switch v-model="editing.autoFirewall" />
+          <div class="form-help">{{ t('portForward.autoFirewallHelp') }}</div>
         </el-form-item>
         <el-form-item :label="t('portForward.maxConnections')">
           <el-input-number v-model="editing.maxConnections" :min="0" :max="100000" />
@@ -168,6 +177,8 @@ interface Rule {
   protocols: string[]
   listenAddress: string
   listenPorts: string
+  // 在本机防火墙自动放行监听成功的端口（仅 Linux）
+  autoFirewall?: boolean
   targetAddresses: string[]
   targetPorts: string
   maxConnections: number
@@ -185,6 +196,9 @@ interface RuleView extends Rule {
   running: boolean
   error?: string
   details?: string[]
+  // 自动放行防火墙的结果说明与是否失败
+  firewall?: string
+  firewallFailed?: boolean
   stats: {
     activeConns: number
     totalConns: number
@@ -252,6 +266,7 @@ function emptyRule(): Rule {
     protocols: ['tcp'],
     listenAddress: '',
     listenPorts: '',
+    autoFirewall: false,
     targetAddresses: [],
     targetPorts: '',
     maxConnections: 0,
@@ -302,7 +317,7 @@ async function loadSettings() {
 function openEditor(row?: RuleView, copy = false) {
   copyFrom.value = null
   if (row) {
-    const { running: _r, error: _e, details: _d, stats: _s, ...rule } = row
+    const { running: _r, error: _e, details: _d, stats: _s, firewall: _f, firewallFailed: _ff, ...rule } = row
     editing.value = JSON.parse(JSON.stringify(rule))
     // 后端空名单返回 null，编辑时统一为数组
     editing.value.ipMode = editing.value.ipMode ?? ''
@@ -404,6 +419,12 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.fw-status {
+  overflow-wrap: anywhere;
+}
+.fw-status.is-failed {
+  color: var(--el-color-warning);
+}
 .w-260 {
   width: 260px;
 }

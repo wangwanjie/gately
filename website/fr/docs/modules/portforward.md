@@ -44,6 +44,10 @@ Lors d'une importation depuis Lucky, le mode sécurisé de la règle est aussi c
 - Faire le pont entre le trafic IPv6 et IPv4 ;
 - Configurer un backend principal et un backend de secours pour un même service.
 
+## Ouvrir le port dans le pare-feu {#auto-firewall}
+
+Avec « Ouvrir le port dans le pare-feu » activé, Gately autorise dans le pare-feu de cet hôte uniquement les ports sur lesquels la règle écoute : les ports consécutifs sont regroupés en une seule règle, TCP / UDP et IPv4 / IPv6 suivent les protocoles de la règle et, avec une adresse d’écoute renseignée, seules les connexions vers cette adresse sont autorisées. La règle est retirée quand elle est désactivée ou supprimée. Voir [Services Web · Ouvrir le port dans le pare-feu](/fr/docs/modules/web#auto-firewall) pour les cas d’usage, les pare-feu pris en charge et l’autorisation à la main.
+
 ## Conseil de déploiement
 
 La redirection de ports écoute directement sur les ports de l'hôte. Pour un déploiement Docker, `--network host` est recommandé.

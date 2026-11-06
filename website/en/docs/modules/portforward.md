@@ -44,6 +44,10 @@ When importing from Lucky, the rule's safe mode is converted as well: allowlist 
 - Bridge IPv6 and IPv4 traffic;
 - Configure a primary and a standby backend for one service.
 
+## Open firewall port {#auto-firewall}
+
+With "Open firewall port" turned on, Gately allows only the ports this rule is listening on in this host's firewall: consecutive ports are merged into one rule, TCP / UDP and IPv4 / IPv6 follow the rule's protocols, and with a listen address set only connections to that address are allowed. The rule is removed when it is disabled or deleted. See [Web Services · Open firewall port](/en/docs/modules/web#auto-firewall) for when to use it, supported firewalls and allowing ports by hand.
+
 ## Deployment tip
 
 Port forwarding listens on host ports directly. For Docker deployments, `--network host` is recommended.

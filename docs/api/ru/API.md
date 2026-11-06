@@ -1704,6 +1704,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | Поле | Тип |
 | --- | --- |
+| `autoFirewall` | boolean |
 | `enable` | boolean |
 | `group` | string |
 | `ipList` | Массив из string |

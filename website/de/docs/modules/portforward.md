@@ -44,6 +44,10 @@ Beim Import aus Lucky wird auch der Sicherheitsmodus der Regel übernommen: Der 
 - Datenverkehr zwischen IPv6 und IPv4 überbrücken;
 - Für einen Dienst ein primäres und ein Standby-Backend einrichten.
 
+## Firewall-Port freigeben {#auto-firewall}
+
+Mit „Firewall-Port freigeben“ gibt Gately in der Firewall dieses Hosts nur die Ports frei, auf denen die Regel erfolgreich lauscht: Aufeinanderfolgende Ports werden zu einer Regel zusammengefasst, TCP / UDP und IPv4 / IPv6 richten sich nach den Protokollen der Regel, und mit gesetzter Listen-Adresse werden nur Verbindungen zu dieser Adresse freigegeben. Beim Deaktivieren oder Löschen der Regel wird die Freigabe entfernt. Einsatzfälle, unterstützte Firewalls und die Freigabe von Hand stehen unter [Web-Dienste · Firewall-Port freigeben](/de/docs/modules/web#auto-firewall).
+
 ## Hinweis zur Bereitstellung
 
 Die Portweiterleitung lauscht direkt auf Ports des Hosts. Bei Docker-Bereitstellungen empfehlen wir `--network host`.

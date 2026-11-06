@@ -43,5 +43,6 @@
   "proxyProtocolHelp": "仅 TCP。连接目标后先发送 PROXY 协议头，把真实客户端地址告诉下游（haproxy 的 accept-proxy、nginx 的 proxy_protocol、Gately Web 服务的“接收 PROXY 协议”）。目标不支持时连接会失败。",
   "filterPlaceholder": "搜索名称、分组、端口或目标",
   "groupCount": "{count} 条规则",
-  "ipAccessNote": "UDP 按数据包判断，名单变化后已有会话的数据包也立即按新名单处理。修改名单不会中断监听。"
+  "ipAccessNote": "UDP 按数据包判断，名单变化后已有会话的数据包也立即按新名单处理。修改名单不会中断监听。",
+  "autoFirewallHelp": "在本机防火墙（nftables / iptables / ip6tables）只放行本规则监听成功的端口，连续端口合并为一条规则，填写了监听地址时只放行该地址；规则停用或删除时撤销。适用于 Gately 运行在 OpenWrt 等路由器或开启了防火墙的 Linux 主机上"
 }

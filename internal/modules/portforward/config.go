@@ -22,10 +22,13 @@ type Rule struct {
 	Name   string `json:"name"`
 	Enable bool   `json:"enable"`
 	// Group 为列表中的分组名称，只影响管理界面的展示，留空为未分组
-	Group           string   `json:"group"`
-	Protocols       []string `json:"protocols"`
-	ListenAddress   string   `json:"listenAddress"`
-	ListenPorts     string   `json:"listenPorts"`
+	Group         string   `json:"group"`
+	Protocols     []string `json:"protocols"`
+	ListenAddress string   `json:"listenAddress"`
+	ListenPorts   string   `json:"listenPorts"`
+	// AutoFirewall 为 true 时在本机防火墙（nftables / iptables / ip6tables 的 input 链）放行监听成功的端口，
+	// 连续端口合并为一条规则，绑定具体地址时只放行发往该地址的连接，只监听回环地址时不放行；规则停止时撤销
+	AutoFirewall    bool     `json:"autoFirewall"`
 	TargetAddresses []string `json:"targetAddresses"`
 	TargetPorts     string   `json:"targetPorts"`
 	// MaxConnections 是该规则每个 TCP 端口的最大并发连接数，0 表示使用全局默认值

@@ -16,6 +16,8 @@ type luckyRule struct {
 	ListenPorts       string
 	TargetAddressList []string
 	TargetPorts       string
+	// OpenFirewallPorts 为 Lucky 的“自动放行防火墙端口”
+	OpenFirewallPorts bool
 	Options           struct {
 		SingleProxyMaxTCPConnections int
 		UDPSessionTimeout            int
@@ -56,6 +58,8 @@ func convertLuckyRules(raw json.RawMessage, ipFilter map[string]luckyimport.IPFi
 			TargetAddresses: lr.TargetAddressList,
 			TargetPorts:     lr.TargetPorts,
 			MaxConnections:  lr.Options.SingleProxyMaxTCPConnections,
+			// 沿用 Lucky 的自动放行防火墙设置
+			AutoFirewall: lr.OpenFirewallPorts,
 		}
 		// Lucky 的 UDPSessionTimeout 单位为毫秒（界面默认 30000），Gately 使用秒
 		if lr.Options.UDPSessionTimeout > 0 {

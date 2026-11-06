@@ -1704,6 +1704,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 
 | Campo | Tipo |
 | --- | --- |
+| `autoFirewall` | boolean |
 | `enable` | boolean |
 | `group` | string |
 | `ipList` | Array de string |

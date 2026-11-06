@@ -43,5 +43,6 @@
   "proxyProtocolHelp": "Nur TCP. Sendet nach dem Verbindungsaufbau einen PROXY-Header, damit nachgelagerte Dienste die echte Client-Adresse kennen (haproxy accept-proxy, nginx proxy_protocol oder „PROXY-Protokoll annehmen“ im Gately-Webdienst). Unterstützt das Ziel es nicht, schlägt die Verbindung fehl.",
   "filterPlaceholder": "Name, Gruppe, Port oder Ziel suchen",
   "groupCount": "{count} Regeln",
-  "ipAccessNote": "UDP wird pro Paket geprüft, Pakete bestehender Sitzungen folgen einer geänderten Liste also sofort. Das Bearbeiten der Liste unterbricht das Lauschen nicht."
+  "ipAccessNote": "UDP wird pro Paket geprüft, Pakete bestehender Sitzungen folgen einer geänderten Liste also sofort. Das Bearbeiten der Liste unterbricht das Lauschen nicht.",
+  "autoFirewallHelp": "Gibt in der lokalen Firewall (nftables / iptables / ip6tables) nur die Ports frei, auf denen diese Regel erfolgreich lauscht, fasst aufeinanderfolgende Ports zu einer Regel zusammen und beschränkt sie bei gesetzter Listen-Adresse auf diese Adresse; wird entfernt, wenn die Regel deaktiviert oder gelöscht wird. Für Gately auf einem Router wie OpenWrt oder einem Linux-Host mit Firewall"
 }

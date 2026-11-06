@@ -1704,6 +1704,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 
 | Field | Type |
 | --- | --- |
+| `autoFirewall` | boolean |
 | `enable` | boolean |
 | `group` | string |
 | `ipList` | Array of string |
