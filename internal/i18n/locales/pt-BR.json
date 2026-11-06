@@ -410,6 +410,7 @@
   "Web 服务拓扑视图快照": "Instantâneo da topologia dos Serviços Web",
   "Web 服务模块已禁用": "O módulo de serviço web está desativado",
   "Web 服务监听": "Escuta do serviço web",
+  "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）": "Chave do listener dos Serviços Web, correspondência exata; distingue sites ou listeners com o mesmo nome (por exemplo, listeners IPv4 e IPv6 separados)",
   "Web 终端": "Terminal web",
   "Web 诱饵路径": "Caminhos isca web",
   "WebDAV 地址需以 http:// 或 https:// 开头": "O endereço WebDAV deve começar com http:// ou https://",

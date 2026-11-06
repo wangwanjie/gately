@@ -166,7 +166,7 @@
               <div v-else class="site-actions">
                 <el-button v-if="l.running" text size="small" :icon="BarChart3" :title="t('web.stats')" @click="openStats(l, item.item)">{{ t('web.stats') }}</el-button>
                 <el-button v-if="l.running" text size="small" :icon="Cable" :title="t('web.connections')" @click="openConns(l, item.item)">{{ t('web.connections') }}</el-button>
-                <el-button v-if="!item.item.isDefault" text size="small" :icon="FileText" :title="t('web.siteLogs')" @click="openLogs(item.item)">{{ t('web.siteLogs') }}</el-button>
+                <el-button v-if="!item.item.isDefault" text size="small" :icon="FileText" :title="t('web.siteLogs')" @click="openLogs(l, item.item)">{{ t('web.siteLogs') }}</el-button>
                 <el-button text size="small" :icon="Pencil" :title="t('common.edit')" @click="openSite(l, item.item)">{{ t('common.edit') }}</el-button>
                 <el-button v-if="!item.item.isDefault" text size="small" :icon="CopyPlus" :title="t('web.copySite')" :aria-label="t('web.copySite')" @click="openSite(l, item.item, true)">{{ t('common.duplicate') }}</el-button>
                 <el-popconfirm v-if="item.item.isDefault" :title="t('web.resetDefaultConfirm')" width="260" @confirm="resetDefaultSite(l)">
@@ -1573,10 +1573,18 @@ function openConns(l: ListenerView, row: SiteRow) {
   connsDialog.value?.open(l.key ?? '', statKey(row), siteTitle(row))
 }
 
-// openLogs 查看站点的访问日志：按站点名称完整匹配，没有名称时按第一个域名过滤
+// openLogs 查看站点的访问日志：按站点名称完整匹配，没有名称时按第一个域名过滤；
+// 同时限定在站点所在的监听器，同名站点分在多个监听器（如分开监听 IPv4、IPv6）时不会混入其他监听器的访客
 const logsDialog = ref<InstanceType<typeof SiteLogDialog>>()
-function openLogs(row: SiteRow) {
-  logsDialog.value?.open({ name: row.site.name, label: siteTitle(row), domain: row.site.domains?.[0], accessLog: row.site.accessLog })
+function openLogs(l: ListenerView, row: SiteRow) {
+  logsDialog.value?.open({
+    name: row.site.name,
+    label: siteTitle(row),
+    domain: row.site.domains?.[0],
+    accessLog: row.site.accessLog,
+    listener: l.key,
+    listenerLabel: `${l.name || t('web.unnamedListener')} · ${l.listenIp || '*'}:${l.port} · ${networkText(l.network)}`,
+  })
 }
 
 // downCount 统计站点中不可用的后端数量

@@ -91,7 +91,8 @@
       "rateLimit": "限流",
       "waf": "WAF"
     },
-    "siteChip": "站點：{site}"
+    "siteChip": "站點：{site}",
+    "listenerChip": "監聽：{listener}"
   },
   "scopeTags": {
     "allWrite": "全部讀寫",

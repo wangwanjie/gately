@@ -410,6 +410,7 @@
   "Web 服务拓扑视图快照": "Web Services topology snapshot",
   "Web 服务模块已禁用": "The Web service module is disabled",
   "Web 服务监听": "Web service listening",
+  "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）": "Web Services listener key, exact match; tells apart sites or listeners with the same name (for example separate IPv4 and IPv6 listeners)",
   "Web 终端": "Web terminal",
   "Web 诱饵路径": "Web decoy paths",
   "WebDAV 地址需以 http:// 或 https:// 开头": "WebDAV address must start with http:// or https://",

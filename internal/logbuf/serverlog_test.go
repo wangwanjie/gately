@@ -93,3 +93,22 @@ func TestServerErrorLogWithHook(t *testing.T) {
 		t.Fatalf("级别不正确: %+v", es)
 	}
 }
+
+// TestServerErrorLogKeepsFields 验证 net/http 错误日志带上 Logger 的附加字段（如监听器 key），按监听器过滤时不会漏掉握手错误。
+func TestServerErrorLogKeepsFields(t *testing.T) {
+	b := New(100, nil)
+	lg := b.Logger("HTTPS").With(Fields{FieldListener: "v6key"}).ServerErrorLog()
+	lg.Printf(`http: TLS handshake error from [240e::1]:5: 没有匹配 "a.test" 的证书`)
+	lg.Printf("http: TLS handshake error from [240e::1]:6: EOF")
+	for _, e := range b.Since(0) {
+		if e.Fields[FieldListener] != "v6key" {
+			t.Fatalf("应带监听器字段: %+v", e)
+		}
+	}
+	f := &Filter{Listener: "v4key"}
+	for _, e := range b.Since(0) {
+		if f.Match(&e) {
+			t.Fatalf("其他监听器的过滤不应匹配: %+v", e)
+		}
+	}
+}

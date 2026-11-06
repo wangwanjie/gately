@@ -5830,6 +5830,14 @@
             }
           },
           {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
             "in": "query",
             "name": "status",
@@ -7332,6 +7340,14 @@
             }
           },
           {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
             "in": "query",
             "name": "status",
@@ -8624,6 +8640,14 @@
             }
           },
           {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
             "in": "query",
             "name": "status",
@@ -9722,6 +9746,14 @@
             "description": "",
             "in": "query",
             "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
             "schema": {
               "type": "string"
             }
@@ -14027,6 +14059,14 @@
             }
           },
           {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
             "in": "query",
             "name": "status",
@@ -16414,6 +16454,14 @@
             }
           },
           {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
             "in": "query",
             "name": "status",
@@ -18139,6 +18187,14 @@
             "description": "",
             "in": "query",
             "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
             "schema": {
               "type": "string"
             }
@@ -20034,6 +20090,14 @@
             }
           },
           {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
             "in": "query",
             "name": "status",
@@ -21489,6 +21553,14 @@
             }
           },
           {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
             "in": "query",
             "name": "status",
@@ -22124,6 +22196,14 @@
             "description": "",
             "in": "query",
             "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
             "schema": {
               "type": "string"
             }
@@ -23642,6 +23722,14 @@
             }
           },
           {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
             "in": "query",
             "name": "status",
@@ -24087,6 +24175,14 @@
             "description": "",
             "in": "query",
             "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
             "schema": {
               "type": "string"
             }
@@ -25656,6 +25752,14 @@
             }
           },
           {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
             "in": "query",
             "name": "status",
@@ -26747,6 +26851,14 @@
             "description": "",
             "in": "query",
             "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
             "schema": {
               "type": "string"
             }
@@ -27864,6 +27976,14 @@
             }
           },
           {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
             "in": "query",
             "name": "status",
@@ -28839,6 +28959,14 @@
             "description": "",
             "in": "query",
             "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
             "schema": {
               "type": "string"
             }
@@ -29860,6 +29988,14 @@
             "description": "",
             "in": "query",
             "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
             "schema": {
               "type": "string"
             }
@@ -31320,6 +31456,14 @@
             }
           },
           {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
             "in": "query",
             "name": "status",
@@ -32132,6 +32276,14 @@
             "description": "",
             "in": "query",
             "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
             "schema": {
               "type": "string"
             }
@@ -33074,6 +33226,14 @@
             "description": "",
             "in": "query",
             "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
             "schema": {
               "type": "string"
             }
@@ -36225,6 +36385,14 @@
             }
           },
           {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
             "in": "query",
             "name": "status",
@@ -37866,6 +38034,14 @@
             }
           },
           {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
             "in": "query",
             "name": "status",
@@ -38143,6 +38319,14 @@
             "description": "",
             "in": "query",
             "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
             "schema": {
               "type": "string"
             }
@@ -40999,6 +41183,14 @@
             }
           },
           {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
             "in": "query",
             "name": "status",
@@ -43687,6 +43879,14 @@
             "description": "",
             "in": "query",
             "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
             "schema": {
               "type": "string"
             }
@@ -46523,6 +46723,14 @@
             "description": "",
             "in": "query",
             "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
             "schema": {
               "type": "string"
             }

@@ -91,7 +91,8 @@
       "rateLimit": "Limitation de débit",
       "waf": "WAF"
     },
-    "siteChip": "Site : {site}"
+    "siteChip": "Site : {site}",
+    "listenerChip": "Écouteur : {listener}"
   },
   "scopeTags": {
     "allWrite": "Accès complet",

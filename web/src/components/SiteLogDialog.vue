@@ -22,6 +22,10 @@ export interface SiteLogTarget {
   // label 为对话框标题中显示的站点名称（可能经过打码）
   label: string
   domain?: string
+  // listener 为站点所在监听器的 key：同名站点分在多个监听器（如分开监听 IPv4、IPv6）时只看本监听器的日志；
+  // listenerLabel 为标签上显示的监听器名称与地址（可能经过打码）
+  listener?: string
+  listenerLabel?: string
   ip?: string
   // ipLabel 为标题中显示的 IP（可能经过打码）
   ipLabel?: string
@@ -40,6 +44,8 @@ const initial = computed(() => ({
   site: target.value.name,
   host: target.value.name ? '' : (target.value.domain ?? ''),
   ip: target.value.ip ?? '',
+  listener: target.value.listener ?? '',
+  listenerLabel: target.value.listenerLabel ?? '',
 }))
 // 没有站点（拓扑页未选中站点时按 IP 查看）时标题只显示地址
 const title = computed(() => {

@@ -7,6 +7,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -152,6 +153,36 @@ func (m *Module) applyOAuthLocked() {
 	m.auth.setOAuth(env)
 }
 
+// listenerLogLabel 返回监听器在运行日志中的来源名称：通常为监听器名称，未命名时为 :端口。
+// 与其他监听器重名时（例如 IPv4、IPv6 各一个都叫 HTTPS）附上监听地址，否则日志里分不清来自哪个监听器。
+func listenerLogLabel(l Listener, all []Listener) string {
+	base := func(x Listener) string {
+		if x.Name != "" {
+			return x.Name
+		}
+		return ":" + strconv.Itoa(x.Port)
+	}
+	label := base(l)
+	for _, o := range all {
+		if o.Key != l.Key && base(o) == label {
+			return label + " (" + listenerAddrLabel(l) + ")"
+		}
+	}
+	return label
+}
+
+// listenerAddrLabel 返回监听地址的简短写法；未填写地址时按网络类型写成 0.0.0.0、[::] 或 *，区分只监听 IPv4 或 IPv6。
+func listenerAddrLabel(l Listener) string {
+	host := l.ListenIP
+	if host == "" {
+		host = map[string]string{"tcp4": "0.0.0.0", "tcp6": "::"}[l.Network]
+	}
+	if host == "" {
+		return "*:" + strconv.Itoa(l.Port)
+	}
+	return net.JoinHostPort(host, strconv.Itoa(l.Port))
+}
+
 // Start 实现 module.Module。
 func (m *Module) Start(ctx context.Context) error {
 	m.mu.Lock()
@@ -184,18 +215,17 @@ func (m *Module) startLocked(l Listener) {
 	if m.ctx == nil {
 		return
 	}
-	label := l.Name
-	if label == "" {
-		label = ":" + strconv.Itoa(l.Port)
-	}
-	r, err := newListenerRunner(l, m.logs.Logger(label), m.auth, m.waf)
+	label := listenerLogLabel(l, m.cfg.Listeners)
+	// 每条日志都带上监听器 key，站点日志据此只看本监听器的记录（同名站点分在 IPv4、IPv6 两个监听器时不会混在一起）
+	lg := m.logs.Logger(label).With(logbuf.Fields{logbuf.FieldListener: l.Key})
+	r, err := newListenerRunner(l, lg, m.auth, m.waf)
 	if err == nil {
 		r.realIP = m.realIP
 		err = r.start(m.certs, m.cfg.Settings.TrustedProxies)
 	}
 	if err != nil {
 		m.errors[l.Key] = err.Error()
-		m.logs.Logger(label).Errorf("启动失败: %v", err)
+		lg.Errorf("启动失败: %v", err)
 		return
 	}
 	delete(m.errors, l.Key)

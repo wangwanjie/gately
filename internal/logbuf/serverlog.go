@@ -15,7 +15,8 @@ var serverLogThrottle = time.Minute
 const serverLogMaxKeys = 256
 
 // ServerErrorLog 返回可设置为 http.Server.ErrorLog 的标准日志器，
-// 把 net/http 内部错误（如 TLS 握手失败）写入本模块日志，同时保留 docker logs 输出。
+// 把 net/http 内部错误（如 TLS 握手失败）写入本模块日志，同时保留 docker logs 输出；
+// Logger 经 With 附加的字段（如监听器 key）同样写入。
 func (l *Logger) ServerErrorLog() *log.Logger {
 	return l.ServerErrorLogWith(nil)
 }
@@ -48,7 +49,7 @@ func (w *serverLogWriter) Write(p []byte) (int, error) {
 	}
 	if level == LevelDebug && key == "" {
 		// 客户端断开、超时等常见噪声只记调试级别，不做节流
-		w.l.buf.Add(level, w.l.source, text)
+		w.l.buf.AddFields(level, w.l.source, text, w.l.fields)
 		return len(p), nil
 	}
 	w.mu.Lock()
@@ -71,7 +72,7 @@ func (w *serverLogWriter) Write(p []byte) (int, error) {
 	}
 	st.last, st.suppressed = now, 0
 	w.mu.Unlock()
-	w.l.buf.Add(level, w.l.source, text)
+	w.l.buf.AddFields(level, w.l.source, text, w.l.fields)
 	return len(p), nil
 }
 

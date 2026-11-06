@@ -91,7 +91,8 @@
       "rateLimit": "レート制限",
       "waf": "WAF"
     },
-    "siteChip": "サイト：{site}"
+    "siteChip": "サイト：{site}",
+    "listenerChip": "リスナー：{listener}"
   },
   "scopeTags": {
     "allWrite": "すべて読み書き",

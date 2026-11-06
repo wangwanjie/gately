@@ -91,7 +91,8 @@
       "rateLimit": "Rate limit",
       "waf": "WAF"
     },
-    "siteChip": "Site: {site}"
+    "siteChip": "Site: {site}",
+    "listenerChip": "Listener: {listener}"
   },
   "scopeTags": {
     "allWrite": "Full access",

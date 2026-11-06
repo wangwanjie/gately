@@ -91,7 +91,8 @@
       "rateLimit": "속도 제한",
       "waf": "WAF"
     },
-    "siteChip": "사이트: {site}"
+    "siteChip": "사이트: {site}",
+    "listenerChip": "리스너: {listener}"
   },
   "scopeTags": {
     "allWrite": "전체 읽기/쓰기",

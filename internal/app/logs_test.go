@@ -65,7 +65,9 @@ func TestLogsFilterAPI(t *testing.T) {
 	a, srv, c := loginApp(t)
 	pf := a.modules[0].logs
 	l := pf.Logger("规则A")
-	l.With(logbuf.Fields{logbuf.FieldIP: "10.0.0.5", logbuf.FieldHost: "a.example.com", logbuf.FieldSite: "博客", logbuf.FieldStatus: "404"}).Infof("10.0.0.5 GET a.example.com/x 404 1ms")
+	l.With(logbuf.Fields{logbuf.FieldIP: "10.0.0.5", logbuf.FieldHost: "a.example.com", logbuf.FieldSite: "博客", logbuf.FieldStatus: "404", logbuf.FieldListener: "v4key"}).Infof("10.0.0.5 GET a.example.com/x 404 1ms")
+	// 另一个监听器里的同名站点（如分开监听的 IPv6）
+	l.With(logbuf.Fields{logbuf.FieldIP: "240e::5", logbuf.FieldHost: "a.example.com", logbuf.FieldSite: "博客", logbuf.FieldStatus: "200", logbuf.FieldListener: "v6key"}).Infof("240e::5 GET a.example.com/x 200 1ms")
 	l.With(logbuf.Fields{logbuf.FieldIP: "10.0.0.6", logbuf.FieldHost: "b.example.com", logbuf.FieldStatus: "502"}).Warnf("10.0.0.6 GET b.example.com/y 502 9ms")
 	pf.Logger("规则B").Errorf("连接 192.168.1.9:80 失败")
 
@@ -105,15 +107,20 @@ func TestLogsFilterAPI(t *testing.T) {
 	}{
 		{"level=warn", "[10.0.0.6 GET b.example.com/y 502 9ms 连接 192.168.1.9:80 失败]"},
 		{"source=" + url.QueryEscape("规则B"), "[连接 192.168.1.9:80 失败]"},
-		{"q=" + url.QueryEscape("GET -b.example"), "[10.0.0.5 GET a.example.com/x 404 1ms]"},
+		{"q=" + url.QueryEscape("GET -b.example"), "[10.0.0.5 GET a.example.com/x 404 1ms 240e::5 GET a.example.com/x 200 1ms]"},
 		// exclude 与 q 同时生效；exclude 中的词带不带 - 都是排除，包含任意一个即排除
-		{"q=GET&exclude=" + url.QueryEscape("b.example"), "[10.0.0.5 GET a.example.com/x 404 1ms]"},
-		{"exclude=" + url.QueryEscape("-404 \"192.168.1.9:80 失败\""), "[10.0.0.6 GET b.example.com/y 502 9ms]"},
+		{"q=GET&exclude=" + url.QueryEscape("b.example"), "[10.0.0.5 GET a.example.com/x 404 1ms 240e::5 GET a.example.com/x 200 1ms]"},
+		{"exclude=" + url.QueryEscape("-404 \"192.168.1.9:80 失败\" 240e"), "[10.0.0.6 GET b.example.com/y 502 9ms]"},
 		{"ip=10.0.0.0/24", "[10.0.0.5 GET a.example.com/x 404 1ms 10.0.0.6 GET b.example.com/y 502 9ms]"},
 		{"ip=192.168.1.9", "[连接 192.168.1.9:80 失败]"},
 		{"host=b.example", "[10.0.0.6 GET b.example.com/y 502 9ms]"},
 		// site 完整匹配站点名称，只返回带该站点字段的访问日志；与 ip 同时生效
-		{"site=" + url.QueryEscape("博客"), "[10.0.0.5 GET a.example.com/x 404 1ms]"},
+		{"site=" + url.QueryEscape("博客"), "[10.0.0.5 GET a.example.com/x 404 1ms 240e::5 GET a.example.com/x 200 1ms]"},
+		// listener 完整匹配监听器 key，把同名站点按监听器分开；监听器 key 不参与关键词匹配
+		{"site=" + url.QueryEscape("博客") + "&listener=v6key", "[240e::5 GET a.example.com/x 200 1ms]"},
+		{"listener=v4key", "[10.0.0.5 GET a.example.com/x 404 1ms]"},
+		{"listener=v4", "[]"},
+		{"q=v6key", "[]"},
 		{"site=" + url.QueryEscape("博"), "[]"},
 		{"site=" + url.QueryEscape("博客") + "&ip=10.0.0.6", "[]"},
 		{"status=4xx", "[10.0.0.5 GET a.example.com/x 404 1ms]"},
@@ -130,7 +137,7 @@ func TestLogsFilterAPI(t *testing.T) {
 		}
 	}
 	// 毫秒时间戳可以直接作为 from/to
-	if code, es := get(fmt.Sprintf("from=%d", time.Now().Add(-time.Hour).UnixMilli()), "zh-CN"); code != http.StatusOK || len(msgs(es)) != 3 {
+	if code, es := get(fmt.Sprintf("from=%d", time.Now().Add(-time.Hour).UnixMilli()), "zh-CN"); code != http.StatusOK || len(msgs(es)) != 4 {
 		t.Errorf("毫秒时间戳 from：状态码 %d，%d 条", code, len(msgs(es)))
 	}
 	now := time.Now()

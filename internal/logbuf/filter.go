@@ -21,6 +21,9 @@ const (
 	FieldDeny = "deny"
 	// FieldAdmin 为请求所带管理后台登录态的用户名，用于识别管理员经站点反代访问后台产生的访问日志
 	FieldAdmin = "admin"
+	// FieldListener 为写入日志的 Web 服务监听器 key。同一端口分 IPv4、IPv6 两个监听器、里面放同名站点时，
+	// 只按来源名称或站点名称无法区分，需要按它过滤
+	FieldListener = "listener"
 )
 
 // DenyBan 是来源地址已被封禁时 FieldDeny 的取值。
@@ -58,6 +61,8 @@ type Filter struct {
 	Host string
 	// Site 为站点名称，不区分大小写完整匹配 site 字段；只匹配带该字段的日志（访问日志）
 	Site string
+	// Listener 为监听器 key，完整匹配 listener 字段；只匹配带该字段的日志
+	Listener string
 	// Status 为状态码区间，命中任意一个即匹配；只匹配带 status 字段的日志
 	Status []StatusRange
 	// Hide 为要隐藏的日志：命中其中任意一项即不匹配，例如被封禁来源的访问日志、管理员自己的请求
@@ -74,7 +79,7 @@ type Filter struct {
 // Empty 判断是否没有任何过滤条件。
 func (f *Filter) Empty() bool {
 	return f == nil || (f.MinLevel == "" && f.Source == "" && len(f.Terms) == 0 && len(f.Excludes) == 0 &&
-		f.IP == nil && f.Host == "" && f.Site == "" && len(f.Status) == 0 && len(f.Hide) == 0 && f.HideIP == nil && f.From.IsZero() && f.To.IsZero())
+		f.IP == nil && f.Host == "" && f.Site == "" && f.Listener == "" && len(f.Status) == 0 && len(f.Hide) == 0 && f.HideIP == nil && f.From.IsZero() && f.To.IsZero())
 }
 
 var levelOrder = map[string]int{LevelDebug: 0, LevelInfo: 1, LevelWarn: 2, LevelError: 3}
@@ -121,6 +126,9 @@ func (f *Filter) Match(e *Entry) bool {
 	if f.Site != "" && !strings.EqualFold(e.Fields[FieldSite], f.Site) {
 		return false
 	}
+	if f.Listener != "" && e.Fields[FieldListener] != f.Listener {
+		return false
+	}
 	if f.IP != nil && !f.IP.matchEntry(e) {
 		return false
 	}
@@ -158,7 +166,11 @@ func (f *Filter) searchText(e *Entry) string {
 			b.WriteString(tr)
 		}
 	}
-	for _, v := range e.Fields {
+	for k, v := range e.Fields {
+		if k == FieldListener {
+			// 监听器 key 是内部随机串，界面上看不到，不参与关键词匹配，免得搜十六进制片段时误中
+			continue
+		}
 		b.WriteByte('\n')
 		b.WriteString(v)
 	}

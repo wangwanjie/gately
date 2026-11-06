@@ -1351,11 +1351,24 @@ const logSite = computed(() => {
   return s && s.default && !s.name ? undefined : s
 })
 
+// logListener 为选中站点类节点所在的监听器节点，沿父节点向上查找
+const logListener = computed(() => {
+  let n = selectedNode.value
+  while (n && n.kind !== 'listener') {
+    n = n.parent ? layout.value?.byId.get(n.parent) : undefined
+  }
+  return n
+})
+
 // openLogs 打开访问日志：选中站点类节点时按该站点过滤，ip 非空时再按访客地址过滤；
 // 未选中站点时只按地址查看全部站点的访问日志
 function openLogs(ip: string) {
   const s = logSite.value
+  const ln = s ? logListener.value : undefined
   emit('logs', {
+    // 只看站点所在监听器的日志：同名站点分在多个监听器（如分开监听 IPv4、IPv6）时不会混在一起
+    listener: ln?.listener?.key,
+    listenerLabel: ln?.listener ? (ln.listener.name ? ln.listener.name + ' · ' : '') + listenerAddr(ln.listener) : undefined,
     // 默认站点有名称时访问日志同样带站点字段，按名称过滤；否则会把全部站点的日志当成默认站点的显示
     name: s ? s.name : '',
     label: s ? siteName(s) : '',
