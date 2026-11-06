@@ -390,6 +390,20 @@ Si está activado el envío del protocolo PROXY al backend, las comprobaciones H
 
 Las comprobaciones pasivas siempre están activas: entre varios backends, uno con 3 fallos de conexión consecutivos se pausa durante 30 segundos antes de volver a sondearlo (un backend único sin comprobación activa nunca se retira). Una vez activadas las comprobaciones activas, la recuperación se decide por completo según sus resultados. Cuando cambia el estado de un backend, se publican los eventos de backend caído y backend recuperado, que se pueden enviar por el [Centro de notificaciones](/es/docs/modules/notify).
 
+### Tiempos de espera del backend {#backend-timeouts}
+
+Tiempos de espera de las conexiones de un sitio de proxy inverso con sus backends, en segundos; 0 usa el valor predeterminado. Los backends por ruta y por usuario usan los mismos ajustes.
+
+| Campo | Predeterminado | Rango | Significado |
+| --- | --- | --- | --- |
+| Conexión `timeouts.connect` | 10 s | 1 a 300 | Establecer la conexión TCP con el backend |
+| Negociación TLS `timeouts.tlsHandshake` | 10 s | 1 a 300 | Completar la negociación TLS con un backend HTTPS |
+| Cabeceras de respuesta `timeouts.responseHeader` | Sin límite | 1 a 86400 | Esperar las cabeceras de respuesta del backend una vez enviada la petición con su cuerpo |
+
+- El tiempo de espera de cabeceras solo cubre la espera hasta que llegan; el cuerpo de la respuesta, las descargas y las conexiones largas como WebSocket y SSE no se ven afectados después. En subidas grandes el tiempo empieza a contar cuando el cuerpo de la petición se ha enviado por completo;
+- Al agotarse se devuelve 504 (Gateway Timeout); otros errores, como una conexión rechazada, devuelven 502. Los tiempos agotados cuentan para la comprobación pasiva igual que los fallos de conexión;
+- Aumenta el tiempo de conexión para backends que arrancan despacio o están detrás de enlaces lentos; fija un tiempo de cabeceras cuando un backend bloqueado deba fallar pronto.
+
 ### Compresión
 
 La compresión se puede activar en los sitios de proxy inverso, archivos estáticos y texto fijo (no en los de redirección). Según `Accept-Encoding`, se prefiere `br` y después `gzip`.

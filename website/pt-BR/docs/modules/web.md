@@ -390,6 +390,20 @@ Quando o envio do protocolo PROXY ao backend está ativado, as verificações HT
 
 As verificações passivas estão sempre em vigor: entre vários backends, um backend com 3 falhas de conexão consecutivas é pausado por 30 segundos antes de ser sondado de novo (um backend único sem verificação ativa nunca é removido). Quando as verificações ativas estão ativadas, a recuperação é decidida inteiramente pelos resultados das verificações. Quando o estado de um backend muda, eventos de upstream fora do ar e upstream recuperado são publicados e podem ser enviados pela [Central de notificações](/pt-BR/docs/modules/notify).
 
+### Tempos limite do backend {#backend-timeouts}
+
+Tempos limite das conexões de um site de proxy reverso com seus backends, em segundos; 0 usa o padrão. Backends por caminho e por usuário usam as mesmas configurações.
+
+| Campo | Padrão | Faixa | Significado |
+| --- | --- | --- | --- |
+| Conexão `timeouts.connect` | 10 s | 1 a 300 | Estabelecer a conexão TCP com o backend |
+| Handshake TLS `timeouts.tlsHandshake` | 10 s | 1 a 300 | Concluir o handshake TLS com um backend HTTPS |
+| Cabeçalhos de resposta `timeouts.responseHeader` | Sem limite | 1 a 86400 | Aguardar os cabeçalhos de resposta do backend depois que a requisição, com o corpo, foi enviada |
+
+- O tempo limite de cabeçalhos cobre só a espera até eles chegarem; o corpo da resposta, downloads e conexões longas como WebSocket e SSE não são afetados depois disso. Em uploads grandes, a contagem começa quando o corpo da requisição termina de ser enviado;
+- Ao esgotar, retorna 504 (Gateway Timeout); outros erros, como conexão recusada, retornam 502. Tempos esgotados contam para a verificação passiva como falhas de conexão;
+- Aumente o tempo de conexão para backends que iniciam devagar ou ficam atrás de links lentos; defina um tempo de cabeçalhos quando um backend travado deve falhar rápido.
+
 ### Compressão
 
 A compressão pode ser ativada em sites de proxy reverso, de arquivos estáticos e de texto fixo (não em sites de redirecionamento). Com base no `Accept-Encoding`, `br` tem preferência, depois `gzip`.

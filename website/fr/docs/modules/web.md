@@ -390,6 +390,20 @@ Lorsque l'envoi du protocole PROXY au backend est activé, les vérifications HT
 
 Les vérifications passives sont toujours actives : parmi plusieurs backends, un backend ayant subi 3 échecs de connexion consécutifs est mis en pause 30 secondes avant d'être sondé de nouveau (un backend unique sans vérification active n'est jamais retiré). Une fois les vérifications actives activées, le rétablissement dépend entièrement de leurs résultats. Lorsque l'état d'un backend change, des événements upstream-down et upstream-recovered sont publiés, et ils peuvent être envoyés via le [Centre de notifications](/fr/docs/modules/notify).
 
+### Délais du backend {#backend-timeouts}
+
+Délais des connexions d'un site proxy inverse vers ses backends, en secondes ; 0 utilise la valeur par défaut. Les backends par chemin et par utilisateur utilisent les mêmes réglages.
+
+| Champ | Défaut | Plage | Signification |
+| --- | --- | --- | --- |
+| Connexion `timeouts.connect` | 10 s | 1 à 300 | Établir la connexion TCP avec le backend |
+| Négociation TLS `timeouts.tlsHandshake` | 10 s | 1 à 300 | Terminer la négociation TLS avec un backend HTTPS |
+| En-têtes de réponse `timeouts.responseHeader` | Aucune limite | 1 à 86400 | Attendre les en-têtes de réponse du backend une fois la requête et son corps envoyés |
+
+- Le délai des en-têtes ne couvre que l'attente avant leur arrivée ; le corps de la réponse, les téléchargements et les connexions longues comme WebSocket et SSE ne sont pas concernés ensuite. Pour les gros envois, le décompte commence une fois le corps de la requête entièrement envoyé ;
+- Un dépassement renvoie 504 (Gateway Timeout) ; les autres erreurs, comme une connexion refusée, renvoient 502. Les dépassements comptent pour la vérification passive comme les échecs de connexion ;
+- Augmentez le délai de connexion pour les backends lents à démarrer ou derrière des liens lents ; définissez un délai d'en-têtes quand un backend bloqué doit échouer vite.
+
 ### Compression
 
 La compression peut être activée pour les sites en proxy inverse, en fichiers statiques et en texte fixe (pas pour les sites de redirection). Selon `Accept-Encoding`, `br` est préféré, puis `gzip`.

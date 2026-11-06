@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // 负载均衡策略
@@ -29,6 +30,61 @@ type HealthCheck struct {
 	// Fails 连续失败多少次判为不健康，Passes 连续成功多少次恢复
 	Fails  int `json:"fails"`
 	Passes int `json:"passes"`
+}
+
+// BackendTimeouts 是反向代理连接后端的超时设置，单位为秒，0 表示使用默认值。
+type BackendTimeouts struct {
+	// Connect 为与后端建立 TCP 连接的超时，默认 10 秒
+	Connect int `json:"connect"`
+	// TLSHandshake 为与 HTTPS 后端完成 TLS 握手的超时，默认 10 秒
+	TLSHandshake int `json:"tlsHandshake"`
+	// ResponseHeader 为请求（含请求体）发完后等待后端返回响应头的超时，默认不限；
+	// 只限制响应头到达前的等待，不影响之后的响应体传输与 WebSocket、SSE 等长连接
+	ResponseHeader int `json:"responseHeader"`
+}
+
+// 后端超时的默认值与上限
+const (
+	defaultConnectTimeout      = 10 * time.Second
+	defaultTLSHandshakeTimeout = 10 * time.Second
+	maxConnectTimeout          = 300
+	maxTLSHandshakeTimeout     = 300
+	maxResponseHeaderTimeout   = 86400
+)
+
+// validate 校验超时范围。0 为默认值，不做改写，以便日后调整默认值时旧配置自动跟随。
+func (t BackendTimeouts) validate() error {
+	if t.Connect < 0 || t.Connect > maxConnectTimeout {
+		return fmt.Errorf("后端连接超时需在 1 到 %d 秒之间（0 为默认 10 秒）", maxConnectTimeout)
+	}
+	if t.TLSHandshake < 0 || t.TLSHandshake > maxTLSHandshakeTimeout {
+		return fmt.Errorf("后端 TLS 握手超时需在 1 到 %d 秒之间（0 为默认 10 秒）", maxTLSHandshakeTimeout)
+	}
+	if t.ResponseHeader < 0 || t.ResponseHeader > maxResponseHeaderTimeout {
+		return fmt.Errorf("等待后端响应头超时需在 1 到 %d 秒之间（0 为不限）", maxResponseHeaderTimeout)
+	}
+	return nil
+}
+
+// connect 返回生效的建连超时。
+func (t BackendTimeouts) connect() time.Duration {
+	if t.Connect > 0 {
+		return time.Duration(t.Connect) * time.Second
+	}
+	return defaultConnectTimeout
+}
+
+// tlsHandshake 返回生效的 TLS 握手超时。
+func (t BackendTimeouts) tlsHandshake() time.Duration {
+	if t.TLSHandshake > 0 {
+		return time.Duration(t.TLSHandshake) * time.Second
+	}
+	return defaultTLSHandshakeTimeout
+}
+
+// responseHeader 返回生效的等待响应头超时，0 表示不限。
+func (t BackendTimeouts) responseHeader() time.Duration {
+	return time.Duration(t.ResponseHeader) * time.Second
 }
 
 // RateLimit 按客户端 IP 限流。
@@ -102,6 +158,9 @@ func (s *Site) validateProxyExtras() error {
 	case LBRoundRobin, LBRandom, LBIPHash, LBLeastConn:
 	default:
 		return fmt.Errorf("未知的负载均衡策略 %q", s.LBPolicy)
+	}
+	if err := s.Timeouts.validate(); err != nil {
+		return err
 	}
 	h := &s.Health
 	if h.Enable {

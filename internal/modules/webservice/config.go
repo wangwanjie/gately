@@ -123,12 +123,14 @@ type Site struct {
 	ShareLinks []ShareLink `json:"shareLinks"`
 
 	// 反向代理增强：Targets 每项可附 weight=N、backup；LBPolicy 为 ""（轮询）、random、ip_hash、least_conn
-	LBPolicy  string      `json:"lbPolicy"`
-	Health    HealthCheck `json:"health"`
-	Compress  bool        `json:"compress"`
-	RateLimit RateLimit   `json:"rateLimit"`
-	Cache     CacheConfig `json:"cache"`
-	Rewrites  []Rewrite   `json:"rewrites"`
+	LBPolicy string      `json:"lbPolicy"`
+	Health   HealthCheck `json:"health"`
+	// Timeouts 为连接后端的超时，分路径与按用户分流的后端同样适用
+	Timeouts  BackendTimeouts `json:"timeouts"`
+	Compress  bool            `json:"compress"`
+	RateLimit RateLimit       `json:"rateLimit"`
+	Cache     CacheConfig     `json:"cache"`
+	Rewrites  []Rewrite       `json:"rewrites"`
 
 	// RequestHeaders / ResponseHeaders 每项为 "Key: Value"，Value 为空表示删除该头
 	RequestHeaders  []string `json:"requestHeaders"`

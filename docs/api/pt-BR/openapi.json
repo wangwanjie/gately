@@ -2886,6 +2886,20 @@
         },
         "type": "object"
       },
+      "webservice.BackendTimeouts": {
+        "properties": {
+          "connect": {
+            "type": "integer"
+          },
+          "responseHeader": {
+            "type": "integer"
+          },
+          "tlsHandshake": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "webservice.BanInfo": {
         "properties": {
           "key": {
@@ -3736,6 +3750,9 @@
           },
           "text": {
             "type": "string"
+          },
+          "timeouts": {
+            "$ref": "#/components/schemas/webservice.BackendTimeouts"
           },
           "type": {
             "type": "string"

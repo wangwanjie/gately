@@ -2056,6 +2056,14 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `remark` | string |
 | `totpSecret` | string |
 
+### webservice.BackendTimeouts
+
+| 필드 | 타입 |
+| --- | --- |
+| `connect` | integer |
+| `responseHeader` | integer |
+| `tlsHandshake` | integer |
+
 ### webservice.BanInfo
 
 | 필드 | 타입 |
@@ -2404,6 +2412,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `statusCode` | integer |
 | `targets` | Array of string |
 | `text` | string |
+| `timeouts` | `webservice.BackendTimeouts` |
 | `type` | string |
 | `upstreamSniFromHost` | boolean |
 | `useTargetHost` | boolean |

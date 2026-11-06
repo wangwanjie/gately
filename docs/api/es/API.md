@@ -2056,6 +2056,14 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `remark` | string |
 | `totpSecret` | string |
 
+### webservice.BackendTimeouts
+
+| Campo | Tipo |
+| --- | --- |
+| `connect` | integer |
+| `responseHeader` | integer |
+| `tlsHandshake` | integer |
+
 ### webservice.BanInfo
 
 | Campo | Tipo |
@@ -2404,6 +2412,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `statusCode` | integer |
 | `targets` | Lista de string |
 | `text` | string |
+| `timeouts` | `webservice.BackendTimeouts` |
 | `type` | string |
 | `upstreamSniFromHost` | boolean |
 | `useTargetHost` | boolean |

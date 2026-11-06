@@ -639,7 +639,7 @@ import { type AuthUser, fromAPI } from '../sharedUsers'
 import AccessSettings from '../components/AccessSettings.vue'
 import IPListsManager from '../components/IPListsManager.vue'
 import NginxImport from '../components/NginxImport.vue'
-import SiteTraffic, { type Rewrite } from '../components/SiteTraffic.vue'
+import SiteTraffic, { type BackendTimeouts, type Rewrite } from '../components/SiteTraffic.vue'
 import SiteStats from '../components/SiteStats.vue'
 import SiteConns from '../components/SiteConns.vue'
 import SiteLogDialog from '../components/SiteLogDialog.vue'
@@ -721,6 +721,8 @@ interface Site {
   shareLinks: ShareLink[]
   lbPolicy: string
   health: { enable: boolean; mode: string; path: string; interval: number; timeout: number; fails: number; passes: number }
+  // 连接后端的超时（秒），0 为默认值
+  timeouts: BackendTimeouts
   compress: boolean
   rateLimit: { enable: boolean; rate: number; burst: number; maxConns: number }
   cache: { enable: boolean; ttl: number; maxMb: number }
@@ -1006,6 +1008,7 @@ function emptySite(): Site {
     shareLinks: [],
     lbPolicy: '',
     health: { enable: false, mode: 'http', path: '/', interval: 10, timeout: 3, fails: 3, passes: 2 },
+    timeouts: { connect: 0, tlsHandshake: 0, responseHeader: 0 },
     compress: false,
     rateLimit: { enable: false, rate: 10, burst: 20, maxConns: 0 },
     cache: { enable: false, ttl: 0, maxMb: 64 },
@@ -1611,6 +1614,7 @@ function openSite(l: ListenerView, row?: SiteRow, copy = false) {
   // 旧配置没有这些对象，补全默认值后可直接编辑
   const defaults = emptySite()
   draft.health = { ...defaults.health, ...(draft.health ?? {}) }
+  draft.timeouts = { ...defaults.timeouts, ...(draft.timeouts ?? {}) }
   draft.rateLimit = { ...defaults.rateLimit, ...(draft.rateLimit ?? {}) }
   draft.cache = { ...defaults.cache, ...(draft.cache ?? {}) }
   draft.errorPage = normalizeErrorPage(draft.errorPage)

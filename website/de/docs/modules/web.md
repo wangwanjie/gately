@@ -390,6 +390,20 @@ Ist das Senden des PROXY-Protokolls an das Backend aktiviert, wechseln HTTP-Prü
 
 Passive Prüfungen sind immer aktiv: Bei mehreren Backends wird ein Backend nach 3 aufeinanderfolgenden Verbindungsfehlern für 30 Sekunden pausiert und danach erneut geprüft (ein einzelnes Backend ohne aktive Prüfung wird nie entfernt). Sobald aktive Prüfungen aktiviert sind, entscheiden allein die Prüfergebnisse über die Wiederherstellung. Ändert sich der Zustand eines Backends, werden die Ereignisse „Upstream ausgefallen“ und „Upstream wiederhergestellt“ veröffentlicht, die sich über die [Benachrichtigungszentrale](/de/docs/modules/notify) versenden lassen.
 
+### Backend-Timeouts {#backend-timeouts}
+
+Timeouts für die Verbindungen einer Reverse-Proxy-Site zu ihren Backends, in Sekunden; 0 verwendet den Standard. Pfad-Backends und Backends pro Benutzer nutzen dieselben Einstellungen.
+
+| Feld | Standard | Bereich | Bedeutung |
+| --- | --- | --- | --- |
+| Verbindung `timeouts.connect` | 10 s | 1 bis 300 | Aufbau der TCP-Verbindung zum Backend |
+| TLS-Handshake `timeouts.tlsHandshake` | 10 s | 1 bis 300 | Abschluss des TLS-Handshakes mit einem HTTPS-Backend |
+| Antwort-Header `timeouts.responseHeader` | Keine Begrenzung | 1 bis 86400 | Warten auf die Antwort-Header des Backends, nachdem die Anfrage samt Body gesendet ist |
+
+- Der Timeout für Antwort-Header gilt nur bis zum Eintreffen der Header; Antwort-Body, Downloads und langlebige Verbindungen wie WebSocket und SSE sind danach nicht betroffen. Bei großen Uploads beginnt die Zeit erst, wenn der Anfrage-Body vollständig gesendet ist;
+- Eine Zeitüberschreitung liefert 504 (Gateway Timeout), andere Fehler wie eine abgelehnte Verbindung liefern 502. Zeitüberschreitungen zählen wie Verbindungsfehler für die passive Prüfung;
+- Erhöhen Sie den Verbindungs-Timeout für Backends, die langsam starten oder über langsame Strecken erreichbar sind; setzen Sie einen Timeout für Antwort-Header, wenn ein hängendes Backend schnell einen Fehler liefern soll.
+
 ### Kompression
 
 Die Kompression lässt sich für Reverse-Proxy-, Statische-Dateien- und Fester-Text-Sites aktivieren (nicht für Weiterleitungs-Sites). Anhand von `Accept-Encoding` wird `br` bevorzugt, danach `gzip`.

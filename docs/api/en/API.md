@@ -2056,6 +2056,14 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `remark` | string |
 | `totpSecret` | string |
 
+### webservice.BackendTimeouts
+
+| Field | Type |
+| --- | --- |
+| `connect` | integer |
+| `responseHeader` | integer |
+| `tlsHandshake` | integer |
+
 ### webservice.BanInfo
 
 | Field | Type |
@@ -2404,6 +2412,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `statusCode` | integer |
 | `targets` | Array of string |
 | `text` | string |
+| `timeouts` | `webservice.BackendTimeouts` |
 | `type` | string |
 | `upstreamSniFromHost` | boolean |
 | `useTargetHost` | boolean |

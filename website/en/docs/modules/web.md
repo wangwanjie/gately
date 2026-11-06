@@ -390,6 +390,20 @@ When sending the PROXY protocol to the backend is enabled, HTTP checks switch to
 
 Passive checks are always in effect: among multiple backends, a backend with 3 consecutive connection failures is paused for 30 seconds before being probed again (a single backend with no active check is never removed). Once active checks are enabled, recovery is decided entirely by the check results. When a backend's state changes, upstream-down and upstream-recovered events are published, and they can be pushed through the [Notification Center](/en/docs/modules/notify).
 
+### Backend timeouts {#backend-timeouts}
+
+Timeouts for a reverse proxy site's connections to its backends, in seconds; 0 uses the default. Path backends and per-user backends use the same settings.
+
+| Field | Default | Range | Meaning |
+| --- | --- | --- | --- |
+| Connect `timeouts.connect` | 10 s | 1 to 300 | Establishing the TCP connection to the backend |
+| TLS handshake `timeouts.tlsHandshake` | 10 s | 1 to 300 | Completing the TLS handshake with an HTTPS backend |
+| Response headers `timeouts.responseHeader` | No limit | 1 to 86400 | Waiting for the backend's response headers after the request, including its body, is sent |
+
+- The response header timeout only covers the wait before headers arrive; the response body, file downloads and long-lived connections such as WebSocket and SSE are not affected after that. For large uploads the clock starts once the request body is fully sent;
+- A timeout returns 504 (Gateway Timeout); other errors such as a refused connection return 502. Timeouts count toward passive health checks like connection failures;
+- Raise the connect timeout for backends that start slowly or sit behind slow links; set a response header timeout when a stuck backend should fail fast.
+
 ### Compression
 
 Compression can be enabled for reverse proxy, static file and fixed text sites (not for redirect sites). Based on `Accept-Encoding`, `br` is preferred, then `gzip`.

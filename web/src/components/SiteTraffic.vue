@@ -16,6 +16,28 @@
         </div>
       </el-form-item>
 
+      <!-- 连接后端的超时，0 为默认值；分路径与按用户分流的后端同样适用 -->
+      <el-form-item :label="t('siteTraffic.backendTimeouts')">
+        <div class="timeouts">
+          <span class="timeout-item">
+            <span class="timeout-label">{{ t('siteTraffic.timeoutConnect') }}</span>
+            <el-input-number v-model="site.timeouts.connect" :min="0" :max="300" controls-position="right" class="w-110" />
+            <span class="timeout-unit">{{ t('siteTraffic.seconds') }}</span>
+          </span>
+          <span class="timeout-item">
+            <span class="timeout-label">{{ t('siteTraffic.timeoutTls') }}</span>
+            <el-input-number v-model="site.timeouts.tlsHandshake" :min="0" :max="300" controls-position="right" class="w-110" />
+            <span class="timeout-unit">{{ t('siteTraffic.seconds') }}</span>
+          </span>
+          <span class="timeout-item">
+            <span class="timeout-label">{{ t('siteTraffic.timeoutResponseHeader') }}</span>
+            <el-input-number v-model="site.timeouts.responseHeader" :min="0" :max="86400" controls-position="right" class="w-110" />
+            <span class="timeout-unit">{{ t('siteTraffic.seconds') }}</span>
+          </span>
+        </div>
+        <div class="form-help">{{ t('siteTraffic.timeoutsHelp') }}</div>
+      </el-form-item>
+
       <el-form-item :label="t('siteTraffic.healthCheck')">
         <el-switch v-model="site.health.enable" />
         <span class="inline-help">{{ t('siteTraffic.healthHelp') }}</span>
@@ -112,10 +134,18 @@ export interface Rewrite {
   code: number
 }
 
+export interface BackendTimeouts {
+  connect: number
+  tlsHandshake: number
+  responseHeader: number
+}
+
 export interface TrafficFields {
   type: string
   lbPolicy: string
   health: { enable: boolean; mode: string; path: string; interval: number; timeout: number; fails: number; passes: number }
+  // 连接后端的超时（秒），0 为默认值
+  timeouts: BackendTimeouts
   compress: boolean
   rateLimit: { enable: boolean; rate: number; burst: number; maxConns: number }
   cache: { enable: boolean; ttl: number; maxMb: number }
@@ -154,6 +184,23 @@ const site = defineModel<TrafficFields>('site', { required: true })
 }
 .gap {
   margin-left: 12px;
+}
+/* 三项超时在窄屏上逐项换行，每项的标签、输入框与单位保持在同一行 */
+.timeouts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+.timeout-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.timeout-label,
+.timeout-unit {
+  font-size: 13px;
+  color: var(--el-text-color-regular);
 }
 .inline-help {
   margin-left: 8px;

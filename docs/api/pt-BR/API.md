@@ -2056,6 +2056,14 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `remark` | string |
 | `totpSecret` | string |
 
+### webservice.BackendTimeouts
+
+| Campo | Tipo |
+| --- | --- |
+| `connect` | integer |
+| `responseHeader` | integer |
+| `tlsHandshake` | integer |
+
 ### webservice.BanInfo
 
 | Campo | Tipo |
@@ -2404,6 +2412,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `statusCode` | integer |
 | `targets` | Array de string |
 | `text` | string |
+| `timeouts` | `webservice.BackendTimeouts` |
 | `type` | string |
 | `upstreamSniFromHost` | boolean |
 | `useTargetHost` | boolean |

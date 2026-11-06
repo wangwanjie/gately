@@ -2056,6 +2056,14 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `remark` | string |
 | `totpSecret` | string |
 
+### webservice.BackendTimeouts
+
+| Champ | Type |
+| --- | --- |
+| `connect` | integer |
+| `responseHeader` | integer |
+| `tlsHandshake` | integer |
+
 ### webservice.BanInfo
 
 | Champ | Type |
@@ -2404,6 +2412,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `statusCode` | integer |
 | `targets` | Tableau de string |
 | `text` | string |
+| `timeouts` | `webservice.BackendTimeouts` |
 | `type` | string |
 | `upstreamSniFromHost` | boolean |
 | `useTargetHost` | boolean |

@@ -345,7 +345,7 @@ var sharedSessionCache = tls.NewLRUClientSessionCache(512)
 // newTransport 为一个后端创建连接池。每个后端独立一个 Transport：
 // 开启“使用访问域名作为 SNI”时请求 URL 的主机名会换成访问域名，独立的连接池保证连接不会被串用到别的后端。
 func newTransport(s Site, up *upstream) *http.Transport {
-	dialer := &net.Dialer{Timeout: 10 * time.Second, KeepAlive: 30 * time.Second}
+	dialer := &net.Dialer{Timeout: s.Timeouts.connect(), KeepAlive: 30 * time.Second}
 	// 实际拨号地址始终是后端配置的地址，与请求 URL 中的主机名无关
 	target := up.url.Host
 	if up.url.Port() == "" {
@@ -360,9 +360,12 @@ func newTransport(s Site, up *upstream) *http.Transport {
 		TLSClientConfig:   &tls.Config{InsecureSkipVerify: s.InsecureSkipVerify, ClientSessionCache: sharedSessionCache},
 		ForceAttemptHTTP2: !s.SendProxyProtocol,
 		// 本机后端的并发可能很高，空闲连接上限放宽到与 nginx keepalive 常用值相当，减少突发时的重复建连
-		MaxIdleConnsPerHost:   256,
-		IdleConnTimeout:       90 * time.Second,
-		ResponseHeaderTimeout: 0,
+		MaxIdleConnsPerHost: 256,
+		IdleConnTimeout:     90 * time.Second,
+		// TLS 握手单独计时（拨号超时不含握手），避免卡在握手的后端无限占用连接
+		TLSHandshakeTimeout: s.Timeouts.tlsHandshake(),
+		// 0 表示不限；只限制请求发完到收到响应头之间的等待
+		ResponseHeaderTimeout: s.Timeouts.responseHeader(),
 		// 发送 PROXY 头时每个连接只对应一个客户端，必须禁用连接复用
 		DisableKeepAlives: s.DisableKeepAlives || s.SendProxyProtocol,
 		DialContext: func(ctx context.Context, network, _ string) (net.Conn, error) {
@@ -465,6 +468,11 @@ func (h *siteHandler) newProxy(s Site, p *pool) http.Handler {
 				p.fail(up, err)
 			}
 			h.reqLog(r).Warnf("%s %s%s 后端错误: %v", r.Method, r.Host, r.URL.Path, err)
+			// 连接、TLS 握手或等待响应头超时返回 504（与 nginx 一致），其余错误返回 502
+			if isUpstreamTimeout(err) {
+				writeErrorPage(h.errPage, w, r, http.StatusGatewayTimeout, "后端服务响应超时", "站点的后端服务没有在规定时间内响应，请稍后重试。")
+				return
+			}
 			writeErrorPage(h.errPage, w, r, http.StatusBadGateway, "无法连接到后端服务", "站点的后端服务没有响应，可能未启动或网络不可达。请稍后重试。")
 		},
 		// 流式响应（SSE 等）及时刷新
@@ -490,6 +498,13 @@ func (h *siteHandler) newProxy(s Site, p *pool) http.Handler {
 		}
 		rp.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+// isUpstreamTimeout 判断代理错误是否为连接后端时的超时：拨号、TLS 握手与等待响应头超时都实现 net.Error 的 Timeout。
+// 访客断开导致的 context.Canceled 不算超时。
+func isUpstreamTimeout(err error) bool {
+	var ne net.Error
+	return errors.As(err, &ne) && ne.Timeout()
 }
 
 // localPort 返回请求到达的本地端口。经 PROXY 协议转入时为原始目的端口。
