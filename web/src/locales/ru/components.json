@@ -92,7 +92,11 @@
       "waf": "WAF"
     },
     "siteChip": "Сайт: {site}",
-    "listenerChip": "Слушатель: {listener}"
+    "listenerChip": "Слушатель: {listener}",
+    "export": "Экспорт",
+    "exportTip": "Экспортировать все журналы, соответствующие текущим фильтрам, включая историю в файлах журналов и сжатых архивах",
+    "exportCsv": "CSV (электронная таблица)",
+    "exportJsonl": "JSON Lines"
   },
   "scopeTags": {
     "allWrite": "Полный доступ",

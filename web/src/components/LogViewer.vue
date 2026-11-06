@@ -60,7 +60,20 @@
         </el-tooltip>
       </template>
       <el-checkbox v-model="follow" size="small">{{ t('components.logViewer.autoScroll') }}</el-checkbox>
-      <el-button v-if="clearable" size="small" text :icon="Trash2" class="clear" @click="clear">{{ t('common.clear') }}</el-button>
+      <!-- 导出与清空放在一组，窄屏换行时一起靠右 -->
+      <span class="actions">
+        <!-- 导出当前筛选条件下的全部日志（含落盘的历史与归档），以下载链接流式保存，不经过页面内存 -->
+        <el-dropdown trigger="click" :disabled="!!error" @command="exportLogs">
+          <el-button size="small" text :icon="Download" :disabled="!!error" :title="t('components.logViewer.exportTip')">{{ t('components.logViewer.export') }}</el-button>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item command="csv">{{ t('components.logViewer.exportCsv') }}</el-dropdown-item>
+              <el-dropdown-item command="jsonl">{{ t('components.logViewer.exportJsonl') }}</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+        <el-button v-if="clearable" size="small" text :icon="Trash2" @click="clear">{{ t('common.clear') }}</el-button>
+      </span>
     </div>
     <div v-show="showAdvanced" class="toolbar advanced">
       <el-input v-model="filters.ip" size="small" class="f-ip" clearable :placeholder="t('components.logViewer.ip')" />
@@ -114,11 +127,11 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { CircleHelp, Filter, RotateCcw, Search, SearchX, Trash2 } from 'lucide-vue-next'
+import { CircleHelp, Download, Filter, RotateCcw, Search, SearchX, Trash2 } from 'lucide-vue-next'
 import { api, type LogEntry } from '../api'
 import { usePolling } from '../composables/usePolling'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 // height 可覆盖默认高度；fill 时组件撑满父容器，日志区占据工具栏以外的全部高度（独立日志页用）；
 // initial 为打开时的过滤条件，例如拓扑页按站点与访客 IP 查看访问日志（site 为站点名称，完整匹配）；
@@ -245,6 +258,19 @@ async function loadSources() {
   } finally {
     sourcesLoading = false
   }
+}
+
+// exportLogs 按当前筛选条件导出日志：用下载链接让浏览器直接把响应流式写入文件，导出大量日志时不占页面内存。
+// 链接带不上界面语言的请求头，用 lang 参数让导出内容与关键词匹配都按界面语言
+function exportLogs(format: string) {
+  const q = new URLSearchParams({ format, lang: String(locale.value) })
+  const a = document.createElement('a')
+  a.href = `${props.url}/export?${q.toString()}${filterQuery()}`
+  a.rel = 'noopener'
+  a.download = ''
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
 }
 
 // 高级过滤项中已填写的数量，显示在按钮上；自定义时间范围清空了日期时不会发出时间条件，不计入
@@ -657,8 +683,15 @@ onMounted(async () => {
   color: var(--el-text-color-secondary);
   font-size: 12px;
 }
-.clear {
+/* 导出与清空靠右排列 */
+.actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   margin-left: auto;
+}
+.actions .el-button + .el-button {
+  margin-left: 0;
 }
 .error-tip {
   color: var(--el-color-danger);

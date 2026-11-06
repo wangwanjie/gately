@@ -92,7 +92,11 @@
       "waf": "WAF"
     },
     "siteChip": "Sitio: {site}",
-    "listenerChip": "Listener: {listener}"
+    "listenerChip": "Listener: {listener}",
+    "export": "Exportar",
+    "exportTip": "Exporta todos los registros que cumplen los filtros actuales, incluido el historial guardado en archivos de registro y archivos comprimidos",
+    "exportCsv": "CSV (hoja de cálculo)",
+    "exportJsonl": "JSON Lines"
   },
   "scopeTags": {
     "allWrite": "Acceso total",

@@ -64,6 +64,10 @@ func (a *App) buildDoc() docModel {
 		if r.Method == http.MethodGet && (r.Path == "/api/logs" || (r.Module != "" && r.Path == "/api/"+r.Module+"/logs")) {
 			ep.Query = append([]string{"since", "before", "limit"}, logFilterParams...)
 		}
+		// 导出接口支持同样的过滤参数，另有 format 选择格式
+		if r.Method == http.MethodGet && (r.Path == "/api/logs/export" || (r.Module != "" && r.Path == "/api/"+r.Module+"/logs/export")) {
+			ep.Query = append([]string{"format", "lang"}, logFilterParams...)
+		}
 		d, hasDoc := a.routeDocs[key]
 		if hasDoc {
 			if d.Req != nil {
@@ -103,7 +107,7 @@ func (a *App) buildDoc() docModel {
 }
 
 // genericPaths 是各模块共用的接口（模块日志、托管程序的在线安装与恢复默认配置），路径相对模块前缀。
-var genericPaths = []string{"/logs", "/logs/sources", "/install", "/install/check", "/install/rollback", "/install/backups/{id}", "/reset"}
+var genericPaths = []string{"/logs", "/logs/sources", "/logs/export", "/install", "/install/check", "/install/rollback", "/install/backups/{id}", "/reset"}
 
 // genericKey 把模块日志等通用接口映射到目录中的通用条目。
 func genericKey(r routeInfo) string {
@@ -323,6 +327,9 @@ var logQueryDesc = map[string]string{
 	"hideAdmin":  "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志",
 	"from":       "开始时间，RFC 3339 格式或毫秒时间戳",
 	"to":         "结束时间，RFC 3339 格式或毫秒时间戳",
+	"site":       "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
+	"format":     "导出格式：jsonl（默认，每行一条 JSON）或 csv",
+	"lang":       "导出内容的语言，例如 en；不填时按 Accept-Language",
 }
 
 func (a *App) handleOpenAPI(w http.ResponseWriter, r *http.Request) {

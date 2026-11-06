@@ -92,7 +92,11 @@
       "waf": "WAF"
     },
     "siteChip": "Site : {site}",
-    "listenerChip": "Écouteur : {listener}"
+    "listenerChip": "Écouteur : {listener}",
+    "export": "Exporter",
+    "exportTip": "Exporte tous les journaux correspondant aux filtres actuels, y compris l’historique conservé dans les fichiers journaux et les archives compressées",
+    "exportCsv": "CSV (tableur)",
+    "exportJsonl": "JSON Lines"
   },
   "scopeTags": {
     "allWrite": "Accès complet",

@@ -92,7 +92,11 @@
       "waf": "WAF"
     },
     "siteChip": "站點：{site}",
-    "listenerChip": "監聽：{listener}"
+    "listenerChip": "監聽：{listener}",
+    "export": "匯出",
+    "exportTip": "匯出目前篩選條件下的全部日誌，包括日誌檔與壓縮歸檔中保留的歷史",
+    "exportCsv": "CSV（試算表軟體）",
+    "exportJsonl": "JSON Lines"
   },
   "scopeTags": {
     "allWrite": "全部讀寫",

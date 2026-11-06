@@ -303,6 +303,7 @@ func (a *App) Handler() http.Handler {
 	rec.add("POST /api/account/totp/disable", a.handleTOTPDisable, "")
 	rec.add("GET /api/logs", a.logsHandler(a.sysLogs), "")
 	rec.add("GET /api/logs/sources", a.logSourcesHandler(a.sysLogs, nil), "")
+	rec.add("GET /api/logs/export", a.logExportHandler(a.sysLogs, "system"), "")
 	rec.add("POST /api/import/lucky", a.handleLuckyImport, "")
 	rec.add("GET /api/system/settings", a.handleGetSettings, "")
 	rec.add("PUT /api/system/settings", a.handlePutSettings, "")
@@ -338,6 +339,7 @@ func (a *App) Handler() http.Handler {
 		}
 		rec.add("GET "+prefix+"/logs", a.logsHandler(e.logs), e.mod.ID())
 		rec.add("GET "+prefix+"/logs/sources", a.logSourcesHandler(e.logs, e.mod), e.mod.ID())
+		rec.add("GET "+prefix+"/logs/export", a.logExportHandler(e.logs, e.mod.ID()), e.mod.ID())
 		rec.add("DELETE "+prefix+"/logs", func(w http.ResponseWriter, r *http.Request) {
 			e.logs.Clear()
 			httpx.OK(w, map[string]bool{"ok": true})

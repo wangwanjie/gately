@@ -97,6 +97,10 @@ func fullTranslate(path string) bool {
 
 // skipTranslate 返回 true 的接口内容来自用户文件或外部程序，不做翻译。
 func skipTranslate(path string) bool {
+	// 日志导出是流式下载，由接口逐条翻译，这里不能缓存整个响应
+	if strings.HasSuffix(path, "/logs/export") {
+		return true
+	}
 	for _, p := range []string{"/files", "/content", "/download", "/backup", "/terminal", "/sftp", "/stats/", "/containers/"} {
 		if strings.Contains(path, p) && !strings.HasSuffix(path, "/logs") {
 			return true

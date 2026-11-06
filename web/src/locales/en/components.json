@@ -92,7 +92,11 @@
       "waf": "WAF"
     },
     "siteChip": "Site: {site}",
-    "listenerChip": "Listener: {listener}"
+    "listenerChip": "Listener: {listener}",
+    "export": "Export",
+    "exportTip": "Export all logs matching the current filters, including history kept in log files and compressed archives",
+    "exportCsv": "CSV (spreadsheet)",
+    "exportJsonl": "JSON Lines"
   },
   "scopeTags": {
     "allWrite": "Full access",

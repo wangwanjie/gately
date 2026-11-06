@@ -1,6 +1,9 @@
 package app
 
 import (
+	"bufio"
+	"encoding/csv"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -17,6 +20,7 @@ import (
 	"github.com/wangwanjie/gately/internal/banlist"
 	"github.com/wangwanjie/gately/internal/fsperm"
 	"github.com/wangwanjie/gately/internal/httpx"
+	"github.com/wangwanjie/gately/internal/i18n"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
 	"github.com/wangwanjie/gately/internal/sysstat"
@@ -280,4 +284,144 @@ func (a *App) logSourcesHandler(buf *logbuf.Buffer, mod module.Module) http.Hand
 		sort.Strings(out)
 		httpx.OK(w, out)
 	}
+}
+
+// 导出格式
+const (
+	exportJSONL = "jsonl"
+	exportCSV   = "csv"
+)
+
+// exportFieldKeys 为 CSV 导出的结构化字段列，与日志页可筛选的字段一致
+var exportFieldKeys = []string{logbuf.FieldIP, logbuf.FieldHost, logbuf.FieldSite, logbuf.FieldStatus, logbuf.FieldMethod, logbuf.FieldPath, logbuf.FieldRule, logbuf.FieldUser, logbuf.FieldDeny}
+
+// logExportHandler 按过滤条件导出全部日志（含落盘的历史文件与归档），以附件形式流式返回。
+// name 用于文件名（模块 ID 或 system）。format 为 jsonl（默认，每行一条 JSON）或 csv。
+// 日志按 lang 参数或请求语言翻译，与日志页看到的一致；过滤参数与日志接口相同。
+func (a *App) logExportHandler(buf *logbuf.Buffer, name string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		q := r.URL.Query()
+		format := strings.ToLower(strings.TrimSpace(q.Get("format")))
+		if format == "" {
+			format = exportJSONL
+		}
+		if format != exportJSONL && format != exportCSV {
+			httpx.Error(w, http.StatusBadRequest, "format 参数无效，可选 jsonl 或 csv")
+			return
+		}
+		f, msg := parseLogFilter(q)
+		if msg != "" {
+			httpx.Error(w, http.StatusBadRequest, "%s", msg)
+			return
+		}
+		// 下载链接带不上界面语言的 Accept-Language，前端通过 lang 参数指定，关键词匹配与导出内容都按它翻译
+		lang := i18n.RequestLang(r)
+		if l := i18n.FromAcceptLanguage(q.Get("lang")); l != "" {
+			lang = l
+		}
+		tr := func(s string) string { return s }
+		if lang != i18n.SourceLang {
+			tr = func(s string) string { return i18n.Tr(lang, s) }
+			if f != nil {
+				f.Translate = tr
+			}
+		}
+		ext, ctype := "jsonl", "application/x-ndjson; charset=utf-8"
+		if format == exportCSV {
+			ext, ctype = "csv", "text/csv; charset=utf-8"
+		}
+		// 文件名只含模块 ID（字母、数字与连字符）与时间，无需转义
+		filename := fmt.Sprintf("gately-%s-logs-%s.%s", name, time.Now().Format("20060102-150405"), ext)
+		h := w.Header()
+		h.Set("Content-Type", ctype)
+		h.Set("Content-Disposition", `attachment; filename="`+filename+`"`)
+		h.Set("Cache-Control", "no-store")
+		h.Set("X-Content-Type-Options", "nosniff")
+		// 只读身份看日志接口时，JSON 响应经 redactReadOnly 脱敏（消息中的地址凭据等）；
+		// 导出不是 JSON、会绕过那一层，这里逐条做同样的脱敏，再按语言翻译
+		redact := needsRedaction(r)
+		prepare := func(e *logbuf.Entry) logbuf.Entry {
+			out := *e
+			if redact {
+				redactLogEntry(&out)
+			}
+			out.Source = tr(out.Source)
+			out.Message = tr(out.Message)
+			return out
+		}
+		bw := bufio.NewWriterSize(w, 64<<10)
+		var write func(e *logbuf.Entry) error
+		if format == exportCSV {
+			cw := csv.NewWriter(bw)
+			// UTF-8 BOM：Excel 据此按 UTF-8 打开，中文不乱码
+			_, _ = bw.WriteString("\ufeff")
+			_ = cw.Write(append([]string{"time", "level", "source", "message"}, exportFieldKeys...))
+			row := make([]string, 4+len(exportFieldKeys))
+			write = func(e *logbuf.Entry) error {
+				out := prepare(e)
+				row[0] = out.Time.Format(time.RFC3339)
+				row[1] = out.Level
+				row[2] = csvCell(out.Source)
+				row[3] = csvCell(out.Message)
+				for i, k := range exportFieldKeys {
+					row[4+i] = csvCell(out.Fields[k])
+				}
+				if err := cw.Write(row); err != nil {
+					return err
+				}
+				// csv.Writer 自带缓冲，写到底层 bufio 后由它攒成大块输出
+				cw.Flush()
+				return cw.Error()
+			}
+		} else {
+			enc := json.NewEncoder(bw)
+			enc.SetEscapeHTML(false)
+			write = func(e *logbuf.Entry) error {
+				return enc.Encode(prepare(e))
+			}
+		}
+		err := buf.Export(r.Context(), f, write)
+		if ferr := bw.Flush(); err == nil {
+			err = ferr
+		}
+		// 响应头已经发出，出错只能中断输出；客户端断开（取消下载）属于正常情况，不记录
+		if err != nil && r.Context().Err() == nil {
+			a.logger.Printf("导出日志（%s）中断: %v", name, err)
+		}
+	}
+}
+
+// csvCell 防止 CSV 公式注入：以 = + - @ 或制表符、回车开头的单元格在表格软件里会被当作公式执行，
+// 日志中的路径、User-Agent 等来自访客，前面加单引号按文本显示。
+func csvCell(s string) string {
+	if s != "" && strings.ContainsRune("=+-@\t\r", rune(s[0])) {
+		return "'" + s
+	}
+	return s
+}
+
+// redactLogEntry 对一条日志做与 redactReadOnly 相同的脱敏：消息、来源与字段值中的地址凭据，
+// 以及名称像密码、令牌的字段。字段表与缓冲中的日志共用，这里换成新的表，不修改原日志。
+func redactLogEntry(e *logbuf.Entry) {
+	if s, ok := redactJSON(e.Message).(string); ok {
+		e.Message = s
+	}
+	if s, ok := redactJSON(e.Source).(string); ok {
+		e.Source = s
+	}
+	if len(e.Fields) == 0 {
+		return
+	}
+	m := make(map[string]any, len(e.Fields))
+	for k, v := range e.Fields {
+		m[k] = v
+	}
+	redactJSON(m)
+	fields := make(logbuf.Fields, len(m))
+	for k, v := range m {
+		if s, ok := v.(string); ok {
+			fields[k] = s
+		}
+	}
+	e.Fields = fields
 }

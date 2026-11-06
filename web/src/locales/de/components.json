@@ -92,7 +92,11 @@
       "waf": "WAF"
     },
     "siteChip": "Site: {site}",
-    "listenerChip": "Listener: {listener}"
+    "listenerChip": "Listener: {listener}",
+    "export": "Exportieren",
+    "exportTip": "Exportiert alle Protokolle, die den aktuellen Filtern entsprechen, einschließlich des Verlaufs in Protokolldateien und komprimierten Archiven",
+    "exportCsv": "CSV (Tabellenkalkulation)",
+    "exportJsonl": "JSON Lines"
   },
   "scopeTags": {
     "allWrite": "Vollzugriff",

@@ -33,8 +33,13 @@ func TestRequiredAndMatch(t *testing.T) {
 		{"GET", "/api/system/update", "status:read"},
 		{"GET", "/api/system/update/state", "status:read"},
 		{"GET", "/api/logs", "logs:read"},
+		// 日志来源与导出是查看日志的同一份数据，只需读权限；其他模块路径里的 export（镜像导出等）仍按写权限
 		{"GET", "/api/logs/sources", "logs:read"},
+		{"GET", "/api/logs/export", "logs:read"},
 		{"GET", "/api/webservice/logs/sources", "webservice:read"},
+		{"GET", "/api/webservice/logs/export", "webservice:read"},
+		{"GET", "/api/docker/images/abc/export", "docker:write"},
+		{"GET", "/api/docker/logs/x/export", "docker:write"},
 		{"POST", "/api/import/lucky", "import:write"},
 		{"GET", "/api/session", Any},
 		{"GET", "/api/openapi.json", Any},

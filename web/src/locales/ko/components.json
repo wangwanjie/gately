@@ -92,7 +92,11 @@
       "waf": "WAF"
     },
     "siteChip": "사이트: {site}",
-    "listenerChip": "리스너: {listener}"
+    "listenerChip": "리스너: {listener}",
+    "export": "내보내기",
+    "exportTip": "현재 필터 조건에 맞는 모든 로그를 로그 파일과 압축 아카이브에 남아 있는 기록까지 포함해 내보냅니다",
+    "exportCsv": "CSV(스프레드시트)",
+    "exportJsonl": "JSON Lines"
   },
   "scopeTags": {
     "allWrite": "전체 읽기/쓰기",

@@ -92,7 +92,11 @@
       "waf": "WAF"
     },
     "siteChip": "サイト：{site}",
-    "listenerChip": "リスナー：{listener}"
+    "listenerChip": "リスナー：{listener}",
+    "export": "エクスポート",
+    "exportTip": "現在のフィルター条件に一致するすべてのログを、ログファイルと圧縮アーカイブに残っている履歴も含めてエクスポートします",
+    "exportCsv": "CSV（表計算ソフト）",
+    "exportJsonl": "JSON Lines"
   },
   "scopeTags": {
     "allWrite": "すべて読み書き",
