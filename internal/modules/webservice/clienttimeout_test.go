@@ -214,8 +214,17 @@ func TestClientWriteIdleTimeout(t *testing.T) {
 		fmt.Fprintf(c, "GET /big HTTP/1.1\r\nHost: a.test\r\n\r\n")
 		// 先停住不读，让 Gately 的写出卡住
 		time.Sleep(3 * time.Second)
-		_ = c.SetReadDeadline(time.Now().Add(10 * time.Second))
-		n, _ := io.Copy(io.Discard, c)
+		// 恢复读取前把接收缓冲调大：4KB 窗口叠加 Linux 的延迟 ACK 时吞吐只有约 100KB/s，
+		// 在较慢的 CI 机器上读不完 64MB，会被误判为提前断开
+		_ = c.(*net.TCPConn).SetReadBuffer(4 << 20)
+		_ = c.SetReadDeadline(time.Now().Add(30 * time.Second))
+		// 按 HTTP 响应读取正文：读满 Content-Length 即结束，长连接不会等到读取期限才返回
+		resp, err := http.ReadResponse(bufio.NewReader(c), nil)
+		if err != nil {
+			return 0
+		}
+		defer resp.Body.Close()
+		n, _ := io.Copy(io.Discard, resp.Body)
 		return n
 	}
 	if n := read(1); n >= size {
