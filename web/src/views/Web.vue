@@ -67,6 +67,7 @@
             <el-tag size="small" type="info">{{ networkText(l.network) }}</el-tag>
             <el-tag v-if="l.tls && l.plainHttp" size="small" type="info">{{ plainHttpText(l.plainHttp) }}</el-tag>
             <el-tag v-if="l.acceptProxyProtocol" size="small" type="info">{{ t('web.acceptProxyTag') }}</el-tag>
+            <el-tag v-if="l.autoFirewall" size="small" :type="l.firewallFailed ? 'warning' : 'info'">{{ t('common.firewallTag') }}</el-tag>
             <el-tag v-if="l.accessScheme || l.accessPort" size="small" type="info" class="mono" :title="t('web.accessAddr')">{{ t('web.accessAddrTag', { scheme: accessScheme(l), port: accessPort(l) }) }}</el-tag>
             <el-tag v-else-if="listenerEntry(l)" size="small" type="info" class="mono" :title="entryText(listenerEntry(l)!)">{{ t('web.accessAddrTag', { scheme: accessScheme(l), port: listenerEntry(l)!.port }) }}</el-tag>
           </span>
@@ -76,6 +77,8 @@
           <StatusBadge v-bind="listenerStatus(l)" />
         </template>
         <template #extra>
+          <!-- 自动放行防火墙的结果：放行失败（如没有权限）时用警告色 -->
+          <div v-if="l.enable && l.autoFirewall && l.firewall" class="meta fw-status" :class="{ 'is-failed': l.firewallFailed }">{{ l.firewall }}</div>
           <div class="sites" :class="{ 'is-compact': compact, 'is-sorting': sortMode }">
             <template v-for="item in displayItems(l)" :key="item.id">
             <GroupHeader
@@ -275,6 +278,10 @@
         <el-form-item :label="t('web.acceptProxy')">
           <el-switch v-model="editingListener.acceptProxyProtocol" />
           <span class="help">{{ t('web.acceptProxyHelp') }}</span>
+        </el-form-item>
+        <el-form-item :label="t('common.autoFirewall')">
+          <el-switch v-model="editingListener.autoFirewall" />
+          <span class="help">{{ t('web.autoFirewallHelp') }}</span>
         </el-form-item>
         <el-form-item :label="t('common.remark')"><el-input v-model="editingListener.remark" /></el-form-item>
         <el-form-item :label="t('common.enable')"><el-switch v-model="editingListener.enable" /></el-form-item>
@@ -771,6 +778,8 @@ interface Listener {
   // 浏览器访问站点用的协议与端口，只用于生成站点链接；'' 按 tls 推算，0 使用监听端口
   accessScheme?: '' | 'http' | 'https'
   accessPort?: number
+  // 在本机防火墙自动放行监听端口（仅 Linux）
+  autoFirewall?: boolean
   sites: Site[] | null
   default: Site
   remark: string
@@ -782,6 +791,9 @@ interface ListenerView extends Listener {
   error?: string
   stats: Record<string, { requests: number; active: number; errors: number }>
   upstreams?: Record<string, { url: string; healthy: boolean }[]>
+  // 自动放行防火墙的结果说明与是否失败
+  firewall?: string
+  firewallFailed?: boolean
 }
 
 interface SiteRow {
@@ -1034,6 +1046,7 @@ function emptyListener(): Listener {
     acceptProxyProtocol: false,
     accessScheme: '',
     accessPort: 0,
+    autoFirewall: false,
     sites: [],
     default: { ...emptySite(), enable: false },
     remark: '',
@@ -1433,7 +1446,7 @@ async function onDrop(l: ListenerView) {
 // 去掉运行状态字段，得到可提交的监听配置
 function plain(l: ListenerView): Listener {
   // 剥离仅用于展示的运行态字段，后端保存接口会拒绝未知字段
-  const { running: _r, error: _e, stats: _s, upstreams: _u, ...rest } = l
+  const { running: _r, error: _e, stats: _s, upstreams: _u, firewall: _f, firewallFailed: _ff, ...rest } = l
   return JSON.parse(JSON.stringify(rest))
 }
 
@@ -1989,6 +2002,13 @@ onMounted(async () => {
 }
 .identity-actions .el-button + .el-button {
   margin-left: 0;
+}
+.fw-status {
+  margin-bottom: 8px;
+  overflow-wrap: anywhere;
+}
+.fw-status.is-failed {
+  color: var(--el-color-warning);
 }
 .sites {
   border: 1px solid var(--g-border);

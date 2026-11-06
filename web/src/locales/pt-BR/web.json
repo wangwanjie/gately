@@ -212,5 +212,6 @@
   "siteMoveConfirm": "Salvar as alterações e mover o site para \"{target}\"?",
   "siteMoveFailed": "Alterações salvas, mas a movimentação falhou: {error}",
   "siteMoved": "Salvo e movido para o listener escolhido",
-  "dropHere": "Solte aqui para mover para este listener"
+  "dropHere": "Solte aqui para mover para este listener",
+  "autoFirewallHelp": "Libera no firewall local (nftables / iptables / ip6tables) apenas a porta deste listener, e também a porta UDP de mesmo número quando o HTTP/3 está ativo, limitada ao endereço de escuta se houver um; é removida quando o listener é desativado, excluído ou falha ao iniciar, sem abrir outras portas. Para o Gately em um roteador como o OpenWrt ou em um host Linux com firewall; com a rede bridge do Docker, libere a porta mapeada no host"
 }

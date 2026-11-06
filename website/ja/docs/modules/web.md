@@ -618,6 +618,36 @@ nginx の設定の置き換え方：
 | `return 444` | 「接続を切断」サイト |
 | HTTPS の server 内の `error_page 497 https://$host:$server_port$request_uri` | 新規リスナーの「同一ポートの HTTP」を「HTTPS へリダイレクト」に設定。既存リスナーに統合する場合は警告のみで、その設定は変更しません |
 
+## ファイアウォールを自動で開放 {#auto-firewall}
+
+OpenWrt などのルーター、またはファイアウォールを有効にした Linux ホストで Gately を動かす場合、システムのファイアウォールは外部からの接続を既定でブロックするため、リスナーのポートを許可する必要があります。リスナーで「ファイアウォールを自動で開放」をオンにすると、Gately はこのホストのファイアウォールでそのリスナーのポートだけを許可します。
+
+- 許可するのはリッスンに成功したポートだけです。ポートが他のプログラムに使われていてリスナーが起動できない場合は許可せず、そのプログラム（ルーターの管理画面など）は外部に公開されないままです。
+- リスナーのネットワークに従います。「IPv6 のみ」は IPv6、「IPv4 のみ」は IPv4、デュアルスタックは両方を許可します。リッスンアドレスを指定した場合はそのアドレス宛ての接続だけを許可し、127.0.0.1・::1 だけで待ち受ける場合は許可不要です。
+- HTTP/3 が有効なら同じ番号の UDP ポートも許可します。
+- リスナーの無効化・削除・起動失敗・スイッチのオフで取り消し、Gately の終了時にも削除します。
+- nftables（OpenWrt fw4、firewalld など）は input フィルターチェーンの先頭に、iptables / ip6tables（OpenWrt fw3、ufw など）は INPUT チェーンの先頭にルールを挿入します。ルールには `gately-open:` コメントが付き、ファイアウォールの再読み込み後 30 秒以内に復元されます。
+- Linux 専用です。Docker では host ネットワークと `cap_add: NET_ADMIN` が必要です。リスナーのカードに結果が表示され、失敗すると「ファイアウォール」タグがオレンジになります。
+
+[ポート転送](/ja/docs/modules/portforward#auto-firewall)と[プロトコル振り分け](/ja/docs/modules/protoroute#auto-firewall)のルールにも同じスイッチがあり、[STUN](/ja/docs/modules/stun#auto-firewall) のルールはチャネルポートを許可します。
+
+### 手動で許可する {#manual-firewall}
+
+手動で許可するときは外部に公開するポートごとに許可ルールを追加し、wan ゾーンの受信は拒否のままにします。wan ゾーン全体の受信を許可にすると、ルーターの管理画面（80 / 443）や SSH なども一緒にインターネットに公開されます。OpenWrt では「ネットワーク → ファイアウォール → トラフィックルール」で追加するか、`/etc/config/firewall` に書きます。
+
+```
+config rule
+	option name 'Allow-Gately-HTTPS'
+	option src 'wan'
+	option family 'ipv6'
+	option proto 'tcp'
+	option dest_port '50663'
+	option target 'ACCEPT'
+```
+
+- Gately を Docker の bridge ネットワークで動かす場合、コンテナからはルーターのファイアウォールが見えないため、ホストまたはルーターでマッピングしたポートを許可してください。
+- Gately を LAN 内の別の機器（macvlan で独自の IPv6 アドレスを持つコンテナなど）で動かす場合、通信はルーターで転送されるため、ルーターに転送ルールを追加します。宛先ゾーンに lan を選び、機器のアドレスと使うポートを指定します。プロバイダーの IPv6 プレフィックスは変わるので、アドレスは `option dest_ip '::1234/::ffff:ffff:ffff:ffff'` のようにサフィックスで一致させます。
+
 ## デプロイのヒント
 
 Web サービスはホストの 80 / 443 などのポートを待ち受ける必要があるため、Docker でデプロイする場合は `--network host` を推奨します。

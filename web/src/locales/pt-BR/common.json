@@ -64,5 +64,7 @@
   "copyName": "{name} (cópia)",
   "copyNameN": "{name} (cópia {n})",
   "copyHint": "Criando um novo item com base em \"{name}\". Ao salvar, um novo item é adicionado e o original não é alterado.",
-  "copyHintSecrets": "Senhas, tokens e outros segredos que você não alterar são mantidos do original."
+  "copyHintSecrets": "Senhas, tokens e outros segredos que você não alterar são mantidos do original.",
+  "autoFirewall": "Liberar porta no firewall",
+  "firewallTag": "Firewall"
 }

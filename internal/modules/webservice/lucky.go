@@ -56,16 +56,18 @@ type luckySite struct {
 }
 
 type luckyListener struct {
-	RuleName      string
-	Enable        bool
-	ListenIP      string
-	ListenPort    int
-	Network       string
-	EnableTLS     bool
-	Http3         bool
-	TLSMinVersion int
-	DefaultProxy  luckySite
-	ProxyList     []luckySite
+	RuleName   string
+	Enable     bool
+	ListenIP   string
+	ListenPort int
+	// AutoOptionsFirewall 为 Lucky 的“自动放行防火墙端口”
+	AutoOptionsFirewall bool
+	Network             string
+	EnableTLS           bool
+	Http3               bool
+	TLSMinVersion       int
+	DefaultProxy        luckySite
+	ProxyList           []luckySite
 	// CorazaWAFInstance 为监听规则的 WAF 实例；子规则填 "main" 表示沿用它
 	CorazaWAFInstance string
 }
@@ -201,6 +203,8 @@ func convertLuckyListeners(raw json.RawMessage, opts luckyimport.Options) ([]Lis
 			Port:     ll.ListenPort,
 			TLS:      ll.EnableTLS,
 			MinTLS:   minTLS[ll.TLSMinVersion],
+			// 沿用 Lucky 的自动放行防火墙设置
+			AutoFirewall: ll.AutoOptionsFirewall,
 		}
 		if ll.Http3 {
 			warns = append(warns, label+": HTTP/3 暂不支持，已忽略")

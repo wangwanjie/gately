@@ -618,6 +618,36 @@ nginx 配置的对应关系：
 | `return 444` | 断开连接站点 |
 | HTTPS server 中的 `error_page 497 https://$host:$server_port$request_uri` | 新建监听的「同端口 HTTP」设为「跳转到 HTTPS」；合并到已有监听时只提示，不改动其设置 |
 
+## 自动放行防火墙 {#auto-firewall}
+
+Gately 运行在 OpenWrt 等路由器上，或运行在开启了防火墙的 Linux 主机上时，系统防火墙默认拦截从外网发往本机的连接，监听端口放行后才能访问。监听开启「自动放行防火墙」后，Gately 在本机防火墙只放行这个监听的端口：
+
+- 只放行监听成功的端口：端口被其他程序占用导致监听失败时不放行，占用端口的程序（例如路由器管理页面）保持不对外；
+- 按监听的网络放行：「仅 IPv6」只放行 IPv6，「仅 IPv4」只放行 IPv4，双栈两者都放行；填写了监听地址时只放行发往该地址的连接；只监听 127.0.0.1、::1 时无需放行；
+- 开启 HTTP/3 时同时放行同号 UDP 端口；
+- 监听停用、删除、启动失败或关闭开关时撤销，Gately 退出时一并移除；
+- nftables（OpenWrt fw4、firewalld 等）在 input 过滤链最前面插入规则，iptables / ip6tables（OpenWrt fw3、ufw 等）在 INPUT 链最前面插入；规则带 `gately-open:` 注释，防火墙重新加载后 30 秒内补回；
+- 只支持 Linux；Docker 部署需要 host 网络与 `cap_add: NET_ADMIN`。监听卡片显示放行结果，放行失败时「防火墙」标签显示为橙色。
+
+[端口转发](/docs/modules/portforward#auto-firewall)与[协议分流](/docs/modules/protoroute#auto-firewall)的规则有同样的开关，[STUN 穿透](/docs/modules/stun#auto-firewall)的规则放行通道端口。
+
+### 手动放行 {#manual-firewall}
+
+手动放行时只为需要对外的端口添加放行规则，wan 区域的入站保持拒绝；把整个 wan 区域的入站改为接受会让路由器管理页面（80 / 443）、SSH 等服务一起暴露在公网。OpenWrt 在「网络 → 防火墙 → 通信规则」中添加，或写入 `/etc/config/firewall`：
+
+```
+config rule
+	option name 'Allow-Gately-HTTPS'
+	option src 'wan'
+	option family 'ipv6'
+	option proto 'tcp'
+	option dest_port '50663'
+	option target 'ACCEPT'
+```
+
+- Gately 以 Docker bridge 网络运行时，容器内看不到路由器的防火墙，需要在宿主机或路由器上放行映射端口；
+- Gately 运行在内网另一台设备上（例如以 macvlan 获得独立 IPv6 地址的容器）时，流量经路由器转发，需要在路由器上添加转发规则：目标区域选 lan，填写设备地址与用到的端口。运营商下发的 IPv6 前缀会变化，地址可按后缀匹配，例如 `option dest_ip '::1234/::ffff:ffff:ffff:ffff'`。
+
 ## 部署提示
 
 Web 服务需要监听宿主机的 80 / 443 等端口，Docker 部署推荐使用 `--network host`。

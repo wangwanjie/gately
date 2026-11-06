@@ -212,5 +212,6 @@
   "siteMoveConfirm": "변경 사항을 저장하고 사이트를 \"{target}\"(으)로 이동할까요?",
   "siteMoveFailed": "변경 사항은 저장되었지만 이동하지 못했습니다: {error}",
   "siteMoved": "저장하고 선택한 리스너로 이동했습니다",
-  "dropHere": "여기에 놓으면 이 리스너로 이동합니다"
+  "dropHere": "여기에 놓으면 이 리스너로 이동합니다",
+  "autoFirewallHelp": "로컬 방화벽(nftables / iptables / ip6tables)에서 이 리스너의 포트만 허용합니다(HTTP/3를 켜면 같은 번호의 UDP 포트도). 수신 주소를 지정하면 그 주소로 오는 연결만 허용합니다. 리스너를 끄거나 삭제하거나 시작에 실패하면 취소되며 다른 포트는 열지 않습니다. OpenWrt 같은 라우터나 방화벽을 켠 Linux 호스트에서 Gately를 실행할 때 사용합니다. Docker bridge 네트워크에서는 호스트에서 매핑한 포트를 허용해야 합니다"
 }

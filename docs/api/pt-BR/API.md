@@ -2267,6 +2267,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `acceptProxyProtocol` | boolean |
 | `accessPort` | integer |
 | `accessScheme` | string |
+| `autoFirewall` | boolean |
 | `default` | `webservice.Site` |
 | `enable` | boolean |
 | `http3` | boolean |

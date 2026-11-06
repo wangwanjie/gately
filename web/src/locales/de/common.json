@@ -64,5 +64,7 @@
   "copyName": "{name} (Kopie)",
   "copyNameN": "{name} (Kopie {n})",
   "copyHint": "Neuer Eintrag auf Basis von „{name}“. Beim Speichern wird ein neuer Eintrag angelegt, das Original bleibt unverändert.",
-  "copyHintSecrets": "Nicht geänderte Passwörter, Token und andere Geheimnisse werden vom Original übernommen."
+  "copyHintSecrets": "Nicht geänderte Passwörter, Token und andere Geheimnisse werden vom Original übernommen.",
+  "autoFirewall": "Firewall-Port freigeben",
+  "firewallTag": "Firewall"
 }

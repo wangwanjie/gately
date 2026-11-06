@@ -2267,6 +2267,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `acceptProxyProtocol` | boolean |
 | `accessPort` | integer |
 | `accessScheme` | string |
+| `autoFirewall` | boolean |
 | `default` | `webservice.Site` |
 | `enable` | boolean |
 | `http3` | boolean |

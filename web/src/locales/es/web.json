@@ -212,5 +212,6 @@
   "siteMoveConfirm": "¿Guardar los cambios y mover el sitio a «{target}»?",
   "siteMoveFailed": "Cambios guardados, pero no se pudo mover: {error}",
   "siteMoved": "Guardado y movido al listener elegido",
-  "dropHere": "Suelta aquí para mover a este listener"
+  "dropHere": "Suelta aquí para mover a este listener",
+  "autoFirewallHelp": "Permite en el cortafuegos local (nftables / iptables / ip6tables) solo el puerto de esta escucha, y también el puerto UDP con el mismo número si HTTP/3 está activado, limitado a la dirección de escucha si se indica; se retira al desactivar, eliminar o fallar el inicio de la escucha, y no abre ningún otro puerto. Para Gately en un router como OpenWrt o en un host Linux con cortafuegos; con la red bridge de Docker, permite el puerto mapeado en el host"
 }

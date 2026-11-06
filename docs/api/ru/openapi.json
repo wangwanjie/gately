@@ -3328,6 +3328,9 @@
           "accessScheme": {
             "type": "string"
           },
+          "autoFirewall": {
+            "type": "boolean"
+          },
           "default": {
             "$ref": "#/components/schemas/webservice.Site"
           },

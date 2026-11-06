@@ -212,5 +212,6 @@
   "siteMoveConfirm": "Änderungen speichern und die Site nach „{target}“ verschieben?",
   "siteMoveFailed": "Änderungen gespeichert, aber das Verschieben ist fehlgeschlagen: {error}",
   "siteMoved": "Gespeichert und zum gewählten Listener verschoben",
-  "dropHere": "Hier ablegen, um in diesen Listener zu verschieben"
+  "dropHere": "Hier ablegen, um in diesen Listener zu verschieben",
+  "autoFirewallHelp": "Gibt in der lokalen Firewall (nftables / iptables / ip6tables) nur den Port dieses Listeners frei, bei aktivem HTTP/3 auch den UDP-Port mit derselben Nummer, und bei gesetzter Listen-Adresse nur für diese Adresse; wird entfernt, wenn der Listener deaktiviert, gelöscht wird oder nicht startet, andere Ports bleiben zu. Für Gately auf einem Router wie OpenWrt oder einem Linux-Host mit Firewall; bei Docker-Bridge-Netzwerken den weitergeleiteten Port auf dem Host freigeben"
 }

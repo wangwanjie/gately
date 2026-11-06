@@ -618,6 +618,36 @@ Converting nginx settings:
 | `return 444` | a Close connection site |
 | `error_page 497 https://$host:$server_port$request_uri` in an HTTPS server | *Plain HTTP on same port* set to *Redirect to HTTPS* on a new listener; when merged into an existing listener, only a warning is shown and its settings stay unchanged |
 
+## Open firewall port {#auto-firewall}
+
+When Gately runs on a router such as OpenWrt, or on a Linux host with a firewall enabled, the system firewall blocks connections from outside by default, and a listener's port has to be allowed before it can be reached. With "Open firewall port" turned on for a listener, Gately allows only that listener's port in this host's firewall:
+
+- Only ports that are actually listening are allowed. If the port is taken by another program and the listener fails to start, nothing is allowed, so that program (a router's admin page, for example) stays closed to the outside.
+- The listener's network decides the address family: "IPv6 only" allows IPv6, "IPv4 only" allows IPv4, dual stack allows both. With a listen address set, only connections to that address are allowed. Listeners on 127.0.0.1 or ::1 need nothing.
+- With HTTP/3 on, the UDP port with the same number is allowed too.
+- The rule is removed when the listener is disabled, deleted, fails to start or the switch is turned off, and when Gately exits.
+- nftables (OpenWrt fw4, firewalld and others): the rule is inserted at the top of the input filter chains. iptables / ip6tables (OpenWrt fw3, ufw and others): at the top of the INPUT chain. Rules carry a `gately-open:` comment and are restored within 30 seconds after the firewall reloads.
+- Linux only. Docker deployments need host networking and `cap_add: NET_ADMIN`. The listener card shows the result; when allowing fails, the "Firewall" tag turns orange.
+
+Rules in [Port Forwarding](/en/docs/modules/portforward#auto-firewall) and [Protocol Routing](/en/docs/modules/protoroute#auto-firewall) have the same switch, and [STUN](/en/docs/modules/stun#auto-firewall) rules allow their channel port.
+
+### Allowing ports by hand {#manual-firewall}
+
+When allowing ports by hand, add a rule for each port that must be reachable and keep inbound traffic on the wan zone rejected. Setting the whole wan zone's input to accept exposes the router's admin page (80 / 443), SSH and other services to the internet as well. On OpenWrt, add it under Network → Firewall → Traffic Rules, or in `/etc/config/firewall`:
+
+```
+config rule
+	option name 'Allow-Gately-HTTPS'
+	option src 'wan'
+	option family 'ipv6'
+	option proto 'tcp'
+	option dest_port '50663'
+	option target 'ACCEPT'
+```
+
+- When Gately runs with Docker bridge networking, the container cannot see the router's firewall; allow the mapped port on the host or the router.
+- When Gately runs on another device in the LAN (for example a container with its own IPv6 address through macvlan), the traffic is forwarded by the router, so add a forward rule on the router with lan as the destination zone, the device's address and the ports in use. ISP-assigned IPv6 prefixes change; match the address by its suffix, for example `option dest_ip '::1234/::ffff:ffff:ffff:ffff'`.
+
 ## Deployment tip
 
 Web Services need to listen on host ports such as 80 / 443. For Docker deployments, `--network host` is recommended.

@@ -212,5 +212,6 @@
   "siteMoveConfirm": "Enregistrer les modifications et déplacer le site vers « {target} » ?",
   "siteMoveFailed": "Modifications enregistrées, mais le déplacement a échoué : {error}",
   "siteMoved": "Enregistré et déplacé vers l'écouteur choisi",
-  "dropHere": "Déposez ici pour déplacer dans cet écouteur"
+  "dropHere": "Déposez ici pour déplacer dans cet écouteur",
+  "autoFirewallHelp": "Autorise dans le pare-feu local (nftables / iptables / ip6tables) uniquement le port de cette écoute, ainsi que le port UDP de même numéro si HTTP/3 est activé, limité à l’adresse d’écoute si elle est renseignée ; retiré quand l’écoute est désactivée, supprimée ou ne démarre pas, sans ouvrir d’autre port. Pour Gately sur un routeur comme OpenWrt ou un hôte Linux avec pare-feu ; avec le réseau bridge de Docker, autorisez le port mappé sur l’hôte"
 }

@@ -212,5 +212,6 @@
   "siteMoveConfirm": "保存修改并把站点移到「{target}」？",
   "siteMoveFailed": "修改已保存，但移动失败：{error}",
   "siteMoved": "已保存并移到所选监听",
-  "dropHere": "放到这里，移入此监听"
+  "dropHere": "放到这里，移入此监听",
+  "autoFirewallHelp": "在本机防火墙（nftables / iptables / ip6tables）只放行这个监听的端口（开启 HTTP/3 时还有同号 UDP 端口），填写了监听地址时只放行该地址；监听停用、删除或启动失败时撤销，不会放开其他端口。适用于 Gately 运行在 OpenWrt 等路由器或开启了防火墙的 Linux 主机上；Docker bridge 网络需要在宿主机放行映射端口"
 }

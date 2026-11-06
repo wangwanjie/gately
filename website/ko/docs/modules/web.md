@@ -618,6 +618,36 @@ nginx 설정을 옮기는 방법은 다음과 같습니다.
 | `return 444` | 연결 끊기 사이트 |
 | HTTPS server의 `error_page 497 https://$host:$server_port$request_uri` | 새 리스너의 「같은 포트의 HTTP」를 「HTTPS로 리디렉션」으로 설정합니다. 기존 리스너에 병합할 때는 경고만 표시하고 설정은 바꾸지 않습니다 |
 
+## 방화벽 자동 허용 {#auto-firewall}
+
+OpenWrt 같은 라우터나 방화벽을 켠 Linux 호스트에서 Gately를 실행하면 시스템 방화벽이 외부에서 들어오는 연결을 기본으로 막으므로, 리스너의 포트를 허용해야 접속할 수 있습니다. 리스너에서 「방화벽 자동 허용」을 켜면 Gately가 이 호스트의 방화벽에서 해당 리스너의 포트만 허용합니다.
+
+- 수신에 성공한 포트만 허용합니다. 다른 프로그램이 포트를 쓰고 있어 리스너가 시작되지 못하면 허용하지 않으며, 그 프로그램(라우터 관리 페이지 등)은 외부에 계속 닫혀 있습니다.
+- 리스너의 네트워크를 따릅니다. 「IPv6만」은 IPv6, 「IPv4만」은 IPv4, 듀얼 스택은 둘 다 허용합니다. 수신 주소를 지정하면 그 주소로 오는 연결만 허용하고, 127.0.0.1·::1에서만 수신하면 허용할 필요가 없습니다.
+- HTTP/3를 켜면 같은 번호의 UDP 포트도 허용합니다.
+- 리스너를 끄거나 삭제하거나 시작에 실패하거나 스위치를 끄면 취소되며, Gately가 종료될 때도 제거됩니다.
+- nftables(OpenWrt fw4, firewalld 등)는 input 필터 체인 맨 앞에, iptables / ip6tables(OpenWrt fw3, ufw 등)는 INPUT 체인 맨 앞에 규칙을 넣습니다. 규칙에는 `gately-open:` 주석이 붙고, 방화벽을 다시 불러온 뒤 30초 안에 복구됩니다.
+- Linux 전용입니다. Docker 배포에는 host 네트워크와 `cap_add: NET_ADMIN`이 필요합니다. 리스너 카드에 결과가 표시되고, 허용에 실패하면 「방화벽」 태그가 주황색으로 바뀝니다.
+
+[포트 포워딩](/ko/docs/modules/portforward#auto-firewall)과 [프로토콜 라우팅](/ko/docs/modules/protoroute#auto-firewall) 규칙에도 같은 스위치가 있고, [STUN](/ko/docs/modules/stun#auto-firewall) 규칙은 채널 포트를 허용합니다.
+
+### 수동으로 허용하기 {#manual-firewall}
+
+수동으로 허용할 때는 외부에 공개할 포트마다 허용 규칙을 추가하고 wan 영역의 수신은 거부로 둡니다. wan 영역 전체의 수신을 허용으로 바꾸면 라우터 관리 페이지(80 / 443), SSH 등도 함께 인터넷에 노출됩니다. OpenWrt에서는 「네트워크 → 방화벽 → 트래픽 규칙」에서 추가하거나 `/etc/config/firewall`에 작성합니다.
+
+```
+config rule
+	option name 'Allow-Gately-HTTPS'
+	option src 'wan'
+	option family 'ipv6'
+	option proto 'tcp'
+	option dest_port '50663'
+	option target 'ACCEPT'
+```
+
+- Gately를 Docker bridge 네트워크로 실행하면 컨테이너에서는 라우터의 방화벽이 보이지 않으므로, 호스트나 라우터에서 매핑한 포트를 허용해야 합니다.
+- Gately를 LAN의 다른 장치(macvlan으로 독립된 IPv6 주소를 받은 컨테이너 등)에서 실행하면 트래픽이 라우터를 거쳐 전달되므로, 라우터에 전달 규칙을 추가합니다. 대상 영역은 lan, 장치 주소와 사용하는 포트를 지정합니다. 통신사가 주는 IPv6 접두사는 바뀌므로 `option dest_ip '::1234/::ffff:ffff:ffff:ffff'`처럼 주소 뒷부분으로 일치시킵니다.
+
 ## 배포 팁
 
 웹 서비스는 호스트의 80 / 443 등의 포트를 수신해야 하므로 Docker 배포에서는 `--network host`를 권장합니다.

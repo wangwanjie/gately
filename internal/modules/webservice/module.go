@@ -20,6 +20,7 @@ import (
 	"github.com/wangwanjie/gately/internal/auth"
 	"github.com/wangwanjie/gately/internal/config"
 	"github.com/wangwanjie/gately/internal/crud"
+	"github.com/wangwanjie/gately/internal/fwopen"
 	"github.com/wangwanjie/gately/internal/geoip"
 	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/logbuf"
@@ -50,11 +51,13 @@ type Module struct {
 	// moveMu 串行化站点移动及其回调：回调在释放 mu 之后执行，若不串行，相邻两次移动的回调可能乱序，
 	// 引用方（性能监控告警规则）先处理后一次的映射，最终停在已不存在的站点标识上。加锁顺序固定为 moveMu → mu
 	moveMu sync.Mutex
+	// fw 管理各监听的自动放行防火墙，key 为监听 key
+	fw *fwopen.Group
 }
 
 // New 创建模块。certs 为证书来源，可为 nil（此时不能启用 HTTPS）；waf 可为 nil（站点的 WAF 设置不生效）。
 func New(certs CertSource, waf WAFProvider) *Module {
-	return &Module{certs: certs, waf: waf, runners: map[string]*listenerRunner{}, errors: map[string]string{}, realIP: &realIPSource{}, ipListStates: map[string]*ipListState{}}
+	return &Module{certs: certs, waf: waf, runners: map[string]*listenerRunner{}, errors: map[string]string{}, realIP: &realIPSource{}, ipListStates: map[string]*ipListState{}, fw: fwopen.NewGroup("web")}
 }
 
 // OnSitesMoved 注册站点移到其他监听后的回调，供按“监听key/站点key”引用站点的模块同步改写引用。
@@ -75,6 +78,8 @@ func (m *Module) Title() string { return "Web 服务" }
 func (m *Module) Init(env module.Env) error {
 	m.store = env.Store
 	m.logs = env.Logs
+	// 自动放行防火墙按配置目录区分实例，并清理上次运行遗留的放行规则
+	fwopen.Setup(m.store.Dir())
 	m.cfg = fileConfig{Settings: Settings{Enable: true}}
 	if _, err := m.store.Load(ID, &m.cfg); err != nil {
 		return err
@@ -208,6 +213,8 @@ func (m *Module) Stop() error {
 	for key := range m.runners {
 		m.stopLocked(key)
 	}
+	// 同步撤销自动放行，进程退出前关闭端口
+	m.fw.ClearAll()
 	return nil
 }
 
@@ -226,10 +233,27 @@ func (m *Module) startLocked(l Listener) {
 	if err != nil {
 		m.errors[l.Key] = err.Error()
 		lg.Errorf("启动失败: %v", err)
+		// 监听失败时端口可能被其他程序占用，绝不能为它放行
+		m.fw.Want(l.Key, nil, nil)
 		return
 	}
 	delete(m.errors, l.Key)
 	m.runners[l.Key] = r
+	m.syncFirewallLocked(r)
+}
+
+// syncFirewallLocked 按监听当前的配置登记自动放行：只放行已经监听成功的 TCP 端口，HTTP/3 启动成功时再放行同号 UDP 端口。
+func (m *Module) syncFirewallLocked(r *listenerRunner) {
+	if !r.cfg.AutoFirewall {
+		m.fw.Want(r.cfg.Key, nil, nil)
+		return
+	}
+	ports := fwopen.ForListen(r.cfg.Network, r.cfg.ListenIP, []int{r.cfg.Port})
+	if r.h3pc != nil {
+		udp := map[string]string{"tcp": "udp", "tcp4": "udp4", "tcp6": "udp6"}[r.cfg.Network]
+		ports = append(ports, fwopen.ForListen(udp, r.cfg.ListenIP, []int{r.cfg.Port})...)
+	}
+	m.fw.Want(r.cfg.Key, ports, r.log)
 }
 
 func (m *Module) stopLocked(key string) {
@@ -238,6 +262,7 @@ func (m *Module) stopLocked(key string) {
 		delete(m.runners, key)
 	}
 	delete(m.errors, key)
+	m.fw.Want(key, nil, nil)
 }
 
 func (m *Module) restartLocked(key string) {
@@ -252,6 +277,8 @@ func (m *Module) restartLocked(key string) {
 				} else {
 					delete(m.errors, key)
 				}
+				// 自动放行开关不影响监听，在热更新时同步
+				m.syncFirewallLocked(r)
 				return
 			}
 		}
@@ -279,6 +306,10 @@ type ListenerView struct {
 	Stats   map[string]map[string]int64 `json:"stats"`
 	// Upstreams 为各站点的后端健康状态，键为站点 key
 	Upstreams map[string][]UpstreamStatus `json:"upstreams,omitempty"`
+	// Firewall 为自动放行防火墙的结果说明，未开启或监听未运行时为空
+	Firewall string `json:"firewall,omitempty"`
+	// FirewallFailed 表示自动放行有端口放行失败（例如没有权限），界面据此提示
+	FirewallFailed bool `json:"firewallFailed,omitempty"`
 }
 
 func (m *Module) viewLocked(l *Listener) any {
@@ -297,6 +328,13 @@ func (m *Module) viewLocked(l *Listener) any {
 		}
 		if t.deflt != nil {
 			v.Stats["default"] = t.deflt.stats.snapshot()
+		}
+		if l.AutoFirewall {
+			v.Firewall = m.fw.Status(l.Key)
+			v.FirewallFailed = m.fw.Failed(l.Key)
+			if v.Firewall == "" && fwopen.IsLoopback(l.ListenIP) {
+				v.Firewall = fwopen.LoopbackNote
+			}
 		}
 	}
 	return v

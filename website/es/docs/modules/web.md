@@ -618,6 +618,36 @@ Conversión de ajustes de nginx:
 | `return 444` | un sitio Cerrar conexión |
 | `error_page 497 https://$host:$server_port$request_uri` en un server HTTPS | «HTTP en el mismo puerto» de un listener nuevo en «Redirigir a HTTPS»; al fusionarse con un listener existente solo se muestra un aviso y su configuración no cambia |
 
+## Abrir puerto en el cortafuegos {#auto-firewall}
+
+Cuando Gately se ejecuta en un router como OpenWrt o en un host Linux con cortafuegos, el cortafuegos del sistema bloquea por defecto las conexiones que llegan desde fuera, y el puerto de una escucha debe estar permitido para poder acceder. Con «Abrir puerto en el cortafuegos» activado en una escucha, Gately permite en el cortafuegos de este host solo el puerto de esa escucha:
+
+- Solo se permiten los puertos que escuchan de verdad. Si el puerto lo ocupa otro programa y la escucha no arranca, no se permite nada, de modo que ese programa (por ejemplo, la página de administración del router) sigue cerrado al exterior.
+- La red de la escucha decide la familia de direcciones: «Solo IPv6» permite IPv6, «Solo IPv4» permite IPv4 y doble pila permite ambas. Con una dirección de escucha indicada, solo se permiten las conexiones a esa dirección. Las escuchas en 127.0.0.1 o ::1 no necesitan nada.
+- Con HTTP/3 activado también se permite el puerto UDP con el mismo número.
+- La regla se retira al desactivar, eliminar o fallar el arranque de la escucha, al apagar el interruptor y cuando Gately se cierra.
+- nftables (OpenWrt fw4, firewalld y otros): la regla se inserta al principio de las cadenas de filtro input. iptables / ip6tables (OpenWrt fw3, ufw y otros): al principio de la cadena INPUT. Las reglas llevan el comentario `gately-open:` y se restauran en menos de 30 segundos tras recargar el cortafuegos.
+- Solo Linux. En Docker hacen falta la red host y `cap_add: NET_ADMIN`. La tarjeta de la escucha muestra el resultado; si falla, la etiqueta «Cortafuegos» se vuelve naranja.
+
+Las reglas de [Reenvío de puertos](/es/docs/modules/portforward#auto-firewall) y de [Enrutamiento por protocolo](/es/docs/modules/protoroute#auto-firewall) tienen el mismo interruptor, y las reglas de [STUN](/es/docs/modules/stun#auto-firewall) permiten su puerto de canal.
+
+### Permitir puertos a mano {#manual-firewall}
+
+Para permitir puertos a mano, añade una regla por cada puerto que deba ser accesible y deja rechazada la entrada de la zona wan. Poner en aceptar toda la entrada de la zona wan expone también a Internet la página de administración del router (80 / 443), SSH y otros servicios. En OpenWrt se añade en Red → Cortafuegos → Reglas de tráfico, o en `/etc/config/firewall`:
+
+```
+config rule
+	option name 'Allow-Gately-HTTPS'
+	option src 'wan'
+	option family 'ipv6'
+	option proto 'tcp'
+	option dest_port '50663'
+	option target 'ACCEPT'
+```
+
+- Si Gately se ejecuta con la red bridge de Docker, el contenedor no ve el cortafuegos del router; permite el puerto mapeado en el host o en el router.
+- Si Gately se ejecuta en otro dispositivo de la LAN (por ejemplo, un contenedor con su propia dirección IPv6 mediante macvlan), el router reenvía el tráfico, así que añade en el router una regla de reenvío con lan como zona de destino, la dirección del dispositivo y los puertos usados. El prefijo IPv6 del proveedor cambia; haz coincidir la dirección por su sufijo, por ejemplo `option dest_ip '::1234/::ffff:ffff:ffff:ffff'`.
+
 ## Consejo de despliegue
 
 Los servicios web necesitan escuchar en puertos del host como el 80 / 443. En despliegues con Docker se recomienda `--network host`.

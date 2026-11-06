@@ -194,6 +194,10 @@ type Listener struct {
 	// AccessScheme 为空时按是否开启 HTTPS 推算，AccessPort 为 0 时使用监听端口
 	AccessScheme string `json:"accessScheme"`
 	AccessPort   int    `json:"accessPort"`
+	// AutoFirewall 为 true 时在本机防火墙（nftables / iptables / ip6tables 的 input 链）放行监听端口
+	// （开启 HTTP/3 时还有同号 UDP 端口）；只放行监听成功的端口，绑定具体地址时只放行发往该地址的连接，
+	// 只监听回环地址时不放行。监听停用、删除或启动失败时撤销。只对 Gately 所在主机的防火墙有效
+	AutoFirewall bool   `json:"autoFirewall"`
 	Sites        []Site `json:"sites"`
 	// Default 在没有站点匹配时使用；未启用时返回 404
 	Default Site   `json:"default"`

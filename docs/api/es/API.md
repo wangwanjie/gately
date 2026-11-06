@@ -2267,6 +2267,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `acceptProxyProtocol` | boolean |
 | `accessPort` | integer |
 | `accessScheme` | string |
+| `autoFirewall` | boolean |
 | `default` | `webservice.Site` |
 | `enable` | boolean |
 | `http3` | boolean |

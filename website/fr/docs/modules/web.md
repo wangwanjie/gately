@@ -618,6 +618,36 @@ Conversion des réglages nginx :
 | `return 444` | un site Fermer la connexion |
 | `error_page 497 https://$host:$server_port$request_uri` dans un server HTTPS | « HTTP sur le même port » d'un nouvel écouteur réglé sur « Rediriger vers HTTPS » ; en cas de fusion avec un écouteur existant, seul un avertissement s'affiche et ses réglages restent inchangés |
 
+## Ouvrir le port dans le pare-feu {#auto-firewall}
+
+Quand Gately tourne sur un routeur comme OpenWrt ou sur un hôte Linux avec pare-feu, le pare-feu du système bloque par défaut les connexions venant de l’extérieur, et le port d’une écoute doit être autorisé pour être joignable. Avec « Ouvrir le port dans le pare-feu » activé sur une écoute, Gately autorise dans le pare-feu de cet hôte uniquement le port de cette écoute :
+
+- Seuls les ports réellement en écoute sont autorisés. Si le port est pris par un autre programme et que l’écoute ne démarre pas, rien n’est autorisé et ce programme (la page d’administration du routeur, par exemple) reste fermé à l’extérieur.
+- Le réseau de l’écoute fixe la famille d’adresses : « IPv6 uniquement » autorise IPv6, « IPv4 uniquement » autorise IPv4, la double pile autorise les deux. Avec une adresse d’écoute renseignée, seules les connexions vers cette adresse sont autorisées. Les écoutes sur 127.0.0.1 ou ::1 n’ont besoin de rien.
+- Avec HTTP/3 activé, le port UDP de même numéro est aussi autorisé.
+- La règle est retirée quand l’écoute est désactivée, supprimée, ne démarre pas ou que l’interrupteur est coupé, ainsi qu’à l’arrêt de Gately.
+- nftables (OpenWrt fw4, firewalld, etc.) : la règle est insérée en tête des chaînes de filtrage input. iptables / ip6tables (OpenWrt fw3, ufw, etc.) : en tête de la chaîne INPUT. Les règles portent le commentaire `gately-open:` et sont rétablies dans les 30 secondes après un rechargement du pare-feu.
+- Linux uniquement. Sous Docker, il faut le réseau host et `cap_add: NET_ADMIN`. La carte de l’écoute affiche le résultat ; en cas d’échec, l’étiquette « Pare-feu » passe en orange.
+
+Les règles de [Redirection de ports](/fr/docs/modules/portforward#auto-firewall) et de [Routage par protocole](/fr/docs/modules/protoroute#auto-firewall) ont le même interrupteur, et les règles [STUN](/fr/docs/modules/stun#auto-firewall) autorisent leur port de canal.
+
+### Autoriser les ports à la main {#manual-firewall}
+
+Pour autoriser des ports à la main, ajoutez une règle pour chaque port à exposer et laissez l’entrée de la zone wan rejetée. Passer toute l’entrée de la zone wan en acceptation expose aussi à Internet la page d’administration du routeur (80 / 443), SSH et d’autres services. Sur OpenWrt, ajoutez-la dans Réseau → Pare-feu → Règles de trafic, ou dans `/etc/config/firewall` :
+
+```
+config rule
+	option name 'Allow-Gately-HTTPS'
+	option src 'wan'
+	option family 'ipv6'
+	option proto 'tcp'
+	option dest_port '50663'
+	option target 'ACCEPT'
+```
+
+- Si Gately tourne avec le réseau bridge de Docker, le conteneur ne voit pas le pare-feu du routeur ; autorisez le port mappé sur l’hôte ou le routeur.
+- Si Gately tourne sur un autre appareil du LAN (par exemple un conteneur avec sa propre adresse IPv6 via macvlan), le trafic est transféré par le routeur : ajoutez sur le routeur une règle de transfert avec lan comme zone de destination, l’adresse de l’appareil et les ports utilisés. Le préfixe IPv6 attribué par le FAI change ; faites correspondre l’adresse par son suffixe, par exemple `option dest_ip '::1234/::ffff:ffff:ffff:ffff'`.
+
 ## Conseil de déploiement
 
 Les Services Web doivent écouter sur des ports de l'hôte tels que 80 / 443. Pour un déploiement Docker, `--network host` est recommandé.

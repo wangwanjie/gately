@@ -64,5 +64,7 @@
   "copyName": "{name} 사본",
   "copyNameN": "{name} 사본 {n}",
   "copyHint": "\"{name}\"을(를) 바탕으로 새로 만듭니다. 저장하면 새 항목이 추가되며 원래 항목은 바뀌지 않습니다.",
-  "copyHintSecrets": "변경하지 않은 비밀번호, 토큰 등의 비밀 값은 원래 항목의 값을 그대로 사용합니다."
+  "copyHintSecrets": "변경하지 않은 비밀번호, 토큰 등의 비밀 값은 원래 항목의 값을 그대로 사용합니다.",
+  "autoFirewall": "방화벽 자동 허용",
+  "firewallTag": "방화벽"
 }

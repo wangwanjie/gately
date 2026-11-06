@@ -618,6 +618,36 @@ Conversão das configurações do nginx:
 | `return 444` | um site Fechar conexão |
 | `error_page 497 https://$host:$server_port$request_uri` em um server HTTPS | “HTTP na mesma porta” de um novo listener definido como “Redirecionar para HTTPS”; ao mesclar com um listener existente, apenas um aviso é exibido e as configurações dele não mudam |
 
+## Liberar porta no firewall {#auto-firewall}
+
+Quando o Gately roda em um roteador como o OpenWrt ou em um host Linux com firewall ativo, o firewall do sistema bloqueia por padrão as conexões vindas de fora, e a porta de um listener precisa ser liberada para ficar acessível. Com «Liberar porta no firewall» ativado em um listener, o Gately libera no firewall deste host apenas a porta desse listener:
+
+- Só são liberadas portas que estão de fato escutando. Se outro programa ocupa a porta e o listener não inicia, nada é liberado, e esse programa (a página de administração do roteador, por exemplo) continua fechado para fora.
+- A rede do listener define a família de endereços: «Somente IPv6» libera IPv6, «Somente IPv4» libera IPv4 e pilha dupla libera ambos. Com um endereço de escuta definido, só as conexões para esse endereço são liberadas. Listeners em 127.0.0.1 ou ::1 não precisam de nada.
+- Com HTTP/3 ativo, a porta UDP de mesmo número também é liberada.
+- A regra é removida quando o listener é desativado, excluído, falha ao iniciar ou o interruptor é desligado, e também quando o Gately encerra.
+- nftables (OpenWrt fw4, firewalld e outros): a regra é inserida no topo das cadeias de filtro input. iptables / ip6tables (OpenWrt fw3, ufw e outros): no topo da cadeia INPUT. As regras levam o comentário `gately-open:` e são restauradas em até 30 segundos após o firewall recarregar.
+- Somente Linux. No Docker é preciso rede host e `cap_add: NET_ADMIN`. O cartão do listener mostra o resultado; se falhar, a etiqueta «Firewall» fica laranja.
+
+As regras de [Redirecionamento de portas](/pt-BR/docs/modules/portforward#auto-firewall) e de [Roteamento por protocolo](/pt-BR/docs/modules/protoroute#auto-firewall) têm o mesmo interruptor, e as regras de [STUN](/pt-BR/docs/modules/stun#auto-firewall) liberam a porta do canal.
+
+### Liberar portas manualmente {#manual-firewall}
+
+Ao liberar portas manualmente, adicione uma regra para cada porta que precisa ficar acessível e mantenha rejeitada a entrada da zona wan. Aceitar toda a entrada da zona wan expõe também à internet a página de administração do roteador (80 / 443), o SSH e outros serviços. No OpenWrt, adicione em Rede → Firewall → Regras de tráfego, ou em `/etc/config/firewall`:
+
+```
+config rule
+	option name 'Allow-Gately-HTTPS'
+	option src 'wan'
+	option family 'ipv6'
+	option proto 'tcp'
+	option dest_port '50663'
+	option target 'ACCEPT'
+```
+
+- Se o Gately roda com a rede bridge do Docker, o contêiner não enxerga o firewall do roteador; libere a porta mapeada no host ou no roteador.
+- Se o Gately roda em outro dispositivo da LAN (por exemplo, um contêiner com endereço IPv6 próprio via macvlan), o tráfego é encaminhado pelo roteador: adicione no roteador uma regra de encaminhamento com lan como zona de destino, o endereço do dispositivo e as portas usadas. O prefixo IPv6 do provedor muda; compare o endereço pelo sufixo, por exemplo `option dest_ip '::1234/::ffff:ffff:ffff:ffff'`.
+
 ## Dica de implantação
 
 Os Serviços Web precisam escutar em portas do host como 80 / 443. Em implantações com Docker, recomendamos `--network host`.

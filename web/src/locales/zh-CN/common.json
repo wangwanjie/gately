@@ -64,5 +64,7 @@
   "copyName": "{name} 副本",
   "copyNameN": "{name} 副本 {n}",
   "copyHint": "以「{name}」为模板新建，保存后新增一条，原条目不受影响。",
-  "copyHintSecrets": "未修改的密码、令牌等密钥沿用原条目的值。"
+  "copyHintSecrets": "未修改的密码、令牌等密钥沿用原条目的值。",
+  "autoFirewall": "自动放行防火墙",
+  "firewallTag": "防火墙"
 }
