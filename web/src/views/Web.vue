@@ -150,7 +150,7 @@
                   WAF{{ wafInstances.some((w) => w.key === item.item.site.waf) ? '' : t('web.wafMissingSuffix') }}
                 </el-tag>
               </div>
-              <div class="site-stats">
+              <div class="site-stats" :title="siteStatsText(l, item.item)">
                 <template v-if="siteStat(l, item.item)">
                   <span>{{ t('web.requestsCount', { count: siteStat(l, item.item)!.requests }) }}</span>
                   <span v-if="siteStat(l, item.item)!.errors" class="text-danger"> · {{ t('web.errorsCount', { count: siteStat(l, item.item)!.errors }) }}</span>
@@ -1578,6 +1578,22 @@ function siteStat(l: ListenerView, row: SiteRow) {
   return k ? l.stats?.[k] : undefined
 }
 
+// siteStatsText 为统计列的完整文字，列宽不足被省略时作为悬停提示
+function siteStatsText(l: ListenerView, row: SiteRow): string {
+  const st = siteStat(l, row)
+  if (!st) {
+    return ''
+  }
+  const parts = [t('web.requestsCount', { count: st.requests })]
+  if (st.errors) {
+    parts.push(t('web.errorsCount', { count: st.errors }))
+  }
+  if (st.active) {
+    parts.push(t('web.activeCount', { count: st.active }))
+  }
+  return parts.join(' · ')
+}
+
 function siteTitle(row: SiteRow) {
   return row.site.name || row.site.domains?.[0] || t('web.defaultSite')
 }
@@ -2191,6 +2207,43 @@ onMounted(async () => {
     flex-shrink: 0;
   }
 }
+/* 中等宽度（平板、带侧栏的小屏笔记本）：操作按钮只显示图标（悬停有标题），统计列收窄，给域名列留出空间 */
+@media (min-width: 768px) and (max-width: 1439.98px) {
+  .site-actions :deep(.el-button > span:not(.el-icon)) {
+    display: none;
+  }
+  .site,
+  .sites.is-compact .site {
+    grid-template-columns: 40px minmax(0, 1.5fr) minmax(0, 1.8fr) minmax(0, 1.3fr) 130px auto;
+  }
+}
+/* 更窄时改为上下排列：第一行开关、域名与操作按钮，目标、选项与统计放在下面 */
+@media (min-width: 768px) and (max-width: 1199.98px) {
+  .site,
+  .sites.is-compact .site {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+  .site-switch {
+    grid-row: 1;
+    grid-column: 1;
+  }
+  .site-main {
+    grid-row: 1;
+    grid-column: 2;
+  }
+  .site-actions {
+    grid-row: 1;
+    grid-column: 3;
+  }
+  .site-target,
+  .site-opts,
+  .site-stats {
+    grid-column: 2 / 4;
+  }
+  .site-opts:empty {
+    display: none;
+  }
+}
 @media (max-width: 767.98px) {
   .site-filter {
     width: 160px;
@@ -2214,9 +2267,14 @@ onMounted(async () => {
     grid-row: 1;
     grid-column: 2;
   }
+  /* 手机上操作按钮单独占最后一行，域名列使用整行宽度 */
+  .site {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
   .site-actions {
-    grid-row: 1;
-    grid-column: 3;
+    grid-row: auto;
+    grid-column: 1 / 3;
+    justify-content: flex-end;
   }
   /* 窄屏下操作按钮只显示图标（悬停有标题），避免挤压域名列 */
   .site-actions :deep(.el-button > span:not(.el-icon)) {
@@ -2225,7 +2283,7 @@ onMounted(async () => {
   .site-target,
   .site-opts,
   .site-stats {
-    grid-column: 2 / 4;
+    grid-column: 2 / 3;
   }
   .site-opts:empty {
     display: none;
