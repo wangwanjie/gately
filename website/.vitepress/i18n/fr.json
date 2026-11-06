@@ -83,8 +83,8 @@
   "home": {
     "pill": "Gratuit et open source · Apache-2.0",
     "announce": {
-      "text": "v0.6.4 : build personnalisé en ligne, masquage du port d’administration, styles de page d’erreur pour les sites →",
-      "link": "/fr/news/v0.6.4"
+      "text": "v0.6.5 : délais du backend et nouvelle tentative, transmission de l’identité, ouverture automatique du pare-feu, archives et export des journaux →",
+      "link": "/fr/news/v0.6.5"
     },
     "titleLine1": "La passerelle réseau tout-en-un",
     "titleLine2": "Open source, prête à l'emploi",

@@ -83,8 +83,8 @@
   "home": {
     "pill": "Gratuito e de código aberto · Apache-2.0",
     "announce": {
-      "text": "v0.6.4: build personalizado online, ocultar a porta de administração, estilos de página de erro para sites →",
-      "link": "/pt-BR/news/v0.6.4"
+      "text": "v0.6.5: tempos limite do backend e nova tentativa, passar identidade, liberação automática do firewall, arquivo e exportação de logs →",
+      "link": "/pt-BR/news/v0.6.5"
     },
     "titleLine1": "O gateway de rede tudo em um",
     "titleLine2": "Código aberto e pronto para usar",

@@ -7,6 +7,10 @@ description: Gately 各版本的發布公告與更新說明。
 
 重要版本的發布公告如下，每個版本的完整變更與下載檔案見 [GitHub Releases](https://github.com/wangwanjie/gately/releases)。
 
+## [v0.6.5](/zh-TW/news/v0.6.5)
+
+2026 年 11 月 6 日 · 反向代理後端逾時、訪客逾時與自動重試；向後端傳遞身分資訊；監聽與轉發規則自動放行防火牆；存取記錄按天歸檔與匯出；入侵防護 IPv6 嚴格模式；託管程序資源。
+
 ## [v0.6.4.1](/zh-TW/news/v0.6.4.1)
 
 2026 年 11 月 4 日 · Tailscale 與 NetBird 支援多實例；通知帶上伺服器名稱；協定分流的路由可暫時停用；修正 DNSPod 解析同步與憑證驗證失敗、ipw.cn 停用導致的公網 IP 取得失敗。

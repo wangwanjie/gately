@@ -7,6 +7,10 @@ description: Release-Ankündigungen und Versionshinweise zu jeder Gately-Version
 
 Unten stehen die Ankündigungen zu wichtigen Releases. Alle Änderungen und Downloads jeder Version finden Sie unter [GitHub Releases](https://github.com/wangwanjie/gately/releases).
 
+## [v0.6.5](/de/news/v0.6.5)
+
+6. November 2026 · Backend- und Besucher-Timeouts mit automatischer Wiederholung für Reverse-Proxy-Sites; Identität an Backends weitergeben; automatische Firewall-Freigabe für Listener und Weiterleitungsregeln; tägliche Archive und Export der Zugriffsprotokolle; IPv6-Strikt-Modus im Einbruchschutz; Ressourcen verwalteter Prozesse.
+
 ## [v0.6.4.1](/de/news/v0.6.4.1)
 
 4. November 2026 · Mehrere Tailscale- und NetBird-Instanzen; Benachrichtigungen mit Servernamen; Routen der Protokollverteilung vorübergehend deaktivierbar; behebt DNSPod-Synchronisierung und Zertifikatsprüfung sowie die öffentliche IP-Abfrage nach dem Ende von ipw.cn.

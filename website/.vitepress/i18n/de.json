@@ -83,8 +83,8 @@
   "home": {
     "pill": "Kostenlos und Open Source · Apache-2.0",
     "announce": {
-      "text": "v0.6.4: benutzerdefinierte Builds online, Admin-Port verbergen, Fehlerseiten-Stile für Sites →",
-      "link": "/de/news/v0.6.4"
+      "text": "v0.6.5: Backend-Timeouts und Wiederholung, Identität weitergeben, automatische Firewall-Freigabe, Protokollarchive und Export →",
+      "link": "/de/news/v0.6.5"
     },
     "titleLine1": "Das All-in-one-Netzwerk-Gateway",
     "titleLine2": "Open Source, sofort einsatzbereit",
