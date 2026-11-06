@@ -120,6 +120,8 @@ export interface ForwardRule {
   listenPorts: string
   targetAddresses?: string[] | null
   targetPorts?: string
+  // 监听协议（tcp/tcp4/tcp6/udp…），为空时按 TCP 处理
+  protocols?: string[] | null
   routes?: ForwardRoute[] | null
 }
 
@@ -213,11 +215,27 @@ function routeFor(routes: ForwardRoute[], domain: string, tls: boolean): Forward
   if (exact) {
     return exact
   }
-  const wild = usable.find((r) => domainsOf(r).some((d) => d.startsWith('*.') && host.endsWith(d.slice(1))))
+  // 与后端一致：通配后缀越长越具体，优先匹配，与路由的书写顺序无关
+  let wild: ForwardRoute | null = null
+  let wildLen = 0
+  for (const r of usable) {
+    for (const d of domainsOf(r)) {
+      if (d.startsWith('*.') && host.endsWith(d.slice(1)) && d.length > wildLen) {
+        wild = r
+        wildLen = d.length
+      }
+    }
+  }
   if (wild) {
     return wild
   }
   return usable.find((r) => domainsOf(r).includes('*')) ?? usable.find((r) => !domainsOf(r).length) ?? null
+}
+
+// carriesTcp 判断规则是否转发 TCP；协议列表为空时按 TCP 处理（协议分流只支持 TCP）。
+function carriesTcp(protocols: string[] | null | undefined): boolean {
+  const list = protocols ?? []
+  return !list.length || list.some((p) => p.toLowerCase().startsWith('tcp'))
 }
 
 // forwardedEntry 在已启用的协议分流与端口转发规则里，找到把该域名的连接转到这个监听的入口端口，
@@ -230,7 +248,8 @@ export function forwardedEntry(
 ): ForwardEntry | null {
   for (const src of sources) {
     for (const r of src.rules) {
-      if (!r.enable) {
+      // 站点链接走 TCP（HTTP/1.1、HTTP/2），只转 UDP 的规则不是入口
+      if (!r.enable || !carriesTcp(r.protocols)) {
         continue
       }
       const route = src.kind === 'protoroute' && domain ? routeFor(r.routes ?? [], domain, l.tls) : null

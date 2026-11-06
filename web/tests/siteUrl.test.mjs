@@ -124,3 +124,28 @@ test('端口表达式解析与后端一致', () => {
   assert.equal(parsePorts('10-5'), null)
   assert.equal(parsePorts('1-2000'), null)
 })
+
+test('通配路由按后缀长度优先，与书写顺序无关', () => {
+  // 与后端一致：*.ddns.vanjay.cn 比 *.vanjay.cn 更具体，即使写在后面也先命中
+  const r = {
+    ...sniRule,
+    routes: [
+      { name: 'wide', protocol: 'tls', domains: ['*.vanjay.cn'], targetAddresses: ['127.0.0.1'], targetPort: 8443 },
+      { name: 'narrow', protocol: 'tls', domains: ['*.ddns.vanjay.cn'], targetAddresses: ['127.0.0.2'], targetPort: 4435 },
+    ],
+  }
+  assert.equal(forwardedEntry(inner, 'emby.ddns.vanjay.cn', proto(r))?.port, 4433)
+  // 只匹配较宽通配的域名走 wide 路由，不进 4435 监听
+  assert.equal(forwardedEntry(inner, 'a.vanjay.cn', proto(r)), null)
+})
+
+test('只转发 UDP 的端口转发规则不作为站点入口', () => {
+  const pf = (protocols) => [{ kind: 'portforward', rules: [{ name: 'h3', enable: true, protocols, listenPorts: '443', targetAddresses: ['127.0.0.1'], targetPorts: '8443' }] }]
+  const l = { listenIp: '', port: 8443, tls: true }
+  assert.equal(forwardedEntry(l, 'a.com', pf(['udp'])), null)
+  assert.equal(forwardedEntry(l, 'a.com', pf(['udp6', 'udp4'])), null)
+  assert.equal(forwardedEntry(l, 'a.com', pf(['tcp', 'udp']))?.port, 443)
+  assert.equal(forwardedEntry(l, 'a.com', pf(['tcp6']))?.port, 443)
+  // 未带协议字段（旧数据）按 TCP 处理
+  assert.equal(forwardedEntry(l, 'a.com', pf(undefined))?.port, 443)
+})
