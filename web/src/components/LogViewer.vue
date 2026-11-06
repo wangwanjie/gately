@@ -420,10 +420,24 @@ function resetFilters() {
   Object.assign(filters, emptyFilters())
 }
 
+// scrollToEnd 开启自动滚动时滚到最新一条。行使用 content-visibility: auto，未渲染的行按估算高度（19px）计算；
+// 长行换行（移动端尤其明显）后实际更高，滚到底后底部的行按真实高度布局，总高度随之变大，只滚一次会停在中间。
+// 每次滚到底后等两帧（第一帧的回调早于这一帧的布局），布局更新后若仍未贴底就再滚，最多几次
 async function scrollToEnd() {
-  if (follow.value) {
-    await nextTick()
-    box.value?.scrollTo({ top: box.value.scrollHeight })
+  if (!follow.value) {
+    return
+  }
+  await nextTick()
+  const el = box.value
+  if (!el) {
+    return
+  }
+  for (let i = 0; i < 8; i++) {
+    el.scrollTop = el.scrollHeight
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+    if (!follow.value || el.scrollHeight - el.scrollTop - el.clientHeight < 2) {
+      break
+    }
   }
 }
 
