@@ -179,7 +179,7 @@
   "--- 已发送 %d，已接收 %d，丢包率 %.0f%%": "--- sent %d, received %d, packet loss %.0f%%",
   "404 页面需为站点目录内的相对路径": "The 404 page must be a relative path inside the site directory",
   "444 断开连接": "444 close connection",
-  ": HTTP/3 暂不支持，已忽略": ": HTTP/3 is not supported yet, ignored",
+  ": HTTP/3 需要开启 HTTPS，已忽略": ": HTTP/3 requires HTTPS, ignored",
   ": KCP / QUIC 监听端口暂不支持，已忽略": ": KCP / QUIC listen port is not supported yet, ignored",
   ": TLS/流加密选项暂不支持，已按明文转发导入": ": TLS / stream encryption options are not supported yet, imported as plaintext forwarding",
   ": frpc 管理端口暂不支持，已忽略": ": frpc admin port is not supported yet, ignored",

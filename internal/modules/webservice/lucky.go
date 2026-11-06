@@ -206,8 +206,13 @@ func convertLuckyListeners(raw json.RawMessage, opts luckyimport.Options) ([]Lis
 			// 沿用 Lucky 的自动放行防火墙设置
 			AutoFirewall: ll.AutoOptionsFirewall,
 		}
+		// HTTP/3 与 Lucky 一样跑在同号 UDP 端口上，只能和 HTTPS 一起开启
 		if ll.Http3 {
-			warns = append(warns, label+": HTTP/3 暂不支持，已忽略")
+			if ll.EnableTLS {
+				l.HTTP3 = true
+			} else {
+				warns = append(warns, label+": HTTP/3 需要开启 HTTPS，已忽略")
+			}
 		}
 		// 汇总各站点的不支持特性，避免逐条重复告警
 		featureSites := map[string][]string{}

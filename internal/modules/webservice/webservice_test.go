@@ -490,7 +490,7 @@ func TestConvertLucky(t *testing.T) {
 		t.Fatalf("found=%d imported=%d %v", found, len(ls), warns)
 	}
 	l := ls[0]
-	if !l.Enable || l.Network != "tcp6" || !l.TLS || l.MinTLS != "1.1" || len(l.Sites) != 2 || !l.Default.Enable || l.Default.Targets[0] != "http://192.168.1.8:8898" {
+	if !l.Enable || l.Network != "tcp6" || !l.TLS || !l.HTTP3 || l.MinTLS != "1.1" || len(l.Sites) != 2 || !l.Default.Enable || l.Default.Targets[0] != "http://192.168.1.8:8898" {
 		t.Fatalf("监听器映射错误: %+v", l)
 	}
 	a, b := l.Sites[0], l.Sites[1]
@@ -506,7 +506,11 @@ func TestConvertLucky(t *testing.T) {
 	if a.WAF != "wafkey" || b.WAF != "" {
 		t.Fatalf("WAF 引用解析错误: %q %q", a.WAF, b.WAF)
 	}
-	for _, w := range []string{"HTTP/3", "fileServer", "WAF", "第三方登录"} {
+	// 开启 HTTPS 的监听沿用 HTTP/3，不再提示
+	if strings.Contains(joined, "HTTP/3") {
+		t.Errorf("HTTP/3 已支持，不应告警:\n%s", joined)
+	}
+	for _, w := range []string{"fileServer", "WAF", "第三方登录"} {
 		if !strings.Contains(joined, w) {
 			t.Errorf("缺少告警 %q:\n%s", w, joined)
 		}

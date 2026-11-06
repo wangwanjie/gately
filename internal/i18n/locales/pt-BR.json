@@ -179,7 +179,7 @@
   "--- 已发送 %d，已接收 %d，丢包率 %.0f%%": "--- %d enviados, %d recebidos, perda de pacotes %.0f%%",
   "404 页面需为站点目录内的相对路径": "A página 404 deve ser um caminho relativo dentro do diretório do site",
   "444 断开连接": "444 fechar conexão",
-  ": HTTP/3 暂不支持，已忽略": ": HTTP/3 ainda não é suportado, ignorado",
+  ": HTTP/3 需要开启 HTTPS，已忽略": ": HTTP/3 requer HTTPS, ignorado",
   ": KCP / QUIC 监听端口暂不支持，已忽略": ": a porta de escuta KCP / QUIC ainda não é suportada, ignorada",
   ": TLS/流加密选项暂不支持，已按明文转发导入": ": as opções de TLS/criptografia de fluxo ainda não são suportadas, importado como encaminhamento em texto simples",
   ": frpc 管理端口暂不支持，已忽略": ": a porta de administração do frpc ainda não é suportada, ignorada",
