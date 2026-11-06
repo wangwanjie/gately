@@ -110,3 +110,45 @@ func TestBundleZip(t *testing.T) {
 		t.Fatalf("zip 内容异常: %v", err)
 	}
 }
+
+// 崩溃堆栈中的函数名与源码路径形似域名（golang.org/x/net/http2.(*serverConn).serve），保留原样才能定位；
+// panic 信息里的访客 IP、域名仍要替换，用户目录与配置目录同样替换。
+func TestStackRedaction(t *testing.T) {
+	r := NewRedactor("/Users/alice/gately-data")
+	in := strings.Join([]string{
+		"===== 2026-11-06T14:46:07Z crash | gately v0.6.5 (5302aa1) pid 7 =====",
+		"panic: dial 203.0.113.9:443 for ha.myhome-secret.com: open /Users/alice/gately-data/x.json",
+		"",
+		"goroutine 812 [running]:",
+		"golang.org/x/net/http2.(*serverConn).serve(0xc000123400, {0x1a2b3c0, 0xc0004e8000})",
+		"\t/home/runner/go/pkg/mod/golang.org/x/net@v0.47.0/http2/server.go:952 +0x1d8",
+		"github.com/quic-go/quic-go/http3.(*Server).handleRequest(...)",
+		"\t/home/runner/go/pkg/mod/github.com/quic-go/quic-go@v0.64.0/http3/server.go:610",
+		"goroutine 0 gp=0x1026562a0 m=0 mp=0x102656ec0 [idle]:",
+		"runtime.kevent(0x4, 0x0, 0x0, 0x16f9f0848, 0x40, 0x0)",
+		"\t/home/runner/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.0.linux-amd64/src/runtime/sys_darwin.go:488 +0x20 fp=0x16f9f0760 sp=0x16f9f0730 pc=0x1004771f0",
+		"created by tailscale.com/net/netmon.(*Monitor).Start in goroutine 1",
+		"\t/home/runner/go/pkg/mod/tailscale.com@v1.90.0/net/netmon/netmon.go:401 +0x12c",
+	}, "\n")
+	out := r.Stack(in)
+	for _, keep := range []string{
+		"golang.org/x/net/http2.(*serverConn).serve(0xc000123400, {0x1a2b3c0, 0xc0004e8000})",
+		"/home/<user>/go/pkg/mod/golang.org/x/net@v0.47.0/http2/server.go:952 +0x1d8",
+		"github.com/quic-go/quic-go/http3.(*Server).handleRequest(...)",
+		"created by tailscale.com/net/netmon.(*Monitor).Start in goroutine 1",
+		"goroutine 812 [running]:",
+		"goroutine 0 gp=0x1026562a0 m=0 mp=0x102656ec0 [idle]:",
+		"/home/<user>/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.0.linux-amd64/src/runtime/sys_darwin.go:488 +0x20 fp=0x16f9f0760 sp=0x16f9f0730 pc=0x1004771f0",
+		"gately v0.6.5 (5302aa1) pid 7",
+		"<config-dir>/x.json",
+	} {
+		if !strings.Contains(out, keep) {
+			t.Errorf("应保留 %q:\n%s", keep, out)
+		}
+	}
+	for _, leak := range []string{"203.0.113.9", "myhome-secret", "runner", "alice"} {
+		if strings.Contains(out, leak) {
+			t.Errorf("泄露了 %q:\n%s", leak, out)
+		}
+	}
+}

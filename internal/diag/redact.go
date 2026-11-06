@@ -177,6 +177,39 @@ func (r *Redactor) Text(s string) string {
 	return s
 }
 
+// reStackFile 匹配 Go 堆栈中的源码位置行，例如 "\t/build/internal/app/app.go:123 +0x1a"；
+// 收到 SIGQUIT 等信号或 GOTRACEBACK=crash 时行尾还带 "fp=0x… sp=0x… pc=0x…"。
+var reStackFile = regexp.MustCompile(`^\t\S+\.(?:go|s):\d+(?: \+0x[0-9a-f]+)?(?: fp=0x[0-9a-f]+ sp=0x[0-9a-f]+ pc=0x[0-9a-f]+)?$`)
+
+// reStackGoroutine 匹配堆栈中的协程标题行，例如 "goroutine 12 [running]:"。
+var reStackGoroutine = regexp.MustCompile(`^goroutine \d+ (?:gp=\S+ m=\S+ (?:mp=\S+ )?)?\[[^\]]*\]:$`)
+
+// Stack 对含 Go 崩溃堆栈的文本脱敏。堆栈中的函数名与源码路径（如 golang.org/x/net/http2.(*serverConn).serve）
+// 形似域名，按自由文本处理会被替换成 <domain> 而无法定位，因此堆栈行只替换配置目录与用户目录；
+// panic 信息等其余行可能带有地址、域名等访客数据，按 Text 完整脱敏。
+func (r *Redactor) Stack(s string) string {
+	lines := strings.Split(s, "\n")
+	for i, line := range lines {
+		frame := reStackFile.MatchString(line) || reStackGoroutine.MatchString(line) ||
+			// 函数行紧跟着源码位置行；"created by" 行同样后接源码位置
+			(i+1 < len(lines) && reStackFile.MatchString(lines[i+1]) && !strings.HasPrefix(line, "\t"))
+		if frame {
+			lines[i] = r.paths(line)
+			continue
+		}
+		lines[i] = r.Text(line)
+	}
+	return strings.Join(lines, "\n")
+}
+
+// paths 只替换本机敏感字面量与用户目录。
+func (r *Redactor) paths(s string) string {
+	for _, l := range r.literals {
+		s = strings.ReplaceAll(s, l.from, l.to)
+	}
+	return reUserPath.ReplaceAllString(s, "${1}<user>")
+}
+
 var reNumList = regexp.MustCompile(`^[0-9,\-: ]+$`)
 
 // Addr 对地址类字段脱敏：保留协议前缀与端口，主机替换为 IP 类别或 <host>，丢弃路径、查询串与账号信息。
