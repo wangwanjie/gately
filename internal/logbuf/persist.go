@@ -322,12 +322,15 @@ func (s *fileSink) flushLocked() {
 		}
 	}
 	// 一批数据可能比当前文件剩余的空间大（甚至跨过多次切分大小）：在行边界拆开，写满一个文件就轮转再写下一段
+	// 轮转失败（目录只读、Windows 上文件正被导出占用等）时，本次剩余数据一次追加到当前文件，
+	// 留到下次写盘再试，避免每写一行就重试一次改名并刷屏报错
+	rotateFailed := false
 	for len(data) > 0 {
-		if s.size > 0 && (s.size+int64(len(data)) > opt.FileBytes || (opt.Archive && !sameDay(s.start, first))) {
-			s.rotateLocked(opt)
+		if !rotateFailed && s.size > 0 && (s.size+int64(len(data)) > opt.FileBytes || (opt.Archive && !sameDay(s.start, first))) {
+			rotateFailed = !s.rotateLocked(opt)
 		}
 		part := data
-		if room := opt.FileBytes - s.size; int64(len(part)) > room {
+		if room := opt.FileBytes - s.size; !rotateFailed && int64(len(part)) > room {
 			// 写到文件满为止的最后一个整行；放不下一整行时至少写一行，避免单行超过上限时卡住
 			cut := 0
 			if room > 0 {
@@ -390,13 +393,14 @@ func lineTime(data []byte, fallback time.Time) time.Time {
 }
 
 // rotateLocked 轮转当前文件，调用方持有 ioMu。普通模式改名为 <文件>.1（覆盖更旧的）；
-// 归档模式改名为按开始时间命名的归档，再在后台压缩与清理。
-func (s *fileSink) rotateLocked(opt PersistOptions) {
+// 归档模式改名为按开始时间命名的归档，再在后台压缩与清理。改名失败时返回 false。
+func (s *fileSink) rotateLocked(opt PersistOptions) bool {
 	if !opt.Archive {
 		if err := os.Rename(s.path, s.path+".1"); err == nil || errors.Is(err, os.ErrNotExist) {
 			s.size = 0
+			return true
 		}
-		return
+		return false
 	}
 	start := s.start
 	if start.IsZero() {
@@ -409,11 +413,12 @@ func (s *fileSink) rotateLocked(opt PersistOptions) {
 	name := s.archiveName(start)
 	if err := os.Rename(s.path, name); err != nil && !errors.Is(err, os.ErrNotExist) {
 		log.Printf("归档日志文件 %s 失败: %v", s.path, err)
-		return
+		return false
 	}
 	s.size = 0
 	s.start = time.Time{}
 	s.goMaintain()
+	return true
 }
 
 // sameDay 判断两个时间在 b 的时区里是否为同一天；a 为零值（当前文件开始时间未知）时视为同一天，不因此轮转。
