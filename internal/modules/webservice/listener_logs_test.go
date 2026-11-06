@@ -136,4 +136,5 @@ func TestLogSources(t *testing.T) {
 		}
 	}
 	var _ module.LogSourcer = m
+	var _ module.AccessLogger = m
 }

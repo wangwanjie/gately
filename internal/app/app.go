@@ -183,7 +183,7 @@ func New(opts Options) (*App, error) {
 	a.settings.normalize()
 	// 先按设置开启日志落盘并恢复上次的日志，后续初始化过程中的日志也能写入文件
 	a.sysLogs.Resize(a.settings.LogLines)
-	a.persistLogs(a.sysLogs, settingsName, a.settings)
+	a.persistLogs(a.sysLogs, settingsName, false, a.settings)
 	if n := tightenConfigDir(opts.ConfigDir); n > 0 {
 		a.sysLogs.Add(logbuf.LevelInfo, "", fmt.Sprintf("已收紧配置目录中 %d 个文件或目录的权限", n))
 	}
@@ -246,7 +246,8 @@ func New(opts Options) (*App, error) {
 		}
 		seen[m.ID()] = true
 		entry := &moduleEntry{mod: m, logs: logbuf.New(a.settings.LogLines, logger)}
-		a.persistLogs(entry.logs, m.ID(), a.settings)
+		_, access := m.(module.AccessLogger)
+		a.persistLogs(entry.logs, m.ID(), access, a.settings)
 		if hc, ok := m.(module.HTTPClientAware); ok {
 			hc.SetHTTPClient(a.updateClient)
 		}

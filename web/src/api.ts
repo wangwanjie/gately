@@ -207,6 +207,9 @@ export interface SystemSettings {
   disableLogPersist: boolean
   // 每个日志文件的大小上限（MB），0 为默认 2 MB
   logFileMB: number
+  // 访问日志（Web 服务）归档的保留天数与总大小（MB），0 为默认值
+  accessLogDays: number
+  accessLogMB: number
   gcPercent: number
   maxProcs: number
   thirdLogin: ThirdLogin

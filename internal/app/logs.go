@@ -16,30 +16,68 @@ import (
 	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
+	"github.com/wangwanjie/gately/internal/sysstat"
 )
 
 // logsDir 是配置目录下保存运行日志的子目录：logs/<模块 ID>.log，系统日志为 logs/gately.log。
 // 备份只收集配置目录顶层的 *.json，不会包含日志。
 const logsDir = "logs"
 
+// 访问日志（Web 服务）归档的默认保留策略
+const (
+	defaultAccessLogDays = 7
+	defaultAccessLogMB   = 32
+	// accessLogDiskShare 为默认总大小占日志所在分区容量的最大比例（1/20 即 5%）：
+	// 闪存只有几十 MB 的路由器上自动调低，避免日志占满存储
+	accessLogDiskShare = 20
+)
+
 // persistLogs 按设置开启或关闭一个日志缓冲的落盘；source 为模块 ID，系统日志使用 settingsName。
-func (a *App) persistLogs(buf *logbuf.Buffer, source string, s Settings) {
+// access 为 true 表示访问日志，按天归档并压缩，按访问日志的保留天数与总大小清理。
+func (a *App) persistLogs(buf *logbuf.Buffer, source string, access bool, s Settings) {
 	if s.DisableLogPersist {
 		buf.ClosePersist()
 		return
 	}
-	path := filepath.Join(a.opts.ConfigDir, logsDir, source+".log")
-	if err := buf.Persist(path, int64(s.LogFileMB)<<20); err != nil {
+	dir := filepath.Join(a.opts.ConfigDir, logsDir)
+	path := filepath.Join(dir, source+".log")
+	opt := logbuf.PersistOptions{FileBytes: int64(s.LogFileMB) << 20}
+	if access {
+		opt = logbuf.PersistOptions{Archive: true, KeepDays: accessLogDays(s), KeepBytes: accessLogBytes(s, dir)}
+	}
+	if err := buf.PersistWith(path, opt); err != nil {
 		// 落盘失败不影响运行，日志仍保留在内存
 		a.logger.Printf("开启日志落盘失败（%s）: %v", path, err)
 	}
 }
 
+// accessLogDays 返回访问日志归档的保留天数。
+func accessLogDays(s Settings) int {
+	if s.AccessLogDays > 0 {
+		return s.AccessLogDays
+	}
+	return defaultAccessLogDays
+}
+
+// accessLogBytes 返回访问日志的总大小上限：填写了就用填写的值，否则为默认值，
+// 但不超过日志所在分区容量的 1/accessLogDiskShare，也不低于允许填写的最小值。
+func accessLogBytes(s Settings, dir string) int64 {
+	if s.AccessLogMB > 0 {
+		return int64(s.AccessLogMB) << 20
+	}
+	limit := int64(defaultAccessLogMB) << 20
+	if d := sysstat.DiskUsage(dir); d != nil {
+		limit = min(limit, int64(d.Total/accessLogDiskShare))
+	}
+	return max(limit, int64(minAccessLogMB)<<20)
+}
+
 // applyLogPersist 把日志落盘设置应用到系统日志与全部模块日志。
 func (a *App) applyLogPersist(s Settings) {
-	a.persistLogs(a.sysLogs, settingsName, s)
+	a.persistLogs(a.sysLogs, settingsName, false, s)
 	for _, e := range a.modules {
-		a.persistLogs(e.logs, e.mod.ID(), s)
+		_, access := e.mod.(module.AccessLogger)
+		a.persistLogs(e.logs, e.mod.ID(), access, s)
 	}
 }
 

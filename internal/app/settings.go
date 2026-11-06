@@ -75,8 +75,14 @@ type Settings struct {
 	LogLines int `json:"logLines"`
 	// DisableLogPersist 为 true 时运行日志只保留在内存，重启后丢失；默认写入配置目录下的 logs/
 	DisableLogPersist bool `json:"disableLogPersist"`
-	// LogFileMB 为每个日志文件的大小上限（MB），超过后轮转并保留一份历史，0 表示默认 2 MB
+	// LogFileMB 为每个日志文件的大小上限（MB），超过后轮转并保留一份历史，0 表示默认 2 MB；
+	// Web 服务访问日志另按 AccessLogDays、AccessLogMB 归档
 	LogFileMB int `json:"logFileMB"`
+	// AccessLogDays 为访问日志（Web 服务）归档的保留天数，0 表示默认 7 天
+	AccessLogDays int `json:"accessLogDays"`
+	// AccessLogMB 为访问日志当前文件与全部压缩归档的总大小上限（MB），0 表示默认：32 MB，
+	// 但不超过日志所在分区容量的 5%，闪存很小的路由器上自动调低
+	AccessLogMB int `json:"accessLogMB"`
 	// GCPercent / MaxProcs 为运行时调优参数，0 表示默认
 	GCPercent int `json:"gcPercent"`
 	MaxProcs  int `json:"maxProcs"`
@@ -92,6 +98,10 @@ const (
 	defaultLogLines = 2000
 	maxLogLines     = 20000
 	maxLogFileMB    = 100
+	// 访问日志保留天数与总大小的取值范围
+	maxAccessLogDays = 3650
+	minAccessLogMB   = 4
+	maxAccessLogMB   = 100 << 10
 )
 
 func (s *Settings) normalize() {
@@ -195,6 +205,12 @@ func (s *Settings) Validate() error {
 	}
 	if s.LogFileMB < 0 || s.LogFileMB > maxLogFileMB {
 		return fmt.Errorf("日志文件上限应在 1~%d MB 之间", maxLogFileMB)
+	}
+	if s.AccessLogDays < 0 || s.AccessLogDays > maxAccessLogDays {
+		return fmt.Errorf("访问日志保留天数应在 1~%d 之间", maxAccessLogDays)
+	}
+	if s.AccessLogMB != 0 && (s.AccessLogMB < minAccessLogMB || s.AccessLogMB > maxAccessLogMB) {
+		return fmt.Errorf("访问日志总大小应在 %d~%d MB 之间", minAccessLogMB, maxAccessLogMB)
 	}
 	if s.GCPercent < 0 || s.GCPercent > 1000 || s.MaxProcs < 0 || s.MaxProcs > 1024 {
 		return errors.New("运行时参数超出范围")

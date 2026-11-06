@@ -2,10 +2,12 @@ package logbuf
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
 	"log"
+	"math"
 	"os"
 	"path/filepath"
 	"sort"
@@ -23,19 +25,64 @@ const (
 	// maxPending 限制未写盘数据的大小，磁盘卡住时丢弃新日志，避免撑大内存
 	maxPending = 4 << 20
 	// flushEarlyBytes 为提前写盘的阈值：待写数据攒到这么多就立即写入，不再等满 flushInterval。
-	// 访问日志在高流量下每秒可达数 MB，只按时间写盘会顶到 maxPending 丢日志
+	// 访问日志在高流量下每秒可达数 MB，只按时间写盘会顶到 maxPending 丢日志，单次写入也会远超文件的切分大小
 	flushEarlyBytes = 256 << 10
 	// DefaultFileBytes 为单个日志文件的默认上限，超过后轮转为 <文件>.1，即每个来源最多占用两倍空间
 	DefaultFileBytes = 2 << 20
+	// DefaultKeepBytes 为归档模式下当前文件与全部归档的默认总大小上限
+	DefaultKeepBytes = 32 << 20
+	// 归档模式下当前文件的轮转大小取总上限的四分之一，并限制在这个区间内：
+	// 太小会产生大量小归档，太大则单个归档解压查找太慢、清理粒度太粗
+	minArchiveFileBytes = 1 << 20
+	maxArchiveFileBytes = 16 << 20
 )
 
-// fileSink 把日志以 JSON Lines 追加写入文件，超过上限后轮转一份历史文件。
+// PersistOptions 是日志落盘参数。
+type PersistOptions struct {
+	// FileBytes 为当前日志文件的大小上限，超过后轮转；<=0 时使用默认值
+	// （普通模式为 DefaultFileBytes，归档模式按 KeepBytes 计算）
+	FileBytes int64
+	// Archive 为 true 时开启归档：当前文件跨天或超过上限时改名为 <名称>.<开始时间>.log 并在后台压缩为 .log.gz，
+	// 按 KeepDays 与 KeepBytes 清理最旧的归档，检索与导出会查找全部归档。
+	// 为 false 时只保留一份 <文件>.1 历史文件
+	Archive bool
+	// KeepDays 为归档的保留天数，0 表示不按天数清理
+	KeepDays int
+	// KeepBytes 为当前文件与全部归档（压缩后）的总大小上限，<=0 时使用 DefaultKeepBytes
+	KeepBytes int64
+}
+
+// normalized 返回补齐默认值后的参数。
+func (o PersistOptions) normalized() PersistOptions {
+	if !o.Archive {
+		o.KeepDays, o.KeepBytes = 0, 0
+		if o.FileBytes <= 0 {
+			o.FileBytes = DefaultFileBytes
+		}
+		return o
+	}
+	if o.KeepBytes <= 0 {
+		o.KeepBytes = DefaultKeepBytes
+	}
+	if o.KeepDays < 0 {
+		o.KeepDays = 0
+	}
+	if o.FileBytes <= 0 {
+		o.FileBytes = min(max(o.KeepBytes/4, minArchiveFileBytes), maxArchiveFileBytes)
+	}
+	return o
+}
+
+// fileSink 把日志以 JSON Lines 追加写入文件，超过上限后轮转：普通模式只保留一份历史文件，
+// 归档模式按时间命名、压缩并按保留策略清理，见 PersistOptions。
 type fileSink struct {
 	path string
 
-	mu       sync.Mutex
-	pending  []byte
-	maxBytes int64
+	mu      sync.Mutex
+	pending []byte
+	// pendingFirst 为待写盘数据中第一条日志的时间，归档模式据此判断是否跨天
+	pendingFirst time.Time
+	opt          PersistOptions
 	// scheduled 表示已安排了一次延迟写盘；没有新日志时不安排，空闲时没有任何定时唤醒
 	scheduled bool
 	// urgent 表示已因待写数据过多发起了一次立即写盘，写盘开始前不再重复发起
@@ -44,25 +91,49 @@ type fileSink struct {
 	sources      map[string]struct{}
 	sourcesDirty bool
 
-	// ioMu 串行化文件操作（写入、轮转、清空）
+	// ioMu 串行化当前文件的操作（写入、轮转、清空）
 	ioMu sync.Mutex
 	size int64
+	// start 为当前文件第一条日志的时间，归档时用作归档名称；未知时为零值
+	start time.Time
+
+	// archMu 串行化归档的压缩、清理与清空。加锁顺序为 archMu -> ioMu，持有 ioMu 时不能再取 archMu
+	archMu sync.Mutex
+	// bg 跟踪后台的压缩与清理，测试据此等待其完成
+	bg sync.WaitGroup
 }
 
-// Persist 开启日志落盘：path 为日志文件，maxBytes 为单个文件上限（<=0 时使用默认值）。
-//
-// 首次开启且缓冲为空时，从文件尾部恢复最近的日志，并让序号接着文件中最大的序号继续递增，
-// 前端按序号增量拉取不会因为重启而错乱。已开启时只更新文件上限。
+// goMaintain 在后台执行一次 maintain。
+func (s *fileSink) goMaintain() {
+	s.bg.Add(1)
+	go func() {
+		defer s.bg.Done()
+		s.maintain()
+	}()
+}
+
+// Persist 开启日志落盘：path 为日志文件，maxBytes 为单个文件上限（<=0 时使用默认值），只保留一份历史文件。
 func (b *Buffer) Persist(path string, maxBytes int64) error {
-	if maxBytes <= 0 {
-		maxBytes = DefaultFileBytes
-	}
+	return b.PersistWith(path, PersistOptions{FileBytes: maxBytes})
+}
+
+// PersistWith 按 opt 开启日志落盘，path 为当前日志文件。
+//
+// 首次开启且缓冲为空时，从文件（归档模式下包括最近的归档）恢复最近的日志，并让序号接着文件中最大的序号继续递增，
+// 前端按序号增量拉取不会因为重启而错乱。同一路径已开启时只更新参数。
+func (b *Buffer) PersistWith(path string, opt PersistOptions) error {
+	opt = opt.normalized()
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	if b.sink != nil && b.sink.path == path {
 		b.sink.mu.Lock()
-		b.sink.maxBytes = maxBytes
+		changed := b.sink.opt != opt
+		b.sink.opt = opt
 		b.sink.mu.Unlock()
+		if changed && opt.Archive {
+			// 保留策略变了，按新策略清理一次
+			b.sink.goMaintain()
+		}
 		return nil
 	}
 	if b.sink != nil {
@@ -73,11 +144,27 @@ func (b *Buffer) Persist(path string, maxBytes int64) error {
 	if err := fsperm.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return err
 	}
-	var size int64
+	s := &fileSink{path: path, opt: opt, sources: map[string]struct{}{}}
 	if st, err := os.Stat(path); err == nil {
-		size = st.Size()
+		s.size = st.Size()
+		s.start = firstEntryTime(path)
 	}
-	restored := readTail(path, len(b.entries))
+	// 缓冲已有日志（运行中换了日志目录）时只需要文件里最大的序号，读一条即可
+	want := 1
+	if b.count == 0 {
+		want = len(b.entries)
+	}
+	var restored []Entry
+	if opt.Archive {
+		// 先按保留策略删掉过期的归档再恢复，已经过期的日志不会再进入内存缓冲。
+		// 这时 sink 还没有交给其他协程，同步执行即可（只删文件，耗时的压缩仍放在后台）
+		s.archMu.Lock()
+		s.prune()
+		s.archMu.Unlock()
+		restored = s.restore(want)
+	} else {
+		restored = readTail(path, want)
+	}
 	var maxSeq uint64
 	for _, e := range restored {
 		maxSeq = max(maxSeq, e.Seq)
@@ -92,7 +179,6 @@ func (b *Buffer) Persist(path string, maxBytes int64) error {
 	if maxSeq >= b.nextSeq {
 		b.nextSeq = maxSeq + 1
 	}
-	s := &fileSink{path: path, maxBytes: maxBytes, size: size, sources: map[string]struct{}{}}
 	// 来源：已记录的来源文件、恢复的日志与本次运行已出现的来源合在一起
 	for _, src := range readSources(s.sourcesPath()) {
 		if len(b.sources) < maxSources {
@@ -109,6 +195,10 @@ func (b *Buffer) Persist(path string, maxBytes int64) error {
 	}
 	s.sourcesDirty = len(s.sources) > 0
 	b.sink = s
+	if opt.Archive {
+		// 压缩上次退出时没压缩完的归档，并按保留策略清理
+		s.goMaintain()
+	}
 	return nil
 }
 
@@ -123,7 +213,7 @@ func (b *Buffer) ClosePersist() {
 	}
 }
 
-// stem 返回日志文件去掉 .log 后缀的路径，来源记录文件以它为前缀。
+// stem 返回日志文件去掉 .log 后缀的路径，归档与来源记录文件都以它为前缀。
 func (s *fileSink) stem() string {
 	return strings.TrimSuffix(s.path, ".log")
 }
@@ -141,13 +231,13 @@ func (s *fileSink) add(e Entry) {
 	}
 	s.mu.Lock()
 	if len(s.pending)+len(line) < maxPending {
+		if len(s.pending) == 0 {
+			s.pendingFirst = e.Time
+		}
 		s.pending = append(s.pending, line...)
 		s.pending = append(s.pending, '\n')
 	}
-	if !s.scheduled {
-		s.scheduled = true
-		time.AfterFunc(flushInterval, s.flush)
-	}
+	s.scheduleLocked()
 	if len(s.pending) >= flushEarlyBytes && !s.urgent {
 		s.urgent = true
 		go s.flush()
@@ -161,12 +251,17 @@ func (s *fileSink) addSource(src string) {
 	if _, ok := s.sources[src]; !ok {
 		s.sources[src] = struct{}{}
 		s.sourcesDirty = true
-		if !s.scheduled {
-			s.scheduled = true
-			time.AfterFunc(flushInterval, s.flush)
-		}
+		s.scheduleLocked()
 	}
 	s.mu.Unlock()
+}
+
+// scheduleLocked 安排一次延迟写盘，调用方持有 s.mu。
+func (s *fileSink) scheduleLocked() {
+	if !s.scheduled {
+		s.scheduled = true
+		time.AfterFunc(flushInterval, s.flush)
+	}
 }
 
 // close 立即写入剩余日志。之后仍可能触发已安排的延迟写盘，那时没有待写数据，什么也不做。
@@ -185,10 +280,12 @@ func (s *fileSink) flush() {
 func (s *fileSink) flushLocked() {
 	s.mu.Lock()
 	data := s.pending
+	first := s.pendingFirst
 	s.pending = nil
+	s.pendingFirst = time.Time{}
 	s.scheduled = false
 	s.urgent = false
-	limit := s.maxBytes
+	opt := s.opt
 	var sources []string
 	if s.sourcesDirty {
 		s.sourcesDirty = false
@@ -203,27 +300,116 @@ func (s *fileSink) flushLocked() {
 	if len(data) == 0 {
 		return
 	}
-	if s.size > 0 && s.size+int64(len(data)) > limit {
-		// 只保留一份历史文件：<文件> -> <文件>.1，覆盖更旧的
-		if err := os.Rename(s.path, s.path+".1"); err == nil || errors.Is(err, os.ErrNotExist) {
-			s.size = 0
+	if opt.Archive && s.size > 0 && s.start.IsZero() {
+		// 当前文件的开始时间未知（开启落盘时第一行无法解析）：重新读一次，仍读不到就从这批日志算起，
+		// 否则 sameDay 一直视为同一天，再也不会按天切分
+		if s.start = firstEntryTime(s.path); s.start.IsZero() {
+			s.start = first
 		}
 	}
+	// 一批数据可能比当前文件剩余的空间大（甚至跨过多次切分大小）：在行边界拆开，写满一个文件就轮转再写下一段
+	for len(data) > 0 {
+		if s.size > 0 && (s.size+int64(len(data)) > opt.FileBytes || (opt.Archive && !sameDay(s.start, first))) {
+			s.rotateLocked(opt)
+		}
+		part := data
+		if room := opt.FileBytes - s.size; int64(len(part)) > room {
+			// 写到文件满为止的最后一个整行；放不下一整行时至少写一行，避免单行超过上限时卡住
+			cut := 0
+			if room > 0 {
+				cut = bytes.LastIndexByte(part[:room], '\n') + 1
+			}
+			if cut <= 0 {
+				if cut = bytes.IndexByte(part, '\n') + 1; cut <= 0 {
+					cut = len(part)
+				}
+			}
+			part = part[:cut]
+		}
+		if !s.appendLocked(part, first) {
+			return
+		}
+		data = data[len(part):]
+		if len(data) > 0 {
+			// 下一段的开始时间（用于跨天判断与归档命名）取它第一行的时间
+			first = lineTime(data, first)
+		}
+	}
+}
+
+// appendLocked 把 data 追加到当前文件，调用方持有 ioMu；first 为其中第一条日志的时间，新文件以它为开始时间。
+// 写入失败时记录日志并返回 false（这批日志丢弃）。
+func (s *fileSink) appendLocked(data []byte, first time.Time) bool {
 	f, err := os.OpenFile(s.path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
 	if err != nil {
 		log.Printf("写入日志文件 %s 失败: %v", s.path, err)
-		return
+		return false
 	}
 	if s.size == 0 {
 		// 新建（或轮转、清空后重建）的文件显式设置权限，部分文件系统会忽略创建权限，见 fsperm
 		_ = f.Chmod(0o600)
+		s.start = first
 	}
 	n, err := f.Write(data)
 	s.size += int64(n)
 	_ = f.Close()
 	if err != nil {
 		log.Printf("写入日志文件 %s 失败: %v", s.path, err)
+		return false
 	}
+	return true
+}
+
+// lineTime 解析 data 第一行日志的时间，解析失败时返回 fallback。
+func lineTime(data []byte, fallback time.Time) time.Time {
+	line := data
+	if i := bytes.IndexByte(data, '\n'); i >= 0 {
+		line = data[:i]
+	}
+	var e struct {
+		Time time.Time `json:"time"`
+	}
+	if json.Unmarshal(line, &e) != nil || e.Time.IsZero() {
+		return fallback
+	}
+	return e.Time
+}
+
+// rotateLocked 轮转当前文件，调用方持有 ioMu。普通模式改名为 <文件>.1（覆盖更旧的）；
+// 归档模式改名为按开始时间命名的归档，再在后台压缩与清理。
+func (s *fileSink) rotateLocked(opt PersistOptions) {
+	if !opt.Archive {
+		if err := os.Rename(s.path, s.path+".1"); err == nil || errors.Is(err, os.ErrNotExist) {
+			s.size = 0
+		}
+		return
+	}
+	start := s.start
+	if start.IsZero() {
+		// 第一行无法解析（例如旧版本写坏的文件）时，用修改时间代替，至少能排在正确的位置附近
+		start = time.Now()
+		if st, err := os.Stat(s.path); err == nil {
+			start = st.ModTime()
+		}
+	}
+	name := s.archiveName(start)
+	if err := os.Rename(s.path, name); err != nil && !errors.Is(err, os.ErrNotExist) {
+		log.Printf("归档日志文件 %s 失败: %v", s.path, err)
+		return
+	}
+	s.size = 0
+	s.start = time.Time{}
+	s.goMaintain()
+}
+
+// sameDay 判断两个时间在 b 的时区里是否为同一天；a 为零值（当前文件开始时间未知）时视为同一天，不因此轮转。
+func sameDay(a, b time.Time) bool {
+	if a.IsZero() || b.IsZero() {
+		return true
+	}
+	y1, m1, d1 := a.In(b.Location()).Date()
+	y2, m2, d2 := b.Date()
+	return y1 == y2 && m1 == m2 && d1 == d2
 }
 
 // writeSources 把来源列表写入来源记录文件（先写临时文件再改名，断电不会留下半个文件）。
@@ -264,20 +450,64 @@ func readSources(path string) []string {
 	return out
 }
 
-// clear 丢弃未写盘数据并删除日志文件与来源记录。
+// clear 丢弃未写盘数据并删除日志文件、历史文件、归档与来源记录。
 func (s *fileSink) clear() {
+	s.archMu.Lock()
+	defer s.archMu.Unlock()
 	s.ioMu.Lock()
 	defer s.ioMu.Unlock()
 	s.mu.Lock()
 	s.pending = nil
+	s.pendingFirst = time.Time{}
 	s.sources = map[string]struct{}{}
 	s.sourcesDirty = false
 	s.mu.Unlock()
+	for _, a := range s.listArchives() {
+		for _, p := range a.paths() {
+			_ = os.Remove(p)
+		}
+	}
+	s.removeTempFiles()
 	_ = os.Remove(s.sourcesPath())
 	_ = os.Remove(s.path + ".1")
 	_ = os.Remove(s.path)
 	s.size = 0
+	s.start = time.Time{}
 }
+
+// restore 在归档模式下从当前文件、归档与旧版本留下的 .1 文件中读取最近的至多 n 条日志，按时间顺序返回。
+func (s *fileSink) restore(n int) []Entry {
+	files := s.openFiles()
+	defer closeFiles(files)
+	rev := searchFiles(context.Background(), files, 0, math.MaxUint64, n, nil)
+	for i, j := 0, len(rev)-1; i < j; i, j = i+1, j-1 {
+		rev[i], rev[j] = rev[j], rev[i]
+	}
+	return rev
+}
+
+// firstEntryTime 读取日志文件第一条日志的时间，读不到时返回零值。
+func firstEntryTime(path string) time.Time {
+	f, err := os.Open(path)
+	if err != nil {
+		return time.Time{}
+	}
+	defer f.Close()
+	var t time.Time
+	_ = scanForward(context.Background(), f, func(line []byte) bool {
+		var e Entry
+		if json.Unmarshal(line, &e) == nil && e.Seq > 0 {
+			t = e.Time
+			return false
+		}
+		// 损坏的行跳过，最多看前几行即可，见 maxHeadLines
+		return true
+	}, maxHeadLines)
+	return t
+}
+
+// maxHeadLines 为读取文件开始时间时最多查看的行数
+const maxHeadLines = 16
 
 // readTail 按时间顺序返回日志文件（含 .1 历史文件）中最近的至多 n 条日志。
 func readTail(path string, n int) []Entry {

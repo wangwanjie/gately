@@ -339,6 +339,15 @@
                 <el-input-number v-model="form.logFileMB" :min="0" :max="100" />
                 <span class="help">{{ t('settings.runtime.logFileMBHelp') }}</span>
               </el-form-item>
+              <!-- 访问日志（Web 服务）按天归档压缩，单独设置保留天数与总大小；0 表示默认值 -->
+              <el-form-item v-if="logPersist" :label="t('settings.runtime.accessLogDays')">
+                <el-input-number v-model="form.accessLogDays" :min="0" :max="3650" />
+                <span class="help">{{ t('settings.runtime.accessLogDaysHelp') }}</span>
+              </el-form-item>
+              <el-form-item v-if="logPersist" :label="t('settings.runtime.accessLogMB')">
+                <el-input-number v-model="form.accessLogMB" :min="0" :max="102400" :step="16" />
+                <span class="help">{{ t('settings.runtime.accessLogMBHelp') }}</span>
+              </el-form-item>
               <el-form-item :label="t('settings.runtime.gcPercent')">
                 <el-input-number v-model="form.gcPercent" :min="0" :max="1000" :step="10" />
                 <span class="help">{{ t('settings.runtime.gcPercentHelp') }}</span>

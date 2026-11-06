@@ -65,6 +65,12 @@ type LogSourcer interface {
 	LogSources() []string
 }
 
+// AccessLogger 由写访问日志的模块实现。访问日志量大且需要回看，落盘时按天归档并压缩，
+// 按“访问日志保留天数”与“访问日志总大小”清理，其他模块只保留一份历史文件。
+type AccessLogger interface {
+	AccessLogs() bool
+}
+
 // SummaryItem 是总览页展示的一项指标。Level 为 ok / warn / error / info，用于着色。
 type SummaryItem struct {
 	Label string `json:"label"`

@@ -193,6 +193,9 @@ func (m *Module) LogSources() []string {
 	return out
 }
 
+// AccessLogs 实现 module.AccessLogger：站点访问日志按天归档并压缩保存。
+func (m *Module) AccessLogs() bool { return true }
+
 // listenerAddrLabel 返回监听地址的简短写法；未填写地址时按网络类型写成 0.0.0.0、[::] 或 *，区分只监听 IPv4 或 IPv6。
 func listenerAddrLabel(l Listener) string {
 	host := l.ListenIP

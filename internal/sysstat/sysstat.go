@@ -361,3 +361,8 @@ func inContainer() bool {
 	}
 	return false
 }
+
+// DiskUsage 返回 dir 所在分区的容量，不支持的平台或读取失败时返回 nil。
+func DiskUsage(dir string) *Disk {
+	return diskUsage(dir)
+}

@@ -47,7 +47,7 @@ var crudNouns = map[string]string{
 // apiCatalog 以“方法 路径”为键，补充非通用接口的说明。
 var apiCatalog = map[string]epDoc{
 	"GET /api/{module}/logs":                             {Summary: "查看模块运行日志", Desc: "支持 `since` 参数增量拉取，返回序号大于该值的日志；`before` 返回序号小于该值的日志，用于加载更早的记录；`limit` 只返回其中最新的若干条，内存中不够时继续查找日志文件里保留的历史。过滤参数：`level` 最低级别，`source` 来源，`q` 关键词（空格分隔表示同时包含，双引号包住短语，前缀 `-` 表示排除），`ip` 客户端地址（完整地址、CIDR 或地址片段，多个以逗号分隔），`host` 站点名称或域名（部分匹配），`site` 站点名称（完整匹配，只返回该站点的访问日志），`status` 状态码（如 `404`、`4xx`、`500-599`），`from`、`to` 时间范围（RFC 3339 或毫秒时间戳）。`exclude` 为排除词，包含其中任意一个的日志不返回，写法同 `q`，前缀 `-` 可省略。"},
-	"DELETE /api/{module}/logs":                          {Summary: "清空模块运行日志"},
+	"DELETE /api/{module}/logs":                          {Summary: "清空模块运行日志", Desc: "同时删除落盘的日志文件、历史文件、归档与来源记录。"},
 	"GET /api/{module}/logs/sources":                     {Summary: "列出模块日志的全部来源", Desc: "返回按名称排序的来源标签数组：日志中出现过的来源（落盘时跨重启保留），以及模块配置中的来源（例如 Web 服务的全部监听器与 IP 列表），用于按 `source` 过滤。来源与日志一样按请求语言翻译。"},
 	"GET /api/{module}/install":                          {Summary: "查看托管程序的安装信息与进度", Desc: "frp、Cloudflare 隧道、Tailscale、NetBird 与 File Browser 提供。返回配置目录 bin 下已安装的版本、保存的旧版本（`backups`，最多 3 个）、该程序单独设置的下载代理 `proxy`、当前平台，以及安装进度 `state`（`stage` 为 checking、downloading、verifying、extracting、done、uptodate 或 failed）。`unsupported` 非空时表示上游没有提供当前平台的程序。"},
 	"POST /api/{module}/install":                         {Summary: "在线安装或更新托管程序", Desc: "请求体 `{\"version\": \"\", \"proxy\": \"\"}`：`version` 为空时安装最新正式版（已是最新版时不下载，`stage` 为 uptodate），否则安装指定版本；`proxy` 为下载代理（http、https 或 socks5），会保存下来供下次使用，为空时沿用全局设置 `updateProxy`。下载后校验 SHA-256，安装到配置目录的 bin 下，原有版本移入旧版本列表，完成后重启使用该程序的进程。立即返回，进度通过 `GET /api/{module}/install` 查询。", Body: true},
