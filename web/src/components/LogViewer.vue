@@ -127,8 +127,9 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { ElMessage } from 'element-plus'
 import { CircleHelp, Download, Filter, RotateCcw, Search, SearchX, Trash2 } from 'lucide-vue-next'
-import { api, type LogEntry } from '../api'
+import { api, ApiError, type LogEntry } from '../api'
 import { usePolling } from '../composables/usePolling'
 
 const { t, locale } = useI18n()
@@ -262,7 +263,16 @@ async function loadSources() {
 
 // exportLogs 按当前筛选条件导出日志：用下载链接让浏览器直接把响应流式写入文件，导出大量日志时不占页面内存。
 // 链接带不上界面语言的请求头，用 lang 参数让导出内容与关键词匹配都按界面语言
-function exportLogs(format: string) {
+async function exportLogs(format: string) {
+  // 先用轻量的来源接口确认会话仍有效：会话过期时 api 会跳转登录页，避免浏览器把 401 的错误 JSON 当作导出文件保存
+  try {
+    await api.get(`${props.url}/sources`)
+  } catch (e) {
+    if (e instanceof ApiError && e.status !== 401) {
+      ElMessage.error(e.message)
+    }
+    return
+  }
   const q = new URLSearchParams({ format, lang: String(locale.value) })
   const a = document.createElement('a')
   a.href = `${props.url}/export?${q.toString()}${filterQuery()}`
