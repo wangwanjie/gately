@@ -137,3 +137,25 @@ func TestNoSNIHandshakeLogLevel(t *testing.T) {
 		}
 	}
 }
+
+// TestIsUnservedCertError 验证只解析证书模块的完整错误句，其他原因或多出内容时不判为噪声。
+func TestIsUnservedCertError(t *testing.T) {
+	r, err := newListenerRunner(Listener{TLS: true, Sites: []Site{{Enable: true, Domains: []string{"mine.test"}, Type: TypeText, Text: "x", StatusCode: 200}}},
+		logbuf.New(10, log.New(io.Discard, "", 0)).Logger("t"), newAuthenticator("s"), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for reason, want := range map[string]bool{
+		fmt.Sprintf("没有匹配 %q 的证书", "scan.example"):        true,
+		fmt.Sprintf("没有匹配 %q 的证书", ""):                    true,
+		fmt.Sprintf("没有匹配 %q 的证书", `a"b.example`):         true,
+		fmt.Sprintf("没有匹配 %q 的证书", "mine.test"):           false,
+		fmt.Sprintf("没有匹配 %q 的证书（附加）", "scan.example"):    false,
+		"前缀" + fmt.Sprintf("没有匹配 %q 的证书", "scan.example"): false,
+		"tls: unsupported SSLv2 handshake received":       false,
+	} {
+		if got := r.isUnservedCertError(reason); got != want {
+			t.Errorf("%q 判定为 %v，应为 %v", reason, got, want)
+		}
+	}
+}

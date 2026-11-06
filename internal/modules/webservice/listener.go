@@ -262,16 +262,11 @@ func buildSiteTable(cfg Listener, log *logbuf.Logger, auth *authenticator, waf W
 // 证书模块的错误格式为「没有匹配 %q 的证书」（见 internal/modules/ssl/module.go 的 GetCertificate）。
 // 不带 SNI、用 IP 或别人的域名握手多为公网扫描，与配置无关；站点中填写了该域名却没有证书时仍是配置问题，返回 false。
 func (l *listenerRunner) isUnservedCertError(reason string) bool {
-	rest, ok := strings.CutPrefix(reason, "没有匹配 ")
-	if !ok {
-		return false
-	}
-	quoted, ok := strings.CutSuffix(rest, " 的证书")
-	if !ok {
-		return false
-	}
-	name, err := strconv.Unquote(quoted)
-	if err != nil {
+	// 直接复用证书模块的格式串解析，它已是翻译键，不会引入新的待翻译片段；
+	// 再按同一格式拼回比对，确保整句完全一致（不接受前后多出内容）
+	const noCertFormat = "没有匹配 %q 的证书"
+	var name string
+	if _, err := fmt.Sscanf(reason, noCertFormat, &name); err != nil || fmt.Sprintf(noCertFormat, name) != reason {
 		return false
 	}
 	return !l.current().servesSNI(name)
