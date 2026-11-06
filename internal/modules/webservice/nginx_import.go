@@ -1242,10 +1242,12 @@ func nginxSeconds(v string) (int, bool) {
 		if !ok {
 			return 0, false
 		}
-		total += n * mul
-		if total > 31_536_000_000*10 {
+		// 超过 10 年按无法识别处理；先比较再相乘，避免 999999999999y 这类值乘积溢出成负数绕过上限
+		const limit = int64(31_536_000_000 * 10)
+		if n > (limit-total)/mul {
 			return 0, false
 		}
+		total += n * mul
 	}
 	if total == 0 {
 		// 0 在 nginx 中没有实际意义，交给调用方按无法识别处理

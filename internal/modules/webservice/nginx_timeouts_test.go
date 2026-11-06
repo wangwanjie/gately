@@ -7,12 +7,12 @@ import (
 
 // nginx 时间值的解析与向上取整。
 func TestNginxSeconds(t *testing.T) {
-	for in, want := range map[string]int{"60": 60, "30s": 30, "5m": 300, "1h": 3600, "1m30s": 90, "500ms": 1, "1500ms": 2, "1d": 86400, "2w": 1209600} {
+	for in, want := range map[string]int{"60": 60, "30s": 30, "5m": 300, "1h": 3600, "1m30s": 90, "500ms": 1, "1500ms": 2, "1d": 86400, "2w": 1209600, "10y": 315360000} {
 		if got, ok := nginxSeconds(in); !ok || got != want {
 			t.Errorf("%q = %d %v，应为 %d", in, got, ok, want)
 		}
 	}
-	for _, bad := range []string{"", "0", "0s", "s", "10x", "1.5s", "-1", "5 s", "9999999999999s"} {
+	for _, bad := range []string{"", "0", "0s", "s", "10x", "1.5s", "-1", "5 s", "9999999999999s", "11y", "999999999999y", "999999999999M", "9y999999999999d"} {
 		if _, ok := nginxSeconds(bad); ok {
 			t.Errorf("%q 应无法识别", bad)
 		}
