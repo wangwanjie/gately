@@ -16,19 +16,26 @@ import (
 )
 
 func TestPortCheck(t *testing.T) {
-	ln, err := net.Listen("tcp", ":0")
-	if err != nil {
-		t.Fatal(err)
+	// 端口关闭后可能被并行运行的其他测试进程立即占用，换端口重试几次，避免偶发失败
+	for attempt := 0; attempt < 5; attempt++ {
+		ln, err := net.Listen("tcp", ":0")
+		if err != nil {
+			t.Fatal(err)
+		}
+		port := ln.Addr().(*net.TCPAddr).Port
+		r := portCheck(port)
+		if r.Status != module.CheckInfo || r.Params["state"] != "inuse" || r.ID != "port."+strconv.Itoa(port) {
+			ln.Close()
+			t.Fatalf("占用的端口应为 info/inuse: %+v", r)
+		}
+		ln.Close()
+		r = portCheck(port)
+		if r.Status == module.CheckOK {
+			return
+		}
+		t.Logf("端口 %d 关闭后仍被占用（可能被其他进程抢占），重试: %+v", port, r)
 	}
-	port := ln.Addr().(*net.TCPAddr).Port
-	r := portCheck(port)
-	if r.Status != module.CheckInfo || r.Params["state"] != "inuse" || r.ID != "port."+strconv.Itoa(port) {
-		t.Fatalf("占用的端口应为 info/inuse: %+v", r)
-	}
-	ln.Close()
-	if r := portCheck(port); r.Status != module.CheckOK {
-		t.Fatalf("空闲端口应为 ok: %+v", r)
-	}
+	t.Fatal("空闲端口应为 ok：连续 5 次关闭后仍显示占用")
 }
 
 func TestNatChecks(t *testing.T) {
