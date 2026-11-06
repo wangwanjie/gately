@@ -98,6 +98,15 @@ Die Erkennung zählt neue Verbindungen zu Ports, **auf denen dieser Host nicht l
 
 Belegte Köderports werden automatisch ausgenommen, damit keine legitimen Besucher gesperrt werden.
 
+## IPv6-Strikt-Modus
+
+IPv6 hat kein NAT, jedes Gerät besitzt eine öffentliche Adresse, und sobald sie in DNS oder Certificate-Transparency-Logs auftaucht, können Scanner sie direkt erreichen. Die Option „IPv6-Strikt-Modus“ der Portscan-Erkennung stellt IPv6 auf eine Allowlist um: IPv6-Quellen dürfen nur offene Ports erreichen (lauschende Ports plus „Zusätzliche offene Ports“), schon die erste Verbindung zu einem anderen Port führt zur Sperre, ohne Schwellenwert. IPv4 nutzt weiterhin den Schwellenwert.
+
+- Die Sperre gilt für das gesamte /64, andere Geräte im selben /64 werden mitgesperrt. Adressen der Whitelist und die von „Private Adressen ignorieren“ erfassten Adressen sind ausgenommen.
+- Ein neu lauschender Port gilt nach etwa 10 Sekunden als offen, der Modus wirkt etwa 15 Sekunden nach dem Einschalten oder einem Neustart; bis dahin gilt der Schwellenwert. Der Schwellenwert gilt auch, wenn die lauschenden Ports nicht gelesen werden können.
+- Ports, die andere Programme über Firewall-Regeln nutzen, müssen zuerst zu „Zusätzliche offene Ports“ hinzugefügt werden, sonst werden Quellen, die sie nutzen, gesperrt.
+- Gezählt werden nur neue TCP-Verbindungen. Die Firewall-Synchronisierung muss aktiv und die Portscan-Erkennung eingeschaltet sein.
+
 ## Verhältnis zum Webdienst
 
 Sperren aus „Nach fehlgeschlagener Authentifizierung sperren“ des Webdienstes landen in derselben Sperrliste; mit aktiver Synchronisierung gelten sie daher für den ganzen Host statt nur für Websites. Mit „LAN-Adressen ignorieren“ werden LAN-Adressen nie automatisch gesperrt.

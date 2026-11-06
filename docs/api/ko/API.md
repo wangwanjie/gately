@@ -1371,6 +1371,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `banSeconds` | integer |
 | `enable` | boolean |
 | `excludePorts` | string |
+| `ipv6Strict` | boolean |
 | `threshold` | integer |
 
 ### guard.Settings

@@ -98,6 +98,15 @@ Scan detection counts new connections to ports **this host is not listening on**
 
 Trap ports that are in use are excluded automatically so legitimate visitors are not banned.
 
+## IPv6 strict mode
+
+IPv6 has no NAT, so every device has a public address, and once that address shows up in DNS or certificate transparency logs, scanners can connect to it directly. The "IPv6 strict mode" option of port scan detection switches IPv6 to an allowlist: IPv6 sources may only connect to open ports (listening ports plus "Extra open ports"), and the first connection to any other port gets them banned, with no threshold counting. IPv4 still uses the threshold.
+
+- Bans apply to the whole /64, so other devices in the same /64 are banned too. Whitelisted addresses and the addresses covered by "Ignore private addresses" are not affected.
+- A port that starts listening counts as open within about 10 seconds, and the mode takes effect about 15 seconds after being turned on or after a restart; until then the threshold applies. The threshold also applies when the listening ports cannot be read.
+- Ports used by other programs through firewall rules must be added to "Extra open ports" first, or sources connecting to them will be banned.
+- Only new TCP connections are counted. Firewall sync must be active and port scan detection must be enabled.
+
 ## Relationship with the web service
 
 Bans from the web service's "Ban after failed authentication" go into the same ban list, so with firewall sync on they apply to the whole host rather than only to web sites. With "Ignore LAN addresses" on, LAN addresses are never banned automatically.

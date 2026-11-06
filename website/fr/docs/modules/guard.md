@@ -98,6 +98,15 @@ La détection compte les nouvelles connexions vers des ports **sur lesquels cet 
 
 Les ports pièges en cours d'utilisation sont exclus automatiquement pour ne pas bannir de visiteurs légitimes.
 
+## Mode strict IPv6
+
+IPv6 n'a pas de NAT : chaque appareil possède une adresse publique, et dès qu'elle apparaît dans le DNS ou dans les journaux de transparence des certificats, les scanners peuvent s'y connecter directement. L'option « Mode strict IPv6 » de la détection de scan de ports passe IPv6 en liste d'autorisation : les sources IPv6 ne peuvent se connecter qu'aux ports ouverts (ports en écoute plus « Ports ouverts supplémentaires ») et la première connexion à un autre port entraîne un bannissement, sans seuil. IPv4 utilise toujours le seuil.
+
+- Le bannissement s'applique à tout le /64 : les autres appareils du même /64 sont bannis aussi. Les adresses de la liste blanche et celles couvertes par « Ignorer les adresses privées » sont épargnées.
+- Un port qui commence à écouter est considéré ouvert après environ 10 secondes, et le mode prend effet environ 15 secondes après l'activation ou un redémarrage ; d'ici là, le seuil s'applique. Le seuil s'applique aussi quand les ports en écoute ne peuvent pas être lus.
+- Les ports utilisés par d'autres programmes via des règles de pare-feu doivent d'abord être ajoutés aux « Ports ouverts supplémentaires », sinon les sources qui s'y connectent seront bannies.
+- Seules les nouvelles connexions TCP sont comptées. La synchronisation avec le pare-feu doit être active et la détection de scan de ports activée.
+
 ## Lien avec le service web
 
 Les bannissements de « Bannir après des échecs d'authentification » du service web vont dans la même liste ; avec la synchronisation activée, ils s'appliquent donc à tout l'hôte et plus seulement aux sites web. Avec « Ignorer les adresses du LAN » activé, les adresses du LAN ne sont jamais bannies automatiquement.

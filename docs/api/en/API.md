@@ -1371,6 +1371,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `banSeconds` | integer |
 | `enable` | boolean |
 | `excludePorts` | string |
+| `ipv6Strict` | boolean |
 | `threshold` | integer |
 
 ### guard.Settings

@@ -1055,6 +1055,9 @@
           "excludePorts": {
             "type": "string"
           },
+          "ipv6Strict": {
+            "type": "boolean"
+          },
           "threshold": {
             "type": "integer"
           }

@@ -1371,6 +1371,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `banSeconds` | integer |
 | `enable` | boolean |
 | `excludePorts` | string |
+| `ipv6Strict` | boolean |
 | `threshold` | integer |
 
 ### guard.Settings

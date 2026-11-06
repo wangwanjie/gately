@@ -1371,6 +1371,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `banSeconds` | integer |
 | `enable` | boolean |
 | `excludePorts` | string |
+| `ipv6Strict` | boolean |
 | `threshold` | integer |
 
 ### guard.Settings

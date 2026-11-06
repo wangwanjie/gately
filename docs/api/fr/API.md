@@ -1371,6 +1371,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `banSeconds` | integer |
 | `enable` | boolean |
 | `excludePorts` | string |
+| `ipv6Strict` | boolean |
 | `threshold` | integer |
 
 ### guard.Settings

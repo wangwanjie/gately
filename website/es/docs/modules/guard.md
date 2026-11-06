@@ -98,6 +98,15 @@ La detección cuenta las conexiones nuevas a puertos **en los que este equipo no
 
 Los puertos trampa que están en uso se excluyen automáticamente para no bloquear a visitantes legítimos.
 
+## Modo estricto IPv6
+
+IPv6 no tiene NAT, cada dispositivo tiene una dirección pública y, cuando esa dirección aparece en el DNS o en los registros de transparencia de certificados, los escáneres pueden conectarse a ella directamente. La opción «Modo estricto IPv6» de la detección de escaneo de puertos pasa IPv6 a una lista de permitidos: los orígenes IPv6 solo pueden conectarse a puertos abiertos (puertos en escucha más «Puertos abiertos adicionales») y la primera conexión a cualquier otro puerto provoca el bloqueo, sin contar umbral. IPv4 sigue usando el umbral.
+
+- El bloqueo se aplica a todo el /64, así que los demás dispositivos del mismo /64 también quedan bloqueados. Las direcciones de la lista blanca y las cubiertas por «Ignorar direcciones privadas» no se ven afectadas.
+- Un puerto que empieza a escuchar se considera abierto en unos 10 segundos, y el modo surte efecto unos 15 segundos después de activarlo o de reiniciar; hasta entonces se aplica el umbral. El umbral también se aplica cuando no se pueden leer los puertos en escucha.
+- Los puertos que otros programas usan mediante reglas del cortafuegos deben añadirse antes a «Puertos abiertos adicionales»; de lo contrario, los orígenes que se conecten a ellos serán bloqueados.
+- Solo se cuentan las conexiones TCP nuevas. La sincronización con el cortafuegos debe estar activa y la detección de escaneo de puertos habilitada.
+
 ## Relación con el servicio web
 
 Los bloqueos de «Bloquear tras fallos de autenticación» del servicio web van a la misma lista, por lo que con la sincronización activada afectan a todo el equipo y no solo a los sitios web. Con «Ignorar direcciones de la LAN» activado, las direcciones de la LAN nunca se bloquean automáticamente.

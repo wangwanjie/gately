@@ -98,6 +98,15 @@ A detecção conta conexões novas a portas **em que este host não está escuta
 
 Portas armadilha em uso são excluídas automaticamente para não bloquear visitantes legítimos.
 
+## Modo estrito IPv6
+
+O IPv6 não tem NAT, cada dispositivo tem um endereço público e, quando esse endereço aparece no DNS ou nos logs de transparência de certificados, scanners podem se conectar a ele diretamente. A opção «Modo estrito IPv6» da detecção de varredura de portas muda o IPv6 para uma lista de permissões: origens IPv6 só podem se conectar a portas abertas (portas em escuta mais «Portas abertas adicionais») e a primeira conexão a qualquer outra porta resulta em banimento, sem contagem de limite. O IPv4 continua usando o limite.
+
+- O banimento vale para todo o /64, então outros dispositivos do mesmo /64 também são banidos. Endereços da lista branca e os cobertos por «Ignorar endereços privados» não são afetados.
+- Uma porta que começa a escutar é considerada aberta em cerca de 10 segundos, e o modo entra em vigor cerca de 15 segundos após ser ativado ou após uma reinicialização; até lá vale o limite. O limite também vale quando as portas em escuta não podem ser lidas.
+- Portas usadas por outros programas por meio de regras de firewall devem ser adicionadas antes às «Portas abertas adicionais», ou as origens que se conectarem a elas serão banidas.
+- Apenas novas conexões TCP são contadas. A sincronização com o firewall deve estar ativa e a detecção de varredura de portas habilitada.
+
 ## Relação com o serviço web
 
 Os bloqueios de "Bloquear após falhas de autenticação" do serviço web vão para a mesma lista; com a sincronização ligada, eles valem para o host inteiro, e não só para os sites. Com "Ignorar endereços da LAN" ligado, endereços da LAN nunca são bloqueados automaticamente.
