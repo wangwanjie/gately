@@ -104,6 +104,7 @@ IPv6 hat kein NAT, jedes Gerät besitzt eine öffentliche Adresse, und sobald si
 
 - Die Sperre gilt für das gesamte /64, andere Geräte im selben /64 werden mitgesperrt. Adressen der Whitelist und die von „Private Adressen ignorieren“ erfassten Adressen sind ausgenommen.
 - Ein neu lauschender Port gilt nach etwa 10 Sekunden als offen, der Modus wirkt etwa 15 Sekunden nach dem Einschalten oder einem Neustart; bis dahin gilt der Schwellenwert. Der Schwellenwert gilt auch, wenn die lauschenden Ports nicht gelesen werden können.
+- Ein Port, der nicht mehr lauscht, gilt noch 30 Sekunden als offen, damit Besucher, die während eines frps-Neuverbindens oder eines Neustarts eines Programms oder Listeners erneut verbinden, nicht gesperrt werden. Hat der FTP-Dienst einen passiven Portbereich, zählt der ganze Bereich als offen; vergibt das System die passiven Ports zufällig, lassen sie sich nicht vorab auflisten, IPv6-Datenverbindungen würden als Scan gesperrt, und das Laufprotokoll weist darauf hin: Legen Sie im FTP-Dienst einen passiven Portbereich fest.
 - Ports, die andere Programme über Firewall-Regeln nutzen, müssen zuerst zu „Zusätzliche offene Ports“ hinzugefügt werden, sonst werden Quellen, die sie nutzen, gesperrt.
 - Gezählt werden nur neue TCP-Verbindungen. Die Firewall-Synchronisierung muss aktiv und die Portscan-Erkennung eingeschaltet sein.
 

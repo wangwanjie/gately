@@ -104,6 +104,7 @@ IPv6 has no NAT, so every device has a public address, and once that address sho
 
 - Bans apply to the whole /64, so other devices in the same /64 are banned too. Whitelisted addresses and the addresses covered by "Ignore private addresses" are not affected.
 - A port that starts listening counts as open within about 10 seconds, and the mode takes effect about 15 seconds after being turned on or after a restart; until then the threshold applies. The threshold also applies when the listening ports cannot be read.
+- A port that stops listening still counts as open for 30 seconds, so visitors retrying while frps reconnects or a program or listener restarts are not banned. When the FTP service has a passive port range, the whole range counts as open; with passive ports assigned at random by the system they cannot be listed in advance, IPv6 data connections would be banned as scans, and the run log says so: set a passive port range in the FTP service.
 - Ports used by other programs through firewall rules must be added to "Extra open ports" first, or sources connecting to them will be banned.
 - Only new TCP connections are counted. Firewall sync must be active and port scan detection must be enabled.
 

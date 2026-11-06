@@ -168,7 +168,7 @@
     "exclude": "Extra open ports",
     "excludeHelp": "{count} ports are listening and count as open automatically. Add ports used by other programs through firewall rules here.",
     "ipv6Strict": "IPv6 strict mode",
-    "ipv6StrictHelp": "When on, IPv6 sources may only connect to open ports (listening ports plus the extra open ports above); the first connection to any other port gets them banned, with no threshold counting. IPv4 still uses the threshold. Bans apply to the whole /64, so other devices in the same /64 are banned too; whitelisted addresses are not affected. A port that starts listening counts as open within about 10 seconds, and the mode takes effect about 15 seconds after being turned on or after a restart. Ports used by other programs through firewall rules must be added to the extra open ports first, or visitors using them will be banned. TCP only."
+    "ipv6StrictHelp": "When on, IPv6 sources may only connect to open ports (listening ports plus the extra open ports above); the first connection to any other port gets them banned, with no threshold counting. IPv4 still uses the threshold. Bans apply to the whole /64, so other devices in the same /64 are banned too; whitelisted addresses are not affected. A port that starts listening counts as open within about 10 seconds, and the mode takes effect about 15 seconds after being turned on or after a restart. Ports used by other programs through firewall rules must be added to the extra open ports first, or visitors using them will be banned. TCP only. When using the FTP service, set a passive port range; the whole range counts as open automatically."
   },
   "settings": {
     "firewall": "Sync to system firewall",

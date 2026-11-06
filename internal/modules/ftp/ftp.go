@@ -24,6 +24,7 @@ import (
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
 	"github.com/wangwanjie/gately/internal/mountfs"
+	"github.com/wangwanjie/gately/internal/openports"
 )
 
 // ID 是模块标识。
@@ -322,6 +323,7 @@ func (m *Module) Stop() error {
 }
 
 func (m *Module) stopLocked() {
+	openports.Clear(ID)
 	if m.srv != nil {
 		_ = m.srv.Stop()
 		m.srv = nil
@@ -353,6 +355,12 @@ func (m *Module) restartLocked() {
 		return
 	}
 	m.srv, m.drv = srv, d
+	// 被动模式的数据端口只在传输时短暂监听，登记给入侵防护，避免 IPv6 严格模式把数据连接当成端口扫描
+	if m.settings.PassiveStart != 0 {
+		openports.Set(ID, openports.Entry{Ranges: []openports.Range{{Lo: m.settings.PassiveStart, Hi: m.settings.PassiveEnd}}})
+	} else {
+		openports.Set(ID, openports.Entry{Dynamic: true})
+	}
 	go func() {
 		// Serve 在 Stop 后返回，其他错误写入运行日志
 		if err := srv.Serve(); err != nil {

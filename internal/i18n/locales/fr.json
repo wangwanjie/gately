@@ -287,6 +287,7 @@
   "IPv%d 网卡地址选择 %q（按序号）暂不支持，已改为自动选择公网地址": "IPv%d : la sélection de l'adresse de carte réseau %q (par numéro) n'est pas prise en charge pour l'instant, passage en sélection automatique de l'adresse publique",
   "IPv4 地址: %s -\u003e %s": "Adresse IPv4 : %s -\u003e %s",
   "IPv4 获取: %w": "Obtention IPv4 : %w",
+  "IPv6 严格模式下，%s 使用随机分配的端口，IPv6 访客连接这些端口会被当成端口扫描封禁；请为它设置固定的端口范围（如 FTP 被动端口范围）": "En mode strict IPv6, %s utilise des ports attribués aléatoirement, et les visiteurs IPv6 qui s'y connectent sont bannis comme scanners de ports ; définissez-lui une plage de ports fixe (comme la plage de ports passifs FTP)",
   "IPv6 严格模式已启用：IPv6 来源连接开放端口以外的端口即被封禁": "Mode strict IPv6 activé : une source IPv6 est bannie dès qu'elle se connecte à un port qui n'est pas ouvert",
   "IPv6 地址: %s -\u003e %s": "Adresse IPv6 : %s -\u003e %s",
   "IPv6 地址属性过短": "Attribut d'adresse IPv6 trop court",

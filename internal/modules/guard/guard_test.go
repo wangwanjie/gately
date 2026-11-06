@@ -20,6 +20,7 @@ import (
 	"github.com/wangwanjie/gately/internal/events"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
+	"github.com/wangwanjie/gately/internal/openports"
 )
 
 // cleanDefault 清空共享封禁表，避免测试之间互相影响。
@@ -1051,5 +1052,61 @@ func TestFirewallOpenPortsGrace(t *testing.T) {
 	fw.poll(ctx)
 	if got := openOf(); got != "443" {
 		t.Fatalf("超过宽限期的端口应移出，得到 %q", got)
+	}
+}
+
+// 模块登记的临时端口（如 FTP 被动端口范围）计入开放端口；使用随机端口的模块在严格模式下提示一次
+func TestFirewallRegisteredOpenPorts(t *testing.T) {
+	cleanDefault(t)
+	old := listeningPortsFn
+	defer func() { listeningPortsFn = old }()
+	listeningPortsFn = func() (map[int]bool, error) {
+		return map[int]bool{21: true}, nil
+	}
+	t.Cleanup(func() {
+		openports.Clear("ftp")
+	})
+	openports.Set("ftp", openports.Entry{Ranges: []openports.Range{{Lo: 50000, Hi: 50010}}})
+	buf := logbuf.New(100, nil)
+	fake := &fakeNFT{output: `{"nftables": []}`}
+	fw := activeFirewall(t, fake)
+	fw.log = buf.Logger("fw")
+	ctx := context.Background()
+	s := defaultSettings()
+	s.Scan = ScanSettings{Enable: true, Threshold: 10, IPv6Strict: true}
+	fw.apply(ctx, s)
+	fw.mu.Lock()
+	got := fw.open
+	fw.mu.Unlock()
+	if got != "21,50000-50010" {
+		t.Fatalf("开放端口应包含 FTP 被动端口范围，得到 %q", got)
+	}
+	countWarn := func() int {
+		n := 0
+		for _, e := range buf.Since(0) {
+			if strings.Contains(e.Message, "随机分配的端口") {
+				n++
+			}
+		}
+		return n
+	}
+	if countWarn() != 0 {
+		t.Fatal("固定端口范围不应提示")
+	}
+	// 改为随机被动端口：提示一次，重复轮询不再提示
+	openports.Set("ftp", openports.Entry{Dynamic: true})
+	fw.poll(ctx)
+	fw.poll(ctx)
+	if n := countWarn(); n != 1 {
+		t.Fatalf("随机端口应提示一次，得到 %d 次", n)
+	}
+	// 关闭严格模式时不提示
+	openports.Clear("ftp")
+	fw.poll(ctx)
+	openports.Set("ftp", openports.Entry{Dynamic: true})
+	s.Scan.IPv6Strict = false
+	fw.apply(ctx, s)
+	if n := countWarn(); n != 1 {
+		t.Fatalf("关闭严格模式不应再提示，得到 %d 次", n)
 	}
 }

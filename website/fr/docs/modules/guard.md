@@ -104,6 +104,7 @@ IPv6 n'a pas de NAT : chaque appareil possède une adresse publique, et dès qu'
 
 - Le bannissement s'applique à tout le /64 : les autres appareils du même /64 sont bannis aussi. Les adresses de la liste blanche et celles couvertes par « Ignorer les adresses privées » sont épargnées.
 - Un port qui commence à écouter est considéré ouvert après environ 10 secondes, et le mode prend effet environ 15 secondes après l'activation ou un redémarrage ; d'ici là, le seuil s'applique. Le seuil s'applique aussi quand les ports en écoute ne peuvent pas être lus.
+- Un port qui cesse d'écouter reste considéré comme ouvert pendant 30 secondes, afin que les visiteurs qui réessaient pendant une reconnexion de frps ou le redémarrage d'un programme ou d'un écouteur ne soient pas bannis. Quand le service FTP a une plage de ports passifs, toute la plage compte comme ouverte ; si le système attribue les ports passifs au hasard, ils ne peuvent pas être listés à l'avance, les connexions de données IPv6 seraient bannies comme des scans et le journal d'exécution le signale : définissez une plage de ports passifs dans le service FTP.
 - Les ports utilisés par d'autres programmes via des règles de pare-feu doivent d'abord être ajoutés aux « Ports ouverts supplémentaires », sinon les sources qui s'y connectent seront bannies.
 - Seules les nouvelles connexions TCP sont comptées. La synchronisation avec le pare-feu doit être active et la détection de scan de ports activée.
 

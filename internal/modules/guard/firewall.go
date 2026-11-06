@@ -17,6 +17,7 @@ import (
 
 	"github.com/wangwanjie/gately/internal/banlist"
 	"github.com/wangwanjie/gately/internal/logbuf"
+	"github.com/wangwanjie/gately/internal/openports"
 )
 
 // tableName 是 Gately 在 nftables 中使用的表（inet 族，同时处理 IPv4 与 IPv6）
@@ -89,6 +90,8 @@ type firewall struct {
 	// seen 为各端口最近一次读到正在监听的时间。端口短暂停止监听（frps 重连、托管进程或监听器重启）时
 	// 在 portGrace 内仍视为开放，避免恰好落在停机窗口的轮询把它移出开放端口集合，让重连的正常访客被严格模式封禁
 	seen map[int]time.Time
+	// dynWarned 为最近一次提示过的「使用随机端口的模块」，内容不变时不重复提示
+	dynWarned string
 	// dirty 表示封禁表有变化，等待轮询协程对账写入
 	dirty    bool
 	importFn func(source string, addrs []netip.Addr)
@@ -295,6 +298,7 @@ func (f *firewall) applyLocked(ctx context.Context, s Settings) {
 	}
 	listening, lerr := f.listeningLocked()
 	open, trap, skipped := portSets(s, listening)
+	f.warnDynamicLocked(s)
 	entries := banlist.Default.List()
 	// 严格模式就绪之前按普通的阈值检测处理
 	ss := s
@@ -350,13 +354,36 @@ func (f *firewall) listeningLocked() (map[int]bool, error) {
 	return out, nil
 }
 
+// warnDynamicLocked 在 IPv6 严格模式开启、且有模块使用随机端口（如未设置被动端口范围的 FTP）时提示一次：
+// 这些端口无法事先列入开放端口，IPv6 访客连接它们会被当成端口扫描封禁。调用方持有 f.mu。
+func (f *firewall) warnDynamicLocked(s Settings) {
+	cur := ""
+	if s.Scan.Enable && s.Scan.IPv6Strict {
+		_, dynamic := openports.All()
+		cur = strings.Join(dynamic, ",")
+	}
+	if cur == f.dynWarned {
+		return
+	}
+	f.dynWarned = cur
+	if cur != "" {
+		f.log.Warnf("IPv6 严格模式下，%s 使用随机分配的端口，IPv6 访客连接这些端口会被当成端口扫描封禁；请为它设置固定的端口范围（如 FTP 被动端口范围）", cur)
+	}
+}
+
 // portSets 计算扫描检测视为开放的端口与实际生效的诱饵端口（去掉正在监听的端口）。
+// 开放端口还包括各模块登记的临时端口（如 FTP 被动端口范围），见 openports。
 func portSets(s Settings, listening map[int]bool) (open, trap []portRange, skipped []int) {
 	for p := range listening {
 		open = append(open, portRange{p, p})
 	}
 	ex, _ := parsePorts(s.Scan.ExcludePorts)
-	open = mergePorts(append(open, ex...))
+	open = append(open, ex...)
+	extra, _ := openports.All()
+	for _, r := range extra {
+		open = append(open, portRange{r.Lo, r.Hi})
+	}
+	open = mergePorts(open)
 	traps, _ := parsePorts(s.Trap.Ports)
 	trap, skipped = subtractPorts(traps, listening)
 	if skipped == nil {
@@ -910,6 +937,7 @@ func (f *firewall) refreshPortsLocked(ctx context.Context) bool {
 		return false
 	}
 	open, trap, skipped := portSets(f.cfg, listening)
+	f.warnDynamicLocked(f.cfg)
 	o, t := formatPorts(open), formatPorts(trap)
 	f.status.OpenPorts = countPorts(open)
 	f.status.TrapPorts = t

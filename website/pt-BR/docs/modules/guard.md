@@ -104,6 +104,7 @@ O IPv6 não tem NAT, cada dispositivo tem um endereço público e, quando esse e
 
 - O banimento vale para todo o /64, então outros dispositivos do mesmo /64 também são banidos. Endereços da lista branca e os cobertos por «Ignorar endereços privados» não são afetados.
 - Uma porta que começa a escutar é considerada aberta em cerca de 10 segundos, e o modo entra em vigor cerca de 15 segundos após ser ativado ou após uma reinicialização; até lá vale o limite. O limite também vale quando as portas em escuta não podem ser lidas.
+- Uma porta que para de escutar ainda conta como aberta por 30 segundos, para que visitantes que tentam de novo enquanto o frps se reconecta ou um programa ou listener reinicia não sejam banidos. Quando o serviço FTP tem um intervalo de portas passivas, o intervalo inteiro conta como aberto; se o sistema atribui as portas passivas aleatoriamente, elas não podem ser listadas antes, as conexões de dados IPv6 seriam banidas como varreduras e o log de execução avisa: defina um intervalo de portas passivas no serviço FTP.
 - Portas usadas por outros programas por meio de regras de firewall devem ser adicionadas antes às «Portas abertas adicionais», ou as origens que se conectarem a elas serão banidas.
 - Apenas novas conexões TCP são contadas. A sincronização com o firewall deve estar ativa e a detecção de varredura de portas habilitada.
 

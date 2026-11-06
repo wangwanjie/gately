@@ -104,6 +104,7 @@ IPv6 no tiene NAT, cada dispositivo tiene una dirección pública y, cuando esa 
 
 - El bloqueo se aplica a todo el /64, así que los demás dispositivos del mismo /64 también quedan bloqueados. Las direcciones de la lista blanca y las cubiertas por «Ignorar direcciones privadas» no se ven afectadas.
 - Un puerto que empieza a escuchar se considera abierto en unos 10 segundos, y el modo surte efecto unos 15 segundos después de activarlo o de reiniciar; hasta entonces se aplica el umbral. El umbral también se aplica cuando no se pueden leer los puertos en escucha.
+- Un puerto que deja de escuchar sigue contando como abierto durante 30 segundos, para que no se bloquee a los visitantes que reintentan mientras frps se reconecta o se reinicia un programa o una escucha. Si el servicio FTP tiene un rango de puertos pasivos, todo el rango cuenta como abierto; si el sistema asigna los puertos pasivos al azar, no se pueden listar de antemano, las conexiones de datos IPv6 se bloquearían como escaneos y el registro de ejecución lo avisa: configure un rango de puertos pasivos en el servicio FTP.
 - Los puertos que otros programas usan mediante reglas del cortafuegos deben añadirse antes a «Puertos abiertos adicionales»; de lo contrario, los orígenes que se conecten a ellos serán bloqueados.
 - Solo se cuentan las conexiones TCP nuevas. La sincronización con el cortafuegos debe estar activa y la detección de escaneo de puertos habilitada.
 
