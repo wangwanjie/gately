@@ -23,6 +23,12 @@
 
 部分平台取不到某些指標（例如 macOS 上沒有 CPU 使用率），對應圖表顯示「暫無資料」。
 
+### 託管程序
+
+Gately 託管外部程式（frp、Tailscale、NetBird、Cloudflare 隧道、File Browser）時，「主機與 Gately 程序」下方列出各託管程序：所屬模組與實例、程式名、PID、執行時長、重新啟動次數，以及目前 CPU 與常駐記憶體和最近約 60 秒的迷你曲線；點擊一列進入對應模組。CPU 與 Gately 程序口徑一致，按整機核心數折算。只統計程序本身，不含它再啟動的子程序；不顯示路徑、啟動參數與環境變數。
+
+「Gately 程序 CPU」與「Gately 程序記憶體」兩張圖另有一條綠色的託管程序合計線，圖表右上角同時顯示合計的最新值，1 小時與 24 小時檔同樣保留。Linux 上讀取 `/proc`，macOS 上透過 `ps` 讀取（取不到執行緒數），其他平台只列出程序。也可以透過 `GET /api/perf/processes` 讀取（需要 `perf:read` 權限）。
+
 ### 站台
 
 開啟 Web 服務模組時，列出全部執行中的站台（含預設站台）：
@@ -107,6 +113,7 @@
 | `GET /api/perf/overview?range=60s\|1h\|24h` | 主機與程序歷史 |
 | `GET /api/perf/sites` | 各站台最近約 60 秒的指標 |
 | `GET /api/perf/alerts` | 計時中與告警中的對象 |
+| `GET /api/perf/processes` | 託管程序目前與最近約 60 秒的 CPU、常駐記憶體 |
 | `GET /api/perf/metrics` | 可用於告警的指標 |
 | `/api/perf/rules` | 告警規則的增刪改查、啟停、排序與分組 |
 

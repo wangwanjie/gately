@@ -1,0 +1,11 @@
+{
+  "title": "관리 프로세스",
+  "total": "{count}개 · CPU {cpu} · 메모리 {rss}",
+  "uptime": "실행 {d}",
+  "threads": "스레드 {n}개",
+  "restarts": "재시작 {n}회",
+  "memory": "메모리",
+  "chartTotal": "관리 프로세스 합계",
+  "perfHelp": "Gately가 시작하고 관리하는 외부 프로그램(frpc, tailscaled, File Browser 등)이며 프로세스 자체만 집계합니다. CPU는 호스트 전체 코어 기준 비율이고 곡선은 최근 약 60초입니다. 위쪽 Gately 프로세스 CPU·메모리 차트에는 관리 프로세스 합계 선이 함께 표시됩니다.",
+  "chartLatest": "관리 프로세스 {v}"
+}

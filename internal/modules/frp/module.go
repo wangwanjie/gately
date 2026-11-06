@@ -337,7 +337,7 @@ func (m *Module) runInstance(runs map[string]*instRuntime, bin, key, name, conte
 	}
 	// 名称可能被修改，重建托管器以使用新的日志来源
 	rt.sup = proc.New(log)
-	rt.sup.Start(proc.Spec{Path: exe, Args: []string{"-c", path}})
+	rt.sup.Start(proc.Spec{Path: exe, Args: []string{"-c", path}, Module: ID, Name: name})
 }
 
 // clientContent 返回 frpc 实例应运行的配置内容，停用或模块未启动时为空。

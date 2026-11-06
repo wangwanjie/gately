@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/wangwanjie/gately/internal/auth"
 	"github.com/wangwanjie/gately/internal/config"
 	"github.com/wangwanjie/gately/internal/crud"
 	"github.com/wangwanjie/gately/internal/events"
@@ -47,6 +48,8 @@ type Module struct {
 	now     func() time.Time
 	cancel  context.CancelFunc
 	done    chan struct{}
+	// procs 保存各托管进程最近 60 秒的资源占用
+	procs procTracker
 }
 
 // New 创建模块，web 为 Web 服务模块，用于取得各站点的性能快照；可为 nil（此时只监控主机与进程）。
@@ -159,8 +162,9 @@ func (m *Module) loop(ctx context.Context, done chan struct{}) {
 
 // sampleOnce 执行一次采样与评估并发布产生的事件。
 func (m *Module) sampleOnce() {
-	var host hostSample
-	host = toHostSample(m.src.Host())
+	snap := m.src.Host()
+	host := toHostSample(snap)
+	m.procs.add(m.now(), snap.Managed)
 	var sites []webservice.PerfSite
 	if m.src.Sites != nil {
 		sites = m.src.Sites()
@@ -178,7 +182,7 @@ func (m *Module) sampleOnce() {
 
 // toHostSample 把系统快照转换为采样值，取不到的字段为 unknown。
 func toHostSample(s sysstat.Snapshot) hostSample {
-	h := hostSample{Name: s.Hostname, CPU: unknown, Mem: unknown, Disk: unknown, Load1: unknown, ProcCPU: unknown, ProcRSSMB: unknown, ProcFD: unknown}
+	h := hostSample{Name: s.Hostname, CPU: unknown, Mem: unknown, Disk: unknown, Load1: unknown, ProcCPU: unknown, ProcRSSMB: unknown, ProcFD: unknown, ChildCPU: unknown, ChildRSSMB: unknown}
 	if s.CPU.Usage != nil {
 		h.CPU = *s.CPU.Usage
 	}
@@ -201,6 +205,17 @@ func toHostSample(s sysstat.Snapshot) hostSample {
 		h.ProcFD = float64(s.Process.FDs)
 	}
 	h.Goroutines = float64(s.Process.Goroutines)
+	// 托管进程合计：只累加取得到的值，一个都取不到（或没有托管进程）时为 unknown，图表上不画这条线
+	cpu, rss := unknown, unknown
+	for _, c := range s.Managed {
+		if c.CPU != nil {
+			cpu = max(cpu, 0) + *c.CPU
+		}
+		if c.RSS > 0 {
+			rss = max(rss, 0) + float64(c.RSS)/(1<<20)
+		}
+	}
+	h.ChildCPU, h.ChildRSSMB = cpu, rss
 	return h
 }
 
@@ -223,10 +238,12 @@ func (m *Module) Routes(r module.Router) {
 	r.HandleFunc("GET /overview", m.handleOverview)
 	r.HandleFunc("GET /sites", m.handleSites)
 	r.HandleFunc("GET /alerts", m.handleAlerts)
+	r.HandleFunc("GET /processes", m.handleProcesses)
 	module.DocOf(r, "GET /metrics", module.Doc{Summary: "可用于告警的指标", Resp: []MetricDef{}})
 	module.DocOf(r, "GET /overview", module.Doc{Summary: "主机与进程历史（?range=60s|1h|24h）", Resp: &Overview{}})
 	module.DocOf(r, "GET /sites", module.Doc{Summary: "各站点最近约 60 秒的指标", Resp: []SiteView{}})
 	module.DocOf(r, "GET /alerts", module.Doc{Summary: "进行中的告警（计时中与已触发）", Resp: []AlertState{}})
+	module.DocOf(r, "GET /processes", module.Doc{Summary: "托管进程（frpc、tailscaled 等）当前与最近约 60 秒的资源占用", Resp: []ProcessView{}})
 }
 
 func (m *Module) handleMetricDefs(w http.ResponseWriter, _ *http.Request) {
@@ -235,6 +252,19 @@ func (m *Module) handleMetricDefs(w http.ResponseWriter, _ *http.Request) {
 
 func (m *Module) handleSites(w http.ResponseWriter, _ *http.Request) {
 	httpx.OK(w, m.eng.siteViews())
+}
+
+// handleProcesses 列出托管进程。接口本身要求 perf:read，进程带有各模块的实例名称，
+// 只列出请求者有读权限的模块（API 令牌按自身权限判定）。
+func (m *Module) handleProcesses(w http.ResponseWriter, r *http.Request) {
+	all := m.procs.views()
+	out := make([]ProcessView, 0, len(all))
+	for _, v := range all {
+		if auth.Allowed(r.Context(), v.Module+":read") {
+			out = append(out, v)
+		}
+	}
+	httpx.OK(w, out)
 }
 
 func (m *Module) handleAlerts(w http.ResponseWriter, _ *http.Request) {
@@ -255,6 +285,10 @@ type Point struct {
 	ProcRSS    *float64 `json:"procRss"`
 	ProcFDs    *float64 `json:"procFds"`
 	Goroutines *float64 `json:"goroutines"`
+	// ChildCPU、ChildCPUMax、ChildRSS 为全部托管进程的 CPU 与常驻内存（MB）合计，没有托管进程时为 null
+	ChildCPU    *float64 `json:"childCpu"`
+	ChildCPUMax *float64 `json:"childCpuMax"`
+	ChildRSS    *float64 `json:"childRss"`
 }
 
 // Overview 是主机与进程历史接口的输出。
@@ -276,12 +310,14 @@ func opt(v float64) *float64 {
 
 func pointOf(p hostPoint) Point {
 	return Point{Time: p.T, CPU: opt(p.CPU), CPUMax: opt(p.CPUMax), Mem: opt(p.Mem), Disk: opt(p.Disk), Load1: opt(p.Load1),
-		ProcCPU: opt(p.ProcCPU), ProcCPUMax: opt(p.ProcCPUMax), ProcRSS: opt(p.ProcRSSMB), ProcFDs: opt(p.ProcFD), Goroutines: opt(p.Goroutines)}
+		ProcCPU: opt(p.ProcCPU), ProcCPUMax: opt(p.ProcCPUMax), ProcRSS: opt(p.ProcRSSMB), ProcFDs: opt(p.ProcFD), Goroutines: opt(p.Goroutines),
+		ChildCPU: opt(p.ChildCPU), ChildCPUMax: opt(p.ChildCPUMax), ChildRSS: opt(p.ChildRSSMB)}
 }
 
 func pointOfSample(s hostSample) Point {
 	return pointOf(hostPoint{T: s.At.Unix(), CPU: s.CPU, CPUMax: s.CPU, Mem: s.Mem, Disk: s.Disk, Load1: s.Load1,
-		ProcCPU: s.ProcCPU, ProcCPUMax: s.ProcCPU, ProcRSSMB: s.ProcRSSMB, ProcFD: s.ProcFD, Goroutines: s.Goroutines})
+		ProcCPU: s.ProcCPU, ProcCPUMax: s.ProcCPU, ProcRSSMB: s.ProcRSSMB, ProcFD: s.ProcFD, Goroutines: s.Goroutines,
+		ChildCPU: s.ChildCPU, ChildCPUMax: s.ChildCPU, ChildRSSMB: s.ChildRSSMB})
 }
 
 // overview 返回指定时间档的历史。

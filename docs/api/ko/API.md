@@ -739,6 +739,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/perf/overview` | `perf:read` | 호스트와 프로세스 기록(?range=60s|1h|24h) |
 | GET | `/api/perf/sites` | `perf:read` | 사이트별 최근 약 60초 지표 |
 | GET | `/api/perf/alerts` | `perf:read` | 진행 중인 경보(대기 중과 경보 중) |
+| GET | `/api/perf/processes` | `perf:read` | 관리 프로세스(frpc, tailscaled 등)의 현재 및 최근 약 60초 리소스 사용량 |
 
 ## 네트워크 진단
 
@@ -1620,6 +1621,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | 필드 | 타입 |
 | --- | --- |
+| `childCpu` | number |
+| `childCpuMax` | number |
+| `childRss` | number |
 | `cpu` | number |
 | `cpuMax` | number |
 | `disk` | number |
@@ -1631,6 +1635,29 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `procFds` | number |
 | `procRss` | number |
 | `t` | integer |
+
+### perf.ProcSample
+
+| 필드 | 타입 |
+| --- | --- |
+| `cpu` | number |
+| `rss` | number |
+| `t` | integer |
+
+### perf.ProcessView
+
+| 필드 | 타입 |
+| --- | --- |
+| `cpu` | number |
+| `module` | string |
+| `name` | string |
+| `pid` | integer |
+| `program` | string |
+| `restarts` | integer |
+| `rss` | integer |
+| `samples` | Array of `perf.ProcSample` |
+| `since` | 시간 (RFC 3339) |
+| `threads` | integer |
 
 ### perf.Rule
 

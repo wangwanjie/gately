@@ -593,8 +593,21 @@ func (a *App) handleStatus(w http.ResponseWriter, r *http.Request) {
 		"build":      a.buildProfile(),
 		"timeZone":   zoneLabel(),
 		"configDir":  a.opts.ConfigDir,
-		"host":       a.hostStats.Snapshot(),
+		"host":       hostForRequest(r, a.hostStats.Snapshot()),
 	})
+}
+
+// hostForRequest 按请求者的权限过滤托管进程：概览接口只要求 status:read，而托管进程带有各模块的实例名称，
+// 只列出请求者有读权限的模块（API 令牌按自身权限，只读账号与管理员可读全部模块）。
+func hostForRequest(r *http.Request, s sysstat.Snapshot) sysstat.Snapshot {
+	out := make([]sysstat.ManagedProcess, 0, len(s.Managed))
+	for _, m := range s.Managed {
+		if auth.Allowed(r.Context(), m.Module+":"+apitoken.LevelRead) {
+			out = append(out, m)
+		}
+	}
+	s.Managed = out
+	return s
 }
 
 // zoneLabel 返回时区名称；未显式设置时区（显示为 Local）时改用缩写与 UTC 偏移，例如 CST UTC+08:00。

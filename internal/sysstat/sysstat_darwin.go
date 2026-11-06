@@ -2,7 +2,12 @@ package sysstat
 
 import (
 	"encoding/binary"
+	"os"
+	"strconv"
+	"strings"
 	"time"
+
+	"github.com/wangwanjie/gately/internal/proc"
 
 	"golang.org/x/sys/unix"
 )
@@ -54,3 +59,26 @@ func fillPlatform(s *Snapshot) {
 }
 
 func fillProcessOS(p *Process) {}
+
+// readChildren 在 macOS 上用 ps 读取托管进程的常驻内存与累计 CPU 时间（不依赖 cgo 读不到这些计数），
+// 只在有托管进程时调用；线程数取不到。与 Linux 一样只接受父进程是 Gately 自身的 PID。
+func readChildren(pids []int) map[int]childRaw {
+	if len(pids) == 0 {
+		return nil
+	}
+	list := make([]string, 0, len(pids))
+	for _, pid := range pids {
+		if pid > 0 {
+			list = append(list, strconv.Itoa(pid))
+		}
+	}
+	if len(list) == 0 {
+		return nil
+	}
+	// PID 只来自托管器登记，均为数字，以单个参数传给 ps，不经过 shell
+	out, err := proc.Output(2*time.Second, "/bin/ps", []string{"-o", "pid=,ppid=,rss=,time=", "-p", strings.Join(list, ",")}, []string{"LC_ALL=C"})
+	if err != nil && len(out) == 0 {
+		return nil
+	}
+	return parsePS(string(out), os.Getpid())
+}

@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"sort"
 	"strings"
 	"sync"
 	"syscall"
@@ -115,6 +116,10 @@ type Spec struct {
 	OnStart func()
 	// LogLine 在写入日志前改写一行输出（如隐藏登录链接），可为 nil；OnLine 收到的仍是原始内容
 	LogLine func(line string) string
+	// Module 与 Name 标明进程属于哪个模块的哪个实例，用于在概览与性能监控中列出托管进程的资源占用。
+	// Name 为空时使用日志来源。只由 Supervisor 使用，一次性命令（Run）不登记。
+	Module string
+	Name   string
 }
 
 // State 是进程运行状态。
@@ -137,6 +142,61 @@ type Supervisor struct {
 	cancel context.CancelFunc
 	done   chan struct{}
 	state  State
+	// module、name、program 为当前运行的进程归属与可执行文件名（不含路径），Start 时设置
+	module, name, program string
+}
+
+// Managed 是一个正在运行的托管进程。只包含归属与可执行文件名，不含路径、参数与环境变量：
+// 参数里可能有配置文件路径，环境变量里可能有令牌，这些信息不应出现在只读的概览接口中。
+type Managed struct {
+	Module   string    `json:"module"`
+	Name     string    `json:"name"`
+	Program  string    `json:"program"`
+	PID      int       `json:"pid"`
+	Since    time.Time `json:"since"`
+	Restarts int       `json:"restarts"`
+}
+
+// registry 登记所有已调用 Start、尚未 Stop 的托管器，供 Running 列出正在运行的进程
+var registry = struct {
+	mu   sync.Mutex
+	sups map[*Supervisor]struct{}
+}{sups: map[*Supervisor]struct{}{}}
+
+// Running 返回当前正在运行的托管进程，按模块、名称、程序排序，结果稳定便于前端展示。
+func Running() []Managed {
+	registry.mu.Lock()
+	sups := make([]*Supervisor, 0, len(registry.sups))
+	for s := range registry.sups {
+		sups = append(sups, s)
+	}
+	registry.mu.Unlock()
+	out := []Managed{}
+	for _, s := range sups {
+		s.mu.Lock()
+		st := s.state
+		m := Managed{Module: s.module, Name: s.name, Program: s.program, PID: st.PID, Since: st.Since, Restarts: st.Restarts}
+		s.mu.Unlock()
+		// 两次重启之间（等待重启时）没有进程，不列出
+		if !st.Running || st.PID <= 0 {
+			continue
+		}
+		out = append(out, m)
+	}
+	sort.Slice(out, func(i, j int) bool {
+		a, b := out[i], out[j]
+		if a.Module != b.Module {
+			return a.Module < b.Module
+		}
+		if a.Name != b.Name {
+			return a.Name < b.Name
+		}
+		if a.Program != b.Program {
+			return a.Program < b.Program
+		}
+		return a.PID < b.PID
+	})
+	return out
 }
 
 // New 创建托管器，log 接收进程输出与托管事件。
@@ -156,10 +216,18 @@ func (s *Supervisor) Start(spec Spec) {
 	s.Stop()
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan struct{})
+	name := spec.Name
+	if name == "" {
+		name = s.log.Source()
+	}
 	s.mu.Lock()
 	s.cancel, s.done = cancel, done
 	s.state = State{}
+	s.module, s.name, s.program = spec.Module, name, filepath.Base(spec.Path)
 	s.mu.Unlock()
+	registry.mu.Lock()
+	registry.sups[s] = struct{}{}
+	registry.mu.Unlock()
 	go s.loop(ctx, spec, done)
 }
 
@@ -174,6 +242,10 @@ func (s *Supervisor) Stop() {
 	}
 	cancel()
 	<-done
+	// 先等进程退出再注销：Stop 返回后 Running 不再列出它
+	registry.mu.Lock()
+	delete(registry.sups, s)
+	registry.mu.Unlock()
 }
 
 func (s *Supervisor) loop(ctx context.Context, spec Spec, done chan struct{}) {

@@ -159,6 +159,7 @@ Ejecuta comandos o envía peticiones HTTP según una programación cron.
 ## Resumen y registros del sistema
 
 - La página «Resumen» muestra la información del host: modelo de CPU, uso y carga, memoria, disco, direcciones de las interfaces de red y velocidades en vivo, IPv4 e IPv6 públicas (pulsa para copiar), el estado del servicio de cada módulo y, para el proceso de Gately, su versión, commit, hora de compilación, hora de inicio, PID, CPU, memoria residente, heap de Go y número de goroutines;
+- Cuando Gately gestiona programas externos (frp, Tailscale, NetBird, túnel de Cloudflare, File Browser), la página «Resumen» incluye además la tarjeta «Procesos gestionados», que lista cada proceso con su módulo e instancia, nombre del programa, PID, tiempo activo, número de reinicios, CPU y memoria residente, con los totales en la cabecera; pulsa una fila para abrir su módulo. Solo se cuenta el propio proceso, no los hijos que inicia, y no se muestran rutas ni argumentos de arranque;
 - La página «Registros del sistema» reúne los registros de todos los módulos, incluidos los registros de ejecución de módulos como Docker, FTP y Tareas programadas.
 
 ## Temas

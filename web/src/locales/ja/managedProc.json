@@ -1,0 +1,11 @@
+{
+  "title": "管理対象プロセス",
+  "total": "{count} 件 · CPU {cpu} · メモリ {rss}",
+  "uptime": "稼働 {d}",
+  "threads": "スレッド {n}",
+  "restarts": "再起動 {n} 回",
+  "memory": "メモリ",
+  "chartTotal": "管理対象プロセス合計",
+  "perfHelp": "Gately が起動して管理する外部プログラム（frpc、tailscaled、File Browser など）で、プロセス自体のみを集計します。CPU はホスト全コアに対する割合で、曲線は直近約 60 秒です。上の Gately プロセスの CPU とメモリのグラフには管理対象プロセス合計の線も表示されます。",
+  "chartLatest": "管理対象 {v}"
+}

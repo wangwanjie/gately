@@ -739,6 +739,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | GET | `/api/perf/overview` | `perf:read` | Host and process history (?range=60s|1h|24h) |
 | GET | `/api/perf/sites` | `perf:read` | Each site's metrics over roughly the last 60 seconds |
 | GET | `/api/perf/alerts` | `perf:read` | Alerts in progress (pending and firing) |
+| GET | `/api/perf/processes` | `perf:read` | Managed processes (frpc, tailscaled and so on) with their current and last 60 seconds of resource usage |
 
 ## Network diagnostics
 
@@ -1620,6 +1621,9 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 
 | Field | Type |
 | --- | --- |
+| `childCpu` | number |
+| `childCpuMax` | number |
+| `childRss` | number |
 | `cpu` | number |
 | `cpuMax` | number |
 | `disk` | number |
@@ -1631,6 +1635,29 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `procFds` | number |
 | `procRss` | number |
 | `t` | integer |
+
+### perf.ProcSample
+
+| Field | Type |
+| --- | --- |
+| `cpu` | number |
+| `rss` | number |
+| `t` | integer |
+
+### perf.ProcessView
+
+| Field | Type |
+| --- | --- |
+| `cpu` | number |
+| `module` | string |
+| `name` | string |
+| `pid` | integer |
+| `program` | string |
+| `restarts` | integer |
+| `rss` | integer |
+| `samples` | Array of `perf.ProcSample` |
+| `since` | Time (RFC 3339) |
+| `threads` | integer |
 
 ### perf.Rule
 

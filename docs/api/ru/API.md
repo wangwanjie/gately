@@ -739,6 +739,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/perf/overview` | `perf:read` | История хоста и процесса (?range=60s|1h|24h) |
 | GET | `/api/perf/sites` | `perf:read` | Метрики каждого сайта примерно за последние 60 секунд |
 | GET | `/api/perf/alerts` | `perf:read` | Текущие оповещения (ожидание и сработавшие) |
+| GET | `/api/perf/processes` | `perf:read` | Управляемые процессы (frpc, tailscaled и др.): текущее потребление ресурсов и за последние примерно 60 секунд |
 
 ## Диагностика сети
 
@@ -1620,6 +1621,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | Поле | Тип |
 | --- | --- |
+| `childCpu` | number |
+| `childCpuMax` | number |
+| `childRss` | number |
 | `cpu` | number |
 | `cpuMax` | number |
 | `disk` | number |
@@ -1631,6 +1635,29 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `procFds` | number |
 | `procRss` | number |
 | `t` | integer |
+
+### perf.ProcSample
+
+| Поле | Тип |
+| --- | --- |
+| `cpu` | number |
+| `rss` | number |
+| `t` | integer |
+
+### perf.ProcessView
+
+| Поле | Тип |
+| --- | --- |
+| `cpu` | number |
+| `module` | string |
+| `name` | string |
+| `pid` | integer |
+| `program` | string |
+| `restarts` | integer |
+| `rss` | integer |
+| `samples` | Массив из `perf.ProcSample` |
+| `since` | Время (RFC 3339) |
+| `threads` | integer |
 
 ### perf.Rule
 

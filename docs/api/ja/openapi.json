@@ -1739,6 +1739,15 @@
       },
       "perf.Point": {
         "properties": {
+          "childCpu": {
+            "type": "number"
+          },
+          "childCpuMax": {
+            "type": "number"
+          },
+          "childRss": {
+            "type": "number"
+          },
           "cpu": {
             "type": "number"
           },
@@ -1770,6 +1779,59 @@
             "type": "number"
           },
           "t": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "perf.ProcSample": {
+        "properties": {
+          "cpu": {
+            "type": "number"
+          },
+          "rss": {
+            "type": "number"
+          },
+          "t": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "perf.ProcessView": {
+        "properties": {
+          "cpu": {
+            "type": "number"
+          },
+          "module": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "pid": {
+            "type": "integer"
+          },
+          "program": {
+            "type": "string"
+          },
+          "restarts": {
+            "type": "integer"
+          },
+          "rss": {
+            "type": "integer"
+          },
+          "samples": {
+            "items": {
+              "$ref": "#/components/schemas/perf.ProcSample"
+            },
+            "type": "array"
+          },
+          "since": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "threads": {
             "type": "integer"
           }
         },
@@ -26890,6 +26952,67 @@
           }
         ],
         "summary": "ホストとプロセスの履歴（?range=60s|1h|24h）",
+        "tags": [
+          "パフォーマンス監視"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/processes": {
+      "get": {
+        "description": "必要な権限: `perf:read`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/perf.ProcessView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "管理対象プロセス（frpc、tailscaled など）の現在と直近約 60 秒のリソース使用量",
         "tags": [
           "パフォーマンス監視"
         ],

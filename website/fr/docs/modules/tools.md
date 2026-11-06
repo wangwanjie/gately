@@ -159,6 +159,7 @@ Exécutez des commandes ou envoyez des requêtes HTTP selon un calendrier cron.
 ## Vue d'ensemble et journaux système
 
 - La page « Vue d'ensemble » affiche les informations de l'hôte : modèle de CPU, utilisation et charge, mémoire, disque, adresses des interfaces réseau et débits en direct, IPv4 et IPv6 publiques (cliquez pour copier), l'état du service de chaque module et, pour le processus Gately, sa version, son commit, sa date de build, son heure de démarrage, son PID, son CPU, sa mémoire résidente, son tas Go et son nombre de goroutines ;
+- Lorsque Gately gère des programmes externes (frp, Tailscale, NetBird, tunnel Cloudflare, File Browser), la page « Vue d'ensemble » comporte aussi une carte « Processus gérés » qui liste chaque processus avec son module et son instance, le nom du programme, le PID, la durée d'activité, le nombre de redémarrages, le CPU et la mémoire résidente, les totaux figurant dans l'en-tête ; cliquez sur une ligne pour ouvrir son module. Seul le processus lui-même est compté, pas les enfants qu'il lance, et les chemins et arguments de lancement ne sont pas affichés ;
 - La page « Journaux système » rassemble les journaux de tous les modules, y compris les enregistrements d'exécution de modules tels que Docker, FTP et Tâches planifiées.
 
 ## Thèmes

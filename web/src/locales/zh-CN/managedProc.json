@@ -1,0 +1,11 @@
+{
+  "title": "托管进程",
+  "total": "{count} 个 · CPU {cpu} · 内存 {rss}",
+  "uptime": "已运行 {d}",
+  "threads": "{n} 个线程",
+  "restarts": "重启 {n} 次",
+  "memory": "内存",
+  "chartTotal": "托管进程合计",
+  "perfHelp": "Gately 启动并托管的外部程序（frpc、tailscaled、File Browser 等），只统计进程本身；CPU 按整机核数折算，曲线为最近约 60 秒。上方 Gately 进程的 CPU 与内存图中另有一条托管进程合计的线。",
+  "chartLatest": "托管进程 {v}"
+}

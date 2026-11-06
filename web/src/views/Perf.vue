@@ -25,12 +25,27 @@
       <div v-for="c in charts" :key="c.key" class="chart-card">
         <div class="chart-head">
           <span>{{ c.title }}</span>
-          <b>{{ c.latest }}</b>
+          <span class="chart-latest">
+            <!-- 托管进程合计的最新值，没有托管进程时不显示 -->
+            <span v-if="c.extra" class="chart-extra">{{ c.extra }}</span>
+            <b>{{ c.latest }}</b>
+          </span>
         </div>
         <TrendChart :times="times" :series="c.series" :from="from" :to="to" :max="c.max" :format="c.format" :height="110" :empty-text="t('perf.noData')" />
       </div>
     </div>
     <div class="form-help">{{ t('perf.historyHelp') }}</div>
+
+    <!-- 托管进程：各自当前与最近约 60 秒的资源占用；没有托管进程时不显示 -->
+    <template v-if="processes.length">
+      <h3 class="section">{{ t('managedProc.title') }}</h3>
+      <div class="g-card procs-card">
+        <div class="g-card-head">
+          <span class="g-card-desc">{{ t('managedProc.perfHelp') }}</span>
+        </div>
+        <ManagedProcList :items="processes" sparks :capacity="12" />
+      </div>
+    </template>
 
     <template v-if="webEnabled">
       <h3 class="section">{{ t('perf.sitesSection') }}</h3>
@@ -199,6 +214,7 @@ import CopyHint from '../components/CopyHint.vue'
 import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import SiteStats from '../components/SiteStats.vue'
 import TrendChart, { type TrendSeries } from '../components/TrendChart.vue'
+import ManagedProcList, { type ManagedRow } from '../components/ManagedProcList.vue'
 import { useGroupedList } from '../composables/useGroupSort'
 import { useCompactView } from '../composables/useCompactView'
 import { useFormLayout } from '../composables/useIsMobile'
@@ -239,6 +255,10 @@ interface Point {
   procRss: number | null
   procFds: number | null
   goroutines: number | null
+  // 托管进程合计，没有托管进程时为 null；旧版本后端没有这些字段
+  childCpu?: number | null
+  childCpuMax?: number | null
+  childRss?: number | null
 }
 
 interface Overview {
@@ -294,6 +314,7 @@ const notifyEnabled = computed(() => moduleEnabled('notify'))
 const range = ref<'60s' | '1h' | '24h'>('1h')
 const overview = ref<Overview>()
 const sites = ref<SiteView[]>([])
+const processes = ref<ManagedRow[]>([])
 const alerts = ref<AlertState[]>([])
 const rules = ref<Rule[]>([])
 const metrics = ref<MetricDef[]>([])
@@ -318,7 +339,7 @@ const to = computed(() => overview.value?.latest?.t ?? Math.floor(Date.now() / 1
 const from = computed(() => to.value - spans[range.value])
 const times = computed(() => (overview.value?.series ?? []).map((p) => p.t))
 
-const colors = { a: 'var(--el-color-primary)', b: 'var(--g-chart-2)', warn: 'var(--el-color-warning)' }
+const colors = { a: 'var(--el-color-primary)', b: 'var(--g-chart-2)', c: 'var(--el-color-success)', warn: 'var(--el-color-warning)' }
 const pct = (v: number) => v.toFixed(v >= 10 ? 0 : 1) + '%'
 const num = (v: number) => (v >= 100 ? v.toFixed(0) : v.toFixed(v >= 10 ? 1 : 2))
 
@@ -341,7 +362,22 @@ function withPeak(name: string, color: string, avg: (p: Point) => number | null,
   return out
 }
 
-const charts = computed(() => [
+// 托管进程合计画成一条额外的线，时间范围内从来没有托管进程时不画（旧版本后端没有该字段，值为 undefined）
+function childSeries(get: (p: Point) => number | null | undefined): TrendSeries[] {
+  const values = col((p) => get(p) ?? null)
+  if (!values.some((v) => v != null)) {
+    return []
+  }
+  return [{ name: t('managedProc.chartTotal'), color: colors.c, values }]
+}
+
+function childLatest(get: (p: Point) => number | null | undefined, fmt: (v: number) => string) {
+  const p = overview.value?.latest
+  const v = p ? get(p) : null
+  return v == null ? '' : t('managedProc.chartLatest', { v: fmt(v) })
+}
+
+const charts = computed<{ key: string; title: string; max?: number; format: (v: number) => string; latest: string; extra?: string; series: TrendSeries[] }[]>(() => [
   { key: 'cpu', title: t('perf.chartHostCpu'), max: 100, format: pct, latest: latestOf((p) => p.cpu, pct), series: withPeak(t('perf.average'), colors.a, (p) => p.cpu, (p) => p.cpuMax) },
   {
     key: 'mem',
@@ -355,8 +391,24 @@ const charts = computed(() => [
     ],
   },
   { key: 'load', title: t('perf.chartLoad'), max: undefined, format: num, latest: latestOf((p) => p.load1, num), series: [{ name: t('perf.load1'), color: colors.a, values: col((p) => p.load1) }] },
-  { key: 'pcpu', title: t('perf.chartProcCpu'), max: undefined, format: pct, latest: latestOf((p) => p.procCpu, pct), series: withPeak(t('perf.average'), colors.b, (p) => p.procCpu, (p) => p.procCpuMax) },
-  { key: 'rss', title: t('perf.chartProcRss'), max: undefined, format: (v: number) => v.toFixed(0) + ' MB', latest: latestOf((p) => p.procRss, (v) => v.toFixed(0) + ' MB'), series: [{ name: 'RSS', color: colors.b, values: col((p) => p.procRss) }] },
+  {
+    key: 'pcpu',
+    title: t('perf.chartProcCpu'),
+    max: undefined,
+    format: pct,
+    latest: latestOf((p) => p.procCpu, pct),
+    extra: childLatest((p) => p.childCpu, pct),
+    series: [...withPeak(t('perf.average'), colors.b, (p) => p.procCpu, (p) => p.procCpuMax), ...childSeries((p) => p.childCpu)],
+  },
+  {
+    key: 'rss',
+    title: t('perf.chartProcRss'),
+    max: undefined,
+    format: (v: number) => v.toFixed(0) + ' MB',
+    latest: latestOf((p) => p.procRss, (v) => v.toFixed(0) + ' MB'),
+    extra: childLatest((p) => p.childRss, (v) => v.toFixed(0) + ' MB'),
+    series: [{ name: 'RSS', color: colors.b, values: col((p) => p.procRss) }, ...childSeries((p) => p.childRss)],
+  },
   {
     key: 'fds',
     title: t('perf.chartProcFds'),
@@ -617,9 +669,15 @@ async function loadOverview() {
 }
 
 async function loadLive() {
-  const [a, s] = await Promise.all([api.get<AlertState[]>('/api/perf/alerts'), webEnabled.value ? api.get<SiteView[]>('/api/perf/sites') : Promise.resolve([])])
+  const [a, s, p] = await Promise.all([
+    api.get<AlertState[]>('/api/perf/alerts'),
+    webEnabled.value ? api.get<SiteView[]>('/api/perf/sites') : Promise.resolve([]),
+    // 旧版本后端没有这个接口，取不到时当作没有托管进程
+    api.get<ManagedRow[]>('/api/perf/processes').catch(() => [] as ManagedRow[]),
+  ])
   alerts.value = a
   sites.value = s
+  processes.value = p ?? []
 }
 
 async function loadNotify() {
@@ -697,6 +755,18 @@ onMounted(async () => {
   font-size: 16px;
   font-variant-numeric: tabular-nums;
 }
+.chart-latest {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+.chart-extra {
+  font-size: 12px;
+  color: var(--el-color-success);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
 .alerts {
   display: flex;
   flex-direction: column;
@@ -749,5 +819,12 @@ onMounted(async () => {
 }
 .form-help {
   margin-top: 6px;
+}
+.procs-card {
+  overflow: hidden;
+}
+.procs-card .g-card-head {
+  min-height: 0;
+  padding: 8px 16px;
 }
 </style>

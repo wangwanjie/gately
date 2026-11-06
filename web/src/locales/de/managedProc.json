@@ -1,0 +1,11 @@
+{
+  "title": "Verwaltete Prozesse",
+  "total": "{count} · CPU {cpu} · Speicher {rss}",
+  "uptime": "Läuft seit {d}",
+  "threads": "{n} Threads",
+  "restarts": "{n}-mal neu gestartet",
+  "memory": "Speicher",
+  "chartTotal": "Summe verwalteter Prozesse",
+  "perfHelp": "Externe Programme, die Gately startet und verwaltet (frpc, tailscaled, File Browser usw.); gezählt wird nur der Prozess selbst. Die CPU bezieht sich auf alle Kerne des Hosts, die Kurven zeigen etwa die letzten 60 Sekunden. Die CPU- und Speicherdiagramme des Gately-Prozesses oben enthalten eine zusätzliche Linie für die Summe der verwalteten Prozesse.",
+  "chartLatest": "Verwaltet {v}"
+}

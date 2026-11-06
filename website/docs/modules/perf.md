@@ -23,6 +23,12 @@
 
 部分平台取不到某些指标（例如 macOS 上没有 CPU 使用率），对应图表显示「暂无数据」。
 
+### 托管进程
+
+Gately 托管着外部程序（frp、Tailscale、NetBird、Cloudflare 隧道、File Browser）时，「主机与 Gately 进程」下方列出各托管进程：所属模块与实例、程序名、PID、运行时长、重启次数，以及当前 CPU 与常驻内存和最近约 60 秒的迷你曲线；点击一行进入对应模块。CPU 与 Gately 进程口径一致，按整机核数折算。只统计进程本身，不含它再启动的子进程；不显示路径、启动参数与环境变量。
+
+「Gately 进程 CPU」与「Gately 进程内存」两张图另有一条绿色的托管进程合计线，图表右上角同时显示合计的最新值，1 小时与 24 小时档同样保留。Linux 上读取 `/proc`，macOS 上通过 `ps` 读取（取不到线程数），其他平台只列出进程。也可以通过 `GET /api/perf/processes` 读取（需要 `perf:read` 权限）。
+
 ### 站点
 
 开启 Web 服务模块时，列出全部运行中的站点（含默认站点）：
@@ -107,6 +113,7 @@
 | `GET /api/perf/overview?range=60s\|1h\|24h` | 主机与进程历史 |
 | `GET /api/perf/sites` | 各站点最近约 60 秒的指标 |
 | `GET /api/perf/alerts` | 计时中与告警中的对象 |
+| `GET /api/perf/processes` | 托管进程当前与最近约 60 秒的 CPU、常驻内存 |
 | `GET /api/perf/metrics` | 可用于告警的指标 |
 | `/api/perf/rules` | 告警规则的增删改查、启停、排序与分组 |
 

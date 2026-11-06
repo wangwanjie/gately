@@ -210,3 +210,81 @@ func TestRunLogLine(t *testing.T) {
 		t.Errorf("OnLine 应收到原始输出: %q", raw)
 	}
 }
+
+// findManaged 在 Running 的结果中按 PID 查找
+func findManaged(pid int) (Managed, bool) {
+	for _, m := range Running() {
+		if m.PID == pid {
+			return m, true
+		}
+	}
+	return Managed{}, false
+}
+
+// 运行中的托管进程会被 Running 列出，只带归属与程序名；停止或无法启动的不列出
+func TestRunningRegistry(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("依赖 sleep 命令")
+	}
+	_, log := newLog()
+	s := New(log)
+	s.Start(Spec{Path: "sleep", Args: []string{"60"}, Env: []string{"GATELY_TEST_SECRET=hunter2"}, Module: "frp", Name: "家里"})
+	waitFor(t, func() bool { return s.State().Running })
+	pid := s.State().PID
+	m, ok := findManaged(pid)
+	if !ok {
+		t.Fatalf("运行中的进程应被列出: %+v", Running())
+	}
+	if m.Module != "frp" || m.Name != "家里" || m.Program != "sleep" || m.Since.IsZero() || m.Restarts != 0 {
+		t.Fatalf("登记信息不符: %+v", m)
+	}
+
+	// 没有指定名称时用日志来源
+	_, log2 := newLog()
+	s2 := New(log2)
+	s2.Start(Spec{Path: "sleep", Args: []string{"60"}})
+	waitFor(t, func() bool { return s2.State().Running })
+	if m2, ok := findManaged(s2.State().PID); !ok || m2.Name != "t" || m2.Module != "" {
+		t.Fatalf("未指定名称时应使用日志来源: %+v %v", m2, ok)
+	}
+	s2.Stop()
+
+	s.Stop()
+	if _, ok := findManaged(pid); ok {
+		t.Fatal("停止后不应再列出")
+	}
+	registry.mu.Lock()
+	_, left := registry.sups[s]
+	registry.mu.Unlock()
+	if left {
+		t.Fatal("停止后应注销托管器")
+	}
+
+	// 无法启动的不列出
+	s3 := New(log)
+	s3.Start(Spec{Path: "/nonexistent/gately-test-bin", Module: "frp"})
+	waitFor(t, func() bool { return s3.State().Error != "" })
+	for _, m := range Running() {
+		if m.Program == "gately-test-bin" {
+			t.Fatalf("无法启动的进程不应列出: %+v", m)
+		}
+	}
+	s3.Stop()
+}
+
+// 等待重启期间没有进程，不列出；重新启动后列出新的 PID 与重启次数
+func TestRunningDuringRestart(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("依赖 sh 命令")
+	}
+	_, log := newLog()
+	s := New(log)
+	s.Start(Spec{Path: "sh", Args: []string{"-c", "exit 1"}, Module: "cloudflared", Name: "x"})
+	defer s.Stop()
+	waitFor(t, func() bool { return s.State().Restarts >= 1 && !s.State().Running })
+	for _, m := range Running() {
+		if m.Module == "cloudflared" && m.Name == "x" && !s.State().Running {
+			t.Fatalf("等待重启时不应列出: %+v", m)
+		}
+	}
+}

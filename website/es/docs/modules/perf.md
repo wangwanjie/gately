@@ -23,6 +23,12 @@ Se toma una muestra cada 5 segundos: el rango de 60 segundos muestra cada muestr
 
 Algunas plataformas no ofrecen todas las métricas (por ejemplo, en macOS no hay uso de CPU); esos gráficos muestran «Sin datos».
 
+### Procesos gestionados
+
+Cuando Gately gestiona programas externos (frp, Tailscale, NetBird, túnel de Cloudflare, File Browser), debajo de «Host y proceso de Gately» se lista cada proceso gestionado: módulo e instancia, nombre del programa, PID, tiempo activo y número de reinicios, con la CPU y la memoria residente actuales y minigráficos de aproximadamente los últimos 60 segundos; pulsa una fila para abrir su módulo. La CPU se mide igual que la del proceso de Gately, respecto a todos los núcleos del equipo. Solo se cuenta el propio proceso, no los hijos que inicia; no se muestran rutas, argumentos de arranque ni variables de entorno.
+
+Los gráficos «CPU del proceso de Gately» y «Memoria del proceso de Gately» tienen una línea verde adicional con el total de los procesos gestionados, y la esquina superior derecha de cada gráfico muestra su último valor; los rangos de 1 hora y 24 horas también lo conservan. En Linux los valores se leen de `/proc` y en macOS de `ps` (sin número de hilos); en otras plataformas solo se listan los procesos. Los mismos datos están disponibles en `GET /api/perf/processes` (requiere `perf:read`).
+
 ### Sitios
 
 Con el módulo Servicios web activado se listan todos los sitios en ejecución (incluidos los sitios por defecto):
@@ -107,6 +113,7 @@ Con Rendimiento activado, `/api/metrics` exporta además las métricas del host 
 | `GET /api/perf/overview?range=60s\|1h\|24h` | Historial del host y del proceso |
 | `GET /api/perf/sites` | Métricas de cada sitio en aproximadamente los últimos 60 segundos |
 | `GET /api/perf/alerts` | Objetos pendientes y activos |
+| `GET /api/perf/processes` | CPU y memoria residente actuales y de los últimos 60 segundos aproximadamente de los procesos gestionados |
 | `GET /api/perf/metrics` | Métricas disponibles para alertas |
 | `/api/perf/rules` | Crear, leer, actualizar y eliminar reglas de alerta, habilitarlas, ordenarlas y agruparlas |
 

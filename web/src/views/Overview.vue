@@ -171,6 +171,15 @@
           </div>
         </div>
       </section>
+
+      <!-- ============ 托管进程（frpc、tailscaled 等），没有时不显示 ============ -->
+      <section v-if="managed.length" class="g-card managed-card">
+        <div class="g-card-head">
+          <div class="g-card-title"><Layers :size="16" />{{ t('managedProc.title') }}</div>
+          <span class="g-card-desc">{{ managedTotal }}</span>
+        </div>
+        <ManagedProcList :items="managed" :now="now" />
+      </section>
       </div>
       <div class="g-card services-card">
         <div class="g-card-head">
@@ -212,6 +221,7 @@ import {
   Clock,
   HardDrive,
   HeartPulse,
+  Layers,
   MemoryStick,
   Network,
   Power,
@@ -223,6 +233,7 @@ import { api, formatBytes, formatDuration, formatRate, type Status } from '../ap
 import RingGauge from '../components/RingGauge.vue'
 import SelfCheck from '../components/SelfCheck.vue'
 import Sparkline from '../components/Sparkline.vue'
+import ManagedProcList from '../components/ManagedProcList.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import { navByModule } from '../nav'
 
@@ -346,6 +357,24 @@ const procItems = computed(() => {
     { label: t('overview.proc.configDir'), value: s.configDir, mono: true, wide: true },
   ]
   return items as { label: string; value: string; mono?: boolean; wide?: boolean }[]
+})
+
+// 托管进程及合计：CPU 只累加取得到的值，都取不到时显示 -
+const managed = computed(() => host.value?.managed ?? [])
+const managedTotal = computed(() => {
+  let cpu: number | undefined
+  let rss = 0
+  for (const p of managed.value) {
+    if (p.cpu != null) {
+      cpu = (cpu ?? 0) + p.cpu
+    }
+    rss += p.rss ?? 0
+  }
+  return t('managedProc.total', {
+    count: managed.value.length,
+    cpu: cpu === undefined ? '-' : cpu.toFixed(cpu >= 10 ? 0 : 1) + '%',
+    rss: rss ? formatBytes(rss) : '-',
+  })
 })
 
 // 构建时间可能是 unknown 等非日期字符串，无法解析时原样显示
@@ -964,6 +993,9 @@ onBeforeUnmount(() => {
   text-overflow: ellipsis;
 }
 .proc {
+  overflow: hidden;
+}
+.managed-card {
   overflow: hidden;
 }
 

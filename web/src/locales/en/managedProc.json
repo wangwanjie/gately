@@ -1,0 +1,11 @@
+{
+  "title": "Managed Processes",
+  "total": "{count} · CPU {cpu} · Memory {rss}",
+  "uptime": "Up {d}",
+  "threads": "{n} threads",
+  "restarts": "Restarted {n} times",
+  "memory": "Memory",
+  "chartTotal": "Managed processes total",
+  "perfHelp": "External programs started and managed by Gately (frpc, tailscaled, File Browser and so on), counting each process itself only. CPU is relative to all cores of the host, and the curves cover about the last 60 seconds. The Gately process CPU and memory charts above have an extra line for the managed processes total.",
+  "chartLatest": "Managed {v}"
+}

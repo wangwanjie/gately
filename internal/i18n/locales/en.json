@@ -1455,6 +1455,7 @@
   "打开验证器应用，输入当前显示的 6 位动态验证码": "Open your authenticator app and enter the 6-digit code it shows",
   "托管区域 ID": "Hosted zone ID",
   "托管程序：发现新版本": "Managed programs: new version available",
+  "托管进程（frpc、tailscaled 等）当前与最近约 60 秒的资源占用": "Managed processes (frpc, tailscaled and so on) with their current and last 60 seconds of resource usage",
   "执行命令失败: %w": "Failed to run command: %w",
   "执行失败（%dms）: %v": "Execution failed (%dms): %v",
   "执行完成（%dms）": "Execution completed (%dms)",

@@ -99,7 +99,22 @@ export interface HostStats {
     heapSys: number
     numGC: number
   }
+  // 托管的外部进程（frpc、tailscaled、File Browser 等），旧版本后端没有该字段
+  managed?: ManagedProcess[]
   sampledAt: string
+}
+
+// ManagedProcess 是一个托管进程及其资源占用；cpu 按整机核数归一化，rss 为字节，取不到时缺省
+export interface ManagedProcess {
+  module: string
+  name: string
+  program: string
+  pid: number
+  since: string
+  restarts: number
+  cpu?: number | null
+  rss?: number
+  threads?: number
 }
 
 export interface NetInterface {

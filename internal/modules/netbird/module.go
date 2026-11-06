@@ -340,7 +340,7 @@ func (m *Module) runInstanceLocked(in *Instance, sig, conflict string) {
 			fail("创建状态目录失败: " + err.Error())
 			return
 		}
-		daemonSpec = proc.Spec{Path: cli, Args: inst.DaemonArgs(dir), Env: inst.DaemonEnvList(dir), OnStart: func() {
+		daemonSpec = proc.Spec{Path: cli, Args: inst.DaemonArgs(dir), Env: inst.DaemonEnvList(dir), Module: ID, Name: inst.Name, OnStart: func() {
 			select {
 			case started <- struct{}{}:
 			default:

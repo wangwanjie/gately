@@ -27,6 +27,8 @@ type hostSample struct {
 	CPU, Mem, Disk, Load1      float64
 	ProcCPU, ProcRSSMB, ProcFD float64
 	Goroutines                 float64
+	// ChildCPU、ChildRSSMB 为全部托管进程（frpc、tailscaled 等）的 CPU 与常驻内存（MB）合计，没有托管进程时为 unknown
+	ChildCPU, ChildRSSMB float64
 }
 
 // 采样字段数量与下标，聚合时按下标循环。
@@ -39,11 +41,13 @@ const (
 	fProcRSS
 	fProcFD
 	fGoroutines
+	fChildCPU
+	fChildRSS
 	fieldCount
 )
 
 func (s hostSample) fields() [fieldCount]float64 {
-	return [fieldCount]float64{s.CPU, s.Mem, s.Disk, s.Load1, s.ProcCPU, s.ProcRSSMB, s.ProcFD, s.Goroutines}
+	return [fieldCount]float64{s.CPU, s.Mem, s.Disk, s.Load1, s.ProcCPU, s.ProcRSSMB, s.ProcFD, s.Goroutines, s.ChildCPU, s.ChildRSSMB}
 }
 
 // minuteAgg 累计一分钟内的采样，得到平均值与 CPU 峰值。
@@ -51,8 +55,8 @@ type minuteAgg struct {
 	minute int64
 	sum    [fieldCount]float64
 	n      [fieldCount]int
-	// cpuMax、procCPUMax 为分钟内的峰值，短暂尖峰不会被平均值抹平
-	cpuMax, procCPUMax float64
+	// cpuMax、procCPUMax、childCPUMax 为分钟内的峰值，短暂尖峰不会被平均值抹平
+	cpuMax, procCPUMax, childCPUMax float64
 }
 
 func (a *minuteAgg) add(s hostSample) {
@@ -69,6 +73,9 @@ func (a *minuteAgg) add(s hostSample) {
 	if s.ProcCPU > a.procCPUMax {
 		a.procCPUMax = s.ProcCPU
 	}
+	if s.ChildCPU > a.childCPUMax {
+		a.childCPUMax = s.ChildCPU
+	}
 }
 
 // point 返回聚合后的点，没有任何有效采样的字段为 unknown。
@@ -83,12 +90,16 @@ func (a *minuteAgg) point() hostPoint {
 	}
 	p.CPU, p.Mem, p.Disk, p.Load1 = out[fCPU], out[fMem], out[fDisk], out[fLoad]
 	p.ProcCPU, p.ProcRSSMB, p.ProcFD, p.Goroutines = out[fProcCPU], out[fProcRSS], out[fProcFD], out[fGoroutines]
-	p.CPUMax, p.ProcCPUMax = unknown, unknown
+	p.ChildCPU, p.ChildRSSMB = out[fChildCPU], out[fChildRSS]
+	p.CPUMax, p.ProcCPUMax, p.ChildCPUMax = unknown, unknown, unknown
 	if a.n[fCPU] > 0 {
 		p.CPUMax = a.cpuMax
 	}
 	if a.n[fProcCPU] > 0 {
 		p.ProcCPUMax = a.procCPUMax
+	}
+	if a.n[fChildCPU] > 0 {
+		p.ChildCPUMax = a.childCPUMax
 	}
 	return p
 }
@@ -101,6 +112,8 @@ type hostPoint struct {
 	ProcCPU, ProcRSSMB, ProcFD float64
 	ProcCPUMax                 float64
 	Goroutines                 float64
+	ChildCPU, ChildCPUMax      float64
+	ChildRSSMB                 float64
 }
 
 // hostHistory 保存最近 60 秒（每个采样一点）与最近 24 小时（每分钟一点）的主机与进程历史。并发安全。
@@ -255,5 +268,8 @@ func mergeGroup(g []hostPoint) hostPoint {
 	out.Goroutines = avg(func(p hostPoint) float64 { return p.Goroutines })
 	out.CPUMax = max(func(p hostPoint) float64 { return p.CPUMax })
 	out.ProcCPUMax = max(func(p hostPoint) float64 { return p.ProcCPUMax })
+	out.ChildCPU = avg(func(p hostPoint) float64 { return p.ChildCPU })
+	out.ChildRSSMB = avg(func(p hostPoint) float64 { return p.ChildRSSMB })
+	out.ChildCPUMax = max(func(p hostPoint) float64 { return p.ChildCPUMax })
 	return out
 }

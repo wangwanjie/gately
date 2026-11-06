@@ -306,7 +306,7 @@ func (m *Module) runInstanceLocked(in *Instance, sig, conflict string) {
 			fail("创建状态目录失败: " + err.Error())
 			return
 		}
-		rt.daemon.Start(proc.Spec{Path: daemon, Args: in.DaemonArgs(dir), Env: in.DaemonEnvList()})
+		rt.daemon.Start(proc.Spec{Path: daemon, Args: in.DaemonArgs(dir), Env: in.DaemonEnvList(), Module: ID, Name: in.Name})
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan struct{})

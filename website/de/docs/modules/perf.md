@@ -23,6 +23,12 @@ Alle 5 Sekunden wird gemessen: der 60-Sekunden-Bereich zeigt jede Messung, der 1
 
 Manche Plattformen liefern nicht jeden Messwert (unter macOS gibt es zum Beispiel keine CPU-Auslastung); diese Diagramme zeigen „Keine Daten“.
 
+### Verwaltete Prozesse
+
+Wenn Gately externe Programme verwaltet (frp, Tailscale, NetBird, Cloudflare-Tunnel, File Browser), wird unter „Host und Gately-Prozess“ jeder verwaltete Prozess aufgeführt: Modul und Instanz, Programmname, PID, Laufzeit und Anzahl der Neustarts, dazu aktuelle CPU und resident Memory sowie Mini-Kurven der letzten etwa 60 Sekunden; ein Klick auf eine Zeile öffnet das Modul. Die CPU wird wie beim Gately-Prozess bezogen auf alle Kerne des Rechners gemessen. Gezählt wird nur der Prozess selbst, nicht die von ihm gestarteten Kindprozesse; Pfade, Startargumente und Umgebungsvariablen werden nicht angezeigt.
+
+Die Diagramme „CPU des Gately-Prozesses“ und „Speicher des Gately-Prozesses“ enthalten eine zusätzliche grüne Linie für die Summe der verwalteten Prozesse, und oben rechts im Diagramm steht deren aktueller Wert; auch die Bereiche 1 Stunde und 24 Stunden behalten sie. Unter Linux stammen die Werte aus `/proc`, unter macOS aus `ps` (ohne Thread-Anzahl); andere Plattformen listen nur die Prozesse auf. Dieselben Daten liefert `GET /api/perf/processes` (erfordert `perf:read`).
+
 ### Websites
 
 Bei aktivem Modul Webdienste werden alle laufenden Websites (einschließlich Standard-Websites) aufgelistet:
@@ -107,6 +113,7 @@ Solange Leistung aktiv ist, exportiert `/api/metrics` zusätzlich die Host- und 
 | `GET /api/perf/overview?range=60s\|1h\|24h` | Verlauf von Host und Prozess |
 | `GET /api/perf/sites` | Messwerte jeder Website über etwa die letzten 60 Sekunden |
 | `GET /api/perf/alerts` | Ausstehende und ausgelöste Objekte |
+| `GET /api/perf/processes` | Aktuelle CPU und resident Memory verwalteter Prozesse sowie die der letzten etwa 60 Sekunden |
 | `GET /api/perf/metrics` | Für Warnungen verfügbare Messwerte |
 | `/api/perf/rules` | Warnregeln anlegen, lesen, ändern und löschen, aktivieren, sortieren und gruppieren |
 

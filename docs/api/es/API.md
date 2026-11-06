@@ -739,6 +739,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | GET | `/api/perf/overview` | `perf:read` | Historial del host y del proceso (?range=60s|1h|24h) |
 | GET | `/api/perf/sites` | `perf:read` | Métricas de cada sitio en aproximadamente los últimos 60 segundos |
 | GET | `/api/perf/alerts` | `perf:read` | Alertas en curso (pendientes y activas) |
+| GET | `/api/perf/processes` | `perf:read` | Procesos gestionados (frpc, tailscaled, etc.) con su uso de recursos actual y de los últimos 60 segundos aproximadamente |
 
 ## Diagnóstico de red
 
@@ -1620,6 +1621,9 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 
 | Campo | Tipo |
 | --- | --- |
+| `childCpu` | number |
+| `childCpuMax` | number |
+| `childRss` | number |
 | `cpu` | number |
 | `cpuMax` | number |
 | `disk` | number |
@@ -1631,6 +1635,29 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `procFds` | number |
 | `procRss` | number |
 | `t` | integer |
+
+### perf.ProcSample
+
+| Campo | Tipo |
+| --- | --- |
+| `cpu` | number |
+| `rss` | number |
+| `t` | integer |
+
+### perf.ProcessView
+
+| Campo | Tipo |
+| --- | --- |
+| `cpu` | number |
+| `module` | string |
+| `name` | string |
+| `pid` | integer |
+| `program` | string |
+| `restarts` | integer |
+| `rss` | integer |
+| `samples` | Lista de `perf.ProcSample` |
+| `since` | Hora (RFC 3339) |
+| `threads` | integer |
 
 ### perf.Rule
 

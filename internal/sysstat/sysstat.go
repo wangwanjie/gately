@@ -13,6 +13,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/wangwanjie/gately/internal/proc"
 )
 
 // Snapshot 是一次采集的结果。
@@ -29,7 +31,19 @@ type Snapshot struct {
 	Disk        *Disk       `json:"disk,omitempty"`
 	Interfaces  []Interface `json:"interfaces"`
 	Process     Process     `json:"process"`
-	SampledAt   time.Time   `json:"sampledAt"`
+	// Managed 为 Gately 托管的外部进程（frpc、tailscaled、File Browser 等）及各自的资源占用
+	Managed   []ManagedProcess `json:"managed"`
+	SampledAt time.Time        `json:"sampledAt"`
+}
+
+// ManagedProcess 是一个托管进程及其资源占用。只统计该进程本身，不含它再启动的子进程；
+// 取不到的字段为空（不支持的平台、进程刚启动还没有两次采样时的 CPU）。
+type ManagedProcess struct {
+	proc.Managed
+	RSS uint64 `json:"rss,omitempty"`
+	// CPU 与 Gately 进程口径一致，按整机核数归一化的百分比
+	CPU     *float64 `json:"cpu,omitempty"`
+	Threads int      `json:"threads,omitempty"`
 }
 
 // CPU 描述处理器信息。Usage 为整机使用率百分比，未知时为 nil。
@@ -90,7 +104,18 @@ type rawSample struct {
 	cpuIdle   uint64
 	procTicks uint64
 	ifBytes   map[string][2]uint64
-	ok        bool
+	// children 为托管进程的计数器，按 PID 索引
+	children map[int]childRaw
+	ok       bool
+}
+
+// childRaw 是一个托管进程的原始计数器。since 为托管器记录的启动时间，用于识别 PID 被重启后的新进程复用，
+// 此时前后两次的 CPU 时间不能相减。
+type childRaw struct {
+	since   int64
+	ticks   uint64
+	rss     uint64
+	threads int
 }
 
 // Collector 保存上一次采样，用于计算使用率与速率。并发安全。
@@ -98,6 +123,9 @@ type Collector struct {
 	mu   sync.Mutex
 	dir  string
 	last rawSample
+	// kids 为托管进程计数器的基准，与主机计数器分开保存：macOS 等平台读不到主机计数器（last 不会更新），
+	// 托管进程的计数器仍能读到，需要自己的基准才能算出 CPU
+	kids rawSample
 }
 
 // New 创建采集器，dir 为统计磁盘容量的目录（一般为配置目录）。
@@ -116,13 +144,14 @@ func (c *Collector) Snapshot() Snapshot {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	cur := readRaw()
+	managed := proc.Running()
+	cur := readSample(managed)
 	prev := c.last
 	if cur.ok && (!prev.ok || cur.at.Sub(prev.at) > maxInterval) {
 		// 没有可用的上一次采样：短暂等待后再采一次，保证首屏就有使用率与速率
 		prev = cur
 		time.Sleep(minInterval)
-		cur = readRaw()
+		cur = readSample(managed)
 	}
 
 	s := Snapshot{
@@ -139,6 +168,19 @@ func (c *Collector) Snapshot() Snapshot {
 	}
 	s.Interfaces = interfaces(cur, prev)
 	fillProcess(&s.Process)
+	kidsPrev := c.kids
+	if kidsPrev.at.IsZero() || cur.at.Sub(kidsPrev.at) > maxInterval {
+		// 基准过旧时不计算，用本次结果作为新基准；主机计数器可读时首屏已多采过一次，直接用那次作为基准
+		kidsPrev = rawSample{}
+		if prev.at.Before(cur.at) {
+			kidsPrev = prev
+		}
+	}
+	s.Managed = managedStats(managed, cur, kidsPrev, s.CPU.Cores)
+	// 与主机计数器相同：两次请求间隔太近时保留更早的基准
+	if c.kids.at.IsZero() || cur.at.Sub(c.kids.at) >= minInterval {
+		c.kids = rawSample{at: cur.at, children: cur.children}
+	}
 
 	if cur.ok && prev.ok {
 		dt := cur.at.Sub(prev.at).Seconds()
@@ -159,6 +201,45 @@ func (c *Collector) Snapshot() Snapshot {
 		c.last = cur
 	}
 	return s
+}
+
+// readSample 读取主机计数器与托管进程计数器。
+func readSample(managed []proc.Managed) rawSample {
+	s := readRaw()
+	s.children = map[int]childRaw{}
+	if len(managed) == 0 {
+		return s
+	}
+	pids := make([]int, 0, len(managed))
+	for _, m := range managed {
+		pids = append(pids, m.PID)
+	}
+	raw := readChildren(pids)
+	for _, m := range managed {
+		if r, ok := raw[m.PID]; ok {
+			r.since = m.Since.UnixNano()
+			s.children[m.PID] = r
+		}
+	}
+	return s
+}
+
+// managedStats 组合托管进程列表与资源占用。CPU 由相邻两次采样的 CPU 时间差计算，同一 PID 的启动时间变了（进程被重启）时不计算。
+func managedStats(list []proc.Managed, cur, prev rawSample, cores int) []ManagedProcess {
+	out := make([]ManagedProcess, 0, len(list))
+	dt := cur.at.Sub(prev.at).Seconds()
+	for _, m := range list {
+		mp := ManagedProcess{Managed: m}
+		if r, ok := cur.children[m.PID]; ok {
+			mp.RSS, mp.Threads = r.rss, r.threads
+			if p, ok := prev.children[m.PID]; ok && p.since == r.since && dt > 0 && r.ticks >= p.ticks && cores > 0 {
+				v := clampPercent(float64(r.ticks-p.ticks) / clockTicks / dt / float64(cores) * 100)
+				mp.CPU = &v
+			}
+		}
+		out = append(out, mp)
+	}
+	return out
 }
 
 func clampPercent(v float64) float64 {

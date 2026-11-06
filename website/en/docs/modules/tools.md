@@ -159,6 +159,7 @@ Run commands or send HTTP requests on a cron schedule.
 ## Overview and System Logs
 
 - The "Overview" page shows host information: CPU model, usage and load, memory, disk, network interface addresses and live rates, public IPv4 and IPv6 (click to copy), the service status of each module, and for the Gately process its version, commit, build time, start time, PID, CPU, resident memory, Go heap and goroutine count;
+- When Gately manages external programs (frp, Tailscale, NetBird, Cloudflare Tunnel, File Browser), the "Overview" page also has a "Managed Processes" card listing each process with its module and instance, program name, PID, uptime, restart count, CPU and resident memory, with the totals in the card header; click a row to open its module. Only the process itself is counted, not the children it starts, and paths and launch arguments are not shown;
 - The "System Logs" page collects the logs of all modules, including the runtime records of modules such as Docker, FTP and Scheduled Tasks.
 
 ## Themes

@@ -739,6 +739,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/perf/overview` | `perf:read` | 主机与进程历史（?range=60s|1h|24h） |
 | GET | `/api/perf/sites` | `perf:read` | 各站点最近约 60 秒的指标 |
 | GET | `/api/perf/alerts` | `perf:read` | 进行中的告警（计时中与已触发） |
+| GET | `/api/perf/processes` | `perf:read` | 托管进程（frpc、tailscaled 等）当前与最近约 60 秒的资源占用 |
 
 ## 网络诊断
 
@@ -1620,6 +1621,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | 字段 | 类型 |
 | --- | --- |
+| `childCpu` | number |
+| `childCpuMax` | number |
+| `childRss` | number |
 | `cpu` | number |
 | `cpuMax` | number |
 | `disk` | number |
@@ -1631,6 +1635,29 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `procFds` | number |
 | `procRss` | number |
 | `t` | integer |
+
+### perf.ProcSample
+
+| 字段 | 类型 |
+| --- | --- |
+| `cpu` | number |
+| `rss` | number |
+| `t` | integer |
+
+### perf.ProcessView
+
+| 字段 | 类型 |
+| --- | --- |
+| `cpu` | number |
+| `module` | string |
+| `name` | string |
+| `pid` | integer |
+| `program` | string |
+| `restarts` | integer |
+| `rss` | integer |
+| `samples` | 数组 of `perf.ProcSample` |
+| `since` | 时间 (RFC 3339) |
+| `threads` | integer |
 
 ### perf.Rule
 

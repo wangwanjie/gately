@@ -203,3 +203,26 @@ func fillProcessOS(p *Process) {
 		p.FDs = len(ents)
 	}
 }
+
+// readChildren 读取托管进程的 CPU 时间、常驻内存与线程数。只接受父进程是 Gately 自身的 PID：
+// 托管进程都由 Gately 直接启动，进程退出后 PID 若被系统中其他进程复用，不会把别人的占用算进来。
+func readChildren(pids []int) map[int]childRaw {
+	out := make(map[int]childRaw, len(pids))
+	self := os.Getpid()
+	page := uint64(os.Getpagesize())
+	for _, pid := range pids {
+		if pid <= 0 {
+			continue
+		}
+		b, err := os.ReadFile("/proc/" + strconv.Itoa(pid) + "/stat")
+		if err != nil {
+			continue
+		}
+		r, ppid, ok := parseStat(string(b), page)
+		if !ok || ppid != self {
+			continue
+		}
+		out[pid] = r
+	}
+	return out
+}

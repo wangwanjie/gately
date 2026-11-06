@@ -23,6 +23,12 @@ Uma amostra é coletada a cada 5 segundos: o intervalo de 60 segundos mostra cad
 
 Algumas plataformas não fornecem todas as métricas (por exemplo, no macOS não há uso de CPU); esses gráficos mostram "Sem dados".
 
+### Processos gerenciados
+
+Quando o Gately gerencia programas externos (frp, Tailscale, NetBird, túnel do Cloudflare, File Browser), cada processo gerenciado aparece abaixo de "Host e processo do Gately": módulo e instância, nome do programa, PID, tempo ativo e número de reinícios, com a CPU e a memória residente atuais e minigráficos de cerca dos últimos 60 segundos; clique em uma linha para abrir o módulo. A CPU é medida como a do processo do Gately, em relação a todos os núcleos da máquina. Conta apenas o próprio processo, sem os filhos que ele inicia; caminhos, argumentos de inicialização e variáveis de ambiente não são exibidos.
+
+Os gráficos "CPU do processo do Gately" e "Memória do processo do Gately" têm uma linha verde extra com o total dos processos gerenciados, e o canto superior direito de cada gráfico mostra o valor mais recente; os intervalos de 1 hora e 24 horas também a mantêm. No Linux os valores vêm de `/proc` e no macOS de `ps` (sem número de threads); nas demais plataformas os processos são apenas listados. Os mesmos dados estão disponíveis em `GET /api/perf/processes` (requer `perf:read`).
+
 ### Sites
 
 Com o módulo Serviços web ligado, todos os sites em execução (incluindo os sites padrão) são listados:
@@ -107,6 +113,7 @@ Com Desempenho ligado, `/api/metrics` também exporta as métricas do host e do 
 | `GET /api/perf/overview?range=60s\|1h\|24h` | Histórico do host e do processo |
 | `GET /api/perf/sites` | Métricas de cada site em aproximadamente os últimos 60 segundos |
 | `GET /api/perf/alerts` | Objetos pendentes e disparados |
+| `GET /api/perf/processes` | CPU e memória residente atuais e dos últimos 60 segundos aproximadamente dos processos gerenciados |
 | `GET /api/perf/metrics` | Métricas disponíveis para alertas |
 | `/api/perf/rules` | Criar, ler, alterar e excluir regras de alerta, ativá-las, ordená-las e agrupá-las |
 

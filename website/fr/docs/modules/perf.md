@@ -23,6 +23,12 @@ Un échantillon est pris toutes les 5 secondes : la plage de 60 secondes affiche
 
 Certaines plateformes ne fournissent pas toutes les métriques (par exemple pas d'utilisation CPU sous macOS) ; ces graphiques affichent « Aucune donnée ».
 
+### Processus gérés
+
+Lorsque Gately gère des programmes externes (frp, Tailscale, NetBird, tunnel Cloudflare, File Browser), chaque processus géré est listé sous « Hôte et processus Gately » : module et instance, nom du programme, PID, durée d'activité et nombre de redémarrages, avec le CPU et la mémoire résidente actuels et des mini-courbes sur environ les 60 dernières secondes ; cliquez sur une ligne pour ouvrir son module. Le CPU est mesuré comme celui du processus Gately, rapporté à l'ensemble des cœurs de la machine. Seul le processus lui-même est compté, pas les enfants qu'il lance ; les chemins, arguments de lancement et variables d'environnement ne sont pas affichés.
+
+Les graphiques « CPU du processus Gately » et « Mémoire du processus Gately » comportent une ligne verte supplémentaire pour le total des processus gérés, et le coin supérieur droit de chaque graphique en affiche la dernière valeur ; les plages 1 heure et 24 heures la conservent aussi. Sous Linux les valeurs proviennent de `/proc`, sous macOS de `ps` (sans nombre de threads) ; les autres plateformes ne font que lister les processus. Les mêmes données sont disponibles via `GET /api/perf/processes` (droit `perf:read` requis).
+
 ### Sites
 
 Quand le module Services web est actif, tous les sites en cours d'exécution (sites par défaut compris) sont listés :
@@ -107,6 +113,7 @@ Quand Performances est actif, `/api/metrics` exporte aussi les métriques de l'h
 | `GET /api/perf/overview?range=60s\|1h\|24h` | Historique de l'hôte et du processus |
 | `GET /api/perf/sites` | Métriques de chaque site sur environ les 60 dernières secondes |
 | `GET /api/perf/alerts` | Objets en attente et en alerte |
+| `GET /api/perf/processes` | CPU et mémoire résidente actuels et des 60 dernières secondes environ des processus gérés |
 | `GET /api/perf/metrics` | Métriques disponibles pour les alertes |
 | `/api/perf/rules` | Créer, lire, modifier et supprimer des règles d'alerte, les activer, les ordonner et les grouper |
 

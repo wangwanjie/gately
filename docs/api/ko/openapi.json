@@ -1739,6 +1739,15 @@
       },
       "perf.Point": {
         "properties": {
+          "childCpu": {
+            "type": "number"
+          },
+          "childCpuMax": {
+            "type": "number"
+          },
+          "childRss": {
+            "type": "number"
+          },
           "cpu": {
             "type": "number"
           },
@@ -1770,6 +1779,59 @@
             "type": "number"
           },
           "t": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "perf.ProcSample": {
+        "properties": {
+          "cpu": {
+            "type": "number"
+          },
+          "rss": {
+            "type": "number"
+          },
+          "t": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "perf.ProcessView": {
+        "properties": {
+          "cpu": {
+            "type": "number"
+          },
+          "module": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "pid": {
+            "type": "integer"
+          },
+          "program": {
+            "type": "string"
+          },
+          "restarts": {
+            "type": "integer"
+          },
+          "rss": {
+            "type": "integer"
+          },
+          "samples": {
+            "items": {
+              "$ref": "#/components/schemas/perf.ProcSample"
+            },
+            "type": "array"
+          },
+          "since": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "threads": {
             "type": "integer"
           }
         },
@@ -26890,6 +26952,67 @@
           }
         ],
         "summary": "호스트와 프로세스 기록(?range=60s|1h|24h)",
+        "tags": [
+          "성능 모니터링"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/processes": {
+      "get": {
+        "description": "필요한 권한: `perf:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/perf.ProcessView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "관리 프로세스(frpc, tailscaled 등)의 현재 및 최근 약 60초 리소스 사용량",
         "tags": [
           "성능 모니터링"
         ],

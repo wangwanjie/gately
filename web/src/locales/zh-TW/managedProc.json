@@ -1,0 +1,11 @@
+{
+  "title": "託管程序",
+  "total": "{count} 個 · CPU {cpu} · 記憶體 {rss}",
+  "uptime": "已執行 {d}",
+  "threads": "{n} 個執行緒",
+  "restarts": "重新啟動 {n} 次",
+  "memory": "記憶體",
+  "chartTotal": "託管程序合計",
+  "perfHelp": "Gately 啟動並託管的外部程式（frpc、tailscaled、File Browser 等），只統計程序本身；CPU 按整機核心數折算，曲線為最近約 60 秒。上方 Gately 程序的 CPU 與記憶體圖中另有一條託管程序合計的線。",
+  "chartLatest": "託管程序 {v}"
+}

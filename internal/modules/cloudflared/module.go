@@ -262,7 +262,7 @@ func (m *Module) applyLocked(key string) {
 	// 名称可能被修改，重建托管器以使用新的日志来源
 	rt.sup = proc.New(m.logs.Logger(t.Name))
 	args, env := t.Args()
-	rt.sup.Start(proc.Spec{Path: bin, Args: args, Env: env, OnLine: rt.onLine, OnStart: rt.reset})
+	rt.sup.Start(proc.Spec{Path: bin, Args: args, Env: env, OnLine: rt.onLine, OnStart: rt.reset, Module: ID, Name: t.Name})
 }
 
 func (m *Module) dropLocked(key string) {

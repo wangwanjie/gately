@@ -739,6 +739,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/perf/overview` | `perf:read` | ホストとプロセスの履歴（?range=60s|1h|24h） |
 | GET | `/api/perf/sites` | `perf:read` | 各サイトの直近約 60 秒の指標 |
 | GET | `/api/perf/alerts` | `perf:read` | 進行中のアラート（計測中と発報中） |
+| GET | `/api/perf/processes` | `perf:read` | 管理対象プロセス（frpc、tailscaled など）の現在と直近約 60 秒のリソース使用量 |
 
 ## ネットワーク診断
 
@@ -1620,6 +1621,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | フィールド | 型 |
 | --- | --- |
+| `childCpu` | number |
+| `childCpuMax` | number |
+| `childRss` | number |
 | `cpu` | number |
 | `cpuMax` | number |
 | `disk` | number |
@@ -1631,6 +1635,29 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `procFds` | number |
 | `procRss` | number |
 | `t` | integer |
+
+### perf.ProcSample
+
+| フィールド | 型 |
+| --- | --- |
+| `cpu` | number |
+| `rss` | number |
+| `t` | integer |
+
+### perf.ProcessView
+
+| フィールド | 型 |
+| --- | --- |
+| `cpu` | number |
+| `module` | string |
+| `name` | string |
+| `pid` | integer |
+| `program` | string |
+| `restarts` | integer |
+| `rss` | integer |
+| `samples` | 配列 of `perf.ProcSample` |
+| `since` | 時刻 (RFC 3339) |
+| `threads` | integer |
 
 ### perf.Rule
 

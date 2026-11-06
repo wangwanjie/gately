@@ -206,7 +206,7 @@ func (m *Module) applyLocked(key string) {
 	}
 	// 名称可能被修改，重建托管器以使用新的日志来源
 	rt.sup = proc.New(log)
-	rt.sup.Start(proc.Spec{Path: bin, Args: []string{"-c", cfgPath}, Env: inst.Env(), Dir: m.dataDir(key)})
+	rt.sup.Start(proc.Spec{Path: bin, Args: []string{"-c", cfgPath}, Env: inst.Env(), Dir: m.dataDir(key), Module: ID, Name: inst.Name})
 }
 
 // dropLocked 停止并移除实例的运行时；调用方持有 mu。

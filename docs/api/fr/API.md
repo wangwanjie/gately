@@ -739,6 +739,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | GET | `/api/perf/overview` | `perf:read` | Historique de l'hôte et du processus (?range=60s|1h|24h) |
 | GET | `/api/perf/sites` | `perf:read` | Métriques de chaque site sur environ les 60 dernières secondes |
 | GET | `/api/perf/alerts` | `perf:read` | Alertes en cours (en attente et déclenchées) |
+| GET | `/api/perf/processes` | `perf:read` | Processus gérés (frpc, tailscaled, etc.) avec leur consommation de ressources actuelle et des 60 dernières secondes environ |
 
 ## Diagnostic réseau
 
@@ -1620,6 +1621,9 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 
 | Champ | Type |
 | --- | --- |
+| `childCpu` | number |
+| `childCpuMax` | number |
+| `childRss` | number |
 | `cpu` | number |
 | `cpuMax` | number |
 | `disk` | number |
@@ -1631,6 +1635,29 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `procFds` | number |
 | `procRss` | number |
 | `t` | integer |
+
+### perf.ProcSample
+
+| Champ | Type |
+| --- | --- |
+| `cpu` | number |
+| `rss` | number |
+| `t` | integer |
+
+### perf.ProcessView
+
+| Champ | Type |
+| --- | --- |
+| `cpu` | number |
+| `module` | string |
+| `name` | string |
+| `pid` | integer |
+| `program` | string |
+| `restarts` | integer |
+| `rss` | integer |
+| `samples` | Tableau de `perf.ProcSample` |
+| `since` | Heure (RFC 3339) |
+| `threads` | integer |
 
 ### perf.Rule
 

@@ -85,8 +85,9 @@ func TestRuleValidate(t *testing.T) {
 
 // fakeHost 返回可控的系统快照。
 type fakeHost struct {
-	mu  sync.Mutex
-	cpu float64
+	mu      sync.Mutex
+	cpu     float64
+	managed []sysstat.ManagedProcess
 }
 
 func (f *fakeHost) snapshot() sysstat.Snapshot {
@@ -96,7 +97,8 @@ func (f *fakeHost) snapshot() sysstat.Snapshot {
 	return sysstat.Snapshot{Hostname: "box", CPU: sysstat.CPU{Cores: 4, Usage: &cpu, Load: []float64{0.5}},
 		Memory:  &sysstat.Memory{Total: 1000, Used: 250},
 		Disk:    &sysstat.Disk{Total: 100, Used: 10},
-		Process: sysstat.Process{PID: 1, CPU: &proc, RSS: 64 << 20, FDs: 12, Goroutines: 30}}
+		Process: sysstat.Process{PID: 1, CPU: &proc, RSS: 64 << 20, FDs: 12, Goroutines: 30},
+		Managed: append([]sysstat.ManagedProcess(nil), f.managed...)}
 }
 
 type harness struct {

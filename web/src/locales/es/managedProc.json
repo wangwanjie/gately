@@ -1,0 +1,11 @@
+{
+  "title": "Procesos gestionados",
+  "total": "{count} · CPU {cpu} · Memoria {rss}",
+  "uptime": "Activo {d}",
+  "threads": "{n} hilos",
+  "restarts": "Reiniciado {n} veces",
+  "memory": "Memoria",
+  "chartTotal": "Total de procesos gestionados",
+  "perfHelp": "Programas externos que Gately inicia y gestiona (frpc, tailscaled, File Browser, etc.); solo se cuenta el propio proceso. La CPU es relativa a todos los núcleos del equipo y las curvas cubren aproximadamente los últimos 60 segundos. Los gráficos de CPU y memoria del proceso de Gately de arriba incluyen una línea adicional con el total de los procesos gestionados.",
+  "chartLatest": "Gestionados {v}"
+}

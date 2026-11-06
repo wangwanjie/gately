@@ -739,6 +739,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | GET | `/api/perf/overview` | `perf:read` | Histórico do host e do processo (?range=60s|1h|24h) |
 | GET | `/api/perf/sites` | `perf:read` | Métricas de cada site em aproximadamente os últimos 60 segundos |
 | GET | `/api/perf/alerts` | `perf:read` | Alertas em andamento (pendentes e disparados) |
+| GET | `/api/perf/processes` | `perf:read` | Processos gerenciados (frpc, tailscaled etc.) com o uso de recursos atual e dos últimos 60 segundos aproximadamente |
 
 ## Diagnóstico de rede
 
@@ -1620,6 +1621,9 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 
 | Campo | Tipo |
 | --- | --- |
+| `childCpu` | number |
+| `childCpuMax` | number |
+| `childRss` | number |
 | `cpu` | number |
 | `cpuMax` | number |
 | `disk` | number |
@@ -1631,6 +1635,29 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `procFds` | number |
 | `procRss` | number |
 | `t` | integer |
+
+### perf.ProcSample
+
+| Campo | Tipo |
+| --- | --- |
+| `cpu` | number |
+| `rss` | number |
+| `t` | integer |
+
+### perf.ProcessView
+
+| Campo | Tipo |
+| --- | --- |
+| `cpu` | number |
+| `module` | string |
+| `name` | string |
+| `pid` | integer |
+| `program` | string |
+| `restarts` | integer |
+| `rss` | integer |
+| `samples` | Array de `perf.ProcSample` |
+| `since` | Hora (RFC 3339) |
+| `threads` | integer |
 
 ### perf.Rule
 

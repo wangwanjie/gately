@@ -23,6 +23,12 @@ A sample is taken every 5 seconds: the 60 second range shows every sample; the 1
 
 Some platforms cannot provide every metric (for example there is no CPU usage on macOS); those charts show "No data".
 
+### Managed processes
+
+When Gately manages external programs (frp, Tailscale, NetBird, Cloudflare Tunnel, File Browser), each managed process is listed below "Host and Gately process": its module and instance, program name, PID, uptime and restart count, with the current CPU and resident memory and sparklines for about the last 60 seconds; click a row to open its module. CPU is measured like the Gately process, relative to all cores of the machine. Only the process itself is counted, not the children it starts; paths, launch arguments and environment variables are not shown.
+
+The "Gately process CPU" and "Gately process memory" charts have an extra green line for the managed processes total, and the top right of each chart shows its latest value; the 1 hour and 24 hour ranges keep it as well. On Linux the values come from `/proc`, on macOS from `ps` (no thread count); other platforms only list the processes. The same data is available from `GET /api/perf/processes` (requires `perf:read`).
+
 ### Sites
 
 With the Web Services module on, all running sites (including default sites) are listed:
@@ -107,6 +113,7 @@ While Performance is on, `/api/metrics` also exports the host and process metric
 | `GET /api/perf/overview?range=60s\|1h\|24h` | Host and process history |
 | `GET /api/perf/sites` | Each site's metrics over roughly the last 60 seconds |
 | `GET /api/perf/alerts` | Pending and firing objects |
+| `GET /api/perf/processes` | Managed processes' current CPU and resident memory and the last roughly 60 seconds |
 | `GET /api/perf/metrics` | Metrics available for alerts |
 | `/api/perf/rules` | Create, read, update and delete alert rules, enable, order and group them |
 
