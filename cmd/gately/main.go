@@ -93,6 +93,8 @@ func main() {
 		InitialPassword: os.Getenv("GATELY_INITIAL_PASSWORD"),
 		GatewaySocket:   *gatewaySocket,
 		GatewayPrefix:   *gatewayPrefix,
+		// 崩溃信息保存到配置目录的 crash.log，容器重启后看不到 stderr 时也能随诊断包导出
+		CrashLog: true,
 	})
 	if err != nil {
 		log.Fatalf("启动失败: %v", err)

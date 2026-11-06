@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/wangwanjie/gately/internal/apitoken"
+	"github.com/wangwanjie/gately/internal/crashlog"
 	"github.com/wangwanjie/gately/internal/diag"
 	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/logbuf"
@@ -112,6 +113,10 @@ func (a *App) buildDiagnostics(includeLogs bool, now time.Time) (*diag.Bundle, e
 	}
 
 	if includeLogs {
+		// 崩溃记录：Go 运行时的 panic / fatal error 与堆栈，以及进程被强制结束的时间，排查异常退出时最关键
+		if raw, err := os.ReadFile(filepath.Join(a.opts.ConfigDir, crashlog.LogName)); err == nil && len(raw) > 0 {
+			b.Add("logs/"+crashlog.LogName, []byte(red.Stack(string(raw))))
+		}
 		b.Add("logs/system.log", formatDiagLogs(red, a.sysLogs))
 		for _, e := range a.modules {
 			b.Add("logs/"+e.mod.ID()+".log", formatDiagLogs(red, e.logs))

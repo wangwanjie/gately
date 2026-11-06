@@ -25,6 +25,7 @@ import (
 	"github.com/wangwanjie/gately/internal/audit"
 	"github.com/wangwanjie/gately/internal/auth"
 	"github.com/wangwanjie/gately/internal/config"
+	"github.com/wangwanjie/gately/internal/crashlog"
 	"github.com/wangwanjie/gately/internal/events"
 	"github.com/wangwanjie/gately/internal/fileusers"
 	"github.com/wangwanjie/gately/internal/httpcompress"
@@ -72,6 +73,9 @@ type Options struct {
 	GatewaySocket string
 	// GatewayPrefix 是经网关访问时的路径前缀，例如 /app/gately；为空表示不加前缀
 	GatewayPrefix string
+	// CrashLog 为 true 时把运行时崩溃信息保存到配置目录的 crash.log，并在启动时报告上次运行是否异常结束。
+	// 只有服务进程开启：它会设置整个进程的崩溃输出，测试与导出文档等场景不需要
+	CrashLog bool
 }
 
 type moduleEntry struct {
@@ -130,10 +134,12 @@ type App struct {
 	passkeyChallenges challengeStore
 	pendingMu         sync.Mutex
 	pendingTOTP       string
+	// crash 为本次运行的崩溃记录，未开启时为 nil（方法均可在 nil 上调用）
+	crash *crashlog.Recorder
 }
 
 // New 加载配置并初始化所有模块，但不启动网络服务。
-func New(opts Options) (*App, error) {
+func New(opts Options) (_ *App, err error) {
 	prefix, err := normalizeGatewayPrefix(opts.GatewayPrefix)
 	if err != nil {
 		return nil, err
@@ -184,6 +190,15 @@ func New(opts Options) (*App, error) {
 	// 先按设置开启日志落盘并恢复上次的日志，后续初始化过程中的日志也能写入文件
 	a.sysLogs.Resize(a.settings.LogLines)
 	a.persistLogs(a.sysLogs, settingsName, false, a.settings)
+	if opts.CrashLog {
+		a.startCrashLog()
+		// 之后初始化失败时进程会退出：同样写进崩溃记录，下次启动不会误报为被强制结束
+		defer func() {
+			if err != nil {
+				a.crash.Fatal("start failed: " + err.Error())
+			}
+		}()
+	}
 	if n := tightenConfigDir(opts.ConfigDir); n > 0 {
 		a.sysLogs.Add(logbuf.LevelInfo, "", fmt.Sprintf("已收紧配置目录中 %d 个文件或目录的权限", n))
 	}
@@ -373,6 +388,17 @@ func (a *App) Handler() http.Handler {
 
 // Run 启动所有模块和管理服务，阻塞直到 ctx 取消。收到重启请求时停止全部服务后重新执行自身。
 func (a *App) Run(parent context.Context) error {
+	err := a.run(parent)
+	if err != nil {
+		// 进程随后退出：错误写进崩溃记录，下次启动时与崩溃一样整理进 crash.log
+		a.crash.Fatal("run failed: " + err.Error())
+		return err
+	}
+	a.crash.Close()
+	return nil
+}
+
+func (a *App) run(parent context.Context) error {
 	// 模块使用独立的可取消上下文：重启时先取消，确保后台协程退出后 Stop 不会一直等待
 	ctx, cancelModules := context.WithCancel(parent)
 	defer cancelModules()
@@ -476,6 +502,8 @@ func (a *App) Run(parent context.Context) error {
 	a.closeLogs()
 	if restart {
 		a.logger.Printf("正在重启…")
+		// 重启前结束本次的崩溃记录，新进程启动时不会把这次重启当成异常结束
+		a.crash.Close()
 		restartProcess()
 	}
 	return nil
