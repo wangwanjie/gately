@@ -777,7 +777,8 @@ code {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .two {
-    grid-template-columns: 1fr;
+    /* minmax(0, 1fr)：列宽不随代码块里的长命令撑大，手机上不再横向溢出，pre 自己横向滚动 */
+    grid-template-columns: minmax(0, 1fr);
     gap: 28px;
   }
 }
