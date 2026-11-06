@@ -86,3 +86,43 @@ server {
 		}
 	}
 }
+
+// 导入 nginx：client_body_timeout 与 send_timeout 转换为访客读写空闲超时，各类站点都适用；未设置时保持默认。
+func TestImportNginxClientTimeouts(t *testing.T) {
+	conf := `server {
+	listen 8080;
+	server_name a.example.com;
+	client_body_timeout 30s;
+	send_timeout 2h;
+	location / { proxy_pass http://127.0.0.1:3000; }
+}
+server {
+	listen 8080;
+	server_name b.example.com;
+	location / {
+		root /srv/www;
+		client_body_timeout 5;
+	}
+}
+server {
+	listen 8080;
+	server_name c.example.com;
+	location / { proxy_pass http://127.0.0.1:3000; }
+}`
+	rep, err := importNginx(conf, nil, nameCerts{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, pl, s := findSite(rep, "a.example.com")
+	if s == nil || s.ClientTimeouts != (ClientTimeouts{ReadIdle: 30, WriteIdle: 3600}) || !strings.Contains(strings.Join(pl.Warnings, "\n"), "send_timeout 2h 超过 Gately 的上限") {
+		t.Fatalf("a: %+v %v", s, pl)
+	}
+	_, _, s = findSite(rep, "b.example.com")
+	if s == nil || s.Type != TypeStatic || s.ClientTimeouts != (ClientTimeouts{ReadIdle: 5}) {
+		t.Fatalf("b 静态站点同样导入: %+v", s)
+	}
+	_, _, s = findSite(rep, "c.example.com")
+	if s == nil || s.ClientTimeouts != (ClientTimeouts{}) {
+		t.Fatalf("c 未设置时应为默认: %+v", s)
+	}
+}

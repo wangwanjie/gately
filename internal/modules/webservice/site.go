@@ -504,6 +504,12 @@ func (h *siteHandler) newProxy(s Site, p *pool) http.Handler {
 			if errors.Is(context.Cause(r.Context()), errConnClosed) {
 				return
 			}
+			// 访客发送请求体时空闲超时：不是后端的错，不计入被动检查，返回 408（与 nginx 的 client_body_timeout 一致）
+			if clientDeadlinesFrom(r.Context()).readTimedOut() {
+				h.reqLog(r).Warnf("%s %s%s 读取请求体超时: %v", r.Method, r.Host, r.URL.Path, err)
+				writeErrorPage(h.errPage, w, r, http.StatusRequestTimeout, "请求超时", "请求没有在规定时间内完成，请重试。")
+				return
+			}
 			h.stats.Errors.Add(1)
 			// 客户端中途断开不是后端的错
 			if att := attemptFrom(r.Context()); att != nil && r.Context().Err() == nil {
@@ -626,6 +632,8 @@ type statusRecorder struct {
 	rate *rateRing
 	// firstByte 为首次写出响应头（或响应体）的时间，零值表示尚未写出，用于首字节延迟统计
 	firstByte time.Time
+	// dl 为访客写出空闲超时，每次写出前设置截止时间，写完清除；nil 表示不限制
+	dl *clientDeadlines
 }
 
 // countsForLatency 判断这次请求是否计入首字节延迟：必须写出过响应，且不是协议升级、断开连接或被管理员断开的请求。
@@ -650,7 +658,11 @@ func (s *statusRecorder) Write(p []byte) (int, error) {
 	}
 	s.wroteHeader = true
 	s.markFirstByte()
+	armed := s.dl != nil && s.dl.armWrite()
 	n, err := s.ResponseWriter.Write(p)
+	if armed {
+		s.dl.clearWrite()
+	}
 	s.bytes += int64(n)
 	if s.req != nil {
 		s.req.down.Add(int64(n))
@@ -776,8 +788,12 @@ func (h *siteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	r, ar := h.conns.begin(w, r, client)
 	defer h.conns.end(ar)
 	rec.req = ar
+	// 访客空闲超时：读取请求体与写出响应时一次卡住超过设置的秒数即放弃，防止极慢的访客长期占住连接
+	dl := newClientDeadlines(w, h.site.ClientTimeouts)
+	rec.dl = dl
+	r = r.WithContext(context.WithValue(r.Context(), ctxKeyClientDeadlines{}, dl))
 	if r.Body != nil && r.Body != http.NoBody {
-		r.Body = &trackedBody{ReadCloser: r.Body, req: ar}
+		r.Body = &idleBody{ReadCloser: &trackedBody{ReadCloser: r.Body, req: ar}, d: dl}
 	}
 	defer func() {
 		// 已接管的连接由 close 直接关闭，无需再中断

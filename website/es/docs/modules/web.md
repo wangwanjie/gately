@@ -405,6 +405,20 @@ Tiempos de espera de las conexiones de un sitio de proxy inverso con sus backend
 - Al agotarse se devuelve 504 (Gateway Timeout); otros errores, como una conexión rechazada, devuelven 502. Los tiempos agotados cuentan para la comprobación pasiva igual que los fallos de conexión;
 - Aumenta el tiempo de conexión para backends que arrancan despacio o están detrás de enlaces lentos; fija un tiempo de cabeceras cuando un backend bloqueado deba fallar pronto.
 
+### Tiempos de espera del visitante {#client-timeouts}
+
+Tiempos de inactividad hacia los visitantes, en segundos; 0 usa el valor predeterminado de 60 segundos (igual que los valores predeterminados de `client_body_timeout` y `send_timeout` en nginx). Todos los tipos de sitio salvo Cerrar conexión pueden configurarlos.
+
+| Campo | Predeterminado | Rango | Significado |
+| --- | --- | --- | --- |
+| Cuerpo de la petición `clientTimeouts.readIdle` | 60 s | 1 a 3600 | Espera máxima de una sola lectura del cuerpo de la petición |
+| Respuesta `clientTimeouts.writeIdle` | 60 s | 1 a 3600 | Espera máxima de una sola escritura de la respuesta |
+
+- Solo se mide una lectura o escritura que se queda bloqueada, así que las subidas y descargas grandes que avanzan, el tiempo de espera al backend y las conexiones largas como WebSocket no se ven afectados;
+- Corta a los visitantes que envían el cuerpo o leen la respuesta de forma extremadamente lenta (slowloris, slow read) para que no ocupen conexiones durante mucho tiempo;
+- Agotar la lectura del cuerpo devuelve 408 y cierra la conexión sin contar para la comprobación pasiva del backend; agotar la escritura cierra la conexión;
+- Se aplica a HTTP/1, HTTP/2 y HTTP/3.
+
 ### Compresión
 
 La compresión se puede activar en los sitios de proxy inverso, archivos estáticos y texto fijo (no en los de redirección). Según `Accept-Encoding`, se prefiere `br` y después `gzip`.
@@ -579,6 +593,7 @@ El botón «Importar nginx» de la parte superior de la página convierte sitios
 - Por defecto se importan desactivados, para revisarlos uno a uno en paralelo con nginx antes de activarlos; con «Activar tras importar» marcado se aplican de inmediato (si nginx sigue ocupando el mismo puerto, el listener nuevo no podrá iniciarse);
 - Se convierten: `proxy_pass` (incluidos el peso, la reserva y la política de balanceo de carga de upstream), directorios estáticos `root` / `alias` (`autoindex`, `try_files $uri.html`, `error_page 404`), redirecciones y contenido fijo con `return`, redirecciones `rewrite` de todo el sitio, `add_header`, `proxy_set_header`, `gzip`, `allow` / `deny`, backends por ruta, control de acceso y redirecciones a nivel de location, y `listen ... proxy_protocol` y `quic`;
 - `proxy_connect_timeout` y `proxy_read_timeout` se convierten en los [tiempos de conexión y de cabeceras de respuesta](#backend-timeouts) del sitio; el valor de location / tiene prioridad sobre el nivel server y los valores por encima del límite se importan con el límite. Los valores distintos en otras locations no se importan y la vista previa lo indica;
+- `client_body_timeout` y `send_timeout` se convierten en los [tiempos de espera del visitante](#client-timeouts) del sitio, para todos los tipos de sitio;
 - `auth_request` se convierte en autenticación delegada: el endpoint de autenticación se toma del `proxy_pass` de la location de la subpetición de autenticación (admite variables con `set`) y la redirección de inicio de sesión de `error_page 401 =302`, por lo que la configuración habitual de Authelia se convierte directamente; si solo está activado en algunas location, se convierte en un «Ámbito de autenticación» limitado a esas rutas;
 - `auth_basic` se convierte en autenticación básica con usuarios compartidos; el archivo de usuarios de nginx no se lee, así que nadie podrá pasar hasta que añadas los usuarios;
 - El reenvío TCP/UDP de `stream` se configura en [Reenvío de puertos](/es/docs/modules/portforward). Los certificados no se importan: si a un sitio HTTPS le falta el certificado, la vista previa muestra los archivos de certificado que usa nginx, y puedes añadirlos por ruta de archivo en la página de [Certificados](/es/docs/modules/ssl).

@@ -2083,6 +2083,13 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `maxMb` | integer |
 | `ttl` | integer |
 
+### webservice.ClientTimeouts
+
+| Champ | Type |
+| --- | --- |
+| `readIdle` | integer |
+| `writeIdle` | integer |
+
 ### webservice.ConnView
 
 | Champ | Type |
@@ -2369,6 +2376,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `basicAuth` | boolean |
 | `cache` | `webservice.CacheConfig` |
 | `cleanUrls` | boolean |
+| `clientTimeouts` | `webservice.ClientTimeouts` |
 | `compress` | boolean |
 | `contentType` | string |
 | `cors` | boolean |

@@ -405,6 +405,20 @@ http://10.0.0.3:8080 backup
 - 시간 초과 시 504(Gateway Timeout), 연결 거부 같은 다른 오류는 502를 반환합니다. 시간 초과도 연결 실패처럼 수동 검사에 집계됩니다;
 - 늦게 시작하는 백엔드나 느린 회선 뒤의 백엔드는 연결 시간 제한을 늘리고, 멈춘 백엔드를 빨리 오류로 처리하려면 응답 헤더 대기 시간 제한을 설정합니다.
 
+### 방문자 시간 제한 {#client-timeouts}
+
+방문자에 대한 읽기·쓰기 유휴 시간 제한으로, 단위는 초이며 0은 기본값 60초(nginx의 `client_body_timeout`, `send_timeout` 기본값과 같음)입니다. 연결 끊기를 제외한 모든 사이트 유형에서 설정할 수 있습니다.
+
+| 항목 | 기본값 | 범위 | 설명 |
+| --- | --- | --- | --- |
+| 요청 본문 `clientTimeouts.readIdle` | 60초 | 1~3600 | 요청 본문을 한 번 읽을 때 기다리는 최대 시간 |
+| 응답 `clientTimeouts.writeIdle` | 60초 | 1~3600 | 응답을 한 번 쓸 때 기다리는 최대 시간 |
+
+- 한 번의 읽기나 쓰기가 멈췄을 때만 계산하므로 데이터가 계속 오가는 큰 파일 업로드·다운로드, 백엔드 처리 대기 시간, WebSocket 같은 장시간 연결에는 영향이 없습니다;
+- 요청 본문을 매우 느리게 보내거나 응답을 매우 느리게 읽는 방문자(slowloris, slow read)를 끊어 연결을 오래 점유하지 못하게 합니다;
+- 요청 본문 읽기 시간 초과 시 408을 반환하고 연결을 닫으며 백엔드의 수동 검사에는 집계하지 않습니다. 쓰기 시간 초과 시 연결을 끊습니다;
+- HTTP/1, HTTP/2, HTTP/3 모두에 적용됩니다.
+
 ### 압축
 
 리버스 프록시, 정적 파일, 고정 텍스트 사이트에서 압축을 켤 수 있습니다(리다이렉트 사이트 제외). `Accept-Encoding`에 따라 `br`을 우선하고 그다음 `gzip`을 선택합니다.
@@ -579,6 +593,7 @@ curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/webservice/m
 - 기본적으로 비활성 상태로 가져오므로 nginx와 병행하면서 하나씩 확인한 뒤 활성화할 수 있습니다. 「가져온 후 바로 활성화」를 체크하면 즉시 적용됩니다(nginx가 같은 포트를 쓰고 있으면 새 리스너는 시작되지 않습니다).
 - 변환되는 내용: `proxy_pass`(upstream의 가중치, 예비, 로드 밸런싱 정책 포함), `root` / `alias` 정적 디렉터리(`autoindex`, `try_files $uri.html`, `error_page 404`), `return` 리다이렉트와 고정 내용, 사이트 전체 `rewrite` 리다이렉트, `add_header`, `proxy_set_header`, `gzip`, `allow` / `deny`, location 단위의 경로별 백엔드·접근 제어·리다이렉트, `listen ... proxy_protocol`과 `quic`.
 - `proxy_connect_timeout`과 `proxy_read_timeout`은 사이트의 [연결 시간 제한과 응답 헤더 대기 시간 제한](#backend-timeouts)으로 변환됩니다. location /의 값이 server 수준보다 우선하며, 상한을 넘는 값은 상한으로 가져옵니다. 다른 location의 다른 값은 가져오지 않으며 미리보기에서 알려 줍니다;
+- `client_body_timeout`과 `send_timeout`은 사이트의 [방문자 시간 제한](#client-timeouts)으로 변환되며 모든 사이트 유형에 적용됩니다;
 - `auth_request`는 포워드 인증으로 변환됩니다. 인증 엔드포인트는 인증 하위 요청 location의 `proxy_pass`에서 가져오고(`set` 변수 지원), 로그인 리디렉션은 `error_page 401 =302`에서 가져오므로 Authelia의 일반적인 설정은 그대로 변환됩니다. 일부 location에서만 쓰는 경우에는 「인증 범위」에서 지정한 경로만 인증하도록 변환합니다.
 - `auth_basic`은 공유 사용자를 쓰는 기본 인증으로 변환됩니다. nginx의 사용자 파일은 읽지 않으므로 사용자를 추가하기 전에는 아무도 통과할 수 없습니다.
 - `stream`의 TCP/UDP 전달은 [포트 포워딩](/ko/docs/modules/portforward)에서 설정하세요. 인증서는 가져오지 않습니다. HTTPS 사이트에 인증서가 없으면 미리 보기에서 nginx가 쓰는 인증서 파일을 보여 주므로 [인증서](/ko/docs/modules/ssl) 페이지에서 파일 경로로 추가할 수 있습니다.

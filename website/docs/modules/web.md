@@ -405,6 +405,20 @@ http://10.0.0.3:8080 backup
 - 超时返回 504（网关超时），连接被拒绝等其他错误返回 502；超时与连接失败一样计入被动检查；
 - 后端启动慢或经慢速链路访问时调大连接超时；希望卡住的后端尽快报错时设置等待响应头超时。
 
+### 访客超时 {#client-timeouts}
+
+对访客的读写空闲超时，单位为秒，填 0 使用默认值 60 秒（与 nginx 的 `client_body_timeout`、`send_timeout` 默认值相同），断开连接以外的站点类型都可设置。
+
+| 字段 | 默认值 | 范围 | 说明 |
+| --- | --- | --- | --- |
+| 读取请求体 `clientTimeouts.readIdle` | 60 秒 | 1 至 3600 | 一次读取请求体最多等待的时间 |
+| 写出响应 `clientTimeouts.writeIdle` | 60 秒 | 1 至 3600 | 一次写出响应最多等待的时间 |
+
+- 只在一次读取或写出卡住时计时：数据持续传输的大文件上传下载、等待后端处理的时间以及 WebSocket 等长连接都不受影响；
+- 用于断开极慢地发送请求体或读取响应的访客（slowloris、slow read），避免它们长期占住连接；
+- 读取请求体超时返回 408 并关闭连接，不计入后端的被动检查；写出超时直接断开连接；
+- HTTP/1、HTTP/2 与 HTTP/3 都生效。
+
 ### 压缩
 
 对反向代理、静态文件、固定文本站点可启用压缩（重定向站点除外）。按 `Accept-Encoding` 优先选择 `br`，其次 `gzip`。
@@ -579,6 +593,7 @@ curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/webservice/m
 - 默认导入为停用状态，便于与 nginx 并行逐个核对后再启用；勾选「导入后立即启用」则立即生效（nginx 仍占用同一端口时新建的监听会启动失败）；
 - 能转换的内容：`proxy_pass`（含 upstream 的权重、备用与负载均衡策略）、`root` / `alias` 静态目录（`autoindex`、`try_files $uri.html`、`error_page 404`）、`return` 跳转与固定内容、整站 `rewrite` 跳转、`add_header`、`proxy_set_header`、`gzip`、`allow` / `deny`、location 级的分路径后端、访问控制与跳转、`listen ... proxy_protocol` 与 `quic`；
 - `proxy_connect_timeout` 与 `proxy_read_timeout` 转换为站点的[连接超时与等待响应头超时](#backend-timeouts)，location / 中的值优先于 server 级，超过上限时按上限导入；其他 location 中不同的值不会导入，预览中会提示；
+- `client_body_timeout` 与 `send_timeout` 转换为站点的[访客超时](#client-timeouts)，各类站点都适用；
 - `auth_request` 会转换为转发认证：认证地址取自认证子请求 location 的 `proxy_pass`（支持 `set` 变量），登录跳转取自 `error_page 401 =302`，Authelia 的常见写法可以直接转换；只在部分 location 启用时转换为「仅对指定路径认证」；
 - `auth_basic` 转换为使用共享用户的基本认证，nginx 的用户文件不会被读取，补齐用户前任何人都无法通过；
 - `stream` 中的 TCP/UDP 转发请在[端口转发](/docs/modules/portforward)中配置；证书不会导入，HTTPS 站点缺少证书时预览会列出 nginx 使用的证书文件，可在[证书](/docs/modules/ssl)页按文件路径添加。

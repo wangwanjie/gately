@@ -2083,6 +2083,13 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `maxMb` | integer |
 | `ttl` | integer |
 
+### webservice.ClientTimeouts
+
+| Feld | Typ |
+| --- | --- |
+| `readIdle` | integer |
+| `writeIdle` | integer |
+
 ### webservice.ConnView
 
 | Feld | Typ |
@@ -2369,6 +2376,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `basicAuth` | boolean |
 | `cache` | `webservice.CacheConfig` |
 | `cleanUrls` | boolean |
+| `clientTimeouts` | `webservice.ClientTimeouts` |
 | `compress` | boolean |
 | `contentType` | string |
 | `cors` | boolean |

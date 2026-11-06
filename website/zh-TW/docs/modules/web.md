@@ -405,6 +405,20 @@ http://10.0.0.3:8080 backup
 - 逾時回傳 504（閘道逾時），連線被拒等其他錯誤回傳 502；逾時與連線失敗一樣計入被動檢查；
 - 後端啟動慢或經慢速鏈路存取時調大連線逾時；希望卡住的後端盡快報錯時設定等待回應標頭逾時。
 
+### 訪客逾時 {#client-timeouts}
+
+對訪客的讀寫閒置逾時，單位為秒，填 0 使用預設值 60 秒（與 nginx 的 `client_body_timeout`、`send_timeout` 預設值相同），中斷連線以外的站台類型都可設定。
+
+| 欄位 | 預設值 | 範圍 | 說明 |
+| --- | --- | --- | --- |
+| 讀取請求本文 `clientTimeouts.readIdle` | 60 秒 | 1 至 3600 | 一次讀取請求本文最多等待的時間 |
+| 寫出回應 `clientTimeouts.writeIdle` | 60 秒 | 1 至 3600 | 一次寫出回應最多等待的時間 |
+
+- 只在一次讀取或寫出卡住時計時：資料持續傳輸的大檔案上傳下載、等待後端處理的時間以及 WebSocket 等長連線都不受影響；
+- 用於中斷極慢地傳送請求本文或讀取回應的訪客（slowloris、slow read），避免它們長期佔住連線；
+- 讀取請求本文逾時回傳 408 並關閉連線，不計入後端的被動檢查；寫出逾時直接中斷連線；
+- HTTP/1、HTTP/2 與 HTTP/3 都生效。
+
 ### 壓縮
 
 對反向代理、靜態檔案、固定文字站台可啟用壓縮（重新導向站台除外）。依 `Accept-Encoding` 優先選擇 `br`，其次 `gzip`。
@@ -579,6 +593,7 @@ curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/webservice/m
 - 預設匯入為停用狀態，方便與 nginx 並行逐一核對後再啟用；勾選「匯入後立即啟用」則立即生效（nginx 仍佔用相同連接埠時，新增的監聽會啟動失敗）；
 - 可轉換的內容：`proxy_pass`（含 upstream 的權重、備用與負載平衡策略）、`root` / `alias` 靜態目錄（`autoindex`、`try_files $uri.html`、`error_page 404`）、`return` 跳轉與固定內容、整站 `rewrite` 跳轉、`add_header`、`proxy_set_header`、`gzip`、`allow` / `deny`、location 層級的分路徑後端、存取控制與跳轉、`listen ... proxy_protocol` 與 `quic`；
 - `proxy_connect_timeout` 與 `proxy_read_timeout` 轉換為站台的[連線逾時與等待回應標頭逾時](#backend-timeouts)，location / 中的值優先於 server 級，超過上限時按上限匯入；其他 location 中不同的值不會匯入，預覽中會提示；
+- `client_body_timeout` 與 `send_timeout` 轉換為站台的[訪客逾時](#client-timeouts)，各類站台都適用；
 - `auth_request` 會轉換為轉發認證：驗證位址取自驗證子請求 location 的 `proxy_pass`（支援 `set` 變數），登入跳轉取自 `error_page 401 =302`，Authelia 的常見寫法可以直接轉換；只在部分 location 啟用時，轉換為只對指定路徑驗證（「驗證範圍」）；
 - `auth_basic` 轉換為使用共用使用者的基本驗證，nginx 的使用者檔案不會被讀取，補齊使用者之前任何人都無法通過；
 - `stream` 中的 TCP/UDP 轉發請在 [連接埠轉發](/zh-TW/docs/modules/portforward) 中設定；憑證不會匯入，HTTPS 站台缺少憑證時，預覽會列出 nginx 使用的憑證檔案，可在 [憑證](/zh-TW/docs/modules/ssl) 頁依檔案路徑新增。

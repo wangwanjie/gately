@@ -2083,6 +2083,13 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `maxMb` | integer |
 | `ttl` | integer |
 
+### webservice.ClientTimeouts
+
+| Campo | Tipo |
+| --- | --- |
+| `readIdle` | integer |
+| `writeIdle` | integer |
+
 ### webservice.ConnView
 
 | Campo | Tipo |
@@ -2369,6 +2376,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `basicAuth` | boolean |
 | `cache` | `webservice.CacheConfig` |
 | `cleanUrls` | boolean |
+| `clientTimeouts` | `webservice.ClientTimeouts` |
 | `compress` | boolean |
 | `contentType` | string |
 | `cors` | boolean |

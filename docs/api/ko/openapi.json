@@ -2938,6 +2938,17 @@
         },
         "type": "object"
       },
+      "webservice.ClientTimeouts": {
+        "properties": {
+          "readIdle": {
+            "type": "integer"
+          },
+          "writeIdle": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "webservice.ConnView": {
         "properties": {
           "down": {
@@ -3582,6 +3593,9 @@
           },
           "cleanUrls": {
             "type": "boolean"
+          },
+          "clientTimeouts": {
+            "$ref": "#/components/schemas/webservice.ClientTimeouts"
           },
           "compress": {
             "type": "boolean"

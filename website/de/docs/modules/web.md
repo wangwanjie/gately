@@ -405,6 +405,20 @@ Timeouts für die Verbindungen einer Reverse-Proxy-Site zu ihren Backends, in Se
 - Eine Zeitüberschreitung liefert 504 (Gateway Timeout), andere Fehler wie eine abgelehnte Verbindung liefern 502. Zeitüberschreitungen zählen wie Verbindungsfehler für die passive Prüfung;
 - Erhöhen Sie den Verbindungs-Timeout für Backends, die langsam starten oder über langsame Strecken erreichbar sind; setzen Sie einen Timeout für Antwort-Header, wenn ein hängendes Backend schnell einen Fehler liefern soll.
 
+### Besucher-Timeouts {#client-timeouts}
+
+Leerlauf-Timeouts gegenüber Besuchern, in Sekunden; 0 verwendet den Standard von 60 Sekunden (wie die Standardwerte von `client_body_timeout` und `send_timeout` in nginx). Alle Site-Typen außer Verbindung trennen können sie setzen.
+
+| Feld | Standard | Bereich | Bedeutung |
+| --- | --- | --- | --- |
+| Anfrage-Body `clientTimeouts.readIdle` | 60 s | 1 bis 3600 | Längste Wartezeit für ein einzelnes Lesen des Anfrage-Bodys |
+| Antwort `clientTimeouts.writeIdle` | 60 s | 1 bis 3600 | Längste Wartezeit für ein einzelnes Schreiben der Antwort |
+
+- Gemessen wird nur ein einzelnes Lesen oder Schreiben, das hängt; laufende große Uploads und Downloads, die Wartezeit auf das Backend und langlebige Verbindungen wie WebSocket sind nicht betroffen;
+- Besucher, die den Anfrage-Body extrem langsam senden oder die Antwort extrem langsam lesen (slowloris, slow read), werden getrennt und können Verbindungen nicht lange belegen;
+- Ein Timeout beim Anfrage-Body liefert 408 und schließt die Verbindung, ohne für die passive Prüfung des Backends zu zählen; ein Timeout beim Schreiben schließt die Verbindung;
+- Gilt für HTTP/1, HTTP/2 und HTTP/3.
+
 ### Kompression
 
 Die Kompression lässt sich für Reverse-Proxy-, Statische-Dateien- und Fester-Text-Sites aktivieren (nicht für Weiterleitungs-Sites). Anhand von `Accept-Encoding` wird `br` bevorzugt, danach `gzip`.
@@ -579,6 +593,7 @@ Mit „nginx importieren“ oben auf der Seite lassen sich bestehende nginx-Site
 - Standardmäßig wird deaktiviert importiert, damit Sie parallel zu nginx eine Site nach der anderen prüfen und dann aktivieren können. Mit „Nach dem Import sofort aktivieren“ gilt alles sofort (belegt nginx denselben Port noch, startet ein neuer Listener nicht);
 - Umgewandelt werden: `proxy_pass` (einschließlich Gewichtung, Backup und Lastverteilungsstrategie aus upstream), statische Verzeichnisse per `root` / `alias` (`autoindex`, `try_files $uri.html`, `error_page 404`), Weiterleitungen und feste Inhalte per `return`, seitenweite `rewrite`-Weiterleitungen, `add_header`, `proxy_set_header`, `gzip`, `allow` / `deny`, Backends, Zugriffskontrolle und Weiterleitungen pro location sowie `listen ... proxy_protocol` und `quic`;
 - `proxy_connect_timeout` und `proxy_read_timeout` werden zu den [Timeouts für Verbindung und Antwort-Header](#backend-timeouts) der Site; ein Wert in location / hat Vorrang vor der server-Ebene, Werte über der Obergrenze werden mit der Obergrenze importiert. Abweichende Werte in anderen locations werden nicht importiert, die Vorschau weist darauf hin;
+- `client_body_timeout` und `send_timeout` werden zu den [Besucher-Timeouts](#client-timeouts) der Site, für alle Site-Typen;
 - `auth_request` wird zu Forward-Auth: Die Authentifizierungsadresse stammt aus dem `proxy_pass` der location für die Auth-Subanfrage (`set`-Variablen werden unterstützt), die Anmeldeweiterleitung aus `error_page 401 =302`; gängige Authelia-Konfigurationen lassen sich direkt übernehmen. Ist es nur in einzelnen locations aktiv, wird daraus eine Authentifizierung nur für die betreffenden Pfade;
 - `auth_basic` wird zu Basic-Authentifizierung mit gemeinsamen Benutzern. Die Benutzerdatei von nginx wird nicht gelesen; bis Sie Benutzer anlegen, kommt niemand durch;
 - TCP/UDP-Weiterleitungen aus `stream` richten Sie in der [Portweiterleitung](/de/docs/modules/portforward) ein. Zertifikate werden nicht importiert: Fehlt einer HTTPS-Site ein Zertifikat, nennt die Vorschau die von nginx verwendeten Zertifikatsdateien, die Sie auf der Seite [Zertifikate](/de/docs/modules/ssl) per Dateipfad hinzufügen können.

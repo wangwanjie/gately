@@ -80,6 +80,23 @@
       </template>
     </template>
 
+    <!-- 对访客的读写空闲超时，0 为默认 60 秒；防止极慢的访客长期占住连接 -->
+    <el-form-item :label="t('siteTraffic.clientTimeouts')">
+      <div class="timeouts">
+        <span class="timeout-item">
+          <span class="timeout-label">{{ t('siteTraffic.timeoutReadBody') }}</span>
+          <el-input-number v-model="site.clientTimeouts.readIdle" :min="0" :max="3600" controls-position="right" class="w-110" />
+          <span class="timeout-unit">{{ t('siteTraffic.seconds') }}</span>
+        </span>
+        <span class="timeout-item">
+          <span class="timeout-label">{{ t('siteTraffic.timeoutWrite') }}</span>
+          <el-input-number v-model="site.clientTimeouts.writeIdle" :min="0" :max="3600" controls-position="right" class="w-110" />
+          <span class="timeout-unit">{{ t('siteTraffic.seconds') }}</span>
+        </span>
+      </div>
+      <div class="form-help">{{ t('siteTraffic.clientTimeoutsHelp') }}</div>
+    </el-form-item>
+
     <el-form-item v-if="site.type !== 'redirect'" :label="t('siteTraffic.compress')">
       <el-switch v-model="site.compress" />
       <span class="inline-help">{{ t('siteTraffic.compressHelp') }}</span>
@@ -140,12 +157,19 @@ export interface BackendTimeouts {
   responseHeader: number
 }
 
+export interface ClientTimeouts {
+  readIdle: number
+  writeIdle: number
+}
+
 export interface TrafficFields {
   type: string
   lbPolicy: string
   health: { enable: boolean; mode: string; path: string; interval: number; timeout: number; fails: number; passes: number }
   // 连接后端的超时（秒），0 为默认值
   timeouts: BackendTimeouts
+  // 对访客的读写空闲超时（秒），0 为默认值
+  clientTimeouts: ClientTimeouts
   compress: boolean
   rateLimit: { enable: boolean; rate: number; burst: number; maxConns: number }
   cache: { enable: boolean; ttl: number; maxMb: number }

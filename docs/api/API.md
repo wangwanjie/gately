@@ -2083,6 +2083,13 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `maxMb` | integer |
 | `ttl` | integer |
 
+### webservice.ClientTimeouts
+
+| 字段 | 类型 |
+| --- | --- |
+| `readIdle` | integer |
+| `writeIdle` | integer |
+
 ### webservice.ConnView
 
 | 字段 | 类型 |
@@ -2369,6 +2376,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `basicAuth` | boolean |
 | `cache` | `webservice.CacheConfig` |
 | `cleanUrls` | boolean |
+| `clientTimeouts` | `webservice.ClientTimeouts` |
 | `compress` | boolean |
 | `contentType` | string |
 | `cors` | boolean |

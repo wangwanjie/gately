@@ -126,11 +126,13 @@ type Site struct {
 	LBPolicy string      `json:"lbPolicy"`
 	Health   HealthCheck `json:"health"`
 	// Timeouts 为连接后端的超时，分路径与按用户分流的后端同样适用
-	Timeouts  BackendTimeouts `json:"timeouts"`
-	Compress  bool            `json:"compress"`
-	RateLimit RateLimit       `json:"rateLimit"`
-	Cache     CacheConfig     `json:"cache"`
-	Rewrites  []Rewrite       `json:"rewrites"`
+	Timeouts BackendTimeouts `json:"timeouts"`
+	// ClientTimeouts 为对访客的读写空闲超时，所有站点类型（断开连接除外）都适用
+	ClientTimeouts ClientTimeouts `json:"clientTimeouts"`
+	Compress       bool           `json:"compress"`
+	RateLimit      RateLimit      `json:"rateLimit"`
+	Cache          CacheConfig    `json:"cache"`
+	Rewrites       []Rewrite      `json:"rewrites"`
 
 	// RequestHeaders / ResponseHeaders 每项为 "Key: Value"，Value 为空表示删除该头
 	RequestHeaders  []string `json:"requestHeaders"`
@@ -484,6 +486,9 @@ func (s *Site) validate(isDefault bool) error {
 	}
 	s.IPSets = uniqueList(s.IPSets)
 	if err := validateHeaderLines(append(append([]string{}, s.RequestHeaders...), s.ResponseHeaders...)); err != nil {
+		return err
+	}
+	if err := s.ClientTimeouts.validate(); err != nil {
 		return err
 	}
 	if err := s.validateProxyExtras(); err != nil {

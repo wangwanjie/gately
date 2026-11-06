@@ -695,6 +695,7 @@ func (c *nginxConverter) convert(srv *ngDirective) {
 		// location / 中的设置优先，没有时继承 server 级
 		c.applyProxyTimeouts(main, srv.Block)
 	}
+	c.applyClientTimeouts(main, srv.Block)
 	for _, o := range others {
 		if isInternalLocation(o) {
 			continue
@@ -1146,34 +1147,45 @@ func (c *nginxConverter) applyProxyOptions(list []*ngDirective, headers *[]strin
 // nginx 的 proxy_read_timeout 是两次读取之间的空闲上限，等待响应头同样受它限制，对应 Gately 的等待响应头超时；
 // Gately 不限制响应体的读取间隔，长连接不会因此断开。
 func (c *nginxConverter) applyProxyTimeouts(lists ...[]*ngDirective) {
-	find := func(name string) *ngDirective {
-		for _, list := range lists {
-			for _, d := range list {
-				if d.Name == name {
-					return d
-				}
+	c.site.Timeouts.Connect = c.nginxTimeout("proxy_connect_timeout", maxConnectTimeout, lists)
+	c.site.Timeouts.ResponseHeader = c.nginxTimeout("proxy_read_timeout", maxResponseHeaderTimeout, lists)
+}
+
+// applyClientTimeouts 把 client_body_timeout 与 send_timeout 转换为站点的访客读写空闲超时，两者在 nginx 中
+// 同样是两次读取（写出）之间的空闲上限，含义一致。lists 的优先级与 applyProxyTimeouts 相同。
+func (c *nginxConverter) applyClientTimeouts(lists ...[]*ngDirective) {
+	c.site.ClientTimeouts.ReadIdle = c.nginxTimeout("client_body_timeout", maxClientIdle, lists)
+	c.site.ClientTimeouts.WriteIdle = c.nginxTimeout("send_timeout", maxClientIdle, lists)
+}
+
+// nginxTimeout 按优先级在 lists 中查找指令 name 并转换为秒；没有设置或无法识别时返回 0（使用 Gately 的默认值），
+// 超过上限时按上限并提示。
+func (c *nginxConverter) nginxTimeout(name string, max int, lists [][]*ngDirective) int {
+	var d *ngDirective
+	for _, list := range lists {
+		for _, x := range list {
+			if x.Name == name {
+				d = x
+				break
 			}
 		}
-		return nil
+		if d != nil {
+			break
+		}
 	}
-	conv := func(name string, max int) int {
-		d := find(name)
-		if d == nil {
-			return 0
-		}
-		n, ok := nginxSeconds(d.arg(0))
-		if !ok {
-			c.warn("%s %s 无法识别，使用 Gately 的默认值", name, d.arg(0))
-			return 0
-		}
-		if n > max {
-			c.warn("%s %s 超过 Gately 的上限，按 %d 秒导入", name, d.arg(0), max)
-			return max
-		}
-		return n
+	if d == nil {
+		return 0
 	}
-	c.site.Timeouts.Connect = conv("proxy_connect_timeout", maxConnectTimeout)
-	c.site.Timeouts.ResponseHeader = conv("proxy_read_timeout", maxResponseHeaderTimeout)
+	n, ok := nginxSeconds(d.arg(0))
+	if !ok {
+		c.warn("%s %s 无法识别，使用 Gately 的默认值", name, d.arg(0))
+		return 0
+	}
+	if n > max {
+		c.warn("%s %s 超过 Gately 的上限，按 %d 秒导入", name, d.arg(0), max)
+		return max
+	}
+	return n
 }
 
 // warnLocationTimeouts 在 location 设置了与站点不同的后端超时时提示：Gately 的后端超时按站点设置，对所有路径生效。

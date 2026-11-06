@@ -2083,6 +2083,13 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `maxMb` | integer |
 | `ttl` | integer |
 
+### webservice.ClientTimeouts
+
+| Field | Type |
+| --- | --- |
+| `readIdle` | integer |
+| `writeIdle` | integer |
+
 ### webservice.ConnView
 
 | Field | Type |
@@ -2369,6 +2376,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `basicAuth` | boolean |
 | `cache` | `webservice.CacheConfig` |
 | `cleanUrls` | boolean |
+| `clientTimeouts` | `webservice.ClientTimeouts` |
 | `compress` | boolean |
 | `contentType` | string |
 | `cors` | boolean |

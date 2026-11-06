@@ -387,7 +387,12 @@ func (s *statusRecorder) FlushError() error {
 	}
 	s.wroteHeader = true
 	s.markFirstByte()
-	return http.NewResponseController(s.ResponseWriter).Flush()
+	armed := s.dl != nil && s.dl.armWrite()
+	err := http.NewResponseController(s.ResponseWriter).Flush()
+	if armed {
+		s.dl.clearWrite()
+	}
+	return err
 }
 
 // closeConnRequest 是断开连接的请求。

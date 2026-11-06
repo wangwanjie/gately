@@ -2083,6 +2083,13 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `maxMb` | integer |
 | `ttl` | integer |
 
+### webservice.ClientTimeouts
+
+| Campo | Tipo |
+| --- | --- |
+| `readIdle` | integer |
+| `writeIdle` | integer |
+
 ### webservice.ConnView
 
 | Campo | Tipo |
@@ -2369,6 +2376,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `basicAuth` | boolean |
 | `cache` | `webservice.CacheConfig` |
 | `cleanUrls` | boolean |
+| `clientTimeouts` | `webservice.ClientTimeouts` |
 | `compress` | boolean |
 | `contentType` | string |
 | `cors` | boolean |

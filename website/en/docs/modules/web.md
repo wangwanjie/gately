@@ -405,6 +405,20 @@ Timeouts for a reverse proxy site's connections to its backends, in seconds; 0 u
 - A timeout returns 504 (Gateway Timeout); other errors such as a refused connection return 502. Timeouts count toward passive health checks like connection failures;
 - Raise the connect timeout for backends that start slowly or sit behind slow links; set a response header timeout when a stuck backend should fail fast.
 
+### Visitor timeouts {#client-timeouts}
+
+Idle timeouts toward visitors, in seconds; 0 uses the default of 60 seconds (the same as nginx's `client_body_timeout` and `send_timeout` defaults). Every site type except Close connection can set them.
+
+| Field | Default | Range | Meaning |
+| --- | --- | --- | --- |
+| Request body `clientTimeouts.readIdle` | 60 s | 1 to 3600 | Longest wait for a single read of the request body |
+| Response `clientTimeouts.writeIdle` | 60 s | 1 to 3600 | Longest wait for a single write of the response |
+
+- Only a single read or write that stalls is timed, so large uploads and downloads that keep moving, time spent waiting for the backend and long-lived connections such as WebSocket are not affected;
+- It drops visitors that send the request body or read the response extremely slowly (slowloris, slow read) so they cannot hold connections for long;
+- A request body timeout returns 408 and closes the connection without counting against the backend's passive checks; a write timeout closes the connection;
+- It applies to HTTP/1, HTTP/2 and HTTP/3.
+
 ### Compression
 
 Compression can be enabled for reverse proxy, static file and fixed text sites (not for redirect sites). Based on `Accept-Encoding`, `br` is preferred, then `gzip`.
@@ -579,6 +593,7 @@ Except for `gately_listener_requests_total`, metrics carry the labels `listener`
 - Imports are disabled by default, so you can run alongside nginx and review them one by one before enabling. Tick "Enable right after import" to apply them immediately (a new listener fails to start while nginx still holds the same port);
 - What is converted: `proxy_pass` (including upstream weights, backup servers and load-balancing policies), `root` / `alias` static directories (`autoindex`, `try_files $uri.html`, `error_page 404`), `return` redirects and fixed content, whole-site `rewrite` redirects, `add_header`, `proxy_set_header`, `gzip`, `allow` / `deny`, location-level path backends, access control and redirects, and `listen ... proxy_protocol` and `quic`;
 - `proxy_connect_timeout` and `proxy_read_timeout` become the site's [connect and response header timeouts](#backend-timeouts); a value in location / takes precedence over the server level, and values above the limit are imported at the limit. Different values in other locations are not imported, and the preview says so;
+- `client_body_timeout` and `send_timeout` become the site's [visitor timeouts](#client-timeouts), for every site type;
 - `auth_request` becomes forward auth: the auth endpoint comes from the `proxy_pass` of the auth subrequest location (`set` variables are supported) and the login redirect from `error_page 401 =302`, so common Authelia setups convert directly. When it is enabled only in some locations, the site's "Authentication scope" is limited to those paths, which become path rules set to "Authentication required";
 - `auth_basic` becomes basic authentication with shared users. nginx user files are not read, so nobody can get through until you add the users;
 - Configure TCP/UDP forwarding from `stream` in [Port Forwarding](/en/docs/modules/portforward). Certificates are not imported: when an HTTPS site has no certificate, the preview lists the certificate files nginx uses, and you can add them by file path on the [SSL Certificates](/en/docs/modules/ssl) page.

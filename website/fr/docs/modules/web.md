@@ -405,6 +405,20 @@ Délais des connexions d'un site proxy inverse vers ses backends, en secondes ; 
 - Un dépassement renvoie 504 (Gateway Timeout) ; les autres erreurs, comme une connexion refusée, renvoient 502. Les dépassements comptent pour la vérification passive comme les échecs de connexion ;
 - Augmentez le délai de connexion pour les backends lents à démarrer ou derrière des liens lents ; définissez un délai d'en-têtes quand un backend bloqué doit échouer vite.
 
+### Délais des visiteurs {#client-timeouts}
+
+Délais d'inactivité envers les visiteurs, en secondes ; 0 utilise la valeur par défaut de 60 secondes (comme les valeurs par défaut de `client_body_timeout` et `send_timeout` dans nginx). Tous les types de site sauf Fermer la connexion peuvent les définir.
+
+| Champ | Défaut | Plage | Signification |
+| --- | --- | --- | --- |
+| Corps de requête `clientTimeouts.readIdle` | 60 s | 1 à 3600 | Attente maximale d'une seule lecture du corps de requête |
+| Réponse `clientTimeouts.writeIdle` | 60 s | 1 à 3600 | Attente maximale d'une seule écriture de la réponse |
+
+- Seule une lecture ou écriture bloquée est chronométrée : les gros envois et téléchargements qui progressent, l'attente du backend et les connexions longues comme WebSocket ne sont pas concernés ;
+- Les visiteurs qui envoient le corps ou lisent la réponse extrêmement lentement (slowloris, slow read) sont déconnectés et ne peuvent pas occuper les connexions longtemps ;
+- Un dépassement à la lecture du corps renvoie 408 et ferme la connexion sans compter pour la vérification passive du backend ; un dépassement à l'écriture ferme la connexion ;
+- S'applique à HTTP/1, HTTP/2 et HTTP/3.
+
 ### Compression
 
 La compression peut être activée pour les sites en proxy inverse, en fichiers statiques et en texte fixe (pas pour les sites de redirection). Selon `Accept-Encoding`, `br` est préféré, puis `gzip`.
@@ -579,6 +593,7 @@ Le bouton « Importer nginx » en haut de la page convertit des sites nginx exis
 - Par défaut, les sites sont importés désactivés, pour être vérifiés un par un en parallèle de nginx avant activation ; cochez « Activer dès l'import » pour qu'ils s'appliquent immédiatement (si nginx occupe encore le même port, le nouvel écouteur ne démarre pas) ;
 - Éléments convertis : `proxy_pass` (y compris poids, secours et politique de répartition de charge des upstream), répertoires statiques `root` / `alias` (`autoindex`, `try_files $uri.html`, `error_page 404`), redirections et contenu fixe `return`, redirections `rewrite` de tout le site, `add_header`, `proxy_set_header`, `gzip`, `allow` / `deny`, backends par chemin, contrôle d'accès et redirections au niveau des location, `listen ... proxy_protocol` et `quic` ;
 - `proxy_connect_timeout` et `proxy_read_timeout` deviennent les [délais de connexion et d'en-têtes de réponse](#backend-timeouts) du site ; la valeur de location / l'emporte sur le niveau server et les valeurs au-delà de la limite sont importées à la limite. Les valeurs différentes dans d'autres locations ne sont pas importées, l'aperçu le signale ;
+- `client_body_timeout` et `send_timeout` deviennent les [délais des visiteurs](#client-timeouts) du site, pour tous les types de site ;
 - `auth_request` est converti en authentification déléguée : l'adresse de vérification est reprise du `proxy_pass` de la location de la sous-requête d'authentification (variables `set` prises en charge), et la redirection de connexion de `error_page 401 =302` ; les configurations Authelia courantes se convertissent directement. Si l'authentification n'est active que sur certaines location, le « Périmètre d'authentification » est limité aux chemins concernés ;
 - `auth_basic` est converti en authentification Basic avec les utilisateurs partagés ; le fichier d'utilisateurs de nginx n'est pas lu, et personne ne peut passer tant que les utilisateurs n'ont pas été ajoutés ;
 - Les redirections TCP/UDP du bloc `stream` se configurent dans la [Redirection de ports](/fr/docs/modules/portforward) ; les certificats ne sont pas importés : quand un site HTTPS n'a pas de certificat, l'aperçu indique les fichiers de certificat utilisés par nginx, que vous pouvez ajouter par chemin de fichier dans la page [Certificats](/fr/docs/modules/ssl).
