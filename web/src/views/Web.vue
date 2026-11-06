@@ -2017,7 +2017,7 @@ onMounted(async () => {
 }
 .site {
   display: grid;
-  grid-template-columns: 40px minmax(0, 1.5fr) minmax(0, 1.8fr) minmax(0, 1.3fr) 110px auto;
+  grid-template-columns: 40px minmax(0, 1.5fr) minmax(0, 1.8fr) minmax(0, 1.3fr) 190px auto;
   gap: 8px 14px;
   align-items: center;
   padding: 9px 8px 9px 12px;
@@ -2096,8 +2096,12 @@ onMounted(async () => {
   gap: 4px;
 }
 .site-stats {
+  min-width: 0;
   font-size: 12px;
   white-space: nowrap;
+  /* 列宽不足时省略，避免与右侧操作按钮重叠 */
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .site-actions {
   display: flex;
@@ -2163,7 +2167,7 @@ onMounted(async () => {
   }
   /* 域名优先完整显示，名称说明只占剩余空间 */
   .sites.is-compact .site {
-    grid-template-columns: 40px minmax(0, 1.9fr) minmax(0, 1.6fr) minmax(0, 1fr) 100px auto;
+    grid-template-columns: 40px minmax(0, 1.9fr) minmax(0, 1.6fr) minmax(0, 1fr) 190px auto;
   }
   .sites.is-compact .site-main .site-domains {
     flex: 0 1 auto;
