@@ -8,6 +8,7 @@
     :close-on-click-modal="false"
     :before-close="beforeClose"
     append-to-body
+    @update:model-value="(v: boolean) => emit('update:modelValue', v)"
     @open="load"
   >
     <template #header>
@@ -111,6 +112,9 @@ function onKey(e: KeyboardEvent) {
   }
 }
 
+// beforeClose 拦截右上角关闭、Esc 与底部「关闭」按钮：有未保存修改时先确认。
+// 对话框自己关闭（右上角 X、Esc）后会发出 update:model-value，上面已转发给父组件，
+// 否则父组件的可见状态仍为 true，下次打开文件时赋值不变，对话框就不会再出现。
 async function beforeClose(done: () => void) {
   if (!dirty.value) {
     done()
