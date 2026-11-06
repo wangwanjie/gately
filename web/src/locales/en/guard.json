@@ -166,7 +166,9 @@
     "perMinute": "per minute",
     "thresholdHelp": "A source is banned when it connects to closed ports more often than this per minute. A normal client retrying a closed port does so about 5 times a minute, so keep this at 10 or above.",
     "exclude": "Extra open ports",
-    "excludeHelp": "{count} ports are listening and count as open automatically. Add ports used by other programs through firewall rules here."
+    "excludeHelp": "{count} ports are listening and count as open automatically. Add ports used by other programs through firewall rules here.",
+    "ipv6Strict": "IPv6 strict mode",
+    "ipv6StrictHelp": "When on, IPv6 sources may only connect to open ports (listening ports plus the extra open ports above); the first connection to any other port gets them banned, with no threshold counting. IPv4 still uses the threshold. Bans apply to the whole /64, so other devices in the same /64 are banned too; whitelisted addresses are not affected. A port that starts listening counts as open within about 10 seconds, and the mode takes effect about 15 seconds after being turned on or after a restart. Ports used by other programs through firewall rules must be added to the extra open ports first, or visitors using them will be banned. TCP only."
   },
   "settings": {
     "firewall": "Sync to system firewall",

@@ -166,7 +166,9 @@
     "perMinute": "por minuto",
     "thresholdHelp": "Uma origem é bloqueada se conectar a portas fechadas mais vezes por minuto do que este valor. Um cliente normal tenta de novo uma porta fechada cerca de 5 vezes por minuto, então use 10 ou mais.",
     "exclude": "Portas abertas adicionais",
-    "excludeHelp": "Há {count} portas em escuta, consideradas abertas automaticamente. Adicione aqui as portas que outros programas usam por meio de regras de firewall."
+    "excludeHelp": "Há {count} portas em escuta, consideradas abertas automaticamente. Adicione aqui as portas que outros programas usam por meio de regras de firewall.",
+    "ipv6Strict": "Modo estrito IPv6",
+    "ipv6StrictHelp": "Quando ativado, origens IPv6 só podem se conectar a portas abertas (portas em escuta mais as portas abertas adicionais acima); a primeira conexão a qualquer outra porta resulta em banimento, sem contagem de limite. O IPv4 continua usando o limite. O banimento vale para todo o /64, então outros dispositivos do mesmo /64 também são banidos; endereços da lista branca não são afetados. Uma porta que começa a escutar é considerada aberta em cerca de 10 segundos, e o modo entra em vigor cerca de 15 segundos após ser ativado ou após uma reinicialização. Portas usadas por outros programas por meio de regras de firewall devem ser adicionadas antes às portas abertas adicionais, ou os visitantes serão banidos. Somente TCP."
   },
   "settings": {
     "firewall": "Sincronizar com o firewall",

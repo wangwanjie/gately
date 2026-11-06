@@ -192,6 +192,10 @@
                   <el-input v-model="settings.scan.excludePorts" class="mono w-420" placeholder="8443,10000-10100" />
                   <div class="form-help">{{ t('guard.scan.excludeHelp', { count: status.firewall.openPorts }) }}</div>
                 </el-form-item>
+                <el-form-item :label="t('guard.scan.ipv6Strict')">
+                  <el-switch v-model="settings.scan.ipv6Strict" :disabled="!settings.scan.enable" />
+                  <div class="form-help">{{ t('guard.scan.ipv6StrictHelp') }}</div>
+                </el-form-item>
                 <el-form-item :label="t('guard.banTime')">
                   <BanTimeInput v-model="settings.scan.banSeconds" />
                 </el-form-item>
@@ -426,7 +430,7 @@ interface Settings {
   ignorePrivate: boolean
   ignoreList: string[]
   trap: { enable: boolean; ports: string; banSeconds: number }
-  scan: { enable: boolean; threshold: number; excludePorts: string; banSeconds: number }
+  scan: { enable: boolean; threshold: number; excludePorts: string; banSeconds: number; ipv6Strict?: boolean }
 }
 
 interface BanEntry {

@@ -166,7 +166,9 @@
     "perMinute": "por minuto",
     "thresholdHelp": "Un origen se bloquea si se conecta a puertos cerrados más veces por minuto que este valor. Un cliente normal reintenta un puerto cerrado unas 5 veces por minuto, así que conviene no bajar de 10.",
     "exclude": "Puertos abiertos adicionales",
-    "excludeHelp": "Hay {count} puertos en escucha que se consideran abiertos automáticamente. Añade aquí los puertos que otros programas usan mediante reglas del cortafuegos."
+    "excludeHelp": "Hay {count} puertos en escucha que se consideran abiertos automáticamente. Añade aquí los puertos que otros programas usan mediante reglas del cortafuegos.",
+    "ipv6Strict": "Modo estricto IPv6",
+    "ipv6StrictHelp": "Al activarlo, los orígenes IPv6 solo pueden conectarse a puertos abiertos (puertos en escucha más los puertos abiertos adicionales de arriba); la primera conexión a cualquier otro puerto provoca el bloqueo, sin contar umbral. IPv4 sigue usando el umbral. El bloqueo se aplica a todo el /64, así que los demás dispositivos del mismo /64 también quedan bloqueados; las direcciones de la lista blanca no se ven afectadas. Un puerto que empieza a escuchar se considera abierto en unos 10 segundos, y el modo surte efecto unos 15 segundos después de activarlo o de reiniciar. Los puertos que otros programas usan mediante reglas del cortafuegos deben añadirse antes a los puertos abiertos adicionales; de lo contrario, los visitantes serán bloqueados. Solo TCP."
   },
   "settings": {
     "firewall": "Sincronizar con el cortafuegos",
