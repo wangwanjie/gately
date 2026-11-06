@@ -7,7 +7,6 @@
       ref="selLayer"
       class="sel-layer"
       :style="selStyle"
-      @copy="onLayerCopy"
     >
       <!-- 顶部留出操作条的高度，缓冲区开头几行也能滚到操作条下方 -->
       <div class="sel-spacer"></div>
@@ -45,6 +44,7 @@ import { ClipboardPaste, Copy, TextSelect, X } from 'lucide-vue-next'
 import { ElMessage } from 'element-plus'
 import { ApiError, api } from '../../api'
 import { copyText, recordClip } from './clipboard'
+import { edgePoint, joinRows, type RowPoint } from './selectText'
 import { ensureAccess, isCancel } from './security'
 import { ctrlChar, keySequence, type KeyName } from './terminalKeys'
 import { findTheme } from './themes'
@@ -577,6 +577,8 @@ onBeforeUnmount(() => {
   observer?.disconnect()
   window.removeEventListener('online', reconnect)
   document.removeEventListener('visibilitychange', onWake)
+  // 选择模式中关闭标签页时，摘掉选择模式挂在 document 上的复制监听
+  document.removeEventListener('copy', onDocCopy)
   const el = host.value
   el?.removeEventListener('touchstart', onTouchStart, { capture: true })
   el?.removeEventListener('touchmove', onTouchMove, { capture: true })
@@ -764,31 +766,40 @@ function selectWordAt(x: number, y: number) {
 }
 
 // rowPos 把 DOM 选区端点换算成（行号, 行内偏移）。
-function rowPos(node: Node, offset: number, isEnd: boolean): { r: number; o: number } | null {
+// 端点不在某一行文字里时按它与行容器的前后关系收拢：在行容器之前（顶部占位、叠层前面的终端或页面元素）
+// 取首行开头，在之后取末行结尾。手指拖着选择手柄往上滚过一屏时，起点常落在这些位置，
+// 系统仍把中间的行都显示为选中，复制也要包含它们。
+function rowPos(node: Node, offset: number): RowPoint | null {
   const layer = selLayer.value
+  const rowsEl = selRowsEl.value
   const rows = selRows.value
-  if (!layer || !rows.length) {
+  if (!layer || !rowsEl || !rows.length) {
     return null
-  }
-  const lastEnd = { r: rows.length - 1, o: rows[rows.length - 1].length }
-  if (node === layer) {
-    // 端点落在叠层本身（顶部空白或行容器之外）时，按位置取首行开头或末行结尾
-    return offset <= 1 ? { r: 0, o: 0 } : lastEnd
-  }
-  if (node === selRowsEl.value) {
-    // 端点落在行容器上时 offset 是行的下标
-    return offset >= rows.length ? lastEnd : { r: offset, o: 0 }
   }
   const el = (node.nodeType === Node.TEXT_NODE ? node.parentElement : (node as Element))?.closest<HTMLElement>('.sel-row')
-  if (!el || !layer.contains(el)) {
+  if (el && rowsEl.contains(el)) {
+    const r = Number(el.dataset.r)
+    const len = rows[r]?.length ?? 0
+    if (node.nodeType === Node.TEXT_NODE) {
+      return { r, o: Math.min(offset, len) }
+    }
+    // 端点落在行元素上：offset 0 是行首，其余是行尾
+    return { r, o: offset > 0 ? len : 0 }
+  }
+  if (node === rowsEl) {
+    // 端点落在行容器上时 offset 是行的下标
+    return offset >= rows.length ? edgePoint(rows, 'end') : { r: offset, o: 0 }
+  }
+  const all = document.createRange()
+  all.selectNodeContents(rowsEl)
+  let cmp: number
+  try {
+    cmp = all.comparePoint(node, offset)
+  } catch {
+    // 端点不在同一文档树里（例如已被移除的节点），无法比较
     return null
   }
-  const r = Number(el.dataset.r)
-  const len = rows[r]?.length ?? 0
-  if (node.nodeType === Node.TEXT_NODE) {
-    return { r, o: Math.min(offset, len) }
-  }
-  return { r, o: isEnd && offset > 0 ? len : 0 }
+  return cmp > 0 ? edgePoint(rows, 'end') : edgePoint(rows, 'start')
 }
 
 // getSelectedText 按终端逻辑行拼出选中的文本：软换行的续行直接相连，不插入换行符。
@@ -798,25 +809,23 @@ function getSelectedText(): string {
     return ''
   }
   const range = sel.getRangeAt(0)
-  const s = rowPos(range.startContainer, range.startOffset, false)
-  const e = rowPos(range.endContainer, range.endOffset, true)
+  const s = rowPos(range.startContainer, range.startOffset)
+  const e = rowPos(range.endContainer, range.endOffset)
   if (!s || !e) {
     return ''
   }
-  const rows = selRows.value
-  let out = ''
-  for (let r = s.r; r <= e.r; r++) {
-    out += rows[r].slice(r === s.r ? s.o : 0, r === e.r ? e.o : undefined)
-    if (r < e.r && !selWrapped[r + 1]) {
-      out += '\n'
-    }
-  }
-  // 选到末尾的空行时去掉多余的换行
-  return out.replace(/\n+$/, '')
+  return joinRows(selRows.value, selWrapped, s, e)
 }
 
-// 系统拷贝菜单或快捷键复制时，同样写入按逻辑行拼好的文本
-function onLayerCopy(e: ClipboardEvent) {
+// 系统拷贝菜单或快捷键复制时，同样写入按逻辑行拼好的文本。
+// 监听挂在 document 上：选区起点落在叠层之外时，copy 事件的目标也在叠层之外，挂在叠层上收不到。
+// 只处理与文字行有交集的选区，页面其他位置的复制不受影响。
+function onDocCopy(e: ClipboardEvent) {
+  const sel = window.getSelection()
+  const rowsEl = selRowsEl.value
+  if (!sel || sel.rangeCount === 0 || !rowsEl || !sel.getRangeAt(0).intersectsNode(rowsEl)) {
+    return
+  }
   const text = getSelectedText()
   if (!text || !e.clipboardData) {
     return
@@ -825,6 +834,14 @@ function onLayerCopy(e: ClipboardEvent) {
   e.clipboardData.setData('text/plain', text)
   recordClip(text)
 }
+
+watch(selecting, (on) => {
+  if (on) {
+    document.addEventListener('copy', onDocCopy)
+  } else {
+    document.removeEventListener('copy', onDocCopy)
+  }
+})
 
 async function copySelected() {
   const text = getSelectedText()
