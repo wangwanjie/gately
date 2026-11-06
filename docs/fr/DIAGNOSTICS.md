@@ -13,6 +13,7 @@ Le paquet est généré sur votre propre machine et n'est jamais envoyé nulle p
 | `modules.json` | Liste des modules et résumé d'état affiché dans la page de vue d'ensemble |
 | `config/*.json` | **Structure** de la configuration : noms de champs, nombres, interrupteurs et valeurs énumérées comme le protocole et le mode |
 | `logs/*.log` | Journaux d'exécution récents du système et de chaque module, y compris ceux enregistrés sur disque avant un redémarrage (désactivable) |
+| `logs/crash.log` | Enregistrement des arrêts anormaux : message et piles des plantages du runtime Go (panic, fatal error), et heure approximative à laquelle le processus a été tué (par exemple par l'OOM killer faute de mémoire) ; présent uniquement après un arrêt anormal (désactivable) |
 
 ## Ce qui n'est jamais exporté
 
@@ -27,6 +28,13 @@ Le paquet est généré sur votre propre machine et n'est jamais envoyé nulle p
 - **Configuration** : les valeurs sont retirées par défaut. Seuls subsistent les noms de champs, les nombres, les booléens, une liste fixe de champs énumérés (`protocol`, `mode`, `provider`, …) et les horodatages. Les champs d'adresse ne gardent que le port et la catégorie d'IP.
 - **Journaux** : les adresses IP, domaines, e-mails, URL, paires du type `password=…`, jetons `Bearer`, longues chaînes ressemblant à des jetons, adresses MAC et répertoires d'utilisateur sont masqués. Les domaines de services publics comme `github.com` et `letsencrypt.org` sont conservés, car ils montrent si un échec vient du réseau.
 - Un nom que vous avez saisi (par exemple la remarque d'une règle) peut encore apparaître dans une ligne de journal s'il ne ressemble ni à une IP ni à un domaine. Parcourez `logs/*.log` avant de publier et retirez tout ce que vous ne voulez pas partager.
+
+## Diagnostiquer un arrêt anormal
+
+Pendant son exécution, Gately écrit les détails des plantages dans `crash.log` dans le répertoire de configuration. Après un arrêt inattendu, le journal système du démarrage suivant indique si la dernière exécution a planté ou a été tuée :
+
+- **Plantage** : `crash.log` contient la cause et les piles de toutes les goroutines ; exportez le paquet de diagnostic et joignez-le à l'issue. Pour les erreurs fatales comme `concurrent map writes`, Go n'écrit la ligne `fatal error: …` que sur la sortie d'erreur standard, visible avec `docker logs`.
+- **Arrêt inattendu** : le processus n'a rien laissé, en général parce que le système l'a tué faute de mémoire (OOM), qu'il a été arrêté par `kill -9` / `docker kill` ou qu'il y a eu une coupure de courant. Lancez `dmesg -T | grep -i -E "oom|killed process"` sur l'hôte pour vérifier un OOM.
 
 ## API
 

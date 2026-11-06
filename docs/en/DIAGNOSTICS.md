@@ -13,6 +13,7 @@ The bundle is generated on your own machine and is never uploaded anywhere. Clic
 | `modules.json` | Module list and the status summary shown on the overview page |
 | `config/*.json` | Configuration **structure**: field names, numbers, switches, and enum values such as protocol and mode |
 | `logs/*.log` | Recent runtime logs of the system and every module, including those persisted before a restart (can be turned off) |
+| `logs/crash.log` | Abnormal exit records: the message and stacks of Go runtime crashes (panic, fatal error), and the approximate time the process was killed (for example by the OOM killer); present only after an abnormal exit (can be turned off) |
 
 ## What is never exported
 
@@ -27,6 +28,13 @@ The bundle is generated on your own machine and is never uploaded anywhere. Clic
 - **Configuration**: values are removed by default. Only field names, numbers, booleans, a fixed list of enum fields (`protocol`, `mode`, `provider`, …) and timestamps survive. Address fields keep only the port and the IP category.
 - **Logs**: IP addresses, domains, e-mails, URLs, `password=…` style pairs, `Bearer` tokens, long token-like strings, MAC addresses and user directories are masked. Public service domains such as `github.com` and `letsencrypt.org` are kept because they show whether a failure is a network problem.
 - A name you typed (for example a rule remark) can still appear in a log line if it does not look like an IP or domain. Skim `logs/*.log` before posting, and remove anything you do not want to share.
+
+## Troubleshooting abnormal exits
+
+While running, Gately writes crash details to `crash.log` in the config directory. After the process ends unexpectedly, the system log on the next start says whether the last run crashed or was killed:
+
+- **Crashed**: `crash.log` contains the reason and the stacks of all goroutines; export the diagnostics bundle and attach it to the issue. For fatal errors such as `concurrent map writes`, Go prints the `fatal error: …` line only to standard error, which you can find in `docker logs`.
+- **Ended unexpectedly**: the process left nothing behind, usually because the system killed it for running out of memory (OOM), it was ended with `kill -9` / `docker kill`, or the power went out. Run `dmesg -T | grep -i -E "oom|killed process"` on the host to check for OOM.
 
 ## API
 

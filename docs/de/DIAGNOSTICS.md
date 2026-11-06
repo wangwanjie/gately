@@ -13,6 +13,7 @@ Das Paket wird auf Ihrem eigenen Rechner erzeugt und nirgendwohin hochgeladen. K
 | `modules.json` | Modulliste und die Statuszusammenfassung der Übersichtsseite |
 | `config/*.json` | **Struktur** der Konfiguration: Feldnamen, Zahlen, Schalter und Enum-Werte wie Protokoll und Modus |
 | `logs/*.log` | Aktuelle Laufzeitprotokolle des Systems und aller Module, einschließlich der vor einem Neustart gespeicherten (abschaltbar) |
+| `logs/crash.log` | Aufzeichnung abnormaler Beendigungen: Meldung und Stacks von Abstürzen der Go-Laufzeit (panic, fatal error) sowie der ungefähre Zeitpunkt, zu dem der Prozess zwangsweise beendet wurde (zum Beispiel vom OOM-Killer bei Speichermangel); nur nach einer abnormalen Beendigung vorhanden (abschaltbar) |
 
 ## Was nie exportiert wird
 
@@ -27,6 +28,13 @@ Das Paket wird auf Ihrem eigenen Rechner erzeugt und nirgendwohin hochgeladen. K
 - **Konfiguration**: Werte werden standardmäßig entfernt. Erhalten bleiben nur Feldnamen, Zahlen, Booleans, eine feste Liste von Enum-Feldern (`protocol`, `mode`, `provider`, …) und Zeitstempel. Adressfelder behalten nur den Port und die IP-Kategorie.
 - **Logs**: IP-Adressen, Domains, E-Mail-Adressen, URLs, Paare der Form `password=…`, `Bearer`-Tokens, lange tokenartige Strings, MAC-Adressen und Benutzerverzeichnisse werden maskiert. Domains öffentlicher Dienste wie `github.com` und `letsencrypt.org` bleiben erhalten, weil sie zeigen, ob ein Fehler ein Netzwerkproblem ist.
 - Ein selbst eingegebener Name (zum Beispiel die Bemerkung einer Regel) kann trotzdem in einer Logzeile stehen, wenn er nicht wie eine IP oder Domain aussieht. Überfliegen Sie `logs/*.log` vor dem Veröffentlichen und entfernen Sie alles, was Sie nicht teilen möchten.
+
+## Abnormale Beendigungen untersuchen
+
+Während des Betriebs schreibt Gately Absturzdetails in `crash.log` im Konfigurationsverzeichnis. Nach einem unerwarteten Ende zeigt das Systemprotokoll beim nächsten Start, ob der letzte Lauf abgestürzt ist oder zwangsweise beendet wurde:
+
+- **Absturz**: `crash.log` enthält die Ursache und die Stacks aller Goroutinen; exportieren Sie das Diagnosepaket und hängen Sie es an das Issue an. Bei fatalen Fehlern wie `concurrent map writes` gibt Go die Zeile `fatal error: …` nur auf der Standardfehlerausgabe aus, sie steht in `docker logs`.
+- **Unerwartetes Ende**: Der Prozess hat nichts hinterlassen, meist weil das System ihn wegen Speichermangels beendet hat (OOM), er mit `kill -9` / `docker kill` beendet wurde oder der Strom ausfiel. Prüfen Sie mit `dmesg -T | grep -i -E "oom|killed process"` auf dem Host, ob es ein OOM war.
 
 ## API
 
