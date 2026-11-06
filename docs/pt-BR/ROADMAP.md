@@ -19,7 +19,7 @@ Princípios de design:
 | HTTP | Biblioteca padrão `net/http` (sintaxe de rotas do Go 1.22) | Mínimo de dependências, fácil de auditar |
 | Armazenamento | Um arquivo JSON em texto puro por módulo, com escrita atômica | Fácil de importar, fazer backup e comparar com git diff |
 | Autenticação | Senhas bcrypt + tokens de sessão assinados com HMAC, limitação de falhas de login, TOTP depois | Sem dependências externas |
-| Logs | Buffer circular em memória por módulo + arquivos JSON Lines gravados em lote (rotação por tamanho, restaurados após reiniciar) + endpoint de busca incremental | Endpoint simples de polling de logs, atualização incremental no frontend |
+| Logs | Buffer circular em memória por módulo + arquivos JSON Lines gravados em lote (rotação por tamanho, restaurados após reiniciar; logs de acesso web arquivados e compactados por dia) + endpoint de busca incremental | Endpoint simples de polling de logs, atualização incremental no frontend |
 | Frontend | Vue 3 + TypeScript + Vite + Element Plus, empacotado com `go:embed` | Muitos componentes, desenvolvimento rápido |
 | Publicação | Binários GoReleaser para várias arquiteturas + imagens Docker multiarquitetura | — |
 
