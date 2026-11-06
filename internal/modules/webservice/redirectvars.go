@@ -48,7 +48,7 @@ func usesAny(tmpl string, vars []string) bool {
 	return false
 }
 
-// errBadHost 表示访客的 Host 含有域名中不该出现的字符，不能代入跳转地址。
+// errBadHost 表示访客的 Host 为空或含有域名中不该出现的字符，不能代入跳转地址。
 var errBadHost = errors.New("请求的域名不合法")
 
 // safeHost 检查由 Host 派生的变量值只含域名、IP 与端口会用到的字符。
@@ -162,6 +162,17 @@ func timeVar(t time.Time) string {
 // lookup 返回请求变量的值。
 func (q redirectRequest) lookup(name string) (string, bool, error) {
 	r := q.r
+	switch name {
+	case "host", "hostAndPort", "1":
+		// 不带 Host 的请求（HTTP/1.0、PRI * 等，多为扫描器）没有可代入的域名，按非法请求拒绝，
+		// 不当作跳转目标暂不可用（那是配置或 STUN 状态问题，会记警告日志）
+		if hostOnly(r.Host) == "" {
+			return "", false, errBadHost
+		}
+	}
+	if _, ok := partIndex(name, "domainPart"); ok && hostOnly(r.Host) == "" {
+		return "", false, errBadHost
+	}
 	switch name {
 	case "host":
 		return safeHost(hostOnly(r.Host))
