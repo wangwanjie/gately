@@ -577,6 +577,7 @@ curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/webservice/m
 - 포트가 같은 사이트는 기존 리스너에 병합하고, 그 밖에는 새 리스너를 만듭니다. 이미 있는 도메인은 건너뛰므로 여러 번 가져와도 됩니다.
 - 기본적으로 비활성 상태로 가져오므로 nginx와 병행하면서 하나씩 확인한 뒤 활성화할 수 있습니다. 「가져온 후 바로 활성화」를 체크하면 즉시 적용됩니다(nginx가 같은 포트를 쓰고 있으면 새 리스너는 시작되지 않습니다).
 - 변환되는 내용: `proxy_pass`(upstream의 가중치, 예비, 로드 밸런싱 정책 포함), `root` / `alias` 정적 디렉터리(`autoindex`, `try_files $uri.html`, `error_page 404`), `return` 리다이렉트와 고정 내용, 사이트 전체 `rewrite` 리다이렉트, `add_header`, `proxy_set_header`, `gzip`, `allow` / `deny`, location 단위의 경로별 백엔드·접근 제어·리다이렉트, `listen ... proxy_protocol`과 `quic`.
+- `proxy_connect_timeout`과 `proxy_read_timeout`은 사이트의 [연결 시간 제한과 응답 헤더 대기 시간 제한](#backend-timeouts)으로 변환됩니다. location /의 값이 server 수준보다 우선하며, 상한을 넘는 값은 상한으로 가져옵니다. 다른 location의 다른 값은 가져오지 않으며 미리보기에서 알려 줍니다;
 - `auth_request`는 포워드 인증으로 변환됩니다. 인증 엔드포인트는 인증 하위 요청 location의 `proxy_pass`에서 가져오고(`set` 변수 지원), 로그인 리디렉션은 `error_page 401 =302`에서 가져오므로 Authelia의 일반적인 설정은 그대로 변환됩니다. 일부 location에서만 쓰는 경우에는 「인증 범위」에서 지정한 경로만 인증하도록 변환합니다.
 - `auth_basic`은 공유 사용자를 쓰는 기본 인증으로 변환됩니다. nginx의 사용자 파일은 읽지 않으므로 사용자를 추가하기 전에는 아무도 통과할 수 없습니다.
 - `stream`의 TCP/UDP 전달은 [포트 포워딩](/ko/docs/modules/portforward)에서 설정하세요. 인증서는 가져오지 않습니다. HTTPS 사이트에 인증서가 없으면 미리 보기에서 nginx가 쓰는 인증서 파일을 보여 주므로 [인증서](/ko/docs/modules/ssl) 페이지에서 파일 경로로 추가할 수 있습니다.

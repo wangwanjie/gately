@@ -577,6 +577,7 @@ curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/webservice/m
 - 相同端口的站点合并到已有监听，否则新建监听；已存在的域名会跳过，可以重复导入；
 - 默认导入为停用状态，便于与 nginx 并行逐个核对后再启用；勾选「导入后立即启用」则立即生效（nginx 仍占用同一端口时新建的监听会启动失败）；
 - 能转换的内容：`proxy_pass`（含 upstream 的权重、备用与负载均衡策略）、`root` / `alias` 静态目录（`autoindex`、`try_files $uri.html`、`error_page 404`）、`return` 跳转与固定内容、整站 `rewrite` 跳转、`add_header`、`proxy_set_header`、`gzip`、`allow` / `deny`、location 级的分路径后端、访问控制与跳转、`listen ... proxy_protocol` 与 `quic`；
+- `proxy_connect_timeout` 与 `proxy_read_timeout` 转换为站点的[连接超时与等待响应头超时](#backend-timeouts)，location / 中的值优先于 server 级，超过上限时按上限导入；其他 location 中不同的值不会导入，预览中会提示；
 - `auth_request` 会转换为转发认证：认证地址取自认证子请求 location 的 `proxy_pass`（支持 `set` 变量），登录跳转取自 `error_page 401 =302`，Authelia 的常见写法可以直接转换；只在部分 location 启用时转换为「仅对指定路径认证」；
 - `auth_basic` 转换为使用共享用户的基本认证，nginx 的用户文件不会被读取，补齐用户前任何人都无法通过；
 - `stream` 中的 TCP/UDP 转发请在[端口转发](/docs/modules/portforward)中配置；证书不会导入，HTTPS 站点缺少证书时预览会列出 nginx 使用的证书文件，可在[证书](/docs/modules/ssl)页按文件路径添加。

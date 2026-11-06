@@ -691,6 +691,10 @@ func (c *nginxConverter) convert(srv *ngDirective) {
 			}
 		}
 	}
+	if c.site.Type == TypeProxy {
+		// location / 中的设置优先，没有时继承 server 级
+		c.applyProxyTimeouts(main, srv.Block)
+	}
 	for _, o := range others {
 		if isInternalLocation(o) {
 			continue
@@ -1137,6 +1141,107 @@ func (c *nginxConverter) applyProxyOptions(list []*ngDirective, headers *[]strin
 	}
 }
 
+// applyProxyTimeouts 把 proxy_connect_timeout 与 proxy_read_timeout 转换为站点的后端超时。
+// lists 按优先级排列（location / 在前，server 在后），取第一个出现的值；都没有时保持 Gately 的默认值。
+// nginx 的 proxy_read_timeout 是两次读取之间的空闲上限，等待响应头同样受它限制，对应 Gately 的等待响应头超时；
+// Gately 不限制响应体的读取间隔，长连接不会因此断开。
+func (c *nginxConverter) applyProxyTimeouts(lists ...[]*ngDirective) {
+	find := func(name string) *ngDirective {
+		for _, list := range lists {
+			for _, d := range list {
+				if d.Name == name {
+					return d
+				}
+			}
+		}
+		return nil
+	}
+	conv := func(name string, max int) int {
+		d := find(name)
+		if d == nil {
+			return 0
+		}
+		n, ok := nginxSeconds(d.arg(0))
+		if !ok {
+			c.warn("%s %s 无法识别，使用 Gately 的默认值", name, d.arg(0))
+			return 0
+		}
+		if n > max {
+			c.warn("%s %s 超过 Gately 的上限，按 %d 秒导入", name, d.arg(0), max)
+			return max
+		}
+		return n
+	}
+	c.site.Timeouts.Connect = conv("proxy_connect_timeout", maxConnectTimeout)
+	c.site.Timeouts.ResponseHeader = conv("proxy_read_timeout", maxResponseHeaderTimeout)
+}
+
+// warnLocationTimeouts 在 location 设置了与站点不同的后端超时时提示：Gately 的后端超时按站点设置，对所有路径生效。
+func (c *nginxConverter) warnLocationTimeouts(p string, list []*ngDirective) {
+	for _, d := range list {
+		var cur int
+		switch d.Name {
+		case "proxy_connect_timeout":
+			cur = c.site.Timeouts.Connect
+		case "proxy_read_timeout":
+			cur = c.site.Timeouts.ResponseHeader
+		default:
+			continue
+		}
+		if n, ok := nginxSeconds(d.arg(0)); !ok || n != cur {
+			c.warn("location %s 的 %s 未导入，站点的后端超时对所有路径生效", p, d.Name)
+		}
+	}
+}
+
+// nginxSeconds 解析 nginx 的时间值（如 60、30s、5m、1h、1m30s、500ms），不足 1 秒的部分向上取整，结果至少为 1 秒。
+// 支持的单位与 nginx 相同：ms、s、m、h、d、w、M（30 天）、y（365 天），不带单位为秒。
+func nginxSeconds(v string) (int, bool) {
+	units := map[string]int64{"ms": 1, "s": 1000, "m": 60_000, "h": 3_600_000, "d": 86_400_000, "w": 604_800_000, "M": 2_592_000_000, "y": 31_536_000_000}
+	if v == "" {
+		return 0, false
+	}
+	var total int64
+	for v != "" {
+		i := 0
+		for i < len(v) && v[i] >= '0' && v[i] <= '9' {
+			i++
+		}
+		// 每段都要以数字开头，且限制位数防止溢出
+		if i == 0 || i > 12 {
+			return 0, false
+		}
+		n, _ := strconv.ParseInt(v[:i], 10, 64)
+		v = v[i:]
+		j := 0
+		for j < len(v) && (v[j] < '0' || v[j] > '9') {
+			j++
+		}
+		unit := v[:j]
+		v = v[j:]
+		if unit == "" {
+			// 不带单位的数字只能是最后一段
+			if v != "" {
+				return 0, false
+			}
+			unit = "s"
+		}
+		mul, ok := units[unit]
+		if !ok {
+			return 0, false
+		}
+		total += n * mul
+		if total > 31_536_000_000*10 {
+			return 0, false
+		}
+	}
+	if total == 0 {
+		// 0 在 nginx 中没有实际意义，交给调用方按无法识别处理
+		return 0, false
+	}
+	return int((total + 999) / 1000), true
+}
+
 // applyStatic 识别 root / alias 静态目录。serverList 用于读取 server 级的 root。
 func (c *nginxConverter) applyStatic(list, serverList []*ngDirective) bool {
 	root := ""
@@ -1297,6 +1402,7 @@ func (c *nginxConverter) convertLocation(d *ngDirective) {
 			loc.Targets = targets
 		}
 		c.applyProxyOptions(d.Block, &loc.RequestHeaders, false)
+		c.warnLocationTimeouts(p, d.Block)
 		if len(loc.Targets) > 0 || len(loc.RequestHeaders) > 0 {
 			s.Locations = append(s.Locations, loc)
 		}

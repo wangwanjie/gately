@@ -577,6 +577,7 @@ curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/webservice/m
 - 同じポートのサイトは既存のリスナーに追加し、それ以外は新しいリスナーを作成します。既存のドメインはスキップされるため、繰り返しインポートできます。
 - 既定では無効の状態でインポートされるため、nginx と並行して 1 つずつ確認してから有効にできます。「インポート後すぐに有効化」にチェックを入れるとすぐに有効になります（nginx が同じポートを使用中の場合、新しいリスナーは起動に失敗します）。
 - 変換できる内容：`proxy_pass`（upstream の重み、バックアップ、ロードバランシングポリシーを含む）、`root` / `alias` の静的ディレクトリ（`autoindex`、`try_files $uri.html`、`error_page 404`）、`return` によるリダイレクトと固定内容、サイト全体の `rewrite` リダイレクト、`add_header`、`proxy_set_header`、`gzip`、`allow` / `deny`、location 単位のパス別バックエンド・アクセス制御・リダイレクト、`listen ... proxy_protocol` と `quic`。
+- `proxy_connect_timeout` と `proxy_read_timeout` はサイトの[接続タイムアウトとレスポンスヘッダー待ち](#backend-timeouts)に変換されます。location / の値が server レベルより優先され、上限を超える値は上限でインポートされます。ほかの location の異なる値はインポートされず、プレビューで知らせます；
 - `auth_request` はフォワード認証に変換されます。認証 URL は認証サブリクエストの location の `proxy_pass`（`set` 変数に対応）から、ログインのリダイレクト先は `error_page 401 =302` から取得するため、Authelia のよくある書き方はそのまま変換できます。一部の location でのみ有効な場合は「認証必須」にしたパスのみ認証する設定に変換されます。
 - `auth_basic` は共有ユーザーを使う Basic 認証に変換されます。nginx のユーザーファイルは読み込まれないため、ユーザーを追加するまでは誰も認証を通過できません。
 - `stream` 内の TCP/UDP 転送は [ポート転送](/ja/docs/modules/portforward) で設定してください。証明書はインポートされません。HTTPS サイトに証明書がない場合、プレビューには nginx が使っている証明書ファイルが表示されるので、[SSL 証明書](/ja/docs/modules/ssl) ページでファイルパスから追加できます。

@@ -577,6 +577,7 @@ curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/webservice/m
 - 相同連接埠的站台合併到既有監聽，否則新增監聽；已存在的網域會略過，可以重複匯入；
 - 預設匯入為停用狀態，方便與 nginx 並行逐一核對後再啟用；勾選「匯入後立即啟用」則立即生效（nginx 仍佔用相同連接埠時，新增的監聽會啟動失敗）；
 - 可轉換的內容：`proxy_pass`（含 upstream 的權重、備用與負載平衡策略）、`root` / `alias` 靜態目錄（`autoindex`、`try_files $uri.html`、`error_page 404`）、`return` 跳轉與固定內容、整站 `rewrite` 跳轉、`add_header`、`proxy_set_header`、`gzip`、`allow` / `deny`、location 層級的分路徑後端、存取控制與跳轉、`listen ... proxy_protocol` 與 `quic`；
+- `proxy_connect_timeout` 與 `proxy_read_timeout` 轉換為站台的[連線逾時與等待回應標頭逾時](#backend-timeouts)，location / 中的值優先於 server 級，超過上限時按上限匯入；其他 location 中不同的值不會匯入，預覽中會提示；
 - `auth_request` 會轉換為轉發認證：驗證位址取自驗證子請求 location 的 `proxy_pass`（支援 `set` 變數），登入跳轉取自 `error_page 401 =302`，Authelia 的常見寫法可以直接轉換；只在部分 location 啟用時，轉換為只對指定路徑驗證（「驗證範圍」）；
 - `auth_basic` 轉換為使用共用使用者的基本驗證，nginx 的使用者檔案不會被讀取，補齊使用者之前任何人都無法通過；
 - `stream` 中的 TCP/UDP 轉發請在 [連接埠轉發](/zh-TW/docs/modules/portforward) 中設定；憑證不會匯入，HTTPS 站台缺少憑證時，預覽會列出 nginx 使用的憑證檔案，可在 [憑證](/zh-TW/docs/modules/ssl) 頁依檔案路徑新增。
