@@ -69,6 +69,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Méthode | Chemin | Permission requise | Description |
 | --- | --- | --- | --- |
 | GET | `/api/portforward/logs` | `portforward:read` | Consulter les journaux d'exécution d'un module |
+| GET | `/api/portforward/logs/sources` | `portforward:read` | Lister toutes les sources des journaux du module |
+| GET | `/api/portforward/logs/export` | `portforward:read` | Exporter les journaux du module |
 | DELETE | `/api/portforward/logs` | `portforward:write` | Vider les journaux d'exécution d'un module |
 | GET | `/api/portforward/rules` | `portforward:read` | Lister Règle de redirection de ports |
 | POST | `/api/portforward/rules` | `portforward:write` | Ajouter Règle de redirection de ports |
@@ -88,6 +90,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Méthode | Chemin | Permission requise | Description |
 | --- | --- | --- | --- |
 | GET | `/api/protoroute/logs` | `protoroute:read` | Consulter les journaux d'exécution d'un module |
+| GET | `/api/protoroute/logs/sources` | `protoroute:read` | Lister toutes les sources des journaux du module |
+| GET | `/api/protoroute/logs/export` | `protoroute:read` | Exporter les journaux du module |
 | DELETE | `/api/protoroute/logs` | `protoroute:write` | Vider les journaux d'exécution d'un module |
 | GET | `/api/protoroute/rules` | `protoroute:read` | Lister règle de routage par protocole |
 | POST | `/api/protoroute/rules` | `protoroute:write` | Ajouter règle de routage par protocole |
@@ -107,6 +111,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Méthode | Chemin | Permission requise | Description |
 | --- | --- | --- | --- |
 | GET | `/api/ddns/logs` | `ddns:read` | Consulter les journaux d'exécution d'un module |
+| GET | `/api/ddns/logs/sources` | `ddns:read` | Lister toutes les sources des journaux du module |
+| GET | `/api/ddns/logs/export` | `ddns:read` | Exporter les journaux du module |
 | DELETE | `/api/ddns/logs` | `ddns:write` | Vider les journaux d'exécution d'un module |
 | GET | `/api/ddns/tasks` | `ddns:read` | Lister Tâche DDNS |
 | POST | `/api/ddns/tasks` | `ddns:write` | Ajouter Tâche DDNS |
@@ -135,6 +141,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Méthode | Chemin | Permission requise | Description |
 | --- | --- | --- | --- |
 | GET | `/api/stun/logs` | `stun:read` | Consulter les journaux d'exécution d'un module |
+| GET | `/api/stun/logs/sources` | `stun:read` | Lister toutes les sources des journaux du module |
+| GET | `/api/stun/logs/export` | `stun:read` | Exporter les journaux du module |
 | DELETE | `/api/stun/logs` | `stun:write` | Vider les journaux d'exécution d'un module |
 | GET | `/api/stun/rules` | `stun:read` | Lister Règle STUN |
 | POST | `/api/stun/rules` | `stun:write` | Ajouter Règle STUN |
@@ -156,6 +164,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Méthode | Chemin | Permission requise | Description |
 | --- | --- | --- | --- |
 | GET | `/api/tailscale/logs` | `tailscale:read` | Consulter les journaux d'exécution d'un module |
+| GET | `/api/tailscale/logs/sources` | `tailscale:read` | Lister toutes les sources des journaux du module |
+| GET | `/api/tailscale/logs/export` | `tailscale:read` | Exporter les journaux du module |
 | DELETE | `/api/tailscale/logs` | `tailscale:write` | Vider les journaux d'exécution d'un module |
 | GET | `/api/tailscale/instances` | `tailscale:read` | Lister instance Tailscale |
 | POST | `/api/tailscale/instances` | `tailscale:write` | Ajouter une instance Tailscale |
@@ -187,6 +197,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Méthode | Chemin | Permission requise | Description |
 | --- | --- | --- | --- |
 | GET | `/api/netbird/logs` | `netbird:read` | Consulter les journaux d'exécution d'un module |
+| GET | `/api/netbird/logs/sources` | `netbird:read` | Lister toutes les sources des journaux du module |
+| GET | `/api/netbird/logs/export` | `netbird:read` | Exporter les journaux du module |
 | DELETE | `/api/netbird/logs` | `netbird:write` | Vider les journaux d'exécution d'un module |
 | GET | `/api/netbird/instances` | `netbird:read` | Lister Instance NetBird |
 | POST | `/api/netbird/instances` | `netbird:write` | Ajouter une instance NetBird |
@@ -218,6 +230,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Méthode | Chemin | Permission requise | Description |
 | --- | --- | --- | --- |
 | GET | `/api/frp/logs` | `frp:read` | Consulter les journaux d'exécution d'un module |
+| GET | `/api/frp/logs/sources` | `frp:read` | Lister toutes les sources des journaux du module |
+| GET | `/api/frp/logs/export` | `frp:read` | Exporter les journaux du module |
 | DELETE | `/api/frp/logs` | `frp:write` | Vider les journaux d'exécution d'un module |
 | GET | `/api/frp/clients` | `frp:read` | Lister Client frp |
 | POST | `/api/frp/clients` | `frp:write` | Ajouter Client frp |
@@ -270,6 +284,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Méthode | Chemin | Permission requise | Description |
 | --- | --- | --- | --- |
 | GET | `/api/cloudflared/logs` | `cloudflared:read` | Consulter les journaux d'exécution d'un module |
+| GET | `/api/cloudflared/logs/sources` | `cloudflared:read` | Lister toutes les sources des journaux du module |
+| GET | `/api/cloudflared/logs/export` | `cloudflared:read` | Exporter les journaux du module |
 | DELETE | `/api/cloudflared/logs` | `cloudflared:write` | Vider les journaux d'exécution d'un module |
 | GET | `/api/cloudflared/tunnels` | `cloudflared:read` | Lister Tunnel Cloudflare |
 | POST | `/api/cloudflared/tunnels` | `cloudflared:write` | Ajouter Tunnel Cloudflare |
@@ -300,6 +316,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Méthode | Chemin | Permission requise | Description |
 | --- | --- | --- | --- |
 | GET | `/api/ssl/logs` | `ssl:read` | Consulter les journaux d'exécution d'un module |
+| GET | `/api/ssl/logs/sources` | `ssl:read` | Lister toutes les sources des journaux du module |
+| GET | `/api/ssl/logs/export` | `ssl:read` | Exporter les journaux du module |
 | DELETE | `/api/ssl/logs` | `ssl:write` | Vider les journaux d'exécution d'un module |
 | GET | `/api/ssl/certs` | `ssl:read` | Lister Certificat |
 | POST | `/api/ssl/certs` | `ssl:write` | Ajouter Certificat |
@@ -325,6 +343,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Méthode | Chemin | Permission requise | Description |
 | --- | --- | --- | --- |
 | GET | `/api/waf/logs` | `waf:read` | Consulter les journaux d'exécution d'un module |
+| GET | `/api/waf/logs/sources` | `waf:read` | Lister toutes les sources des journaux du module |
+| GET | `/api/waf/logs/export` | `waf:read` | Exporter les journaux du module |
 | DELETE | `/api/waf/logs` | `waf:write` | Vider les journaux d'exécution d'un module |
 | GET | `/api/waf/instances` | `waf:read` | Lister Instance WAF |
 | POST | `/api/waf/instances` | `waf:write` | Ajouter Instance WAF |
@@ -345,6 +365,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Méthode | Chemin | Permission requise | Description |
 | --- | --- | --- | --- |
 | GET | `/api/webservice/logs` | `webservice:read` | Consulter les journaux d'exécution d'un module |
+| GET | `/api/webservice/logs/sources` | `webservice:read` | Lister toutes les sources des journaux du module |
+| GET | `/api/webservice/logs/export` | `webservice:read` | Exporter les journaux du module |
 | DELETE | `/api/webservice/logs` | `webservice:write` | Vider les journaux d'exécution d'un module |
 | GET | `/api/webservice/listeners` | `webservice:read` | Lister Écoute du service Web |
 | POST | `/api/webservice/listeners` | `webservice:write` | Ajouter Écoute du service Web |
@@ -400,6 +422,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Méthode | Chemin | Permission requise | Description |
 | --- | --- | --- | --- |
 | GET | `/api/guard/logs` | `guard:read` | Consulter les journaux d'exécution d'un module |
+| GET | `/api/guard/logs/sources` | `guard:read` | Lister toutes les sources des journaux du module |
+| GET | `/api/guard/logs/export` | `guard:read` | Exporter les journaux du module |
 | DELETE | `/api/guard/logs` | `guard:write` | Vider les journaux d'exécution d'un module |
 | GET | `/api/guard/jails` | `guard:read` | Lister règle de prévention des intrusions |
 | POST | `/api/guard/jails` | `guard:write` | Ajouter règle de prévention des intrusions |
@@ -426,6 +450,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Méthode | Chemin | Permission requise | Description |
 | --- | --- | --- | --- |
 | GET | `/api/wol/logs` | `wol:read` | Consulter les journaux d'exécution d'un module |
+| GET | `/api/wol/logs/sources` | `wol:read` | Lister toutes les sources des journaux du module |
+| GET | `/api/wol/logs/export` | `wol:read` | Exporter les journaux du module |
 | DELETE | `/api/wol/logs` | `wol:write` | Vider les journaux d'exécution d'un module |
 | GET | `/api/wol/devices` | `wol:read` | Lister Réveiller l'appareil |
 | POST | `/api/wol/devices` | `wol:write` | Ajouter Réveiller l'appareil |
@@ -445,6 +471,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Méthode | Chemin | Permission requise | Description |
 | --- | --- | --- | --- |
 | GET | `/api/webterminal/logs` | `webterminal:read` | Consulter les journaux d'exécution d'un module |
+| GET | `/api/webterminal/logs/sources` | `webterminal:read` | Lister toutes les sources des journaux du module |
+| GET | `/api/webterminal/logs/export` | `webterminal:read` | Exporter les journaux du module |
 | DELETE | `/api/webterminal/logs` | `webterminal:write` | Vider les journaux d'exécution d'un module |
 | GET | `/api/webterminal/connections` | `webterminal:read` | Lister Connexion de terminal |
 | POST | `/api/webterminal/connections` | `webterminal:write` | Ajouter Connexion de terminal |
@@ -512,6 +540,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Méthode | Chemin | Permission requise | Description |
 | --- | --- | --- | --- |
 | GET | `/api/cron/logs` | `cron:read` | Consulter les journaux d'exécution d'un module |
+| GET | `/api/cron/logs/sources` | `cron:read` | Lister toutes les sources des journaux du module |
+| GET | `/api/cron/logs/export` | `cron:read` | Exporter les journaux du module |
 | DELETE | `/api/cron/logs` | `cron:write` | Vider les journaux d'exécution d'un module |
 | GET | `/api/cron/tasks` | `cron:read` | Lister Tâche planifiée |
 | POST | `/api/cron/tasks` | `cron:write` | Ajouter Tâche planifiée |
@@ -531,6 +561,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Méthode | Chemin | Permission requise | Description |
 | --- | --- | --- | --- |
 | GET | `/api/docker/logs` | `docker:read` | Consulter les journaux d'exécution d'un module |
+| GET | `/api/docker/logs/sources` | `docker:read` | Lister toutes les sources des journaux du module |
+| GET | `/api/docker/logs/export` | `docker:read` | Exporter les journaux du module |
 | DELETE | `/api/docker/logs` | `docker:write` | Vider les journaux d'exécution d'un module |
 | GET | `/api/docker/tasks` | `docker:read` | Lister les tâches d'arrière-plan |
 | GET | `/api/docker/tasks/{id}` | `docker:read` | Consulter la progression et la sortie d'une tâche d'arrière-plan |
@@ -603,6 +635,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Méthode | Chemin | Permission requise | Description |
 | --- | --- | --- | --- |
 | GET | `/api/webdav/logs` | `webdav:read` | Consulter les journaux d'exécution d'un module |
+| GET | `/api/webdav/logs/sources` | `webdav:read` | Lister toutes les sources des journaux du module |
+| GET | `/api/webdav/logs/export` | `webdav:read` | Exporter les journaux du module |
 | DELETE | `/api/webdav/logs` | `webdav:write` | Vider les journaux d'exécution d'un module |
 | GET | `/api/webdav/settings` | `webdav:read` | Lire les paramètres WebDAV |
 | GET | `/api/webdav/settings/secrets` | `webdav:write` | Afficher en clair les mots de passe des utilisateurs locaux |
@@ -615,6 +649,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Méthode | Chemin | Permission requise | Description |
 | --- | --- | --- | --- |
 | GET | `/api/ftp/logs` | `ftp:read` | Consulter les journaux d'exécution d'un module |
+| GET | `/api/ftp/logs/sources` | `ftp:read` | Lister toutes les sources des journaux du module |
+| GET | `/api/ftp/logs/export` | `ftp:read` | Exporter les journaux du module |
 | DELETE | `/api/ftp/logs` | `ftp:write` | Vider les journaux d'exécution d'un module |
 | GET | `/api/ftp/settings` | `ftp:read` | Lire les paramètres FTP |
 | GET | `/api/ftp/settings/secrets` | `ftp:write` | Afficher en clair les mots de passe des utilisateurs locaux |
@@ -627,6 +663,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Méthode | Chemin | Permission requise | Description |
 | --- | --- | --- | --- |
 | GET | `/api/smb/logs` | `smb:read` | Consulter les journaux d'exécution d'un module |
+| GET | `/api/smb/logs/sources` | `smb:read` | Lister toutes les sources des journaux du module |
+| GET | `/api/smb/logs/export` | `smb:read` | Exporter les journaux du module |
 | DELETE | `/api/smb/logs` | `smb:write` | Vider les journaux d'exécution d'un module |
 | GET | `/api/smb/settings` | `smb:read` | Lire les paramètres SMB |
 | GET | `/api/smb/settings/secrets` | `smb:write` | Afficher en clair les mots de passe des utilisateurs locaux |
@@ -639,6 +677,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Méthode | Chemin | Permission requise | Description |
 | --- | --- | --- | --- |
 | GET | `/api/filebrowser/logs` | `filebrowser:read` | Consulter les journaux d'exécution d'un module |
+| GET | `/api/filebrowser/logs/sources` | `filebrowser:read` | Lister toutes les sources des journaux du module |
+| GET | `/api/filebrowser/logs/export` | `filebrowser:read` | Exporter les journaux du module |
 | DELETE | `/api/filebrowser/logs` | `filebrowser:write` | Vider les journaux d'exécution d'un module |
 | GET | `/api/filebrowser/instances` | `filebrowser:read` | Lister Instance File Browser |
 | POST | `/api/filebrowser/instances` | `filebrowser:write` | Ajouter Instance File Browser |
@@ -667,6 +707,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Méthode | Chemin | Permission requise | Description |
 | --- | --- | --- | --- |
 | GET | `/api/storage/logs` | `storage:read` | Consulter les journaux d'exécution d'un module |
+| GET | `/api/storage/logs/sources` | `storage:read` | Lister toutes les sources des journaux du module |
+| GET | `/api/storage/logs/export` | `storage:read` | Exporter les journaux du module |
 | DELETE | `/api/storage/logs` | `storage:write` | Vider les journaux d'exécution d'un module |
 | GET | `/api/storage/mounts` | `storage:read` | Lister Montages de stockage |
 | POST | `/api/storage/mounts` | `storage:write` | Ajouter Montages de stockage |
@@ -691,6 +733,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Méthode | Chemin | Permission requise | Description |
 | --- | --- | --- | --- |
 | GET | `/api/notify/logs` | `notify:read` | Consulter les journaux d'exécution d'un module |
+| GET | `/api/notify/logs/sources` | `notify:read` | Lister toutes les sources des journaux du module |
+| GET | `/api/notify/logs/export` | `notify:read` | Exporter les journaux du module |
 | DELETE | `/api/notify/logs` | `notify:write` | Vider les journaux d'exécution d'un module |
 | GET | `/api/notify/channels` | `notify:read` | Lister Canaux de notification |
 | POST | `/api/notify/channels` | `notify:write` | Ajouter Canaux de notification |
@@ -724,6 +768,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Méthode | Chemin | Permission requise | Description |
 | --- | --- | --- | --- |
 | GET | `/api/perf/logs` | `perf:read` | Consulter les journaux d'exécution d'un module |
+| GET | `/api/perf/logs/sources` | `perf:read` | Lister toutes les sources des journaux du module |
+| GET | `/api/perf/logs/export` | `perf:read` | Exporter les journaux du module |
 | DELETE | `/api/perf/logs` | `perf:write` | Vider les journaux d'exécution d'un module |
 | GET | `/api/perf/rules` | `perf:read` | Lister Règles d'alerte de performances |
 | POST | `/api/perf/rules` | `perf:write` | Ajouter Règles d'alerte de performances |
@@ -746,6 +792,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Méthode | Chemin | Permission requise | Description |
 | --- | --- | --- | --- |
 | GET | `/api/nettools/logs` | `nettools:read` | Consulter les journaux d'exécution d'un module |
+| GET | `/api/nettools/logs/sources` | `nettools:read` | Lister toutes les sources des journaux du module |
+| GET | `/api/nettools/logs/export` | `nettools:read` | Exporter les journaux du module |
 | DELETE | `/api/nettools/logs` | `nettools:write` | Vider les journaux d'exécution d'un module |
 | POST | `/api/nettools/run` | `nettools:write` | Exécuter un outil de diagnostic et renvoyer la tâche (tool : ping / traceroute / tcp / dns / speed / scan) |
 | GET | `/api/nettools/tasks` | `nettools:read` | Dernières tâches de diagnostic |
@@ -760,6 +808,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Méthode | Chemin | Permission requise | Description |
 | --- | --- | --- | --- |
 | GET | `/api/backup/logs` | `backup:read` | Consulter les journaux d'exécution d'un module |
+| GET | `/api/backup/logs/sources` | `backup:read` | Lister toutes les sources des journaux du module |
+| GET | `/api/backup/logs/export` | `backup:read` | Exporter les journaux du module |
 | DELETE | `/api/backup/logs` | `backup:write` | Vider les journaux d'exécution d'un module |
 | GET | `/api/backup/targets` | `backup:read` | Lister Destination de sauvegarde |
 | POST | `/api/backup/targets` | `backup:write` | Ajouter Destination de sauvegarde |
@@ -794,6 +844,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | GET | `/api/session` | Tout jeton valide | Consulter l'identité authentifiée actuelle |
 | GET | `/api/status` | `status:read` | Consulter l'état du système et des modules |
 | GET | `/api/logs` | `logs:read` | Consulter les journaux système |
+| GET | `/api/logs/sources` | `logs:read` | Lister toutes les sources des journaux système |
+| GET | `/api/logs/export` | `logs:read` | Exporter les journaux système |
 | GET | `/api/system/settings` | Session connectée uniquement | Lire les paramètres globaux |
 | PUT | `/api/system/settings` | Session connectée uniquement | Enregistrer les paramètres globaux |
 | GET | `/api/system/settings/secrets` | Session connectée uniquement | Afficher en clair les Client Secret de la connexion tierce |

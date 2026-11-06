@@ -69,6 +69,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Метод | Путь | Необходимое право | Описание |
 | --- | --- | --- | --- |
 | GET | `/api/portforward/logs` | `portforward:read` | Просмотр журнала работы модуля |
+| GET | `/api/portforward/logs/sources` | `portforward:read` | Список всех источников журналов модуля |
+| GET | `/api/portforward/logs/export` | `portforward:read` | Экспорт журналов модуля |
 | DELETE | `/api/portforward/logs` | `portforward:write` | Очистить журнал работы модуля |
 | GET | `/api/portforward/rules` | `portforward:read` | Список: Правило проброса портов |
 | POST | `/api/portforward/rules` | `portforward:write` | Добавить: Правило проброса портов |
@@ -88,6 +90,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Метод | Путь | Необходимое право | Описание |
 | --- | --- | --- | --- |
 | GET | `/api/protoroute/logs` | `protoroute:read` | Просмотр журнала работы модуля |
+| GET | `/api/protoroute/logs/sources` | `protoroute:read` | Список всех источников журналов модуля |
+| GET | `/api/protoroute/logs/export` | `protoroute:read` | Экспорт журналов модуля |
 | DELETE | `/api/protoroute/logs` | `protoroute:write` | Очистить журнал работы модуля |
 | GET | `/api/protoroute/rules` | `protoroute:read` | Список: правило маршрутизации по протоколу |
 | POST | `/api/protoroute/rules` | `protoroute:write` | Добавить: правило маршрутизации по протоколу |
@@ -107,6 +111,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Метод | Путь | Необходимое право | Описание |
 | --- | --- | --- | --- |
 | GET | `/api/ddns/logs` | `ddns:read` | Просмотр журнала работы модуля |
+| GET | `/api/ddns/logs/sources` | `ddns:read` | Список всех источников журналов модуля |
+| GET | `/api/ddns/logs/export` | `ddns:read` | Экспорт журналов модуля |
 | DELETE | `/api/ddns/logs` | `ddns:write` | Очистить журнал работы модуля |
 | GET | `/api/ddns/tasks` | `ddns:read` | Список: Задача DDNS |
 | POST | `/api/ddns/tasks` | `ddns:write` | Добавить: Задача DDNS |
@@ -135,6 +141,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Метод | Путь | Необходимое право | Описание |
 | --- | --- | --- | --- |
 | GET | `/api/stun/logs` | `stun:read` | Просмотр журнала работы модуля |
+| GET | `/api/stun/logs/sources` | `stun:read` | Список всех источников журналов модуля |
+| GET | `/api/stun/logs/export` | `stun:read` | Экспорт журналов модуля |
 | DELETE | `/api/stun/logs` | `stun:write` | Очистить журнал работы модуля |
 | GET | `/api/stun/rules` | `stun:read` | Список: Правило STUN |
 | POST | `/api/stun/rules` | `stun:write` | Добавить: Правило STUN |
@@ -156,6 +164,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Метод | Путь | Необходимое право | Описание |
 | --- | --- | --- | --- |
 | GET | `/api/tailscale/logs` | `tailscale:read` | Просмотр журнала работы модуля |
+| GET | `/api/tailscale/logs/sources` | `tailscale:read` | Список всех источников журналов модуля |
+| GET | `/api/tailscale/logs/export` | `tailscale:read` | Экспорт журналов модуля |
 | DELETE | `/api/tailscale/logs` | `tailscale:write` | Очистить журнал работы модуля |
 | GET | `/api/tailscale/instances` | `tailscale:read` | Список: экземпляр Tailscale |
 | POST | `/api/tailscale/instances` | `tailscale:write` | Добавить экземпляр Tailscale |
@@ -187,6 +197,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Метод | Путь | Необходимое право | Описание |
 | --- | --- | --- | --- |
 | GET | `/api/netbird/logs` | `netbird:read` | Просмотр журнала работы модуля |
+| GET | `/api/netbird/logs/sources` | `netbird:read` | Список всех источников журналов модуля |
+| GET | `/api/netbird/logs/export` | `netbird:read` | Экспорт журналов модуля |
 | DELETE | `/api/netbird/logs` | `netbird:write` | Очистить журнал работы модуля |
 | GET | `/api/netbird/instances` | `netbird:read` | Список: Экземпляр NetBird |
 | POST | `/api/netbird/instances` | `netbird:write` | Добавить экземпляр NetBird |
@@ -218,6 +230,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Метод | Путь | Необходимое право | Описание |
 | --- | --- | --- | --- |
 | GET | `/api/frp/logs` | `frp:read` | Просмотр журнала работы модуля |
+| GET | `/api/frp/logs/sources` | `frp:read` | Список всех источников журналов модуля |
+| GET | `/api/frp/logs/export` | `frp:read` | Экспорт журналов модуля |
 | DELETE | `/api/frp/logs` | `frp:write` | Очистить журнал работы модуля |
 | GET | `/api/frp/clients` | `frp:read` | Список: Клиент frp |
 | POST | `/api/frp/clients` | `frp:write` | Добавить: Клиент frp |
@@ -270,6 +284,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Метод | Путь | Необходимое право | Описание |
 | --- | --- | --- | --- |
 | GET | `/api/cloudflared/logs` | `cloudflared:read` | Просмотр журнала работы модуля |
+| GET | `/api/cloudflared/logs/sources` | `cloudflared:read` | Список всех источников журналов модуля |
+| GET | `/api/cloudflared/logs/export` | `cloudflared:read` | Экспорт журналов модуля |
 | DELETE | `/api/cloudflared/logs` | `cloudflared:write` | Очистить журнал работы модуля |
 | GET | `/api/cloudflared/tunnels` | `cloudflared:read` | Список: Туннель Cloudflare |
 | POST | `/api/cloudflared/tunnels` | `cloudflared:write` | Добавить: Туннель Cloudflare |
@@ -300,6 +316,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Метод | Путь | Необходимое право | Описание |
 | --- | --- | --- | --- |
 | GET | `/api/ssl/logs` | `ssl:read` | Просмотр журнала работы модуля |
+| GET | `/api/ssl/logs/sources` | `ssl:read` | Список всех источников журналов модуля |
+| GET | `/api/ssl/logs/export` | `ssl:read` | Экспорт журналов модуля |
 | DELETE | `/api/ssl/logs` | `ssl:write` | Очистить журнал работы модуля |
 | GET | `/api/ssl/certs` | `ssl:read` | Список: Сертификат |
 | POST | `/api/ssl/certs` | `ssl:write` | Добавить: Сертификат |
@@ -325,6 +343,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Метод | Путь | Необходимое право | Описание |
 | --- | --- | --- | --- |
 | GET | `/api/waf/logs` | `waf:read` | Просмотр журнала работы модуля |
+| GET | `/api/waf/logs/sources` | `waf:read` | Список всех источников журналов модуля |
+| GET | `/api/waf/logs/export` | `waf:read` | Экспорт журналов модуля |
 | DELETE | `/api/waf/logs` | `waf:write` | Очистить журнал работы модуля |
 | GET | `/api/waf/instances` | `waf:read` | Список: Экземпляр WAF |
 | POST | `/api/waf/instances` | `waf:write` | Добавить: Экземпляр WAF |
@@ -345,6 +365,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Метод | Путь | Необходимое право | Описание |
 | --- | --- | --- | --- |
 | GET | `/api/webservice/logs` | `webservice:read` | Просмотр журнала работы модуля |
+| GET | `/api/webservice/logs/sources` | `webservice:read` | Список всех источников журналов модуля |
+| GET | `/api/webservice/logs/export` | `webservice:read` | Экспорт журналов модуля |
 | DELETE | `/api/webservice/logs` | `webservice:write` | Очистить журнал работы модуля |
 | GET | `/api/webservice/listeners` | `webservice:read` | Список: Прослушивание веб-службы |
 | POST | `/api/webservice/listeners` | `webservice:write` | Добавить: Прослушивание веб-службы |
@@ -400,6 +422,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Метод | Путь | Необходимое право | Описание |
 | --- | --- | --- | --- |
 | GET | `/api/guard/logs` | `guard:read` | Просмотр журнала работы модуля |
+| GET | `/api/guard/logs/sources` | `guard:read` | Список всех источников журналов модуля |
+| GET | `/api/guard/logs/export` | `guard:read` | Экспорт журналов модуля |
 | DELETE | `/api/guard/logs` | `guard:write` | Очистить журнал работы модуля |
 | GET | `/api/guard/jails` | `guard:read` | Список: правило защиты от вторжений |
 | POST | `/api/guard/jails` | `guard:write` | Добавить: правило защиты от вторжений |
@@ -426,6 +450,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Метод | Путь | Необходимое право | Описание |
 | --- | --- | --- | --- |
 | GET | `/api/wol/logs` | `wol:read` | Просмотр журнала работы модуля |
+| GET | `/api/wol/logs/sources` | `wol:read` | Список всех источников журналов модуля |
+| GET | `/api/wol/logs/export` | `wol:read` | Экспорт журналов модуля |
 | DELETE | `/api/wol/logs` | `wol:write` | Очистить журнал работы модуля |
 | GET | `/api/wol/devices` | `wol:read` | Список: Разбудить устройство |
 | POST | `/api/wol/devices` | `wol:write` | Добавить: Разбудить устройство |
@@ -445,6 +471,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Метод | Путь | Необходимое право | Описание |
 | --- | --- | --- | --- |
 | GET | `/api/webterminal/logs` | `webterminal:read` | Просмотр журнала работы модуля |
+| GET | `/api/webterminal/logs/sources` | `webterminal:read` | Список всех источников журналов модуля |
+| GET | `/api/webterminal/logs/export` | `webterminal:read` | Экспорт журналов модуля |
 | DELETE | `/api/webterminal/logs` | `webterminal:write` | Очистить журнал работы модуля |
 | GET | `/api/webterminal/connections` | `webterminal:read` | Список: Подключение терминала |
 | POST | `/api/webterminal/connections` | `webterminal:write` | Добавить: Подключение терминала |
@@ -512,6 +540,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Метод | Путь | Необходимое право | Описание |
 | --- | --- | --- | --- |
 | GET | `/api/cron/logs` | `cron:read` | Просмотр журнала работы модуля |
+| GET | `/api/cron/logs/sources` | `cron:read` | Список всех источников журналов модуля |
+| GET | `/api/cron/logs/export` | `cron:read` | Экспорт журналов модуля |
 | DELETE | `/api/cron/logs` | `cron:write` | Очистить журнал работы модуля |
 | GET | `/api/cron/tasks` | `cron:read` | Список: Запланированная задача |
 | POST | `/api/cron/tasks` | `cron:write` | Добавить: Запланированная задача |
@@ -531,6 +561,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Метод | Путь | Необходимое право | Описание |
 | --- | --- | --- | --- |
 | GET | `/api/docker/logs` | `docker:read` | Просмотр журнала работы модуля |
+| GET | `/api/docker/logs/sources` | `docker:read` | Список всех источников журналов модуля |
+| GET | `/api/docker/logs/export` | `docker:read` | Экспорт журналов модуля |
 | DELETE | `/api/docker/logs` | `docker:write` | Очистить журнал работы модуля |
 | GET | `/api/docker/tasks` | `docker:read` | Список фоновых задач |
 | GET | `/api/docker/tasks/{id}` | `docker:read` | Просмотр хода выполнения и вывода фоновой задачи |
@@ -603,6 +635,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Метод | Путь | Необходимое право | Описание |
 | --- | --- | --- | --- |
 | GET | `/api/webdav/logs` | `webdav:read` | Просмотр журнала работы модуля |
+| GET | `/api/webdav/logs/sources` | `webdav:read` | Список всех источников журналов модуля |
+| GET | `/api/webdav/logs/export` | `webdav:read` | Экспорт журналов модуля |
 | DELETE | `/api/webdav/logs` | `webdav:write` | Очистить журнал работы модуля |
 | GET | `/api/webdav/settings` | `webdav:read` | Чтение настроек WebDAV |
 | GET | `/api/webdav/settings/secrets` | `webdav:write` | Показать пароли локальных пользователей открытым текстом |
@@ -615,6 +649,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Метод | Путь | Необходимое право | Описание |
 | --- | --- | --- | --- |
 | GET | `/api/ftp/logs` | `ftp:read` | Просмотр журнала работы модуля |
+| GET | `/api/ftp/logs/sources` | `ftp:read` | Список всех источников журналов модуля |
+| GET | `/api/ftp/logs/export` | `ftp:read` | Экспорт журналов модуля |
 | DELETE | `/api/ftp/logs` | `ftp:write` | Очистить журнал работы модуля |
 | GET | `/api/ftp/settings` | `ftp:read` | Чтение настроек FTP |
 | GET | `/api/ftp/settings/secrets` | `ftp:write` | Показать пароли локальных пользователей открытым текстом |
@@ -627,6 +663,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Метод | Путь | Необходимое право | Описание |
 | --- | --- | --- | --- |
 | GET | `/api/smb/logs` | `smb:read` | Просмотр журнала работы модуля |
+| GET | `/api/smb/logs/sources` | `smb:read` | Список всех источников журналов модуля |
+| GET | `/api/smb/logs/export` | `smb:read` | Экспорт журналов модуля |
 | DELETE | `/api/smb/logs` | `smb:write` | Очистить журнал работы модуля |
 | GET | `/api/smb/settings` | `smb:read` | Получить настройки SMB |
 | GET | `/api/smb/settings/secrets` | `smb:write` | Показать пароли локальных пользователей открытым текстом |
@@ -639,6 +677,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Метод | Путь | Необходимое право | Описание |
 | --- | --- | --- | --- |
 | GET | `/api/filebrowser/logs` | `filebrowser:read` | Просмотр журнала работы модуля |
+| GET | `/api/filebrowser/logs/sources` | `filebrowser:read` | Список всех источников журналов модуля |
+| GET | `/api/filebrowser/logs/export` | `filebrowser:read` | Экспорт журналов модуля |
 | DELETE | `/api/filebrowser/logs` | `filebrowser:write` | Очистить журнал работы модуля |
 | GET | `/api/filebrowser/instances` | `filebrowser:read` | Список: Экземпляр File Browser |
 | POST | `/api/filebrowser/instances` | `filebrowser:write` | Добавить: Экземпляр File Browser |
@@ -667,6 +707,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Метод | Путь | Необходимое право | Описание |
 | --- | --- | --- | --- |
 | GET | `/api/storage/logs` | `storage:read` | Просмотр журнала работы модуля |
+| GET | `/api/storage/logs/sources` | `storage:read` | Список всех источников журналов модуля |
+| GET | `/api/storage/logs/export` | `storage:read` | Экспорт журналов модуля |
 | DELETE | `/api/storage/logs` | `storage:write` | Очистить журнал работы модуля |
 | GET | `/api/storage/mounts` | `storage:read` | Список: Монтирование хранилищ |
 | POST | `/api/storage/mounts` | `storage:write` | Добавить: Монтирование хранилищ |
@@ -691,6 +733,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Метод | Путь | Необходимое право | Описание |
 | --- | --- | --- | --- |
 | GET | `/api/notify/logs` | `notify:read` | Просмотр журнала работы модуля |
+| GET | `/api/notify/logs/sources` | `notify:read` | Список всех источников журналов модуля |
+| GET | `/api/notify/logs/export` | `notify:read` | Экспорт журналов модуля |
 | DELETE | `/api/notify/logs` | `notify:write` | Очистить журнал работы модуля |
 | GET | `/api/notify/channels` | `notify:read` | Список: Каналы уведомлений |
 | POST | `/api/notify/channels` | `notify:write` | Добавить: Каналы уведомлений |
@@ -724,6 +768,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Метод | Путь | Необходимое право | Описание |
 | --- | --- | --- | --- |
 | GET | `/api/perf/logs` | `perf:read` | Просмотр журнала работы модуля |
+| GET | `/api/perf/logs/sources` | `perf:read` | Список всех источников журналов модуля |
+| GET | `/api/perf/logs/export` | `perf:read` | Экспорт журналов модуля |
 | DELETE | `/api/perf/logs` | `perf:write` | Очистить журнал работы модуля |
 | GET | `/api/perf/rules` | `perf:read` | Список: Правила оповещений о производительности |
 | POST | `/api/perf/rules` | `perf:write` | Добавить: Правила оповещений о производительности |
@@ -746,6 +792,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Метод | Путь | Необходимое право | Описание |
 | --- | --- | --- | --- |
 | GET | `/api/nettools/logs` | `nettools:read` | Просмотр журнала работы модуля |
+| GET | `/api/nettools/logs/sources` | `nettools:read` | Список всех источников журналов модуля |
+| GET | `/api/nettools/logs/export` | `nettools:read` | Экспорт журналов модуля |
 | DELETE | `/api/nettools/logs` | `nettools:write` | Очистить журнал работы модуля |
 | POST | `/api/nettools/run` | `nettools:write` | Запустить инструмент диагностики, возвращает задачу (tool: ping / traceroute / tcp / dns / speed / scan) |
 | GET | `/api/nettools/tasks` | `nettools:read` | Последние задачи диагностики |
@@ -760,6 +808,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Метод | Путь | Необходимое право | Описание |
 | --- | --- | --- | --- |
 | GET | `/api/backup/logs` | `backup:read` | Просмотр журнала работы модуля |
+| GET | `/api/backup/logs/sources` | `backup:read` | Список всех источников журналов модуля |
+| GET | `/api/backup/logs/export` | `backup:read` | Экспорт журналов модуля |
 | DELETE | `/api/backup/logs` | `backup:write` | Очистить журнал работы модуля |
 | GET | `/api/backup/targets` | `backup:read` | Список: Назначение резервных копий |
 | POST | `/api/backup/targets` | `backup:write` | Добавить: Назначение резервных копий |
@@ -794,6 +844,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/session` | Любой действующий токен | Просмотр текущего удостоверения аутентификации |
 | GET | `/api/status` | `status:read` | Просмотр состояния системы и модулей |
 | GET | `/api/logs` | `logs:read` | Просмотр системного журнала |
+| GET | `/api/logs/sources` | `logs:read` | Список всех источников системных журналов |
+| GET | `/api/logs/export` | `logs:read` | Экспорт системных журналов |
 | GET | `/api/system/settings` | Только сессия входа | Чтение глобальных настроек |
 | PUT | `/api/system/settings` | Только сессия входа | Сохранить глобальные настройки |
 | GET | `/api/system/settings/secrets` | Только сессия входа | Показать Client Secret стороннего входа открытым текстом |

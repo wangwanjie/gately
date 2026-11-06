@@ -5707,7 +5707,7 @@
     },
     "/api/backup/logs": {
       "delete": {
-        "description": "必要な権限: `backup:write`。",
+        "description": "ディスク上のログファイル、ローテーション済みファイル、アーカイブ、ソース記録も削除します。\n\n必要な権限: `backup:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -5831,7 +5831,7 @@
             }
           },
           {
-            "description": "",
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
             "in": "query",
             "name": "site",
             "schema": {
@@ -5928,6 +5928,230 @@
           }
         ],
         "summary": "モジュールの実行ログを表示",
+        "tags": [
+          "設定バックアップ"
+        ],
+        "x-required-scope": "backup:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/backup/logs/export": {
+      "get": {
+        "description": "フィルター条件に一致するすべてのログを添付ファイルとしてストリーミングで返します。古い順で、ディスク上のローテーション済みファイルと圧縮アーカイブも含みます。`format` は `jsonl`（既定、1 行に 1 件の JSON）または `csv`（BOM 付き UTF-8。= + - @ で始まるセルには数式インジェクション防止のため先頭に単一引用符を付けます）。フィルターパラメーターはログ表示 API と同じです。読み取り専用の ID がエクスポートする内容は、表示時と同様に認証情報がマスクされます。`lang` でエクスポート内容の言語（`en` など）を指定します。省略時は Accept-Language に従います。\n\n必要な権限: `backup:read`。",
+        "parameters": [
+          {
+            "description": "エクスポート形式：jsonl（既定、1 行に 1 件の JSON）または csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "エクスポート内容の言語（例: en）。省略時は Accept-Language に従います",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低レベル：debug、info、warn、error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ソースラベル（大文字小文字を区別しない完全一致）",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "キーワード：スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の - で除外",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "除外キーワード：スペース区切り、二重引用符でフレーズを指定。いずれかを含むと除外。q と同時に適用",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "クライアントアドレス：完全なアドレス、CIDR またはアドレスの一部。複数はカンマ区切り。先頭に ! または - を付けると除外",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名またはドメインの一部",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web サービスのリスナー key（完全一致）。同名のサイトや同名のリスナー（IPv4 と IPv6 を別々に待ち受ける場合など）を区別します",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ステータスコード（404、4xx、500-599 など、複数はカンマ区切り）",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、禁止された送信元のアクセスログを隠します。禁止により拒否されたリクエストと、現在も禁止中の送信元のすべてのリクエスト（禁止のきっかけになったものを含む）が対象です（返却結果にのみ影響し、ログは保存されます）",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、管理画面のログインセッションを持つリクエスト（管理者が Web サービスのサイト経由で管理画面にアクセスして生じたアクセスログ）を非表示にします",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "終了時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログをエクスポート",
+        "tags": [
+          "設定バックアップ"
+        ],
+        "x-required-scope": "backup:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/backup/logs/sources": {
+      "get": {
+        "description": "名前順に並べたソースラベルの配列を返します。ログに出現したソース（ディスク保存時は再起動後も保持）と、モジュール設定のソース（Web サービスのすべてのリスナーや IP リストなど）を含み、`source` での絞り込みに使用します。ソースはログと同様にリクエストの言語に翻訳されます。\n\n必要な権限: `backup:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログのすべてのソースを一覧表示",
         "tags": [
           "設定バックアップ"
         ],
@@ -7217,7 +7441,7 @@
     },
     "/api/cloudflared/logs": {
       "delete": {
-        "description": "必要な権限: `cloudflared:write`。",
+        "description": "ディスク上のログファイル、ローテーション済みファイル、アーカイブ、ソース記録も削除します。\n\n必要な権限: `cloudflared:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -7341,7 +7565,7 @@
             }
           },
           {
-            "description": "",
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
             "in": "query",
             "name": "site",
             "schema": {
@@ -7438,6 +7662,230 @@
           }
         ],
         "summary": "モジュールの実行ログを表示",
+        "tags": [
+          "Cloudflare トンネル"
+        ],
+        "x-required-scope": "cloudflared:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/cloudflared/logs/export": {
+      "get": {
+        "description": "フィルター条件に一致するすべてのログを添付ファイルとしてストリーミングで返します。古い順で、ディスク上のローテーション済みファイルと圧縮アーカイブも含みます。`format` は `jsonl`（既定、1 行に 1 件の JSON）または `csv`（BOM 付き UTF-8。= + - @ で始まるセルには数式インジェクション防止のため先頭に単一引用符を付けます）。フィルターパラメーターはログ表示 API と同じです。読み取り専用の ID がエクスポートする内容は、表示時と同様に認証情報がマスクされます。`lang` でエクスポート内容の言語（`en` など）を指定します。省略時は Accept-Language に従います。\n\n必要な権限: `cloudflared:read`。",
+        "parameters": [
+          {
+            "description": "エクスポート形式：jsonl（既定、1 行に 1 件の JSON）または csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "エクスポート内容の言語（例: en）。省略時は Accept-Language に従います",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低レベル：debug、info、warn、error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ソースラベル（大文字小文字を区別しない完全一致）",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "キーワード：スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の - で除外",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "除外キーワード：スペース区切り、二重引用符でフレーズを指定。いずれかを含むと除外。q と同時に適用",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "クライアントアドレス：完全なアドレス、CIDR またはアドレスの一部。複数はカンマ区切り。先頭に ! または - を付けると除外",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名またはドメインの一部",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web サービスのリスナー key（完全一致）。同名のサイトや同名のリスナー（IPv4 と IPv6 を別々に待ち受ける場合など）を区別します",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ステータスコード（404、4xx、500-599 など、複数はカンマ区切り）",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、禁止された送信元のアクセスログを隠します。禁止により拒否されたリクエストと、現在も禁止中の送信元のすべてのリクエスト（禁止のきっかけになったものを含む）が対象です（返却結果にのみ影響し、ログは保存されます）",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、管理画面のログインセッションを持つリクエスト（管理者が Web サービスのサイト経由で管理画面にアクセスして生じたアクセスログ）を非表示にします",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "終了時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログをエクスポート",
+        "tags": [
+          "Cloudflare トンネル"
+        ],
+        "x-required-scope": "cloudflared:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/cloudflared/logs/sources": {
+      "get": {
+        "description": "名前順に並べたソースラベルの配列を返します。ログに出現したソース（ディスク保存時は再起動後も保持）と、モジュール設定のソース（Web サービスのすべてのリスナーや IP リストなど）を含み、`source` での絞り込みに使用します。ソースはログと同様にリクエストの言語に翻訳されます。\n\n必要な権限: `cloudflared:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログのすべてのソースを一覧表示",
         "tags": [
           "Cloudflare トンネル"
         ],
@@ -8517,7 +8965,7 @@
     },
     "/api/cron/logs": {
       "delete": {
-        "description": "必要な権限: `cron:write`。",
+        "description": "ディスク上のログファイル、ローテーション済みファイル、アーカイブ、ソース記録も削除します。\n\n必要な権限: `cron:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -8641,7 +9089,7 @@
             }
           },
           {
-            "description": "",
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
             "in": "query",
             "name": "site",
             "schema": {
@@ -8738,6 +9186,230 @@
           }
         ],
         "summary": "モジュールの実行ログを表示",
+        "tags": [
+          "スケジュールタスク"
+        ],
+        "x-required-scope": "cron:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/cron/logs/export": {
+      "get": {
+        "description": "フィルター条件に一致するすべてのログを添付ファイルとしてストリーミングで返します。古い順で、ディスク上のローテーション済みファイルと圧縮アーカイブも含みます。`format` は `jsonl`（既定、1 行に 1 件の JSON）または `csv`（BOM 付き UTF-8。= + - @ で始まるセルには数式インジェクション防止のため先頭に単一引用符を付けます）。フィルターパラメーターはログ表示 API と同じです。読み取り専用の ID がエクスポートする内容は、表示時と同様に認証情報がマスクされます。`lang` でエクスポート内容の言語（`en` など）を指定します。省略時は Accept-Language に従います。\n\n必要な権限: `cron:read`。",
+        "parameters": [
+          {
+            "description": "エクスポート形式：jsonl（既定、1 行に 1 件の JSON）または csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "エクスポート内容の言語（例: en）。省略時は Accept-Language に従います",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低レベル：debug、info、warn、error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ソースラベル（大文字小文字を区別しない完全一致）",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "キーワード：スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の - で除外",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "除外キーワード：スペース区切り、二重引用符でフレーズを指定。いずれかを含むと除外。q と同時に適用",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "クライアントアドレス：完全なアドレス、CIDR またはアドレスの一部。複数はカンマ区切り。先頭に ! または - を付けると除外",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名またはドメインの一部",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web サービスのリスナー key（完全一致）。同名のサイトや同名のリスナー（IPv4 と IPv6 を別々に待ち受ける場合など）を区別します",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ステータスコード（404、4xx、500-599 など、複数はカンマ区切り）",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、禁止された送信元のアクセスログを隠します。禁止により拒否されたリクエストと、現在も禁止中の送信元のすべてのリクエスト（禁止のきっかけになったものを含む）が対象です（返却結果にのみ影響し、ログは保存されます）",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、管理画面のログインセッションを持つリクエスト（管理者が Web サービスのサイト経由で管理画面にアクセスして生じたアクセスログ）を非表示にします",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "終了時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログをエクスポート",
+        "tags": [
+          "スケジュールタスク"
+        ],
+        "x-required-scope": "cron:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/cron/logs/sources": {
+      "get": {
+        "description": "名前順に並べたソースラベルの配列を返します。ログに出現したソース（ディスク保存時は再起動後も保持）と、モジュール設定のソース（Web サービスのすべてのリスナーや IP リストなど）を含み、`source` での絞り込みに使用します。ソースはログと同様にリクエストの言語に翻訳されます。\n\n必要な権限: `cron:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログのすべてのソースを一覧表示",
         "tags": [
           "スケジュールタスク"
         ],
@@ -9628,7 +10300,7 @@
     },
     "/api/ddns/logs": {
       "delete": {
-        "description": "必要な権限: `ddns:write`。",
+        "description": "ディスク上のログファイル、ローテーション済みファイル、アーカイブ、ソース記録も削除します。\n\n必要な権限: `ddns:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -9752,7 +10424,7 @@
             }
           },
           {
-            "description": "",
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
             "in": "query",
             "name": "site",
             "schema": {
@@ -9849,6 +10521,230 @@
           }
         ],
         "summary": "モジュールの実行ログを表示",
+        "tags": [
+          "ダイナミック DNS"
+        ],
+        "x-required-scope": "ddns:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ddns/logs/export": {
+      "get": {
+        "description": "フィルター条件に一致するすべてのログを添付ファイルとしてストリーミングで返します。古い順で、ディスク上のローテーション済みファイルと圧縮アーカイブも含みます。`format` は `jsonl`（既定、1 行に 1 件の JSON）または `csv`（BOM 付き UTF-8。= + - @ で始まるセルには数式インジェクション防止のため先頭に単一引用符を付けます）。フィルターパラメーターはログ表示 API と同じです。読み取り専用の ID がエクスポートする内容は、表示時と同様に認証情報がマスクされます。`lang` でエクスポート内容の言語（`en` など）を指定します。省略時は Accept-Language に従います。\n\n必要な権限: `ddns:read`。",
+        "parameters": [
+          {
+            "description": "エクスポート形式：jsonl（既定、1 行に 1 件の JSON）または csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "エクスポート内容の言語（例: en）。省略時は Accept-Language に従います",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低レベル：debug、info、warn、error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ソースラベル（大文字小文字を区別しない完全一致）",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "キーワード：スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の - で除外",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "除外キーワード：スペース区切り、二重引用符でフレーズを指定。いずれかを含むと除外。q と同時に適用",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "クライアントアドレス：完全なアドレス、CIDR またはアドレスの一部。複数はカンマ区切り。先頭に ! または - を付けると除外",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名またはドメインの一部",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web サービスのリスナー key（完全一致）。同名のサイトや同名のリスナー（IPv4 と IPv6 を別々に待ち受ける場合など）を区別します",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ステータスコード（404、4xx、500-599 など、複数はカンマ区切り）",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、禁止された送信元のアクセスログを隠します。禁止により拒否されたリクエストと、現在も禁止中の送信元のすべてのリクエスト（禁止のきっかけになったものを含む）が対象です（返却結果にのみ影響し、ログは保存されます）",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、管理画面のログインセッションを持つリクエスト（管理者が Web サービスのサイト経由で管理画面にアクセスして生じたアクセスログ）を非表示にします",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "終了時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログをエクスポート",
+        "tags": [
+          "ダイナミック DNS"
+        ],
+        "x-required-scope": "ddns:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ddns/logs/sources": {
+      "get": {
+        "description": "名前順に並べたソースラベルの配列を返します。ログに出現したソース（ディスク保存時は再起動後も保持）と、モジュール設定のソース（Web サービスのすべてのリスナーや IP リストなど）を含み、`source` での絞り込みに使用します。ソースはログと同様にリクエストの言語に翻訳されます。\n\n必要な権限: `ddns:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログのすべてのソースを一覧表示",
         "tags": [
           "ダイナミック DNS"
         ],
@@ -13936,7 +14832,7 @@
     },
     "/api/docker/logs": {
       "delete": {
-        "description": "必要な権限: `docker:write`。",
+        "description": "ディスク上のログファイル、ローテーション済みファイル、アーカイブ、ソース記録も削除します。\n\n必要な権限: `docker:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -14060,7 +14956,7 @@
             }
           },
           {
-            "description": "",
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
             "in": "query",
             "name": "site",
             "schema": {
@@ -14157,6 +15053,230 @@
           }
         ],
         "summary": "モジュールの実行ログを表示",
+        "tags": [
+          "Docker 管理"
+        ],
+        "x-required-scope": "docker:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/docker/logs/export": {
+      "get": {
+        "description": "フィルター条件に一致するすべてのログを添付ファイルとしてストリーミングで返します。古い順で、ディスク上のローテーション済みファイルと圧縮アーカイブも含みます。`format` は `jsonl`（既定、1 行に 1 件の JSON）または `csv`（BOM 付き UTF-8。= + - @ で始まるセルには数式インジェクション防止のため先頭に単一引用符を付けます）。フィルターパラメーターはログ表示 API と同じです。読み取り専用の ID がエクスポートする内容は、表示時と同様に認証情報がマスクされます。`lang` でエクスポート内容の言語（`en` など）を指定します。省略時は Accept-Language に従います。\n\n必要な権限: `docker:read`。",
+        "parameters": [
+          {
+            "description": "エクスポート形式：jsonl（既定、1 行に 1 件の JSON）または csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "エクスポート内容の言語（例: en）。省略時は Accept-Language に従います",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低レベル：debug、info、warn、error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ソースラベル（大文字小文字を区別しない完全一致）",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "キーワード：スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の - で除外",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "除外キーワード：スペース区切り、二重引用符でフレーズを指定。いずれかを含むと除外。q と同時に適用",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "クライアントアドレス：完全なアドレス、CIDR またはアドレスの一部。複数はカンマ区切り。先頭に ! または - を付けると除外",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名またはドメインの一部",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web サービスのリスナー key（完全一致）。同名のサイトや同名のリスナー（IPv4 と IPv6 を別々に待ち受ける場合など）を区別します",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ステータスコード（404、4xx、500-599 など、複数はカンマ区切り）",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、禁止された送信元のアクセスログを隠します。禁止により拒否されたリクエストと、現在も禁止中の送信元のすべてのリクエスト（禁止のきっかけになったものを含む）が対象です（返却結果にのみ影響し、ログは保存されます）",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、管理画面のログインセッションを持つリクエスト（管理者が Web サービスのサイト経由で管理画面にアクセスして生じたアクセスログ）を非表示にします",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "終了時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログをエクスポート",
+        "tags": [
+          "Docker 管理"
+        ],
+        "x-required-scope": "docker:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/docker/logs/sources": {
+      "get": {
+        "description": "名前順に並べたソースラベルの配列を返します。ログに出現したソース（ディスク保存時は再起動後も保持）と、モジュール設定のソース（Web サービスのすべてのリスナーや IP リストなど）を含み、`source` での絞り込みに使用します。ソースはログと同様にリクエストの言語に翻訳されます。\n\n必要な権限: `docker:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログのすべてのソースを一覧表示",
         "tags": [
           "Docker 管理"
         ],
@@ -16331,7 +17451,7 @@
     },
     "/api/filebrowser/logs": {
       "delete": {
-        "description": "必要な権限: `filebrowser:write`。",
+        "description": "ディスク上のログファイル、ローテーション済みファイル、アーカイブ、ソース記録も削除します。\n\n必要な権限: `filebrowser:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -16455,7 +17575,7 @@
             }
           },
           {
-            "description": "",
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
             "in": "query",
             "name": "site",
             "schema": {
@@ -16552,6 +17672,230 @@
           }
         ],
         "summary": "モジュールの実行ログを表示",
+        "tags": [
+          "File Browser"
+        ],
+        "x-required-scope": "filebrowser:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/filebrowser/logs/export": {
+      "get": {
+        "description": "フィルター条件に一致するすべてのログを添付ファイルとしてストリーミングで返します。古い順で、ディスク上のローテーション済みファイルと圧縮アーカイブも含みます。`format` は `jsonl`（既定、1 行に 1 件の JSON）または `csv`（BOM 付き UTF-8。= + - @ で始まるセルには数式インジェクション防止のため先頭に単一引用符を付けます）。フィルターパラメーターはログ表示 API と同じです。読み取り専用の ID がエクスポートする内容は、表示時と同様に認証情報がマスクされます。`lang` でエクスポート内容の言語（`en` など）を指定します。省略時は Accept-Language に従います。\n\n必要な権限: `filebrowser:read`。",
+        "parameters": [
+          {
+            "description": "エクスポート形式：jsonl（既定、1 行に 1 件の JSON）または csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "エクスポート内容の言語（例: en）。省略時は Accept-Language に従います",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低レベル：debug、info、warn、error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ソースラベル（大文字小文字を区別しない完全一致）",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "キーワード：スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の - で除外",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "除外キーワード：スペース区切り、二重引用符でフレーズを指定。いずれかを含むと除外。q と同時に適用",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "クライアントアドレス：完全なアドレス、CIDR またはアドレスの一部。複数はカンマ区切り。先頭に ! または - を付けると除外",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名またはドメインの一部",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web サービスのリスナー key（完全一致）。同名のサイトや同名のリスナー（IPv4 と IPv6 を別々に待ち受ける場合など）を区別します",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ステータスコード（404、4xx、500-599 など、複数はカンマ区切り）",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、禁止された送信元のアクセスログを隠します。禁止により拒否されたリクエストと、現在も禁止中の送信元のすべてのリクエスト（禁止のきっかけになったものを含む）が対象です（返却結果にのみ影響し、ログは保存されます）",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、管理画面のログインセッションを持つリクエスト（管理者が Web サービスのサイト経由で管理画面にアクセスして生じたアクセスログ）を非表示にします",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "終了時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログをエクスポート",
+        "tags": [
+          "File Browser"
+        ],
+        "x-required-scope": "filebrowser:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/filebrowser/logs/sources": {
+      "get": {
+        "description": "名前順に並べたソースラベルの配列を返します。ログに出現したソース（ディスク保存時は再起動後も保持）と、モジュール設定のソース（Web サービスのすべてのリスナーや IP リストなど）を含み、`source` での絞り込みに使用します。ソースはログと同様にリクエストの言語に翻訳されます。\n\n必要な権限: `filebrowser:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログのすべてのソースを一覧表示",
         "tags": [
           "File Browser"
         ],
@@ -18069,7 +19413,7 @@
     },
     "/api/frp/logs": {
       "delete": {
-        "description": "必要な権限: `frp:write`。",
+        "description": "ディスク上のログファイル、ローテーション済みファイル、アーカイブ、ソース記録も削除します。\n\n必要な権限: `frp:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -18193,7 +19537,7 @@
             }
           },
           {
-            "description": "",
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
             "in": "query",
             "name": "site",
             "schema": {
@@ -18290,6 +19634,230 @@
           }
         ],
         "summary": "モジュールの実行ログを表示",
+        "tags": [
+          "frp イントラネット穿透"
+        ],
+        "x-required-scope": "frp:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/frp/logs/export": {
+      "get": {
+        "description": "フィルター条件に一致するすべてのログを添付ファイルとしてストリーミングで返します。古い順で、ディスク上のローテーション済みファイルと圧縮アーカイブも含みます。`format` は `jsonl`（既定、1 行に 1 件の JSON）または `csv`（BOM 付き UTF-8。= + - @ で始まるセルには数式インジェクション防止のため先頭に単一引用符を付けます）。フィルターパラメーターはログ表示 API と同じです。読み取り専用の ID がエクスポートする内容は、表示時と同様に認証情報がマスクされます。`lang` でエクスポート内容の言語（`en` など）を指定します。省略時は Accept-Language に従います。\n\n必要な権限: `frp:read`。",
+        "parameters": [
+          {
+            "description": "エクスポート形式：jsonl（既定、1 行に 1 件の JSON）または csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "エクスポート内容の言語（例: en）。省略時は Accept-Language に従います",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低レベル：debug、info、warn、error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ソースラベル（大文字小文字を区別しない完全一致）",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "キーワード：スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の - で除外",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "除外キーワード：スペース区切り、二重引用符でフレーズを指定。いずれかを含むと除外。q と同時に適用",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "クライアントアドレス：完全なアドレス、CIDR またはアドレスの一部。複数はカンマ区切り。先頭に ! または - を付けると除外",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名またはドメインの一部",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web サービスのリスナー key（完全一致）。同名のサイトや同名のリスナー（IPv4 と IPv6 を別々に待ち受ける場合など）を区別します",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ステータスコード（404、4xx、500-599 など、複数はカンマ区切り）",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、禁止された送信元のアクセスログを隠します。禁止により拒否されたリクエストと、現在も禁止中の送信元のすべてのリクエスト（禁止のきっかけになったものを含む）が対象です（返却結果にのみ影響し、ログは保存されます）",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、管理画面のログインセッションを持つリクエスト（管理者が Web サービスのサイト経由で管理画面にアクセスして生じたアクセスログ）を非表示にします",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "終了時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログをエクスポート",
+        "tags": [
+          "frp イントラネット穿透"
+        ],
+        "x-required-scope": "frp:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/frp/logs/sources": {
+      "get": {
+        "description": "名前順に並べたソースラベルの配列を返します。ログに出現したソース（ディスク保存時は再起動後も保持）と、モジュール設定のソース（Web サービスのすべてのリスナーや IP リストなど）を含み、`source` での絞り込みに使用します。ソースはログと同様にリクエストの言語に翻訳されます。\n\n必要な権限: `frp:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログのすべてのソースを一覧表示",
         "tags": [
           "frp イントラネット穿透"
         ],
@@ -19967,7 +21535,7 @@
     },
     "/api/ftp/logs": {
       "delete": {
-        "description": "必要な権限: `ftp:write`。",
+        "description": "ディスク上のログファイル、ローテーション済みファイル、アーカイブ、ソース記録も削除します。\n\n必要な権限: `ftp:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -20091,7 +21659,7 @@
             }
           },
           {
-            "description": "",
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
             "in": "query",
             "name": "site",
             "schema": {
@@ -20188,6 +21756,230 @@
           }
         ],
         "summary": "モジュールの実行ログを表示",
+        "tags": [
+          "FTP サービス"
+        ],
+        "x-required-scope": "ftp:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ftp/logs/export": {
+      "get": {
+        "description": "フィルター条件に一致するすべてのログを添付ファイルとしてストリーミングで返します。古い順で、ディスク上のローテーション済みファイルと圧縮アーカイブも含みます。`format` は `jsonl`（既定、1 行に 1 件の JSON）または `csv`（BOM 付き UTF-8。= + - @ で始まるセルには数式インジェクション防止のため先頭に単一引用符を付けます）。フィルターパラメーターはログ表示 API と同じです。読み取り専用の ID がエクスポートする内容は、表示時と同様に認証情報がマスクされます。`lang` でエクスポート内容の言語（`en` など）を指定します。省略時は Accept-Language に従います。\n\n必要な権限: `ftp:read`。",
+        "parameters": [
+          {
+            "description": "エクスポート形式：jsonl（既定、1 行に 1 件の JSON）または csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "エクスポート内容の言語（例: en）。省略時は Accept-Language に従います",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低レベル：debug、info、warn、error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ソースラベル（大文字小文字を区別しない完全一致）",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "キーワード：スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の - で除外",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "除外キーワード：スペース区切り、二重引用符でフレーズを指定。いずれかを含むと除外。q と同時に適用",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "クライアントアドレス：完全なアドレス、CIDR またはアドレスの一部。複数はカンマ区切り。先頭に ! または - を付けると除外",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名またはドメインの一部",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web サービスのリスナー key（完全一致）。同名のサイトや同名のリスナー（IPv4 と IPv6 を別々に待ち受ける場合など）を区別します",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ステータスコード（404、4xx、500-599 など、複数はカンマ区切り）",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、禁止された送信元のアクセスログを隠します。禁止により拒否されたリクエストと、現在も禁止中の送信元のすべてのリクエスト（禁止のきっかけになったものを含む）が対象です（返却結果にのみ影響し、ログは保存されます）",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、管理画面のログインセッションを持つリクエスト（管理者が Web サービスのサイト経由で管理画面にアクセスして生じたアクセスログ）を非表示にします",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "終了時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログをエクスポート",
+        "tags": [
+          "FTP サービス"
+        ],
+        "x-required-scope": "ftp:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ftp/logs/sources": {
+      "get": {
+        "description": "名前順に並べたソースラベルの配列を返します。ログに出現したソース（ディスク保存時は再起動後も保持）と、モジュール設定のソース（Web サービスのすべてのリスナーや IP リストなど）を含み、`source` での絞り込みに使用します。ソースはログと同様にリクエストの言語に翻訳されます。\n\n必要な権限: `ftp:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログのすべてのソースを一覧表示",
         "tags": [
           "FTP サービス"
         ],
@@ -21430,7 +23222,7 @@
     },
     "/api/guard/logs": {
       "delete": {
-        "description": "必要な権限: `guard:write`。",
+        "description": "ディスク上のログファイル、ローテーション済みファイル、アーカイブ、ソース記録も削除します。\n\n必要な権限: `guard:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -21554,7 +23346,7 @@
             }
           },
           {
-            "description": "",
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
             "in": "query",
             "name": "site",
             "schema": {
@@ -21651,6 +23443,230 @@
           }
         ],
         "summary": "モジュールの実行ログを表示",
+        "tags": [
+          "侵入防御"
+        ],
+        "x-required-scope": "guard:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/guard/logs/export": {
+      "get": {
+        "description": "フィルター条件に一致するすべてのログを添付ファイルとしてストリーミングで返します。古い順で、ディスク上のローテーション済みファイルと圧縮アーカイブも含みます。`format` は `jsonl`（既定、1 行に 1 件の JSON）または `csv`（BOM 付き UTF-8。= + - @ で始まるセルには数式インジェクション防止のため先頭に単一引用符を付けます）。フィルターパラメーターはログ表示 API と同じです。読み取り専用の ID がエクスポートする内容は、表示時と同様に認証情報がマスクされます。`lang` でエクスポート内容の言語（`en` など）を指定します。省略時は Accept-Language に従います。\n\n必要な権限: `guard:read`。",
+        "parameters": [
+          {
+            "description": "エクスポート形式：jsonl（既定、1 行に 1 件の JSON）または csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "エクスポート内容の言語（例: en）。省略時は Accept-Language に従います",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低レベル：debug、info、warn、error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ソースラベル（大文字小文字を区別しない完全一致）",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "キーワード：スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の - で除外",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "除外キーワード：スペース区切り、二重引用符でフレーズを指定。いずれかを含むと除外。q と同時に適用",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "クライアントアドレス：完全なアドレス、CIDR またはアドレスの一部。複数はカンマ区切り。先頭に ! または - を付けると除外",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名またはドメインの一部",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web サービスのリスナー key（完全一致）。同名のサイトや同名のリスナー（IPv4 と IPv6 を別々に待ち受ける場合など）を区別します",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ステータスコード（404、4xx、500-599 など、複数はカンマ区切り）",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、禁止された送信元のアクセスログを隠します。禁止により拒否されたリクエストと、現在も禁止中の送信元のすべてのリクエスト（禁止のきっかけになったものを含む）が対象です（返却結果にのみ影響し、ログは保存されます）",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、管理画面のログインセッションを持つリクエスト（管理者が Web サービスのサイト経由で管理画面にアクセスして生じたアクセスログ）を非表示にします",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "終了時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログをエクスポート",
+        "tags": [
+          "侵入防御"
+        ],
+        "x-required-scope": "guard:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/guard/logs/sources": {
+      "get": {
+        "description": "名前順に並べたソースラベルの配列を返します。ログに出現したソース（ディスク保存時は再起動後も保持）と、モジュール設定のソース（Web サービスのすべてのリスナーや IP リストなど）を含み、`source` での絞り込みに使用します。ソースはログと同様にリクエストの言語に翻訳されます。\n\n必要な権限: `guard:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログのすべてのソースを一覧表示",
         "tags": [
           "侵入防御"
         ],
@@ -22202,7 +24218,7 @@
             }
           },
           {
-            "description": "",
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
             "in": "query",
             "name": "site",
             "schema": {
@@ -22299,6 +24315,230 @@
           }
         ],
         "summary": "システムログを表示",
+        "tags": [
+          "システム"
+        ],
+        "x-required-scope": "logs:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/logs/export": {
+      "get": {
+        "description": "フィルター条件に一致するすべてのシステムログを添付ファイルとしてストリーミングで返します。パラメーターはモジュールログのエクスポートと同じです。\n\n必要な権限: `logs:read`。",
+        "parameters": [
+          {
+            "description": "エクスポート形式：jsonl（既定、1 行に 1 件の JSON）または csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "エクスポート内容の言語（例: en）。省略時は Accept-Language に従います",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低レベル：debug、info、warn、error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ソースラベル（大文字小文字を区別しない完全一致）",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "キーワード：スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の - で除外",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "除外キーワード：スペース区切り、二重引用符でフレーズを指定。いずれかを含むと除外。q と同時に適用",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "クライアントアドレス：完全なアドレス、CIDR またはアドレスの一部。複数はカンマ区切り。先頭に ! または - を付けると除外",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名またはドメインの一部",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web サービスのリスナー key（完全一致）。同名のサイトや同名のリスナー（IPv4 と IPv6 を別々に待ち受ける場合など）を区別します",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ステータスコード（404、4xx、500-599 など、複数はカンマ区切り）",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、禁止された送信元のアクセスログを隠します。禁止により拒否されたリクエストと、現在も禁止中の送信元のすべてのリクエスト（禁止のきっかけになったものを含む）が対象です（返却結果にのみ影響し、ログは保存されます）",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、管理画面のログインセッションを持つリクエスト（管理者が Web サービスのサイト経由で管理画面にアクセスして生じたアクセスログ）を非表示にします",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "終了時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "システムログをエクスポート",
+        "tags": [
+          "システム"
+        ],
+        "x-required-scope": "logs:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/logs/sources": {
+      "get": {
+        "description": "名前順に並べたソースラベルの配列を返します。ログをディスクに保存している場合は再起動後も保持されます。\n\n必要な権限: `logs:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "システムログのすべてのソースを一覧表示",
         "tags": [
           "システム"
         ],
@@ -23599,7 +25839,7 @@
     },
     "/api/netbird/logs": {
       "delete": {
-        "description": "必要な権限: `netbird:write`。",
+        "description": "ディスク上のログファイル、ローテーション済みファイル、アーカイブ、ソース記録も削除します。\n\n必要な権限: `netbird:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -23723,7 +25963,7 @@
             }
           },
           {
-            "description": "",
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
             "in": "query",
             "name": "site",
             "schema": {
@@ -23820,6 +26060,230 @@
           }
         ],
         "summary": "モジュールの実行ログを表示",
+        "tags": [
+          "NetBird ネットワーク"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/logs/export": {
+      "get": {
+        "description": "フィルター条件に一致するすべてのログを添付ファイルとしてストリーミングで返します。古い順で、ディスク上のローテーション済みファイルと圧縮アーカイブも含みます。`format` は `jsonl`（既定、1 行に 1 件の JSON）または `csv`（BOM 付き UTF-8。= + - @ で始まるセルには数式インジェクション防止のため先頭に単一引用符を付けます）。フィルターパラメーターはログ表示 API と同じです。読み取り専用の ID がエクスポートする内容は、表示時と同様に認証情報がマスクされます。`lang` でエクスポート内容の言語（`en` など）を指定します。省略時は Accept-Language に従います。\n\n必要な権限: `netbird:read`。",
+        "parameters": [
+          {
+            "description": "エクスポート形式：jsonl（既定、1 行に 1 件の JSON）または csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "エクスポート内容の言語（例: en）。省略時は Accept-Language に従います",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低レベル：debug、info、warn、error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ソースラベル（大文字小文字を区別しない完全一致）",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "キーワード：スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の - で除外",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "除外キーワード：スペース区切り、二重引用符でフレーズを指定。いずれかを含むと除外。q と同時に適用",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "クライアントアドレス：完全なアドレス、CIDR またはアドレスの一部。複数はカンマ区切り。先頭に ! または - を付けると除外",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名またはドメインの一部",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web サービスのリスナー key（完全一致）。同名のサイトや同名のリスナー（IPv4 と IPv6 を別々に待ち受ける場合など）を区別します",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ステータスコード（404、4xx、500-599 など、複数はカンマ区切り）",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、禁止された送信元のアクセスログを隠します。禁止により拒否されたリクエストと、現在も禁止中の送信元のすべてのリクエスト（禁止のきっかけになったものを含む）が対象です（返却結果にのみ影響し、ログは保存されます）",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、管理画面のログインセッションを持つリクエスト（管理者が Web サービスのサイト経由で管理画面にアクセスして生じたアクセスログ）を非表示にします",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "終了時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログをエクスポート",
+        "tags": [
+          "NetBird ネットワーク"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/logs/sources": {
+      "get": {
+        "description": "名前順に並べたソースラベルの配列を返します。ログに出現したソース（ディスク保存時は再起動後も保持）と、モジュール設定のソース（Web サービスのすべてのリスナーや IP リストなど）を含み、`source` での絞り込みに使用します。ソースはログと同様にリクエストの言語に翻訳されます。\n\n必要な権限: `netbird:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログのすべてのソースを一覧表示",
         "tags": [
           "NetBird ネットワーク"
         ],
@@ -24057,7 +26521,7 @@
     },
     "/api/nettools/logs": {
       "delete": {
-        "description": "必要な権限: `nettools:write`。",
+        "description": "ディスク上のログファイル、ローテーション済みファイル、アーカイブ、ソース記録も削除します。\n\n必要な権限: `nettools:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -24181,7 +26645,7 @@
             }
           },
           {
-            "description": "",
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
             "in": "query",
             "name": "site",
             "schema": {
@@ -24278,6 +26742,230 @@
           }
         ],
         "summary": "モジュールの実行ログを表示",
+        "tags": [
+          "ネットワーク診断"
+        ],
+        "x-required-scope": "nettools:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/nettools/logs/export": {
+      "get": {
+        "description": "フィルター条件に一致するすべてのログを添付ファイルとしてストリーミングで返します。古い順で、ディスク上のローテーション済みファイルと圧縮アーカイブも含みます。`format` は `jsonl`（既定、1 行に 1 件の JSON）または `csv`（BOM 付き UTF-8。= + - @ で始まるセルには数式インジェクション防止のため先頭に単一引用符を付けます）。フィルターパラメーターはログ表示 API と同じです。読み取り専用の ID がエクスポートする内容は、表示時と同様に認証情報がマスクされます。`lang` でエクスポート内容の言語（`en` など）を指定します。省略時は Accept-Language に従います。\n\n必要な権限: `nettools:read`。",
+        "parameters": [
+          {
+            "description": "エクスポート形式：jsonl（既定、1 行に 1 件の JSON）または csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "エクスポート内容の言語（例: en）。省略時は Accept-Language に従います",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低レベル：debug、info、warn、error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ソースラベル（大文字小文字を区別しない完全一致）",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "キーワード：スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の - で除外",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "除外キーワード：スペース区切り、二重引用符でフレーズを指定。いずれかを含むと除外。q と同時に適用",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "クライアントアドレス：完全なアドレス、CIDR またはアドレスの一部。複数はカンマ区切り。先頭に ! または - を付けると除外",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名またはドメインの一部",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web サービスのリスナー key（完全一致）。同名のサイトや同名のリスナー（IPv4 と IPv6 を別々に待ち受ける場合など）を区別します",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ステータスコード（404、4xx、500-599 など、複数はカンマ区切り）",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、禁止された送信元のアクセスログを隠します。禁止により拒否されたリクエストと、現在も禁止中の送信元のすべてのリクエスト（禁止のきっかけになったものを含む）が対象です（返却結果にのみ影響し、ログは保存されます）",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、管理画面のログインセッションを持つリクエスト（管理者が Web サービスのサイト経由で管理画面にアクセスして生じたアクセスログ）を非表示にします",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "終了時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログをエクスポート",
+        "tags": [
+          "ネットワーク診断"
+        ],
+        "x-required-scope": "nettools:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/nettools/logs/sources": {
+      "get": {
+        "description": "名前順に並べたソースラベルの配列を返します。ログに出現したソース（ディスク保存時は再起動後も保持）と、モジュール設定のソース（Web サービスのすべてのリスナーや IP リストなど）を含み、`source` での絞り込みに使用します。ソースはログと同様にリクエストの言語に翻訳されます。\n\n必要な権限: `nettools:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログのすべてのソースを一覧表示",
         "tags": [
           "ネットワーク診断"
         ],
@@ -25629,7 +28317,7 @@
     },
     "/api/notify/logs": {
       "delete": {
-        "description": "必要な権限: `notify:write`。",
+        "description": "ディスク上のログファイル、ローテーション済みファイル、アーカイブ、ソース記録も削除します。\n\n必要な権限: `notify:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -25753,7 +28441,7 @@
             }
           },
           {
-            "description": "",
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
             "in": "query",
             "name": "site",
             "schema": {
@@ -25850,6 +28538,230 @@
           }
         ],
         "summary": "モジュールの実行ログを表示",
+        "tags": [
+          "通知センター"
+        ],
+        "x-required-scope": "notify:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/notify/logs/export": {
+      "get": {
+        "description": "フィルター条件に一致するすべてのログを添付ファイルとしてストリーミングで返します。古い順で、ディスク上のローテーション済みファイルと圧縮アーカイブも含みます。`format` は `jsonl`（既定、1 行に 1 件の JSON）または `csv`（BOM 付き UTF-8。= + - @ で始まるセルには数式インジェクション防止のため先頭に単一引用符を付けます）。フィルターパラメーターはログ表示 API と同じです。読み取り専用の ID がエクスポートする内容は、表示時と同様に認証情報がマスクされます。`lang` でエクスポート内容の言語（`en` など）を指定します。省略時は Accept-Language に従います。\n\n必要な権限: `notify:read`。",
+        "parameters": [
+          {
+            "description": "エクスポート形式：jsonl（既定、1 行に 1 件の JSON）または csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "エクスポート内容の言語（例: en）。省略時は Accept-Language に従います",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低レベル：debug、info、warn、error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ソースラベル（大文字小文字を区別しない完全一致）",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "キーワード：スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の - で除外",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "除外キーワード：スペース区切り、二重引用符でフレーズを指定。いずれかを含むと除外。q と同時に適用",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "クライアントアドレス：完全なアドレス、CIDR またはアドレスの一部。複数はカンマ区切り。先頭に ! または - を付けると除外",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名またはドメインの一部",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web サービスのリスナー key（完全一致）。同名のサイトや同名のリスナー（IPv4 と IPv6 を別々に待ち受ける場合など）を区別します",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ステータスコード（404、4xx、500-599 など、複数はカンマ区切り）",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、禁止された送信元のアクセスログを隠します。禁止により拒否されたリクエストと、現在も禁止中の送信元のすべてのリクエスト（禁止のきっかけになったものを含む）が対象です（返却結果にのみ影響し、ログは保存されます）",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、管理画面のログインセッションを持つリクエスト（管理者が Web サービスのサイト経由で管理画面にアクセスして生じたアクセスログ）を非表示にします",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "終了時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログをエクスポート",
+        "tags": [
+          "通知センター"
+        ],
+        "x-required-scope": "notify:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/notify/logs/sources": {
+      "get": {
+        "description": "名前順に並べたソースラベルの配列を返します。ログに出現したソース（ディスク保存時は再起動後も保持）と、モジュール設定のソース（Web サービスのすべてのリスナーや IP リストなど）を含み、`source` での絞り込みに使用します。ソースはログと同様にリクエストの言語に翻訳されます。\n\n必要な権限: `notify:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログのすべてのソースを一覧表示",
         "tags": [
           "通知センター"
         ],
@@ -26733,7 +29645,7 @@
     },
     "/api/perf/logs": {
       "delete": {
-        "description": "必要な権限: `perf:write`。",
+        "description": "ディスク上のログファイル、ローテーション済みファイル、アーカイブ、ソース記録も削除します。\n\n必要な権限: `perf:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -26857,7 +29769,7 @@
             }
           },
           {
-            "description": "",
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
             "in": "query",
             "name": "site",
             "schema": {
@@ -26954,6 +29866,230 @@
           }
         ],
         "summary": "モジュールの実行ログを表示",
+        "tags": [
+          "パフォーマンス監視"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/logs/export": {
+      "get": {
+        "description": "フィルター条件に一致するすべてのログを添付ファイルとしてストリーミングで返します。古い順で、ディスク上のローテーション済みファイルと圧縮アーカイブも含みます。`format` は `jsonl`（既定、1 行に 1 件の JSON）または `csv`（BOM 付き UTF-8。= + - @ で始まるセルには数式インジェクション防止のため先頭に単一引用符を付けます）。フィルターパラメーターはログ表示 API と同じです。読み取り専用の ID がエクスポートする内容は、表示時と同様に認証情報がマスクされます。`lang` でエクスポート内容の言語（`en` など）を指定します。省略時は Accept-Language に従います。\n\n必要な権限: `perf:read`。",
+        "parameters": [
+          {
+            "description": "エクスポート形式：jsonl（既定、1 行に 1 件の JSON）または csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "エクスポート内容の言語（例: en）。省略時は Accept-Language に従います",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低レベル：debug、info、warn、error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ソースラベル（大文字小文字を区別しない完全一致）",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "キーワード：スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の - で除外",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "除外キーワード：スペース区切り、二重引用符でフレーズを指定。いずれかを含むと除外。q と同時に適用",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "クライアントアドレス：完全なアドレス、CIDR またはアドレスの一部。複数はカンマ区切り。先頭に ! または - を付けると除外",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名またはドメインの一部",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web サービスのリスナー key（完全一致）。同名のサイトや同名のリスナー（IPv4 と IPv6 を別々に待ち受ける場合など）を区別します",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ステータスコード（404、4xx、500-599 など、複数はカンマ区切り）",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、禁止された送信元のアクセスログを隠します。禁止により拒否されたリクエストと、現在も禁止中の送信元のすべてのリクエスト（禁止のきっかけになったものを含む）が対象です（返却結果にのみ影響し、ログは保存されます）",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、管理画面のログインセッションを持つリクエスト（管理者が Web サービスのサイト経由で管理画面にアクセスして生じたアクセスログ）を非表示にします",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "終了時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログをエクスポート",
+        "tags": [
+          "パフォーマンス監視"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/logs/sources": {
+      "get": {
+        "description": "名前順に並べたソースラベルの配列を返します。ログに出現したソース（ディスク保存時は再起動後も保持）と、モジュール設定のソース（Web サービスのすべてのリスナーや IP リストなど）を含み、`source` での絞り込みに使用します。ソースはログと同様にリクエストの言語に翻訳されます。\n\n必要な権限: `perf:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログのすべてのソースを一覧表示",
         "tags": [
           "パフォーマンス監視"
         ],
@@ -27853,7 +30989,7 @@
     },
     "/api/portforward/logs": {
       "delete": {
-        "description": "必要な権限: `portforward:write`。",
+        "description": "ディスク上のログファイル、ローテーション済みファイル、アーカイブ、ソース記録も削除します。\n\n必要な権限: `portforward:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -27977,7 +31113,7 @@
             }
           },
           {
-            "description": "",
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
             "in": "query",
             "name": "site",
             "schema": {
@@ -28074,6 +31210,230 @@
           }
         ],
         "summary": "モジュールの実行ログを表示",
+        "tags": [
+          "ポートフォワード"
+        ],
+        "x-required-scope": "portforward:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/portforward/logs/export": {
+      "get": {
+        "description": "フィルター条件に一致するすべてのログを添付ファイルとしてストリーミングで返します。古い順で、ディスク上のローテーション済みファイルと圧縮アーカイブも含みます。`format` は `jsonl`（既定、1 行に 1 件の JSON）または `csv`（BOM 付き UTF-8。= + - @ で始まるセルには数式インジェクション防止のため先頭に単一引用符を付けます）。フィルターパラメーターはログ表示 API と同じです。読み取り専用の ID がエクスポートする内容は、表示時と同様に認証情報がマスクされます。`lang` でエクスポート内容の言語（`en` など）を指定します。省略時は Accept-Language に従います。\n\n必要な権限: `portforward:read`。",
+        "parameters": [
+          {
+            "description": "エクスポート形式：jsonl（既定、1 行に 1 件の JSON）または csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "エクスポート内容の言語（例: en）。省略時は Accept-Language に従います",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低レベル：debug、info、warn、error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ソースラベル（大文字小文字を区別しない完全一致）",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "キーワード：スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の - で除外",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "除外キーワード：スペース区切り、二重引用符でフレーズを指定。いずれかを含むと除外。q と同時に適用",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "クライアントアドレス：完全なアドレス、CIDR またはアドレスの一部。複数はカンマ区切り。先頭に ! または - を付けると除外",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名またはドメインの一部",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web サービスのリスナー key（完全一致）。同名のサイトや同名のリスナー（IPv4 と IPv6 を別々に待ち受ける場合など）を区別します",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ステータスコード（404、4xx、500-599 など、複数はカンマ区切り）",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、禁止された送信元のアクセスログを隠します。禁止により拒否されたリクエストと、現在も禁止中の送信元のすべてのリクエスト（禁止のきっかけになったものを含む）が対象です（返却結果にのみ影響し、ログは保存されます）",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、管理画面のログインセッションを持つリクエスト（管理者が Web サービスのサイト経由で管理画面にアクセスして生じたアクセスログ）を非表示にします",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "終了時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログをエクスポート",
+        "tags": [
+          "ポートフォワード"
+        ],
+        "x-required-scope": "portforward:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/portforward/logs/sources": {
+      "get": {
+        "description": "名前順に並べたソースラベルの配列を返します。ログに出現したソース（ディスク保存時は再起動後も保持）と、モジュール設定のソース（Web サービスのすべてのリスナーや IP リストなど）を含み、`source` での絞り込みに使用します。ソースはログと同様にリクエストの言語に翻訳されます。\n\n必要な権限: `portforward:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログのすべてのソースを一覧表示",
         "tags": [
           "ポートフォワード"
         ],
@@ -28841,7 +32201,7 @@
     },
     "/api/protoroute/logs": {
       "delete": {
-        "description": "必要な権限: `protoroute:write`。",
+        "description": "ディスク上のログファイル、ローテーション済みファイル、アーカイブ、ソース記録も削除します。\n\n必要な権限: `protoroute:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -28965,7 +32325,7 @@
             }
           },
           {
-            "description": "",
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
             "in": "query",
             "name": "site",
             "schema": {
@@ -29062,6 +32422,230 @@
           }
         ],
         "summary": "モジュールの実行ログを表示",
+        "tags": [
+          "プロトコル振り分け"
+        ],
+        "x-required-scope": "protoroute:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/protoroute/logs/export": {
+      "get": {
+        "description": "フィルター条件に一致するすべてのログを添付ファイルとしてストリーミングで返します。古い順で、ディスク上のローテーション済みファイルと圧縮アーカイブも含みます。`format` は `jsonl`（既定、1 行に 1 件の JSON）または `csv`（BOM 付き UTF-8。= + - @ で始まるセルには数式インジェクション防止のため先頭に単一引用符を付けます）。フィルターパラメーターはログ表示 API と同じです。読み取り専用の ID がエクスポートする内容は、表示時と同様に認証情報がマスクされます。`lang` でエクスポート内容の言語（`en` など）を指定します。省略時は Accept-Language に従います。\n\n必要な権限: `protoroute:read`。",
+        "parameters": [
+          {
+            "description": "エクスポート形式：jsonl（既定、1 行に 1 件の JSON）または csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "エクスポート内容の言語（例: en）。省略時は Accept-Language に従います",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低レベル：debug、info、warn、error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ソースラベル（大文字小文字を区別しない完全一致）",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "キーワード：スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の - で除外",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "除外キーワード：スペース区切り、二重引用符でフレーズを指定。いずれかを含むと除外。q と同時に適用",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "クライアントアドレス：完全なアドレス、CIDR またはアドレスの一部。複数はカンマ区切り。先頭に ! または - を付けると除外",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名またはドメインの一部",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web サービスのリスナー key（完全一致）。同名のサイトや同名のリスナー（IPv4 と IPv6 を別々に待ち受ける場合など）を区別します",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ステータスコード（404、4xx、500-599 など、複数はカンマ区切り）",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、禁止された送信元のアクセスログを隠します。禁止により拒否されたリクエストと、現在も禁止中の送信元のすべてのリクエスト（禁止のきっかけになったものを含む）が対象です（返却結果にのみ影響し、ログは保存されます）",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、管理画面のログインセッションを持つリクエスト（管理者が Web サービスのサイト経由で管理画面にアクセスして生じたアクセスログ）を非表示にします",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "終了時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログをエクスポート",
+        "tags": [
+          "プロトコル振り分け"
+        ],
+        "x-required-scope": "protoroute:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/protoroute/logs/sources": {
+      "get": {
+        "description": "名前順に並べたソースラベルの配列を返します。ログに出現したソース（ディスク保存時は再起動後も保持）と、モジュール設定のソース（Web サービスのすべてのリスナーや IP リストなど）を含み、`source` での絞り込みに使用します。ソースはログと同様にリクエストの言語に翻訳されます。\n\n必要な権限: `protoroute:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログのすべてのソースを一覧表示",
         "tags": [
           "プロトコル振り分け"
         ],
@@ -29870,7 +33454,7 @@
     },
     "/api/smb/logs": {
       "delete": {
-        "description": "必要な権限: `smb:write`。",
+        "description": "ディスク上のログファイル、ローテーション済みファイル、アーカイブ、ソース記録も削除します。\n\n必要な権限: `smb:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -29994,7 +33578,7 @@
             }
           },
           {
-            "description": "",
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
             "in": "query",
             "name": "site",
             "schema": {
@@ -30091,6 +33675,230 @@
           }
         ],
         "summary": "モジュールの実行ログを表示",
+        "tags": [
+          "SMB サービス"
+        ],
+        "x-required-scope": "smb:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/smb/logs/export": {
+      "get": {
+        "description": "フィルター条件に一致するすべてのログを添付ファイルとしてストリーミングで返します。古い順で、ディスク上のローテーション済みファイルと圧縮アーカイブも含みます。`format` は `jsonl`（既定、1 行に 1 件の JSON）または `csv`（BOM 付き UTF-8。= + - @ で始まるセルには数式インジェクション防止のため先頭に単一引用符を付けます）。フィルターパラメーターはログ表示 API と同じです。読み取り専用の ID がエクスポートする内容は、表示時と同様に認証情報がマスクされます。`lang` でエクスポート内容の言語（`en` など）を指定します。省略時は Accept-Language に従います。\n\n必要な権限: `smb:read`。",
+        "parameters": [
+          {
+            "description": "エクスポート形式：jsonl（既定、1 行に 1 件の JSON）または csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "エクスポート内容の言語（例: en）。省略時は Accept-Language に従います",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低レベル：debug、info、warn、error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ソースラベル（大文字小文字を区別しない完全一致）",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "キーワード：スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の - で除外",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "除外キーワード：スペース区切り、二重引用符でフレーズを指定。いずれかを含むと除外。q と同時に適用",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "クライアントアドレス：完全なアドレス、CIDR またはアドレスの一部。複数はカンマ区切り。先頭に ! または - を付けると除外",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名またはドメインの一部",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web サービスのリスナー key（完全一致）。同名のサイトや同名のリスナー（IPv4 と IPv6 を別々に待ち受ける場合など）を区別します",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ステータスコード（404、4xx、500-599 など、複数はカンマ区切り）",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、禁止された送信元のアクセスログを隠します。禁止により拒否されたリクエストと、現在も禁止中の送信元のすべてのリクエスト（禁止のきっかけになったものを含む）が対象です（返却結果にのみ影響し、ログは保存されます）",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、管理画面のログインセッションを持つリクエスト（管理者が Web サービスのサイト経由で管理画面にアクセスして生じたアクセスログ）を非表示にします",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "終了時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログをエクスポート",
+        "tags": [
+          "SMB サービス"
+        ],
+        "x-required-scope": "smb:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/smb/logs/sources": {
+      "get": {
+        "description": "名前順に並べたソースラベルの配列を返します。ログに出現したソース（ディスク保存時は再起動後も保持）と、モジュール設定のソース（Web サービスのすべてのリスナーや IP リストなど）を含み、`source` での絞り込みに使用します。ソースはログと同様にリクエストの言語に翻訳されます。\n\n必要な権限: `smb:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログのすべてのソースを一覧表示",
         "tags": [
           "SMB サービス"
         ],
@@ -31333,7 +35141,7 @@
     },
     "/api/ssl/logs": {
       "delete": {
-        "description": "必要な権限: `ssl:write`。",
+        "description": "ディスク上のログファイル、ローテーション済みファイル、アーカイブ、ソース記録も削除します。\n\n必要な権限: `ssl:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -31457,7 +35265,7 @@
             }
           },
           {
-            "description": "",
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
             "in": "query",
             "name": "site",
             "schema": {
@@ -31554,6 +35362,230 @@
           }
         ],
         "summary": "モジュールの実行ログを表示",
+        "tags": [
+          "SSL 証明書"
+        ],
+        "x-required-scope": "ssl:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ssl/logs/export": {
+      "get": {
+        "description": "フィルター条件に一致するすべてのログを添付ファイルとしてストリーミングで返します。古い順で、ディスク上のローテーション済みファイルと圧縮アーカイブも含みます。`format` は `jsonl`（既定、1 行に 1 件の JSON）または `csv`（BOM 付き UTF-8。= + - @ で始まるセルには数式インジェクション防止のため先頭に単一引用符を付けます）。フィルターパラメーターはログ表示 API と同じです。読み取り専用の ID がエクスポートする内容は、表示時と同様に認証情報がマスクされます。`lang` でエクスポート内容の言語（`en` など）を指定します。省略時は Accept-Language に従います。\n\n必要な権限: `ssl:read`。",
+        "parameters": [
+          {
+            "description": "エクスポート形式：jsonl（既定、1 行に 1 件の JSON）または csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "エクスポート内容の言語（例: en）。省略時は Accept-Language に従います",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低レベル：debug、info、warn、error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ソースラベル（大文字小文字を区別しない完全一致）",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "キーワード：スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の - で除外",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "除外キーワード：スペース区切り、二重引用符でフレーズを指定。いずれかを含むと除外。q と同時に適用",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "クライアントアドレス：完全なアドレス、CIDR またはアドレスの一部。複数はカンマ区切り。先頭に ! または - を付けると除外",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名またはドメインの一部",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web サービスのリスナー key（完全一致）。同名のサイトや同名のリスナー（IPv4 と IPv6 を別々に待ち受ける場合など）を区別します",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ステータスコード（404、4xx、500-599 など、複数はカンマ区切り）",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、禁止された送信元のアクセスログを隠します。禁止により拒否されたリクエストと、現在も禁止中の送信元のすべてのリクエスト（禁止のきっかけになったものを含む）が対象です（返却結果にのみ影響し、ログは保存されます）",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、管理画面のログインセッションを持つリクエスト（管理者が Web サービスのサイト経由で管理画面にアクセスして生じたアクセスログ）を非表示にします",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "終了時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログをエクスポート",
+        "tags": [
+          "SSL 証明書"
+        ],
+        "x-required-scope": "ssl:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ssl/logs/sources": {
+      "get": {
+        "description": "名前順に並べたソースラベルの配列を返します。ログに出現したソース（ディスク保存時は再起動後も保持）と、モジュール設定のソース（Web サービスのすべてのリスナーや IP リストなど）を含み、`source` での絞り込みに使用します。ソースはログと同様にリクエストの言語に翻訳されます。\n\n必要な権限: `ssl:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログのすべてのソースを一覧表示",
         "tags": [
           "SSL 証明書"
         ],
@@ -32158,7 +36190,7 @@
     },
     "/api/storage/logs": {
       "delete": {
-        "description": "必要な権限: `storage:write`。",
+        "description": "ディスク上のログファイル、ローテーション済みファイル、アーカイブ、ソース記録も削除します。\n\n必要な権限: `storage:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -32282,7 +36314,7 @@
             }
           },
           {
-            "description": "",
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
             "in": "query",
             "name": "site",
             "schema": {
@@ -32379,6 +36411,230 @@
           }
         ],
         "summary": "モジュールの実行ログを表示",
+        "tags": [
+          "ストレージマウント"
+        ],
+        "x-required-scope": "storage:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/storage/logs/export": {
+      "get": {
+        "description": "フィルター条件に一致するすべてのログを添付ファイルとしてストリーミングで返します。古い順で、ディスク上のローテーション済みファイルと圧縮アーカイブも含みます。`format` は `jsonl`（既定、1 行に 1 件の JSON）または `csv`（BOM 付き UTF-8。= + - @ で始まるセルには数式インジェクション防止のため先頭に単一引用符を付けます）。フィルターパラメーターはログ表示 API と同じです。読み取り専用の ID がエクスポートする内容は、表示時と同様に認証情報がマスクされます。`lang` でエクスポート内容の言語（`en` など）を指定します。省略時は Accept-Language に従います。\n\n必要な権限: `storage:read`。",
+        "parameters": [
+          {
+            "description": "エクスポート形式：jsonl（既定、1 行に 1 件の JSON）または csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "エクスポート内容の言語（例: en）。省略時は Accept-Language に従います",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低レベル：debug、info、warn、error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ソースラベル（大文字小文字を区別しない完全一致）",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "キーワード：スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の - で除外",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "除外キーワード：スペース区切り、二重引用符でフレーズを指定。いずれかを含むと除外。q と同時に適用",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "クライアントアドレス：完全なアドレス、CIDR またはアドレスの一部。複数はカンマ区切り。先頭に ! または - を付けると除外",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名またはドメインの一部",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web サービスのリスナー key（完全一致）。同名のサイトや同名のリスナー（IPv4 と IPv6 を別々に待ち受ける場合など）を区別します",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ステータスコード（404、4xx、500-599 など、複数はカンマ区切り）",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、禁止された送信元のアクセスログを隠します。禁止により拒否されたリクエストと、現在も禁止中の送信元のすべてのリクエスト（禁止のきっかけになったものを含む）が対象です（返却結果にのみ影響し、ログは保存されます）",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、管理画面のログインセッションを持つリクエスト（管理者が Web サービスのサイト経由で管理画面にアクセスして生じたアクセスログ）を非表示にします",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "終了時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログをエクスポート",
+        "tags": [
+          "ストレージマウント"
+        ],
+        "x-required-scope": "storage:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/storage/logs/sources": {
+      "get": {
+        "description": "名前順に並べたソースラベルの配列を返します。ログに出現したソース（ディスク保存時は再起動後も保持）と、モジュール設定のソース（Web サービスのすべてのリスナーや IP リストなど）を含み、`source` での絞り込みに使用します。ソースはログと同様にリクエストの言語に翻訳されます。\n\n必要な権限: `storage:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログのすべてのソースを一覧表示",
         "tags": [
           "ストレージマウント"
         ],
@@ -33108,7 +37364,7 @@
     },
     "/api/stun/logs": {
       "delete": {
-        "description": "必要な権限: `stun:write`。",
+        "description": "ディスク上のログファイル、ローテーション済みファイル、アーカイブ、ソース記録も削除します。\n\n必要な権限: `stun:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -33232,7 +37488,7 @@
             }
           },
           {
-            "description": "",
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
             "in": "query",
             "name": "site",
             "schema": {
@@ -33329,6 +37585,230 @@
           }
         ],
         "summary": "モジュールの実行ログを表示",
+        "tags": [
+          "STUN 穿透"
+        ],
+        "x-required-scope": "stun:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/stun/logs/export": {
+      "get": {
+        "description": "フィルター条件に一致するすべてのログを添付ファイルとしてストリーミングで返します。古い順で、ディスク上のローテーション済みファイルと圧縮アーカイブも含みます。`format` は `jsonl`（既定、1 行に 1 件の JSON）または `csv`（BOM 付き UTF-8。= + - @ で始まるセルには数式インジェクション防止のため先頭に単一引用符を付けます）。フィルターパラメーターはログ表示 API と同じです。読み取り専用の ID がエクスポートする内容は、表示時と同様に認証情報がマスクされます。`lang` でエクスポート内容の言語（`en` など）を指定します。省略時は Accept-Language に従います。\n\n必要な権限: `stun:read`。",
+        "parameters": [
+          {
+            "description": "エクスポート形式：jsonl（既定、1 行に 1 件の JSON）または csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "エクスポート内容の言語（例: en）。省略時は Accept-Language に従います",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低レベル：debug、info、warn、error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ソースラベル（大文字小文字を区別しない完全一致）",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "キーワード：スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の - で除外",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "除外キーワード：スペース区切り、二重引用符でフレーズを指定。いずれかを含むと除外。q と同時に適用",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "クライアントアドレス：完全なアドレス、CIDR またはアドレスの一部。複数はカンマ区切り。先頭に ! または - を付けると除外",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名またはドメインの一部",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web サービスのリスナー key（完全一致）。同名のサイトや同名のリスナー（IPv4 と IPv6 を別々に待ち受ける場合など）を区別します",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ステータスコード（404、4xx、500-599 など、複数はカンマ区切り）",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、禁止された送信元のアクセスログを隠します。禁止により拒否されたリクエストと、現在も禁止中の送信元のすべてのリクエスト（禁止のきっかけになったものを含む）が対象です（返却結果にのみ影響し、ログは保存されます）",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、管理画面のログインセッションを持つリクエスト（管理者が Web サービスのサイト経由で管理画面にアクセスして生じたアクセスログ）を非表示にします",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "終了時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログをエクスポート",
+        "tags": [
+          "STUN 穿透"
+        ],
+        "x-required-scope": "stun:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/stun/logs/sources": {
+      "get": {
+        "description": "名前順に並べたソースラベルの配列を返します。ログに出現したソース（ディスク保存時は再起動後も保持）と、モジュール設定のソース（Web サービスのすべてのリスナーや IP リストなど）を含み、`source` での絞り込みに使用します。ソースはログと同様にリクエストの言語に翻訳されます。\n\n必要な権限: `stun:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログのすべてのソースを一覧表示",
         "tags": [
           "STUN 穿透"
         ],
@@ -36262,7 +40742,7 @@
     },
     "/api/tailscale/logs": {
       "delete": {
-        "description": "必要な権限: `tailscale:write`。",
+        "description": "ディスク上のログファイル、ローテーション済みファイル、アーカイブ、ソース記録も削除します。\n\n必要な権限: `tailscale:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -36386,7 +40866,7 @@
             }
           },
           {
-            "description": "",
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
             "in": "query",
             "name": "site",
             "schema": {
@@ -36483,6 +40963,230 @@
           }
         ],
         "summary": "モジュールの実行ログを表示",
+        "tags": [
+          "Tailscale ネットワーク"
+        ],
+        "x-required-scope": "tailscale:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/logs/export": {
+      "get": {
+        "description": "フィルター条件に一致するすべてのログを添付ファイルとしてストリーミングで返します。古い順で、ディスク上のローテーション済みファイルと圧縮アーカイブも含みます。`format` は `jsonl`（既定、1 行に 1 件の JSON）または `csv`（BOM 付き UTF-8。= + - @ で始まるセルには数式インジェクション防止のため先頭に単一引用符を付けます）。フィルターパラメーターはログ表示 API と同じです。読み取り専用の ID がエクスポートする内容は、表示時と同様に認証情報がマスクされます。`lang` でエクスポート内容の言語（`en` など）を指定します。省略時は Accept-Language に従います。\n\n必要な権限: `tailscale:read`。",
+        "parameters": [
+          {
+            "description": "エクスポート形式：jsonl（既定、1 行に 1 件の JSON）または csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "エクスポート内容の言語（例: en）。省略時は Accept-Language に従います",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低レベル：debug、info、warn、error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ソースラベル（大文字小文字を区別しない完全一致）",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "キーワード：スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の - で除外",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "除外キーワード：スペース区切り、二重引用符でフレーズを指定。いずれかを含むと除外。q と同時に適用",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "クライアントアドレス：完全なアドレス、CIDR またはアドレスの一部。複数はカンマ区切り。先頭に ! または - を付けると除外",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名またはドメインの一部",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web サービスのリスナー key（完全一致）。同名のサイトや同名のリスナー（IPv4 と IPv6 を別々に待ち受ける場合など）を区別します",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ステータスコード（404、4xx、500-599 など、複数はカンマ区切り）",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、禁止された送信元のアクセスログを隠します。禁止により拒否されたリクエストと、現在も禁止中の送信元のすべてのリクエスト（禁止のきっかけになったものを含む）が対象です（返却結果にのみ影響し、ログは保存されます）",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、管理画面のログインセッションを持つリクエスト（管理者が Web サービスのサイト経由で管理画面にアクセスして生じたアクセスログ）を非表示にします",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "終了時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログをエクスポート",
+        "tags": [
+          "Tailscale ネットワーク"
+        ],
+        "x-required-scope": "tailscale:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/logs/sources": {
+      "get": {
+        "description": "名前順に並べたソースラベルの配列を返します。ログに出現したソース（ディスク保存時は再起動後も保持）と、モジュール設定のソース（Web サービスのすべてのリスナーや IP リストなど）を含み、`source` での絞り込みに使用します。ソースはログと同様にリクエストの言語に翻訳されます。\n\n必要な権限: `tailscale:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログのすべてのソースを一覧表示",
         "tags": [
           "Tailscale ネットワーク"
         ],
@@ -37911,7 +42615,7 @@
     },
     "/api/waf/logs": {
       "delete": {
-        "description": "必要な権限: `waf:write`。",
+        "description": "ディスク上のログファイル、ローテーション済みファイル、アーカイブ、ソース記録も削除します。\n\n必要な権限: `waf:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -38035,7 +42739,7 @@
             }
           },
           {
-            "description": "",
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
             "in": "query",
             "name": "site",
             "schema": {
@@ -38139,6 +42843,230 @@
         "x-token-allowed": true
       }
     },
+    "/api/waf/logs/export": {
+      "get": {
+        "description": "フィルター条件に一致するすべてのログを添付ファイルとしてストリーミングで返します。古い順で、ディスク上のローテーション済みファイルと圧縮アーカイブも含みます。`format` は `jsonl`（既定、1 行に 1 件の JSON）または `csv`（BOM 付き UTF-8。= + - @ で始まるセルには数式インジェクション防止のため先頭に単一引用符を付けます）。フィルターパラメーターはログ表示 API と同じです。読み取り専用の ID がエクスポートする内容は、表示時と同様に認証情報がマスクされます。`lang` でエクスポート内容の言語（`en` など）を指定します。省略時は Accept-Language に従います。\n\n必要な権限: `waf:read`。",
+        "parameters": [
+          {
+            "description": "エクスポート形式：jsonl（既定、1 行に 1 件の JSON）または csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "エクスポート内容の言語（例: en）。省略時は Accept-Language に従います",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低レベル：debug、info、warn、error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ソースラベル（大文字小文字を区別しない完全一致）",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "キーワード：スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の - で除外",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "除外キーワード：スペース区切り、二重引用符でフレーズを指定。いずれかを含むと除外。q と同時に適用",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "クライアントアドレス：完全なアドレス、CIDR またはアドレスの一部。複数はカンマ区切り。先頭に ! または - を付けると除外",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名またはドメインの一部",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web サービスのリスナー key（完全一致）。同名のサイトや同名のリスナー（IPv4 と IPv6 を別々に待ち受ける場合など）を区別します",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ステータスコード（404、4xx、500-599 など、複数はカンマ区切り）",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、禁止された送信元のアクセスログを隠します。禁止により拒否されたリクエストと、現在も禁止中の送信元のすべてのリクエスト（禁止のきっかけになったものを含む）が対象です（返却結果にのみ影響し、ログは保存されます）",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、管理画面のログインセッションを持つリクエスト（管理者が Web サービスのサイト経由で管理画面にアクセスして生じたアクセスログ）を非表示にします",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "終了時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログをエクスポート",
+        "tags": [
+          "WAF ファイアウォール"
+        ],
+        "x-required-scope": "waf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/waf/logs/sources": {
+      "get": {
+        "description": "名前順に並べたソースラベルの配列を返します。ログに出現したソース（ディスク保存時は再起動後も保持）と、モジュール設定のソース（Web サービスのすべてのリスナーや IP リストなど）を含み、`source` での絞り込みに使用します。ソースはログと同様にリクエストの言語に翻訳されます。\n\n必要な権限: `waf:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログのすべてのソースを一覧表示",
+        "tags": [
+          "WAF ファイアウォール"
+        ],
+        "x-required-scope": "waf:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/waf/safeline/test": {
       "post": {
         "description": "リクエストボディはインスタンスの `safeline` フィールドと同じです（`addr` は `ホスト:ポート` または `unix:` で始まるソケットパス、`timeoutMs` はタイムアウト）。ハートビートで接続を確認した後、サンプルの SQL インジェクションリクエストを検査に送ります。`latencyMs`（ハートビートの往復ミリ秒）、`blocked`（サンプル攻撃が検知されたか）、`eventId`（SafeLine のイベント ID）を返します。接続に失敗すると 502 を返します。サンプル攻撃は SafeLine コンソールの攻撃記録に表示されます。\n\n必要な権限: `waf:write`。",
@@ -38201,7 +43129,7 @@
     },
     "/api/webdav/logs": {
       "delete": {
-        "description": "必要な権限: `webdav:write`。",
+        "description": "ディスク上のログファイル、ローテーション済みファイル、アーカイブ、ソース記録も削除します。\n\n必要な権限: `webdav:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -38325,7 +43253,7 @@
             }
           },
           {
-            "description": "",
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
             "in": "query",
             "name": "site",
             "schema": {
@@ -38422,6 +43350,230 @@
           }
         ],
         "summary": "モジュールの実行ログを表示",
+        "tags": [
+          "WebDAV サービス"
+        ],
+        "x-required-scope": "webdav:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webdav/logs/export": {
+      "get": {
+        "description": "フィルター条件に一致するすべてのログを添付ファイルとしてストリーミングで返します。古い順で、ディスク上のローテーション済みファイルと圧縮アーカイブも含みます。`format` は `jsonl`（既定、1 行に 1 件の JSON）または `csv`（BOM 付き UTF-8。= + - @ で始まるセルには数式インジェクション防止のため先頭に単一引用符を付けます）。フィルターパラメーターはログ表示 API と同じです。読み取り専用の ID がエクスポートする内容は、表示時と同様に認証情報がマスクされます。`lang` でエクスポート内容の言語（`en` など）を指定します。省略時は Accept-Language に従います。\n\n必要な権限: `webdav:read`。",
+        "parameters": [
+          {
+            "description": "エクスポート形式：jsonl（既定、1 行に 1 件の JSON）または csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "エクスポート内容の言語（例: en）。省略時は Accept-Language に従います",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低レベル：debug、info、warn、error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ソースラベル（大文字小文字を区別しない完全一致）",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "キーワード：スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の - で除外",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "除外キーワード：スペース区切り、二重引用符でフレーズを指定。いずれかを含むと除外。q と同時に適用",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "クライアントアドレス：完全なアドレス、CIDR またはアドレスの一部。複数はカンマ区切り。先頭に ! または - を付けると除外",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名またはドメインの一部",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web サービスのリスナー key（完全一致）。同名のサイトや同名のリスナー（IPv4 と IPv6 を別々に待ち受ける場合など）を区別します",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ステータスコード（404、4xx、500-599 など、複数はカンマ区切り）",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、禁止された送信元のアクセスログを隠します。禁止により拒否されたリクエストと、現在も禁止中の送信元のすべてのリクエスト（禁止のきっかけになったものを含む）が対象です（返却結果にのみ影響し、ログは保存されます）",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、管理画面のログインセッションを持つリクエスト（管理者が Web サービスのサイト経由で管理画面にアクセスして生じたアクセスログ）を非表示にします",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "終了時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログをエクスポート",
+        "tags": [
+          "WebDAV サービス"
+        ],
+        "x-required-scope": "webdav:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webdav/logs/sources": {
+      "get": {
+        "description": "名前順に並べたソースラベルの配列を返します。ログに出現したソース（ディスク保存時は再起動後も保持）と、モジュール設定のソース（Web サービスのすべてのリスナーや IP リストなど）を含み、`source` での絞り込みに使用します。ソースはログと同様にリクエストの言語に翻訳されます。\n\n必要な権限: `webdav:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログのすべてのソースを一覧表示",
         "tags": [
           "WebDAV サービス"
         ],
@@ -41060,7 +46212,7 @@
     },
     "/api/webservice/logs": {
       "delete": {
-        "description": "必要な権限: `webservice:write`。",
+        "description": "ディスク上のログファイル、ローテーション済みファイル、アーカイブ、ソース記録も削除します。\n\n必要な権限: `webservice:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -41184,7 +46336,7 @@
             }
           },
           {
-            "description": "",
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
             "in": "query",
             "name": "site",
             "schema": {
@@ -41281,6 +46433,230 @@
           }
         ],
         "summary": "モジュールの実行ログを表示",
+        "tags": [
+          "Web サービス"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/logs/export": {
+      "get": {
+        "description": "フィルター条件に一致するすべてのログを添付ファイルとしてストリーミングで返します。古い順で、ディスク上のローテーション済みファイルと圧縮アーカイブも含みます。`format` は `jsonl`（既定、1 行に 1 件の JSON）または `csv`（BOM 付き UTF-8。= + - @ で始まるセルには数式インジェクション防止のため先頭に単一引用符を付けます）。フィルターパラメーターはログ表示 API と同じです。読み取り専用の ID がエクスポートする内容は、表示時と同様に認証情報がマスクされます。`lang` でエクスポート内容の言語（`en` など）を指定します。省略時は Accept-Language に従います。\n\n必要な権限: `webservice:read`。",
+        "parameters": [
+          {
+            "description": "エクスポート形式：jsonl（既定、1 行に 1 件の JSON）または csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "エクスポート内容の言語（例: en）。省略時は Accept-Language に従います",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低レベル：debug、info、warn、error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ソースラベル（大文字小文字を区別しない完全一致）",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "キーワード：スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の - で除外",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "除外キーワード：スペース区切り、二重引用符でフレーズを指定。いずれかを含むと除外。q と同時に適用",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "クライアントアドレス：完全なアドレス、CIDR またはアドレスの一部。複数はカンマ区切り。先頭に ! または - を付けると除外",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名またはドメインの一部",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web サービスのリスナー key（完全一致）。同名のサイトや同名のリスナー（IPv4 と IPv6 を別々に待ち受ける場合など）を区別します",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ステータスコード（404、4xx、500-599 など、複数はカンマ区切り）",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、禁止された送信元のアクセスログを隠します。禁止により拒否されたリクエストと、現在も禁止中の送信元のすべてのリクエスト（禁止のきっかけになったものを含む）が対象です（返却結果にのみ影響し、ログは保存されます）",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、管理画面のログインセッションを持つリクエスト（管理者が Web サービスのサイト経由で管理画面にアクセスして生じたアクセスログ）を非表示にします",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "終了時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログをエクスポート",
+        "tags": [
+          "Web サービス"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/logs/sources": {
+      "get": {
+        "description": "名前順に並べたソースラベルの配列を返します。ログに出現したソース（ディスク保存時は再起動後も保持）と、モジュール設定のソース（Web サービスのすべてのリスナーや IP リストなど）を含み、`source` での絞り込みに使用します。ソースはログと同様にリクエストの言語に翻訳されます。\n\n必要な権限: `webservice:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログのすべてのソースを一覧表示",
         "tags": [
           "Web サービス"
         ],
@@ -43761,7 +49137,7 @@
     },
     "/api/webterminal/logs": {
       "delete": {
-        "description": "必要な権限: `webterminal:write`。",
+        "description": "ディスク上のログファイル、ローテーション済みファイル、アーカイブ、ソース記録も削除します。\n\n必要な権限: `webterminal:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -43885,7 +49261,7 @@
             }
           },
           {
-            "description": "",
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
             "in": "query",
             "name": "site",
             "schema": {
@@ -43982,6 +49358,230 @@
           }
         ],
         "summary": "モジュールの実行ログを表示",
+        "tags": [
+          "Web ターミナル"
+        ],
+        "x-required-scope": "webterminal:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webterminal/logs/export": {
+      "get": {
+        "description": "フィルター条件に一致するすべてのログを添付ファイルとしてストリーミングで返します。古い順で、ディスク上のローテーション済みファイルと圧縮アーカイブも含みます。`format` は `jsonl`（既定、1 行に 1 件の JSON）または `csv`（BOM 付き UTF-8。= + - @ で始まるセルには数式インジェクション防止のため先頭に単一引用符を付けます）。フィルターパラメーターはログ表示 API と同じです。読み取り専用の ID がエクスポートする内容は、表示時と同様に認証情報がマスクされます。`lang` でエクスポート内容の言語（`en` など）を指定します。省略時は Accept-Language に従います。\n\n必要な権限: `webterminal:read`。",
+        "parameters": [
+          {
+            "description": "エクスポート形式：jsonl（既定、1 行に 1 件の JSON）または csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "エクスポート内容の言語（例: en）。省略時は Accept-Language に従います",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低レベル：debug、info、warn、error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ソースラベル（大文字小文字を区別しない完全一致）",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "キーワード：スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の - で除外",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "除外キーワード：スペース区切り、二重引用符でフレーズを指定。いずれかを含むと除外。q と同時に適用",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "クライアントアドレス：完全なアドレス、CIDR またはアドレスの一部。複数はカンマ区切り。先頭に ! または - を付けると除外",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名またはドメインの一部",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web サービスのリスナー key（完全一致）。同名のサイトや同名のリスナー（IPv4 と IPv6 を別々に待ち受ける場合など）を区別します",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ステータスコード（404、4xx、500-599 など、複数はカンマ区切り）",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、禁止された送信元のアクセスログを隠します。禁止により拒否されたリクエストと、現在も禁止中の送信元のすべてのリクエスト（禁止のきっかけになったものを含む）が対象です（返却結果にのみ影響し、ログは保存されます）",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、管理画面のログインセッションを持つリクエスト（管理者が Web サービスのサイト経由で管理画面にアクセスして生じたアクセスログ）を非表示にします",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "終了時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログをエクスポート",
+        "tags": [
+          "Web ターミナル"
+        ],
+        "x-required-scope": "webterminal:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webterminal/logs/sources": {
+      "get": {
+        "description": "名前順に並べたソースラベルの配列を返します。ログに出現したソース（ディスク保存時は再起動後も保持）と、モジュール設定のソース（Web サービスのすべてのリスナーや IP リストなど）を含み、`source` での絞り込みに使用します。ソースはログと同様にリクエストの言語に翻訳されます。\n\n必要な権限: `webterminal:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログのすべてのソースを一覧表示",
         "tags": [
           "Web ターミナル"
         ],
@@ -46605,7 +52205,7 @@
     },
     "/api/wol/logs": {
       "delete": {
-        "description": "必要な権限: `wol:write`。",
+        "description": "ディスク上のログファイル、ローテーション済みファイル、アーカイブ、ソース記録も削除します。\n\n必要な権限: `wol:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -46729,7 +52329,7 @@
             }
           },
           {
-            "description": "",
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
             "in": "query",
             "name": "site",
             "schema": {
@@ -46826,6 +52426,230 @@
           }
         ],
         "summary": "モジュールの実行ログを表示",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "wol:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/wol/logs/export": {
+      "get": {
+        "description": "フィルター条件に一致するすべてのログを添付ファイルとしてストリーミングで返します。古い順で、ディスク上のローテーション済みファイルと圧縮アーカイブも含みます。`format` は `jsonl`（既定、1 行に 1 件の JSON）または `csv`（BOM 付き UTF-8。= + - @ で始まるセルには数式インジェクション防止のため先頭に単一引用符を付けます）。フィルターパラメーターはログ表示 API と同じです。読み取り専用の ID がエクスポートする内容は、表示時と同様に認証情報がマスクされます。`lang` でエクスポート内容の言語（`en` など）を指定します。省略時は Accept-Language に従います。\n\n必要な権限: `wol:read`。",
+        "parameters": [
+          {
+            "description": "エクスポート形式：jsonl（既定、1 行に 1 件の JSON）または csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "エクスポート内容の言語（例: en）。省略時は Accept-Language に従います",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低レベル：debug、info、warn、error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ソースラベル（大文字小文字を区別しない完全一致）",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "キーワード：スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の - で除外",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "除外キーワード：スペース区切り、二重引用符でフレーズを指定。いずれかを含むと除外。q と同時に適用",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "クライアントアドレス：完全なアドレス、CIDR またはアドレスの一部。複数はカンマ区切り。先頭に ! または - を付けると除外",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名またはドメインの一部",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web サービスのリスナー key（完全一致）。同名のサイトや同名のリスナー（IPv4 と IPv6 を別々に待ち受ける場合など）を区別します",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ステータスコード（404、4xx、500-599 など、複数はカンマ区切り）",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、禁止された送信元のアクセスログを隠します。禁止により拒否されたリクエストと、現在も禁止中の送信元のすべてのリクエスト（禁止のきっかけになったものを含む）が対象です（返却結果にのみ影響し、ログは保存されます）",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、管理画面のログインセッションを持つリクエスト（管理者が Web サービスのサイト経由で管理画面にアクセスして生じたアクセスログ）を非表示にします",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "終了時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログをエクスポート",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "wol:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/wol/logs/sources": {
+      "get": {
+        "description": "名前順に並べたソースラベルの配列を返します。ログに出現したソース（ディスク保存時は再起動後も保持）と、モジュール設定のソース（Web サービスのすべてのリスナーや IP リストなど）を含み、`source` での絞り込みに使用します。ソースはログと同様にリクエストの言語に翻訳されます。\n\n必要な権限: `wol:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログのすべてのソースを一覧表示",
         "tags": [
           "Wake-on-LAN"
         ],

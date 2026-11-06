@@ -69,6 +69,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路徑 | 所需權限 | 說明 |
 | --- | --- | --- | --- |
 | GET | `/api/portforward/logs` | `portforward:read` | 檢視模組執行日誌 |
+| GET | `/api/portforward/logs/sources` | `portforward:read` | 列出模組日誌的全部來源 |
+| GET | `/api/portforward/logs/export` | `portforward:read` | 匯出模組執行日誌 |
 | DELETE | `/api/portforward/logs` | `portforward:write` | 清空模組執行日誌 |
 | GET | `/api/portforward/rules` | `portforward:read` | 取得連接埠轉發規則清單 |
 | POST | `/api/portforward/rules` | `portforward:write` | 新增連接埠轉發規則 |
@@ -88,6 +90,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路徑 | 所需權限 | 說明 |
 | --- | --- | --- | --- |
 | GET | `/api/protoroute/logs` | `protoroute:read` | 檢視模組執行日誌 |
+| GET | `/api/protoroute/logs/sources` | `protoroute:read` | 列出模組日誌的全部來源 |
+| GET | `/api/protoroute/logs/export` | `protoroute:read` | 匯出模組執行日誌 |
 | DELETE | `/api/protoroute/logs` | `protoroute:write` | 清空模組執行日誌 |
 | GET | `/api/protoroute/rules` | `protoroute:read` | 取得協定分流規則清單 |
 | POST | `/api/protoroute/rules` | `protoroute:write` | 新增協定分流規則 |
@@ -107,6 +111,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路徑 | 所需權限 | 說明 |
 | --- | --- | --- | --- |
 | GET | `/api/ddns/logs` | `ddns:read` | 檢視模組執行日誌 |
+| GET | `/api/ddns/logs/sources` | `ddns:read` | 列出模組日誌的全部來源 |
+| GET | `/api/ddns/logs/export` | `ddns:read` | 匯出模組執行日誌 |
 | DELETE | `/api/ddns/logs` | `ddns:write` | 清空模組執行日誌 |
 | GET | `/api/ddns/tasks` | `ddns:read` | 取得DDNS 任務清單 |
 | POST | `/api/ddns/tasks` | `ddns:write` | 新增DDNS 任務 |
@@ -135,6 +141,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路徑 | 所需權限 | 說明 |
 | --- | --- | --- | --- |
 | GET | `/api/stun/logs` | `stun:read` | 檢視模組執行日誌 |
+| GET | `/api/stun/logs/sources` | `stun:read` | 列出模組日誌的全部來源 |
+| GET | `/api/stun/logs/export` | `stun:read` | 匯出模組執行日誌 |
 | DELETE | `/api/stun/logs` | `stun:write` | 清空模組執行日誌 |
 | GET | `/api/stun/rules` | `stun:read` | 取得STUN 規則清單 |
 | POST | `/api/stun/rules` | `stun:write` | 新增STUN 規則 |
@@ -156,6 +164,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路徑 | 所需權限 | 說明 |
 | --- | --- | --- | --- |
 | GET | `/api/tailscale/logs` | `tailscale:read` | 檢視模組執行日誌 |
+| GET | `/api/tailscale/logs/sources` | `tailscale:read` | 列出模組日誌的全部來源 |
+| GET | `/api/tailscale/logs/export` | `tailscale:read` | 匯出模組執行日誌 |
 | DELETE | `/api/tailscale/logs` | `tailscale:write` | 清空模組執行日誌 |
 | GET | `/api/tailscale/instances` | `tailscale:read` | 取得Tailscale 實例清單 |
 | POST | `/api/tailscale/instances` | `tailscale:write` | 新增 Tailscale 實例 |
@@ -187,6 +197,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路徑 | 所需權限 | 說明 |
 | --- | --- | --- | --- |
 | GET | `/api/netbird/logs` | `netbird:read` | 檢視模組執行日誌 |
+| GET | `/api/netbird/logs/sources` | `netbird:read` | 列出模組日誌的全部來源 |
+| GET | `/api/netbird/logs/export` | `netbird:read` | 匯出模組執行日誌 |
 | DELETE | `/api/netbird/logs` | `netbird:write` | 清空模組執行日誌 |
 | GET | `/api/netbird/instances` | `netbird:read` | 取得NetBird 執行個體清單 |
 | POST | `/api/netbird/instances` | `netbird:write` | 新增 NetBird 執行個體 |
@@ -218,6 +230,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路徑 | 所需權限 | 說明 |
 | --- | --- | --- | --- |
 | GET | `/api/frp/logs` | `frp:read` | 檢視模組執行日誌 |
+| GET | `/api/frp/logs/sources` | `frp:read` | 列出模組日誌的全部來源 |
+| GET | `/api/frp/logs/export` | `frp:read` | 匯出模組執行日誌 |
 | DELETE | `/api/frp/logs` | `frp:write` | 清空模組執行日誌 |
 | GET | `/api/frp/clients` | `frp:read` | 取得frp 用戶端清單 |
 | POST | `/api/frp/clients` | `frp:write` | 新增frp 用戶端 |
@@ -270,6 +284,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路徑 | 所需權限 | 說明 |
 | --- | --- | --- | --- |
 | GET | `/api/cloudflared/logs` | `cloudflared:read` | 檢視模組執行日誌 |
+| GET | `/api/cloudflared/logs/sources` | `cloudflared:read` | 列出模組日誌的全部來源 |
+| GET | `/api/cloudflared/logs/export` | `cloudflared:read` | 匯出模組執行日誌 |
 | DELETE | `/api/cloudflared/logs` | `cloudflared:write` | 清空模組執行日誌 |
 | GET | `/api/cloudflared/tunnels` | `cloudflared:read` | 取得Cloudflare 通道清單 |
 | POST | `/api/cloudflared/tunnels` | `cloudflared:write` | 新增Cloudflare 通道 |
@@ -300,6 +316,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路徑 | 所需權限 | 說明 |
 | --- | --- | --- | --- |
 | GET | `/api/ssl/logs` | `ssl:read` | 檢視模組執行日誌 |
+| GET | `/api/ssl/logs/sources` | `ssl:read` | 列出模組日誌的全部來源 |
+| GET | `/api/ssl/logs/export` | `ssl:read` | 匯出模組執行日誌 |
 | DELETE | `/api/ssl/logs` | `ssl:write` | 清空模組執行日誌 |
 | GET | `/api/ssl/certs` | `ssl:read` | 取得憑證清單 |
 | POST | `/api/ssl/certs` | `ssl:write` | 新增憑證 |
@@ -325,6 +343,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路徑 | 所需權限 | 說明 |
 | --- | --- | --- | --- |
 | GET | `/api/waf/logs` | `waf:read` | 檢視模組執行日誌 |
+| GET | `/api/waf/logs/sources` | `waf:read` | 列出模組日誌的全部來源 |
+| GET | `/api/waf/logs/export` | `waf:read` | 匯出模組執行日誌 |
 | DELETE | `/api/waf/logs` | `waf:write` | 清空模組執行日誌 |
 | GET | `/api/waf/instances` | `waf:read` | 取得WAF 執行個體清單 |
 | POST | `/api/waf/instances` | `waf:write` | 新增WAF 執行個體 |
@@ -345,6 +365,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路徑 | 所需權限 | 說明 |
 | --- | --- | --- | --- |
 | GET | `/api/webservice/logs` | `webservice:read` | 檢視模組執行日誌 |
+| GET | `/api/webservice/logs/sources` | `webservice:read` | 列出模組日誌的全部來源 |
+| GET | `/api/webservice/logs/export` | `webservice:read` | 匯出模組執行日誌 |
 | DELETE | `/api/webservice/logs` | `webservice:write` | 清空模組執行日誌 |
 | GET | `/api/webservice/listeners` | `webservice:read` | 取得Web 服務監聽清單 |
 | POST | `/api/webservice/listeners` | `webservice:write` | 新增Web 服務監聽 |
@@ -400,6 +422,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路徑 | 所需權限 | 說明 |
 | --- | --- | --- | --- |
 | GET | `/api/guard/logs` | `guard:read` | 檢視模組執行日誌 |
+| GET | `/api/guard/logs/sources` | `guard:read` | 列出模組日誌的全部來源 |
+| GET | `/api/guard/logs/export` | `guard:read` | 匯出模組執行日誌 |
 | DELETE | `/api/guard/logs` | `guard:write` | 清空模組執行日誌 |
 | GET | `/api/guard/jails` | `guard:read` | 取得入侵防護規則清單 |
 | POST | `/api/guard/jails` | `guard:write` | 新增入侵防護規則 |
@@ -426,6 +450,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路徑 | 所需權限 | 說明 |
 | --- | --- | --- | --- |
 | GET | `/api/wol/logs` | `wol:read` | 檢視模組執行日誌 |
+| GET | `/api/wol/logs/sources` | `wol:read` | 列出模組日誌的全部來源 |
+| GET | `/api/wol/logs/export` | `wol:read` | 匯出模組執行日誌 |
 | DELETE | `/api/wol/logs` | `wol:write` | 清空模組執行日誌 |
 | GET | `/api/wol/devices` | `wol:read` | 取得喚醒裝置清單 |
 | POST | `/api/wol/devices` | `wol:write` | 新增喚醒裝置 |
@@ -445,6 +471,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路徑 | 所需權限 | 說明 |
 | --- | --- | --- | --- |
 | GET | `/api/webterminal/logs` | `webterminal:read` | 檢視模組執行日誌 |
+| GET | `/api/webterminal/logs/sources` | `webterminal:read` | 列出模組日誌的全部來源 |
+| GET | `/api/webterminal/logs/export` | `webterminal:read` | 匯出模組執行日誌 |
 | DELETE | `/api/webterminal/logs` | `webterminal:write` | 清空模組執行日誌 |
 | GET | `/api/webterminal/connections` | `webterminal:read` | 取得終端機連線清單 |
 | POST | `/api/webterminal/connections` | `webterminal:write` | 新增終端機連線 |
@@ -512,6 +540,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路徑 | 所需權限 | 說明 |
 | --- | --- | --- | --- |
 | GET | `/api/cron/logs` | `cron:read` | 檢視模組執行日誌 |
+| GET | `/api/cron/logs/sources` | `cron:read` | 列出模組日誌的全部來源 |
+| GET | `/api/cron/logs/export` | `cron:read` | 匯出模組執行日誌 |
 | DELETE | `/api/cron/logs` | `cron:write` | 清空模組執行日誌 |
 | GET | `/api/cron/tasks` | `cron:read` | 取得排程任務清單 |
 | POST | `/api/cron/tasks` | `cron:write` | 新增排程任務 |
@@ -531,6 +561,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路徑 | 所需權限 | 說明 |
 | --- | --- | --- | --- |
 | GET | `/api/docker/logs` | `docker:read` | 檢視模組執行日誌 |
+| GET | `/api/docker/logs/sources` | `docker:read` | 列出模組日誌的全部來源 |
+| GET | `/api/docker/logs/export` | `docker:read` | 匯出模組執行日誌 |
 | DELETE | `/api/docker/logs` | `docker:write` | 清空模組執行日誌 |
 | GET | `/api/docker/tasks` | `docker:read` | 列出背景任務 |
 | GET | `/api/docker/tasks/{id}` | `docker:read` | 檢視背景任務進度與輸出 |
@@ -603,6 +635,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路徑 | 所需權限 | 說明 |
 | --- | --- | --- | --- |
 | GET | `/api/webdav/logs` | `webdav:read` | 檢視模組執行日誌 |
+| GET | `/api/webdav/logs/sources` | `webdav:read` | 列出模組日誌的全部來源 |
+| GET | `/api/webdav/logs/export` | `webdav:read` | 匯出模組執行日誌 |
 | DELETE | `/api/webdav/logs` | `webdav:write` | 清空模組執行日誌 |
 | GET | `/api/webdav/settings` | `webdav:read` | 讀取 WebDAV 設定 |
 | GET | `/api/webdav/settings/secrets` | `webdav:write` | 查看本機使用者密碼明文 |
@@ -615,6 +649,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路徑 | 所需權限 | 說明 |
 | --- | --- | --- | --- |
 | GET | `/api/ftp/logs` | `ftp:read` | 檢視模組執行日誌 |
+| GET | `/api/ftp/logs/sources` | `ftp:read` | 列出模組日誌的全部來源 |
+| GET | `/api/ftp/logs/export` | `ftp:read` | 匯出模組執行日誌 |
 | DELETE | `/api/ftp/logs` | `ftp:write` | 清空模組執行日誌 |
 | GET | `/api/ftp/settings` | `ftp:read` | 讀取 FTP 設定 |
 | GET | `/api/ftp/settings/secrets` | `ftp:write` | 查看本機使用者密碼明文 |
@@ -627,6 +663,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路徑 | 所需權限 | 說明 |
 | --- | --- | --- | --- |
 | GET | `/api/smb/logs` | `smb:read` | 檢視模組執行日誌 |
+| GET | `/api/smb/logs/sources` | `smb:read` | 列出模組日誌的全部來源 |
+| GET | `/api/smb/logs/export` | `smb:read` | 匯出模組執行日誌 |
 | DELETE | `/api/smb/logs` | `smb:write` | 清空模組執行日誌 |
 | GET | `/api/smb/settings` | `smb:read` | 讀取 SMB 設定 |
 | GET | `/api/smb/settings/secrets` | `smb:write` | 查看本機使用者密碼明文 |
@@ -639,6 +677,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路徑 | 所需權限 | 說明 |
 | --- | --- | --- | --- |
 | GET | `/api/filebrowser/logs` | `filebrowser:read` | 檢視模組執行日誌 |
+| GET | `/api/filebrowser/logs/sources` | `filebrowser:read` | 列出模組日誌的全部來源 |
+| GET | `/api/filebrowser/logs/export` | `filebrowser:read` | 匯出模組執行日誌 |
 | DELETE | `/api/filebrowser/logs` | `filebrowser:write` | 清空模組執行日誌 |
 | GET | `/api/filebrowser/instances` | `filebrowser:read` | 取得File Browser 實例清單 |
 | POST | `/api/filebrowser/instances` | `filebrowser:write` | 新增File Browser 實例 |
@@ -667,6 +707,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路徑 | 所需權限 | 說明 |
 | --- | --- | --- | --- |
 | GET | `/api/storage/logs` | `storage:read` | 檢視模組執行日誌 |
+| GET | `/api/storage/logs/sources` | `storage:read` | 列出模組日誌的全部來源 |
+| GET | `/api/storage/logs/export` | `storage:read` | 匯出模組執行日誌 |
 | DELETE | `/api/storage/logs` | `storage:write` | 清空模組執行日誌 |
 | GET | `/api/storage/mounts` | `storage:read` | 取得儲存掛載清單 |
 | POST | `/api/storage/mounts` | `storage:write` | 新增儲存掛載 |
@@ -691,6 +733,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路徑 | 所需權限 | 說明 |
 | --- | --- | --- | --- |
 | GET | `/api/notify/logs` | `notify:read` | 檢視模組執行日誌 |
+| GET | `/api/notify/logs/sources` | `notify:read` | 列出模組日誌的全部來源 |
+| GET | `/api/notify/logs/export` | `notify:read` | 匯出模組執行日誌 |
 | DELETE | `/api/notify/logs` | `notify:write` | 清空模組執行日誌 |
 | GET | `/api/notify/channels` | `notify:read` | 取得通知管道清單 |
 | POST | `/api/notify/channels` | `notify:write` | 新增通知管道 |
@@ -724,6 +768,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路徑 | 所需權限 | 說明 |
 | --- | --- | --- | --- |
 | GET | `/api/perf/logs` | `perf:read` | 檢視模組執行日誌 |
+| GET | `/api/perf/logs/sources` | `perf:read` | 列出模組日誌的全部來源 |
+| GET | `/api/perf/logs/export` | `perf:read` | 匯出模組執行日誌 |
 | DELETE | `/api/perf/logs` | `perf:write` | 清空模組執行日誌 |
 | GET | `/api/perf/rules` | `perf:read` | 取得效能告警規則清單 |
 | POST | `/api/perf/rules` | `perf:write` | 新增效能告警規則 |
@@ -746,6 +792,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路徑 | 所需權限 | 說明 |
 | --- | --- | --- | --- |
 | GET | `/api/nettools/logs` | `nettools:read` | 檢視模組執行日誌 |
+| GET | `/api/nettools/logs/sources` | `nettools:read` | 列出模組日誌的全部來源 |
+| GET | `/api/nettools/logs/export` | `nettools:read` | 匯出模組執行日誌 |
 | DELETE | `/api/nettools/logs` | `nettools:write` | 清空模組執行日誌 |
 | POST | `/api/nettools/run` | `nettools:write` | 執行診斷工具，回傳任務（tool: ping / traceroute / tcp / dns / speed / scan） |
 | GET | `/api/nettools/tasks` | `nettools:read` | 最近的診斷任務 |
@@ -760,6 +808,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路徑 | 所需權限 | 說明 |
 | --- | --- | --- | --- |
 | GET | `/api/backup/logs` | `backup:read` | 檢視模組執行日誌 |
+| GET | `/api/backup/logs/sources` | `backup:read` | 列出模組日誌的全部來源 |
+| GET | `/api/backup/logs/export` | `backup:read` | 匯出模組執行日誌 |
 | DELETE | `/api/backup/logs` | `backup:write` | 清空模組執行日誌 |
 | GET | `/api/backup/targets` | `backup:read` | 取得備份目的地清單 |
 | POST | `/api/backup/targets` | `backup:write` | 新增備份目的地 |
@@ -794,6 +844,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/session` | 任意有效權杖 | 檢視目前驗證身分 |
 | GET | `/api/status` | `status:read` | 檢視系統與各模組狀態 |
 | GET | `/api/logs` | `logs:read` | 檢視系統日誌 |
+| GET | `/api/logs/sources` | `logs:read` | 列出系統日誌的全部來源 |
+| GET | `/api/logs/export` | `logs:read` | 匯出系統日誌 |
 | GET | `/api/system/settings` | 僅登入工作階段 | 讀取全域設定 |
 | PUT | `/api/system/settings` | 僅登入工作階段 | 儲存全域設定 |
 | GET | `/api/system/settings/secrets` | 僅登入工作階段 | 查看第三方登入 Client Secret 明文 |

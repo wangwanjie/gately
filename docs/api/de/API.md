@@ -69,6 +69,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Methode | Pfad | Erforderliche Berechtigung | Beschreibung |
 | --- | --- | --- | --- |
 | GET | `/api/portforward/logs` | `portforward:read` | Laufzeitprotokolle eines Moduls anzeigen |
+| GET | `/api/portforward/logs/sources` | `portforward:read` | Alle Quellen der Modulprotokolle auflisten |
+| GET | `/api/portforward/logs/export` | `portforward:read` | Modulprotokolle exportieren |
 | DELETE | `/api/portforward/logs` | `portforward:write` | Modulprotokolle leeren |
 | GET | `/api/portforward/rules` | `portforward:read` | Portweiterleitungsregeln auflisten |
 | POST | `/api/portforward/rules` | `portforward:write` | Portweiterleitungsregeln hinzufügen |
@@ -88,6 +90,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Methode | Pfad | Erforderliche Berechtigung | Beschreibung |
 | --- | --- | --- | --- |
 | GET | `/api/protoroute/logs` | `protoroute:read` | Laufzeitprotokolle eines Moduls anzeigen |
+| GET | `/api/protoroute/logs/sources` | `protoroute:read` | Alle Quellen der Modulprotokolle auflisten |
+| GET | `/api/protoroute/logs/export` | `protoroute:read` | Modulprotokolle exportieren |
 | DELETE | `/api/protoroute/logs` | `protoroute:write` | Modulprotokolle leeren |
 | GET | `/api/protoroute/rules` | `protoroute:read` | Protokoll-Routing-Regel auflisten |
 | POST | `/api/protoroute/rules` | `protoroute:write` | Protokoll-Routing-Regel hinzufügen |
@@ -107,6 +111,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Methode | Pfad | Erforderliche Berechtigung | Beschreibung |
 | --- | --- | --- | --- |
 | GET | `/api/ddns/logs` | `ddns:read` | Laufzeitprotokolle eines Moduls anzeigen |
+| GET | `/api/ddns/logs/sources` | `ddns:read` | Alle Quellen der Modulprotokolle auflisten |
+| GET | `/api/ddns/logs/export` | `ddns:read` | Modulprotokolle exportieren |
 | DELETE | `/api/ddns/logs` | `ddns:write` | Modulprotokolle leeren |
 | GET | `/api/ddns/tasks` | `ddns:read` | DDNS-Aufgaben auflisten |
 | POST | `/api/ddns/tasks` | `ddns:write` | DDNS-Aufgaben hinzufügen |
@@ -135,6 +141,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Methode | Pfad | Erforderliche Berechtigung | Beschreibung |
 | --- | --- | --- | --- |
 | GET | `/api/stun/logs` | `stun:read` | Laufzeitprotokolle eines Moduls anzeigen |
+| GET | `/api/stun/logs/sources` | `stun:read` | Alle Quellen der Modulprotokolle auflisten |
+| GET | `/api/stun/logs/export` | `stun:read` | Modulprotokolle exportieren |
 | DELETE | `/api/stun/logs` | `stun:write` | Modulprotokolle leeren |
 | GET | `/api/stun/rules` | `stun:read` | STUN-Regeln auflisten |
 | POST | `/api/stun/rules` | `stun:write` | STUN-Regeln hinzufügen |
@@ -156,6 +164,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Methode | Pfad | Erforderliche Berechtigung | Beschreibung |
 | --- | --- | --- | --- |
 | GET | `/api/tailscale/logs` | `tailscale:read` | Laufzeitprotokolle eines Moduls anzeigen |
+| GET | `/api/tailscale/logs/sources` | `tailscale:read` | Alle Quellen der Modulprotokolle auflisten |
+| GET | `/api/tailscale/logs/export` | `tailscale:read` | Modulprotokolle exportieren |
 | DELETE | `/api/tailscale/logs` | `tailscale:write` | Modulprotokolle leeren |
 | GET | `/api/tailscale/instances` | `tailscale:read` | Tailscale-Instanz auflisten |
 | POST | `/api/tailscale/instances` | `tailscale:write` | Tailscale-Instanz hinzufügen |
@@ -187,6 +197,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Methode | Pfad | Erforderliche Berechtigung | Beschreibung |
 | --- | --- | --- | --- |
 | GET | `/api/netbird/logs` | `netbird:read` | Laufzeitprotokolle eines Moduls anzeigen |
+| GET | `/api/netbird/logs/sources` | `netbird:read` | Alle Quellen der Modulprotokolle auflisten |
+| GET | `/api/netbird/logs/export` | `netbird:read` | Modulprotokolle exportieren |
 | DELETE | `/api/netbird/logs` | `netbird:write` | Modulprotokolle leeren |
 | GET | `/api/netbird/instances` | `netbird:read` | NetBird-Instanz auflisten |
 | POST | `/api/netbird/instances` | `netbird:write` | NetBird-Instanz hinzufügen |
@@ -218,6 +230,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Methode | Pfad | Erforderliche Berechtigung | Beschreibung |
 | --- | --- | --- | --- |
 | GET | `/api/frp/logs` | `frp:read` | Laufzeitprotokolle eines Moduls anzeigen |
+| GET | `/api/frp/logs/sources` | `frp:read` | Alle Quellen der Modulprotokolle auflisten |
+| GET | `/api/frp/logs/export` | `frp:read` | Modulprotokolle exportieren |
 | DELETE | `/api/frp/logs` | `frp:write` | Modulprotokolle leeren |
 | GET | `/api/frp/clients` | `frp:read` | frp-Client auflisten |
 | POST | `/api/frp/clients` | `frp:write` | frp-Client hinzufügen |
@@ -270,6 +284,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Methode | Pfad | Erforderliche Berechtigung | Beschreibung |
 | --- | --- | --- | --- |
 | GET | `/api/cloudflared/logs` | `cloudflared:read` | Laufzeitprotokolle eines Moduls anzeigen |
+| GET | `/api/cloudflared/logs/sources` | `cloudflared:read` | Alle Quellen der Modulprotokolle auflisten |
+| GET | `/api/cloudflared/logs/export` | `cloudflared:read` | Modulprotokolle exportieren |
 | DELETE | `/api/cloudflared/logs` | `cloudflared:write` | Modulprotokolle leeren |
 | GET | `/api/cloudflared/tunnels` | `cloudflared:read` | Cloudflare-Tunnel auflisten |
 | POST | `/api/cloudflared/tunnels` | `cloudflared:write` | Cloudflare-Tunnel hinzufügen |
@@ -300,6 +316,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Methode | Pfad | Erforderliche Berechtigung | Beschreibung |
 | --- | --- | --- | --- |
 | GET | `/api/ssl/logs` | `ssl:read` | Laufzeitprotokolle eines Moduls anzeigen |
+| GET | `/api/ssl/logs/sources` | `ssl:read` | Alle Quellen der Modulprotokolle auflisten |
+| GET | `/api/ssl/logs/export` | `ssl:read` | Modulprotokolle exportieren |
 | DELETE | `/api/ssl/logs` | `ssl:write` | Modulprotokolle leeren |
 | GET | `/api/ssl/certs` | `ssl:read` | Zertifikate auflisten |
 | POST | `/api/ssl/certs` | `ssl:write` | Zertifikate hinzufügen |
@@ -325,6 +343,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Methode | Pfad | Erforderliche Berechtigung | Beschreibung |
 | --- | --- | --- | --- |
 | GET | `/api/waf/logs` | `waf:read` | Laufzeitprotokolle eines Moduls anzeigen |
+| GET | `/api/waf/logs/sources` | `waf:read` | Alle Quellen der Modulprotokolle auflisten |
+| GET | `/api/waf/logs/export` | `waf:read` | Modulprotokolle exportieren |
 | DELETE | `/api/waf/logs` | `waf:write` | Modulprotokolle leeren |
 | GET | `/api/waf/instances` | `waf:read` | WAF-Instanzen auflisten |
 | POST | `/api/waf/instances` | `waf:write` | WAF-Instanzen hinzufügen |
@@ -345,6 +365,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Methode | Pfad | Erforderliche Berechtigung | Beschreibung |
 | --- | --- | --- | --- |
 | GET | `/api/webservice/logs` | `webservice:read` | Laufzeitprotokolle eines Moduls anzeigen |
+| GET | `/api/webservice/logs/sources` | `webservice:read` | Alle Quellen der Modulprotokolle auflisten |
+| GET | `/api/webservice/logs/export` | `webservice:read` | Modulprotokolle exportieren |
 | DELETE | `/api/webservice/logs` | `webservice:write` | Modulprotokolle leeren |
 | GET | `/api/webservice/listeners` | `webservice:read` | Web-Dienst lauscht auflisten |
 | POST | `/api/webservice/listeners` | `webservice:write` | Web-Dienst lauscht hinzufügen |
@@ -400,6 +422,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Methode | Pfad | Erforderliche Berechtigung | Beschreibung |
 | --- | --- | --- | --- |
 | GET | `/api/guard/logs` | `guard:read` | Laufzeitprotokolle eines Moduls anzeigen |
+| GET | `/api/guard/logs/sources` | `guard:read` | Alle Quellen der Modulprotokolle auflisten |
+| GET | `/api/guard/logs/export` | `guard:read` | Modulprotokolle exportieren |
 | DELETE | `/api/guard/logs` | `guard:write` | Modulprotokolle leeren |
 | GET | `/api/guard/jails` | `guard:read` | Einbruchschutz-Regel auflisten |
 | POST | `/api/guard/jails` | `guard:write` | Einbruchschutz-Regel hinzufügen |
@@ -426,6 +450,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Methode | Pfad | Erforderliche Berechtigung | Beschreibung |
 | --- | --- | --- | --- |
 | GET | `/api/wol/logs` | `wol:read` | Laufzeitprotokolle eines Moduls anzeigen |
+| GET | `/api/wol/logs/sources` | `wol:read` | Alle Quellen der Modulprotokolle auflisten |
+| GET | `/api/wol/logs/export` | `wol:read` | Modulprotokolle exportieren |
 | DELETE | `/api/wol/logs` | `wol:write` | Modulprotokolle leeren |
 | GET | `/api/wol/devices` | `wol:read` | Gerät aufwecken auflisten |
 | POST | `/api/wol/devices` | `wol:write` | Gerät aufwecken hinzufügen |
@@ -445,6 +471,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Methode | Pfad | Erforderliche Berechtigung | Beschreibung |
 | --- | --- | --- | --- |
 | GET | `/api/webterminal/logs` | `webterminal:read` | Laufzeitprotokolle eines Moduls anzeigen |
+| GET | `/api/webterminal/logs/sources` | `webterminal:read` | Alle Quellen der Modulprotokolle auflisten |
+| GET | `/api/webterminal/logs/export` | `webterminal:read` | Modulprotokolle exportieren |
 | DELETE | `/api/webterminal/logs` | `webterminal:write` | Modulprotokolle leeren |
 | GET | `/api/webterminal/connections` | `webterminal:read` | Terminalverbindungen auflisten |
 | POST | `/api/webterminal/connections` | `webterminal:write` | Terminalverbindungen hinzufügen |
@@ -512,6 +540,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Methode | Pfad | Erforderliche Berechtigung | Beschreibung |
 | --- | --- | --- | --- |
 | GET | `/api/cron/logs` | `cron:read` | Laufzeitprotokolle eines Moduls anzeigen |
+| GET | `/api/cron/logs/sources` | `cron:read` | Alle Quellen der Modulprotokolle auflisten |
+| GET | `/api/cron/logs/export` | `cron:read` | Modulprotokolle exportieren |
 | DELETE | `/api/cron/logs` | `cron:write` | Modulprotokolle leeren |
 | GET | `/api/cron/tasks` | `cron:read` | Geplante Aufgaben auflisten |
 | POST | `/api/cron/tasks` | `cron:write` | Geplante Aufgaben hinzufügen |
@@ -531,6 +561,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Methode | Pfad | Erforderliche Berechtigung | Beschreibung |
 | --- | --- | --- | --- |
 | GET | `/api/docker/logs` | `docker:read` | Laufzeitprotokolle eines Moduls anzeigen |
+| GET | `/api/docker/logs/sources` | `docker:read` | Alle Quellen der Modulprotokolle auflisten |
+| GET | `/api/docker/logs/export` | `docker:read` | Modulprotokolle exportieren |
 | DELETE | `/api/docker/logs` | `docker:write` | Modulprotokolle leeren |
 | GET | `/api/docker/tasks` | `docker:read` | Hintergrundaufgaben auflisten |
 | GET | `/api/docker/tasks/{id}` | `docker:read` | Fortschritt und Ausgabe einer Hintergrundaufgabe anzeigen |
@@ -603,6 +635,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Methode | Pfad | Erforderliche Berechtigung | Beschreibung |
 | --- | --- | --- | --- |
 | GET | `/api/webdav/logs` | `webdav:read` | Laufzeitprotokolle eines Moduls anzeigen |
+| GET | `/api/webdav/logs/sources` | `webdav:read` | Alle Quellen der Modulprotokolle auflisten |
+| GET | `/api/webdav/logs/export` | `webdav:read` | Modulprotokolle exportieren |
 | DELETE | `/api/webdav/logs` | `webdav:write` | Modulprotokolle leeren |
 | GET | `/api/webdav/settings` | `webdav:read` | WebDAV-Einstellungen lesen |
 | GET | `/api/webdav/settings/secrets` | `webdav:write` | Passwörter der lokalen Benutzer im Klartext anzeigen |
@@ -615,6 +649,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Methode | Pfad | Erforderliche Berechtigung | Beschreibung |
 | --- | --- | --- | --- |
 | GET | `/api/ftp/logs` | `ftp:read` | Laufzeitprotokolle eines Moduls anzeigen |
+| GET | `/api/ftp/logs/sources` | `ftp:read` | Alle Quellen der Modulprotokolle auflisten |
+| GET | `/api/ftp/logs/export` | `ftp:read` | Modulprotokolle exportieren |
 | DELETE | `/api/ftp/logs` | `ftp:write` | Modulprotokolle leeren |
 | GET | `/api/ftp/settings` | `ftp:read` | FTP-Einstellungen lesen |
 | GET | `/api/ftp/settings/secrets` | `ftp:write` | Passwörter der lokalen Benutzer im Klartext anzeigen |
@@ -627,6 +663,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Methode | Pfad | Erforderliche Berechtigung | Beschreibung |
 | --- | --- | --- | --- |
 | GET | `/api/smb/logs` | `smb:read` | Laufzeitprotokolle eines Moduls anzeigen |
+| GET | `/api/smb/logs/sources` | `smb:read` | Alle Quellen der Modulprotokolle auflisten |
+| GET | `/api/smb/logs/export` | `smb:read` | Modulprotokolle exportieren |
 | DELETE | `/api/smb/logs` | `smb:write` | Modulprotokolle leeren |
 | GET | `/api/smb/settings` | `smb:read` | SMB-Einstellungen abrufen |
 | GET | `/api/smb/settings/secrets` | `smb:write` | Passwörter der lokalen Benutzer im Klartext anzeigen |
@@ -639,6 +677,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Methode | Pfad | Erforderliche Berechtigung | Beschreibung |
 | --- | --- | --- | --- |
 | GET | `/api/filebrowser/logs` | `filebrowser:read` | Laufzeitprotokolle eines Moduls anzeigen |
+| GET | `/api/filebrowser/logs/sources` | `filebrowser:read` | Alle Quellen der Modulprotokolle auflisten |
+| GET | `/api/filebrowser/logs/export` | `filebrowser:read` | Modulprotokolle exportieren |
 | DELETE | `/api/filebrowser/logs` | `filebrowser:write` | Modulprotokolle leeren |
 | GET | `/api/filebrowser/instances` | `filebrowser:read` | File-Browser-Instanz auflisten |
 | POST | `/api/filebrowser/instances` | `filebrowser:write` | File-Browser-Instanz hinzufügen |
@@ -667,6 +707,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Methode | Pfad | Erforderliche Berechtigung | Beschreibung |
 | --- | --- | --- | --- |
 | GET | `/api/storage/logs` | `storage:read` | Laufzeitprotokolle eines Moduls anzeigen |
+| GET | `/api/storage/logs/sources` | `storage:read` | Alle Quellen der Modulprotokolle auflisten |
+| GET | `/api/storage/logs/export` | `storage:read` | Modulprotokolle exportieren |
 | DELETE | `/api/storage/logs` | `storage:write` | Modulprotokolle leeren |
 | GET | `/api/storage/mounts` | `storage:read` | Speicher-Einbindungen auflisten |
 | POST | `/api/storage/mounts` | `storage:write` | Speicher-Einbindungen hinzufügen |
@@ -691,6 +733,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Methode | Pfad | Erforderliche Berechtigung | Beschreibung |
 | --- | --- | --- | --- |
 | GET | `/api/notify/logs` | `notify:read` | Laufzeitprotokolle eines Moduls anzeigen |
+| GET | `/api/notify/logs/sources` | `notify:read` | Alle Quellen der Modulprotokolle auflisten |
+| GET | `/api/notify/logs/export` | `notify:read` | Modulprotokolle exportieren |
 | DELETE | `/api/notify/logs` | `notify:write` | Modulprotokolle leeren |
 | GET | `/api/notify/channels` | `notify:read` | Benachrichtigungskanäle auflisten |
 | POST | `/api/notify/channels` | `notify:write` | Benachrichtigungskanäle hinzufügen |
@@ -724,6 +768,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Methode | Pfad | Erforderliche Berechtigung | Beschreibung |
 | --- | --- | --- | --- |
 | GET | `/api/perf/logs` | `perf:read` | Laufzeitprotokolle eines Moduls anzeigen |
+| GET | `/api/perf/logs/sources` | `perf:read` | Alle Quellen der Modulprotokolle auflisten |
+| GET | `/api/perf/logs/export` | `perf:read` | Modulprotokolle exportieren |
 | DELETE | `/api/perf/logs` | `perf:write` | Modulprotokolle leeren |
 | GET | `/api/perf/rules` | `perf:read` | Leistungs-Warnregeln auflisten |
 | POST | `/api/perf/rules` | `perf:write` | Leistungs-Warnregeln hinzufügen |
@@ -746,6 +792,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Methode | Pfad | Erforderliche Berechtigung | Beschreibung |
 | --- | --- | --- | --- |
 | GET | `/api/nettools/logs` | `nettools:read` | Laufzeitprotokolle eines Moduls anzeigen |
+| GET | `/api/nettools/logs/sources` | `nettools:read` | Alle Quellen der Modulprotokolle auflisten |
+| GET | `/api/nettools/logs/export` | `nettools:read` | Modulprotokolle exportieren |
 | DELETE | `/api/nettools/logs` | `nettools:write` | Modulprotokolle leeren |
 | POST | `/api/nettools/run` | `nettools:write` | Diagnosewerkzeug ausführen und Aufgabe zurückgeben (tool: ping / traceroute / tcp / dns / speed / scan) |
 | GET | `/api/nettools/tasks` | `nettools:read` | Letzte Diagnoseaufgaben |
@@ -760,6 +808,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Methode | Pfad | Erforderliche Berechtigung | Beschreibung |
 | --- | --- | --- | --- |
 | GET | `/api/backup/logs` | `backup:read` | Laufzeitprotokolle eines Moduls anzeigen |
+| GET | `/api/backup/logs/sources` | `backup:read` | Alle Quellen der Modulprotokolle auflisten |
+| GET | `/api/backup/logs/export` | `backup:read` | Modulprotokolle exportieren |
 | DELETE | `/api/backup/logs` | `backup:write` | Modulprotokolle leeren |
 | GET | `/api/backup/targets` | `backup:read` | Backup-Ziele auflisten |
 | POST | `/api/backup/targets` | `backup:write` | Backup-Ziele hinzufügen |
@@ -794,6 +844,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | GET | `/api/session` | Beliebiges gültiges Token | Aktuelle Authentifizierungsidentität anzeigen |
 | GET | `/api/status` | `status:read` | System- und Modulstatus anzeigen |
 | GET | `/api/logs` | `logs:read` | Systemprotokolle anzeigen |
+| GET | `/api/logs/sources` | `logs:read` | Alle Quellen der Systemprotokolle auflisten |
+| GET | `/api/logs/export` | `logs:read` | Systemprotokolle exportieren |
 | GET | `/api/system/settings` | Nur Anmeldesitzung | Globale Einstellungen lesen |
 | PUT | `/api/system/settings` | Nur Anmeldesitzung | Globale Einstellungen speichern |
 | GET | `/api/system/settings/secrets` | Nur Anmeldesitzung | Client Secrets der Drittanbieter-Anmeldung im Klartext anzeigen |

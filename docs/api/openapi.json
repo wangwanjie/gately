@@ -5707,7 +5707,7 @@
     },
     "/api/backup/logs": {
       "delete": {
-        "description": "所需权限：`backup:write`。",
+        "description": "同时删除落盘的日志文件、历史文件、归档与来源记录。\n\n所需权限：`backup:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -5831,7 +5831,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
             "in": "query",
             "name": "site",
             "schema": {
@@ -5928,6 +5928,230 @@
           }
         ],
         "summary": "查看模块运行日志",
+        "tags": [
+          "配置备份"
+        ],
+        "x-required-scope": "backup:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/backup/logs/export": {
+      "get": {
+        "description": "以附件流式返回满足过滤条件的全部日志，按时间从旧到新，包括落盘的历史文件与压缩归档。`format` 为 `jsonl`（默认，每行一条 JSON）或 `csv`（UTF-8 带 BOM，以 = + - @ 开头的单元格加单引号防止公式注入）。过滤参数与查看日志接口相同。只读身份导出的内容与查看时一样做凭据脱敏。`lang` 指定导出内容的语言（如 `en`），不填时按 Accept-Language。\n\n所需权限：`backup:read`。",
+        "parameters": [
+          {
+            "description": "导出格式：jsonl（默认，每行一条 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "导出内容的语言，例如 en；不填时按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低级别：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "来源标签，不区分大小写精确匹配",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "关键词：空格分隔表示同时包含，双引号包住短语，前缀 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "客户端地址：完整地址、CIDR 或地址片段，多个以逗号分隔，前缀 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称或域名的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "开始时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "结束时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "导出模块运行日志",
+        "tags": [
+          "配置备份"
+        ],
+        "x-required-scope": "backup:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/backup/logs/sources": {
+      "get": {
+        "description": "返回按名称排序的来源标签数组：日志中出现过的来源（落盘时跨重启保留），以及模块配置中的来源（例如 Web 服务的全部监听器与 IP 列表），用于按 `source` 过滤。来源与日志一样按请求语言翻译。\n\n所需权限：`backup:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模块日志的全部来源",
         "tags": [
           "配置备份"
         ],
@@ -7217,7 +7441,7 @@
     },
     "/api/cloudflared/logs": {
       "delete": {
-        "description": "所需权限：`cloudflared:write`。",
+        "description": "同时删除落盘的日志文件、历史文件、归档与来源记录。\n\n所需权限：`cloudflared:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -7341,7 +7565,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
             "in": "query",
             "name": "site",
             "schema": {
@@ -7438,6 +7662,230 @@
           }
         ],
         "summary": "查看模块运行日志",
+        "tags": [
+          "Cloudflare 隧道"
+        ],
+        "x-required-scope": "cloudflared:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/cloudflared/logs/export": {
+      "get": {
+        "description": "以附件流式返回满足过滤条件的全部日志，按时间从旧到新，包括落盘的历史文件与压缩归档。`format` 为 `jsonl`（默认，每行一条 JSON）或 `csv`（UTF-8 带 BOM，以 = + - @ 开头的单元格加单引号防止公式注入）。过滤参数与查看日志接口相同。只读身份导出的内容与查看时一样做凭据脱敏。`lang` 指定导出内容的语言（如 `en`），不填时按 Accept-Language。\n\n所需权限：`cloudflared:read`。",
+        "parameters": [
+          {
+            "description": "导出格式：jsonl（默认，每行一条 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "导出内容的语言，例如 en；不填时按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低级别：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "来源标签，不区分大小写精确匹配",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "关键词：空格分隔表示同时包含，双引号包住短语，前缀 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "客户端地址：完整地址、CIDR 或地址片段，多个以逗号分隔，前缀 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称或域名的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "开始时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "结束时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "导出模块运行日志",
+        "tags": [
+          "Cloudflare 隧道"
+        ],
+        "x-required-scope": "cloudflared:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/cloudflared/logs/sources": {
+      "get": {
+        "description": "返回按名称排序的来源标签数组：日志中出现过的来源（落盘时跨重启保留），以及模块配置中的来源（例如 Web 服务的全部监听器与 IP 列表），用于按 `source` 过滤。来源与日志一样按请求语言翻译。\n\n所需权限：`cloudflared:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模块日志的全部来源",
         "tags": [
           "Cloudflare 隧道"
         ],
@@ -8517,7 +8965,7 @@
     },
     "/api/cron/logs": {
       "delete": {
-        "description": "所需权限：`cron:write`。",
+        "description": "同时删除落盘的日志文件、历史文件、归档与来源记录。\n\n所需权限：`cron:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -8641,7 +9089,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
             "in": "query",
             "name": "site",
             "schema": {
@@ -8738,6 +9186,230 @@
           }
         ],
         "summary": "查看模块运行日志",
+        "tags": [
+          "计划任务"
+        ],
+        "x-required-scope": "cron:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/cron/logs/export": {
+      "get": {
+        "description": "以附件流式返回满足过滤条件的全部日志，按时间从旧到新，包括落盘的历史文件与压缩归档。`format` 为 `jsonl`（默认，每行一条 JSON）或 `csv`（UTF-8 带 BOM，以 = + - @ 开头的单元格加单引号防止公式注入）。过滤参数与查看日志接口相同。只读身份导出的内容与查看时一样做凭据脱敏。`lang` 指定导出内容的语言（如 `en`），不填时按 Accept-Language。\n\n所需权限：`cron:read`。",
+        "parameters": [
+          {
+            "description": "导出格式：jsonl（默认，每行一条 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "导出内容的语言，例如 en；不填时按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低级别：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "来源标签，不区分大小写精确匹配",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "关键词：空格分隔表示同时包含，双引号包住短语，前缀 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "客户端地址：完整地址、CIDR 或地址片段，多个以逗号分隔，前缀 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称或域名的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "开始时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "结束时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "导出模块运行日志",
+        "tags": [
+          "计划任务"
+        ],
+        "x-required-scope": "cron:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/cron/logs/sources": {
+      "get": {
+        "description": "返回按名称排序的来源标签数组：日志中出现过的来源（落盘时跨重启保留），以及模块配置中的来源（例如 Web 服务的全部监听器与 IP 列表），用于按 `source` 过滤。来源与日志一样按请求语言翻译。\n\n所需权限：`cron:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模块日志的全部来源",
         "tags": [
           "计划任务"
         ],
@@ -9628,7 +10300,7 @@
     },
     "/api/ddns/logs": {
       "delete": {
-        "description": "所需权限：`ddns:write`。",
+        "description": "同时删除落盘的日志文件、历史文件、归档与来源记录。\n\n所需权限：`ddns:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -9752,7 +10424,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
             "in": "query",
             "name": "site",
             "schema": {
@@ -9849,6 +10521,230 @@
           }
         ],
         "summary": "查看模块运行日志",
+        "tags": [
+          "动态域名"
+        ],
+        "x-required-scope": "ddns:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ddns/logs/export": {
+      "get": {
+        "description": "以附件流式返回满足过滤条件的全部日志，按时间从旧到新，包括落盘的历史文件与压缩归档。`format` 为 `jsonl`（默认，每行一条 JSON）或 `csv`（UTF-8 带 BOM，以 = + - @ 开头的单元格加单引号防止公式注入）。过滤参数与查看日志接口相同。只读身份导出的内容与查看时一样做凭据脱敏。`lang` 指定导出内容的语言（如 `en`），不填时按 Accept-Language。\n\n所需权限：`ddns:read`。",
+        "parameters": [
+          {
+            "description": "导出格式：jsonl（默认，每行一条 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "导出内容的语言，例如 en；不填时按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低级别：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "来源标签，不区分大小写精确匹配",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "关键词：空格分隔表示同时包含，双引号包住短语，前缀 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "客户端地址：完整地址、CIDR 或地址片段，多个以逗号分隔，前缀 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称或域名的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "开始时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "结束时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "导出模块运行日志",
+        "tags": [
+          "动态域名"
+        ],
+        "x-required-scope": "ddns:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ddns/logs/sources": {
+      "get": {
+        "description": "返回按名称排序的来源标签数组：日志中出现过的来源（落盘时跨重启保留），以及模块配置中的来源（例如 Web 服务的全部监听器与 IP 列表），用于按 `source` 过滤。来源与日志一样按请求语言翻译。\n\n所需权限：`ddns:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模块日志的全部来源",
         "tags": [
           "动态域名"
         ],
@@ -13936,7 +14832,7 @@
     },
     "/api/docker/logs": {
       "delete": {
-        "description": "所需权限：`docker:write`。",
+        "description": "同时删除落盘的日志文件、历史文件、归档与来源记录。\n\n所需权限：`docker:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -14060,7 +14956,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
             "in": "query",
             "name": "site",
             "schema": {
@@ -14157,6 +15053,230 @@
           }
         ],
         "summary": "查看模块运行日志",
+        "tags": [
+          "Docker 管理"
+        ],
+        "x-required-scope": "docker:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/docker/logs/export": {
+      "get": {
+        "description": "以附件流式返回满足过滤条件的全部日志，按时间从旧到新，包括落盘的历史文件与压缩归档。`format` 为 `jsonl`（默认，每行一条 JSON）或 `csv`（UTF-8 带 BOM，以 = + - @ 开头的单元格加单引号防止公式注入）。过滤参数与查看日志接口相同。只读身份导出的内容与查看时一样做凭据脱敏。`lang` 指定导出内容的语言（如 `en`），不填时按 Accept-Language。\n\n所需权限：`docker:read`。",
+        "parameters": [
+          {
+            "description": "导出格式：jsonl（默认，每行一条 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "导出内容的语言，例如 en；不填时按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低级别：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "来源标签，不区分大小写精确匹配",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "关键词：空格分隔表示同时包含，双引号包住短语，前缀 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "客户端地址：完整地址、CIDR 或地址片段，多个以逗号分隔，前缀 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称或域名的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "开始时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "结束时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "导出模块运行日志",
+        "tags": [
+          "Docker 管理"
+        ],
+        "x-required-scope": "docker:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/docker/logs/sources": {
+      "get": {
+        "description": "返回按名称排序的来源标签数组：日志中出现过的来源（落盘时跨重启保留），以及模块配置中的来源（例如 Web 服务的全部监听器与 IP 列表），用于按 `source` 过滤。来源与日志一样按请求语言翻译。\n\n所需权限：`docker:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模块日志的全部来源",
         "tags": [
           "Docker 管理"
         ],
@@ -16331,7 +17451,7 @@
     },
     "/api/filebrowser/logs": {
       "delete": {
-        "description": "所需权限：`filebrowser:write`。",
+        "description": "同时删除落盘的日志文件、历史文件、归档与来源记录。\n\n所需权限：`filebrowser:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -16455,7 +17575,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
             "in": "query",
             "name": "site",
             "schema": {
@@ -16552,6 +17672,230 @@
           }
         ],
         "summary": "查看模块运行日志",
+        "tags": [
+          "File Browser"
+        ],
+        "x-required-scope": "filebrowser:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/filebrowser/logs/export": {
+      "get": {
+        "description": "以附件流式返回满足过滤条件的全部日志，按时间从旧到新，包括落盘的历史文件与压缩归档。`format` 为 `jsonl`（默认，每行一条 JSON）或 `csv`（UTF-8 带 BOM，以 = + - @ 开头的单元格加单引号防止公式注入）。过滤参数与查看日志接口相同。只读身份导出的内容与查看时一样做凭据脱敏。`lang` 指定导出内容的语言（如 `en`），不填时按 Accept-Language。\n\n所需权限：`filebrowser:read`。",
+        "parameters": [
+          {
+            "description": "导出格式：jsonl（默认，每行一条 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "导出内容的语言，例如 en；不填时按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低级别：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "来源标签，不区分大小写精确匹配",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "关键词：空格分隔表示同时包含，双引号包住短语，前缀 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "客户端地址：完整地址、CIDR 或地址片段，多个以逗号分隔，前缀 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称或域名的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "开始时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "结束时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "导出模块运行日志",
+        "tags": [
+          "File Browser"
+        ],
+        "x-required-scope": "filebrowser:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/filebrowser/logs/sources": {
+      "get": {
+        "description": "返回按名称排序的来源标签数组：日志中出现过的来源（落盘时跨重启保留），以及模块配置中的来源（例如 Web 服务的全部监听器与 IP 列表），用于按 `source` 过滤。来源与日志一样按请求语言翻译。\n\n所需权限：`filebrowser:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模块日志的全部来源",
         "tags": [
           "File Browser"
         ],
@@ -18069,7 +19413,7 @@
     },
     "/api/frp/logs": {
       "delete": {
-        "description": "所需权限：`frp:write`。",
+        "description": "同时删除落盘的日志文件、历史文件、归档与来源记录。\n\n所需权限：`frp:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -18193,7 +19537,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
             "in": "query",
             "name": "site",
             "schema": {
@@ -18290,6 +19634,230 @@
           }
         ],
         "summary": "查看模块运行日志",
+        "tags": [
+          "frp 内网穿透"
+        ],
+        "x-required-scope": "frp:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/frp/logs/export": {
+      "get": {
+        "description": "以附件流式返回满足过滤条件的全部日志，按时间从旧到新，包括落盘的历史文件与压缩归档。`format` 为 `jsonl`（默认，每行一条 JSON）或 `csv`（UTF-8 带 BOM，以 = + - @ 开头的单元格加单引号防止公式注入）。过滤参数与查看日志接口相同。只读身份导出的内容与查看时一样做凭据脱敏。`lang` 指定导出内容的语言（如 `en`），不填时按 Accept-Language。\n\n所需权限：`frp:read`。",
+        "parameters": [
+          {
+            "description": "导出格式：jsonl（默认，每行一条 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "导出内容的语言，例如 en；不填时按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低级别：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "来源标签，不区分大小写精确匹配",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "关键词：空格分隔表示同时包含，双引号包住短语，前缀 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "客户端地址：完整地址、CIDR 或地址片段，多个以逗号分隔，前缀 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称或域名的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "开始时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "结束时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "导出模块运行日志",
+        "tags": [
+          "frp 内网穿透"
+        ],
+        "x-required-scope": "frp:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/frp/logs/sources": {
+      "get": {
+        "description": "返回按名称排序的来源标签数组：日志中出现过的来源（落盘时跨重启保留），以及模块配置中的来源（例如 Web 服务的全部监听器与 IP 列表），用于按 `source` 过滤。来源与日志一样按请求语言翻译。\n\n所需权限：`frp:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模块日志的全部来源",
         "tags": [
           "frp 内网穿透"
         ],
@@ -19967,7 +21535,7 @@
     },
     "/api/ftp/logs": {
       "delete": {
-        "description": "所需权限：`ftp:write`。",
+        "description": "同时删除落盘的日志文件、历史文件、归档与来源记录。\n\n所需权限：`ftp:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -20091,7 +21659,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
             "in": "query",
             "name": "site",
             "schema": {
@@ -20188,6 +21756,230 @@
           }
         ],
         "summary": "查看模块运行日志",
+        "tags": [
+          "FTP 服务"
+        ],
+        "x-required-scope": "ftp:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ftp/logs/export": {
+      "get": {
+        "description": "以附件流式返回满足过滤条件的全部日志，按时间从旧到新，包括落盘的历史文件与压缩归档。`format` 为 `jsonl`（默认，每行一条 JSON）或 `csv`（UTF-8 带 BOM，以 = + - @ 开头的单元格加单引号防止公式注入）。过滤参数与查看日志接口相同。只读身份导出的内容与查看时一样做凭据脱敏。`lang` 指定导出内容的语言（如 `en`），不填时按 Accept-Language。\n\n所需权限：`ftp:read`。",
+        "parameters": [
+          {
+            "description": "导出格式：jsonl（默认，每行一条 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "导出内容的语言，例如 en；不填时按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低级别：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "来源标签，不区分大小写精确匹配",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "关键词：空格分隔表示同时包含，双引号包住短语，前缀 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "客户端地址：完整地址、CIDR 或地址片段，多个以逗号分隔，前缀 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称或域名的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "开始时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "结束时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "导出模块运行日志",
+        "tags": [
+          "FTP 服务"
+        ],
+        "x-required-scope": "ftp:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ftp/logs/sources": {
+      "get": {
+        "description": "返回按名称排序的来源标签数组：日志中出现过的来源（落盘时跨重启保留），以及模块配置中的来源（例如 Web 服务的全部监听器与 IP 列表），用于按 `source` 过滤。来源与日志一样按请求语言翻译。\n\n所需权限：`ftp:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模块日志的全部来源",
         "tags": [
           "FTP 服务"
         ],
@@ -21430,7 +23222,7 @@
     },
     "/api/guard/logs": {
       "delete": {
-        "description": "所需权限：`guard:write`。",
+        "description": "同时删除落盘的日志文件、历史文件、归档与来源记录。\n\n所需权限：`guard:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -21554,7 +23346,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
             "in": "query",
             "name": "site",
             "schema": {
@@ -21651,6 +23443,230 @@
           }
         ],
         "summary": "查看模块运行日志",
+        "tags": [
+          "入侵防护"
+        ],
+        "x-required-scope": "guard:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/guard/logs/export": {
+      "get": {
+        "description": "以附件流式返回满足过滤条件的全部日志，按时间从旧到新，包括落盘的历史文件与压缩归档。`format` 为 `jsonl`（默认，每行一条 JSON）或 `csv`（UTF-8 带 BOM，以 = + - @ 开头的单元格加单引号防止公式注入）。过滤参数与查看日志接口相同。只读身份导出的内容与查看时一样做凭据脱敏。`lang` 指定导出内容的语言（如 `en`），不填时按 Accept-Language。\n\n所需权限：`guard:read`。",
+        "parameters": [
+          {
+            "description": "导出格式：jsonl（默认，每行一条 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "导出内容的语言，例如 en；不填时按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低级别：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "来源标签，不区分大小写精确匹配",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "关键词：空格分隔表示同时包含，双引号包住短语，前缀 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "客户端地址：完整地址、CIDR 或地址片段，多个以逗号分隔，前缀 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称或域名的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "开始时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "结束时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "导出模块运行日志",
+        "tags": [
+          "入侵防护"
+        ],
+        "x-required-scope": "guard:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/guard/logs/sources": {
+      "get": {
+        "description": "返回按名称排序的来源标签数组：日志中出现过的来源（落盘时跨重启保留），以及模块配置中的来源（例如 Web 服务的全部监听器与 IP 列表），用于按 `source` 过滤。来源与日志一样按请求语言翻译。\n\n所需权限：`guard:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模块日志的全部来源",
         "tags": [
           "入侵防护"
         ],
@@ -22202,7 +24218,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
             "in": "query",
             "name": "site",
             "schema": {
@@ -22299,6 +24315,230 @@
           }
         ],
         "summary": "查看系统日志",
+        "tags": [
+          "系统"
+        ],
+        "x-required-scope": "logs:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/logs/export": {
+      "get": {
+        "description": "以附件流式返回满足过滤条件的全部系统日志，参数与导出模块运行日志相同。\n\n所需权限：`logs:read`。",
+        "parameters": [
+          {
+            "description": "导出格式：jsonl（默认，每行一条 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "导出内容的语言，例如 en；不填时按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低级别：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "来源标签，不区分大小写精确匹配",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "关键词：空格分隔表示同时包含，双引号包住短语，前缀 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "客户端地址：完整地址、CIDR 或地址片段，多个以逗号分隔，前缀 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称或域名的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "开始时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "结束时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "导出系统日志",
+        "tags": [
+          "系统"
+        ],
+        "x-required-scope": "logs:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/logs/sources": {
+      "get": {
+        "description": "返回按名称排序的来源标签数组，日志落盘时跨重启保留。\n\n所需权限：`logs:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出系统日志的全部来源",
         "tags": [
           "系统"
         ],
@@ -23599,7 +25839,7 @@
     },
     "/api/netbird/logs": {
       "delete": {
-        "description": "所需权限：`netbird:write`。",
+        "description": "同时删除落盘的日志文件、历史文件、归档与来源记录。\n\n所需权限：`netbird:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -23723,7 +25963,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
             "in": "query",
             "name": "site",
             "schema": {
@@ -23820,6 +26060,230 @@
           }
         ],
         "summary": "查看模块运行日志",
+        "tags": [
+          "NetBird 组网"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/logs/export": {
+      "get": {
+        "description": "以附件流式返回满足过滤条件的全部日志，按时间从旧到新，包括落盘的历史文件与压缩归档。`format` 为 `jsonl`（默认，每行一条 JSON）或 `csv`（UTF-8 带 BOM，以 = + - @ 开头的单元格加单引号防止公式注入）。过滤参数与查看日志接口相同。只读身份导出的内容与查看时一样做凭据脱敏。`lang` 指定导出内容的语言（如 `en`），不填时按 Accept-Language。\n\n所需权限：`netbird:read`。",
+        "parameters": [
+          {
+            "description": "导出格式：jsonl（默认，每行一条 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "导出内容的语言，例如 en；不填时按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低级别：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "来源标签，不区分大小写精确匹配",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "关键词：空格分隔表示同时包含，双引号包住短语，前缀 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "客户端地址：完整地址、CIDR 或地址片段，多个以逗号分隔，前缀 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称或域名的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "开始时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "结束时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "导出模块运行日志",
+        "tags": [
+          "NetBird 组网"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/logs/sources": {
+      "get": {
+        "description": "返回按名称排序的来源标签数组：日志中出现过的来源（落盘时跨重启保留），以及模块配置中的来源（例如 Web 服务的全部监听器与 IP 列表），用于按 `source` 过滤。来源与日志一样按请求语言翻译。\n\n所需权限：`netbird:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模块日志的全部来源",
         "tags": [
           "NetBird 组网"
         ],
@@ -24057,7 +26521,7 @@
     },
     "/api/nettools/logs": {
       "delete": {
-        "description": "所需权限：`nettools:write`。",
+        "description": "同时删除落盘的日志文件、历史文件、归档与来源记录。\n\n所需权限：`nettools:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -24181,7 +26645,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
             "in": "query",
             "name": "site",
             "schema": {
@@ -24278,6 +26742,230 @@
           }
         ],
         "summary": "查看模块运行日志",
+        "tags": [
+          "网络诊断"
+        ],
+        "x-required-scope": "nettools:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/nettools/logs/export": {
+      "get": {
+        "description": "以附件流式返回满足过滤条件的全部日志，按时间从旧到新，包括落盘的历史文件与压缩归档。`format` 为 `jsonl`（默认，每行一条 JSON）或 `csv`（UTF-8 带 BOM，以 = + - @ 开头的单元格加单引号防止公式注入）。过滤参数与查看日志接口相同。只读身份导出的内容与查看时一样做凭据脱敏。`lang` 指定导出内容的语言（如 `en`），不填时按 Accept-Language。\n\n所需权限：`nettools:read`。",
+        "parameters": [
+          {
+            "description": "导出格式：jsonl（默认，每行一条 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "导出内容的语言，例如 en；不填时按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低级别：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "来源标签，不区分大小写精确匹配",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "关键词：空格分隔表示同时包含，双引号包住短语，前缀 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "客户端地址：完整地址、CIDR 或地址片段，多个以逗号分隔，前缀 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称或域名的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "开始时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "结束时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "导出模块运行日志",
+        "tags": [
+          "网络诊断"
+        ],
+        "x-required-scope": "nettools:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/nettools/logs/sources": {
+      "get": {
+        "description": "返回按名称排序的来源标签数组：日志中出现过的来源（落盘时跨重启保留），以及模块配置中的来源（例如 Web 服务的全部监听器与 IP 列表），用于按 `source` 过滤。来源与日志一样按请求语言翻译。\n\n所需权限：`nettools:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模块日志的全部来源",
         "tags": [
           "网络诊断"
         ],
@@ -25629,7 +28317,7 @@
     },
     "/api/notify/logs": {
       "delete": {
-        "description": "所需权限：`notify:write`。",
+        "description": "同时删除落盘的日志文件、历史文件、归档与来源记录。\n\n所需权限：`notify:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -25753,7 +28441,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
             "in": "query",
             "name": "site",
             "schema": {
@@ -25850,6 +28538,230 @@
           }
         ],
         "summary": "查看模块运行日志",
+        "tags": [
+          "通知中心"
+        ],
+        "x-required-scope": "notify:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/notify/logs/export": {
+      "get": {
+        "description": "以附件流式返回满足过滤条件的全部日志，按时间从旧到新，包括落盘的历史文件与压缩归档。`format` 为 `jsonl`（默认，每行一条 JSON）或 `csv`（UTF-8 带 BOM，以 = + - @ 开头的单元格加单引号防止公式注入）。过滤参数与查看日志接口相同。只读身份导出的内容与查看时一样做凭据脱敏。`lang` 指定导出内容的语言（如 `en`），不填时按 Accept-Language。\n\n所需权限：`notify:read`。",
+        "parameters": [
+          {
+            "description": "导出格式：jsonl（默认，每行一条 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "导出内容的语言，例如 en；不填时按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低级别：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "来源标签，不区分大小写精确匹配",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "关键词：空格分隔表示同时包含，双引号包住短语，前缀 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "客户端地址：完整地址、CIDR 或地址片段，多个以逗号分隔，前缀 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称或域名的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "开始时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "结束时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "导出模块运行日志",
+        "tags": [
+          "通知中心"
+        ],
+        "x-required-scope": "notify:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/notify/logs/sources": {
+      "get": {
+        "description": "返回按名称排序的来源标签数组：日志中出现过的来源（落盘时跨重启保留），以及模块配置中的来源（例如 Web 服务的全部监听器与 IP 列表），用于按 `source` 过滤。来源与日志一样按请求语言翻译。\n\n所需权限：`notify:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模块日志的全部来源",
         "tags": [
           "通知中心"
         ],
@@ -26733,7 +29645,7 @@
     },
     "/api/perf/logs": {
       "delete": {
-        "description": "所需权限：`perf:write`。",
+        "description": "同时删除落盘的日志文件、历史文件、归档与来源记录。\n\n所需权限：`perf:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -26857,7 +29769,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
             "in": "query",
             "name": "site",
             "schema": {
@@ -26954,6 +29866,230 @@
           }
         ],
         "summary": "查看模块运行日志",
+        "tags": [
+          "性能监控"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/logs/export": {
+      "get": {
+        "description": "以附件流式返回满足过滤条件的全部日志，按时间从旧到新，包括落盘的历史文件与压缩归档。`format` 为 `jsonl`（默认，每行一条 JSON）或 `csv`（UTF-8 带 BOM，以 = + - @ 开头的单元格加单引号防止公式注入）。过滤参数与查看日志接口相同。只读身份导出的内容与查看时一样做凭据脱敏。`lang` 指定导出内容的语言（如 `en`），不填时按 Accept-Language。\n\n所需权限：`perf:read`。",
+        "parameters": [
+          {
+            "description": "导出格式：jsonl（默认，每行一条 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "导出内容的语言，例如 en；不填时按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低级别：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "来源标签，不区分大小写精确匹配",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "关键词：空格分隔表示同时包含，双引号包住短语，前缀 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "客户端地址：完整地址、CIDR 或地址片段，多个以逗号分隔，前缀 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称或域名的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "开始时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "结束时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "导出模块运行日志",
+        "tags": [
+          "性能监控"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/logs/sources": {
+      "get": {
+        "description": "返回按名称排序的来源标签数组：日志中出现过的来源（落盘时跨重启保留），以及模块配置中的来源（例如 Web 服务的全部监听器与 IP 列表），用于按 `source` 过滤。来源与日志一样按请求语言翻译。\n\n所需权限：`perf:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模块日志的全部来源",
         "tags": [
           "性能监控"
         ],
@@ -27853,7 +30989,7 @@
     },
     "/api/portforward/logs": {
       "delete": {
-        "description": "所需权限：`portforward:write`。",
+        "description": "同时删除落盘的日志文件、历史文件、归档与来源记录。\n\n所需权限：`portforward:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -27977,7 +31113,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
             "in": "query",
             "name": "site",
             "schema": {
@@ -28074,6 +31210,230 @@
           }
         ],
         "summary": "查看模块运行日志",
+        "tags": [
+          "端口转发"
+        ],
+        "x-required-scope": "portforward:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/portforward/logs/export": {
+      "get": {
+        "description": "以附件流式返回满足过滤条件的全部日志，按时间从旧到新，包括落盘的历史文件与压缩归档。`format` 为 `jsonl`（默认，每行一条 JSON）或 `csv`（UTF-8 带 BOM，以 = + - @ 开头的单元格加单引号防止公式注入）。过滤参数与查看日志接口相同。只读身份导出的内容与查看时一样做凭据脱敏。`lang` 指定导出内容的语言（如 `en`），不填时按 Accept-Language。\n\n所需权限：`portforward:read`。",
+        "parameters": [
+          {
+            "description": "导出格式：jsonl（默认，每行一条 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "导出内容的语言，例如 en；不填时按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低级别：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "来源标签，不区分大小写精确匹配",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "关键词：空格分隔表示同时包含，双引号包住短语，前缀 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "客户端地址：完整地址、CIDR 或地址片段，多个以逗号分隔，前缀 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称或域名的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "开始时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "结束时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "导出模块运行日志",
+        "tags": [
+          "端口转发"
+        ],
+        "x-required-scope": "portforward:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/portforward/logs/sources": {
+      "get": {
+        "description": "返回按名称排序的来源标签数组：日志中出现过的来源（落盘时跨重启保留），以及模块配置中的来源（例如 Web 服务的全部监听器与 IP 列表），用于按 `source` 过滤。来源与日志一样按请求语言翻译。\n\n所需权限：`portforward:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模块日志的全部来源",
         "tags": [
           "端口转发"
         ],
@@ -28841,7 +32201,7 @@
     },
     "/api/protoroute/logs": {
       "delete": {
-        "description": "所需权限：`protoroute:write`。",
+        "description": "同时删除落盘的日志文件、历史文件、归档与来源记录。\n\n所需权限：`protoroute:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -28965,7 +32325,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
             "in": "query",
             "name": "site",
             "schema": {
@@ -29062,6 +32422,230 @@
           }
         ],
         "summary": "查看模块运行日志",
+        "tags": [
+          "协议分流"
+        ],
+        "x-required-scope": "protoroute:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/protoroute/logs/export": {
+      "get": {
+        "description": "以附件流式返回满足过滤条件的全部日志，按时间从旧到新，包括落盘的历史文件与压缩归档。`format` 为 `jsonl`（默认，每行一条 JSON）或 `csv`（UTF-8 带 BOM，以 = + - @ 开头的单元格加单引号防止公式注入）。过滤参数与查看日志接口相同。只读身份导出的内容与查看时一样做凭据脱敏。`lang` 指定导出内容的语言（如 `en`），不填时按 Accept-Language。\n\n所需权限：`protoroute:read`。",
+        "parameters": [
+          {
+            "description": "导出格式：jsonl（默认，每行一条 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "导出内容的语言，例如 en；不填时按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低级别：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "来源标签，不区分大小写精确匹配",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "关键词：空格分隔表示同时包含，双引号包住短语，前缀 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "客户端地址：完整地址、CIDR 或地址片段，多个以逗号分隔，前缀 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称或域名的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "开始时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "结束时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "导出模块运行日志",
+        "tags": [
+          "协议分流"
+        ],
+        "x-required-scope": "protoroute:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/protoroute/logs/sources": {
+      "get": {
+        "description": "返回按名称排序的来源标签数组：日志中出现过的来源（落盘时跨重启保留），以及模块配置中的来源（例如 Web 服务的全部监听器与 IP 列表），用于按 `source` 过滤。来源与日志一样按请求语言翻译。\n\n所需权限：`protoroute:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模块日志的全部来源",
         "tags": [
           "协议分流"
         ],
@@ -29870,7 +33454,7 @@
     },
     "/api/smb/logs": {
       "delete": {
-        "description": "所需权限：`smb:write`。",
+        "description": "同时删除落盘的日志文件、历史文件、归档与来源记录。\n\n所需权限：`smb:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -29994,7 +33578,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
             "in": "query",
             "name": "site",
             "schema": {
@@ -30091,6 +33675,230 @@
           }
         ],
         "summary": "查看模块运行日志",
+        "tags": [
+          "SMB 服务"
+        ],
+        "x-required-scope": "smb:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/smb/logs/export": {
+      "get": {
+        "description": "以附件流式返回满足过滤条件的全部日志，按时间从旧到新，包括落盘的历史文件与压缩归档。`format` 为 `jsonl`（默认，每行一条 JSON）或 `csv`（UTF-8 带 BOM，以 = + - @ 开头的单元格加单引号防止公式注入）。过滤参数与查看日志接口相同。只读身份导出的内容与查看时一样做凭据脱敏。`lang` 指定导出内容的语言（如 `en`），不填时按 Accept-Language。\n\n所需权限：`smb:read`。",
+        "parameters": [
+          {
+            "description": "导出格式：jsonl（默认，每行一条 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "导出内容的语言，例如 en；不填时按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低级别：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "来源标签，不区分大小写精确匹配",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "关键词：空格分隔表示同时包含，双引号包住短语，前缀 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "客户端地址：完整地址、CIDR 或地址片段，多个以逗号分隔，前缀 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称或域名的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "开始时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "结束时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "导出模块运行日志",
+        "tags": [
+          "SMB 服务"
+        ],
+        "x-required-scope": "smb:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/smb/logs/sources": {
+      "get": {
+        "description": "返回按名称排序的来源标签数组：日志中出现过的来源（落盘时跨重启保留），以及模块配置中的来源（例如 Web 服务的全部监听器与 IP 列表），用于按 `source` 过滤。来源与日志一样按请求语言翻译。\n\n所需权限：`smb:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模块日志的全部来源",
         "tags": [
           "SMB 服务"
         ],
@@ -31333,7 +35141,7 @@
     },
     "/api/ssl/logs": {
       "delete": {
-        "description": "所需权限：`ssl:write`。",
+        "description": "同时删除落盘的日志文件、历史文件、归档与来源记录。\n\n所需权限：`ssl:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -31457,7 +35265,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
             "in": "query",
             "name": "site",
             "schema": {
@@ -31554,6 +35362,230 @@
           }
         ],
         "summary": "查看模块运行日志",
+        "tags": [
+          "SSL 证书"
+        ],
+        "x-required-scope": "ssl:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ssl/logs/export": {
+      "get": {
+        "description": "以附件流式返回满足过滤条件的全部日志，按时间从旧到新，包括落盘的历史文件与压缩归档。`format` 为 `jsonl`（默认，每行一条 JSON）或 `csv`（UTF-8 带 BOM，以 = + - @ 开头的单元格加单引号防止公式注入）。过滤参数与查看日志接口相同。只读身份导出的内容与查看时一样做凭据脱敏。`lang` 指定导出内容的语言（如 `en`），不填时按 Accept-Language。\n\n所需权限：`ssl:read`。",
+        "parameters": [
+          {
+            "description": "导出格式：jsonl（默认，每行一条 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "导出内容的语言，例如 en；不填时按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低级别：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "来源标签，不区分大小写精确匹配",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "关键词：空格分隔表示同时包含，双引号包住短语，前缀 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "客户端地址：完整地址、CIDR 或地址片段，多个以逗号分隔，前缀 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称或域名的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "开始时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "结束时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "导出模块运行日志",
+        "tags": [
+          "SSL 证书"
+        ],
+        "x-required-scope": "ssl:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ssl/logs/sources": {
+      "get": {
+        "description": "返回按名称排序的来源标签数组：日志中出现过的来源（落盘时跨重启保留），以及模块配置中的来源（例如 Web 服务的全部监听器与 IP 列表），用于按 `source` 过滤。来源与日志一样按请求语言翻译。\n\n所需权限：`ssl:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模块日志的全部来源",
         "tags": [
           "SSL 证书"
         ],
@@ -32158,7 +36190,7 @@
     },
     "/api/storage/logs": {
       "delete": {
-        "description": "所需权限：`storage:write`。",
+        "description": "同时删除落盘的日志文件、历史文件、归档与来源记录。\n\n所需权限：`storage:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -32282,7 +36314,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
             "in": "query",
             "name": "site",
             "schema": {
@@ -32379,6 +36411,230 @@
           }
         ],
         "summary": "查看模块运行日志",
+        "tags": [
+          "存储挂载"
+        ],
+        "x-required-scope": "storage:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/storage/logs/export": {
+      "get": {
+        "description": "以附件流式返回满足过滤条件的全部日志，按时间从旧到新，包括落盘的历史文件与压缩归档。`format` 为 `jsonl`（默认，每行一条 JSON）或 `csv`（UTF-8 带 BOM，以 = + - @ 开头的单元格加单引号防止公式注入）。过滤参数与查看日志接口相同。只读身份导出的内容与查看时一样做凭据脱敏。`lang` 指定导出内容的语言（如 `en`），不填时按 Accept-Language。\n\n所需权限：`storage:read`。",
+        "parameters": [
+          {
+            "description": "导出格式：jsonl（默认，每行一条 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "导出内容的语言，例如 en；不填时按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低级别：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "来源标签，不区分大小写精确匹配",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "关键词：空格分隔表示同时包含，双引号包住短语，前缀 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "客户端地址：完整地址、CIDR 或地址片段，多个以逗号分隔，前缀 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称或域名的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "开始时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "结束时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "导出模块运行日志",
+        "tags": [
+          "存储挂载"
+        ],
+        "x-required-scope": "storage:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/storage/logs/sources": {
+      "get": {
+        "description": "返回按名称排序的来源标签数组：日志中出现过的来源（落盘时跨重启保留），以及模块配置中的来源（例如 Web 服务的全部监听器与 IP 列表），用于按 `source` 过滤。来源与日志一样按请求语言翻译。\n\n所需权限：`storage:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模块日志的全部来源",
         "tags": [
           "存储挂载"
         ],
@@ -33108,7 +37364,7 @@
     },
     "/api/stun/logs": {
       "delete": {
-        "description": "所需权限：`stun:write`。",
+        "description": "同时删除落盘的日志文件、历史文件、归档与来源记录。\n\n所需权限：`stun:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -33232,7 +37488,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
             "in": "query",
             "name": "site",
             "schema": {
@@ -33329,6 +37585,230 @@
           }
         ],
         "summary": "查看模块运行日志",
+        "tags": [
+          "STUN 穿透"
+        ],
+        "x-required-scope": "stun:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/stun/logs/export": {
+      "get": {
+        "description": "以附件流式返回满足过滤条件的全部日志，按时间从旧到新，包括落盘的历史文件与压缩归档。`format` 为 `jsonl`（默认，每行一条 JSON）或 `csv`（UTF-8 带 BOM，以 = + - @ 开头的单元格加单引号防止公式注入）。过滤参数与查看日志接口相同。只读身份导出的内容与查看时一样做凭据脱敏。`lang` 指定导出内容的语言（如 `en`），不填时按 Accept-Language。\n\n所需权限：`stun:read`。",
+        "parameters": [
+          {
+            "description": "导出格式：jsonl（默认，每行一条 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "导出内容的语言，例如 en；不填时按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低级别：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "来源标签，不区分大小写精确匹配",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "关键词：空格分隔表示同时包含，双引号包住短语，前缀 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "客户端地址：完整地址、CIDR 或地址片段，多个以逗号分隔，前缀 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称或域名的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "开始时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "结束时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "导出模块运行日志",
+        "tags": [
+          "STUN 穿透"
+        ],
+        "x-required-scope": "stun:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/stun/logs/sources": {
+      "get": {
+        "description": "返回按名称排序的来源标签数组：日志中出现过的来源（落盘时跨重启保留），以及模块配置中的来源（例如 Web 服务的全部监听器与 IP 列表），用于按 `source` 过滤。来源与日志一样按请求语言翻译。\n\n所需权限：`stun:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模块日志的全部来源",
         "tags": [
           "STUN 穿透"
         ],
@@ -36262,7 +40742,7 @@
     },
     "/api/tailscale/logs": {
       "delete": {
-        "description": "所需权限：`tailscale:write`。",
+        "description": "同时删除落盘的日志文件、历史文件、归档与来源记录。\n\n所需权限：`tailscale:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -36386,7 +40866,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
             "in": "query",
             "name": "site",
             "schema": {
@@ -36483,6 +40963,230 @@
           }
         ],
         "summary": "查看模块运行日志",
+        "tags": [
+          "Tailscale 组网"
+        ],
+        "x-required-scope": "tailscale:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/logs/export": {
+      "get": {
+        "description": "以附件流式返回满足过滤条件的全部日志，按时间从旧到新，包括落盘的历史文件与压缩归档。`format` 为 `jsonl`（默认，每行一条 JSON）或 `csv`（UTF-8 带 BOM，以 = + - @ 开头的单元格加单引号防止公式注入）。过滤参数与查看日志接口相同。只读身份导出的内容与查看时一样做凭据脱敏。`lang` 指定导出内容的语言（如 `en`），不填时按 Accept-Language。\n\n所需权限：`tailscale:read`。",
+        "parameters": [
+          {
+            "description": "导出格式：jsonl（默认，每行一条 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "导出内容的语言，例如 en；不填时按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低级别：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "来源标签，不区分大小写精确匹配",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "关键词：空格分隔表示同时包含，双引号包住短语，前缀 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "客户端地址：完整地址、CIDR 或地址片段，多个以逗号分隔，前缀 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称或域名的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "开始时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "结束时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "导出模块运行日志",
+        "tags": [
+          "Tailscale 组网"
+        ],
+        "x-required-scope": "tailscale:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/logs/sources": {
+      "get": {
+        "description": "返回按名称排序的来源标签数组：日志中出现过的来源（落盘时跨重启保留），以及模块配置中的来源（例如 Web 服务的全部监听器与 IP 列表），用于按 `source` 过滤。来源与日志一样按请求语言翻译。\n\n所需权限：`tailscale:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模块日志的全部来源",
         "tags": [
           "Tailscale 组网"
         ],
@@ -37911,7 +42615,7 @@
     },
     "/api/waf/logs": {
       "delete": {
-        "description": "所需权限：`waf:write`。",
+        "description": "同时删除落盘的日志文件、历史文件、归档与来源记录。\n\n所需权限：`waf:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -38035,7 +42739,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
             "in": "query",
             "name": "site",
             "schema": {
@@ -38139,6 +42843,230 @@
         "x-token-allowed": true
       }
     },
+    "/api/waf/logs/export": {
+      "get": {
+        "description": "以附件流式返回满足过滤条件的全部日志，按时间从旧到新，包括落盘的历史文件与压缩归档。`format` 为 `jsonl`（默认，每行一条 JSON）或 `csv`（UTF-8 带 BOM，以 = + - @ 开头的单元格加单引号防止公式注入）。过滤参数与查看日志接口相同。只读身份导出的内容与查看时一样做凭据脱敏。`lang` 指定导出内容的语言（如 `en`），不填时按 Accept-Language。\n\n所需权限：`waf:read`。",
+        "parameters": [
+          {
+            "description": "导出格式：jsonl（默认，每行一条 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "导出内容的语言，例如 en；不填时按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低级别：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "来源标签，不区分大小写精确匹配",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "关键词：空格分隔表示同时包含，双引号包住短语，前缀 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "客户端地址：完整地址、CIDR 或地址片段，多个以逗号分隔，前缀 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称或域名的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "开始时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "结束时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "导出模块运行日志",
+        "tags": [
+          "WAF 防火墙"
+        ],
+        "x-required-scope": "waf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/waf/logs/sources": {
+      "get": {
+        "description": "返回按名称排序的来源标签数组：日志中出现过的来源（落盘时跨重启保留），以及模块配置中的来源（例如 Web 服务的全部监听器与 IP 列表），用于按 `source` 过滤。来源与日志一样按请求语言翻译。\n\n所需权限：`waf:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模块日志的全部来源",
+        "tags": [
+          "WAF 防火墙"
+        ],
+        "x-required-scope": "waf:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/waf/safeline/test": {
       "post": {
         "description": "请求体与实例的 `safeline` 字段相同（`addr` 为 `主机:端口` 或 `unix:` 开头的套接字路径，`timeoutMs` 为超时）。先发送心跳确认连接，再送检一个示例 SQL 注入请求；返回 `latencyMs`（心跳往返毫秒数）、`blocked`（示例攻击是否被识别）与 `eventId`（雷池中的事件 ID）。连接失败返回 502。示例攻击会出现在雷池控制台的攻击记录中。\n\n所需权限：`waf:write`。",
@@ -38201,7 +43129,7 @@
     },
     "/api/webdav/logs": {
       "delete": {
-        "description": "所需权限：`webdav:write`。",
+        "description": "同时删除落盘的日志文件、历史文件、归档与来源记录。\n\n所需权限：`webdav:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -38325,7 +43253,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
             "in": "query",
             "name": "site",
             "schema": {
@@ -38422,6 +43350,230 @@
           }
         ],
         "summary": "查看模块运行日志",
+        "tags": [
+          "WebDAV 服务"
+        ],
+        "x-required-scope": "webdav:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webdav/logs/export": {
+      "get": {
+        "description": "以附件流式返回满足过滤条件的全部日志，按时间从旧到新，包括落盘的历史文件与压缩归档。`format` 为 `jsonl`（默认，每行一条 JSON）或 `csv`（UTF-8 带 BOM，以 = + - @ 开头的单元格加单引号防止公式注入）。过滤参数与查看日志接口相同。只读身份导出的内容与查看时一样做凭据脱敏。`lang` 指定导出内容的语言（如 `en`），不填时按 Accept-Language。\n\n所需权限：`webdav:read`。",
+        "parameters": [
+          {
+            "description": "导出格式：jsonl（默认，每行一条 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "导出内容的语言，例如 en；不填时按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低级别：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "来源标签，不区分大小写精确匹配",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "关键词：空格分隔表示同时包含，双引号包住短语，前缀 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "客户端地址：完整地址、CIDR 或地址片段，多个以逗号分隔，前缀 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称或域名的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "开始时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "结束时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "导出模块运行日志",
+        "tags": [
+          "WebDAV 服务"
+        ],
+        "x-required-scope": "webdav:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webdav/logs/sources": {
+      "get": {
+        "description": "返回按名称排序的来源标签数组：日志中出现过的来源（落盘时跨重启保留），以及模块配置中的来源（例如 Web 服务的全部监听器与 IP 列表），用于按 `source` 过滤。来源与日志一样按请求语言翻译。\n\n所需权限：`webdav:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模块日志的全部来源",
         "tags": [
           "WebDAV 服务"
         ],
@@ -41060,7 +46212,7 @@
     },
     "/api/webservice/logs": {
       "delete": {
-        "description": "所需权限：`webservice:write`。",
+        "description": "同时删除落盘的日志文件、历史文件、归档与来源记录。\n\n所需权限：`webservice:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -41184,7 +46336,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
             "in": "query",
             "name": "site",
             "schema": {
@@ -41281,6 +46433,230 @@
           }
         ],
         "summary": "查看模块运行日志",
+        "tags": [
+          "Web 服务"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/logs/export": {
+      "get": {
+        "description": "以附件流式返回满足过滤条件的全部日志，按时间从旧到新，包括落盘的历史文件与压缩归档。`format` 为 `jsonl`（默认，每行一条 JSON）或 `csv`（UTF-8 带 BOM，以 = + - @ 开头的单元格加单引号防止公式注入）。过滤参数与查看日志接口相同。只读身份导出的内容与查看时一样做凭据脱敏。`lang` 指定导出内容的语言（如 `en`），不填时按 Accept-Language。\n\n所需权限：`webservice:read`。",
+        "parameters": [
+          {
+            "description": "导出格式：jsonl（默认，每行一条 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "导出内容的语言，例如 en；不填时按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低级别：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "来源标签，不区分大小写精确匹配",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "关键词：空格分隔表示同时包含，双引号包住短语，前缀 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "客户端地址：完整地址、CIDR 或地址片段，多个以逗号分隔，前缀 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称或域名的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "开始时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "结束时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "导出模块运行日志",
+        "tags": [
+          "Web 服务"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/logs/sources": {
+      "get": {
+        "description": "返回按名称排序的来源标签数组：日志中出现过的来源（落盘时跨重启保留），以及模块配置中的来源（例如 Web 服务的全部监听器与 IP 列表），用于按 `source` 过滤。来源与日志一样按请求语言翻译。\n\n所需权限：`webservice:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模块日志的全部来源",
         "tags": [
           "Web 服务"
         ],
@@ -43761,7 +49137,7 @@
     },
     "/api/webterminal/logs": {
       "delete": {
-        "description": "所需权限：`webterminal:write`。",
+        "description": "同时删除落盘的日志文件、历史文件、归档与来源记录。\n\n所需权限：`webterminal:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -43885,7 +49261,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
             "in": "query",
             "name": "site",
             "schema": {
@@ -43982,6 +49358,230 @@
           }
         ],
         "summary": "查看模块运行日志",
+        "tags": [
+          "Web 终端"
+        ],
+        "x-required-scope": "webterminal:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webterminal/logs/export": {
+      "get": {
+        "description": "以附件流式返回满足过滤条件的全部日志，按时间从旧到新，包括落盘的历史文件与压缩归档。`format` 为 `jsonl`（默认，每行一条 JSON）或 `csv`（UTF-8 带 BOM，以 = + - @ 开头的单元格加单引号防止公式注入）。过滤参数与查看日志接口相同。只读身份导出的内容与查看时一样做凭据脱敏。`lang` 指定导出内容的语言（如 `en`），不填时按 Accept-Language。\n\n所需权限：`webterminal:read`。",
+        "parameters": [
+          {
+            "description": "导出格式：jsonl（默认，每行一条 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "导出内容的语言，例如 en；不填时按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低级别：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "来源标签，不区分大小写精确匹配",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "关键词：空格分隔表示同时包含，双引号包住短语，前缀 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "客户端地址：完整地址、CIDR 或地址片段，多个以逗号分隔，前缀 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称或域名的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "开始时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "结束时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "导出模块运行日志",
+        "tags": [
+          "Web 终端"
+        ],
+        "x-required-scope": "webterminal:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webterminal/logs/sources": {
+      "get": {
+        "description": "返回按名称排序的来源标签数组：日志中出现过的来源（落盘时跨重启保留），以及模块配置中的来源（例如 Web 服务的全部监听器与 IP 列表），用于按 `source` 过滤。来源与日志一样按请求语言翻译。\n\n所需权限：`webterminal:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模块日志的全部来源",
         "tags": [
           "Web 终端"
         ],
@@ -46605,7 +52205,7 @@
     },
     "/api/wol/logs": {
       "delete": {
-        "description": "所需权限：`wol:write`。",
+        "description": "同时删除落盘的日志文件、历史文件、归档与来源记录。\n\n所需权限：`wol:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -46729,7 +52329,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
             "in": "query",
             "name": "site",
             "schema": {
@@ -46826,6 +52426,230 @@
           }
         ],
         "summary": "查看模块运行日志",
+        "tags": [
+          "网络唤醒"
+        ],
+        "x-required-scope": "wol:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/wol/logs/export": {
+      "get": {
+        "description": "以附件流式返回满足过滤条件的全部日志，按时间从旧到新，包括落盘的历史文件与压缩归档。`format` 为 `jsonl`（默认，每行一条 JSON）或 `csv`（UTF-8 带 BOM，以 = + - @ 开头的单元格加单引号防止公式注入）。过滤参数与查看日志接口相同。只读身份导出的内容与查看时一样做凭据脱敏。`lang` 指定导出内容的语言（如 `en`），不填时按 Accept-Language。\n\n所需权限：`wol:read`。",
+        "parameters": [
+          {
+            "description": "导出格式：jsonl（默认，每行一条 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "导出内容的语言，例如 en；不填时按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低级别：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "来源标签，不区分大小写精确匹配",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "关键词：空格分隔表示同时包含，双引号包住短语，前缀 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "客户端地址：完整地址、CIDR 或地址片段，多个以逗号分隔，前缀 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称或域名的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站点名称，不区分大小写完整匹配，只返回该站点的访问日志",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服务监听器 key，完整匹配；用于区分同名站点或同名监听器（例如分开监听的 IPv4 与 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "状态码，如 404、4xx、500-599，多个以逗号分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏被封禁来源的访问日志：封禁后被拒绝的请求，以及当前仍在封禁中的来源的全部请求（包括触发封禁的请求）；只影响返回结果，日志照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "为 1 时隐藏带管理后台登录态的请求，即管理员经 Web 服务站点访问后台产生的访问日志",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "开始时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "结束时间，RFC 3339 格式或毫秒时间戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "导出模块运行日志",
+        "tags": [
+          "网络唤醒"
+        ],
+        "x-required-scope": "wol:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/wol/logs/sources": {
+      "get": {
+        "description": "返回按名称排序的来源标签数组：日志中出现过的来源（落盘时跨重启保留），以及模块配置中的来源（例如 Web 服务的全部监听器与 IP 列表），用于按 `source` 过滤。来源与日志一样按请求语言翻译。\n\n所需权限：`wol:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模块日志的全部来源",
         "tags": [
           "网络唤醒"
         ],

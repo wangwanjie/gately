@@ -69,6 +69,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Method | Path | Required permission | Description |
 | --- | --- | --- | --- |
 | GET | `/api/portforward/logs` | `portforward:read` | View module runtime logs |
+| GET | `/api/portforward/logs/sources` | `portforward:read` | List all sources of module logs |
+| GET | `/api/portforward/logs/export` | `portforward:read` | Export module logs |
 | DELETE | `/api/portforward/logs` | `portforward:write` | Clear module runtime logs |
 | GET | `/api/portforward/rules` | `portforward:read` | List Port forwarding rule |
 | POST | `/api/portforward/rules` | `portforward:write` | Create Port forwarding rule |
@@ -88,6 +90,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Method | Path | Required permission | Description |
 | --- | --- | --- | --- |
 | GET | `/api/protoroute/logs` | `protoroute:read` | View module runtime logs |
+| GET | `/api/protoroute/logs/sources` | `protoroute:read` | List all sources of module logs |
+| GET | `/api/protoroute/logs/export` | `protoroute:read` | Export module logs |
 | DELETE | `/api/protoroute/logs` | `protoroute:write` | Clear module runtime logs |
 | GET | `/api/protoroute/rules` | `protoroute:read` | List protocol routing rule |
 | POST | `/api/protoroute/rules` | `protoroute:write` | Create protocol routing rule |
@@ -107,6 +111,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Method | Path | Required permission | Description |
 | --- | --- | --- | --- |
 | GET | `/api/ddns/logs` | `ddns:read` | View module runtime logs |
+| GET | `/api/ddns/logs/sources` | `ddns:read` | List all sources of module logs |
+| GET | `/api/ddns/logs/export` | `ddns:read` | Export module logs |
 | DELETE | `/api/ddns/logs` | `ddns:write` | Clear module runtime logs |
 | GET | `/api/ddns/tasks` | `ddns:read` | List DDNS task |
 | POST | `/api/ddns/tasks` | `ddns:write` | Create DDNS task |
@@ -135,6 +141,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Method | Path | Required permission | Description |
 | --- | --- | --- | --- |
 | GET | `/api/stun/logs` | `stun:read` | View module runtime logs |
+| GET | `/api/stun/logs/sources` | `stun:read` | List all sources of module logs |
+| GET | `/api/stun/logs/export` | `stun:read` | Export module logs |
 | DELETE | `/api/stun/logs` | `stun:write` | Clear module runtime logs |
 | GET | `/api/stun/rules` | `stun:read` | List STUN rule |
 | POST | `/api/stun/rules` | `stun:write` | Create STUN rule |
@@ -156,6 +164,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Method | Path | Required permission | Description |
 | --- | --- | --- | --- |
 | GET | `/api/tailscale/logs` | `tailscale:read` | View module runtime logs |
+| GET | `/api/tailscale/logs/sources` | `tailscale:read` | List all sources of module logs |
+| GET | `/api/tailscale/logs/export` | `tailscale:read` | Export module logs |
 | DELETE | `/api/tailscale/logs` | `tailscale:write` | Clear module runtime logs |
 | GET | `/api/tailscale/instances` | `tailscale:read` | List Tailscale instance |
 | POST | `/api/tailscale/instances` | `tailscale:write` | Add a Tailscale instance |
@@ -187,6 +197,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Method | Path | Required permission | Description |
 | --- | --- | --- | --- |
 | GET | `/api/netbird/logs` | `netbird:read` | View module runtime logs |
+| GET | `/api/netbird/logs/sources` | `netbird:read` | List all sources of module logs |
+| GET | `/api/netbird/logs/export` | `netbird:read` | Export module logs |
 | DELETE | `/api/netbird/logs` | `netbird:write` | Clear module runtime logs |
 | GET | `/api/netbird/instances` | `netbird:read` | List NetBird instance |
 | POST | `/api/netbird/instances` | `netbird:write` | Add a NetBird instance |
@@ -218,6 +230,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Method | Path | Required permission | Description |
 | --- | --- | --- | --- |
 | GET | `/api/frp/logs` | `frp:read` | View module runtime logs |
+| GET | `/api/frp/logs/sources` | `frp:read` | List all sources of module logs |
+| GET | `/api/frp/logs/export` | `frp:read` | Export module logs |
 | DELETE | `/api/frp/logs` | `frp:write` | Clear module runtime logs |
 | GET | `/api/frp/clients` | `frp:read` | List frp client |
 | POST | `/api/frp/clients` | `frp:write` | Create frp client |
@@ -270,6 +284,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Method | Path | Required permission | Description |
 | --- | --- | --- | --- |
 | GET | `/api/cloudflared/logs` | `cloudflared:read` | View module runtime logs |
+| GET | `/api/cloudflared/logs/sources` | `cloudflared:read` | List all sources of module logs |
+| GET | `/api/cloudflared/logs/export` | `cloudflared:read` | Export module logs |
 | DELETE | `/api/cloudflared/logs` | `cloudflared:write` | Clear module runtime logs |
 | GET | `/api/cloudflared/tunnels` | `cloudflared:read` | List Cloudflare Tunnel |
 | POST | `/api/cloudflared/tunnels` | `cloudflared:write` | Create Cloudflare Tunnel |
@@ -300,6 +316,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Method | Path | Required permission | Description |
 | --- | --- | --- | --- |
 | GET | `/api/ssl/logs` | `ssl:read` | View module runtime logs |
+| GET | `/api/ssl/logs/sources` | `ssl:read` | List all sources of module logs |
+| GET | `/api/ssl/logs/export` | `ssl:read` | Export module logs |
 | DELETE | `/api/ssl/logs` | `ssl:write` | Clear module runtime logs |
 | GET | `/api/ssl/certs` | `ssl:read` | List Certificate |
 | POST | `/api/ssl/certs` | `ssl:write` | Create Certificate |
@@ -325,6 +343,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Method | Path | Required permission | Description |
 | --- | --- | --- | --- |
 | GET | `/api/waf/logs` | `waf:read` | View module runtime logs |
+| GET | `/api/waf/logs/sources` | `waf:read` | List all sources of module logs |
+| GET | `/api/waf/logs/export` | `waf:read` | Export module logs |
 | DELETE | `/api/waf/logs` | `waf:write` | Clear module runtime logs |
 | GET | `/api/waf/instances` | `waf:read` | List WAF instance |
 | POST | `/api/waf/instances` | `waf:write` | Create WAF instance |
@@ -345,6 +365,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Method | Path | Required permission | Description |
 | --- | --- | --- | --- |
 | GET | `/api/webservice/logs` | `webservice:read` | View module runtime logs |
+| GET | `/api/webservice/logs/sources` | `webservice:read` | List all sources of module logs |
+| GET | `/api/webservice/logs/export` | `webservice:read` | Export module logs |
 | DELETE | `/api/webservice/logs` | `webservice:write` | Clear module runtime logs |
 | GET | `/api/webservice/listeners` | `webservice:read` | List Web service listening |
 | POST | `/api/webservice/listeners` | `webservice:write` | Create Web service listening |
@@ -400,6 +422,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Method | Path | Required permission | Description |
 | --- | --- | --- | --- |
 | GET | `/api/guard/logs` | `guard:read` | View module runtime logs |
+| GET | `/api/guard/logs/sources` | `guard:read` | List all sources of module logs |
+| GET | `/api/guard/logs/export` | `guard:read` | Export module logs |
 | DELETE | `/api/guard/logs` | `guard:write` | Clear module runtime logs |
 | GET | `/api/guard/jails` | `guard:read` | List intrusion prevention rule |
 | POST | `/api/guard/jails` | `guard:write` | Create intrusion prevention rule |
@@ -426,6 +450,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Method | Path | Required permission | Description |
 | --- | --- | --- | --- |
 | GET | `/api/wol/logs` | `wol:read` | View module runtime logs |
+| GET | `/api/wol/logs/sources` | `wol:read` | List all sources of module logs |
+| GET | `/api/wol/logs/export` | `wol:read` | Export module logs |
 | DELETE | `/api/wol/logs` | `wol:write` | Clear module runtime logs |
 | GET | `/api/wol/devices` | `wol:read` | List Wake a device |
 | POST | `/api/wol/devices` | `wol:write` | Create Wake a device |
@@ -445,6 +471,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Method | Path | Required permission | Description |
 | --- | --- | --- | --- |
 | GET | `/api/webterminal/logs` | `webterminal:read` | View module runtime logs |
+| GET | `/api/webterminal/logs/sources` | `webterminal:read` | List all sources of module logs |
+| GET | `/api/webterminal/logs/export` | `webterminal:read` | Export module logs |
 | DELETE | `/api/webterminal/logs` | `webterminal:write` | Clear module runtime logs |
 | GET | `/api/webterminal/connections` | `webterminal:read` | List Terminal connection |
 | POST | `/api/webterminal/connections` | `webterminal:write` | Create Terminal connection |
@@ -512,6 +540,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Method | Path | Required permission | Description |
 | --- | --- | --- | --- |
 | GET | `/api/cron/logs` | `cron:read` | View module runtime logs |
+| GET | `/api/cron/logs/sources` | `cron:read` | List all sources of module logs |
+| GET | `/api/cron/logs/export` | `cron:read` | Export module logs |
 | DELETE | `/api/cron/logs` | `cron:write` | Clear module runtime logs |
 | GET | `/api/cron/tasks` | `cron:read` | List Scheduled task |
 | POST | `/api/cron/tasks` | `cron:write` | Create Scheduled task |
@@ -531,6 +561,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Method | Path | Required permission | Description |
 | --- | --- | --- | --- |
 | GET | `/api/docker/logs` | `docker:read` | View module runtime logs |
+| GET | `/api/docker/logs/sources` | `docker:read` | List all sources of module logs |
+| GET | `/api/docker/logs/export` | `docker:read` | Export module logs |
 | DELETE | `/api/docker/logs` | `docker:write` | Clear module runtime logs |
 | GET | `/api/docker/tasks` | `docker:read` | List background tasks |
 | GET | `/api/docker/tasks/{id}` | `docker:read` | View background task progress and output |
@@ -603,6 +635,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Method | Path | Required permission | Description |
 | --- | --- | --- | --- |
 | GET | `/api/webdav/logs` | `webdav:read` | View module runtime logs |
+| GET | `/api/webdav/logs/sources` | `webdav:read` | List all sources of module logs |
+| GET | `/api/webdav/logs/export` | `webdav:read` | Export module logs |
 | DELETE | `/api/webdav/logs` | `webdav:write` | Clear module runtime logs |
 | GET | `/api/webdav/settings` | `webdav:read` | Read WebDAV settings |
 | GET | `/api/webdav/settings/secrets` | `webdav:write` | View local user passwords in plain text |
@@ -615,6 +649,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Method | Path | Required permission | Description |
 | --- | --- | --- | --- |
 | GET | `/api/ftp/logs` | `ftp:read` | View module runtime logs |
+| GET | `/api/ftp/logs/sources` | `ftp:read` | List all sources of module logs |
+| GET | `/api/ftp/logs/export` | `ftp:read` | Export module logs |
 | DELETE | `/api/ftp/logs` | `ftp:write` | Clear module runtime logs |
 | GET | `/api/ftp/settings` | `ftp:read` | Read FTP settings |
 | GET | `/api/ftp/settings/secrets` | `ftp:write` | View local user passwords in plain text |
@@ -627,6 +663,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Method | Path | Required permission | Description |
 | --- | --- | --- | --- |
 | GET | `/api/smb/logs` | `smb:read` | View module runtime logs |
+| GET | `/api/smb/logs/sources` | `smb:read` | List all sources of module logs |
+| GET | `/api/smb/logs/export` | `smb:read` | Export module logs |
 | DELETE | `/api/smb/logs` | `smb:write` | Clear module runtime logs |
 | GET | `/api/smb/settings` | `smb:read` | Get SMB settings |
 | GET | `/api/smb/settings/secrets` | `smb:write` | View local user passwords in plain text |
@@ -639,6 +677,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Method | Path | Required permission | Description |
 | --- | --- | --- | --- |
 | GET | `/api/filebrowser/logs` | `filebrowser:read` | View module runtime logs |
+| GET | `/api/filebrowser/logs/sources` | `filebrowser:read` | List all sources of module logs |
+| GET | `/api/filebrowser/logs/export` | `filebrowser:read` | Export module logs |
 | DELETE | `/api/filebrowser/logs` | `filebrowser:write` | Clear module runtime logs |
 | GET | `/api/filebrowser/instances` | `filebrowser:read` | List File Browser instance |
 | POST | `/api/filebrowser/instances` | `filebrowser:write` | Create File Browser instance |
@@ -667,6 +707,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Method | Path | Required permission | Description |
 | --- | --- | --- | --- |
 | GET | `/api/storage/logs` | `storage:read` | View module runtime logs |
+| GET | `/api/storage/logs/sources` | `storage:read` | List all sources of module logs |
+| GET | `/api/storage/logs/export` | `storage:read` | Export module logs |
 | DELETE | `/api/storage/logs` | `storage:write` | Clear module runtime logs |
 | GET | `/api/storage/mounts` | `storage:read` | List Storage Mounts |
 | POST | `/api/storage/mounts` | `storage:write` | Create Storage Mounts |
@@ -691,6 +733,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Method | Path | Required permission | Description |
 | --- | --- | --- | --- |
 | GET | `/api/notify/logs` | `notify:read` | View module runtime logs |
+| GET | `/api/notify/logs/sources` | `notify:read` | List all sources of module logs |
+| GET | `/api/notify/logs/export` | `notify:read` | Export module logs |
 | DELETE | `/api/notify/logs` | `notify:write` | Clear module runtime logs |
 | GET | `/api/notify/channels` | `notify:read` | List Notification channel |
 | POST | `/api/notify/channels` | `notify:write` | Create Notification channel |
@@ -724,6 +768,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Method | Path | Required permission | Description |
 | --- | --- | --- | --- |
 | GET | `/api/perf/logs` | `perf:read` | View module runtime logs |
+| GET | `/api/perf/logs/sources` | `perf:read` | List all sources of module logs |
+| GET | `/api/perf/logs/export` | `perf:read` | Export module logs |
 | DELETE | `/api/perf/logs` | `perf:write` | Clear module runtime logs |
 | GET | `/api/perf/rules` | `perf:read` | List Performance alert rules |
 | POST | `/api/perf/rules` | `perf:write` | Create Performance alert rules |
@@ -746,6 +792,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Method | Path | Required permission | Description |
 | --- | --- | --- | --- |
 | GET | `/api/nettools/logs` | `nettools:read` | View module runtime logs |
+| GET | `/api/nettools/logs/sources` | `nettools:read` | List all sources of module logs |
+| GET | `/api/nettools/logs/export` | `nettools:read` | Export module logs |
 | DELETE | `/api/nettools/logs` | `nettools:write` | Clear module runtime logs |
 | POST | `/api/nettools/run` | `nettools:write` | Run a diagnostic tool and return a task (tool: ping / traceroute / tcp / dns / speed / scan) |
 | GET | `/api/nettools/tasks` | `nettools:read` | Recent diagnostic tasks |
@@ -760,6 +808,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Method | Path | Required permission | Description |
 | --- | --- | --- | --- |
 | GET | `/api/backup/logs` | `backup:read` | View module runtime logs |
+| GET | `/api/backup/logs/sources` | `backup:read` | List all sources of module logs |
+| GET | `/api/backup/logs/export` | `backup:read` | Export module logs |
 | DELETE | `/api/backup/logs` | `backup:write` | Clear module runtime logs |
 | GET | `/api/backup/targets` | `backup:read` | List Backup destinations |
 | POST | `/api/backup/targets` | `backup:write` | Create Backup destinations |
@@ -794,6 +844,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | GET | `/api/session` | Any valid token | View the current authenticated identity |
 | GET | `/api/status` | `status:read` | View system and module status |
 | GET | `/api/logs` | `logs:read` | View system logs |
+| GET | `/api/logs/sources` | `logs:read` | List all sources of system logs |
+| GET | `/api/logs/export` | `logs:read` | Export system logs |
 | GET | `/api/system/settings` | Login sessions only | Read global settings |
 | PUT | `/api/system/settings` | Login sessions only | Save global settings |
 | GET | `/api/system/settings/secrets` | Login sessions only | View third-party login Client Secrets in plain text |

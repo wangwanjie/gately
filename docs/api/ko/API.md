@@ -69,6 +69,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 메서드 | 경로 | 필요 권한 | 설명 |
 | --- | --- | --- | --- |
 | GET | `/api/portforward/logs` | `portforward:read` | 모듈 실행 로그 보기 |
+| GET | `/api/portforward/logs/sources` | `portforward:read` | 모듈 로그의 모든 소스 목록 |
+| GET | `/api/portforward/logs/export` | `portforward:read` | 모듈 로그 내보내기 |
 | DELETE | `/api/portforward/logs` | `portforward:write` | 모듈 실행 로그 비우기 |
 | GET | `/api/portforward/rules` | `portforward:read` | 포트 포워딩 규칙 목록 조회 |
 | POST | `/api/portforward/rules` | `portforward:write` | 포트 포워딩 규칙 추가 |
@@ -88,6 +90,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 메서드 | 경로 | 필요 권한 | 설명 |
 | --- | --- | --- | --- |
 | GET | `/api/protoroute/logs` | `protoroute:read` | 모듈 실행 로그 보기 |
+| GET | `/api/protoroute/logs/sources` | `protoroute:read` | 모듈 로그의 모든 소스 목록 |
+| GET | `/api/protoroute/logs/export` | `protoroute:read` | 모듈 로그 내보내기 |
 | DELETE | `/api/protoroute/logs` | `protoroute:write` | 모듈 실행 로그 비우기 |
 | GET | `/api/protoroute/rules` | `protoroute:read` | 프로토콜 라우팅 규칙 목록 조회 |
 | POST | `/api/protoroute/rules` | `protoroute:write` | 프로토콜 라우팅 규칙 추가 |
@@ -107,6 +111,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 메서드 | 경로 | 필요 권한 | 설명 |
 | --- | --- | --- | --- |
 | GET | `/api/ddns/logs` | `ddns:read` | 모듈 실행 로그 보기 |
+| GET | `/api/ddns/logs/sources` | `ddns:read` | 모듈 로그의 모든 소스 목록 |
+| GET | `/api/ddns/logs/export` | `ddns:read` | 모듈 로그 내보내기 |
 | DELETE | `/api/ddns/logs` | `ddns:write` | 모듈 실행 로그 비우기 |
 | GET | `/api/ddns/tasks` | `ddns:read` | DDNS 작업 목록 조회 |
 | POST | `/api/ddns/tasks` | `ddns:write` | DDNS 작업 추가 |
@@ -135,6 +141,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 메서드 | 경로 | 필요 권한 | 설명 |
 | --- | --- | --- | --- |
 | GET | `/api/stun/logs` | `stun:read` | 모듈 실행 로그 보기 |
+| GET | `/api/stun/logs/sources` | `stun:read` | 모듈 로그의 모든 소스 목록 |
+| GET | `/api/stun/logs/export` | `stun:read` | 모듈 로그 내보내기 |
 | DELETE | `/api/stun/logs` | `stun:write` | 모듈 실행 로그 비우기 |
 | GET | `/api/stun/rules` | `stun:read` | STUN 규칙 목록 조회 |
 | POST | `/api/stun/rules` | `stun:write` | STUN 규칙 추가 |
@@ -156,6 +164,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 메서드 | 경로 | 필요 권한 | 설명 |
 | --- | --- | --- | --- |
 | GET | `/api/tailscale/logs` | `tailscale:read` | 모듈 실행 로그 보기 |
+| GET | `/api/tailscale/logs/sources` | `tailscale:read` | 모듈 로그의 모든 소스 목록 |
+| GET | `/api/tailscale/logs/export` | `tailscale:read` | 모듈 로그 내보내기 |
 | DELETE | `/api/tailscale/logs` | `tailscale:write` | 모듈 실행 로그 비우기 |
 | GET | `/api/tailscale/instances` | `tailscale:read` | Tailscale 인스턴스 목록 조회 |
 | POST | `/api/tailscale/instances` | `tailscale:write` | Tailscale 인스턴스 추가 |
@@ -187,6 +197,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 메서드 | 경로 | 필요 권한 | 설명 |
 | --- | --- | --- | --- |
 | GET | `/api/netbird/logs` | `netbird:read` | 모듈 실행 로그 보기 |
+| GET | `/api/netbird/logs/sources` | `netbird:read` | 모듈 로그의 모든 소스 목록 |
+| GET | `/api/netbird/logs/export` | `netbird:read` | 모듈 로그 내보내기 |
 | DELETE | `/api/netbird/logs` | `netbird:write` | 모듈 실행 로그 비우기 |
 | GET | `/api/netbird/instances` | `netbird:read` | NetBird 인스턴스 목록 조회 |
 | POST | `/api/netbird/instances` | `netbird:write` | NetBird 인스턴스 추가 |
@@ -218,6 +230,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 메서드 | 경로 | 필요 권한 | 설명 |
 | --- | --- | --- | --- |
 | GET | `/api/frp/logs` | `frp:read` | 모듈 실행 로그 보기 |
+| GET | `/api/frp/logs/sources` | `frp:read` | 모듈 로그의 모든 소스 목록 |
+| GET | `/api/frp/logs/export` | `frp:read` | 모듈 로그 내보내기 |
 | DELETE | `/api/frp/logs` | `frp:write` | 모듈 실행 로그 비우기 |
 | GET | `/api/frp/clients` | `frp:read` | frp 클라이언트 목록 조회 |
 | POST | `/api/frp/clients` | `frp:write` | frp 클라이언트 추가 |
@@ -270,6 +284,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 메서드 | 경로 | 필요 권한 | 설명 |
 | --- | --- | --- | --- |
 | GET | `/api/cloudflared/logs` | `cloudflared:read` | 모듈 실행 로그 보기 |
+| GET | `/api/cloudflared/logs/sources` | `cloudflared:read` | 모듈 로그의 모든 소스 목록 |
+| GET | `/api/cloudflared/logs/export` | `cloudflared:read` | 모듈 로그 내보내기 |
 | DELETE | `/api/cloudflared/logs` | `cloudflared:write` | 모듈 실행 로그 비우기 |
 | GET | `/api/cloudflared/tunnels` | `cloudflared:read` | Cloudflare 터널 목록 조회 |
 | POST | `/api/cloudflared/tunnels` | `cloudflared:write` | Cloudflare 터널 추가 |
@@ -300,6 +316,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 메서드 | 경로 | 필요 권한 | 설명 |
 | --- | --- | --- | --- |
 | GET | `/api/ssl/logs` | `ssl:read` | 모듈 실행 로그 보기 |
+| GET | `/api/ssl/logs/sources` | `ssl:read` | 모듈 로그의 모든 소스 목록 |
+| GET | `/api/ssl/logs/export` | `ssl:read` | 모듈 로그 내보내기 |
 | DELETE | `/api/ssl/logs` | `ssl:write` | 모듈 실행 로그 비우기 |
 | GET | `/api/ssl/certs` | `ssl:read` | 인증서 목록 조회 |
 | POST | `/api/ssl/certs` | `ssl:write` | 인증서 추가 |
@@ -325,6 +343,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 메서드 | 경로 | 필요 권한 | 설명 |
 | --- | --- | --- | --- |
 | GET | `/api/waf/logs` | `waf:read` | 모듈 실행 로그 보기 |
+| GET | `/api/waf/logs/sources` | `waf:read` | 모듈 로그의 모든 소스 목록 |
+| GET | `/api/waf/logs/export` | `waf:read` | 모듈 로그 내보내기 |
 | DELETE | `/api/waf/logs` | `waf:write` | 모듈 실행 로그 비우기 |
 | GET | `/api/waf/instances` | `waf:read` | WAF 인스턴스 목록 조회 |
 | POST | `/api/waf/instances` | `waf:write` | WAF 인스턴스 추가 |
@@ -345,6 +365,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 메서드 | 경로 | 필요 권한 | 설명 |
 | --- | --- | --- | --- |
 | GET | `/api/webservice/logs` | `webservice:read` | 모듈 실행 로그 보기 |
+| GET | `/api/webservice/logs/sources` | `webservice:read` | 모듈 로그의 모든 소스 목록 |
+| GET | `/api/webservice/logs/export` | `webservice:read` | 모듈 로그 내보내기 |
 | DELETE | `/api/webservice/logs` | `webservice:write` | 모듈 실행 로그 비우기 |
 | GET | `/api/webservice/listeners` | `webservice:read` | Web 서비스 수신 대기 목록 조회 |
 | POST | `/api/webservice/listeners` | `webservice:write` | Web 서비스 수신 대기 추가 |
@@ -400,6 +422,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 메서드 | 경로 | 필요 권한 | 설명 |
 | --- | --- | --- | --- |
 | GET | `/api/guard/logs` | `guard:read` | 모듈 실행 로그 보기 |
+| GET | `/api/guard/logs/sources` | `guard:read` | 모듈 로그의 모든 소스 목록 |
+| GET | `/api/guard/logs/export` | `guard:read` | 모듈 로그 내보내기 |
 | DELETE | `/api/guard/logs` | `guard:write` | 모듈 실행 로그 비우기 |
 | GET | `/api/guard/jails` | `guard:read` | 침입 방지 규칙 목록 조회 |
 | POST | `/api/guard/jails` | `guard:write` | 침입 방지 규칙 추가 |
@@ -426,6 +450,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 메서드 | 경로 | 필요 권한 | 설명 |
 | --- | --- | --- | --- |
 | GET | `/api/wol/logs` | `wol:read` | 모듈 실행 로그 보기 |
+| GET | `/api/wol/logs/sources` | `wol:read` | 모듈 로그의 모든 소스 목록 |
+| GET | `/api/wol/logs/export` | `wol:read` | 모듈 로그 내보내기 |
 | DELETE | `/api/wol/logs` | `wol:write` | 모듈 실행 로그 비우기 |
 | GET | `/api/wol/devices` | `wol:read` | 장치 깨우기 목록 조회 |
 | POST | `/api/wol/devices` | `wol:write` | 장치 깨우기 추가 |
@@ -445,6 +471,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 메서드 | 경로 | 필요 권한 | 설명 |
 | --- | --- | --- | --- |
 | GET | `/api/webterminal/logs` | `webterminal:read` | 모듈 실행 로그 보기 |
+| GET | `/api/webterminal/logs/sources` | `webterminal:read` | 모듈 로그의 모든 소스 목록 |
+| GET | `/api/webterminal/logs/export` | `webterminal:read` | 모듈 로그 내보내기 |
 | DELETE | `/api/webterminal/logs` | `webterminal:write` | 모듈 실행 로그 비우기 |
 | GET | `/api/webterminal/connections` | `webterminal:read` | 터미널 연결 목록 조회 |
 | POST | `/api/webterminal/connections` | `webterminal:write` | 터미널 연결 추가 |
@@ -512,6 +540,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 메서드 | 경로 | 필요 권한 | 설명 |
 | --- | --- | --- | --- |
 | GET | `/api/cron/logs` | `cron:read` | 모듈 실행 로그 보기 |
+| GET | `/api/cron/logs/sources` | `cron:read` | 모듈 로그의 모든 소스 목록 |
+| GET | `/api/cron/logs/export` | `cron:read` | 모듈 로그 내보내기 |
 | DELETE | `/api/cron/logs` | `cron:write` | 모듈 실행 로그 비우기 |
 | GET | `/api/cron/tasks` | `cron:read` | 예약 작업 목록 조회 |
 | POST | `/api/cron/tasks` | `cron:write` | 예약 작업 추가 |
@@ -531,6 +561,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 메서드 | 경로 | 필요 권한 | 설명 |
 | --- | --- | --- | --- |
 | GET | `/api/docker/logs` | `docker:read` | 모듈 실행 로그 보기 |
+| GET | `/api/docker/logs/sources` | `docker:read` | 모듈 로그의 모든 소스 목록 |
+| GET | `/api/docker/logs/export` | `docker:read` | 모듈 로그 내보내기 |
 | DELETE | `/api/docker/logs` | `docker:write` | 모듈 실행 로그 비우기 |
 | GET | `/api/docker/tasks` | `docker:read` | 백그라운드 작업 목록 조회 |
 | GET | `/api/docker/tasks/{id}` | `docker:read` | 백그라운드 작업 진행 상황 및 출력 보기 |
@@ -603,6 +635,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 메서드 | 경로 | 필요 권한 | 설명 |
 | --- | --- | --- | --- |
 | GET | `/api/webdav/logs` | `webdav:read` | 모듈 실행 로그 보기 |
+| GET | `/api/webdav/logs/sources` | `webdav:read` | 모듈 로그의 모든 소스 목록 |
+| GET | `/api/webdav/logs/export` | `webdav:read` | 모듈 로그 내보내기 |
 | DELETE | `/api/webdav/logs` | `webdav:write` | 모듈 실행 로그 비우기 |
 | GET | `/api/webdav/settings` | `webdav:read` | WebDAV 설정 읽기 |
 | GET | `/api/webdav/settings/secrets` | `webdav:write` | 로컬 사용자 비밀번호 평문 보기 |
@@ -615,6 +649,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 메서드 | 경로 | 필요 권한 | 설명 |
 | --- | --- | --- | --- |
 | GET | `/api/ftp/logs` | `ftp:read` | 모듈 실행 로그 보기 |
+| GET | `/api/ftp/logs/sources` | `ftp:read` | 모듈 로그의 모든 소스 목록 |
+| GET | `/api/ftp/logs/export` | `ftp:read` | 모듈 로그 내보내기 |
 | DELETE | `/api/ftp/logs` | `ftp:write` | 모듈 실행 로그 비우기 |
 | GET | `/api/ftp/settings` | `ftp:read` | FTP 설정 읽기 |
 | GET | `/api/ftp/settings/secrets` | `ftp:write` | 로컬 사용자 비밀번호 평문 보기 |
@@ -627,6 +663,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 메서드 | 경로 | 필요 권한 | 설명 |
 | --- | --- | --- | --- |
 | GET | `/api/smb/logs` | `smb:read` | 모듈 실행 로그 보기 |
+| GET | `/api/smb/logs/sources` | `smb:read` | 모듈 로그의 모든 소스 목록 |
+| GET | `/api/smb/logs/export` | `smb:read` | 모듈 로그 내보내기 |
 | DELETE | `/api/smb/logs` | `smb:write` | 모듈 실행 로그 비우기 |
 | GET | `/api/smb/settings` | `smb:read` | SMB 설정 조회 |
 | GET | `/api/smb/settings/secrets` | `smb:write` | 로컬 사용자 비밀번호 평문 보기 |
@@ -639,6 +677,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 메서드 | 경로 | 필요 권한 | 설명 |
 | --- | --- | --- | --- |
 | GET | `/api/filebrowser/logs` | `filebrowser:read` | 모듈 실행 로그 보기 |
+| GET | `/api/filebrowser/logs/sources` | `filebrowser:read` | 모듈 로그의 모든 소스 목록 |
+| GET | `/api/filebrowser/logs/export` | `filebrowser:read` | 모듈 로그 내보내기 |
 | DELETE | `/api/filebrowser/logs` | `filebrowser:write` | 모듈 실행 로그 비우기 |
 | GET | `/api/filebrowser/instances` | `filebrowser:read` | File Browser 인스턴스 목록 조회 |
 | POST | `/api/filebrowser/instances` | `filebrowser:write` | File Browser 인스턴스 추가 |
@@ -667,6 +707,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 메서드 | 경로 | 필요 권한 | 설명 |
 | --- | --- | --- | --- |
 | GET | `/api/storage/logs` | `storage:read` | 모듈 실행 로그 보기 |
+| GET | `/api/storage/logs/sources` | `storage:read` | 모듈 로그의 모든 소스 목록 |
+| GET | `/api/storage/logs/export` | `storage:read` | 모듈 로그 내보내기 |
 | DELETE | `/api/storage/logs` | `storage:write` | 모듈 실행 로그 비우기 |
 | GET | `/api/storage/mounts` | `storage:read` | 스토리지 마운트 목록 조회 |
 | POST | `/api/storage/mounts` | `storage:write` | 스토리지 마운트 추가 |
@@ -691,6 +733,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 메서드 | 경로 | 필요 권한 | 설명 |
 | --- | --- | --- | --- |
 | GET | `/api/notify/logs` | `notify:read` | 모듈 실행 로그 보기 |
+| GET | `/api/notify/logs/sources` | `notify:read` | 모듈 로그의 모든 소스 목록 |
+| GET | `/api/notify/logs/export` | `notify:read` | 모듈 로그 내보내기 |
 | DELETE | `/api/notify/logs` | `notify:write` | 모듈 실행 로그 비우기 |
 | GET | `/api/notify/channels` | `notify:read` | 알림 채널 목록 조회 |
 | POST | `/api/notify/channels` | `notify:write` | 알림 채널 추가 |
@@ -724,6 +768,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 메서드 | 경로 | 필요 권한 | 설명 |
 | --- | --- | --- | --- |
 | GET | `/api/perf/logs` | `perf:read` | 모듈 실행 로그 보기 |
+| GET | `/api/perf/logs/sources` | `perf:read` | 모듈 로그의 모든 소스 목록 |
+| GET | `/api/perf/logs/export` | `perf:read` | 모듈 로그 내보내기 |
 | DELETE | `/api/perf/logs` | `perf:write` | 모듈 실행 로그 비우기 |
 | GET | `/api/perf/rules` | `perf:read` | 성능 경보 규칙 목록 조회 |
 | POST | `/api/perf/rules` | `perf:write` | 성능 경보 규칙 추가 |
@@ -746,6 +792,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 메서드 | 경로 | 필요 권한 | 설명 |
 | --- | --- | --- | --- |
 | GET | `/api/nettools/logs` | `nettools:read` | 모듈 실행 로그 보기 |
+| GET | `/api/nettools/logs/sources` | `nettools:read` | 모듈 로그의 모든 소스 목록 |
+| GET | `/api/nettools/logs/export` | `nettools:read` | 모듈 로그 내보내기 |
 | DELETE | `/api/nettools/logs` | `nettools:write` | 모듈 실행 로그 비우기 |
 | POST | `/api/nettools/run` | `nettools:write` | 진단 도구를 실행하고 작업을 반환합니다 (tool: ping / traceroute / tcp / dns / speed / scan) |
 | GET | `/api/nettools/tasks` | `nettools:read` | 최근 진단 작업 |
@@ -760,6 +808,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 메서드 | 경로 | 필요 권한 | 설명 |
 | --- | --- | --- | --- |
 | GET | `/api/backup/logs` | `backup:read` | 모듈 실행 로그 보기 |
+| GET | `/api/backup/logs/sources` | `backup:read` | 모듈 로그의 모든 소스 목록 |
+| GET | `/api/backup/logs/export` | `backup:read` | 모듈 로그 내보내기 |
 | DELETE | `/api/backup/logs` | `backup:write` | 모듈 실행 로그 비우기 |
 | GET | `/api/backup/targets` | `backup:read` | 백업 대상 목록 조회 |
 | POST | `/api/backup/targets` | `backup:write` | 백업 대상 추가 |
@@ -794,6 +844,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/session` | 유효한 모든 토큰 | 현재 인증된 ID 보기 |
 | GET | `/api/status` | `status:read` | 시스템 및 각 모듈 상태 보기 |
 | GET | `/api/logs` | `logs:read` | 시스템 로그 보기 |
+| GET | `/api/logs/sources` | `logs:read` | 시스템 로그의 모든 소스 목록 |
+| GET | `/api/logs/export` | `logs:read` | 시스템 로그 내보내기 |
 | GET | `/api/system/settings` | 로그인 세션 전용 | 전역 설정 읽기 |
 | PUT | `/api/system/settings` | 로그인 세션 전용 | 전역 설정 저장 |
 | GET | `/api/system/settings/secrets` | 로그인 세션 전용 | 서드파티 로그인 Client Secret 평문 보기 |

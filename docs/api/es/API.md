@@ -69,6 +69,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Método | Ruta | Permiso requerido | Descripción |
 | --- | --- | --- | --- |
 | GET | `/api/portforward/logs` | `portforward:read` | Ver los registros de ejecución del módulo |
+| GET | `/api/portforward/logs/sources` | `portforward:read` | Listar todos los orígenes de los registros del módulo |
+| GET | `/api/portforward/logs/export` | `portforward:read` | Exportar registros del módulo |
 | DELETE | `/api/portforward/logs` | `portforward:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/portforward/rules` | `portforward:read` | Listar Regla de reenvío de puertos |
 | POST | `/api/portforward/rules` | `portforward:write` | Añadir Regla de reenvío de puertos |
@@ -88,6 +90,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Método | Ruta | Permiso requerido | Descripción |
 | --- | --- | --- | --- |
 | GET | `/api/protoroute/logs` | `protoroute:read` | Ver los registros de ejecución del módulo |
+| GET | `/api/protoroute/logs/sources` | `protoroute:read` | Listar todos los orígenes de los registros del módulo |
+| GET | `/api/protoroute/logs/export` | `protoroute:read` | Exportar registros del módulo |
 | DELETE | `/api/protoroute/logs` | `protoroute:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/protoroute/rules` | `protoroute:read` | Listar regla de enrutamiento por protocolo |
 | POST | `/api/protoroute/rules` | `protoroute:write` | Añadir regla de enrutamiento por protocolo |
@@ -107,6 +111,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Método | Ruta | Permiso requerido | Descripción |
 | --- | --- | --- | --- |
 | GET | `/api/ddns/logs` | `ddns:read` | Ver los registros de ejecución del módulo |
+| GET | `/api/ddns/logs/sources` | `ddns:read` | Listar todos los orígenes de los registros del módulo |
+| GET | `/api/ddns/logs/export` | `ddns:read` | Exportar registros del módulo |
 | DELETE | `/api/ddns/logs` | `ddns:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/ddns/tasks` | `ddns:read` | Listar Tarea DDNS |
 | POST | `/api/ddns/tasks` | `ddns:write` | Añadir Tarea DDNS |
@@ -135,6 +141,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Método | Ruta | Permiso requerido | Descripción |
 | --- | --- | --- | --- |
 | GET | `/api/stun/logs` | `stun:read` | Ver los registros de ejecución del módulo |
+| GET | `/api/stun/logs/sources` | `stun:read` | Listar todos los orígenes de los registros del módulo |
+| GET | `/api/stun/logs/export` | `stun:read` | Exportar registros del módulo |
 | DELETE | `/api/stun/logs` | `stun:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/stun/rules` | `stun:read` | Listar Regla STUN |
 | POST | `/api/stun/rules` | `stun:write` | Añadir Regla STUN |
@@ -156,6 +164,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Método | Ruta | Permiso requerido | Descripción |
 | --- | --- | --- | --- |
 | GET | `/api/tailscale/logs` | `tailscale:read` | Ver los registros de ejecución del módulo |
+| GET | `/api/tailscale/logs/sources` | `tailscale:read` | Listar todos los orígenes de los registros del módulo |
+| GET | `/api/tailscale/logs/export` | `tailscale:read` | Exportar registros del módulo |
 | DELETE | `/api/tailscale/logs` | `tailscale:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/tailscale/instances` | `tailscale:read` | Listar instancia de Tailscale |
 | POST | `/api/tailscale/instances` | `tailscale:write` | Añadir una instancia de Tailscale |
@@ -187,6 +197,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Método | Ruta | Permiso requerido | Descripción |
 | --- | --- | --- | --- |
 | GET | `/api/netbird/logs` | `netbird:read` | Ver los registros de ejecución del módulo |
+| GET | `/api/netbird/logs/sources` | `netbird:read` | Listar todos los orígenes de los registros del módulo |
+| GET | `/api/netbird/logs/export` | `netbird:read` | Exportar registros del módulo |
 | DELETE | `/api/netbird/logs` | `netbird:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/netbird/instances` | `netbird:read` | Listar Instancia de NetBird |
 | POST | `/api/netbird/instances` | `netbird:write` | Añadir una instancia de NetBird |
@@ -218,6 +230,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Método | Ruta | Permiso requerido | Descripción |
 | --- | --- | --- | --- |
 | GET | `/api/frp/logs` | `frp:read` | Ver los registros de ejecución del módulo |
+| GET | `/api/frp/logs/sources` | `frp:read` | Listar todos los orígenes de los registros del módulo |
+| GET | `/api/frp/logs/export` | `frp:read` | Exportar registros del módulo |
 | DELETE | `/api/frp/logs` | `frp:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/frp/clients` | `frp:read` | Listar Cliente frp |
 | POST | `/api/frp/clients` | `frp:write` | Añadir Cliente frp |
@@ -270,6 +284,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Método | Ruta | Permiso requerido | Descripción |
 | --- | --- | --- | --- |
 | GET | `/api/cloudflared/logs` | `cloudflared:read` | Ver los registros de ejecución del módulo |
+| GET | `/api/cloudflared/logs/sources` | `cloudflared:read` | Listar todos los orígenes de los registros del módulo |
+| GET | `/api/cloudflared/logs/export` | `cloudflared:read` | Exportar registros del módulo |
 | DELETE | `/api/cloudflared/logs` | `cloudflared:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/cloudflared/tunnels` | `cloudflared:read` | Listar Túnel de Cloudflare |
 | POST | `/api/cloudflared/tunnels` | `cloudflared:write` | Añadir Túnel de Cloudflare |
@@ -300,6 +316,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Método | Ruta | Permiso requerido | Descripción |
 | --- | --- | --- | --- |
 | GET | `/api/ssl/logs` | `ssl:read` | Ver los registros de ejecución del módulo |
+| GET | `/api/ssl/logs/sources` | `ssl:read` | Listar todos los orígenes de los registros del módulo |
+| GET | `/api/ssl/logs/export` | `ssl:read` | Exportar registros del módulo |
 | DELETE | `/api/ssl/logs` | `ssl:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/ssl/certs` | `ssl:read` | Listar Certificado |
 | POST | `/api/ssl/certs` | `ssl:write` | Añadir Certificado |
@@ -325,6 +343,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Método | Ruta | Permiso requerido | Descripción |
 | --- | --- | --- | --- |
 | GET | `/api/waf/logs` | `waf:read` | Ver los registros de ejecución del módulo |
+| GET | `/api/waf/logs/sources` | `waf:read` | Listar todos los orígenes de los registros del módulo |
+| GET | `/api/waf/logs/export` | `waf:read` | Exportar registros del módulo |
 | DELETE | `/api/waf/logs` | `waf:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/waf/instances` | `waf:read` | Listar Instancia WAF |
 | POST | `/api/waf/instances` | `waf:write` | Añadir Instancia WAF |
@@ -345,6 +365,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Método | Ruta | Permiso requerido | Descripción |
 | --- | --- | --- | --- |
 | GET | `/api/webservice/logs` | `webservice:read` | Ver los registros de ejecución del módulo |
+| GET | `/api/webservice/logs/sources` | `webservice:read` | Listar todos los orígenes de los registros del módulo |
+| GET | `/api/webservice/logs/export` | `webservice:read` | Exportar registros del módulo |
 | DELETE | `/api/webservice/logs` | `webservice:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/webservice/listeners` | `webservice:read` | Listar Escucha del servicio web |
 | POST | `/api/webservice/listeners` | `webservice:write` | Añadir Escucha del servicio web |
@@ -400,6 +422,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Método | Ruta | Permiso requerido | Descripción |
 | --- | --- | --- | --- |
 | GET | `/api/guard/logs` | `guard:read` | Ver los registros de ejecución del módulo |
+| GET | `/api/guard/logs/sources` | `guard:read` | Listar todos los orígenes de los registros del módulo |
+| GET | `/api/guard/logs/export` | `guard:read` | Exportar registros del módulo |
 | DELETE | `/api/guard/logs` | `guard:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/guard/jails` | `guard:read` | Listar regla de prevención de intrusiones |
 | POST | `/api/guard/jails` | `guard:write` | Añadir regla de prevención de intrusiones |
@@ -426,6 +450,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Método | Ruta | Permiso requerido | Descripción |
 | --- | --- | --- | --- |
 | GET | `/api/wol/logs` | `wol:read` | Ver los registros de ejecución del módulo |
+| GET | `/api/wol/logs/sources` | `wol:read` | Listar todos los orígenes de los registros del módulo |
+| GET | `/api/wol/logs/export` | `wol:read` | Exportar registros del módulo |
 | DELETE | `/api/wol/logs` | `wol:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/wol/devices` | `wol:read` | Listar Activar un dispositivo |
 | POST | `/api/wol/devices` | `wol:write` | Añadir Activar un dispositivo |
@@ -445,6 +471,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Método | Ruta | Permiso requerido | Descripción |
 | --- | --- | --- | --- |
 | GET | `/api/webterminal/logs` | `webterminal:read` | Ver los registros de ejecución del módulo |
+| GET | `/api/webterminal/logs/sources` | `webterminal:read` | Listar todos los orígenes de los registros del módulo |
+| GET | `/api/webterminal/logs/export` | `webterminal:read` | Exportar registros del módulo |
 | DELETE | `/api/webterminal/logs` | `webterminal:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/webterminal/connections` | `webterminal:read` | Listar Conexión de terminal |
 | POST | `/api/webterminal/connections` | `webterminal:write` | Añadir Conexión de terminal |
@@ -512,6 +540,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Método | Ruta | Permiso requerido | Descripción |
 | --- | --- | --- | --- |
 | GET | `/api/cron/logs` | `cron:read` | Ver los registros de ejecución del módulo |
+| GET | `/api/cron/logs/sources` | `cron:read` | Listar todos los orígenes de los registros del módulo |
+| GET | `/api/cron/logs/export` | `cron:read` | Exportar registros del módulo |
 | DELETE | `/api/cron/logs` | `cron:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/cron/tasks` | `cron:read` | Listar Tarea programada |
 | POST | `/api/cron/tasks` | `cron:write` | Añadir Tarea programada |
@@ -531,6 +561,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Método | Ruta | Permiso requerido | Descripción |
 | --- | --- | --- | --- |
 | GET | `/api/docker/logs` | `docker:read` | Ver los registros de ejecución del módulo |
+| GET | `/api/docker/logs/sources` | `docker:read` | Listar todos los orígenes de los registros del módulo |
+| GET | `/api/docker/logs/export` | `docker:read` | Exportar registros del módulo |
 | DELETE | `/api/docker/logs` | `docker:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/docker/tasks` | `docker:read` | Listar tareas en segundo plano |
 | GET | `/api/docker/tasks/{id}` | `docker:read` | Ver el progreso y la salida de una tarea en segundo plano |
@@ -603,6 +635,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Método | Ruta | Permiso requerido | Descripción |
 | --- | --- | --- | --- |
 | GET | `/api/webdav/logs` | `webdav:read` | Ver los registros de ejecución del módulo |
+| GET | `/api/webdav/logs/sources` | `webdav:read` | Listar todos los orígenes de los registros del módulo |
+| GET | `/api/webdav/logs/export` | `webdav:read` | Exportar registros del módulo |
 | DELETE | `/api/webdav/logs` | `webdav:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/webdav/settings` | `webdav:read` | Leer los ajustes de WebDAV |
 | GET | `/api/webdav/settings/secrets` | `webdav:write` | Ver en texto plano las contraseñas de los usuarios locales |
@@ -615,6 +649,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Método | Ruta | Permiso requerido | Descripción |
 | --- | --- | --- | --- |
 | GET | `/api/ftp/logs` | `ftp:read` | Ver los registros de ejecución del módulo |
+| GET | `/api/ftp/logs/sources` | `ftp:read` | Listar todos los orígenes de los registros del módulo |
+| GET | `/api/ftp/logs/export` | `ftp:read` | Exportar registros del módulo |
 | DELETE | `/api/ftp/logs` | `ftp:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/ftp/settings` | `ftp:read` | Leer los ajustes de FTP |
 | GET | `/api/ftp/settings/secrets` | `ftp:write` | Ver en texto plano las contraseñas de los usuarios locales |
@@ -627,6 +663,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Método | Ruta | Permiso requerido | Descripción |
 | --- | --- | --- | --- |
 | GET | `/api/smb/logs` | `smb:read` | Ver los registros de ejecución del módulo |
+| GET | `/api/smb/logs/sources` | `smb:read` | Listar todos los orígenes de los registros del módulo |
+| GET | `/api/smb/logs/export` | `smb:read` | Exportar registros del módulo |
 | DELETE | `/api/smb/logs` | `smb:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/smb/settings` | `smb:read` | Obtener la configuración de SMB |
 | GET | `/api/smb/settings/secrets` | `smb:write` | Ver en texto plano las contraseñas de los usuarios locales |
@@ -639,6 +677,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Método | Ruta | Permiso requerido | Descripción |
 | --- | --- | --- | --- |
 | GET | `/api/filebrowser/logs` | `filebrowser:read` | Ver los registros de ejecución del módulo |
+| GET | `/api/filebrowser/logs/sources` | `filebrowser:read` | Listar todos los orígenes de los registros del módulo |
+| GET | `/api/filebrowser/logs/export` | `filebrowser:read` | Exportar registros del módulo |
 | DELETE | `/api/filebrowser/logs` | `filebrowser:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/filebrowser/instances` | `filebrowser:read` | Listar Instancia de File Browser |
 | POST | `/api/filebrowser/instances` | `filebrowser:write` | Añadir Instancia de File Browser |
@@ -667,6 +707,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Método | Ruta | Permiso requerido | Descripción |
 | --- | --- | --- | --- |
 | GET | `/api/storage/logs` | `storage:read` | Ver los registros de ejecución del módulo |
+| GET | `/api/storage/logs/sources` | `storage:read` | Listar todos los orígenes de los registros del módulo |
+| GET | `/api/storage/logs/export` | `storage:read` | Exportar registros del módulo |
 | DELETE | `/api/storage/logs` | `storage:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/storage/mounts` | `storage:read` | Listar Montajes de almacenamiento |
 | POST | `/api/storage/mounts` | `storage:write` | Añadir Montajes de almacenamiento |
@@ -691,6 +733,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Método | Ruta | Permiso requerido | Descripción |
 | --- | --- | --- | --- |
 | GET | `/api/notify/logs` | `notify:read` | Ver los registros de ejecución del módulo |
+| GET | `/api/notify/logs/sources` | `notify:read` | Listar todos los orígenes de los registros del módulo |
+| GET | `/api/notify/logs/export` | `notify:read` | Exportar registros del módulo |
 | DELETE | `/api/notify/logs` | `notify:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/notify/channels` | `notify:read` | Listar Canal de notificaciones |
 | POST | `/api/notify/channels` | `notify:write` | Añadir Canal de notificaciones |
@@ -724,6 +768,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Método | Ruta | Permiso requerido | Descripción |
 | --- | --- | --- | --- |
 | GET | `/api/perf/logs` | `perf:read` | Ver los registros de ejecución del módulo |
+| GET | `/api/perf/logs/sources` | `perf:read` | Listar todos los orígenes de los registros del módulo |
+| GET | `/api/perf/logs/export` | `perf:read` | Exportar registros del módulo |
 | DELETE | `/api/perf/logs` | `perf:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/perf/rules` | `perf:read` | Listar Reglas de alerta de rendimiento |
 | POST | `/api/perf/rules` | `perf:write` | Añadir Reglas de alerta de rendimiento |
@@ -746,6 +792,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Método | Ruta | Permiso requerido | Descripción |
 | --- | --- | --- | --- |
 | GET | `/api/nettools/logs` | `nettools:read` | Ver los registros de ejecución del módulo |
+| GET | `/api/nettools/logs/sources` | `nettools:read` | Listar todos los orígenes de los registros del módulo |
+| GET | `/api/nettools/logs/export` | `nettools:read` | Exportar registros del módulo |
 | DELETE | `/api/nettools/logs` | `nettools:write` | Vaciar los registros de ejecución del módulo |
 | POST | `/api/nettools/run` | `nettools:write` | Ejecutar una herramienta de diagnóstico y devolver la tarea (tool: ping / traceroute / tcp / dns / speed / scan) |
 | GET | `/api/nettools/tasks` | `nettools:read` | Tareas de diagnóstico recientes |
@@ -760,6 +808,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Método | Ruta | Permiso requerido | Descripción |
 | --- | --- | --- | --- |
 | GET | `/api/backup/logs` | `backup:read` | Ver los registros de ejecución del módulo |
+| GET | `/api/backup/logs/sources` | `backup:read` | Listar todos los orígenes de los registros del módulo |
+| GET | `/api/backup/logs/export` | `backup:read` | Exportar registros del módulo |
 | DELETE | `/api/backup/logs` | `backup:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/backup/targets` | `backup:read` | Listar Destino de copia de seguridad |
 | POST | `/api/backup/targets` | `backup:write` | Añadir Destino de copia de seguridad |
@@ -794,6 +844,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | GET | `/api/session` | Cualquier token válido | Ver la identidad autenticada actual |
 | GET | `/api/status` | `status:read` | Ver el estado del sistema y de cada módulo |
 | GET | `/api/logs` | `logs:read` | Ver los registros del sistema |
+| GET | `/api/logs/sources` | `logs:read` | Listar todos los orígenes de los registros del sistema |
+| GET | `/api/logs/export` | `logs:read` | Exportar registros del sistema |
 | GET | `/api/system/settings` | Solo sesión iniciada | Leer los ajustes globales |
 | PUT | `/api/system/settings` | Solo sesión iniciada | Guardar los ajustes globales |
 | GET | `/api/system/settings/secrets` | Solo sesión iniciada | Ver en texto plano los Client Secret del inicio de sesión de terceros |

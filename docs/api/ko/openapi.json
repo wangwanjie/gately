@@ -5707,7 +5707,7 @@
     },
     "/api/backup/logs": {
       "delete": {
-        "description": "필요한 권한: `backup:write`.",
+        "description": "디스크의 로그 파일, 순환된 파일, 아카이브와 소스 기록도 함께 삭제합니다.\n\n필요한 권한: `backup:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -5831,7 +5831,7 @@
             }
           },
           {
-            "description": "",
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
             "in": "query",
             "name": "site",
             "schema": {
@@ -5928,6 +5928,230 @@
           }
         ],
         "summary": "모듈 실행 로그 보기",
+        "tags": [
+          "설정 백업"
+        ],
+        "x-required-scope": "backup:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/backup/logs/export": {
+      "get": {
+        "description": "필터 조건에 맞는 모든 로그를 첨부 파일로 스트리밍하여 반환합니다. 오래된 순서이며 디스크의 순환된 파일과 압축 아카이브도 포함합니다. `format`은 `jsonl`(기본값, 한 줄에 JSON 하나) 또는 `csv`(BOM 포함 UTF-8, = + - @로 시작하는 셀에는 수식 주입 방지를 위해 작은따옴표를 앞에 붙임)입니다. 필터 매개변수는 로그 조회 API와 같습니다. 읽기 전용 신원이 내보내는 내용은 조회할 때와 마찬가지로 자격 증명이 가려집니다. `lang`은 내보낼 내용의 언어(예: `en`)를 지정하며, 생략하면 Accept-Language를 따릅니다.\n\n필요한 권한: `backup:read`.",
+        "parameters": [
+          {
+            "description": "내보내기 형식: jsonl(기본값, 한 줄에 JSON 하나) 또는 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "내보낼 내용의 언어(예: en). 생략하면 Accept-Language를 따릅니다",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "최소 수준: debug, info, warn 또는 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "소스 레이블, 대소문자 구분 없이 정확히 일치",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "키워드: 공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 - 는 제외",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "제외 키워드: 공백으로 구분, 큰따옴표로 구문을 묶음, 하나라도 포함하면 제외되며 q와 함께 적용",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "클라이언트 주소: 전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분, 앞에 ! 또는 -를 붙이면 제외",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름 또는 도메인의 일부",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "웹 서비스 리스너 key, 완전 일치. 이름이 같은 사이트나 리스너(예: IPv4와 IPv6를 따로 수신하는 경우)를 구분합니다",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "상태 코드(예: 404, 4xx, 500-599), 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 차단된 출처의 접근 로그를 숨깁니다. 차단되어 거부된 요청과 현재 차단 중인 출처의 모든 요청(차단을 일으킨 요청 포함)이 대상입니다(반환 결과에만 영향, 로그는 그대로 보관)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 관리 콘솔 로그인 세션이 있는 요청, 즉 관리자가 Web 서비스 사이트를 통해 콘솔에 접근하며 생긴 액세스 로그를 숨깁니다",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "시작 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "종료 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그 내보내기",
+        "tags": [
+          "설정 백업"
+        ],
+        "x-required-scope": "backup:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/backup/logs/sources": {
+      "get": {
+        "description": "이름순으로 정렬된 소스 레이블 배열을 반환합니다. 로그에 나타난 소스(디스크 저장 시 재시작 후에도 유지)와 모듈 설정의 소스(예: Web 서비스의 모든 리스너와 IP 목록)를 포함하며 `source` 필터에 사용합니다. 소스는 로그와 마찬가지로 요청 언어로 번역됩니다.\n\n필요한 권한: `backup:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그의 모든 소스 목록",
         "tags": [
           "설정 백업"
         ],
@@ -7217,7 +7441,7 @@
     },
     "/api/cloudflared/logs": {
       "delete": {
-        "description": "필요한 권한: `cloudflared:write`.",
+        "description": "디스크의 로그 파일, 순환된 파일, 아카이브와 소스 기록도 함께 삭제합니다.\n\n필요한 권한: `cloudflared:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -7341,7 +7565,7 @@
             }
           },
           {
-            "description": "",
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
             "in": "query",
             "name": "site",
             "schema": {
@@ -7438,6 +7662,230 @@
           }
         ],
         "summary": "모듈 실행 로그 보기",
+        "tags": [
+          "Cloudflare 터널"
+        ],
+        "x-required-scope": "cloudflared:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/cloudflared/logs/export": {
+      "get": {
+        "description": "필터 조건에 맞는 모든 로그를 첨부 파일로 스트리밍하여 반환합니다. 오래된 순서이며 디스크의 순환된 파일과 압축 아카이브도 포함합니다. `format`은 `jsonl`(기본값, 한 줄에 JSON 하나) 또는 `csv`(BOM 포함 UTF-8, = + - @로 시작하는 셀에는 수식 주입 방지를 위해 작은따옴표를 앞에 붙임)입니다. 필터 매개변수는 로그 조회 API와 같습니다. 읽기 전용 신원이 내보내는 내용은 조회할 때와 마찬가지로 자격 증명이 가려집니다. `lang`은 내보낼 내용의 언어(예: `en`)를 지정하며, 생략하면 Accept-Language를 따릅니다.\n\n필요한 권한: `cloudflared:read`.",
+        "parameters": [
+          {
+            "description": "내보내기 형식: jsonl(기본값, 한 줄에 JSON 하나) 또는 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "내보낼 내용의 언어(예: en). 생략하면 Accept-Language를 따릅니다",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "최소 수준: debug, info, warn 또는 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "소스 레이블, 대소문자 구분 없이 정확히 일치",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "키워드: 공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 - 는 제외",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "제외 키워드: 공백으로 구분, 큰따옴표로 구문을 묶음, 하나라도 포함하면 제외되며 q와 함께 적용",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "클라이언트 주소: 전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분, 앞에 ! 또는 -를 붙이면 제외",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름 또는 도메인의 일부",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "웹 서비스 리스너 key, 완전 일치. 이름이 같은 사이트나 리스너(예: IPv4와 IPv6를 따로 수신하는 경우)를 구분합니다",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "상태 코드(예: 404, 4xx, 500-599), 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 차단된 출처의 접근 로그를 숨깁니다. 차단되어 거부된 요청과 현재 차단 중인 출처의 모든 요청(차단을 일으킨 요청 포함)이 대상입니다(반환 결과에만 영향, 로그는 그대로 보관)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 관리 콘솔 로그인 세션이 있는 요청, 즉 관리자가 Web 서비스 사이트를 통해 콘솔에 접근하며 생긴 액세스 로그를 숨깁니다",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "시작 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "종료 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그 내보내기",
+        "tags": [
+          "Cloudflare 터널"
+        ],
+        "x-required-scope": "cloudflared:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/cloudflared/logs/sources": {
+      "get": {
+        "description": "이름순으로 정렬된 소스 레이블 배열을 반환합니다. 로그에 나타난 소스(디스크 저장 시 재시작 후에도 유지)와 모듈 설정의 소스(예: Web 서비스의 모든 리스너와 IP 목록)를 포함하며 `source` 필터에 사용합니다. 소스는 로그와 마찬가지로 요청 언어로 번역됩니다.\n\n필요한 권한: `cloudflared:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그의 모든 소스 목록",
         "tags": [
           "Cloudflare 터널"
         ],
@@ -8517,7 +8965,7 @@
     },
     "/api/cron/logs": {
       "delete": {
-        "description": "필요한 권한: `cron:write`.",
+        "description": "디스크의 로그 파일, 순환된 파일, 아카이브와 소스 기록도 함께 삭제합니다.\n\n필요한 권한: `cron:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -8641,7 +9089,7 @@
             }
           },
           {
-            "description": "",
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
             "in": "query",
             "name": "site",
             "schema": {
@@ -8738,6 +9186,230 @@
           }
         ],
         "summary": "모듈 실행 로그 보기",
+        "tags": [
+          "예약 작업"
+        ],
+        "x-required-scope": "cron:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/cron/logs/export": {
+      "get": {
+        "description": "필터 조건에 맞는 모든 로그를 첨부 파일로 스트리밍하여 반환합니다. 오래된 순서이며 디스크의 순환된 파일과 압축 아카이브도 포함합니다. `format`은 `jsonl`(기본값, 한 줄에 JSON 하나) 또는 `csv`(BOM 포함 UTF-8, = + - @로 시작하는 셀에는 수식 주입 방지를 위해 작은따옴표를 앞에 붙임)입니다. 필터 매개변수는 로그 조회 API와 같습니다. 읽기 전용 신원이 내보내는 내용은 조회할 때와 마찬가지로 자격 증명이 가려집니다. `lang`은 내보낼 내용의 언어(예: `en`)를 지정하며, 생략하면 Accept-Language를 따릅니다.\n\n필요한 권한: `cron:read`.",
+        "parameters": [
+          {
+            "description": "내보내기 형식: jsonl(기본값, 한 줄에 JSON 하나) 또는 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "내보낼 내용의 언어(예: en). 생략하면 Accept-Language를 따릅니다",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "최소 수준: debug, info, warn 또는 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "소스 레이블, 대소문자 구분 없이 정확히 일치",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "키워드: 공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 - 는 제외",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "제외 키워드: 공백으로 구분, 큰따옴표로 구문을 묶음, 하나라도 포함하면 제외되며 q와 함께 적용",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "클라이언트 주소: 전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분, 앞에 ! 또는 -를 붙이면 제외",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름 또는 도메인의 일부",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "웹 서비스 리스너 key, 완전 일치. 이름이 같은 사이트나 리스너(예: IPv4와 IPv6를 따로 수신하는 경우)를 구분합니다",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "상태 코드(예: 404, 4xx, 500-599), 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 차단된 출처의 접근 로그를 숨깁니다. 차단되어 거부된 요청과 현재 차단 중인 출처의 모든 요청(차단을 일으킨 요청 포함)이 대상입니다(반환 결과에만 영향, 로그는 그대로 보관)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 관리 콘솔 로그인 세션이 있는 요청, 즉 관리자가 Web 서비스 사이트를 통해 콘솔에 접근하며 생긴 액세스 로그를 숨깁니다",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "시작 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "종료 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그 내보내기",
+        "tags": [
+          "예약 작업"
+        ],
+        "x-required-scope": "cron:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/cron/logs/sources": {
+      "get": {
+        "description": "이름순으로 정렬된 소스 레이블 배열을 반환합니다. 로그에 나타난 소스(디스크 저장 시 재시작 후에도 유지)와 모듈 설정의 소스(예: Web 서비스의 모든 리스너와 IP 목록)를 포함하며 `source` 필터에 사용합니다. 소스는 로그와 마찬가지로 요청 언어로 번역됩니다.\n\n필요한 권한: `cron:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그의 모든 소스 목록",
         "tags": [
           "예약 작업"
         ],
@@ -9628,7 +10300,7 @@
     },
     "/api/ddns/logs": {
       "delete": {
-        "description": "필요한 권한: `ddns:write`.",
+        "description": "디스크의 로그 파일, 순환된 파일, 아카이브와 소스 기록도 함께 삭제합니다.\n\n필요한 권한: `ddns:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -9752,7 +10424,7 @@
             }
           },
           {
-            "description": "",
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
             "in": "query",
             "name": "site",
             "schema": {
@@ -9849,6 +10521,230 @@
           }
         ],
         "summary": "모듈 실행 로그 보기",
+        "tags": [
+          "동적 도메인"
+        ],
+        "x-required-scope": "ddns:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ddns/logs/export": {
+      "get": {
+        "description": "필터 조건에 맞는 모든 로그를 첨부 파일로 스트리밍하여 반환합니다. 오래된 순서이며 디스크의 순환된 파일과 압축 아카이브도 포함합니다. `format`은 `jsonl`(기본값, 한 줄에 JSON 하나) 또는 `csv`(BOM 포함 UTF-8, = + - @로 시작하는 셀에는 수식 주입 방지를 위해 작은따옴표를 앞에 붙임)입니다. 필터 매개변수는 로그 조회 API와 같습니다. 읽기 전용 신원이 내보내는 내용은 조회할 때와 마찬가지로 자격 증명이 가려집니다. `lang`은 내보낼 내용의 언어(예: `en`)를 지정하며, 생략하면 Accept-Language를 따릅니다.\n\n필요한 권한: `ddns:read`.",
+        "parameters": [
+          {
+            "description": "내보내기 형식: jsonl(기본값, 한 줄에 JSON 하나) 또는 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "내보낼 내용의 언어(예: en). 생략하면 Accept-Language를 따릅니다",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "최소 수준: debug, info, warn 또는 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "소스 레이블, 대소문자 구분 없이 정확히 일치",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "키워드: 공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 - 는 제외",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "제외 키워드: 공백으로 구분, 큰따옴표로 구문을 묶음, 하나라도 포함하면 제외되며 q와 함께 적용",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "클라이언트 주소: 전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분, 앞에 ! 또는 -를 붙이면 제외",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름 또는 도메인의 일부",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "웹 서비스 리스너 key, 완전 일치. 이름이 같은 사이트나 리스너(예: IPv4와 IPv6를 따로 수신하는 경우)를 구분합니다",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "상태 코드(예: 404, 4xx, 500-599), 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 차단된 출처의 접근 로그를 숨깁니다. 차단되어 거부된 요청과 현재 차단 중인 출처의 모든 요청(차단을 일으킨 요청 포함)이 대상입니다(반환 결과에만 영향, 로그는 그대로 보관)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 관리 콘솔 로그인 세션이 있는 요청, 즉 관리자가 Web 서비스 사이트를 통해 콘솔에 접근하며 생긴 액세스 로그를 숨깁니다",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "시작 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "종료 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그 내보내기",
+        "tags": [
+          "동적 도메인"
+        ],
+        "x-required-scope": "ddns:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ddns/logs/sources": {
+      "get": {
+        "description": "이름순으로 정렬된 소스 레이블 배열을 반환합니다. 로그에 나타난 소스(디스크 저장 시 재시작 후에도 유지)와 모듈 설정의 소스(예: Web 서비스의 모든 리스너와 IP 목록)를 포함하며 `source` 필터에 사용합니다. 소스는 로그와 마찬가지로 요청 언어로 번역됩니다.\n\n필요한 권한: `ddns:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그의 모든 소스 목록",
         "tags": [
           "동적 도메인"
         ],
@@ -13936,7 +14832,7 @@
     },
     "/api/docker/logs": {
       "delete": {
-        "description": "필요한 권한: `docker:write`.",
+        "description": "디스크의 로그 파일, 순환된 파일, 아카이브와 소스 기록도 함께 삭제합니다.\n\n필요한 권한: `docker:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -14060,7 +14956,7 @@
             }
           },
           {
-            "description": "",
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
             "in": "query",
             "name": "site",
             "schema": {
@@ -14157,6 +15053,230 @@
           }
         ],
         "summary": "모듈 실행 로그 보기",
+        "tags": [
+          "Docker 관리"
+        ],
+        "x-required-scope": "docker:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/docker/logs/export": {
+      "get": {
+        "description": "필터 조건에 맞는 모든 로그를 첨부 파일로 스트리밍하여 반환합니다. 오래된 순서이며 디스크의 순환된 파일과 압축 아카이브도 포함합니다. `format`은 `jsonl`(기본값, 한 줄에 JSON 하나) 또는 `csv`(BOM 포함 UTF-8, = + - @로 시작하는 셀에는 수식 주입 방지를 위해 작은따옴표를 앞에 붙임)입니다. 필터 매개변수는 로그 조회 API와 같습니다. 읽기 전용 신원이 내보내는 내용은 조회할 때와 마찬가지로 자격 증명이 가려집니다. `lang`은 내보낼 내용의 언어(예: `en`)를 지정하며, 생략하면 Accept-Language를 따릅니다.\n\n필요한 권한: `docker:read`.",
+        "parameters": [
+          {
+            "description": "내보내기 형식: jsonl(기본값, 한 줄에 JSON 하나) 또는 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "내보낼 내용의 언어(예: en). 생략하면 Accept-Language를 따릅니다",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "최소 수준: debug, info, warn 또는 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "소스 레이블, 대소문자 구분 없이 정확히 일치",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "키워드: 공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 - 는 제외",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "제외 키워드: 공백으로 구분, 큰따옴표로 구문을 묶음, 하나라도 포함하면 제외되며 q와 함께 적용",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "클라이언트 주소: 전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분, 앞에 ! 또는 -를 붙이면 제외",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름 또는 도메인의 일부",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "웹 서비스 리스너 key, 완전 일치. 이름이 같은 사이트나 리스너(예: IPv4와 IPv6를 따로 수신하는 경우)를 구분합니다",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "상태 코드(예: 404, 4xx, 500-599), 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 차단된 출처의 접근 로그를 숨깁니다. 차단되어 거부된 요청과 현재 차단 중인 출처의 모든 요청(차단을 일으킨 요청 포함)이 대상입니다(반환 결과에만 영향, 로그는 그대로 보관)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 관리 콘솔 로그인 세션이 있는 요청, 즉 관리자가 Web 서비스 사이트를 통해 콘솔에 접근하며 생긴 액세스 로그를 숨깁니다",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "시작 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "종료 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그 내보내기",
+        "tags": [
+          "Docker 관리"
+        ],
+        "x-required-scope": "docker:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/docker/logs/sources": {
+      "get": {
+        "description": "이름순으로 정렬된 소스 레이블 배열을 반환합니다. 로그에 나타난 소스(디스크 저장 시 재시작 후에도 유지)와 모듈 설정의 소스(예: Web 서비스의 모든 리스너와 IP 목록)를 포함하며 `source` 필터에 사용합니다. 소스는 로그와 마찬가지로 요청 언어로 번역됩니다.\n\n필요한 권한: `docker:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그의 모든 소스 목록",
         "tags": [
           "Docker 관리"
         ],
@@ -16331,7 +17451,7 @@
     },
     "/api/filebrowser/logs": {
       "delete": {
-        "description": "필요한 권한: `filebrowser:write`.",
+        "description": "디스크의 로그 파일, 순환된 파일, 아카이브와 소스 기록도 함께 삭제합니다.\n\n필요한 권한: `filebrowser:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -16455,7 +17575,7 @@
             }
           },
           {
-            "description": "",
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
             "in": "query",
             "name": "site",
             "schema": {
@@ -16552,6 +17672,230 @@
           }
         ],
         "summary": "모듈 실행 로그 보기",
+        "tags": [
+          "File Browser"
+        ],
+        "x-required-scope": "filebrowser:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/filebrowser/logs/export": {
+      "get": {
+        "description": "필터 조건에 맞는 모든 로그를 첨부 파일로 스트리밍하여 반환합니다. 오래된 순서이며 디스크의 순환된 파일과 압축 아카이브도 포함합니다. `format`은 `jsonl`(기본값, 한 줄에 JSON 하나) 또는 `csv`(BOM 포함 UTF-8, = + - @로 시작하는 셀에는 수식 주입 방지를 위해 작은따옴표를 앞에 붙임)입니다. 필터 매개변수는 로그 조회 API와 같습니다. 읽기 전용 신원이 내보내는 내용은 조회할 때와 마찬가지로 자격 증명이 가려집니다. `lang`은 내보낼 내용의 언어(예: `en`)를 지정하며, 생략하면 Accept-Language를 따릅니다.\n\n필요한 권한: `filebrowser:read`.",
+        "parameters": [
+          {
+            "description": "내보내기 형식: jsonl(기본값, 한 줄에 JSON 하나) 또는 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "내보낼 내용의 언어(예: en). 생략하면 Accept-Language를 따릅니다",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "최소 수준: debug, info, warn 또는 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "소스 레이블, 대소문자 구분 없이 정확히 일치",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "키워드: 공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 - 는 제외",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "제외 키워드: 공백으로 구분, 큰따옴표로 구문을 묶음, 하나라도 포함하면 제외되며 q와 함께 적용",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "클라이언트 주소: 전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분, 앞에 ! 또는 -를 붙이면 제외",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름 또는 도메인의 일부",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "웹 서비스 리스너 key, 완전 일치. 이름이 같은 사이트나 리스너(예: IPv4와 IPv6를 따로 수신하는 경우)를 구분합니다",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "상태 코드(예: 404, 4xx, 500-599), 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 차단된 출처의 접근 로그를 숨깁니다. 차단되어 거부된 요청과 현재 차단 중인 출처의 모든 요청(차단을 일으킨 요청 포함)이 대상입니다(반환 결과에만 영향, 로그는 그대로 보관)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 관리 콘솔 로그인 세션이 있는 요청, 즉 관리자가 Web 서비스 사이트를 통해 콘솔에 접근하며 생긴 액세스 로그를 숨깁니다",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "시작 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "종료 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그 내보내기",
+        "tags": [
+          "File Browser"
+        ],
+        "x-required-scope": "filebrowser:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/filebrowser/logs/sources": {
+      "get": {
+        "description": "이름순으로 정렬된 소스 레이블 배열을 반환합니다. 로그에 나타난 소스(디스크 저장 시 재시작 후에도 유지)와 모듈 설정의 소스(예: Web 서비스의 모든 리스너와 IP 목록)를 포함하며 `source` 필터에 사용합니다. 소스는 로그와 마찬가지로 요청 언어로 번역됩니다.\n\n필요한 권한: `filebrowser:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그의 모든 소스 목록",
         "tags": [
           "File Browser"
         ],
@@ -18069,7 +19413,7 @@
     },
     "/api/frp/logs": {
       "delete": {
-        "description": "필요한 권한: `frp:write`.",
+        "description": "디스크의 로그 파일, 순환된 파일, 아카이브와 소스 기록도 함께 삭제합니다.\n\n필요한 권한: `frp:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -18193,7 +19537,7 @@
             }
           },
           {
-            "description": "",
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
             "in": "query",
             "name": "site",
             "schema": {
@@ -18290,6 +19634,230 @@
           }
         ],
         "summary": "모듈 실행 로그 보기",
+        "tags": [
+          "frp 내부망 터널링"
+        ],
+        "x-required-scope": "frp:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/frp/logs/export": {
+      "get": {
+        "description": "필터 조건에 맞는 모든 로그를 첨부 파일로 스트리밍하여 반환합니다. 오래된 순서이며 디스크의 순환된 파일과 압축 아카이브도 포함합니다. `format`은 `jsonl`(기본값, 한 줄에 JSON 하나) 또는 `csv`(BOM 포함 UTF-8, = + - @로 시작하는 셀에는 수식 주입 방지를 위해 작은따옴표를 앞에 붙임)입니다. 필터 매개변수는 로그 조회 API와 같습니다. 읽기 전용 신원이 내보내는 내용은 조회할 때와 마찬가지로 자격 증명이 가려집니다. `lang`은 내보낼 내용의 언어(예: `en`)를 지정하며, 생략하면 Accept-Language를 따릅니다.\n\n필요한 권한: `frp:read`.",
+        "parameters": [
+          {
+            "description": "내보내기 형식: jsonl(기본값, 한 줄에 JSON 하나) 또는 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "내보낼 내용의 언어(예: en). 생략하면 Accept-Language를 따릅니다",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "최소 수준: debug, info, warn 또는 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "소스 레이블, 대소문자 구분 없이 정확히 일치",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "키워드: 공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 - 는 제외",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "제외 키워드: 공백으로 구분, 큰따옴표로 구문을 묶음, 하나라도 포함하면 제외되며 q와 함께 적용",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "클라이언트 주소: 전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분, 앞에 ! 또는 -를 붙이면 제외",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름 또는 도메인의 일부",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "웹 서비스 리스너 key, 완전 일치. 이름이 같은 사이트나 리스너(예: IPv4와 IPv6를 따로 수신하는 경우)를 구분합니다",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "상태 코드(예: 404, 4xx, 500-599), 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 차단된 출처의 접근 로그를 숨깁니다. 차단되어 거부된 요청과 현재 차단 중인 출처의 모든 요청(차단을 일으킨 요청 포함)이 대상입니다(반환 결과에만 영향, 로그는 그대로 보관)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 관리 콘솔 로그인 세션이 있는 요청, 즉 관리자가 Web 서비스 사이트를 통해 콘솔에 접근하며 생긴 액세스 로그를 숨깁니다",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "시작 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "종료 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그 내보내기",
+        "tags": [
+          "frp 내부망 터널링"
+        ],
+        "x-required-scope": "frp:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/frp/logs/sources": {
+      "get": {
+        "description": "이름순으로 정렬된 소스 레이블 배열을 반환합니다. 로그에 나타난 소스(디스크 저장 시 재시작 후에도 유지)와 모듈 설정의 소스(예: Web 서비스의 모든 리스너와 IP 목록)를 포함하며 `source` 필터에 사용합니다. 소스는 로그와 마찬가지로 요청 언어로 번역됩니다.\n\n필요한 권한: `frp:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그의 모든 소스 목록",
         "tags": [
           "frp 내부망 터널링"
         ],
@@ -19967,7 +21535,7 @@
     },
     "/api/ftp/logs": {
       "delete": {
-        "description": "필요한 권한: `ftp:write`.",
+        "description": "디스크의 로그 파일, 순환된 파일, 아카이브와 소스 기록도 함께 삭제합니다.\n\n필요한 권한: `ftp:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -20091,7 +21659,7 @@
             }
           },
           {
-            "description": "",
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
             "in": "query",
             "name": "site",
             "schema": {
@@ -20188,6 +21756,230 @@
           }
         ],
         "summary": "모듈 실행 로그 보기",
+        "tags": [
+          "FTP 서비스"
+        ],
+        "x-required-scope": "ftp:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ftp/logs/export": {
+      "get": {
+        "description": "필터 조건에 맞는 모든 로그를 첨부 파일로 스트리밍하여 반환합니다. 오래된 순서이며 디스크의 순환된 파일과 압축 아카이브도 포함합니다. `format`은 `jsonl`(기본값, 한 줄에 JSON 하나) 또는 `csv`(BOM 포함 UTF-8, = + - @로 시작하는 셀에는 수식 주입 방지를 위해 작은따옴표를 앞에 붙임)입니다. 필터 매개변수는 로그 조회 API와 같습니다. 읽기 전용 신원이 내보내는 내용은 조회할 때와 마찬가지로 자격 증명이 가려집니다. `lang`은 내보낼 내용의 언어(예: `en`)를 지정하며, 생략하면 Accept-Language를 따릅니다.\n\n필요한 권한: `ftp:read`.",
+        "parameters": [
+          {
+            "description": "내보내기 형식: jsonl(기본값, 한 줄에 JSON 하나) 또는 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "내보낼 내용의 언어(예: en). 생략하면 Accept-Language를 따릅니다",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "최소 수준: debug, info, warn 또는 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "소스 레이블, 대소문자 구분 없이 정확히 일치",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "키워드: 공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 - 는 제외",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "제외 키워드: 공백으로 구분, 큰따옴표로 구문을 묶음, 하나라도 포함하면 제외되며 q와 함께 적용",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "클라이언트 주소: 전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분, 앞에 ! 또는 -를 붙이면 제외",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름 또는 도메인의 일부",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "웹 서비스 리스너 key, 완전 일치. 이름이 같은 사이트나 리스너(예: IPv4와 IPv6를 따로 수신하는 경우)를 구분합니다",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "상태 코드(예: 404, 4xx, 500-599), 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 차단된 출처의 접근 로그를 숨깁니다. 차단되어 거부된 요청과 현재 차단 중인 출처의 모든 요청(차단을 일으킨 요청 포함)이 대상입니다(반환 결과에만 영향, 로그는 그대로 보관)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 관리 콘솔 로그인 세션이 있는 요청, 즉 관리자가 Web 서비스 사이트를 통해 콘솔에 접근하며 생긴 액세스 로그를 숨깁니다",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "시작 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "종료 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그 내보내기",
+        "tags": [
+          "FTP 서비스"
+        ],
+        "x-required-scope": "ftp:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ftp/logs/sources": {
+      "get": {
+        "description": "이름순으로 정렬된 소스 레이블 배열을 반환합니다. 로그에 나타난 소스(디스크 저장 시 재시작 후에도 유지)와 모듈 설정의 소스(예: Web 서비스의 모든 리스너와 IP 목록)를 포함하며 `source` 필터에 사용합니다. 소스는 로그와 마찬가지로 요청 언어로 번역됩니다.\n\n필요한 권한: `ftp:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그의 모든 소스 목록",
         "tags": [
           "FTP 서비스"
         ],
@@ -21430,7 +23222,7 @@
     },
     "/api/guard/logs": {
       "delete": {
-        "description": "필요한 권한: `guard:write`.",
+        "description": "디스크의 로그 파일, 순환된 파일, 아카이브와 소스 기록도 함께 삭제합니다.\n\n필요한 권한: `guard:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -21554,7 +23346,7 @@
             }
           },
           {
-            "description": "",
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
             "in": "query",
             "name": "site",
             "schema": {
@@ -21651,6 +23443,230 @@
           }
         ],
         "summary": "모듈 실행 로그 보기",
+        "tags": [
+          "침입 방지"
+        ],
+        "x-required-scope": "guard:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/guard/logs/export": {
+      "get": {
+        "description": "필터 조건에 맞는 모든 로그를 첨부 파일로 스트리밍하여 반환합니다. 오래된 순서이며 디스크의 순환된 파일과 압축 아카이브도 포함합니다. `format`은 `jsonl`(기본값, 한 줄에 JSON 하나) 또는 `csv`(BOM 포함 UTF-8, = + - @로 시작하는 셀에는 수식 주입 방지를 위해 작은따옴표를 앞에 붙임)입니다. 필터 매개변수는 로그 조회 API와 같습니다. 읽기 전용 신원이 내보내는 내용은 조회할 때와 마찬가지로 자격 증명이 가려집니다. `lang`은 내보낼 내용의 언어(예: `en`)를 지정하며, 생략하면 Accept-Language를 따릅니다.\n\n필요한 권한: `guard:read`.",
+        "parameters": [
+          {
+            "description": "내보내기 형식: jsonl(기본값, 한 줄에 JSON 하나) 또는 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "내보낼 내용의 언어(예: en). 생략하면 Accept-Language를 따릅니다",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "최소 수준: debug, info, warn 또는 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "소스 레이블, 대소문자 구분 없이 정확히 일치",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "키워드: 공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 - 는 제외",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "제외 키워드: 공백으로 구분, 큰따옴표로 구문을 묶음, 하나라도 포함하면 제외되며 q와 함께 적용",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "클라이언트 주소: 전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분, 앞에 ! 또는 -를 붙이면 제외",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름 또는 도메인의 일부",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "웹 서비스 리스너 key, 완전 일치. 이름이 같은 사이트나 리스너(예: IPv4와 IPv6를 따로 수신하는 경우)를 구분합니다",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "상태 코드(예: 404, 4xx, 500-599), 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 차단된 출처의 접근 로그를 숨깁니다. 차단되어 거부된 요청과 현재 차단 중인 출처의 모든 요청(차단을 일으킨 요청 포함)이 대상입니다(반환 결과에만 영향, 로그는 그대로 보관)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 관리 콘솔 로그인 세션이 있는 요청, 즉 관리자가 Web 서비스 사이트를 통해 콘솔에 접근하며 생긴 액세스 로그를 숨깁니다",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "시작 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "종료 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그 내보내기",
+        "tags": [
+          "침입 방지"
+        ],
+        "x-required-scope": "guard:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/guard/logs/sources": {
+      "get": {
+        "description": "이름순으로 정렬된 소스 레이블 배열을 반환합니다. 로그에 나타난 소스(디스크 저장 시 재시작 후에도 유지)와 모듈 설정의 소스(예: Web 서비스의 모든 리스너와 IP 목록)를 포함하며 `source` 필터에 사용합니다. 소스는 로그와 마찬가지로 요청 언어로 번역됩니다.\n\n필요한 권한: `guard:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그의 모든 소스 목록",
         "tags": [
           "침입 방지"
         ],
@@ -22202,7 +24218,7 @@
             }
           },
           {
-            "description": "",
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
             "in": "query",
             "name": "site",
             "schema": {
@@ -22299,6 +24315,230 @@
           }
         ],
         "summary": "시스템 로그 보기",
+        "tags": [
+          "시스템"
+        ],
+        "x-required-scope": "logs:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/logs/export": {
+      "get": {
+        "description": "필터 조건에 맞는 모든 시스템 로그를 첨부 파일로 스트리밍하여 반환합니다. 매개변수는 모듈 로그 내보내기와 같습니다.\n\n필요한 권한: `logs:read`.",
+        "parameters": [
+          {
+            "description": "내보내기 형식: jsonl(기본값, 한 줄에 JSON 하나) 또는 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "내보낼 내용의 언어(예: en). 생략하면 Accept-Language를 따릅니다",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "최소 수준: debug, info, warn 또는 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "소스 레이블, 대소문자 구분 없이 정확히 일치",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "키워드: 공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 - 는 제외",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "제외 키워드: 공백으로 구분, 큰따옴표로 구문을 묶음, 하나라도 포함하면 제외되며 q와 함께 적용",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "클라이언트 주소: 전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분, 앞에 ! 또는 -를 붙이면 제외",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름 또는 도메인의 일부",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "웹 서비스 리스너 key, 완전 일치. 이름이 같은 사이트나 리스너(예: IPv4와 IPv6를 따로 수신하는 경우)를 구분합니다",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "상태 코드(예: 404, 4xx, 500-599), 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 차단된 출처의 접근 로그를 숨깁니다. 차단되어 거부된 요청과 현재 차단 중인 출처의 모든 요청(차단을 일으킨 요청 포함)이 대상입니다(반환 결과에만 영향, 로그는 그대로 보관)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 관리 콘솔 로그인 세션이 있는 요청, 즉 관리자가 Web 서비스 사이트를 통해 콘솔에 접근하며 생긴 액세스 로그를 숨깁니다",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "시작 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "종료 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "시스템 로그 내보내기",
+        "tags": [
+          "시스템"
+        ],
+        "x-required-scope": "logs:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/logs/sources": {
+      "get": {
+        "description": "이름순으로 정렬된 소스 레이블 배열을 반환합니다. 로그를 디스크에 저장하면 재시작 후에도 유지됩니다.\n\n필요한 권한: `logs:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "시스템 로그의 모든 소스 목록",
         "tags": [
           "시스템"
         ],
@@ -23599,7 +25839,7 @@
     },
     "/api/netbird/logs": {
       "delete": {
-        "description": "필요한 권한: `netbird:write`.",
+        "description": "디스크의 로그 파일, 순환된 파일, 아카이브와 소스 기록도 함께 삭제합니다.\n\n필요한 권한: `netbird:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -23723,7 +25963,7 @@
             }
           },
           {
-            "description": "",
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
             "in": "query",
             "name": "site",
             "schema": {
@@ -23820,6 +26060,230 @@
           }
         ],
         "summary": "모듈 실행 로그 보기",
+        "tags": [
+          "NetBird 네트워크"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/logs/export": {
+      "get": {
+        "description": "필터 조건에 맞는 모든 로그를 첨부 파일로 스트리밍하여 반환합니다. 오래된 순서이며 디스크의 순환된 파일과 압축 아카이브도 포함합니다. `format`은 `jsonl`(기본값, 한 줄에 JSON 하나) 또는 `csv`(BOM 포함 UTF-8, = + - @로 시작하는 셀에는 수식 주입 방지를 위해 작은따옴표를 앞에 붙임)입니다. 필터 매개변수는 로그 조회 API와 같습니다. 읽기 전용 신원이 내보내는 내용은 조회할 때와 마찬가지로 자격 증명이 가려집니다. `lang`은 내보낼 내용의 언어(예: `en`)를 지정하며, 생략하면 Accept-Language를 따릅니다.\n\n필요한 권한: `netbird:read`.",
+        "parameters": [
+          {
+            "description": "내보내기 형식: jsonl(기본값, 한 줄에 JSON 하나) 또는 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "내보낼 내용의 언어(예: en). 생략하면 Accept-Language를 따릅니다",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "최소 수준: debug, info, warn 또는 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "소스 레이블, 대소문자 구분 없이 정확히 일치",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "키워드: 공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 - 는 제외",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "제외 키워드: 공백으로 구분, 큰따옴표로 구문을 묶음, 하나라도 포함하면 제외되며 q와 함께 적용",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "클라이언트 주소: 전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분, 앞에 ! 또는 -를 붙이면 제외",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름 또는 도메인의 일부",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "웹 서비스 리스너 key, 완전 일치. 이름이 같은 사이트나 리스너(예: IPv4와 IPv6를 따로 수신하는 경우)를 구분합니다",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "상태 코드(예: 404, 4xx, 500-599), 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 차단된 출처의 접근 로그를 숨깁니다. 차단되어 거부된 요청과 현재 차단 중인 출처의 모든 요청(차단을 일으킨 요청 포함)이 대상입니다(반환 결과에만 영향, 로그는 그대로 보관)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 관리 콘솔 로그인 세션이 있는 요청, 즉 관리자가 Web 서비스 사이트를 통해 콘솔에 접근하며 생긴 액세스 로그를 숨깁니다",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "시작 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "종료 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그 내보내기",
+        "tags": [
+          "NetBird 네트워크"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/logs/sources": {
+      "get": {
+        "description": "이름순으로 정렬된 소스 레이블 배열을 반환합니다. 로그에 나타난 소스(디스크 저장 시 재시작 후에도 유지)와 모듈 설정의 소스(예: Web 서비스의 모든 리스너와 IP 목록)를 포함하며 `source` 필터에 사용합니다. 소스는 로그와 마찬가지로 요청 언어로 번역됩니다.\n\n필요한 권한: `netbird:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그의 모든 소스 목록",
         "tags": [
           "NetBird 네트워크"
         ],
@@ -24057,7 +26521,7 @@
     },
     "/api/nettools/logs": {
       "delete": {
-        "description": "필요한 권한: `nettools:write`.",
+        "description": "디스크의 로그 파일, 순환된 파일, 아카이브와 소스 기록도 함께 삭제합니다.\n\n필요한 권한: `nettools:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -24181,7 +26645,7 @@
             }
           },
           {
-            "description": "",
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
             "in": "query",
             "name": "site",
             "schema": {
@@ -24278,6 +26742,230 @@
           }
         ],
         "summary": "모듈 실행 로그 보기",
+        "tags": [
+          "네트워크 진단"
+        ],
+        "x-required-scope": "nettools:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/nettools/logs/export": {
+      "get": {
+        "description": "필터 조건에 맞는 모든 로그를 첨부 파일로 스트리밍하여 반환합니다. 오래된 순서이며 디스크의 순환된 파일과 압축 아카이브도 포함합니다. `format`은 `jsonl`(기본값, 한 줄에 JSON 하나) 또는 `csv`(BOM 포함 UTF-8, = + - @로 시작하는 셀에는 수식 주입 방지를 위해 작은따옴표를 앞에 붙임)입니다. 필터 매개변수는 로그 조회 API와 같습니다. 읽기 전용 신원이 내보내는 내용은 조회할 때와 마찬가지로 자격 증명이 가려집니다. `lang`은 내보낼 내용의 언어(예: `en`)를 지정하며, 생략하면 Accept-Language를 따릅니다.\n\n필요한 권한: `nettools:read`.",
+        "parameters": [
+          {
+            "description": "내보내기 형식: jsonl(기본값, 한 줄에 JSON 하나) 또는 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "내보낼 내용의 언어(예: en). 생략하면 Accept-Language를 따릅니다",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "최소 수준: debug, info, warn 또는 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "소스 레이블, 대소문자 구분 없이 정확히 일치",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "키워드: 공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 - 는 제외",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "제외 키워드: 공백으로 구분, 큰따옴표로 구문을 묶음, 하나라도 포함하면 제외되며 q와 함께 적용",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "클라이언트 주소: 전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분, 앞에 ! 또는 -를 붙이면 제외",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름 또는 도메인의 일부",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "웹 서비스 리스너 key, 완전 일치. 이름이 같은 사이트나 리스너(예: IPv4와 IPv6를 따로 수신하는 경우)를 구분합니다",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "상태 코드(예: 404, 4xx, 500-599), 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 차단된 출처의 접근 로그를 숨깁니다. 차단되어 거부된 요청과 현재 차단 중인 출처의 모든 요청(차단을 일으킨 요청 포함)이 대상입니다(반환 결과에만 영향, 로그는 그대로 보관)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 관리 콘솔 로그인 세션이 있는 요청, 즉 관리자가 Web 서비스 사이트를 통해 콘솔에 접근하며 생긴 액세스 로그를 숨깁니다",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "시작 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "종료 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그 내보내기",
+        "tags": [
+          "네트워크 진단"
+        ],
+        "x-required-scope": "nettools:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/nettools/logs/sources": {
+      "get": {
+        "description": "이름순으로 정렬된 소스 레이블 배열을 반환합니다. 로그에 나타난 소스(디스크 저장 시 재시작 후에도 유지)와 모듈 설정의 소스(예: Web 서비스의 모든 리스너와 IP 목록)를 포함하며 `source` 필터에 사용합니다. 소스는 로그와 마찬가지로 요청 언어로 번역됩니다.\n\n필요한 권한: `nettools:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그의 모든 소스 목록",
         "tags": [
           "네트워크 진단"
         ],
@@ -25629,7 +28317,7 @@
     },
     "/api/notify/logs": {
       "delete": {
-        "description": "필요한 권한: `notify:write`.",
+        "description": "디스크의 로그 파일, 순환된 파일, 아카이브와 소스 기록도 함께 삭제합니다.\n\n필요한 권한: `notify:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -25753,7 +28441,7 @@
             }
           },
           {
-            "description": "",
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
             "in": "query",
             "name": "site",
             "schema": {
@@ -25850,6 +28538,230 @@
           }
         ],
         "summary": "모듈 실행 로그 보기",
+        "tags": [
+          "알림 센터"
+        ],
+        "x-required-scope": "notify:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/notify/logs/export": {
+      "get": {
+        "description": "필터 조건에 맞는 모든 로그를 첨부 파일로 스트리밍하여 반환합니다. 오래된 순서이며 디스크의 순환된 파일과 압축 아카이브도 포함합니다. `format`은 `jsonl`(기본값, 한 줄에 JSON 하나) 또는 `csv`(BOM 포함 UTF-8, = + - @로 시작하는 셀에는 수식 주입 방지를 위해 작은따옴표를 앞에 붙임)입니다. 필터 매개변수는 로그 조회 API와 같습니다. 읽기 전용 신원이 내보내는 내용은 조회할 때와 마찬가지로 자격 증명이 가려집니다. `lang`은 내보낼 내용의 언어(예: `en`)를 지정하며, 생략하면 Accept-Language를 따릅니다.\n\n필요한 권한: `notify:read`.",
+        "parameters": [
+          {
+            "description": "내보내기 형식: jsonl(기본값, 한 줄에 JSON 하나) 또는 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "내보낼 내용의 언어(예: en). 생략하면 Accept-Language를 따릅니다",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "최소 수준: debug, info, warn 또는 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "소스 레이블, 대소문자 구분 없이 정확히 일치",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "키워드: 공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 - 는 제외",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "제외 키워드: 공백으로 구분, 큰따옴표로 구문을 묶음, 하나라도 포함하면 제외되며 q와 함께 적용",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "클라이언트 주소: 전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분, 앞에 ! 또는 -를 붙이면 제외",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름 또는 도메인의 일부",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "웹 서비스 리스너 key, 완전 일치. 이름이 같은 사이트나 리스너(예: IPv4와 IPv6를 따로 수신하는 경우)를 구분합니다",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "상태 코드(예: 404, 4xx, 500-599), 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 차단된 출처의 접근 로그를 숨깁니다. 차단되어 거부된 요청과 현재 차단 중인 출처의 모든 요청(차단을 일으킨 요청 포함)이 대상입니다(반환 결과에만 영향, 로그는 그대로 보관)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 관리 콘솔 로그인 세션이 있는 요청, 즉 관리자가 Web 서비스 사이트를 통해 콘솔에 접근하며 생긴 액세스 로그를 숨깁니다",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "시작 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "종료 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그 내보내기",
+        "tags": [
+          "알림 센터"
+        ],
+        "x-required-scope": "notify:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/notify/logs/sources": {
+      "get": {
+        "description": "이름순으로 정렬된 소스 레이블 배열을 반환합니다. 로그에 나타난 소스(디스크 저장 시 재시작 후에도 유지)와 모듈 설정의 소스(예: Web 서비스의 모든 리스너와 IP 목록)를 포함하며 `source` 필터에 사용합니다. 소스는 로그와 마찬가지로 요청 언어로 번역됩니다.\n\n필요한 권한: `notify:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그의 모든 소스 목록",
         "tags": [
           "알림 센터"
         ],
@@ -26733,7 +29645,7 @@
     },
     "/api/perf/logs": {
       "delete": {
-        "description": "필요한 권한: `perf:write`.",
+        "description": "디스크의 로그 파일, 순환된 파일, 아카이브와 소스 기록도 함께 삭제합니다.\n\n필요한 권한: `perf:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -26857,7 +29769,7 @@
             }
           },
           {
-            "description": "",
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
             "in": "query",
             "name": "site",
             "schema": {
@@ -26954,6 +29866,230 @@
           }
         ],
         "summary": "모듈 실행 로그 보기",
+        "tags": [
+          "성능 모니터링"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/logs/export": {
+      "get": {
+        "description": "필터 조건에 맞는 모든 로그를 첨부 파일로 스트리밍하여 반환합니다. 오래된 순서이며 디스크의 순환된 파일과 압축 아카이브도 포함합니다. `format`은 `jsonl`(기본값, 한 줄에 JSON 하나) 또는 `csv`(BOM 포함 UTF-8, = + - @로 시작하는 셀에는 수식 주입 방지를 위해 작은따옴표를 앞에 붙임)입니다. 필터 매개변수는 로그 조회 API와 같습니다. 읽기 전용 신원이 내보내는 내용은 조회할 때와 마찬가지로 자격 증명이 가려집니다. `lang`은 내보낼 내용의 언어(예: `en`)를 지정하며, 생략하면 Accept-Language를 따릅니다.\n\n필요한 권한: `perf:read`.",
+        "parameters": [
+          {
+            "description": "내보내기 형식: jsonl(기본값, 한 줄에 JSON 하나) 또는 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "내보낼 내용의 언어(예: en). 생략하면 Accept-Language를 따릅니다",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "최소 수준: debug, info, warn 또는 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "소스 레이블, 대소문자 구분 없이 정확히 일치",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "키워드: 공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 - 는 제외",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "제외 키워드: 공백으로 구분, 큰따옴표로 구문을 묶음, 하나라도 포함하면 제외되며 q와 함께 적용",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "클라이언트 주소: 전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분, 앞에 ! 또는 -를 붙이면 제외",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름 또는 도메인의 일부",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "웹 서비스 리스너 key, 완전 일치. 이름이 같은 사이트나 리스너(예: IPv4와 IPv6를 따로 수신하는 경우)를 구분합니다",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "상태 코드(예: 404, 4xx, 500-599), 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 차단된 출처의 접근 로그를 숨깁니다. 차단되어 거부된 요청과 현재 차단 중인 출처의 모든 요청(차단을 일으킨 요청 포함)이 대상입니다(반환 결과에만 영향, 로그는 그대로 보관)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 관리 콘솔 로그인 세션이 있는 요청, 즉 관리자가 Web 서비스 사이트를 통해 콘솔에 접근하며 생긴 액세스 로그를 숨깁니다",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "시작 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "종료 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그 내보내기",
+        "tags": [
+          "성능 모니터링"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/logs/sources": {
+      "get": {
+        "description": "이름순으로 정렬된 소스 레이블 배열을 반환합니다. 로그에 나타난 소스(디스크 저장 시 재시작 후에도 유지)와 모듈 설정의 소스(예: Web 서비스의 모든 리스너와 IP 목록)를 포함하며 `source` 필터에 사용합니다. 소스는 로그와 마찬가지로 요청 언어로 번역됩니다.\n\n필요한 권한: `perf:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그의 모든 소스 목록",
         "tags": [
           "성능 모니터링"
         ],
@@ -27853,7 +30989,7 @@
     },
     "/api/portforward/logs": {
       "delete": {
-        "description": "필요한 권한: `portforward:write`.",
+        "description": "디스크의 로그 파일, 순환된 파일, 아카이브와 소스 기록도 함께 삭제합니다.\n\n필요한 권한: `portforward:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -27977,7 +31113,7 @@
             }
           },
           {
-            "description": "",
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
             "in": "query",
             "name": "site",
             "schema": {
@@ -28074,6 +31210,230 @@
           }
         ],
         "summary": "모듈 실행 로그 보기",
+        "tags": [
+          "포트 포워딩"
+        ],
+        "x-required-scope": "portforward:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/portforward/logs/export": {
+      "get": {
+        "description": "필터 조건에 맞는 모든 로그를 첨부 파일로 스트리밍하여 반환합니다. 오래된 순서이며 디스크의 순환된 파일과 압축 아카이브도 포함합니다. `format`은 `jsonl`(기본값, 한 줄에 JSON 하나) 또는 `csv`(BOM 포함 UTF-8, = + - @로 시작하는 셀에는 수식 주입 방지를 위해 작은따옴표를 앞에 붙임)입니다. 필터 매개변수는 로그 조회 API와 같습니다. 읽기 전용 신원이 내보내는 내용은 조회할 때와 마찬가지로 자격 증명이 가려집니다. `lang`은 내보낼 내용의 언어(예: `en`)를 지정하며, 생략하면 Accept-Language를 따릅니다.\n\n필요한 권한: `portforward:read`.",
+        "parameters": [
+          {
+            "description": "내보내기 형식: jsonl(기본값, 한 줄에 JSON 하나) 또는 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "내보낼 내용의 언어(예: en). 생략하면 Accept-Language를 따릅니다",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "최소 수준: debug, info, warn 또는 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "소스 레이블, 대소문자 구분 없이 정확히 일치",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "키워드: 공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 - 는 제외",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "제외 키워드: 공백으로 구분, 큰따옴표로 구문을 묶음, 하나라도 포함하면 제외되며 q와 함께 적용",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "클라이언트 주소: 전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분, 앞에 ! 또는 -를 붙이면 제외",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름 또는 도메인의 일부",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "웹 서비스 리스너 key, 완전 일치. 이름이 같은 사이트나 리스너(예: IPv4와 IPv6를 따로 수신하는 경우)를 구분합니다",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "상태 코드(예: 404, 4xx, 500-599), 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 차단된 출처의 접근 로그를 숨깁니다. 차단되어 거부된 요청과 현재 차단 중인 출처의 모든 요청(차단을 일으킨 요청 포함)이 대상입니다(반환 결과에만 영향, 로그는 그대로 보관)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 관리 콘솔 로그인 세션이 있는 요청, 즉 관리자가 Web 서비스 사이트를 통해 콘솔에 접근하며 생긴 액세스 로그를 숨깁니다",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "시작 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "종료 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그 내보내기",
+        "tags": [
+          "포트 포워딩"
+        ],
+        "x-required-scope": "portforward:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/portforward/logs/sources": {
+      "get": {
+        "description": "이름순으로 정렬된 소스 레이블 배열을 반환합니다. 로그에 나타난 소스(디스크 저장 시 재시작 후에도 유지)와 모듈 설정의 소스(예: Web 서비스의 모든 리스너와 IP 목록)를 포함하며 `source` 필터에 사용합니다. 소스는 로그와 마찬가지로 요청 언어로 번역됩니다.\n\n필요한 권한: `portforward:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그의 모든 소스 목록",
         "tags": [
           "포트 포워딩"
         ],
@@ -28841,7 +32201,7 @@
     },
     "/api/protoroute/logs": {
       "delete": {
-        "description": "필요한 권한: `protoroute:write`.",
+        "description": "디스크의 로그 파일, 순환된 파일, 아카이브와 소스 기록도 함께 삭제합니다.\n\n필요한 권한: `protoroute:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -28965,7 +32325,7 @@
             }
           },
           {
-            "description": "",
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
             "in": "query",
             "name": "site",
             "schema": {
@@ -29062,6 +32422,230 @@
           }
         ],
         "summary": "모듈 실행 로그 보기",
+        "tags": [
+          "프로토콜 라우팅"
+        ],
+        "x-required-scope": "protoroute:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/protoroute/logs/export": {
+      "get": {
+        "description": "필터 조건에 맞는 모든 로그를 첨부 파일로 스트리밍하여 반환합니다. 오래된 순서이며 디스크의 순환된 파일과 압축 아카이브도 포함합니다. `format`은 `jsonl`(기본값, 한 줄에 JSON 하나) 또는 `csv`(BOM 포함 UTF-8, = + - @로 시작하는 셀에는 수식 주입 방지를 위해 작은따옴표를 앞에 붙임)입니다. 필터 매개변수는 로그 조회 API와 같습니다. 읽기 전용 신원이 내보내는 내용은 조회할 때와 마찬가지로 자격 증명이 가려집니다. `lang`은 내보낼 내용의 언어(예: `en`)를 지정하며, 생략하면 Accept-Language를 따릅니다.\n\n필요한 권한: `protoroute:read`.",
+        "parameters": [
+          {
+            "description": "내보내기 형식: jsonl(기본값, 한 줄에 JSON 하나) 또는 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "내보낼 내용의 언어(예: en). 생략하면 Accept-Language를 따릅니다",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "최소 수준: debug, info, warn 또는 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "소스 레이블, 대소문자 구분 없이 정확히 일치",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "키워드: 공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 - 는 제외",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "제외 키워드: 공백으로 구분, 큰따옴표로 구문을 묶음, 하나라도 포함하면 제외되며 q와 함께 적용",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "클라이언트 주소: 전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분, 앞에 ! 또는 -를 붙이면 제외",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름 또는 도메인의 일부",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "웹 서비스 리스너 key, 완전 일치. 이름이 같은 사이트나 리스너(예: IPv4와 IPv6를 따로 수신하는 경우)를 구분합니다",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "상태 코드(예: 404, 4xx, 500-599), 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 차단된 출처의 접근 로그를 숨깁니다. 차단되어 거부된 요청과 현재 차단 중인 출처의 모든 요청(차단을 일으킨 요청 포함)이 대상입니다(반환 결과에만 영향, 로그는 그대로 보관)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 관리 콘솔 로그인 세션이 있는 요청, 즉 관리자가 Web 서비스 사이트를 통해 콘솔에 접근하며 생긴 액세스 로그를 숨깁니다",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "시작 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "종료 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그 내보내기",
+        "tags": [
+          "프로토콜 라우팅"
+        ],
+        "x-required-scope": "protoroute:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/protoroute/logs/sources": {
+      "get": {
+        "description": "이름순으로 정렬된 소스 레이블 배열을 반환합니다. 로그에 나타난 소스(디스크 저장 시 재시작 후에도 유지)와 모듈 설정의 소스(예: Web 서비스의 모든 리스너와 IP 목록)를 포함하며 `source` 필터에 사용합니다. 소스는 로그와 마찬가지로 요청 언어로 번역됩니다.\n\n필요한 권한: `protoroute:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그의 모든 소스 목록",
         "tags": [
           "프로토콜 라우팅"
         ],
@@ -29870,7 +33454,7 @@
     },
     "/api/smb/logs": {
       "delete": {
-        "description": "필요한 권한: `smb:write`.",
+        "description": "디스크의 로그 파일, 순환된 파일, 아카이브와 소스 기록도 함께 삭제합니다.\n\n필요한 권한: `smb:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -29994,7 +33578,7 @@
             }
           },
           {
-            "description": "",
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
             "in": "query",
             "name": "site",
             "schema": {
@@ -30091,6 +33675,230 @@
           }
         ],
         "summary": "모듈 실행 로그 보기",
+        "tags": [
+          "SMB 서비스"
+        ],
+        "x-required-scope": "smb:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/smb/logs/export": {
+      "get": {
+        "description": "필터 조건에 맞는 모든 로그를 첨부 파일로 스트리밍하여 반환합니다. 오래된 순서이며 디스크의 순환된 파일과 압축 아카이브도 포함합니다. `format`은 `jsonl`(기본값, 한 줄에 JSON 하나) 또는 `csv`(BOM 포함 UTF-8, = + - @로 시작하는 셀에는 수식 주입 방지를 위해 작은따옴표를 앞에 붙임)입니다. 필터 매개변수는 로그 조회 API와 같습니다. 읽기 전용 신원이 내보내는 내용은 조회할 때와 마찬가지로 자격 증명이 가려집니다. `lang`은 내보낼 내용의 언어(예: `en`)를 지정하며, 생략하면 Accept-Language를 따릅니다.\n\n필요한 권한: `smb:read`.",
+        "parameters": [
+          {
+            "description": "내보내기 형식: jsonl(기본값, 한 줄에 JSON 하나) 또는 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "내보낼 내용의 언어(예: en). 생략하면 Accept-Language를 따릅니다",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "최소 수준: debug, info, warn 또는 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "소스 레이블, 대소문자 구분 없이 정확히 일치",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "키워드: 공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 - 는 제외",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "제외 키워드: 공백으로 구분, 큰따옴표로 구문을 묶음, 하나라도 포함하면 제외되며 q와 함께 적용",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "클라이언트 주소: 전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분, 앞에 ! 또는 -를 붙이면 제외",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름 또는 도메인의 일부",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "웹 서비스 리스너 key, 완전 일치. 이름이 같은 사이트나 리스너(예: IPv4와 IPv6를 따로 수신하는 경우)를 구분합니다",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "상태 코드(예: 404, 4xx, 500-599), 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 차단된 출처의 접근 로그를 숨깁니다. 차단되어 거부된 요청과 현재 차단 중인 출처의 모든 요청(차단을 일으킨 요청 포함)이 대상입니다(반환 결과에만 영향, 로그는 그대로 보관)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 관리 콘솔 로그인 세션이 있는 요청, 즉 관리자가 Web 서비스 사이트를 통해 콘솔에 접근하며 생긴 액세스 로그를 숨깁니다",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "시작 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "종료 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그 내보내기",
+        "tags": [
+          "SMB 서비스"
+        ],
+        "x-required-scope": "smb:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/smb/logs/sources": {
+      "get": {
+        "description": "이름순으로 정렬된 소스 레이블 배열을 반환합니다. 로그에 나타난 소스(디스크 저장 시 재시작 후에도 유지)와 모듈 설정의 소스(예: Web 서비스의 모든 리스너와 IP 목록)를 포함하며 `source` 필터에 사용합니다. 소스는 로그와 마찬가지로 요청 언어로 번역됩니다.\n\n필요한 권한: `smb:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그의 모든 소스 목록",
         "tags": [
           "SMB 서비스"
         ],
@@ -31333,7 +35141,7 @@
     },
     "/api/ssl/logs": {
       "delete": {
-        "description": "필요한 권한: `ssl:write`.",
+        "description": "디스크의 로그 파일, 순환된 파일, 아카이브와 소스 기록도 함께 삭제합니다.\n\n필요한 권한: `ssl:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -31457,7 +35265,7 @@
             }
           },
           {
-            "description": "",
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
             "in": "query",
             "name": "site",
             "schema": {
@@ -31554,6 +35362,230 @@
           }
         ],
         "summary": "모듈 실행 로그 보기",
+        "tags": [
+          "SSL 인증서"
+        ],
+        "x-required-scope": "ssl:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ssl/logs/export": {
+      "get": {
+        "description": "필터 조건에 맞는 모든 로그를 첨부 파일로 스트리밍하여 반환합니다. 오래된 순서이며 디스크의 순환된 파일과 압축 아카이브도 포함합니다. `format`은 `jsonl`(기본값, 한 줄에 JSON 하나) 또는 `csv`(BOM 포함 UTF-8, = + - @로 시작하는 셀에는 수식 주입 방지를 위해 작은따옴표를 앞에 붙임)입니다. 필터 매개변수는 로그 조회 API와 같습니다. 읽기 전용 신원이 내보내는 내용은 조회할 때와 마찬가지로 자격 증명이 가려집니다. `lang`은 내보낼 내용의 언어(예: `en`)를 지정하며, 생략하면 Accept-Language를 따릅니다.\n\n필요한 권한: `ssl:read`.",
+        "parameters": [
+          {
+            "description": "내보내기 형식: jsonl(기본값, 한 줄에 JSON 하나) 또는 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "내보낼 내용의 언어(예: en). 생략하면 Accept-Language를 따릅니다",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "최소 수준: debug, info, warn 또는 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "소스 레이블, 대소문자 구분 없이 정확히 일치",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "키워드: 공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 - 는 제외",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "제외 키워드: 공백으로 구분, 큰따옴표로 구문을 묶음, 하나라도 포함하면 제외되며 q와 함께 적용",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "클라이언트 주소: 전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분, 앞에 ! 또는 -를 붙이면 제외",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름 또는 도메인의 일부",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "웹 서비스 리스너 key, 완전 일치. 이름이 같은 사이트나 리스너(예: IPv4와 IPv6를 따로 수신하는 경우)를 구분합니다",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "상태 코드(예: 404, 4xx, 500-599), 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 차단된 출처의 접근 로그를 숨깁니다. 차단되어 거부된 요청과 현재 차단 중인 출처의 모든 요청(차단을 일으킨 요청 포함)이 대상입니다(반환 결과에만 영향, 로그는 그대로 보관)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 관리 콘솔 로그인 세션이 있는 요청, 즉 관리자가 Web 서비스 사이트를 통해 콘솔에 접근하며 생긴 액세스 로그를 숨깁니다",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "시작 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "종료 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그 내보내기",
+        "tags": [
+          "SSL 인증서"
+        ],
+        "x-required-scope": "ssl:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ssl/logs/sources": {
+      "get": {
+        "description": "이름순으로 정렬된 소스 레이블 배열을 반환합니다. 로그에 나타난 소스(디스크 저장 시 재시작 후에도 유지)와 모듈 설정의 소스(예: Web 서비스의 모든 리스너와 IP 목록)를 포함하며 `source` 필터에 사용합니다. 소스는 로그와 마찬가지로 요청 언어로 번역됩니다.\n\n필요한 권한: `ssl:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그의 모든 소스 목록",
         "tags": [
           "SSL 인증서"
         ],
@@ -32158,7 +36190,7 @@
     },
     "/api/storage/logs": {
       "delete": {
-        "description": "필요한 권한: `storage:write`.",
+        "description": "디스크의 로그 파일, 순환된 파일, 아카이브와 소스 기록도 함께 삭제합니다.\n\n필요한 권한: `storage:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -32282,7 +36314,7 @@
             }
           },
           {
-            "description": "",
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
             "in": "query",
             "name": "site",
             "schema": {
@@ -32379,6 +36411,230 @@
           }
         ],
         "summary": "모듈 실행 로그 보기",
+        "tags": [
+          "스토리지 마운트"
+        ],
+        "x-required-scope": "storage:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/storage/logs/export": {
+      "get": {
+        "description": "필터 조건에 맞는 모든 로그를 첨부 파일로 스트리밍하여 반환합니다. 오래된 순서이며 디스크의 순환된 파일과 압축 아카이브도 포함합니다. `format`은 `jsonl`(기본값, 한 줄에 JSON 하나) 또는 `csv`(BOM 포함 UTF-8, = + - @로 시작하는 셀에는 수식 주입 방지를 위해 작은따옴표를 앞에 붙임)입니다. 필터 매개변수는 로그 조회 API와 같습니다. 읽기 전용 신원이 내보내는 내용은 조회할 때와 마찬가지로 자격 증명이 가려집니다. `lang`은 내보낼 내용의 언어(예: `en`)를 지정하며, 생략하면 Accept-Language를 따릅니다.\n\n필요한 권한: `storage:read`.",
+        "parameters": [
+          {
+            "description": "내보내기 형식: jsonl(기본값, 한 줄에 JSON 하나) 또는 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "내보낼 내용의 언어(예: en). 생략하면 Accept-Language를 따릅니다",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "최소 수준: debug, info, warn 또는 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "소스 레이블, 대소문자 구분 없이 정확히 일치",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "키워드: 공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 - 는 제외",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "제외 키워드: 공백으로 구분, 큰따옴표로 구문을 묶음, 하나라도 포함하면 제외되며 q와 함께 적용",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "클라이언트 주소: 전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분, 앞에 ! 또는 -를 붙이면 제외",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름 또는 도메인의 일부",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "웹 서비스 리스너 key, 완전 일치. 이름이 같은 사이트나 리스너(예: IPv4와 IPv6를 따로 수신하는 경우)를 구분합니다",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "상태 코드(예: 404, 4xx, 500-599), 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 차단된 출처의 접근 로그를 숨깁니다. 차단되어 거부된 요청과 현재 차단 중인 출처의 모든 요청(차단을 일으킨 요청 포함)이 대상입니다(반환 결과에만 영향, 로그는 그대로 보관)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 관리 콘솔 로그인 세션이 있는 요청, 즉 관리자가 Web 서비스 사이트를 통해 콘솔에 접근하며 생긴 액세스 로그를 숨깁니다",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "시작 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "종료 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그 내보내기",
+        "tags": [
+          "스토리지 마운트"
+        ],
+        "x-required-scope": "storage:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/storage/logs/sources": {
+      "get": {
+        "description": "이름순으로 정렬된 소스 레이블 배열을 반환합니다. 로그에 나타난 소스(디스크 저장 시 재시작 후에도 유지)와 모듈 설정의 소스(예: Web 서비스의 모든 리스너와 IP 목록)를 포함하며 `source` 필터에 사용합니다. 소스는 로그와 마찬가지로 요청 언어로 번역됩니다.\n\n필요한 권한: `storage:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그의 모든 소스 목록",
         "tags": [
           "스토리지 마운트"
         ],
@@ -33108,7 +37364,7 @@
     },
     "/api/stun/logs": {
       "delete": {
-        "description": "필요한 권한: `stun:write`.",
+        "description": "디스크의 로그 파일, 순환된 파일, 아카이브와 소스 기록도 함께 삭제합니다.\n\n필요한 권한: `stun:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -33232,7 +37488,7 @@
             }
           },
           {
-            "description": "",
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
             "in": "query",
             "name": "site",
             "schema": {
@@ -33329,6 +37585,230 @@
           }
         ],
         "summary": "모듈 실행 로그 보기",
+        "tags": [
+          "STUN 터널링"
+        ],
+        "x-required-scope": "stun:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/stun/logs/export": {
+      "get": {
+        "description": "필터 조건에 맞는 모든 로그를 첨부 파일로 스트리밍하여 반환합니다. 오래된 순서이며 디스크의 순환된 파일과 압축 아카이브도 포함합니다. `format`은 `jsonl`(기본값, 한 줄에 JSON 하나) 또는 `csv`(BOM 포함 UTF-8, = + - @로 시작하는 셀에는 수식 주입 방지를 위해 작은따옴표를 앞에 붙임)입니다. 필터 매개변수는 로그 조회 API와 같습니다. 읽기 전용 신원이 내보내는 내용은 조회할 때와 마찬가지로 자격 증명이 가려집니다. `lang`은 내보낼 내용의 언어(예: `en`)를 지정하며, 생략하면 Accept-Language를 따릅니다.\n\n필요한 권한: `stun:read`.",
+        "parameters": [
+          {
+            "description": "내보내기 형식: jsonl(기본값, 한 줄에 JSON 하나) 또는 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "내보낼 내용의 언어(예: en). 생략하면 Accept-Language를 따릅니다",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "최소 수준: debug, info, warn 또는 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "소스 레이블, 대소문자 구분 없이 정확히 일치",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "키워드: 공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 - 는 제외",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "제외 키워드: 공백으로 구분, 큰따옴표로 구문을 묶음, 하나라도 포함하면 제외되며 q와 함께 적용",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "클라이언트 주소: 전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분, 앞에 ! 또는 -를 붙이면 제외",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름 또는 도메인의 일부",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "웹 서비스 리스너 key, 완전 일치. 이름이 같은 사이트나 리스너(예: IPv4와 IPv6를 따로 수신하는 경우)를 구분합니다",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "상태 코드(예: 404, 4xx, 500-599), 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 차단된 출처의 접근 로그를 숨깁니다. 차단되어 거부된 요청과 현재 차단 중인 출처의 모든 요청(차단을 일으킨 요청 포함)이 대상입니다(반환 결과에만 영향, 로그는 그대로 보관)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 관리 콘솔 로그인 세션이 있는 요청, 즉 관리자가 Web 서비스 사이트를 통해 콘솔에 접근하며 생긴 액세스 로그를 숨깁니다",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "시작 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "종료 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그 내보내기",
+        "tags": [
+          "STUN 터널링"
+        ],
+        "x-required-scope": "stun:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/stun/logs/sources": {
+      "get": {
+        "description": "이름순으로 정렬된 소스 레이블 배열을 반환합니다. 로그에 나타난 소스(디스크 저장 시 재시작 후에도 유지)와 모듈 설정의 소스(예: Web 서비스의 모든 리스너와 IP 목록)를 포함하며 `source` 필터에 사용합니다. 소스는 로그와 마찬가지로 요청 언어로 번역됩니다.\n\n필요한 권한: `stun:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그의 모든 소스 목록",
         "tags": [
           "STUN 터널링"
         ],
@@ -36262,7 +40742,7 @@
     },
     "/api/tailscale/logs": {
       "delete": {
-        "description": "필요한 권한: `tailscale:write`.",
+        "description": "디스크의 로그 파일, 순환된 파일, 아카이브와 소스 기록도 함께 삭제합니다.\n\n필요한 권한: `tailscale:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -36386,7 +40866,7 @@
             }
           },
           {
-            "description": "",
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
             "in": "query",
             "name": "site",
             "schema": {
@@ -36483,6 +40963,230 @@
           }
         ],
         "summary": "모듈 실행 로그 보기",
+        "tags": [
+          "Tailscale 네트워킹"
+        ],
+        "x-required-scope": "tailscale:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/logs/export": {
+      "get": {
+        "description": "필터 조건에 맞는 모든 로그를 첨부 파일로 스트리밍하여 반환합니다. 오래된 순서이며 디스크의 순환된 파일과 압축 아카이브도 포함합니다. `format`은 `jsonl`(기본값, 한 줄에 JSON 하나) 또는 `csv`(BOM 포함 UTF-8, = + - @로 시작하는 셀에는 수식 주입 방지를 위해 작은따옴표를 앞에 붙임)입니다. 필터 매개변수는 로그 조회 API와 같습니다. 읽기 전용 신원이 내보내는 내용은 조회할 때와 마찬가지로 자격 증명이 가려집니다. `lang`은 내보낼 내용의 언어(예: `en`)를 지정하며, 생략하면 Accept-Language를 따릅니다.\n\n필요한 권한: `tailscale:read`.",
+        "parameters": [
+          {
+            "description": "내보내기 형식: jsonl(기본값, 한 줄에 JSON 하나) 또는 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "내보낼 내용의 언어(예: en). 생략하면 Accept-Language를 따릅니다",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "최소 수준: debug, info, warn 또는 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "소스 레이블, 대소문자 구분 없이 정확히 일치",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "키워드: 공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 - 는 제외",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "제외 키워드: 공백으로 구분, 큰따옴표로 구문을 묶음, 하나라도 포함하면 제외되며 q와 함께 적용",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "클라이언트 주소: 전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분, 앞에 ! 또는 -를 붙이면 제외",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름 또는 도메인의 일부",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "웹 서비스 리스너 key, 완전 일치. 이름이 같은 사이트나 리스너(예: IPv4와 IPv6를 따로 수신하는 경우)를 구분합니다",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "상태 코드(예: 404, 4xx, 500-599), 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 차단된 출처의 접근 로그를 숨깁니다. 차단되어 거부된 요청과 현재 차단 중인 출처의 모든 요청(차단을 일으킨 요청 포함)이 대상입니다(반환 결과에만 영향, 로그는 그대로 보관)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 관리 콘솔 로그인 세션이 있는 요청, 즉 관리자가 Web 서비스 사이트를 통해 콘솔에 접근하며 생긴 액세스 로그를 숨깁니다",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "시작 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "종료 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그 내보내기",
+        "tags": [
+          "Tailscale 네트워킹"
+        ],
+        "x-required-scope": "tailscale:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/logs/sources": {
+      "get": {
+        "description": "이름순으로 정렬된 소스 레이블 배열을 반환합니다. 로그에 나타난 소스(디스크 저장 시 재시작 후에도 유지)와 모듈 설정의 소스(예: Web 서비스의 모든 리스너와 IP 목록)를 포함하며 `source` 필터에 사용합니다. 소스는 로그와 마찬가지로 요청 언어로 번역됩니다.\n\n필요한 권한: `tailscale:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그의 모든 소스 목록",
         "tags": [
           "Tailscale 네트워킹"
         ],
@@ -37911,7 +42615,7 @@
     },
     "/api/waf/logs": {
       "delete": {
-        "description": "필요한 권한: `waf:write`.",
+        "description": "디스크의 로그 파일, 순환된 파일, 아카이브와 소스 기록도 함께 삭제합니다.\n\n필요한 권한: `waf:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -38035,7 +42739,7 @@
             }
           },
           {
-            "description": "",
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
             "in": "query",
             "name": "site",
             "schema": {
@@ -38139,6 +42843,230 @@
         "x-token-allowed": true
       }
     },
+    "/api/waf/logs/export": {
+      "get": {
+        "description": "필터 조건에 맞는 모든 로그를 첨부 파일로 스트리밍하여 반환합니다. 오래된 순서이며 디스크의 순환된 파일과 압축 아카이브도 포함합니다. `format`은 `jsonl`(기본값, 한 줄에 JSON 하나) 또는 `csv`(BOM 포함 UTF-8, = + - @로 시작하는 셀에는 수식 주입 방지를 위해 작은따옴표를 앞에 붙임)입니다. 필터 매개변수는 로그 조회 API와 같습니다. 읽기 전용 신원이 내보내는 내용은 조회할 때와 마찬가지로 자격 증명이 가려집니다. `lang`은 내보낼 내용의 언어(예: `en`)를 지정하며, 생략하면 Accept-Language를 따릅니다.\n\n필요한 권한: `waf:read`.",
+        "parameters": [
+          {
+            "description": "내보내기 형식: jsonl(기본값, 한 줄에 JSON 하나) 또는 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "내보낼 내용의 언어(예: en). 생략하면 Accept-Language를 따릅니다",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "최소 수준: debug, info, warn 또는 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "소스 레이블, 대소문자 구분 없이 정확히 일치",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "키워드: 공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 - 는 제외",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "제외 키워드: 공백으로 구분, 큰따옴표로 구문을 묶음, 하나라도 포함하면 제외되며 q와 함께 적용",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "클라이언트 주소: 전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분, 앞에 ! 또는 -를 붙이면 제외",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름 또는 도메인의 일부",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "웹 서비스 리스너 key, 완전 일치. 이름이 같은 사이트나 리스너(예: IPv4와 IPv6를 따로 수신하는 경우)를 구분합니다",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "상태 코드(예: 404, 4xx, 500-599), 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 차단된 출처의 접근 로그를 숨깁니다. 차단되어 거부된 요청과 현재 차단 중인 출처의 모든 요청(차단을 일으킨 요청 포함)이 대상입니다(반환 결과에만 영향, 로그는 그대로 보관)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 관리 콘솔 로그인 세션이 있는 요청, 즉 관리자가 Web 서비스 사이트를 통해 콘솔에 접근하며 생긴 액세스 로그를 숨깁니다",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "시작 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "종료 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그 내보내기",
+        "tags": [
+          "WAF 방화벽"
+        ],
+        "x-required-scope": "waf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/waf/logs/sources": {
+      "get": {
+        "description": "이름순으로 정렬된 소스 레이블 배열을 반환합니다. 로그에 나타난 소스(디스크 저장 시 재시작 후에도 유지)와 모듈 설정의 소스(예: Web 서비스의 모든 리스너와 IP 목록)를 포함하며 `source` 필터에 사용합니다. 소스는 로그와 마찬가지로 요청 언어로 번역됩니다.\n\n필요한 권한: `waf:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그의 모든 소스 목록",
+        "tags": [
+          "WAF 방화벽"
+        ],
+        "x-required-scope": "waf:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/waf/safeline/test": {
       "post": {
         "description": "요청 본문은 인스턴스의 `safeline` 필드와 같습니다(`addr`은 `호스트:포트` 또는 `unix:`로 시작하는 소켓 경로, `timeoutMs`는 시간 초과). 하트비트로 연결을 확인한 뒤 샘플 SQL 인젝션 요청을 검사로 보냅니다. `latencyMs`(하트비트 왕복 밀리초), `blocked`(샘플 공격 탐지 여부), `eventId`(SafeLine의 이벤트 ID)를 반환합니다. 연결에 실패하면 502를 반환합니다. 샘플 공격은 SafeLine 콘솔의 공격 기록에 표시됩니다.\n\n필요한 권한: `waf:write`.",
@@ -38201,7 +43129,7 @@
     },
     "/api/webdav/logs": {
       "delete": {
-        "description": "필요한 권한: `webdav:write`.",
+        "description": "디스크의 로그 파일, 순환된 파일, 아카이브와 소스 기록도 함께 삭제합니다.\n\n필요한 권한: `webdav:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -38325,7 +43253,7 @@
             }
           },
           {
-            "description": "",
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
             "in": "query",
             "name": "site",
             "schema": {
@@ -38422,6 +43350,230 @@
           }
         ],
         "summary": "모듈 실행 로그 보기",
+        "tags": [
+          "WebDAV 서비스"
+        ],
+        "x-required-scope": "webdav:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webdav/logs/export": {
+      "get": {
+        "description": "필터 조건에 맞는 모든 로그를 첨부 파일로 스트리밍하여 반환합니다. 오래된 순서이며 디스크의 순환된 파일과 압축 아카이브도 포함합니다. `format`은 `jsonl`(기본값, 한 줄에 JSON 하나) 또는 `csv`(BOM 포함 UTF-8, = + - @로 시작하는 셀에는 수식 주입 방지를 위해 작은따옴표를 앞에 붙임)입니다. 필터 매개변수는 로그 조회 API와 같습니다. 읽기 전용 신원이 내보내는 내용은 조회할 때와 마찬가지로 자격 증명이 가려집니다. `lang`은 내보낼 내용의 언어(예: `en`)를 지정하며, 생략하면 Accept-Language를 따릅니다.\n\n필요한 권한: `webdav:read`.",
+        "parameters": [
+          {
+            "description": "내보내기 형식: jsonl(기본값, 한 줄에 JSON 하나) 또는 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "내보낼 내용의 언어(예: en). 생략하면 Accept-Language를 따릅니다",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "최소 수준: debug, info, warn 또는 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "소스 레이블, 대소문자 구분 없이 정확히 일치",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "키워드: 공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 - 는 제외",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "제외 키워드: 공백으로 구분, 큰따옴표로 구문을 묶음, 하나라도 포함하면 제외되며 q와 함께 적용",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "클라이언트 주소: 전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분, 앞에 ! 또는 -를 붙이면 제외",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름 또는 도메인의 일부",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "웹 서비스 리스너 key, 완전 일치. 이름이 같은 사이트나 리스너(예: IPv4와 IPv6를 따로 수신하는 경우)를 구분합니다",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "상태 코드(예: 404, 4xx, 500-599), 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 차단된 출처의 접근 로그를 숨깁니다. 차단되어 거부된 요청과 현재 차단 중인 출처의 모든 요청(차단을 일으킨 요청 포함)이 대상입니다(반환 결과에만 영향, 로그는 그대로 보관)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 관리 콘솔 로그인 세션이 있는 요청, 즉 관리자가 Web 서비스 사이트를 통해 콘솔에 접근하며 생긴 액세스 로그를 숨깁니다",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "시작 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "종료 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그 내보내기",
+        "tags": [
+          "WebDAV 서비스"
+        ],
+        "x-required-scope": "webdav:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webdav/logs/sources": {
+      "get": {
+        "description": "이름순으로 정렬된 소스 레이블 배열을 반환합니다. 로그에 나타난 소스(디스크 저장 시 재시작 후에도 유지)와 모듈 설정의 소스(예: Web 서비스의 모든 리스너와 IP 목록)를 포함하며 `source` 필터에 사용합니다. 소스는 로그와 마찬가지로 요청 언어로 번역됩니다.\n\n필요한 권한: `webdav:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그의 모든 소스 목록",
         "tags": [
           "WebDAV 서비스"
         ],
@@ -41060,7 +46212,7 @@
     },
     "/api/webservice/logs": {
       "delete": {
-        "description": "필요한 권한: `webservice:write`.",
+        "description": "디스크의 로그 파일, 순환된 파일, 아카이브와 소스 기록도 함께 삭제합니다.\n\n필요한 권한: `webservice:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -41184,7 +46336,7 @@
             }
           },
           {
-            "description": "",
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
             "in": "query",
             "name": "site",
             "schema": {
@@ -41281,6 +46433,230 @@
           }
         ],
         "summary": "모듈 실행 로그 보기",
+        "tags": [
+          "Web 서비스"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/logs/export": {
+      "get": {
+        "description": "필터 조건에 맞는 모든 로그를 첨부 파일로 스트리밍하여 반환합니다. 오래된 순서이며 디스크의 순환된 파일과 압축 아카이브도 포함합니다. `format`은 `jsonl`(기본값, 한 줄에 JSON 하나) 또는 `csv`(BOM 포함 UTF-8, = + - @로 시작하는 셀에는 수식 주입 방지를 위해 작은따옴표를 앞에 붙임)입니다. 필터 매개변수는 로그 조회 API와 같습니다. 읽기 전용 신원이 내보내는 내용은 조회할 때와 마찬가지로 자격 증명이 가려집니다. `lang`은 내보낼 내용의 언어(예: `en`)를 지정하며, 생략하면 Accept-Language를 따릅니다.\n\n필요한 권한: `webservice:read`.",
+        "parameters": [
+          {
+            "description": "내보내기 형식: jsonl(기본값, 한 줄에 JSON 하나) 또는 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "내보낼 내용의 언어(예: en). 생략하면 Accept-Language를 따릅니다",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "최소 수준: debug, info, warn 또는 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "소스 레이블, 대소문자 구분 없이 정확히 일치",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "키워드: 공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 - 는 제외",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "제외 키워드: 공백으로 구분, 큰따옴표로 구문을 묶음, 하나라도 포함하면 제외되며 q와 함께 적용",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "클라이언트 주소: 전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분, 앞에 ! 또는 -를 붙이면 제외",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름 또는 도메인의 일부",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "웹 서비스 리스너 key, 완전 일치. 이름이 같은 사이트나 리스너(예: IPv4와 IPv6를 따로 수신하는 경우)를 구분합니다",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "상태 코드(예: 404, 4xx, 500-599), 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 차단된 출처의 접근 로그를 숨깁니다. 차단되어 거부된 요청과 현재 차단 중인 출처의 모든 요청(차단을 일으킨 요청 포함)이 대상입니다(반환 결과에만 영향, 로그는 그대로 보관)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 관리 콘솔 로그인 세션이 있는 요청, 즉 관리자가 Web 서비스 사이트를 통해 콘솔에 접근하며 생긴 액세스 로그를 숨깁니다",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "시작 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "종료 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그 내보내기",
+        "tags": [
+          "Web 서비스"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/logs/sources": {
+      "get": {
+        "description": "이름순으로 정렬된 소스 레이블 배열을 반환합니다. 로그에 나타난 소스(디스크 저장 시 재시작 후에도 유지)와 모듈 설정의 소스(예: Web 서비스의 모든 리스너와 IP 목록)를 포함하며 `source` 필터에 사용합니다. 소스는 로그와 마찬가지로 요청 언어로 번역됩니다.\n\n필요한 권한: `webservice:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그의 모든 소스 목록",
         "tags": [
           "Web 서비스"
         ],
@@ -43761,7 +49137,7 @@
     },
     "/api/webterminal/logs": {
       "delete": {
-        "description": "필요한 권한: `webterminal:write`.",
+        "description": "디스크의 로그 파일, 순환된 파일, 아카이브와 소스 기록도 함께 삭제합니다.\n\n필요한 권한: `webterminal:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -43885,7 +49261,7 @@
             }
           },
           {
-            "description": "",
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
             "in": "query",
             "name": "site",
             "schema": {
@@ -43982,6 +49358,230 @@
           }
         ],
         "summary": "모듈 실행 로그 보기",
+        "tags": [
+          "Web 터미널"
+        ],
+        "x-required-scope": "webterminal:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webterminal/logs/export": {
+      "get": {
+        "description": "필터 조건에 맞는 모든 로그를 첨부 파일로 스트리밍하여 반환합니다. 오래된 순서이며 디스크의 순환된 파일과 압축 아카이브도 포함합니다. `format`은 `jsonl`(기본값, 한 줄에 JSON 하나) 또는 `csv`(BOM 포함 UTF-8, = + - @로 시작하는 셀에는 수식 주입 방지를 위해 작은따옴표를 앞에 붙임)입니다. 필터 매개변수는 로그 조회 API와 같습니다. 읽기 전용 신원이 내보내는 내용은 조회할 때와 마찬가지로 자격 증명이 가려집니다. `lang`은 내보낼 내용의 언어(예: `en`)를 지정하며, 생략하면 Accept-Language를 따릅니다.\n\n필요한 권한: `webterminal:read`.",
+        "parameters": [
+          {
+            "description": "내보내기 형식: jsonl(기본값, 한 줄에 JSON 하나) 또는 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "내보낼 내용의 언어(예: en). 생략하면 Accept-Language를 따릅니다",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "최소 수준: debug, info, warn 또는 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "소스 레이블, 대소문자 구분 없이 정확히 일치",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "키워드: 공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 - 는 제외",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "제외 키워드: 공백으로 구분, 큰따옴표로 구문을 묶음, 하나라도 포함하면 제외되며 q와 함께 적용",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "클라이언트 주소: 전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분, 앞에 ! 또는 -를 붙이면 제외",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름 또는 도메인의 일부",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "웹 서비스 리스너 key, 완전 일치. 이름이 같은 사이트나 리스너(예: IPv4와 IPv6를 따로 수신하는 경우)를 구분합니다",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "상태 코드(예: 404, 4xx, 500-599), 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 차단된 출처의 접근 로그를 숨깁니다. 차단되어 거부된 요청과 현재 차단 중인 출처의 모든 요청(차단을 일으킨 요청 포함)이 대상입니다(반환 결과에만 영향, 로그는 그대로 보관)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 관리 콘솔 로그인 세션이 있는 요청, 즉 관리자가 Web 서비스 사이트를 통해 콘솔에 접근하며 생긴 액세스 로그를 숨깁니다",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "시작 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "종료 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그 내보내기",
+        "tags": [
+          "Web 터미널"
+        ],
+        "x-required-scope": "webterminal:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webterminal/logs/sources": {
+      "get": {
+        "description": "이름순으로 정렬된 소스 레이블 배열을 반환합니다. 로그에 나타난 소스(디스크 저장 시 재시작 후에도 유지)와 모듈 설정의 소스(예: Web 서비스의 모든 리스너와 IP 목록)를 포함하며 `source` 필터에 사용합니다. 소스는 로그와 마찬가지로 요청 언어로 번역됩니다.\n\n필요한 권한: `webterminal:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그의 모든 소스 목록",
         "tags": [
           "Web 터미널"
         ],
@@ -46605,7 +52205,7 @@
     },
     "/api/wol/logs": {
       "delete": {
-        "description": "필요한 권한: `wol:write`.",
+        "description": "디스크의 로그 파일, 순환된 파일, 아카이브와 소스 기록도 함께 삭제합니다.\n\n필요한 권한: `wol:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -46729,7 +52329,7 @@
             }
           },
           {
-            "description": "",
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
             "in": "query",
             "name": "site",
             "schema": {
@@ -46826,6 +52426,230 @@
           }
         ],
         "summary": "모듈 실행 로그 보기",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "wol:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/wol/logs/export": {
+      "get": {
+        "description": "필터 조건에 맞는 모든 로그를 첨부 파일로 스트리밍하여 반환합니다. 오래된 순서이며 디스크의 순환된 파일과 압축 아카이브도 포함합니다. `format`은 `jsonl`(기본값, 한 줄에 JSON 하나) 또는 `csv`(BOM 포함 UTF-8, = + - @로 시작하는 셀에는 수식 주입 방지를 위해 작은따옴표를 앞에 붙임)입니다. 필터 매개변수는 로그 조회 API와 같습니다. 읽기 전용 신원이 내보내는 내용은 조회할 때와 마찬가지로 자격 증명이 가려집니다. `lang`은 내보낼 내용의 언어(예: `en`)를 지정하며, 생략하면 Accept-Language를 따릅니다.\n\n필요한 권한: `wol:read`.",
+        "parameters": [
+          {
+            "description": "내보내기 형식: jsonl(기본값, 한 줄에 JSON 하나) 또는 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "내보낼 내용의 언어(예: en). 생략하면 Accept-Language를 따릅니다",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "최소 수준: debug, info, warn 또는 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "소스 레이블, 대소문자 구분 없이 정확히 일치",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "키워드: 공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 - 는 제외",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "제외 키워드: 공백으로 구분, 큰따옴표로 구문을 묶음, 하나라도 포함하면 제외되며 q와 함께 적용",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "클라이언트 주소: 전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분, 앞에 ! 또는 -를 붙이면 제외",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름 또는 도메인의 일부",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "웹 서비스 리스너 key, 완전 일치. 이름이 같은 사이트나 리스너(예: IPv4와 IPv6를 따로 수신하는 경우)를 구분합니다",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "상태 코드(예: 404, 4xx, 500-599), 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 차단된 출처의 접근 로그를 숨깁니다. 차단되어 거부된 요청과 현재 차단 중인 출처의 모든 요청(차단을 일으킨 요청 포함)이 대상입니다(반환 결과에만 영향, 로그는 그대로 보관)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 관리 콘솔 로그인 세션이 있는 요청, 즉 관리자가 Web 서비스 사이트를 통해 콘솔에 접근하며 생긴 액세스 로그를 숨깁니다",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "시작 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "종료 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그 내보내기",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "wol:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/wol/logs/sources": {
+      "get": {
+        "description": "이름순으로 정렬된 소스 레이블 배열을 반환합니다. 로그에 나타난 소스(디스크 저장 시 재시작 후에도 유지)와 모듈 설정의 소스(예: Web 서비스의 모든 리스너와 IP 목록)를 포함하며 `source` 필터에 사용합니다. 소스는 로그와 마찬가지로 요청 언어로 번역됩니다.\n\n필요한 권한: `wol:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그의 모든 소스 목록",
         "tags": [
           "Wake-on-LAN"
         ],

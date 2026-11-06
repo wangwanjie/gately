@@ -69,6 +69,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路径 | 所需权限 | 说明 |
 | --- | --- | --- | --- |
 | GET | `/api/portforward/logs` | `portforward:read` | 查看模块运行日志 |
+| GET | `/api/portforward/logs/sources` | `portforward:read` | 列出模块日志的全部来源 |
+| GET | `/api/portforward/logs/export` | `portforward:read` | 导出模块运行日志 |
 | DELETE | `/api/portforward/logs` | `portforward:write` | 清空模块运行日志 |
 | GET | `/api/portforward/rules` | `portforward:read` | 获取端口转发规则列表 |
 | POST | `/api/portforward/rules` | `portforward:write` | 新增端口转发规则 |
@@ -88,6 +90,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路径 | 所需权限 | 说明 |
 | --- | --- | --- | --- |
 | GET | `/api/protoroute/logs` | `protoroute:read` | 查看模块运行日志 |
+| GET | `/api/protoroute/logs/sources` | `protoroute:read` | 列出模块日志的全部来源 |
+| GET | `/api/protoroute/logs/export` | `protoroute:read` | 导出模块运行日志 |
 | DELETE | `/api/protoroute/logs` | `protoroute:write` | 清空模块运行日志 |
 | GET | `/api/protoroute/rules` | `protoroute:read` | 获取协议分流规则列表 |
 | POST | `/api/protoroute/rules` | `protoroute:write` | 新增协议分流规则 |
@@ -107,6 +111,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路径 | 所需权限 | 说明 |
 | --- | --- | --- | --- |
 | GET | `/api/ddns/logs` | `ddns:read` | 查看模块运行日志 |
+| GET | `/api/ddns/logs/sources` | `ddns:read` | 列出模块日志的全部来源 |
+| GET | `/api/ddns/logs/export` | `ddns:read` | 导出模块运行日志 |
 | DELETE | `/api/ddns/logs` | `ddns:write` | 清空模块运行日志 |
 | GET | `/api/ddns/tasks` | `ddns:read` | 获取DDNS 任务列表 |
 | POST | `/api/ddns/tasks` | `ddns:write` | 新增DDNS 任务 |
@@ -135,6 +141,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路径 | 所需权限 | 说明 |
 | --- | --- | --- | --- |
 | GET | `/api/stun/logs` | `stun:read` | 查看模块运行日志 |
+| GET | `/api/stun/logs/sources` | `stun:read` | 列出模块日志的全部来源 |
+| GET | `/api/stun/logs/export` | `stun:read` | 导出模块运行日志 |
 | DELETE | `/api/stun/logs` | `stun:write` | 清空模块运行日志 |
 | GET | `/api/stun/rules` | `stun:read` | 获取STUN 规则列表 |
 | POST | `/api/stun/rules` | `stun:write` | 新增STUN 规则 |
@@ -156,6 +164,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路径 | 所需权限 | 说明 |
 | --- | --- | --- | --- |
 | GET | `/api/tailscale/logs` | `tailscale:read` | 查看模块运行日志 |
+| GET | `/api/tailscale/logs/sources` | `tailscale:read` | 列出模块日志的全部来源 |
+| GET | `/api/tailscale/logs/export` | `tailscale:read` | 导出模块运行日志 |
 | DELETE | `/api/tailscale/logs` | `tailscale:write` | 清空模块运行日志 |
 | GET | `/api/tailscale/instances` | `tailscale:read` | 获取Tailscale 实例列表 |
 | POST | `/api/tailscale/instances` | `tailscale:write` | 新增 Tailscale 实例 |
@@ -187,6 +197,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路径 | 所需权限 | 说明 |
 | --- | --- | --- | --- |
 | GET | `/api/netbird/logs` | `netbird:read` | 查看模块运行日志 |
+| GET | `/api/netbird/logs/sources` | `netbird:read` | 列出模块日志的全部来源 |
+| GET | `/api/netbird/logs/export` | `netbird:read` | 导出模块运行日志 |
 | DELETE | `/api/netbird/logs` | `netbird:write` | 清空模块运行日志 |
 | GET | `/api/netbird/instances` | `netbird:read` | 获取NetBird 实例列表 |
 | POST | `/api/netbird/instances` | `netbird:write` | 新增 NetBird 实例 |
@@ -218,6 +230,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路径 | 所需权限 | 说明 |
 | --- | --- | --- | --- |
 | GET | `/api/frp/logs` | `frp:read` | 查看模块运行日志 |
+| GET | `/api/frp/logs/sources` | `frp:read` | 列出模块日志的全部来源 |
+| GET | `/api/frp/logs/export` | `frp:read` | 导出模块运行日志 |
 | DELETE | `/api/frp/logs` | `frp:write` | 清空模块运行日志 |
 | GET | `/api/frp/clients` | `frp:read` | 获取frp 客户端列表 |
 | POST | `/api/frp/clients` | `frp:write` | 新增frp 客户端 |
@@ -270,6 +284,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路径 | 所需权限 | 说明 |
 | --- | --- | --- | --- |
 | GET | `/api/cloudflared/logs` | `cloudflared:read` | 查看模块运行日志 |
+| GET | `/api/cloudflared/logs/sources` | `cloudflared:read` | 列出模块日志的全部来源 |
+| GET | `/api/cloudflared/logs/export` | `cloudflared:read` | 导出模块运行日志 |
 | DELETE | `/api/cloudflared/logs` | `cloudflared:write` | 清空模块运行日志 |
 | GET | `/api/cloudflared/tunnels` | `cloudflared:read` | 获取Cloudflare 隧道列表 |
 | POST | `/api/cloudflared/tunnels` | `cloudflared:write` | 新增Cloudflare 隧道 |
@@ -300,6 +316,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路径 | 所需权限 | 说明 |
 | --- | --- | --- | --- |
 | GET | `/api/ssl/logs` | `ssl:read` | 查看模块运行日志 |
+| GET | `/api/ssl/logs/sources` | `ssl:read` | 列出模块日志的全部来源 |
+| GET | `/api/ssl/logs/export` | `ssl:read` | 导出模块运行日志 |
 | DELETE | `/api/ssl/logs` | `ssl:write` | 清空模块运行日志 |
 | GET | `/api/ssl/certs` | `ssl:read` | 获取证书列表 |
 | POST | `/api/ssl/certs` | `ssl:write` | 新增证书 |
@@ -325,6 +343,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路径 | 所需权限 | 说明 |
 | --- | --- | --- | --- |
 | GET | `/api/waf/logs` | `waf:read` | 查看模块运行日志 |
+| GET | `/api/waf/logs/sources` | `waf:read` | 列出模块日志的全部来源 |
+| GET | `/api/waf/logs/export` | `waf:read` | 导出模块运行日志 |
 | DELETE | `/api/waf/logs` | `waf:write` | 清空模块运行日志 |
 | GET | `/api/waf/instances` | `waf:read` | 获取WAF 实例列表 |
 | POST | `/api/waf/instances` | `waf:write` | 新增WAF 实例 |
@@ -345,6 +365,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路径 | 所需权限 | 说明 |
 | --- | --- | --- | --- |
 | GET | `/api/webservice/logs` | `webservice:read` | 查看模块运行日志 |
+| GET | `/api/webservice/logs/sources` | `webservice:read` | 列出模块日志的全部来源 |
+| GET | `/api/webservice/logs/export` | `webservice:read` | 导出模块运行日志 |
 | DELETE | `/api/webservice/logs` | `webservice:write` | 清空模块运行日志 |
 | GET | `/api/webservice/listeners` | `webservice:read` | 获取Web 服务监听列表 |
 | POST | `/api/webservice/listeners` | `webservice:write` | 新增Web 服务监听 |
@@ -400,6 +422,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路径 | 所需权限 | 说明 |
 | --- | --- | --- | --- |
 | GET | `/api/guard/logs` | `guard:read` | 查看模块运行日志 |
+| GET | `/api/guard/logs/sources` | `guard:read` | 列出模块日志的全部来源 |
+| GET | `/api/guard/logs/export` | `guard:read` | 导出模块运行日志 |
 | DELETE | `/api/guard/logs` | `guard:write` | 清空模块运行日志 |
 | GET | `/api/guard/jails` | `guard:read` | 获取入侵防护规则列表 |
 | POST | `/api/guard/jails` | `guard:write` | 新增入侵防护规则 |
@@ -426,6 +450,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路径 | 所需权限 | 说明 |
 | --- | --- | --- | --- |
 | GET | `/api/wol/logs` | `wol:read` | 查看模块运行日志 |
+| GET | `/api/wol/logs/sources` | `wol:read` | 列出模块日志的全部来源 |
+| GET | `/api/wol/logs/export` | `wol:read` | 导出模块运行日志 |
 | DELETE | `/api/wol/logs` | `wol:write` | 清空模块运行日志 |
 | GET | `/api/wol/devices` | `wol:read` | 获取唤醒设备列表 |
 | POST | `/api/wol/devices` | `wol:write` | 新增唤醒设备 |
@@ -445,6 +471,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路径 | 所需权限 | 说明 |
 | --- | --- | --- | --- |
 | GET | `/api/webterminal/logs` | `webterminal:read` | 查看模块运行日志 |
+| GET | `/api/webterminal/logs/sources` | `webterminal:read` | 列出模块日志的全部来源 |
+| GET | `/api/webterminal/logs/export` | `webterminal:read` | 导出模块运行日志 |
 | DELETE | `/api/webterminal/logs` | `webterminal:write` | 清空模块运行日志 |
 | GET | `/api/webterminal/connections` | `webterminal:read` | 获取终端连接列表 |
 | POST | `/api/webterminal/connections` | `webterminal:write` | 新增终端连接 |
@@ -512,6 +540,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路径 | 所需权限 | 说明 |
 | --- | --- | --- | --- |
 | GET | `/api/cron/logs` | `cron:read` | 查看模块运行日志 |
+| GET | `/api/cron/logs/sources` | `cron:read` | 列出模块日志的全部来源 |
+| GET | `/api/cron/logs/export` | `cron:read` | 导出模块运行日志 |
 | DELETE | `/api/cron/logs` | `cron:write` | 清空模块运行日志 |
 | GET | `/api/cron/tasks` | `cron:read` | 获取计划任务列表 |
 | POST | `/api/cron/tasks` | `cron:write` | 新增计划任务 |
@@ -531,6 +561,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路径 | 所需权限 | 说明 |
 | --- | --- | --- | --- |
 | GET | `/api/docker/logs` | `docker:read` | 查看模块运行日志 |
+| GET | `/api/docker/logs/sources` | `docker:read` | 列出模块日志的全部来源 |
+| GET | `/api/docker/logs/export` | `docker:read` | 导出模块运行日志 |
 | DELETE | `/api/docker/logs` | `docker:write` | 清空模块运行日志 |
 | GET | `/api/docker/tasks` | `docker:read` | 列出后台任务 |
 | GET | `/api/docker/tasks/{id}` | `docker:read` | 查看后台任务进度与输出 |
@@ -603,6 +635,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路径 | 所需权限 | 说明 |
 | --- | --- | --- | --- |
 | GET | `/api/webdav/logs` | `webdav:read` | 查看模块运行日志 |
+| GET | `/api/webdav/logs/sources` | `webdav:read` | 列出模块日志的全部来源 |
+| GET | `/api/webdav/logs/export` | `webdav:read` | 导出模块运行日志 |
 | DELETE | `/api/webdav/logs` | `webdav:write` | 清空模块运行日志 |
 | GET | `/api/webdav/settings` | `webdav:read` | 读取 WebDAV 设置 |
 | GET | `/api/webdav/settings/secrets` | `webdav:write` | 查看本地用户密码明文 |
@@ -615,6 +649,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路径 | 所需权限 | 说明 |
 | --- | --- | --- | --- |
 | GET | `/api/ftp/logs` | `ftp:read` | 查看模块运行日志 |
+| GET | `/api/ftp/logs/sources` | `ftp:read` | 列出模块日志的全部来源 |
+| GET | `/api/ftp/logs/export` | `ftp:read` | 导出模块运行日志 |
 | DELETE | `/api/ftp/logs` | `ftp:write` | 清空模块运行日志 |
 | GET | `/api/ftp/settings` | `ftp:read` | 读取 FTP 设置 |
 | GET | `/api/ftp/settings/secrets` | `ftp:write` | 查看本地用户密码明文 |
@@ -627,6 +663,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路径 | 所需权限 | 说明 |
 | --- | --- | --- | --- |
 | GET | `/api/smb/logs` | `smb:read` | 查看模块运行日志 |
+| GET | `/api/smb/logs/sources` | `smb:read` | 列出模块日志的全部来源 |
+| GET | `/api/smb/logs/export` | `smb:read` | 导出模块运行日志 |
 | DELETE | `/api/smb/logs` | `smb:write` | 清空模块运行日志 |
 | GET | `/api/smb/settings` | `smb:read` | 读取 SMB 设置 |
 | GET | `/api/smb/settings/secrets` | `smb:write` | 查看本地用户密码明文 |
@@ -639,6 +677,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路径 | 所需权限 | 说明 |
 | --- | --- | --- | --- |
 | GET | `/api/filebrowser/logs` | `filebrowser:read` | 查看模块运行日志 |
+| GET | `/api/filebrowser/logs/sources` | `filebrowser:read` | 列出模块日志的全部来源 |
+| GET | `/api/filebrowser/logs/export` | `filebrowser:read` | 导出模块运行日志 |
 | DELETE | `/api/filebrowser/logs` | `filebrowser:write` | 清空模块运行日志 |
 | GET | `/api/filebrowser/instances` | `filebrowser:read` | 获取File Browser 实例列表 |
 | POST | `/api/filebrowser/instances` | `filebrowser:write` | 新增File Browser 实例 |
@@ -667,6 +707,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路径 | 所需权限 | 说明 |
 | --- | --- | --- | --- |
 | GET | `/api/storage/logs` | `storage:read` | 查看模块运行日志 |
+| GET | `/api/storage/logs/sources` | `storage:read` | 列出模块日志的全部来源 |
+| GET | `/api/storage/logs/export` | `storage:read` | 导出模块运行日志 |
 | DELETE | `/api/storage/logs` | `storage:write` | 清空模块运行日志 |
 | GET | `/api/storage/mounts` | `storage:read` | 获取存储挂载列表 |
 | POST | `/api/storage/mounts` | `storage:write` | 新增存储挂载 |
@@ -691,6 +733,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路径 | 所需权限 | 说明 |
 | --- | --- | --- | --- |
 | GET | `/api/notify/logs` | `notify:read` | 查看模块运行日志 |
+| GET | `/api/notify/logs/sources` | `notify:read` | 列出模块日志的全部来源 |
+| GET | `/api/notify/logs/export` | `notify:read` | 导出模块运行日志 |
 | DELETE | `/api/notify/logs` | `notify:write` | 清空模块运行日志 |
 | GET | `/api/notify/channels` | `notify:read` | 获取通知渠道列表 |
 | POST | `/api/notify/channels` | `notify:write` | 新增通知渠道 |
@@ -724,6 +768,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路径 | 所需权限 | 说明 |
 | --- | --- | --- | --- |
 | GET | `/api/perf/logs` | `perf:read` | 查看模块运行日志 |
+| GET | `/api/perf/logs/sources` | `perf:read` | 列出模块日志的全部来源 |
+| GET | `/api/perf/logs/export` | `perf:read` | 导出模块运行日志 |
 | DELETE | `/api/perf/logs` | `perf:write` | 清空模块运行日志 |
 | GET | `/api/perf/rules` | `perf:read` | 获取性能告警规则列表 |
 | POST | `/api/perf/rules` | `perf:write` | 新增性能告警规则 |
@@ -746,6 +792,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路径 | 所需权限 | 说明 |
 | --- | --- | --- | --- |
 | GET | `/api/nettools/logs` | `nettools:read` | 查看模块运行日志 |
+| GET | `/api/nettools/logs/sources` | `nettools:read` | 列出模块日志的全部来源 |
+| GET | `/api/nettools/logs/export` | `nettools:read` | 导出模块运行日志 |
 | DELETE | `/api/nettools/logs` | `nettools:write` | 清空模块运行日志 |
 | POST | `/api/nettools/run` | `nettools:write` | 运行诊断工具，返回任务（tool: ping / traceroute / tcp / dns / speed / scan） |
 | GET | `/api/nettools/tasks` | `nettools:read` | 最近的诊断任务 |
@@ -760,6 +808,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路径 | 所需权限 | 说明 |
 | --- | --- | --- | --- |
 | GET | `/api/backup/logs` | `backup:read` | 查看模块运行日志 |
+| GET | `/api/backup/logs/sources` | `backup:read` | 列出模块日志的全部来源 |
+| GET | `/api/backup/logs/export` | `backup:read` | 导出模块运行日志 |
 | DELETE | `/api/backup/logs` | `backup:write` | 清空模块运行日志 |
 | GET | `/api/backup/targets` | `backup:read` | 获取备份目的地列表 |
 | POST | `/api/backup/targets` | `backup:write` | 新增备份目的地 |
@@ -794,6 +844,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/session` | 任意有效令牌 | 查看当前认证身份 |
 | GET | `/api/status` | `status:read` | 查看系统与各模块状态 |
 | GET | `/api/logs` | `logs:read` | 查看系统日志 |
+| GET | `/api/logs/sources` | `logs:read` | 列出系统日志的全部来源 |
+| GET | `/api/logs/export` | `logs:read` | 导出系统日志 |
 | GET | `/api/system/settings` | 仅登录会话 | 读取全局设置 |
 | PUT | `/api/system/settings` | 仅登录会话 | 保存全局设置 |
 | GET | `/api/system/settings/secrets` | 仅登录会话 | 查看第三方登录 Client Secret 明文 |

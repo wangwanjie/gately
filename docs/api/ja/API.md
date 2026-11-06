@@ -69,6 +69,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | メソッド | パス | 必要な権限 | 説明 |
 | --- | --- | --- | --- |
 | GET | `/api/portforward/logs` | `portforward:read` | モジュールの実行ログを表示 |
+| GET | `/api/portforward/logs/sources` | `portforward:read` | モジュールログのすべてのソースを一覧表示 |
+| GET | `/api/portforward/logs/export` | `portforward:read` | モジュールログをエクスポート |
 | DELETE | `/api/portforward/logs` | `portforward:write` | モジュールの実行ログを消去 |
 | GET | `/api/portforward/rules` | `portforward:read` | ポートフォワードルール の一覧を取得 |
 | POST | `/api/portforward/rules` | `portforward:write` | ポートフォワードルール を追加 |
@@ -88,6 +90,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | メソッド | パス | 必要な権限 | 説明 |
 | --- | --- | --- | --- |
 | GET | `/api/protoroute/logs` | `protoroute:read` | モジュールの実行ログを表示 |
+| GET | `/api/protoroute/logs/sources` | `protoroute:read` | モジュールログのすべてのソースを一覧表示 |
+| GET | `/api/protoroute/logs/export` | `protoroute:read` | モジュールログをエクスポート |
 | DELETE | `/api/protoroute/logs` | `protoroute:write` | モジュールの実行ログを消去 |
 | GET | `/api/protoroute/rules` | `protoroute:read` | プロトコル振り分けルール の一覧を取得 |
 | POST | `/api/protoroute/rules` | `protoroute:write` | プロトコル振り分けルール を追加 |
@@ -107,6 +111,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | メソッド | パス | 必要な権限 | 説明 |
 | --- | --- | --- | --- |
 | GET | `/api/ddns/logs` | `ddns:read` | モジュールの実行ログを表示 |
+| GET | `/api/ddns/logs/sources` | `ddns:read` | モジュールログのすべてのソースを一覧表示 |
+| GET | `/api/ddns/logs/export` | `ddns:read` | モジュールログをエクスポート |
 | DELETE | `/api/ddns/logs` | `ddns:write` | モジュールの実行ログを消去 |
 | GET | `/api/ddns/tasks` | `ddns:read` | DDNS タスク の一覧を取得 |
 | POST | `/api/ddns/tasks` | `ddns:write` | DDNS タスク を追加 |
@@ -135,6 +141,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | メソッド | パス | 必要な権限 | 説明 |
 | --- | --- | --- | --- |
 | GET | `/api/stun/logs` | `stun:read` | モジュールの実行ログを表示 |
+| GET | `/api/stun/logs/sources` | `stun:read` | モジュールログのすべてのソースを一覧表示 |
+| GET | `/api/stun/logs/export` | `stun:read` | モジュールログをエクスポート |
 | DELETE | `/api/stun/logs` | `stun:write` | モジュールの実行ログを消去 |
 | GET | `/api/stun/rules` | `stun:read` | STUN ルール の一覧を取得 |
 | POST | `/api/stun/rules` | `stun:write` | STUN ルール を追加 |
@@ -156,6 +164,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | メソッド | パス | 必要な権限 | 説明 |
 | --- | --- | --- | --- |
 | GET | `/api/tailscale/logs` | `tailscale:read` | モジュールの実行ログを表示 |
+| GET | `/api/tailscale/logs/sources` | `tailscale:read` | モジュールログのすべてのソースを一覧表示 |
+| GET | `/api/tailscale/logs/export` | `tailscale:read` | モジュールログをエクスポート |
 | DELETE | `/api/tailscale/logs` | `tailscale:write` | モジュールの実行ログを消去 |
 | GET | `/api/tailscale/instances` | `tailscale:read` | Tailscale インスタンス の一覧を取得 |
 | POST | `/api/tailscale/instances` | `tailscale:write` | Tailscale インスタンスを追加 |
@@ -187,6 +197,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | メソッド | パス | 必要な権限 | 説明 |
 | --- | --- | --- | --- |
 | GET | `/api/netbird/logs` | `netbird:read` | モジュールの実行ログを表示 |
+| GET | `/api/netbird/logs/sources` | `netbird:read` | モジュールログのすべてのソースを一覧表示 |
+| GET | `/api/netbird/logs/export` | `netbird:read` | モジュールログをエクスポート |
 | DELETE | `/api/netbird/logs` | `netbird:write` | モジュールの実行ログを消去 |
 | GET | `/api/netbird/instances` | `netbird:read` | NetBird インスタンス の一覧を取得 |
 | POST | `/api/netbird/instances` | `netbird:write` | NetBird インスタンスを追加 |
@@ -218,6 +230,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | メソッド | パス | 必要な権限 | 説明 |
 | --- | --- | --- | --- |
 | GET | `/api/frp/logs` | `frp:read` | モジュールの実行ログを表示 |
+| GET | `/api/frp/logs/sources` | `frp:read` | モジュールログのすべてのソースを一覧表示 |
+| GET | `/api/frp/logs/export` | `frp:read` | モジュールログをエクスポート |
 | DELETE | `/api/frp/logs` | `frp:write` | モジュールの実行ログを消去 |
 | GET | `/api/frp/clients` | `frp:read` | frp クライアント の一覧を取得 |
 | POST | `/api/frp/clients` | `frp:write` | frp クライアント を追加 |
@@ -270,6 +284,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | メソッド | パス | 必要な権限 | 説明 |
 | --- | --- | --- | --- |
 | GET | `/api/cloudflared/logs` | `cloudflared:read` | モジュールの実行ログを表示 |
+| GET | `/api/cloudflared/logs/sources` | `cloudflared:read` | モジュールログのすべてのソースを一覧表示 |
+| GET | `/api/cloudflared/logs/export` | `cloudflared:read` | モジュールログをエクスポート |
 | DELETE | `/api/cloudflared/logs` | `cloudflared:write` | モジュールの実行ログを消去 |
 | GET | `/api/cloudflared/tunnels` | `cloudflared:read` | Cloudflare トンネル の一覧を取得 |
 | POST | `/api/cloudflared/tunnels` | `cloudflared:write` | Cloudflare トンネル を追加 |
@@ -300,6 +316,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | メソッド | パス | 必要な権限 | 説明 |
 | --- | --- | --- | --- |
 | GET | `/api/ssl/logs` | `ssl:read` | モジュールの実行ログを表示 |
+| GET | `/api/ssl/logs/sources` | `ssl:read` | モジュールログのすべてのソースを一覧表示 |
+| GET | `/api/ssl/logs/export` | `ssl:read` | モジュールログをエクスポート |
 | DELETE | `/api/ssl/logs` | `ssl:write` | モジュールの実行ログを消去 |
 | GET | `/api/ssl/certs` | `ssl:read` | 証明書 の一覧を取得 |
 | POST | `/api/ssl/certs` | `ssl:write` | 証明書 を追加 |
@@ -325,6 +343,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | メソッド | パス | 必要な権限 | 説明 |
 | --- | --- | --- | --- |
 | GET | `/api/waf/logs` | `waf:read` | モジュールの実行ログを表示 |
+| GET | `/api/waf/logs/sources` | `waf:read` | モジュールログのすべてのソースを一覧表示 |
+| GET | `/api/waf/logs/export` | `waf:read` | モジュールログをエクスポート |
 | DELETE | `/api/waf/logs` | `waf:write` | モジュールの実行ログを消去 |
 | GET | `/api/waf/instances` | `waf:read` | WAF インスタンス の一覧を取得 |
 | POST | `/api/waf/instances` | `waf:write` | WAF インスタンス を追加 |
@@ -345,6 +365,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | メソッド | パス | 必要な権限 | 説明 |
 | --- | --- | --- | --- |
 | GET | `/api/webservice/logs` | `webservice:read` | モジュールの実行ログを表示 |
+| GET | `/api/webservice/logs/sources` | `webservice:read` | モジュールログのすべてのソースを一覧表示 |
+| GET | `/api/webservice/logs/export` | `webservice:read` | モジュールログをエクスポート |
 | DELETE | `/api/webservice/logs` | `webservice:write` | モジュールの実行ログを消去 |
 | GET | `/api/webservice/listeners` | `webservice:read` | Web サービスのリッスン の一覧を取得 |
 | POST | `/api/webservice/listeners` | `webservice:write` | Web サービスのリッスン を追加 |
@@ -400,6 +422,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | メソッド | パス | 必要な権限 | 説明 |
 | --- | --- | --- | --- |
 | GET | `/api/guard/logs` | `guard:read` | モジュールの実行ログを表示 |
+| GET | `/api/guard/logs/sources` | `guard:read` | モジュールログのすべてのソースを一覧表示 |
+| GET | `/api/guard/logs/export` | `guard:read` | モジュールログをエクスポート |
 | DELETE | `/api/guard/logs` | `guard:write` | モジュールの実行ログを消去 |
 | GET | `/api/guard/jails` | `guard:read` | 侵入防御ルール の一覧を取得 |
 | POST | `/api/guard/jails` | `guard:write` | 侵入防御ルール を追加 |
@@ -426,6 +450,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | メソッド | パス | 必要な権限 | 説明 |
 | --- | --- | --- | --- |
 | GET | `/api/wol/logs` | `wol:read` | モジュールの実行ログを表示 |
+| GET | `/api/wol/logs/sources` | `wol:read` | モジュールログのすべてのソースを一覧表示 |
+| GET | `/api/wol/logs/export` | `wol:read` | モジュールログをエクスポート |
 | DELETE | `/api/wol/logs` | `wol:write` | モジュールの実行ログを消去 |
 | GET | `/api/wol/devices` | `wol:read` | デバイスをウェイクアップ の一覧を取得 |
 | POST | `/api/wol/devices` | `wol:write` | デバイスをウェイクアップ を追加 |
@@ -445,6 +471,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | メソッド | パス | 必要な権限 | 説明 |
 | --- | --- | --- | --- |
 | GET | `/api/webterminal/logs` | `webterminal:read` | モジュールの実行ログを表示 |
+| GET | `/api/webterminal/logs/sources` | `webterminal:read` | モジュールログのすべてのソースを一覧表示 |
+| GET | `/api/webterminal/logs/export` | `webterminal:read` | モジュールログをエクスポート |
 | DELETE | `/api/webterminal/logs` | `webterminal:write` | モジュールの実行ログを消去 |
 | GET | `/api/webterminal/connections` | `webterminal:read` | ターミナル接続 の一覧を取得 |
 | POST | `/api/webterminal/connections` | `webterminal:write` | ターミナル接続 を追加 |
@@ -512,6 +540,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | メソッド | パス | 必要な権限 | 説明 |
 | --- | --- | --- | --- |
 | GET | `/api/cron/logs` | `cron:read` | モジュールの実行ログを表示 |
+| GET | `/api/cron/logs/sources` | `cron:read` | モジュールログのすべてのソースを一覧表示 |
+| GET | `/api/cron/logs/export` | `cron:read` | モジュールログをエクスポート |
 | DELETE | `/api/cron/logs` | `cron:write` | モジュールの実行ログを消去 |
 | GET | `/api/cron/tasks` | `cron:read` | スケジュールタスク の一覧を取得 |
 | POST | `/api/cron/tasks` | `cron:write` | スケジュールタスク を追加 |
@@ -531,6 +561,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | メソッド | パス | 必要な権限 | 説明 |
 | --- | --- | --- | --- |
 | GET | `/api/docker/logs` | `docker:read` | モジュールの実行ログを表示 |
+| GET | `/api/docker/logs/sources` | `docker:read` | モジュールログのすべてのソースを一覧表示 |
+| GET | `/api/docker/logs/export` | `docker:read` | モジュールログをエクスポート |
 | DELETE | `/api/docker/logs` | `docker:write` | モジュールの実行ログを消去 |
 | GET | `/api/docker/tasks` | `docker:read` | バックグラウンドタスクを一覧表示 |
 | GET | `/api/docker/tasks/{id}` | `docker:read` | バックグラウンドタスクの進行状況と出力を表示 |
@@ -603,6 +635,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | メソッド | パス | 必要な権限 | 説明 |
 | --- | --- | --- | --- |
 | GET | `/api/webdav/logs` | `webdav:read` | モジュールの実行ログを表示 |
+| GET | `/api/webdav/logs/sources` | `webdav:read` | モジュールログのすべてのソースを一覧表示 |
+| GET | `/api/webdav/logs/export` | `webdav:read` | モジュールログをエクスポート |
 | DELETE | `/api/webdav/logs` | `webdav:write` | モジュールの実行ログを消去 |
 | GET | `/api/webdav/settings` | `webdav:read` | WebDAV 設定を読み取り |
 | GET | `/api/webdav/settings/secrets` | `webdav:write` | ローカルユーザーのパスワードを平文で表示 |
@@ -615,6 +649,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | メソッド | パス | 必要な権限 | 説明 |
 | --- | --- | --- | --- |
 | GET | `/api/ftp/logs` | `ftp:read` | モジュールの実行ログを表示 |
+| GET | `/api/ftp/logs/sources` | `ftp:read` | モジュールログのすべてのソースを一覧表示 |
+| GET | `/api/ftp/logs/export` | `ftp:read` | モジュールログをエクスポート |
 | DELETE | `/api/ftp/logs` | `ftp:write` | モジュールの実行ログを消去 |
 | GET | `/api/ftp/settings` | `ftp:read` | FTP 設定を読み取り |
 | GET | `/api/ftp/settings/secrets` | `ftp:write` | ローカルユーザーのパスワードを平文で表示 |
@@ -627,6 +663,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | メソッド | パス | 必要な権限 | 説明 |
 | --- | --- | --- | --- |
 | GET | `/api/smb/logs` | `smb:read` | モジュールの実行ログを表示 |
+| GET | `/api/smb/logs/sources` | `smb:read` | モジュールログのすべてのソースを一覧表示 |
+| GET | `/api/smb/logs/export` | `smb:read` | モジュールログをエクスポート |
 | DELETE | `/api/smb/logs` | `smb:write` | モジュールの実行ログを消去 |
 | GET | `/api/smb/settings` | `smb:read` | SMB 設定を取得 |
 | GET | `/api/smb/settings/secrets` | `smb:write` | ローカルユーザーのパスワードを平文で表示 |
@@ -639,6 +677,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | メソッド | パス | 必要な権限 | 説明 |
 | --- | --- | --- | --- |
 | GET | `/api/filebrowser/logs` | `filebrowser:read` | モジュールの実行ログを表示 |
+| GET | `/api/filebrowser/logs/sources` | `filebrowser:read` | モジュールログのすべてのソースを一覧表示 |
+| GET | `/api/filebrowser/logs/export` | `filebrowser:read` | モジュールログをエクスポート |
 | DELETE | `/api/filebrowser/logs` | `filebrowser:write` | モジュールの実行ログを消去 |
 | GET | `/api/filebrowser/instances` | `filebrowser:read` | File Browser インスタンス の一覧を取得 |
 | POST | `/api/filebrowser/instances` | `filebrowser:write` | File Browser インスタンス を追加 |
@@ -667,6 +707,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | メソッド | パス | 必要な権限 | 説明 |
 | --- | --- | --- | --- |
 | GET | `/api/storage/logs` | `storage:read` | モジュールの実行ログを表示 |
+| GET | `/api/storage/logs/sources` | `storage:read` | モジュールログのすべてのソースを一覧表示 |
+| GET | `/api/storage/logs/export` | `storage:read` | モジュールログをエクスポート |
 | DELETE | `/api/storage/logs` | `storage:write` | モジュールの実行ログを消去 |
 | GET | `/api/storage/mounts` | `storage:read` | ストレージマウント の一覧を取得 |
 | POST | `/api/storage/mounts` | `storage:write` | ストレージマウント を追加 |
@@ -691,6 +733,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | メソッド | パス | 必要な権限 | 説明 |
 | --- | --- | --- | --- |
 | GET | `/api/notify/logs` | `notify:read` | モジュールの実行ログを表示 |
+| GET | `/api/notify/logs/sources` | `notify:read` | モジュールログのすべてのソースを一覧表示 |
+| GET | `/api/notify/logs/export` | `notify:read` | モジュールログをエクスポート |
 | DELETE | `/api/notify/logs` | `notify:write` | モジュールの実行ログを消去 |
 | GET | `/api/notify/channels` | `notify:read` | 通知チャネル の一覧を取得 |
 | POST | `/api/notify/channels` | `notify:write` | 通知チャネル を追加 |
@@ -724,6 +768,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | メソッド | パス | 必要な権限 | 説明 |
 | --- | --- | --- | --- |
 | GET | `/api/perf/logs` | `perf:read` | モジュールの実行ログを表示 |
+| GET | `/api/perf/logs/sources` | `perf:read` | モジュールログのすべてのソースを一覧表示 |
+| GET | `/api/perf/logs/export` | `perf:read` | モジュールログをエクスポート |
 | DELETE | `/api/perf/logs` | `perf:write` | モジュールの実行ログを消去 |
 | GET | `/api/perf/rules` | `perf:read` | パフォーマンスアラートルール の一覧を取得 |
 | POST | `/api/perf/rules` | `perf:write` | パフォーマンスアラートルール を追加 |
@@ -746,6 +792,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | メソッド | パス | 必要な権限 | 説明 |
 | --- | --- | --- | --- |
 | GET | `/api/nettools/logs` | `nettools:read` | モジュールの実行ログを表示 |
+| GET | `/api/nettools/logs/sources` | `nettools:read` | モジュールログのすべてのソースを一覧表示 |
+| GET | `/api/nettools/logs/export` | `nettools:read` | モジュールログをエクスポート |
 | DELETE | `/api/nettools/logs` | `nettools:write` | モジュールの実行ログを消去 |
 | POST | `/api/nettools/run` | `nettools:write` | 診断ツールを実行してタスクを返す（tool: ping / traceroute / tcp / dns / speed / scan） |
 | GET | `/api/nettools/tasks` | `nettools:read` | 最近の診断タスク |
@@ -760,6 +808,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | メソッド | パス | 必要な権限 | 説明 |
 | --- | --- | --- | --- |
 | GET | `/api/backup/logs` | `backup:read` | モジュールの実行ログを表示 |
+| GET | `/api/backup/logs/sources` | `backup:read` | モジュールログのすべてのソースを一覧表示 |
+| GET | `/api/backup/logs/export` | `backup:read` | モジュールログをエクスポート |
 | DELETE | `/api/backup/logs` | `backup:write` | モジュールの実行ログを消去 |
 | GET | `/api/backup/targets` | `backup:read` | バックアップ先 の一覧を取得 |
 | POST | `/api/backup/targets` | `backup:write` | バックアップ先 を追加 |
@@ -794,6 +844,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/session` | 任意の有効なトークン | 現在の認証 ID を表示 |
 | GET | `/api/status` | `status:read` | システムと各モジュールの状態を表示 |
 | GET | `/api/logs` | `logs:read` | システムログを表示 |
+| GET | `/api/logs/sources` | `logs:read` | システムログのすべてのソースを一覧表示 |
+| GET | `/api/logs/export` | `logs:read` | システムログをエクスポート |
 | GET | `/api/system/settings` | ログインセッションのみ | グローバル設定を読み取り |
 | PUT | `/api/system/settings` | ログインセッションのみ | グローバル設定を保存 |
 | GET | `/api/system/settings/secrets` | ログインセッションのみ | サードパーティログインの Client Secret を平文で表示 |

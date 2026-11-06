@@ -69,6 +69,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Método | Caminho | Permissão necessária | Descrição |
 | --- | --- | --- | --- |
 | GET | `/api/portforward/logs` | `portforward:read` | Ver logs de execução do módulo |
+| GET | `/api/portforward/logs/sources` | `portforward:read` | Listar todas as origens dos logs do módulo |
+| GET | `/api/portforward/logs/export` | `portforward:read` | Exportar logs do módulo |
 | DELETE | `/api/portforward/logs` | `portforward:write` | Limpar logs de execução do módulo |
 | GET | `/api/portforward/rules` | `portforward:read` | Listar Regra de encaminhamento de portas |
 | POST | `/api/portforward/rules` | `portforward:write` | Adicionar Regra de encaminhamento de portas |
@@ -88,6 +90,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Método | Caminho | Permissão necessária | Descrição |
 | --- | --- | --- | --- |
 | GET | `/api/protoroute/logs` | `protoroute:read` | Ver logs de execução do módulo |
+| GET | `/api/protoroute/logs/sources` | `protoroute:read` | Listar todas as origens dos logs do módulo |
+| GET | `/api/protoroute/logs/export` | `protoroute:read` | Exportar logs do módulo |
 | DELETE | `/api/protoroute/logs` | `protoroute:write` | Limpar logs de execução do módulo |
 | GET | `/api/protoroute/rules` | `protoroute:read` | Listar regra de roteamento por protocolo |
 | POST | `/api/protoroute/rules` | `protoroute:write` | Adicionar regra de roteamento por protocolo |
@@ -107,6 +111,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Método | Caminho | Permissão necessária | Descrição |
 | --- | --- | --- | --- |
 | GET | `/api/ddns/logs` | `ddns:read` | Ver logs de execução do módulo |
+| GET | `/api/ddns/logs/sources` | `ddns:read` | Listar todas as origens dos logs do módulo |
+| GET | `/api/ddns/logs/export` | `ddns:read` | Exportar logs do módulo |
 | DELETE | `/api/ddns/logs` | `ddns:write` | Limpar logs de execução do módulo |
 | GET | `/api/ddns/tasks` | `ddns:read` | Listar Tarefa DDNS |
 | POST | `/api/ddns/tasks` | `ddns:write` | Adicionar Tarefa DDNS |
@@ -135,6 +141,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Método | Caminho | Permissão necessária | Descrição |
 | --- | --- | --- | --- |
 | GET | `/api/stun/logs` | `stun:read` | Ver logs de execução do módulo |
+| GET | `/api/stun/logs/sources` | `stun:read` | Listar todas as origens dos logs do módulo |
+| GET | `/api/stun/logs/export` | `stun:read` | Exportar logs do módulo |
 | DELETE | `/api/stun/logs` | `stun:write` | Limpar logs de execução do módulo |
 | GET | `/api/stun/rules` | `stun:read` | Listar Regra STUN |
 | POST | `/api/stun/rules` | `stun:write` | Adicionar Regra STUN |
@@ -156,6 +164,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Método | Caminho | Permissão necessária | Descrição |
 | --- | --- | --- | --- |
 | GET | `/api/tailscale/logs` | `tailscale:read` | Ver logs de execução do módulo |
+| GET | `/api/tailscale/logs/sources` | `tailscale:read` | Listar todas as origens dos logs do módulo |
+| GET | `/api/tailscale/logs/export` | `tailscale:read` | Exportar logs do módulo |
 | DELETE | `/api/tailscale/logs` | `tailscale:write` | Limpar logs de execução do módulo |
 | GET | `/api/tailscale/instances` | `tailscale:read` | Listar instância do Tailscale |
 | POST | `/api/tailscale/instances` | `tailscale:write` | Adicionar uma instância do Tailscale |
@@ -187,6 +197,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Método | Caminho | Permissão necessária | Descrição |
 | --- | --- | --- | --- |
 | GET | `/api/netbird/logs` | `netbird:read` | Ver logs de execução do módulo |
+| GET | `/api/netbird/logs/sources` | `netbird:read` | Listar todas as origens dos logs do módulo |
+| GET | `/api/netbird/logs/export` | `netbird:read` | Exportar logs do módulo |
 | DELETE | `/api/netbird/logs` | `netbird:write` | Limpar logs de execução do módulo |
 | GET | `/api/netbird/instances` | `netbird:read` | Listar Instância do NetBird |
 | POST | `/api/netbird/instances` | `netbird:write` | Adicionar uma instância do NetBird |
@@ -218,6 +230,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Método | Caminho | Permissão necessária | Descrição |
 | --- | --- | --- | --- |
 | GET | `/api/frp/logs` | `frp:read` | Ver logs de execução do módulo |
+| GET | `/api/frp/logs/sources` | `frp:read` | Listar todas as origens dos logs do módulo |
+| GET | `/api/frp/logs/export` | `frp:read` | Exportar logs do módulo |
 | DELETE | `/api/frp/logs` | `frp:write` | Limpar logs de execução do módulo |
 | GET | `/api/frp/clients` | `frp:read` | Listar Cliente frp |
 | POST | `/api/frp/clients` | `frp:write` | Adicionar Cliente frp |
@@ -270,6 +284,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Método | Caminho | Permissão necessária | Descrição |
 | --- | --- | --- | --- |
 | GET | `/api/cloudflared/logs` | `cloudflared:read` | Ver logs de execução do módulo |
+| GET | `/api/cloudflared/logs/sources` | `cloudflared:read` | Listar todas as origens dos logs do módulo |
+| GET | `/api/cloudflared/logs/export` | `cloudflared:read` | Exportar logs do módulo |
 | DELETE | `/api/cloudflared/logs` | `cloudflared:write` | Limpar logs de execução do módulo |
 | GET | `/api/cloudflared/tunnels` | `cloudflared:read` | Listar Túnel Cloudflare |
 | POST | `/api/cloudflared/tunnels` | `cloudflared:write` | Adicionar Túnel Cloudflare |
@@ -300,6 +316,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Método | Caminho | Permissão necessária | Descrição |
 | --- | --- | --- | --- |
 | GET | `/api/ssl/logs` | `ssl:read` | Ver logs de execução do módulo |
+| GET | `/api/ssl/logs/sources` | `ssl:read` | Listar todas as origens dos logs do módulo |
+| GET | `/api/ssl/logs/export` | `ssl:read` | Exportar logs do módulo |
 | DELETE | `/api/ssl/logs` | `ssl:write` | Limpar logs de execução do módulo |
 | GET | `/api/ssl/certs` | `ssl:read` | Listar Certificado |
 | POST | `/api/ssl/certs` | `ssl:write` | Adicionar Certificado |
@@ -325,6 +343,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Método | Caminho | Permissão necessária | Descrição |
 | --- | --- | --- | --- |
 | GET | `/api/waf/logs` | `waf:read` | Ver logs de execução do módulo |
+| GET | `/api/waf/logs/sources` | `waf:read` | Listar todas as origens dos logs do módulo |
+| GET | `/api/waf/logs/export` | `waf:read` | Exportar logs do módulo |
 | DELETE | `/api/waf/logs` | `waf:write` | Limpar logs de execução do módulo |
 | GET | `/api/waf/instances` | `waf:read` | Listar Instância WAF |
 | POST | `/api/waf/instances` | `waf:write` | Adicionar Instância WAF |
@@ -345,6 +365,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Método | Caminho | Permissão necessária | Descrição |
 | --- | --- | --- | --- |
 | GET | `/api/webservice/logs` | `webservice:read` | Ver logs de execução do módulo |
+| GET | `/api/webservice/logs/sources` | `webservice:read` | Listar todas as origens dos logs do módulo |
+| GET | `/api/webservice/logs/export` | `webservice:read` | Exportar logs do módulo |
 | DELETE | `/api/webservice/logs` | `webservice:write` | Limpar logs de execução do módulo |
 | GET | `/api/webservice/listeners` | `webservice:read` | Listar Escuta do serviço web |
 | POST | `/api/webservice/listeners` | `webservice:write` | Adicionar Escuta do serviço web |
@@ -400,6 +422,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Método | Caminho | Permissão necessária | Descrição |
 | --- | --- | --- | --- |
 | GET | `/api/guard/logs` | `guard:read` | Ver logs de execução do módulo |
+| GET | `/api/guard/logs/sources` | `guard:read` | Listar todas as origens dos logs do módulo |
+| GET | `/api/guard/logs/export` | `guard:read` | Exportar logs do módulo |
 | DELETE | `/api/guard/logs` | `guard:write` | Limpar logs de execução do módulo |
 | GET | `/api/guard/jails` | `guard:read` | Listar regra de prevenção de intrusões |
 | POST | `/api/guard/jails` | `guard:write` | Adicionar regra de prevenção de intrusões |
@@ -426,6 +450,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Método | Caminho | Permissão necessária | Descrição |
 | --- | --- | --- | --- |
 | GET | `/api/wol/logs` | `wol:read` | Ver logs de execução do módulo |
+| GET | `/api/wol/logs/sources` | `wol:read` | Listar todas as origens dos logs do módulo |
+| GET | `/api/wol/logs/export` | `wol:read` | Exportar logs do módulo |
 | DELETE | `/api/wol/logs` | `wol:write` | Limpar logs de execução do módulo |
 | GET | `/api/wol/devices` | `wol:read` | Listar Despertar dispositivo |
 | POST | `/api/wol/devices` | `wol:write` | Adicionar Despertar dispositivo |
@@ -445,6 +471,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Método | Caminho | Permissão necessária | Descrição |
 | --- | --- | --- | --- |
 | GET | `/api/webterminal/logs` | `webterminal:read` | Ver logs de execução do módulo |
+| GET | `/api/webterminal/logs/sources` | `webterminal:read` | Listar todas as origens dos logs do módulo |
+| GET | `/api/webterminal/logs/export` | `webterminal:read` | Exportar logs do módulo |
 | DELETE | `/api/webterminal/logs` | `webterminal:write` | Limpar logs de execução do módulo |
 | GET | `/api/webterminal/connections` | `webterminal:read` | Listar Conexão de terminal |
 | POST | `/api/webterminal/connections` | `webterminal:write` | Adicionar Conexão de terminal |
@@ -512,6 +540,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Método | Caminho | Permissão necessária | Descrição |
 | --- | --- | --- | --- |
 | GET | `/api/cron/logs` | `cron:read` | Ver logs de execução do módulo |
+| GET | `/api/cron/logs/sources` | `cron:read` | Listar todas as origens dos logs do módulo |
+| GET | `/api/cron/logs/export` | `cron:read` | Exportar logs do módulo |
 | DELETE | `/api/cron/logs` | `cron:write` | Limpar logs de execução do módulo |
 | GET | `/api/cron/tasks` | `cron:read` | Listar Tarefa agendada |
 | POST | `/api/cron/tasks` | `cron:write` | Adicionar Tarefa agendada |
@@ -531,6 +561,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Método | Caminho | Permissão necessária | Descrição |
 | --- | --- | --- | --- |
 | GET | `/api/docker/logs` | `docker:read` | Ver logs de execução do módulo |
+| GET | `/api/docker/logs/sources` | `docker:read` | Listar todas as origens dos logs do módulo |
+| GET | `/api/docker/logs/export` | `docker:read` | Exportar logs do módulo |
 | DELETE | `/api/docker/logs` | `docker:write` | Limpar logs de execução do módulo |
 | GET | `/api/docker/tasks` | `docker:read` | Listar tarefas em segundo plano |
 | GET | `/api/docker/tasks/{id}` | `docker:read` | Ver progresso e saída das tarefas em segundo plano |
@@ -603,6 +635,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Método | Caminho | Permissão necessária | Descrição |
 | --- | --- | --- | --- |
 | GET | `/api/webdav/logs` | `webdav:read` | Ver logs de execução do módulo |
+| GET | `/api/webdav/logs/sources` | `webdav:read` | Listar todas as origens dos logs do módulo |
+| GET | `/api/webdav/logs/export` | `webdav:read` | Exportar logs do módulo |
 | DELETE | `/api/webdav/logs` | `webdav:write` | Limpar logs de execução do módulo |
 | GET | `/api/webdav/settings` | `webdav:read` | Ler configurações do WebDAV |
 | GET | `/api/webdav/settings/secrets` | `webdav:write` | Ver senhas dos usuários locais em texto puro |
@@ -615,6 +649,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Método | Caminho | Permissão necessária | Descrição |
 | --- | --- | --- | --- |
 | GET | `/api/ftp/logs` | `ftp:read` | Ver logs de execução do módulo |
+| GET | `/api/ftp/logs/sources` | `ftp:read` | Listar todas as origens dos logs do módulo |
+| GET | `/api/ftp/logs/export` | `ftp:read` | Exportar logs do módulo |
 | DELETE | `/api/ftp/logs` | `ftp:write` | Limpar logs de execução do módulo |
 | GET | `/api/ftp/settings` | `ftp:read` | Ler configurações do FTP |
 | GET | `/api/ftp/settings/secrets` | `ftp:write` | Ver senhas dos usuários locais em texto puro |
@@ -627,6 +663,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Método | Caminho | Permissão necessária | Descrição |
 | --- | --- | --- | --- |
 | GET | `/api/smb/logs` | `smb:read` | Ver logs de execução do módulo |
+| GET | `/api/smb/logs/sources` | `smb:read` | Listar todas as origens dos logs do módulo |
+| GET | `/api/smb/logs/export` | `smb:read` | Exportar logs do módulo |
 | DELETE | `/api/smb/logs` | `smb:write` | Limpar logs de execução do módulo |
 | GET | `/api/smb/settings` | `smb:read` | Obter configurações do SMB |
 | GET | `/api/smb/settings/secrets` | `smb:write` | Ver senhas dos usuários locais em texto puro |
@@ -639,6 +677,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Método | Caminho | Permissão necessária | Descrição |
 | --- | --- | --- | --- |
 | GET | `/api/filebrowser/logs` | `filebrowser:read` | Ver logs de execução do módulo |
+| GET | `/api/filebrowser/logs/sources` | `filebrowser:read` | Listar todas as origens dos logs do módulo |
+| GET | `/api/filebrowser/logs/export` | `filebrowser:read` | Exportar logs do módulo |
 | DELETE | `/api/filebrowser/logs` | `filebrowser:write` | Limpar logs de execução do módulo |
 | GET | `/api/filebrowser/instances` | `filebrowser:read` | Listar Instância do File Browser |
 | POST | `/api/filebrowser/instances` | `filebrowser:write` | Adicionar Instância do File Browser |
@@ -667,6 +707,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Método | Caminho | Permissão necessária | Descrição |
 | --- | --- | --- | --- |
 | GET | `/api/storage/logs` | `storage:read` | Ver logs de execução do módulo |
+| GET | `/api/storage/logs/sources` | `storage:read` | Listar todas as origens dos logs do módulo |
+| GET | `/api/storage/logs/export` | `storage:read` | Exportar logs do módulo |
 | DELETE | `/api/storage/logs` | `storage:write` | Limpar logs de execução do módulo |
 | GET | `/api/storage/mounts` | `storage:read` | Listar Montagens de armazenamento |
 | POST | `/api/storage/mounts` | `storage:write` | Adicionar Montagens de armazenamento |
@@ -691,6 +733,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Método | Caminho | Permissão necessária | Descrição |
 | --- | --- | --- | --- |
 | GET | `/api/notify/logs` | `notify:read` | Ver logs de execução do módulo |
+| GET | `/api/notify/logs/sources` | `notify:read` | Listar todas as origens dos logs do módulo |
+| GET | `/api/notify/logs/export` | `notify:read` | Exportar logs do módulo |
 | DELETE | `/api/notify/logs` | `notify:write` | Limpar logs de execução do módulo |
 | GET | `/api/notify/channels` | `notify:read` | Listar Canais de notificação |
 | POST | `/api/notify/channels` | `notify:write` | Adicionar Canais de notificação |
@@ -724,6 +768,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Método | Caminho | Permissão necessária | Descrição |
 | --- | --- | --- | --- |
 | GET | `/api/perf/logs` | `perf:read` | Ver logs de execução do módulo |
+| GET | `/api/perf/logs/sources` | `perf:read` | Listar todas as origens dos logs do módulo |
+| GET | `/api/perf/logs/export` | `perf:read` | Exportar logs do módulo |
 | DELETE | `/api/perf/logs` | `perf:write` | Limpar logs de execução do módulo |
 | GET | `/api/perf/rules` | `perf:read` | Listar Regras de alerta de desempenho |
 | POST | `/api/perf/rules` | `perf:write` | Adicionar Regras de alerta de desempenho |
@@ -746,6 +792,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Método | Caminho | Permissão necessária | Descrição |
 | --- | --- | --- | --- |
 | GET | `/api/nettools/logs` | `nettools:read` | Ver logs de execução do módulo |
+| GET | `/api/nettools/logs/sources` | `nettools:read` | Listar todas as origens dos logs do módulo |
+| GET | `/api/nettools/logs/export` | `nettools:read` | Exportar logs do módulo |
 | DELETE | `/api/nettools/logs` | `nettools:write` | Limpar logs de execução do módulo |
 | POST | `/api/nettools/run` | `nettools:write` | Executar ferramenta de diagnóstico e retornar a tarefa (tool: ping / traceroute / tcp / dns / speed / scan) |
 | GET | `/api/nettools/tasks` | `nettools:read` | Tarefas de diagnóstico recentes |
@@ -760,6 +808,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Método | Caminho | Permissão necessária | Descrição |
 | --- | --- | --- | --- |
 | GET | `/api/backup/logs` | `backup:read` | Ver logs de execução do módulo |
+| GET | `/api/backup/logs/sources` | `backup:read` | Listar todas as origens dos logs do módulo |
+| GET | `/api/backup/logs/export` | `backup:read` | Exportar logs do módulo |
 | DELETE | `/api/backup/logs` | `backup:write` | Limpar logs de execução do módulo |
 | GET | `/api/backup/targets` | `backup:read` | Listar Destino do backup |
 | POST | `/api/backup/targets` | `backup:write` | Adicionar Destino do backup |
@@ -794,6 +844,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | GET | `/api/session` | Qualquer token válido | Ver a identidade autenticada atual |
 | GET | `/api/status` | `status:read` | Ver o estado do sistema e dos módulos |
 | GET | `/api/logs` | `logs:read` | Ver logs do sistema |
+| GET | `/api/logs/sources` | `logs:read` | Listar todas as origens dos logs do sistema |
+| GET | `/api/logs/export` | `logs:read` | Exportar logs do sistema |
 | GET | `/api/system/settings` | Somente sessão de login | Ler configurações globais |
 | PUT | `/api/system/settings` | Somente sessão de login | Salvar configurações globais |
 | GET | `/api/system/settings/secrets` | Somente sessão de login | Ver Client Secrets do login de terceiros em texto puro |

@@ -5707,7 +5707,7 @@
     },
     "/api/backup/logs": {
       "delete": {
-        "description": "所需權限：`backup:write`。",
+        "description": "同時刪除落盤的日誌檔案、歷史檔案、歸檔與來源記錄。\n\n所需權限：`backup:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -5831,7 +5831,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
             "in": "query",
             "name": "site",
             "schema": {
@@ -5928,6 +5928,230 @@
           }
         ],
         "summary": "檢視模組執行日誌",
+        "tags": [
+          "設定備份"
+        ],
+        "x-required-scope": "backup:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/backup/logs/export": {
+      "get": {
+        "description": "以附件串流返回符合篩選條件的全部日誌，按時間從舊到新，包括落盤的歷史檔案與壓縮歸檔。`format` 為 `jsonl`（預設，每行一條 JSON）或 `csv`（UTF-8 帶 BOM，以 = + - @ 開頭的儲存格加單引號防止公式注入）。篩選參數與查看日誌介面相同。唯讀身分匯出的內容與查看時一樣做憑證遮蔽。`lang` 指定匯出內容的語言（如 `en`），不填時按 Accept-Language。\n\n所需權限：`backup:read`。",
+        "parameters": [
+          {
+            "description": "匯出格式：jsonl（預設，每行一條 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "匯出內容的語言，例如 en；不填時按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低層級：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "來源標籤，不區分大小寫精確比對",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "關鍵字：空格分隔表示同時包含，雙引號包住短語，前綴 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的關鍵字：空格分隔，雙引號包住短語，包含其中任意一個即排除；與 q 同時生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "用戶端位址：完整位址、CIDR 或位址片段，多個以逗號分隔，前綴 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱或網域的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服務監聽器 key，完整比對；用於區分同名站點或同名監聽器（例如分開監聽的 IPv4 與 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "狀態碼，如 404、4xx、500-599，多個以逗號分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏被封鎖來源的存取日誌：封鎖後被拒絕的請求，以及目前仍在封鎖中的來源的全部請求（包括觸發封鎖的請求）；只影響回傳結果，日誌照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏帶管理後台登入狀態的請求，即管理員經 Web 服務站點存取後台產生的存取日誌",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "結束時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "匯出模組執行日誌",
+        "tags": [
+          "設定備份"
+        ],
+        "x-required-scope": "backup:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/backup/logs/sources": {
+      "get": {
+        "description": "返回按名稱排序的來源標籤陣列：日誌中出現過的來源（落盤時跨重啟保留），以及模組設定中的來源（例如 Web 服務的全部監聽器與 IP 清單），用於按 `source` 篩選。來源與日誌一樣按請求語言翻譯。\n\n所需權限：`backup:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模組日誌的全部來源",
         "tags": [
           "設定備份"
         ],
@@ -7217,7 +7441,7 @@
     },
     "/api/cloudflared/logs": {
       "delete": {
-        "description": "所需權限：`cloudflared:write`。",
+        "description": "同時刪除落盤的日誌檔案、歷史檔案、歸檔與來源記錄。\n\n所需權限：`cloudflared:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -7341,7 +7565,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
             "in": "query",
             "name": "site",
             "schema": {
@@ -7438,6 +7662,230 @@
           }
         ],
         "summary": "檢視模組執行日誌",
+        "tags": [
+          "Cloudflare 通道"
+        ],
+        "x-required-scope": "cloudflared:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/cloudflared/logs/export": {
+      "get": {
+        "description": "以附件串流返回符合篩選條件的全部日誌，按時間從舊到新，包括落盤的歷史檔案與壓縮歸檔。`format` 為 `jsonl`（預設，每行一條 JSON）或 `csv`（UTF-8 帶 BOM，以 = + - @ 開頭的儲存格加單引號防止公式注入）。篩選參數與查看日誌介面相同。唯讀身分匯出的內容與查看時一樣做憑證遮蔽。`lang` 指定匯出內容的語言（如 `en`），不填時按 Accept-Language。\n\n所需權限：`cloudflared:read`。",
+        "parameters": [
+          {
+            "description": "匯出格式：jsonl（預設，每行一條 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "匯出內容的語言，例如 en；不填時按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低層級：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "來源標籤，不區分大小寫精確比對",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "關鍵字：空格分隔表示同時包含，雙引號包住短語，前綴 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的關鍵字：空格分隔，雙引號包住短語，包含其中任意一個即排除；與 q 同時生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "用戶端位址：完整位址、CIDR 或位址片段，多個以逗號分隔，前綴 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱或網域的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服務監聽器 key，完整比對；用於區分同名站點或同名監聽器（例如分開監聽的 IPv4 與 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "狀態碼，如 404、4xx、500-599，多個以逗號分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏被封鎖來源的存取日誌：封鎖後被拒絕的請求，以及目前仍在封鎖中的來源的全部請求（包括觸發封鎖的請求）；只影響回傳結果，日誌照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏帶管理後台登入狀態的請求，即管理員經 Web 服務站點存取後台產生的存取日誌",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "結束時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "匯出模組執行日誌",
+        "tags": [
+          "Cloudflare 通道"
+        ],
+        "x-required-scope": "cloudflared:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/cloudflared/logs/sources": {
+      "get": {
+        "description": "返回按名稱排序的來源標籤陣列：日誌中出現過的來源（落盤時跨重啟保留），以及模組設定中的來源（例如 Web 服務的全部監聽器與 IP 清單），用於按 `source` 篩選。來源與日誌一樣按請求語言翻譯。\n\n所需權限：`cloudflared:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模組日誌的全部來源",
         "tags": [
           "Cloudflare 通道"
         ],
@@ -8517,7 +8965,7 @@
     },
     "/api/cron/logs": {
       "delete": {
-        "description": "所需權限：`cron:write`。",
+        "description": "同時刪除落盤的日誌檔案、歷史檔案、歸檔與來源記錄。\n\n所需權限：`cron:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -8641,7 +9089,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
             "in": "query",
             "name": "site",
             "schema": {
@@ -8738,6 +9186,230 @@
           }
         ],
         "summary": "檢視模組執行日誌",
+        "tags": [
+          "排程任務"
+        ],
+        "x-required-scope": "cron:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/cron/logs/export": {
+      "get": {
+        "description": "以附件串流返回符合篩選條件的全部日誌，按時間從舊到新，包括落盤的歷史檔案與壓縮歸檔。`format` 為 `jsonl`（預設，每行一條 JSON）或 `csv`（UTF-8 帶 BOM，以 = + - @ 開頭的儲存格加單引號防止公式注入）。篩選參數與查看日誌介面相同。唯讀身分匯出的內容與查看時一樣做憑證遮蔽。`lang` 指定匯出內容的語言（如 `en`），不填時按 Accept-Language。\n\n所需權限：`cron:read`。",
+        "parameters": [
+          {
+            "description": "匯出格式：jsonl（預設，每行一條 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "匯出內容的語言，例如 en；不填時按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低層級：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "來源標籤，不區分大小寫精確比對",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "關鍵字：空格分隔表示同時包含，雙引號包住短語，前綴 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的關鍵字：空格分隔，雙引號包住短語，包含其中任意一個即排除；與 q 同時生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "用戶端位址：完整位址、CIDR 或位址片段，多個以逗號分隔，前綴 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱或網域的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服務監聽器 key，完整比對；用於區分同名站點或同名監聽器（例如分開監聽的 IPv4 與 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "狀態碼，如 404、4xx、500-599，多個以逗號分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏被封鎖來源的存取日誌：封鎖後被拒絕的請求，以及目前仍在封鎖中的來源的全部請求（包括觸發封鎖的請求）；只影響回傳結果，日誌照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏帶管理後台登入狀態的請求，即管理員經 Web 服務站點存取後台產生的存取日誌",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "結束時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "匯出模組執行日誌",
+        "tags": [
+          "排程任務"
+        ],
+        "x-required-scope": "cron:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/cron/logs/sources": {
+      "get": {
+        "description": "返回按名稱排序的來源標籤陣列：日誌中出現過的來源（落盤時跨重啟保留），以及模組設定中的來源（例如 Web 服務的全部監聽器與 IP 清單），用於按 `source` 篩選。來源與日誌一樣按請求語言翻譯。\n\n所需權限：`cron:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模組日誌的全部來源",
         "tags": [
           "排程任務"
         ],
@@ -9628,7 +10300,7 @@
     },
     "/api/ddns/logs": {
       "delete": {
-        "description": "所需權限：`ddns:write`。",
+        "description": "同時刪除落盤的日誌檔案、歷史檔案、歸檔與來源記錄。\n\n所需權限：`ddns:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -9752,7 +10424,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
             "in": "query",
             "name": "site",
             "schema": {
@@ -9849,6 +10521,230 @@
           }
         ],
         "summary": "檢視模組執行日誌",
+        "tags": [
+          "動態網域"
+        ],
+        "x-required-scope": "ddns:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ddns/logs/export": {
+      "get": {
+        "description": "以附件串流返回符合篩選條件的全部日誌，按時間從舊到新，包括落盤的歷史檔案與壓縮歸檔。`format` 為 `jsonl`（預設，每行一條 JSON）或 `csv`（UTF-8 帶 BOM，以 = + - @ 開頭的儲存格加單引號防止公式注入）。篩選參數與查看日誌介面相同。唯讀身分匯出的內容與查看時一樣做憑證遮蔽。`lang` 指定匯出內容的語言（如 `en`），不填時按 Accept-Language。\n\n所需權限：`ddns:read`。",
+        "parameters": [
+          {
+            "description": "匯出格式：jsonl（預設，每行一條 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "匯出內容的語言，例如 en；不填時按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低層級：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "來源標籤，不區分大小寫精確比對",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "關鍵字：空格分隔表示同時包含，雙引號包住短語，前綴 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的關鍵字：空格分隔，雙引號包住短語，包含其中任意一個即排除；與 q 同時生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "用戶端位址：完整位址、CIDR 或位址片段，多個以逗號分隔，前綴 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱或網域的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服務監聽器 key，完整比對；用於區分同名站點或同名監聽器（例如分開監聽的 IPv4 與 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "狀態碼，如 404、4xx、500-599，多個以逗號分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏被封鎖來源的存取日誌：封鎖後被拒絕的請求，以及目前仍在封鎖中的來源的全部請求（包括觸發封鎖的請求）；只影響回傳結果，日誌照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏帶管理後台登入狀態的請求，即管理員經 Web 服務站點存取後台產生的存取日誌",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "結束時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "匯出模組執行日誌",
+        "tags": [
+          "動態網域"
+        ],
+        "x-required-scope": "ddns:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ddns/logs/sources": {
+      "get": {
+        "description": "返回按名稱排序的來源標籤陣列：日誌中出現過的來源（落盤時跨重啟保留），以及模組設定中的來源（例如 Web 服務的全部監聽器與 IP 清單），用於按 `source` 篩選。來源與日誌一樣按請求語言翻譯。\n\n所需權限：`ddns:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模組日誌的全部來源",
         "tags": [
           "動態網域"
         ],
@@ -13936,7 +14832,7 @@
     },
     "/api/docker/logs": {
       "delete": {
-        "description": "所需權限：`docker:write`。",
+        "description": "同時刪除落盤的日誌檔案、歷史檔案、歸檔與來源記錄。\n\n所需權限：`docker:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -14060,7 +14956,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
             "in": "query",
             "name": "site",
             "schema": {
@@ -14157,6 +15053,230 @@
           }
         ],
         "summary": "檢視模組執行日誌",
+        "tags": [
+          "Docker 管理"
+        ],
+        "x-required-scope": "docker:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/docker/logs/export": {
+      "get": {
+        "description": "以附件串流返回符合篩選條件的全部日誌，按時間從舊到新，包括落盤的歷史檔案與壓縮歸檔。`format` 為 `jsonl`（預設，每行一條 JSON）或 `csv`（UTF-8 帶 BOM，以 = + - @ 開頭的儲存格加單引號防止公式注入）。篩選參數與查看日誌介面相同。唯讀身分匯出的內容與查看時一樣做憑證遮蔽。`lang` 指定匯出內容的語言（如 `en`），不填時按 Accept-Language。\n\n所需權限：`docker:read`。",
+        "parameters": [
+          {
+            "description": "匯出格式：jsonl（預設，每行一條 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "匯出內容的語言，例如 en；不填時按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低層級：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "來源標籤，不區分大小寫精確比對",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "關鍵字：空格分隔表示同時包含，雙引號包住短語，前綴 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的關鍵字：空格分隔，雙引號包住短語，包含其中任意一個即排除；與 q 同時生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "用戶端位址：完整位址、CIDR 或位址片段，多個以逗號分隔，前綴 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱或網域的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服務監聽器 key，完整比對；用於區分同名站點或同名監聽器（例如分開監聽的 IPv4 與 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "狀態碼，如 404、4xx、500-599，多個以逗號分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏被封鎖來源的存取日誌：封鎖後被拒絕的請求，以及目前仍在封鎖中的來源的全部請求（包括觸發封鎖的請求）；只影響回傳結果，日誌照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏帶管理後台登入狀態的請求，即管理員經 Web 服務站點存取後台產生的存取日誌",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "結束時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "匯出模組執行日誌",
+        "tags": [
+          "Docker 管理"
+        ],
+        "x-required-scope": "docker:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/docker/logs/sources": {
+      "get": {
+        "description": "返回按名稱排序的來源標籤陣列：日誌中出現過的來源（落盤時跨重啟保留），以及模組設定中的來源（例如 Web 服務的全部監聽器與 IP 清單），用於按 `source` 篩選。來源與日誌一樣按請求語言翻譯。\n\n所需權限：`docker:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模組日誌的全部來源",
         "tags": [
           "Docker 管理"
         ],
@@ -16331,7 +17451,7 @@
     },
     "/api/filebrowser/logs": {
       "delete": {
-        "description": "所需權限：`filebrowser:write`。",
+        "description": "同時刪除落盤的日誌檔案、歷史檔案、歸檔與來源記錄。\n\n所需權限：`filebrowser:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -16455,7 +17575,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
             "in": "query",
             "name": "site",
             "schema": {
@@ -16552,6 +17672,230 @@
           }
         ],
         "summary": "檢視模組執行日誌",
+        "tags": [
+          "File Browser"
+        ],
+        "x-required-scope": "filebrowser:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/filebrowser/logs/export": {
+      "get": {
+        "description": "以附件串流返回符合篩選條件的全部日誌，按時間從舊到新，包括落盤的歷史檔案與壓縮歸檔。`format` 為 `jsonl`（預設，每行一條 JSON）或 `csv`（UTF-8 帶 BOM，以 = + - @ 開頭的儲存格加單引號防止公式注入）。篩選參數與查看日誌介面相同。唯讀身分匯出的內容與查看時一樣做憑證遮蔽。`lang` 指定匯出內容的語言（如 `en`），不填時按 Accept-Language。\n\n所需權限：`filebrowser:read`。",
+        "parameters": [
+          {
+            "description": "匯出格式：jsonl（預設，每行一條 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "匯出內容的語言，例如 en；不填時按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低層級：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "來源標籤，不區分大小寫精確比對",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "關鍵字：空格分隔表示同時包含，雙引號包住短語，前綴 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的關鍵字：空格分隔，雙引號包住短語，包含其中任意一個即排除；與 q 同時生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "用戶端位址：完整位址、CIDR 或位址片段，多個以逗號分隔，前綴 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱或網域的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服務監聽器 key，完整比對；用於區分同名站點或同名監聽器（例如分開監聽的 IPv4 與 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "狀態碼，如 404、4xx、500-599，多個以逗號分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏被封鎖來源的存取日誌：封鎖後被拒絕的請求，以及目前仍在封鎖中的來源的全部請求（包括觸發封鎖的請求）；只影響回傳結果，日誌照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏帶管理後台登入狀態的請求，即管理員經 Web 服務站點存取後台產生的存取日誌",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "結束時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "匯出模組執行日誌",
+        "tags": [
+          "File Browser"
+        ],
+        "x-required-scope": "filebrowser:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/filebrowser/logs/sources": {
+      "get": {
+        "description": "返回按名稱排序的來源標籤陣列：日誌中出現過的來源（落盤時跨重啟保留），以及模組設定中的來源（例如 Web 服務的全部監聽器與 IP 清單），用於按 `source` 篩選。來源與日誌一樣按請求語言翻譯。\n\n所需權限：`filebrowser:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模組日誌的全部來源",
         "tags": [
           "File Browser"
         ],
@@ -18069,7 +19413,7 @@
     },
     "/api/frp/logs": {
       "delete": {
-        "description": "所需權限：`frp:write`。",
+        "description": "同時刪除落盤的日誌檔案、歷史檔案、歸檔與來源記錄。\n\n所需權限：`frp:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -18193,7 +19537,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
             "in": "query",
             "name": "site",
             "schema": {
@@ -18290,6 +19634,230 @@
           }
         ],
         "summary": "檢視模組執行日誌",
+        "tags": [
+          "frp 內網穿透"
+        ],
+        "x-required-scope": "frp:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/frp/logs/export": {
+      "get": {
+        "description": "以附件串流返回符合篩選條件的全部日誌，按時間從舊到新，包括落盤的歷史檔案與壓縮歸檔。`format` 為 `jsonl`（預設，每行一條 JSON）或 `csv`（UTF-8 帶 BOM，以 = + - @ 開頭的儲存格加單引號防止公式注入）。篩選參數與查看日誌介面相同。唯讀身分匯出的內容與查看時一樣做憑證遮蔽。`lang` 指定匯出內容的語言（如 `en`），不填時按 Accept-Language。\n\n所需權限：`frp:read`。",
+        "parameters": [
+          {
+            "description": "匯出格式：jsonl（預設，每行一條 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "匯出內容的語言，例如 en；不填時按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低層級：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "來源標籤，不區分大小寫精確比對",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "關鍵字：空格分隔表示同時包含，雙引號包住短語，前綴 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的關鍵字：空格分隔，雙引號包住短語，包含其中任意一個即排除；與 q 同時生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "用戶端位址：完整位址、CIDR 或位址片段，多個以逗號分隔，前綴 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱或網域的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服務監聽器 key，完整比對；用於區分同名站點或同名監聽器（例如分開監聽的 IPv4 與 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "狀態碼，如 404、4xx、500-599，多個以逗號分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏被封鎖來源的存取日誌：封鎖後被拒絕的請求，以及目前仍在封鎖中的來源的全部請求（包括觸發封鎖的請求）；只影響回傳結果，日誌照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏帶管理後台登入狀態的請求，即管理員經 Web 服務站點存取後台產生的存取日誌",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "結束時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "匯出模組執行日誌",
+        "tags": [
+          "frp 內網穿透"
+        ],
+        "x-required-scope": "frp:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/frp/logs/sources": {
+      "get": {
+        "description": "返回按名稱排序的來源標籤陣列：日誌中出現過的來源（落盤時跨重啟保留），以及模組設定中的來源（例如 Web 服務的全部監聽器與 IP 清單），用於按 `source` 篩選。來源與日誌一樣按請求語言翻譯。\n\n所需權限：`frp:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模組日誌的全部來源",
         "tags": [
           "frp 內網穿透"
         ],
@@ -19967,7 +21535,7 @@
     },
     "/api/ftp/logs": {
       "delete": {
-        "description": "所需權限：`ftp:write`。",
+        "description": "同時刪除落盤的日誌檔案、歷史檔案、歸檔與來源記錄。\n\n所需權限：`ftp:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -20091,7 +21659,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
             "in": "query",
             "name": "site",
             "schema": {
@@ -20188,6 +21756,230 @@
           }
         ],
         "summary": "檢視模組執行日誌",
+        "tags": [
+          "FTP 服務"
+        ],
+        "x-required-scope": "ftp:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ftp/logs/export": {
+      "get": {
+        "description": "以附件串流返回符合篩選條件的全部日誌，按時間從舊到新，包括落盤的歷史檔案與壓縮歸檔。`format` 為 `jsonl`（預設，每行一條 JSON）或 `csv`（UTF-8 帶 BOM，以 = + - @ 開頭的儲存格加單引號防止公式注入）。篩選參數與查看日誌介面相同。唯讀身分匯出的內容與查看時一樣做憑證遮蔽。`lang` 指定匯出內容的語言（如 `en`），不填時按 Accept-Language。\n\n所需權限：`ftp:read`。",
+        "parameters": [
+          {
+            "description": "匯出格式：jsonl（預設，每行一條 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "匯出內容的語言，例如 en；不填時按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低層級：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "來源標籤，不區分大小寫精確比對",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "關鍵字：空格分隔表示同時包含，雙引號包住短語，前綴 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的關鍵字：空格分隔，雙引號包住短語，包含其中任意一個即排除；與 q 同時生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "用戶端位址：完整位址、CIDR 或位址片段，多個以逗號分隔，前綴 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱或網域的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服務監聽器 key，完整比對；用於區分同名站點或同名監聽器（例如分開監聽的 IPv4 與 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "狀態碼，如 404、4xx、500-599，多個以逗號分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏被封鎖來源的存取日誌：封鎖後被拒絕的請求，以及目前仍在封鎖中的來源的全部請求（包括觸發封鎖的請求）；只影響回傳結果，日誌照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏帶管理後台登入狀態的請求，即管理員經 Web 服務站點存取後台產生的存取日誌",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "結束時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "匯出模組執行日誌",
+        "tags": [
+          "FTP 服務"
+        ],
+        "x-required-scope": "ftp:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ftp/logs/sources": {
+      "get": {
+        "description": "返回按名稱排序的來源標籤陣列：日誌中出現過的來源（落盤時跨重啟保留），以及模組設定中的來源（例如 Web 服務的全部監聽器與 IP 清單），用於按 `source` 篩選。來源與日誌一樣按請求語言翻譯。\n\n所需權限：`ftp:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模組日誌的全部來源",
         "tags": [
           "FTP 服務"
         ],
@@ -21430,7 +23222,7 @@
     },
     "/api/guard/logs": {
       "delete": {
-        "description": "所需權限：`guard:write`。",
+        "description": "同時刪除落盤的日誌檔案、歷史檔案、歸檔與來源記錄。\n\n所需權限：`guard:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -21554,7 +23346,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
             "in": "query",
             "name": "site",
             "schema": {
@@ -21651,6 +23443,230 @@
           }
         ],
         "summary": "檢視模組執行日誌",
+        "tags": [
+          "入侵防護"
+        ],
+        "x-required-scope": "guard:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/guard/logs/export": {
+      "get": {
+        "description": "以附件串流返回符合篩選條件的全部日誌，按時間從舊到新，包括落盤的歷史檔案與壓縮歸檔。`format` 為 `jsonl`（預設，每行一條 JSON）或 `csv`（UTF-8 帶 BOM，以 = + - @ 開頭的儲存格加單引號防止公式注入）。篩選參數與查看日誌介面相同。唯讀身分匯出的內容與查看時一樣做憑證遮蔽。`lang` 指定匯出內容的語言（如 `en`），不填時按 Accept-Language。\n\n所需權限：`guard:read`。",
+        "parameters": [
+          {
+            "description": "匯出格式：jsonl（預設，每行一條 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "匯出內容的語言，例如 en；不填時按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低層級：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "來源標籤，不區分大小寫精確比對",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "關鍵字：空格分隔表示同時包含，雙引號包住短語，前綴 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的關鍵字：空格分隔，雙引號包住短語，包含其中任意一個即排除；與 q 同時生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "用戶端位址：完整位址、CIDR 或位址片段，多個以逗號分隔，前綴 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱或網域的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服務監聽器 key，完整比對；用於區分同名站點或同名監聽器（例如分開監聽的 IPv4 與 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "狀態碼，如 404、4xx、500-599，多個以逗號分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏被封鎖來源的存取日誌：封鎖後被拒絕的請求，以及目前仍在封鎖中的來源的全部請求（包括觸發封鎖的請求）；只影響回傳結果，日誌照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏帶管理後台登入狀態的請求，即管理員經 Web 服務站點存取後台產生的存取日誌",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "結束時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "匯出模組執行日誌",
+        "tags": [
+          "入侵防護"
+        ],
+        "x-required-scope": "guard:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/guard/logs/sources": {
+      "get": {
+        "description": "返回按名稱排序的來源標籤陣列：日誌中出現過的來源（落盤時跨重啟保留），以及模組設定中的來源（例如 Web 服務的全部監聽器與 IP 清單），用於按 `source` 篩選。來源與日誌一樣按請求語言翻譯。\n\n所需權限：`guard:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模組日誌的全部來源",
         "tags": [
           "入侵防護"
         ],
@@ -22202,7 +24218,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
             "in": "query",
             "name": "site",
             "schema": {
@@ -22299,6 +24315,230 @@
           }
         ],
         "summary": "檢視系統日誌",
+        "tags": [
+          "系統"
+        ],
+        "x-required-scope": "logs:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/logs/export": {
+      "get": {
+        "description": "以附件串流返回符合篩選條件的全部系統日誌，參數與匯出模組執行日誌相同。\n\n所需權限：`logs:read`。",
+        "parameters": [
+          {
+            "description": "匯出格式：jsonl（預設，每行一條 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "匯出內容的語言，例如 en；不填時按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低層級：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "來源標籤，不區分大小寫精確比對",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "關鍵字：空格分隔表示同時包含，雙引號包住短語，前綴 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的關鍵字：空格分隔，雙引號包住短語，包含其中任意一個即排除；與 q 同時生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "用戶端位址：完整位址、CIDR 或位址片段，多個以逗號分隔，前綴 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱或網域的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服務監聽器 key，完整比對；用於區分同名站點或同名監聽器（例如分開監聽的 IPv4 與 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "狀態碼，如 404、4xx、500-599，多個以逗號分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏被封鎖來源的存取日誌：封鎖後被拒絕的請求，以及目前仍在封鎖中的來源的全部請求（包括觸發封鎖的請求）；只影響回傳結果，日誌照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏帶管理後台登入狀態的請求，即管理員經 Web 服務站點存取後台產生的存取日誌",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "結束時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "匯出系統日誌",
+        "tags": [
+          "系統"
+        ],
+        "x-required-scope": "logs:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/logs/sources": {
+      "get": {
+        "description": "返回按名稱排序的來源標籤陣列，日誌落盤時跨重啟保留。\n\n所需權限：`logs:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出系統日誌的全部來源",
         "tags": [
           "系統"
         ],
@@ -23599,7 +25839,7 @@
     },
     "/api/netbird/logs": {
       "delete": {
-        "description": "所需權限：`netbird:write`。",
+        "description": "同時刪除落盤的日誌檔案、歷史檔案、歸檔與來源記錄。\n\n所需權限：`netbird:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -23723,7 +25963,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
             "in": "query",
             "name": "site",
             "schema": {
@@ -23820,6 +26060,230 @@
           }
         ],
         "summary": "檢視模組執行日誌",
+        "tags": [
+          "NetBird 組網"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/logs/export": {
+      "get": {
+        "description": "以附件串流返回符合篩選條件的全部日誌，按時間從舊到新，包括落盤的歷史檔案與壓縮歸檔。`format` 為 `jsonl`（預設，每行一條 JSON）或 `csv`（UTF-8 帶 BOM，以 = + - @ 開頭的儲存格加單引號防止公式注入）。篩選參數與查看日誌介面相同。唯讀身分匯出的內容與查看時一樣做憑證遮蔽。`lang` 指定匯出內容的語言（如 `en`），不填時按 Accept-Language。\n\n所需權限：`netbird:read`。",
+        "parameters": [
+          {
+            "description": "匯出格式：jsonl（預設，每行一條 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "匯出內容的語言，例如 en；不填時按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低層級：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "來源標籤，不區分大小寫精確比對",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "關鍵字：空格分隔表示同時包含，雙引號包住短語，前綴 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的關鍵字：空格分隔，雙引號包住短語，包含其中任意一個即排除；與 q 同時生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "用戶端位址：完整位址、CIDR 或位址片段，多個以逗號分隔，前綴 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱或網域的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服務監聽器 key，完整比對；用於區分同名站點或同名監聽器（例如分開監聽的 IPv4 與 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "狀態碼，如 404、4xx、500-599，多個以逗號分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏被封鎖來源的存取日誌：封鎖後被拒絕的請求，以及目前仍在封鎖中的來源的全部請求（包括觸發封鎖的請求）；只影響回傳結果，日誌照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏帶管理後台登入狀態的請求，即管理員經 Web 服務站點存取後台產生的存取日誌",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "結束時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "匯出模組執行日誌",
+        "tags": [
+          "NetBird 組網"
+        ],
+        "x-required-scope": "netbird:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/netbird/logs/sources": {
+      "get": {
+        "description": "返回按名稱排序的來源標籤陣列：日誌中出現過的來源（落盤時跨重啟保留），以及模組設定中的來源（例如 Web 服務的全部監聽器與 IP 清單），用於按 `source` 篩選。來源與日誌一樣按請求語言翻譯。\n\n所需權限：`netbird:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模組日誌的全部來源",
         "tags": [
           "NetBird 組網"
         ],
@@ -24057,7 +26521,7 @@
     },
     "/api/nettools/logs": {
       "delete": {
-        "description": "所需權限：`nettools:write`。",
+        "description": "同時刪除落盤的日誌檔案、歷史檔案、歸檔與來源記錄。\n\n所需權限：`nettools:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -24181,7 +26645,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
             "in": "query",
             "name": "site",
             "schema": {
@@ -24278,6 +26742,230 @@
           }
         ],
         "summary": "檢視模組執行日誌",
+        "tags": [
+          "網路診斷"
+        ],
+        "x-required-scope": "nettools:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/nettools/logs/export": {
+      "get": {
+        "description": "以附件串流返回符合篩選條件的全部日誌，按時間從舊到新，包括落盤的歷史檔案與壓縮歸檔。`format` 為 `jsonl`（預設，每行一條 JSON）或 `csv`（UTF-8 帶 BOM，以 = + - @ 開頭的儲存格加單引號防止公式注入）。篩選參數與查看日誌介面相同。唯讀身分匯出的內容與查看時一樣做憑證遮蔽。`lang` 指定匯出內容的語言（如 `en`），不填時按 Accept-Language。\n\n所需權限：`nettools:read`。",
+        "parameters": [
+          {
+            "description": "匯出格式：jsonl（預設，每行一條 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "匯出內容的語言，例如 en；不填時按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低層級：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "來源標籤，不區分大小寫精確比對",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "關鍵字：空格分隔表示同時包含，雙引號包住短語，前綴 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的關鍵字：空格分隔，雙引號包住短語，包含其中任意一個即排除；與 q 同時生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "用戶端位址：完整位址、CIDR 或位址片段，多個以逗號分隔，前綴 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱或網域的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服務監聽器 key，完整比對；用於區分同名站點或同名監聽器（例如分開監聽的 IPv4 與 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "狀態碼，如 404、4xx、500-599，多個以逗號分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏被封鎖來源的存取日誌：封鎖後被拒絕的請求，以及目前仍在封鎖中的來源的全部請求（包括觸發封鎖的請求）；只影響回傳結果，日誌照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏帶管理後台登入狀態的請求，即管理員經 Web 服務站點存取後台產生的存取日誌",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "結束時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "匯出模組執行日誌",
+        "tags": [
+          "網路診斷"
+        ],
+        "x-required-scope": "nettools:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/nettools/logs/sources": {
+      "get": {
+        "description": "返回按名稱排序的來源標籤陣列：日誌中出現過的來源（落盤時跨重啟保留），以及模組設定中的來源（例如 Web 服務的全部監聽器與 IP 清單），用於按 `source` 篩選。來源與日誌一樣按請求語言翻譯。\n\n所需權限：`nettools:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模組日誌的全部來源",
         "tags": [
           "網路診斷"
         ],
@@ -25629,7 +28317,7 @@
     },
     "/api/notify/logs": {
       "delete": {
-        "description": "所需權限：`notify:write`。",
+        "description": "同時刪除落盤的日誌檔案、歷史檔案、歸檔與來源記錄。\n\n所需權限：`notify:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -25753,7 +28441,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
             "in": "query",
             "name": "site",
             "schema": {
@@ -25850,6 +28538,230 @@
           }
         ],
         "summary": "檢視模組執行日誌",
+        "tags": [
+          "通知中心"
+        ],
+        "x-required-scope": "notify:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/notify/logs/export": {
+      "get": {
+        "description": "以附件串流返回符合篩選條件的全部日誌，按時間從舊到新，包括落盤的歷史檔案與壓縮歸檔。`format` 為 `jsonl`（預設，每行一條 JSON）或 `csv`（UTF-8 帶 BOM，以 = + - @ 開頭的儲存格加單引號防止公式注入）。篩選參數與查看日誌介面相同。唯讀身分匯出的內容與查看時一樣做憑證遮蔽。`lang` 指定匯出內容的語言（如 `en`），不填時按 Accept-Language。\n\n所需權限：`notify:read`。",
+        "parameters": [
+          {
+            "description": "匯出格式：jsonl（預設，每行一條 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "匯出內容的語言，例如 en；不填時按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低層級：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "來源標籤，不區分大小寫精確比對",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "關鍵字：空格分隔表示同時包含，雙引號包住短語，前綴 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的關鍵字：空格分隔，雙引號包住短語，包含其中任意一個即排除；與 q 同時生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "用戶端位址：完整位址、CIDR 或位址片段，多個以逗號分隔，前綴 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱或網域的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服務監聽器 key，完整比對；用於區分同名站點或同名監聽器（例如分開監聽的 IPv4 與 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "狀態碼，如 404、4xx、500-599，多個以逗號分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏被封鎖來源的存取日誌：封鎖後被拒絕的請求，以及目前仍在封鎖中的來源的全部請求（包括觸發封鎖的請求）；只影響回傳結果，日誌照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏帶管理後台登入狀態的請求，即管理員經 Web 服務站點存取後台產生的存取日誌",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "結束時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "匯出模組執行日誌",
+        "tags": [
+          "通知中心"
+        ],
+        "x-required-scope": "notify:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/notify/logs/sources": {
+      "get": {
+        "description": "返回按名稱排序的來源標籤陣列：日誌中出現過的來源（落盤時跨重啟保留），以及模組設定中的來源（例如 Web 服務的全部監聽器與 IP 清單），用於按 `source` 篩選。來源與日誌一樣按請求語言翻譯。\n\n所需權限：`notify:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模組日誌的全部來源",
         "tags": [
           "通知中心"
         ],
@@ -26733,7 +29645,7 @@
     },
     "/api/perf/logs": {
       "delete": {
-        "description": "所需權限：`perf:write`。",
+        "description": "同時刪除落盤的日誌檔案、歷史檔案、歸檔與來源記錄。\n\n所需權限：`perf:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -26857,7 +29769,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
             "in": "query",
             "name": "site",
             "schema": {
@@ -26954,6 +29866,230 @@
           }
         ],
         "summary": "檢視模組執行日誌",
+        "tags": [
+          "效能監控"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/logs/export": {
+      "get": {
+        "description": "以附件串流返回符合篩選條件的全部日誌，按時間從舊到新，包括落盤的歷史檔案與壓縮歸檔。`format` 為 `jsonl`（預設，每行一條 JSON）或 `csv`（UTF-8 帶 BOM，以 = + - @ 開頭的儲存格加單引號防止公式注入）。篩選參數與查看日誌介面相同。唯讀身分匯出的內容與查看時一樣做憑證遮蔽。`lang` 指定匯出內容的語言（如 `en`），不填時按 Accept-Language。\n\n所需權限：`perf:read`。",
+        "parameters": [
+          {
+            "description": "匯出格式：jsonl（預設，每行一條 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "匯出內容的語言，例如 en；不填時按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低層級：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "來源標籤，不區分大小寫精確比對",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "關鍵字：空格分隔表示同時包含，雙引號包住短語，前綴 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的關鍵字：空格分隔，雙引號包住短語，包含其中任意一個即排除；與 q 同時生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "用戶端位址：完整位址、CIDR 或位址片段，多個以逗號分隔，前綴 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱或網域的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服務監聽器 key，完整比對；用於區分同名站點或同名監聽器（例如分開監聽的 IPv4 與 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "狀態碼，如 404、4xx、500-599，多個以逗號分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏被封鎖來源的存取日誌：封鎖後被拒絕的請求，以及目前仍在封鎖中的來源的全部請求（包括觸發封鎖的請求）；只影響回傳結果，日誌照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏帶管理後台登入狀態的請求，即管理員經 Web 服務站點存取後台產生的存取日誌",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "結束時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "匯出模組執行日誌",
+        "tags": [
+          "效能監控"
+        ],
+        "x-required-scope": "perf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/perf/logs/sources": {
+      "get": {
+        "description": "返回按名稱排序的來源標籤陣列：日誌中出現過的來源（落盤時跨重啟保留），以及模組設定中的來源（例如 Web 服務的全部監聽器與 IP 清單），用於按 `source` 篩選。來源與日誌一樣按請求語言翻譯。\n\n所需權限：`perf:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模組日誌的全部來源",
         "tags": [
           "效能監控"
         ],
@@ -27853,7 +30989,7 @@
     },
     "/api/portforward/logs": {
       "delete": {
-        "description": "所需權限：`portforward:write`。",
+        "description": "同時刪除落盤的日誌檔案、歷史檔案、歸檔與來源記錄。\n\n所需權限：`portforward:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -27977,7 +31113,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
             "in": "query",
             "name": "site",
             "schema": {
@@ -28074,6 +31210,230 @@
           }
         ],
         "summary": "檢視模組執行日誌",
+        "tags": [
+          "連接埠轉發"
+        ],
+        "x-required-scope": "portforward:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/portforward/logs/export": {
+      "get": {
+        "description": "以附件串流返回符合篩選條件的全部日誌，按時間從舊到新，包括落盤的歷史檔案與壓縮歸檔。`format` 為 `jsonl`（預設，每行一條 JSON）或 `csv`（UTF-8 帶 BOM，以 = + - @ 開頭的儲存格加單引號防止公式注入）。篩選參數與查看日誌介面相同。唯讀身分匯出的內容與查看時一樣做憑證遮蔽。`lang` 指定匯出內容的語言（如 `en`），不填時按 Accept-Language。\n\n所需權限：`portforward:read`。",
+        "parameters": [
+          {
+            "description": "匯出格式：jsonl（預設，每行一條 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "匯出內容的語言，例如 en；不填時按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低層級：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "來源標籤，不區分大小寫精確比對",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "關鍵字：空格分隔表示同時包含，雙引號包住短語，前綴 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的關鍵字：空格分隔，雙引號包住短語，包含其中任意一個即排除；與 q 同時生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "用戶端位址：完整位址、CIDR 或位址片段，多個以逗號分隔，前綴 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱或網域的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服務監聽器 key，完整比對；用於區分同名站點或同名監聽器（例如分開監聽的 IPv4 與 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "狀態碼，如 404、4xx、500-599，多個以逗號分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏被封鎖來源的存取日誌：封鎖後被拒絕的請求，以及目前仍在封鎖中的來源的全部請求（包括觸發封鎖的請求）；只影響回傳結果，日誌照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏帶管理後台登入狀態的請求，即管理員經 Web 服務站點存取後台產生的存取日誌",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "結束時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "匯出模組執行日誌",
+        "tags": [
+          "連接埠轉發"
+        ],
+        "x-required-scope": "portforward:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/portforward/logs/sources": {
+      "get": {
+        "description": "返回按名稱排序的來源標籤陣列：日誌中出現過的來源（落盤時跨重啟保留），以及模組設定中的來源（例如 Web 服務的全部監聽器與 IP 清單），用於按 `source` 篩選。來源與日誌一樣按請求語言翻譯。\n\n所需權限：`portforward:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模組日誌的全部來源",
         "tags": [
           "連接埠轉發"
         ],
@@ -28841,7 +32201,7 @@
     },
     "/api/protoroute/logs": {
       "delete": {
-        "description": "所需權限：`protoroute:write`。",
+        "description": "同時刪除落盤的日誌檔案、歷史檔案、歸檔與來源記錄。\n\n所需權限：`protoroute:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -28965,7 +32325,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
             "in": "query",
             "name": "site",
             "schema": {
@@ -29062,6 +32422,230 @@
           }
         ],
         "summary": "檢視模組執行日誌",
+        "tags": [
+          "協定分流"
+        ],
+        "x-required-scope": "protoroute:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/protoroute/logs/export": {
+      "get": {
+        "description": "以附件串流返回符合篩選條件的全部日誌，按時間從舊到新，包括落盤的歷史檔案與壓縮歸檔。`format` 為 `jsonl`（預設，每行一條 JSON）或 `csv`（UTF-8 帶 BOM，以 = + - @ 開頭的儲存格加單引號防止公式注入）。篩選參數與查看日誌介面相同。唯讀身分匯出的內容與查看時一樣做憑證遮蔽。`lang` 指定匯出內容的語言（如 `en`），不填時按 Accept-Language。\n\n所需權限：`protoroute:read`。",
+        "parameters": [
+          {
+            "description": "匯出格式：jsonl（預設，每行一條 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "匯出內容的語言，例如 en；不填時按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低層級：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "來源標籤，不區分大小寫精確比對",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "關鍵字：空格分隔表示同時包含，雙引號包住短語，前綴 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的關鍵字：空格分隔，雙引號包住短語，包含其中任意一個即排除；與 q 同時生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "用戶端位址：完整位址、CIDR 或位址片段，多個以逗號分隔，前綴 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱或網域的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服務監聽器 key，完整比對；用於區分同名站點或同名監聽器（例如分開監聽的 IPv4 與 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "狀態碼，如 404、4xx、500-599，多個以逗號分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏被封鎖來源的存取日誌：封鎖後被拒絕的請求，以及目前仍在封鎖中的來源的全部請求（包括觸發封鎖的請求）；只影響回傳結果，日誌照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏帶管理後台登入狀態的請求，即管理員經 Web 服務站點存取後台產生的存取日誌",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "結束時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "匯出模組執行日誌",
+        "tags": [
+          "協定分流"
+        ],
+        "x-required-scope": "protoroute:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/protoroute/logs/sources": {
+      "get": {
+        "description": "返回按名稱排序的來源標籤陣列：日誌中出現過的來源（落盤時跨重啟保留），以及模組設定中的來源（例如 Web 服務的全部監聽器與 IP 清單），用於按 `source` 篩選。來源與日誌一樣按請求語言翻譯。\n\n所需權限：`protoroute:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模組日誌的全部來源",
         "tags": [
           "協定分流"
         ],
@@ -29870,7 +33454,7 @@
     },
     "/api/smb/logs": {
       "delete": {
-        "description": "所需權限：`smb:write`。",
+        "description": "同時刪除落盤的日誌檔案、歷史檔案、歸檔與來源記錄。\n\n所需權限：`smb:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -29994,7 +33578,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
             "in": "query",
             "name": "site",
             "schema": {
@@ -30091,6 +33675,230 @@
           }
         ],
         "summary": "檢視模組執行日誌",
+        "tags": [
+          "SMB 服務"
+        ],
+        "x-required-scope": "smb:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/smb/logs/export": {
+      "get": {
+        "description": "以附件串流返回符合篩選條件的全部日誌，按時間從舊到新，包括落盤的歷史檔案與壓縮歸檔。`format` 為 `jsonl`（預設，每行一條 JSON）或 `csv`（UTF-8 帶 BOM，以 = + - @ 開頭的儲存格加單引號防止公式注入）。篩選參數與查看日誌介面相同。唯讀身分匯出的內容與查看時一樣做憑證遮蔽。`lang` 指定匯出內容的語言（如 `en`），不填時按 Accept-Language。\n\n所需權限：`smb:read`。",
+        "parameters": [
+          {
+            "description": "匯出格式：jsonl（預設，每行一條 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "匯出內容的語言，例如 en；不填時按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低層級：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "來源標籤，不區分大小寫精確比對",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "關鍵字：空格分隔表示同時包含，雙引號包住短語，前綴 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的關鍵字：空格分隔，雙引號包住短語，包含其中任意一個即排除；與 q 同時生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "用戶端位址：完整位址、CIDR 或位址片段，多個以逗號分隔，前綴 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱或網域的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服務監聽器 key，完整比對；用於區分同名站點或同名監聽器（例如分開監聽的 IPv4 與 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "狀態碼，如 404、4xx、500-599，多個以逗號分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏被封鎖來源的存取日誌：封鎖後被拒絕的請求，以及目前仍在封鎖中的來源的全部請求（包括觸發封鎖的請求）；只影響回傳結果，日誌照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏帶管理後台登入狀態的請求，即管理員經 Web 服務站點存取後台產生的存取日誌",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "結束時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "匯出模組執行日誌",
+        "tags": [
+          "SMB 服務"
+        ],
+        "x-required-scope": "smb:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/smb/logs/sources": {
+      "get": {
+        "description": "返回按名稱排序的來源標籤陣列：日誌中出現過的來源（落盤時跨重啟保留），以及模組設定中的來源（例如 Web 服務的全部監聽器與 IP 清單），用於按 `source` 篩選。來源與日誌一樣按請求語言翻譯。\n\n所需權限：`smb:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模組日誌的全部來源",
         "tags": [
           "SMB 服務"
         ],
@@ -31333,7 +35141,7 @@
     },
     "/api/ssl/logs": {
       "delete": {
-        "description": "所需權限：`ssl:write`。",
+        "description": "同時刪除落盤的日誌檔案、歷史檔案、歸檔與來源記錄。\n\n所需權限：`ssl:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -31457,7 +35265,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
             "in": "query",
             "name": "site",
             "schema": {
@@ -31554,6 +35362,230 @@
           }
         ],
         "summary": "檢視模組執行日誌",
+        "tags": [
+          "SSL 憑證"
+        ],
+        "x-required-scope": "ssl:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ssl/logs/export": {
+      "get": {
+        "description": "以附件串流返回符合篩選條件的全部日誌，按時間從舊到新，包括落盤的歷史檔案與壓縮歸檔。`format` 為 `jsonl`（預設，每行一條 JSON）或 `csv`（UTF-8 帶 BOM，以 = + - @ 開頭的儲存格加單引號防止公式注入）。篩選參數與查看日誌介面相同。唯讀身分匯出的內容與查看時一樣做憑證遮蔽。`lang` 指定匯出內容的語言（如 `en`），不填時按 Accept-Language。\n\n所需權限：`ssl:read`。",
+        "parameters": [
+          {
+            "description": "匯出格式：jsonl（預設，每行一條 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "匯出內容的語言，例如 en；不填時按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低層級：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "來源標籤，不區分大小寫精確比對",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "關鍵字：空格分隔表示同時包含，雙引號包住短語，前綴 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的關鍵字：空格分隔，雙引號包住短語，包含其中任意一個即排除；與 q 同時生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "用戶端位址：完整位址、CIDR 或位址片段，多個以逗號分隔，前綴 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱或網域的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服務監聽器 key，完整比對；用於區分同名站點或同名監聽器（例如分開監聽的 IPv4 與 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "狀態碼，如 404、4xx、500-599，多個以逗號分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏被封鎖來源的存取日誌：封鎖後被拒絕的請求，以及目前仍在封鎖中的來源的全部請求（包括觸發封鎖的請求）；只影響回傳結果，日誌照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏帶管理後台登入狀態的請求，即管理員經 Web 服務站點存取後台產生的存取日誌",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "結束時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "匯出模組執行日誌",
+        "tags": [
+          "SSL 憑證"
+        ],
+        "x-required-scope": "ssl:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ssl/logs/sources": {
+      "get": {
+        "description": "返回按名稱排序的來源標籤陣列：日誌中出現過的來源（落盤時跨重啟保留），以及模組設定中的來源（例如 Web 服務的全部監聽器與 IP 清單），用於按 `source` 篩選。來源與日誌一樣按請求語言翻譯。\n\n所需權限：`ssl:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模組日誌的全部來源",
         "tags": [
           "SSL 憑證"
         ],
@@ -32158,7 +36190,7 @@
     },
     "/api/storage/logs": {
       "delete": {
-        "description": "所需權限：`storage:write`。",
+        "description": "同時刪除落盤的日誌檔案、歷史檔案、歸檔與來源記錄。\n\n所需權限：`storage:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -32282,7 +36314,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
             "in": "query",
             "name": "site",
             "schema": {
@@ -32379,6 +36411,230 @@
           }
         ],
         "summary": "檢視模組執行日誌",
+        "tags": [
+          "儲存掛載"
+        ],
+        "x-required-scope": "storage:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/storage/logs/export": {
+      "get": {
+        "description": "以附件串流返回符合篩選條件的全部日誌，按時間從舊到新，包括落盤的歷史檔案與壓縮歸檔。`format` 為 `jsonl`（預設，每行一條 JSON）或 `csv`（UTF-8 帶 BOM，以 = + - @ 開頭的儲存格加單引號防止公式注入）。篩選參數與查看日誌介面相同。唯讀身分匯出的內容與查看時一樣做憑證遮蔽。`lang` 指定匯出內容的語言（如 `en`），不填時按 Accept-Language。\n\n所需權限：`storage:read`。",
+        "parameters": [
+          {
+            "description": "匯出格式：jsonl（預設，每行一條 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "匯出內容的語言，例如 en；不填時按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低層級：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "來源標籤，不區分大小寫精確比對",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "關鍵字：空格分隔表示同時包含，雙引號包住短語，前綴 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的關鍵字：空格分隔，雙引號包住短語，包含其中任意一個即排除；與 q 同時生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "用戶端位址：完整位址、CIDR 或位址片段，多個以逗號分隔，前綴 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱或網域的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服務監聽器 key，完整比對；用於區分同名站點或同名監聽器（例如分開監聽的 IPv4 與 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "狀態碼，如 404、4xx、500-599，多個以逗號分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏被封鎖來源的存取日誌：封鎖後被拒絕的請求，以及目前仍在封鎖中的來源的全部請求（包括觸發封鎖的請求）；只影響回傳結果，日誌照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏帶管理後台登入狀態的請求，即管理員經 Web 服務站點存取後台產生的存取日誌",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "結束時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "匯出模組執行日誌",
+        "tags": [
+          "儲存掛載"
+        ],
+        "x-required-scope": "storage:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/storage/logs/sources": {
+      "get": {
+        "description": "返回按名稱排序的來源標籤陣列：日誌中出現過的來源（落盤時跨重啟保留），以及模組設定中的來源（例如 Web 服務的全部監聽器與 IP 清單），用於按 `source` 篩選。來源與日誌一樣按請求語言翻譯。\n\n所需權限：`storage:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模組日誌的全部來源",
         "tags": [
           "儲存掛載"
         ],
@@ -33108,7 +37364,7 @@
     },
     "/api/stun/logs": {
       "delete": {
-        "description": "所需權限：`stun:write`。",
+        "description": "同時刪除落盤的日誌檔案、歷史檔案、歸檔與來源記錄。\n\n所需權限：`stun:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -33232,7 +37488,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
             "in": "query",
             "name": "site",
             "schema": {
@@ -33329,6 +37585,230 @@
           }
         ],
         "summary": "檢視模組執行日誌",
+        "tags": [
+          "STUN 穿透"
+        ],
+        "x-required-scope": "stun:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/stun/logs/export": {
+      "get": {
+        "description": "以附件串流返回符合篩選條件的全部日誌，按時間從舊到新，包括落盤的歷史檔案與壓縮歸檔。`format` 為 `jsonl`（預設，每行一條 JSON）或 `csv`（UTF-8 帶 BOM，以 = + - @ 開頭的儲存格加單引號防止公式注入）。篩選參數與查看日誌介面相同。唯讀身分匯出的內容與查看時一樣做憑證遮蔽。`lang` 指定匯出內容的語言（如 `en`），不填時按 Accept-Language。\n\n所需權限：`stun:read`。",
+        "parameters": [
+          {
+            "description": "匯出格式：jsonl（預設，每行一條 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "匯出內容的語言，例如 en；不填時按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低層級：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "來源標籤，不區分大小寫精確比對",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "關鍵字：空格分隔表示同時包含，雙引號包住短語，前綴 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的關鍵字：空格分隔，雙引號包住短語，包含其中任意一個即排除；與 q 同時生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "用戶端位址：完整位址、CIDR 或位址片段，多個以逗號分隔，前綴 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱或網域的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服務監聽器 key，完整比對；用於區分同名站點或同名監聽器（例如分開監聽的 IPv4 與 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "狀態碼，如 404、4xx、500-599，多個以逗號分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏被封鎖來源的存取日誌：封鎖後被拒絕的請求，以及目前仍在封鎖中的來源的全部請求（包括觸發封鎖的請求）；只影響回傳結果，日誌照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏帶管理後台登入狀態的請求，即管理員經 Web 服務站點存取後台產生的存取日誌",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "結束時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "匯出模組執行日誌",
+        "tags": [
+          "STUN 穿透"
+        ],
+        "x-required-scope": "stun:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/stun/logs/sources": {
+      "get": {
+        "description": "返回按名稱排序的來源標籤陣列：日誌中出現過的來源（落盤時跨重啟保留），以及模組設定中的來源（例如 Web 服務的全部監聽器與 IP 清單），用於按 `source` 篩選。來源與日誌一樣按請求語言翻譯。\n\n所需權限：`stun:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模組日誌的全部來源",
         "tags": [
           "STUN 穿透"
         ],
@@ -36262,7 +40742,7 @@
     },
     "/api/tailscale/logs": {
       "delete": {
-        "description": "所需權限：`tailscale:write`。",
+        "description": "同時刪除落盤的日誌檔案、歷史檔案、歸檔與來源記錄。\n\n所需權限：`tailscale:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -36386,7 +40866,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
             "in": "query",
             "name": "site",
             "schema": {
@@ -36483,6 +40963,230 @@
           }
         ],
         "summary": "檢視模組執行日誌",
+        "tags": [
+          "Tailscale 組網"
+        ],
+        "x-required-scope": "tailscale:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/logs/export": {
+      "get": {
+        "description": "以附件串流返回符合篩選條件的全部日誌，按時間從舊到新，包括落盤的歷史檔案與壓縮歸檔。`format` 為 `jsonl`（預設，每行一條 JSON）或 `csv`（UTF-8 帶 BOM，以 = + - @ 開頭的儲存格加單引號防止公式注入）。篩選參數與查看日誌介面相同。唯讀身分匯出的內容與查看時一樣做憑證遮蔽。`lang` 指定匯出內容的語言（如 `en`），不填時按 Accept-Language。\n\n所需權限：`tailscale:read`。",
+        "parameters": [
+          {
+            "description": "匯出格式：jsonl（預設，每行一條 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "匯出內容的語言，例如 en；不填時按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低層級：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "來源標籤，不區分大小寫精確比對",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "關鍵字：空格分隔表示同時包含，雙引號包住短語，前綴 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的關鍵字：空格分隔，雙引號包住短語，包含其中任意一個即排除；與 q 同時生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "用戶端位址：完整位址、CIDR 或位址片段，多個以逗號分隔，前綴 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱或網域的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服務監聽器 key，完整比對；用於區分同名站點或同名監聽器（例如分開監聽的 IPv4 與 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "狀態碼，如 404、4xx、500-599，多個以逗號分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏被封鎖來源的存取日誌：封鎖後被拒絕的請求，以及目前仍在封鎖中的來源的全部請求（包括觸發封鎖的請求）；只影響回傳結果，日誌照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏帶管理後台登入狀態的請求，即管理員經 Web 服務站點存取後台產生的存取日誌",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "結束時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "匯出模組執行日誌",
+        "tags": [
+          "Tailscale 組網"
+        ],
+        "x-required-scope": "tailscale:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/tailscale/logs/sources": {
+      "get": {
+        "description": "返回按名稱排序的來源標籤陣列：日誌中出現過的來源（落盤時跨重啟保留），以及模組設定中的來源（例如 Web 服務的全部監聽器與 IP 清單），用於按 `source` 篩選。來源與日誌一樣按請求語言翻譯。\n\n所需權限：`tailscale:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模組日誌的全部來源",
         "tags": [
           "Tailscale 組網"
         ],
@@ -37911,7 +42615,7 @@
     },
     "/api/waf/logs": {
       "delete": {
-        "description": "所需權限：`waf:write`。",
+        "description": "同時刪除落盤的日誌檔案、歷史檔案、歸檔與來源記錄。\n\n所需權限：`waf:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -38035,7 +42739,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
             "in": "query",
             "name": "site",
             "schema": {
@@ -38139,6 +42843,230 @@
         "x-token-allowed": true
       }
     },
+    "/api/waf/logs/export": {
+      "get": {
+        "description": "以附件串流返回符合篩選條件的全部日誌，按時間從舊到新，包括落盤的歷史檔案與壓縮歸檔。`format` 為 `jsonl`（預設，每行一條 JSON）或 `csv`（UTF-8 帶 BOM，以 = + - @ 開頭的儲存格加單引號防止公式注入）。篩選參數與查看日誌介面相同。唯讀身分匯出的內容與查看時一樣做憑證遮蔽。`lang` 指定匯出內容的語言（如 `en`），不填時按 Accept-Language。\n\n所需權限：`waf:read`。",
+        "parameters": [
+          {
+            "description": "匯出格式：jsonl（預設，每行一條 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "匯出內容的語言，例如 en；不填時按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低層級：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "來源標籤，不區分大小寫精確比對",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "關鍵字：空格分隔表示同時包含，雙引號包住短語，前綴 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的關鍵字：空格分隔，雙引號包住短語，包含其中任意一個即排除；與 q 同時生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "用戶端位址：完整位址、CIDR 或位址片段，多個以逗號分隔，前綴 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱或網域的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服務監聽器 key，完整比對；用於區分同名站點或同名監聽器（例如分開監聽的 IPv4 與 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "狀態碼，如 404、4xx、500-599，多個以逗號分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏被封鎖來源的存取日誌：封鎖後被拒絕的請求，以及目前仍在封鎖中的來源的全部請求（包括觸發封鎖的請求）；只影響回傳結果，日誌照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏帶管理後台登入狀態的請求，即管理員經 Web 服務站點存取後台產生的存取日誌",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "結束時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "匯出模組執行日誌",
+        "tags": [
+          "WAF 防火牆"
+        ],
+        "x-required-scope": "waf:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/waf/logs/sources": {
+      "get": {
+        "description": "返回按名稱排序的來源標籤陣列：日誌中出現過的來源（落盤時跨重啟保留），以及模組設定中的來源（例如 Web 服務的全部監聽器與 IP 清單），用於按 `source` 篩選。來源與日誌一樣按請求語言翻譯。\n\n所需權限：`waf:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模組日誌的全部來源",
+        "tags": [
+          "WAF 防火牆"
+        ],
+        "x-required-scope": "waf:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/waf/safeline/test": {
       "post": {
         "description": "請求本文與實例的 `safeline` 欄位相同（`addr` 為 `主機:連接埠` 或 `unix:` 開頭的通訊端路徑，`timeoutMs` 為逾時）。先傳送心跳確認連線，再送檢一個範例 SQL 注入請求；回傳 `latencyMs`（心跳往返毫秒數）、`blocked`（範例攻擊是否被識別）與 `eventId`（雷池中的事件 ID）。連線失敗回傳 502。範例攻擊會出現在雷池控制台的攻擊記錄中。\n\n所需權限：`waf:write`。",
@@ -38201,7 +43129,7 @@
     },
     "/api/webdav/logs": {
       "delete": {
-        "description": "所需權限：`webdav:write`。",
+        "description": "同時刪除落盤的日誌檔案、歷史檔案、歸檔與來源記錄。\n\n所需權限：`webdav:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -38325,7 +43253,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
             "in": "query",
             "name": "site",
             "schema": {
@@ -38422,6 +43350,230 @@
           }
         ],
         "summary": "檢視模組執行日誌",
+        "tags": [
+          "WebDAV 服務"
+        ],
+        "x-required-scope": "webdav:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webdav/logs/export": {
+      "get": {
+        "description": "以附件串流返回符合篩選條件的全部日誌，按時間從舊到新，包括落盤的歷史檔案與壓縮歸檔。`format` 為 `jsonl`（預設，每行一條 JSON）或 `csv`（UTF-8 帶 BOM，以 = + - @ 開頭的儲存格加單引號防止公式注入）。篩選參數與查看日誌介面相同。唯讀身分匯出的內容與查看時一樣做憑證遮蔽。`lang` 指定匯出內容的語言（如 `en`），不填時按 Accept-Language。\n\n所需權限：`webdav:read`。",
+        "parameters": [
+          {
+            "description": "匯出格式：jsonl（預設，每行一條 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "匯出內容的語言，例如 en；不填時按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低層級：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "來源標籤，不區分大小寫精確比對",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "關鍵字：空格分隔表示同時包含，雙引號包住短語，前綴 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的關鍵字：空格分隔，雙引號包住短語，包含其中任意一個即排除；與 q 同時生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "用戶端位址：完整位址、CIDR 或位址片段，多個以逗號分隔，前綴 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱或網域的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服務監聽器 key，完整比對；用於區分同名站點或同名監聽器（例如分開監聽的 IPv4 與 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "狀態碼，如 404、4xx、500-599，多個以逗號分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏被封鎖來源的存取日誌：封鎖後被拒絕的請求，以及目前仍在封鎖中的來源的全部請求（包括觸發封鎖的請求）；只影響回傳結果，日誌照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏帶管理後台登入狀態的請求，即管理員經 Web 服務站點存取後台產生的存取日誌",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "結束時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "匯出模組執行日誌",
+        "tags": [
+          "WebDAV 服務"
+        ],
+        "x-required-scope": "webdav:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webdav/logs/sources": {
+      "get": {
+        "description": "返回按名稱排序的來源標籤陣列：日誌中出現過的來源（落盤時跨重啟保留），以及模組設定中的來源（例如 Web 服務的全部監聽器與 IP 清單），用於按 `source` 篩選。來源與日誌一樣按請求語言翻譯。\n\n所需權限：`webdav:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模組日誌的全部來源",
         "tags": [
           "WebDAV 服務"
         ],
@@ -41060,7 +46212,7 @@
     },
     "/api/webservice/logs": {
       "delete": {
-        "description": "所需權限：`webservice:write`。",
+        "description": "同時刪除落盤的日誌檔案、歷史檔案、歸檔與來源記錄。\n\n所需權限：`webservice:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -41184,7 +46336,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
             "in": "query",
             "name": "site",
             "schema": {
@@ -41281,6 +46433,230 @@
           }
         ],
         "summary": "檢視模組執行日誌",
+        "tags": [
+          "Web 服務"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/logs/export": {
+      "get": {
+        "description": "以附件串流返回符合篩選條件的全部日誌，按時間從舊到新，包括落盤的歷史檔案與壓縮歸檔。`format` 為 `jsonl`（預設，每行一條 JSON）或 `csv`（UTF-8 帶 BOM，以 = + - @ 開頭的儲存格加單引號防止公式注入）。篩選參數與查看日誌介面相同。唯讀身分匯出的內容與查看時一樣做憑證遮蔽。`lang` 指定匯出內容的語言（如 `en`），不填時按 Accept-Language。\n\n所需權限：`webservice:read`。",
+        "parameters": [
+          {
+            "description": "匯出格式：jsonl（預設，每行一條 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "匯出內容的語言，例如 en；不填時按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低層級：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "來源標籤，不區分大小寫精確比對",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "關鍵字：空格分隔表示同時包含，雙引號包住短語，前綴 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的關鍵字：空格分隔，雙引號包住短語，包含其中任意一個即排除；與 q 同時生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "用戶端位址：完整位址、CIDR 或位址片段，多個以逗號分隔，前綴 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱或網域的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服務監聽器 key，完整比對；用於區分同名站點或同名監聽器（例如分開監聽的 IPv4 與 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "狀態碼，如 404、4xx、500-599，多個以逗號分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏被封鎖來源的存取日誌：封鎖後被拒絕的請求，以及目前仍在封鎖中的來源的全部請求（包括觸發封鎖的請求）；只影響回傳結果，日誌照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏帶管理後台登入狀態的請求，即管理員經 Web 服務站點存取後台產生的存取日誌",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "結束時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "匯出模組執行日誌",
+        "tags": [
+          "Web 服務"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/logs/sources": {
+      "get": {
+        "description": "返回按名稱排序的來源標籤陣列：日誌中出現過的來源（落盤時跨重啟保留），以及模組設定中的來源（例如 Web 服務的全部監聽器與 IP 清單），用於按 `source` 篩選。來源與日誌一樣按請求語言翻譯。\n\n所需權限：`webservice:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模組日誌的全部來源",
         "tags": [
           "Web 服務"
         ],
@@ -43761,7 +49137,7 @@
     },
     "/api/webterminal/logs": {
       "delete": {
-        "description": "所需權限：`webterminal:write`。",
+        "description": "同時刪除落盤的日誌檔案、歷史檔案、歸檔與來源記錄。\n\n所需權限：`webterminal:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -43885,7 +49261,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
             "in": "query",
             "name": "site",
             "schema": {
@@ -43982,6 +49358,230 @@
           }
         ],
         "summary": "檢視模組執行日誌",
+        "tags": [
+          "Web 終端機"
+        ],
+        "x-required-scope": "webterminal:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webterminal/logs/export": {
+      "get": {
+        "description": "以附件串流返回符合篩選條件的全部日誌，按時間從舊到新，包括落盤的歷史檔案與壓縮歸檔。`format` 為 `jsonl`（預設，每行一條 JSON）或 `csv`（UTF-8 帶 BOM，以 = + - @ 開頭的儲存格加單引號防止公式注入）。篩選參數與查看日誌介面相同。唯讀身分匯出的內容與查看時一樣做憑證遮蔽。`lang` 指定匯出內容的語言（如 `en`），不填時按 Accept-Language。\n\n所需權限：`webterminal:read`。",
+        "parameters": [
+          {
+            "description": "匯出格式：jsonl（預設，每行一條 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "匯出內容的語言，例如 en；不填時按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低層級：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "來源標籤，不區分大小寫精確比對",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "關鍵字：空格分隔表示同時包含，雙引號包住短語，前綴 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的關鍵字：空格分隔，雙引號包住短語，包含其中任意一個即排除；與 q 同時生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "用戶端位址：完整位址、CIDR 或位址片段，多個以逗號分隔，前綴 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱或網域的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服務監聽器 key，完整比對；用於區分同名站點或同名監聽器（例如分開監聽的 IPv4 與 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "狀態碼，如 404、4xx、500-599，多個以逗號分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏被封鎖來源的存取日誌：封鎖後被拒絕的請求，以及目前仍在封鎖中的來源的全部請求（包括觸發封鎖的請求）；只影響回傳結果，日誌照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏帶管理後台登入狀態的請求，即管理員經 Web 服務站點存取後台產生的存取日誌",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "結束時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "匯出模組執行日誌",
+        "tags": [
+          "Web 終端機"
+        ],
+        "x-required-scope": "webterminal:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webterminal/logs/sources": {
+      "get": {
+        "description": "返回按名稱排序的來源標籤陣列：日誌中出現過的來源（落盤時跨重啟保留），以及模組設定中的來源（例如 Web 服務的全部監聽器與 IP 清單），用於按 `source` 篩選。來源與日誌一樣按請求語言翻譯。\n\n所需權限：`webterminal:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模組日誌的全部來源",
         "tags": [
           "Web 終端機"
         ],
@@ -46605,7 +52205,7 @@
     },
     "/api/wol/logs": {
       "delete": {
-        "description": "所需權限：`wol:write`。",
+        "description": "同時刪除落盤的日誌檔案、歷史檔案、歸檔與來源記錄。\n\n所需權限：`wol:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -46729,7 +52329,7 @@
             }
           },
           {
-            "description": "",
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
             "in": "query",
             "name": "site",
             "schema": {
@@ -46826,6 +52426,230 @@
           }
         ],
         "summary": "檢視模組執行日誌",
+        "tags": [
+          "網路喚醒"
+        ],
+        "x-required-scope": "wol:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/wol/logs/export": {
+      "get": {
+        "description": "以附件串流返回符合篩選條件的全部日誌，按時間從舊到新，包括落盤的歷史檔案與壓縮歸檔。`format` 為 `jsonl`（預設，每行一條 JSON）或 `csv`（UTF-8 帶 BOM，以 = + - @ 開頭的儲存格加單引號防止公式注入）。篩選參數與查看日誌介面相同。唯讀身分匯出的內容與查看時一樣做憑證遮蔽。`lang` 指定匯出內容的語言（如 `en`），不填時按 Accept-Language。\n\n所需權限：`wol:read`。",
+        "parameters": [
+          {
+            "description": "匯出格式：jsonl（預設，每行一條 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "匯出內容的語言，例如 en；不填時按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低層級：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "來源標籤，不區分大小寫精確比對",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "關鍵字：空格分隔表示同時包含，雙引號包住短語，前綴 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的關鍵字：空格分隔，雙引號包住短語，包含其中任意一個即排除；與 q 同時生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "用戶端位址：完整位址、CIDR 或位址片段，多個以逗號分隔，前綴 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱或網域的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服務監聽器 key，完整比對；用於區分同名站點或同名監聽器（例如分開監聽的 IPv4 與 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "狀態碼，如 404、4xx、500-599，多個以逗號分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏被封鎖來源的存取日誌：封鎖後被拒絕的請求，以及目前仍在封鎖中的來源的全部請求（包括觸發封鎖的請求）；只影響回傳結果，日誌照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏帶管理後台登入狀態的請求，即管理員經 Web 服務站點存取後台產生的存取日誌",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "結束時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "匯出模組執行日誌",
+        "tags": [
+          "網路喚醒"
+        ],
+        "x-required-scope": "wol:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/wol/logs/sources": {
+      "get": {
+        "description": "返回按名稱排序的來源標籤陣列：日誌中出現過的來源（落盤時跨重啟保留），以及模組設定中的來源（例如 Web 服務的全部監聽器與 IP 清單），用於按 `source` 篩選。來源與日誌一樣按請求語言翻譯。\n\n所需權限：`wol:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模組日誌的全部來源",
         "tags": [
           "網路喚醒"
         ],
