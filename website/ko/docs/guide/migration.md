@@ -30,7 +30,7 @@ Gately의 「설정 → 백업 및 마이그레이션」을 열고 `lucky_*.lkcf
 | lucky_ddns.lkcf | 동적 DNS | 제공자 11곳을 지원합니다. Lucky 공식 IP 조회 주소는 제거됩니다 |
 | lucky_stun.lkcf | STUN 통과 | 전역 STUN 서버 목록과 전역 Webhook을 포함합니다. 내장 전달의 안전 모드도 출발지 IP 접근 제어로 변환됩니다 |
 | lucky_ssl.lkcf | SSL 인증서 | 이미 발급된 인증서는 그대로 가져오며 만료 전에는 다시 신청하지 않습니다 |
-| lucky_reverseproxy.lkcf | 웹 서비스 | 사이트, 인증, WAF 참조(하위 규칙의 WAF가 main이면 수신 규칙의 인스턴스를 그대로 사용). 리다이렉트 하위 규칙의 `{host}{path}{args}`, `{port}`, `{1}`, `{STUN_규칙이름_PORT}` 등의 변수도 그대로 동작합니다 |
+| lucky_reverseproxy.lkcf | 웹 서비스 | 사이트, 인증, WAF 참조(하위 규칙의 WAF가 main이면 수신 규칙의 인스턴스를 그대로 사용). 리다이렉트 하위 규칙의 `{host}{path}{args}`, `{port}`, `{1}`, `{STUN_규칙이름_PORT}` 등의 변수도 그대로 동작합니다. 리스너의 HTTP/3 설정도 가져올 때 그대로 유지됩니다 |
 | lucky_coraza.lkcf | WAF 방화벽 | 인스턴스 key를 그대로 사용하므로 사이트 참조가 유지됩니다 |
 | lucky_wol.lkcf | Wake-on-LAN | |
 | lucky_webterminal.lkcf | 웹 터미널 | SSH와 Telnet 연결, 프록시, `keyFile`, `workDir`, 타임아웃, 환경 변수, 빠른 접근 디렉터리, 세션 설정, 전역 빠른 명령, 사용자 약관과 2FA 키. SSH 연결은 처음 연결할 때 호스트 지문을 기록합니다 |

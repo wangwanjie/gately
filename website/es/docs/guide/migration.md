@@ -30,7 +30,7 @@ Archivos compatibles:
 | lucky_ddns.lkcf | DNS dinámico | Admite 11 proveedores; se eliminan las direcciones oficiales de consulta de IP de Lucky |
 | lucky_stun.lkcf | Traversal STUN | Incluye la lista global de servidores STUN y el webhook global; el modo seguro del reenvío integrado también pasa a ser control de acceso por IP de origen |
 | lucky_ssl.lkcf | Certificados SSL | Los certificados ya emitidos se importan tal cual y no se vuelven a solicitar antes de que caduquen |
-| lucky_reverseproxy.lkcf | Servicios web | Sitios, autenticación y referencias a WAF (cuando el WAF de una subregla es main, se reutiliza la instancia de la regla de escucha); las variables de las subreglas de redirección, como `{host}{path}{args}`, `{port}`, `{1}` y `{STUN_NombreRegla_PORT}`, siguen funcionando |
+| lucky_reverseproxy.lkcf | Servicios web | Sitios, autenticación y referencias a WAF (cuando el WAF de una subregla es main, se reutiliza la instancia de la regla de escucha); las variables de las subreglas de redirección, como `{host}{path}{args}`, `{port}`, `{1}` y `{STUN_NombreRegla_PORT}`, siguen funcionando; los ajustes de HTTP/3 de los listeners se conservan al importar |
 | lucky_coraza.lkcf | Cortafuegos WAF | Conserva la clave de instancia, por lo que las referencias de los sitios siguen siendo válidas |
 | lucky_wol.lkcf | Wake-on-LAN | |
 | lucky_webterminal.lkcf | Terminal web | Conexiones SSH y Telnet, proxies, `keyFile`, `workDir`, tiempos de espera, variables de entorno, directorios de acceso rápido, ajustes de sesión, atajos globales, y el acuerdo de usuario y el secreto de 2FA; en las conexiones SSH, la huella del host se registra en la primera conexión |

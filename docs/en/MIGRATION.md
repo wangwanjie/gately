@@ -30,7 +30,7 @@ Supported files:
 | lucky_ddns.lkcf | Dynamic DNS | 11 providers supported; Lucky's official IP lookup URLs are removed |
 | lucky_stun.lkcf | STUN Traversal | Includes the global STUN server list and the global webhook; the safe mode of the built-in forwarding becomes source IP access control too |
 | lucky_ssl.lkcf | SSL Certificates | Already-issued certificates are imported as-is and are not re-requested before they expire |
-| lucky_reverseproxy.lkcf | Web Services | Sites, authentication, and WAF references (when a sub-rule's WAF is `main`, the listener rule's instance is reused); variables in redirect sub-rules such as `{host}{path}{args}`, `{port}`, `{1}` and `{STUN_RuleName_PORT}` keep working |
+| lucky_reverseproxy.lkcf | Web Services | Sites, authentication, and WAF references (when a sub-rule's WAF is `main`, the listener rule's instance is reused); variables in redirect sub-rules such as `{host}{path}{args}`, `{port}`, `{1}` and `{STUN_RuleName_PORT}` keep working; listeners' HTTP/3 settings are kept on import |
 | lucky_coraza.lkcf | WAF Firewall | Instance keys are preserved, so site references remain valid |
 | lucky_wol.lkcf | Wake-on-LAN | |
 | lucky_webterminal.lkcf | Web Terminal | SSH and Telnet connections, proxies, `keyFile`, `workDir`, timeouts, environment variables, quick access directories, session settings, global shortcuts, and the user agreement and 2FA secret; SSH connections record the host fingerprint on first connect |

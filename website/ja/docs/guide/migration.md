@@ -30,7 +30,7 @@ Gately の「設定 → バックアップと移行」を開き、すべての `
 | lucky_ddns.lkcf | ダイナミック DNS | 11 のプロバイダーに対応。Lucky 公式の IP 照会アドレスは削除されます |
 | lucky_stun.lkcf | STUN 穿孔 | グローバルな STUN サーバー一覧とグローバル Webhook を含みます。内蔵転送のセーフモードも送信元 IP アクセス制御に変換されます |
 | lucky_ssl.lkcf | SSL 証明書 | 発行済みの証明書はそのままインポートされ、有効期限が切れるまで再取得しません |
-| lucky_reverseproxy.lkcf | Web サービス | サイト、認証、WAF 参照（サブルールの WAF が main の場合は待ち受けルールのインスタンスを引き継ぎます）。リダイレクトのサブルールにある `{host}{path}{args}`、`{port}`、`{1}`、`{STUN_ルール名_PORT}` などの変数もそのまま動作します |
+| lucky_reverseproxy.lkcf | Web サービス | サイト、認証、WAF 参照（サブルールの WAF が main の場合は待ち受けルールのインスタンスを引き継ぎます）。リダイレクトのサブルールにある `{host}{path}{args}`、`{port}`、`{1}`、`{STUN_ルール名_PORT}` などの変数もそのまま動作します。リスナーの HTTP/3 設定もインポート時に引き継ぎます |
 | lucky_coraza.lkcf | WAF ファイアウォール | インスタンスキーを引き継ぐため、サイトからの参照は有効なままです |
 | lucky_wol.lkcf | Wake-on-LAN | |
 | lucky_webterminal.lkcf | Web ターミナル | SSH と Telnet の接続、プロキシ、`keyFile`、`workDir`、タイムアウト、環境変数、クイックアクセスのディレクトリ、セッション設定、共通のクイックコマンド、利用規約と 2FA のシークレット。SSH 接続では初回接続時にホストフィンガープリントを記録します |
