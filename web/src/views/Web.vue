@@ -63,7 +63,7 @@
         <template #title>
           <span>{{ l.name || t('web.unnamedListener') }}</span>
           <span class="tags">
-            <el-tag size="small" effect="plain" class="mono">{{ l.tls ? 'https' : 'http' }}://{{ l.listenIp || '*' }}:{{ l.port }}</el-tag>
+            <el-tag size="small" effect="plain" class="mono">{{ l.tls ? 'https' : 'http' }}://{{ hostPort(l) }}</el-tag>
             <el-tag size="small" type="info">{{ networkText(l.network) }}</el-tag>
             <el-tag v-if="l.tls && l.plainHttp" size="small" type="info">{{ plainHttpText(l.plainHttp) }}</el-tag>
             <el-tag v-if="l.acceptProxyProtocol" size="small" type="info">{{ t('web.acceptProxyTag') }}</el-tag>
@@ -1503,10 +1503,15 @@ function openListener(l?: ListenerView, copy = false) {
   listenerVisible.value = true
 }
 
+// hostPort 返回“监听地址:端口”，IPv6 地址加方括号，未指定地址显示 *
+function hostPort(l: Listener) {
+  const host = l.listenIp ? (l.listenIp.includes(':') ? `[${l.listenIp}]` : l.listenIp) : '*'
+  return `${host}:${l.port}`
+}
+
 // listenerLabel 返回监听的显示名称：名称为空时显示监听地址
 function listenerLabel(l: Listener) {
-  const host = l.listenIp ? (l.listenIp.includes(':') ? `[${l.listenIp}]` : l.listenIp) : '*'
-  return l.name || `${host}:${l.port}`
+  return l.name || hostPort(l)
 }
 
 // stripShareLinks 去掉站点的分享链接：令牌可绕过认证，复制站点或监听时不带走
@@ -1596,7 +1601,7 @@ function openLogs(l: ListenerView, row: SiteRow) {
     domain: row.site.domains?.[0],
     accessLog: row.site.accessLog,
     listener: l.key,
-    listenerLabel: `${l.name || t('web.unnamedListener')} · ${l.listenIp || '*'}:${l.port} · ${networkText(l.network)}`,
+    listenerLabel: `${l.name || t('web.unnamedListener')} · ${hostPort(l)} · ${networkText(l.network)}`,
   })
 }
 
