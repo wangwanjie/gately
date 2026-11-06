@@ -1014,3 +1014,42 @@ func TestFirewallIPv6StrictArming(t *testing.T) {
 		t.Fatalf("停止后应清空严格模式状态: ready=%v at=%v", ready, at)
 	}
 }
+
+// 端口短暂停止监听（frps 重连、监听器重启）时，在 portGrace 内仍视为开放端口，超过后才移出
+func TestFirewallOpenPortsGrace(t *testing.T) {
+	cleanDefault(t)
+	old := listeningPortsFn
+	defer func() { listeningPortsFn = old }()
+	listening := map[int]bool{443: true, 7000: true}
+	listeningPortsFn = func() (map[int]bool, error) {
+		return listening, nil
+	}
+	fake := &fakeNFT{output: `{"nftables": []}`}
+	fw := activeFirewall(t, fake)
+	ctx := context.Background()
+	s := defaultSettings()
+	s.Scan = ScanSettings{Enable: true, Threshold: 10, IPv6Strict: true}
+	fw.apply(ctx, s)
+	openOf := func() string {
+		fw.mu.Lock()
+		defer fw.mu.Unlock()
+		return fw.open
+	}
+	if got := openOf(); got != "443,7000" {
+		t.Fatalf("开放端口应为 443,7000，得到 %q", got)
+	}
+	// 7000 暂时停止监听：宽限期内仍在开放端口中
+	listening = map[int]bool{443: true}
+	fw.poll(ctx)
+	if got := openOf(); got != "443,7000" {
+		t.Fatalf("宽限期内停止监听的端口应保留，得到 %q", got)
+	}
+	// 超过宽限期仍未恢复：移出开放端口
+	fw.mu.Lock()
+	fw.seen[7000] = time.Now().Add(-portGrace - time.Second)
+	fw.mu.Unlock()
+	fw.poll(ctx)
+	if got := openOf(); got != "443" {
+		t.Fatalf("超过宽限期的端口应移出，得到 %q", got)
+	}
+}

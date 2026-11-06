@@ -86,6 +86,9 @@ type firewall struct {
 	// 立即启用会把访问这些端口的正常访客封掉，所以要等 strictAt 之后的轮询确认端口同步过再启用
 	strictReady bool
 	strictAt    time.Time
+	// seen 为各端口最近一次读到正在监听的时间。端口短暂停止监听（frps 重连、托管进程或监听器重启）时
+	// 在 portGrace 内仍视为开放，避免恰好落在停机窗口的轮询把它移出开放端口集合，让重连的正常访客被严格模式封禁
+	seen map[int]time.Time
 	// dirty 表示封禁表有变化，等待轮询协程对账写入
 	dirty    bool
 	importFn func(source string, addrs []netip.Addr)
@@ -290,7 +293,7 @@ func (f *firewall) applyLocked(ctx context.Context, s Settings) {
 			f.status.Version = strings.TrimSpace(out)
 		}
 	}
-	listening, lerr := listeningPortsFn()
+	listening, lerr := f.listeningLocked()
 	open, trap, skipped := portSets(s, listening)
 	entries := banlist.Default.List()
 	// 严格模式就绪之前按普通的阈值检测处理
@@ -318,6 +321,33 @@ func (f *firewall) applyLocked(ctx context.Context, s Settings) {
 	if !wasActive {
 		f.log.Infof("防火墙规则已写入 nftables（表 inet %s，%d 条封禁）", tableName, len(entries))
 	}
+}
+
+// portGrace 为端口停止监听后仍视为开放的时间，覆盖两到三次轮询（每 10 秒一次）
+const portGrace = 30 * time.Second
+
+// listeningLocked 读取正在监听的端口，并加上 portGrace 内监听过的端口。调用方持有 f.mu。
+func (f *firewall) listeningLocked() (map[int]bool, error) {
+	listening, err := listeningPortsFn()
+	if err != nil {
+		return listening, err
+	}
+	now := time.Now()
+	if f.seen == nil {
+		f.seen = map[int]time.Time{}
+	}
+	for p := range listening {
+		f.seen[p] = now
+	}
+	out := make(map[int]bool, len(f.seen))
+	for p, at := range f.seen {
+		if now.Sub(at) > portGrace {
+			delete(f.seen, p)
+			continue
+		}
+		out[p] = true
+	}
+	return out, nil
 }
 
 // portSets 计算扫描检测视为开放的端口与实际生效的诱饵端口（去掉正在监听的端口）。
@@ -875,7 +905,7 @@ func (f *firewall) poll(ctx context.Context) {
 
 // refreshPortsLocked 按当前监听端口更新开放端口与诱饵端口集合。
 func (f *firewall) refreshPortsLocked(ctx context.Context) bool {
-	listening, err := listeningPortsFn()
+	listening, err := f.listeningLocked()
 	if err != nil {
 		return false
 	}
