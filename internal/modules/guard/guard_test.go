@@ -887,3 +887,130 @@ func TestManualBanRefusesLoopback(t *testing.T) {
 	}
 	banlist.Default.Unban("198.51.100.9")
 }
+
+// IPv6 严格模式：IPv6 来源第一次连接开放端口以外的端口即封禁，不经过计数器；IPv4 仍按阈值检测
+func TestBuildScriptIPv6Strict(t *testing.T) {
+	now := time.Now()
+	s := defaultSettings()
+	s.Scan = ScanSettings{Enable: true, Threshold: 20, IPv6Strict: true, BanSeconds: 7200}
+	script, _, _ := buildScript(s, nil, nil, []portRange{{443, 443}}, nil, now)
+	strict := `meta nfproto ipv6 tcp flags & (fin|syn|rst|ack) == syn tcp dport != @open add @scan6 { ip6 saddr & ffff:ffff:ffff:ffff:: timeout 7200s } counter drop comment "scan-hit"`
+	for _, want := range []string{
+		strict,
+		"limit rate over 20/minute burst 20 packets } add @scan4 { ip saddr timeout 7200s }",
+	} {
+		if !strings.Contains(script, want) {
+			t.Errorf("脚本缺少 %q:\n%s", want, script)
+		}
+	}
+	if strings.Contains(script, "@meter6 {") {
+		t.Errorf("严格模式下 IPv6 不应再使用计数器:\n%s", script)
+	}
+	// 白名单地址在 input 链最前面放行，不受严格模式影响
+	if strings.Index(script, "ip6 saddr @allow6 accept") > strings.Index(script, strict) {
+		t.Errorf("白名单放行必须在严格规则之前:\n%s", script)
+	}
+	// 关闭严格模式后恢复阈值检测
+	s.Scan.IPv6Strict = false
+	script, _, _ = buildScript(s, nil, nil, []portRange{{443, 443}}, nil, now)
+	if !strings.Contains(script, "add @meter6 { ip6 saddr & ffff:ffff:ffff:ffff:: limit rate over 20/minute") || strings.Contains(script, strict) {
+		t.Errorf("关闭严格模式应使用阈值检测:\n%s", script)
+	}
+	// 扫描检测未启用时，严格模式不生成任何规则
+	s.Scan = ScanSettings{IPv6Strict: true}
+	s.Trap.Enable = false
+	script, _, _ = buildScript(s, nil, nil, nil, nil, now)
+	if strings.Contains(script, "scan-hit") || strings.Contains(script, "hook input") {
+		t.Errorf("未启用扫描检测时不应生成扫描规则:\n%s", script)
+	}
+}
+
+// 严格模式在规则写入后要等端口同步过才启用，读不到监听端口时一直保持阈值检测，避免把正常访客封掉
+func TestFirewallIPv6StrictArming(t *testing.T) {
+	cleanDefault(t)
+	old := listeningPortsFn
+	defer func() { listeningPortsFn = old }()
+	listening := map[int]bool{443: true}
+	var listenErr error
+	listeningPortsFn = func() (map[int]bool, error) {
+		return listening, listenErr
+	}
+	fake := &fakeNFT{output: `{"nftables": []}`}
+	fw := activeFirewall(t, fake)
+	ctx := context.Background()
+	strictRule := "tcp dport != @open add @scan6 {"
+	sawStrict := func() bool {
+		fake.mu.Lock()
+		defer fake.mu.Unlock()
+		for _, c := range fake.calls {
+			if strings.Contains(c, strictRule) {
+				return true
+			}
+		}
+		return false
+	}
+	reset := func() {
+		fake.mu.Lock()
+		fake.calls = nil
+		fake.mu.Unlock()
+	}
+
+	s := defaultSettings()
+	s.Scan = ScanSettings{Enable: true, Threshold: 10, IPv6Strict: true}
+	fw.apply(ctx, s)
+	if sawStrict() || !strings.Contains(fake.last(), "add @meter6 {") {
+		t.Fatalf("刚写入规则时应先使用阈值检测:\n%s", fake.last())
+	}
+	// 宽限期内轮询不启用
+	fw.poll(ctx)
+	if sawStrict() {
+		t.Fatal("宽限期内不应启用严格模式")
+	}
+	// 宽限期结束但读不到监听端口：仍然不启用
+	fw.mu.Lock()
+	fw.strictAt = time.Now().Add(-time.Second)
+	fw.mu.Unlock()
+	listenErr = errorString("no proc")
+	fw.poll(ctx)
+	if sawStrict() {
+		t.Fatal("读不到监听端口时不应启用严格模式")
+	}
+	// 端口同步成功后启用
+	listenErr = nil
+	fw.poll(ctx)
+	if !sawStrict() {
+		t.Fatal("宽限期结束且端口同步成功后应启用严格模式")
+	}
+	// 之后再次读不到监听端口而重写规则，退回阈值检测
+	reset()
+	listenErr = errorString("no proc")
+	fw.apply(ctx, s)
+	if sawStrict() {
+		t.Fatal("重写规则时读不到监听端口应退回阈值检测")
+	}
+	// 关闭严格模式后状态清空，再次打开要重新等待
+	listenErr = nil
+	s.Scan.IPv6Strict = false
+	fw.apply(ctx, s)
+	s.Scan.IPv6Strict = true
+	reset()
+	fw.apply(ctx, s)
+	if sawStrict() {
+		t.Fatal("重新打开严格模式应重新等待宽限期")
+	}
+	// 停止后重新启动同样要重新等待
+	fw.mu.Lock()
+	fw.strictAt = time.Now().Add(-time.Second)
+	fw.mu.Unlock()
+	fw.poll(ctx)
+	if !sawStrict() {
+		t.Fatal("宽限期结束后应启用严格模式")
+	}
+	fw.stop()
+	fw.mu.Lock()
+	ready, at := fw.strictReady, fw.strictAt
+	fw.mu.Unlock()
+	if ready || !at.IsZero() {
+		t.Fatalf("停止后应清空严格模式状态: ready=%v at=%v", ready, at)
+	}
+}

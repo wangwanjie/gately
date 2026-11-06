@@ -59,6 +59,9 @@ type ScanSettings struct {
 	// ExcludePorts 为额外视为开放的端口（例如由其他防火墙规则转发的端口），格式同诱饵端口
 	ExcludePorts string `json:"excludePorts"`
 	BanSeconds   int    `json:"banSeconds"`
+	// IPv6Strict 为 true 时 IPv6 来源只允许连接开放端口（正在监听的端口加 ExcludePorts），
+	// 第一次连接其他端口即被封禁，不再按 Threshold 计数；IPv4 仍按阈值检测。仅在扫描检测启用时生效
+	IPv6Strict bool `json:"ipv6Strict"`
 }
 
 // Settings 是模块全局设置。

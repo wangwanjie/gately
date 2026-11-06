@@ -100,6 +100,9 @@ func subtractPorts(list []portRange, remove map[int]bool) (rest []portRange, rem
 // procNetFiles 是列出 TCP 套接字的 proc 文件，可在测试中替换
 var procNetFiles = []string{"/proc/net/tcp", "/proc/net/tcp6"}
 
+// listeningPortsFn 可在测试中替换
+var listeningPortsFn = listeningPorts
+
 // listeningPorts 读取本机网络命名空间中处于监听状态、且不只绑定在回环地址上的 TCP 端口。
 func listeningPorts() (map[int]bool, error) {
 	ports := map[int]bool{}

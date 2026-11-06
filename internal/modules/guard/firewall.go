@@ -34,6 +34,8 @@ const (
 // 防火墙轮询参数，可在测试中调整
 var (
 	pollInterval = 10 * time.Second
+	// strictGrace 为 IPv6 严格模式在规则写入后延迟启用的时间，等待各服务开始监听、开放端口同步完成
+	strictGrace = 15 * time.Second
 	// retryEvery 表示规则写入失败后每隔几次轮询重试一次
 	retryEvery = 6
 	nftTimeout = 15 * time.Second
@@ -80,6 +82,10 @@ type firewall struct {
 	denyText string
 	// open / trap 为最近一次写入的开放端口与诱饵端口
 	open, trap string
+	// strictReady 表示 IPv6 严格模式已经就绪：规则刚写入时监听端口可能还没有全部开始监听，
+	// 立即启用会把访问这些端口的正常访客封掉，所以要等 strictAt 之后的轮询确认端口同步过再启用
+	strictReady bool
+	strictAt    time.Time
 	// dirty 表示封禁表有变化，等待轮询协程对账写入
 	dirty    bool
 	importFn func(source string, addrs []netip.Addr)
@@ -191,6 +197,8 @@ func (f *firewall) stop() {
 	f.status.Active = false
 	f.members = map[string]time.Time{}
 	f.dirty = false
+	// 重新启动后各服务要重新开始监听，严格模式需要再等一轮端口同步
+	f.strictReady, f.strictAt = false, time.Time{}
 }
 
 // snapshot 返回当前状态。
@@ -244,6 +252,13 @@ func (f *firewall) apply(ctx context.Context, s Settings) {
 
 func (f *firewall) applyLocked(ctx context.Context, s Settings) {
 	f.cfg = s
+	strict := s.Scan.Enable && s.Scan.IPv6Strict
+	switch {
+	case !strict:
+		f.strictReady, f.strictAt = false, time.Time{}
+	case !f.strictReady && f.strictAt.IsZero():
+		f.strictAt = time.Now().Add(strictGrace)
+	}
 	wasActive := f.status.Active
 	version := f.status.Version
 	// 重建会删除旧表，先把旧表的计数并入基数，保存设置后计数不清零
@@ -275,10 +290,14 @@ func (f *firewall) applyLocked(ctx context.Context, s Settings) {
 			f.status.Version = strings.TrimSpace(out)
 		}
 	}
-	listening, _ := listeningPorts()
+	listening, lerr := listeningPortsFn()
 	open, trap, skipped := portSets(s, listening)
 	entries := banlist.Default.List()
-	script, members, deny := buildScript(s, f.local, entries, open, trap, time.Now())
+	// 严格模式就绪之前按普通的阈值检测处理
+	ss := s
+	// 读不到监听端口时开放端口集合不完整，严格模式会把所有端口当成未开放，必须退回阈值检测
+	ss.Scan.IPv6Strict = strict && f.strictReady && lerr == nil
+	script, members, deny := buildScript(ss, f.local, entries, open, trap, time.Now())
 	if _, err := f.run(ctx, script, "-f", "-"); err != nil {
 		f.status.Reason = classify(err)
 		f.status.Error = err.Error()
@@ -368,7 +387,12 @@ func buildScript(s Settings, local []netip.Prefix, entries []banlist.Entry, open
 			sec := banSeconds(s, s.Scan.BanSeconds)
 			n := s.Scan.Threshold
 			fmt.Fprintf(&b, "\t\tmeta nfproto ipv4 %s tcp dport != @open add @meter4 { ip saddr limit rate over %d/minute burst %d packets } add @scan4 { ip saddr timeout %ds } counter drop comment \"scan-hit\"\n", syn, n, n, sec)
-			fmt.Fprintf(&b, "\t\tmeta nfproto ipv6 %s tcp dport != @open add @meter6 { ip6 saddr & %s limit rate over %d/minute burst %d packets } add @scan6 { ip6 saddr & %s timeout %ds } counter drop comment \"scan-hit\"\n", syn, v6Mask, n, n, v6Mask, sec)
+			if s.Scan.IPv6Strict {
+				// 严格模式：IPv6 来源第一次连接开放端口以外的端口即封禁（按 /64）
+				fmt.Fprintf(&b, "\t\tmeta nfproto ipv6 %s tcp dport != @open add @scan6 { ip6 saddr & %s timeout %ds } counter drop comment \"scan-hit\"\n", syn, v6Mask, sec)
+			} else {
+				fmt.Fprintf(&b, "\t\tmeta nfproto ipv6 %s tcp dport != @open add @meter6 { ip6 saddr & %s limit rate over %d/minute burst %d packets } add @scan6 { ip6 saddr & %s timeout %ds } counter drop comment \"scan-hit\"\n", syn, v6Mask, n, n, v6Mask, sec)
+			}
 		}
 		b.WriteString("\t}\n")
 	}
@@ -808,7 +832,14 @@ func (f *firewall) poll(ctx context.Context) {
 	dropped, hits := doc.counters()
 	f.status.Dropped, f.status.Hits = addCounts(f.baseDropped, dropped), addCounts(f.baseHits, hits)
 	f.status.CheckedAt = time.Now()
-	f.refreshPortsLocked(ctx)
+	portsOK := f.refreshPortsLocked(ctx)
+	if portsOK && f.cfg.Scan.Enable && f.cfg.Scan.IPv6Strict && !f.strictReady && !f.strictAt.IsZero() && !time.Now().Before(f.strictAt) {
+		f.strictReady = true
+		f.applyLocked(ctx, f.cfg)
+		if f.status.Active {
+			f.log.Infof("IPv6 严格模式已启用：IPv6 来源连接开放端口以外的端口即被封禁")
+		}
+	}
 	importFn := f.importFn
 	f.mu.Unlock()
 
@@ -843,10 +874,10 @@ func (f *firewall) poll(ctx context.Context) {
 }
 
 // refreshPortsLocked 按当前监听端口更新开放端口与诱饵端口集合。
-func (f *firewall) refreshPortsLocked(ctx context.Context) {
-	listening, err := listeningPorts()
+func (f *firewall) refreshPortsLocked(ctx context.Context) bool {
+	listening, err := listeningPortsFn()
 	if err != nil {
-		return
+		return false
 	}
 	open, trap, skipped := portSets(f.cfg, listening)
 	o, t := formatPorts(open), formatPorts(trap)
@@ -854,7 +885,7 @@ func (f *firewall) refreshPortsLocked(ctx context.Context) {
 	f.status.TrapPorts = t
 	f.status.TrapSkipped = skipped
 	if o == f.open && t == f.trap {
-		return
+		return true
 	}
 	var b strings.Builder
 	fmt.Fprintf(&b, "flush set inet %s open\nflush set inet %s trap\n", tableName, tableName)
@@ -866,9 +897,10 @@ func (f *firewall) refreshPortsLocked(ctx context.Context) {
 	}
 	if _, err := f.run(ctx, b.String(), "-f", "-"); err != nil {
 		f.log.Warnf("更新端口集合失败: %v", err)
-		return
+		return false
 	}
 	f.open, f.trap = o, t
+	return true
 }
 
 // rules 返回 Gately 表的当前内容（nft list table 的文本），供界面查看。
