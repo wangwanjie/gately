@@ -15,7 +15,6 @@
   "thirdParty": "或使用第三方账号",
   "loginWith": "使用 {name} 登录",
   "redirecting": "正在跳转到 {name}…",
-  "initialPasswordHint": "默认账号 admin，密码 gately.cn，登录后请立即修改。忘记密码可在服务器上运行 gately reset-password 重置。",
   "totpTitle": "两步验证",
   "totpPrompt": "打开验证器 App，输入 {user} 的 6 位动态验证码",
   "code": "验证码",

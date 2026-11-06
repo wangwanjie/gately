@@ -15,7 +15,6 @@
   "thirdParty": "O usa una cuenta de terceros",
   "loginWith": "Iniciar sesión con {name}",
   "redirecting": "Redirigiendo a {name}…",
-  "initialPasswordHint": "La cuenta predeterminada es admin con la contraseña gately.cn; cámbiala nada más entrar. ¿Olvidaste la contraseña? Ejecuta gately reset-password en el servidor para restablecerla.",
   "totpTitle": "Autenticación de dos factores",
   "totpPrompt": "Abre tu app de autenticación e introduce el código de 6 dígitos de {user}",
   "code": "Código de verificación",

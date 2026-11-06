@@ -15,7 +15,6 @@
   "thirdParty": "または外部アカウントでログイン",
   "loginWith": "{name} でログイン",
   "redirecting": "{name} に移動しています…",
-  "initialPasswordHint": "デフォルトのアカウントは admin、パスワードは gately.cn です。ログイン後すぐに変更してください。パスワードを忘れた場合はサーバーで gately reset-password を実行してリセットできます。",
   "totpTitle": "2 段階認証",
   "totpPrompt": "認証アプリを開き、{user} の 6 桁のコードを入力してください",
   "code": "認証コード",

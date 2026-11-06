@@ -15,7 +15,6 @@
   "thirdParty": "Or use a third-party account",
   "loginWith": "Sign in with {name}",
   "redirecting": "Redirecting to {name}…",
-  "initialPasswordHint": "The default account is admin with password gately.cn; change it right after signing in. Forgot the password? Run gately reset-password on the server to reset it.",
   "totpTitle": "Two-factor authentication",
   "totpPrompt": "Open your authenticator app and enter the 6-digit code for {user}",
   "code": "Verification code",

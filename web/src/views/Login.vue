@@ -123,8 +123,6 @@
             </a>
           </div>
         </div>
-
-        <p class="hint"><Info :size="14" />{{ t('login.initialPasswordHint') }}</p>
       </div>
     </section>
 
@@ -164,7 +162,7 @@ import { nextTick, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
-import { LoaderCircle, ArrowLeft, Fingerprint, ArrowLeftRight, ArrowRight, Info, KeyRound, LockKeyhole, Server, ShieldCheck, UserRound } from 'lucide-vue-next'
+import { LoaderCircle, ArrowLeft, Fingerprint, ArrowLeftRight, ArrowRight, KeyRound, LockKeyhole, Server, ShieldCheck, UserRound } from 'lucide-vue-next'
 import { api, ApiError } from '../api'
 import AppLogo from '../components/AppLogo.vue'
 import ThemePicker from '../components/ThemePicker.vue'
@@ -649,23 +647,6 @@ h2 {
 .spin {
   flex-shrink: 0;
   animation: spin 1s linear infinite;
-}
-
-.hint {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  margin: 28px 0 0;
-  padding: 10px 12px;
-  border-radius: 10px;
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--el-text-color-secondary);
-  background: var(--el-fill-color-lighter);
-}
-.hint svg {
-  flex-shrink: 0;
-  margin-top: 2px;
 }
 
 /* ---------- 两步验证弹窗 ---------- */

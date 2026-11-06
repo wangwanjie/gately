@@ -15,7 +15,6 @@
   "thirdParty": "Oder ein Drittanbieter-Konto verwenden",
   "loginWith": "Mit {name} anmelden",
   "redirecting": "Weiterleitung zu {name} …",
-  "initialPasswordHint": "Standardkonto ist admin mit dem Passwort gately.cn; ändern Sie es direkt nach der Anmeldung. Passwort vergessen? Führen Sie auf dem Server gately reset-password aus, um es zurückzusetzen.",
   "totpTitle": "Zwei-Faktor-Authentifizierung",
   "totpPrompt": "Öffnen Sie Ihre Authenticator-App und geben Sie den 6-stelligen Code für {user} ein",
   "code": "Bestätigungscode",

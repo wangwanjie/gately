@@ -15,7 +15,6 @@
   "thirdParty": "或使用第三方帳號",
   "loginWith": "使用 {name} 登入",
   "redirecting": "正在跳轉到 {name}…",
-  "initialPasswordHint": "預設帳號 admin，密碼 gately.cn，登入後請立即修改。忘記密碼可在伺服器上執行 gately reset-password 重設。",
   "totpTitle": "兩步驟驗證",
   "totpPrompt": "開啟驗證器 App，輸入 {user} 的 6 位數動態驗證碼",
   "code": "驗證碼",
