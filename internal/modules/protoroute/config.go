@@ -31,6 +31,9 @@ type Rule struct {
 	Protocols     []string `json:"protocols"`
 	ListenAddress string   `json:"listenAddress"`
 	ListenPorts   string   `json:"listenPorts"`
+	// AutoFirewall 为 true 时在本机防火墙（nftables / iptables / ip6tables 的 input 链）放行监听成功的端口，
+	// 连续端口合并为一条规则，绑定具体地址时只放行发往该地址的连接，只监听回环地址时不放行；规则停止时撤销
+	AutoFirewall bool `json:"autoFirewall"`
 	// Routes 是按顺序展示的路由表，匹配优先级见 router.go
 	Routes []Route `json:"routes"`
 	// TargetAddresses、TargetPorts、ProxyProtocol 是默认目标：未命中路由或无法识别协议时使用，地址留空表示直接断开

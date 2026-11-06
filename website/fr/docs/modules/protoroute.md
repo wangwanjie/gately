@@ -119,6 +119,10 @@ Le routage par protocole était auparavant le mode « Routage SNI » des règles
 
 Après la migration, gérez ces règles via `/api/protoroute/rules` : le champ des routes passe de `sniRoutes` à `routes` et le champ `mode` n'est plus utilisé ; les règles de routage soumises à `/api/portforward/rules` sont refusées. Les métriques deviennent `gately_protoroute_*` ; voir [Métriques de supervision](/fr/docs/reference/monitoring).
 
+## Ouvrir le port dans le pare-feu {#auto-firewall}
+
+Avec « Ouvrir le port dans le pare-feu » activé, Gately autorise dans le pare-feu de cet hôte uniquement les ports sur lesquels la règle écoute : les ports consécutifs sont regroupés en une seule règle, IPv4 / IPv6 suivent les protocoles de la règle et, avec une adresse d’écoute renseignée, seules les connexions vers cette adresse sont autorisées. La règle est retirée quand elle est désactivée ou supprimée. Voir [Services Web · Ouvrir le port dans le pare-feu](/fr/docs/modules/web#auto-firewall) pour les cas d’usage, les pare-feu pris en charge et l’autorisation à la main.
+
 ## Conseil de déploiement
 
 Le routage par protocole écoute directement sur les ports de l'hôte. Pour un déploiement Docker, `--network host` est recommandé.

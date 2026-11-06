@@ -119,6 +119,10 @@ Protocol routing used to be the "SNI routing" mode of port forwarding rules. On 
 
 After the move, manage these rules through `/api/protoroute/rules`: the route field is renamed from `sniRoutes` to `routes` and the `mode` field is no longer used; routing rules submitted to `/api/portforward/rules` are rejected. The metrics are now `gately_protoroute_*`; see [Monitoring](/en/docs/reference/monitoring).
 
+## Open firewall port {#auto-firewall}
+
+With "Open firewall port" turned on, Gately allows only the ports this rule is listening on in this host's firewall: consecutive ports are merged into one rule, IPv4 / IPv6 follow the rule's protocols, and with a listen address set only connections to that address are allowed. The rule is removed when it is disabled or deleted. See [Web Services · Open firewall port](/en/docs/modules/web#auto-firewall) for when to use it, supported firewalls and allowing ports by hand.
+
 ## Deployment tip
 
 Protocol routing listens on host ports directly; for Docker, `--network host` is recommended.

@@ -100,5 +100,6 @@
     "irc": "Plain IRC clients (they send CAP, PASS, NICK or USER first); use a TLS route for IRC over TLS"
   },
   "routeMinecraftPlaceholder": "Server addresses, one per line: mc.example.com, *.example.com or *. Leave empty to match every Minecraft connection",
-  "ipAccessNote": "Checked before the protocol is detected; refused connections are not read and do not count as route hits. Editing the list does not interrupt listening."
+  "ipAccessNote": "Checked before the protocol is detected; refused connections are not read and do not count as route hits. Editing the list does not interrupt listening.",
+  "autoFirewallHelp": "Allows only the ports this rule is listening on in the local firewall (nftables / iptables / ip6tables), with consecutive ports merged into one rule and only for the listen address if one is set; removed when the rule is disabled or deleted. For Gately running on a router such as OpenWrt or on a Linux host with a firewall"
 }

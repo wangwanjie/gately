@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/wangwanjie/gately/internal/fwopen"
 	"net"
 	"slices"
 	"strconv"
@@ -72,6 +73,8 @@ type runner struct {
 	srv    l4proxy.Server
 	// listenErrors 记录启动失败的监听项，供界面展示
 	listenErrors []string
+	// listening 为监听成功的端口（协议 -> 端口），自动放行防火墙只放行这些端口
+	listening map[string][]int
 }
 
 func newRunner(rule Rule, settings Settings, log *logbuf.Logger) *runner {
@@ -162,6 +165,10 @@ func (r *runner) start(parent context.Context) error {
 				continue
 			}
 			okCount++
+			if r.listening == nil {
+				r.listening = map[string][]int{}
+			}
+			r.listening[proto] = append(r.listening[proto], pair.Listen)
 			if disabled := disabledRoutes(r.rule.Routes); disabled > 0 {
 				log.Infof("%s %s 已启动（协议分流，%d 条路由，%d 条已停用）", proto, addr, len(r.rule.Routes), disabled)
 			} else {
@@ -260,4 +267,13 @@ func disabledRoutes(routes []Route) int {
 		}
 	}
 	return n
+}
+
+// firewallPorts 返回自动放行防火墙需要放行的端口：只包含监听成功的端口，连续端口合并为区间。
+func (r *runner) firewallPorts() []fwopen.Port {
+	var out []fwopen.Port
+	for _, proto := range r.rule.Protocols {
+		out = append(out, fwopen.ForListen(proto, r.rule.ListenAddress, r.listening[proto])...)
+	}
+	return out
 }

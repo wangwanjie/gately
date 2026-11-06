@@ -119,6 +119,10 @@ El enrutamiento por protocolo era antes el modo «Enrutamiento SNI» de las regl
 
 Tras la migración, gestiona estas reglas a través de `/api/protoroute/rules`: el campo de rutas cambia de nombre de `sniRoutes` a `routes` y el campo `mode` deja de usarse; las reglas de enrutamiento enviadas a `/api/portforward/rules` se rechazan. Las métricas pasan a ser `gately_protoroute_*`; consulta [Métricas de monitorización](/es/docs/reference/monitoring).
 
+## Abrir puerto en el cortafuegos {#auto-firewall}
+
+Con «Abrir puerto en el cortafuegos» activado, Gately permite en el cortafuegos de este host solo los puertos en los que la regla escucha: los puertos consecutivos se unen en una sola regla, IPv4 / IPv6 siguen los protocolos de la regla y, con una dirección de escucha indicada, solo se permiten las conexiones a esa dirección. Se retira al desactivar o eliminar la regla. Consulta [Servicios web · Abrir puerto en el cortafuegos](/es/docs/modules/web#auto-firewall) para saber cuándo usarlo, los cortafuegos compatibles y cómo permitir puertos a mano.
+
 ## Consejo de despliegue
 
 El enrutamiento por protocolo escucha directamente en puertos del host; en Docker se recomienda `--network host`.

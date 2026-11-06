@@ -19,7 +19,8 @@
           <template #title>
             <span>{{ it.item.name || t('protoRoute.unnamed') }}</span>
             <span class="tags">
-              <el-tag v-for="p in it.item.protocols" :key="p" size="small" effect="plain" class="mono">{{ p.toUpperCase() }}</el-tag>
+                <el-tag v-for="p in it.item.protocols" :key="p" size="small" effect="plain" class="mono">{{ p.toUpperCase() }}</el-tag>
+              <el-tag v-if="it.item.autoFirewall" size="small" :type="it.item.firewallFailed ? 'warning' : 'info'">{{ t('common.firewallTag') }}</el-tag>
             </span>
           </template>
           <template v-if="it.item.remark" #sub>{{ it.item.remark }}</template>
@@ -33,6 +34,10 @@
             <StatusBadge v-bind="ruleStatus(it.item)" />
           </template>
           <Field :label="t('protoRoute.listen')" mono>{{ listenText(it.item) }}</Field>
+          <!-- 自动放行防火墙的结果：放行失败（如没有权限）时用警告色 -->
+          <Field v-if="it.item.enable && it.item.autoFirewall && it.item.firewall" :label="t('common.firewallTag')" wide>
+            <span class="fw-status" :class="{ 'is-failed': it.item.firewallFailed }">{{ it.item.firewall }}</span>
+          </Field>
           <Field :label="t('protoRoute.defaultTarget')" mono>
             <template v-if="it.item.targetAddresses?.length">
               <div v-for="addr in it.item.targetAddresses" :key="addr">
@@ -163,6 +168,10 @@
           <el-input-number v-model="editing.sniffTimeout" :min="0" :max="60" :step="0.1" :precision="1" />
           <div class="form-help">{{ t('protoRoute.sniffTimeoutHelp') }}</div>
         </el-form-item>
+        <el-form-item :label="t('common.autoFirewall')">
+          <el-switch v-model="editing.autoFirewall" />
+          <div class="form-help">{{ t('protoRoute.autoFirewallHelp') }}</div>
+        </el-form-item>
         <el-form-item :label="t('protoRoute.maxConnections')">
           <el-input-number v-model="editing.maxConnections" :min="0" :max="100000" />
           <span class="help">{{ t('protoRoute.useGlobalDefault') }}</span>
@@ -230,6 +239,8 @@ interface Rule {
   protocols: string[]
   listenAddress: string
   listenPorts: string
+  // 在本机防火墙自动放行监听成功的端口（仅 Linux）
+  autoFirewall?: boolean
   routes: Route[]
   // 默认目标：未命中路由或无法识别协议时使用，地址留空表示直接断开
   targetAddresses: string[]
@@ -279,6 +290,9 @@ interface RuleView extends Rule {
   running: boolean
   error?: string
   details?: string[]
+  // 自动放行防火墙的结果说明与是否失败
+  firewall?: string
+  firewallFailed?: boolean
   stats: {
     activeConns: number
     totalConns: number
@@ -381,6 +395,7 @@ function emptyRule(): Rule {
     protocols: ['tcp'],
     listenAddress: '',
     listenPorts: '',
+    autoFirewall: false,
     routes: [],
     targetAddresses: [],
     targetPorts: '',
@@ -526,7 +541,7 @@ async function loadSettings() {
 // openEditor 打开编辑框：copy 为 true 时以 row 为模板新建副本
 function openEditor(row?: RuleView, copy = false) {
   if (row) {
-    const { running: _r, error: _e, details: _d, stats: _s, ...rule } = row
+    const { running: _r, error: _e, details: _d, stats: _s, firewall: _f, firewallFailed: _ff, ...rule } = row
     editing.value = JSON.parse(JSON.stringify(rule))
   } else {
     editing.value = emptyRule()
@@ -596,7 +611,7 @@ async function toggle(row: RuleView, enable: boolean) {
 
 // toggleRoute 在列表中直接启用或停用规则的第 i 条路由：以卡片上的规则为底提交整条规则，其他字段保持不变
 async function toggleRoute(row: RuleView, i: number, enable: boolean) {
-  const { key, running: _r, error: _e, details: _d, stats: _s, ...rule } = row
+  const { key, running: _r, error: _e, details: _d, stats: _s, firewall: _f, firewallFailed: _ff, ...rule } = row
   const body: Rule = JSON.parse(JSON.stringify(rule))
   body.routes[i].disabled = !enable
   routeToggling.value = key ?? ''
@@ -662,6 +677,12 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.fw-status {
+  overflow-wrap: anywhere;
+}
+.fw-status.is-failed {
+  color: var(--el-color-warning);
+}
 .detail {
   color: var(--el-color-warning);
 }

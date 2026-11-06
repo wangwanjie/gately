@@ -119,6 +119,10 @@ sslh는 시간 초과 후 기본적으로 연결을 SSH로 넘깁니다. Gately�
 
 옮겨진 뒤에는 `/api/protoroute/rules`로 이 규칙을 관리하세요. 라우트 필드 이름은 `sniRoutes`에서 `routes`로 바뀌었고 `mode` 필드는 더 이상 쓰지 않습니다. `/api/portforward/rules`에 라우팅 규칙을 제출하면 거부됩니다. 모니터링 지표도 `gately_protoroute_*`로 바뀌었습니다. [모니터링 지표](/ko/docs/reference/monitoring)를 참고하세요.
 
+## 방화벽 자동 허용 {#auto-firewall}
+
+규칙에서 「방화벽 자동 허용」을 켜면 Gately가 이 호스트의 방화벽에서 이 규칙이 수신에 성공한 포트만 허용합니다. 연속된 포트는 하나의 규칙으로 합치고, IPv4 / IPv6는 규칙의 프로토콜을 따르며, 수신 주소를 지정하면 그 주소로 오는 연결만 허용합니다. 규칙을 끄거나 삭제하면 취소됩니다. 사용 상황, 지원하는 방화벽, 수동으로 허용하는 방법은 [Web 서비스 · 방화벽 자동 허용](/ko/docs/modules/web#auto-firewall)을 참고하세요.
+
 ## 배포 팁
 
 프로토콜 라우팅은 호스트 포트를 직접 수신하므로 Docker 배포에서는 `--network host`를 권장합니다.

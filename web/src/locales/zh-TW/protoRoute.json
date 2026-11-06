@@ -100,5 +100,6 @@
     "irc": "明文 IRC 用戶端（先送出 CAP、PASS、NICK 或 USER）；使用 TLS 的 IRC 請用 TLS 路由"
   },
   "routeMinecraftPlaceholder": "伺服器位址，每行一個：mc.example.com、*.example.com 或 *；留空比對全部 Minecraft 連線",
-  "ipAccessNote": "在識別協定之前判斷，被拒絕的連線不會讀取資料，也不計入路由命中。修改名單不會中斷監聽。"
+  "ipAccessNote": "在識別協定之前判斷，被拒絕的連線不會讀取資料，也不計入路由命中。修改名單不會中斷監聽。",
+  "autoFirewallHelp": "在本機防火牆（nftables / iptables / ip6tables）只放行本規則監聽成功的連接埠，連續連接埠合併為一條規則，填寫了監聽位址時只放行該位址；規則停用或刪除時撤銷。適用於 Gately 執行在 OpenWrt 等路由器或開啟了防火牆的 Linux 主機上"
 }

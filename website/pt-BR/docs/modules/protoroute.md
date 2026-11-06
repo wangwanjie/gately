@@ -119,6 +119,10 @@ O roteamento por protocolo era antes o modo "Roteamento SNI" das regras de redir
 
 Depois da migração, gerencie essas regras por `/api/protoroute/rules`: o campo de rotas passa de `sniRoutes` para `routes` e o campo `mode` deixa de ser usado; regras de roteamento enviadas para `/api/portforward/rules` são recusadas. As métricas agora são `gately_protoroute_*`; veja [Monitoramento](/pt-BR/docs/reference/monitoring).
 
+## Liberar porta no firewall {#auto-firewall}
+
+Com «Liberar porta no firewall» ativado, o Gately libera no firewall deste host apenas as portas em que a regra está escutando: portas consecutivas viram uma única regra, IPv4 / IPv6 seguem os protocolos da regra e, com um endereço de escuta definido, só as conexões para esse endereço são liberadas. A liberação é removida quando a regra é desativada ou excluída. Veja [Serviços Web · Liberar porta no firewall](/pt-BR/docs/modules/web#auto-firewall) para quando usar, firewalls suportados e como liberar portas manualmente.
+
 ## Dica de implantação
 
 O roteamento por protocolo escuta diretamente nas portas do host; em implantações com Docker, recomendamos `--network host`.

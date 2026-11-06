@@ -2071,6 +2071,9 @@
       },
       "protoroute.Rule": {
         "properties": {
+          "autoFirewall": {
+            "type": "boolean"
+          },
           "enable": {
             "type": "boolean"
           },

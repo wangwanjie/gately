@@ -100,5 +100,6 @@
     "irc": "明文 IRC 客户端（先发送 CAP、PASS、NICK 或 USER）；使用 TLS 的 IRC 请用 TLS 路由"
   },
   "routeMinecraftPlaceholder": "服务器地址，每行一个：mc.example.com、*.example.com 或 *；留空匹配全部 Minecraft 连接",
-  "ipAccessNote": "在识别协议之前判断，被拒绝的连接不会读取数据，也不计入路由命中。修改名单不会中断监听。"
+  "ipAccessNote": "在识别协议之前判断，被拒绝的连接不会读取数据，也不计入路由命中。修改名单不会中断监听。",
+  "autoFirewallHelp": "在本机防火墙（nftables / iptables / ip6tables）只放行本规则监听成功的端口，连续端口合并为一条规则，填写了监听地址时只放行该地址；规则停用或删除时撤销。适用于 Gately 运行在 OpenWrt 等路由器或开启了防火墙的 Linux 主机上"
 }

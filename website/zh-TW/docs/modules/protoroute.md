@@ -119,6 +119,10 @@ sslh 在逾時後預設把連線交給 SSH；Gately 依 `SSH-` 版本識別字�
 
 遷移後請改用 `/api/protoroute/rules` 管理這些規則：路由欄位由 `sniRoutes` 改名為 `routes`，不再使用 `mode` 欄位；向 `/api/portforward/rules` 提交分流規則會被拒絕。監控指標也改為 `gately_protoroute_*`，見[監控](/zh-TW/docs/reference/monitoring)。
 
+## 自動放行防火牆 {#auto-firewall}
+
+規則開啟「自動放行防火牆」後，Gately 在本機防火牆只放行本規則監聽成功的連接埠：連續連接埠合併為一條規則，依規則的協定放行 IPv4 / IPv6，填寫了監聽位址時只放行發往該位址的連線；規則停用或刪除時撤銷。適用情境、支援的防火牆與手動放行的做法見 [Web 服務 · 自動放行防火牆](/zh-TW/docs/modules/web#auto-firewall)。
+
 ## 部署提示
 
 協定分流直接監聽主機的連接埠，Docker 部署建議使用 `--network host`。

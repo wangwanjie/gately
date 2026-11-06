@@ -1751,6 +1751,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 
 | Champ | Type |
 | --- | --- |
+| `autoFirewall` | boolean |
 | `enable` | boolean |
 | `group` | string |
 | `ipList` | Tableau de string |

@@ -119,6 +119,10 @@ Das Protokoll-Routing war früher der Modus „SNI-Routing“ von Portweiterleit
 
 Verwalten Sie diese Regeln nach der Migration über `/api/protoroute/rules`: Das Routenfeld heißt jetzt `routes` statt `sniRoutes`, und das Feld `mode` entfällt; an `/api/portforward/rules` gesendete Routing-Regeln werden abgelehnt. Die Metriken heißen jetzt `gately_protoroute_*`; siehe [Monitoring](/de/docs/reference/monitoring).
 
+## Firewall-Port freigeben {#auto-firewall}
+
+Mit „Firewall-Port freigeben“ gibt Gately in der Firewall dieses Hosts nur die Ports frei, auf denen die Regel erfolgreich lauscht: Aufeinanderfolgende Ports werden zu einer Regel zusammengefasst, IPv4 / IPv6 richten sich nach den Protokollen der Regel, und mit gesetzter Listen-Adresse werden nur Verbindungen zu dieser Adresse freigegeben. Beim Deaktivieren oder Löschen der Regel wird die Freigabe entfernt. Einsatzfälle, unterstützte Firewalls und die Freigabe von Hand stehen unter [Web-Dienste · Firewall-Port freigeben](/de/docs/modules/web#auto-firewall).
+
 ## Hinweis zur Bereitstellung
 
 Das Protokoll-Routing lauscht direkt auf Ports des Hosts; bei Docker empfehlen wir `--network host`.
