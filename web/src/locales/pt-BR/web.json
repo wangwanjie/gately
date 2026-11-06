@@ -50,6 +50,7 @@
   "accessSchemeAuto": "Automático ({scheme})",
   "accessAddrTag": "Acesso {scheme}:{port}",
   "accessAddrHelp": "A lista de sites usa este esquema e porta para montar URLs completas que podem ser abertas e copiadas, como {example}. Deixe vazio para deduzi-los do listener; preencha quando os visitantes chegam pelo Roteamento por protocolo, um mapeamento de portas do roteador, frp ou uma CDN com outro esquema ou porta. Afeta apenas os links; a escuta e o proxy continuam iguais",
+  "accessAutoVia": "Detectado: a regra de {module} \"{rule}\" encaminha a porta {port} para este listener, então os links dos sites usam a porta {port}; informe uma porta de acesso para substituir",
   "tabBasic": "Básico",
   "tabSecurity": "Segurança",
   "tabTraffic": "Tráfego",

@@ -50,6 +50,7 @@
   "accessSchemeAuto": "自動（{scheme}）",
   "accessAddrTag": "存取 {scheme}:{port}",
   "accessAddrHelp": "站台清單依這裡的協定和連接埠產生可點擊、可複製的完整位址，如 {example}。留空時依監聽推算；經協定分流、路由器連接埠對映、frp 或 CDN 存取，對外協定或連接埠與監聽不同時填寫。只影響連結，不影響監聽與轉發",
+  "accessAutoVia": "自動識別：{module}規則「{rule}」從 {port} 連接埠轉入本監聽，站點連結使用 {port} 連接埠；填寫存取連接埠可覆蓋",
   "tabBasic": "基本",
   "tabSecurity": "安全",
   "tabTraffic": "流量",

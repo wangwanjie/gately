@@ -68,6 +68,7 @@
             <el-tag v-if="l.tls && l.plainHttp" size="small" type="info">{{ plainHttpText(l.plainHttp) }}</el-tag>
             <el-tag v-if="l.acceptProxyProtocol" size="small" type="info">{{ t('web.acceptProxyTag') }}</el-tag>
             <el-tag v-if="l.accessScheme || l.accessPort" size="small" type="info" class="mono" :title="t('web.accessAddr')">{{ t('web.accessAddrTag', { scheme: accessScheme(l), port: accessPort(l) }) }}</el-tag>
+            <el-tag v-else-if="listenerEntry(l)" size="small" type="info" class="mono" :title="entryText(listenerEntry(l)!)">{{ t('web.accessAddrTag', { scheme: accessScheme(l), port: listenerEntry(l)!.port }) }}</el-tag>
           </span>
         </template>
         <template v-if="l.remark" #sub>{{ l.remark }}</template>
@@ -249,9 +250,10 @@
               <el-option label="http" value="http" />
               <el-option label="https" value="https" />
             </el-select>
-            <el-input-number v-model="accessPortInput" :min="1" :max="65535" :placeholder="String(editingListener.port || '')" controls-position="right" class="w-160" />
+            <el-input-number v-model="accessPortInput" :min="1" :max="65535" :placeholder="String(editingEntry?.port || editingListener.port || '')" controls-position="right" class="w-160" />
           </div>
           <div class="form-help">{{ t('web.accessAddrHelp', { example: accessExample }) }}</div>
+          <div v-if="editingEntry && !editingListener.accessPort" class="form-help">{{ entryText(editingEntry) }}</div>
         </el-form-item>
         <el-form-item v-if="editingListener.tls" :label="t('web.minTls')">
           <el-select v-model="editingListener.minTls" class="w-120">
@@ -647,7 +649,7 @@ import LogCard from '../components/LogCard.vue'
 import CopyHint from '../components/CopyHint.vue'
 import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import UrlLink from '../components/UrlLink.vue'
-import { accessPort, accessScheme, siteLink, type SiteLink } from '../siteUrl'
+import { accessPort, accessScheme, forwardedEntry, siteLink, type ForwardEntry, type ForwardRule, type ForwardSource, type SiteLink } from '../siteUrl'
 import { useFormLayout } from '../composables/useIsMobile'
 import { useListText, splitLines } from '../composables/useListText'
 import ListInput from '../components/ListInput.vue'
@@ -1032,9 +1034,51 @@ function emptyListener(): Listener {
   }
 }
 
-// domainLinks 返回站点各域名及其访问地址，不能拼成具体地址的域名（如 *.example.com）link 为 null
+// forwardSources 为协议分流与端口转发的规则，用来推算只对本机开放、经四层转发进入的监听的对外端口；
+// 模块未开启或读取失败（如令牌无权限）时为空，链接按监听端口生成
+const forwardSources = ref<ForwardSource[]>([])
+
+async function loadForwards() {
+  const kinds: ForwardSource['kind'][] = ['protoroute', 'portforward']
+  const out = await Promise.all(
+    kinds.map(async (kind) => {
+      if (!navModuleEnabled(kind)) {
+        return null
+      }
+      try {
+        return { kind, rules: await api.get<ForwardRule[]>(`/api/${kind}/rules`) }
+      } catch {
+        return null
+      }
+    }),
+  )
+  forwardSources.value = out.filter((x): x is ForwardSource => x !== null)
+}
+
+// listenerEntry 返回监听经四层转发的入口（不区分域名，按默认目标），手动填写了访问端口时不推算
+function listenerEntry(l: Listener): ForwardEntry | null {
+  if (l.accessPort) {
+    return null
+  }
+  return forwardedEntry(l, '', forwardSources.value)
+}
+
+// entryText 说明自动识别出的访问端口来自哪条转发规则
+function entryText(e: ForwardEntry): string {
+  const module = t(`nav.items.${e.kind}.title`)
+  return t('web.accessAutoVia', { port: e.port, module, rule: e.rule })
+}
+
+// editingEntry 为编辑中的监听自动识别出的入口，用作访问端口输入框的占位与说明
+const editingEntry = computed(() => forwardedEntry(editingListener.value, '', forwardSources.value))
+
+// domainLinks 返回站点各域名及其访问地址，不能拼成具体地址的域名（如 *.example.com）link 为 null。
+// 未手动填写访问端口时，若有协议分流或端口转发把该域名的连接转到这个监听，用转发的入口端口生成链接
 function domainLinks(l: Listener, s: Site): { domain: string; link: SiteLink | null }[] {
-  return (s.domains ?? []).map((domain) => ({ domain, link: siteLink(domain, l) }))
+  return (s.domains ?? []).map((domain) => {
+    const entry = l.accessPort ? null : forwardedEntry(l, domain, forwardSources.value)
+    return { domain, link: siteLink(domain, entry ? { ...l, accessPort: entry.port } : l) }
+  })
 }
 
 // accessPortInput 把 0（使用监听端口）映射为输入框的空值
@@ -1046,7 +1090,11 @@ const accessPortInput = computed<number | undefined>({
 })
 
 // accessExample 为表单说明里展示的示例地址，随所选协议与端口变化
-const accessExample = computed(() => siteLink('example.com', editingListener.value)?.text ?? `${accessScheme(editingListener.value)}://example.com:${accessPort(editingListener.value)}`)
+const accessExample = computed(() => {
+  const l = editingListener.value
+  const eff = !l.accessPort && editingEntry.value ? { ...l, accessPort: editingEntry.value.port } : l
+  return siteLink('example.com', eff)?.text ?? `${accessScheme(eff)}://example.com:${accessPort(eff)}`
+})
 
 function plainHttpText(v: string) {
   return v === 'redirect' ? t('web.plainHttpRedirectTag') : t('web.plainHttpServeTag')
@@ -1854,6 +1902,7 @@ onMounted(async () => {
   }
   await prepare()
   loadIPLists()
+  loadForwards()
   await load()
   openFromQuery()
   polling.start()

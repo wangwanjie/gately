@@ -50,6 +50,7 @@
   "accessSchemeAuto": "Automatique ({scheme})",
   "accessAddrTag": "Accès {scheme}:{port}",
   "accessAddrHelp": "La liste des sites utilise ce schéma et ce port pour construire des URL complètes cliquables et copiables, comme {example}. Laissez vide pour les déduire de l’écouteur ; renseignez-les quand les visiteurs passent par le Routage par protocole, une redirection de port du routeur, frp ou un CDN avec un autre schéma ou port. Seuls les liens sont concernés, l’écoute et le proxy restent identiques",
+  "accessAutoVia": "Détecté : la règle {module} « {rule} » transfère le port {port} vers ce listener, les liens des sites utilisent donc le port {port} ; indiquez un port d’accès pour le remplacer",
   "tabBasic": "Général",
   "tabSecurity": "Sécurité",
   "tabTraffic": "Trafic",

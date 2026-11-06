@@ -1,7 +1,7 @@
 // 站点访问地址拼接的单元测试：node --test tests/
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { accessPort, accessScheme, hostPart, safeHttpUrl, siteLink } from '../src/siteUrl.ts'
+import { accessPort, accessScheme, forwardedEntry, hostPart, parsePorts, safeHttpUrl, siteLink } from '../src/siteUrl.ts'
 
 const https = (port, extra = {}) => ({ port, tls: true, ...extra })
 const http = (port, extra = {}) => ({ port, tls: false, ...extra })
@@ -65,4 +65,62 @@ test('safeHttpUrl 只放行 http(s) 绝对地址', () => {
   for (const u of ['javascript:alert(1)', 'JAVASCRIPT:alert(1)', ' javascript:alert(1)', 'data:text/html,x', 'vbscript:x', 'file:///etc/passwd', '/relative', '//a.com', 'http://', '']) {
     assert.equal(safeHttpUrl(u), null, u)
   }
+})
+
+// 与 B760 实际配置相同：协议分流 4433 把 anylink 送到 127.0.0.1:4436，其余域名进 127.0.0.2:4435 的 Web 监听
+const sniRule = {
+  name: '4433 SNI 分流',
+  enable: true,
+  listenPorts: '4433',
+  routes: [{ name: 'anylink', protocol: 'tls', domains: ['anylink.ddns.vanjay.cn'], targetAddresses: ['127.0.0.1'], targetPort: 4436 }],
+  targetAddresses: ['127.0.0.2'],
+  targetPorts: '4435',
+}
+const disabledRule = { ...sniRule, name: '4443 SNI 分流', enable: false, listenPorts: '4443' }
+const proto = (...rules) => [{ kind: 'protoroute', rules }]
+const inner = { listenIp: '127.0.0.2', port: 4435, tls: true }
+
+test('经协议分流默认目标进入的监听用分流入口端口', () => {
+  const e = forwardedEntry(inner, 'emby.ddns.vanjay.cn', proto(disabledRule, sniRule))
+  assert.deepEqual(e, { kind: 'protoroute', rule: '4433 SNI 分流', port: 4433 })
+  assert.equal(siteLink('emby.ddns.vanjay.cn', { ...inner, accessPort: e.port }).text, 'https://emby.ddns.vanjay.cn:4433')
+  // 不区分域名时按默认目标
+  assert.equal(forwardedEntry(inner, '', proto(sniRule))?.port, 4433)
+})
+
+test('协议分流路由按域名命中，目标地址与端口必须对应监听', () => {
+  const anylink = { listenIp: '', port: 4436, tls: true }
+  assert.equal(forwardedEntry(anylink, 'anylink.ddns.vanjay.cn', proto(sniRule))?.port, 4433)
+  // 命中路由的域名不会去默认目标，4435 监听上同名域名不推算
+  assert.equal(forwardedEntry(inner, 'anylink.ddns.vanjay.cn', proto(sniRule)), null)
+  // 停用规则、停用路由不计入
+  assert.equal(forwardedEntry(inner, 'a.com', proto(disabledRule)), null)
+  const r = { ...sniRule, routes: [{ ...sniRule.routes[0], domains: ['*.ddns.vanjay.cn'], targetAddresses: ['127.0.0.2'], targetPort: 4435, disabled: true }] }
+  assert.equal(forwardedEntry(inner, 'x.ddns.vanjay.cn', proto(r))?.port, 4433)
+  // 监听具体回环地址时，转发到其他回环地址连不上，不计入
+  assert.equal(forwardedEntry({ ...inner, listenIp: '127.0.0.1' }, 'a.com', proto(sniRule)), null)
+  // 监听全部地址时回环目标可达
+  assert.equal(forwardedEntry({ ...inner, listenIp: '' }, 'a.com', proto(sniRule))?.port, 4433)
+  // 只接受 acme-tls/1 的路由不影响浏览器访问
+  const acme = { ...sniRule, routes: [{ name: 'acme', protocol: 'tls', domains: ['a.com'], alpn: ['acme-tls/1'], targetAddresses: ['127.0.0.1'], targetPort: 9 }] }
+  assert.equal(forwardedEntry(inner, 'a.com', proto(acme))?.port, 4433)
+})
+
+test('端口转发按端口映射推算', () => {
+  const pf = (rule) => [{ kind: 'portforward', rules: [{ name: 'pf', enable: true, ...rule }] }]
+  const l = { listenIp: '', port: 8443, tls: true }
+  assert.equal(forwardedEntry(l, 'a.com', pf({ listenPorts: '443', targetAddresses: ['127.0.0.1'], targetPorts: '8443' }))?.port, 443)
+  assert.equal(forwardedEntry(l, 'a.com', pf({ listenPorts: '9000-9002', targetAddresses: ['::1'], targetPorts: '8441-8443' }))?.port, 9002)
+  // 目标端口留空即与监听端口相同
+  assert.equal(forwardedEntry(l, 'a.com', pf({ listenPorts: '8443', targetAddresses: ['[::1]'], targetPorts: '' }))?.port, 8443)
+  // 转发到其他主机不计入
+  assert.equal(forwardedEntry(l, 'a.com', pf({ listenPorts: '443', targetAddresses: ['192.168.1.2'], targetPorts: '8443' })), null)
+})
+
+test('端口表达式解析与后端一致', () => {
+  assert.deepEqual(parsePorts('80, 443，8000-8002'), [80, 443, 8000, 8001, 8002])
+  assert.equal(parsePorts(''), null)
+  assert.equal(parsePorts('0'), null)
+  assert.equal(parsePorts('10-5'), null)
+  assert.equal(parsePorts('1-2000'), null)
 })

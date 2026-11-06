@@ -50,6 +50,7 @@
   "accessSchemeAuto": "Auto ({scheme})",
   "accessAddrTag": "Access {scheme}:{port}",
   "accessAddrHelp": "The site list uses this scheme and port to build clickable, copyable full URLs such as {example}. Leave empty to derive them from the listener; set them when visitors reach it through Protocol Routing, a router port mapping, frp or a CDN with a different scheme or port. Only links are affected, listening and proxying stay the same",
+  "accessAutoVia": "Detected: the {module} rule \"{rule}\" forwards port {port} to this listener, so site links use port {port}; set an access port to override",
   "tabBasic": "Basic",
   "tabSecurity": "Security",
   "tabTraffic": "Traffic",

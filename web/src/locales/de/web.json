@@ -50,6 +50,7 @@
   "accessSchemeAuto": "Automatisch ({scheme})",
   "accessAddrTag": "Zugriff {scheme}:{port}",
   "accessAddrHelp": "Die Seitenliste bildet mit diesem Schema und Port anklickbare, kopierbare vollständige URLs wie {example}. Leer lassen, um sie aus dem Listener abzuleiten; ausfüllen, wenn Besucher über Protokoll-Routing, eine Portweiterleitung im Router, frp oder ein CDN mit anderem Schema oder Port kommen. Betrifft nur die Links, Lauschen und Weiterleiten bleiben gleich",
+  "accessAutoVia": "Erkannt: Die {module}-Regel „{rule}“ leitet Port {port} an diesen Listener weiter, daher verwenden Seitenlinks Port {port}; zum Überschreiben einen Zugriffsport eintragen",
   "tabBasic": "Allgemein",
   "tabSecurity": "Sicherheit",
   "tabTraffic": "Datenverkehr",

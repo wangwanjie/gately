@@ -50,6 +50,7 @@
   "accessSchemeAuto": "자동 ({scheme})",
   "accessAddrTag": "접속 {scheme}:{port}",
   "accessAddrHelp": "사이트 목록은 여기의 프로토콜과 포트로 클릭·복사할 수 있는 전체 URL(예: {example})을 만듭니다. 비워 두면 리스너에서 추정합니다. 프로토콜 라우팅, 공유기 포트 매핑, frp 또는 CDN을 거쳐 외부 프로토콜이나 포트가 리스너와 다를 때 입력하세요. 링크에만 적용되며 수신과 전달은 그대로입니다",
+  "accessAutoVia": "자동 감지: {module} 규칙 \"{rule}\"이(가) 포트 {port}를 이 리스너로 전달하므로 사이트 링크는 포트 {port}를 사용합니다. 접속 포트를 입력하면 덮어쓸 수 있습니다",
   "tabBasic": "기본",
   "tabSecurity": "보안",
   "tabTraffic": "트래픽",

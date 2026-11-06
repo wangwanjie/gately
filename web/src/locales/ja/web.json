@@ -50,6 +50,7 @@
   "accessSchemeAuto": "自動（{scheme}）",
   "accessAddrTag": "アクセス {scheme}:{port}",
   "accessAddrHelp": "サイト一覧はここのプロトコルとポートでクリック・コピーできる完全な URL（例: {example}）を作成します。空欄ならリスナーから推定します。プロトコル振り分け、ルーターのポートマッピング、frp、CDN 経由で外部のプロトコルやポートがリスナーと異なる場合に設定してください。リンクにのみ影響し、待ち受けと転送は変わりません",
+  "accessAutoVia": "自動検出：{module}ルール「{rule}」がポート {port} をこのリスナーへ転送しているため、サイトのリンクはポート {port} を使います。アクセスポートを入力すると上書きできます",
   "tabBasic": "基本",
   "tabSecurity": "セキュリティ",
   "tabTraffic": "トラフィック",
