@@ -288,6 +288,8 @@ func TestIdentityHeadersSharedUsers(t *testing.T) {
 		{"同名站点用户的基本认证", "/", basicHeader("bob", "site-pw"), "Remote-User=bob"},
 		{"共享用户的基本认证", "/", basicHeader("bob", "shared-pw"), "Remote-Email=bob@example.com|Remote-Groups=users|Remote-User=bob"},
 		{"未登录访问公开路径", "/public/x", map[string]string{}, ""},
+		// 访客在 Connection 中列出身份头，反向代理会把它们当逐跳头删掉；Gately 写入的身份头仍要到达后端
+		{"Connection 列出身份头", "/", map[string]string{"Cookie": alice, "Connection": "keep-alive, Remote-Email, remote_groups", "Proxy-Connection": "Remote-Name"}, aliceWant},
 	}
 	for _, c := range cases {
 		resp, body := get(t, noRedirect(), addr, "fx.test", c.path, forgedIdentity(c.hdr))
@@ -341,7 +343,7 @@ func TestIdentityHeadersForwardAuth(t *testing.T) {
 		{"user-only.test", "session=ok", "X-User=alice"},
 	}
 	for _, c := range cases {
-		hdr := forgedIdentity(map[string]string{"Cookie": c.cookie, "X-Email": "forged", "X_Groups": "forged", "X-Name": "forged"})
+		hdr := forgedIdentity(map[string]string{"Cookie": c.cookie, "X-Email": "forged", "X_Groups": "forged", "X-Name": "forged", "Connection": "X-User, X-Email"})
 		resp, body := get(t, noRedirect(), addr, c.host, "/", hdr)
 		if resp.StatusCode != http.StatusOK || body != c.want {
 			t.Fatalf("%s %s: 状态 %d，后端收到 %q，期望 %q", c.host, c.cookie, resp.StatusCode, body, c.want)

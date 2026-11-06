@@ -148,6 +148,37 @@ func delHeaderVariants(h http.Header, name string) {
 			delete(h, k)
 		}
 	}
+	// 反向代理会先删掉 Connection 中列出的逐跳头，再交给后端：访客发 Connection: Remote-Email 就能让
+	// Gately 写入的身份头消失。这里把同名令牌从 Connection 中去掉，保证认证通过的请求一定带上身份头
+	for _, ck := range []string{"Connection", "Proxy-Connection"} {
+		vals, ok := h[ck]
+		if !ok {
+			continue
+		}
+		var keep []string
+		changed := false
+		for _, v := range vals {
+			var toks []string
+			for _, tok := range strings.Split(v, ",") {
+				if tt := strings.TrimSpace(tok); tt != "" && headerVariantKey(tt) == want {
+					changed = true
+					continue
+				}
+				toks = append(toks, tok)
+			}
+			if joined := strings.TrimSpace(strings.Join(toks, ",")); joined != "" {
+				keep = append(keep, joined)
+			}
+		}
+		if !changed {
+			continue
+		}
+		if len(keep) == 0 {
+			delete(h, ck)
+		} else {
+			h[ck] = keep
+		}
+	}
 }
 
 // visitor 是认证识别出的访客身份。
