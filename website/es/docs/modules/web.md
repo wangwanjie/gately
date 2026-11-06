@@ -363,6 +363,7 @@ http://10.0.0.3:8080 backup
 
 - `weight=N`: peso, un entero de 1 a 100, por defecto 1;
 - `backup`: un backend de reserva que solo se usa cuando todos los backends que no son de reserva no están disponibles. Cuando todos los backends no están disponibles, se vuelven a probar los que no son de reserva.
+- Cuando no se puede conectar con un backend (conexión rechazada, inalcanzable o tiempo de conexión agotado), la misma petición se reintenta al momento en el siguiente backend, primero en otros backends principales y después en los de respaldo, con un máximo de 3 backends. En ese punto la petición aún no se ha enviado, así que reenviar POST y peticiones similares es seguro. Los fallos tras establecer la conexión no se reintentan, y el backend fallido sigue contando para la comprobación pasiva.
 
 ### Política de balanceo de carga
 

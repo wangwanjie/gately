@@ -363,6 +363,7 @@ http://10.0.0.3:8080 backup
 
 - `weight=N` : poids, un entier de 1 à 100, 1 par défaut ;
 - `backup` : un backend de secours, utilisé uniquement lorsque tous les backends hors secours sont indisponibles. Lorsque tous les backends sont indisponibles, tous ceux hors secours sont réessayés.
+- Quand un backend est injoignable (connexion refusée, hôte inaccessible ou délai de connexion dépassé), la même requête est relancée aussitôt sur le backend suivant, d'abord les autres backends principaux puis les secours, avec au plus 3 backends. La requête n'a pas encore été envoyée à ce stade, renvoyer un POST ou une requête similaire est donc sûr. Les échecs après l'établissement de la connexion ne sont pas relancés, et le backend en échec compte toujours pour la vérification passive.
 
 ### Politique de répartition de charge
 

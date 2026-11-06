@@ -363,6 +363,7 @@ http://10.0.0.3:8080 backup
 
 - `weight=N`: peso, um inteiro de 1 a 100, padrão 1;
 - `backup`: um backend em espera, usado somente quando todos os backends que não são backup estão indisponíveis. Quando todos os backends estão indisponíveis, todos os que não são backup são tentados de novo.
+- Quando um backend não pode ser alcançado (conexão recusada, inacessível ou tempo de conexão esgotado), a mesma requisição é repetida na hora no próximo backend, primeiro outros backends principais e depois os de reserva, com no máximo 3 backends. Nesse ponto a requisição ainda não foi enviada, então reenviar POST e requisições semelhantes é seguro. Falhas depois que a conexão é estabelecida não são repetidas, e o backend com falha continua contando para a verificação passiva.
 
 ### Política de balanceamento de carga
 

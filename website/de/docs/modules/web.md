@@ -363,6 +363,7 @@ http://10.0.0.3:8080 backup
 
 - `weight=N`: Gewichtung, eine ganze Zahl von 1 bis 100, Standard 1;
 - `backup`: ein Standby-Backend, das nur verwendet wird, wenn alle Nicht-Backup-Backends nicht verfügbar sind. Sind alle Backends nicht verfügbar, werden alle Nicht-Backup-Backends erneut versucht.
+- Ist ein Backend nicht erreichbar (Verbindung abgelehnt, nicht erreichbar oder Verbindungs-Timeout), wird dieselbe Anfrage sofort beim nächsten Backend wiederholt, zuerst bei anderen primären Backends, dann bei Backups, mit höchstens 3 Backends. Die Anfrage ist zu diesem Zeitpunkt noch nicht gesendet, daher ist auch das erneute Senden von POST und ähnlichen Anfragen sicher. Fehler nach dem Verbindungsaufbau werden nicht wiederholt; das fehlgeschlagene Backend zählt weiterhin für die passive Prüfung.
 
 ### Strategie der Lastverteilung
 

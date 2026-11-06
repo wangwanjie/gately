@@ -387,42 +387,83 @@ func newTransport(s Site, up *upstream) *http.Transport {
 	}
 }
 
-// upstreamRoundTripper 按请求选中的后端使用对应的连接池。
-type upstreamRoundTripper map[*upstream]*http.Transport
+// upstreamRoundTripper 按请求选中的后端使用对应的连接池；与后端建连失败时换下一个后端重试（见 proxyAttempt）。
+type upstreamRoundTripper struct {
+	trs  map[*upstream]*http.Transport
+	pool *pool
+	// target 把请求改写为发往指定后端（URL、Host 与 SNI），重试换后端时使用
+	target func(pr *httputil.ProxyRequest, up *upstream)
+	log    func(r *http.Request) *logbuf.Logger
+}
 
-func (rt upstreamRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	up, _ := req.Context().Value(ctxKeyUpstream{}).(*upstream)
-	return rt[up].RoundTrip(req)
+func (rt *upstreamRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	att := attemptFrom(req.Context())
+	if att == nil {
+		return nil, errors.New("缺少后端选择")
+	}
+	out := req
+	var body *retryBody
+	if req.Body != nil && req.Body != http.NoBody && len(rt.pool.ups) > 1 {
+		// 失败时 Transport 会关闭请求体，重试需要它保持可读；读过的请求体不能重发，此时不再重试。
+		// 访客请求体最终由 net/http 在请求结束时关闭
+		body = &retryBody{ReadCloser: req.Body}
+		out = shallowRequest(req)
+		out.Body = body
+	}
+	for {
+		up := att.current()
+		resp, err := rt.trs[up].RoundTrip(out)
+		if err == nil || !dialFailed(err) || req.Context().Err() != nil || (body != nil && body.read.Load()) {
+			return resp, err
+		}
+		next := att.next()
+		if next == nil {
+			return resp, err
+		}
+		rt.pool.fail(up, err)
+		rt.log(att.in).Warnf("%s %s%s 连接后端 %s 失败（%v），改用 %s", req.Method, req.Host, req.URL.Path, up.url.Host, err, next.url.Host)
+		att.use(next)
+		retry := shallowRequest(out)
+		pr := &httputil.ProxyRequest{In: att.in, Out: retry}
+		// 从访客请求的地址重新拼接，避免叠加上一个后端的路径前缀
+		u := *att.in.URL
+		retry.URL = &u
+		rt.target(pr, next)
+		out = retry
+	}
 }
 
 // newProxy 创建反向代理处理器，s 为生效的站点配置（分路径规则会传入合并后的配置），p 为其后端集合。
 func (h *siteHandler) newProxy(s Site, p *pool) http.Handler {
-	rt := upstreamRoundTripper{}
+	// target 把发往后端的请求指向 up：URL 改为后端地址，按设置保留访客的 Host，按设置用访问域名作 SNI
+	target := func(pr *httputil.ProxyRequest, up *upstream) {
+		pr.SetURL(up.url)
+		if !s.UseTargetHost {
+			// SetURL 会改写 Host，这里恢复客户端请求的 Host
+			pr.Out.Host = pr.In.Host
+		}
+		if s.UpstreamSNIFromHost && up.url.Scheme == "https" {
+			// 把 URL 主机名换成访问域名，TLS 握手的 SNI 与证书校验都使用它；拨号地址仍是后端地址（见 newTransport）
+			if host := hostOnly(pr.In.Host); host != "" && net.ParseIP(host) == nil {
+				port := up.url.Port()
+				if port == "" {
+					port = "443"
+				}
+				pr.Out.URL.Host = net.JoinHostPort(host, port)
+			}
+		}
+	}
+	rt := &upstreamRoundTripper{trs: map[*upstream]*http.Transport{}, pool: p, target: target, log: h.reqLog}
 	for _, up := range p.ups {
 		tr := newTransport(s, up)
-		rt[up] = tr
+		rt.trs[up] = tr
 		h.idleClosers = append(h.idleClosers, tr.CloseIdleConnections)
 	}
 	rp := &httputil.ReverseProxy{
 		Transport:  rt,
 		BufferPool: sharedBufferPool,
 		Rewrite: func(pr *httputil.ProxyRequest) {
-			up, _ := pr.In.Context().Value(ctxKeyUpstream{}).(*upstream)
-			pr.SetURL(up.url)
-			if !s.UseTargetHost {
-				// SetURL 会改写 Host，这里恢复客户端请求的 Host
-				pr.Out.Host = pr.In.Host
-			}
-			if s.UpstreamSNIFromHost && up.url.Scheme == "https" {
-				// 把 URL 主机名换成访问域名，TLS 握手的 SNI 与证书校验都使用它；拨号地址仍是后端地址（见 newTransport）
-				if host := hostOnly(pr.In.Host); host != "" && net.ParseIP(host) == nil {
-					port := up.url.Port()
-					if port == "" {
-						port = "443"
-					}
-					pr.Out.URL.Host = net.JoinHostPort(host, port)
-				}
-			}
+			target(pr, attemptFrom(pr.In.Context()).current())
 			// 客户端自带的 X-Real-IP 不可信，只在开启转发头时由 Gately 写入
 			pr.Out.Header.Del("X-Real-Ip")
 			if s.ForwardedHeaders {
@@ -444,7 +485,8 @@ func (h *siteHandler) newProxy(s Site, p *pool) http.Handler {
 		},
 		ModifyResponse: func(resp *http.Response) error {
 			applyHeaders(resp.Header, s.ResponseHeaders)
-			if up, _ := resp.Request.Context().Value(ctxKeyUpstream{}).(*upstream); up != nil {
+			if att := attemptFrom(resp.Request.Context()); att != nil {
+				up := att.current()
 				p.ok(up)
 				// 统计后端返回的响应体字节数。101 协议升级时 ReverseProxy 要求响应体是可读写的连接，包装会破坏升级，不统计
 				if resp.StatusCode != http.StatusSwitchingProtocols && resp.Body != nil && resp.Body != http.NoBody {
@@ -464,8 +506,8 @@ func (h *siteHandler) newProxy(s Site, p *pool) http.Handler {
 			}
 			h.stats.Errors.Add(1)
 			// 客户端中途断开不是后端的错
-			if up, _ := r.Context().Value(ctxKeyUpstream{}).(*upstream); up != nil && r.Context().Err() == nil {
-				p.fail(up, err)
+			if att := attemptFrom(r.Context()); att != nil && r.Context().Err() == nil {
+				p.fail(att.current(), err)
 			}
 			h.reqLog(r).Warnf("%s %s%s 后端错误: %v", r.Method, r.Host, r.URL.Path, err)
 			// 连接、TLS 握手或等待响应头超时返回 504（与 nginx 一致），其余错误返回 502
@@ -480,23 +522,18 @@ func (h *siteHandler) newProxy(s Site, p *pool) http.Handler {
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		client := clientAddr(r)
-		up := p.pick(client.Addr())
-		up.conns.Add(1)
-		defer up.conns.Add(-1)
-		now := time.Now().Unix()
-		up.stats.requests.Add(1)
-		up.stats.rate.add(now, 1, 0)
-		up.stats.recent.touch(client.Addr(), now)
-		// 记下选中的后端，拓扑视图按访客地址筛选时据此高亮到具体后端
-		if a, ok := r.Context().Value(ctxKeyActiveReq{}).(*activeReq); ok {
-			a.upstream.Store(up)
-		}
+		active, _ := r.Context().Value(ctxKeyActiveReq{}).(*activeReq)
+		att := &proxyAttempt{pool: p, client: client.Addr(), active: active}
+		att.use(p.pick(client.Addr()))
+		defer att.release()
 		ctx := context.WithValue(r.Context(), ctxKeyClientAddr{}, client)
-		ctx = context.WithValue(ctx, ctxKeyUpstream{}, up)
+		ctx = context.WithValue(ctx, ctxKeyUpstream{}, att)
 		if h.errPage != nil && h.errPage.codes != nil {
 			ctx = context.WithValue(ctx, ctxKeyVisitorReq{}, r)
 		}
-		rp.ServeHTTP(w, r.WithContext(ctx))
+		in := r.WithContext(ctx)
+		att.in = in
+		rp.ServeHTTP(w, in)
 	})
 }
 

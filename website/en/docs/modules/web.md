@@ -363,6 +363,7 @@ http://10.0.0.3:8080 backup
 
 - `weight=N`: weight, an integer from 1 to 100, default 1;
 - `backup`: a standby backend that is used only when all non-backup backends are unavailable. When every backend is unavailable, all non-backup backends are tried again.
+- When a backend cannot be reached (connection refused, unreachable or connect timeout), the same request is retried on the next backend right away, other primary backends first and then backups, trying at most 3 backends. The request has not been sent at that point, so resending POST and similar requests is safe. Failures after the connection is established are not retried, and the failed backend still counts toward passive checks.
 
 ### Load balancing policy
 
