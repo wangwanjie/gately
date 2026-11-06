@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestPersistRestore(t *testing.T) {
@@ -99,4 +100,26 @@ func TestTailEntriesLargeFile(t *testing.T) {
 	if len(got) != 1000 || got[0].Seq != 4001 || got[999].Seq != 5000 {
 		t.Fatalf("跨块读取结果不对: len=%d first=%d", len(got), got[0].Seq)
 	}
+}
+
+// TestFlushEarlyWhenPendingLarge 待写数据超过阈值时立即写盘，不等满 flushInterval。
+func TestFlushEarlyWhenPendingLarge(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "w.log")
+	b := New(10, nil)
+	if err := b.Persist(path, 64<<20); err != nil {
+		t.Fatal(err)
+	}
+	defer b.ClosePersist()
+	line := strings.Repeat("q", 1000)
+	for i := 0; i < flushEarlyBytes/1000+10; i++ {
+		b.Add(LevelInfo, "", line)
+	}
+	deadline := time.Now().Add(flushInterval / 2)
+	for time.Now().Before(deadline) {
+		if st, err := os.Stat(path); err == nil && st.Size() >= flushEarlyBytes {
+			return
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	t.Fatalf("待写数据超过 %d 字节后应立即写盘", flushEarlyBytes)
 }

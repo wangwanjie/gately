@@ -20,6 +20,9 @@ const (
 	flushInterval = time.Second
 	// maxPending 限制未写盘数据的大小，磁盘卡住时丢弃新日志，避免撑大内存
 	maxPending = 4 << 20
+	// flushEarlyBytes 为提前写盘的阈值：待写数据攒到这么多就立即写入，不再等满 flushInterval。
+	// 访问日志在高流量下每秒可达数 MB，只按时间写盘会顶到 maxPending 丢日志
+	flushEarlyBytes = 256 << 10
 	// DefaultFileBytes 为单个日志文件的默认上限，超过后轮转为 <文件>.1，即每个来源最多占用两倍空间
 	DefaultFileBytes = 2 << 20
 )
@@ -33,6 +36,8 @@ type fileSink struct {
 	maxBytes int64
 	// scheduled 表示已安排了一次延迟写盘；没有新日志时不安排，空闲时没有任何定时唤醒
 	scheduled bool
+	// urgent 表示已因待写数据过多发起了一次立即写盘，写盘开始前不再重复发起
+	urgent bool
 
 	// ioMu 串行化文件操作（写入、轮转、清空）
 	ioMu sync.Mutex
@@ -112,6 +117,10 @@ func (s *fileSink) add(e Entry) {
 		s.scheduled = true
 		time.AfterFunc(flushInterval, s.flush)
 	}
+	if len(s.pending) >= flushEarlyBytes && !s.urgent {
+		s.urgent = true
+		go s.flush()
+	}
 	s.mu.Unlock()
 }
 
@@ -133,6 +142,7 @@ func (s *fileSink) flushLocked() {
 	data := s.pending
 	s.pending = nil
 	s.scheduled = false
+	s.urgent = false
 	limit := s.maxBytes
 	s.mu.Unlock()
 	if len(data) == 0 {
