@@ -91,7 +91,7 @@ func Required(method, path string) string {
 		return Any
 	case "/api/status", "/api/system/info", "/api/system/update", "/api/system/update/state":
 		return DomainStatus + ":" + LevelRead
-	case "/api/logs":
+	case "/api/logs", "/api/logs/sources":
 		return DomainLogs + ":" + LevelRead
 	case "/api/import/lucky":
 		return DomainImport + ":" + LevelWrite
@@ -104,7 +104,10 @@ func Required(method, path string) string {
 	if level == LevelWrite && tail == "shared-users" && (mod == "webdav" || mod == "ftp" || mod == "smb") {
 		return sharedFileUserScope
 	}
-	// 模块日志属于只读信息，清空日志属于写操作
+	// 模块日志属于只读信息，清空日志属于写操作；日志来源列表与查看日志同为读权限
+	if level == LevelRead && tail == "logs/sources" {
+		return mod + ":" + LevelRead
+	}
 	if level == LevelRead {
 		for _, seg := range strings.Split(tail, "/") {
 			if sensitiveGetSegments[seg] {

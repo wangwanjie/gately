@@ -1,9 +1,11 @@
 package app
 
 import (
+	"net/http"
 	"net/netip"
 	"net/url"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -11,7 +13,9 @@ import (
 	"github.com/wangwanjie/gately/internal/auth"
 	"github.com/wangwanjie/gately/internal/banlist"
 	"github.com/wangwanjie/gately/internal/fsperm"
+	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/logbuf"
+	"github.com/wangwanjie/gately/internal/module"
 )
 
 // logsDir 是配置目录下保存运行日志的子目录：logs/<模块 ID>.log，系统日志为 logs/gately.log。
@@ -162,4 +166,28 @@ func parseLogTime(s string) (time.Time, bool) {
 	}
 	t, err := time.Parse(time.RFC3339, s)
 	return t, err == nil
+}
+
+// logSourcesHandler 返回日志的全部来源标签（按名称排序）：日志中出现过的来源（含落盘记录），
+// 加上模块配置中的来源（mod 实现 module.LogSourcer 时），日志页的来源下拉据此列出，不依赖已加载的日志。
+func (a *App) logSourcesHandler(buf *logbuf.Buffer, mod module.Module) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		set := map[string]struct{}{}
+		for _, s := range buf.Sources() {
+			set[s] = struct{}{}
+		}
+		if ls, ok := mod.(module.LogSourcer); ok {
+			for _, s := range ls.LogSources() {
+				if s != "" {
+					set[s] = struct{}{}
+				}
+			}
+		}
+		out := make([]string, 0, len(set))
+		for s := range set {
+			out = append(out, s)
+		}
+		sort.Strings(out)
+		httpx.OK(w, out)
+	}
 }

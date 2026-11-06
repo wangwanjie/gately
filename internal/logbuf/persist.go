@@ -8,6 +8,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -38,6 +40,9 @@ type fileSink struct {
 	scheduled bool
 	// urgent 表示已因待写数据过多发起了一次立即写盘，写盘开始前不再重复发起
 	urgent bool
+	// sources 为出现过的来源，sourcesDirty 表示有新来源尚未写入来源记录文件
+	sources      map[string]struct{}
+	sourcesDirty bool
 
 	// ioMu 串行化文件操作（写入、轮转、清空）
 	ioMu sync.Mutex
@@ -87,7 +92,23 @@ func (b *Buffer) Persist(path string, maxBytes int64) error {
 	if maxSeq >= b.nextSeq {
 		b.nextSeq = maxSeq + 1
 	}
-	b.sink = &fileSink{path: path, maxBytes: maxBytes, size: size}
+	s := &fileSink{path: path, maxBytes: maxBytes, size: size, sources: map[string]struct{}{}}
+	// 来源：已记录的来源文件、恢复的日志与本次运行已出现的来源合在一起
+	for _, src := range readSources(s.sourcesPath()) {
+		if len(b.sources) < maxSources {
+			b.sources[src] = struct{}{}
+		}
+	}
+	for _, e := range restored {
+		if e.Source != "" && len(b.sources) < maxSources {
+			b.sources[e.Source] = struct{}{}
+		}
+	}
+	for src := range b.sources {
+		s.sources[src] = struct{}{}
+	}
+	s.sourcesDirty = len(s.sources) > 0
+	b.sink = s
 	return nil
 }
 
@@ -100,6 +121,16 @@ func (b *Buffer) ClosePersist() {
 	if s != nil {
 		s.close()
 	}
+}
+
+// stem 返回日志文件去掉 .log 后缀的路径，来源记录文件以它为前缀。
+func (s *fileSink) stem() string {
+	return strings.TrimSuffix(s.path, ".log")
+}
+
+// sourcesPath 返回来源记录文件的路径。
+func (s *fileSink) sourcesPath() string {
+	return s.stem() + ".sources"
 }
 
 // add 序列化一条日志追加到待写盘数据。调用方持有 Buffer.mu，保证文件中的顺序与序号一致。
@@ -124,6 +155,20 @@ func (s *fileSink) add(e Entry) {
 	s.mu.Unlock()
 }
 
+// addSource 记下新出现的来源，随下次写盘保存。调用方持有 Buffer.mu。
+func (s *fileSink) addSource(src string) {
+	s.mu.Lock()
+	if _, ok := s.sources[src]; !ok {
+		s.sources[src] = struct{}{}
+		s.sourcesDirty = true
+		if !s.scheduled {
+			s.scheduled = true
+			time.AfterFunc(flushInterval, s.flush)
+		}
+	}
+	s.mu.Unlock()
+}
+
 // close 立即写入剩余日志。之后仍可能触发已安排的延迟写盘，那时没有待写数据，什么也不做。
 func (s *fileSink) close() {
 	s.flush()
@@ -144,7 +189,17 @@ func (s *fileSink) flushLocked() {
 	s.scheduled = false
 	s.urgent = false
 	limit := s.maxBytes
+	var sources []string
+	if s.sourcesDirty {
+		s.sourcesDirty = false
+		for src := range s.sources {
+			sources = append(sources, src)
+		}
+	}
 	s.mu.Unlock()
+	if sources != nil {
+		s.writeSources(sources)
+	}
 	if len(data) == 0 {
 		return
 	}
@@ -171,13 +226,54 @@ func (s *fileSink) flushLocked() {
 	}
 }
 
-// clear 丢弃未写盘数据并删除日志文件。
+// writeSources 把来源列表写入来源记录文件（先写临时文件再改名，断电不会留下半个文件）。
+func (s *fileSink) writeSources(list []string) {
+	sort.Strings(list)
+	data, err := json.Marshal(list)
+	if err != nil {
+		return
+	}
+	path := s.sourcesPath()
+	tmp := path + ".tmp"
+	if err := fsperm.WriteFile(tmp, data, 0o600); err != nil {
+		log.Printf("写入日志来源记录 %s 失败: %v", path, err)
+		return
+	}
+	if err := os.Rename(tmp, path); err != nil {
+		_ = os.Remove(tmp)
+		log.Printf("写入日志来源记录 %s 失败: %v", path, err)
+	}
+}
+
+// readSources 读取来源记录文件，文件不存在或内容无效时返回 nil。
+func readSources(path string) []string {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil
+	}
+	var list []string
+	if json.Unmarshal(data, &list) != nil {
+		return nil
+	}
+	out := list[:0]
+	for _, src := range list {
+		if src != "" {
+			out = append(out, src)
+		}
+	}
+	return out
+}
+
+// clear 丢弃未写盘数据并删除日志文件与来源记录。
 func (s *fileSink) clear() {
 	s.ioMu.Lock()
 	defer s.ioMu.Unlock()
 	s.mu.Lock()
 	s.pending = nil
+	s.sources = map[string]struct{}{}
+	s.sourcesDirty = false
 	s.mu.Unlock()
+	_ = os.Remove(s.sourcesPath())
 	_ = os.Remove(s.path + ".1")
 	_ = os.Remove(s.path)
 	s.size = 0

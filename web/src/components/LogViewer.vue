@@ -7,7 +7,8 @@
         <el-option :label="t('components.logViewer.levelWarn')" value="warn" />
         <el-option :label="t('components.logViewer.levelError')" value="error" />
       </el-select>
-      <!-- 来源取自已加载的日志，也可以直接输入；清除时置为空串（默认是 undefined，拼查询参数时会出错） -->
+      <!-- 来源列表由后端给出（配置中的全部来源与日志中出现过的来源，包括已落盘的），展开时刷新，并合并已加载日志中的来源；
+           也可以直接输入。清除时置为空串（默认是 undefined，拼查询参数时会出错） -->
       <el-select
         v-model="filters.source"
         size="small"
@@ -18,6 +19,7 @@
         allow-create
         default-first-option
         :placeholder="t('components.logViewer.source')"
+        @visible-change="(open: boolean) => open && loadSources()"
       >
         <el-option v-for="s in sourceOptions" :key="s" :label="s" :value="s" />
       </el-select>
@@ -206,8 +208,10 @@ const hasMore = ref(false)
 const loadingMore = ref(false)
 // 过滤参数无效时后端返回的错误
 const error = ref('')
-// 出现过的来源，供来源下拉选择；切换过滤条件后仍保留
+// 已加载日志中出现过的来源；切换过滤条件后仍保留
 const seenSources = ref<string[]>([])
+// 后端给出的来源：配置中的全部来源（例如还没有访问记录的监听器）与日志中出现过的来源（包括已挤出内存、只在文件里的）
+const apiSources = ref<string[]>([])
 let lastSeq = 0
 let loaded = false
 // 轮询裁剪上限：用户每加载一页历史就放宽相应条数，避免刚加载的旧日志被下一次轮询裁掉
@@ -219,12 +223,29 @@ let generation = 0
 let initialGen = -1
 
 const sourceOptions = computed(() => {
-  const list = [...seenSources.value]
+  const list = [...new Set([...apiSources.value, ...seenSources.value])].sort((a, b) => a.localeCompare(b))
   if (filters.source && !list.includes(filters.source)) {
     list.unshift(filters.source)
   }
   return list
 })
+
+// loadSources 拉取来源列表；失败时保留上次的结果，下拉里仍有已加载日志中的来源
+let sourcesLoading = false
+async function loadSources() {
+  if (sourcesLoading) {
+    return
+  }
+  sourcesLoading = true
+  try {
+    const list = await api.get<string[]>(`${props.url}/sources`)
+    apiSources.value = Array.isArray(list) ? list : []
+  } catch {
+    // 来源列表只是辅助，失败不提示
+  } finally {
+    sourcesLoading = false
+  }
+}
 
 // 高级过滤项中已填写的数量，显示在按钮上；自定义时间范围清空了日期时不会发出时间条件，不计入
 const rangeActive = computed(() => (filters.range === 'custom' ? !!filters.custom?.[0] : filters.range !== 'all'))
@@ -543,6 +564,10 @@ async function clear() {
   await api.del(props.url)
   generation++
   entries.value = []
+  // 清空时后端一并清除了记录的来源，重新拉取（只剩配置中的来源）
+  seenSources.value = []
+  apiSources.value = []
+  void loadSources()
   hasMore.value = false
   keep = MAX
 }
@@ -572,6 +597,7 @@ onBeforeUnmount(() => window.clearTimeout(debounce))
 const polling = usePolling(poll, 2000)
 
 onMounted(async () => {
+  void loadSources()
   // 首次拉取完成后再开始轮询，避免首屏请求较慢时重复拉取
   await poll()
   polling.start()

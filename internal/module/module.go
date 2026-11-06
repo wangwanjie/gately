@@ -59,6 +59,12 @@ type Migrator interface {
 	Migrate(store *config.Store) (from string, err error)
 }
 
+// LogSourcer 由日志来源来自配置（监听器、规则、实例等名称）的模块实现，返回当前配置中的全部来源标签。
+// 日志页的来源下拉据此列出还没有写过日志、或日志已被挤出内存的来源，与写日志时使用的标签保持一致。
+type LogSourcer interface {
+	LogSources() []string
+}
+
 // SummaryItem 是总览页展示的一项指标。Level 为 ok / warn / error / info，用于着色。
 type SummaryItem struct {
 	Label string `json:"label"`

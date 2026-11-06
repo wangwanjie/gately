@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -111,4 +112,28 @@ func TestListenerLogLabel(t *testing.T) {
 			t.Errorf("%s: %q，期望 %q", l.Key, got, want[l.Key])
 		}
 	}
+}
+
+// TestLogSources 验证来源列表包含全部监听器（含停用的）与 IP 列表，标签与写日志时使用的一致。
+func TestLogSources(t *testing.T) {
+	m := &Module{cfg: fileConfig{
+		Listeners: []Listener{
+			{Key: "a", Name: "HTTPS", Network: "tcp4", Port: 443},
+			{Key: "b", Name: "HTTPS", Network: "tcp6", Port: 443},
+			{Key: "c", Port: 8080},
+			{Key: "d", Name: "停用", Port: 81, Enable: false},
+		},
+		IPLists: []IPList{{Key: "x", Name: "国内 IP"}, {Key: "y"}},
+	}}
+	got := m.LogSources()
+	want := []string{"HTTPS (0.0.0.0:443)", "HTTPS ([::]:443)", ":8080", "停用", "国内 IP"}
+	if fmt.Sprint(got) != fmt.Sprint(want) {
+		t.Fatalf("来源列表不对:\n得到 %q\n期望 %q", got, want)
+	}
+	for _, l := range m.cfg.Listeners {
+		if !slices.Contains(got, listenerLogLabel(l, m.cfg.Listeners)) {
+			t.Fatalf("应包含监听器 %s 的日志标签", l.Key)
+		}
+	}
+	var _ module.LogSourcer = m
 }

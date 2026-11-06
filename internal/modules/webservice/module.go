@@ -176,6 +176,23 @@ func listenerLogLabel(l Listener, all []Listener) string {
 	return label
 }
 
+// LogSources 实现 module.LogSourcer：全部监听器（包括已停用的）的日志标签与订阅的 IP 列表名称，
+// 与写日志时使用的标签一致，日志页的来源下拉据此列出还没有访问记录的监听器。
+func (m *Module) LogSources() []string {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	out := make([]string, 0, len(m.cfg.Listeners)+len(m.cfg.IPLists))
+	for _, l := range m.cfg.Listeners {
+		out = append(out, listenerLogLabel(l, m.cfg.Listeners))
+	}
+	for _, l := range m.cfg.IPLists {
+		if l.Name != "" {
+			out = append(out, l.Name)
+		}
+	}
+	return out
+}
+
 // listenerAddrLabel 返回监听地址的简短写法；未填写地址时按网络类型写成 0.0.0.0、[::] 或 *，区分只监听 IPv4 或 IPv6。
 func listenerAddrLabel(l Listener) string {
 	host := l.ListenIP

@@ -6,6 +6,7 @@ package logbuf
 import (
 	"fmt"
 	"log"
+	"sort"
 	"sync"
 	"time"
 )
@@ -40,14 +41,21 @@ type Buffer struct {
 	echo *log.Logger
 	// sink 不为 nil 时日志同时写入文件，见 Persist
 	sink *fileSink
+	// sources 为出现过的来源标签（不含空串），供日志页的来源下拉列出全部来源，见 Sources。
+	// 开启落盘时同时保存到文件，重启后保留；数量受 maxSources 限制
+	sources map[string]struct{}
 }
+
+// maxSources 限制记录的来源数量。来源来自监听器、规则等配置名称，正常远小于该值，
+// 上限只是防止异常情况下无限增长
+const maxSources = 1000
 
 // New 创建容量为 size 的缓冲。
 func New(size int, echo *log.Logger) *Buffer {
 	if size <= 0 {
 		size = 500
 	}
-	return &Buffer{entries: make([]Entry, size), nextSeq: 1, echo: echo}
+	return &Buffer{entries: make([]Entry, size), nextSeq: 1, echo: echo, sources: map[string]struct{}{}}
 }
 
 // Add 追加一条日志。
@@ -57,8 +65,13 @@ func (b *Buffer) Add(level, source, msg string) {
 
 // AddFields 追加一条带结构化字段的日志，fields 写入后不应再修改。
 func (b *Buffer) AddFields(level, source, msg string, fields Fields) {
+	b.addAt(time.Now(), level, source, msg, fields)
+}
+
+// addAt 以指定时间追加一条日志，测试用它模拟跨天写入。
+func (b *Buffer) addAt(t time.Time, level, source, msg string, fields Fields) {
 	b.mu.Lock()
-	e := Entry{Seq: b.nextSeq, Time: time.Now(), Level: level, Source: source, Message: msg, Fields: fields}
+	e := Entry{Seq: b.nextSeq, Time: t, Level: level, Source: source, Message: msg, Fields: fields}
 	b.nextSeq++
 	idx := (b.start + b.count) % len(b.entries)
 	b.entries[idx] = e
@@ -66,6 +79,15 @@ func (b *Buffer) AddFields(level, source, msg string, fields Fields) {
 		b.count++
 	} else {
 		b.start = (b.start + 1) % len(b.entries)
+	}
+	// 第一次出现的来源记下来；map 查找很快，不影响写入性能
+	if source != "" {
+		if _, ok := b.sources[source]; !ok && len(b.sources) < maxSources {
+			b.sources[source] = struct{}{}
+			if b.sink != nil {
+				b.sink.addSource(source)
+			}
+		}
 	}
 	// 在锁内交给落盘，保证文件中的顺序与序号一致
 	if b.sink != nil {
@@ -115,11 +137,26 @@ func (b *Buffer) at(i int) Entry {
 	return b.entries[(b.start+i)%len(b.entries)]
 }
 
-// Clear 清空缓冲（开启落盘时同时删除日志文件），序号继续递增，保证前端增量拉取不会错乱。
+// Sources 按名称排序返回出现过的来源标签：本次运行中写过日志的来源，
+// 以及开启落盘后从来源记录文件与恢复的日志中读到的来源。
+func (b *Buffer) Sources() []string {
+	b.mu.Lock()
+	out := make([]string, 0, len(b.sources))
+	for s := range b.sources {
+		out = append(out, s)
+	}
+	b.mu.Unlock()
+	sort.Strings(out)
+	return out
+}
+
+// Clear 清空缓冲（开启落盘时同时删除日志文件与来源记录），序号继续递增，保证前端增量拉取不会错乱。
+// 记录的来源一并清空：日志已经删除，再列出这些来源也查不到内容。
 func (b *Buffer) Clear() {
 	b.mu.Lock()
 	b.start = 0
 	b.count = 0
+	b.sources = map[string]struct{}{}
 	sink := b.sink
 	b.mu.Unlock()
 	if sink != nil {

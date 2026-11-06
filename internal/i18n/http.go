@@ -86,7 +86,7 @@ func trFields(lang string, v any, extra map[string]bool) any {
 func fullTranslate(path string) bool {
 	switch {
 	case path == "/api/status", path == "/api/logs", path == "/api/openapi.json",
-		strings.HasSuffix(path, "/logs"), strings.HasPrefix(path, "/api/events"),
+		strings.HasSuffix(path, "/logs"), strings.HasSuffix(path, "/logs/sources"), strings.HasPrefix(path, "/api/events"),
 		strings.HasPrefix(path, "/api/nettools/tasks"), strings.HasPrefix(path, "/api/docker/tasks"),
 		path == "/api/guard/presets", path == "/api/notify/event-types",
 		strings.HasPrefix(path, "/api/tokens/scopes"), strings.HasSuffix(path, "/providers"):

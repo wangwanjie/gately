@@ -103,7 +103,7 @@ func (a *App) buildDoc() docModel {
 }
 
 // genericPaths 是各模块共用的接口（模块日志、托管程序的在线安装与恢复默认配置），路径相对模块前缀。
-var genericPaths = []string{"/logs", "/install", "/install/check", "/install/rollback", "/install/backups/{id}", "/reset"}
+var genericPaths = []string{"/logs", "/logs/sources", "/install", "/install/check", "/install/rollback", "/install/backups/{id}", "/reset"}
 
 // genericKey 把模块日志等通用接口映射到目录中的通用条目。
 func genericKey(r routeInfo) string {
