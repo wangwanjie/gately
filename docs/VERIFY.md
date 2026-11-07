@@ -27,6 +27,17 @@ cosign verify-blob checksums.txt \
 gh attestation verify gately_v1.0.0_linux_amd64.tar.gz --repo wangwanjie/gately
 ```
 
+## macOS 代码签名
+
+macOS 压缩包中的 `gately` 使用 Apple Developer ID 证书签名（团队 ID `X6B6C6U6QV`）并经过 Apple 公证，下载解压后可以直接运行。可以这样查看签名：
+
+```bash
+codesign -dv --verbose=2 gately
+spctl -a -vv -t install gately
+```
+
+输出中应包含 `TeamIdentifier=X6B6C6U6QV` 与 `source=Notarized Developer ID`。首次运行时系统会联网查询公证记录。
+
 ## Docker 镜像
 
 ```bash

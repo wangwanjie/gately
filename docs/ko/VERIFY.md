@@ -27,6 +27,17 @@ cosign verify-blob checksums.txt \
 gh attestation verify gately_v1.0.0_linux_amd64.tar.gz --repo wangwanjie/gately
 ```
 
+## macOS 코드 서명
+
+macOS 압축 파일의 `gately`는 Apple Developer ID 인증서(팀 ID `X6B6C6U6QV`)로 서명되고 Apple 공증을 받았으므로, 내려받아 압축을 풀면 바로 실행됩니다. 서명 확인 방법:
+
+```bash
+codesign -dv --verbose=2 gately
+spctl -a -vv -t install gately
+```
+
+출력에 `TeamIdentifier=X6B6C6U6QV`와 `source=Notarized Developer ID`가 포함되어야 합니다. 처음 실행할 때 macOS가 온라인으로 공증 기록을 조회합니다.
+
 ## Docker 이미지
 
 ```bash

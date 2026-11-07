@@ -27,6 +27,17 @@ cosign verify-blob checksums.txt \
 gh attestation verify gately_v1.0.0_linux_amd64.tar.gz --repo wangwanjie/gately
 ```
 
+## Assinatura de código no macOS
+
+O binário `gately` dos arquivos para macOS é assinado com um certificado Apple Developer ID (ID de equipe `X6B6C6U6QV`) e notarizado pela Apple, então roda direto após baixar e extrair. Para ver a assinatura:
+
+```bash
+codesign -dv --verbose=2 gately
+spctl -a -vv -t install gately
+```
+
+A saída deve conter `TeamIdentifier=X6B6C6U6QV` e `source=Notarized Developer ID`. Na primeira execução, o macOS consulta o registro de notarização online.
+
 ## Imagem Docker
 
 ```bash
