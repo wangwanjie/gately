@@ -83,8 +83,8 @@
   "home": {
     "pill": "Free and open source · Apache-2.0",
     "announce": {
-      "text": "v0.6.5: backend timeouts and retry, passing identity, automatic firewall ports, log archives and export →",
-      "link": "/en/news/v0.6.5"
+      "text": "v0.6.5.1: start at boot, paged long lists, bulk DDNS records, crash log →",
+      "link": "/en/news/v0.6.5.1"
     },
     "titleLine1": "The all-in-one network gateway",
     "titleLine2": "Open source, ready out of the box",

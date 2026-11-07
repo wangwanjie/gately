@@ -83,8 +83,8 @@
   "home": {
     "pill": "Gratuit et open source · Apache-2.0",
     "announce": {
-      "text": "v0.6.5 : délais du backend et nouvelle tentative, transmission de l’identité, ouverture automatique du pare-feu, archives et export des journaux →",
-      "link": "/fr/news/v0.6.5"
+      "text": "v0.6.5.1 : démarrage automatique, listes paginées, ajout en lot d’enregistrements DDNS, journal des plantages →",
+      "link": "/fr/news/v0.6.5.1"
     },
     "titleLine1": "La passerelle réseau tout-en-un",
     "titleLine2": "Open source, prête à l'emploi",

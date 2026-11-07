@@ -7,6 +7,10 @@ description: Release announcements and notes for each Gately version.
 
 Announcements for major releases are listed below. See [GitHub Releases](https://github.com/wangwanjie/gately/releases) for the full changes and downloads of every version.
 
+## [v0.6.5.1](/en/news/v0.6.5.1)
+
+November 7, 2026 · Start at boot with gately service; paged long lists; bulk adding DDNS records; crash.log; signed and notarized macOS binaries.
+
 ## [v0.6.5](/en/news/v0.6.5)
 
 November 6, 2026 · Backend timeouts, visitor timeouts and automatic retry for reverse proxy sites; passing identity to backends; automatic firewall ports for listeners and forwarding rules; daily access log archives and log export; IPv6 strict mode in Guard; resource usage of managed processes.

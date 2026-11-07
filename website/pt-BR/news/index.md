@@ -7,6 +7,10 @@ description: Anúncios e notas de cada versão do Gately.
 
 Abaixo estão os anúncios das versões principais. Veja as [GitHub Releases](https://github.com/wangwanjie/gately/releases) para as mudanças completas e os downloads de cada versão.
 
+## [v0.6.5.1](/pt-BR/news/v0.6.5.1)
+
+7 de novembro de 2026 · Inicialização automática com gately service; listas longas paginadas; adição em lote de registros DDNS; crash.log; binários de macOS assinados e notarizados.
+
 ## [v0.6.5](/pt-BR/news/v0.6.5)
 
 6 de novembro de 2026 · Tempos limite do backend e do visitante com nova tentativa automática para sites de proxy reverso; passar a identidade aos backends; liberação automática do firewall para listeners e regras de encaminhamento; arquivos diários e exportação dos logs de acesso; modo estrito IPv6 na Prevenção de intrusão; recursos dos processos gerenciados.

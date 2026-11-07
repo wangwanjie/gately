@@ -83,8 +83,8 @@
   "home": {
     "pill": "Gratis y de código abierto · Apache-2.0",
     "announce": {
-      "text": "v0.6.5: tiempos de espera del backend y reintento, pasar identidad, apertura automática del cortafuegos, archivo y exportación de registros →",
-      "link": "/es/news/v0.6.5"
+      "text": "v0.6.5.1: inicio automático, listas paginadas, registros DDNS en bloque, registro de fallos →",
+      "link": "/es/news/v0.6.5.1"
     },
     "titleLine1": "La pasarela de red todo en uno",
     "titleLine2": "Código abierto y lista para usar",

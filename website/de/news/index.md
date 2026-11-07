@@ -7,6 +7,10 @@ description: Release-Ankündigungen und Versionshinweise zu jeder Gately-Version
 
 Unten stehen die Ankündigungen zu wichtigen Releases. Alle Änderungen und Downloads jeder Version finden Sie unter [GitHub Releases](https://github.com/wangwanjie/gately/releases).
 
+## [v0.6.5.1](/de/news/v0.6.5.1)
+
+7. November 2026 · Autostart mit gately service; seitenweise lange Listen; DDNS-Einträge im Stapel hinzufügen; crash.log; signierte und notarisierte macOS-Binärdateien.
+
 ## [v0.6.5](/de/news/v0.6.5)
 
 6. November 2026 · Backend- und Besucher-Timeouts mit automatischer Wiederholung für Reverse-Proxy-Sites; Identität an Backends weitergeben; automatische Firewall-Freigabe für Listener und Weiterleitungsregeln; tägliche Archive und Export der Zugriffsprotokolle; IPv6-Strikt-Modus im Einbruchschutz; Ressourcen verwalteter Prozesse.
