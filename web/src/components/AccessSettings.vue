@@ -11,14 +11,16 @@
         <div class="meta">{{ t('accessSettings.guardManaged', { count: bans.length }) }}</div>
         <div><router-link to="/guard" class="link">{{ t('accessSettings.openGuard') }}</router-link></div>
       </div>
-      <div v-else class="rows">
+      <div v-else ref="banRows" class="rows">
         <el-empty v-if="!bans.length" :image-size="36" :description="t('accessSettings.noBans')" />
-        <div v-for="b in bans" :key="b.key" class="row">
+        <!-- 只渲染当前页，被扫描时封禁可能积累到数千条 -->
+        <div v-for="b in banPager.rows.value" :key="b.key" class="row">
           <span class="mono key">{{ b.key }}</span>
           <el-tag size="small" :type="b.manual ? 'info' : 'warning'">{{ b.reason }}</el-tag>
           <span class="meta">{{ b.permanent ? t('accessSettings.permanent') : t('accessSettings.until', { time: new Date(b.until).toLocaleString() }) }}</span>
           <el-button text size="small" @click="unban(b.key)">{{ t('accessSettings.unban') }}</el-button>
         </div>
+        <ListPager :pager="banPager" :anchor="banRows" compact class="pager" />
         <div class="row">
           <el-input v-model="newIp" :placeholder="t('accessSettings.manualBanIp')" class="mono ip" />
           <!-- 勾选永久时不限时长（接口 seconds 为 -1） -->
@@ -65,6 +67,8 @@ import { Upload } from 'lucide-vue-next'
 import { api } from '../api'
 import { moduleEnabled } from '../nav'
 import ProxyInput from './ProxyInput.vue'
+import ListPager from './ListPager.vue'
+import { usePager } from '../composables/usePager'
 
 interface Ban {
   key: string
@@ -84,6 +88,8 @@ const { t } = useI18n()
 const seconds = defineModel<number>('autoBanSeconds', { required: true })
 const minutes = computed({ get: () => Math.round((seconds.value ?? 0) / 60), set: (v: number) => (seconds.value = (v ?? 0) * 60) })
 const bans = ref<Ban[]>([])
+const banPager = usePager(() => bans.value, { storageKey: 'access.bans', defaultSize: 20 })
+const banRows = ref<HTMLElement | null>(null)
 const guardOn = computed(() => moduleEnabled('guard'))
 const geo = ref<GeoInfo>({ loaded: false, size: 0 })
 const newIp = ref('')
@@ -176,6 +182,10 @@ onMounted(() => {
 }
 .key {
   min-width: 150px;
+}
+.pager {
+  margin-top: 0;
+  align-items: flex-start;
 }
 .ip {
   width: 200px;
