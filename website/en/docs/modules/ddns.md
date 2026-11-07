@@ -33,6 +33,27 @@ Record values can use these variables, replaced with current values on every syn
 
 When a STUN rule's public address changes, tasks that reference it sync right away instead of waiting for the next check. While the rule is disabled or has not traversed yet, the record is skipped for that round and the record status shows why. STUN variables can also be used in the task's Webhook. When they appear only in the Webhook, the Webhook is still called once after the address changes. The rule key can be used instead of the rule name.
 
+## Bulk adding records {#batch}
+
+On the Records tab of the task editor, click **Bulk add** and enter one domain per line:
+
+- Use a full domain, or just a host (such as `emby`), which is added under the **Default zone**;
+- Full domains are split by the default zone and the zones of existing records first, otherwise by the public suffix (such as `example.com.cn`); check the split in the preview;
+- A type and value may follow the domain. Without a type, one record is added for each checked type (A, AAAA) with the value `{ipv4Addr}` or `{ipv6Addr}`; a bare IP address is added as A or AAAA based on the address;
+- TTL, line and remark apply to all records added this time. Blank lines and lines starting with `#` are ignored, and a pasted `https://`, port or path is stripped.
+
+```text
+www.example.com
+nas.example.com
+emby
+v6.example.com AAAA
+cdn.example.com CNAME target.example.net
+_ssh.example.com TXT port={STUN_ssh_PORT}
+fix.example.com 203.0.113.10
+```
+
+Lines that duplicate existing records are skipped. Invalid lines are listed with their line numbers and must be fixed before adding. The records appear in the editor table and take effect after you save the task.
+
 ## Notifications
 
 A Webhook can be called when the IP changes or a sync fails. When the callback URL is unreachable directly, choose the global update proxy under the Webhook's "Proxy" or enter a `http://`, `https://` or `socks5://` proxy address; STUN rules and the HTTP requests of scheduled tasks offer the same option.

@@ -33,6 +33,27 @@ Eintragswerte können diese Variablen verwenden; sie werden bei jeder Synchronis
 
 Ändert sich die öffentliche Adresse einer STUN-Regel, synchronisieren Aufgaben, die sie verwenden, sofort, statt auf die nächste Prüfung zu warten. Solange die Regel deaktiviert ist oder noch keine Verbindung hergestellt hat, wird der Eintrag in dieser Runde übersprungen und der Eintragsstatus nennt den Grund. STUN-Variablen lassen sich auch im Webhook der Aufgabe verwenden. Stehen sie nur im Webhook, wird der Webhook nach einer Adressänderung trotzdem einmal aufgerufen. Statt des Regelnamens kann auch der Regelschlüssel (key) verwendet werden.
 
+## Einträge gesammelt hinzufügen {#batch}
+
+Im Reiter Einträge des Aufgaben-Editors auf **Mehrere hinzufügen** klicken und eine Domain pro Zeile eingeben:
+
+- Eine vollständige Domain oder nur den Host (etwa `emby`), der unter der **Standardzone** angelegt wird;
+- Vollständige Domains werden zuerst anhand der Standardzone und der Zonen vorhandener Einträge aufgeteilt, sonst anhand des öffentlichen Suffixes (etwa `example.com.cn`); die Aufteilung zeigt die Vorschau;
+- Nach der Domain können Typ und Wert folgen. Ohne Typ wird je angehaktem Typ (A, AAAA) ein Eintrag mit dem Wert `{ipv4Addr}` bzw. `{ipv6Addr}` angelegt; eine reine IP-Adresse wird je nach Adresse als A oder AAAA angelegt;
+- TTL, Leitung und Notiz gelten für alle dabei hinzugefügten Einträge. Leere Zeilen und Zeilen mit `#` am Anfang werden ignoriert, mitkopierte `https://`, Ports und Pfade entfernt.
+
+```text
+www.example.com
+nas.example.com
+emby
+v6.example.com AAAA
+cdn.example.com CNAME target.example.net
+_ssh.example.com TXT port={STUN_ssh_PORT}
+fix.example.com 203.0.113.10
+```
+
+Zeilen, die vorhandene Einträge doppeln, werden übersprungen. Ungültige Zeilen werden mit Zeilennummer aufgeführt und müssen vor dem Hinzufügen korrigiert werden. Die Einträge erscheinen in der Tabelle des Editors und gelten nach dem Speichern der Aufgabe.
+
 ## Benachrichtigungen
 
 Bei einer IP-Änderung oder einer fehlgeschlagenen Synchronisierung kann ein Webhook aufgerufen werden. Ist die Callback-Adresse direkt nicht erreichbar, wählen Sie im Webhook unter „Proxy“ den globalen Update-Proxy oder tragen eine Proxy-Adresse mit `http://`, `https://` oder `socks5://` ein; STUN-Traversal und HTTP-Anfragen geplanter Aufgaben bieten dieselbe Option.

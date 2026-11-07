@@ -33,6 +33,27 @@ Les valeurs d'enregistrement peuvent utiliser ces variables, remplacées par les
 
 Quand l'adresse publique d'une règle STUN change, les tâches qui y font référence se synchronisent aussitôt, sans attendre la vérification suivante. Tant que la règle est désactivée ou n'a pas encore réussi la traversée, l'enregistrement est ignoré pour ce tour et son état en indique la raison. Les variables STUN sont aussi utilisables dans le Webhook de la tâche. Si elles n'apparaissent que dans le Webhook, celui-ci est quand même appelé une fois après le changement d'adresse. La clé (key) de la règle peut remplacer son nom.
 
+## Ajout groupé d'enregistrements {#batch}
+
+Dans l'onglet des enregistrements de l'éditeur de tâche, cliquez sur **Ajout groupé** et saisissez un domaine par ligne :
+
+- Un domaine complet, ou seulement l'hôte (comme `emby`), ajouté sous la **zone par défaut** ;
+- Les domaines complets sont d'abord découpés selon la zone par défaut et celles des enregistrements existants, sinon selon le suffixe public (comme `example.com.cn`) ; vérifiez le découpage dans l'aperçu ;
+- Le type et la valeur peuvent suivre le domaine. Sans type, un enregistrement est ajouté par type coché (A, AAAA) avec la valeur `{ipv4Addr}` ou `{ipv6Addr}` ; une adresse IP seule est ajoutée en A ou AAAA selon l'adresse ;
+- Le TTL, la ligne et la note s'appliquent à tous les enregistrements ajoutés. Les lignes vides et celles commençant par `#` sont ignorées, et un `https://`, un port ou un chemin collés sont retirés.
+
+```text
+www.example.com
+nas.example.com
+emby
+v6.example.com AAAA
+cdn.example.com CNAME target.example.net
+_ssh.example.com TXT port={STUN_ssh_PORT}
+fix.example.com 203.0.113.10
+```
+
+Les lignes en double avec des enregistrements existants sont ignorées. Les lignes invalides sont listées avec leur numéro et doivent être corrigées avant l'ajout. Les enregistrements apparaissent dans le tableau de l'éditeur et s'appliquent à l'enregistrement de la tâche.
+
 ## Notifications
 
 Un Webhook peut être appelé lorsque l'IP change ou qu'une synchronisation échoue. Si l'adresse de rappel est inaccessible en direct, le champ « Proxy » du Webhook permet de choisir le proxy global de mise à jour ou de saisir une adresse de proxy `http://`, `https://` ou `socks5://` ; les requêtes HTTP de la traversée STUN et des tâches planifiées offrent la même option.

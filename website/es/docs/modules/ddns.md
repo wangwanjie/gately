@@ -33,6 +33,27 @@ Los valores de registro pueden usar estas variables, que se sustituyen por los v
 
 Cuando cambia la dirección pública de una regla STUN, las tareas que la usan se sincronizan al momento, sin esperar a la siguiente comprobación. Mientras la regla esté desactivada o aún no haya atravesado el NAT, el registro se omite en esa ronda y su estado indica el motivo. Las variables STUN también pueden usarse en el Webhook de la tarea. Si solo aparecen en el Webhook, este se llama igualmente una vez tras el cambio de dirección. Puede usarse la clave (key) de la regla en lugar de su nombre.
 
+## Añadir registros en lote {#batch}
+
+En la pestaña de registros del editor de tareas, pulse **Añadir en lote** e introduzca un dominio por línea:
+
+- Un dominio completo, o solo el host (como `emby`), que se añade bajo la **zona predeterminada**;
+- Los dominios completos se dividen primero por la zona predeterminada y las zonas de los registros existentes; si no, por el sufijo público (como `example.com.cn`). Compruebe la división en la vista previa;
+- Tras el dominio puede ir el tipo y el valor. Sin tipo se añade un registro por cada tipo marcado (A, AAAA) con el valor `{ipv4Addr}` o `{ipv6Addr}`; una dirección IP sola se añade como A o AAAA según la dirección;
+- TTL, línea y nota se aplican a todos los registros añadidos. Se ignoran las líneas vacías y las que empiezan por `#`, y se quitan `https://`, puerto y ruta pegados por error.
+
+```text
+www.example.com
+nas.example.com
+emby
+v6.example.com AAAA
+cdn.example.com CNAME target.example.net
+_ssh.example.com TXT port={STUN_ssh_PORT}
+fix.example.com 203.0.113.10
+```
+
+Las líneas que duplican registros existentes se omiten. Las líneas no válidas se listan con su número y deben corregirse antes de añadir. Los registros aparecen en la tabla del editor y se aplican al guardar la tarea.
+
 ## Notificaciones
 
 Se puede llamar a un webhook cuando cambia la IP o falla una sincronización. Si la dirección de retorno no es accesible directamente, en «Proxy» del webhook se puede elegir el proxy global de actualizaciones o indicar una dirección de proxy `http://`, `https://` o `socks5://`; las peticiones HTTP del traversal STUN y de las tareas programadas tienen la misma opción.

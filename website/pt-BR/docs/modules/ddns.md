@@ -33,6 +33,27 @@ Os valores de registro podem usar estas variáveis, substituídas pelos valores 
 
 Quando o endereço público de uma regra STUN muda, as tarefas que a usam sincronizam na hora, sem esperar a próxima verificação. Enquanto a regra estiver desativada ou ainda não tiver atravessado o NAT, o registro é ignorado naquela rodada e o estado dele mostra o motivo. As variáveis STUN também podem ser usadas no Webhook da tarefa. Quando aparecem só no Webhook, ele é chamado mesmo assim uma vez depois que o endereço muda. A chave (key) da regra pode substituir o nome.
 
+## Adicionar registros em lote {#batch}
+
+Na aba de registros do editor da tarefa, clique em **Adicionar em lote** e informe um domínio por linha:
+
+- Um domínio completo, ou só o host (como `emby`), adicionado sob a **zona padrão**;
+- Domínios completos são divididos primeiro pela zona padrão e pelas zonas dos registros existentes; senão, pelo sufixo público (como `example.com.cn`); confira a divisão na prévia;
+- Tipo e valor podem vir após o domínio. Sem tipo, é adicionado um registro para cada tipo marcado (A, AAAA) com o valor `{ipv4Addr}` ou `{ipv6Addr}`; um endereço IP sozinho é adicionado como A ou AAAA conforme o endereço;
+- TTL, linha e observação valem para todos os registros adicionados. Linhas vazias e iniciadas por `#` são ignoradas, e `https://`, porta e caminho colados por engano são removidos.
+
+```text
+www.example.com
+nas.example.com
+emby
+v6.example.com AAAA
+cdn.example.com CNAME target.example.net
+_ssh.example.com TXT port={STUN_ssh_PORT}
+fix.example.com 203.0.113.10
+```
+
+Linhas que duplicam registros existentes são ignoradas. Linhas inválidas são listadas com o número e precisam ser corrigidas antes de adicionar. Os registros aparecem na tabela do editor e passam a valer ao salvar a tarefa.
+
 ## Notificações
 
 Um Webhook pode ser chamado quando o IP muda ou a sincronização falha. Se o endereço de callback não for alcançável diretamente, escolha em "Proxy" do Webhook o proxy global de atualização ou informe um endereço de proxy com `http://`, `https://` ou `socks5://`; a travessia STUN e as requisições HTTP das tarefas agendadas têm a mesma opção.
