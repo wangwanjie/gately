@@ -99,7 +99,8 @@ export function splitDomain(domain: string, zone: string, knownZones: string[]):
 }
 
 function recordId(r: { sub: string; zone: string; type: string; line?: string }) {
-  const sub = (r.sub || '@').toLowerCase()
+  // 与后端一致先去掉两端空白：已有记录中手动录入的 " www " 与批量输入的 www 视为同一条
+  const sub = (r.sub.trim() || '@').toLowerCase()
   return `${r.type.toUpperCase()} ${sub}.${normZone(r.zone)} ${(r.line ?? '').trim()}`
 }
 

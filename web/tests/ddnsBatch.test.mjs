@@ -100,3 +100,15 @@ test('AAAA 记录值严格校验，与后端 netip.ParseAddr 一致', () => {
   assert.equal(isIPv6('2001:db8::1'), true)
   assert.equal(isIPv6('1.2.3.4'), false)
 })
+
+test('已有记录的主机记录两端带空白时，与批量输入的同名记录视为重复', () => {
+  const res = parseBatch('www', { ...base, zone: 'example.com', existing: [{ sub: ' WWW ', zone: 'Example.com', type: 'a', line: '' }] })
+  assert.deepEqual(res.records, [])
+  assert.deepEqual(res.duplicates.map((d) => d.line), [1])
+})
+
+test('同一行生成 A 与 AAAA 时只跳过已存在的那种，不计入重复', () => {
+  const res = parseBatch('www', { ...base, zone: 'example.com', types: ['A', 'AAAA'], existing: [{ sub: 'www', zone: 'example.com', type: 'A', line: '' }] })
+  assert.deepEqual(brief(res), ['AAAA www.example.com {ipv6Addr}'])
+  assert.deepEqual(res.duplicates, [])
+})
