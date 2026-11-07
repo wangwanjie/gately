@@ -44,6 +44,68 @@ func TestIDNDomainMatchesPunycodeHost(t *testing.T) {
 	}
 }
 
+// TestLabelWildcardRouting 覆盖精确域名、首段通配、后缀通配与兜底的路由优先级。
+func TestLabelWildcardRouting(t *testing.T) {
+	addr, _ := startRunner(t, Listener{Sites: []Site{
+		{Enable: true, Domains: []string{"*"}, Type: TypeText, Text: "fallback"},
+		{Enable: true, Domains: []string{"*.example.com"}, Type: TypeText, Text: "suffix"},
+		{Enable: true, Domains: []string{"ping-*.example.com"}, Type: TypeText, Text: "label"},
+		{Enable: true, Domains: []string{"ping-one.example.com"}, Type: TypeText, Text: "exact"},
+	}}, nil, nil)
+	for host, want := range map[string]string{
+		"ping-one.example.com": "exact", "PING-TWO.EXAMPLE.COM:8080": "label",
+		"ping-two.nested.example.com": "suffix", "other.example.com": "suffix",
+		"example.com": "fallback", "ping-two.example.com.evil.test": "fallback",
+	} {
+		resp, body := get(t, http.DefaultClient, addr, host, "/", nil)
+		if resp.StatusCode != 200 || body != want {
+			t.Errorf("Host %s: %d %q; want %q", host, resp.StatusCode, body, want)
+		}
+	}
+}
+
+func TestLabelWildcardAuth(t *testing.T) {
+	addr, _ := startRunner(t, Listener{Sites: []Site{
+		{Enable: true, Domains: []string{"ping-*.example.com"}, Type: TypeText, Text: "private", BasicAuth: true, Users: []string{"alice:test"}},
+		{Enable: true, Domains: []string{"api-ping-*.example.com"}, Type: TypeText, Text: "public"},
+	}}, nil, nil)
+	for host, want := range map[string]int{
+		"ping-one.example.com": 401, "api-ping-one.example.com": 200,
+		"ping-one.nested.example.com": 404, "other.example.com": 404,
+	} {
+		resp, _ := get(t, http.DefaultClient, addr, host, "/", nil)
+		if resp.StatusCode != want {
+			t.Errorf("Host %s: %d; want %d", host, resp.StatusCode, want)
+		}
+	}
+	req, _ := http.NewRequest("GET", "http://"+addr+"/", nil)
+	req.Host = "ping-one.example.com"
+	req.SetBasicAuth("alice", "test")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		t.Fatalf("authenticated request: %d", resp.StatusCode)
+	}
+}
+
+func TestImportLabelWildcardDomains(t *testing.T) {
+	raw := json.RawMessage(`[{"Enable":true,"ListenPort":8080,"Network":"tcp","ProxyList":[{"Enable":true,"Domains":["ping-*.example.com","api-ping-*.example.com"],"Locations":["http://127.0.0.1:1"],"WebServiceType":"reverseproxy","EnableBasicAuth":true,"BasicAuthUserList":["alice:test"]}]}]`)
+	ls, warns, _, err := convertLuckyListeners(raw, luckyimport.Options{})
+	if err != nil || len(ls) != 1 || len(ls[0].Sites) != 1 {
+		t.Fatalf("import: %v, %v, %+v", err, warns, ls)
+	}
+	s := ls[0].Sites[0]
+	if strings.Join(s.Domains, ",") != "ping-*.example.com,api-ping-*.example.com" || !s.BasicAuth || len(s.Users) != 1 || s.Targets[0] != "http://127.0.0.1:1" {
+		t.Fatalf("import changed site settings: %+v", s)
+	}
+	if _, err := normalizeBatchDomains(s.Domains); err != nil {
+		t.Fatal(err)
+	}
+}
+
 // TestImportSkipsBadDomains 导入外部配置时只跳过写错的域名，同一站点、同一监听的其他内容照常导入。
 func TestImportSkipsBadDomains(t *testing.T) {
 	raw, _ := json.Marshal([]map[string]any{{

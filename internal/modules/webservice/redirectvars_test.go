@@ -46,6 +46,8 @@ func TestRedirectTargetVars(t *testing.T) {
 			"http://x.y.b.test/p1/p2/p3", "https://y.c.test/p2/"},
 		{"多级子域名", []string{"*.b.test"}, "https://{1}.c.test", false,
 			"http://x.y.b.test/", "https://x.y.c.test"},
+		{"首段内通配优先于后缀通配", []string{"*.b.test", "app-*-dev.b.test"}, "https://{1}.c.test", false,
+			"http://app-one-dev.b.test/", "https://one.c.test"},
 		{"精确域名优先时 {1} 为空", []string{"*.b.test", "a.b.test"}, "https://n{1}.c.test", false,
 			"http://a.b.test/", "https://n.c.test"},
 		{"* 匹配完整域名", []string{"*"}, "https://{1}.c.test", false,

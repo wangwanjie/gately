@@ -56,7 +56,7 @@
   "tabTraffic": "Traffic",
   "tabHeaders": "Headers",
   "domains": "Domains",
-  "domainsPlaceholder": "One per line; supports *.example.com and *",
+  "domainsPlaceholder": "One per line; supports *.example.com, api-*.example.com and *",
   "type": "Type",
   "typeProxy": "Reverse proxy",
   "typeRedirect": "Redirect",

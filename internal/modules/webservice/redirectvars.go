@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/wangwanjie/gately/internal/hostname"
 	"github.com/wangwanjie/gately/internal/stunaddr"
 )
 
@@ -260,15 +261,16 @@ func sampleVar(name string) (string, bool, error) {
 }
 
 // wildcardPart 返回访客域名在站点域名规则中被 * 匹配到的部分：
-// 命中 *.example.com 时为前面的子域名，命中 * 或默认站点时为完整域名，精确匹配时为空。
+// 命中 *.example.com 时为前面的子域名，首段内通配时为该段中 * 捕获的字符，
+// 命中 * 或默认站点时为完整域名，精确匹配时为空。
 func wildcardPart(domains []string, host string) string {
 	best, bestLen := "", -1
 	for _, d := range domains {
 		if d == host {
 			return ""
 		}
-		if strings.HasPrefix(d, "*.") && strings.HasSuffix(host, d[1:]) && len(d) > bestLen {
-			best, bestLen = strings.TrimSuffix(host, d[1:]), len(d)
+		if capture, ok := hostname.CapturePattern(d, host); ok && d != "*" && len(d) > bestLen {
+			best, bestLen = capture, len(d)
 		}
 	}
 	if bestLen >= 0 {
