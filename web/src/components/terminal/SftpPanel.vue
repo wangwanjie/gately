@@ -85,7 +85,7 @@
 
       <!-- 桌面端表头 -->
       <div v-if="!isMobile && sorted.length" class="list-head">
-        <el-checkbox :model-value="allSelected" :indeterminate="selected.size > 0 && !allSelected" @change="toggleAll" />
+        <el-checkbox :model-value="allSelected" :indeterminate="someSelected && !allSelected" @change="toggleAll" />
         <span class="c-name">{{ t('common.name') }}</span>
         <span class="c-size">{{ t('sftp.col.size') }}</span>
         <span class="c-time">{{ t('sftp.col.modTime') }}</span>
@@ -317,6 +317,8 @@ const filePager = usePager(() => sorted.value, { storageKey: 'sftp.files', reset
 const listEl = ref<HTMLElement | null>(null)
 // 表头复选框只作用于当前页，避免选中看不见的条目后被一并删除；跨页已选的数量显示在底部操作栏
 const allSelected = computed(() => filePager.rows.value.length > 0 && filePager.rows.value.every((e) => selected.value.has(e.path)))
+// 表头复选框只反映当前页：其他页有选中而本页一个没选时不显示半选
+const someSelected = computed(() => filePager.rows.value.some((e) => selected.value.has(e.path)))
 
 // ---- 目录加载 ----
 function lastPathKey(): string {
