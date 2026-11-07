@@ -5,6 +5,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -92,6 +93,11 @@ func platformRun(action string, sp Spec, out io.Writer) error {
 		if err := os.MkdirAll(sp.ConfigDir, 0o700); err != nil {
 			return err
 		}
+		// 服务以 LocalSystem 运行，配置目录里有账号、令牌、DNS 密钥与证书私钥，且托管程序优先从 <配置目录>\bin 查找；
+		// ProgramData 默认允许普通用户读取并新建文件，目录必须收紧为只有 SYSTEM 与管理员可访问
+		if err := protectDir(sp.ConfigDir); err != nil {
+			return fmt.Errorf("设置配置目录权限失败: %w", err)
+		}
 		if s, err := m.OpenService(Name); err == nil {
 			s.Close()
 			return errors.New("服务已存在，请先运行 gately service uninstall 再重新安装")
@@ -167,6 +173,24 @@ func platformRun(action string, sp Spec, out io.Writer) error {
 		return nil
 	}
 	return nil
+}
+
+// protectedDirSDDL 是配置目录的安全描述符：受保护的 DACL（不继承上级目录的权限），
+// 只有 SYSTEM 与 Administrators 完全控制，并由子目录与文件继承
+const protectedDirSDDL = "D:P(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)"
+
+// protectDir 把目录（含已有内容，经继承）设置为只有 SYSTEM 与管理员可访问，目录已存在时同样重设。
+func protectDir(dir string) error {
+	sd, err := windows.SecurityDescriptorFromString(protectedDirSDDL)
+	if err != nil {
+		return err
+	}
+	dacl, _, err := sd.DACL()
+	if err != nil {
+		return err
+	}
+	return windows.SetNamedSecurityInfo(dir, windows.SE_FILE_OBJECT,
+		windows.DACL_SECURITY_INFORMATION|windows.PROTECTED_DACL_SECURITY_INFORMATION, nil, nil, dacl, nil)
 }
 
 // stopService 发送停止请求并等待服务进入停止状态。

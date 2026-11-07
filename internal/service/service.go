@@ -102,6 +102,7 @@ func Run(args []string, out io.Writer) int {
 			return 1
 		}
 		sp.ConfigDir = abs
+		checkInstallSafety(sp, out)
 	}
 
 	if err := platformRun(action, sp, out); err != nil {
