@@ -66,5 +66,6 @@
   "copyHint": "Creating a new item based on \"{name}\". Saving adds a new item and leaves the original unchanged.",
   "copyHintSecrets": "Passwords, tokens and other secrets you leave unchanged are taken from the original.",
   "autoFirewall": "Open firewall port",
-  "firewallTag": "Firewall"
+  "firewallTag": "Firewall",
+  "pageRange": "{from}–{to} of {total}"
 }

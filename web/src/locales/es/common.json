@@ -66,5 +66,6 @@
   "copyHint": "Se creará un elemento nuevo a partir de «{name}». Al guardar se añade un elemento nuevo y el original no cambia.",
   "copyHintSecrets": "Las contraseñas, tokens y demás secretos que no modifiques se toman del original.",
   "autoFirewall": "Abrir puerto en el cortafuegos",
-  "firewallTag": "Cortafuegos"
+  "firewallTag": "Cortafuegos",
+  "pageRange": "{from}–{to} de {total}"
 }

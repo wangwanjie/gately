@@ -66,5 +66,6 @@
   "copyHint": "Neuer Eintrag auf Basis von „{name}“. Beim Speichern wird ein neuer Eintrag angelegt, das Original bleibt unverändert.",
   "copyHintSecrets": "Nicht geänderte Passwörter, Token und andere Geheimnisse werden vom Original übernommen.",
   "autoFirewall": "Firewall-Port freigeben",
-  "firewallTag": "Firewall"
+  "firewallTag": "Firewall",
+  "pageRange": "{from}–{to} von {total}"
 }

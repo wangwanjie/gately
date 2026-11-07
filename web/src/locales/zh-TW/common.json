@@ -66,5 +66,6 @@
   "copyHint": "以「{name}」為範本新建，儲存後新增一筆，原項目不受影響。",
   "copyHintSecrets": "未修改的密碼、權杖等金鑰沿用原項目的值。",
   "autoFirewall": "自動放行防火牆",
-  "firewallTag": "防火牆"
+  "firewallTag": "防火牆",
+  "pageRange": "第 {from}–{to} 筆，共 {total} 筆"
 }
