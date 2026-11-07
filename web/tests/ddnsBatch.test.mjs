@@ -124,3 +124,9 @@ test('只有公共后缀时不能作为主域名', () => {
   const res = parseBatch('com.cn\nco.uk', base)
   assert.deepEqual(res.errors.map((e) => e.reason), ['domain', 'domain'])
 })
+
+test('中文域名转换为 punycode', () => {
+  const res = parseBatch('中文.example.com\nnas.例子.中国', { ...base, knownZones: ['example.com'] })
+  assert.deepEqual(res.errors, [])
+  assert.deepEqual(brief(res), ['A xn--fiq228c.example.com {ipv4Addr}', 'A nas.xn--fsqu00a.xn--fiqs8s {ipv4Addr}'])
+})

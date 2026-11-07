@@ -55,11 +55,24 @@ function normZone(z: string) {
   return z.trim().toLowerCase().replace(/^\.+|\.+$/g, '')
 }
 
-// normDomain 去掉误粘贴的协议、路径、端口与末尾的点
+// toASCIILabel 把中文等国际化域名标签转换为 punycode（xn--...），转换失败时原样返回，交给格式校验报错
+function toASCIILabel(label: string) {
+  // eslint-disable-next-line no-control-regex
+  if (/^[\x00-\x7f]*$/.test(label)) {
+    return label
+  }
+  try {
+    return new URL(`http://${label}.invalid/`).hostname.split('.')[0]
+  } catch {
+    return label
+  }
+}
+
+// normDomain 去掉误粘贴的协议、路径、端口与末尾的点，国际化域名转换为 punycode（服务商接口只接受 ASCII 形式）
 function normDomain(s: string) {
   let d = s.trim().toLowerCase().replace(/^[a-z][a-z0-9+.-]*:\/\//, '')
   d = d.replace(/[/?#].*$/, '').replace(/:\d+$/, '')
-  return d.replace(/\.+$/, '')
+  return d.replace(/[。．｡]/g, '.').replace(/\.+$/, '').split('.').map(toASCIILabel).join('.')
 }
 
 // guessZone 按公共后缀猜主域名：example.com、example.com.cn
