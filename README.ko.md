@@ -67,7 +67,6 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 
 부팅 시 자동 실행: 압축을 푼 뒤 `sudo ./gately service install`을 실행합니다(Windows는 관리자 권한 터미널에서 `.\gately.exe service install`). Linux는 systemd 서비스, macOS는 launchd 데몬(`-user`를 붙이면 sudo 없이 로그인 항목으로 등록), Windows는 서비스로 등록하고 즉시 시작하며 비정상 종료 후 자동으로 다시 시작합니다. 설정 디렉터리 기본값은 `/etc/gately`, `/usr/local/etc/gately`, `%ProgramData%\Gately`이며 `-c`, `-listen`으로 바꿀 수 있습니다. 서비스는 실행 파일 경로를 참조하므로 먼저 최종 위치에 두세요. 이후 `gately service uninstall|start|stop|restart|status`로 관리하며, 제거해도 설정 디렉터리는 남습니다.
 
-
 서비스 템플릿: [systemd](deploy/systemd/gately.service), [OpenWrt procd](deploy/openwrt/gately.init). 다운로드한 압축 파일과 이미지 검증(cosign 서명, 빌드 출처 증명, SBOM)은 [릴리스 산출물 검증](docs/ko/VERIFY.md)을 참고하세요.
 
 </details>

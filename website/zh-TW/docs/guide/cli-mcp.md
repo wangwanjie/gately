@@ -4,6 +4,8 @@
 
 另有 `gately reset-password` 與 `gately reset-totp` 直接讀寫本機設定目錄，不經過 API，用於忘記密碼或遺失兩步驟驗證器時找回管理員帳號，見 [重設密碼與兩步驟驗證](/zh-TW/docs/guide/install#reset)。
 
+`gately service install|uninstall|start|stop|restart|status` 把 Gately 註冊為開機自啟的系統服務，見 [開機自啟](/zh-TW/docs/guide/install#service)。
+
 ## 連線設定
 
 連線資訊依以下順序決定，後面的會覆蓋前面的：

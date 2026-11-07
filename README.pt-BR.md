@@ -67,7 +67,6 @@ Parâmetros: `-c` diretório de configuração (também pode ser definido pela v
 
 Iniciar com o sistema: depois de extrair, execute `sudo ./gately service install` (no Windows, `.\gately.exe service install` em um terminal de administrador). Isso registra uma unidade systemd no Linux, um daemon launchd no macOS (com `-user`, um item de login sem sudo) e um serviço no Windows, inicia o Gately e o reinicia após uma falha. O diretório de configuração padrão é `/etc/gately`, `/usr/local/etc/gately` ou `%ProgramData%\Gately`; `-c` e `-listen` o substituem. O serviço aponta para o caminho do executável, então coloque-o antes no local definitivo. Depois, gerencie com `gately service uninstall|start|stop|restart|status`; a desinstalação mantém o diretório de configuração.
 
-
 Modelos de serviço: [systemd](deploy/systemd/gately.service) e [OpenWrt procd](deploy/openwrt/gately.init). Para verificar os pacotes e imagens baixados (assinaturas cosign, proveniência do build, SBOM), consulte [Verificação dos artefatos de release](docs/pt-BR/VERIFY.md).
 
 </details>

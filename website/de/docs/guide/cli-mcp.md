@@ -4,6 +4,8 @@ Die ausführbare Datei `gately` enthält zwei Unterbefehle: `gately ctl` ruft im
 
 Zusätzlich arbeiten `gately reset-password` und `gately reset-totp` direkt auf dem lokalen Konfigurationsverzeichnis, ohne die API, und stellen das Administratorkonto nach einem vergessenen Passwort oder verlorenen Authenticator wieder her; siehe [Passwort und Zwei-Faktor-Authentifizierung zurücksetzen](/de/docs/guide/install#reset).
 
+`gately service install|uninstall|start|stop|restart|status` registriert Gately als Systemdienst mit Autostart; siehe [Autostart](/de/docs/guide/install#service).
+
 ## Verbindungskonfiguration
 
 Die Verbindungsdaten werden in dieser Reihenfolge ermittelt, wobei spätere Quellen frühere überschreiben:

@@ -4,6 +4,8 @@
 
 另有 `gately reset-password` 与 `gately reset-totp` 直接读写本机配置目录，不经过 API，用于忘记密码或丢失两步验证器时找回管理员账号，见 [重置密码与两步验证](/docs/guide/install#reset)。
 
+`gately service install|uninstall|start|stop|restart|status` 把 Gately 注册为开机自启的系统服务，见 [开机自启](/docs/guide/install#service)。
+
 ## 连接配置
 
 连接信息按以下顺序确定，后面的覆盖前面的：

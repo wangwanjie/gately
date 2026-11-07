@@ -46,6 +46,18 @@ services:
 ./gately -c /etc/gately
 ```
 
+### Автозапуск (gately service) {#service}
+
+После распаковки переместите программу в окончательное место (служба ссылается на путь к текущему исполняемому файлу) и выполните:
+
+```bash
+sudo ./gately service install
+```
+
+В Windows выполните `.\gately.exe service install` в терминале администратора. В Linux регистрируется юнит systemd, в macOS — демон launchd (с `-user` — объект входа текущего пользователя без sudo), в Windows — системная служба; Gately сразу запускается и перезапускается после сбоя. Каталог конфигурации по умолчанию — `/etc/gately`, `/usr/local/etc/gately` или `%ProgramData%\Gately`; `-c` задаёт другой, `-listen` — адрес прослушивания панели управления, `-no-start` только регистрирует службу без запуска. Далее управляйте ею командами `gately service uninstall|start|stop|restart|status`; при удалении каталог конфигурации сохраняется.
+
+Чтобы настроить юнит-файл вручную, используйте шаблон systemd ниже.
+
 ### systemd
 
 В репозитории есть готовый unit-файл [deploy/systemd/gately.service](https://github.com/wangwanjie/gately/blob/main/deploy/systemd/gately.service), в котором уже выданы возможности (capabilities), нужные для прослушивания низких портов:

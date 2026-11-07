@@ -46,6 +46,18 @@ services:
 ./gately -c /etc/gately
 ```
 
+### 부팅 시 자동 시작(gately service) {#service}
+
+압축을 푼 뒤 프로그램을 최종 위치에 두고(서비스는 현재 실행 파일 경로를 참조합니다) 다음을 실행합니다:
+
+```bash
+sudo ./gately service install
+```
+
+Windows에서는 관리자 터미널에서 `.\gately.exe service install`을 실행합니다. Linux는 systemd 서비스, macOS는 launchd 데몬(`-user`를 붙이면 sudo 없이 현재 사용자의 로그인 항목으로 등록), Windows는 시스템 서비스로 등록되며, 설치 후 바로 시작하고 비정상 종료 시 자동으로 다시 시작합니다. 설정 디렉터리 기본값은 `/etc/gately`, `/usr/local/etc/gately`, `%ProgramData%\Gately`이며 `-c`로 지정하고, `-listen`으로 관리 화면 수신 주소를, `-no-start`로 시작 없이 등록만 합니다. 이후 `gately service uninstall|start|stop|restart|status`로 관리하며, 제거해도 설정 디렉터리는 남습니다.
+
+유닛 파일을 직접 조정하려면 아래 systemd 템플릿을 사용할 수 있습니다.
+
 ### systemd
 
 저장소에 완성된 서비스 파일 [deploy/systemd/gately.service](https://github.com/wangwanjie/gately/blob/main/deploy/systemd/gately.service)가 있으며, 낮은 번호의 포트를 수신하는 데 필요한 권한(capability)이 이미 부여되어 있습니다.

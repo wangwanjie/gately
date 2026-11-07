@@ -4,6 +4,8 @@ El ejecutable `gately` incluye dos subcomandos: `gately ctl` llama desde la term
 
 Además, `gately reset-password` y `gately reset-totp` trabajan directamente sobre el directorio de configuración local, sin pasar por la API, para recuperar la cuenta de administrador si olvidaste la contraseña o perdiste el autenticador; consulta [Restablecer la contraseña y la autenticación de dos factores](/es/docs/guide/install#reset).
 
+`gately service install|uninstall|start|stop|restart|status` registra Gately como servicio del sistema que se inicia con el equipo; consulte [Inicio automático](/es/docs/guide/install#service).
+
 ## Configuración de la conexión
 
 Los datos de conexión se determinan en el siguiente orden, y cada paso sobrescribe al anterior:

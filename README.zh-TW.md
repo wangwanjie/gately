@@ -67,7 +67,6 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 
 開機自啟：解壓後執行 `sudo ./gately service install`（Windows 在系統管理員終端機執行 `.\gately.exe service install`）。Linux 會註冊 systemd 服務，macOS 註冊 launchd 常駐程式（加 `-user` 可免 sudo 註冊為登入項目），Windows 註冊為系統服務，安裝後立即啟動並在異常結束後自動重新啟動；設定目錄預設為 `/etc/gately`、`/usr/local/etc/gately` 或 `%ProgramData%\Gately`，可用 `-c`、`-listen` 指定。服務引用的是目前執行檔的路徑，請先把程式放到最終位置。之後用 `gately service uninstall|start|stop|restart|status` 管理，解除安裝時保留設定目錄。
 
-
 服務範本：[systemd](deploy/systemd/gately.service)、[OpenWrt procd](deploy/openwrt/gately.init)。驗證下載的壓縮檔與映像檔（cosign 簽章、建置來源證明、SBOM）請見[驗證發布產物](docs/zh-TW/VERIFY.md)。
 
 </details>

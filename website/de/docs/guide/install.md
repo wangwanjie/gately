@@ -46,6 +46,18 @@ Das Image enthält `sh`, `bash` und `curl`, sodass gängige Benachrichtigungsskr
 ./gately -c /etc/gately
 ```
 
+### Autostart (gately service) {#service}
+
+Legen Sie das Programm nach dem Entpacken an seinen endgültigen Ort (der Dienst verweist auf den Pfad der aktuellen ausführbaren Datei) und führen Sie dann aus:
+
+```bash
+sudo ./gately service install
+```
+
+Unter Windows führen Sie `.\gately.exe service install` in einem Administrator-Terminal aus. Unter Linux wird eine systemd-Unit, unter macOS ein launchd-Daemon (mit `-user` ein Anmeldeobjekt des aktuellen Benutzers ohne sudo) und unter Windows ein Systemdienst registriert; Gately startet sofort und wird nach einem Absturz neu gestartet. Das Konfigurationsverzeichnis ist standardmäßig `/etc/gately`, `/usr/local/etc/gately` bzw. `%ProgramData%\Gately`; `-c` legt ein anderes fest, `-listen` die Listen-Adresse der Verwaltungsoberfläche und `-no-start` registriert den Dienst, ohne ihn zu starten. Danach verwalten Sie ihn mit `gately service uninstall|start|stop|restart|status`; beim Deinstallieren bleibt das Konfigurationsverzeichnis erhalten.
+
+Um die Unit-Datei anzupassen, können Sie die systemd-Vorlage unten verwenden.
+
 ### systemd
 
 Das Repository enthält eine vollständige Unit-Datei [deploy/systemd/gately.service](https://github.com/wangwanjie/gately/blob/main/deploy/systemd/gately.service), die bereits die nötigen Capabilities zum Lauschen auf privilegierten Ports gewährt:

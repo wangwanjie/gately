@@ -4,6 +4,8 @@
 
 이 밖에 `gately reset-password`와 `gately reset-totp`는 API를 거치지 않고 로컬 설정 디렉터리를 직접 다루며, 비밀번호를 잊었거나 인증 앱을 잃어버렸을 때 관리자 계정을 복구합니다. [비밀번호와 2단계 인증 재설정](/ko/docs/guide/install#reset)을 참고하세요.
 
+`gately service install|uninstall|start|stop|restart|status`로 Gately를 부팅 시 자동 시작되는 시스템 서비스로 등록할 수 있습니다. [부팅 시 자동 시작](/ko/docs/guide/install#service)을 참고하세요.
+
 ## 연결 설정
 
 연결 정보는 다음 순서로 결정되며 뒤에 오는 항목이 앞의 항목을 덮어씁니다.

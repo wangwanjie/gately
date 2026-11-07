@@ -46,6 +46,18 @@ The image ships with `sh`, `bash` and `curl`, so typical notification scripts ru
 ./gately -c /etc/gately
 ```
 
+### Start at boot (gately service) {#service}
+
+After extracting, move the binary to its final location (the service points at the current executable path), then run:
+
+```bash
+sudo ./gately service install
+```
+
+On Windows, run `.\gately.exe service install` in an administrator terminal. Linux gets a systemd unit, macOS a launchd daemon (add `-user` to register a login item for the current user without sudo) and Windows a system service; Gately starts right away and is brought back after a crash. The config directory defaults to `/etc/gately`, `/usr/local/etc/gately` or `%ProgramData%\Gately`; `-c` sets another one, `-listen` sets the admin UI listen address and `-no-start` registers the service without starting it. Manage it afterwards with `gately service uninstall|start|stop|restart|status`; uninstalling keeps the config directory.
+
+To customize the unit file, use the systemd template below instead.
+
 ### systemd
 
 The repository ships a complete service file, [deploy/systemd/gately.service](https://github.com/wangwanjie/gately/blob/main/deploy/systemd/gately.service), which already grants the capability needed to listen on low ports:

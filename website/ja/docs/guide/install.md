@@ -46,6 +46,18 @@ services:
 ./gately -c /etc/gately
 ```
 
+### 自動起動（gately service） {#service}
+
+展開後、プログラムを最終的な場所に置いてから（サービスは現在の実行ファイルのパスを参照します）次を実行します：
+
+```bash
+sudo ./gately service install
+```
+
+Windows では管理者ターミナルで `.\gately.exe service install` を実行します。Linux では systemd サービス、macOS では launchd デーモン（`-user` を付けると sudo なしで現在のユーザーのログイン項目として登録）、Windows ではシステムサービスとして登録され、すぐに起動し、異常終了後は自動的に再起動されます。設定ディレクトリの既定値は `/etc/gately`、`/usr/local/etc/gately`、`%ProgramData%\Gately` で、`-c` で指定でき、`-listen` で管理画面の待ち受けアドレス、`-no-start` で起動せず登録のみ行います。以後は `gately service uninstall|start|stop|restart|status` で管理し、アンインストール時も設定ディレクトリは残ります。
+
+ユニットファイルをカスタマイズする場合は、下の systemd テンプレートを使えます。
+
 ### systemd
 
 リポジトリには完全なサービスファイル [deploy/systemd/gately.service](https://github.com/wangwanjie/gately/blob/main/deploy/systemd/gately.service) が用意されており、低い番号のポートで待ち受けるために必要なケーパビリティも付与済みです。

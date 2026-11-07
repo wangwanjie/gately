@@ -46,6 +46,18 @@ services:
 ./gately -c /etc/gately
 ```
 
+### 开机自启（gately service） {#service}
+
+解压后把程序放到最终位置（服务引用的是当前可执行文件的路径），然后执行：
+
+```bash
+sudo ./gately service install
+```
+
+Windows 在管理员终端执行 `.\gately.exe service install`。Linux 注册为 systemd 服务，macOS 注册为 launchd 守护进程（加 `-user` 可免 sudo 注册为当前用户的登录项），Windows 注册为系统服务；安装后立即启动，异常退出后自动拉起。配置目录默认为 `/etc/gately`、`/usr/local/etc/gately` 或 `%ProgramData%\Gately`，可用 `-c` 指定，`-listen` 指定管理界面监听地址，`-no-start` 只注册不启动。之后用 `gately service uninstall|start|stop|restart|status` 管理，卸载时保留配置目录。
+
+如需自定义单元文件，也可以使用下面的 systemd 模板。
+
 ### systemd
 
 仓库提供完整的服务文件 [deploy/systemd/gately.service](https://github.com/wangwanjie/gately/blob/main/deploy/systemd/gately.service)，已授予监听低位端口所需的能力：

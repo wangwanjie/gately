@@ -4,6 +4,8 @@
 
 このほか `gately reset-password` と `gately reset-totp` は API を経由せずローカルの設定ディレクトリを直接操作し、パスワードを忘れたときや認証アプリを紛失したときに管理者アカウントを復旧します。[パスワードと 2 段階認証のリセット](/ja/docs/guide/install#reset) を参照してください。
 
+`gately service install|uninstall|start|stop|restart|status` で Gately を起動時に自動起動するシステムサービスとして登録できます。[自動起動](/ja/docs/guide/install#service) を参照してください。
+
 ## 接続設定
 
 接続情報は次の順序で決まり、後のものが前のものを上書きします。

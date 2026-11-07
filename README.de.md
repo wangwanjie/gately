@@ -67,7 +67,6 @@ Parameter: `-c` Konfigurationsverzeichnis (alternativ die Umgebungsvariable `GAT
 
 Start beim Hochfahren: Nach dem Entpacken `sudo ./gately service install` ausführen (Windows: `.\gately.exe service install` in einem Terminal mit Administratorrechten). Das registriert unter Linux eine systemd-Unit, unter macOS einen launchd-Daemon (mit `-user` als Anmeldeobjekt ohne sudo) und unter Windows einen Dienst, startet Gately sofort und startet es nach einem Absturz neu. Das Konfigurationsverzeichnis ist standardmäßig `/etc/gately`, `/usr/local/etc/gately` oder `%ProgramData%\Gately`; `-c` und `-listen` überschreiben es. Der Dienst verweist auf den Pfad der Programmdatei, legen Sie sie daher vorher am endgültigen Ort ab. Danach verwalten Sie ihn mit `gately service uninstall|start|stop|restart|status`; beim Deinstallieren bleibt das Konfigurationsverzeichnis erhalten.
 
-
 Dienstvorlagen: [systemd](deploy/systemd/gately.service) und [OpenWrt procd](deploy/openwrt/gately.init). Wie Sie heruntergeladene Archive und Images prüfen (cosign-Signaturen, Build-Provenienz, SBOM), beschreibt [Release-Artefakte verifizieren](docs/de/VERIFY.md).
 
 </details>

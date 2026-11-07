@@ -67,7 +67,6 @@ Flags: `-c` sets the config directory (the `GATELY_CONFIG_DIR` environment varia
 
 Start at boot: after extracting, run `sudo ./gately service install` (Windows: `.\gately.exe service install` in an administrator terminal). It registers a systemd unit on Linux, a launchd daemon on macOS (add `-user` for a login item without sudo) and a Windows service, starts Gately and brings it back after a crash; the config directory defaults to `/etc/gately`, `/usr/local/etc/gately` or `%ProgramData%\Gately` and `-c` and `-listen` override it. Keep the binary at its final location first, because the service points at that path. Use `gately service uninstall|start|stop|restart|status` to manage it afterwards; the config directory is kept when uninstalling.
 
-
 Service templates: [systemd](deploy/systemd/gately.service) and [OpenWrt procd](deploy/openwrt/gately.init). To verify downloaded archives and images (cosign signatures, build provenance, SBOM), see [Verifying release artifacts](docs/en/VERIFY.md).
 
 </details>
