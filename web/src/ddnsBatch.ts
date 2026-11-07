@@ -69,8 +69,9 @@ function guessZone(domain: string) {
     return ''
   }
   const last2 = labels.slice(-2).join('.')
-  if (labels.length >= 3 && multiSuffixes.has(last2)) {
-    return labels.slice(-3).join('.')
+  if (multiSuffixes.has(last2)) {
+    // 只有公共后缀本身（com.cn）不能作为主域名
+    return labels.length >= 3 ? labels.slice(-3).join('.') : ''
   }
   return last2
 }

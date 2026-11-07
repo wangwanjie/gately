@@ -118,3 +118,9 @@ test('一种类型都没勾选时，没写类型的行提示勾选类型', () =>
   assert.deepEqual(res.errors.map((e) => `${e.line} ${e.reason}`), ['1 types'])
   assert.deepEqual(brief(res), ['CNAME api.example.com www.example.com'])
 })
+
+test('只有公共后缀时不能作为主域名', () => {
+  assert.equal(splitDomain('com.cn', '', []), null)
+  const res = parseBatch('com.cn\nco.uk', base)
+  assert.deepEqual(res.errors.map((e) => e.reason), ['domain', 'domain'])
+})
