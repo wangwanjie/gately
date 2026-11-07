@@ -14,6 +14,9 @@ permissions:
 jobs:
   binaries:
     runs-on: ubuntu-latest
+    # 只构建并上传 artifact，不需要写权限
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -83,6 +86,8 @@ jobs:
   sign-macos:
     needs: binaries
     runs-on: macos-latest
+    permissions:
+      contents: read
     env:
       MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
     steps:
@@ -90,8 +95,12 @@ jobs:
         with:
           name: dist-unsigned
           path: dist
+      # 证书导入或公证失败（证书过期、Apple 服务故障、排队超时等）时不阻断发版：
+      # 两步都 continue-on-error，失败时 dist 中仍是未签名的原压缩包，照常上传并发布，同时留下警告
       - name: 导入签名证书
+        id: import
         if: env.MACOS_CERT_P12 != ''
+        continue-on-error: true
         env:
           MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
         run: |
@@ -113,7 +122,9 @@ jobs:
           fi
           echo "SIGN_IDENTITY=$IDENTITY" >> "$GITHUB_ENV"
       - name: 签名并公证
-        if: env.MACOS_CERT_P12 != ''
+        id: sign
+        if: steps.import.outcome == 'success'
+        continue-on-error: true
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
@@ -132,13 +143,14 @@ jobs:
           done
           # 两个架构放进同一个 zip 一次提交公证，节省排队时间
           ditto -c -k --keepParent "$work/notarize" "$work/notarize.zip"
+          # 公证结果为 Invalid 时 notarytool 以非零码退出，这里不让脚本立即终止，交给下面按 status 判断并打印公证日志
           xcrun notarytool submit "$work/notarize.zip" --apple-id "$APPLE_ID" --password "$APPLE_APP_PASSWORD" --team-id "$APPLE_TEAM_ID" \
-            --wait --timeout 30m --output-format json > "$work/result.json"
+            --wait --timeout 30m --output-format json > "$work/result.json" || true
           cat "$work/result.json"
-          status=$(plutil -extract status raw "$work/result.json")
+          status=$(plutil -extract status raw "$work/result.json" || echo unknown)
           if [ "$status" != "Accepted" ]; then
-            id=$(plutil -extract id raw "$work/result.json")
-            xcrun notarytool log "$id" --apple-id "$APPLE_ID" --password "$APPLE_APP_PASSWORD" --team-id "$APPLE_TEAM_ID"
+            id=$(plutil -extract id raw "$work/result.json" || true)
+            [ -n "$id" ] && xcrun notarytool log "$id" --apple-id "$APPLE_ID" --password "$APPLE_APP_PASSWORD" --team-id "$APPLE_TEAM_ID"
             exit 1
           fi
           # 命令行二进制无法装订公证票据，Gatekeeper 首次运行时在线查询；用重新打包后的文件替换原压缩包
@@ -146,6 +158,9 @@ jobs:
             name=$(basename "$tgz" .tar.gz)
             (cd "$work/$name" && COPYFILE_DISABLE=1 tar --no-xattrs -czf "$GITHUB_WORKSPACE/$tgz" gately LICENSE README.md)
           done
+      - name: 签名失败时发布未签名的 macOS 产物
+        if: steps.import.outcome == 'failure' || steps.sign.outcome == 'failure'
+        run: echo "::warning title=macOS 未签名::macOS 签名或公证失败，本次 Release 中的 darwin 压缩包未签名，请查看上面的步骤日志"
       - name: 上传 macOS 产物
         uses: actions/upload-artifact@v4
         with:
