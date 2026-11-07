@@ -1069,6 +1069,7 @@
   "各站点最近约 60 秒的指标": "Messwerte jeder Website über etwa die letzten 60 Sekunden",
   "同一端口同时以明文 HTTP 提供站点": "Sites werden auf demselben Port auch per unverschlüsseltem HTTP ausgeliefert",
   "同一端口收到的明文 HTTP 请求跳转到 HTTPS": "Unverschlüsselte HTTP-Anfragen auf demselben Port werden auf HTTPS umgeleitet",
+  "同一配置目录已有另一个 Gately 实例在运行，本次不开启崩溃记录": "Eine andere Gately-Instanz mit demselben Konfigurationsverzeichnis läuft bereits; die Absturzaufzeichnung wird für diese nicht aktiviert",
   "同名文件或目录已存在": "Eine Datei oder ein Verzeichnis mit demselben Namen existiert bereits",
   "同时删除落盘的日志文件、历史文件、归档与来源记录。": "Löscht auch die Protokolldateien auf der Festplatte, rotierte Dateien, Archive und die Quellenliste.",
   "同时运行的任务已达上限 %d，请稍后再试": "Das Limit %d gleichzeitig laufender Aufgaben ist erreicht, bitte später erneut versuchen",

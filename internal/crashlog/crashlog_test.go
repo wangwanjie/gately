@@ -1,6 +1,7 @@
 package crashlog
 
 import (
+	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -205,4 +206,37 @@ func TestLogIsTrimmedByEntry(t *testing.T) {
 	if !strings.HasPrefix(s, entryPrefix) || !strings.Contains(s, "entry E") || strings.Contains(s, "entry A") {
 		t.Fatalf("应只保留最新的完整记录: 开头 %q", s[:40])
 	}
+}
+
+// 同一配置目录已有实例在运行时，第二个实例拿不到实例锁：不整理、不删除前者的运行标记，也不误报意外结束；
+// 前者退出（或被强制结束）释放锁后才能正常开启。
+func TestSecondInstanceKeepsRunningMarker(t *testing.T) {
+	dir := t.TempDir()
+	first, _, err := Start(dir, "gately first")
+	if err != nil {
+		t.Fatal(err)
+	}
+	run := filepath.Join(dir, runName)
+	second, prev, err := Start(dir, "gately second")
+	if !errors.Is(err, ErrLocked) || second != nil || prev.Kind != None {
+		t.Fatalf("第二个实例应得到 ErrLocked 且不报告上次运行: %v %v %+v", err, second, prev)
+	}
+	if data, _ := os.ReadFile(run); !strings.HasPrefix(string(data), "gately first") {
+		t.Fatalf("第一个实例的运行标记被改动: %q", data)
+	}
+	if _, err := os.Stat(filepath.Join(dir, LogName)); !os.IsNotExist(err) {
+		t.Fatalf("不应把运行中实例的标记写进 crash.log: %v", err)
+	}
+	// 第一个实例被强制结束：锁释放、标记保留，下一个实例报告意外结束
+	first.Abandon()
+	third, prev, err := Start(dir, "gately third")
+	if err != nil || prev.Kind != Killed {
+		t.Fatalf("前一个实例结束后应能开启并报告意外结束: %v %+v", err, prev)
+	}
+	third.Close()
+	fourth, _, err := Start(dir, "gately fourth")
+	if err != nil {
+		t.Fatalf("正常退出后应能再次开启: %v", err)
+	}
+	fourth.Close()
 }

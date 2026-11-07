@@ -12,6 +12,7 @@ package crashlog
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -26,11 +27,17 @@ const (
 	LogName = "crash.log"
 	// runName 是运行标记文件名，正常退出时删除
 	runName = "crash-run.log"
+	// lockName 是实例锁文件名：运行期间持有排他锁，同一配置目录的另一个实例据此知道标记文件属于活着的进程。
+	// 锁文件本身不删除，进程结束时锁由系统释放
+	lockName = "crash-run.lock"
 	// maxLogBytes 是 crash.log 的大小上限，超出时从最早的记录开始丢弃
 	maxLogBytes = 1 << 20
 	// entryPrefix 是 crash.log 中每条记录的标题行前缀，裁剪时按它对齐记录边界
 	entryPrefix = "===== "
 )
+
+// ErrLocked 表示同一配置目录已有另一个实例在运行并持有实例锁：本次不整理它的运行标记，也不开启崩溃记录。
+var ErrLocked = errors.New("another instance using this config directory is running")
 
 // heartbeat 是刷新运行标记文件修改时间的间隔：被强制结束时，用最后的修改时间估计结束时间
 var heartbeat = time.Minute
@@ -61,6 +68,7 @@ type Recorder struct {
 	path string
 	mu   sync.Mutex
 	f    *os.File
+	lock *os.File
 	stop chan struct{}
 }
 
@@ -71,26 +79,40 @@ func Start(dir, header string) (*Recorder, Previous, error) {
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return nil, Previous{}, err
 	}
+	// 先拿实例锁：拿不到说明另一个实例正在使用这个配置目录（例如服务已在运行，又手动启动了一次），
+	// 它的运行标记不能当成上次运行的遗留来整理或删除
+	lock, err := os.OpenFile(filepath.Join(dir, lockName), os.O_CREATE|os.O_RDWR, 0o600)
+	if err != nil {
+		return nil, Previous{}, err
+	}
+	if err := tryLock(lock); err != nil {
+		lock.Close()
+		return nil, Previous{}, err
+	}
 	prev, err := collect(dir)
 	if err != nil {
+		lock.Close()
 		return nil, prev, err
 	}
 	path := filepath.Join(dir, runName)
 	// O_APPEND：运行时写崩溃输出与 Fatal 追加内容都落在文件末尾，不会覆盖首行
 	f, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY|os.O_APPEND, 0o600)
 	if err != nil {
+		lock.Close()
 		return nil, prev, err
 	}
 	if _, err := f.WriteString(strings.TrimSpace(header) + "\n"); err != nil {
 		f.Close()
+		lock.Close()
 		return nil, prev, err
 	}
 	// 运行时会复制一份文件描述符，崩溃时直接写入，不经过 Go 的任何缓冲
 	if err := debug.SetCrashOutput(f, debug.CrashOptions{}); err != nil {
 		f.Close()
+		lock.Close()
 		return nil, prev, err
 	}
-	r := &Recorder{path: path, f: f, stop: make(chan struct{})}
+	r := &Recorder{path: path, f: f, lock: lock, stop: make(chan struct{})}
 	go r.beat(heartbeat)
 	return r, prev, nil
 }
@@ -140,6 +162,26 @@ func (r *Recorder) Close() {
 	_ = r.f.Close()
 	r.f = nil
 	_ = os.Remove(r.path)
+	// 删除标记后再释放实例锁，避免另一个实例在两者之间把标记当成遗留
+	_ = r.lock.Close()
+}
+
+// Abandon 模拟进程被强制结束：停止心跳并关闭文件、释放实例锁，但保留运行标记与崩溃输出设置之外的一切痕迹，
+// 下次 Start 会把它当成意外结束整理。只供测试在同一进程内模拟 kill -9 使用。
+func (r *Recorder) Abandon() {
+	if r == nil {
+		return
+	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if r.f == nil {
+		return
+	}
+	close(r.stop)
+	_ = debug.SetCrashOutput(nil, debug.CrashOptions{})
+	_ = r.f.Close()
+	r.f = nil
+	_ = r.lock.Close()
 }
 
 // collect 读取上次运行留下的标记文件，追加到 crash.log 后删除。没有标记文件表示上次正常退出。

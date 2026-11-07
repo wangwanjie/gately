@@ -1,6 +1,7 @@
 package app
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -16,7 +17,10 @@ func (a *App) startCrashLog() {
 	header := fmt.Sprintf("gately %s (%s, built %s) pid %d started %s",
 		version.Version, version.Commit, version.BuildDate, os.Getpid(), time.Now().UTC().Format(time.RFC3339))
 	rec, prev, err := crashlog.Start(a.opts.ConfigDir, header)
-	if err != nil {
+	if errors.Is(err, crashlog.ErrLocked) {
+		// 另一个实例正在使用这个配置目录（例如已注册为服务，又手动启动了一次），它的运行标记不能动
+		a.sysLogs.Add(logbuf.LevelWarn, "", "同一配置目录已有另一个 Gately 实例在运行，本次不开启崩溃记录")
+	} else if err != nil {
 		// 记录失败不影响启动
 		a.sysLogs.Add(logbuf.LevelWarn, "", "开启崩溃记录失败: "+err.Error())
 	}

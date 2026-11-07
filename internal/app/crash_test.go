@@ -100,7 +100,8 @@ func TestCrashLogLifecycle(t *testing.T) {
 		t.Fatal("正常退出后再次启动不应报告异常")
 	}
 
-	// a2 没有退出就再次启动，等同进程被强制结束
+	// a2 没有退出就再次启动，等同进程被强制结束（同一进程内用 Abandon 释放实例锁、保留运行标记）
+	a2.crash.Abandon()
 	a3, err := New(Options{ConfigDir: dir, Listen: listen, CrashLog: true})
 	if err != nil {
 		t.Fatal(err)
@@ -125,6 +126,8 @@ func TestCrashLogRecordsRunError(t *testing.T) {
 	if err := a.Run(context.Background()); err == nil {
 		t.Fatal("监听非法地址应失败")
 	}
+	// Run 失败后进程随即退出，实例锁由系统释放
+	a.crash.Abandon()
 	a2, err := New(Options{ConfigDir: dir, Listen: "127.0.0.1:" + strconv.Itoa(freeTCPPort(t)), CrashLog: true})
 	if err != nil {
 		t.Fatal(err)
