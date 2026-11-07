@@ -2675,6 +2675,7 @@
   "路径已存在且不是目录: ": "Path already exists and is not a directory: ",
   "路径必须是以 / 开头的绝对路径": "Path must be an absolute path starting with /",
   "路径必须是容器内的绝对路径": "Path must be an absolute path inside the container",
+  "路径或参数含控制字符: %q": "Path or argument contains control characters: %q",
   "路径是目录": "Path is a directory",
   "路径规则 %q 应以 / 或 * 开头": "path rule %q must start with / or *",
   "路径规则 %q 无效: %v": "invalid path rule %q: %v",

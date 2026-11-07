@@ -102,6 +102,10 @@ func Run(args []string, out io.Writer) int {
 			return 1
 		}
 		sp.ConfigDir = abs
+		if err := validateSpec(sp); err != nil {
+			say(out, "操作失败: %v", err)
+			return 1
+		}
 		checkInstallSafety(sp, out)
 	}
 

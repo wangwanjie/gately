@@ -2675,6 +2675,7 @@
   "路径已存在且不是目录: ": "O caminho já existe e não é um diretório: ",
   "路径必须是以 / 开头的绝对路径": "O caminho deve ser absoluto e começar com /",
   "路径必须是容器内的绝对路径": "O caminho deve ser um caminho absoluto dentro do contêiner",
+  "路径或参数含控制字符: %q": "O caminho ou argumento contém caracteres de controle: %q",
   "路径是目录": "O caminho é um diretório",
   "路径规则 %q 应以 / 或 * 开头": "a regra de caminho %q deve começar com / ou *",
   "路径规则 %q 无效: %v": "regra de caminho %q inválida: %v",

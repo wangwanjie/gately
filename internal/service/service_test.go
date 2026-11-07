@@ -63,3 +63,38 @@ func TestRunArgs(t *testing.T) {
 		}
 	}
 }
+
+// ExecStart 会展开 % 说明符与 $变量，路径中的 % 与 $ 必须转义，单元文件才能原样执行
+func TestSystemdUnitEscapes(t *testing.T) {
+	u := systemdUnit(Spec{Exe: "/opt/a%20b/gately", ConfigDir: "/data/$HOME/g's", Listen: "[::]:16680"})
+	want := `ExecStart=/opt/a%%20b/gately -c "/data/$$HOME/g's" -listen [::]:16680` + "\n"
+	if !strings.Contains(u, want) {
+		t.Errorf("转义不正确，期望含 %q:\n%s", want, u)
+	}
+	u = systemdUnit(Spec{Exe: `C:\x "y"`, ConfigDir: "/etc/gately"})
+	if !strings.Contains(u, `ExecStart="C:\\x \"y\"" -c /etc/gately`) {
+		t.Errorf("反斜杠与双引号转义不正确:\n%s", u)
+	}
+}
+
+// 换行等控制字符可以在单元文件里另起一行注入指令，安装时直接拒绝
+func TestValidateSpecRejectsControlChars(t *testing.T) {
+	ok := Spec{Exe: "/usr/local/bin/gately", ConfigDir: "/data/my gately", Listen: ":16680"}
+	if err := validateSpec(ok); err != nil {
+		t.Fatalf("正常路径被拒绝: %v", err)
+	}
+	for _, sp := range []Spec{
+		{Exe: "/usr/local/bin/gately", ConfigDir: "/etc/gately\nExecStartPre=/bin/sh -c id"},
+		{Exe: "/usr/local/bin/gately", ConfigDir: "/etc/gately", Listen: ":16680\r"},
+		{Exe: "/tmp/\x00gately", ConfigDir: "/etc/gately"},
+		{Exe: "/tmp/gately\t", ConfigDir: "/etc/gately"},
+	} {
+		if err := validateSpec(sp); err == nil {
+			t.Errorf("含控制字符的 %+v 未被拒绝", sp)
+		}
+	}
+	var out bytes.Buffer
+	if code := Run([]string{"install", "-c", "/etc/gately\nExecStartPre=/bin/id"}, &out); code != 1 || !strings.Contains(out.String(), "控制字符") {
+		t.Errorf("install 未拒绝控制字符: 退出码 %d\n%s", code, out.String())
+	}
+}

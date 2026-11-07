@@ -1,16 +1,32 @@
 package service
 
 import (
+	"fmt"
 	"strings"
 )
 
-// systemdQuote 在参数含空白或引号时加双引号，供 systemd 单元的 ExecStart 使用。
+// systemdQuote 转义参数供 systemd 单元的 ExecStart 使用：ExecStart 会展开 % 说明符与 $变量，
+// 分别写成 %% 与 $$；含空白、引号或反斜杠时再加双引号。控制字符由 validateSpec 提前拒绝。
 func systemdQuote(s string) string {
+	s = strings.NewReplacer("%", "%%", "$", "$$").Replace(s)
 	if s == "" || strings.ContainsAny(s, " \t\"'\\") {
 		r := strings.NewReplacer(`\`, `\\`, `"`, `\"`)
 		return `"` + r.Replace(s) + `"`
 	}
 	return s
+}
+
+// validateSpec 拒绝含换行等控制字符的路径与参数：它们会写进单元文件、plist 或服务命令行，
+// 换行可以在 systemd 单元里另起一行注入任意指令。
+func validateSpec(sp Spec) error {
+	for _, v := range append([]string{sp.Exe}, sp.args()...) {
+		for _, c := range v {
+			if c < 0x20 || c == 0x7f {
+				return fmt.Errorf("路径或参数含控制字符: %q", v)
+			}
+		}
+	}
+	return nil
 }
 
 // systemdUnit 生成 systemd 单元文件内容，与 deploy/systemd/gately.service 保持一致。
