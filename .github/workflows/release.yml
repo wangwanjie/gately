@@ -62,8 +62,6 @@ jobs:
             alpine:3.24@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6 \
             sh -ec 'for arch in amd64 arm64 arm mipsle mips riscv64; do deploy/openwrt/build.sh "$1" "$arch" "/bin-in/$arch/gately" dist; done; deploy/openwrt/build-luci.sh "$1" dist' sh "$GITHUB_REF_NAME"
           sudo chown -R "$(id -u):$(id -g)" dist
-      - name: 生成校验和
-        run: cd dist && sha256sum *.tar.gz *.fpk *.ipk *.apk > checksums.txt
       - name: 生成 SBOM
         uses: anchore/sbom-action@v0
         with:
@@ -72,6 +70,148 @@ jobs:
           output-file: dist/gately_${{ github.ref_name }}_sbom.spdx.json
           upload-artifact: false
           upload-release-assets: false
+      - name: 上传未签名产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-unsigned
+          path: dist/
+          retention-days: 3
+
+  # 用 Developer ID 证书签名 macOS 二进制并提交 Apple 公证，用户下载后 Gatekeeper 直接放行。
+  # 需要仓库 Secrets：MACOS_CERT_P12（Developer ID Application 证书 p12 的 base64）、MACOS_CERT_PASSWORD、
+  # APPLE_ID、APPLE_APP_PASSWORD（Apple ID 的 App 专用密码）、APPLE_TEAM_ID；未配置证书时跳过签名，原样发布
+  sign-macos:
+    needs: binaries
+    runs-on: macos-latest
+    env:
+      MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist-unsigned
+          path: dist
+      - name: 导入签名证书
+        if: env.MACOS_CERT_P12 != ''
+        env:
+          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+        run: |
+          KC="$RUNNER_TEMP/signing.keychain-db"
+          KCPASS=$(openssl rand -hex 16)
+          echo "$MACOS_CERT_P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security create-keychain -p "$KCPASS" "$KC"
+          security set-keychain-settings -lut 21600 "$KC"
+          security unlock-keychain -p "$KCPASS" "$KC"
+          security import "$RUNNER_TEMP/cert.p12" -k "$KC" -P "$MACOS_CERT_PASSWORD" -T /usr/bin/codesign
+          # 允许 codesign 无交互使用私钥
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KCPASS" "$KC" >/dev/null
+          security list-keychains -d user -s "$KC" $(security list-keychains -d user | tr -d '"')
+          rm "$RUNNER_TEMP/cert.p12"
+          IDENTITY=$(security find-identity -v -p codesigning "$KC" | awk -F'"' '/Developer ID Application/ {print $2; exit}')
+          if [ -z "$IDENTITY" ]; then
+            echo "证书中没有 Developer ID Application 身份" >&2
+            exit 1
+          fi
+          echo "SIGN_IDENTITY=$IDENTITY" >> "$GITHUB_ENV"
+      - name: 签名并公证
+        if: env.MACOS_CERT_P12 != ''
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          work="$RUNNER_TEMP/macos"
+          mkdir -p "$work/notarize"
+          for tgz in dist/gately_*_darwin_*.tar.gz; do
+            name=$(basename "$tgz" .tar.gz)
+            mkdir -p "$work/$name"
+            tar xzf "$tgz" -C "$work/$name"
+            # 开启 hardened runtime 并带可信时间戳，这是公证的前提
+            codesign --force --options runtime --timestamp --identifier cn.gately.gately --sign "$SIGN_IDENTITY" "$work/$name/gately"
+            codesign --verify --strict --verbose=2 "$work/$name/gately"
+            cp "$work/$name/gately" "$work/notarize/$name"
+          done
+          # 两个架构放进同一个 zip 一次提交公证，节省排队时间
+          ditto -c -k --keepParent "$work/notarize" "$work/notarize.zip"
+          xcrun notarytool submit "$work/notarize.zip" --apple-id "$APPLE_ID" --password "$APPLE_APP_PASSWORD" --team-id "$APPLE_TEAM_ID" \
+            --wait --timeout 30m --output-format json > "$work/result.json"
+          cat "$work/result.json"
+          status=$(plutil -extract status raw "$work/result.json")
+          if [ "$status" != "Accepted" ]; then
+            id=$(plutil -extract id raw "$work/result.json")
+            xcrun notarytool log "$id" --apple-id "$APPLE_ID" --password "$APPLE_APP_PASSWORD" --team-id "$APPLE_TEAM_ID"
+            exit 1
+          fi
+          # 命令行二进制无法装订公证票据，Gatekeeper 首次运行时在线查询；用重新打包后的文件替换原压缩包
+          for tgz in dist/gately_*_darwin_*.tar.gz; do
+            name=$(basename "$tgz" .tar.gz)
+            (cd "$work/$name" && COPYFILE_DISABLE=1 tar --no-xattrs -czf "$GITHUB_WORKSPACE/$tgz" gately LICENSE README.md)
+          done
+      - name: 上传 macOS 产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-macos
+          path: dist/gately_*_darwin_*.tar.gz
+          retention-days: 3
+      - name: 清理钥匙串
+        if: always() && env.MACOS_CERT_P12 != ''
+        run: security delete-keychain "$RUNNER_TEMP/signing.keychain-db" || true
+
+  publish:
+    needs: sign-macos
+    runs-on: ubuntu-latest
+    env:
+      # Windows 代码签名证书，未配置时跳过；使用 jsign 签名，支持的证书存储类型见 https://ebourg.github.io/jsign/
+      # WINDOWS_SIGN_STORETYPE：PKCS12、SIGNPATH（SignPath，开源项目可免费申请）、TRUSTEDSIGNING（Azure Trusted Signing）、AZUREKEYVAULT 等
+      # WINDOWS_SIGN_KEYSTORE：PKCS12 时为证书文件的 base64，云服务时为服务地址或密钥库名称
+      # WINDOWS_SIGN_STOREPASS：证书密码或云服务访问令牌；WINDOWS_SIGN_ALIAS：证书别名（PKCS12 单证书可留空）
+      # WINDOWS_SIGN_CERTFILE：云服务需要单独提供证书链时填 PEM 内容，可留空
+      WINDOWS_SIGN_STORETYPE: ${{ secrets.WINDOWS_SIGN_STORETYPE }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist-unsigned
+          path: dist
+      - name: 替换为已签名的 macOS 产物
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-macos
+          path: dist
+      - name: 签名 Windows 二进制
+        if: env.WINDOWS_SIGN_STORETYPE != ''
+        env:
+          WINDOWS_SIGN_KEYSTORE: ${{ secrets.WINDOWS_SIGN_KEYSTORE }}
+          WINDOWS_SIGN_STOREPASS: ${{ secrets.WINDOWS_SIGN_STOREPASS }}
+          WINDOWS_SIGN_ALIAS: ${{ secrets.WINDOWS_SIGN_ALIAS }}
+          WINDOWS_SIGN_CERTFILE: ${{ secrets.WINDOWS_SIGN_CERTFILE }}
+        run: |
+          # 固定版本并校验哈希，避免下载被替换
+          curl -fsSL -o "$RUNNER_TEMP/jsign.jar" https://github.com/ebourg/jsign/releases/download/7.6/jsign-7.6.jar
+          echo "6cf58aa080e7ff82656f320cff8d4a3bff30408df8766806dcba3740dd839fa5  $RUNNER_TEMP/jsign.jar" | sha256sum -c -
+          keystore="$WINDOWS_SIGN_KEYSTORE"
+          if [ "$WINDOWS_SIGN_STORETYPE" = PKCS12 ]; then
+            echo "$WINDOWS_SIGN_KEYSTORE" | base64 --decode > "$RUNNER_TEMP/win.p12"
+            keystore="$RUNNER_TEMP/win.p12"
+          fi
+          args=(--storetype "$WINDOWS_SIGN_STORETYPE" --keystore "$keystore" --storepass "$WINDOWS_SIGN_STOREPASS"
+            --tsaurl http://timestamp.digicert.com,http://timestamp.sectigo.com --alg SHA-256
+            --name Gately --url https://gately.cn)
+          if [ -n "$WINDOWS_SIGN_ALIAS" ]; then
+            args+=(--alias "$WINDOWS_SIGN_ALIAS")
+          fi
+          if [ -n "$WINDOWS_SIGN_CERTFILE" ]; then
+            printf '%s\n' "$WINDOWS_SIGN_CERTFILE" > "$RUNNER_TEMP/win-chain.pem"
+            args+=(--certfile "$RUNNER_TEMP/win-chain.pem")
+          fi
+          for tgz in dist/gately_*_windows_*.tar.gz; do
+            work=$(mktemp -d)
+            tar xzf "$tgz" -C "$work"
+            java -jar "$RUNNER_TEMP/jsign.jar" "${args[@]}" "$work/gately.exe"
+            (cd "$work" && tar czf "$GITHUB_WORKSPACE/$tgz" gately.exe LICENSE README.md)
+          done
+          rm -f "$RUNNER_TEMP/win.p12" "$RUNNER_TEMP/win-chain.pem"
+      - name: 生成校验和
+        run: cd dist && sha256sum *.tar.gz *.fpk *.ipk *.apk > checksums.txt
       - uses: sigstore/cosign-installer@v3
       - name: 签名校验和文件（cosign 无密钥）
         run: |
