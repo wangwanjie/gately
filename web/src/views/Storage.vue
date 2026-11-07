@@ -39,7 +39,7 @@
       </template>
     </GroupedList>
 
-    <div v-if="current" class="g-card">
+    <div v-if="current" ref="browserCard" class="g-card">
       <div class="g-card-head g-sticky-bar">
         <div class="g-card-title"><FolderOpen :size="16" />{{ current.name }}</div>
         <div class="toolbar">
@@ -58,7 +58,8 @@
           </el-breadcrumb-item>
         </el-breadcrumb>
         <el-alert v-if="listError" type="error" :title="listError" :closable="false" show-icon />
-        <el-table v-else v-loading="loading" :data="entries" :empty-text="t('storage.emptyDir')" size="small">
+        <!-- 目录条目多时只渲染当前页 -->
+        <el-table v-else v-loading="loading" :data="filePager.rows.value" :empty-text="t('storage.emptyDir')" size="small" row-key="name">
           <el-table-column :label="t('common.name')" min-width="220">
             <template #default="{ row }">
               <a class="name" @click="open(row)">
@@ -86,6 +87,7 @@
             </template>
           </el-table-column>
         </el-table>
+        <ListPager v-if="!listError" :pager="filePager" :anchor="browserCard" />
       </div>
     </div>
 
@@ -141,6 +143,8 @@ import { api } from '../api'
 import SecretInput from '../components/SecretInput.vue'
 import { secretOf } from '../secrets'
 import PageHeader from '../components/PageHeader.vue'
+import ListPager from '../components/ListPager.vue'
+import { usePager } from '../composables/usePager'
 import EntityCard from '../components/EntityCard.vue'
 import GroupedList from '../components/GroupedList.vue'
 import GroupInput from '../components/GroupInput.vue'
@@ -206,6 +210,9 @@ const loading = ref(false)
 const listError = ref('')
 const uploading = ref(false)
 const fileInput = ref<HTMLInputElement>()
+// 目录列表分页：进入其他目录或切换挂载时回到第 1 页，刷新、上传与删除后保持当前页
+const filePager = usePager(() => entries.value, { storageKey: 'storage.files', resetOn: [cwd, () => current.value?.key] })
+const browserCard = ref<HTMLElement | null>(null)
 
 function empty(): Mount {
   return { name: '', type: 'local', remark: '', enable: true, readOnly: false, path: '', url: '', username: '', password: '', skipVerify: false, domain: '' }

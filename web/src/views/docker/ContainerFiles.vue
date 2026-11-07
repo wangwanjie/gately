@@ -17,8 +17,9 @@
       </div>
     </div>
 
-    <div v-loading="loading" class="list">
-      <div v-for="f in entries" :key="f.path" class="item" @click="open(f)">
+    <!-- 目录条目多时只渲染当前页 -->
+    <div ref="listEl" v-loading="loading" class="list">
+      <div v-for="f in filePager.rows.value" :key="f.path" class="item" @click="open(f)">
         <component :is="f.dir ? Folder : File" :size="20" class="ico" :class="{ dir: f.dir }" />
         <div class="main">
           <div class="name">{{ f.name }}<span v-if="f.link" class="link mono"> → {{ f.link }}</span></div>
@@ -44,6 +45,7 @@
       </div>
       <el-empty v-if="!loading && !entries.length" :description="t('docker.container.files.emptyDir')" :image-size="60" />
     </div>
+    <ListPager :pager="filePager" :anchor="listEl" />
 
     <el-dialog v-model="editVisible" :title="editPath" :width="'860px'" :fullscreen="isMobile" top="4vh" append-to-body>
       <el-alert v-if="truncated" type="warning" :closable="false" show-icon class="gap" :title="t('docker.container.files.truncated')" />
@@ -63,6 +65,8 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowUp, Download, Ellipsis, File, Folder, FolderPlus, Pencil, RefreshCw, Save, Trash2, Upload } from 'lucide-vue-next'
 import { api } from '../../api'
 import { useIsMobile } from '../../composables/useIsMobile'
+import { usePager } from '../../composables/usePager'
+import ListPager from '../../components/ListPager.vue'
 import { download, formatBytes, formatTime } from './format'
 import type { FileEntry } from './types'
 
@@ -82,6 +86,9 @@ const editPath = ref('')
 const content = ref('')
 const truncated = ref(false)
 const saving = ref(false)
+// 目录列表分页：进入其他目录时回到第 1 页，刷新与增删后保持当前页
+const filePager = usePager(() => entries.value, { storageKey: 'docker.files', resetOn: path })
+const listEl = ref<HTMLElement | null>(null)
 
 const crumbs = computed(() => {
   const parts = path.value.split('/').filter(Boolean)
