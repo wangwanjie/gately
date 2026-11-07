@@ -7,6 +7,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"sync"
 	"sync/atomic"
 	"time"
 )
@@ -54,6 +55,11 @@ func (t ClientTimeouts) writeIdle() time.Duration {
 // clientDeadlines 在每次读取请求体、写出响应前设置截止时间，结束后立即清除。
 // 清除很重要：HTTP/1 读完请求体后 net/http 会在同一连接上做后台读取以发现访客断开，残留的读截止时间会让它误判断开并取消请求；
 // HTTP/2 的截止时间是请求流上的定时器，残留时即使没有读写也会重置请求流。HTTP/1、HTTP/2 与 HTTP/3 都支持；不支持截止时间的连接不做限制。
+//
+// 站点处理函数返回后不能再设置截止时间：后端不读完请求体就先回复时，处理函数随即返回，转发到后端的 Transport 协程
+// 仍会继续读取访客的请求体。此时 HTTP/2 的 responseWriter 已被 net/http 回收，调用 SetReadDeadline 会空指针崩溃，
+// 且发生在没有 recover 的协程里，整个进程退出；HTTP/1 的连接则可能已在处理下一个请求。处理函数返回前调用 finish，
+// 之后的设置与清除都直接跳过；mu 保证 finish 返回时没有进行中的设置。
 type clientDeadlines struct {
 	rc        *http.ResponseController
 	read      time.Duration
@@ -61,10 +67,39 @@ type clientDeadlines struct {
 	noRead    atomic.Bool
 	noWrite   atomic.Bool
 	readTimed atomic.Bool
+	mu        sync.Mutex
+	done      bool
 }
 
 func newClientDeadlines(w http.ResponseWriter, t ClientTimeouts) *clientDeadlines {
 	return &clientDeadlines{rc: http.NewResponseController(w), read: t.readIdle(), write: t.writeIdle()}
+}
+
+// finish 在站点处理函数返回前调用，之后不再操作 ResponseController。
+func (d *clientDeadlines) finish() {
+	d.mu.Lock()
+	d.done = true
+	d.mu.Unlock()
+}
+
+// setRead 在处理函数返回前设置读截止时间；已返回时什么也不做并返回 http.ErrNotSupported。
+func (d *clientDeadlines) setRead(t time.Time) error {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	if d.done {
+		return http.ErrNotSupported
+	}
+	return d.rc.SetReadDeadline(t)
+}
+
+// setWrite 与 setRead 相同，设置写截止时间。
+func (d *clientDeadlines) setWrite(t time.Time) error {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	if d.done {
+		return http.ErrNotSupported
+	}
+	return d.rc.SetWriteDeadline(t)
 }
 
 // armRead 设置读截止时间，返回是否设置成功。
@@ -72,7 +107,7 @@ func (d *clientDeadlines) armRead() bool {
 	if d.noRead.Load() || d.readTimed.Load() {
 		return false
 	}
-	if err := d.rc.SetReadDeadline(time.Now().Add(d.read)); err != nil {
+	if err := d.setRead(time.Now().Add(d.read)); err != nil {
 		d.noRead.Store(true)
 		return false
 	}
@@ -80,7 +115,7 @@ func (d *clientDeadlines) armRead() bool {
 }
 
 func (d *clientDeadlines) clearRead() {
-	_ = d.rc.SetReadDeadline(time.Time{})
+	_ = d.setRead(time.Time{})
 }
 
 // armWrite 设置写截止时间，返回是否设置成功。
@@ -88,7 +123,7 @@ func (d *clientDeadlines) armWrite() bool {
 	if d.noWrite.Load() {
 		return false
 	}
-	if err := d.rc.SetWriteDeadline(time.Now().Add(d.write)); err != nil {
+	if err := d.setWrite(time.Now().Add(d.write)); err != nil {
 		d.noWrite.Store(true)
 		return false
 	}
@@ -96,7 +131,7 @@ func (d *clientDeadlines) armWrite() bool {
 }
 
 func (d *clientDeadlines) clearWrite() {
-	_ = d.rc.SetWriteDeadline(time.Time{})
+	_ = d.setWrite(time.Time{})
 }
 
 // readTimedOut 表示读取请求体因访客空闲超时而失败，此时后端没有过错，不计入被动检查，返回 408。
@@ -126,7 +161,7 @@ func (b *idleBody) Read(p []byte) (int, error) {
 		// 超时后保持截止时间已过：net/http 回复前会尝试读掉剩余的请求体，没有截止时间就会一直等待停住的访客；
 		// 读取失败后服务器回复完即关闭连接
 		b.d.readTimed.Store(true)
-		_ = b.d.rc.SetReadDeadline(time.Now())
+		_ = b.d.setRead(time.Now())
 		return n, err
 	}
 	if armed {

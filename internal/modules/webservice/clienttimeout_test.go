@@ -240,3 +240,68 @@ func TestClientIdleTextSite(t *testing.T) {
 		t.Fatalf("固定文本站点: %d %s", resp.StatusCode, body)
 	}
 }
+
+// 后端不读请求体就先回复时，站点处理函数随即返回，而转发到后端的协程仍在读取访客后续发来的请求体。
+// 这时不能再通过 ResponseController 设置截止时间：HTTP/2 的 responseWriter 在处理函数返回后已被回收，
+// 调用会在没有 recover 的 Transport 协程里空指针崩溃，整个进程退出（HA iOS App 经 HTTP/2 登录时触发）。
+func TestClientIdleBodyReadAfterHandlerReturns(t *testing.T) {
+	early := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// 不读请求体直接回复；Connection: close 让 net/http 不再先读掉请求体再发响应头
+		w.Header().Set("Connection", "close")
+		_, _ = io.WriteString(w, "early")
+	}))
+	t.Cleanup(early.Close)
+	l := Listener{TLS: true, HTTP3: true, Sites: []Site{{Enable: true, Domains: []string{"secure.test"}, Targets: []string{early.URL}}}}
+	addr, _ := startRunner(t, l, fakeCerts{selfSigned(t, "secure.test")}, nil)
+	plain, _ := startRunner(t, Listener{Sites: l.Sites}, nil, nil)
+
+	clients := map[string]struct {
+		c    *http.Client
+		base string
+	}{
+		"h1": {&http.Client{Timeout: 20 * time.Second}, "http://" + plain},
+		"h2": {h2Client(), "https://" + addr},
+		"h3": {&http.Client{Timeout: 20 * time.Second, Transport: &http3.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true, ServerName: "secure.test"}}}, "https://" + addr},
+	}
+	for name, cl := range clients {
+		for round := 0; round < 3; round++ {
+			pr, pw := io.Pipe()
+			req, _ := http.NewRequest("POST", cl.base+"/auth/login_flow", pr)
+			req.Host = "secure.test"
+			// 先发一段，后端回复、处理函数返回之后访客继续发送请求体，转发协程会继续读取；
+			// 没人读取时写入会阻塞，到时关闭管道结束
+			go func() {
+				_, _ = pw.Write([]byte(`{"client_id":"https://home-assistant.io/iOS"`))
+				for i := 0; i < 6; i++ {
+					time.Sleep(50 * time.Millisecond)
+					if _, err := pw.Write([]byte(strings.Repeat("x", 512))); err != nil {
+						return
+					}
+				}
+				_ = pw.Close()
+			}()
+			stop := time.AfterFunc(time.Second, func() { _ = pw.CloseWithError(io.ErrUnexpectedEOF) })
+			resp, err := cl.c.Do(req)
+			if err == nil {
+				body, _ := io.ReadAll(resp.Body)
+				resp.Body.Close()
+				if string(body) != "early" {
+					t.Fatalf("%s: 应收到后端的回复: %d %q", name, resp.StatusCode, body)
+				}
+			} else if name == "h2" {
+				// HTTP/2 下后端的回复一定能先送达访客；HTTP/1 与 HTTP/3 是否报错取决于连接关闭的先后，不影响本用例
+				t.Fatalf("%s: %v", name, err)
+			}
+			time.Sleep(500 * time.Millisecond)
+			stop.Stop()
+			_ = pw.CloseWithError(io.ErrUnexpectedEOF)
+		}
+	}
+	// 进程仍然存活且能继续服务
+	time.Sleep(300 * time.Millisecond)
+	resp, err := h2Client().Get("https://" + addr + "/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+}

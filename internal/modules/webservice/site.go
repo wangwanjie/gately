@@ -790,6 +790,8 @@ func (h *siteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	rec.req = ar
 	// 访客空闲超时：读取请求体与写出响应时一次卡住超过设置的秒数即放弃，防止极慢的访客长期占住连接
 	dl := newClientDeadlines(w, h.site.ClientTimeouts)
+	// 处理函数返回后，仍在读取请求体的转发协程不能再设置截止时间（见 clientDeadlines）
+	defer dl.finish()
 	rec.dl = dl
 	r = r.WithContext(context.WithValue(r.Context(), ctxKeyClientDeadlines{}, dl))
 	if r.Body != nil && r.Body != http.NoBody {
