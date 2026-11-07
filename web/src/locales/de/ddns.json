@@ -97,6 +97,7 @@
   "batchErr": {
     "domain": "Ungültige Domain",
     "type": "Ungültiger Eintragstyp; nur A, AAAA, CNAME und TXT werden unterstützt",
+    "types": "Wählen Sie mindestens einen Eintragstyp aus oder geben Sie den Typ in der Zeile an",
     "value": "CNAME- und TXT-Einträge brauchen einen Wert",
     "zone": "Bei reinem Host ist eine Standardzone nötig",
     "address": "Der Wert ist keine gültige IP-Adresse"

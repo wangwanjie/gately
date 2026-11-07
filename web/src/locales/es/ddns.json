@@ -97,6 +97,7 @@
   "batchErr": {
     "domain": "Dominio no válido",
     "type": "Tipo de registro no válido; solo se admiten A, AAAA, CNAME y TXT",
+    "types": "Marque al menos un tipo de registro o escriba el tipo en la línea",
     "value": "Los registros CNAME y TXT necesitan un valor",
     "zone": "Se necesita una zona predeterminada si solo se indica el host",
     "address": "El valor no es una dirección IP válida"

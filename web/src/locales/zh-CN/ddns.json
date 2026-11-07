@@ -97,6 +97,7 @@
   "batchErr": {
     "domain": "域名格式无效",
     "type": "记录类型无效，只支持 A、AAAA、CNAME、TXT",
+    "types": "请至少勾选一种记录类型，或在行内写明类型",
     "value": "CNAME、TXT 记录需要填写记录值",
     "zone": "只写主机记录时需要填写默认主域名",
     "address": "记录值不是有效的 IP 地址"

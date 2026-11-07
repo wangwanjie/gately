@@ -8,7 +8,8 @@
 export const BATCH_TYPES = ['A', 'AAAA', 'CNAME', 'TXT'] as const
 
 // BatchError 为无效行的原因，界面按 ddns.batchErr.<原因> 显示
-export type BatchError = 'domain' | 'type' | 'value' | 'zone' | 'address'
+// types 表示该行没写类型，而对话框一种类型也没有勾选
+export type BatchError = 'domain' | 'type' | 'types' | 'value' | 'zone' | 'address'
 
 export interface BatchRecord {
   sub: string
@@ -203,7 +204,7 @@ export function parseBatch(text: string, opts: BatchOptions): BatchResult {
       built.push({ sub: parts.sub, zone: parts.zone, type, value: v })
     }
     if (!built.length) {
-      fail('type')
+      fail(m[2] ? 'type' : 'types')
       return
     }
     let added = false

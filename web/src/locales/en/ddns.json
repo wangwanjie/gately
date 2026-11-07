@@ -97,6 +97,7 @@
   "batchErr": {
     "domain": "Invalid domain",
     "type": "Invalid record type; only A, AAAA, CNAME and TXT are supported",
+    "types": "Check at least one record type, or write the type on the line",
     "value": "CNAME and TXT records need a value",
     "zone": "A default zone is required when only a host is given",
     "address": "The value is not a valid IP address"

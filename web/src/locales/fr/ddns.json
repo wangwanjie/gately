@@ -97,6 +97,7 @@
   "batchErr": {
     "domain": "Domaine invalide",
     "type": "Type d’enregistrement invalide ; seuls A, AAAA, CNAME et TXT sont pris en charge",
+    "types": "Cochez au moins un type d'enregistrement ou indiquez le type sur la ligne",
     "value": "Les enregistrements CNAME et TXT nécessitent une valeur",
     "zone": "Une zone par défaut est requise si seul l’hôte est indiqué",
     "address": "La valeur n’est pas une adresse IP valide"

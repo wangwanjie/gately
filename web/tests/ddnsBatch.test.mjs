@@ -112,3 +112,9 @@ test('同一行生成 A 与 AAAA 时只跳过已存在的那种，不计入重�
   assert.deepEqual(brief(res), ['AAAA www.example.com {ipv6Addr}'])
   assert.deepEqual(res.duplicates, [])
 })
+
+test('一种类型都没勾选时，没写类型的行提示勾选类型', () => {
+  const res = parseBatch('www.example.com\napi.example.com CNAME www.example.com', { ...base, types: [] })
+  assert.deepEqual(res.errors.map((e) => `${e.line} ${e.reason}`), ['1 types'])
+  assert.deepEqual(brief(res), ['CNAME api.example.com www.example.com'])
+})

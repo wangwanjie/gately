@@ -97,6 +97,7 @@
   "batchErr": {
     "domain": "網域格式無效",
     "type": "記錄類型無效，只支援 A、AAAA、CNAME、TXT",
+    "types": "請至少勾選一種記錄類型，或在行內寫明類型",
     "value": "CNAME、TXT 記錄需要填寫記錄值",
     "zone": "只寫主機記錄時需要填寫預設主網域",
     "address": "記錄值不是有效的 IP 位址"
