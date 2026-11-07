@@ -43,10 +43,11 @@
     <el-tabs v-model="tab" class="guard-tabs">
       <!-- 封禁列表 -->
       <el-tab-pane :label="t('guard.tabs.bans', { count: bans.length })" name="bans">
-        <div class="toolbar g-sticky-bar">
+        <div ref="banBar" class="toolbar g-sticky-bar">
           <el-input v-model="filter" :placeholder="t('guard.ban.search')" clearable class="search" :prefix-icon="Search" />
         </div>
-        <el-table :data="filteredBans" :empty-text="t('guard.ban.empty')" size="small" class="ban-table">
+        <!-- 只渲染当前页：封禁积累到数千条时一次性渲染会让页面卡死（issue #73） -->
+        <el-table :data="banPager.rows.value" :empty-text="t('guard.ban.empty')" size="small" class="ban-table" row-key="key">
           <el-table-column :label="t('guard.ban.address')" min-width="170">
             <template #default="{ row }"><span class="mono">{{ row.key }}</span></template>
           </el-table-column>
@@ -74,6 +75,7 @@
             </template>
           </el-table-column>
         </el-table>
+        <ListPager :pager="banPager" :anchor="banBar" />
       </el-tab-pane>
 
       <!-- 日志规则 -->
@@ -382,6 +384,8 @@ import { ElMessage } from 'element-plus'
 import { Ban, CopyPlus, Crosshair, FileCode, Flame, FlaskConical, LayoutTemplate, Pencil, Plus, Radar, RefreshCw, Save, Search, ShieldBan, SlidersHorizontal, Trash2 } from 'lucide-vue-next'
 import { api } from '../api'
 import PageHeader from '../components/PageHeader.vue'
+import ListPager from '../components/ListPager.vue'
+import { usePager } from '../composables/usePager'
 import EntityCard from '../components/EntityCard.vue'
 import GroupedList from '../components/GroupedList.vue'
 import GroupInput from '../components/GroupInput.vue'
@@ -576,6 +580,9 @@ const filteredBans = computed(() => {
   }
   return bans.value.filter((b) => [b.key, b.reason, b.jail ?? '', sourceTag(b).text].some((s) => s.toLowerCase().includes(q)))
 })
+// 封禁列表分页；搜索词变化时回到第 1 页，定时刷新与解封后保持当前页
+const banPager = usePager(() => filteredBans.value, { storageKey: 'guard.bans', resetOn: filter })
+const banBar = ref<HTMLElement | null>(null)
 
 function sourceTag(b: BanEntry): { type: 'danger' | 'warning' | 'info' | 'primary' | 'success'; text: string } {
   switch (b.source) {
