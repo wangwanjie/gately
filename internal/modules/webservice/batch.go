@@ -107,7 +107,7 @@ func normalizeBatchDomains(in []string) ([]string, error) {
 	var out []string
 	seen := map[string]bool{}
 	for _, raw := range in {
-		d, ok := hostname.Normalize(raw, true)
+		d, ok := hostname.NormalizePattern(raw)
 		if !ok {
 			return nil, fmt.Errorf("域名 %q 格式错误", strings.TrimSpace(raw))
 		}

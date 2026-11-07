@@ -44,7 +44,7 @@ type Site struct {
 	Enable bool   `json:"enable"`
 	// Group 为列表中的分组名称，只影响管理界面的展示，留空为未分组；默认站点不分组
 	Group string `json:"group"`
-	// Domains 支持精确域名、*.example.com 通配（匹配任意级子域名）与 *（匹配所有）
+	// Domains 支持精确域名、*.example.com（任意级子域名）、api-*.example.com（首段内通配）与 *（匹配所有）
 	Domains []string `json:"domains"`
 	Type    string   `json:"type"`
 
@@ -356,7 +356,7 @@ func (l *Listener) Validate() error {
 // 避免一个域名写错导致整个监听被跳过。
 func splitDomains(in []string) (ok, bad []string) {
 	for _, raw := range in {
-		d, valid := hostname.Normalize(raw, true)
+		d, valid := hostname.NormalizePattern(raw)
 		switch {
 		case !valid:
 			bad = append(bad, strings.TrimSpace(raw))
@@ -379,7 +379,7 @@ func (s *Site) validate(isDefault bool) error {
 	for _, raw := range s.Domains {
 		// 规范化为请求 Host 的形式：小写、IPv6 不带方括号、国际化域名转 punycode；
 		// 带端口、路径、@ 等永远匹配不上的写法直接报错
-		d, ok := hostname.Normalize(raw, true)
+		d, ok := hostname.NormalizePattern(raw)
 		if !ok {
 			return fmt.Errorf("域名 %q 格式错误", strings.TrimSpace(raw))
 		}
@@ -530,7 +530,8 @@ func matchDomain(rule, host string) int {
 		return 3
 	case rule == "*":
 		return 1
-	case strings.HasPrefix(rule, "*.") && strings.HasSuffix(host, rule[1:]):
+	}
+	if _, ok := hostname.CapturePattern(rule, host); ok {
 		return 2
 	}
 	return 0

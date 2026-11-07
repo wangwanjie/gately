@@ -28,15 +28,15 @@ func TestSelfCheckCertCoverage(t *testing.T) {
 	m.cfg.Settings.Enable = true
 	m.cfg.Listeners = []Listener{
 		{Enable: true, TLS: true, Port: 443, Name: "https", Sites: []Site{
-			{Enable: true, Name: "ok", Domains: []string{"a.example.com", "x.example.org", "*.example.org", "*"}},
-			{Enable: true, Name: "bad", Domains: []string{"dashboard.x-ui.example.com", "*.example.com", "a.example.com"}},
+			{Enable: true, Name: "ok", Domains: []string{"a.example.com", "x.example.org", "*.example.org", "app-*.example.org", "*"}},
+			{Enable: true, Name: "bad", Domains: []string{"dashboard.x-ui.example.com", "*.example.com", "app-*.example.com", "a.example.com"}},
 			{Enable: false, Name: "off", Domains: []string{"nocert.example.net"}},
 		}},
 		{Enable: true, TLS: false, Port: 80, Sites: []Site{{Enable: true, Domains: []string{"plain.example.net"}}}},
 		{Enable: false, TLS: true, Port: 8443, Sites: []Site{{Enable: true, Domains: []string{"stopped.example.net"}}}},
 	}
 	got := m.SelfCheck(context.Background(), module.CheckEnv{})
-	if len(got) != 1 || got[0].ID != "web.certMissing" || got[0].Params["site"] != "https / bad" || got[0].Params["domains"] != "dashboard.x-ui.example.com, *.example.com" {
+	if len(got) != 1 || got[0].ID != "web.certMissing" || got[0].Params["site"] != "https / bad" || got[0].Params["domains"] != "dashboard.x-ui.example.com, *.example.com, app-*.example.com" {
 		t.Fatalf("应只报告缺少证书的站点与域名: %+v", got)
 	}
 	m.cfg.Listeners[0].Sites[1].Enable = false

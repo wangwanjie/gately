@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/wangwanjie/gately/internal/hostname"
 	"github.com/wangwanjie/gately/internal/module"
 )
 
@@ -68,6 +69,9 @@ func certCheckName(d string) (string, bool) {
 		}
 		return "gately-check." + rest, true
 	case strings.Contains(d, "*"):
+		if name, ok := hostname.NormalizePattern(d); ok {
+			return strings.Replace(name, "*", "x", 1), true
+		}
 		return "", false
 	}
 	return d, true
