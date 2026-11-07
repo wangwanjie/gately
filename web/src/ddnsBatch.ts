@@ -124,13 +124,23 @@ function checkValue(type: string, value: string): BatchError | null {
   if (type === 'A' && !reIPv4.test(value)) {
     return 'address'
   }
-  if (type === 'AAAA' && !/^[0-9a-f:.]+$/i.test(value)) {
-    return 'address'
-  }
-  if (type === 'AAAA' && !value.includes(':')) {
+  if (type === 'AAAA' && !isIPv6(value)) {
     return 'address'
   }
   return null
+}
+
+// isIPv6 严格校验 IPv6 地址（含 ::ffff:1.2.3.4 这类内嵌 IPv4 的写法，不接受 %zone），与后端 netip.ParseAddr 一致
+export function isIPv6(value: string) {
+  if (!value.includes(':') || !/^[0-9a-f:.]+$/i.test(value)) {
+    return false
+  }
+  try {
+    new URL(`http://[${value}]/`)
+    return true
+  } catch {
+    return false
+  }
 }
 
 // parseBatch 解析批量输入，返回可添加的记录、重复跳过的行与无效行

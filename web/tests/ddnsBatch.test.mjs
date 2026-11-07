@@ -1,7 +1,7 @@
 // DDNS 批量添加解析的单元测试：node --test tests/
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { parseBatch, splitDomain } from '../src/ddnsBatch.ts'
+import { isIPv6, parseBatch, splitDomain } from '../src/ddnsBatch.ts'
 
 const base = { zone: '', types: ['A'], knownZones: [], existing: [], line: '' }
 const brief = (res) => res.records.map((r) => `${r.type} ${r.sub}.${r.zone} ${r.value}`)
@@ -91,4 +91,12 @@ test('与已有记录或前面的行重复时跳过，线路不同不算重复',
   const same = parseBatch('www.example.com', { ...base, existing, line: '电信' })
   assert.equal(same.records.length, 0)
   assert.equal(same.duplicates.length, 1)
+})
+
+test('AAAA 记录值严格校验，与后端 netip.ParseAddr 一致', () => {
+  const res = parseBatch('a 1:2\nb :::\nc AAAA fe80::1%eth0\nd 2001:db8::1\ne AAAA ::ffff:1.2.3.4', { ...base, zone: 'example.com' })
+  assert.deepEqual(res.errors.map((e) => `${e.line} ${e.reason}`), ['1 address', '2 address', '3 address'])
+  assert.deepEqual(brief(res), ['AAAA d.example.com 2001:db8::1', 'AAAA e.example.com ::ffff:1.2.3.4'])
+  assert.equal(isIPv6('2001:db8::1'), true)
+  assert.equal(isIPv6('1.2.3.4'), false)
 })
