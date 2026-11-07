@@ -65,6 +65,9 @@ Download the archive for your platform from [Releases](https://github.com/wangwa
 
 Flags: `-c` sets the config directory (the `GATELY_CONFIG_DIR` environment variable also works), `-listen` overrides the admin UI listen address, `-apply` applies `<name>.json` files from a directory to the config directory on every start (`GATELY_APPLY_DIR`, handy for GitOps and Kubernetes; the account and token files cannot be overwritten), and `-version` prints the version. For unattended installs, set `GATELY_INITIAL_PASSWORD` to choose the initial admin password instead of the default `gately.cn`.
 
+Start at boot: after extracting, run `sudo ./gately service install` (Windows: `.\gately.exe service install` in an administrator terminal). It registers a systemd unit on Linux, a launchd daemon on macOS (add `-user` for a login item without sudo) and a Windows service, starts Gately and brings it back after a crash; the config directory defaults to `/etc/gately`, `/usr/local/etc/gately` or `%ProgramData%\Gately` and `-c` and `-listen` override it. Keep the binary at its final location first, because the service points at that path. Use `gately service uninstall|start|stop|restart|status` to manage it afterwards; the config directory is kept when uninstalling.
+
+
 Service templates: [systemd](deploy/systemd/gately.service) and [OpenWrt procd](deploy/openwrt/gately.init). To verify downloaded archives and images (cosign signatures, build provenance, SBOM), see [Verifying release artifacts](docs/en/VERIFY.md).
 
 </details>

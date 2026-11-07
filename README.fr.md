@@ -65,6 +65,9 @@ Téléchargez l'archive correspondant à votre plateforme depuis [Releases](http
 
 Paramètres : `-c` répertoire de configuration (la variable d'environnement `GATELY_CONFIG_DIR` fonctionne aussi), `-listen` remplace l'adresse d'écoute de l'interface d'administration, `-apply` applique à chaque démarrage les fichiers `<nom>.json` d'un répertoire au répertoire de configuration (`GATELY_APPLY_DIR`, pratique pour le GitOps et Kubernetes ; les fichiers de comptes et de jetons ne peuvent pas être écrasés), `-version` affiche la version. Pour une installation sans intervention, définissez `GATELY_INITIAL_PASSWORD` afin de choisir le mot de passe administrateur initial à la place du mot de passe par défaut `gately.cn`.
 
+Démarrage au boot : après extraction, exécutez `sudo ./gately service install` (Windows : `.\gately.exe service install` dans un terminal administrateur). Cela enregistre une unité systemd sous Linux, un démon launchd sous macOS (avec `-user`, un élément d'ouverture de session sans sudo) et un service sous Windows, démarre Gately et le relance après un plantage. Le répertoire de configuration vaut par défaut `/etc/gately`, `/usr/local/etc/gately` ou `%ProgramData%\Gately` ; `-c` et `-listen` le remplacent. Le service pointe vers le chemin de l'exécutable, placez-le donc d'abord à son emplacement définitif. Ensuite, gérez-le avec `gately service uninstall|start|stop|restart|status` ; la désinstallation conserve le répertoire de configuration.
+
+
 Modèles de service : [systemd](deploy/systemd/gately.service) et [OpenWrt procd](deploy/openwrt/gately.init). Pour vérifier les archives et images téléchargées (signatures cosign, provenance de build, SBOM), consultez [Vérifier les artefacts publiés](docs/fr/VERIFY.md).
 
 </details>

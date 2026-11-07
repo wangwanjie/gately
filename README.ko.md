@@ -65,6 +65,9 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 
 인수: `-c` 설정 디렉터리(환경 변수 `GATELY_CONFIG_DIR`로도 지정 가능), `-listen` 관리 UI 수신 주소 덮어쓰기, `-apply` 시작할 때마다 디렉터리의 `<name>.json` 파일을 설정 디렉터리에 적용(`GATELY_APPLY_DIR`, GitOps와 Kubernetes에 유용. 계정 및 토큰 파일은 덮어쓸 수 없음), `-version` 버전 출력. 무인 설치 시 `GATELY_INITIAL_PASSWORD`를 설정하면 기본 비밀번호 `gately.cn` 대신 사용할 관리자 초기 비밀번호를 지정할 수 있습니다.
 
+부팅 시 자동 실행: 압축을 푼 뒤 `sudo ./gately service install`을 실행합니다(Windows는 관리자 권한 터미널에서 `.\gately.exe service install`). Linux는 systemd 서비스, macOS는 launchd 데몬(`-user`를 붙이면 sudo 없이 로그인 항목으로 등록), Windows는 서비스로 등록하고 즉시 시작하며 비정상 종료 후 자동으로 다시 시작합니다. 설정 디렉터리 기본값은 `/etc/gately`, `/usr/local/etc/gately`, `%ProgramData%\Gately`이며 `-c`, `-listen`으로 바꿀 수 있습니다. 서비스는 실행 파일 경로를 참조하므로 먼저 최종 위치에 두세요. 이후 `gately service uninstall|start|stop|restart|status`로 관리하며, 제거해도 설정 디렉터리는 남습니다.
+
+
 서비스 템플릿: [systemd](deploy/systemd/gately.service), [OpenWrt procd](deploy/openwrt/gately.init). 다운로드한 압축 파일과 이미지 검증(cosign 서명, 빌드 출처 증명, SBOM)은 [릴리스 산출물 검증](docs/ko/VERIFY.md)을 참고하세요.
 
 </details>

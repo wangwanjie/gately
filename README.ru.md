@@ -65,6 +65,9 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 
 Параметры: `-c` — каталог конфигурации (можно также задать переменной окружения `GATELY_CONFIG_DIR`), `-listen` переопределяет адрес, на котором слушает интерфейс управления, `-apply` при каждом запуске применяет файлы `<имя>.json` из каталога к каталогу конфигурации (`GATELY_APPLY_DIR`, удобно для GitOps и Kubernetes; файлы учётных записей и токенов перезаписать нельзя), `-version` выводит версию. Для автоматической установки задайте `GATELY_INITIAL_PASSWORD`, чтобы указать начальный пароль администратора вместо пароля по умолчанию `gately.cn`.
 
+Автозапуск при загрузке: после распаковки выполните `sudo ./gately service install` (в Windows — `.\gately.exe service install` в терминале администратора). Команда регистрирует unit systemd в Linux, демон launchd в macOS (с `-user` — элемент входа без sudo) и службу в Windows, сразу запускает Gately и перезапускает его после сбоя. Каталог конфигурации по умолчанию — `/etc/gately`, `/usr/local/etc/gately` или `%ProgramData%\Gately`, изменить его можно через `-c` и `-listen`. Служба ссылается на путь к исполняемому файлу, поэтому сначала поместите его на постоянное место. Дальше управляйте через `gately service uninstall|start|stop|restart|status`; при удалении каталог конфигурации сохраняется.
+
+
 Шаблоны служб: [systemd](deploy/systemd/gately.service) и [OpenWrt procd](deploy/openwrt/gately.init). Проверка загруженных архивов и образов (подписи cosign, происхождение сборки, SBOM) описана в разделе [Проверка артефактов релиза](docs/ru/VERIFY.md).
 
 </details>

@@ -65,6 +65,9 @@ Descarga el paquete de tu plataforma desde [Releases](https://github.com/wangwan
 
 Parámetros: `-c` directorio de configuración (también se puede usar la variable de entorno `GATELY_CONFIG_DIR`), `-listen` sobrescribe la dirección de escucha de la interfaz de administración, `-apply` aplica en cada arranque los archivos `<nombre>.json` de un directorio al directorio de configuración (`GATELY_APPLY_DIR`, útil para GitOps y Kubernetes; los archivos de cuentas y tokens no se pueden sobrescribir), `-version` muestra la versión. En instalaciones desatendidas, define `GATELY_INITIAL_PASSWORD` para elegir la contraseña inicial del administrador en lugar de la contraseña predeterminada `gately.cn`.
 
+Inicio con el sistema: tras descomprimir, ejecuta `sudo ./gately service install` (en Windows, `.\gately.exe service install` en un terminal de administrador). Registra una unidad systemd en Linux, un daemon launchd en macOS (con `-user` como elemento de inicio de sesión, sin sudo) y un servicio en Windows, inicia Gately y lo vuelve a levantar tras un fallo. El directorio de configuración es por defecto `/etc/gately`, `/usr/local/etc/gately` o `%ProgramData%\Gately`, y `-c` y `-listen` lo cambian. El servicio apunta a la ruta del ejecutable, así que colócalo antes en su ubicación definitiva. Después se gestiona con `gately service uninstall|start|stop|restart|status`; al desinstalar se conserva el directorio de configuración.
+
+
 Plantillas de servicio: [systemd](deploy/systemd/gately.service) y [OpenWrt procd](deploy/openwrt/gately.init). Para verificar los archivos e imágenes descargados (firmas cosign, procedencia de compilación, SBOM), consulta [Verificar los artefactos publicados](docs/es/VERIFY.md).
 
 </details>

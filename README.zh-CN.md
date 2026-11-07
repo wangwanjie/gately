@@ -65,6 +65,9 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 
 参数：`-c` 配置目录（也可用环境变量 `GATELY_CONFIG_DIR`），`-listen` 覆盖管理界面监听地址，`-apply` 每次启动把目录中的 `<名称>.json` 覆盖到配置目录（环境变量 `GATELY_APPLY_DIR`，适合 GitOps 与 Kubernetes；账号与令牌文件不允许覆盖），`-version` 输出版本。无人值守安装时可设置环境变量 `GATELY_INITIAL_PASSWORD` 指定管理员初始密码，代替默认密码 `gately.cn`。
 
+开机自启：解压后执行 `sudo ./gately service install`（Windows 在管理员终端执行 `.\gately.exe service install`）。Linux 会注册 systemd 服务，macOS 注册 launchd 守护进程（加 `-user` 可免 sudo 注册为登录项），Windows 注册为系统服务，安装后立即启动并在异常退出后自动拉起；配置目录默认为 `/etc/gately`、`/usr/local/etc/gately` 或 `%ProgramData%\Gately`，可用 `-c`、`-listen` 指定。服务引用的是当前可执行文件的路径，请先把程序放到最终位置。之后用 `gately service uninstall|start|stop|restart|status` 管理，卸载时保留配置目录。
+
+
 服务模板：[systemd](deploy/systemd/gately.service)、[OpenWrt procd](deploy/openwrt/gately.init)。校验下载的压缩包与镜像（cosign 签名、构建来源证明、SBOM）见[校验发布产物](docs/VERIFY.md)。
 
 </details>

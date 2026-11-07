@@ -65,6 +65,9 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 
 オプション: `-c` は設定ディレクトリ（環境変数 `GATELY_CONFIG_DIR` でも指定可能）、`-listen` は管理画面の待ち受けアドレスの上書き、`-apply` は起動のたびにディレクトリ内の `<name>.json` を設定ディレクトリに適用（`GATELY_APPLY_DIR`、GitOps や Kubernetes に便利。アカウントとトークンのファイルは上書き不可）、`-version` はバージョン表示です。無人インストールでは `GATELY_INITIAL_PASSWORD` を設定すると、デフォルトのパスワード `gately.cn` の代わりに管理者の初期パスワードを指定できます。
 
+起動時の自動実行: 展開後に `sudo ./gately service install` を実行します（Windows では管理者権限のターミナルで `.\gately.exe service install`）。Linux では systemd サービス、macOS では launchd デーモン（`-user` を付けると sudo なしでログイン項目として登録）、Windows ではサービスとして登録し、すぐに起動してクラッシュ後は自動で再起動します。設定ディレクトリの既定値は `/etc/gately`、`/usr/local/etc/gately`、`%ProgramData%\Gately` で、`-c` と `-listen` で変更できます。サービスは実行ファイルのパスを参照するため、先に最終的な場所へ配置してください。以降は `gately service uninstall|start|stop|restart|status` で管理でき、アンインストールしても設定ディレクトリは残ります。
+
+
 サービステンプレート: [systemd](deploy/systemd/gately.service)、[OpenWrt procd](deploy/openwrt/gately.init)。ダウンロードしたアーカイブやイメージの検証（cosign 署名、ビルド来歴、SBOM）は[リリース成果物の検証](docs/ja/VERIFY.md)を参照してください。
 
 </details>
