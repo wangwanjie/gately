@@ -242,6 +242,35 @@ func TestSecondInstanceKeepsRunningMarker(t *testing.T) {
 	fourth.Close()
 }
 
+// 运行标记被换成符号链接时不读取它指向的文件，也不跟随它写到别处。
+func TestRunMarkerSymlinkIsIgnored(t *testing.T) {
+	dir := t.TempDir()
+	secret := filepath.Join(t.TempDir(), "secret")
+	if err := os.WriteFile(secret, []byte("token=abc\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(secret, filepath.Join(dir, runName)); err != nil {
+		t.Skip("无法创建符号链接:", err)
+	}
+	rec, prev, err := Start(dir, "gately")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rec.Close()
+	if prev.Kind != None {
+		t.Fatalf("符号链接不应被当成上次运行的标记: %+v", prev)
+	}
+	if data, _ := os.ReadFile(secret); string(data) != "token=abc\n" {
+		t.Fatalf("符号链接指向的文件被改动: %q", data)
+	}
+	if data, _ := os.ReadFile(filepath.Join(dir, LogName)); strings.Contains(string(data), "token=abc") {
+		t.Fatal("符号链接指向的内容被写进 crash.log")
+	}
+	if st, err := os.Lstat(filepath.Join(dir, runName)); err != nil || !st.Mode().IsRegular() {
+		t.Fatalf("应新建普通文件作为运行标记: %v", err)
+	}
+}
+
 // 裁剪位置恰好落在某条记录的标题行开头时，这条记录应完整保留。
 func TestTrimHeadKeepsEntryAtCutBoundary(t *testing.T) {
 	a := entryPrefix + "A =====\n" + strings.Repeat("a", 50) + "\n\n"

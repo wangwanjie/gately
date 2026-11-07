@@ -95,8 +95,9 @@ func Start(dir, header string) (*Recorder, Previous, error) {
 		return nil, prev, err
 	}
 	path := filepath.Join(dir, runName)
+	// O_EXCL：collect 已删除旧标记，此时文件不应存在；若被换成符号链接也不会跟随写到别处。
 	// O_APPEND：运行时写崩溃输出与 Fatal 追加内容都落在文件末尾，不会覆盖首行
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY|os.O_APPEND, 0o600)
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_EXCL|os.O_WRONLY|os.O_APPEND, 0o600)
 	if err != nil {
 		lock.Close()
 		return nil, prev, err
@@ -187,12 +188,16 @@ func (r *Recorder) Abandon() {
 // collect 读取上次运行留下的标记文件，追加到 crash.log 后删除。没有标记文件表示上次正常退出。
 func collect(dir string) (Previous, error) {
 	path := filepath.Join(dir, runName)
-	st, err := os.Stat(path)
+	// Lstat：标记文件只会是本程序创建的普通文件；若是符号链接等，不读取它指向的内容，直接删除
+	st, err := os.Lstat(path)
 	if os.IsNotExist(err) {
 		return Previous{}, nil
 	}
 	if err != nil {
 		return Previous{}, err
+	}
+	if !st.Mode().IsRegular() {
+		return Previous{}, os.Remove(path)
 	}
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -268,11 +273,25 @@ func appendLog(path string, entry []byte) error {
 	if len(data) > maxLogBytes {
 		data = trimHead(data, maxLogBytes)
 	}
-	tmp := path + ".tmp"
-	if err := os.WriteFile(tmp, data, 0o600); err != nil {
+	// 临时文件用 CreateTemp 新建（O_EXCL，权限 0600），不会沿用已有文件的权限或跟随符号链接
+	f, err := os.CreateTemp(filepath.Dir(path), LogName+".*.tmp")
+	if err != nil {
 		return err
 	}
-	return os.Rename(tmp, path)
+	tmp := f.Name()
+	_, err = f.Write(data)
+	if cerr := f.Close(); err == nil {
+		err = cerr
+	}
+	if err != nil {
+		os.Remove(tmp)
+		return err
+	}
+	if err := os.Rename(tmp, path); err != nil {
+		os.Remove(tmp)
+		return err
+	}
+	return nil
 }
 
 // trimHead 保留末尾不超过 limit 字节的完整记录。最后一条记录单独就超过上限时

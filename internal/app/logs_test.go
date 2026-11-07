@@ -35,12 +35,15 @@ func TestTightenConfigDir(t *testing.T) {
 	frpc := write("frp/frpc.toml", 0o755)
 	audit := write("audit.log.1", 0o644)
 	log := write("logs/ddns.log", 0o755)
+	crash := write("crash.log", 0o644)
+	crashRun := write("crash-run.log", 0o644)
+	crashLock := write("crash-run.lock", 0o644)
 	// bin/ 里是用户放的程序，必须保持可执行
 	bin := write("bin/frpc", 0o755)
 	if n := tightenConfigDir(dir); n == 0 {
 		t.Fatal("应有改动")
 	}
-	for _, p := range []string{hist, frpc, audit, log} {
+	for _, p := range []string{hist, frpc, audit, log, crash, crashRun, crashLock} {
 		st, _ := os.Stat(p)
 		if st.Mode().Perm() != 0o600 {
 			t.Fatalf("%s 权限 %o", p, st.Mode().Perm())
