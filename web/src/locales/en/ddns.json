@@ -80,5 +80,25 @@
   "deleteLocalOnly": "Only the Gately configuration is deleted; the DNS record at the provider is kept.",
   "deleteRemoteUnsupported": "{provider} does not support deleting records through its API. Only the Gately configuration is deleted; delete the record in the provider's console.",
   "deletedRemote": "Deleted, including the DNS record at the provider",
-  "copyRecord": "Duplicate record"
+  "copyRecord": "Duplicate record",
+  "batchAdd": "Bulk add",
+  "batchTitle": "Bulk add DNS records",
+  "batchHelp": "One domain per line: a full domain (nas.example.com) or just a host (nas, added under the default zone). You can append a type and value after the domain, e.g. cdn.example.com CNAME target.example.net; a bare IP address is added as A or AAAA based on the address. Blank lines and lines starting with # are ignored.",
+  "batchZone": "Default zone",
+  "batchZoneHelp": "Full domains are split by this zone and the zones of existing records first, otherwise by the public suffix",
+  "batchTypesHelp": "Lines without a type get one record for each checked type",
+  "batchTtlHelp": "0 uses the provider default",
+  "batchWillAdd": "{count} records will be added",
+  "batchDuplicates": "{count} lines duplicate existing records and are skipped",
+  "batchErrors": "{count} lines are invalid; fix them to add",
+  "batchLineNo": "Line {line}",
+  "batchSubmit": "Add {count}",
+  "batchAdded": "Added {count} records; save the task to apply them",
+  "batchErr": {
+    "domain": "Invalid domain",
+    "type": "Invalid record type; only A, AAAA, CNAME and TXT are supported",
+    "value": "CNAME and TXT records need a value",
+    "zone": "A default zone is required when only a host is given",
+    "address": "The value is not a valid IP address"
+  }
 }

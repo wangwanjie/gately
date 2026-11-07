@@ -80,5 +80,25 @@
   "deleteLocalOnly": "Nur die Gately-Konfiguration wird gelöscht; der DNS-Eintrag beim Anbieter bleibt erhalten.",
   "deleteRemoteUnsupported": "{provider} unterstützt das Löschen von Einträgen über die API nicht. Nur die Gately-Konfiguration wird gelöscht; löschen Sie den Eintrag in der Konsole des Anbieters.",
   "deletedRemote": "Gelöscht, auch der DNS-Eintrag beim Anbieter",
-  "copyRecord": "Eintrag duplizieren"
+  "copyRecord": "Eintrag duplizieren",
+  "batchAdd": "Mehrere hinzufügen",
+  "batchTitle": "DNS-Einträge gesammelt hinzufügen",
+  "batchHelp": "Eine Domain pro Zeile: vollständige Domain (nas.example.com) oder nur der Host (nas, wird unter der Standardzone angelegt). Nach der Domain können Typ und Wert folgen, z. B. cdn.example.com CNAME target.example.net; eine reine IP-Adresse wird je nach Adresse als A oder AAAA angelegt. Leere Zeilen und Zeilen mit # am Anfang werden ignoriert.",
+  "batchZone": "Standardzone",
+  "batchZoneHelp": "Vollständige Domains werden zuerst anhand dieser Zone und der Zonen vorhandener Einträge aufgeteilt, sonst anhand des öffentlichen Suffixes",
+  "batchTypesHelp": "Zeilen ohne Typ erhalten je angehaktem Typ einen Eintrag",
+  "batchTtlHelp": "0 nutzt den Standard des Anbieters",
+  "batchWillAdd": "{count} Einträge werden hinzugefügt",
+  "batchDuplicates": "{count} Zeilen doppeln vorhandene Einträge und werden übersprungen",
+  "batchErrors": "{count} Zeilen sind ungültig; zum Hinzufügen korrigieren",
+  "batchLineNo": "Zeile {line}",
+  "batchSubmit": "{count} hinzufügen",
+  "batchAdded": "{count} Einträge hinzugefügt; Aufgabe speichern, um sie zu übernehmen",
+  "batchErr": {
+    "domain": "Ungültige Domain",
+    "type": "Ungültiger Eintragstyp; nur A, AAAA, CNAME und TXT werden unterstützt",
+    "value": "CNAME- und TXT-Einträge brauchen einen Wert",
+    "zone": "Bei reinem Host ist eine Standardzone nötig",
+    "address": "Der Wert ist keine gültige IP-Adresse"
+  }
 }

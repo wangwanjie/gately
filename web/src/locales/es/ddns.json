@@ -80,5 +80,25 @@
   "deleteLocalOnly": "Solo se elimina la configuración de Gately; el registro DNS del proveedor se conserva.",
   "deleteRemoteUnsupported": "{provider} no permite eliminar registros mediante su API. Solo se elimina la configuración de Gately; borra el registro en el panel del proveedor.",
   "deletedRemote": "Eliminado, también el registro DNS del proveedor",
-  "copyRecord": "Duplicar registro"
+  "copyRecord": "Duplicar registro",
+  "batchAdd": "Añadir en lote",
+  "batchTitle": "Añadir registros DNS en lote",
+  "batchHelp": "Un dominio por línea: un dominio completo (nas.example.com) o solo el host (nas, se añade bajo la zona predeterminada). Puede añadir tipo y valor tras el dominio, p. ej. cdn.example.com CNAME target.example.net; una dirección IP sola se añade como A o AAAA según la dirección. Se ignoran las líneas vacías y las que empiezan por #.",
+  "batchZone": "Zona predeterminada",
+  "batchZoneHelp": "Los dominios completos se dividen primero por esta zona y las zonas de los registros existentes; si no, por el sufijo público",
+  "batchTypesHelp": "Las líneas sin tipo añaden un registro por cada tipo marcado",
+  "batchTtlHelp": "0 usa el valor del proveedor",
+  "batchWillAdd": "Se añadirán {count} registros",
+  "batchDuplicates": "{count} líneas duplican registros existentes y se omiten",
+  "batchErrors": "{count} líneas no son válidas; corríjalas para añadir",
+  "batchLineNo": "Línea {line}",
+  "batchSubmit": "Añadir {count}",
+  "batchAdded": "Se añadieron {count} registros; guarde la tarea para aplicarlos",
+  "batchErr": {
+    "domain": "Dominio no válido",
+    "type": "Tipo de registro no válido; solo se admiten A, AAAA, CNAME y TXT",
+    "value": "Los registros CNAME y TXT necesitan un valor",
+    "zone": "Se necesita una zona predeterminada si solo se indica el host",
+    "address": "El valor no es una dirección IP válida"
+  }
 }

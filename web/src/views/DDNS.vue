@@ -111,6 +111,15 @@
       </template>
     </GroupedList>
 
+    <DDNSBatchRecords
+      v-model="batchVisible"
+      :existing="editing.records"
+      :known-zones="batchKnownZones"
+      :supports-line="currentProvider?.supportsLine"
+      :default-types="batchDefaultTypes"
+      @add="addBatchRecords"
+    />
+
     <SortDialog v-model="recordSort.visible" :title="recordSort.title" :entries="recordSort.entries" :save="recordSort.save" mono />
 
     <LogCard url="/api/ddns/logs" clearable />
@@ -190,6 +199,7 @@
             <div class="records-ops">
               <el-button size="small" :icon="Plus" @click="addRecord('A')">{{ t('ddns.addV4') }}</el-button>
               <el-button size="small" :icon="Plus" @click="addRecord('AAAA')">{{ t('ddns.addV6') }}</el-button>
+              <el-button size="small" :icon="ListPlus" data-test="ddns-batch-open" @click="batchVisible = true">{{ t('ddns.batchAdd') }}</el-button>
               <el-button v-if="editing.records.length > 1" size="small" :icon="ArrowUpDown" @click="openEditingRecordSort">{{ t('ddns.sortRecords') }}</el-button>
             </div>
             <div v-if="editing.records.length" class="form-help">
@@ -266,7 +276,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
-import { ArrowUpDown, ChevronsDownUp, ChevronsUpDown, CopyPlus, Globe, Pencil, Plus, RefreshCw, SlidersHorizontal, Trash2, Zap } from 'lucide-vue-next'
+import { ArrowUpDown, ChevronsDownUp, ChevronsUpDown, CopyPlus, Globe, ListPlus, Pencil, Plus, RefreshCw, SlidersHorizontal, Trash2, Zap } from 'lucide-vue-next'
 import { api } from '../api'
 import GroupHeader from '../components/GroupHeader.vue'
 import GroupedList from '../components/GroupedList.vue'
@@ -289,6 +299,7 @@ import Field from '../components/Field.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
 import CopyHint from '../components/CopyHint.vue'
+import DDNSBatchRecords, { type BatchNewRecord } from '../components/DDNSBatchRecords.vue'
 import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import WebhookEditor, { type WebhookConfig } from '../components/WebhookEditor.vue'
 import IPSourceEditor, { type IPSource, type NetInterface } from '../components/IPSourceEditor.vue'
@@ -675,6 +686,28 @@ function addRecord(type: 'A' | 'AAAA') {
   } else {
     editing.value.ipv4.enable = true
   }
+}
+
+// 批量添加解析记录对话框
+const batchVisible = ref(false)
+// 同服务商其他任务的主域名，用来拆分批量输入的完整域名
+const batchKnownZones = computed(() => [
+  ...new Set(tasks.value.filter((tk) => tk.provider === editing.value.provider).flatMap((tk) => tk.records.map((r) => r.zone))),
+])
+// 默认勾选的记录类型：只启用了 IPv6 获取时为 AAAA，否则为 A
+const batchDefaultTypes = computed(() => (editing.value.ipv6.enable && !editing.value.ipv4.enable ? ['AAAA'] : ['A']))
+
+// addBatchRecords 追加批量解析出的记录；新建任务时自动带的空白记录一并去掉，并按需启用 IPv4/IPv6 获取
+function addBatchRecords(records: BatchNewRecord[]) {
+  editing.value.records = editing.value.records.filter((r) => r.key || r.zone.trim() || r.sub.trim())
+  editing.value.records.push(...records)
+  if (records.some((r) => r.value.includes('{ipv4Addr}'))) {
+    editing.value.ipv4.enable = true
+  }
+  if (records.some((r) => r.value.includes('{ipv6Addr}'))) {
+    editing.value.ipv6.enable = true
+  }
+  ElMessage.success(t('ddns.batchAdded', { count: records.length }))
 }
 
 function onTypeChange(r: DNSRecord) {

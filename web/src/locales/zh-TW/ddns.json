@@ -80,5 +80,25 @@
   "deleteLocalOnly": "只刪除 Gately 中的設定，服務商處的解析保留。",
   "deleteRemoteUnsupported": "{provider} 不支援透過 API 刪除解析，只刪除 Gately 中的設定，服務商處的記錄請到服務商後台手動刪除。",
   "deletedRemote": "已刪除，服務商處的解析也已刪除",
-  "copyRecord": "複製記錄"
+  "copyRecord": "複製記錄",
+  "batchAdd": "批次新增",
+  "batchTitle": "批次新增解析記錄",
+  "batchHelp": "每行一個網域，可寫完整網域（nas.example.com），也可只寫主機記錄（nas，掛在預設主網域下）。行內可在網域後加上類型與記錄值，例如 cdn.example.com CNAME target.example.net；只寫 IP 位址時依位址推斷 A 或 AAAA。空行與 # 開頭的行會忽略。",
+  "batchZone": "預設主網域",
+  "batchZoneHelp": "完整網域優先依它與既有記錄的主網域拆分，其餘依公共後綴推斷",
+  "batchTypesHelp": "未寫類型的行依勾選的類型各新增一筆",
+  "batchTtlHelp": "0 為服務商預設值",
+  "batchWillAdd": "將新增 {count} 筆記錄",
+  "batchDuplicates": "{count} 行與既有記錄重複，已略過",
+  "batchErrors": "{count} 行無效，修改後才能新增",
+  "batchLineNo": "第 {line} 行",
+  "batchSubmit": "新增 {count} 筆",
+  "batchAdded": "已新增 {count} 筆記錄，儲存任務後生效",
+  "batchErr": {
+    "domain": "網域格式無效",
+    "type": "記錄類型無效，只支援 A、AAAA、CNAME、TXT",
+    "value": "CNAME、TXT 記錄需要填寫記錄值",
+    "zone": "只寫主機記錄時需要填寫預設主網域",
+    "address": "記錄值不是有效的 IP 位址"
+  }
 }

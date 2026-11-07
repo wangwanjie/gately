@@ -80,5 +80,25 @@
   "deleteLocalOnly": "Gately の設定だけを削除し、プロバイダー側の DNS レコードは残します。",
   "deleteRemoteUnsupported": "{provider} は API によるレコード削除に対応していません。Gately の設定だけを削除するので、プロバイダー側のレコードは管理画面で削除してください。",
   "deletedRemote": "削除しました。プロバイダー側の DNS レコードも削除されました",
-  "copyRecord": "レコードを複製"
+  "copyRecord": "レコードを複製",
+  "batchAdd": "一括追加",
+  "batchTitle": "DNS レコードを一括追加",
+  "batchHelp": "1 行に 1 ドメイン。完全なドメイン（nas.example.com）またはホスト名のみ（nas、既定のゾーンに追加）を入力します。ドメインの後にタイプと値を続けて書けます（例：cdn.example.com CNAME target.example.net）。IP アドレスだけを書くとアドレスから A / AAAA を判定します。空行と # で始まる行は無視されます。",
+  "batchZone": "既定のゾーン",
+  "batchZoneHelp": "完全なドメインはこのゾーンと既存レコードのゾーンで優先的に分割し、それ以外はパブリックサフィックスで判定します",
+  "batchTypesHelp": "タイプを書いていない行は、チェックしたタイプごとに 1 件追加します",
+  "batchTtlHelp": "0 はプロバイダーの既定値",
+  "batchWillAdd": "{count} 件のレコードを追加します",
+  "batchDuplicates": "{count} 行は既存レコードと重複するためスキップします",
+  "batchErrors": "{count} 行が無効です。修正すると追加できます",
+  "batchLineNo": "{line} 行目",
+  "batchSubmit": "{count} 件追加",
+  "batchAdded": "{count} 件のレコードを追加しました。タスクを保存すると反映されます",
+  "batchErr": {
+    "domain": "ドメインの形式が無効です",
+    "type": "レコードタイプが無効です（A、AAAA、CNAME、TXT のみ対応）",
+    "value": "CNAME と TXT レコードには値が必要です",
+    "zone": "ホスト名のみの場合は既定のゾーンが必要です",
+    "address": "値が有効な IP アドレスではありません"
+  }
 }

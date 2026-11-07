@@ -80,5 +80,25 @@
   "deleteLocalOnly": "Seule la configuration Gately est supprimée ; l’enregistrement DNS chez le fournisseur est conservé.",
   "deleteRemoteUnsupported": "{provider} ne permet pas de supprimer des enregistrements via son API. Seule la configuration Gately est supprimée ; supprimez l’enregistrement dans la console du fournisseur.",
   "deletedRemote": "Supprimé, y compris l’enregistrement DNS chez le fournisseur",
-  "copyRecord": "Dupliquer l'enregistrement"
+  "copyRecord": "Dupliquer l'enregistrement",
+  "batchAdd": "Ajout groupé",
+  "batchTitle": "Ajout groupé d’enregistrements DNS",
+  "batchHelp": "Un domaine par ligne : un domaine complet (nas.example.com) ou seulement l’hôte (nas, ajouté sous la zone par défaut). Vous pouvez ajouter un type et une valeur après le domaine, p. ex. cdn.example.com CNAME target.example.net ; une adresse IP seule est ajoutée en A ou AAAA selon l’adresse. Les lignes vides et celles commençant par # sont ignorées.",
+  "batchZone": "Zone par défaut",
+  "batchZoneHelp": "Les domaines complets sont d’abord découpés selon cette zone et celles des enregistrements existants, sinon selon le suffixe public",
+  "batchTypesHelp": "Les lignes sans type ajoutent un enregistrement par type coché",
+  "batchTtlHelp": "0 utilise la valeur du fournisseur",
+  "batchWillAdd": "{count} enregistrements seront ajoutés",
+  "batchDuplicates": "{count} lignes en double avec des enregistrements existants sont ignorées",
+  "batchErrors": "{count} lignes sont invalides ; corrigez-les pour ajouter",
+  "batchLineNo": "Ligne {line}",
+  "batchSubmit": "Ajouter {count}",
+  "batchAdded": "{count} enregistrements ajoutés ; enregistrez la tâche pour les appliquer",
+  "batchErr": {
+    "domain": "Domaine invalide",
+    "type": "Type d’enregistrement invalide ; seuls A, AAAA, CNAME et TXT sont pris en charge",
+    "value": "Les enregistrements CNAME et TXT nécessitent une valeur",
+    "zone": "Une zone par défaut est requise si seul l’hôte est indiqué",
+    "address": "La valeur n’est pas une adresse IP valide"
+  }
 }

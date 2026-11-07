@@ -80,5 +80,25 @@
   "deleteLocalOnly": "只删除 Gately 中的配置，服务商处的解析保留。",
   "deleteRemoteUnsupported": "{provider} 不支持通过接口删除解析，只删除 Gately 中的配置，服务商处的记录请到服务商后台手动删除。",
   "deletedRemote": "已删除，服务商处的解析也已删除",
-  "copyRecord": "复制记录"
+  "copyRecord": "复制记录",
+  "batchAdd": "批量添加",
+  "batchTitle": "批量添加解析记录",
+  "batchHelp": "每行一个域名，可写完整域名（nas.example.com），也可只写主机记录（nas，挂在默认主域名下）。行内可在域名后追加类型与记录值，例如 cdn.example.com CNAME target.example.net；只写 IP 地址时按地址推断 A 或 AAAA。空行与 # 开头的行会忽略。",
+  "batchZone": "默认主域名",
+  "batchZoneHelp": "完整域名优先按它和已有记录的主域名拆分，其余按公共后缀推断",
+  "batchTypesHelp": "未写类型的行按勾选的类型各添加一条",
+  "batchTtlHelp": "0 为服务商默认值",
+  "batchWillAdd": "将添加 {count} 条记录",
+  "batchDuplicates": "{count} 行与已有记录重复，已跳过",
+  "batchErrors": "{count} 行无效，修改后才能添加",
+  "batchLineNo": "第 {line} 行",
+  "batchSubmit": "添加 {count} 条",
+  "batchAdded": "已添加 {count} 条记录，保存任务后生效",
+  "batchErr": {
+    "domain": "域名格式无效",
+    "type": "记录类型无效，只支持 A、AAAA、CNAME、TXT",
+    "value": "CNAME、TXT 记录需要填写记录值",
+    "zone": "只写主机记录时需要填写默认主域名",
+    "address": "记录值不是有效的 IP 地址"
+  }
 }

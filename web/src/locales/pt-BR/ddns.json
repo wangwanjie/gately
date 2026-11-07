@@ -80,5 +80,25 @@
   "deleteLocalOnly": "Só a configuração do Gately é excluída; o registro DNS no provedor é mantido.",
   "deleteRemoteUnsupported": "{provider} não permite excluir registros pela API. Só a configuração do Gately é excluída; exclua o registro no painel do provedor.",
   "deletedRemote": "Excluído, inclusive o registro DNS no provedor",
-  "copyRecord": "Duplicar registro"
+  "copyRecord": "Duplicar registro",
+  "batchAdd": "Adicionar em lote",
+  "batchTitle": "Adicionar registros DNS em lote",
+  "batchHelp": "Um domínio por linha: domínio completo (nas.example.com) ou só o host (nas, adicionado sob a zona padrão). Você pode incluir tipo e valor após o domínio, ex.: cdn.example.com CNAME target.example.net; um endereço IP sozinho é adicionado como A ou AAAA conforme o endereço. Linhas vazias e iniciadas por # são ignoradas.",
+  "batchZone": "Zona padrão",
+  "batchZoneHelp": "Domínios completos são divididos primeiro por esta zona e pelas zonas dos registros existentes; senão, pelo sufixo público",
+  "batchTypesHelp": "Linhas sem tipo adicionam um registro para cada tipo marcado",
+  "batchTtlHelp": "0 usa o padrão do provedor",
+  "batchWillAdd": "{count} registros serão adicionados",
+  "batchDuplicates": "{count} linhas duplicam registros existentes e foram ignoradas",
+  "batchErrors": "{count} linhas são inválidas; corrija para adicionar",
+  "batchLineNo": "Linha {line}",
+  "batchSubmit": "Adicionar {count}",
+  "batchAdded": "{count} registros adicionados; salve a tarefa para aplicá-los",
+  "batchErr": {
+    "domain": "Domínio inválido",
+    "type": "Tipo de registro inválido; apenas A, AAAA, CNAME e TXT são suportados",
+    "value": "Registros CNAME e TXT precisam de um valor",
+    "zone": "É preciso uma zona padrão quando só o host é informado",
+    "address": "O valor não é um endereço IP válido"
+  }
 }
