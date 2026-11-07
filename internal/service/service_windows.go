@@ -193,9 +193,12 @@ func protectDir(dir string) error {
 		windows.DACL_SECURITY_INFORMATION|windows.PROTECTED_DACL_SECURITY_INFORMATION, nil, nil, dacl, nil)
 }
 
-// stopService 发送停止请求并等待服务进入停止状态。
+// stopService 发送停止请求并等待服务进入停止状态；服务本来就没有运行时视为成功。
 func stopService(s *mgr.Service) error {
 	st, err := s.Control(svc.Stop)
+	if errors.Is(err, windows.ERROR_SERVICE_NOT_ACTIVE) {
+		return nil
+	}
 	if err != nil {
 		return err
 	}

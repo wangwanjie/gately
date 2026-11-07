@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 const supportsUserMode = true
@@ -24,6 +25,19 @@ func DefaultConfigDir(user bool) string {
 		}
 	}
 	return "/usr/local/etc/gately"
+}
+
+// loaded 判断 launchd 中是否已加载该任务。
+func loaded(target string) bool {
+	return exec.Command("launchctl", "print", target).Run() == nil
+}
+
+// waitUnloaded 等待任务从 launchd 中卸载，最多等待 timeout。
+func waitUnloaded(target string, timeout time.Duration) {
+	deadline := time.Now().Add(timeout)
+	for loaded(target) && time.Now().Before(deadline) {
+		time.Sleep(200 * time.Millisecond)
+	}
 }
 
 // launchdPaths 返回 plist 路径、日志路径与 launchctl 域（system 或 gui/<uid>）。
@@ -67,8 +81,12 @@ func platformRun(action string, sp Spec, out io.Writer) error {
 		if err := os.MkdirAll(filepath.Dir(plist), 0o755); err != nil {
 			return err
 		}
-		// 已注册时先卸载，使新的 plist 生效
-		_ = exec.Command("launchctl", "bootout", target).Run()
+		// 已注册时先卸载，使新的 plist 生效；bootout 异步结束进程，等任务真正卸载后再 bootstrap，
+		// 否则 bootstrap 常报 "Bootstrap failed: 5: Input/output error"
+		if loaded(target) {
+			_ = exec.Command("launchctl", "bootout", target).Run()
+			waitUnloaded(target, 15*time.Second)
+		}
 		if err := os.WriteFile(plist, []byte(launchdPlist(sp, logPath)), 0o644); err != nil {
 			return err
 		}
@@ -94,15 +112,19 @@ func platformRun(action string, sp Spec, out io.Writer) error {
 		if _, err := os.Stat(plist); err != nil {
 			return errors.New("服务尚未安装，请先运行 gately service install")
 		}
+		// 任务已加载（运行中，或已加载但进程已退出）时 bootstrap 会报错，改用 kickstart 启动
+		if loaded(target) {
+			return runCmd(out, "launchctl", "kickstart", target)
+		}
 		return runCmd(out, "launchctl", "bootstrap", domain, plist)
 	case "stop":
 		// bootout 会结束进程并卸载任务，plist 保留，开机时仍会自动运行
 		return runCmd(out, "launchctl", "bootout", target)
 	case "restart":
-		if err := runCmd(out, "launchctl", "kickstart", "-k", target); err != nil {
+		if !loaded(target) {
 			return errors.New("服务未在运行，请先运行 gately service start")
 		}
-		return nil
+		return runCmd(out, "launchctl", "kickstart", "-k", target)
 	case "status":
 		raw, err := exec.Command("launchctl", "print", target).CombinedOutput()
 		if err != nil {
