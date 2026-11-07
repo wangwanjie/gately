@@ -26,30 +26,33 @@ type Redactor struct {
 
 type literal struct {
 	from, to string
+	// word 为 true 时只替换完整的词：主机名常是 gate、nas 这类短词，按子串替换会把 gately 改成 <hostname>ly，
+	// 连堆栈里的包路径都被破坏；目录路径按子串替换即可
+	word bool
 }
 
 // NewRedactor 创建脱敏器。configDir 与主机名、用户目录出现在文本中时会被替换为占位符。
 func NewRedactor(configDir string) *Redactor {
 	r := &Redactor{}
-	add := func(from, to string) {
+	add := func(from, to string, word bool) {
 		from = strings.TrimSpace(from)
 		// 过短的字面量（如 "/"、"a"）会误伤正常文本
 		if len(from) < 3 {
 			return
 		}
-		r.literals = append(r.literals, literal{from, to})
+		r.literals = append(r.literals, literal{from, to, word})
 	}
 	if configDir != "" {
 		if abs, err := filepath.Abs(configDir); err == nil {
-			add(abs, "<config-dir>")
+			add(abs, "<config-dir>", false)
 		}
-		add(configDir, "<config-dir>")
+		add(configDir, "<config-dir>", false)
 	}
 	if home, err := os.UserHomeDir(); err == nil {
-		add(home, "<home>")
+		add(home, "<home>", false)
 	}
 	if host, err := os.Hostname(); err == nil {
-		add(host, "<hostname>")
+		add(host, "<hostname>", true)
 	}
 	// 长的先替换，避免短字面量破坏长字面量
 	for i := 1; i < len(r.literals); i++ {
@@ -131,9 +134,7 @@ func (r *Redactor) Text(s string) string {
 	if s == "" {
 		return s
 	}
-	for _, l := range r.literals {
-		s = strings.ReplaceAll(s, l.from, l.to)
-	}
+	s = r.replaceLiterals(s)
 	s = reUserPath.ReplaceAllString(s, "${1}<user>")
 	s = reURL.ReplaceAllStringFunc(s, func(m string) string {
 		scheme := m[:strings.Index(m, "://")]
@@ -202,11 +203,46 @@ func (r *Redactor) Stack(s string) string {
 	return strings.Join(lines, "\n")
 }
 
+// replaceLiterals 替换本机敏感字面量。
+func (r *Redactor) replaceLiterals(s string) string {
+	for _, l := range r.literals {
+		if l.word {
+			s = replaceWord(s, l.from, l.to)
+		} else {
+			s = strings.ReplaceAll(s, l.from, l.to)
+		}
+	}
+	return s
+}
+
+// isWordByte 判断字节是否属于主机名、标识符的一部分（字母、数字、- 与 _）。
+func isWordByte(b byte) bool {
+	return b == '-' || b == '_' || b >= '0' && b <= '9' || b >= 'a' && b <= 'z' || b >= 'A' && b <= 'Z'
+}
+
+// replaceWord 只替换前后都不是词字符的 from，例如主机名 gate 会替换 gate.lan 中的 gate，不替换 gately 中的。
+func replaceWord(s, from, to string) string {
+	var sb strings.Builder
+	for {
+		i := strings.Index(s, from)
+		if i < 0 {
+			sb.WriteString(s)
+			return sb.String()
+		}
+		end := i + len(from)
+		if (i == 0 || !isWordByte(s[i-1])) && (end == len(s) || !isWordByte(s[end])) {
+			sb.WriteString(s[:i])
+			sb.WriteString(to)
+		} else {
+			sb.WriteString(s[:end])
+		}
+		s = s[end:]
+	}
+}
+
 // paths 只替换本机敏感字面量与用户目录。
 func (r *Redactor) paths(s string) string {
-	for _, l := range r.literals {
-		s = strings.ReplaceAll(s, l.from, l.to)
-	}
+	s = r.replaceLiterals(s)
 	return reUserPath.ReplaceAllString(s, "${1}<user>")
 }
 

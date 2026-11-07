@@ -156,3 +156,23 @@ func TestStackRedaction(t *testing.T) {
 		}
 	}
 }
+
+// 主机名只按完整的词替换：主机名为 gate 时，gate.lan 与 "on gate:" 中的替换，gately、gate-way2 中的不替换。
+func TestHostnameReplacedAsWord(t *testing.T) {
+	r := &Redactor{literals: []literal{{from: "gate", to: "<hostname>", word: true}}}
+	cases := []struct{ in, want string }{
+		{"gately v0.6.5.1 on gate", "gately v0.6.5.1 on <hostname>"},
+		{"github.com/wangwanjie/gately/internal/app.(*App).Run", "github.com/wangwanjie/gately/internal/app.(*App).Run"},
+		{"resolve gate.lan: gate-way2 gate_x", "resolve <hostname>.lan: gate-way2 gate_x"},
+		{"gate", "<hostname>"},
+		{"(gate)gate", "(<hostname>)<hostname>"},
+	}
+	for _, c := range cases {
+		if got := r.Text(c.in); got != c.want {
+			t.Errorf("Text(%q) = %q，应为 %q", c.in, got, c.want)
+		}
+		if got := r.Stack(c.in); got != c.want {
+			t.Errorf("Stack(%q) = %q，应为 %q", c.in, got, c.want)
+		}
+	}
+}
