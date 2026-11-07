@@ -19,12 +19,17 @@ import (
 	"github.com/wangwanjie/gately/internal/ctl"
 	"github.com/wangwanjie/gately/internal/i18n"
 	"github.com/wangwanjie/gately/internal/modules/registry"
+	"github.com/wangwanjie/gately/internal/service"
 	"github.com/wangwanjie/gately/internal/systz"
 	"github.com/wangwanjie/gately/internal/version"
 	"github.com/wangwanjie/gately/web"
 )
 
 func main() {
+	// 由 Windows 服务控制管理器启动时，按服务方式运行：向 SCM 报告状态，收到停止请求时优雅退出
+	if service.IsWindowsService() {
+		os.Exit(service.RunAsWindowsService(serve))
+	}
 	// 子命令：ctl 调用运行中的实例，mcp 提供 MCP 服务；其余参数走服务启动流程
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
@@ -36,6 +41,9 @@ func main() {
 		case "reset-password", "reset-totp":
 			// 在服务器上重置管理员密码或关闭两步验证，提示按系统语言翻译
 			os.Exit(runReset(os.Args[1], os.Args[2:], os.Stdin, i18n.NewWriterFor(os.Stdout, i18n.FromEnv())))
+		case "service":
+			// 注册为系统服务（systemd、launchd、Windows 服务），实现开机自启
+			os.Exit(service.Run(os.Args[2:], i18n.NewWriterFor(os.Stdout, i18n.FromEnv())))
 		case "version":
 			// 与 -version 等价，避免 docker exec gately gately version 误启动第二个服务实例
 			printVersion()
@@ -46,6 +54,13 @@ func main() {
 			os.Exit(run(os.Args[2:], os.Stdout))
 		}
 	}
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	serve(ctx)
+}
+
+// serve 解析启动参数并运行服务，直到 ctx 被取消。命令行与 Windows 服务共用。
+func serve(ctx context.Context) {
 	// 标准日志（含启动失败等 log.Fatalf）按服务端语言翻译
 	log.SetOutput(i18n.NewWriter(os.Stderr))
 	configDir := flag.String("c", defaultConfigDir(), "configuration directory / 配置目录")
@@ -100,8 +115,6 @@ func main() {
 		log.Fatalf("启动失败: %v", err)
 	}
 
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
 	if err := a.Run(ctx); err != nil {
 		log.Fatalf("运行失败: %v", err)
 	}
