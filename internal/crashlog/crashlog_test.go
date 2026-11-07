@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -239,4 +240,57 @@ func TestSecondInstanceKeepsRunningMarker(t *testing.T) {
 		t.Fatalf("正常退出后应能再次开启: %v", err)
 	}
 	fourth.Close()
+}
+
+// 裁剪位置恰好落在某条记录的标题行开头时，这条记录应完整保留。
+func TestTrimHeadKeepsEntryAtCutBoundary(t *testing.T) {
+	a := entryPrefix + "A =====\n" + strings.Repeat("a", 50) + "\n\n"
+	b := entryPrefix + "B =====\n" + strings.Repeat("b", 50) + "\n\n"
+	data := []byte(a + b)
+	got := string(trimHead(data, len(b)))
+	if got != b {
+		t.Fatalf("应完整保留记录 B，实际 %q", got)
+	}
+	if got := string(trimHead(data, len(data))); got != a+b {
+		t.Fatalf("未超限时不应裁剪: %q", got)
+	}
+}
+
+// 单条记录就超过上限时保留开头（标题与崩溃原因）和结尾，中间按整行截断。
+func TestTrimHeadTruncatesHugeEntryInTheMiddle(t *testing.T) {
+	path := filepath.Join(t.TempDir(), LogName)
+	if err := appendLog(path, []byte(entryPrefix+"old =====\nold\n\n")); err != nil {
+		t.Fatal(err)
+	}
+	var b strings.Builder
+	b.WriteString(entryPrefix + "2026-11-07T00:00:00Z crash | gately v0.6.5.1 =====\nfatal error in main.handler\n\n")
+	for i := 0; b.Len() < 3*maxLogBytes; i++ {
+		b.WriteString("goroutine " + strconv.Itoa(i) + " [running]:\nmain.worker(0xc000123400)\n\t/src/main.go:42 +0x1d\n\n")
+	}
+	b.WriteString("last line of the dump\n\n")
+	if err := appendLog(path, []byte(b.String())); err != nil {
+		t.Fatal(err)
+	}
+	data, _ := os.ReadFile(path)
+	s := string(data)
+	if len(data) > maxLogBytes {
+		t.Fatalf("crash.log 不应超过上限: %d", len(data))
+	}
+	if !strings.HasPrefix(s, entryPrefix+"2026-11-07T00:00:00Z crash | gately v0.6.5.1 =====\nfatal error in main.handler\n") {
+		t.Fatalf("应保留最新记录的开头: %q", s[:120])
+	}
+	if strings.Contains(s, "old") || !strings.Contains(s, "bytes truncated) ...") || !strings.HasSuffix(s, "last line of the dump\n\n") {
+		t.Fatalf("应丢弃旧记录、保留结尾并标明截断: 结尾 %q", s[len(s)-80:])
+	}
+	// 截断点对齐整行：截断说明前后都是完整的行
+	i := strings.Index(s, "\n... (")
+	if !strings.HasSuffix(s[:i], "\n") && !strings.HasSuffix(s[:i], "+0x1d") && !strings.HasSuffix(s[:i], "]:") && !strings.HasSuffix(s[:i], ")") {
+		t.Fatalf("截断点应在行尾: %q", s[i-40:i+10])
+	}
+	if st, _ := os.Stat(path); st.Mode().Perm() != 0o600 {
+		t.Fatalf("crash.log 权限应为 0600: %v", st.Mode())
+	}
+	if m, _ := filepath.Glob(filepath.Join(filepath.Dir(path), "*.tmp")); len(m) != 0 {
+		t.Fatalf("不应残留临时文件: %v", m)
+	}
 }

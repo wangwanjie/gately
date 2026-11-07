@@ -275,12 +275,49 @@ func appendLog(path string, entry []byte) error {
 	return os.Rename(tmp, path)
 }
 
-// trimHead 保留末尾不超过 limit 字节的完整记录；单条记录就超过上限时保留它的末尾部分。
+// trimHead 保留末尾不超过 limit 字节的完整记录。最后一条记录单独就超过上限时
+// （例如持有大量连接时运行时致命错误会打印全部协程的堆栈），保留它的开头与结尾、截去中间。
 func trimHead(data []byte, limit int) []byte {
+	if len(data) <= limit {
+		return data
+	}
 	cut := len(data) - limit
 	sep := []byte("\n" + entryPrefix)
-	if i := bytes.Index(data[cut:], sep); i >= 0 {
-		return data[cut+i+1:]
+	// 从 cut-1 开始查找：cut 恰好落在某条记录标题行开头时，它前面的换行也要在查找范围内，这条记录才能保留
+	if i := bytes.Index(data[cut-1:], sep); i >= 0 {
+		return data[cut-1+i+1:]
 	}
-	return data[cut:]
+	start := 0
+	if i := bytes.LastIndex(data[:cut], sep); i >= 0 {
+		start = i + 1
+	}
+	return truncateMiddle(data[start:], limit)
+}
+
+// truncateMiddle 把超长的单条记录截到 limit 以内：保留开头约 3/4（标题行、崩溃原因与出错协程的堆栈）
+// 和结尾约 1/4，中间换成一行截断说明；截断点对齐到整行，避免半行地址或文本影响脱敏与阅读。
+func truncateMiddle(entry []byte, limit int) []byte {
+	if len(entry) <= limit {
+		return entry
+	}
+	const room = 64 // 截断说明一行预留的长度
+	head := entry[:limit*3/4]
+	if i := bytes.LastIndexByte(head, '\n'); i >= 0 {
+		head = head[:i+1]
+	}
+	tailLen := limit - len(head) - room
+	if tailLen < 0 {
+		tailLen = 0
+	}
+	tail := entry[len(entry)-tailLen:]
+	if i := bytes.IndexByte(tail, '\n'); i >= 0 {
+		tail = tail[i+1:]
+	} else {
+		tail = nil
+	}
+	note := fmt.Sprintf("\n... (%d bytes truncated) ...\n\n", len(entry)-len(head)-len(tail))
+	out := make([]byte, 0, len(head)+len(note)+len(tail))
+	out = append(out, head...)
+	out = append(out, note...)
+	return append(out, tail...)
 }
