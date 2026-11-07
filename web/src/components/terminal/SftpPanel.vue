@@ -93,10 +93,11 @@
         <span class="c-op" />
       </div>
 
-      <div class="list" v-loading="loading">
+      <!-- 目录条目多时只渲染当前页 -->
+      <div ref="listEl" class="list" v-loading="loading">
         <el-empty v-if="!loading && !sorted.length && !error" :description="t('sftp.emptyDir')" :image-size="50" />
         <div
-          v-for="e in sorted"
+          v-for="e in filePager.rows.value"
           :key="e.path"
           class="row"
           :class="{ sel: selected.has(e.path) }"
@@ -139,6 +140,8 @@
           </div>
         </div>
       </div>
+
+      <ListPager :pager="filePager" :anchor="listEl" compact class="s-pager" />
 
       <!-- 上传进度 -->
       <div v-if="uploads.length" class="uploads">
@@ -257,6 +260,8 @@ import {
 } from 'lucide-vue-next'
 import { api, formatBytes } from '../../api'
 import { useIsMobile } from '../../composables/useIsMobile'
+import { usePager } from '../../composables/usePager'
+import ListPager from '../ListPager.vue'
 import SftpEditor from './SftpEditor.vue'
 import {
   baseName, breadcrumbs, dirName, downloadUrl, isArchive, joinPath, listDir, modeOctal, modeText, post, remove, sortEntries, uploadForm,
@@ -307,7 +312,11 @@ const key = computed(() => props.conn?.key ?? '')
 const crumbs = computed(() => breadcrumbs(path.value || '/'))
 const sorted = computed(() => sortEntries(entries.value, sortKey.value, sortAsc.value))
 const selectedEntries = computed(() => entries.value.filter((e) => selected.value.has(e.path)))
-const allSelected = computed(() => sorted.value.length > 0 && selected.value.size === sorted.value.length)
+// 分页后只渲染当前页：进入其他目录或改变排序时回到第 1 页，操作后刷新保持当前页
+const filePager = usePager(() => sorted.value, { storageKey: 'sftp.files', resetOn: [path, sortKey, sortAsc] })
+const listEl = ref<HTMLElement | null>(null)
+// 表头复选框只作用于当前页，避免选中看不见的条目后被一并删除；跨页已选的数量显示在底部操作栏
+const allSelected = computed(() => filePager.rows.value.length > 0 && filePager.rows.value.every((e) => selected.value.has(e.path)))
 
 // ---- 目录加载 ----
 function lastPathKey(): string {
@@ -384,7 +393,15 @@ function toggle(e: SftpEntry) {
 }
 
 function toggleAll(v: unknown) {
-  selected.value = v ? new Set(sorted.value.map((e) => e.path)) : new Set()
+  const s = new Set(selected.value)
+  for (const e of filePager.rows.value) {
+    if (v) {
+      s.add(e.path)
+    } else {
+      s.delete(e.path)
+    }
+  }
+  selected.value = s
 }
 
 function toggleSelectMode() {
@@ -959,6 +976,10 @@ async function onDrop(e: DragEvent) {
 .crumb-sep {
   flex: 0 0 auto;
   color: var(--el-text-color-placeholder);
+}
+.s-pager {
+  flex-shrink: 0;
+  margin-top: 8px;
 }
 .s-err {
   margin: 8px 0;
