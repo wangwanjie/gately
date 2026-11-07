@@ -114,6 +114,10 @@ func TestBundleZip(t *testing.T) {
 // 崩溃堆栈中的函数名与源码路径形似域名（golang.org/x/net/http2.(*serverConn).serve），保留原样才能定位；
 // panic 信息里的访客 IP、域名仍要替换，用户目录与配置目录同样替换。
 func TestStackRedaction(t *testing.T) {
+	// 固定家目录：NewRedactor 会把本机家目录整体替换为 <home>，CI 上的家目录正是样例中的 /home/runner，
+	// 这里要验证的是对任意用户目录的 /home/<user> 替换
+	t.Setenv("HOME", "/nonexistent-gately-home")
+	t.Setenv("USERPROFILE", `C:\nonexistent-gately-home`)
 	r := NewRedactor("/Users/alice/gately-data")
 	in := strings.Join([]string{
 		"===== 2026-11-06T14:46:07Z crash | gately v0.6.5 (5302aa1) pid 7 =====",
