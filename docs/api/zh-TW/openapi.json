@@ -22502,7 +22502,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Gately 寫入 nftables 的規則（文字）",
+        "summary": "Gately 寫入系統防火牆的規則（文字）",
         "tags": [
           "入侵防護"
         ],

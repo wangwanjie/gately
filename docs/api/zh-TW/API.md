@@ -443,7 +443,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/guard/bans` | `guard:read` | 目前封鎖的 IP |
 | POST | `/api/guard/bans` | `guard:write` | 手動封鎖 IP 或網段（seconds 為 0 表示預設時長，-1 表示永久） |
 | DELETE | `/api/guard/bans` | `guard:write` | 解除封鎖（body 為 {"key": 位址}） |
-| GET | `/api/guard/firewall/rules` | `guard:read` | Gately 寫入 nftables 的規則（文字） |
+| GET | `/api/guard/firewall/rules` | `guard:read` | Gately 寫入系統防火牆的規則（文字） |
 
 ## 網路喚醒
 

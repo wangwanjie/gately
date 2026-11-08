@@ -443,7 +443,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/guard/bans` | `guard:read` | 현재 차단된 IP |
 | POST | `/api/guard/bans` | `guard:write` | IP 또는 네트워크 수동 차단(seconds가 0이면 기본 시간, -1이면 영구) |
 | DELETE | `/api/guard/bans` | `guard:write` | 차단 해제 (body는 {"key": 주소}) |
-| GET | `/api/guard/firewall/rules` | `guard:read` | Gately가 nftables에 기록한 규칙(텍스트) |
+| GET | `/api/guard/firewall/rules` | `guard:read` | Gately가 시스템 방화벽에 기록한 규칙(텍스트) |
 
 ## Wake-on-LAN
 

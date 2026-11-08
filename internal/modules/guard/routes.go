@@ -102,7 +102,7 @@ func (m *Module) Routes(r module.Router) {
 	module.DocOf(r, "GET /bans", module.Doc{Summary: "当前封禁的 IP", Resp: []BanView{}})
 	module.DocOf(r, "POST /bans", module.Doc{Summary: "手动封禁 IP 或网段（seconds 为 0 表示默认时长，-1 表示永久）", Req: &banRequest{}, Resp: &banlist.Entry{}})
 	module.DocOf(r, "DELETE /bans", module.Doc{Summary: "解除封禁（body 为 {\"key\": 地址}）", Req: &banRequest{}})
-	module.DocOf(r, "GET /firewall/rules", module.Doc{Summary: "Gately 写入 nftables 的规则（文本）"})
+	module.DocOf(r, "GET /firewall/rules", module.Doc{Summary: "Gately 写入系统防火墙的规则（文本）"})
 }
 
 // jailChangedLocked 在规则新增、修改或启停后重启该规则。

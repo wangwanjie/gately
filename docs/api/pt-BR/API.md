@@ -443,7 +443,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | GET | `/api/guard/bans` | `guard:read` | IPs bloqueados no momento |
 | POST | `/api/guard/bans` | `guard:write` | Bloquear manualmente um IP ou rede (seconds: 0 usa a duração padrão, -1 significa permanente) |
 | DELETE | `/api/guard/bans` | `guard:write` | Desbloquear (body é {"key": endereço}) |
-| GET | `/api/guard/firewall/rules` | `guard:read` | Regras que o Gately gravou no nftables (texto) |
+| GET | `/api/guard/firewall/rules` | `guard:read` | Regras que o Gately gravou no firewall do sistema (texto) |
 
 ## Wake-on-LAN
 

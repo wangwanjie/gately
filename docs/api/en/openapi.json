@@ -22502,7 +22502,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Rules Gately wrote to nftables (text)",
+        "summary": "Rules Gately wrote to the system firewall (text)",
         "tags": [
           "Intrusion Prevention"
         ],

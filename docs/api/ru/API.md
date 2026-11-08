@@ -443,7 +443,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/guard/bans` | `guard:read` | Заблокированные сейчас IP |
 | POST | `/api/guard/bans` | `guard:write` | Заблокировать IP или сеть вручную (seconds: 0 — срок по умолчанию, -1 — навсегда) |
 | DELETE | `/api/guard/bans` | `guard:write` | Снять блокировку (body: {"key": адрес}) |
-| GET | `/api/guard/firewall/rules` | `guard:read` | Правила, записанные Gately в nftables (текст) |
+| GET | `/api/guard/firewall/rules` | `guard:read` | Правила, записанные Gately в системный брандмауэр (текст) |
 
 ## Wake-on-LAN
 

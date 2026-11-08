@@ -246,7 +246,7 @@
   "FileBrowser Quantum 没有提供 %s 的程序": "FileBrowser Quantum не предоставляет программу для %s",
   "FileBrowser Quantum 没有提供 %s/%s 的程序": "FileBrowser Quantum не предоставляет программу для %s/%s",
   "FileBrowser Quantum 没有提供 ARMv%s 的程序": "FileBrowser Quantum не предоставляет программу для ARMv%s",
-  "Gately 写入 nftables 的规则（文本）": "Правила, записанные Gately в nftables (текст)",
+  "Gately 写入系统防火墙的规则（文本）": "Правила, записанные Gately в системный брандмауэр (текст)",
   "Gately 安全更新：当前版本 %s 受安全问题影响": "Обновление безопасности Gately: текущая версия %s подвержена проблемам безопасности",
   "Gately 官网": "Сайт Gately",
   "Gately 有新版本 %s": "Доступна Gately %s",
