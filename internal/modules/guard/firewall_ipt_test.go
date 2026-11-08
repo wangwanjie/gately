@@ -595,3 +595,68 @@ func TestIPTRebuildFailureCleansUp(t *testing.T) {
 		}
 	}
 }
+
+// 增量写入失败（例如与群晖防火墙同时修改规则）后由下一次轮询完整重写；支持时 iptables-restore 带 -w 等待锁
+func TestIPTIncrementalFailureResyncs(t *testing.T) {
+	cleanDefault(t)
+	ipt := &fakeIPT{save: map[string]string{"iptables": goodSave(""), "ip6tables": goodSave("")}}
+	fw, buf := iptFirewall(t, ipt)
+	for i := range fw.ipt.fams {
+		fw.ipt.fams[i].wait = true
+	}
+	s := defaultSettings()
+	s.Firewall = true
+	fw.apply(context.Background(), s)
+	if !fw.snapshot().Active {
+		t.Fatal("应生效")
+	}
+	if len(ipt.find("iptables-legacy-restore -w --noflush")) == 0 || len(ipt.find("iptables-legacy-restore --noflush")) != 0 {
+		t.Fatalf("支持时 iptables-restore 应带 -w: %v", ipt.calls)
+	}
+	locked := true
+	ipt.fail = func(bin string, _ []string) error {
+		if locked && (bin == "ipset" || strings.HasSuffix(bin, "-restore")) {
+			return errorString("Another app is currently holding the xtables lock")
+		}
+		return nil
+	}
+	banlist.Default.Ban("203.0.113.20", banlist.Options{Duration: time.Hour})
+	banlist.Default.Ban("198.51.100.0/24", banlist.Options{Duration: time.Hour})
+	fw.change(banlist.Change{})
+	fw.flush(context.Background())
+	fw.mu.Lock()
+	resync := fw.resync
+	fw.mu.Unlock()
+	if !resync {
+		t.Fatal("增量写入失败后应标记完整重写")
+	}
+	locked = false
+	ipt.reset()
+	fw.mu.Lock()
+	fw.pollIPTLocked(context.Background())
+	if !fw.snapshot().Active {
+		t.Fatal("重写后应生效")
+	}
+	if len(ipt.find("ipset restore -exist", "add gately_ban4 203.0.113.20 timeout")) != 1 || len(ipt.find("-restore", "-A GATELY_DENY -s 198.51.100.0/24 -j DROP")) == 0 {
+		t.Fatalf("轮询应完整重写并补上失败的变化: %v", ipt.calls)
+	}
+	fw.mu.Lock()
+	resync = fw.resync
+	fw.mu.Unlock()
+	if resync {
+		t.Fatal("重写成功后应清除标记")
+	}
+	if !strings.Contains(strings.Join(logsAt(buf, "info"), "\n"), "补上之前未写入的变化") {
+		t.Errorf("应记录重新写入: %v", logsAt(buf, "info"))
+	}
+}
+
+// 旧版 iptables-restore 不认识 -w，不带该参数
+func TestIPTRestoreArgs(t *testing.T) {
+	if got := (iptFamily{}).restoreArgs(); !slices.Equal(got, []string{"--noflush"}) {
+		t.Fatalf("不支持 -w 时: %v", got)
+	}
+	if got := (iptFamily{wait: true}).restoreArgs(); !slices.Equal(got, []string{"-w", "--noflush"}) {
+		t.Fatalf("支持 -w 时: %v", got)
+	}
+}
