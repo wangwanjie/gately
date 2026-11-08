@@ -121,11 +121,27 @@ func findIPT() *iptBackend {
 		}
 		b.fams = append(b.fams, fam)
 	}
+	b.dropUnusableV6(ctx)
 	ver, _ := b.run(ctx, "", b.fams[0].bin, "-V")
 	sv, _ := b.run(ctx, "", ipset, "version")
 	sv, _, _ = strings.Cut(strings.TrimSpace(sv), ",")
 	b.version = strings.TrimSpace(strings.TrimSpace(ver) + ", " + sv)
 	return b
+}
+
+// dropUnusableV6 去掉无法使用的 IPv6 地址族：内核禁用了 IPv6（ipv6.disable=1）或没有 ip6table_mangle 时
+// ip6tables 无法读写 mangle 表，此时只处理 IPv4，避免 IPv6 写入失败拖累 IPv4 的同步。
+func (b *iptBackend) dropUnusableV6(ctx context.Context) {
+	out := b.fams[:0]
+	for _, f := range b.fams {
+		if f.v6 {
+			if _, err := b.run(ctx, "", f.save, "-t", "mangle"); err != nil {
+				continue
+			}
+		}
+		out = append(out, f)
+	}
+	b.fams = out
 }
 
 // legacyFamily 查找 name（iptables / ip6tables）的 legacy 版本及其 save / restore 命令。

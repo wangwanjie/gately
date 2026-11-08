@@ -660,3 +660,32 @@ func TestIPTRestoreArgs(t *testing.T) {
 		t.Fatalf("支持 -w 时: %v", got)
 	}
 }
+
+// 内核禁用 IPv6 时 ip6tables 读不了 mangle 表，只处理 IPv4，IPv4 照常写入
+func TestIPTDropsUnusableV6(t *testing.T) {
+	cleanDefault(t)
+	banlist.Default.Ban("203.0.113.30", banlist.Options{Duration: time.Hour})
+	ipt := &fakeIPT{save: map[string]string{"iptables": goodSave("")}}
+	ipt.fail = func(bin string, _ []string) error {
+		if strings.HasPrefix(bin, "ip6tables") {
+			return errorString("ip6tables v1.8.10 (legacy): can't initialize ip6tables table `mangle': Address family not supported by protocol")
+		}
+		return nil
+	}
+	b := newFakeIPTBackend(ipt)
+	b.dropUnusableV6(context.Background())
+	if len(b.fams) != 1 || b.fams[0].v6 || b.hasV6() {
+		t.Fatalf("应只保留 IPv4: %+v", b.fams)
+	}
+	fw, _ := iptFirewall(t, ipt)
+	fw.ipt = b
+	s := defaultSettings()
+	s.Firewall = true
+	fw.apply(context.Background(), s)
+	if !fw.snapshot().Active || len(ipt.find("ipset restore -exist", "add gately_ban4 203.0.113.30")) != 1 {
+		t.Fatalf("IPv4 应照常生效: %+v %v", fw.snapshot(), ipt.calls)
+	}
+	if len(ipt.find("ip6tables-legacy-restore")) != 0 || len(ipt.find("create gately_ban6")) != 0 {
+		t.Fatalf("不应再写入 IPv6: %v", ipt.calls)
+	}
+}
