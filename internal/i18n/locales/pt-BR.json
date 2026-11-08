@@ -1449,6 +1449,7 @@
   "当前系统不支持 SMB 服务，仅支持 Linux 与 macOS": "O serviço SMB não está disponível neste sistema; apenas Linux e macOS são suportados",
   "当前系统不支持本机 Shell": "O sistema atual não suporta shell local",
   "当前系统不支持注册服务": "Este sistema não suporta o registro de serviços",
+  "当前系统内核不支持 nftables（没有 nf_tables），无法同步到系统防火墙，不再重试；封禁只对 Gately 自身的服务生效，诱饵端口改由 Gately 监听。可在入侵防护设置中关闭“同步到系统防火墙”。错误: %v": "O kernel do sistema não oferece suporte a nftables (sem nf_tables), então os bloqueios não podem ser sincronizados com o firewall do sistema e não haverá novas tentativas; os bloqueios valem apenas para os serviços do Gately e as portas armadilha são escutadas pelo Gately. Você pode desativar \"Sincronizar com o firewall\" nas configurações de Prevenção de intrusão. Erro: %v",
   "当前被封禁的 IP": "IPs atualmente bloqueados",
   "往返时间 最小/平均/最大 = %.2f/%.2f/%.2f ms": "Tempo de ida e volta mín/médio/máx = %.2f/%.2f/%.2f ms",
   "心跳、超时与重试间隔不能小于 500 毫秒": "Heartbeat, tempo limite e intervalo de nova tentativa não podem ser inferiores a 500 milissegundos",

@@ -219,6 +219,8 @@
               <el-form-item :label="t('guard.settings.firewall')">
                 <el-switch v-model="settings.firewall" />
                 <div class="form-help">{{ t('guard.settings.firewallHelp') }}</div>
+                <!-- 内核没有 nf_tables 时开启也不会生效，提示可以关闭 -->
+                <div v-if="settings.firewall && status.firewall.reason === 'unsupported'" class="form-help text-warning">{{ t('guard.settings.firewallUnsupported') }}</div>
               </el-form-item>
               <el-form-item :label="t('guard.settings.banSeconds')">
                 <DurationInput v-model="settings.banSeconds" />
@@ -547,7 +549,9 @@ const fwBadge = computed((): { type: StatusType; text: string } => {
   if (fw.active) {
     return { type: 'running', text: t('guard.fw.active') }
   }
-  return { type: fw.reason === 'os' ? 'info' : 'warn', text: t('guard.fw.inactive') }
+  // 非 Linux 与内核不支持 nf_tables 都是平台限制，无法通过配置解决，用提示色
+  const platform = fw.reason === 'os' || fw.reason === 'unsupported'
+  return { type: platform ? 'info' : 'warn', text: platform ? t('guard.fw.unavailable') : t('guard.fw.inactive') }
 })
 
 // fwProblem 解释防火墙未生效的原因与处理办法
@@ -566,6 +570,8 @@ const fwProblem = computed(() => {
       return { type: 'info' as const, title: t('guard.fw.reasonOS'), hint: t('guard.fw.hintOS') }
     case 'missing':
       return { type: 'warning' as const, title: t('guard.fw.reasonMissing'), hint: docker ? t('guard.fw.hintMissingDocker') : t('guard.fw.hintMissing') }
+    case 'unsupported':
+      return { type: 'info' as const, title: t('guard.fw.reasonUnsupported'), hint: t('guard.fw.hintUnsupported') }
     case 'permission':
       return { type: 'warning' as const, title: t('guard.fw.reasonPermission'), hint: docker ? t('guard.fw.hintPermissionDocker') : t('guard.fw.hintPermission') }
     default:

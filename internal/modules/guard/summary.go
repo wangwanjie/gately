@@ -89,6 +89,9 @@ func (m *Module) SelfCheck(_ context.Context, _ module.CheckEnv) []module.CheckR
 	case fw.Enabled && fw.Reason == ReasonOS:
 		// 非 Linux 平台本来就没有 nftables，只作提示
 		out = append(out, module.CheckResult{ID: "guard.os", Status: module.CheckInfo})
+	case fw.Enabled && fw.Reason == ReasonUnsupported:
+		// 内核没有 nf_tables（如群晖 DSM）无法通过配置解决，与非 Linux 平台一样只作提示
+		out = append(out, module.CheckResult{ID: "guard.unsupported", Status: module.CheckInfo})
 	case fw.Enabled && fw.Reason != "":
 		out = append(out, module.CheckResult{ID: "guard." + fw.Reason, Status: module.CheckWarn, Params: map[string]string{"error": fw.Error}})
 	}

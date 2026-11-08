@@ -30,6 +30,8 @@ const (
 	ReasonMissing    = "missing"
 	ReasonPermission = "permission"
 	ReasonError      = "error"
+	// ReasonUnsupported 表示内核没有 nf_tables（如群晖 DSM），补装软件包也无法解决，不再重试
+	ReasonUnsupported = "unsupported"
 )
 
 // 防火墙轮询参数，可在测试中调整
@@ -157,6 +159,35 @@ func classify(err error) string {
 	msg := err.Error()
 	if strings.Contains(msg, "Operation not permitted") || strings.Contains(msg, "Permission denied") {
 		return ReasonPermission
+	}
+	return ReasonError
+}
+
+// kernelUnsupported 判断 nft 基础查询的错误是否表示内核没有 nf_tables：
+// 内核未编入 nf_tables 时 netlink 请求返回 EINVAL（Invalid argument），
+// 连 nfnetlink 也没有时返回 EPROTONOSUPPORT / EAFNOSUPPORT / EOPNOTSUPP。
+func kernelUnsupported(msg string) bool {
+	low := strings.ToLower(msg)
+	for _, s := range []string{"invalid argument", "protocol not supported", "address family not supported", "operation not supported"} {
+		if strings.Contains(low, s) {
+			return true
+		}
+	}
+	return false
+}
+
+// probeKernelLocked 在写入规则失败后执行最基础的 nft list tables，区分「内核不支持 nf_tables」与规则本身的问题。
+// 规则脚本出错（如缺少某个集合类型的模块）时基础查询仍能成功，只有查询本身也失败才认为内核不支持。调用方持有 f.mu。
+func (f *firewall) probeKernelLocked(ctx context.Context) string {
+	_, err := f.run(ctx, "", "list", "tables")
+	if err == nil {
+		return ReasonError
+	}
+	if r := classify(err); r == ReasonPermission {
+		return r
+	}
+	if kernelUnsupported(err.Error()) {
+		return ReasonUnsupported
 	}
 	return ReasonError
 }
@@ -306,11 +337,24 @@ func (f *firewall) applyLocked(ctx context.Context, s Settings) {
 	ss.Scan.IPv6Strict = strict && f.strictReady && lerr == nil
 	script, members, deny := buildScript(ss, f.local, entries, open, trap, time.Now())
 	if _, err := f.run(ctx, script, "-f", "-"); err != nil {
-		f.status.Reason = classify(err)
+		reason := classify(err)
+		if reason == ReasonError {
+			reason = f.probeKernelLocked(ctx)
+		}
+		f.status.Reason = reason
 		f.status.Error = err.Error()
-		if f.lastErr != err.Error() {
-			f.lastErr = err.Error()
-			f.log.Errorf("写入防火墙规则失败: %v", err)
+		// 日志去重的键：内核不支持时只记一次，不随错误文本变化重复记录
+		key := err.Error()
+		if reason == ReasonUnsupported {
+			key = ReasonUnsupported
+		}
+		if f.lastErr != key {
+			f.lastErr = key
+			if reason == ReasonUnsupported {
+				f.log.Warnf("当前系统内核不支持 nftables（没有 nf_tables），无法同步到系统防火墙，不再重试；封禁只对 Gately 自身的服务生效，诱饵端口改由 Gately 监听。可在入侵防护设置中关闭“同步到系统防火墙”。错误: %v", err)
+			} else {
+				f.log.Errorf("写入防火墙规则失败: %v", err)
+			}
 		}
 		return
 	}
@@ -638,6 +682,7 @@ func (f *firewall) loop(ctx context.Context) {
 }
 
 // retry 在规则未生效、且原因可能自行消失（写入出错、稍后才安装 nft）时重新写入。
+// 内核不支持（ReasonUnsupported）、权限不足与非 Linux 平台不会自行恢复，不重试；保存设置或重启时会重新检测。
 func (f *firewall) retry(ctx context.Context) {
 	f.mu.Lock()
 	st := f.status

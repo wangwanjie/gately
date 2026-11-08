@@ -20,7 +20,7 @@ Prevenção de intrusão no estilo fail2ban: o Gately encontra tentativas de for
 | Linux (root ou `CAP_NET_ADMIN`, nftables instalado) | Todo o tráfego é descartado no kernel, incluindo SSH, outros programas e o tráfego encaminhado a contêineres Docker e dispositivos da LAN | Tratadas pelo kernel, detectam varreduras que só enviam SYN | Disponível |
 | Docker (rede host + `cap_add: NET_ADMIN`) | Igual ao anterior; as regras são gravadas no host | Igual | Disponível |
 | Pacote do fnOS, OpenWrt 22.03 ou posterior | Igual ao anterior (roda como root e o nftables já vem incluído) | Igual | Disponível |
-| Demais casos (Windows, macOS, FreeBSD, Linux sem nftables ou sem permissão) | Só os serviços do Gately: encaminhamento de portas, serviço web, STUN, WebDAV, FTP, SMB, login do frps e painel | O próprio Gately escuta; só detecta conexões que completam o handshake | Indisponível |
+| Demais casos (Windows, macOS, FreeBSD, Linux sem nftables ou sem permissão, Linux cujo kernel não tem nf_tables como Synology DSM) | Só os serviços do Gately: encaminhamento de portas, serviço web, STUN, WebDAV, FTP, SMB, login do frps e painel | O próprio Gately escuta; só detecta conexões que completam o handshake | Indisponível |
 
 O topo da página mostra o status da sincronização com o firewall e, quando indisponível, o motivo e como resolver.
 

@@ -20,7 +20,7 @@ fail2ban 방식의 침입 방지입니다. 로그에서 무차별 대입 공격�
 | Linux(root 또는 `CAP_NET_ADMIN`, nftables 설치됨) | SSH, 다른 프로그램, Docker 컨테이너와 LAN 기기로 전달되는 트래픽까지 모두 커널에서 삭제 | 커널에서 처리, SYN만 보내는 스캔도 감지 | 사용 가능 |
 | Docker(host 네트워크 + `cap_add: NET_ADMIN`) | 위와 같음, 규칙은 호스트에 기록 | 위와 같음 | 사용 가능 |
 | fnOS 패키지, OpenWrt 22.03 이상 | 위와 같음(root로 실행, nftables 기본 포함) | 위와 같음 | 사용 가능 |
-| 그 밖의 경우(Windows, macOS, FreeBSD, nftables나 권한이 없는 Linux) | Gately 자체 서비스(포트 포워딩, 웹 서비스, STUN, WebDAV, FTP, SMB, frps 로그인, 관리 콘솔)에만 적용 | Gately가 직접 수신, 핸드셰이크를 완료한 연결만 감지 | 사용 불가 |
+| 그 밖의 경우(Windows, macOS, FreeBSD, nftables나 권한이 없는 Linux, Synology DSM처럼 커널에 nf_tables가 없는 Linux) | Gately 자체 서비스(포트 포워딩, 웹 서비스, STUN, WebDAV, FTP, SMB, frps 로그인, 관리 콘솔)에만 적용 | Gately가 직접 수신, 핸드셰이크를 완료한 연결만 감지 | 사용 불가 |
 
 페이지 상단에 방화벽 동기화 상태가 표시되며, 사용할 수 없으면 원인과 해결 방법을 보여 줍니다.
 
