@@ -95,6 +95,8 @@ type firewall struct {
 	members map[string]time.Time
 	// capped 为 iptables 后端中剩余时间超过 ipset 上限、按上限写入的键及其在内核中的到期时间
 	capped map[string]time.Time
+	// resync 表示 iptables 后端的增量写入失败，内核中的规则可能与封禁表不一致，下一次轮询完整重写
+	resync bool
 	// denyText 为最近一次写入 deny4 / deny6 的内容，内容不变时不重写
 	denyText string
 	// open / trap 为最近一次写入的开放端口与诱饵端口
@@ -315,7 +317,7 @@ func (f *firewall) applyLocked(ctx context.Context, s Settings) {
 	// 重建会删除旧表，先把旧表的计数并入基数，保存设置后计数不清零
 	f.keepCountsLocked(ctx)
 	f.status = FirewallStatus{Enabled: s.Firewall, Version: version, Dropped: cloneCounts(f.baseDropped), Hits: cloneCounts(f.baseHits), TrapSkipped: []int{}}
-	f.dirty = false
+	f.dirty, f.resync = false, false
 	f.members, f.capped = map[string]time.Time{}, map[string]time.Time{}
 	if !s.Firewall {
 		if wasActive {
@@ -839,6 +841,7 @@ func (f *firewall) setLocal(ctx context.Context, local []netip.Prefix) {
 		open, trap := f.iptCurrentPortsLocked()
 		if err := f.ipt.restoreChains(ctx, f.effectiveLocked(), f.iptPlanLocked(nil, open, trap), iptInChains); err != nil {
 			f.log.Warnf("更新白名单失败: %v", err)
+			f.resync = true
 		}
 		return
 	}

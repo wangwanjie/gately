@@ -68,6 +68,17 @@ var iptCandidates = []string{"/usr/sbin", "/sbin", "/usr/bin", "/bin"}
 type iptFamily struct {
 	v6                 bool
 	bin, save, restore string
+	// wait 表示 iptables-restore 支持 -w（1.6.2 起写入时获取 xtables 锁，不带 -w 遇到群晖防火墙、
+	// Docker 同时修改规则时直接失败）；更早的版本不加锁，也不认识这个参数
+	wait bool
+}
+
+// restoreArgs 返回 iptables-restore 的参数：只重写声明的链，支持时等待 xtables 锁。
+func (f iptFamily) restoreArgs() []string {
+	if f.wait {
+		return []string{"-w", "--noflush"}
+	}
+	return []string{"--noflush"}
 }
 
 // iptBackend 通过 iptables（legacy）与 ipset 命令写入规则。
@@ -94,6 +105,8 @@ func findIPT() *iptBackend {
 		return nil
 	}
 	b := &iptBackend{run: execCmd, ipset: ipset}
+	ctx, cancel := context.WithTimeout(context.Background(), nftTimeout)
+	defer cancel()
 	for _, v6 := range []bool{false, true} {
 		name := "iptables"
 		if v6 {
@@ -108,8 +121,6 @@ func findIPT() *iptBackend {
 		}
 		b.fams = append(b.fams, fam)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), nftTimeout)
-	defer cancel()
 	ver, _ := b.run(ctx, "", b.fams[0].bin, "-V")
 	sv, _ := b.run(ctx, "", ipset, "version")
 	sv, _, _ = strings.Cut(strings.TrimSpace(sv), ",")
@@ -128,6 +139,10 @@ func legacyFamily(name string, v6 bool) (iptFamily, bool) {
 			return fam, false
 		}
 		fam.bin, fam.save, fam.restore = p, lookCmd(name+"-save"), lookCmd(name+"-restore")
+	}
+	if fam.restore != "" {
+		out, _ := exec.Command(fam.restore, "--help").CombinedOutput()
+		fam.wait = strings.Contains(string(out), "--wait")
 	}
 	return fam, fam.bin != "" && fam.save != "" && fam.restore != ""
 }
@@ -373,7 +388,7 @@ type iptPlan struct {
 func (b *iptBackend) restoreChains(ctx context.Context, s Settings, plan iptPlan, chains []string) error {
 	for _, f := range b.fams {
 		rules := iptRules(s, f.v6, plan.allow, plan.deny, plan.open, plan.trap)
-		if _, err := b.run(ctx, renderRestore(chains, rules), f.restore, "--noflush"); err != nil {
+		if _, err := b.run(ctx, renderRestore(chains, rules), f.restore, f.restoreArgs()...); err != nil {
 			return err
 		}
 	}
@@ -385,7 +400,7 @@ func (b *iptBackend) restoreChains(ctx context.Context, s Settings, plan iptPlan
 // 顺序：清空自有链（解除对集合的引用）→ 重建集合 → 写入规则 → 把跳转规则放到内建链第一位。
 func (b *iptBackend) rebuild(ctx context.Context, s Settings, plan iptPlan, entries []banlist.Entry, now time.Time) (members, capped map[string]time.Time, err error) {
 	for _, f := range b.fams {
-		if _, err := b.run(ctx, renderRestore(iptChains, nil), f.restore, "--noflush"); err != nil {
+		if _, err := b.run(ctx, renderRestore(iptChains, nil), f.restore, f.restoreArgs()...); err != nil {
 			return nil, nil, err
 		}
 	}
@@ -649,7 +664,7 @@ func (b *iptBackend) remove(ctx context.Context) error {
 				}
 			}
 		}
-		if _, err := b.run(ctx, renderRestore(iptChains, nil), f.restore, "--noflush"); err != nil {
+		if _, err := b.run(ctx, renderRestore(iptChains, nil), f.restore, f.restoreArgs()...); err != nil {
 			errs = append(errs, err)
 			continue
 		}
@@ -787,11 +802,14 @@ func (f *firewall) flushIPTLocked(ctx context.Context, entries []banlist.Entry, 
 	}
 	// 删除排在添加之前，更新超时时间时先删后加
 	if err := f.ipt.applyIPSet(ctx, append(dels, adds...)); err != nil {
+		// ipset 在出错的那一行停下，之后的语句没有执行，内核与 members 不再一致：由下一次轮询完整重写
 		f.log.Warnf("更新防火墙失败: %v", err)
+		f.resync = true
 	}
 	if deny := iptDenyText(entries); deny != f.denyText {
 		if err := f.ipt.writeDeny(ctx, iptDenyPrefixes(entries)); err != nil {
 			f.log.Warnf("更新防火墙失败: %v", err)
+			f.resync = true
 			return
 		}
 		f.denyText = deny
@@ -802,9 +820,15 @@ func (f *firewall) flushIPTLocked(ctx context.Context, entries []banlist.Entry, 
 // 调用方持有 f.mu，本函数返回前释放。
 func (f *firewall) pollIPTLocked(ctx context.Context) {
 	dropped, hits, fixed, err := f.ipt.check(ctx)
-	if errors.Is(err, errIPTMissing) {
-		// 自有链被其他程序删除（例如防火墙或网络重启时清空了全部规则），重新写入
-		f.log.Warnf("防火墙规则已被外部清除，重新写入")
+	if errors.Is(err, errIPTMissing) || (err == nil && f.resync) {
+		if f.resync {
+			// 之前的增量写入（封禁集合、网段封禁或白名单）失败，完整重写一次
+			f.log.Infof("重新写入防火墙规则，补上之前未写入的变化")
+		} else {
+			// 自有链被其他程序删除（例如防火墙或网络重启时清空了全部规则），重新写入
+			f.log.Warnf("防火墙规则已被外部清除，重新写入")
+		}
+		f.resync = false
 		f.status.Active = false
 		f.applyLocked(ctx, f.cfg)
 		active, onActive := f.status.Active, f.onActive

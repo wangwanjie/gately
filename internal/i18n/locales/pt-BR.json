@@ -2869,6 +2869,7 @@
   "重定向目标暂不可用: %v": "Destino do redirecionamento indisponível: %v",
   "重建失败，恢复旧容器: %v": "Falha na recriação, restaurando o contêiner antigo: %v",
   "重建完成，新容器 %s": "Recriação concluída, novo contêiner %s",
+  "重新写入防火墙规则，补上之前未写入的变化": "Regravando as regras de firewall para incluir alterações que não foram gravadas antes",
   "重新加载": "Recarregar",
   "重新启动旧容器失败: %v": "Falha ao reiniciar o contêiner antigo: %v",
   "重新生成令牌明文": "Regenerar o texto simples do token",
