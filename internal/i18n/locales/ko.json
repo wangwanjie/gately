@@ -1994,6 +1994,7 @@
   "清理临时集合失败: %v": "임시 집합 정리 실패: %v",
   "清理已结束的后台任务": "종료된 백그라운드 작업 정리",
   "清理无用的 Docker 资源": "사용하지 않는 Docker 리소스 정리",
+  "清理未写完的防火墙规则失败: %v": "일부만 기록된 방화벽 규칙을 정리하지 못했습니다: %v",
   "清理目标 %q 无效，可选 containers / images / networks / volumes / buildcache": "정리 대상 %q이(가) 유효하지 않음. containers / images / networks / volumes / buildcache 중에서 선택",
   "清理验证记录失败（可手动删除 TXT %s.%s）: %v": "검증 레코드 정리 실패 (TXT %s.%s를 직접 삭제할 수 있음): %v",
   "清空模块运行日志": "모듈 실행 로그 비우기",

@@ -1994,6 +1994,7 @@
   "清理临时集合失败: %v": "Failed to clean up temporary sets: %v",
   "清理已结束的后台任务": "Clean up finished background tasks",
   "清理无用的 Docker 资源": "Clean up unused Docker resources",
+  "清理未写完的防火墙规则失败: %v": "Failed to clean up partly written firewall rules: %v",
   "清理目标 %q 无效，可选 containers / images / networks / volumes / buildcache": "Invalid cleanup target %q; choose containers / images / networks / volumes / buildcache",
   "清理验证记录失败（可手动删除 TXT %s.%s）: %v": "Failed to clean up validation record (you can delete TXT %s.%s manually): %v",
   "清空模块运行日志": "Clear module runtime logs",

@@ -1994,6 +1994,7 @@
   "清理临时集合失败: %v": "Échec du nettoyage des ensembles temporaires : %v",
   "清理已结束的后台任务": "Nettoyer les tâches d'arrière-plan terminées",
   "清理无用的 Docker 资源": "Nettoyer les ressources Docker inutiles",
+  "清理未写完的防火墙规则失败: %v": "Échec du nettoyage des règles de pare-feu partiellement écrites : %v",
   "清理目标 %q 无效，可选 containers / images / networks / volumes / buildcache": "Cible de nettoyage %q invalide, valeurs possibles : containers / images / networks / volumes / buildcache",
   "清理验证记录失败（可手动删除 TXT %s.%s）: %v": "Échec du nettoyage de l'enregistrement de validation (supprimez TXT %s.%s manuellement) : %v",
   "清空模块运行日志": "Vider les journaux d'exécution d'un module",

@@ -377,6 +377,13 @@ func (f *firewall) applyLocked(ctx context.Context, s Settings) {
 		_, err = f.run(ctx, script, "-f", "-")
 	}
 	if err != nil {
+		if f.ipt != nil {
+			// iptables 按地址族分步写入，不是原子的：中途失败时已写入的部分（例如 IPv4 的链、跳转与网段封禁）
+			// 会留在内核中，而规则未生效时停止或关闭同步都不会删除，这里尽力清理一次
+			if rerr := f.ipt.remove(ctx); rerr != nil {
+				f.log.Debugf("清理未写完的防火墙规则失败: %v", rerr)
+			}
+		}
 		reason := classify(err)
 		if reason == ReasonError && f.ipt == nil {
 			reason = f.probeKernelLocked(ctx)

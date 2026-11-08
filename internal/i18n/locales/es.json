@@ -1994,6 +1994,7 @@
   "清理临时集合失败: %v": "No se pudieron limpiar los conjuntos temporales: %v",
   "清理已结束的后台任务": "Limpiar las tareas en segundo plano finalizadas",
   "清理无用的 Docker 资源": "Limpiar recursos de Docker sin uso",
+  "清理未写完的防火墙规则失败: %v": "No se pudieron limpiar las reglas de cortafuegos escritas a medias: %v",
   "清理目标 %q 无效，可选 containers / images / networks / volumes / buildcache": "Destino de limpieza %q no válido; opciones: containers / images / networks / volumes / buildcache",
   "清理验证记录失败（可手动删除 TXT %s.%s）: %v": "Error al limpiar el registro de validación (puede eliminar manualmente TXT %s.%s): %v",
   "清空模块运行日志": "Vaciar los registros de ejecución del módulo",

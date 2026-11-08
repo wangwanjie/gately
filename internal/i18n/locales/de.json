@@ -1994,6 +1994,7 @@
   "清理临时集合失败: %v": "Bereinigen der temporären Mengen fehlgeschlagen: %v",
   "清理已结束的后台任务": "Beendete Hintergrundaufgaben bereinigen",
   "清理无用的 Docker 资源": "Ungenutzte Docker-Ressourcen bereinigen",
+  "清理未写完的防火墙规则失败: %v": "Teilweise geschriebene Firewall-Regeln konnten nicht entfernt werden: %v",
   "清理目标 %q 无效，可选 containers / images / networks / volumes / buildcache": "Bereinigungsziel %q ungültig, zulässig sind containers / images / networks / volumes / buildcache",
   "清理验证记录失败（可手动删除 TXT %s.%s）: %v": "Bereinigung des Validierungseintrags fehlgeschlagen (TXT %s.%s kann manuell gelöscht werden): %v",
   "清空模块运行日志": "Modulprotokolle leeren",

@@ -564,3 +564,34 @@ func TestIPTLongBanCapped(t *testing.T) {
 		t.Fatalf("重新写入后应更新到期时间: %v", exp)
 	}
 }
+
+// 写入中途失败（IPv4 已写入、IPv6 出错）时尽力删除已写入的部分，不留下未生效却在拦截的规则
+func TestIPTRebuildFailureCleansUp(t *testing.T) {
+	cleanDefault(t)
+	banlist.Default.Ban("198.51.100.0/24", banlist.Options{Duration: time.Hour})
+	ipt := &fakeIPT{save: map[string]string{"iptables": goodSave(""), "ip6tables": goodSave("")}}
+	// 第一次 IPv6 restore 是清空自有链，第二次是写入规则：只让第二次失败。
+	// fail 在 fakeIPT 持锁时调用，不能再调用 find
+	v6Restores := 0
+	ipt.fail = func(bin string, _ []string) error {
+		if bin == "ip6tables-legacy-restore" {
+			v6Restores++
+			if v6Restores == 2 {
+				return errorString("ip6tables-restore v1.8.10 (legacy): line 3 failed")
+			}
+		}
+		return nil
+	}
+	fw, _ := iptFirewall(t, ipt)
+	s := defaultSettings()
+	s.Firewall = true
+	fw.apply(context.Background(), s)
+	if st := fw.snapshot(); st.Active || st.Reason != ReasonError {
+		t.Fatalf("写入失败应为错误: %+v", st)
+	}
+	for _, want := range [][]string{{"iptables-legacy -w -t mangle -D PREROUTING -j GATELY_PRE"}, {"iptables-legacy -w -t mangle -X GATELY_DENY"}, {"ipset destroy gately_ban4"}} {
+		if len(ipt.find(want...)) == 0 {
+			t.Errorf("失败后应清理 %v: %v", want, ipt.calls)
+		}
+	}
+}
