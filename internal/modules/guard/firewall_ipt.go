@@ -43,6 +43,13 @@ const (
 	iptMaxHitcount = 255
 	// iptMultiport 为 multiport 一条规则最多容纳的端口数（一个范围占两个）
 	iptMultiport = 15
+	// iptMaxTimeout 为 ipset 元素超时的上限（秒，约 24.8 天，ipset 按毫秒以 int32 存储）。
+	// 封禁剩余时间更长时先按上限写入，临近到期前由对账按剩余时间重新写入
+	iptMaxTimeout = 2147483
+	// iptRefresh 为按上限写入的元素在到期前多久重新写入
+	iptRefresh = 24 * time.Hour
+	// iptMaxElem 为每个集合最多容纳的元素数（ipset 默认 65536，长期封禁累计超过时写入会失败）
+	iptMaxElem = 1048576
 )
 
 // iptChains 为全部自有链；iptInChains 为随设置、白名单与端口变化而重写的 input 部分
@@ -202,9 +209,9 @@ func (b *iptBackend) createSets() string {
 	for _, f := range b.fams {
 		for _, kind := range []string{"ban", "trap", "scan"} {
 			if f.v6 {
-				fmt.Fprintf(&sb, "create %s hash:ip family inet6 netmask 64 timeout 0\n", iptSet(kind, true))
+				fmt.Fprintf(&sb, "create %s hash:ip family inet6 netmask 64 timeout 0 maxelem %d\n", iptSet(kind, true), iptMaxElem)
 			} else {
-				fmt.Fprintf(&sb, "create %s hash:ip family inet timeout 0\n", iptSet(kind, false))
+				fmt.Fprintf(&sb, "create %s hash:ip family inet timeout 0 maxelem %d\n", iptSet(kind, false), iptMaxElem)
 			}
 		}
 	}
@@ -212,16 +219,25 @@ func (b *iptBackend) createSets() string {
 }
 
 // iptElement 返回单个来源、有期限的封禁对应的 ipset add 语句；永久封禁与网段返回 ok=false，写入 GATELY_DENY。
-func iptElement(e banlist.Entry, now time.Time) (stmt string, ok bool) {
+// 剩余时间超过 ipset 的上限时按上限写入，capped 为 true，exp 为元素在内核中的到期时间。
+func iptElement(e banlist.Entry, now time.Time) (stmt string, exp time.Time, capped, ok bool) {
 	if e.Permanent() || !banlist.IsSingle(e.Key) {
-		return "", false
+		return "", time.Time{}, false, false
 	}
 	sec := int(e.Until.Sub(now).Seconds()) + 1
 	if sec < 1 {
-		return "", false
+		return "", time.Time{}, false, false
+	}
+	if sec > iptMaxTimeout {
+		sec, capped = iptMaxTimeout, true
 	}
 	p, _ := banlist.KeyPrefix(e.Key)
-	return fmt.Sprintf("add %s %s timeout %d", iptSet("ban", p.Addr().Is6()), p.Addr(), sec), true
+	return fmt.Sprintf("add %s %s timeout %d", iptSet("ban", p.Addr().Is6()), p.Addr(), sec), now.Add(time.Duration(sec) * time.Second), capped, true
+}
+
+// iptSetTimeout 返回 SET 目标使用的超时秒数，不超过 ipset 的上限。
+func iptSetTimeout(sec int) int {
+	return min(sec, iptMaxTimeout)
 }
 
 // iptDelStmt 返回从封禁集合删除单个来源的 ipset 语句。
@@ -309,7 +325,7 @@ func iptRules(s Settings, v6 bool, allow, deny []netip.Prefix, open, trap []port
 		for _, c := range multiportChunks(trap) {
 			add(iptIn, "-p tcp --syn -m multiport --dports "+c+" -j "+iptTrap)
 		}
-		add(iptTrap, fmt.Sprintf("-j SET --add-set %s src --exist --timeout %d", iptSet("trap", v6), banSeconds(s, s.Trap.BanSeconds)))
+		add(iptTrap, fmt.Sprintf("-j SET --add-set %s src --exist --timeout %d", iptSet("trap", v6), iptSetTimeout(banSeconds(s, s.Trap.BanSeconds))))
 		add(iptTrap, "-j DROP")
 	}
 	if s.Scan.Enable {
@@ -325,7 +341,7 @@ func iptRules(s Settings, v6 bool, allow, deny []netip.Prefix, open, trap []port
 			add(iptScan, fmt.Sprintf("-m recent --name %s%s --set", iptRecent(v6), mask))
 			add(iptScan, fmt.Sprintf("-m recent --name %s%s --rcheck --seconds 60 --hitcount %d -j %s", iptRecent(v6), mask, n, iptScanHit))
 		}
-		add(iptScanHit, fmt.Sprintf("-j SET --add-set %s src --exist --timeout %d", iptSet("scan", v6), banSeconds(s, s.Scan.BanSeconds)))
+		add(iptScanHit, fmt.Sprintf("-j SET --add-set %s src --exist --timeout %d", iptSet("scan", v6), iptSetTimeout(banSeconds(s, s.Scan.BanSeconds))))
 		add(iptScanHit, "-j DROP")
 	}
 	return rules
@@ -364,12 +380,13 @@ func (b *iptBackend) restoreChains(ctx context.Context, s Settings, plan iptPlan
 	return nil
 }
 
-// rebuild 重建全部链与集合并写入当前封禁，返回写入集合的单个来源及其解封时间。
+// rebuild 重建全部链与集合并写入当前封禁，返回写入集合的单个来源及其解封时间，
+// 以及按上限写入的来源在内核中的到期时间。
 // 顺序：清空自有链（解除对集合的引用）→ 重建集合 → 写入规则 → 把跳转规则放到内建链第一位。
-func (b *iptBackend) rebuild(ctx context.Context, s Settings, plan iptPlan, entries []banlist.Entry, now time.Time) (map[string]time.Time, error) {
+func (b *iptBackend) rebuild(ctx context.Context, s Settings, plan iptPlan, entries []banlist.Entry, now time.Time) (members, capped map[string]time.Time, err error) {
 	for _, f := range b.fams {
 		if _, err := b.run(ctx, renderRestore(iptChains, nil), f.restore, "--noflush"); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	}
 	var sb strings.Builder
@@ -381,17 +398,17 @@ func (b *iptBackend) rebuild(ctx context.Context, s Settings, plan iptPlan, entr
 			// 集合仍被其他规则引用（例如手工加过引用它的规则）时无法销毁，清空后沿用；类型不同时下面的 create 会报错
 			sb.WriteString("flush " + name + "\n")
 		default:
-			return nil, err
+			return nil, nil, err
 		}
 	}
-	members := map[string]time.Time{}
+	members, capped = map[string]time.Time{}, map[string]time.Time{}
 	create := b.createSets()
 	// 创建在前、清空在后：create 对已存在的同类型集合不报错（-exist）
 	sets := create + sb.String()
 	sb.Reset()
 	sb.WriteString(sets)
 	for _, e := range entries {
-		stmt, ok := iptElement(e, now)
+		stmt, exp, isCapped, ok := iptElement(e, now)
 		if !ok {
 			continue
 		}
@@ -400,18 +417,21 @@ func (b *iptBackend) rebuild(ctx context.Context, s Settings, plan iptPlan, entr
 			continue
 		}
 		members[e.Key] = e.Until
+		if isCapped {
+			capped[e.Key] = exp
+		}
 		sb.WriteString(stmt + "\n")
 	}
 	if _, err := b.run(ctx, sb.String(), b.ipset, "restore", "-exist"); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	if err := b.restoreChains(ctx, s, plan, iptChains); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	if _, err := b.ensureJumps(ctx); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return members, nil
+	return members, capped, nil
 }
 
 // saveAll 读取各地址族 mangle 表的内容（带计数）。
@@ -731,7 +751,7 @@ func (f *firewall) warnClampLocked(s Settings) {
 func (f *firewall) flushIPTLocked(ctx context.Context, entries []banlist.Entry, now time.Time) {
 	want := map[string]banlist.Entry{}
 	for _, e := range entries {
-		if _, ok := iptElement(e, now); !ok {
+		if _, _, _, ok := iptElement(e, now); !ok {
 			continue
 		}
 		if p, _ := banlist.KeyPrefix(e.Key); p.Addr().Is6() && !f.ipt.hasV6() {
@@ -742,22 +762,28 @@ func (f *firewall) flushIPTLocked(ctx context.Context, entries []banlist.Entry, 
 	var dels, adds []string
 	for key, until := range f.members {
 		e, keep := want[key]
-		if keep && e.Until.Equal(until) {
+		exp, isCapped := f.capped[key]
+		// 按上限写入的元素临近到期时重新写入，延续到真正的解封时间
+		if keep && e.Until.Equal(until) && (!isCapped || exp.Sub(now) > iptRefresh) {
 			continue
 		}
 		// 自然到期的元素已被内核删除，只有提前解封或需要更新超时时间时才删除
-		if until.After(now) {
+		if until.After(now) && (!isCapped || exp.After(now)) {
 			dels = append(dels, iptDelStmt(key))
 		}
 		delete(f.members, key)
+		delete(f.capped, key)
 	}
 	for key, e := range want {
 		if _, ok := f.members[key]; ok {
 			continue
 		}
-		stmt, _ := iptElement(e, now)
+		stmt, exp, isCapped, _ := iptElement(e, now)
 		adds = append(adds, stmt)
 		f.members[key] = e.Until
+		if isCapped {
+			f.capped[key] = exp
+		}
 	}
 	// 删除排在添加之前，更新超时时间时先删后加
 	if err := f.ipt.applyIPSet(ctx, append(dels, adds...)); err != nil {
@@ -799,6 +825,13 @@ func (f *firewall) pollIPTLocked(ctx context.Context) {
 	f.status.Error = ""
 	f.status.Dropped, f.status.Hits = addCounts(f.baseDropped, dropped), addCounts(f.baseHits, hits)
 	f.status.CheckedAt = time.Now()
+	// 按上限写入的长期封禁临近到期时，标记由下一次对账重新写入
+	for _, exp := range f.capped {
+		if exp.Sub(f.status.CheckedAt) <= iptRefresh {
+			f.dirty = true
+			break
+		}
+	}
 	portsOK := f.refreshPortsLocked(ctx)
 	if portsOK && f.cfg.Scan.Enable && f.cfg.Scan.IPv6Strict && !f.strictReady && !f.strictAt.IsZero() && !time.Now().Before(f.strictAt) {
 		f.strictReady = true

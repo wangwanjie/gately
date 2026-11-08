@@ -490,3 +490,77 @@ func TestIPTRebuildSetInUse(t *testing.T) {
 		t.Fatalf("应创建并清空被占用的集合: %v", ipt.calls)
 	}
 }
+
+// 剩余时间超过 ipset 上限（约 24.8 天）的封禁按上限写入，临近到期时由对账按剩余时间重新写入；
+// 诱饵端口与扫描检测的 SET 超时同样不超过上限，集合容量放大到 iptMaxElem
+func TestIPTLongBanCapped(t *testing.T) {
+	cleanDefault(t)
+	banlist.Default.Ban("203.0.113.9", banlist.Options{Duration: 30 * 24 * time.Hour})
+	banlist.Default.Ban("203.0.113.10", banlist.Options{Duration: time.Hour})
+	ipt := &fakeIPT{save: map[string]string{"iptables": goodSave(""), "ip6tables": goodSave("")}}
+	fw, _ := iptFirewall(t, ipt)
+	s := defaultSettings()
+	s.Firewall = true
+	s.Trap.Enable, s.Trap.BanSeconds = true, 365*24*3600
+	fw.apply(context.Background(), s)
+	if st := fw.snapshot(); !st.Active {
+		t.Fatalf("应生效: %+v", st)
+	}
+	restore := ipt.find("ipset restore -exist", "create gately_ban4")
+	if len(restore) != 1 {
+		t.Fatalf("应写入集合: %v", ipt.calls)
+	}
+	for _, want := range []string{"add gately_ban4 203.0.113.9 timeout 2147483\n", "maxelem 1048576"} {
+		if !strings.Contains(restore[0], want) {
+			t.Fatalf("ipset 内容缺少 %q:\n%s", want, restore[0])
+		}
+	}
+	if strings.Contains(restore[0], "203.0.113.10 timeout 2147483") {
+		t.Fatalf("短期封禁不应按上限写入:\n%s", restore[0])
+	}
+	if len(ipt.find("-restore --noflush", "--add-set gately_trap4 src --exist --timeout 2147483")) == 0 {
+		t.Fatalf("诱饵端口的 SET 超时应不超过上限: %v", ipt.calls)
+	}
+	fw.mu.Lock()
+	exp, ok := fw.capped[banlist.KeyFor(netip.MustParseAddr("203.0.113.9"))]
+	fw.mu.Unlock()
+	if !ok || time.Until(exp) > iptMaxTimeout*time.Second || time.Until(exp) < iptMaxTimeout*time.Second-time.Minute {
+		t.Fatalf("应记录按上限写入的到期时间: %v %v", ok, exp)
+	}
+
+	// 未临近到期时轮询不触发重写
+	ipt.reset()
+	fw.mu.Lock()
+	fw.pollIPTLocked(context.Background())
+	fw.mu.Lock()
+	dirty := fw.dirty
+	fw.mu.Unlock()
+	fw.flush(context.Background())
+	if dirty || len(ipt.find("ipset restore -exist", "203.0.113.9")) != 0 {
+		t.Fatalf("未临近到期不应重写: dirty=%v %v", dirty, ipt.calls)
+	}
+
+	// 内核中的元素临近到期：轮询标记后对账先删后加，延续到真正的解封时间
+	fw.mu.Lock()
+	for k := range fw.capped {
+		fw.capped[k] = time.Now().Add(time.Hour)
+	}
+	fw.mu.Unlock()
+	ipt.reset()
+	fw.mu.Lock()
+	fw.pollIPTLocked(context.Background())
+	fw.flush(context.Background())
+	got := ipt.find("ipset restore -exist", "add gately_ban4 203.0.113.9 timeout 2147483")
+	if len(got) != 1 || !strings.Contains(got[0], "del gately_ban4 203.0.113.9\n") {
+		t.Fatalf("临近到期应重新写入: %v", ipt.calls)
+	}
+	if strings.Contains(got[0], "203.0.113.10") {
+		t.Fatalf("其他封禁不应重写:\n%s", got[0])
+	}
+	fw.mu.Lock()
+	exp = fw.capped[banlist.KeyFor(netip.MustParseAddr("203.0.113.9"))]
+	fw.mu.Unlock()
+	if time.Until(exp) < iptMaxTimeout*time.Second-time.Minute {
+		t.Fatalf("重新写入后应更新到期时间: %v", exp)
+	}
+}
