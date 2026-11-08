@@ -1994,6 +1994,7 @@
   "清理临时集合失败: %v": "清理暫存集合失敗: %v",
   "清理已结束的后台任务": "清理已結束的背景任務",
   "清理无用的 Docker 资源": "清理無用的 Docker 資源",
+  "清理未写完的防火墙规则失败: %v": "清理未寫完的防火牆規則失敗: %v",
   "清理目标 %q 无效，可选 containers / images / networks / volumes / buildcache": "清理目標 %q 無效，可選 containers / images / networks / volumes / buildcache",
   "清理验证记录失败（可手动删除 TXT %s.%s）: %v": "清理驗證記錄失敗（可手動刪除 TXT %s.%s）: %v",
   "清空模块运行日志": "清空模組執行日誌",
