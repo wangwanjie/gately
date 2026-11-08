@@ -158,6 +158,8 @@
   "forwardAuthUrlHelp": "Каждый запрос сначала проверяется по этому адресу и пропускается при 2xx, как auth_request в nginx. Для Authelia: /api/authz/auth-request",
   "forwardAuthLogin": "Переход ко входу",
   "forwardAuthLoginHelp": "Куда отправить посетителя при ответе 401. {'{url}'} — исходный адрес, {'{method}'} — метод запроса. Пусто — вернуть ответ проверки как есть",
+  "forwardAuthLoginFromLocation": "Переход по 401",
+  "forwardAuthLoginFromLocationHelp": "Если адрес проверки возвращает 401 с абсолютным http(s)-адресом в Location (например, Casdoor), посетитель перенаправляется туда с кодом 302, Set-Cookie и Cache-Control передаются вместе с ним. Заданный «Переход ко входу» имеет приоритет",
   "forwardAuthHeaders": "Заголовки личности",
   "locationsTag": "правил путей: {count}",
   "sharedUsersDivider": "Общие пользователи и поставщик удостоверений OIDC",

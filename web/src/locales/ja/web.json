@@ -158,6 +158,8 @@
   "forwardAuthUrlHelp": "各リクエストをまずこの URL で検証し、2xx なら通します。nginx の auth_request に相当し、Authelia では /api/authz/auth-request です",
   "forwardAuthLogin": "ログインへのリダイレクト",
   "forwardAuthLoginHelp": "エンドポイントが 401 を返したときのリダイレクト先です。{'{url}'} は元の URL、{'{method}'} はリクエストメソッドです。空ならエンドポイントの応答をそのまま返します",
+  "forwardAuthLoginFromLocation": "401 リダイレクト",
+  "forwardAuthLoginFromLocationHelp": "エンドポイントが http(s) の絶対 URL を Location に持つ 401 を返したとき（Casdoor など）、その URL へ 302 でリダイレクトし、Set-Cookie と Cache-Control も渡します。ログインへのリダイレクトを設定した場合はそちらが優先されます",
   "forwardAuthHeaders": "渡す ID ヘッダー",
   "locationsTag": "パス別 {count} 件",
   "sharedUsersDivider": "共有ユーザーと OIDC ID プロバイダー",

@@ -158,6 +158,8 @@
   "forwardAuthUrlHelp": "Chaque requête est d'abord vérifiée auprès de cette URL et autorisée en cas de 2xx, comme auth_request de nginx. Pour Authelia : /api/authz/auth-request",
   "forwardAuthLogin": "Redirection de connexion",
   "forwardAuthLoginHelp": "Où envoyer le visiteur quand le point renvoie 401. {'{url}'} est l'URL d'origine et {'{method}'} la méthode. Vide pour renvoyer la réponse du point telle quelle",
+  "forwardAuthLoginFromLocation": "Redirection 401",
+  "forwardAuthLoginFromLocationHelp": "Quand le point d'accès renvoie 401 avec une Location http(s) absolue (par ex. Casdoor), le visiteur y est redirigé en 302, avec Set-Cookie et Cache-Control. Une redirection de connexion renseignée reste prioritaire",
   "forwardAuthHeaders": "En-têtes d'identité",
   "locationsTag": "{count} règles de chemin",
   "sharedUsersDivider": "Utilisateurs partagés et fournisseur d'identité OIDC",

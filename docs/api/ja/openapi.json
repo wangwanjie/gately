@@ -3247,6 +3247,9 @@
             },
             "type": "array"
           },
+          "loginFromLocation": {
+            "type": "boolean"
+          },
           "loginUrl": {
             "type": "string"
           },

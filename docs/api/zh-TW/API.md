@@ -2279,6 +2279,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 欄位 | 類型 |
 | --- | --- |
 | `copyHeaders` | 陣列 of string |
+| `loginFromLocation` | boolean |
 | `loginUrl` | string |
 | `url` | string |
 

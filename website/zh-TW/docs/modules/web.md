@@ -173,6 +173,7 @@ https://auth.example.com/__gately_auth/oauth/callback
 | --- | --- |
 | `url` | 驗證介面，例如 Authelia 的 `http://127.0.0.1:9091/api/authz/auth-request` |
 | `loginUrl` | 介面回傳 401 時把訪客跳轉到的位址，例如 `https://auth.example.com/?rd={url}&rm={method}`；`{url}` 為原始位址（已編碼），`{method}` 為請求方法。留空時原樣回傳介面的回應 |
+| `loginFromLocation` | 未填 `loginUrl` 時，介面回傳 401 且 `Location` 為唯一的 http(s) 絕對位址時把訪客 302 跳轉到該位址，並傳遞 `Set-Cookie` 與 `Cache-Control`，適用於在 401 中給出動態登入位址的服務（如 Casdoor 原生 `/api/forward-auth`）；其他形式的 `Location` 不跳轉，按 401 原樣傳回。預設關閉 |
 | `copyHeaders` | 驗證通過後從介面回應複製到後端請求的身分標頭，預設 `Remote-User`、`Remote-Groups`、`Remote-Email`、`Remote-Name` |
 
 運作方式：

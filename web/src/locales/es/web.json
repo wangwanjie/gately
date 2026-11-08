@@ -158,6 +158,8 @@
   "forwardAuthUrlHelp": "Cada petición se comprueba primero contra esta URL y pasa con 2xx, como auth_request de nginx. En Authelia es /api/authz/auth-request",
   "forwardAuthLogin": "Redirección de inicio de sesión",
   "forwardAuthLoginHelp": "Adónde enviar al visitante cuando el endpoint devuelve 401. {'{url}'} es la URL original y {'{method}'} el método. Vacío para devolver la respuesta del endpoint tal cual",
+  "forwardAuthLoginFromLocation": "Redirección 401",
+  "forwardAuthLoginFromLocationHelp": "Cuando el endpoint devuelve 401 con una Location http(s) absoluta (p. ej. Casdoor), redirige al visitante allí con 302 y transmite Set-Cookie y Cache-Control. Si se indica una redirección de inicio de sesión, esta tiene prioridad",
   "forwardAuthHeaders": "Cabeceras de identidad",
   "locationsTag": "{count} reglas de ruta",
   "sharedUsersDivider": "Usuarios compartidos y proveedor de identidad OIDC",

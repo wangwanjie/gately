@@ -2279,6 +2279,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Campo | Tipo |
 | --- | --- |
 | `copyHeaders` | Lista de string |
+| `loginFromLocation` | boolean |
 | `loginUrl` | string |
 | `url` | string |
 

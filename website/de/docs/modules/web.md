@@ -173,6 +173,7 @@ Die Anmeldung über Drittanbieter für die Verwaltungsoberfläche selbst wird se
 | --- | --- |
 | `url` | Der Prüf-Endpunkt, etwa `http://127.0.0.1:9091/api/authz/auth-request` von Authelia |
 | `loginUrl` | Wohin Besucher geschickt werden, wenn der Endpunkt mit 401 antwortet, etwa `https://auth.example.com/?rd={url}&rm={method}`. `{url}` ist die ursprüngliche Adresse (URL-kodiert) und `{method}` die Anfragemethode. Ist das Feld leer, wird die Antwort des Endpunkts unverändert zurückgegeben |
+| `loginFromLocation` | Ist `loginUrl` leer und antwortet der Endpunkt mit 401 und genau einer absoluten http(s)-`Location`, wird der Besucher per 302 dorthin geleitet; `Set-Cookie` und `Cache-Control` werden mitgegeben. Gedacht für Dienste, die im 401 eine dynamische Login-Adresse liefern, etwa Casdoors natives `/api/forward-auth`. Jede andere `Location` wird ignoriert und der 401 unverändert zurückgegeben. Standardmäßig aus |
 | `copyHeaders` | Identitäts-Header, die aus der Antwort des Endpunkts in die Backend-Anfrage kopiert werden; Standard sind `Remote-User`, `Remote-Groups`, `Remote-Email` und `Remote-Name` |
 
 So funktioniert es:

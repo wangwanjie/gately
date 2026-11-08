@@ -158,6 +158,8 @@
   "forwardAuthUrlHelp": "Jede Anfrage wird zuerst gegen diese URL geprüft und bei 2xx durchgelassen, wie nginx auth_request. Für Authelia: /api/authz/auth-request",
   "forwardAuthLogin": "Login-Weiterleitung",
   "forwardAuthLoginHelp": "Ziel, wenn der Endpunkt 401 liefert. {'{url}'} ist die ursprüngliche URL, {'{method}'} die Methode. Leer lassen, um die Antwort des Endpunkts durchzureichen",
+  "forwardAuthLoginFromLocation": "401-Umleitung",
+  "forwardAuthLoginFromLocationHelp": "Liefert der Endpunkt 401 mit einer absoluten http(s)-Location (z. B. Casdoor), wird der Besucher per 302 dorthin geleitet; Set-Cookie und Cache-Control werden mitgegeben. Eine eingetragene Login-Weiterleitung hat Vorrang",
   "forwardAuthHeaders": "Identitäts-Header",
   "locationsTag": "{count} Pfadregeln",
   "sharedUsersDivider": "Gemeinsame Benutzer und OIDC-Identitätsanbieter",

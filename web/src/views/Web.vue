@@ -418,6 +418,11 @@
                 <el-input v-model="site.forwardAuth.loginUrl" class="mono" placeholder="https://auth.example.com/?rd={url}&rm={method}" />
                 <div class="form-help">{{ t('web.forwardAuthLoginHelp') }}</div>
               </el-form-item>
+              <!-- 认证服务在 401 中给出动态登录地址（如 Casdoor）时使用；填写了静态登录地址时以静态地址为准，开关置灰 -->
+              <el-form-item :label="t('web.forwardAuthLoginFromLocation')">
+                <el-switch v-model="site.forwardAuth.loginFromLocation" :disabled="!!site.forwardAuth.loginUrl?.trim()" />
+                <div class="form-help">{{ t('web.forwardAuthLoginFromLocationHelp') }}</div>
+              </el-form-item>
               <el-form-item :label="t('web.forwardAuthHeaders')">
                 <el-input v-model="fwdHeadersText" class="mono" placeholder="Remote-User, Remote-Groups, Remote-Email, Remote-Name" />
               </el-form-item>
@@ -719,7 +724,7 @@ interface Site {
   waf: string
   remark: string
   authOptional: boolean
-  forwardAuth: { url: string; loginUrl: string; copyHeaders: string[] | null }
+  forwardAuth: { url: string; loginUrl: string; loginFromLocation?: boolean; copyHeaders: string[] | null }
   countryMode: string
   countries: string[] | null
   // denyClose 为 true 时访问控制拒绝的请求直接断开连接（记为 444），不返回 403
@@ -1014,7 +1019,7 @@ function emptySite(): Site {
     waf: '',
     remark: '',
     authOptional: false,
-    forwardAuth: { url: '', loginUrl: '', copyHeaders: [] },
+    forwardAuth: { url: '', loginUrl: '', loginFromLocation: false, copyHeaders: [] },
     countryMode: '',
     countries: [],
     denyClose: false,
@@ -1654,7 +1659,7 @@ function openSite(l: ListenerView, row?: SiteRow, copy = false) {
     draft.identityHeaders.unshift({ header: draft.userHeader, field: 'user' })
   }
   delete draft.userHeader
-  draft.forwardAuth = Object.assign({ url: '', loginUrl: '', copyHeaders: [] }, draft.forwardAuth)
+  draft.forwardAuth = Object.assign({ url: '', loginUrl: '', loginFromLocation: false, copyHeaders: [] }, draft.forwardAuth)
   forwardAuthOn.value = !!draft.forwardAuth.url
   // 旧配置没有这些对象，补全默认值后可直接编辑
   const defaults = emptySite()
@@ -1743,7 +1748,7 @@ async function saveSite() {
     }
   }
   if (!forwardAuthOn.value) {
-    site.value.forwardAuth = { url: '', loginUrl: '', copyHeaders: [] }
+    site.value.forwardAuth = { url: '', loginUrl: '', loginFromLocation: false, copyHeaders: [] }
   }
   // 关闭认证或改为其他类型后，按用户分流不再显示，也不再生效，一并清空，避免保存时被隐藏的设置拦住
   if (site.value.type !== 'proxy' || !localAuthOn.value) {
