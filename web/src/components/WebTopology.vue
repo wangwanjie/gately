@@ -1020,7 +1020,8 @@ function matchLabel(s: NonNullable<LayoutNode['site']>) {
   if (s.domains.includes('*')) {
     return t('webTopology.matchAny')
   }
-  return s.domains.some((d) => d.startsWith('*.')) ? t('webTopology.matchWildcard') : t('webTopology.matchExact')
+  // * 已在上面处理，其余含 * 的为 *.example.com 或首段通配 api-*.example.com
+  return s.domains.some((d) => d.includes('*')) ? t('webTopology.matchWildcard') : t('webTopology.matchExact')
 }
 
 function rateText(r: { qps: number; bps: number }) {
