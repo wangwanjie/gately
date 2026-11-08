@@ -10,7 +10,7 @@
   "from": "Old domain",
   "to": "New domain",
   "replaceHelp": "Replaces the domain suffix: the old domain itself and its subdomains (including the *.old wildcard) are rewritten, so replacing old.com with new.com turns www.old.com into www.new.com. Domains that become duplicates are merged and sites without a match stay unchanged.",
-  "domainsPlaceholder": "One domain per line, or separated by commas. *.example.com wildcards are supported",
+  "domainsPlaceholder": "One domain per line, or separated by commas. *.example.com and api-*.example.com wildcards are supported",
   "addHelp": "Domains a site already has are skipped; new ones are appended.",
   "removeHelp": "Matches full domains; domains a site does not have are ignored. A site cannot be left without any domain.",
   "optionsHelp": "Only options set to On or Off are changed; options set to Keep stay as configured on each site. Authentication, access control, backend addresses and other settings that affect access must be edited per site.",

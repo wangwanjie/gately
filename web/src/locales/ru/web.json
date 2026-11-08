@@ -56,7 +56,7 @@
   "tabTraffic": "Трафик",
   "tabHeaders": "Заголовки",
   "domains": "Домены",
-  "domainsPlaceholder": "По одному в строке; поддерживаются *.example.com и *",
+  "domainsPlaceholder": "По одному в строке; поддерживаются *.example.com, api-*.example.com и *",
   "type": "Тип",
   "typeProxy": "Обратный прокси",
   "typeRedirect": "Перенаправление",

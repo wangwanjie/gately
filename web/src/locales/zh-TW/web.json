@@ -56,7 +56,7 @@
   "tabTraffic": "流量",
   "tabHeaders": "請求標頭",
   "domains": "網域名稱",
-  "domainsPlaceholder": "每行一個；支援 *.example.com 與 *",
+  "domainsPlaceholder": "每行一個；支援 *.example.com、api-*.example.com 與 *",
   "type": "類型",
   "typeProxy": "反向代理",
   "typeRedirect": "重新導向",

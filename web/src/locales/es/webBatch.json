@@ -10,7 +10,7 @@
   "from": "Dominio anterior",
   "to": "Dominio nuevo",
   "replaceHelp": "Reemplaza el sufijo del dominio: se reescriben el dominio anterior y sus subdominios (incluido el comodín *.anterior); al cambiar old.com por new.com, www.old.com pasa a www.new.com. Los dominios que queden duplicados se fusionan y los sitios sin coincidencia no cambian.",
-  "domainsPlaceholder": "Un dominio por línea o separados por comas. Admite comodines *.example.com",
+  "domainsPlaceholder": "Un dominio por línea o separados por comas. Admite comodines *.example.com y api-*.example.com",
   "addHelp": "Los dominios que el sitio ya tiene se omiten; los nuevos se añaden al final.",
   "removeHelp": "Coincide con el dominio completo; los dominios que el sitio no tiene se ignoran. Un sitio no puede quedarse sin dominios.",
   "optionsHelp": "Solo se cambian las opciones en Activado o Desactivado; las que están en No cambiar conservan la configuración de cada sitio. La autenticación, el control de acceso, las direcciones de backend y otros ajustes que afectan al acceso deben editarse sitio por sitio.",

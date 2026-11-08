@@ -56,7 +56,7 @@
   "tabTraffic": "トラフィック",
   "tabHeaders": "ヘッダー",
   "domains": "ドメイン",
-  "domainsPlaceholder": "1 行に 1 つ。*.example.com と * に対応",
+  "domainsPlaceholder": "1 行に 1 つ。*.example.com、api-*.example.com、* に対応",
   "type": "種類",
   "typeProxy": "リバースプロキシ",
   "typeRedirect": "リダイレクト",

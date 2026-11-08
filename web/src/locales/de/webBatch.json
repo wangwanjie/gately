@@ -10,7 +10,7 @@
   "from": "Alte Domain",
   "to": "Neue Domain",
   "replaceHelp": "Ersetzt das Domain-Suffix: Die alte Domain selbst und ihre Subdomains (einschließlich des Platzhalters *.alt) werden umgeschrieben; wird old.com durch new.com ersetzt, wird aus www.old.com www.new.com. Doppelte Domains werden zusammengeführt, Sites ohne Treffer bleiben unverändert.",
-  "domainsPlaceholder": "Eine Domain pro Zeile oder durch Kommas getrennt. Platzhalter wie *.example.com sind möglich",
+  "domainsPlaceholder": "Eine Domain pro Zeile oder durch Kommas getrennt. Platzhalter wie *.example.com und api-*.example.com sind möglich",
   "addHelp": "Domains, die die Site schon hat, werden übersprungen; neue werden angehängt.",
   "removeHelp": "Verglichen wird die vollständige Domain; Domains, die die Site nicht hat, werden ignoriert. Eine Site darf nicht ohne Domain bleiben.",
   "optionsHelp": "Nur Optionen mit An oder Aus werden geändert; Optionen auf Unverändert behalten die Einstellung der jeweiligen Site. Authentifizierung, Zugriffskontrolle, Backend-Adressen und weitere zugriffsrelevante Einstellungen müssen pro Site bearbeitet werden.",
