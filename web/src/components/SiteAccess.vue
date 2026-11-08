@@ -69,6 +69,7 @@ import { Copy, Plus, Trash2 } from 'lucide-vue-next'
 import { api } from '../api'
 import { copyText } from '../composables/useClipboard'
 import { splitCommasOrSpaces } from '../composables/useListText'
+import { firstHost } from '../siteUrl'
 import ListInput from './ListInput.vue'
 
 export interface PathRule {
@@ -117,9 +118,10 @@ function addLink() {
   site.value.shareLinks.push({ name: '', token: '', maxUses: 0, pathPrefix: '' })
 }
 
-// copyLink 用站点的首个域名与监听端口拼出分享地址
+// copyLink 用站点的首个具体域名与监听端口拼出分享地址；通配域名（含首段通配 api-*.example.com）不能直接访问，
+// 全是通配时退回当前页面的主机名
 function copyLink(l: ShareLink) {
-  const host = (site.value.domains ?? []).find((d) => d !== '*' && !d.startsWith('*.')) ?? location.hostname
+  const host = firstHost(site.value.domains) ?? location.hostname
   const defaultPort = props.tls ? 443 : 80
   const port = props.port === defaultPort ? '' : `:${props.port}`
   copyText(`${props.tls ? 'https' : 'http'}://${host}${port}/?_gs=${l.token}`)

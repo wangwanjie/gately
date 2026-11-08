@@ -39,6 +39,18 @@ export function hostPart(domain: string): string | null {
   return d
 }
 
+// firstHost 返回域名列表中第一个能直接访问的主机（IPv6 加方括号）；全是通配（*、*.example.com、api-*.example.com）
+// 或格式不对时返回 null，由调用方换用其他主机。
+export function firstHost(domains: readonly string[] | null | undefined): string | null {
+  for (const d of domains ?? []) {
+    const h = hostPart(d)
+    if (h) {
+      return h
+    }
+  }
+  return null
+}
+
 // accessScheme 返回浏览器访问监听使用的协议。
 export function accessScheme(l: AccessListener): 'http' | 'https' {
   if (l.accessScheme === 'http' || l.accessScheme === 'https') {

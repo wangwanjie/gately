@@ -1,7 +1,7 @@
 // 站点访问地址拼接的单元测试：node --test tests/
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { accessPort, accessScheme, forwardedEntry, hostPart, parsePorts, safeHttpUrl, siteLink } from '../src/siteUrl.ts'
+import { accessPort, accessScheme, firstHost, forwardedEntry, hostPart, parsePorts, safeHttpUrl, siteLink } from '../src/siteUrl.ts'
 
 const https = (port, extra = {}) => ({ port, tls: true, ...extra })
 const http = (port, extra = {}) => ({ port, tls: false, ...extra })
@@ -148,4 +148,15 @@ test('只转发 UDP 的端口转发规则不作为站点入口', () => {
   assert.equal(forwardedEntry(l, 'a.com', pf(['tcp6']))?.port, 443)
   // 未带协议字段（旧数据）按 TCP 处理
   assert.equal(forwardedEntry(l, 'a.com', pf(undefined))?.port, 443)
+})
+
+test('firstHost 跳过各种通配，返回第一个能直接访问的主机', () => {
+  assert.equal(firstHost(['*', '*.example.com', 'api-*.example.com', 'app-*-dev.example.com', 'a.example.com']), 'a.example.com')
+  assert.equal(firstHost(['*api.example.com', 'fd00::1']), '[fd00::1]')
+  assert.equal(firstHost(['api-*.example.com', '*']), null)
+  assert.equal(firstHost([]), null)
+  assert.equal(firstHost(null), null)
+  assert.equal(firstHost(undefined), null)
+  // 写坏的值同样跳过，不会拼进分享链接
+  assert.equal(firstHost(['evil.com/@x', 'a.com:8080', 'ok.example.com']), 'ok.example.com')
 })
