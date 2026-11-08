@@ -243,6 +243,26 @@ esac
 	}
 }
 
+// 专用链中最后一条规则删除后，删除跳转与空链；链中还有规则时保留
+func TestChainModeDropsEmptyChain(t *testing.T) {
+	dir := fakeBins(t, map[string]string{"iptables-legacy": legacyIPT, "iptables-legacy-save": legacySave})
+	SetInstance("/tmp/gately-chain-test6")
+	own := chainName()
+	b := &cmdBackend{}
+	f := chainFam{bin: filepath.Join(dir, "iptables-legacy"), save: filepath.Join(dir, "iptables-legacy-save"), input: "INPUT"}
+	writeFilter(t, dir, "*filter\n:INPUT DROP [0:0]\n:"+own+" - [0:0]\n-A INPUT -j "+own+"\n-A "+own+" -p tcp -m tcp --dport 80 -j ACCEPT\nCOMMIT\n")
+	b.dropEmptyChain(context.Background(), f)
+	if calls := readCalls(t, dir); calls != "" {
+		t.Fatalf("链中还有规则时不应删除:\n%s", calls)
+	}
+	writeFilter(t, dir, "*filter\n:INPUT DROP [0:0]\n:"+own+" - [0:0]\n-A INPUT -j "+own+"\nCOMMIT\n")
+	b.dropEmptyChain(context.Background(), f)
+	calls := readCalls(t, dir)
+	if !strings.Contains(calls, "-w -D INPUT -j "+own) || !strings.Contains(calls, "-w -X "+own) {
+		t.Fatalf("空链应删除跳转与链:\n%s", calls)
+	}
+}
+
 // 内核没有 nf_tables 且没有 iptables（legacy）时给出明确说明；iptables 是 nf_tables 版本时同样不能使用
 func TestTargetsNoNFTablesNoLegacy(t *testing.T) {
 	fakeBins(t, map[string]string{"nft": dsmNFT, "iptables": `echo "iptables v1.8.10 (nf_tables)"` + "\n", "iptables-save": "true\n"})

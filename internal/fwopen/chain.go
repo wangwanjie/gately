@@ -317,5 +317,26 @@ func (b *cmdBackend) chainDel(ctx context.Context, t target, e existing) error {
 	} else {
 		b.chain.known[key] = list
 	}
+	b.dropEmptyChain(ctx, f)
 	return nil
+}
+
+// dropEmptyChain 在专用链已经没有规则时删除跳转与链本身（例如撤销全部放行或 Gately 退出时），
+// 不在系统防火墙中留下空链；之后再放行时 chainAdd 会重新创建。失败不影响放行结果，只是留下一条空链。
+func (b *cmdBackend) dropEmptyChain(ctx context.Context, f chainFam) {
+	own := chainName()
+	out, err := run(ctx, "", f.save, "-t", "filter")
+	if err != nil {
+		return
+	}
+	st := parseSavedFilter(out, own)
+	if !st.hasOwn || len(st.own) > 0 {
+		return
+	}
+	for range st.jumps {
+		if _, err := run(ctx, "", f.bin, "-w", "-D", f.builtin(), "-j", own); err != nil {
+			return
+		}
+	}
+	_, _ = run(ctx, "", f.bin, "-w", "-X", own)
 }
