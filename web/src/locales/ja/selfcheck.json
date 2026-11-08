@@ -66,7 +66,7 @@
     "frpConflict": "同じ frps に同名のプロキシが既にあるか、ドメインやリモートポートが使用中です。複数の機器で同じ frpc 設定をコピーした場合によく起こります。機器ごとに frpc の user を変えるか、プロキシ名・ドメイン・リモートポートを変更してください。競合したプロキシのサイトはタイムアウトします。",
     "guardMissing": "nftables をインストールしてください。Docker の場合は最新のイメージに更新してください。",
     "guardPermission": "nftables への書き込みには root または CAP_NET_ADMIN が必要です。Docker の場合は compose に cap_add: [NET_ADMIN] を追加し、host ネットワークを使ってください。",
-    "guardUnsupported": "カーネルで nf_tables が有効になっていない（Synology DSM など）ため、パッケージを入れても解決できません。侵入防御の設定で「システムファイアウォールに同期」をオフにできます。",
+    "guardUnsupported": "カーネルで nf_tables が有効になっておらず（Synology DSM など）、使える iptables（legacy）と ipset もありません。Docker の場合は最新のイメージに更新し、直接インストールの場合は ipset と iptables（legacy）を入れてください。",
     "guardError": "カーネルに nftables モジュールがないか、nft が古すぎる可能性があります（0.9.0 以上が必要）。",
     "guardTrapSkipped": "これらのポートではサービスが待ち受けているため、おとりにすると正規の訪問者をブロックしてしまいます。自動でスキップしました。",
     "guardScanUnavailable": "侵入防御のページでファイアウォールの状態と対処方法を確認してください。",

@@ -1324,6 +1324,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Campo | Tipo |
 | --- | --- |
 | `active` | boolean |
+| `backend` | string |
 | `checkedAt` | Hora (RFC 3339) |
 | `dropped` | Mapa de integer |
 | `enabled` | boolean |

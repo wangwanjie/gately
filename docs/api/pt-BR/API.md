@@ -1324,6 +1324,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Campo | Tipo |
 | --- | --- |
 | `active` | boolean |
+| `backend` | string |
 | `checkedAt` | Hora (RFC 3339) |
 | `dropped` | Mapa de integer |
 | `enabled` | boolean |

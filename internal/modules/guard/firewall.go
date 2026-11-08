@@ -57,6 +57,8 @@ type FirewallStatus struct {
 	Reason  string `json:"reason,omitempty"`
 	Error   string `json:"error,omitempty"`
 	Version string `json:"version,omitempty"`
+	// Backend 为写入规则使用的防火墙：nftables，或内核没有 nf_tables 时的 iptables（legacy + ipset）
+	Backend string `json:"backend,omitempty"`
 	// Dropped 为各类规则丢弃的数据包数：ban（封禁表）、deny（网段与永久封禁）、trap、scan（内核直接封禁的地址）
 	Dropped map[string]uint64 `json:"dropped"`
 	// Hits 为诱饵端口与扫描检测规则的触发次数
@@ -69,7 +71,13 @@ type FirewallStatus struct {
 	CheckedAt   time.Time `json:"checkedAt,omitzero"`
 }
 
-// firewall 把封禁表同步到 nftables。
+// 防火墙后端
+const (
+	BackendNFT = "nftables"
+	BackendIPT = "iptables"
+)
+
+// firewall 把封禁表同步到 nftables；内核没有 nf_tables 时改用 iptables（legacy）+ ipset，见 firewall_ipt.go。
 type firewall struct {
 	log *logbuf.Logger
 	// run 执行 nft 命令，可在测试中替换
@@ -79,6 +87,10 @@ type firewall struct {
 	cfg    Settings
 	status FirewallStatus
 	nft    string
+	// ipt 不为 nil 时使用 iptables（legacy）+ ipset 写入规则
+	ipt *iptBackend
+	// iptClamp 为最近一次提示过的扫描阈值截断，相同时不重复提示
+	iptClamp int
 	// members 为已写入 ban4 / ban6 的键及其解封时间
 	members map[string]time.Time
 	// denyText 为最近一次写入 deny4 / deny6 的内容，内容不变时不重写
@@ -225,7 +237,7 @@ func (f *firewall) stop() {
 	if f.status.Active {
 		// 删除表前保留计数，模块重新启动后继续累加
 		f.keepCountsLocked(context.Background())
-		if _, err := f.run(context.Background(), "", "delete", "table", "inet", tableName); err != nil {
+		if err := f.removeLocked(context.Background()); err != nil {
 			f.log.Warnf("删除防火墙规则失败: %v", err)
 		} else {
 			f.log.Infof("已移除防火墙规则")
@@ -305,7 +317,7 @@ func (f *firewall) applyLocked(ctx context.Context, s Settings) {
 	f.members = map[string]time.Time{}
 	if !s.Firewall {
 		if wasActive {
-			if _, err := f.run(ctx, "", "delete", "table", "inet", tableName); err != nil {
+			if err := f.removeLocked(ctx); err != nil {
 				f.log.Warnf("删除防火墙规则失败: %v", err)
 			}
 			f.log.Infof("已关闭防火墙同步，规则已移除")
@@ -313,16 +325,31 @@ func (f *firewall) applyLocked(ctx context.Context, s Settings) {
 		f.status.Reason = ReasonDisabled
 		return
 	}
-	if f.nft == "" {
+	if f.nft == "" && f.ipt == nil {
 		path, reason := findNFT()
-		if path == "" {
+		switch {
+		case path != "":
+			f.nft = path
+			f.status.Version = ""
+		case reason == ReasonMissing:
+			// 没有 nft 命令时改用 iptables（legacy）+ ipset
+			if ipt := findIPTFn(); ipt != nil {
+				f.ipt = ipt
+				f.status.Version = ipt.version
+			}
+		}
+		if f.nft == "" && f.ipt == nil {
 			f.status.Reason = reason
 			return
 		}
-		f.nft = path
-		f.status.Version = ""
 	}
-	if f.status.Version == "" {
+	if f.ipt != nil {
+		f.status.Backend = BackendIPT
+		f.status.Version = f.ipt.version
+	} else {
+		f.status.Backend = BackendNFT
+	}
+	if f.status.Version == "" && f.ipt == nil {
 		if out, err := f.run(ctx, "", "--version"); err == nil {
 			f.status.Version = strings.TrimSpace(out)
 		}
@@ -335,11 +362,32 @@ func (f *firewall) applyLocked(ctx context.Context, s Settings) {
 	ss := s
 	// 读不到监听端口时开放端口集合不完整，严格模式会把所有端口当成未开放，必须退回阈值检测
 	ss.Scan.IPv6Strict = strict && f.strictReady && lerr == nil
-	script, members, deny := buildScript(ss, f.local, entries, open, trap, time.Now())
-	if _, err := f.run(ctx, script, "-f", "-"); err != nil {
+	var members map[string]time.Time
+	var deny string
+	var err error
+	if f.ipt != nil {
+		f.warnClampLocked(ss)
+		members, err = f.ipt.rebuild(ctx, ss, f.iptPlanLocked(entries, open, trap), entries, time.Now())
+		deny = iptDenyText(entries)
+	} else {
+		var script string
+		script, members, deny = buildScript(ss, f.local, entries, open, trap, time.Now())
+		_, err = f.run(ctx, script, "-f", "-")
+	}
+	if err != nil {
 		reason := classify(err)
-		if reason == ReasonError {
+		if reason == ReasonError && f.ipt == nil {
 			reason = f.probeKernelLocked(ctx)
+			if reason == ReasonUnsupported {
+				// 内核没有 nf_tables 时改用 iptables（legacy）+ ipset 重新写入
+				if ipt := findIPTFn(); ipt != nil {
+					f.log.Infof("当前系统内核不支持 nftables，改用 iptables（legacy）与 ipset 写入防火墙规则")
+					f.nft, f.ipt = "", ipt
+					f.status.Version = ipt.version
+					f.applyLocked(ctx, s)
+					return
+				}
+			}
 		}
 		f.status.Reason = reason
 		f.status.Error = err.Error()
@@ -351,7 +399,7 @@ func (f *firewall) applyLocked(ctx context.Context, s Settings) {
 		if f.lastErr != key {
 			f.lastErr = key
 			if reason == ReasonUnsupported {
-				f.log.Warnf("当前系统内核不支持 nftables（没有 nf_tables），无法同步到系统防火墙，不再重试；封禁只对 Gately 自身的服务生效，诱饵端口改由 Gately 监听。可在入侵防护设置中关闭“同步到系统防火墙”。错误: %v", err)
+				f.log.Warnf("当前系统内核不支持 nftables（没有 nf_tables），也没有可用的 iptables（legacy）与 ipset，无法同步到系统防火墙，不再重试；封禁只对 Gately 自身的服务生效，诱饵端口改由 Gately 监听。Docker 部署请更新到最新镜像，直接安装请安装 ipset 与 iptables（legacy）后保存一次设置。错误: %v", err)
 			} else {
 				f.log.Errorf("写入防火墙规则失败: %v", err)
 			}
@@ -367,7 +415,11 @@ func (f *firewall) applyLocked(ctx context.Context, s Settings) {
 	f.denyText = deny
 	f.open, f.trap = formatPorts(open), formatPorts(trap)
 	if !wasActive {
-		f.log.Infof("防火墙规则已写入 nftables（表 inet %s，%d 条封禁）", tableName, len(entries))
+		if f.ipt != nil {
+			f.log.Infof("防火墙规则已写入 iptables（mangle 表 GATELY_* 链与 ipset 集合，%d 条封禁）", len(entries))
+		} else {
+			f.log.Infof("防火墙规则已写入 nftables（表 inet %s，%d 条封禁）", tableName, len(entries))
+		}
 	}
 }
 
@@ -711,6 +763,10 @@ func (f *firewall) flush(ctx context.Context) {
 	f.dirty = false
 	now := time.Now()
 	entries := banlist.Default.List()
+	if f.ipt != nil {
+		f.flushIPTLocked(ctx, entries, now)
+		return
+	}
 	want := map[string]banlist.Entry{}
 	for _, e := range entries {
 		if _, _, ok := timedElement(e, now); ok {
@@ -767,6 +823,13 @@ func (f *firewall) setLocal(ctx context.Context, local []netip.Prefix) {
 	if !f.status.Active {
 		return
 	}
+	if f.ipt != nil {
+		open, trap := f.iptCurrentPortsLocked()
+		if err := f.ipt.restoreChains(ctx, f.effectiveLocked(), f.iptPlanLocked(nil, open, trap), iptInChains); err != nil {
+			f.log.Warnf("更新白名单失败: %v", err)
+		}
+		return
+	}
 	allow4, allow6 := splitFamilies(mergePrefixes(allowPrefixes(f.cfg.ignoreSet(local).prefixes)))
 	var b strings.Builder
 	fmt.Fprintf(&b, "flush set inet %s allow4\nflush set inet %s allow6\n", tableName, tableName)
@@ -791,7 +854,11 @@ func deleteStmt(key string) string {
 // 规则生效时直接读取内核的最新计数；读取失败或表已被外部删除时退回最近一次轮询的结果。
 func (f *firewall) keepCountsLocked(ctx context.Context) {
 	dropped, hits := f.status.Dropped, f.status.Hits
-	if f.status.Active {
+	if f.status.Active && f.ipt != nil {
+		if d, h, err := f.ipt.counters(ctx); err == nil {
+			dropped, hits = addCounts(f.baseDropped, d), addCounts(f.baseHits, h)
+		}
+	} else if f.status.Active {
 		if out, err := f.run(ctx, "", "-j", "list", "table", "inet", tableName); err == nil {
 			var doc nftDoc
 			if json.Unmarshal([]byte(out), &doc) == nil {
@@ -893,6 +960,10 @@ func (f *firewall) poll(ctx context.Context) {
 		f.mu.Unlock()
 		return
 	}
+	if f.ipt != nil {
+		f.pollIPTLocked(ctx)
+		return
+	}
 	out, err := f.run(ctx, "", "-j", "list", "table", "inet", tableName)
 	if err != nil {
 		if strings.Contains(err.Error(), "No such file") {
@@ -990,6 +1061,15 @@ func (f *firewall) refreshPortsLocked(ctx context.Context) bool {
 	if o == f.open && t == f.trap {
 		return true
 	}
+	if f.ipt != nil {
+		ss := f.effectiveLocked()
+		if err := f.ipt.restoreChains(ctx, ss, iptPlan{allow: f.allowLocked(), open: open, trap: trap}, iptInChains); err != nil {
+			f.log.Warnf("更新端口集合失败: %v", err)
+			return false
+		}
+		f.open, f.trap = o, t
+		return true
+	}
 	var b strings.Builder
 	fmt.Fprintf(&b, "flush set inet %s open\nflush set inet %s trap\n", tableName, tableName)
 	if len(open) > 0 {
@@ -1013,6 +1093,12 @@ func (f *firewall) rules(ctx context.Context) (string, error) {
 	f.mu.Unlock()
 	if !active {
 		return "", errors.New("防火墙规则未生效")
+	}
+	f.mu.Lock()
+	ipt := f.ipt
+	f.mu.Unlock()
+	if ipt != nil {
+		return ipt.text(ctx)
 	}
 	return f.run(ctx, "", "list", "table", "inet", tableName)
 }

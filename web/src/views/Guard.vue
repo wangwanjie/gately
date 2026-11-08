@@ -372,7 +372,7 @@
     </el-dialog>
 
     <!-- 防火墙规则 -->
-    <el-dialog v-model="rulesVisible" :title="t('guard.fw.rulesTitle')" width="820px" :fullscreen="isMobile">
+    <el-dialog v-model="rulesVisible" :title="status?.firewall.backend === 'iptables' ? t('guard.fw.rulesTitleIpt') : t('guard.fw.rulesTitle')" width="820px" :fullscreen="isMobile">
       <pre class="rules mono">{{ rulesText }}</pre>
     </el-dialog>
   </div>
@@ -412,6 +412,8 @@ interface FirewallStatus {
   enabled: boolean
   active: boolean
   reason?: string
+  // backend 为写入规则的防火墙：nftables，或内核没有 nf_tables 时的 iptables（legacy + ipset）
+  backend?: 'nftables' | 'iptables'
   error?: string
   version?: string
   dropped: Record<string, number>

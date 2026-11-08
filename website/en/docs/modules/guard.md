@@ -20,7 +20,8 @@ fail2ban-style intrusion prevention: Gately finds brute-force attempts in logs, 
 | Linux (root or `CAP_NET_ADMIN`, nftables installed) | All traffic is dropped in the kernel, including SSH, other programs and traffic forwarded to Docker containers and LAN devices | Handled by the kernel, catches SYN-only scans | Available |
 | Docker (host network + `cap_add: NET_ADMIN`) | Same as above, rules are written to the host | Same | Available |
 | fnOS package, OpenWrt 22.03 and later | Same as above (runs as root, nftables is built in) | Same | Available |
-| Everything else (Windows, macOS, FreeBSD, Linux without nftables or permission, Linux whose kernel lacks nf_tables such as Synology DSM) | Only Gately's own services: port forwarding, web service, STUN, WebDAV, FTP, SMB, frps logins and the admin console | Served by Gately, only catches connections that complete the handshake | Not available |
+| Synology DSM and other Linux whose kernel lacks nf_tables (Docker with host network + `NET_ADMIN`; a direct install needs ipset and iptables legacy) | Same as above, using the iptables mangle table and ipset | Same as above | Available (threshold capped at 255 per minute) |
+| Everything else (Windows, macOS, FreeBSD, Linux with neither nftables nor iptables (legacy) and ipset, or without permission) | Only Gately's own services: port forwarding, web service, STUN, WebDAV, FTP, SMB, frps logins and the admin console | Served by Gately, only catches connections that complete the handshake | Not available |
 
 The top of the page shows the firewall sync status and, when it is not available, the reason and how to fix it.
 
@@ -31,6 +32,8 @@ With "Sync to system firewall" on, Gately creates its own `inet gately` table in
 - The `prerouting` chain (priority -190, after connection tracking and before destination NAT) drops packets from banned addresses, whether they are for this host or forwarded to a container or LAN device. Replies to connections this host opens itself (DNS, package mirrors and so on) still get through even if the other end is banned. IPv6 is banned per /64;
 - The `input` chain only looks at new connections to this host, for trap ports and scan detection. Whitelisted addresses are skipped;
 - The whole table is deleted when sync is turned off or Gately stops. If another program removes it, Gately rewrites it within 10 seconds.
+
+When the kernel has no nf_tables (Synology DSM, for example), iptables (legacy) and ipset are used instead, again without touching existing rules: the first rule of `PREROUTING` and `INPUT` in the mangle table jumps to Gately's own `GATELY_PRE` and `GATELY_IN` chains, which do the same as the two chains above; banned single addresses go into the ipset sets `gately_ban4` / `gately_ban6` (IPv6 per /64), and network and permanent bans become rules in the `GATELY_DENY` chain. If a program such as the Synology firewall puts its own rules in front, the jumps are moved back to the top within 10 seconds, and cleared chains are written again. Scan detection counts with the recent module, with the threshold capped at 255 per minute.
 
 "View rules" on the page shows the complete rules currently in place.
 

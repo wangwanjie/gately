@@ -1324,6 +1324,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 欄位 | 類型 |
 | --- | --- |
 | `active` | boolean |
+| `backend` | string |
 | `checkedAt` | 時間 (RFC 3339) |
 | `dropped` | 對應 of integer |
 | `enabled` | boolean |

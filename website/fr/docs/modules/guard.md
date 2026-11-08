@@ -20,7 +20,8 @@ Prévention d'intrusion à la fail2ban : Gately repère les attaques par force b
 | Linux (root ou `CAP_NET_ADMIN`, nftables installé) | Tout le trafic est rejeté dans le noyau, y compris SSH, les autres programmes et le trafic redirigé vers des conteneurs Docker et des appareils du LAN | Gérés par le noyau, repèrent les scans qui n'envoient que des SYN | Disponible |
 | Docker (réseau host + `cap_add: NET_ADMIN`) | Comme ci-dessus, les règles sont écrites sur l'hôte | Idem | Disponible |
 | Paquet fnOS, OpenWrt 22.03 et versions ultérieures | Comme ci-dessus (exécution en root, nftables inclus) | Idem | Disponible |
-| Autres cas (Windows, macOS, FreeBSD, Linux sans nftables ou sans autorisation, Linux dont le noyau n'a pas nf_tables comme Synology DSM) | Uniquement les services de Gately : redirection de ports, service web, STUN, WebDAV, FTP, SMB, connexions frps et console d'administration | Gately écoute lui-même, ne repère que les connexions qui terminent la poignée de main | Indisponible |
+| Synology DSM et autres Linux dont le noyau n'a pas nf_tables (Docker en réseau host + `NET_ADMIN` ; une installation directe demande ipset et iptables legacy) | Comme ci-dessus, avec la table mangle d'iptables et ipset | Comme ci-dessus | Disponible (seuil plafonné à 255 par minute) |
+| Autres cas (Windows, macOS, FreeBSD, Linux sans nftables ni iptables (legacy) avec ipset, ou sans autorisation) | Uniquement les services de Gately : redirection de ports, service web, STUN, WebDAV, FTP, SMB, connexions frps et console d'administration | Gately écoute lui-même, ne repère que les connexions qui terminent la poignée de main | Indisponible |
 
 Le haut de la page affiche l'état de la synchronisation du pare-feu et, si elle est indisponible, la raison et la marche à suivre.
 
@@ -31,6 +32,8 @@ Avec « Synchroniser avec le pare-feu » activé, Gately crée sa propre table `
 - La chaîne `prerouting` (priorité -190, après le suivi de connexion et avant le NAT de destination) rejette les paquets venant des adresses bannies, qu'ils soient destinés à cet hôte ou redirigés vers un conteneur ou un appareil du LAN. Les réponses aux connexions que cet hôte ouvre lui-même (DNS, miroirs de paquets, etc.) passent toujours, même si l'autre extrémité est bannie. En IPv6, le bannissement porte sur le /64 ;
 - La chaîne `input` ne regarde que les nouvelles connexions vers cet hôte, pour les ports pièges et la détection de scan. Les adresses en liste blanche sont ignorées ;
 - Toute la table est supprimée quand la synchronisation est désactivée ou que Gately s'arrête. Si un autre programme la supprime, Gately la réécrit en moins de 10 secondes.
+
+Si le noyau n'a pas nf_tables (Synology DSM, par exemple), iptables (legacy) et ipset sont utilisés à la place, là encore sans toucher aux règles existantes : la première règle de `PREROUTING` et `INPUT` dans la table mangle saute vers les chaînes propres à Gately `GATELY_PRE` et `GATELY_IN`, qui jouent le même rôle que les deux chaînes ci-dessus ; les adresses isolées bloquées vont dans les ensembles ipset `gately_ban4` / `gately_ban6` (IPv6 par /64), et les blocages de réseaux et permanents deviennent des règles de la chaîne `GATELY_DENY`. Si un programme comme le pare-feu de Synology place ses règles devant, les sauts sont remis en tête en moins de 10 secondes, et les chaînes effacées sont réécrites. La détection de scan compte avec le module recent, avec un seuil plafonné à 255 par minute.
 
 « Voir les règles » sur la page affiche l'ensemble des règles en place.
 

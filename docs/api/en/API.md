@@ -1324,6 +1324,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Field | Type |
 | --- | --- |
 | `active` | boolean |
+| `backend` | string |
 | `checkedAt` | Time (RFC 3339) |
 | `dropped` | Map of integer |
 | `enabled` | boolean |

@@ -20,7 +20,8 @@ fail2ban のような侵入防御です。ログからブルートフォース�
 | Linux（root または `CAP_NET_ADMIN`、nftables をインストール済み） | SSH、他のプログラム、Docker コンテナや LAN 機器へ転送される通信も含め、すべてカーネルで破棄 | カーネルで処理し、SYN だけのスキャンも検出 | 利用可 |
 | Docker（host ネットワーク + `cap_add: NET_ADMIN`） | 同上。ルールはホストに書き込まれます | 同上 | 利用可 |
 | fnOS パッケージ、OpenWrt 22.03 以降 | 同上（root で動作し、nftables は標準搭載） | 同上 | 利用可 |
-| その他（Windows、macOS、FreeBSD、nftables や権限のない Linux、Synology DSM などカーネルに nf_tables がない Linux） | Gately 自身のサービス（ポート転送、Web サービス、STUN、WebDAV、FTP、SMB、frps ログイン、管理画面）にのみ適用 | Gately が待ち受け、ハンドシェイクを完了した接続のみ検出 | 利用不可 |
+| Synology DSM などカーネルに nf_tables がない Linux（Docker の host ネットワーク + `NET_ADMIN`、直接インストールには ipset と iptables legacy が必要） | 同上（iptables の mangle テーブルと ipset を使用） | 同上 | 利用可（しきい値は最大で毎分 255 回） |
+| その他（Windows、macOS、FreeBSD、nftables も iptables（legacy）と ipset もない、または権限のない Linux） | Gately 自身のサービス（ポート転送、Web サービス、STUN、WebDAV、FTP、SMB、frps ログイン、管理画面）にのみ適用 | Gately が待ち受け、ハンドシェイクを完了した接続のみ検出 | 利用不可 |
 
 ページ上部にファイアウォール同期の状態が表示され、利用できない場合は原因と対処方法が表示されます。
 
@@ -31,6 +32,8 @@ fail2ban のような侵入防御です。ログからブルートフォース�
 - `prerouting` チェーン（優先度 -190、コネクショントラッキングの後、宛先 NAT の前）でブロック中のアドレスから届くパケットを破棄します。このホスト宛ても、コンテナや LAN 機器への転送も破棄されます。このホストから開始した接続（DNS やパッケージミラーへのアクセスなど）の応答は、相手のアドレスがブロックされていても通常どおり通します。IPv6 は /64 単位でブロックします；
 - `input` チェーンはこのホスト宛ての新しい接続だけを見て、おとりポートとスキャン検出に使います。ホワイトリストのアドレスは対象外です；
 - 同期をオフにするか Gately を停止するとテーブルごと削除されます。他のプログラムに削除された場合は 10 秒以内に書き直します。
+
+カーネルに nf_tables がない場合（Synology DSM など）は iptables（legacy）と ipset を使い、こちらも既存のルールには手を加えません。mangle テーブルの `PREROUTING` と `INPUT` の先頭ルールから Gately 専用の `GATELY_PRE`・`GATELY_IN` チェーンへジャンプし、上の 2 つのチェーンと同じ働きをします。ブロックした単一アドレスは ipset セット `gately_ban4` / `gately_ban6`（IPv6 は /64 単位）に入れ、ネットワークと永久ブロックは `GATELY_DENY` チェーンのルールにします。Synology のファイアウォールなどが自分のルールを前に挿入した場合は 10 秒以内にジャンプを先頭へ戻し、チェーンが消された場合は自動で書き直します。スキャン検出は recent モジュールで数え、しきい値は最大で毎分 255 回として扱います。
 
 ページの「ルールを表示」で現在のルール全体を確認できます。
 
