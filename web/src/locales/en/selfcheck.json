@@ -66,7 +66,7 @@
     "frpConflict": "The frps server already has a proxy with this name, or the domain or remote port is taken. This usually happens when several devices share a copy of the same frpc config. Give each device's frpc a different user, or change the proxy names, domains and remote ports; sites behind a conflicting proxy time out.",
     "guardMissing": "Install nftables. For Docker, update to the latest image.",
     "guardPermission": "Writing to nftables requires root or CAP_NET_ADMIN. For Docker, add cap_add: [NET_ADMIN] to the compose file and use host networking.",
-    "guardUnsupported": "The kernel does not have nf_tables enabled (Synology DSM, for example), and installing packages cannot fix that. Turn off \"Sync to system firewall\" in the Intrusion Prevention settings.",
+    "guardUnsupported": "The kernel does not have nf_tables enabled (Synology DSM, for example) and there are no usable iptables (legacy) and ipset. With Docker, update to the latest image; for a direct install, install ipset and iptables (legacy).",
     "guardError": "The kernel may be missing nftables modules, or nft is too old (0.9.0 or later is required).",
     "guardTrapSkipped": "Services listen on these ports, so trapping them would ban legitimate visitors. They were skipped.",
     "guardScanUnavailable": "See the Intrusion Prevention page for the firewall status and how to fix it.",

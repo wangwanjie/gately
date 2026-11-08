@@ -934,6 +934,9 @@
           "active": {
             "type": "boolean"
           },
+          "backend": {
+            "type": "string"
+          },
           "checkedAt": {
             "format": "date-time",
             "type": "string"

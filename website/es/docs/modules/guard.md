@@ -20,7 +20,8 @@ Prevención de intrusiones al estilo de fail2ban: Gately detecta ataques de fuer
 | Linux (root o `CAP_NET_ADMIN`, nftables instalado) | Se descarta en el kernel todo el tráfico, incluido SSH, otros programas y el tráfico reenviado a contenedores Docker y dispositivos de la LAN | Los gestiona el kernel y detectan escaneos que solo envían SYN | Disponible |
 | Docker (red host + `cap_add: NET_ADMIN`) | Igual que arriba; las reglas se escriben en el anfitrión | Igual | Disponible |
 | Paquete de fnOS, OpenWrt 22.03 y posteriores | Igual que arriba (se ejecuta como root y nftables viene incluido) | Igual | Disponible |
-| Resto de casos (Windows, macOS, FreeBSD, Linux sin nftables o sin permisos, Linux cuyo kernel no tiene nf_tables como Synology DSM) | Solo los servicios de Gately: reenvío de puertos, servicio web, STUN, WebDAV, FTP, SMB, el inicio de sesión de frps y el panel | Escucha Gately; solo detecta conexiones que completan el saludo TCP | No disponible |
+| Synology DSM y otros Linux cuyo kernel no tiene nf_tables (Docker con red host + `NET_ADMIN`; una instalación directa necesita ipset e iptables legacy) | Igual que arriba, con la tabla mangle de iptables e ipset | Igual que arriba | Disponible (umbral máximo de 255 por minuto) |
+| Resto de casos (Windows, macOS, FreeBSD, Linux sin nftables ni iptables (legacy) con ipset, o sin permisos) | Solo los servicios de Gately: reenvío de puertos, servicio web, STUN, WebDAV, FTP, SMB, el inicio de sesión de frps y el panel | Escucha Gately; solo detecta conexiones que completan el saludo TCP | No disponible |
 
 La parte superior de la página muestra el estado de la sincronización con el cortafuegos y, si no está disponible, el motivo y cómo solucionarlo.
 
@@ -31,6 +32,8 @@ Con «Sincronizar con el cortafuegos» activado, Gately crea su propia tabla `in
 - La cadena `prerouting` (prioridad -190, después del seguimiento de conexiones y antes del NAT de destino) descarta los paquetes que llegan de direcciones bloqueadas, tanto los dirigidos a este equipo como los reenviados a contenedores o dispositivos de la LAN. Las respuestas a las conexiones que abre este equipo (DNS, repositorios, etc.) siguen pasando aunque el otro extremo esté bloqueado. En IPv6 se bloquea por /64;
 - La cadena `input` solo mira las conexiones nuevas a este equipo, para los puertos trampa y la detección de escaneos. Las direcciones de la lista blanca no participan;
 - La tabla completa se elimina al desactivar la sincronización o al detener Gately. Si otro programa la borra, Gately la vuelve a escribir en menos de 10 segundos.
+
+Si el kernel no tiene nf_tables (por ejemplo, Synology DSM), se usan iptables (legacy) e ipset, también sin tocar las reglas existentes: la primera regla de `PREROUTING` e `INPUT` en la tabla mangle salta a las cadenas propias de Gately `GATELY_PRE` y `GATELY_IN`, que hacen lo mismo que las dos cadenas anteriores; las direcciones individuales bloqueadas van a los conjuntos de ipset `gately_ban4` / `gately_ban6` (IPv6 por /64), y los bloqueos de redes y permanentes son reglas de la cadena `GATELY_DENY`. Si un programa como el cortafuegos de Synology pone sus reglas delante, los saltos vuelven al principio en menos de 10 segundos, y las cadenas borradas se escriben de nuevo. La detección de escaneo cuenta con el módulo recent, con un umbral máximo de 255 por minuto.
 
 «Ver reglas» en la página muestra todas las reglas vigentes.
 

@@ -1324,6 +1324,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Champ | Type |
 | --- | --- |
 | `active` | boolean |
+| `backend` | string |
 | `checkedAt` | Heure (RFC 3339) |
 | `dropped` | Table de correspondance de integer |
 | `enabled` | boolean |

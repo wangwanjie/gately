@@ -20,7 +20,8 @@ fail2ban 방식의 침입 방지입니다. 로그에서 무차별 대입 공격�
 | Linux(root 또는 `CAP_NET_ADMIN`, nftables 설치됨) | SSH, 다른 프로그램, Docker 컨테이너와 LAN 기기로 전달되는 트래픽까지 모두 커널에서 삭제 | 커널에서 처리, SYN만 보내는 스캔도 감지 | 사용 가능 |
 | Docker(host 네트워크 + `cap_add: NET_ADMIN`) | 위와 같음, 규칙은 호스트에 기록 | 위와 같음 | 사용 가능 |
 | fnOS 패키지, OpenWrt 22.03 이상 | 위와 같음(root로 실행, nftables 기본 포함) | 위와 같음 | 사용 가능 |
-| 그 밖의 경우(Windows, macOS, FreeBSD, nftables나 권한이 없는 Linux, Synology DSM처럼 커널에 nf_tables가 없는 Linux) | Gately 자체 서비스(포트 포워딩, 웹 서비스, STUN, WebDAV, FTP, SMB, frps 로그인, 관리 콘솔)에만 적용 | Gately가 직접 수신, 핸드셰이크를 완료한 연결만 감지 | 사용 불가 |
+| Synology DSM 등 커널에 nf_tables가 없는 Linux(Docker host 네트워크 + `NET_ADMIN`, 직접 설치 시 ipset과 iptables legacy 필요) | 위와 같음(iptables의 mangle 테이블과 ipset 사용) | 위와 같음 | 사용 가능(임계값은 분당 최대 255회) |
+| 그 밖의 경우(Windows, macOS, FreeBSD, nftables도 iptables(legacy)와 ipset도 없거나 권한이 없는 Linux) | Gately 자체 서비스(포트 포워딩, 웹 서비스, STUN, WebDAV, FTP, SMB, frps 로그인, 관리 콘솔)에만 적용 | Gately가 직접 수신, 핸드셰이크를 완료한 연결만 감지 | 사용 불가 |
 
 페이지 상단에 방화벽 동기화 상태가 표시되며, 사용할 수 없으면 원인과 해결 방법을 보여 줍니다.
 
@@ -31,6 +32,8 @@ fail2ban 방식의 침입 방지입니다. 로그에서 무차별 대입 공격�
 - `prerouting` 체인(우선순위 -190, 연결 추적 이후·목적지 NAT 이전)에서 차단된 주소가 보낸 패킷을 버립니다. 이 호스트로 오는 트래픽도, 컨테이너나 LAN 기기로 전달되는 트래픽도 버려집니다. 이 호스트가 먼저 연 연결(DNS, 패키지 미러 접속 등)의 응답은 상대 주소가 차단되어 있어도 그대로 통과합니다. IPv6는 /64 단위로 차단합니다.
 - `input` 체인은 이 호스트로 오는 새 연결만 보며, 미끼 포트와 스캔 탐지에 쓰입니다. 화이트리스트 주소는 제외됩니다.
 - 동기화를 끄거나 Gately를 중지하면 테이블 전체가 삭제됩니다. 다른 프로그램이 테이블을 지우면 10초 안에 다시 기록합니다.
+
+커널에 nf_tables가 없으면(예: Synology DSM) iptables(legacy)와 ipset을 대신 사용하며, 이 경우에도 기존 규칙은 건드리지 않습니다. mangle 테이블 `PREROUTING`과 `INPUT`의 첫 규칙이 각각 Gately 전용 `GATELY_PRE`, `GATELY_IN` 체인으로 점프하며 위의 두 체인과 같은 역할을 합니다. 차단된 단일 주소는 ipset 세트 `gately_ban4` / `gately_ban6`(IPv6는 /64 단위)에 넣고, 네트워크와 영구 차단은 `GATELY_DENY` 체인의 규칙으로 씁니다. Synology 방화벽 등이 자기 규칙을 앞에 끼워 넣으면 10초 안에 점프를 맨 앞으로 되돌리고, 체인이 지워지면 자동으로 다시 씁니다. 스캔 탐지는 recent 모듈로 세며 임계값은 분당 최대 255회로 처리합니다.
 
 페이지의 "규칙 보기"에서 현재 기록된 전체 규칙을 볼 수 있습니다.
 

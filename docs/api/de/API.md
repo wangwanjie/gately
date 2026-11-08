@@ -1324,6 +1324,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Feld | Typ |
 | --- | --- |
 | `active` | boolean |
+| `backend` | string |
 | `checkedAt` | Zeit (RFC 3339) |
 | `dropped` | Map von integer |
 | `enabled` | boolean |

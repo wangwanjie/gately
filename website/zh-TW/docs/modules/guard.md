@@ -20,7 +20,8 @@
 | Linux（root 或 `CAP_NET_ADMIN`，已安裝 nftables） | 核心層丟棄全部流量，包括 SSH、其他程式與轉發給 Docker 容器、內網裝置的流量 | 由核心處理，能發現只發 SYN 的掃描 | 可用 |
 | Docker（host 網路 + `cap_add: NET_ADMIN`） | 同上，規則寫入主機 | 同上 | 可用 |
 | 飛牛 fnOS 安裝包、OpenWrt 22.03 以上 | 同上（以 root 執行，系統內建 nftables） | 同上 | 可用 |
-| 其他情況（Windows、macOS、FreeBSD、沒有 nftables 或權限的 Linux、核心未啟用 nf_tables 的 Linux 如群暉 DSM） | 只對 Gately 自身的服務生效：連接埠轉發、Web 服務、STUN、WebDAV、FTP、SMB、frps 登入、管理後台 | 由 Gately 監聽，只能發現完成交握的連線 | 無法使用 |
+| 群暉 DSM 等核心未啟用 nf_tables 的 Linux（Docker host 網路 + `NET_ADMIN`；直接安裝需要 ipset 與 iptables legacy） | 同上，改用 iptables 的 mangle 表與 ipset | 同上 | 可用（閾值最高按 255 次/分鐘處理） |
+| 其他情況（Windows、macOS、FreeBSD、既沒有 nftables、也沒有 iptables（legacy）與 ipset，或沒有權限的 Linux） | 只對 Gately 自身的服務生效：連接埠轉發、Web 服務、STUN、WebDAV、FTP、SMB、frps 登入、管理後台 | 由 Gately 監聽，只能發現完成交握的連線 | 無法使用 |
 
 頁面頂部會顯示防火牆同步狀態，無法使用時列出原因與處理方式。
 
@@ -31,6 +32,8 @@
 - `prerouting` 鏈（優先級 -190，在連線追蹤之後、目的位址轉換之前）丟棄被封鎖位址發來的封包，發往本機、轉發給容器或內網裝置的流量都會被丟棄；本機主動發起的連線（例如存取 DNS、軟體來源）的回應照常放行，即使對方位址被封鎖也不受影響；IPv6 依 /64 網段封鎖；
 - `input` 鏈只統計發往本機的新連線，用於誘餌連接埠與掃描偵測，白名單位址不參與；
 - 關閉同步或停止 Gately 時整張表會被刪除；表被其他程式清除後 10 秒內自動重寫。
+
+核心沒有 nf_tables（如群暉 DSM）時改用 iptables（legacy）與 ipset，同樣不改動系統既有的規則：mangle 表 `PREROUTING`、`INPUT` 的第一條規則分別跳到 Gately 自己的 `GATELY_PRE`、`GATELY_IN` 鏈，作用與上面兩條鏈相同；被封鎖的單一位址放在 ipset 集合 `gately_ban4` / `gately_ban6`（IPv6 依 /64），網段與永久封鎖寫成 `GATELY_DENY` 鏈中的規則。群暉防火牆等程式把自己的規則插到前面時，10 秒內把跳轉移回第一位；鏈被清除後自動重寫。掃描偵測用 recent 模組計數，閾值最高按每分鐘 255 次處理。
 
 頁面上的「檢視規則」可以看到目前寫入的完整規則。
 

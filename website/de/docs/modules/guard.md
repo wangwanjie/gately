@@ -20,7 +20,8 @@ Einbruchschutz im Stil von fail2ban: Gately erkennt Brute-Force-Versuche in Prot
 | Linux (root oder `CAP_NET_ADMIN`, nftables installiert) | Der gesamte Verkehr wird im Kernel verworfen, auch SSH, andere Programme und an Docker-Container und LAN-Geräte weitergeleiteter Verkehr | Vom Kernel behandelt, erkennt auch reine SYN-Scans | Verfügbar |
 | Docker (Host-Netzwerk + `cap_add: NET_ADMIN`) | Wie oben, die Regeln werden auf dem Host angelegt | Wie oben | Verfügbar |
 | fnOS-Paket, OpenWrt ab 22.03 | Wie oben (läuft als root, nftables ist enthalten) | Wie oben | Verfügbar |
-| Alle anderen Fälle (Windows, macOS, FreeBSD, Linux ohne nftables oder Berechtigung, Linux ohne nf_tables im Kernel wie Synology DSM) | Nur Gatelys eigene Dienste: Portweiterleitung, Webdienst, STUN, WebDAV, FTP, SMB, frps-Anmeldungen und Verwaltungsoberfläche | Gately lauscht selbst, erkennt nur Verbindungen mit abgeschlossenem Handshake | Nicht verfügbar |
+| Synology DSM und andere Linux-Systeme ohne nf_tables im Kernel (Docker mit Host-Netzwerk + `NET_ADMIN`; eine direkte Installation braucht ipset und iptables legacy) | Wie oben, mit der mangle-Tabelle von iptables und ipset | Wie oben | Verfügbar (Schwellenwert höchstens 255 pro Minute) |
+| Alle anderen Fälle (Windows, macOS, FreeBSD, Linux ohne nftables und ohne iptables (legacy) mit ipset, oder ohne Berechtigung) | Nur Gatelys eigene Dienste: Portweiterleitung, Webdienst, STUN, WebDAV, FTP, SMB, frps-Anmeldungen und Verwaltungsoberfläche | Gately lauscht selbst, erkennt nur Verbindungen mit abgeschlossenem Handshake | Nicht verfügbar |
 
 Oben auf der Seite stehen der Status der Firewall-Synchronisierung und, falls sie nicht verfügbar ist, Grund und Abhilfe.
 
@@ -31,6 +32,8 @@ Mit „Mit System-Firewall synchronisieren“ legt Gately in nftables eine eigen
 - Die Kette `prerouting` (Priorität -190, nach dem Connection Tracking und vor dem Ziel-NAT) verwirft Pakete gesperrter Adressen, egal ob sie für diesen Host bestimmt sind oder an einen Container bzw. ein LAN-Gerät weitergeleitet werden. Antworten auf Verbindungen, die dieser Host selbst aufbaut (DNS, Paketquellen usw.), kommen weiterhin an, auch wenn die Gegenstelle gesperrt ist. IPv6 wird pro /64 gesperrt;
 - Die Kette `input` betrachtet nur neue Verbindungen zu diesem Host, für Köderports und Scan-Erkennung. Whitelist-Adressen bleiben außen vor;
 - Die ganze Tabelle wird gelöscht, wenn die Synchronisierung ausgeschaltet wird oder Gately stoppt. Entfernt ein anderes Programm sie, schreibt Gately sie innerhalb von 10 Sekunden neu.
+
+Hat der Kernel kein nf_tables (z. B. Synology DSM), werden iptables (legacy) und ipset verwendet, ebenfalls ohne bestehende Regeln anzufassen: Die erste Regel von `PREROUTING` und `INPUT` in der mangle-Tabelle springt in Gatelys eigene Ketten `GATELY_PRE` und `GATELY_IN`, die dasselbe tun wie die beiden Ketten oben; gesperrte Einzeladressen landen in den ipset-Sets `gately_ban4` / `gately_ban6` (IPv6 pro /64), Netz- und dauerhafte Sperren werden Regeln in der Kette `GATELY_DENY`. Setzt ein Programm wie die Synology-Firewall eigene Regeln davor, werden die Sprünge innerhalb von 10 Sekunden wieder an die erste Stelle gesetzt, gelöschte Ketten werden neu geschrieben. Die Scan-Erkennung zählt mit dem recent-Modul, der Schwellenwert wird auf höchstens 255 pro Minute begrenzt.
 
 „Regeln anzeigen“ auf der Seite zeigt die vollständigen aktuellen Regeln.
 

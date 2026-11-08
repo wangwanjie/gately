@@ -15,6 +15,10 @@ const dsmError = "netlink: Error: cache initialization failed: Invalid argument"
 // inactiveFirewall 返回尚未写入规则的防火墙，日志写入返回的 Buffer
 func inactiveFirewall(t *testing.T, fake *fakeNFT) (*firewall, *logbuf.Buffer) {
 	t.Helper()
+	// 不查找真实的 iptables / ipset：在装有它们的 Linux 上测试时也不会改动宿主机
+	old := findIPTFn
+	findIPTFn = func() *iptBackend { return nil }
+	t.Cleanup(func() { findIPTFn = old })
 	buf := logbuf.New(100, nil)
 	fw := newFirewall(buf.Logger("fw"))
 	fw.run = fake.run

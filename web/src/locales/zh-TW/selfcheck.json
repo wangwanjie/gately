@@ -66,7 +66,7 @@
     "frpConflict": "同一個 frps 上已有同名代理，或網域、遠端連接埠已被佔用，常見於多台裝置複製了同一份 frpc 設定。為每台裝置的 frpc 設定不同的使用者（user），或修改代理名稱、網域與遠端連接埠；衝突的代理對應的網站會逾時。",
     "guardMissing": "請安裝 nftables；Docker 部署請更新到最新映像檔。",
     "guardPermission": "寫入 nftables 需要 root 或 CAP_NET_ADMIN。Docker 部署請在 compose 中加入 cap_add: [NET_ADMIN] 並使用 host 網路。",
-    "guardUnsupported": "系統核心沒有啟用 nf_tables（例如群暉 DSM），無法透過安裝套件解決。可在入侵防護設定中關閉「同步到系統防火牆」。",
+    "guardUnsupported": "系統核心沒有啟用 nf_tables（例如群暉 DSM），也沒有可用的 iptables（legacy）與 ipset。Docker 部署請更新到最新映像檔；直接安裝請安裝 ipset 與 iptables（legacy）。",
     "guardError": "核心可能缺少 nftables 模組，或 nft 版本過舊（需要 0.9.0 以上）。",
     "guardTrapSkipped": "這些連接埠上有服務在監聽，設成誘餌會誤封正常訪客，已自動略過。",
     "guardScanUnavailable": "在入侵防護頁面查看防火牆狀態與處理方式。",
