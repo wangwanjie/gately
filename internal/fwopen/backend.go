@@ -34,6 +34,8 @@ type cmdBackend struct {
 	nft, iptables, ip6tables string
 	// iptNFT / ip6tNFT 表示 iptables / ip6tables 是 nf_tables 版本（iptables-nft），其规则也会出现在 nft 中
 	iptNFT, ip6tNFT bool
+	// chain 不为 nil 时使用专用链模式（内核没有 nf_tables），见 chain.go
+	chain *chainState
 }
 
 var (
@@ -125,6 +127,9 @@ func (b *cmdBackend) bin(t target) string {
 }
 
 func (b *cmdBackend) targets(ctx context.Context) ([]target, map[string][]existing, error) {
+	if b.chain != nil {
+		return b.chainTargets(ctx)
+	}
 	b.detect(ctx)
 	if b.nft == "" && b.iptables == "" {
 		return nil, nil, errors.New("没有找到 nft 或 iptables 命令，无法放行防火墙")
@@ -138,11 +143,13 @@ func (b *cmdBackend) targets(ctx context.Context) ([]target, map[string][]existi
 		out, err := run(ctx, "", b.nft, "-j", "list", "chains")
 		chainsOut = out
 		switch {
-		case err != nil && kernelNoNFT(err.Error()) && b.iptables != "":
-			// 内核没有 nf_tables（如群晖 DSM）时 nft 命令存在也无法使用，改用 iptables（legacy）放行
-			b.nft = ""
 		case err != nil && kernelNoNFT(err.Error()):
-			return nil, nil, fmt.Errorf("当前系统内核不支持 nftables，且没有 iptables 命令，无法放行防火墙: %w", err)
+			// 内核没有 nf_tables（如群晖 DSM）时 nft 命令存在也无法使用，改用 iptables（legacy）的专用链放行
+			if fams := findChainFams(); len(fams) > 0 {
+				b.chain = &chainState{fams: fams, known: map[string]string{}}
+				return b.chainTargets(ctx)
+			}
+			return nil, nil, fmt.Errorf("当前系统内核不支持 nftables，且没有 iptables（legacy）命令，无法放行防火墙: %w", err)
 		case err != nil:
 			return nil, nil, err
 		}
@@ -234,6 +241,9 @@ func iptArgs(p Port) []string {
 }
 
 func (b *cmdBackend) add(ctx context.Context, t target, c string, p Port) error {
+	if b.chain != nil {
+		return b.chainAdd(ctx, t, c, p)
+	}
 	if t.Kind == "iptables" || t.Kind == "ip6tables" {
 		args := append([]string{"-w", "-I", "INPUT", "1"}, iptArgs(p)...)
 		args = append(args, "-m", "comment", "--comment", c, "-j", "ACCEPT")
@@ -246,6 +256,9 @@ func (b *cmdBackend) add(ctx context.Context, t target, c string, p Port) error 
 }
 
 func (b *cmdBackend) del(ctx context.Context, t target, e existing) error {
+	if b.chain != nil {
+		return b.chainDel(ctx, t, e)
+	}
 	if t.Kind == "iptables" || t.Kind == "ip6tables" {
 		args := append([]string{"-w", "-D", "INPUT"}, strings.Fields(e.Ref)...)
 		_, err := run(ctx, "", b.bin(t), args...)
