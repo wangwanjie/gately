@@ -173,6 +173,7 @@ https://auth.example.com/__gately_auth/oauth/callback
 | --- | --- |
 | `url` | 校验接口，例如 Authelia 的 `http://127.0.0.1:9091/api/authz/auth-request` |
 | `loginUrl` | 接口返回 401 时把访客跳转到的地址，例如 `https://auth.example.com/?rd={url}&rm={method}`；`{url}` 为原始地址（已编码），`{method}` 为请求方法。留空时原样返回接口的响应 |
+| `loginFromLocation` | 未填 `loginUrl` 时，接口返回 401 且 `Location` 为唯一的 http(s) 绝对地址时把访客 302 跳转到该地址，并传递 `Set-Cookie` 与 `Cache-Control`，适用于在 401 中给出动态登录地址的服务（如 Casdoor 原生 `/api/forward-auth`）；其他形式的 `Location` 不跳转，按 401 原样返回。默认关闭 |
 | `copyHeaders` | 校验通过后从接口响应复制到后端请求的身份头，默认 `Remote-User`、`Remote-Groups`、`Remote-Email`、`Remote-Name` |
 
 工作方式：

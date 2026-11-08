@@ -2279,6 +2279,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Поле | Тип |
 | --- | --- |
 | `copyHeaders` | Массив из string |
+| `loginFromLocation` | boolean |
 | `loginUrl` | string |
 | `url` | string |
 

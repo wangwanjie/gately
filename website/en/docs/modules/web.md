@@ -173,6 +173,7 @@ Hand authentication to an external service, like nginx `auth_request` or Traefik
 | --- | --- |
 | `url` | The check endpoint, such as Authelia's `http://127.0.0.1:9091/api/authz/auth-request` |
 | `loginUrl` | Where to send visitors when the endpoint answers 401, such as `https://auth.example.com/?rd={url}&rm={method}`. `{url}` is the original address (URL-encoded) and `{method}` the request method. When empty, the endpoint's response is returned as it is |
+| `loginFromLocation` | When `loginUrl` is empty and the endpoint answers 401 with a single absolute http(s) `Location`, redirect the visitor there with 302 and pass `Set-Cookie` and `Cache-Control` along. Meant for services that put a dynamic login address in the 401, such as Casdoor's native `/api/forward-auth`; any other `Location` is ignored and the 401 is returned as is. Off by default |
 | `copyHeaders` | Identity headers copied from the endpoint's reply to the backend request; the default is `Remote-User`, `Remote-Groups`, `Remote-Email` and `Remote-Name` |
 
 How it works:

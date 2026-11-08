@@ -2279,6 +2279,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Feld | Typ |
 | --- | --- |
 | `copyHeaders` | Array von string |
+| `loginFromLocation` | boolean |
 | `loginUrl` | string |
 | `url` | string |
 

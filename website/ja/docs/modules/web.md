@@ -173,6 +173,7 @@ https://auth.example.com/__gately_auth/oauth/callback
 | --- | --- |
 | `url` | チェック用のエンドポイント。Authelia の `http://127.0.0.1:9091/api/authz/auth-request` など |
 | `loginUrl` | エンドポイントが 401 を返したときに訪問者を送る先。例：`https://auth.example.com/?rd={url}&rm={method}`。`{url}` は元のアドレス（URL エンコード済み）、`{method}` はリクエストメソッドです。空の場合は、エンドポイントの応答をそのまま返します |
+| `loginFromLocation` | `loginUrl` が空で、エンドポイントが http(s) の絶対 URL を 1 つだけ `Location` に持つ 401 を返したとき、訪問者をそこへ 302 でリダイレクトし、`Set-Cookie` と `Cache-Control` も渡します。401 に動的なログイン URL を含めるサービス（Casdoor ネイティブの `/api/forward-auth` など）向けです。それ以外の `Location` は使わず、401 をそのまま返します。既定はオフ |
 | `copyHeaders` | エンドポイントの応答からバックエンドへのリクエストにコピーする ID ヘッダー。デフォルトは `Remote-User`、`Remote-Groups`、`Remote-Email`、`Remote-Name` |
 
 仕組み：

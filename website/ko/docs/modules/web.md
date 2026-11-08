@@ -173,6 +173,7 @@ https://auth.example.com/__gately_auth/oauth/callback
 | --- | --- |
 | `url` | 확인용 엔드포인트. 예: Authelia의 `http://127.0.0.1:9091/api/authz/auth-request` |
 | `loginUrl` | 엔드포인트가 401을 반환할 때 방문자를 보낼 주소. 예: `https://auth.example.com/?rd={url}&rm={method}`. `{url}`은 원래 주소(URL 인코딩됨), `{method}`는 요청 메서드입니다. 비우면 엔드포인트의 응답을 그대로 반환합니다 |
+| `loginFromLocation` | `loginUrl`이 비어 있고 엔드포인트가 http(s) 절대 주소 하나를 `Location`에 담아 401을 반환하면 방문자를 그 주소로 302 리디렉션하고 `Set-Cookie`와 `Cache-Control`도 전달합니다. 401에 동적 로그인 주소를 넣는 서비스(Casdoor 기본 `/api/forward-auth` 등)용입니다. 다른 형태의 `Location`은 따르지 않고 401을 그대로 반환합니다. 기본값은 꺼짐 |
 | `copyHeaders` | 엔드포인트 응답에서 백엔드 요청으로 복사할 신원 헤더. 기본값은 `Remote-User`, `Remote-Groups`, `Remote-Email`, `Remote-Name` |
 
 동작 방식은 다음과 같습니다.

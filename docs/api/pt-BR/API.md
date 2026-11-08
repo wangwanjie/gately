@@ -2279,6 +2279,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Campo | Tipo |
 | --- | --- |
 | `copyHeaders` | Array de string |
+| `loginFromLocation` | boolean |
 | `loginUrl` | string |
 | `url` | string |
 

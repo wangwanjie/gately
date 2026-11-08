@@ -2279,6 +2279,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Field | Type |
 | --- | --- |
 | `copyHeaders` | Array of string |
+| `loginFromLocation` | boolean |
 | `loginUrl` | string |
 | `url` | string |
 

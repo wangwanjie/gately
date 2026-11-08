@@ -173,6 +173,7 @@ Entregue a autenticação a um serviço externo, como o `auth_request` do nginx 
 | --- | --- |
 | `url` | O endpoint de verificação, como o do Authelia, `http://127.0.0.1:9091/api/authz/auth-request` |
 | `loginUrl` | Para onde enviar os visitantes quando o endpoint responde 401, como `https://auth.example.com/?rd={url}&rm={method}`. `{url}` é o endereço original (codificado como URL) e `{method}` o método da requisição. Quando vazio, a resposta do endpoint é retornada como está |
+| `loginFromLocation` | Se `loginUrl` estiver vazio e o endpoint responder 401 com uma única `Location` http(s) absoluta, redireciona o visitante para ela com 302 e repassa `Set-Cookie` e `Cache-Control`. Feito para serviços que colocam um endereço de login dinâmico no 401, como o `/api/forward-auth` nativo do Casdoor; qualquer outra `Location` é ignorada e o 401 é devolvido como está. Desativado por padrão |
 | `copyHeaders` | Cabeçalhos de identidade copiados da resposta do endpoint para a requisição ao backend; o padrão é `Remote-User`, `Remote-Groups`, `Remote-Email` e `Remote-Name` |
 
 Como funciona:

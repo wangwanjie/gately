@@ -19,6 +19,9 @@ type ForwardAuth struct {
 	// LoginURL 为认证接口返回 401 时跳转的登录地址，可用 {url}（访客原始地址，已编码）与 {method} 占位，
 	// 例如 https://auth.example.com/?rd={url}&rm={method}；留空时把认证接口的响应原样返回给访客
 	LoginURL string `json:"loginUrl"`
+	// LoginFromLocation 为 true 且未填 LoginURL 时，认证接口返回 401 并带有 http(s) 绝对地址的 Location 时，
+	// 把访客 302 跳转到该地址（Casdoor 等服务在 401 中给出带 state 的动态登录地址）；默认关闭，401 原样返回
+	LoginFromLocation bool `json:"loginFromLocation,omitempty"`
 	// CopyHeaders 为认证通过后从认证响应复制到后端请求的头；留空时使用 Remote-User、Remote-Groups、Remote-Email、Remote-Name
 	CopyHeaders []string `json:"copyHeaders"`
 }
@@ -68,6 +71,29 @@ func (f *ForwardAuth) validate() error {
 		}
 	}
 	return nil
+}
+
+// authLoginLocation 从认证接口 401 响应的 Location 中取出可用于浏览器跳转的登录地址。
+// 只接受唯一一个、带主机的 http(s) 绝对地址，且不含控制字符与用户信息；相对地址的基准是认证接口自身，
+// 浏览器无从得知，javascript:、data: 等其他形式更不能交给浏览器，这些情况都按未开启处理，401 原样返回。
+func authLoginLocation(vs []string) (string, bool) {
+	if len(vs) != 1 {
+		return "", false
+	}
+	loc := strings.TrimSpace(vs[0])
+	if loc == "" || len(loc) > 8192 || strings.ContainsFunc(loc, func(c rune) bool {
+		return c < 0x20 || c == 0x7f
+	}) {
+		return "", false
+	}
+	u, err := url.Parse(loc)
+	if err != nil || u.Host == "" || u.User != nil {
+		return "", false
+	}
+	if scheme := strings.ToLower(u.Scheme); scheme != "http" && scheme != "https" {
+		return "", false
+	}
+	return loc, true
 }
 
 // forwardAuther 执行转发认证。
@@ -154,6 +180,21 @@ func (f *forwardAuther) check(w http.ResponseWriter, r *http.Request, h *siteHan
 		to := strings.NewReplacer("{url}", url.QueryEscape(orig), "{method}", url.QueryEscape(r.Method)).Replace(f.cfg.LoginURL)
 		http.Redirect(w, r, to, http.StatusFound)
 		return false
+	}
+	// 静态登录地址优先；未填写且开启了「跟随 401 跳转」时，采用认证接口在 401 中给出的 Location
+	if resp.StatusCode == http.StatusUnauthorized && f.cfg.LoginFromLocation {
+		if to, ok := authLoginLocation(resp.Header.Values("Location")); ok {
+			// 认证服务在未登录响应中设置的 Cookie（如 OAuth state）与缓存策略随跳转一并交给浏览器
+			for _, k := range []string{"Set-Cookie", "Cache-Control"} {
+				if vs := resp.Header.Values(k); len(vs) > 0 {
+					w.Header()[k] = vs
+				}
+			}
+			_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, maxForwardAuthBody))
+			w.Header().Set("Location", to)
+			w.WriteHeader(http.StatusFound)
+			return false
+		}
 	}
 	// 其余情况（Authelia forward-auth 接口自身返回的 302、403 等）原样转给访客
 	for _, k := range []string{"Location", "Set-Cookie", "Content-Type", "Www-Authenticate", "Cache-Control"} {

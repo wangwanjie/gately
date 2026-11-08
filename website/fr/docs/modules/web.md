@@ -173,6 +173,7 @@ Confiez l'authentification à un service externe, comme `auth_request` de nginx 
 | --- | --- |
 | `url` | Le point de vérification, comme `http://127.0.0.1:9091/api/authz/auth-request` pour Authelia |
 | `loginUrl` | Où envoyer les visiteurs lorsque le point répond 401, comme `https://auth.example.com/?rd={url}&rm={method}`. `{url}` est l'adresse d'origine (encodée en URL) et `{method}` la méthode de la requête. Lorsqu'il est vide, la réponse du point est renvoyée telle quelle |
+| `loginFromLocation` | Si `loginUrl` est vide et que le point répond 401 avec une seule `Location` http(s) absolue, le visiteur y est redirigé en 302, avec `Set-Cookie` et `Cache-Control`. Prévu pour les services qui placent une adresse de connexion dynamique dans le 401, comme le `/api/forward-auth` natif de Casdoor ; toute autre `Location` est ignorée et le 401 est renvoyé tel quel. Désactivé par défaut |
 | `copyHeaders` | En-têtes d'identité copiés de la réponse du point vers la requête envoyée au backend ; par défaut `Remote-User`, `Remote-Groups`, `Remote-Email` et `Remote-Name` |
 
 Fonctionnement :

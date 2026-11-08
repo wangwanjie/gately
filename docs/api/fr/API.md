@@ -2279,6 +2279,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Champ | Type |
 | --- | --- |
 | `copyHeaders` | Tableau de string |
+| `loginFromLocation` | boolean |
 | `loginUrl` | string |
 | `url` | string |
 

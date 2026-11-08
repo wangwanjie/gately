@@ -158,6 +158,8 @@
   "forwardAuthUrlHelp": "每個請求先送到該位址驗證，回傳 2xx 放行，相當於 nginx 的 auth_request；Authelia 為 /api/authz/auth-request",
   "forwardAuthLogin": "登入跳轉",
   "forwardAuthLoginHelp": "認證介面回傳 401 時跳轉到該位址，{'{url}'} 為訪客原始位址，{'{method}'} 為請求方法；留空時把認證介面的回應原樣傳回",
+  "forwardAuthLoginFromLocation": "跟隨 401 跳轉",
+  "forwardAuthLoginFromLocationHelp": "認證介面回傳 401 且帶有 http(s) 絕對位址的 Location 時（如 Casdoor），把訪客 302 跳轉到該位址，Set-Cookie 與 Cache-Control 一併傳遞；填寫了登入跳轉時以登入跳轉為準",
   "forwardAuthHeaders": "傳遞身分標頭",
   "locationsTag": "{count} 條分路徑",
   "sharedUsersDivider": "共用認證使用者與 OIDC 身分提供者",
