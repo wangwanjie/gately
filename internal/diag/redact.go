@@ -215,28 +215,42 @@ func (r *Redactor) replaceLiterals(s string) string {
 	return s
 }
 
-// isWordByte 判断字节是否属于主机名、标识符的一部分（字母、数字、- 与 _）。
+// isWordByte 判断字节是否属于同一个词（字母与数字）。- 与 _ 视为分隔符：主机名为 nas 时，
+// nas-backup、gate_nas 这类复合名中的主机名同样会被替换，宁可多替换也不漏掉。
 func isWordByte(b byte) bool {
-	return b == '-' || b == '_' || b >= '0' && b <= '9' || b >= 'a' && b <= 'z' || b >= 'A' && b <= 'Z'
+	return b >= '0' && b <= '9' || b >= 'a' && b <= 'z' || b >= 'A' && b <= 'Z'
 }
 
-// replaceWord 只替换前后都不是词字符的 from，例如主机名 gate 会替换 gate.lan 中的 gate，不替换 gately 中的。
+// asciiLower 只把 ASCII 大写字母转为小写，保持字节长度不变，便于按下标回到原文切片。
+func asciiLower(s string) string {
+	b := []byte(s)
+	for i, c := range b {
+		if c >= 'A' && c <= 'Z' {
+			b[i] = c + 'a' - 'A'
+		}
+	}
+	return string(b)
+}
+
+// replaceWord 只替换前后都不是词字符的 from（不区分大小写），例如主机名 gate 会替换 gate.lan、GATE-2 中的 gate，
+// 不替换 gately 中的；主机名 DESKTOP-AB12 在日志中写成 desktop-ab12.lan 时同样替换。
 func replaceWord(s, from, to string) string {
 	var sb strings.Builder
+	low, lowFrom := asciiLower(s), asciiLower(from)
 	for {
-		i := strings.Index(s, from)
+		i := strings.Index(low, lowFrom)
 		if i < 0 {
 			sb.WriteString(s)
 			return sb.String()
 		}
-		end := i + len(from)
+		end := i + len(lowFrom)
 		if (i == 0 || !isWordByte(s[i-1])) && (end == len(s) || !isWordByte(s[end])) {
 			sb.WriteString(s[:i])
 			sb.WriteString(to)
 		} else {
 			sb.WriteString(s[:end])
 		}
-		s = s[end:]
+		s, low = s[end:], low[end:]
 	}
 }
 

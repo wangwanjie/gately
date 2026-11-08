@@ -157,13 +157,16 @@ func TestStackRedaction(t *testing.T) {
 	}
 }
 
-// 主机名只按完整的词替换：主机名为 gate 时，gate.lan 与 "on gate:" 中的替换，gately、gate-way2 中的不替换。
+// 主机名只按完整的词替换（不区分大小写，- 与 _ 视为分隔符）：主机名为 gate 时，gate.lan、"on gate:"、
+// gate-way2、gate_x、GATE.lan 中的替换，gately、gates、2gate 中的不替换。
 func TestHostnameReplacedAsWord(t *testing.T) {
 	r := &Redactor{literals: []literal{{from: "gate", to: "<hostname>", word: true}}}
 	cases := []struct{ in, want string }{
 		{"gately v0.6.5.1 on gate", "gately v0.6.5.1 on <hostname>"},
 		{"github.com/wangwanjie/gately/internal/app.(*App).Run", "github.com/wangwanjie/gately/internal/app.(*App).Run"},
-		{"resolve gate.lan: gate-way2 gate_x", "resolve <hostname>.lan: gate-way2 gate_x"},
+		{"resolve gate.lan: gate-way2 gate_x", "resolve <hostname>.lan: <hostname>-way2 <hostname>_x"},
+		{"GATE.lan Gate gates 2gate", "<hostname>.lan <hostname> gates 2gate"},
+		{"compose gately-gate-1", "compose gately-<hostname>-1"},
 		{"gate", "<hostname>"},
 		{"(gate)gate", "(<hostname>)<hostname>"},
 	}
@@ -173,6 +176,22 @@ func TestHostnameReplacedAsWord(t *testing.T) {
 		}
 		if got := r.Stack(c.in); got != c.want {
 			t.Errorf("Stack(%q) = %q，应为 %q", c.in, got, c.want)
+		}
+	}
+}
+
+// 带 - 的主机名在复合名中也会被替换，大小写不同时同样替换。
+func TestHostnameWithDashReplaced(t *testing.T) {
+	r := &Redactor{literals: []literal{{from: "DESKTOP-AB12", to: "<hostname>", word: true}}}
+	cases := []struct{ in, want string }{
+		{"lookup desktop-ab12.lan", "lookup <hostname>.lan"},
+		{"backup to DESKTOP-AB12-backup", "backup to <hostname>-backup"},
+		{"share desktop-ab12_data", "share <hostname>_data"},
+		{"xdesktop-ab12", "xdesktop-ab12"},
+	}
+	for _, c := range cases {
+		if got := r.Text(c.in); got != c.want {
+			t.Errorf("Text(%q) = %q，应为 %q", c.in, got, c.want)
 		}
 	}
 }
