@@ -56,7 +56,7 @@
   "tabTraffic": "Trafic",
   "tabHeaders": "En-têtes",
   "domains": "Domaines",
-  "domainsPlaceholder": "Un par ligne ; *.example.com et * sont pris en charge",
+  "domainsPlaceholder": "Un par ligne ; *.example.com, api-*.example.com et * sont pris en charge",
   "type": "Type",
   "typeProxy": "Proxy inverse",
   "typeRedirect": "Redirection",

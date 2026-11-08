@@ -10,7 +10,7 @@
   "from": "原域名",
   "to": "新域名",
   "replaceHelp": "把域名中的后缀换成新的后缀：原域名本身及其子域名（含 *.原域名 通配）都会替换，例如 old.com 换成 new.com 后，www.old.com 变为 www.new.com；替换后重复的域名会合并，不匹配的站点保持不变。",
-  "domainsPlaceholder": "每行一个域名，也可用逗号分隔，支持 *.example.com 通配",
+  "domainsPlaceholder": "每行一个域名，也可用逗号分隔，支持 *.example.com 与 api-*.example.com 通配",
   "addHelp": "站点已有的域名会跳过，新域名追加在末尾。",
   "removeHelp": "按完整域名匹配后移除，站点不匹配的域名会忽略；不能把站点的域名全部删光。",
   "optionsHelp": "只修改选择了「开启」或「关闭」的项，「不修改」的项保持各站点原有设置。认证、访问控制、后端地址等影响访问的设置需在站点中逐个修改。",

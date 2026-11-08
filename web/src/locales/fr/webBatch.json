@@ -10,7 +10,7 @@
   "from": "Ancien domaine",
   "to": "Nouveau domaine",
   "replaceHelp": "Remplace le suffixe du domaine : l'ancien domaine et ses sous-domaines (y compris le joker *.ancien) sont réécrits ; remplacer old.com par new.com transforme www.old.com en www.new.com. Les domaines devenus identiques sont fusionnés et les sites sans correspondance restent inchangés.",
-  "domainsPlaceholder": "Un domaine par ligne ou séparés par des virgules. Les jokers *.example.com sont acceptés",
+  "domainsPlaceholder": "Un domaine par ligne ou séparés par des virgules. Les jokers *.example.com et api-*.example.com sont acceptés",
   "addHelp": "Les domaines déjà présents sur le site sont ignorés ; les nouveaux sont ajoutés à la fin.",
   "removeHelp": "Correspondance sur le domaine complet ; les domaines absents du site sont ignorés. Un site ne peut pas rester sans domaine.",
   "optionsHelp": "Seules les options réglées sur Activé ou Désactivé sont modifiées ; celles sur Ne pas modifier gardent le réglage de chaque site. L'authentification, le contrôle d'accès, les adresses de backend et les autres réglages qui touchent à l'accès se modifient site par site.",
