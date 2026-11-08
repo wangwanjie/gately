@@ -93,6 +93,8 @@ type firewall struct {
 	iptClamp int
 	// members 为已写入 ban4 / ban6 的键及其解封时间
 	members map[string]time.Time
+	// capped 为 iptables 后端中剩余时间超过 ipset 上限、按上限写入的键及其在内核中的到期时间
+	capped map[string]time.Time
 	// denyText 为最近一次写入 deny4 / deny6 的内容，内容不变时不重写
 	denyText string
 	// open / trap 为最近一次写入的开放端口与诱饵端口
@@ -125,7 +127,7 @@ type firewall struct {
 }
 
 func newFirewall(log *logbuf.Logger) *firewall {
-	f := &firewall{log: log, members: map[string]time.Time{}, baseDropped: map[string]uint64{}, baseHits: map[string]uint64{}, kick: make(chan struct{}, 1)}
+	f := &firewall{log: log, members: map[string]time.Time{}, capped: map[string]time.Time{}, baseDropped: map[string]uint64{}, baseHits: map[string]uint64{}, kick: make(chan struct{}, 1)}
 	f.run = f.execNFT
 	return f
 }
@@ -244,7 +246,7 @@ func (f *firewall) stop() {
 		}
 	}
 	f.status.Active = false
-	f.members = map[string]time.Time{}
+	f.members, f.capped = map[string]time.Time{}, map[string]time.Time{}
 	f.dirty = false
 	// 重新启动后各服务要重新开始监听，严格模式需要再等一轮端口同步
 	f.strictReady, f.strictAt = false, time.Time{}
@@ -314,7 +316,7 @@ func (f *firewall) applyLocked(ctx context.Context, s Settings) {
 	f.keepCountsLocked(ctx)
 	f.status = FirewallStatus{Enabled: s.Firewall, Version: version, Dropped: cloneCounts(f.baseDropped), Hits: cloneCounts(f.baseHits), TrapSkipped: []int{}}
 	f.dirty = false
-	f.members = map[string]time.Time{}
+	f.members, f.capped = map[string]time.Time{}, map[string]time.Time{}
 	if !s.Firewall {
 		if wasActive {
 			if err := f.removeLocked(ctx); err != nil {
@@ -362,12 +364,12 @@ func (f *firewall) applyLocked(ctx context.Context, s Settings) {
 	ss := s
 	// 读不到监听端口时开放端口集合不完整，严格模式会把所有端口当成未开放，必须退回阈值检测
 	ss.Scan.IPv6Strict = strict && f.strictReady && lerr == nil
-	var members map[string]time.Time
+	var members, capped map[string]time.Time
 	var deny string
 	var err error
 	if f.ipt != nil {
 		f.warnClampLocked(ss)
-		members, err = f.ipt.rebuild(ctx, ss, f.iptPlanLocked(entries, open, trap), entries, time.Now())
+		members, capped, err = f.ipt.rebuild(ctx, ss, f.iptPlanLocked(entries, open, trap), entries, time.Now())
 		deny = iptDenyText(entries)
 	} else {
 		var script string
@@ -412,6 +414,9 @@ func (f *firewall) applyLocked(ctx context.Context, s Settings) {
 	f.status.TrapPorts = formatPorts(trap)
 	f.status.TrapSkipped = skipped
 	f.members = members
+	if capped != nil {
+		f.capped = capped
+	}
 	f.denyText = deny
 	f.open, f.trap = formatPorts(open), formatPorts(trap)
 	if !wasActive {
