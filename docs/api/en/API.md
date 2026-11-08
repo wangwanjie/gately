@@ -443,7 +443,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | GET | `/api/guard/bans` | `guard:read` | Currently banned IPs |
 | POST | `/api/guard/bans` | `guard:write` | Ban an IP or network manually (seconds: 0 uses the default duration, -1 means permanent) |
 | DELETE | `/api/guard/bans` | `guard:write` | Remove a ban (body is {"key": address}) |
-| GET | `/api/guard/firewall/rules` | `guard:read` | Rules Gately wrote to nftables (text) |
+| GET | `/api/guard/firewall/rules` | `guard:read` | Rules Gately wrote to the system firewall (text) |
 
 ## Wake-on-LAN
 

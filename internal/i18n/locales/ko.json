@@ -246,7 +246,7 @@
   "FileBrowser Quantum 没有提供 %s 的程序": "FileBrowser Quantum 은 %s 용 프로그램을 제공하지 않습니다",
   "FileBrowser Quantum 没有提供 %s/%s 的程序": "FileBrowser Quantum은 %s/%s용 프로그램을 제공하지 않습니다",
   "FileBrowser Quantum 没有提供 ARMv%s 的程序": "FileBrowser Quantum은 ARMv%s용 프로그램을 제공하지 않습니다",
-  "Gately 写入 nftables 的规则（文本）": "Gately가 nftables에 기록한 규칙(텍스트)",
+  "Gately 写入系统防火墙的规则（文本）": "Gately가 시스템 방화벽에 기록한 규칙(텍스트)",
   "Gately 安全更新：当前版本 %s 受安全问题影响": "Gately 보안 업데이트: 현재 버전 %s 은(는) 보안 문제의 영향을 받습니다",
   "Gately 官网": "Gately 공식 사이트",
   "Gately 有新版本 %s": "Gately 새 버전 %s",

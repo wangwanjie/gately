@@ -22502,7 +22502,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Gately가 nftables에 기록한 규칙(텍스트)",
+        "summary": "Gately가 시스템 방화벽에 기록한 규칙(텍스트)",
         "tags": [
           "침입 방지"
         ],

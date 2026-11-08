@@ -22502,7 +22502,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Gately が nftables に書き込んだルール（テキスト）",
+        "summary": "Gately がシステムファイアウォールに書き込んだルール（テキスト）",
         "tags": [
           "侵入防御"
         ],

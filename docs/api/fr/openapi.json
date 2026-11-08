@@ -22502,7 +22502,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Règles écrites par Gately dans nftables (texte)",
+        "summary": "Règles écrites par Gately dans le pare-feu du système (texte)",
         "tags": [
           "Prévention d'intrusion"
         ],

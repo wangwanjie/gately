@@ -22502,7 +22502,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Von Gately in nftables geschriebene Regeln (Text)",
+        "summary": "Von Gately in die System-Firewall geschriebene Regeln (Text)",
         "tags": [
           "Einbruchschutz"
         ],

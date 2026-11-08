@@ -443,7 +443,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | GET | `/api/guard/bans` | `guard:read` | Derzeit gesperrte IPs |
 | POST | `/api/guard/bans` | `guard:write` | IP oder Netzwerk manuell sperren (seconds: 0 verwendet die Standarddauer, -1 bedeutet dauerhaft) |
 | DELETE | `/api/guard/bans` | `guard:write` | Sperre aufheben (body ist {"key": Adresse}) |
-| GET | `/api/guard/firewall/rules` | `guard:read` | Von Gately in nftables geschriebene Regeln (Text) |
+| GET | `/api/guard/firewall/rules` | `guard:read` | Von Gately in die System-Firewall geschriebene Regeln (Text) |
 
 ## Wake-on-LAN
 

@@ -443,7 +443,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | GET | `/api/guard/bans` | `guard:read` | IP actuellement bannies |
 | POST | `/api/guard/bans` | `guard:write` | Bloquer manuellement une IP ou un réseau (seconds : 0 utilise la durée par défaut, -1 signifie permanent) |
 | DELETE | `/api/guard/bans` | `guard:write` | Lever un bannissement (le body est {"key": adresse}) |
-| GET | `/api/guard/firewall/rules` | `guard:read` | Règles écrites par Gately dans nftables (texte) |
+| GET | `/api/guard/firewall/rules` | `guard:read` | Règles écrites par Gately dans le pare-feu du système (texte) |
 
 ## Wake-on-LAN
 

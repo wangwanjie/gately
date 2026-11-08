@@ -22502,7 +22502,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Reglas que Gately escribió en nftables (texto)",
+        "summary": "Reglas que Gately escribió en el cortafuegos del sistema (texto)",
         "tags": [
           "Prevención de intrusiones"
         ],

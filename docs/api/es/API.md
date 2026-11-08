@@ -443,7 +443,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | GET | `/api/guard/bans` | `guard:read` | IP bloqueadas actualmente |
 | POST | `/api/guard/bans` | `guard:write` | Bloquear manualmente una IP o red (seconds: 0 usa la duración predeterminada, -1 significa permanente) |
 | DELETE | `/api/guard/bans` | `guard:write` | Quitar un bloqueo (el body es {"key": dirección}) |
-| GET | `/api/guard/firewall/rules` | `guard:read` | Reglas que Gately escribió en nftables (texto) |
+| GET | `/api/guard/firewall/rules` | `guard:read` | Reglas que Gately escribió en el cortafuegos del sistema (texto) |
 
 ## Wake-on-LAN
 

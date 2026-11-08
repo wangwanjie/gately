@@ -22502,7 +22502,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Regras que o Gately gravou no nftables (texto)",
+        "summary": "Regras que o Gately gravou no firewall do sistema (texto)",
         "tags": [
           "Prevenção de intrusão"
         ],
