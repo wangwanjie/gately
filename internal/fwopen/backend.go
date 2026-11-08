@@ -87,6 +87,18 @@ func classify(msg string) error {
 	return errors.New(msg)
 }
 
+// kernelNoNFT 判断 nft 基础查询的错误是否表示内核没有 nf_tables：
+// 未编入 nf_tables 时 netlink 返回 EINVAL，连 nfnetlink 都没有时返回 EPROTONOSUPPORT 等。
+func kernelNoNFT(msg string) bool {
+	low := strings.ToLower(msg)
+	for _, s := range []string{"invalid argument", "protocol not supported", "address family not supported", "operation not supported"} {
+		if strings.Contains(low, s) {
+			return true
+		}
+	}
+	return false
+}
+
 func (b *cmdBackend) detect(ctx context.Context) {
 	b.nft = lookPath("nft", nftPaths)
 	b.iptables = lookPath("iptables", iptablesPaths)
@@ -121,12 +133,22 @@ func (b *cmdBackend) targets(ctx context.Context) ([]target, map[string][]existi
 	have := map[string][]existing{}
 	// hasIPFilter / hasIP6Filter 表示 nft 中存在 iptables-nft / ip6tables-nft 的 filter 表 INPUT 链
 	hasIPFilter, hasIP6Filter := false, false
+	var chainsOut string
 	if b.nft != "" {
 		out, err := run(ctx, "", b.nft, "-j", "list", "chains")
-		if err != nil {
+		chainsOut = out
+		switch {
+		case err != nil && kernelNoNFT(err.Error()) && b.iptables != "":
+			// 内核没有 nf_tables（如群晖 DSM）时 nft 命令存在也无法使用，改用 iptables（legacy）放行
+			b.nft = ""
+		case err != nil && kernelNoNFT(err.Error()):
+			return nil, nil, fmt.Errorf("当前系统内核不支持 nftables，且没有 iptables 命令，无法放行防火墙: %w", err)
+		case err != nil:
 			return nil, nil, err
 		}
-		chains, err := parseNFTChains([]byte(out))
+	}
+	if b.nft != "" {
+		chains, err := parseNFTChains([]byte(chainsOut))
 		if err != nil {
 			return nil, nil, err
 		}

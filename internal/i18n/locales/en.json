@@ -1450,6 +1450,7 @@
   "当前系统不支持本机 Shell": "Local shells are not supported on this system",
   "当前系统不支持注册服务": "Registering a service is not supported on this system",
   "当前系统内核不支持 nftables（没有 nf_tables），无法同步到系统防火墙，不再重试；封禁只对 Gately 自身的服务生效，诱饵端口改由 Gately 监听。可在入侵防护设置中关闭“同步到系统防火墙”。错误: %v": "The system kernel does not support nftables (no nf_tables), so bans cannot be synced to the system firewall and will not be retried; bans apply only to Gately's own services and trap ports are listened on by Gately. You can turn off \"Sync to system firewall\" in the Intrusion Prevention settings. Error: %v",
+  "当前系统内核不支持 nftables，且没有 iptables 命令，无法放行防火墙: %w": "The system kernel does not support nftables and there is no iptables command, so the firewall cannot be opened: %w",
   "当前被封禁的 IP": "Currently banned IPs",
   "往返时间 最小/平均/最大 = %.2f/%.2f/%.2f ms": "Round-trip time min/avg/max = %.2f/%.2f/%.2f ms",
   "心跳、超时与重试间隔不能小于 500 毫秒": "Heartbeat, timeout and retry interval cannot be less than 500 ms",

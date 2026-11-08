@@ -1450,6 +1450,7 @@
   "当前系统不支持本机 Shell": "Le système actuel ne prend pas en charge le shell local",
   "当前系统不支持注册服务": "Ce système ne permet pas d’enregistrer un service",
   "当前系统内核不支持 nftables（没有 nf_tables），无法同步到系统防火墙，不再重试；封禁只对 Gately 自身的服务生效，诱饵端口改由 Gately 监听。可在入侵防护设置中关闭“同步到系统防火墙”。错误: %v": "Le noyau du système ne prend pas en charge nftables (pas de nf_tables) : les blocages ne peuvent pas être synchronisés avec le pare-feu système et ne seront pas retentés ; ils s'appliquent uniquement aux services de Gately et les ports pièges sont écoutés par Gately. Vous pouvez désactiver « Synchroniser avec le pare-feu » dans les réglages de Prévention d'intrusion. Erreur : %v",
+  "当前系统内核不支持 nftables，且没有 iptables 命令，无法放行防火墙: %w": "Le noyau du système ne prend pas en charge nftables et la commande iptables est absente : impossible d'ouvrir le pare-feu : %w",
   "当前被封禁的 IP": "IP actuellement bannies",
   "往返时间 最小/平均/最大 = %.2f/%.2f/%.2f ms": "Temps aller-retour min/moy/max = %.2f/%.2f/%.2f ms",
   "心跳、超时与重试间隔不能小于 500 毫秒": "Le heartbeat, le délai d'expiration et l'intervalle de nouvelle tentative ne peuvent pas être inférieurs à 500 millisecondes",
