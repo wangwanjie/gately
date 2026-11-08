@@ -1,6 +1,6 @@
 {
   "title": "Prevenção de intrusão",
-  "desc": "Proteção no estilo fail2ban: encontra IPs maliciosos por regras de logs, portas armadilha e detecção de varredura, bloqueia-os e sincroniza os bloqueios com o firewall do sistema (nftables)",
+  "desc": "Proteção no estilo fail2ban: encontra IPs maliciosos por regras de logs, portas armadilha e detecção de varredura, bloqueia-os e sincroniza os bloqueios com o firewall do sistema (nftables / iptables + ipset)",
   "savedApplied": "Salvo e aplicado",
   "banTime": "Duração do bloqueio",
   "banTimeDefaultValue": "Padrão ({d})",

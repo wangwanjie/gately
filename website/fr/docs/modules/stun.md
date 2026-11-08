@@ -32,6 +32,7 @@ Lorsque « Ouvrir le port dans le pare-feu » est activé sur une règle, Gately
 - nftables : une règle d'autorisation est insérée en tête de chaque chaîne de filtrage sur le hook input (par exemple OpenWrt fw4 et firewalld) ;
 - iptables : une règle d'autorisation est insérée en tête de la chaîne INPUT de la table filter (par exemple OpenWrt fw3 et ufw) ;
 - les règles portent le commentaire `gately-open:` ; un rechargement du pare-feu les efface, et Gately vérifie toutes les 30 secondes et les rajoute ;
+- les noyaux sans nf_tables (comme Synology DSM) utilisent iptables (legacy) : les règles sont placées dans une chaîne filter propre à Gately (commençant par `GTLY_OPEN_`), vers laquelle saute la première règle d'INPUT ; si le pare-feu du système place ses règles devant, le saut est remis en tête dans les 30 secondes. L'image Docker inclut iptables (legacy) ;
 - en Docker, il faut le réseau host et `cap_add: NET_ADMIN` ; la carte de la règle affiche le résultat ou la raison de l'échec ;
 - les pare-feu qui ne passent pas par nftables / iptables, comme le pare-feu système de fnOS, demandent toujours d'ouvrir le port à la main dans leurs réglages.
 

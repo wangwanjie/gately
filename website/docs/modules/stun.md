@@ -32,6 +32,7 @@ STUN 得到的公网端口通常会变化，建议配合：
 - nftables：在所有挂在 input 钩子上的过滤链（例如 OpenWrt fw4、firewalld）最前面插入放行规则；
 - iptables：在 filter 表的 INPUT 链最前面插入放行规则（例如 OpenWrt fw3、ufw）；
 - 放行规则带 `gately-open:` 注释；防火墙重新加载会清掉这些规则，Gately 每 30 秒检查一次并补回；
+- 内核没有 nf_tables（如群晖 DSM）时改用 iptables（legacy）：放行规则写在 Gately 专用的 filter 链（`GTLY_OPEN_` 开头）中，INPUT 的第一条规则跳到这条链；系统防火墙把自己的规则插到前面时 30 秒内挪回第一位。Docker 镜像已自带 iptables（legacy）；
 - Docker 部署需要 host 网络与 `cap_add: NET_ADMIN`，规则卡片会显示放行结果或失败原因；
 - 飞牛 fnOS 系统防火墙等不经过 nftables / iptables 的防火墙需要在系统设置中手动放行。
 

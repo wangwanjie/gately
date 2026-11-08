@@ -1,6 +1,6 @@
 {
   "title": "침입 방지",
-  "desc": "fail2ban 방식의 보호: 로그 규칙, 미끼 포트, 포트 스캔 탐지로 악성 IP를 찾아 자동으로 차단하고 시스템 방화벽(nftables)에 동기화합니다",
+  "desc": "fail2ban 방식의 보호: 로그 규칙, 미끼 포트, 포트 스캔 탐지로 악성 IP를 찾아 자동으로 차단하고 시스템 방화벽(nftables / iptables + ipset)에 동기화합니다",
   "savedApplied": "저장 및 적용됨",
   "banTime": "차단 시간",
   "banTimeDefaultValue": "기본값({d})",

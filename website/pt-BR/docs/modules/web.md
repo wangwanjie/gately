@@ -628,6 +628,7 @@ Quando o Gately roda em um roteador como o OpenWrt ou em um host Linux com firew
 - Com HTTP/3 ativo, a porta UDP de mesmo número também é liberada.
 - A regra é removida quando o listener é desativado, excluído, falha ao iniciar ou o interruptor é desligado, e também quando o Gately encerra.
 - nftables (OpenWrt fw4, firewalld e outros): a regra é inserida no topo das cadeias de filtro input. iptables / ip6tables (OpenWrt fw3, ufw e outros): no topo da cadeia INPUT. As regras levam o comentário `gately-open:` e são restauradas em até 30 segundos após o firewall recarregar.
+- Kernels sem nf_tables (como o Synology DSM) usam iptables (legacy): as regras ficam numa cadeia filter própria do Gately (que começa com `GTLY_OPEN_`), para a qual salta a primeira regra de INPUT; se o firewall do sistema puser regras próprias na frente, o salto volta ao topo em até 30 segundos. A imagem Docker inclui o iptables (legacy).
 - Somente Linux. No Docker é preciso rede host e `cap_add: NET_ADMIN`. O cartão do listener mostra o resultado; se falhar, a etiqueta «Firewall» fica laranja.
 
 As regras de [Redirecionamento de portas](/pt-BR/docs/modules/portforward#auto-firewall) e de [Roteamento por protocolo](/pt-BR/docs/modules/protoroute#auto-firewall) têm o mesmo interruptor, e as regras de [STUN](/pt-BR/docs/modules/stun#auto-firewall) liberam a porta do canal.

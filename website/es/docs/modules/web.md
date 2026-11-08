@@ -628,6 +628,7 @@ Cuando Gately se ejecuta en un router como OpenWrt o en un host Linux con cortaf
 - Con HTTP/3 activado también se permite el puerto UDP con el mismo número.
 - La regla se retira al desactivar, eliminar o fallar el arranque de la escucha, al apagar el interruptor y cuando Gately se cierra.
 - nftables (OpenWrt fw4, firewalld y otros): la regla se inserta al principio de las cadenas de filtro input. iptables / ip6tables (OpenWrt fw3, ufw y otros): al principio de la cadena INPUT. Las reglas llevan el comentario `gately-open:` y se restauran en menos de 30 segundos tras recargar el cortafuegos.
+- Los kernels sin nf_tables (como Synology DSM) usan iptables (legacy): las reglas van en una cadena filter propia de Gately (que empieza por `GTLY_OPEN_`) y la primera regla de INPUT salta a ella; si el cortafuegos del sistema pone sus reglas delante, el salto vuelve al primer puesto en menos de 30 segundos. La imagen Docker incluye iptables (legacy).
 - Solo Linux. En Docker hacen falta la red host y `cap_add: NET_ADMIN`. La tarjeta de la escucha muestra el resultado; si falla, la etiqueta «Cortafuegos» se vuelve naranja.
 
 Las reglas de [Reenvío de puertos](/es/docs/modules/portforward#auto-firewall) y de [Enrutamiento por protocolo](/es/docs/modules/protoroute#auto-firewall) tienen el mismo interruptor, y las reglas de [STUN](/es/docs/modules/stun#auto-firewall) permiten su puerto de canal.

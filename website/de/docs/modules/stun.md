@@ -32,6 +32,7 @@ Ist bei einer Regel „Firewall-Port freigeben" aktiviert, gibt Gately den Kanal
 - nftables: Eine Freigaberegel wird am Anfang jeder Filterkette am input-Hook eingefügt (zum Beispiel OpenWrt fw4 und firewalld);
 - iptables: Eine Freigaberegel wird am Anfang der INPUT-Kette der filter-Tabelle eingefügt (zum Beispiel OpenWrt fw3 und ufw);
 - die Regeln tragen den Kommentar `gately-open:`; ein Neuladen der Firewall löscht sie, Gately prüft alle 30 Sekunden und fügt sie wieder hinzu;
+- Kernel ohne nf_tables (etwa Synology DSM) verwenden stattdessen iptables (legacy): Die Regeln stehen in einer eigenen filter-Kette von Gately (beginnend mit `GTLY_OPEN_`), auf die die erste Regel von INPUT springt; setzt die System-Firewall eigene Regeln davor, wird der Sprung innerhalb von 30 Sekunden wieder an die erste Stelle verschoben. Das Docker-Image enthält iptables (legacy);
 - Docker-Bereitstellungen brauchen das Host-Netzwerk und `cap_add: NET_ADMIN`; die Regelkarte zeigt das Ergebnis oder den Fehlergrund;
 - Firewalls, die nicht über nftables / iptables laufen, etwa die Systemfirewall von fnOS, müssen den Port weiterhin manuell in ihren Einstellungen freigeben.
 

@@ -1,6 +1,6 @@
 # Prevenção de intrusão
 
-Prevenção de intrusão no estilo fail2ban: o Gately encontra tentativas de força bruta nos logs, coloca armadilhas em portas sem uso, conta varreduras de portas, adiciona os IPs maliciosos a uma lista de bloqueio e a sincroniza com o firewall do sistema (nftables), que descarta no kernel todo o tráfego deles.
+Prevenção de intrusão no estilo fail2ban: o Gately encontra tentativas de força bruta nos logs, coloca armadilhas em portas sem uso, conta varreduras de portas, adiciona os IPs maliciosos a uma lista de bloqueio e a sincroniza com o firewall do sistema (nftables / iptables + ipset), que descarta no kernel todo o tráfego deles.
 
 ## Recursos
 

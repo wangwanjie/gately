@@ -628,6 +628,7 @@ When Gately runs on a router such as OpenWrt, or on a Linux host with a firewall
 - With HTTP/3 on, the UDP port with the same number is allowed too.
 - The rule is removed when the listener is disabled, deleted, fails to start or the switch is turned off, and when Gately exits.
 - nftables (OpenWrt fw4, firewalld and others): the rule is inserted at the top of the input filter chains. iptables / ip6tables (OpenWrt fw3, ufw and others): at the top of the INPUT chain. Rules carry a `gately-open:` comment and are restored within 30 seconds after the firewall reloads.
+- Kernels without nf_tables (such as Synology DSM) use iptables (legacy) instead: the rules go into a filter chain of Gately's own (starting with `GTLY_OPEN_`), and the first rule of INPUT jumps to it; when the system firewall puts its own rules in front, the jump is moved back to the top within 30 seconds. The Docker image includes iptables (legacy).
 - Linux only. Docker deployments need host networking and `cap_add: NET_ADMIN`. The listener card shows the result; when allowing fails, the "Firewall" tag turns orange.
 
 Rules in [Port Forwarding](/en/docs/modules/portforward#auto-firewall) and [Protocol Routing](/en/docs/modules/protoroute#auto-firewall) have the same switch, and [STUN](/en/docs/modules/stun#auto-firewall) rules allow their channel port.

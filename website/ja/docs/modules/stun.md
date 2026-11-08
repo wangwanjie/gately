@@ -32,6 +32,7 @@ STUN で得られる公開ポートは通常変化するため、次のものと
 - nftables：input フックにあるすべてのフィルターチェーン（OpenWrt fw4、firewalld など）の先頭に許可ルールを挿入します。
 - iptables：filter テーブルの INPUT チェーンの先頭に許可ルールを挿入します（OpenWrt fw3、ufw など）。
 - 許可ルールには `gately-open:` のコメントが付きます。ファイアウォールの再読み込みで消えた場合、Gately が 30 秒ごとに確認して追加し直します。
+- nf_tables のないカーネル（Synology DSM など）では iptables（legacy）を使います。許可ルールは Gately 専用の filter チェーン（`GTLY_OPEN_` で始まる）に書かれ、INPUT の先頭ルールがこのチェーンへジャンプします。システムのファイアウォールが自身のルールを前に入れた場合は 30 秒以内に先頭へ戻します。Docker イメージには iptables（legacy）が含まれます。
 - Docker では host ネットワークと `cap_add: NET_ADMIN` が必要です。ルールのカードに結果または失敗理由が表示されます。
 - fnOS のシステムファイアウォールなど nftables / iptables を経由しないファイアウォールは、その設定画面で手動で許可してください。
 

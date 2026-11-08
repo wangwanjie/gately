@@ -32,6 +32,7 @@ STUN으로 얻은 공인 포트는 보통 바뀌므로 다음과 함께 쓰기�
 - nftables: input 훅에 걸린 모든 필터 체인(예: OpenWrt fw4, firewalld) 맨 앞에 허용 규칙을 넣습니다.
 - iptables: filter 테이블 INPUT 체인 맨 앞에 허용 규칙을 넣습니다(예: OpenWrt fw3, ufw).
 - 허용 규칙에는 `gately-open:` 주석이 붙습니다. 방화벽을 다시 불러오면 규칙이 지워지며, Gately가 30초마다 확인해 다시 추가합니다.
+- nf_tables가 없는 커널(Synology DSM 등)에서는 iptables(legacy)를 사용합니다. 허용 규칙은 Gately 전용 filter 체인(`GTLY_OPEN_`으로 시작)에 쓰이고, INPUT의 첫 규칙이 이 체인으로 점프합니다. 시스템 방화벽이 자신의 규칙을 앞에 넣으면 30초 안에 점프 규칙을 맨 앞으로 되돌립니다. Docker 이미지에는 iptables(legacy)가 포함되어 있습니다.
 - Docker 배포에는 host 네트워크와 `cap_add: NET_ADMIN`이 필요하며, 규칙 카드에 결과나 실패 이유가 표시됩니다.
 - fnOS 시스템 방화벽처럼 nftables / iptables를 거치지 않는 방화벽은 해당 설정에서 직접 포트를 허용해야 합니다.
 

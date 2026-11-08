@@ -1,6 +1,6 @@
 {
   "title": "侵入防御",
-  "desc": "fail2ban のような保護機能：ログルール、おとりポート、ポートスキャン検出で悪意のある IP を見つけて自動でブロックし、システムファイアウォール（nftables）に同期します",
+  "desc": "fail2ban のような保護機能：ログルール、おとりポート、ポートスキャン検出で悪意のある IP を見つけて自動でブロックし、システムファイアウォール（nftables / iptables + ipset）に同期します",
   "savedApplied": "保存して適用しました",
   "banTime": "ブロック期間",
   "banTimeDefaultValue": "既定（{d}）",

@@ -32,6 +32,7 @@ Con «Abrir puerto en el cortafuegos» activado en una regla, Gately permite el 
 - nftables: se inserta una regla de permiso al principio de cada cadena de filtrado en el hook input (por ejemplo, OpenWrt fw4 y firewalld);
 - iptables: se inserta una regla de permiso al principio de la cadena INPUT de la tabla filter (por ejemplo, OpenWrt fw3 y ufw);
 - las reglas llevan el comentario `gately-open:`; recargar el cortafuegos las borra, y Gately comprueba cada 30 segundos y las vuelve a añadir;
+- los kernels sin nf_tables (como Synology DSM) usan iptables (legacy): las reglas van en una cadena filter propia de Gately (que empieza por `GTLY_OPEN_`) y la primera regla de INPUT salta a ella; si el cortafuegos del sistema pone sus reglas delante, el salto vuelve al primer puesto en menos de 30 segundos. La imagen Docker incluye iptables (legacy);
 - en Docker hacen falta la red host y `cap_add: NET_ADMIN`; la tarjeta de la regla muestra el resultado o el motivo del fallo;
 - los cortafuegos que no pasan por nftables / iptables, como el cortafuegos del sistema de fnOS, requieren abrir el puerto a mano en sus ajustes.
 

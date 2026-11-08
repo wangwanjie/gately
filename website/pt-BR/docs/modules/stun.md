@@ -32,6 +32,7 @@ Com "Liberar porta no firewall" ativado em uma regra, o Gately libera a porta do
 - nftables: uma regra de liberação é inserida no topo de cada cadeia de filtro no hook input (por exemplo, OpenWrt fw4 e firewalld);
 - iptables: uma regra de liberação é inserida no topo da cadeia INPUT da tabela filter (por exemplo, OpenWrt fw3 e ufw);
 - as regras levam o comentário `gately-open:`; recarregar o firewall as apaga, e o Gately verifica a cada 30 segundos e as adiciona de novo;
+- kernels sem nf_tables (como o Synology DSM) usam iptables (legacy): as regras ficam numa cadeia filter própria do Gately (que começa com `GTLY_OPEN_`), para a qual salta a primeira regra de INPUT; se o firewall do sistema puser regras próprias na frente, o salto volta ao topo em até 30 segundos. A imagem Docker inclui o iptables (legacy);
 - no Docker é preciso a rede host e `cap_add: NET_ADMIN`; o cartão da regra mostra o resultado ou o motivo da falha;
 - firewalls que não passam por nftables / iptables, como o firewall do sistema do fnOS, continuam exigindo liberar a porta manualmente nas configurações deles.
 

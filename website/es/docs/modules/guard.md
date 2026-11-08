@@ -1,6 +1,6 @@
 # Prevención de intrusiones
 
-Prevención de intrusiones al estilo de fail2ban: Gately detecta ataques de fuerza bruta en los registros, coloca trampas en puertos sin usar, cuenta los escaneos de puertos, añade las IP maliciosas a una lista de bloqueos y la sincroniza con el cortafuegos del sistema (nftables), que descarta en el kernel todo su tráfico.
+Prevención de intrusiones al estilo de fail2ban: Gately detecta ataques de fuerza bruta en los registros, coloca trampas en puertos sin usar, cuenta los escaneos de puertos, añade las IP maliciosas a una lista de bloqueos y la sincroniza con el cortafuegos del sistema (nftables / iptables + ipset), que descarta en el kernel todo su tráfico.
 
 ## Funciones
 

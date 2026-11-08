@@ -1,6 +1,6 @@
 {
   "title": "Einbruchschutz",
-  "desc": "Schutz im Stil von fail2ban: findet bösartige IPs über Protokollregeln, Köderports und Portscan-Erkennung, sperrt sie und überträgt die Sperren in die System-Firewall (nftables)",
+  "desc": "Schutz im Stil von fail2ban: findet bösartige IPs über Protokollregeln, Köderports und Portscan-Erkennung, sperrt sie und überträgt die Sperren in die System-Firewall (nftables / iptables + ipset)",
   "savedApplied": "Gespeichert und angewendet",
   "banTime": "Sperrdauer",
   "banTimeDefaultValue": "Standard ({d})",

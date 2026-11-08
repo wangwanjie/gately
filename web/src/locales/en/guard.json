@@ -1,6 +1,6 @@
 {
   "title": "Intrusion Prevention",
-  "desc": "fail2ban-style protection: finds malicious IPs through log jails, trap ports and port-scan detection, bans them and syncs the bans to the system firewall (nftables)",
+  "desc": "fail2ban-style protection: finds malicious IPs through log jails, trap ports and port-scan detection, bans them and syncs the bans to the system firewall (nftables / iptables + ipset)",
   "savedApplied": "Saved and applied",
   "banTime": "Ban duration",
   "banTimeDefaultValue": "Default ({d})",
