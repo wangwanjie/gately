@@ -139,6 +139,44 @@ func TestChainModeUnknownRulesAfterRestart(t *testing.T) {
 	}
 }
 
+// 两个登记者放行同一端口（例如 STUN 的 UPnP 内部端口正是 Web 服务的监听端口）：链中有两条相同的规则，
+// 各自对应一个登记者，之后的对账不再来回增删；其中一个撤销时只删一条
+func TestChainModeSamePortTwoOwners(t *testing.T) {
+	dir := fakeBins(t, map[string]string{"nft": dsmNFT, "iptables-legacy": legacyIPT, "iptables-legacy-save": legacySave})
+	SetInstance("/tmp/gately-chain-test3")
+	own := chainName()
+	writeFilter(t, dir, "*filter\n:INPUT DROP [0:0]\nCOMMIT\n")
+	m := &manager{be: &cmdBackend{}, owners: map[string]*ownerState{}}
+	m.owners["web:a"] = &ownerState{ports: []Port{{Proto: "tcp", Port: 443}}}
+	m.owners["stun:b"] = &ownerState{ports: []Port{{Proto: "tcp", Port: 443, Family: "4"}}}
+	m.reconcile(context.Background(), false)
+	if n := strings.Count(readCalls(t, dir), "-w -A "+own+" -p tcp --dport 443 -j ACCEPT"); n != 2 {
+		t.Fatalf("两个登记者各写一条规则，实际 %d 条:\n%s", n, readCalls(t, dir))
+	}
+	// 链中已有两条（iptables-save 规范化后的）相同规则：反复对账都不应再改动
+	saved := "*filter\n:INPUT DROP [0:0]\n:" + own + " - [0:0]\n-A INPUT -j " + own + "\n" +
+		"-A " + own + " -p tcp -m tcp --dport 443 -j ACCEPT\n-A " + own + " -p tcp -m tcp --dport 443 -j ACCEPT\nCOMMIT\n"
+	writeFilter(t, dir, saved)
+	for range 3 {
+		os.Remove(filepath.Join(dir, "calls.log"))
+		m.reconcile(context.Background(), true)
+		if calls := readCalls(t, dir); calls != "" {
+			t.Fatalf("规则齐全时不应增删:\n%s", calls)
+		}
+	}
+	// 撤销其中一个：只删一条
+	delete(m.owners, "stun:b")
+	os.Remove(filepath.Join(dir, "calls.log"))
+	m.reconcile(context.Background(), false)
+	calls := readCalls(t, dir)
+	if strings.Count(calls, "-w -D "+own) != 1 || strings.Contains(calls, "-w -A "+own) {
+		t.Fatalf("撤销一个登记者时只删一条规则:\n%s", calls)
+	}
+	if st := m.owners["web:a"]; !st.ok {
+		t.Fatalf("另一个登记者应保持放行: %+v", st)
+	}
+}
+
 // 内核没有 nf_tables 且没有 iptables（legacy）时给出明确说明；iptables 是 nf_tables 版本时同样不能使用
 func TestTargetsNoNFTablesNoLegacy(t *testing.T) {
 	fakeBins(t, map[string]string{"nft": dsmNFT, "iptables": `echo "iptables v1.8.10 (nf_tables)"` + "\n", "iptables-save": "true\n"})

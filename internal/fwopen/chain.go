@@ -12,6 +12,7 @@ import (
 	"context"
 	"fmt"
 	"os/exec"
+	"slices"
 	"strings"
 )
 
@@ -24,8 +25,10 @@ type chainFam struct {
 // chainState 保存专用链模式的状态。
 type chainState struct {
 	fams []chainFam
-	// known 为链中规则（按 ruleKey）对应的注释，由 add 记录
-	known map[string]string
+	// known 为链中规则（按 ruleKey）对应的注释，由 add 按写入顺序记录。
+	// 同一端口可能有多个登记者（例如 STUN 的 UPnP 内部端口正是 Web 服务的监听端口），链中就有多条相同的规则，
+	// 每条规则对应一个注释，否则对账会把其中一条当成重复删除，再给另一个登记者补回，每轮来回增删
+	known map[string][]string
 }
 
 // chainName 返回本实例的专用链名（iptables 链名最长 28 个字符）。
@@ -191,8 +194,15 @@ func (b *cmdBackend) chainTargets(ctx context.Context) ([]target, map[string][]e
 				return nil, nil, err
 			}
 		}
+		used := map[string]int{}
 		for _, args := range st.own {
-			cm := c.known[ruleKey(f.v6, args)]
+			key := ruleKey(f.v6, args)
+			cm := ""
+			// 相同的规则按出现顺序依次对应登记的注释
+			if n := used[key]; n < len(c.known[key]) {
+				cm = c.known[key][n]
+			}
+			used[key]++
 			if cm == "" {
 				// 不认识的规则（进程重启前写入的）用不会匹配任何登记的注释，对账时删除并按登记补回
 				cm = ownPrefix() + "?:" + ruleKey(f.v6, args)
@@ -241,7 +251,8 @@ func (b *cmdBackend) chainAdd(ctx context.Context, t target, cm string, p Port) 
 	if _, err := run(ctx, "", f.bin, append(args, "-j", "ACCEPT")...); err != nil {
 		return err
 	}
-	b.chain.known[portKey(f.v6, p)] = cm
+	key := portKey(f.v6, p)
+	b.chain.known[key] = append(b.chain.known[key], cm)
 	return nil
 }
 
@@ -255,6 +266,18 @@ func (b *cmdBackend) chainDel(ctx context.Context, t target, e existing) error {
 	if _, err := run(ctx, "", f.bin, args...); err != nil {
 		return err
 	}
-	delete(b.chain.known, ruleKey(f.v6, e.Ref))
+	// 只去掉这条规则对应的注释，同一端口其他登记者的规则保留
+	key := ruleKey(f.v6, e.Ref)
+	list := b.chain.known[key]
+	if i := slices.Index(list, e.Comment); i >= 0 {
+		list = slices.Delete(slices.Clone(list), i, i+1)
+	} else if len(list) > 0 {
+		list = list[1:]
+	}
+	if len(list) == 0 {
+		delete(b.chain.known, key)
+	} else {
+		b.chain.known[key] = list
+	}
 	return nil
 }

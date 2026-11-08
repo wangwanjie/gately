@@ -146,7 +146,7 @@ func (b *cmdBackend) targets(ctx context.Context) ([]target, map[string][]existi
 		case err != nil && kernelNoNFT(err.Error()):
 			// 内核没有 nf_tables（如群晖 DSM）时 nft 命令存在也无法使用，改用 iptables（legacy）的专用链放行
 			if fams := findChainFams(); len(fams) > 0 {
-				b.chain = &chainState{fams: fams, known: map[string]string{}}
+				b.chain = &chainState{fams: fams, known: map[string][]string{}}
 				return b.chainTargets(ctx)
 			}
 			return nil, nil, fmt.Errorf("当前系统内核不支持 nftables，且没有 iptables（legacy）命令，无法放行防火墙: %w", err)
