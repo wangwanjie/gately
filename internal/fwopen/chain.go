@@ -20,7 +20,14 @@ import (
 type chainFam struct {
 	v6        bool
 	bin, save string
+	// input 为在命令中指代内建 INPUT 链的名字。群晖改过的 iptables 会把命令里的 INPUT 改写成 DEFAULT_INPUT
+	// （排在群晖防火墙 INPUT_FIREWALL 之后，放行不起作用），真正的内建链要写成 PRIMITIVE_INPUT；
+	// iptables-save 的输出不受影响，仍显示 INPUT
+	input string
 }
+
+// synoInput 为群晖 iptables 中指代真正内建 INPUT 链的名字
+const synoInput = "PRIMITIVE_INPUT"
 
 // chainState 保存专用链模式的状态。
 type chainState struct {
@@ -58,6 +65,11 @@ func findChainFams() []chainFam {
 			}
 		}
 		if f.bin != "" && f.save != "" {
+			f.input = "INPUT"
+			// 只有群晖的 iptables 认识 PRIMITIVE_INPUT；其他系统上这条链不存在，查询失败
+			if err := exec.Command(f.bin, "-w", "-S", synoInput).Run(); err == nil {
+				f.input = synoInput
+			}
 			out = append(out, f)
 		}
 	}
@@ -74,6 +86,14 @@ func legacyCandidates(name string) []string {
 		out = append(out, d+"/"+name)
 	}
 	return out
+}
+
+// builtin 返回命令中指代内建 INPUT 链的名字。
+func (f chainFam) builtin() string {
+	if f.input == "" {
+		return "INPUT"
+	}
+	return f.input
 }
 
 // kind 返回地址族对应的 target.Kind。
@@ -235,11 +255,11 @@ func (b *cmdBackend) chainTargets(ctx context.Context) ([]target, map[string][]e
 // fixChainJump 删除 INPUT 中全部跳到专用链的规则，再插入到第一位。
 func (b *cmdBackend) fixChainJump(ctx context.Context, f chainFam, own string, jumps int) error {
 	for range jumps {
-		if _, err := run(ctx, "", f.bin, "-w", "-D", "INPUT", "-j", own); err != nil {
+		if _, err := run(ctx, "", f.bin, "-w", "-D", f.builtin(), "-j", own); err != nil {
 			return err
 		}
 	}
-	_, err := run(ctx, "", f.bin, "-w", "-I", "INPUT", "1", "-j", own)
+	_, err := run(ctx, "", f.bin, "-w", "-I", f.builtin(), "1", "-j", own)
 	return err
 }
 

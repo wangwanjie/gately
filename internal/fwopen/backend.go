@@ -89,6 +89,12 @@ func classify(msg string) error {
 	return errors.New(msg)
 }
 
+// iptHasComment 判断 iptables 能否加载 comment 匹配模块（群晖等精简系统没有）。
+func iptHasComment(ctx context.Context, bin string) bool {
+	_, err := run(ctx, "", bin, "-m", "comment", "-h")
+	return err == nil || !strings.Contains(err.Error(), "comment")
+}
+
 // kernelNoNFT 判断 nft 基础查询的错误是否表示内核没有 nf_tables：
 // 未编入 nf_tables 时 netlink 返回 EINVAL，连 nfnetlink 都没有时返回 EPROTONOSUPPORT 等。
 func kernelNoNFT(msg string) bool {
@@ -185,6 +191,14 @@ func (b *cmdBackend) targets(ctx context.Context) ([]target, map[string][]existi
 	}
 	// iptables-legacy 的规则不在 nft 中，总是检查；iptables-nft 只在 filter 表已存在时使用，避免凭空创建表
 	if b.iptables != "" && (!b.iptNFT || hasIPFilter || b.nft == "") {
+		// 群晖 DSM 直接安装时没有 nft，系统自带的 iptables 没有 comment 模块（无法给规则做标记），
+		// 命令里的 INPUT 还会被改写成 DEFAULT_INPUT：有 iptables-save 时改用专用链放行
+		if b.nft == "" && !b.iptNFT && !iptHasComment(ctx, b.iptables) {
+			if fams := findChainFams(); len(fams) > 0 {
+				b.chain = &chainState{fams: fams, known: map[string][]string{}}
+				return b.chainTargets(ctx)
+			}
+		}
 		out, err := run(ctx, "", b.iptables, "-w", "-S", "INPUT")
 		if err != nil {
 			return nil, nil, err

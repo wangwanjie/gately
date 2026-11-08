@@ -34,9 +34,10 @@ func fakeBins(t *testing.T, scripts map[string]string) string {
 const dsmNFT = `echo "netlink: Error: cache initialization failed: Invalid argument" >&2; exit 1
 `
 
-// 假 iptables-legacy：-V 报版本，其他调用记录到 calls.log
-const legacyIPT = `case "$1" in
--V) echo "iptables v1.8.10 (legacy)";;
+// 假 iptables-legacy：-V 报版本，没有 PRIMITIVE_INPUT 链（只有群晖的 iptables 有），其他调用记录到 calls.log
+const legacyIPT = `case "$1 $2 $3" in
+-V*) echo "iptables v1.8.10 (legacy)";;
+"-w -S PRIMITIVE_INPUT") echo "iptables: No chain/target/match by that name." >&2; exit 1;;
 *) echo "$*" >> $DIR/calls.log;;
 esac
 `
@@ -198,6 +199,47 @@ func TestChainModeOtherInstanceAhead(t *testing.T) {
 	m.reconcile(context.Background(), true)
 	if calls := readCalls(t, dir); !strings.Contains(calls, "-w -I INPUT 1 -j "+own) {
 		t.Fatalf("其他规则在前时应挪回第一位:\n%s", calls)
+	}
+}
+
+// 群晖 DSM 直接安装：没有 nft，自带的 iptables 没有 comment 模块，命令里的 INPUT 被改写成 DEFAULT_INPUT
+// （排在群晖防火墙之后），真正的内建链要写成 PRIMITIVE_INPUT：改用专用链，跳转插到 PRIMITIVE_INPUT 第一位
+func TestChainModeSynologyNativeIPTables(t *testing.T) {
+	dsmIPT := `case "$1 $2 $3" in
+-V*) echo "iptables v1.8.3 (legacy)";;
+"-m comment -h") echo "iptables v1.8.3 (legacy): Couldn't load match 'comment':No such file or directory" >&2; exit 2;;
+"-w -S PRIMITIVE_INPUT") echo "-P INPUT ACCEPT";;
+"-w -S INPUT") echo "-N DEFAULT_INPUT";;
+*) echo "$*" >> $DIR/calls.log;;
+esac
+`
+	dir := fakeBins(t, map[string]string{"iptables": dsmIPT, "iptables-save": legacySave})
+	SetInstance("/tmp/gately-chain-test5")
+	own := chainName()
+	writeFilter(t, dir, "*filter\n:INPUT ACCEPT [0:0]\n:DEFAULT_INPUT - [0:0]\n:INPUT_FIREWALL - [0:0]\n"+
+		"-A INPUT -j INPUT_FIREWALL\n-A INPUT -j DEFAULT_INPUT\n-A INPUT_FIREWALL -j DROP\nCOMMIT\n")
+	m := &manager{be: &cmdBackend{}, owners: map[string]*ownerState{}}
+	m.owners["pf:a"] = &ownerState{ports: []Port{{Proto: "tcp", Port: 8443}}}
+	m.reconcile(context.Background(), false)
+	calls := readCalls(t, dir)
+	for _, want := range []string{"-w -N " + own, "-w -I PRIMITIVE_INPUT 1 -j " + own, "-w -A " + own + " -p tcp --dport 8443 -j ACCEPT"} {
+		if !strings.Contains(calls, want) {
+			t.Errorf("缺少调用 %q:\n%s", want, calls)
+		}
+	}
+	if strings.Contains(calls, "comment") || strings.Contains(calls, " INPUT 1") {
+		t.Errorf("不应使用 comment 模块，也不应写到会被改写的 INPUT:\n%s", calls)
+	}
+	if st := m.owners["pf:a"]; !st.ok {
+		t.Fatalf("应放行成功: %+v", st)
+	}
+	// 群晖防火墙重新加载后把 INPUT_FIREWALL 插回最前：用 PRIMITIVE_INPUT 挪回第一位
+	writeFilter(t, dir, "*filter\n:INPUT ACCEPT [0:0]\n:"+own+" - [0:0]\n-A INPUT -j INPUT_FIREWALL\n-A INPUT -j "+own+"\n"+
+		"-A "+own+" -p tcp -m tcp --dport 8443 -j ACCEPT\nCOMMIT\n")
+	os.Remove(filepath.Join(dir, "calls.log"))
+	m.reconcile(context.Background(), true)
+	if calls = readCalls(t, dir); !strings.Contains(calls, "-w -D PRIMITIVE_INPUT -j "+own) || !strings.Contains(calls, "-w -I PRIMITIVE_INPUT 1 -j "+own) {
+		t.Errorf("应经 PRIMITIVE_INPUT 挪回第一位:\n%s", calls)
 	}
 }
 
