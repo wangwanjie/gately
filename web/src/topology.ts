@@ -1081,7 +1081,8 @@ export function maskHost(host: string): string {
 }
 
 // maskDomain 打码域名：保留第一段与顶级域，中间替换为 ***（如 nas.home.example.com → nas.***.com），
-// 只有两段时保留首字母（example.com → e***.com）；通配前缀 *. 原样保留，单段名称（如 localhost）不变。
+// 只有两段时保留首字母（example.com → e***.com）；通配前缀 *. 原样保留，首段通配（api-*.example.com）按普通首段处理，
+// 单段名称（如 localhost）不变。
 export function maskDomain(host: string): string {
   if (!host || isIPLiteral(host)) {
     return host
@@ -1096,9 +1097,13 @@ export function maskDomain(host: string): string {
   return (wild ? '*.' : '') + masked
 }
 
+// domainInText 匹配自由文本中的域名。首段可以是 *（*.example.com），也可以是含一个 * 的首段通配（api-*.example.com），
+// 站点名称默认取首个域名，漏掉首段通配会让打码后的画面仍露出完整域名。String.replace 每次从头匹配，共用同一个 /g 正则是安全的
+const domainInText = /(?<![\w.*-])(?:[a-z0-9_-]*\*[a-z0-9_-]*\.)?(?:[a-z0-9_-]+\.)+[a-z][a-z0-9-]*[a-z](?![\w.-])/gi
+
 // maskDomainText 打码自由文本（如站点名称）中出现的域名。
 export function maskDomainText(text: string): string {
-  return text.replace(/(?<![\w.-])(?:\*\.)?(?:[a-z0-9_-]+\.)+[a-z][a-z0-9-]*[a-z](?![\w.-])/gi, (d) => maskDomain(d))
+  return text.replace(domainInText, (d) => maskDomain(d))
 }
 
 // maskURL 打码后端地址中的 IP 主机（保留协议、端口与路径）；names 为 true 时主机名同样按域名打码。
@@ -1194,7 +1199,7 @@ export function aliasDomain(a: Aliases, host: string): string {
 
 // aliasDomainText 换掉自由文本（如站点名称）中出现的域名。
 export function aliasDomainText(a: Aliases, text: string): string {
-  return text.replace(/(?<![\w.-])(?:\*\.)?(?:[a-z0-9_-]+\.)+[a-z][a-z0-9-]*[a-z](?![\w.-])/gi, (d) => aliasDomain(a, d))
+  return text.replace(domainInText, (d) => aliasDomain(a, d))
 }
 
 // aliasText 换掉自由文本（如监听错误信息）中出现的 IP 地址。
