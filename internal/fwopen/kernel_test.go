@@ -177,6 +177,30 @@ func TestChainModeSamePortTwoOwners(t *testing.T) {
 	}
 }
 
+// 同一主机上的多个实例：其他实例的专用链跳转排在前面时不挪动，避免互相抢第一位；群晖防火墙的规则在前时照常挪回
+func TestChainModeOtherInstanceAhead(t *testing.T) {
+	dir := fakeBins(t, map[string]string{"nft": dsmNFT, "iptables-legacy": legacyIPT, "iptables-legacy-save": legacySave})
+	SetInstance("/tmp/gately-chain-test4")
+	own := chainName()
+	m := &manager{be: &cmdBackend{}, owners: map[string]*ownerState{}}
+	m.owners["web:a"] = &ownerState{ports: []Port{{Proto: "tcp", Port: 443}}}
+	body := ":" + own + " - [0:0]\n-A " + own + " -p tcp -m tcp --dport 443 -j ACCEPT\n"
+	writeFilter(t, dir, "*filter\n:INPUT DROP [0:0]\n:GTLY_OPEN_0badc0de - [0:0]\n"+body+
+		"-A INPUT -j GTLY_OPEN_0badc0de\n-A INPUT -j "+own+"\n-A INPUT -j INPUT_FIREWALL\nCOMMIT\n")
+	// 第一轮把链中进程重启前留下的规则认领为本实例的登记，之后再看跳转位置
+	m.reconcile(context.Background(), true)
+	os.Remove(filepath.Join(dir, "calls.log"))
+	m.reconcile(context.Background(), true)
+	if calls := readCalls(t, dir); calls != "" {
+		t.Fatalf("其他实例的跳转在前时不应挪动:\n%s", calls)
+	}
+	writeFilter(t, dir, "*filter\n:INPUT DROP [0:0]\n"+body+"-A INPUT -j INPUT_FIREWALL\n-A INPUT -j "+own+"\nCOMMIT\n")
+	m.reconcile(context.Background(), true)
+	if calls := readCalls(t, dir); !strings.Contains(calls, "-w -I INPUT 1 -j "+own) {
+		t.Fatalf("其他规则在前时应挪回第一位:\n%s", calls)
+	}
+}
+
 // 内核没有 nf_tables 且没有 iptables（legacy）时给出明确说明；iptables 是 nf_tables 版本时同样不能使用
 func TestTargetsNoNFTablesNoLegacy(t *testing.T) {
 	fakeBins(t, map[string]string{"nft": dsmNFT, "iptables": `echo "iptables v1.8.10 (nf_tables)"` + "\n", "iptables-save": "true\n"})
