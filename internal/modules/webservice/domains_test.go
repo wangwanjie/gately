@@ -56,6 +56,8 @@ func TestLabelWildcardRouting(t *testing.T) {
 		"ping-one.example.com": "exact", "PING-TWO.EXAMPLE.COM:8080": "label",
 		"ping-two.nested.example.com": "suffix", "other.example.com": "suffix",
 		"example.com": "fallback", "ping-two.example.com.evil.test": "fallback",
+		// 带尾点的完全限定写法与不带尾点的同一域名走同一站点
+		"ping-one.example.com.": "exact", "ping-two.example.com.:8080": "label", "other.example.com.": "suffix",
 	} {
 		resp, body := get(t, http.DefaultClient, addr, host, "/", nil)
 		if resp.StatusCode != 200 || body != want {

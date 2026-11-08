@@ -656,11 +656,13 @@ func (a *authenticator) finishTOTPStep(token, host string, s Site, code string) 
 	return u, "", false
 }
 
-// hostOnly 去掉 Host 中的端口。
+// hostOnly 去掉 Host 中的端口、IPv6 方括号与末尾的点，并转为小写。
 func hostOnly(h string) string {
 	h = strings.ToLower(h)
 	if i := strings.LastIndexByte(h, ':'); i > 0 && !strings.HasSuffix(h, "]") {
-		return strings.Trim(h[:i], "[]")
+		h = h[:i]
 	}
-	return strings.Trim(h, "[]")
+	// 完全限定写法 example.com. 与 example.com 是同一个域名，去掉尾点后再匹配站点，
+	// 与 TLS SNI 的处理一致，避免带尾点的请求落到默认站点
+	return strings.TrimSuffix(strings.Trim(h, "[]"), ".")
 }
