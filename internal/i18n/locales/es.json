@@ -1450,6 +1450,7 @@
   "当前系统不支持本机 Shell": "El sistema actual no admite shells locales",
   "当前系统不支持注册服务": "Este sistema no admite registrar un servicio",
   "当前系统内核不支持 nftables（没有 nf_tables），无法同步到系统防火墙，不再重试；封禁只对 Gately 自身的服务生效，诱饵端口改由 Gately 监听。可在入侵防护设置中关闭“同步到系统防火墙”。错误: %v": "El kernel del sistema no admite nftables (no tiene nf_tables), así que los bloqueos no se pueden sincronizar con el cortafuegos del sistema y no se reintentará; los bloqueos solo se aplican a los servicios de Gately y los puertos trampa los escucha Gately. Puede desactivar \"Sincronizar con el cortafuegos\" en los ajustes de Prevención de intrusiones. Error: %v",
+  "当前系统内核不支持 nftables，且没有 iptables 命令，无法放行防火墙: %w": "El kernel del sistema no admite nftables y no hay comando iptables, así que no se puede abrir el cortafuegos: %w",
   "当前被封禁的 IP": "IP bloqueadas actualmente",
   "往返时间 最小/平均/最大 = %.2f/%.2f/%.2f ms": "Tiempo de ida y vuelta mín/prom/máx = %.2f/%.2f/%.2f ms",
   "心跳、超时与重试间隔不能小于 500 毫秒": "El latido, el tiempo de espera y el intervalo de reintento no pueden ser menores de 500 milisegundos",
