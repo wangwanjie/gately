@@ -6,7 +6,7 @@ services:
     restart: unless-stopped
     # 端口转发、STUN 穿透、Web 服务都需要直接监听宿主机端口
     network_mode: host
-    # 入侵防护把封禁写入宿主机的 nftables 防火墙（不需要可删除，封禁仍对 Gately 自身的服务生效）
+    # 入侵防护把封禁写入宿主机防火墙：nftables，内核没有 nf_tables（如群晖）时用 iptables + ipset（不需要可删除，封禁仍对 Gately 自身的服务生效）
     cap_add:
       - NET_ADMIN
     volumes:
