@@ -31,11 +31,14 @@ type chainState struct {
 	known map[string][]string
 }
 
+// chainPrefix 为专用链名的前缀，后接实例标识
+const chainPrefix = "GTLY_OPEN_"
+
 // chainName 返回本实例的专用链名（iptables 链名最长 28 个字符）。
 func chainName() string {
 	instMu.RLock()
 	defer instMu.RUnlock()
-	return "GTLY_OPEN_" + instance
+	return chainPrefix + instance
 }
 
 // findChainFams 查找 iptables（legacy）及其 save 命令；iptables 本身是 nf_tables 版本时不能使用。
@@ -130,6 +133,21 @@ func parseSavedFilter(out, own string) savedTable {
 	return st
 }
 
+// jumpOK 判断跳到专用链的规则是否只有一条且位置正确：排在它前面的只能是其他 Gately 实例的专用链跳转。
+// 同一台主机上的多个实例都要求排在第一位时，允许彼此在前，否则每次对账都会互相挪动。
+func (st savedTable) jumpOK() bool {
+	if st.jumps != 1 || st.jumpPos < 0 {
+		return false
+	}
+	for _, r := range st.input[:st.jumpPos] {
+		fs := strings.Fields(r)
+		if len(fs) != 2 || fs[0] != "-j" || !strings.HasPrefix(fs[1], chainPrefix) {
+			return false
+		}
+	}
+	return true
+}
+
 // busy 判断 INPUT 中是否有跳到专用链以外的规则（可能丢弃流量）。
 func (st savedTable) busy(own string) bool {
 	for _, r := range st.input {
@@ -189,7 +207,7 @@ func (b *cmdBackend) chainTargets(ctx context.Context) ([]target, map[string][]e
 			t.Family = "ip6"
 		}
 		// 链中有规则而跳转不在第一位（被群晖防火墙等挤到后面）时挪回第一位
-		if len(st.own) > 0 && (st.jumpPos != 0 || st.jumps != 1) {
+		if len(st.own) > 0 && !st.jumpOK() {
 			if err := b.fixChainJump(ctx, f, own, st.jumps); err != nil {
 				return nil, nil, err
 			}
@@ -242,7 +260,7 @@ func (b *cmdBackend) chainAdd(ctx context.Context, t target, cm string, p Port) 
 			return err
 		}
 	}
-	if st.jumpPos != 0 || st.jumps != 1 {
+	if !st.jumpOK() {
 		if err := b.fixChainJump(ctx, f, own, st.jumps); err != nil {
 			return err
 		}
