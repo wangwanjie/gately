@@ -272,7 +272,7 @@ func (l *listenerRunner) isUnservedCertError(reason string) bool {
 	return !l.current().servesSNI(name)
 }
 
-// servesSNI 判断 TLS 握手中的 SNI 是否属于某个已启用站点明确填写的域名（精确或 *.example.com 通配）。
+// servesSNI 判断 TLS 握手中的 SNI 是否属于某个已启用站点明确填写的域名（精确、*.example.com 或 api-*.example.com 通配）。
 // 默认站点与填写 * 的站点接收任意域名，但不能为任意域名准备证书，因此不算。
 func (t *siteTable) servesSNI(name string) bool {
 	name = strings.TrimSuffix(strings.ToLower(name), ".")
