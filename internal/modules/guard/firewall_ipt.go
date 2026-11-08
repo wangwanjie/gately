@@ -24,6 +24,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -550,6 +551,28 @@ func (b *iptBackend) counters(ctx context.Context) (dropped, hits map[string]uin
 	return dropped, hits, nil
 }
 
+// chainCounters 读取指定链当前的计数（IPv4 与 IPv6 相加）。
+// iptables-restore --noflush 重写一条链时会把它的计数清零，重写前读出来并入基数，界面上的累计计数不倒退。
+func (b *iptBackend) chainCounters(ctx context.Context, chains []string) (dropped, hits map[string]uint64, err error) {
+	saved, err := b.saveAll(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+	dropped, hits = map[string]uint64{}, map[string]uint64{}
+	for _, out := range saved {
+		_, lines := parseSave(out)
+		var keep []iptLine
+		for _, l := range lines {
+			if slices.Contains(chains, l.chain) {
+				keep = append(keep, l)
+			}
+		}
+		d, h := iptCounters(keep)
+		dropped, hits = addCounts(dropped, d), addCounts(hits, h)
+	}
+	return dropped, hits, nil
+}
+
 // errIPTMissing 表示自有链不存在（被其他程序清除，例如重启网络或防火墙时清空了全部规则）
 var errIPTMissing = errors.New("iptables 规则已被清除")
 
@@ -823,13 +846,26 @@ func (f *firewall) flushIPTLocked(ctx context.Context, entries []banlist.Entry, 
 		f.resync = true
 	}
 	if deny := iptDenyText(entries); deny != f.denyText {
-		if err := f.ipt.writeDeny(ctx, iptDenyPrefixes(entries)); err != nil {
+		if err := f.rewriteIPTLocked(ctx, []string{iptDeny}, func() error { return f.ipt.writeDeny(ctx, iptDenyPrefixes(entries)) }); err != nil {
 			f.log.Warnf("更新防火墙失败: %v", err)
 			f.resync = true
 			return
 		}
 		f.denyText = deny
 	}
+}
+
+// rewriteIPTLocked 重写 chains 中的链：先读出这些链的计数，写入成功后并入基数（重写会把它们清零）。
+// 调用方持有 f.mu。
+func (f *firewall) rewriteIPTLocked(ctx context.Context, chains []string, write func() error) error {
+	d, h, cerr := f.ipt.chainCounters(ctx, chains)
+	if err := write(); err != nil {
+		return err
+	}
+	if cerr == nil {
+		f.baseDropped, f.baseHits = addCounts(f.baseDropped, d), addCounts(f.baseHits, h)
+	}
+	return nil
 }
 
 // pollIPTLocked 是 poll 的 iptables 版本：确认规则仍在、维护跳转位置、读取计数与内核直接封禁的地址、刷新端口。

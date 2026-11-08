@@ -689,3 +689,39 @@ func TestIPTDropsUnusableV6(t *testing.T) {
 		t.Fatalf("不应再写入 IPv6: %v", ipt.calls)
 	}
 }
+
+// 网段封禁变化、端口变化只重写部分链，重写会把这些链的计数清零：重写前并入基数，累计计数不倒退
+func TestIPTPartialRewriteKeepsCounts(t *testing.T) {
+	cleanDefault(t)
+	ipt := &fakeIPT{save: map[string]string{"iptables": goodSave(""), "ip6tables": "*mangle\n" + strings.Join(func() []string {
+		var out []string
+		for _, c := range iptChains {
+			out = append(out, ":"+c+" - [0:0]")
+		}
+		return out
+	}(), "\n") + "\n[0:0] -A PREROUTING -j GATELY_PRE\n[0:0] -A INPUT -j GATELY_IN\nCOMMIT\n"}}
+	fw, _ := iptFirewall(t, ipt)
+	s := defaultSettings()
+	s.Firewall = true
+	fw.apply(context.Background(), s)
+	if !fw.snapshot().Active {
+		t.Fatal("应生效")
+	}
+	// GATELY_DENY 计数为 3，新增网段封禁后重写 GATELY_DENY
+	banlist.Default.Ban("192.0.2.0/24", banlist.Options{Duration: time.Hour})
+	fw.change(banlist.Change{})
+	fw.flush(context.Background())
+	if len(ipt.find("-restore", "-A GATELY_DENY -s 192.0.2.0/24 -j DROP")) == 0 {
+		t.Fatalf("应重写 GATELY_DENY: %v", ipt.calls)
+	}
+	// 重写后内核中 GATELY_DENY 的计数归零，其他链不变
+	ipt.mu.Lock()
+	ipt.save["iptables"] = strings.Replace(goodSave(""), "[3:180] -A GATELY_DENY", "[0:0] -A GATELY_DENY", 1)
+	ipt.mu.Unlock()
+	fw.mu.Lock()
+	fw.pollIPTLocked(context.Background())
+	st := fw.snapshot()
+	if st.Dropped["deny"] != 3 || st.Dropped["ban"] != 7 || st.Hits["trap"] != 4 {
+		t.Fatalf("网段封禁的计数应保留且其他计数不重复累加: dropped=%v hits=%v", st.Dropped, st.Hits)
+	}
+}

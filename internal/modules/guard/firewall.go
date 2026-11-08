@@ -839,7 +839,10 @@ func (f *firewall) setLocal(ctx context.Context, local []netip.Prefix) {
 	}
 	if f.ipt != nil {
 		open, trap := f.iptCurrentPortsLocked()
-		if err := f.ipt.restoreChains(ctx, f.effectiveLocked(), f.iptPlanLocked(nil, open, trap), iptInChains); err != nil {
+		err := f.rewriteIPTLocked(ctx, iptInChains, func() error {
+			return f.ipt.restoreChains(ctx, f.effectiveLocked(), f.iptPlanLocked(nil, open, trap), iptInChains)
+		})
+		if err != nil {
 			f.log.Warnf("更新白名单失败: %v", err)
 			f.resync = true
 		}
@@ -1078,7 +1081,10 @@ func (f *firewall) refreshPortsLocked(ctx context.Context) bool {
 	}
 	if f.ipt != nil {
 		ss := f.effectiveLocked()
-		if err := f.ipt.restoreChains(ctx, ss, iptPlan{allow: f.allowLocked(), open: open, trap: trap}, iptInChains); err != nil {
+		err := f.rewriteIPTLocked(ctx, iptInChains, func() error {
+			return f.ipt.restoreChains(ctx, ss, iptPlan{allow: f.allowLocked(), open: open, trap: trap}, iptInChains)
+		})
+		if err != nil {
 			f.log.Warnf("更新端口集合失败: %v", err)
 			return false
 		}
