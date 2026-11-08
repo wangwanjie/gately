@@ -32,6 +32,7 @@ When a rule has "Open firewall port" turned on, Gately allows the channel port i
 - nftables: an allow rule is inserted at the top of every filter chain on the input hook (for example OpenWrt fw4 and firewalld);
 - iptables: an allow rule is inserted at the top of the INPUT chain of the filter table (for example OpenWrt fw3 and ufw);
 - the rules carry a `gately-open:` comment; a firewall reload clears them, and Gately checks every 30 seconds and adds them back;
+- kernels without nf_tables (such as Synology DSM) use iptables (legacy) instead: the rules go into a filter chain of Gately's own (starting with `GTLY_OPEN_`), and the first rule of INPUT jumps to it; when the system firewall puts its own rules in front, the jump is moved back to the top within 30 seconds. The Docker image includes iptables (legacy);
 - Docker deployments need the host network and `cap_add: NET_ADMIN`; the rule card shows the result or the reason it failed;
 - firewalls that do not go through nftables / iptables, such as the fnOS system firewall, still need the port allowed by hand in their settings.
 

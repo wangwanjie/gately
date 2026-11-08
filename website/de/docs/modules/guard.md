@@ -1,6 +1,6 @@
 # Einbruchschutz
 
-Einbruchschutz im Stil von fail2ban: Gately erkennt Brute-Force-Versuche in Protokollen, legt Köder auf ungenutzte Ports, zählt Portscans, nimmt bösartige IPs in eine Sperrliste auf und überträgt diese in die System-Firewall (nftables), die ihren gesamten Verkehr im Kernel verwirft.
+Einbruchschutz im Stil von fail2ban: Gately erkennt Brute-Force-Versuche in Protokollen, legt Köder auf ungenutzte Ports, zählt Portscans, nimmt bösartige IPs in eine Sperrliste auf und überträgt diese in die System-Firewall (nftables / iptables + ipset), die ihren gesamten Verkehr im Kernel verwirft.
 
 ## Funktionen
 

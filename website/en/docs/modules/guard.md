@@ -1,6 +1,6 @@
 # Intrusion Prevention
 
-fail2ban-style intrusion prevention: Gately finds brute-force attempts in logs, sets traps on unused ports, counts port scans, adds malicious IPs to a ban list and syncs the list to the system firewall (nftables), which drops all of their traffic in the kernel.
+fail2ban-style intrusion prevention: Gately finds brute-force attempts in logs, sets traps on unused ports, counts port scans, adds malicious IPs to a ban list and syncs the list to the system firewall (nftables / iptables + ipset), which drops all of their traffic in the kernel.
 
 ## Capabilities
 

@@ -628,6 +628,7 @@ Gately 运行在 OpenWrt 等路由器上，或运行在开启了防火墙的 Lin
 - 开启 HTTP/3 时同时放行同号 UDP 端口；
 - 监听停用、删除、启动失败或关闭开关时撤销，Gately 退出时一并移除；
 - nftables（OpenWrt fw4、firewalld 等）在 input 过滤链最前面插入规则，iptables / ip6tables（OpenWrt fw3、ufw 等）在 INPUT 链最前面插入；规则带 `gately-open:` 注释，防火墙重新加载后 30 秒内补回；
+- 内核没有 nf_tables（如群晖 DSM）时改用 iptables（legacy）：放行规则写在 Gately 专用的 filter 链（`GTLY_OPEN_` 开头）中，INPUT 的第一条规则跳到这条链；系统防火墙把自己的规则插到前面时 30 秒内挪回第一位。Docker 镜像已自带 iptables（legacy）；
 - 只支持 Linux；Docker 部署需要 host 网络与 `cap_add: NET_ADMIN`。监听卡片显示放行结果，放行失败时「防火墙」标签显示为橙色。
 
 [端口转发](/docs/modules/portforward#auto-firewall)与[协议分流](/docs/modules/protoroute#auto-firewall)的规则有同样的开关，[STUN 穿透](/docs/modules/stun#auto-firewall)的规则放行通道端口。

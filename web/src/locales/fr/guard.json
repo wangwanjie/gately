@@ -1,6 +1,6 @@
 {
   "title": "Prévention d'intrusion",
-  "desc": "Protection à la fail2ban : repère les IP malveillantes grâce aux règles de journaux, aux ports pièges et à la détection de scan, les bannit et synchronise les bannissements avec le pare-feu du système (nftables)",
+  "desc": "Protection à la fail2ban : repère les IP malveillantes grâce aux règles de journaux, aux ports pièges et à la détection de scan, les bannit et synchronise les bannissements avec le pare-feu du système (nftables / iptables + ipset)",
   "savedApplied": "Enregistré et appliqué",
   "banTime": "Durée du bannissement",
   "banTimeDefaultValue": "Par défaut ({d})",

@@ -628,6 +628,7 @@ Quand Gately tourne sur un routeur comme OpenWrt ou sur un hôte Linux avec pare
 - Avec HTTP/3 activé, le port UDP de même numéro est aussi autorisé.
 - La règle est retirée quand l’écoute est désactivée, supprimée, ne démarre pas ou que l’interrupteur est coupé, ainsi qu’à l’arrêt de Gately.
 - nftables (OpenWrt fw4, firewalld, etc.) : la règle est insérée en tête des chaînes de filtrage input. iptables / ip6tables (OpenWrt fw3, ufw, etc.) : en tête de la chaîne INPUT. Les règles portent le commentaire `gately-open:` et sont rétablies dans les 30 secondes après un rechargement du pare-feu.
+- Les noyaux sans nf_tables (comme Synology DSM) utilisent iptables (legacy) : les règles sont placées dans une chaîne filter propre à Gately (commençant par `GTLY_OPEN_`), vers laquelle saute la première règle d'INPUT ; si le pare-feu du système place ses règles devant, le saut est remis en tête dans les 30 secondes. L'image Docker inclut iptables (legacy).
 - Linux uniquement. Sous Docker, il faut le réseau host et `cap_add: NET_ADMIN`. La carte de l’écoute affiche le résultat ; en cas d’échec, l’étiquette « Pare-feu » passe en orange.
 
 Les règles de [Redirection de ports](/fr/docs/modules/portforward#auto-firewall) et de [Routage par protocole](/fr/docs/modules/protoroute#auto-firewall) ont le même interrupteur, et les règles [STUN](/fr/docs/modules/stun#auto-firewall) autorisent leur port de canal.

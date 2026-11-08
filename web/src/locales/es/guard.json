@@ -1,6 +1,6 @@
 {
   "title": "Prevención de intrusiones",
-  "desc": "Protección al estilo de fail2ban: detecta IP maliciosas mediante reglas de registros, puertos trampa y detección de escaneos, las bloquea y sincroniza los bloqueos con el cortafuegos del sistema (nftables)",
+  "desc": "Protección al estilo de fail2ban: detecta IP maliciosas mediante reglas de registros, puertos trampa y detección de escaneos, las bloquea y sincroniza los bloqueos con el cortafuegos del sistema (nftables / iptables + ipset)",
   "savedApplied": "Guardado y aplicado",
   "banTime": "Duración del bloqueo",
   "banTimeDefaultValue": "Predeterminada ({d})",

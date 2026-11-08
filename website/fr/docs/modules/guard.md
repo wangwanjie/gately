@@ -1,6 +1,6 @@
 # Prévention d'intrusion
 
-Prévention d'intrusion à la fail2ban : Gately repère les attaques par force brute dans les journaux, pose des pièges sur les ports inutilisés, compte les scans de ports, ajoute les IP malveillantes à une liste de bannissement et la synchronise avec le pare-feu du système (nftables), qui rejette tout leur trafic dans le noyau.
+Prévention d'intrusion à la fail2ban : Gately repère les attaques par force brute dans les journaux, pose des pièges sur les ports inutilisés, compte les scans de ports, ajoute les IP malveillantes à une liste de bannissement et la synchronise avec le pare-feu du système (nftables / iptables + ipset), qui rejette tout leur trafic dans le noyau.
 
 ## Fonctionnalités
 

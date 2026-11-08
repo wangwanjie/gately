@@ -1,6 +1,6 @@
 {
   "title": "入侵防護",
-  "desc": "類似 fail2ban：依日誌規則、誘餌連接埠與連接埠掃描偵測找出惡意 IP，自動封鎖並同步到系統防火牆（nftables）",
+  "desc": "類似 fail2ban：依日誌規則、誘餌連接埠與連接埠掃描偵測找出惡意 IP，自動封鎖並同步到系統防火牆（nftables / iptables + ipset）",
   "savedApplied": "已儲存並生效",
   "banTime": "封鎖時長",
   "banTimeDefaultValue": "預設（{d}）",

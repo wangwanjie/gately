@@ -628,6 +628,7 @@ OpenWrt 같은 라우터나 방화벽을 켠 Linux 호스트에서 Gately를 실
 - HTTP/3를 켜면 같은 번호의 UDP 포트도 허용합니다.
 - 리스너를 끄거나 삭제하거나 시작에 실패하거나 스위치를 끄면 취소되며, Gately가 종료될 때도 제거됩니다.
 - nftables(OpenWrt fw4, firewalld 등)는 input 필터 체인 맨 앞에, iptables / ip6tables(OpenWrt fw3, ufw 등)는 INPUT 체인 맨 앞에 규칙을 넣습니다. 규칙에는 `gately-open:` 주석이 붙고, 방화벽을 다시 불러온 뒤 30초 안에 복구됩니다.
+- nf_tables가 없는 커널(Synology DSM 등)에서는 iptables(legacy)를 사용합니다. 허용 규칙은 Gately 전용 filter 체인(`GTLY_OPEN_`으로 시작)에 쓰이고, INPUT의 첫 규칙이 이 체인으로 점프합니다. 시스템 방화벽이 자신의 규칙을 앞에 넣으면 30초 안에 점프 규칙을 맨 앞으로 되돌립니다. Docker 이미지에는 iptables(legacy)가 포함되어 있습니다.
 - Linux 전용입니다. Docker 배포에는 host 네트워크와 `cap_add: NET_ADMIN`이 필요합니다. 리스너 카드에 결과가 표시되고, 허용에 실패하면 「방화벽」 태그가 주황색으로 바뀝니다.
 
 [포트 포워딩](/ko/docs/modules/portforward#auto-firewall)과 [프로토콜 라우팅](/ko/docs/modules/protoroute#auto-firewall) 규칙에도 같은 스위치가 있고, [STUN](/ko/docs/modules/stun#auto-firewall) 규칙은 채널 포트를 허용합니다.

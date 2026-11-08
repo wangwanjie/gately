@@ -628,6 +628,7 @@ OpenWrt などのルーター、またはファイアウォールを有効にし
 - HTTP/3 が有効なら同じ番号の UDP ポートも許可します。
 - リスナーの無効化・削除・起動失敗・スイッチのオフで取り消し、Gately の終了時にも削除します。
 - nftables（OpenWrt fw4、firewalld など）は input フィルターチェーンの先頭に、iptables / ip6tables（OpenWrt fw3、ufw など）は INPUT チェーンの先頭にルールを挿入します。ルールには `gately-open:` コメントが付き、ファイアウォールの再読み込み後 30 秒以内に復元されます。
+- nf_tables のないカーネル（Synology DSM など）では iptables（legacy）を使います。許可ルールは Gately 専用の filter チェーン（`GTLY_OPEN_` で始まる）に書かれ、INPUT の先頭ルールがこのチェーンへジャンプします。システムのファイアウォールが自身のルールを前に入れた場合は 30 秒以内に先頭へ戻します。Docker イメージには iptables（legacy）が含まれます。
 - Linux 専用です。Docker では host ネットワークと `cap_add: NET_ADMIN` が必要です。リスナーのカードに結果が表示され、失敗すると「ファイアウォール」タグがオレンジになります。
 
 [ポート転送](/ja/docs/modules/portforward#auto-firewall)と[プロトコル振り分け](/ja/docs/modules/protoroute#auto-firewall)のルールにも同じスイッチがあり、[STUN](/ja/docs/modules/stun#auto-firewall) のルールはチャネルポートを許可します。
