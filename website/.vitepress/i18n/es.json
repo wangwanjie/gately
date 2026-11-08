@@ -83,8 +83,8 @@
   "home": {
     "pill": "Gratis y de código abierto · Apache-2.0",
     "announce": {
-      "text": "v0.6.5.1: inicio automático, listas paginadas, registros DDNS en bloque, registro de fallos →",
-      "link": "/es/news/v0.6.5.1"
+      "text": "v0.6.5.2: cortafuegos en Synology DSM, comodines en la primera etiqueta, redirección 401 →",
+      "link": "/es/news/v0.6.5.2"
     },
     "titleLine1": "La pasarela de red todo en uno",
     "titleLine2": "Código abierto y lista para usar",

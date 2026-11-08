@@ -83,8 +83,8 @@
   "home": {
     "pill": "무료 오픈소스 · Apache-2.0",
     "announce": {
-      "text": "v0.6.5.1 출시: 자동 시작 서비스, 긴 목록 페이지 표시, DDNS 레코드 일괄 추가, 크래시 기록 →",
-      "link": "/ko/news/v0.6.5.1"
+      "text": "v0.6.5.2 출시: Synology DSM 방화벽 지원, 첫 레이블 와일드카드, 401 리디렉션 →",
+      "link": "/ko/news/v0.6.5.2"
     },
     "titleLine1": "올인원 네트워크 게이트웨이",
     "titleLine2": "오픈소스, 설치 즉시 사용",
