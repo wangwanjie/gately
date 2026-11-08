@@ -83,8 +83,8 @@
   "home": {
     "pill": "Kostenlos und Open Source · Apache-2.0",
     "announce": {
-      "text": "v0.6.5.1: Autostart-Dienst, seitenweise Listen, DDNS-Einträge im Stapel, Absturzprotokoll →",
-      "link": "/de/news/v0.6.5.1"
+      "text": "v0.6.5.2: Firewall auf Synology DSM, Platzhalter im ersten Label, 401-Umleitung →",
+      "link": "/de/news/v0.6.5.2"
     },
     "titleLine1": "Das All-in-one-Netzwerk-Gateway",
     "titleLine2": "Open Source, sofort einsatzbereit",

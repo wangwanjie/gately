@@ -7,6 +7,10 @@ description: Gately 各版本的发布公告与更新说明。
 
 重要版本的发布公告如下，每个版本的完整变更与下载文件见 [GitHub Releases](https://github.com/wangwanjie/gately/releases)。
 
+## [v0.6.5.2](/news/v0.6.5.2)
+
+2026 年 11 月 8 日 · 入侵防护与自动放行防火墙支持群晖 DSM 等内核没有 nf_tables 的系统；Web 站点首段通配；转发认证跟随 401 跳转；修复 HTTP/2 请求导致进程退出。
+
 ## [v0.6.5.1](/news/v0.6.5.1)
 
 2026 年 11 月 7 日 · 开机自启服务 gately service；长列表分页；DDNS 批量添加解析记录；崩溃记录 crash.log；macOS 二进制签名与公证。

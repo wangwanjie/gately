@@ -83,8 +83,8 @@
   "home": {
     "pill": "開源免費 · Apache-2.0",
     "announce": {
-      "text": "v0.6.5.1 發佈：開機自啟服務、長列表分頁、DDNS 批次新增記錄、當機記錄 →",
-      "link": "/zh-TW/news/v0.6.5.1"
+      "text": "v0.6.5.2 發佈：群暉 DSM 防火牆支援、站點首段萬用字元、跟隨 401 跳轉 →",
+      "link": "/zh-TW/news/v0.6.5.2"
     },
     "titleLine1": "一站式網路閘道",
     "titleLine2": "開源透明，開箱即用",

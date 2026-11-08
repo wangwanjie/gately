@@ -7,6 +7,10 @@ description: Gately の各バージョンのリリースのお知らせと更新
 
 主要なバージョンのリリースのお知らせを以下に掲載します。各バージョンの変更点の全体とダウンロードファイルは [GitHub Releases](https://github.com/wangwanjie/gately/releases) を参照してください。
 
+## [v0.6.5.2](/ja/news/v0.6.5.2)
+
+2026年11月8日 · Synology DSM など nf_tables のないカーネルで侵入防御とファイアウォールの自動許可に対応、サイトの先頭ラベル内ワイルドカード、フォワード認証の 401 リダイレクト、HTTP/2 リクエストでの終了を修正。
+
 ## [v0.6.5.1](/ja/news/v0.6.5.1)
 
 2026年11月7日 · gately service による自動起動、長いリストのページ表示、DDNS レコードの一括追加、crash.log、macOS バイナリの署名と公証。

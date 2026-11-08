@@ -7,6 +7,10 @@ description: Release announcements and notes for each Gately version.
 
 Announcements for major releases are listed below. See [GitHub Releases](https://github.com/wangwanjie/gately/releases) for the full changes and downloads of every version.
 
+## [v0.6.5.2](/en/news/v0.6.5.2)
+
+November 8, 2026 · Intrusion prevention and automatic firewall opening on Synology DSM and other kernels without nf_tables; first-label wildcards for sites; forward auth follows 401 redirects; fixes an exit on HTTP/2 requests.
+
 ## [v0.6.5.1](/en/news/v0.6.5.1)
 
 November 7, 2026 · Start at boot with gately service; paged long lists; bulk adding DDNS records; crash.log; signed and notarized macOS binaries.
