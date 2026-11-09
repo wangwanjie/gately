@@ -398,6 +398,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/webservice/users` | `webservice:read` | 共有ユーザーと OIDC ID プロバイダーを取得 |
 | PUT | `/api/webservice/users` | `webservice:write` | 共有ユーザーと OIDC ID プロバイダーを保存し、サイトを一括設定 |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | サイトの一括操作：有効化・無効化、削除、ドメインの追加・削除・置換、一部オプションの変更、別のリスナーへの移動。すべてのサイトが検証を通過した場合のみ保存し、1 件でも失敗すると何も変更しません |
+| GET | `/api/webservice/cache` | `webservice:read` | サイトのレスポンスキャッシュのエントリ数と使用量（?listener=&site=） |
+| POST | `/api/webservice/cache/purge` | `webservice:write` | サイトのレスポンスキャッシュを消去します。path が空なら全件、指定時はパスが一致するエントリのみ（キャッシュルールのパスと同じ書式、* 対応） |
 | POST | `/api/webservice/import/nginx` | `webservice:write` | nginx 設定をインポート |
 | GET | `/api/webservice/settings` | `webservice:read` | Web サービスのグローバル設定を読み取り |
 | GET | `/api/webservice/settings/secrets/totp` | `webservice:write` | 共有ユーザーの TOTP シークレットを平文で表示（ユーザー名で索引） |
@@ -2164,7 +2166,26 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `enable` | boolean |
 | `maxMb` | integer |
+| `rules` | 配列 of `webservice.CacheRule` |
 | `ttl` | integer |
+
+### webservice.CacheRule
+
+| フィールド | 型 |
+| --- | --- |
+| `noCache` | boolean |
+| `override` | boolean |
+| `path` | string |
+| `ttl` | integer |
+
+### webservice.CacheStatsView
+
+| フィールド | 型 |
+| --- | --- |
+| `bytes` | integer |
+| `enabled` | boolean |
+| `entries` | integer |
+| `maxBytes` | integer |
 
 ### webservice.ClientTimeouts
 
@@ -2767,6 +2788,24 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `key` | string |
 | `seconds` | integer |
+
+### webservice.cachePurgeRequest
+
+| フィールド | 型 |
+| --- | --- |
+| `listener` | string |
+| `path` | string |
+| `site` | string |
+
+### webservice.cachePurgeResult
+
+| フィールド | 型 |
+| --- | --- |
+| `bytes` | integer |
+| `enabled` | boolean |
+| `entries` | integer |
+| `maxBytes` | integer |
+| `removed` | integer |
 
 ### webservice.closeConnRequest
 

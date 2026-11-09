@@ -104,6 +104,71 @@ type CacheConfig struct {
 	TTL int `json:"ttl"`
 	// MaxMB 为缓存总容量，默认 64
 	MaxMB int `json:"maxMb"`
+	// Rules 为按路径的缓存规则，更具体（去掉 * 后字符更多）的规则优先，未命中任何规则的路径使用上面的站点默认设置
+	Rules []CacheRule `json:"rules"`
+}
+
+// CacheRule 是某个路径的缓存规则。
+type CacheRule struct {
+	// Path 为匹配的路径：不含 * 时按路径段边界做前缀匹配（/api 匹配 /api 与 /api/x，不匹配 /apix）；
+	// 含 * 时整条路径按通配匹配，* 匹配任意字符（包括 /），如 /api/products/* 与 /static/*.js
+	Path string `json:"path"`
+	// NoCache 为 true 时该路径不读也不写缓存
+	NoCache bool `json:"noCache"`
+	// TTL 为后端未给出缓存指令时的缓存秒数，0 表示沿用站点默认
+	TTL int `json:"ttl"`
+	// Override 为 true 时忽略后端的 Cache-Control，固定按缓存时间缓存 200 响应；
+	// 带 Set-Cookie 或 Vary: * 的响应、带 Cookie 或 Authorization 的请求仍然不缓存
+	Override bool `json:"override"`
+}
+
+// 缓存规则的上限
+const (
+	maxCacheTTL   = 86400 * 30
+	maxCacheRules = 200
+)
+
+// validateCachePath 校验缓存规则或清空缓存时使用的路径。
+func validateCachePath(p string) error {
+	if !strings.HasPrefix(p, "/") || strings.ContainsAny(p, " \t?#") {
+		return fmt.Errorf("缓存路径 %q 需以 / 开头且不含空格、? 或 #", p)
+	}
+	// 请求路径会先规范化再匹配，含 . / .. 段或连续斜杠的写法永远匹配不到，直接提示
+	if strings.Contains(p, "//") || strings.Contains(p+"/", "/./") || strings.Contains(p+"/", "/../") {
+		return fmt.Errorf("缓存路径 %q 不能含 .、.. 路径段或连续的 /", p)
+	}
+	return nil
+}
+
+// validateCacheRules 校验并规范化缓存规则。
+func (c *CacheConfig) validateCacheRules() error {
+	if len(c.Rules) > maxCacheRules {
+		return fmt.Errorf("缓存规则不能超过 %d 条", maxCacheRules)
+	}
+	seen := map[string]bool{}
+	for i := range c.Rules {
+		r := &c.Rules[i]
+		r.Path = strings.TrimSpace(r.Path)
+		if err := validateCachePath(r.Path); err != nil {
+			return err
+		}
+		if seen[r.Path] {
+			return fmt.Errorf("缓存路径 %s 重复", r.Path)
+		}
+		seen[r.Path] = true
+		if r.NoCache {
+			// 不缓存的路径没有缓存时间，清掉无用字段，避免界面与配置文件出现误导性的值
+			r.TTL, r.Override = 0, false
+			continue
+		}
+		if r.TTL < 0 || r.TTL > maxCacheTTL {
+			return fmt.Errorf("路径 %s 的缓存时间需在 0 到 30 天之间", r.Path)
+		}
+		if r.Override && r.TTL == 0 && c.TTL == 0 {
+			return fmt.Errorf("路径 %s 忽略后端缓存指令时需要设置缓存时间", r.Path)
+		}
+	}
+	return nil
 }
 
 // Rewrite 是路径重写或重定向规则，按顺序匹配，命中第一条即停止。
@@ -209,7 +274,7 @@ func (s *Site) validateProxyExtras() error {
 	}
 	c := &s.Cache
 	if c.Enable {
-		if c.TTL < 0 || c.TTL > 86400*30 {
+		if c.TTL < 0 || c.TTL > maxCacheTTL {
 			return errors.New("缓存时间需在 0 到 30 天之间")
 		}
 		if c.MaxMB == 0 {
@@ -217,6 +282,9 @@ func (s *Site) validateProxyExtras() error {
 		}
 		if c.MaxMB < 1 || c.MaxMB > 4096 {
 			return errors.New("缓存容量需在 1 到 4096 MB 之间")
+		}
+		if err := c.validateCacheRules(); err != nil {
+			return err
 		}
 	}
 	for i := range s.Rewrites {

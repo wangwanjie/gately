@@ -3006,7 +3006,47 @@
           "maxMb": {
             "type": "integer"
           },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.CacheRule"
+            },
+            "type": "array"
+          },
           "ttl": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.CacheRule": {
+        "properties": {
+          "noCache": {
+            "type": "boolean"
+          },
+          "override": {
+            "type": "boolean"
+          },
+          "path": {
+            "type": "string"
+          },
+          "ttl": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.CacheStatsView": {
+        "properties": {
+          "bytes": {
+            "type": "integer"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "entries": {
+            "type": "integer"
+          },
+          "maxBytes": {
             "type": "integer"
           }
         },
@@ -4509,6 +4549,40 @@
             "type": "string"
           },
           "seconds": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.cachePurgeRequest": {
+        "properties": {
+          "listener": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "site": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.cachePurgeResult": {
+        "properties": {
+          "bytes": {
+            "type": "integer"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "entries": {
+            "type": "integer"
+          },
+          "maxBytes": {
+            "type": "integer"
+          },
+          "removed": {
             "type": "integer"
           }
         },
@@ -44039,6 +44113,131 @@
           }
         ],
         "summary": "Заблокировать IP вручную (seconds: 0 — 24 часа, -1 — навсегда)",
+        "tags": [
+          "Веб-служба"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/cache": {
+      "get": {
+        "description": "Требуемое разрешение: `webservice:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.CacheStatsView"
+                }
+              }
+            },
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Число записей и объём кэша ответов сайта (?listener=\u0026site=)",
+        "tags": [
+          "Веб-служба"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/cache/purge": {
+      "post": {
+        "description": "Требуемое разрешение: `webservice:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/webservice.cachePurgeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.cachePurgeResult"
+                }
+              }
+            },
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Очищает кэш ответов сайта: оставьте path пустым, чтобы очистить всё, иначе удаляются только записи с совпадающим путём (синтаксис как у путей правил кэша, поддерживается *)",
         "tags": [
           "Веб-служба"
         ],

@@ -398,6 +398,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/webservice/users` | `webservice:read` | 读取共享用户与 OIDC 身份提供方 |
 | PUT | `/api/webservice/users` | `webservice:write` | 保存共享用户与 OIDC 身份提供方，批量设置站点 |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | 批量操作站点：启停、删除、增删或替换域名、修改部分选项、移到其他监听器；全部校验通过才保存，任一站点失败都不修改 |
+| GET | `/api/webservice/cache` | `webservice:read` | 站点响应缓存的条目数与占用（?listener=&site=） |
+| POST | `/api/webservice/cache/purge` | `webservice:write` | 清空站点的响应缓存：path 留空清空全部，否则只清空路径命中的条目（写法同缓存规则路径，支持 *） |
 | POST | `/api/webservice/import/nginx` | `webservice:write` | 导入 nginx 配置 |
 | GET | `/api/webservice/settings` | `webservice:read` | 读取 Web 服务全局设置 |
 | GET | `/api/webservice/settings/secrets/totp` | `webservice:write` | 查看共享用户的 TOTP 密钥明文（按用户名索引） |
@@ -2164,7 +2166,26 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `enable` | boolean |
 | `maxMb` | integer |
+| `rules` | 数组 of `webservice.CacheRule` |
 | `ttl` | integer |
+
+### webservice.CacheRule
+
+| 字段 | 类型 |
+| --- | --- |
+| `noCache` | boolean |
+| `override` | boolean |
+| `path` | string |
+| `ttl` | integer |
+
+### webservice.CacheStatsView
+
+| 字段 | 类型 |
+| --- | --- |
+| `bytes` | integer |
+| `enabled` | boolean |
+| `entries` | integer |
+| `maxBytes` | integer |
 
 ### webservice.ClientTimeouts
 
@@ -2767,6 +2788,24 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `key` | string |
 | `seconds` | integer |
+
+### webservice.cachePurgeRequest
+
+| 字段 | 类型 |
+| --- | --- |
+| `listener` | string |
+| `path` | string |
+| `site` | string |
+
+### webservice.cachePurgeResult
+
+| 字段 | 类型 |
+| --- | --- |
+| `bytes` | integer |
+| `enabled` | boolean |
+| `entries` | integer |
+| `maxBytes` | integer |
+| `removed` | integer |
 
 ### webservice.closeConnRequest
 

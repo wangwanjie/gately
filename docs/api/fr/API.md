@@ -398,6 +398,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | GET | `/api/webservice/users` | `webservice:read` | Lire les utilisateurs partagés et le fournisseur d'identité OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Enregistrer utilisateurs partagés et fournisseur d'identité OIDC, configurer les sites en masse |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | Opérations groupées sur les sites : activer, désactiver, supprimer, ajouter, retirer ou remplacer des domaines, modifier certaines options ou déplacer vers un autre écouteur ; l'enregistrement n'a lieu que si tous les sites passent la validation, rien n'est modifié si l'un d'eux échoue |
+| GET | `/api/webservice/cache` | `webservice:read` | Nombre d'entrées et taille du cache de réponses du site (?listener=&site=) |
+| POST | `/api/webservice/cache/purge` | `webservice:write` | Vide le cache de réponses du site : laissez path vide pour tout vider, sinon seules les entrées dont le chemin correspond sont supprimées (même syntaxe que les chemins des règles de cache, * pris en charge) |
 | POST | `/api/webservice/import/nginx` | `webservice:write` | Importer une configuration nginx |
 | GET | `/api/webservice/settings` | `webservice:read` | Lire les paramètres globaux du service Web |
 | GET | `/api/webservice/settings/secrets/totp` | `webservice:write` | Afficher en clair les secrets TOTP des utilisateurs partagés (indexés par nom d'utilisateur) |
@@ -2164,7 +2166,26 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | --- | --- |
 | `enable` | boolean |
 | `maxMb` | integer |
+| `rules` | Tableau de `webservice.CacheRule` |
 | `ttl` | integer |
+
+### webservice.CacheRule
+
+| Champ | Type |
+| --- | --- |
+| `noCache` | boolean |
+| `override` | boolean |
+| `path` | string |
+| `ttl` | integer |
+
+### webservice.CacheStatsView
+
+| Champ | Type |
+| --- | --- |
+| `bytes` | integer |
+| `enabled` | boolean |
+| `entries` | integer |
+| `maxBytes` | integer |
 
 ### webservice.ClientTimeouts
 
@@ -2767,6 +2788,24 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | --- | --- |
 | `key` | string |
 | `seconds` | integer |
+
+### webservice.cachePurgeRequest
+
+| Champ | Type |
+| --- | --- |
+| `listener` | string |
+| `path` | string |
+| `site` | string |
+
+### webservice.cachePurgeResult
+
+| Champ | Type |
+| --- | --- |
+| `bytes` | integer |
+| `enabled` | boolean |
+| `entries` | integer |
+| `maxBytes` | integer |
+| `removed` | integer |
 
 ### webservice.closeConnRequest
 

@@ -3006,7 +3006,47 @@
           "maxMb": {
             "type": "integer"
           },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.CacheRule"
+            },
+            "type": "array"
+          },
           "ttl": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.CacheRule": {
+        "properties": {
+          "noCache": {
+            "type": "boolean"
+          },
+          "override": {
+            "type": "boolean"
+          },
+          "path": {
+            "type": "string"
+          },
+          "ttl": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.CacheStatsView": {
+        "properties": {
+          "bytes": {
+            "type": "integer"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "entries": {
+            "type": "integer"
+          },
+          "maxBytes": {
             "type": "integer"
           }
         },
@@ -4509,6 +4549,40 @@
             "type": "string"
           },
           "seconds": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.cachePurgeRequest": {
+        "properties": {
+          "listener": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "site": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.cachePurgeResult": {
+        "properties": {
+          "bytes": {
+            "type": "integer"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "entries": {
+            "type": "integer"
+          },
+          "maxBytes": {
+            "type": "integer"
+          },
+          "removed": {
             "type": "integer"
           }
         },
@@ -44039,6 +44113,131 @@
           }
         ],
         "summary": "Bloquear manualmente una IP (seconds: 0 significa 24 horas, -1 significa permanente)",
+        "tags": [
+          "Servicio web"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/cache": {
+      "get": {
+        "description": "Permiso necesario: `webservice:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.CacheStatsView"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Número de entradas y tamaño de la caché de respuestas del sitio (?listener=\u0026site=)",
+        "tags": [
+          "Servicio web"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/cache/purge": {
+      "post": {
+        "description": "Permiso necesario: `webservice:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/webservice.cachePurgeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.cachePurgeResult"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Vacía la caché de respuestas del sitio: deja path vacío para vaciarla entera; si no, solo las entradas cuya ruta coincida (misma sintaxis que las rutas de las reglas de caché, admite *)",
         "tags": [
           "Servicio web"
         ],

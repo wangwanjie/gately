@@ -77,6 +77,41 @@
           <el-input-number v-model="site.cache.maxMb" :min="1" :max="4096" />
           <span class="inline-help">{{ t('siteTraffic.memoryMb') }}</span>
         </el-form-item>
+        <!-- 按路径的缓存规则：更具体的路径优先，未命中时使用上面的默认设置 -->
+        <el-form-item :label="t('siteTraffic.cacheRules')">
+          <div class="rows">
+            <div v-for="(r, i) in site.cache.rules" :key="i" class="cache-rule" data-test="cache-rule">
+              <el-input v-model="r.path" :placeholder="t('siteTraffic.cachePathPlaceholder')" class="mono cache-path" />
+              <!-- 缓存方式合并为一个下拉：遵循后端 / 强制缓存（忽略后端 Cache-Control）/ 不缓存；
+                   不缓存时桌面端保留时长占位，使各行的列对齐，移动端直接隐藏 -->
+              <span class="cache-opts">
+                <el-select :model-value="ruleMode(r)" class="w-160" data-test="cache-rule-mode" @update:model-value="(m: CacheRuleMode) => setRuleMode(r, m)">
+                  <el-option :label="t('siteTraffic.cacheModeCache')" value="cache" />
+                  <el-option :label="t('siteTraffic.cacheModeForce')" value="force" />
+                  <el-option :label="t('siteTraffic.cacheModeNoCache')" value="none" />
+                </el-select>
+                <span class="cache-ttl" :class="{ 'is-placeholder': r.noCache }" :aria-hidden="r.noCache">
+                  <el-input-number v-model="r.ttl" :min="0" :max="2592000" :step="60" :disabled="r.noCache" controls-position="right" class="w-120" />
+                  <span class="timeout-unit">{{ t('siteTraffic.seconds') }}</span>
+                </span>
+              </span>
+              <span class="cache-actions">
+                <el-tooltip v-if="canPurge" :content="t('siteTraffic.cachePurgePath')" placement="top">
+                  <el-button text :icon="Eraser" :loading="purging === r.path" :disabled="!r.path.trim()" :aria-label="t('siteTraffic.cachePurgePath')" data-test="cache-purge-rule" @click="purge(r.path.trim())" />
+                </el-tooltip>
+                <el-button text type="danger" :icon="Trash2" :aria-label="t('siteTraffic.deleteRule')" @click="site.cache.rules.splice(i, 1)" />
+              </span>
+            </div>
+            <el-button text :icon="Plus" data-test="cache-rule-add" @click="site.cache.rules.push({ path: '', noCache: false, ttl: 0, override: false })">{{ t('siteTraffic.addRule') }}</el-button>
+            <div class="form-help">{{ t('siteTraffic.cacheRulesHelp') }}</div>
+          </div>
+        </el-form-item>
+        <!-- 已保存且运行中的站点显示当前缓存占用，可清空全部 -->
+        <el-form-item v-if="cacheStats?.enabled" :label="t('siteTraffic.cacheUsage')">
+          <span class="cache-usage" data-test="cache-usage">{{ t('siteTraffic.cacheUsageValue', { entries: cacheStats.entries, size: formatBytes(cacheStats.bytes), max: formatBytes(cacheStats.maxBytes) }) }}</span>
+          <el-button v-if="canPurge" size="small" :icon="Eraser" :loading="purging === ''" class="gap" data-test="cache-purge-all" @click="purge('')">{{ t('siteTraffic.cachePurgeAll') }}</el-button>
+          <el-button size="small" text :icon="RefreshCw" :aria-label="t('siteTraffic.cacheRefresh')" @click="loadCacheStats" />
+        </el-form-item>
       </template>
     </template>
 
@@ -141,8 +176,12 @@
 </template>
 
 <script setup lang="ts">
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Plus, Trash2 } from 'lucide-vue-next'
+import { ElMessage } from 'element-plus'
+import { Eraser, Plus, RefreshCw, Trash2 } from 'lucide-vue-next'
+import { api, formatBytes } from '../api'
+import { isReadonly } from '../nav'
 
 export interface Rewrite {
   pattern: string
@@ -172,12 +211,98 @@ export interface TrafficFields {
   clientTimeouts: ClientTimeouts
   compress: boolean
   rateLimit: { enable: boolean; rate: number; burst: number; maxConns: number }
-  cache: { enable: boolean; ttl: number; maxMb: number }
+  cache: CacheSettings
   rewrites: Rewrite[]
+}
+
+// CacheRule 是某个路径的缓存规则：noCache 为不缓存；ttl 为 0 时沿用站点默认；override 忽略后端的 Cache-Control
+export interface CacheRule {
+  path: string
+  noCache: boolean
+  ttl: number
+  override: boolean
+}
+
+export interface CacheSettings {
+  enable: boolean
+  ttl: number
+  maxMb: number
+  rules: CacheRule[]
+}
+
+// CacheRuleMode 是界面上的缓存方式：cache 遵循后端缓存头，force 忽略后端缓存头按时长缓存，none 不缓存
+type CacheRuleMode = 'cache' | 'force' | 'none'
+
+function ruleMode(r: CacheRule): CacheRuleMode {
+  if (r.noCache) {
+    return 'none'
+  }
+  return r.override ? 'force' : 'cache'
+}
+
+function setRuleMode(r: CacheRule, m: CacheRuleMode) {
+  r.noCache = m === 'none'
+  r.override = m === 'force'
+}
+
+// CacheTarget 指向已保存的站点（所属监听与站点标识），新建或复制站点时为 null
+export interface CacheTarget {
+  listener: string
+  site: string
+}
+
+interface CacheStats {
+  enabled: boolean
+  entries: number
+  bytes: number
+  maxBytes: number
 }
 
 const { t } = useI18n()
 const site = defineModel<TrafficFields>('site', { required: true })
+const props = defineProps<{ cacheTarget?: CacheTarget | null }>()
+
+// cacheStats 为站点运行中的缓存状态；站点未保存、未运行或运行中的配置未启用缓存时不显示占用与清空按钮
+const cacheStats = ref<CacheStats | null>(null)
+// purging 为正在清空的路径，'' 表示清空全部，null 表示空闲
+const purging = ref<string | null>(null)
+// 清空缓存属于写操作，只读账号不显示按钮
+const canPurge = computed(() => !!cacheStats.value?.enabled && !isReadonly.value)
+
+async function loadCacheStats() {
+  const target = props.cacheTarget
+  if (!target) {
+    cacheStats.value = null
+    return
+  }
+  try {
+    const q = new URLSearchParams({ listener: target.listener, site: target.site })
+    cacheStats.value = await api.get<CacheStats>(`/api/webservice/cache?${q}`)
+  } catch {
+    // 监听未运行等情况下拿不到状态，只隐藏占用信息，不打扰编辑
+    cacheStats.value = null
+  }
+}
+
+// purge 清空站点缓存：path 为空时清空全部，否则清空路径命中的条目（按已保存的规则写法匹配）
+async function purge(path: string) {
+  const target = props.cacheTarget
+  if (!target || purging.value !== null) {
+    return
+  }
+  purging.value = path
+  try {
+    const r = await api.post<CacheStats & { removed: number }>('/api/webservice/cache/purge', { listener: target.listener, site: target.site, path })
+    cacheStats.value = { enabled: r.enabled, entries: r.entries, bytes: r.bytes, maxBytes: r.maxBytes }
+    ElMessage.success(t('siteTraffic.cachePurged', { n: r.removed }))
+  } catch (e) {
+    ElMessage.error((e as Error).message)
+  } finally {
+    purging.value = null
+  }
+}
+
+watch(() => [props.cacheTarget?.listener, props.cacheTarget?.site], loadCacheStats, { immediate: true })
 </script>
 
 <style scoped>
@@ -202,6 +327,70 @@ const site = defineModel<TrafficFields>('site', { required: true })
 }
 .w-110 {
   width: 110px;
+}
+.w-120 {
+  width: 120px;
+}
+.w-160 {
+  width: 160px;
+}
+/* 缓存规则一行：路径占满剩余宽度，窄屏时路径独占一行，其余控件换到下一行 */
+.cache-rule {
+  display: flex;
+  gap: 6px 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.cache-path {
+  flex: 1;
+  min-width: 140px;
+}
+.cache-opts {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.cache-ttl {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.cache-ttl.is-placeholder {
+  visibility: hidden;
+}
+.cache-actions {
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+}
+.cache-usage {
+  font-size: 13px;
+  color: var(--el-text-color-regular);
+}
+/* 窄屏：第一行为路径与操作按钮，第二行为缓存方式与时长 */
+@media (max-width: 767.98px) {
+  .cache-rule {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: 8px;
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 6px;
+  }
+  .cache-path {
+    min-width: 0;
+  }
+  .cache-opts {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .cache-actions {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .cache-ttl.is-placeholder {
+    display: none;
+  }
 }
 .w-80 {
   width: 80px;

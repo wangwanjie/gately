@@ -384,6 +384,7 @@ func (m *Module) Routes(r module.Router) {
 	m.registerErrorPages(r)
 	m.registerUsers(r)
 	m.registerBatch(r)
+	m.registerCache(r)
 	r.HandleFunc("POST /import/nginx", m.handleImportNginx)
 	r.HandleFunc("GET /settings", func(w http.ResponseWriter, req *http.Request) {
 		m.mu.Lock()
