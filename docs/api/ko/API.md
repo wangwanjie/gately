@@ -398,6 +398,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/webservice/users` | `webservice:read` | 공유 사용자와 OIDC ID 공급자 조회 |
 | PUT | `/api/webservice/users` | `webservice:write` | 공유 사용자와 OIDC ID 공급자 저장, 사이트 일괄 설정 |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | 사이트 일괄 작업: 활성화·비활성화, 삭제, 도메인 추가·삭제·교체, 일부 옵션 변경, 다른 리스너로 이동. 모든 사이트가 검증을 통과해야 저장되며 하나라도 실패하면 아무것도 변경하지 않습니다 |
+| GET | `/api/webservice/cache` | `webservice:read` | 사이트 응답 캐시의 항목 수와 사용량(?listener=&site=) |
+| POST | `/api/webservice/cache/purge` | `webservice:write` | 사이트의 응답 캐시를 비웁니다. path를 비우면 전체, 지정하면 경로가 일치하는 항목만 비웁니다(캐시 규칙 경로와 같은 형식, * 지원) |
 | POST | `/api/webservice/import/nginx` | `webservice:write` | nginx 설정 가져오기 |
 | GET | `/api/webservice/settings` | `webservice:read` | Web 서비스 전역 설정 읽기 |
 | GET | `/api/webservice/settings/secrets/totp` | `webservice:write` | 공유 사용자의 TOTP 비밀 키 평문 보기(사용자 이름으로 색인) |
@@ -2164,7 +2166,26 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `enable` | boolean |
 | `maxMb` | integer |
+| `rules` | Array of `webservice.CacheRule` |
 | `ttl` | integer |
+
+### webservice.CacheRule
+
+| 필드 | 타입 |
+| --- | --- |
+| `noCache` | boolean |
+| `override` | boolean |
+| `path` | string |
+| `ttl` | integer |
+
+### webservice.CacheStatsView
+
+| 필드 | 타입 |
+| --- | --- |
+| `bytes` | integer |
+| `enabled` | boolean |
+| `entries` | integer |
+| `maxBytes` | integer |
 
 ### webservice.ClientTimeouts
 
@@ -2767,6 +2788,24 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `key` | string |
 | `seconds` | integer |
+
+### webservice.cachePurgeRequest
+
+| 필드 | 타입 |
+| --- | --- |
+| `listener` | string |
+| `path` | string |
+| `site` | string |
+
+### webservice.cachePurgeResult
+
+| 필드 | 타입 |
+| --- | --- |
+| `bytes` | integer |
+| `enabled` | boolean |
+| `entries` | integer |
+| `maxBytes` | integer |
+| `removed` | integer |
 
 ### webservice.closeConnRequest
 

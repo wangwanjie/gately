@@ -398,6 +398,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/webservice/users` | `webservice:read` | Получить общих пользователей и поставщика удостоверений OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Сохранить общих пользователей и поставщика удостоверений OIDC, массово настроить сайты |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | Пакетные операции с сайтами: включение, отключение, удаление, добавление, удаление или замена доменов, изменение некоторых опций и перенос в другой слушатель; сохраняется только если все сайты прошли проверку, при ошибке ничего не меняется |
+| GET | `/api/webservice/cache` | `webservice:read` | Число записей и объём кэша ответов сайта (?listener=&site=) |
+| POST | `/api/webservice/cache/purge` | `webservice:write` | Очищает кэш ответов сайта: оставьте path пустым, чтобы очистить всё, иначе удаляются только записи с совпадающим путём (синтаксис как у путей правил кэша, поддерживается *) |
 | POST | `/api/webservice/import/nginx` | `webservice:write` | Импорт конфигурации nginx |
 | GET | `/api/webservice/settings` | `webservice:read` | Чтение глобальных настроек веб-службы |
 | GET | `/api/webservice/settings/secrets/totp` | `webservice:write` | Показать секреты TOTP общих пользователей открытым текстом (по имени пользователя) |
@@ -2164,7 +2166,26 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `enable` | boolean |
 | `maxMb` | integer |
+| `rules` | Массив из `webservice.CacheRule` |
 | `ttl` | integer |
+
+### webservice.CacheRule
+
+| Поле | Тип |
+| --- | --- |
+| `noCache` | boolean |
+| `override` | boolean |
+| `path` | string |
+| `ttl` | integer |
+
+### webservice.CacheStatsView
+
+| Поле | Тип |
+| --- | --- |
+| `bytes` | integer |
+| `enabled` | boolean |
+| `entries` | integer |
+| `maxBytes` | integer |
 
 ### webservice.ClientTimeouts
 
@@ -2767,6 +2788,24 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `key` | string |
 | `seconds` | integer |
+
+### webservice.cachePurgeRequest
+
+| Поле | Тип |
+| --- | --- |
+| `listener` | string |
+| `path` | string |
+| `site` | string |
+
+### webservice.cachePurgeResult
+
+| Поле | Тип |
+| --- | --- |
+| `bytes` | integer |
+| `enabled` | boolean |
+| `entries` | integer |
+| `maxBytes` | integer |
+| `removed` | integer |
 
 ### webservice.closeConnRequest
 

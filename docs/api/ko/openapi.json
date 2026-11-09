@@ -3006,7 +3006,47 @@
           "maxMb": {
             "type": "integer"
           },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.CacheRule"
+            },
+            "type": "array"
+          },
           "ttl": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.CacheRule": {
+        "properties": {
+          "noCache": {
+            "type": "boolean"
+          },
+          "override": {
+            "type": "boolean"
+          },
+          "path": {
+            "type": "string"
+          },
+          "ttl": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.CacheStatsView": {
+        "properties": {
+          "bytes": {
+            "type": "integer"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "entries": {
+            "type": "integer"
+          },
+          "maxBytes": {
             "type": "integer"
           }
         },
@@ -4509,6 +4549,40 @@
             "type": "string"
           },
           "seconds": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.cachePurgeRequest": {
+        "properties": {
+          "listener": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "site": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.cachePurgeResult": {
+        "properties": {
+          "bytes": {
+            "type": "integer"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "entries": {
+            "type": "integer"
+          },
+          "maxBytes": {
+            "type": "integer"
+          },
+          "removed": {
             "type": "integer"
           }
         },
@@ -44039,6 +44113,131 @@
           }
         ],
         "summary": "IP 수동 차단(seconds가 0이면 24시간, -1이면 영구)",
+        "tags": [
+          "Web 서비스"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/cache": {
+      "get": {
+        "description": "필요한 권한: `webservice:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.CacheStatsView"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "사이트 응답 캐시의 항목 수와 사용량(?listener=\u0026site=)",
+        "tags": [
+          "Web 서비스"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/cache/purge": {
+      "post": {
+        "description": "필요한 권한: `webservice:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/webservice.cachePurgeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.cachePurgeResult"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "사이트의 응답 캐시를 비웁니다. path를 비우면 전체, 지정하면 경로가 일치하는 항목만 비웁니다(캐시 규칙 경로와 같은 형식, * 지원)",
         "tags": [
           "Web 서비스"
         ],

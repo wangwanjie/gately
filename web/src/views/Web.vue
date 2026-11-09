@@ -514,7 +514,7 @@
             <el-form-item :label="t('web.cors')"><el-switch v-model="site.cors" /></el-form-item>
           </el-tab-pane>
           <el-tab-pane v-if="site.type !== 'close'" :label="t('web.tabTraffic')" name="traffic">
-            <SiteTraffic v-model:site="site" />
+            <SiteTraffic v-model:site="site" :cache-target="siteCacheTarget" />
           </el-tab-pane>
           <!-- 错误页：断开连接与固定文本站点不产生错误页；默认站点的设置同时用于未匹配任何站点的 404，始终显示 -->
           <el-tab-pane v-if="siteIsDefault || (site.type !== 'close' && site.type !== 'text')" :label="t('errorPages.tab')" name="errorPage" lazy>
@@ -651,7 +651,7 @@ import { type AuthUser, fromAPI } from '../sharedUsers'
 import AccessSettings from '../components/AccessSettings.vue'
 import IPListsManager from '../components/IPListsManager.vue'
 import NginxImport from '../components/NginxImport.vue'
-import SiteTraffic, { type BackendTimeouts, type ClientTimeouts, type Rewrite } from '../components/SiteTraffic.vue'
+import SiteTraffic, { type BackendTimeouts, type CacheSettings, type CacheTarget, type ClientTimeouts, type Rewrite } from '../components/SiteTraffic.vue'
 import SiteStats from '../components/SiteStats.vue'
 import SiteConns from '../components/SiteConns.vue'
 import SiteLogDialog from '../components/SiteLogDialog.vue'
@@ -739,7 +739,7 @@ interface Site {
   clientTimeouts: ClientTimeouts
   compress: boolean
   rateLimit: { enable: boolean; rate: number; burst: number; maxConns: number }
-  cache: { enable: boolean; ttl: number; maxMb: number }
+  cache: CacheSettings
   rewrites: Rewrite[]
   // errorPage 为 404 与 5xx 错误页的样式与拦截后端错误的设置
   errorPage: ErrorPageOptions
@@ -851,6 +851,19 @@ const copySiteCount = ref(0)
 const siteOwnerKey = ref('')
 const siteFromKey = ref('')
 let copySiteSource: { listener: string; index: number } | null = null
+// siteCacheTarget 指向编辑中的已保存站点，用于查看与清空其运行中的响应缓存；新建与复制时为 null
+const siteCacheTarget = computed<CacheTarget | null>(() => {
+  if (!siteVisible.value || !siteFromKey.value) {
+    return null
+  }
+  if (siteIsDefault.value) {
+    return { listener: siteFromKey.value, site: 'default' }
+  }
+  if (siteIndex.value >= 0 && site.value.key) {
+    return { listener: siteFromKey.value, site: site.value.key }
+  }
+  return null
+})
 const settingsVisible = ref(false)
 const { isMobile, labelPosition } = useFormLayout()
 // moduleEnabled 为模块全局开关，undefined 表示尚未加载
@@ -1031,7 +1044,7 @@ function emptySite(): Site {
     clientTimeouts: { readIdle: 0, writeIdle: 0 },
     compress: false,
     rateLimit: { enable: false, rate: 10, burst: 20, maxConns: 0 },
-    cache: { enable: false, ttl: 0, maxMb: 64 },
+    cache: { enable: false, ttl: 0, maxMb: 64, rules: [] },
     rewrites: [],
     errorPage: emptyErrorPage(),
   }
@@ -1668,6 +1681,7 @@ function openSite(l: ListenerView, row?: SiteRow, copy = false) {
   draft.clientTimeouts = { ...defaults.clientTimeouts, ...(draft.clientTimeouts ?? {}) }
   draft.rateLimit = { ...defaults.rateLimit, ...(draft.rateLimit ?? {}) }
   draft.cache = { ...defaults.cache, ...(draft.cache ?? {}) }
+  draft.cache.rules = (draft.cache.rules ?? []).map((r) => ({ ...r }))
   draft.errorPage = normalizeErrorPage(draft.errorPage)
   if (row && copy && !row.isDefault) {
     copySiteFrom.value = { key: row.site.key ?? '', name: siteTitle(row) }

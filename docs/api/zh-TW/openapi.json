@@ -3006,7 +3006,47 @@
           "maxMb": {
             "type": "integer"
           },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.CacheRule"
+            },
+            "type": "array"
+          },
           "ttl": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.CacheRule": {
+        "properties": {
+          "noCache": {
+            "type": "boolean"
+          },
+          "override": {
+            "type": "boolean"
+          },
+          "path": {
+            "type": "string"
+          },
+          "ttl": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.CacheStatsView": {
+        "properties": {
+          "bytes": {
+            "type": "integer"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "entries": {
+            "type": "integer"
+          },
+          "maxBytes": {
             "type": "integer"
           }
         },
@@ -4509,6 +4549,40 @@
             "type": "string"
           },
           "seconds": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.cachePurgeRequest": {
+        "properties": {
+          "listener": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "site": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.cachePurgeResult": {
+        "properties": {
+          "bytes": {
+            "type": "integer"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "entries": {
+            "type": "integer"
+          },
+          "maxBytes": {
+            "type": "integer"
+          },
+          "removed": {
             "type": "integer"
           }
         },
@@ -44039,6 +44113,131 @@
           }
         ],
         "summary": "手動封鎖 IP（seconds 為 0 表示 24 小時，-1 表示永久）",
+        "tags": [
+          "Web 服務"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/cache": {
+      "get": {
+        "description": "所需權限：`webservice:read`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.CacheStatsView"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "站點回應快取的條目數與佔用（?listener=\u0026site=）",
+        "tags": [
+          "Web 服務"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/cache/purge": {
+      "post": {
+        "description": "所需權限：`webservice:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/webservice.cachePurgeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.cachePurgeResult"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "清空站點的回應快取：path 留空清空全部，否則只清空路徑命中的條目（寫法同快取規則路徑，支援 *）",
         "tags": [
           "Web 服務"
         ],

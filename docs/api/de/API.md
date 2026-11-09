@@ -398,6 +398,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | GET | `/api/webservice/users` | `webservice:read` | Gemeinsame Benutzer und OIDC-Identitätsanbieter lesen |
 | PUT | `/api/webservice/users` | `webservice:write` | Gemeinsame Benutzer und OIDC-Identitätsanbieter speichern, Sites gesammelt einstellen |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | Sammelaktionen für Sites: aktivieren, deaktivieren, löschen, Domains hinzufügen, entfernen oder ersetzen, einige Optionen ändern oder zu einem anderen Listener verschieben; gespeichert wird nur, wenn alle Sites die Prüfung bestehen, schlägt eine fehl, wird nichts geändert |
+| GET | `/api/webservice/cache` | `webservice:read` | Anzahl der Einträge und Größe des Antwort-Caches der Site (?listener=&site=) |
+| POST | `/api/webservice/cache/purge` | `webservice:write` | Leert den Antwort-Cache der Site: path leer lassen, um alles zu leeren, sonst nur Einträge, deren Pfad passt (gleiche Schreibweise wie Pfade von Cache-Regeln, * wird unterstützt) |
 | POST | `/api/webservice/import/nginx` | `webservice:write` | nginx-Konfiguration importieren |
 | GET | `/api/webservice/settings` | `webservice:read` | Globale Web-Dienst-Einstellungen lesen |
 | GET | `/api/webservice/settings/secrets/totp` | `webservice:write` | TOTP-Geheimnisse der gemeinsamen Benutzer im Klartext anzeigen (nach Benutzername) |
@@ -2164,7 +2166,26 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | --- | --- |
 | `enable` | boolean |
 | `maxMb` | integer |
+| `rules` | Array von `webservice.CacheRule` |
 | `ttl` | integer |
+
+### webservice.CacheRule
+
+| Feld | Typ |
+| --- | --- |
+| `noCache` | boolean |
+| `override` | boolean |
+| `path` | string |
+| `ttl` | integer |
+
+### webservice.CacheStatsView
+
+| Feld | Typ |
+| --- | --- |
+| `bytes` | integer |
+| `enabled` | boolean |
+| `entries` | integer |
+| `maxBytes` | integer |
 
 ### webservice.ClientTimeouts
 
@@ -2767,6 +2788,24 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | --- | --- |
 | `key` | string |
 | `seconds` | integer |
+
+### webservice.cachePurgeRequest
+
+| Feld | Typ |
+| --- | --- |
+| `listener` | string |
+| `path` | string |
+| `site` | string |
+
+### webservice.cachePurgeResult
+
+| Feld | Typ |
+| --- | --- |
+| `bytes` | integer |
+| `enabled` | boolean |
+| `entries` | integer |
+| `maxBytes` | integer |
+| `removed` | integer |
 
 ### webservice.closeConnRequest
 

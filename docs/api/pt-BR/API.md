@@ -398,6 +398,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | GET | `/api/webservice/users` | `webservice:read` | Ler usuários compartilhados e provedor de identidade OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Salvar usuários compartilhados e provedor de identidade OIDC, configurar sites em lote |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | Operações em lote de sites: ativar, desativar, excluir, adicionar, remover ou substituir domínios, alterar algumas opções ou mover para outro listener; só é salvo se todos os sites passarem na validação e nada muda se algum falhar |
+| GET | `/api/webservice/cache` | `webservice:read` | Número de entradas e tamanho do cache de respostas do site (?listener=&site=) |
+| POST | `/api/webservice/cache/purge` | `webservice:write` | Limpa o cache de respostas do site: deixe path vazio para limpar tudo; caso contrário, apenas as entradas cujo caminho corresponda (mesma sintaxe dos caminhos das regras de cache, suporta *) |
 | POST | `/api/webservice/import/nginx` | `webservice:write` | Importar configuração do nginx |
 | GET | `/api/webservice/settings` | `webservice:read` | Ler configurações globais do serviço web |
 | GET | `/api/webservice/settings/secrets/totp` | `webservice:write` | Ver segredos TOTP dos usuários compartilhados em texto puro (por nome de usuário) |
@@ -2164,7 +2166,26 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | --- | --- |
 | `enable` | boolean |
 | `maxMb` | integer |
+| `rules` | Array de `webservice.CacheRule` |
 | `ttl` | integer |
+
+### webservice.CacheRule
+
+| Campo | Tipo |
+| --- | --- |
+| `noCache` | boolean |
+| `override` | boolean |
+| `path` | string |
+| `ttl` | integer |
+
+### webservice.CacheStatsView
+
+| Campo | Tipo |
+| --- | --- |
+| `bytes` | integer |
+| `enabled` | boolean |
+| `entries` | integer |
+| `maxBytes` | integer |
 
 ### webservice.ClientTimeouts
 
@@ -2767,6 +2788,24 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | --- | --- |
 | `key` | string |
 | `seconds` | integer |
+
+### webservice.cachePurgeRequest
+
+| Campo | Tipo |
+| --- | --- |
+| `listener` | string |
+| `path` | string |
+| `site` | string |
+
+### webservice.cachePurgeResult
+
+| Campo | Tipo |
+| --- | --- |
+| `bytes` | integer |
+| `enabled` | boolean |
+| `entries` | integer |
+| `maxBytes` | integer |
+| `removed` | integer |
 
 ### webservice.closeConnRequest
 

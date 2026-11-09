@@ -3006,7 +3006,47 @@
           "maxMb": {
             "type": "integer"
           },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.CacheRule"
+            },
+            "type": "array"
+          },
           "ttl": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.CacheRule": {
+        "properties": {
+          "noCache": {
+            "type": "boolean"
+          },
+          "override": {
+            "type": "boolean"
+          },
+          "path": {
+            "type": "string"
+          },
+          "ttl": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.CacheStatsView": {
+        "properties": {
+          "bytes": {
+            "type": "integer"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "entries": {
+            "type": "integer"
+          },
+          "maxBytes": {
             "type": "integer"
           }
         },
@@ -4509,6 +4549,40 @@
             "type": "string"
           },
           "seconds": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.cachePurgeRequest": {
+        "properties": {
+          "listener": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "site": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.cachePurgeResult": {
+        "properties": {
+          "bytes": {
+            "type": "integer"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "entries": {
+            "type": "integer"
+          },
+          "maxBytes": {
+            "type": "integer"
+          },
+          "removed": {
             "type": "integer"
           }
         },
@@ -44039,6 +44113,131 @@
           }
         ],
         "summary": "Bloquer manuellement une IP (seconds : 0 signifie 24 heures, -1 signifie permanent)",
+        "tags": [
+          "Service Web"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/cache": {
+      "get": {
+        "description": "Permission requise : `webservice:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.CacheStatsView"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Nombre d'entrées et taille du cache de réponses du site (?listener=\u0026site=)",
+        "tags": [
+          "Service Web"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/cache/purge": {
+      "post": {
+        "description": "Permission requise : `webservice:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/webservice.cachePurgeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.cachePurgeResult"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Vide le cache de réponses du site : laissez path vide pour tout vider, sinon seules les entrées dont le chemin correspond sont supprimées (même syntaxe que les chemins des règles de cache, * pris en charge)",
         "tags": [
           "Service Web"
         ],

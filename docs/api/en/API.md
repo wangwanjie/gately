@@ -398,6 +398,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | GET | `/api/webservice/users` | `webservice:read` | Read shared users and the OIDC identity provider |
 | PUT | `/api/webservice/users` | `webservice:write` | Save shared users and the OIDC identity provider, set sites in bulk |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | Bulk site operations: enable, disable, delete, add, remove or replace domains, change some options, or move to another listener; changes are saved only if every site passes validation, and nothing changes if any site fails |
+| GET | `/api/webservice/cache` | `webservice:read` | Entry count and size of the site's response cache (?listener=&site=) |
+| POST | `/api/webservice/cache/purge` | `webservice:write` | Clear the site's response cache: leave path empty to clear everything, otherwise only entries whose path matches (same syntax as cache rule paths, * supported) |
 | POST | `/api/webservice/import/nginx` | `webservice:write` | Import nginx config |
 | GET | `/api/webservice/settings` | `webservice:read` | Read Web service global settings |
 | GET | `/api/webservice/settings/secrets/totp` | `webservice:write` | View the TOTP secrets of shared users in plain text (indexed by username) |
@@ -2164,7 +2166,26 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | --- | --- |
 | `enable` | boolean |
 | `maxMb` | integer |
+| `rules` | Array of `webservice.CacheRule` |
 | `ttl` | integer |
+
+### webservice.CacheRule
+
+| Field | Type |
+| --- | --- |
+| `noCache` | boolean |
+| `override` | boolean |
+| `path` | string |
+| `ttl` | integer |
+
+### webservice.CacheStatsView
+
+| Field | Type |
+| --- | --- |
+| `bytes` | integer |
+| `enabled` | boolean |
+| `entries` | integer |
+| `maxBytes` | integer |
 
 ### webservice.ClientTimeouts
 
@@ -2767,6 +2788,24 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | --- | --- |
 | `key` | string |
 | `seconds` | integer |
+
+### webservice.cachePurgeRequest
+
+| Field | Type |
+| --- | --- |
+| `listener` | string |
+| `path` | string |
+| `site` | string |
+
+### webservice.cachePurgeResult
+
+| Field | Type |
+| --- | --- |
+| `bytes` | integer |
+| `enabled` | boolean |
+| `entries` | integer |
+| `maxBytes` | integer |
+| `removed` | integer |
 
 ### webservice.closeConnRequest
 

@@ -398,6 +398,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | GET | `/api/webservice/users` | `webservice:read` | Leer usuarios compartidos y proveedor de identidad OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Guardar usuarios compartidos y proveedor de identidad OIDC, configurar sitios en bloque |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | Operaciones masivas de sitios: activar, desactivar, eliminar, añadir, quitar o reemplazar dominios, cambiar algunas opciones o mover a otro listener; solo se guarda si todos los sitios pasan la validación y no se cambia nada si alguno falla |
+| GET | `/api/webservice/cache` | `webservice:read` | Número de entradas y tamaño de la caché de respuestas del sitio (?listener=&site=) |
+| POST | `/api/webservice/cache/purge` | `webservice:write` | Vacía la caché de respuestas del sitio: deja path vacío para vaciarla entera; si no, solo las entradas cuya ruta coincida (misma sintaxis que las rutas de las reglas de caché, admite *) |
 | POST | `/api/webservice/import/nginx` | `webservice:write` | Importar configuración de nginx |
 | GET | `/api/webservice/settings` | `webservice:read` | Leer los ajustes globales del servicio web |
 | GET | `/api/webservice/settings/secrets/totp` | `webservice:write` | Ver en texto plano los secretos TOTP de los usuarios compartidos (por nombre de usuario) |
@@ -2164,7 +2166,26 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | --- | --- |
 | `enable` | boolean |
 | `maxMb` | integer |
+| `rules` | Lista de `webservice.CacheRule` |
 | `ttl` | integer |
+
+### webservice.CacheRule
+
+| Campo | Tipo |
+| --- | --- |
+| `noCache` | boolean |
+| `override` | boolean |
+| `path` | string |
+| `ttl` | integer |
+
+### webservice.CacheStatsView
+
+| Campo | Tipo |
+| --- | --- |
+| `bytes` | integer |
+| `enabled` | boolean |
+| `entries` | integer |
+| `maxBytes` | integer |
 
 ### webservice.ClientTimeouts
 
@@ -2767,6 +2788,24 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | --- | --- |
 | `key` | string |
 | `seconds` | integer |
+
+### webservice.cachePurgeRequest
+
+| Campo | Tipo |
+| --- | --- |
+| `listener` | string |
+| `path` | string |
+| `site` | string |
+
+### webservice.cachePurgeResult
+
+| Campo | Tipo |
+| --- | --- |
+| `bytes` | integer |
+| `enabled` | boolean |
+| `entries` | integer |
+| `maxBytes` | integer |
+| `removed` | integer |
 
 ### webservice.closeConnRequest
 
