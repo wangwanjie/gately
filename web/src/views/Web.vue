@@ -66,6 +66,7 @@
             <el-tag size="small" effect="plain" class="mono">{{ l.tls ? 'https' : 'http' }}://{{ hostPort(l) }}</el-tag>
             <el-tag size="small" type="info">{{ networkText(l.network) }}</el-tag>
             <el-tag v-if="l.tls && l.plainHttp" size="small" type="info">{{ plainHttpText(l.plainHttp) }}</el-tag>
+            <el-tag v-if="l.httpPort" size="small" type="info" class="mono" :title="t('web.httpPort')">{{ httpPortText(l) }}</el-tag>
             <el-tag v-if="l.acceptProxyProtocol" size="small" type="info">{{ t('web.acceptProxyTag') }}</el-tag>
             <el-tag v-if="l.autoFirewall" size="small" :type="l.firewallFailed ? 'warning' : 'info'">{{ t('common.firewallTag') }}</el-tag>
             <el-tag v-if="l.accessScheme || l.accessPort" size="small" type="info" class="mono" :title="t('web.accessAddr')">{{ t('web.accessAddrTag', { scheme: accessScheme(l), port: accessPort(l) }) }}</el-tag>
@@ -244,6 +245,18 @@
         <el-form-item label="HTTPS">
           <el-switch v-model="editingListener.tls" />
           <span class="help">{{ t('web.tlsHelp') }}</span>
+        </el-form-item>
+        <!-- 额外的明文 HTTP 端口：与主端口共用全部站点，HTTPS 监听常用它再开一个 80 -->
+        <el-form-item :label="t('web.httpPort')">
+          <div class="access-row">
+            <el-input-number v-model="httpPortInput" :min="1" :max="65535" :placeholder="t('web.httpPortOff')" controls-position="right" class="w-160" />
+            <el-radio-group v-if="editingListener.tls && editingListener.httpPort" v-model="editingListener.httpPortMode">
+              <el-radio-button value="redirect">{{ t('web.plainHttpRedirect') }}</el-radio-button>
+              <el-radio-button value="serve">{{ t('web.plainHttpServe') }}</el-radio-button>
+            </el-radio-group>
+          </div>
+          <div class="form-help">{{ editingListener.tls ? t('web.httpPortHelp') : t('web.httpPortPlainHelp') }}</div>
+          <div v-if="editingListener.httpPort && editingListener.httpPort === editingListener.port" class="form-help warn">{{ t('web.httpPortSame') }}</div>
         </el-form-item>
         <!-- 仅用于生成站点链接：经协议分流、端口映射或 CDN 访问时，对外的协议与端口可能与监听不同 -->
         <el-form-item :label="t('web.accessAddr')">
@@ -793,6 +806,9 @@ interface Listener {
   http3: boolean
   // 开启 HTTPS 后同端口收到明文 HTTP 的处理方式：'' 不接受，redirect 跳转到 HTTPS，serve 直接服务
   plainHttp?: '' | 'redirect' | 'serve'
+  // 额外的明文 HTTP 端口（0 为不开启）与其处理方式：redirect 跳转到主端口的 HTTPS，serve 直接服务；主端口为 HTTP 时只能 serve
+  httpPort?: number
+  httpPortMode?: '' | 'redirect' | 'serve'
   acceptProxyProtocol: boolean
   // 浏览器访问站点用的协议与端口，只用于生成站点链接；'' 按 tls 推算，0 使用监听端口
   accessScheme?: '' | 'http' | 'https'
@@ -1087,6 +1103,8 @@ function emptyListener(): Listener {
     minTls: '1.2',
     http3: false,
     plainHttp: '',
+    httpPort: 0,
+    httpPortMode: '',
     acceptProxyProtocol: false,
     accessScheme: '',
     accessPort: 0,
@@ -1145,6 +1163,24 @@ const accessExample = computed(() => {
   const eff = !l.accessPort && editingEntry.value ? { ...l, accessPort: editingEntry.value.port } : l
   return siteLink('example.com', eff)?.text ?? `${accessScheme(eff)}://example.com:${accessPort(eff)}`
 })
+
+// httpPortInput 把 0（不开启）映射为输入框的空值；首次填写端口时默认跳转到 HTTPS
+const httpPortInput = computed<number | undefined>({
+  get: () => editingListener.value.httpPort || undefined,
+  set: (v) => {
+    const l = editingListener.value
+    l.httpPort = v ?? 0
+    if (l.httpPort && !l.httpPortMode) {
+      l.httpPortMode = 'redirect'
+    }
+  },
+})
+
+// httpPortText 为列表中额外 HTTP 端口的标签：开启 HTTPS 且跳转时注明跳转
+function httpPortText(l: Listener) {
+  const redirect = l.tls && (l.httpPortMode || 'redirect') === 'redirect'
+  return redirect ? t('web.httpPortRedirectTag', { port: l.httpPort }) : t('web.httpPortServeTag', { port: l.httpPort })
+}
 
 function plainHttpText(v: string) {
   return v === 'redirect' ? t('web.plainHttpRedirectTag') : t('web.plainHttpServeTag')

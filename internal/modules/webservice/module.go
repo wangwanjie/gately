@@ -275,9 +275,18 @@ func (m *Module) startLocked(l Listener) {
 		m.fw.Want(l.Key, nil, nil)
 		return
 	}
-	delete(m.errors, l.Key)
+	m.setRunnerErrorLocked(r)
 	m.runners[l.Key] = r
 	m.syncFirewallLocked(r)
+}
+
+// setRunnerErrorLocked 按运行中的监听更新错误状态：主端口正常而额外 HTTP 端口监听失败时，监听继续运行并显示原因。
+func (m *Module) setRunnerErrorLocked(r *listenerRunner) {
+	if r.httpErr != "" {
+		m.errors[r.key] = r.httpErr
+		return
+	}
+	delete(m.errors, r.key)
 }
 
 // syncFirewallLocked 按监听当前的配置登记自动放行：只放行已经监听成功的 TCP 端口，HTTP/3 启动成功时再放行同号 UDP 端口。
@@ -286,7 +295,12 @@ func (m *Module) syncFirewallLocked(r *listenerRunner) {
 		m.fw.Want(r.cfg.Key, nil, nil)
 		return
 	}
-	ports := fwopen.ForListen(r.cfg.Network, r.cfg.ListenIP, []int{r.cfg.Port})
+	tcp := []int{r.cfg.Port}
+	// 额外 HTTP 端口只在监听成功时放行
+	if r.httpLn != nil {
+		tcp = append(tcp, r.cfg.HTTPPort)
+	}
+	ports := fwopen.ForListen(r.cfg.Network, r.cfg.ListenIP, tcp)
 	if r.h3pc != nil {
 		udp := map[string]string{"tcp": "udp", "tcp4": "udp4", "tcp6": "udp6"}[r.cfg.Network]
 		ports = append(ports, fwopen.ForListen(udp, r.cfg.ListenIP, []int{r.cfg.Port})...)
@@ -313,7 +327,7 @@ func (m *Module) restartLocked(key string) {
 					m.errors[key] = err.Error()
 					r.log.Errorf("更新站点失败，继续使用原配置: %v", err)
 				} else {
-					delete(m.errors, key)
+					m.setRunnerErrorLocked(r)
 				}
 				// 自动放行开关不影响监听，在热更新时同步
 				m.syncFirewallLocked(r)

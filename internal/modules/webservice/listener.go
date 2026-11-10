@@ -37,11 +37,16 @@ type listenerRunner struct {
 	// cfg 为当前配置，热更新站点时整体替换（持有模块锁），处理请求的 goroutine 不能读取它；
 	// 请求路径用到的设置放在下面创建后不再变化的字段中
 	cfg Listener
-	// key、plainHTTP 在监听存续期间不变（PlainHTTP 变化时会重启监听，见 sameSocket）
+	// key、plainHTTP、httpPortMode 在监听存续期间不变（相关设置变化时会重启监听，见 sameSocket）
 	key, plainHTTP string
-	auth           *authenticator
-	log            *logbuf.Logger
-	srv            *http.Server
+	// httpPortMode 为额外 HTTP 端口的处理方式；跳转所用的 HTTPS 端口随访问地址变化，放在站点表中热更新
+	httpPortMode string
+	// httpLn 为额外 HTTP 端口的监听（未开启或监听失败时为 nil），httpErr 为它监听失败的原因
+	httpLn  net.Listener
+	httpErr string
+	auth    *authenticator
+	log     *logbuf.Logger
+	srv     *http.Server
 	// ln 为交给 srv 的监听（含各层包装），停止时由 stop 同步关闭，见 stop 中的说明
 	ln net.Listener
 	// h3 为 HTTP/3（QUIC）服务，仅在监听器开启 HTTP3 时存在；h3pc 为它的 UDP 监听
@@ -95,6 +100,8 @@ type siteTable struct {
 	cancel context.CancelFunc
 	// missPage 为没有任何站点匹配时输出 404 所用的错误页设置，取自默认站点（默认站点停用时同样生效）
 	missPage *errorPager
+	// httpsPort 为额外 HTTP 端口跳转时使用的 HTTPS 端口（访问端口或监听端口），修改访问地址时随站点表热更新
+	httpsPort int
 }
 
 // current 返回当前生效的站点表，监听器尚未构建时返回空表。
@@ -152,9 +159,15 @@ func (l *listenerRunner) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.TLS == nil && acmehttp.Serve(w, r) {
 		return
 	}
-	// HTTPS 端口收到的明文请求按设置跳转到同端口的 https 地址（ACME 验证已在上面应答）；
+	// HTTPS 端口收到的明文请求按设置跳转到同端口的 https 地址，额外 HTTP 端口的请求跳转到主端口（ACME 验证已在上面应答）；
 	// 可信反向代理已终止 TLS 并以 X-Forwarded-Proto: https 转来的请求不再跳转，否则会循环跳转
-	if l.plainHTTP == PlainHTTPRedirect && !requestIsHTTPS(r) {
+	if fromHTTPPort(r) {
+		if l.httpPortMode == PlainHTTPRedirect && !requestIsHTTPS(r) {
+			l.acts.redirect.hit(r)
+			redirectToHTTPSPort(w, r, l.current().httpsPort)
+			return
+		}
+	} else if l.plainHTTP == PlainHTTPRedirect && !requestIsHTTPS(r) {
 		l.acts.redirect.hit(r)
 		redirectToHTTPS(w, r)
 		return
@@ -199,7 +212,7 @@ func (l *listenerRunner) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func newListenerRunner(cfg Listener, log *logbuf.Logger, auth *authenticator, waf WAFProvider) (*listenerRunner, error) {
-	l := &listenerRunner{cfg: cfg, key: cfg.Key, plainHTTP: cfg.PlainHTTP, log: log, auth: auth}
+	l := &listenerRunner{cfg: cfg, key: cfg.Key, plainHTTP: cfg.PlainHTTP, httpPortMode: cfg.HTTPPortMode, log: log, auth: auth}
 	l.acts.redirect.recent = newRecentIPs()
 	l.acts.notFound.recent = newRecentIPs()
 	t, err := buildSiteTable(cfg, log, auth, waf, nil)
@@ -218,7 +231,7 @@ func buildSiteTable(cfg Listener, log *logbuf.Logger, auth *authenticator, waf W
 			old[h.site.Key] = h
 		}
 	}
-	t := &siteTable{exact: map[string]*siteHandler{}}
+	t := &siteTable{exact: map[string]*siteHandler{}, httpsPort: cfg.httpsPort()}
 	if auth != nil {
 		t.missPage = newErrorPager(cfg.Default, auth.errPages)
 	}
@@ -327,7 +340,8 @@ func (t *siteTable) retire() {
 // sameSocket 判断两份监听配置的端口相关设置是否相同，相同时修改站点无需重启监听。
 func sameSocket(a, b Listener) bool {
 	return a.Network == b.Network && a.ListenIP == b.ListenIP && a.Port == b.Port && a.TLS == b.TLS &&
-		a.PlainHTTP == b.PlainHTTP && a.MinTLS == b.MinTLS && a.HTTP3 == b.HTTP3 && a.AcceptProxyProtocol == b.AcceptProxyProtocol
+		a.PlainHTTP == b.PlainHTTP && a.MinTLS == b.MinTLS && a.HTTP3 == b.HTTP3 && a.AcceptProxyProtocol == b.AcceptProxyProtocol &&
+		a.HTTPPort == b.HTTPPort && a.HTTPPortMode == b.HTTPPortMode
 }
 
 // reload 在不关闭监听的情况下替换站点表：新请求立即使用新配置，已建立的连接（含 WebSocket）保持不断。
@@ -352,25 +366,24 @@ func (l *listenerRunner) start(certs CertSource, trusted []string) error {
 	if err != nil {
 		return err
 	}
-	if l.cfg.AcceptProxyProtocol {
-		if len(trusted) == 0 {
-			ln.Close()
-			return errors.New("已开启接收 PROXY 协议，但未配置可信来源")
-		}
-		// 只有可信来源发来的 PROXY 头才会被采用，其他来源的头被忽略
-		policy, err := proxyproto.ConnLaxWhiteListPolicy(trusted)
-		if err != nil {
-			ln.Close()
-			return err
-		}
-		ln = &proxyproto.Listener{Listener: ln, ConnPolicy: policy, ReadHeaderTimeout: 5 * time.Second}
+	if ln, err = l.wrapProxyProtocol(ln, trusted); err != nil {
+		return err
 	}
 	baseCtx, cancel := context.WithCancel(context.Background())
 	l.cancel = cancel
 	l.baseCtx = baseCtx
+	// 额外 HTTP 端口的连接在上下文中做标记，处理请求时据此决定是否跳转到 HTTPS（见 fromHTTPPort）；
+	// 标记上下文仍派生自 baseCtx，监听停止时同样被取消
+	httpPortCtx := context.WithValue(baseCtx, ctxKeyHTTPPort{}, true)
+	var httpLn net.Listener
 	l.srv = &http.Server{
-		Handler:     l,
-		BaseContext: func(net.Listener) context.Context { return baseCtx },
+		Handler: l,
+		BaseContext: func(ln net.Listener) context.Context {
+			if httpLn != nil && ln == httpLn {
+				return httpPortCtx
+			}
+			return baseCtx
+		},
 		// 记下连接本身，处理请求时据此判断它是否经可信 PROXY 来源进入（见 viaTrustedProxy）
 		ConnContext:       func(ctx context.Context, c net.Conn) context.Context { return context.WithValue(ctx, ctxKeyConn{}, c) },
 		ReadHeaderTimeout: 30 * time.Second,
@@ -408,6 +421,21 @@ func (l *listenerRunner) start(certs CertSource, trusted []string) error {
 			}
 		}
 	}
+	// 额外 HTTP 端口与主端口共用 srv 与站点表；它监听失败不影响主端口，原因记在 httpErr 中显示在监听状态里
+	if l.cfg.HTTPPort > 0 {
+		httpAddr := net.JoinHostPort(l.cfg.ListenIP, strconv.Itoa(l.cfg.HTTPPort))
+		hl, err := net.Listen(l.cfg.Network, httpAddr)
+		if err == nil {
+			hl, err = l.wrapProxyProtocol(hl, trusted)
+		}
+		if err != nil {
+			l.httpErr = fmt.Sprintf("HTTP 端口 %d 监听失败: %v", l.cfg.HTTPPort, err)
+			l.log.Errorf("%s", l.httpErr)
+		} else {
+			httpLn = hl
+			l.httpLn = hl
+		}
+	}
 	l.startAt = time.Now()
 	startTable(l.current(), baseCtx)
 	l.ln = ln
@@ -418,6 +446,13 @@ func (l *listenerRunner) start(certs CertSource, trusted []string) error {
 			l.log.Errorf("监听 %s 退出: %v", addr, err)
 		}
 	}()
+	if httpLn != nil {
+		go func() {
+			if err := srv.Serve(httpLn); err != nil && !errors.Is(err, http.ErrServerClosed) {
+				l.log.Errorf("HTTP 端口 %d 退出: %v", l.cfg.HTTPPort, err)
+			}
+		}()
+	}
 	scheme := "http"
 	if l.cfg.TLS {
 		scheme = "https"
@@ -429,7 +464,62 @@ func (l *listenerRunner) start(certs CertSource, trusted []string) error {
 	case PlainHTTPServe:
 		l.log.Infof("同一端口同时以明文 HTTP 提供站点")
 	}
+	if httpLn != nil {
+		if l.httpPortMode == PlainHTTPRedirect {
+			l.log.Infof("HTTP 端口 %d 的请求跳转到 HTTPS（端口 %d）", l.cfg.HTTPPort, l.cfg.httpsPort())
+		} else {
+			l.log.Infof("HTTP 端口 %d 以明文 HTTP 提供同一组站点", l.cfg.HTTPPort)
+		}
+	}
 	return nil
+}
+
+// wrapProxyProtocol 按设置为监听加上 PROXY 协议解析；出错时关闭 ln。
+func (l *listenerRunner) wrapProxyProtocol(ln net.Listener, trusted []string) (net.Listener, error) {
+	if !l.cfg.AcceptProxyProtocol {
+		return ln, nil
+	}
+	if len(trusted) == 0 {
+		ln.Close()
+		return nil, errors.New("已开启接收 PROXY 协议，但未配置可信来源")
+	}
+	// 只有可信来源发来的 PROXY 头才会被采用，其他来源的头被忽略
+	policy, err := proxyproto.ConnLaxWhiteListPolicy(trusted)
+	if err != nil {
+		ln.Close()
+		return nil, err
+	}
+	return &proxyproto.Listener{Listener: ln, ConnPolicy: policy, ReadHeaderTimeout: 5 * time.Second}, nil
+}
+
+// ctxKeyHTTPPort 标记请求来自额外 HTTP 端口。
+type ctxKeyHTTPPort struct{}
+
+// fromHTTPPort 判断请求是否经额外 HTTP 端口进入。
+func fromHTTPPort(r *http.Request) bool {
+	v, _ := r.Context().Value(ctxKeyHTTPPort{}).(bool)
+	return v
+}
+
+// redirectToHTTPSPort 把额外 HTTP 端口收到的请求跳转到主端口的 https 地址：保留访客请求的主机名，端口换成 HTTPS 端口
+// （443 时省略）。GET/HEAD 用 301，其余方法用 308 保留请求方法与请求体。
+func redirectToHTTPSPort(w http.ResponseWriter, r *http.Request, port int) {
+	host := hostOnly(r.Host)
+	if host == "" {
+		http.Error(w, "缺少 Host 请求头，无法跳转到 HTTPS", http.StatusBadRequest)
+		return
+	}
+	if port != 443 {
+		host = net.JoinHostPort(host, strconv.Itoa(port))
+	} else if strings.Contains(host, ":") {
+		// IPv6 地址作为主机名时要加方括号
+		host = "[" + host + "]"
+	}
+	code := http.StatusMovedPermanently
+	if r.Method != http.MethodGet && r.Method != http.MethodHead {
+		code = http.StatusPermanentRedirect
+	}
+	http.Redirect(w, r, "https://"+host+r.URL.RequestURI(), code)
 }
 
 // redirectToHTTPS 把明文请求跳转到同主机同端口的 https 地址。Host 原样保留（含客户端访问时的端口），
@@ -487,6 +577,10 @@ func (l *listenerRunner) stop() {
 	if l.ln != nil {
 		_ = l.ln.Close()
 		l.ln = nil
+	}
+	if l.httpLn != nil {
+		_ = l.httpLn.Close()
+		l.httpLn = nil
 	}
 	// Shutdown 不管理已劫持的连接；取消请求上下文后反向代理会关闭升级后的连接
 	l.cancel()

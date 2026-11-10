@@ -193,6 +193,12 @@ type Listener struct {
 	// PlainHTTP 决定开启 HTTPS 后同一端口收到明文 HTTP 请求时的处理方式：
 	// 空为不接受（与普通 HTTPS 端口相同），redirect 跳转到同端口的 https 地址，serve 直接按 HTTP 提供站点
 	PlainHTTP string `json:"plainHttp"`
+	// HTTPPort 为额外的明文 HTTP 端口，0 为不开启。它与主端口共用全部站点与设置，常用于 HTTPS 监听 443 时再开 80，
+	// 不必为 HTTP 另建一个监听并重复填写站点
+	HTTPPort int `json:"httpPort"`
+	// HTTPPortMode 为额外 HTTP 端口收到请求时的处理方式：redirect 跳转到主端口的 https 地址，serve 直接按 HTTP 提供站点。
+	// 开启 HTTPS 时默认 redirect；主端口本身是 HTTP 时只能 serve
+	HTTPPortMode string `json:"httpPortMode"`
 	// AcceptProxyProtocol 接收上游（如 haproxy、frp）发送的 PROXY 协议头，仅信任全局设置中的来源
 	AcceptProxyProtocol bool `json:"acceptProxyProtocol"`
 	// AccessScheme 与 AccessPort 为浏览器访问站点时使用的协议与端口，仅用于管理界面生成站点链接，不影响监听与转发。
@@ -325,6 +331,9 @@ func (l *Listener) Validate() error {
 	if !l.TLS {
 		l.PlainHTTP = ""
 	}
+	if err := l.normalizeHTTPPort(); err != nil {
+		return err
+	}
 	switch l.MinTLS {
 	case "", "1.0", "1.1", "1.2", "1.3":
 	default:
@@ -362,6 +371,41 @@ func (l *Listener) Validate() error {
 	// 默认站点固定排在最后，不参与分组（停用时不经过 validate，这里单独清空）
 	l.Default.Group = ""
 	return nil
+}
+
+// normalizeHTTPPort 校验额外 HTTP 端口并补全处理方式。
+func (l *Listener) normalizeHTTPPort() error {
+	if l.HTTPPort == 0 {
+		l.HTTPPortMode = ""
+		return nil
+	}
+	if l.HTTPPort < 0 || l.HTTPPort > 65535 {
+		return errors.New("HTTP 端口无效")
+	}
+	if l.HTTPPort == l.Port {
+		return errors.New("HTTP 端口不能与监听端口相同")
+	}
+	switch l.HTTPPortMode {
+	case "":
+		l.HTTPPortMode = PlainHTTPRedirect
+	case PlainHTTPRedirect, PlainHTTPServe:
+	default:
+		return fmt.Errorf("不支持的 HTTP 端口处理方式 %q", l.HTTPPortMode)
+	}
+	// 主端口是 HTTP 时没有可跳转的 HTTPS 地址，额外端口只是同一组站点的另一个入口
+	if !l.TLS {
+		l.HTTPPortMode = PlainHTTPServe
+	}
+	return nil
+}
+
+// httpsPort 返回从额外 HTTP 端口跳转时使用的 HTTPS 端口：填写了访问端口（且访问协议不是 http）时用它，
+// 例如经路由器把外网 443 映射到本机 8443；否则用监听端口。
+func (l *Listener) httpsPort() int {
+	if l.AccessPort > 0 && l.AccessScheme != "http" {
+		return l.AccessPort
+	}
+	return l.Port
 }
 
 // splitDomains 把域名分成规范化后可用的域名与无法使用的原始写法，导入外部配置时用它跳过个别错误域名，

@@ -73,6 +73,9 @@ export interface TopoListener {
   tls: boolean
   http3: boolean
   plainHttp: string
+  // 额外的明文 HTTP 端口与处理方式，未开启时省略
+  httpPort?: number
+  httpPortMode?: string
   proxyProtocol: boolean
   requests: number
   active: number

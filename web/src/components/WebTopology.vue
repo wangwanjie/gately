@@ -1236,6 +1236,9 @@ const detail = computed<Detail | undefined>(() => {
       } else if (l.tls && l.plainHttp === 'serve') {
         d.tags.push({ text: t('webTopology.plainServe') })
       }
+      if (l.httpPort) {
+        d.tags.push({ text: l.tls && l.httpPortMode === 'redirect' ? t('web.httpPortRedirectTag', { port: l.httpPort }) : t('web.httpPortServeTag', { port: l.httpPort }) })
+      }
       if (l.proxyProtocol) {
         d.tags.push({ text: 'PROXY protocol' })
       }

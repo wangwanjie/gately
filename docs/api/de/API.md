@@ -2368,6 +2368,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `default` | `webservice.Site` |
 | `enable` | boolean |
 | `http3` | boolean |
+| `httpPort` | integer |
+| `httpPortMode` | string |
 | `key` | string |
 | `listenIp` | string |
 | `minTls` | string |
@@ -2775,6 +2777,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `enable` | boolean |
 | `error` | string |
 | `http3` | boolean |
+| `httpPort` | integer |
+| `httpPortMode` | string |
 | `id` | string |
 | `key` | string |
 | `listenIp` | string |

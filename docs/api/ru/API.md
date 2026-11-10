@@ -2368,6 +2368,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `default` | `webservice.Site` |
 | `enable` | boolean |
 | `http3` | boolean |
+| `httpPort` | integer |
+| `httpPortMode` | string |
 | `key` | string |
 | `listenIp` | string |
 | `minTls` | string |
@@ -2775,6 +2777,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `enable` | boolean |
 | `error` | string |
 | `http3` | boolean |
+| `httpPort` | integer |
+| `httpPortMode` | string |
 | `id` | string |
 | `key` | string |
 | `listenIp` | string |
