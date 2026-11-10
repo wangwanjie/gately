@@ -31,7 +31,13 @@
   "cacheModeNoCache": "Pas de cache",
   "cachePurgePath": "Vider le cache de ce chemin",
   "deleteRule": "Supprimer la règle",
-  "cacheRulesHelp": "Sans *, correspondance par préfixe de chemin (/api correspond à /api et /api/x) ; avec *, correspondance sur le chemin entier et * peut englober des /. Les chemins les plus précis l'emportent ; les autres utilisent les réglages par défaut ci-dessus. En cache : respecte le Cache-Control du backend et applique la durée s'il n'en déclare pas. Cache forcé : ignore le Cache-Control du backend et met en cache pour la durée indiquée, mais les réponses avec Set-Cookie ne le sont jamais. Une durée de 0 reprend la durée par défaut. Pour ne mettre en cache que certains chemins, réglez / sur pas de cache",
+  "cacheRulesHelp": "Sans *, correspondance par préfixe de chemin (/api correspond à /api et /api/x) ; avec *, correspondance sur le chemin entier et * peut englober des /. Les chemins respectent la casse ; saisissez le chemin décodé (sans %). Les chemins les plus précis l'emportent ; les autres utilisent les réglages par défaut ci-dessus. En cache : respecte le Cache-Control du backend et applique la durée s'il n'en déclare pas. Cache forcé : ignore no-store, no-cache et max-age du backend et met en cache pour la durée indiquée, mais les réponses marquées private par le backend ou portant Set-Cookie ne le sont jamais. Une durée de 0 reprend la durée par défaut. Pour ne mettre en cache que certains chemins, réglez / sur pas de cache",
+  "cacheForceWarn": "Les réponses en cache forcé sont partagées entre tous les visiteurs. Réservez-le au contenu qui ne dépend pas du visiteur (comme les ressources statiques), et ne l'utilisez pas si le backend dispense d'authentification selon l'IP source",
+  "cachePathError": {
+    "format": "Le chemin doit commencer par / et ne contenir ni espace, ni ?, ni #",
+    "percent": "Le chemin ne doit pas contenir %. Saisissez le chemin décodé",
+    "segment": "Le chemin ne doit contenir ni segment . ou .., ni / consécutifs"
+  },
   "cacheUsage": "Cache actuel",
   "cacheUsageValue": "{entries} entrées, {size} / {max}",
   "cachePurgeAll": "Tout vider",

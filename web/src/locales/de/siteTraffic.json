@@ -31,7 +31,13 @@
   "cacheModeNoCache": "Nicht cachen",
   "cachePurgePath": "Cache für diesen Pfad leeren",
   "deleteRule": "Regel löschen",
-  "cacheRulesHelp": "Ohne * wird per Pfadpräfix verglichen (/api passt auf /api und /api/x); mit * wird der ganze Pfad verglichen und * kann / überspannen. Spezifischere Pfade haben Vorrang; nicht passende Pfade nutzen die Standardwerte oben. Cachen: folgt dem Cache-Control des Backends und nutzt die Dauer, wenn das Backend nichts angibt. Cache erzwingen: ignoriert das Cache-Control des Backends und cacht für die eingestellte Dauer, Antworten mit Set-Cookie aber nie. Dauer 0 übernimmt die Standarddauer. Um nur bestimmte Pfade zu cachen, / auf nicht cachen setzen",
+  "cacheRulesHelp": "Ohne * wird per Pfadpräfix verglichen (/api passt auf /api und /api/x); mit * wird der ganze Pfad verglichen und * kann / überspannen. Pfade unterscheiden Groß-/Kleinschreibung; den dekodierten Pfad eintragen (ohne %). Spezifischere Pfade haben Vorrang; nicht passende Pfade nutzen die Standardwerte oben. Cachen: folgt dem Cache-Control des Backends und nutzt die Dauer, wenn das Backend nichts angibt. Cache erzwingen: ignoriert no-store, no-cache und max-age des Backends und cacht für die eingestellte Dauer, Antworten, die das Backend als private markiert oder die Set-Cookie enthalten, aber nie. Dauer 0 übernimmt die Standarddauer. Um nur bestimmte Pfade zu cachen, / auf nicht cachen setzen",
+  "cacheForceWarn": "Erzwungen gecachte Antworten teilen sich alle Besucher. Nur für Inhalte nutzen, die nicht vom Besucher abhängen (etwa statische Dateien), und nicht, wenn das Backend die Anmeldung anhand der Quell-IP überspringt",
+  "cachePathError": {
+    "format": "Der Pfad muss mit / beginnen und darf keine Leerzeichen, ? oder # enthalten",
+    "percent": "Der Pfad darf kein % enthalten. Den dekodierten Pfad eintragen",
+    "segment": "Der Pfad darf keine Segmente . oder .. und keine aufeinanderfolgenden / enthalten"
+  },
   "cacheUsage": "Aktueller Cache",
   "cacheUsageValue": "{entries} Einträge, {size} / {max}",
   "cachePurgeAll": "Alles leeren",

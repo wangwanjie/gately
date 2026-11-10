@@ -81,7 +81,7 @@
         <el-form-item :label="t('siteTraffic.cacheRules')">
           <div class="rows">
             <div v-for="(r, i) in site.cache.rules" :key="i" class="cache-rule" data-test="cache-rule">
-              <el-input v-model="r.path" :placeholder="t('siteTraffic.cachePathPlaceholder')" class="mono cache-path" />
+              <el-input v-model="r.path" :placeholder="t('siteTraffic.cachePathPlaceholder')" class="mono cache-path" :class="{ 'is-error': !!cachePathError(r.path) }" />
               <!-- 缓存方式合并为一个下拉：遵循后端 / 强制缓存（忽略后端 Cache-Control）/ 不缓存；
                    不缓存时桌面端保留时长占位，使各行的列对齐，移动端直接隐藏 -->
               <span class="cache-opts">
@@ -101,6 +101,9 @@
                 </el-tooltip>
                 <el-button text type="danger" :icon="Trash2" :aria-label="t('siteTraffic.deleteRule')" @click="site.cache.rules.splice(i, 1)" />
               </span>
+              <!-- 路径写法不合法时就地提示（与后端校验一致）；强制缓存的响应由所有访客共用，提醒只用于与身份无关的内容 -->
+              <div v-if="cachePathError(r.path)" class="cache-note is-error" data-test="cache-path-error">{{ t(`siteTraffic.cachePathError.${cachePathError(r.path)}`) }}</div>
+              <div v-if="r.override && !r.noCache" class="cache-note is-warn" data-test="cache-force-warn">{{ t('siteTraffic.cacheForceWarn') }}</div>
             </div>
             <el-button text :icon="Plus" data-test="cache-rule-add" @click="site.cache.rules.push({ path: '', noCache: false, ttl: 0, override: false })">{{ t('siteTraffic.addRule') }}</el-button>
             <div class="form-help">{{ t('siteTraffic.cacheRulesHelp') }}</div>
@@ -182,6 +185,7 @@ import { ElMessage } from 'element-plus'
 import { Eraser, Plus, RefreshCw, Trash2 } from 'lucide-vue-next'
 import { api, formatBytes } from '../api'
 import { isReadonly } from '../nav'
+import { cachePathError } from '../cachePath'
 
 export interface Rewrite {
   pattern: string
@@ -364,6 +368,21 @@ watch(() => [props.cacheTarget?.listener, props.cacheTarget?.site], loadCacheSta
   align-items: center;
   margin-left: auto;
 }
+/* 规则下方的提示独占一行 */
+.cache-note {
+  flex-basis: 100%;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.cache-note.is-error {
+  color: var(--el-color-danger);
+}
+.cache-note.is-warn {
+  color: var(--el-color-warning);
+}
+.cache-path.is-error :deep(.el-input__wrapper) {
+  box-shadow: 0 0 0 1px var(--el-color-danger) inset;
+}
 .cache-usage {
   font-size: 13px;
   color: var(--el-text-color-regular);
@@ -390,6 +409,9 @@ watch(() => [props.cacheTarget?.listener, props.cacheTarget?.site], loadCacheSta
   }
   .cache-ttl.is-placeholder {
     display: none;
+  }
+  .cache-note {
+    grid-column: 1 / -1;
   }
 }
 .w-80 {
