@@ -317,6 +317,9 @@ func inc(n *uint32) {
 	}
 }
 
+// clockSkew 为允许的时间超前量：记录中的时间比当前时间晚超过这么多时视为时钟曾经前跳（误设为未来时间后又改回）。
+const clockSkew = 86400
+
 // Record 记录一次请求。停用时直接返回。
 func (s *Store) Record(h Hit) {
 	if !s.Active() || !h.Addr.IsValid() {
@@ -342,6 +345,10 @@ func (s *Store) Record(h Hit) {
 		}
 		v = &Visitor{IP: addr.String(), First: now}
 		s.m[addr] = v
+	}
+	if v.Last > now+clockSkew || v.LastReq.Time > now+clockSkew {
+		// 时钟曾前跳到未来：把记录拉回当前时间，否则最近请求不再更新、按最近访问的淘汰与清理也会失准
+		resetFuture(v, now, day)
 	}
 	if now > v.Last {
 		v.Last = now
@@ -400,6 +407,37 @@ func addCount(list *[]Count, name string) {
 	if len(*list) < maxDeny {
 		*list = append(*list, Count{Name: name, N: 1})
 	}
+}
+
+// resetFuture 把记录中晚于 now 的时间截到 now，并删除晚于 day 的按天计数。
+// 用于时钟前跳后又改回、以及读取落盘数据时。
+func resetFuture(v *Visitor, now int64, day int32) {
+	clamp := func(t *int64) {
+		if *t > now {
+			*t = now
+		}
+	}
+	clamp(&v.First)
+	clamp(&v.Last)
+	clamp(&v.LastReq.Time)
+	for i := range v.Sites {
+		clamp(&v.Sites[i].Last)
+	}
+	for i := range v.Paths {
+		clamp(&v.Paths[i].Last)
+	}
+	for i := range v.Identities {
+		clamp(&v.Identities[i].Last)
+	}
+	for i := range v.Agents {
+		clamp(&v.Agents[i].Last)
+	}
+	// 按天计数按日期升序，未来的日期都在末尾
+	n := len(v.Days)
+	for n > 0 && v.Days[n-1].D > day {
+		n--
+	}
+	v.Days = v.Days[:n]
 }
 
 // addDay 累加当天的计数；按天的列表按日期升序，通常只需比较最后一项。
