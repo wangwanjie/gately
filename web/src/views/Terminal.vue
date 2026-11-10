@@ -16,6 +16,7 @@
           :conns="conns"
           :is-mobile="isMobile"
           :open-counts="openCounts"
+          :loading-key="editorLoading"
           @connect="connect"
           @edit="openEditor"
           @copy="openCopy"
@@ -518,11 +519,22 @@ function onRemarkChanged(id: string, remark: string) {
 }
 
 // ---- 连接管理 ----
+// editorLoading 为正在取最新列表、准备打开编辑框的连接 key；期间该连接的操作按钮显示加载中，重复点击忽略
+const editorLoading = ref('')
+
 async function openEditor(c: Conn | null) {
+  if (editorLoading.value) {
+    return
+  }
   copyConnFrom.value = null
   if (c) {
     // 连接后后端可能刚记录或补记了主机指纹与类型，打开前取一次最新列表，避免显示并回存旧值
-    await loadConns()
+    editorLoading.value = c.key
+    try {
+      await loadConns()
+    } finally {
+      editorLoading.value = ''
+    }
     c = conns.value.find((x) => x.key === c!.key) ?? c
   }
   editingConn.value = c

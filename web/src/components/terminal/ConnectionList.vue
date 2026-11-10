@@ -27,7 +27,7 @@
             <template v-else>
               <el-button v-if="!isMobile" size="small" type="primary" plain :icon="Play" :disabled="!c.enable" @click="$emit('connect', c)"><span class="btn-text">{{ t('termConn.list.connect') }}</span></el-button>
               <el-dropdown trigger="click" @command="(cmd: string) => onCommand(c, cmd)">
-                <el-button class="op" text :icon="Ellipsis" :aria-label="t('termConn.list.more')" />
+                <el-button class="op" text :icon="Ellipsis" :loading="!!loadingKey && loadingKey === c.key" :aria-label="t('termConn.list.more')" />
                 <template #dropdown>
                   <el-dropdown-menu>
                     <el-dropdown-item command="edit" :icon="Pencil">{{ t('termConn.list.edit') }}</el-dropdown-item>
@@ -65,7 +65,8 @@ import { useCompactView } from '../../composables/useCompactView'
 import { connAddr, type Conn } from './types'
 import { isCancel, withAccess } from './security'
 
-const props = defineProps<{ conns: Conn[]; isMobile: boolean; openCounts: Record<string, number> }>()
+// loadingKey 为正在准备打开编辑框的连接，该连接的更多操作按钮显示加载中
+const props = defineProps<{ conns: Conn[]; isMobile: boolean; openCounts: Record<string, number>; loadingKey?: string }>()
 const emit = defineEmits<{
   connect: [c: Conn]
   edit: [c: Conn | null]
