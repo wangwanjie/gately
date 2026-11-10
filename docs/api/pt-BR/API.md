@@ -2368,6 +2368,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `default` | `webservice.Site` |
 | `enable` | boolean |
 | `http3` | boolean |
+| `httpPort` | integer |
+| `httpPortMode` | string |
 | `key` | string |
 | `listenIp` | string |
 | `minTls` | string |
@@ -2775,6 +2777,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `enable` | boolean |
 | `error` | string |
 | `http3` | boolean |
+| `httpPort` | integer |
+| `httpPortMode` | string |
 | `id` | string |
 | `key` | string |
 | `listenIp` | string |

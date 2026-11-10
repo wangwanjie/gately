@@ -3395,6 +3395,12 @@
           "http3": {
             "type": "boolean"
           },
+          "httpPort": {
+            "type": "integer"
+          },
+          "httpPortMode": {
+            "type": "string"
+          },
           "key": {
             "type": "string"
           },
@@ -4408,6 +4414,12 @@
           },
           "http3": {
             "type": "boolean"
+          },
+          "httpPort": {
+            "type": "integer"
+          },
+          "httpPortMode": {
+            "type": "string"
           },
           "id": {
             "type": "string"

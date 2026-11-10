@@ -73,7 +73,10 @@ type TopoListener struct {
 	TLS      bool   `json:"tls"`
 	HTTP3    bool   `json:"http3"`
 	// PlainHTTP 为 HTTPS 端口收到明文请求时的处理方式（见 Listener.PlainHTTP）
-	PlainHTTP     string `json:"plainHttp"`
+	PlainHTTP string `json:"plainHttp"`
+	// HTTPPort、HTTPPortMode 为额外的明文 HTTP 端口及其处理方式（见 Listener.HTTPPort）
+	HTTPPort      int    `json:"httpPort,omitempty"`
+	HTTPPortMode  string `json:"httpPortMode,omitempty"`
 	ProxyProtocol bool   `json:"proxyProtocol"`
 	// Requests、Active、Rate 为该监听全部站点与监听级动作的汇总
 	Requests int64        `json:"requests"`
@@ -273,7 +276,7 @@ func (m *Module) topology(now int64, focus string, wantIP netip.Addr) TopologyVi
 		tl := TopoListener{
 			ID: "l:" + l.Key, Key: l.Key, Name: l.Name, Enable: l.Enable, Error: m.errors[l.Key],
 			Network: l.Network, ListenIP: l.ListenIP, Port: l.Port, TLS: l.TLS, HTTP3: l.HTTP3,
-			PlainHTTP: l.PlainHTTP, ProxyProtocol: l.AcceptProxyProtocol,
+			PlainHTTP: l.PlainHTTP, HTTPPort: l.HTTPPort, HTTPPortMode: l.HTTPPortMode, ProxyProtocol: l.AcceptProxyProtocol,
 			Sites: []TopoSite{}, Actions: []TopoAction{},
 		}
 		run := m.runners[l.Key]
@@ -316,7 +319,7 @@ func (m *Module) topology(now int64, focus string, wantIP netip.Addr) TopologyVi
 			addSite(l.Default, deflt, true)
 		}
 		if run != nil {
-			if l.TLS && l.PlainHTTP == PlainHTTPRedirect {
+			if l.TLS && (l.PlainHTTP == PlainHTTPRedirect || (l.HTTPPort > 0 && l.HTTPPortMode == PlainHTTPRedirect)) {
 				tl.Actions = append(tl.Actions, TopoAction{ID: "a:" + l.Key + "/redirect", Kind: "redirect"})
 			}
 			if deflt == nil {
