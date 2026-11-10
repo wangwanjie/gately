@@ -474,6 +474,25 @@ Regras de cache:
 - Um acerto retorna os cabeçalhos `X-Cache: HIT` e `Age`, e uma falha retorna `X-Cache: MISS`;
 - A chave do cache inclui o Host, a URI completa da requisição e o `Accept-Encoding`; com a [distribuição por usuário](#user-routes), inclui também a regra de usuário escolhida e, quando [Passar identidade](#identity-headers) está configurado, a identidade enviada ao backend.
 
+Cache por caminho (`rules`, "Cache por caminho" na aba "Tráfego" do editor do site, até 200 regras):
+
+| Campo | Descrição |
+| --- | --- |
+| `path` | Caminho a comparar. Começa com `/`, não contém espaços, `?` nem `#`, nem segmentos `.` ou `..` nem `/` consecutivas, e é único dentro do site. Sem `*`, é comparado como prefixo nos limites de segmento: `/api` corresponde a `/api` e `/api/x`, e deixa `/apix` de fora; com `*`, o caminho inteiro é comparado como curinga, e `*` corresponde a quaisquer caracteres, inclusive `/`, como `/api/products/*` ou `/static/*.js` |
+| `noCache` | Ligado equivale a "Não armazenar": o caminho não lê nem grava o cache |
+| `ttl` | Duração do cache, de 0 a 30 dias (em segundos); 0 usa a duração padrão do site |
+| `override` | Ligado equivale a "Forçar cache": o `Cache-Control` do backend é ignorado e respostas 200 ficam em cache pela duração definida; a regra ou o site precisam de uma duração maior que 0 |
+
+- A interface oferece três modos: "Armazenar" segue o `Cache-Control` do backend e usa a duração quando o backend não declara nada; "Forçar cache" corresponde a `override`; "Não armazenar" corresponde a `noCache`;
+- A regra mais específica vence: regras com mais caracteres sem contar `*` são comparadas primeiro, e empates mantêm a ordem configurada; caminhos que não correspondem a nenhuma regra usam os padrões do site. Para armazenar só alguns caminhos, defina `/` como não armazenar;
+- As regras comparam o caminho da requisição normalizado, então `//api` e `/x/../api` são tratados como `/api`;
+- Em qualquer modo, requisições com `Cookie` ou `Authorization` e respostas com `Set-Cookie` ou `Vary: *` nunca entram no cache.
+
+Ver e limpar o cache: ao editar um site salvo, a aba "Tráfego" mostra o número de entradas e o tamanho do cache em execução do site ("Cache atual"), com "Atualizar" e "Limpar tudo", e cada regra pode limpar o cache do seu caminho. A API correspondente:
+
+- `GET /api/webservice/cache?listener=&site=` retorna `enabled`, `entries`, `bytes` e `maxBytes`; `site` é a chave do site, `default` para o site padrão; retorna 404 quando o site não existe ou o listener dele não está em execução;
+- `POST /api/webservice/cache/purge` com o corpo `{"listener", "site", "path"}`: um `path` vazio limpa todo o cache do site; com valor, só as entradas cujo caminho corresponde, com a mesma sintaxe e comparação do `path` de uma regra; retorna o número de entradas removidas `removed` e o estado em seguida, e 400 quando o site não tem cache ativado.
+
 ### Reescrita e redirecionamento de caminho
 
 As regras são correspondidas em ordem, e a correspondência para na primeira ocorrência.

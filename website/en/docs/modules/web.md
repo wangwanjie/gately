@@ -474,6 +474,25 @@ Caching rules:
 - A hit returns the `X-Cache: HIT` and `Age` headers, and a miss returns `X-Cache: MISS`;
 - The cache key includes Host, the full request URI and `Accept-Encoding`; with [route by user](#user-routes), it also includes the chosen user route, and the identity passed to the backend when [Pass identity](#identity-headers) is set.
 
+Per-path caching (`rules`, "Per-path caching" in the site editor's "Traffic" tab, up to 200 rules):
+
+| Field | Description |
+| --- | --- |
+| `path` | Path to match. It starts with `/`, contains no spaces, `?` or `#`, no `.` or `..` segments and no consecutive `/`, and is unique within the site. Without `*` it matches as a prefix on segment boundaries: `/api` matches `/api` and `/api/x`, and leaves `/apix` alone; with `*` the whole path is matched as a wildcard, and `*` matches any characters including `/`, such as `/api/products/*` or `/static/*.js` |
+| `noCache` | On means "Don't cache": the path neither reads nor writes the cache |
+| `ttl` | Cache duration, 0 to 30 days (in seconds); 0 uses the site's default duration |
+| `override` | On means "Force cache": the backend's `Cache-Control` is ignored and 200 responses are cached for the cache duration; the rule or the site needs a duration greater than 0 |
+
+- The UI offers three modes: "Cache" follows the backend's `Cache-Control` and uses the duration when the backend declares nothing; "Force cache" is `override`; "Don't cache" is `noCache`;
+- The more specific rule wins: rules with more characters once `*` is removed are matched first, and ties keep the configured order; paths that match no rule use the site defaults. To cache only certain paths, set `/` to don't cache;
+- Rules match the normalized request path, so `//api` and `/x/../api` are treated as `/api`;
+- In every mode, requests with `Cookie` or `Authorization` and responses with `Set-Cookie` or `Vary: *` are never cached.
+
+Viewing and purging the cache: when editing a saved site, the "Traffic" tab shows the entry count and size of the site's running cache ("Current cache"), with "Refresh" and "Purge all", and each rule can purge the cache for its path. The matching API:
+
+- `GET /api/webservice/cache?listener=&site=` returns `enabled`, `entries`, `bytes` and `maxBytes`; `site` is the site key, `default` for the default site; it returns 404 when the site does not exist or its listener is not running;
+- `POST /api/webservice/cache/purge` with the body `{"listener", "site", "path"}`: an empty `path` clears the whole site cache, otherwise only entries whose path matches are cleared, with the same syntax and matching as a rule's `path`; it returns the number of removed entries `removed` and the cache state afterwards, and 400 when the site has no cache enabled.
+
 ### Path rewrite and redirect
 
 Rules are matched in order, and matching stops at the first hit.
