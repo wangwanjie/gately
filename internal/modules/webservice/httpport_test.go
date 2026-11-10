@@ -355,3 +355,33 @@ func TestHTTPPortRedirectUnknownHost(t *testing.T) {
 		t.Fatalf("同端口明文 HTTP 对已配置域名应跳转: %q", out)
 	}
 }
+
+// 额外 HTTP 端口与其他已启用监听的端口冲突时拒绝保存；tcp4 与 tcp6、不同的具体地址、停用的监听不冲突。
+func TestHTTPPortConflict(t *testing.T) {
+	https := Listener{Key: "a", Name: "HTTPS", Enable: true, Port: 443, TLS: true, HTTPPort: 80}
+	cases := []struct {
+		name    string
+		l       Listener
+		others  []Listener
+		wantErr bool
+	}{
+		{"与其他监听的主端口相同", https, []Listener{{Key: "b", Enable: true, Port: 80}}, true},
+		{"与其他监听的 HTTP 端口相同", https, []Listener{{Key: "b", Enable: true, Port: 8443, TLS: true, HTTPPort: 80}}, true},
+		{"主端口被其他监听用作 HTTP 端口", Listener{Key: "b", Enable: true, Port: 80}, []Listener{https}, true},
+		{"一方监听全部地址", https, []Listener{{Key: "b", Enable: true, ListenIP: "192.168.1.2", Port: 80}}, true},
+		{"tcp4 与 tcp6 不冲突", Listener{Key: "a", Enable: true, Network: "tcp4", Port: 443, TLS: true, HTTPPort: 80},
+			[]Listener{{Key: "b", Enable: true, Network: "tcp6", Port: 443, TLS: true, HTTPPort: 80}}, false},
+		{"不同的具体地址不冲突", Listener{Key: "a", Enable: true, ListenIP: "10.0.0.1", Port: 443, TLS: true, HTTPPort: 80},
+			[]Listener{{Key: "b", Enable: true, ListenIP: "10.0.0.2", Port: 80}}, false},
+		{"停用的监听不冲突", https, []Listener{{Key: "b", Enable: false, Port: 80}}, false},
+		{"本身停用时不检查", Listener{Key: "a", Port: 443, TLS: true, HTTPPort: 80}, []Listener{{Key: "b", Enable: true, Port: 80}}, false},
+		{"与自身旧配置不冲突", https, []Listener{https}, false},
+		{"主端口之间的重复不在这里检查", Listener{Key: "a", Enable: true, Port: 443}, []Listener{{Key: "b", Enable: true, Port: 443}}, false},
+	}
+	for _, tc := range cases {
+		l := tc.l
+		if err := checkHTTPPortConflict(&l, tc.others); (err != nil) != tc.wantErr {
+			t.Errorf("%s: err = %v", tc.name, err)
+		}
+	}
+}
