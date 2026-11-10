@@ -7,6 +7,10 @@ description: Release-Ankündigungen und Versionshinweise zu jeder Gately-Version
 
 Unten stehen die Ankündigungen zu wichtigen Releases. Alle Änderungen und Downloads jeder Version finden Sie unter [GitHub Releases](https://github.com/wangwanjie/gately/releases).
 
+## [v0.6.5.3](/de/news/v0.6.5.3)
+
+10. November 2026 · Sicherheitskorrektur (Antwort-Cache); Navigationspanels; Besucherprüfung; Wiedergabe der Netzwerktopologie; Cache-Regeln pro Pfad; das Web-Terminal prüft Host-Fingerabdrücke nach Schlüsseltyp; Protokollpanel mit anpassbarer Höhe.
+
 ## [v0.6.5.2](/de/news/v0.6.5.2)
 
 8. November 2026 · Einbruchschutz und automatische Firewall-Freigabe auf Synology DSM und anderen Kerneln ohne nf_tables; Platzhalter im ersten Label von Sites; Forward-Auth folgt 401-Umleitungen; behebt ein Beenden bei HTTP/2-Anfragen.

@@ -83,8 +83,8 @@
   "home": {
     "pill": "Gratuit et open source · Apache-2.0",
     "announce": {
-      "text": "v0.6.5.2 : pare-feu sur Synology DSM, joker dans le premier libellé, redirection 401 →",
-      "link": "/fr/news/v0.6.5.2"
+      "text": "v0.6.5.3 : panneaux de navigation, audit des visiteurs, relecture de la topologie, cache par chemin et correctif de sécurité du cache →",
+      "link": "/fr/news/v0.6.5.3"
     },
     "titleLine1": "La passerelle réseau tout-en-un",
     "titleLine2": "Open source, prête à l'emploi",

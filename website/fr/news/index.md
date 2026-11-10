@@ -7,6 +7,10 @@ description: Annonces et notes de version de chaque version de Gately.
 
 Les annonces des versions majeures sont listées ci-dessous. Consultez [GitHub Releases](https://github.com/wangwanjie/gately/releases) pour la liste complète des changements et les téléchargements de chaque version.
 
+## [v0.6.5.3](/fr/news/v0.6.5.3)
+
+10 novembre 2026 · Correctif de sécurité (cache de réponses) ; panneaux de navigation ; audit des visiteurs ; relecture de la topologie réseau ; règles de cache par chemin ; le terminal Web vérifie les empreintes d’hôte selon le type de clé ; hauteur réglable du panneau des journaux.
+
 ## [v0.6.5.2](/fr/news/v0.6.5.2)
 
 8 novembre 2026 · Prévention d’intrusion et ouverture automatique du pare-feu sur Synology DSM et les autres noyaux sans nf_tables ; joker dans le premier libellé des sites ; l’authentification déléguée suit les redirections 401 ; corrige un arrêt sur les requêtes HTTP/2.
