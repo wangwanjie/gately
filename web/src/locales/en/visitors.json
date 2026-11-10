@@ -99,5 +99,6 @@
   "range7": "7 days",
   "range30": "30 days",
   "rangeAll": "All",
-  "shrinkConfirm": "After shortening the retention, visitors last seen more than {days} days ago and older daily counts are deleted immediately and cannot be recovered. Save anyway?"
+  "shrinkConfirm": "After shortening the retention, visitors last seen more than {days} days ago and older daily counts are deleted immediately and cannot be recovered. Save anyway?",
+  "maxShrinkConfirm": "After lowering the visitor limit to {max}, the {n} visitors over the limit are deleted immediately and cannot be recovered (scanners first, then anonymous visitors, authenticated visitors last; within each group the longest unseen go first). Save anyway?"
 }

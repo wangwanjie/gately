@@ -99,5 +99,6 @@
   "range7": "7 dias",
   "range30": "30 dias",
   "rangeAll": "Tudo",
-  "shrinkConfirm": "Ao reduzir a retenção, os visitantes vistos pela última vez há mais de {days} dias e as contagens diárias mais antigas são excluídos imediatamente e não podem ser recuperados. Salvar mesmo assim?"
+  "shrinkConfirm": "Ao reduzir a retenção, os visitantes vistos pela última vez há mais de {days} dias e as contagens diárias mais antigas são excluídos imediatamente e não podem ser recuperados. Salvar mesmo assim?",
+  "maxShrinkConfirm": "Ao reduzir o máximo de visitantes para {max}, os {n} visitantes excedentes são excluídos imediatamente e não podem ser recuperados (primeiro os scanners, depois os visitantes anônimos e por último os autenticados; em cada grupo, primeiro os que estão há mais tempo sem aparecer). Salvar mesmo assim?"
 }

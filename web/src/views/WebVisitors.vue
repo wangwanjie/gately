@@ -403,6 +403,7 @@ import { isReadonly } from '../nav'
 import { useFormLayout } from '../composables/useIsMobile'
 import { copyText } from '../composables/useClipboard'
 import type { DayPoint, Ident, Item, LastReq, SiteRef, VisitorDetail, VisitorInfo, VisitorList, VisitorSummary } from '../visitors'
+import { latestOnly, shrinkImpact } from '../visitors'
 
 const { t, locale } = useI18n()
 const { isMobile, labelPosition } = useFormLayout()
@@ -565,7 +566,11 @@ function shortTime(sec: number): string {
   return new Date(sec * 1000).toLocaleString(locale.value, { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
 }
 
+// 列表请求序号：条件快速切换时只采用最后一次请求的结果
+const listSeq = latestOnly()
+
 async function load() {
+  const seq = listSeq.next()
   loading.value = true
   try {
     const qs = new URLSearchParams({ days: String(days.value), sort: sort.value, limit: String(pageSize), offset: String((page.value - 1) * pageSize) })
@@ -579,6 +584,9 @@ async function load() {
       qs.set('site', site.value)
     }
     const res = await api.get<VisitorList>('/api/webservice/visitors?' + qs.toString())
+    if (!listSeq.isLatest(seq)) {
+      return
+    }
     items.value = res.items
     total.value = res.total
     summary.value = res.summary
@@ -594,9 +602,13 @@ async function load() {
       await load()
     }
   } catch (e) {
-    ElMessage.error((e as Error).message)
+    if (listSeq.isLatest(seq)) {
+      ElMessage.error((e as Error).message)
+    }
   } finally {
-    loading.value = false
+    if (listSeq.isLatest(seq)) {
+      loading.value = false
+    }
   }
 }
 
@@ -629,18 +641,30 @@ const detailLoading = ref(false)
 const detailIP = ref('')
 const detail = ref<VisitorDetail | null>(null)
 
+// 详情请求序号：连续打开不同访客时，先发出的慢请求不会覆盖后打开的访客
+const detailSeq = latestOnly()
+
 async function loadDetail() {
+  const seq = detailSeq.next()
   detailLoading.value = true
   try {
-    detail.value = await api.get<VisitorDetail>('/api/webservice/visitors/detail?ip=' + encodeURIComponent(detailIP.value))
-    if (detail.value.listeners) {
-      listeners.value = { ...listeners.value, ...detail.value.listeners }
+    const d = await api.get<VisitorDetail>('/api/webservice/visitors/detail?ip=' + encodeURIComponent(detailIP.value))
+    if (!detailSeq.isLatest(seq)) {
+      return
+    }
+    detail.value = d
+    if (d.listeners) {
+      listeners.value = { ...listeners.value, ...d.listeners }
     }
   } catch (e) {
-    ElMessage.error((e as Error).message)
-    detailVisible.value = false
+    if (detailSeq.isLatest(seq)) {
+      ElMessage.error((e as Error).message)
+      detailVisible.value = false
+    }
   } finally {
-    detailLoading.value = false
+    if (detailSeq.isLatest(seq)) {
+      detailLoading.value = false
+    }
   }
 }
 
@@ -740,11 +764,11 @@ async function putSettings(body: { disable: boolean; days: number; max: number }
 }
 
 async function saveSettings() {
-  // 调小保留天数会立即删除超出范围的数据，先确认
-  const cur = info.value
-  if (cur && form.days < cur.days && cur.count > 0) {
+  // 调小保留天数或最多访客数会立即删除超出范围的数据，逐项确认
+  for (const x of shrinkImpact(info.value, form)) {
+    const msg = x.kind === 'days' ? t('visitors.shrinkConfirm', { days: x.days }) : t('visitors.maxShrinkConfirm', { max: num(x.max), n: num(x.n) })
     try {
-      await ElMessageBox.confirm(t('visitors.shrinkConfirm', { days: form.days }), t('visitors.settingsTitle'), {
+      await ElMessageBox.confirm(msg, t('visitors.settingsTitle'), {
         type: 'warning',
         confirmButtonText: t('common.save'),
         cancelButtonText: t('common.cancel'),

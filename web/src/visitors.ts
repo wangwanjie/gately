@@ -113,3 +113,37 @@ export interface VisitorDetail {
   lastReq: LastReq
   listeners?: Record<string, string>
 }
+
+// latestOnly 生成请求序号：每次发起请求取一个新序号，响应回来时序号已不是最新的说明之后又发起过请求，应丢弃。
+// 用于条件快速切换（翻页、筛选、切换访客）时，先发出的慢请求覆盖后发出的结果。
+export function latestOnly() {
+  let seq = 0
+  return {
+    next(): number {
+      seq++
+      return seq
+    },
+    isLatest(n: number): boolean {
+      return n === seq
+    },
+  }
+}
+
+// shrinkImpact 判断保存设置会立即删除哪些数据：保留天数调小且已有数据时为 days；
+// 最多访客数调小到少于现有访客数时为 max，n 为将被删除的访客数。都不删除时返回空列表。
+export function shrinkImpact(
+  cur: Pick<VisitorInfo, 'days' | 'max' | 'count'> | null | undefined,
+  next: { days: number; max: number },
+): ({ kind: 'days'; days: number } | { kind: 'max'; max: number; n: number })[] {
+  const out: ({ kind: 'days'; days: number } | { kind: 'max'; max: number; n: number })[] = []
+  if (!cur || cur.count <= 0) {
+    return out
+  }
+  if (next.days < cur.days) {
+    out.push({ kind: 'days', days: next.days })
+  }
+  if (next.max < cur.max && cur.count > next.max) {
+    out.push({ kind: 'max', max: next.max, n: cur.count - next.max })
+  }
+  return out
+}

@@ -99,5 +99,6 @@
   "range7": "7 días",
   "range30": "30 días",
   "rangeAll": "Todo",
-  "shrinkConfirm": "Al acortar la retención, los visitantes vistos por última vez hace más de {days} días y los recuentos diarios anteriores se eliminan de inmediato y no se pueden recuperar. ¿Guardar de todos modos?"
+  "shrinkConfirm": "Al acortar la retención, los visitantes vistos por última vez hace más de {days} días y los recuentos diarios anteriores se eliminan de inmediato y no se pueden recuperar. ¿Guardar de todos modos?",
+  "maxShrinkConfirm": "Al reducir el máximo de visitantes a {max}, los {n} visitantes que sobran se eliminan de inmediato y no se pueden recuperar (primero los escáneres, luego los visitantes anónimos y por último los autenticados; dentro de cada grupo, primero los que llevan más tiempo sin aparecer). ¿Guardar de todos modos?"
 }
