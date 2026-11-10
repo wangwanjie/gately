@@ -25,7 +25,9 @@ type PanelView struct {
 	// Icon 为页面标题旁的图标与浏览器标签页图标，为空时使用默认图标
 	Icon PanelIcon
 	// Theme 为 ""（跟随系统）、light、dark
-	Theme  string
+	Theme string
+	// Skin 为默认皮肤（色系 ID，见 panelthemes.go），为空时用默认色系；访客可在页面上换肤，选择保存在浏览器中
+	Skin   string
 	Groups []PanelGroup
 	// LAN 为当前使用内网地址；Switchable 表示有链接配置了内网地址，显示内外网切换；
 	// Forced 表示访客手动选择了内网或外网，显示“自动识别”
@@ -96,27 +98,16 @@ const (
 	panelGridIcon       = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>`
 )
 
-// panelLight / panelDark 为浅色与深色主题的颜色变量。
-const (
-	panelLight = `--brand:#0e7c66;--brand-2:#18a888;--soft:rgba(14,124,102,.10);--bg:#f4f7f6;--card:#fff;--hover:#fbfdfc;--text:#1d2624;--muted:#6b7775;--faint:#9aa5a3;--line:#e3e9e7;--input:#f8faf9;--shadow:0 1px 2px rgba(16,40,34,.04),0 8px 24px -14px rgba(16,40,34,.22)`
-	panelDark  = `--brand:#2bbf9c;--brand-2:#18a888;--soft:rgba(43,191,156,.14);--bg:#0f1413;--card:#171d1c;--hover:#1c2423;--text:#e4ebe9;--muted:#93a09d;--faint:#66726f;--line:#26302e;--input:#121817;--shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px -16px rgba(0,0,0,.7)`
-)
-
+// panelCSS 为页面样式；颜色与圆角变量（--brand、--bg、--r 等）由 skinCSS 按皮肤输出，页面脚本换肤时覆盖。
 const panelCSS = `
-:root{` + panelLight + `}
-@media (prefers-color-scheme:dark){:root:not([data-theme=light]){` + panelDark + `}}
-:root[data-theme=dark]{` + panelDark + `}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-html{color-scheme:light dark}
-:root[data-theme=light]{color-scheme:light}
-:root[data-theme=dark]{color-scheme:dark}
 body{margin:0;min-height:100vh;display:flex;flex-direction:column;background:var(--bg);color:var(--text);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased}
 .bg{position:fixed;inset:0;z-index:-1;background:radial-gradient(60rem 30rem at 0% -10%,var(--soft),transparent 70%),radial-gradient(50rem 28rem at 100% 0%,var(--soft),transparent 70%)}
 .page{width:100%;max-width:1200px;margin:0 auto;padding:32px 24px 12px;flex:1}
 .top{display:flex;align-items:center;justify-content:space-between;gap:16px 24px;flex-wrap:wrap;margin-bottom:26px}
 .brand{display:flex;align-items:center;gap:14px;min-width:0}
-.logo{width:48px;height:48px;flex:none;border-radius:14px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--brand-2),var(--brand));box-shadow:0 8px 20px -10px var(--brand);font-size:22px;font-weight:650;overflow:hidden}
+.logo{width:48px;height:48px;flex:none;border-radius:var(--r);display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--brand-2),var(--brand));box-shadow:0 8px 20px -10px var(--brand);font-size:22px;font-weight:650;overflow:hidden}
 .logo svg{width:24px;height:24px}
 .logo.img{background:var(--card);border:1px solid var(--line);box-shadow:none}
 .logo img{width:34px;height:34px;object-fit:contain}
@@ -127,14 +118,14 @@ body{margin:0;min-height:100vh;display:flex;flex-direction:column;background:var
 .tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .search{position:relative;display:flex;align-items:center}
 .search svg{position:absolute;left:11px;width:16px;height:16px;color:var(--faint);pointer-events:none}
-.search input{width:260px;height:38px;padding:0 34px 0 34px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--text);font:inherit;outline:none;transition:border-color .15s,box-shadow .15s}
+.search input{width:260px;height:38px;padding:0 34px 0 34px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--card);color:var(--text);font:inherit;outline:none;transition:border-color .15s,box-shadow .15s}
 .search input::placeholder{color:var(--faint)}
 .search input:focus{border-color:var(--brand);box-shadow:0 0 0 4px var(--soft)}
 .search input::-webkit-search-cancel-button{display:none}
 .search kbd{position:absolute;right:9px;min-width:18px;height:20px;padding:0 5px;border:1px solid var(--line);border-radius:5px;color:var(--faint);font:11px/18px ui-monospace,Menlo,monospace;text-align:center;background:var(--input)}
 .search input:focus~kbd{display:none}
-.net{display:inline-flex;align-items:center;gap:2px;height:38px;padding:3px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
-.net a,.net span{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 11px;border-radius:7px;color:var(--muted);text-decoration:none;font-size:13px;white-space:nowrap}
+.net{display:inline-flex;align-items:center;gap:2px;height:38px;padding:3px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--card)}
+.net a,.net span{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 11px;border-radius:max(2px,calc(var(--r-sm) - 3px));color:var(--muted);text-decoration:none;font-size:13px;white-space:nowrap}
 .net a:hover{color:var(--text);background:var(--input)}
 .net .on{color:var(--brand);background:var(--soft);font-weight:600}
 .net .dot{width:6px;height:6px;border-radius:50%;background:currentColor}
@@ -142,7 +133,7 @@ body{margin:0;min-height:100vh;display:flex;flex-direction:column;background:var
 .grp h2{display:flex;align-items:center;gap:8px;margin:0 0 12px;font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.02em}
 .grp h2 .n{min-width:20px;padding:0 6px;border-radius:999px;background:var(--input);border:1px solid var(--line);color:var(--faint);font-size:11px;font-weight:500;text-align:center}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
-.card{position:relative;display:flex;align-items:center;gap:12px;min-width:0;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--card);color:inherit;box-shadow:var(--shadow);transition:border-color .15s,transform .15s,background .15s}
+.card{position:relative;display:flex;align-items:center;gap:12px;min-width:0;padding:12px 14px;border:1px solid var(--line);border-radius:var(--r);background:var(--card);color:inherit;box-shadow:var(--shadow);transition:border-color .15s,transform .15s,background .15s}
 .card .hit{position:absolute;inset:0;z-index:1;border-radius:inherit}
 .card.link:hover{border-color:var(--brand);background:var(--hover);transform:translateY(-1px)}
 .card .hit:focus-visible{outline:none;box-shadow:0 0 0 4px var(--soft)}
@@ -151,7 +142,7 @@ body{margin:0;min-height:100vh;display:flex;flex-direction:column;background:var
 .alt{display:inline-block;max-width:100%;padding:1px 7px;border:1px solid var(--line);border-radius:999px;background:var(--input);color:var(--muted);font-size:11.5px;line-height:17px;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 a.alt:hover{border-color:var(--brand);color:var(--brand)}
 .alt.off{opacity:.5;text-decoration:line-through;cursor:not-allowed}
-.ic{width:40px;height:40px;flex:none;border-radius:11px;display:grid;place-items:center;color:#fff;background:var(--c,var(--brand));font-size:17px;font-weight:650;overflow:hidden}
+.ic{width:40px;height:40px;flex:none;border-radius:calc(var(--r-sm) + 1px);display:grid;place-items:center;color:#fff;background:var(--c,var(--brand));font-size:17px;font-weight:650;overflow:hidden}
 .ic.img{background:var(--input);border:1px solid var(--line)}
 .ic img{width:28px;height:28px;object-fit:contain}
 .ic.tile img{width:22px;height:22px}
@@ -166,14 +157,14 @@ a.alt:hover{border-color:var(--brand);color:var(--brand)}
 .page{padding:20px 14px 8px}
 .top{margin-bottom:20px}
 .brand h1{font-size:19px}
-.logo{width:42px;height:42px;border-radius:12px;font-size:19px}
+.logo{width:42px;height:42px;border-radius:calc(var(--r) - 2px);font-size:19px}
 .tools{width:100%}
 .search{flex:1 1 180px}
 .search input{width:100%}
 .search kbd{display:none}
 .grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-.card{gap:10px;padding:10px 11px;border-radius:12px}
-.ic{width:34px;height:34px;border-radius:10px;font-size:15px}
+.card{gap:10px;padding:10px 11px;border-radius:calc(var(--r) - 2px)}
+.ic{width:34px;height:34px;border-radius:var(--r-sm);font-size:15px}
 .ic img{width:24px;height:24px}
 .ic.tile img{width:19px;height:19px}
 .nm{font-size:13.5px}
@@ -186,7 +177,8 @@ const panelSrc = `<!doctype html>
 <meta name="robots" content="noindex,nofollow">
 <title>{{.Title}}</title>
 <link rel="icon" href="{{.Favicon}}">
-<style nonce="{{.Nonce}}">` + panelCSS + `{{range $i, $c := .Colors}}.c{{$i}}{--c:{{$c}}}{{end}}</style></head>
+<style nonce="{{.Nonce}}">{{.SkinCSS}}` + panelCSS + panelSkinCSS + `{{range $i, $c := .Colors}}.c{{$i}}{--c:{{$c}}}{{end}}</style>
+{{if not .Preview}}<script type="application/json" id="skin-data">{{.Skins}}</script><script nonce="{{.Nonce}}">` + panelSkinJS + `</script>{{end}}</head>
 <body><div class="bg" aria-hidden="true"></div>
 <div class="page">
 <header class="top">
@@ -194,6 +186,7 @@ const panelSrc = `<!doctype html>
 <div><h1>{{.Title}}</h1>{{if .Subtitle}}<p>{{.Subtitle}}</p>{{end}}</div></div>
 <div class="tools">
 {{if not .Preview}}<label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="search" placeholder="{{.T.search}}" aria-label="{{.T.search}}" title="{{.T.clearHint}}" autocomplete="off" spellcheck="false"><kbd>/</kbd></label>{{end}}
+{{if not .Preview}}<div class="skin"><button id="skin-btn" class="skin-btn" type="button" aria-haspopup="dialog" aria-controls="skin-pop" aria-expanded="false" title="{{.SkinT.switchTheme}}" aria-label="{{.SkinT.switchTheme}}">{{.SkinIcon}}</button></div>{{end}}
 {{if .Switchable}}<nav class="net" aria-label="{{.T.netHint}}">{{if .LAN}}<span class="on"><i class="dot"></i>{{.T.lan}}</span><a href="?net=wan" title="{{.T.toWan}}">{{.T.wan}}</a>{{else}}<a href="?net=lan" title="{{.T.toLan}}">{{.T.lan}}</a><span class="on"><i class="dot"></i>{{.T.wan}}</span>{{end}}{{if .Forced}}<a href="?net=auto">{{.T.auto}}</a>{{end}}</nav>{{end}}
 </div>
 </header>
@@ -369,10 +362,15 @@ func RenderPanel(r *http.Request, v PanelView) ([]byte, string) {
 	if v.Theme == "light" || v.Theme == "dark" {
 		theme = v.Theme
 	}
+	skin := v.Skin
+	if !ValidSkin(skin) || skin == "" {
+		skin = DefaultSkin()
+	}
 	data := map[string]any{
 		"Lang": lang, "T": Localize(lang, panelTexts), "Nonce": nonce,
 		"Title": v.Title, "Subtitle": v.Subtitle, "Icon": head, "Favicon": favicon, "GridIcon": template.HTML(panelGridIcon),
-		"Theme": theme, "Groups": groups, "Empty": total == 0, "Colors": colors,
+		"Theme": theme, "Groups": groups,
+		"SkinCSS": template.CSS(skinCSS(skin)), "Skins": skinScriptData(lang, skin, theme), "SkinT": skinLangTexts(lang).UI, "SkinIcon": template.HTML(skinIconPalette), "Empty": total == 0, "Colors": colors,
 		"LAN": v.LAN, "Switchable": v.Switchable, "Forced": v.Forced, "Preview": v.Preview,
 	}
 	var buf bytes.Buffer

@@ -377,7 +377,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | PUT | `/api/webservice/listeners-order` | `webservice:write` | Reordenar Escucha del servicio web |
 | PUT | `/api/webservice/listeners-enable` | `webservice:write` | Activar o desactivar en lote: Escucha del servicio web |
 | POST | `/api/webservice/listeners-delete` | `webservice:write` | Eliminar en lote: Escucha del servicio web |
-| GET | `/api/webservice/iplists` | `webservice:read` | Listar 订阅 IP  |
+| GET | `/api/webservice/iplists` | `webservice:read` | Listar las listas de IP suscritas |
 | POST | `/api/webservice/iplists` | `webservice:write` | Añadir Lista de IP suscrita |
 | POST | `/api/webservice/iplists/{key}/copy` | `webservice:write` | Duplicar Lista de IP suscrita |
 | PUT | `/api/webservice/iplists/{key}` | `webservice:write` | Modificar Lista de IP suscrita |
@@ -2426,6 +2426,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `links` | Lista de `webservice.PanelLink` |
 | `name` | string |
 | `remark` | string |
+| `skin` | string |
 | `subtitle` | string |
 | `theme` | string |
 | `title` | string |

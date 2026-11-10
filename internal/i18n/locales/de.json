@@ -601,6 +601,7 @@
   "不支持的渠道类型 %q": "Nicht unterstützter Kanaltyp %q",
   "不支持的界面语言 %q": "Nicht unterstützte Oberflächensprache %q",
   "不支持的登录方式 %q": "Nicht unterstützte Anmeldemethode %q",
+  "不支持的皮肤 %q": "nicht unterstützter Skin %q",
   "不支持的级别 %q": "Nicht unterstützte Stufe %q",
   "不支持的网络类型 %q": "Nicht unterstützter Netzwerktyp %q",
   "不支持的记录类型 %q": "Nicht unterstützter Datensatztyp %q",

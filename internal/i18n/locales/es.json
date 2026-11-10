@@ -601,6 +601,7 @@
   "不支持的渠道类型 %q": "Tipo de canal %q no compatible",
   "不支持的界面语言 %q": "Idioma de interfaz no admitido %q",
   "不支持的登录方式 %q": "Método de inicio de sesión no admitido %q",
+  "不支持的皮肤 %q": "apariencia no admitida %q",
   "不支持的级别 %q": "Nivel %q no compatible",
   "不支持的网络类型 %q": "Tipo de red %q no compatible",
   "不支持的记录类型 %q": "Tipo de registro %q no compatible",

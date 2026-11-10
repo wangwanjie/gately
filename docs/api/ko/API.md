@@ -377,7 +377,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/webservice/listeners-order` | `webservice:write` | Web 서비스 수신 대기 순서 변경 |
 | PUT | `/api/webservice/listeners-enable` | `webservice:write` | Web 서비스 수신 대기 일괄 사용/사용 안 함 |
 | POST | `/api/webservice/listeners-delete` | `webservice:write` | Web 서비스 수신 대기 일괄 삭제 |
-| GET | `/api/webservice/iplists` | `webservice:read` | 订阅 IP  목록 조회 |
+| GET | `/api/webservice/iplists` | `webservice:read` | 구독 IP 목록 조회 |
 | POST | `/api/webservice/iplists` | `webservice:write` | 구독 IP 목록 추가 |
 | POST | `/api/webservice/iplists/{key}/copy` | `webservice:write` | 구독 IP 목록 복제 |
 | PUT | `/api/webservice/iplists/{key}` | `webservice:write` | 구독 IP 목록 수정 |
@@ -2426,6 +2426,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `links` | Array of `webservice.PanelLink` |
 | `name` | string |
 | `remark` | string |
+| `skin` | string |
 | `subtitle` | string |
 | `theme` | string |
 | `title` | string |

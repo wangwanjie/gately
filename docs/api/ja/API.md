@@ -377,7 +377,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/webservice/listeners-order` | `webservice:write` | Web サービスのリッスン の並び順を変更 |
 | PUT | `/api/webservice/listeners-enable` | `webservice:write` | Web サービスのリッスン の一括有効化・無効化 |
 | POST | `/api/webservice/listeners-delete` | `webservice:write` | Web サービスのリッスン の一括削除 |
-| GET | `/api/webservice/iplists` | `webservice:read` | 订阅 IP  の一覧を取得 |
+| GET | `/api/webservice/iplists` | `webservice:read` | 購読 IP リストの一覧を取得 |
 | POST | `/api/webservice/iplists` | `webservice:write` | 購読 IP リスト を追加 |
 | POST | `/api/webservice/iplists/{key}/copy` | `webservice:write` | 購読 IP リスト を複製 |
 | PUT | `/api/webservice/iplists/{key}` | `webservice:write` | 購読 IP リスト を更新 |
@@ -2426,6 +2426,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `links` | 配列 of `webservice.PanelLink` |
 | `name` | string |
 | `remark` | string |
+| `skin` | string |
 | `subtitle` | string |
 | `theme` | string |
 | `title` | string |
