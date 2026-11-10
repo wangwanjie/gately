@@ -475,3 +475,43 @@ func waitFor(t *testing.T, d time.Duration, cond func() bool, msg string) {
 	}
 	t.Fatal(msg)
 }
+
+// 重写规则跳转中的 {host}：IPv6 字面地址补回方括号，含域名以外字符的 Host 拒绝代入。
+func TestRewriteHost(t *testing.T) {
+	cases := []struct {
+		in   string
+		want string
+		ok   bool
+	}{
+		{"w.test", "w.test", true},
+		{"W.Test:8443", "w.test", true},
+		{"[2001:db8::1]:8443", "[2001:db8::1]", true},
+		{"[2001:db8::1]", "[2001:db8::1]", true},
+		{"", "", false},
+		{"a&b.test", "", false},
+		{"a%2fb.test", "", false},
+	}
+	for _, c := range cases {
+		got, ok := rewriteHost(c.in)
+		if ok != c.ok || got != c.want {
+			t.Errorf("rewriteHost(%q) = %q, %v，期望 %q, %v", c.in, got, ok, c.want, c.ok)
+		}
+	}
+}
+
+func TestRewriteRedirectHostIPv6(t *testing.T) {
+	b := okBackend(t)
+	l := Listener{Sites: []Site{{Enable: true, Domains: []string{"*"}, Targets: []string{b.URL}, Rewrites: []Rewrite{
+		{Pattern: `^/(.*)$`, To: "https://{host}:8443/$1", Redirect: true, Code: 302},
+	}}}}
+	addr, _ := startRunner(t, l, nil, nil)
+	c := noRedirect()
+	resp, _ := get(t, c, addr, "[2001:db8::1]:80", "/x", nil)
+	if resp.StatusCode != 302 || resp.Header.Get("Location") != "https://[2001:db8::1]:8443/x" {
+		t.Fatalf("IPv6 跳转不符: %d %s", resp.StatusCode, resp.Header.Get("Location"))
+	}
+	resp, _ = get(t, c, addr, "a&b.test", "/x", nil)
+	if resp.StatusCode != 400 {
+		t.Fatalf("非法 Host 应返回 400: %d %s", resp.StatusCode, resp.Header.Get("Location"))
+	}
+}
