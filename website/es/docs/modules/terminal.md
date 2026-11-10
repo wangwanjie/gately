@@ -22,6 +22,12 @@ Las conexiones SSH y Telnet pueden usar cada una su propio proxy de salida de ti
 
 Cuando se establece por primera vez una conexión SSH, se registra y se confía en la huella del host del servidor, y se verifica en cada conexión posterior. Tras reinstalar un servidor o cambiar sus claves, ejecuta «Restablecer huella del host» en la conexión para volver a confiar en él.
 
+- Junto con la huella se registra el tipo de clave (`hostKeyType`). El editor de la conexión, el aviso de primera confianza y el error de discrepancia lo muestran como `ECDSA SHA256:...`, con la misma notación que `ssh-keygen -l`, para compararlo con la salida de `ssh-keyscan`;
+- Con un tipo registrado, la conexión negocia solo ese tipo de clave del host. Si falta el tipo, es desconocido o el servidor ya no lo ofrece, se prueban los demás tipos con un handshake cada uno, solo se acepta una clave cuya huella coincida con la registrada y después se completa el tipo;
+- Los servidores suelen tener varias claves de host (ECDSA, RSA, Ed25519, etc.), así que también se puede introducir directamente una huella de otro tipo obtenida con `ssh-keyscan` u otra herramienta;
+- La comprobación de la clave del host ocurre antes de la autenticación: si ninguna clave del servidor coincide con la registrada, la conexión informa de que la clave del host cambió, muestra el tipo y la huella registrados y actuales, y no envía contraseña ni firma;
+- «Probar conexión» muestra la huella y el tipo del servidor en una primera conexión y no registra nada; al editar una conexión se conserva el tipo registrado, mientras que cambiar el host o el puerto, reescribir la huella a mano o «Restablecer huella del host» lo borran.
+
 ## Sesiones
 
 - Las sesiones se conservan en el servidor. Tras actualizar el navegador o desconectarte, puedes volver a conectarte desde la lista de sesiones; al conectar se reproduce primero el búfer de salida y después se transmite la salida en vivo;

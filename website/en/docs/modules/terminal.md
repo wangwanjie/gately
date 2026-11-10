@@ -22,6 +22,12 @@ SSH and Telnet connections can each use their own outbound proxy of type `socks5
 
 When an SSH connection is first established, the server's host fingerprint is recorded and trusted, and it is verified on every later connection. After a server is reinstalled or its keys change, run "Reset host fingerprint" on the connection to trust it again.
 
+- The key type is recorded together with the fingerprint (`hostKeyType`). The connection editor, the first-trust notice and the mismatch error show it as `ECDSA SHA256:...`, written as `ssh-keygen -l` does, so it can be compared with `ssh-keyscan` output;
+- With a recorded type, the connection negotiates only that host key type. When the type is missing, unknown or no longer offered by the server, the other types are tried one handshake each, only a key whose fingerprint matches the record is accepted, and the type is then filled in;
+- Servers usually have several host keys (ECDSA, RSA, Ed25519 and so on), so a fingerprint of another type taken from `ssh-keyscan` or another tool can be entered directly;
+- Host key checking happens before authentication: when all of the server's host keys mismatch the record, the connection reports that the host key changed, shows the recorded and current type and fingerprint, and sends no password or signature;
+- "Test connection" shows the server's fingerprint and type on a first connection and records nothing; editing a connection keeps the recorded type, while changing the host or port, rewriting the fingerprint by hand or "Reset host fingerprint" clears it.
+
 ## Sessions
 
 - Sessions are persisted on the server. After a browser refresh or disconnect you can reattach from the session list; on attach the output buffer is replayed first, then output is streamed live;

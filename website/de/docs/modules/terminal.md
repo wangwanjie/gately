@@ -22,6 +22,12 @@ SSH- und Telnet-Verbindungen können jeweils einen eigenen ausgehenden Proxy vom
 
 Beim ersten Aufbau einer SSH-Verbindung wird der Host-Fingerabdruck des Servers gespeichert und als vertrauenswürdig behandelt; bei jeder späteren Verbindung wird er geprüft. Nach einer Neuinstallation des Servers oder wenn sich seine Schlüssel ändern, führen Sie an der Verbindung „Host-Fingerabdruck zurücksetzen“ aus, um ihm erneut zu vertrauen.
 
+- Zusammen mit dem Fingerabdruck wird der Schlüsseltyp gespeichert (`hostKeyType`). Verbindungseditor, Hinweis beim ersten Vertrauen und Fehlermeldung bei Abweichung zeigen ihn als `ECDSA SHA256:...`, in der Schreibweise von `ssh-keygen -l`, damit er sich mit der Ausgabe von `ssh-keyscan` vergleichen lässt;
+- Ist ein Typ gespeichert, handelt die Verbindung nur diesen Host-Schlüsseltyp aus. Fehlt der Typ, ist er unbekannt oder bietet der Server ihn nicht mehr an, werden die übrigen Typen mit je einem Handshake versucht; akzeptiert wird nur ein Schlüssel, dessen Fingerabdruck zum gespeicherten passt, anschließend wird der Typ nachgetragen;
+- Server haben meist mehrere Host-Schlüssel (ECDSA, RSA, Ed25519 usw.), daher lässt sich auch ein Fingerabdruck eines anderen Typs aus `ssh-keyscan` oder einem anderen Werkzeug direkt eintragen;
+- Die Prüfung des Host-Schlüssels erfolgt vor der Authentifizierung: Passen alle Host-Schlüssel des Servers nicht zum gespeicherten Wert, meldet die Verbindung einen geänderten Host-Schlüssel, zeigt gespeicherten und aktuellen Typ samt Fingerabdruck und sendet weder Passwort noch Signatur;
+- „Verbindung testen“ zeigt bei einer ersten Verbindung Fingerabdruck und Typ des Servers an und speichert nichts; beim Bearbeiten einer Verbindung bleibt der gespeicherte Typ erhalten, das Ändern von Host oder Port, das manuelle Überschreiben des Fingerabdrucks und „Host-Fingerabdruck zurücksetzen“ löschen ihn.
+
 ## Sitzungen
 
 - Sitzungen bleiben auf dem Server erhalten. Nach einem Neuladen des Browsers oder einem Verbindungsabbruch binden Sie sich aus der Sitzungsliste wieder an; beim Anbinden wird zuerst der Ausgabepuffer erneut abgespielt, danach die Ausgabe live gestreamt;
