@@ -36,18 +36,17 @@ func queryInt(r *http.Request, name string) (int64, bool) {
 // replayIndex 返回概览并附上当前设置。
 func (m *Module) replayIndex(from, to, last int64, points int) ReplayIndex {
 	m.mu.Lock()
-	set := m.cfg.Replay
+	set := effectiveReplaySettings(m.cfg.Replay)
 	st := m.replay.store
 	m.mu.Unlock()
-	_ = set.Normalize()
 	var out ReplayIndex
 	if st != nil {
+		// 容量上限以存储实际使用的为准（index 已填入）
 		out = st.index(from, to, last, points)
 	} else {
-		out = ReplayIndex{Step: replayStep, Buckets: []ReplayBucket{}}
+		out = ReplayIndex{Step: replayStep, Buckets: []ReplayBucket{}, Limit: set.limit()}
 	}
 	out.Settings = set
-	out.Limit = set.limit()
 	return out
 }
 
