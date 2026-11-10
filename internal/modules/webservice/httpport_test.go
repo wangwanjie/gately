@@ -97,6 +97,8 @@ func TestHTTPPortRedirect(t *testing.T) {
 func TestHTTPPortRedirectAccessPort(t *testing.T) {
 	l := httpPortListener(t, PlainHTTPRedirect)
 	l.AccessPort = 443
+	// IP 直连没有对应站点，由默认站点处理时才跳转
+	l.Default = Site{Enable: true, Type: TypeText, Text: "default"}
 	_, _ = startRunner(t, l, fakeCerts{selfSigned(t, "secure.test")}, nil)
 	httpAddr := "127.0.0.1:" + strconv.Itoa(l.HTTPPort)
 	if out := rawGet(t, httpAddr, "GET", "secure.test", ""); !strings.Contains(out, "Location: https://secure.test/a/b?x=1\r\n") {
@@ -317,5 +319,39 @@ func TestHTTPPortTopology(t *testing.T) {
 	}
 	if !found {
 		t.Fatalf("应显示跳转动作: %+v", tl.Actions)
+	}
+}
+
+// 没有对应站点的域名不跳转：没有默认站点时返回 404 并交给路径探测计数，默认站点为断开连接时直接断开，
+// 与 HTTPS 上的行为一致；默认站点为普通站点时照常跳转。同端口明文 HTTP 的跳转同样如此。
+func TestHTTPPortRedirectUnknownHost(t *testing.T) {
+	l := httpPortListener(t, PlainHTTPRedirect)
+	_, r := startRunner(t, l, fakeCerts{selfSigned(t, "secure.test")}, nil)
+	httpAddr := "127.0.0.1:" + strconv.Itoa(l.HTTPPort)
+	if out := rawGet(t, httpAddr, "GET", "scan.example", ""); !strings.HasPrefix(out, "HTTP/1.1 404") || strings.Contains(out, "Location:") {
+		t.Fatalf("未知域名不应跳转: %q", out)
+	}
+	if n := r.acts.redirect.total.Load(); n != 0 {
+		t.Fatalf("未知域名不应计入跳转: %d", n)
+	}
+
+	l = httpPortListener(t, PlainHTTPRedirect)
+	l.Default = Site{Enable: true, Type: TypeClose}
+	_, _ = startRunner(t, l, fakeCerts{selfSigned(t, "secure.test")}, nil)
+	httpAddr = "127.0.0.1:" + strconv.Itoa(l.HTTPPort)
+	if out := rawGet(t, httpAddr, "GET", "scan.example", ""); out != "" {
+		t.Fatalf("默认站点为断开连接时应直接断开: %q", out)
+	}
+	if out := rawGet(t, httpAddr, "GET", "secure.test", ""); !strings.HasPrefix(out, "HTTP/1.1 301") {
+		t.Fatalf("已配置的域名仍应跳转: %q", out)
+	}
+
+	pl := plainHTTPListener(PlainHTTPRedirect)
+	addr, _ := startRunner(t, pl, fakeCerts{selfSigned(t, "secure.test")}, nil)
+	if out := rawGet(t, addr, "GET", "scan.example", ""); strings.Contains(out, "Location:") {
+		t.Fatalf("同端口明文 HTTP 对未知域名也不应跳转: %q", out)
+	}
+	if out := rawGet(t, addr, "GET", "secure.test", ""); !strings.Contains(out, "Location: https://secure.test") {
+		t.Fatalf("同端口明文 HTTP 对已配置域名应跳转: %q", out)
 	}
 }
