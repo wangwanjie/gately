@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -137,7 +138,7 @@ func validatePanelURL(raw string) error {
 	if !panelSchemes[scheme] {
 		return fmt.Errorf("不支持 %s: 协议的地址", scheme)
 	}
-	if scheme != "mailto" && u.Host == "" {
+	if scheme != "mailto" && !validPanelHost(u.Host) {
 		return errors.New("地址需为完整 URL，例如 https://nas.example.com")
 	}
 	if _, has := u.User.Password(); has {
@@ -145,6 +146,53 @@ func validatePanelURL(raw string) error {
 		return errors.New("地址不能包含密码")
 	}
 	return nil
+}
+
+// validPanelHost 检查地址的主机部分：主机名不能为空、不能有空标签（如 .nas.example.com、a..b），
+// 未加方括号的主机名不能含冒号（IPv6 地址须写成 [2001:db8::1]），端口须为 1-65535 的数字。
+// 变量展开为空（如非通配站点的 {1}、越界的 {domainPartN}）时得到的地址会在这里被拦下
+func validPanelHost(host string) bool {
+	if strings.HasPrefix(host, "[") {
+		end := strings.IndexByte(host, ']')
+		if end < 0 {
+			return false
+		}
+		if _, err := netip.ParseAddr(host[1:end]); err != nil {
+			return false
+		}
+		rest := host[end+1:]
+		if rest == "" {
+			return true
+		}
+		port, ok := strings.CutPrefix(rest, ":")
+		return ok && validPanelPort(port)
+	}
+	name := host
+	if i := strings.LastIndexByte(host, ':'); i >= 0 {
+		if !validPanelPort(host[i+1:]) {
+			return false
+		}
+		name = host[:i]
+	}
+	if name == "" || strings.Contains(name, ":") {
+		return false
+	}
+	// 允许完全限定写法末尾的一个点
+	for _, label := range strings.Split(strings.TrimSuffix(name, "."), ".") {
+		if label == "" {
+			return false
+		}
+	}
+	return true
+}
+
+// validPanelPort 检查端口为 1-65535 的十进制数字。
+func validPanelPort(port string) bool {
+	if port == "" || len(port) > 5 || strings.TrimLeft(port, "0123456789") != "" {
+		return false
+	}
+	n, err := strconv.Atoi(port)
+	return err == nil && n >= 1 && n <= 65535
 }
 
 // panelVarAllowed 判断链接地址中可用的变量：只允许访客访问面板所用的域名、端口与 STUN 地址。
@@ -463,9 +511,19 @@ func (p *compiledPanel) view(q redirectRequest, lan, forced, preview bool) webpa
 }
 
 // expandPanelURL 展开链接地址中的变量并校验，不可用时返回 false。
+// {1} 没有值（面板站点不是通配域名，或预览时）时链接视为暂不可用：空值代入后地址虽可能仍能解析，
+// 指向的却是另一个主机，例如 https://{1}.nas.example.com 变成 https://.nas.example.com
 func expandPanelURL(raw string, q redirectRequest) (string, bool) {
-	href, err := expandVars(raw, panelLookup(q.lookup))
-	if err != nil || validatePanelURL(href) != nil {
+	empty := false
+	lookup := panelLookup(q.lookup)
+	href, err := expandVars(raw, func(name string) (string, bool, error) {
+		v, found, lookupErr := lookup(name)
+		if lookupErr == nil && found && name == "1" && v == "" {
+			empty = true
+		}
+		return v, found, lookupErr
+	})
+	if err != nil || empty || validatePanelURL(href) != nil {
 		return "", false
 	}
 	return href, true
