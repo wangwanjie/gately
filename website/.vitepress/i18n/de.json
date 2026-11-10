@@ -83,8 +83,8 @@
   "home": {
     "pill": "Kostenlos und Open Source · Apache-2.0",
     "announce": {
-      "text": "v0.6.5.2: Firewall auf Synology DSM, Platzhalter im ersten Label, 401-Umleitung →",
-      "link": "/de/news/v0.6.5.2"
+      "text": "v0.6.5.3: Navigationspanels, Besucherprüfung, Topologie-Wiedergabe, Cache pro Pfad und Sicherheitskorrektur für den Cache →",
+      "link": "/de/news/v0.6.5.3"
     },
     "titleLine1": "Das All-in-one-Netzwerk-Gateway",
     "titleLine2": "Open Source, sofort einsatzbereit",

@@ -7,6 +7,10 @@ description: Release announcements and notes for each Gately version.
 
 Announcements for major releases are listed below. See [GitHub Releases](https://github.com/wangwanjie/gately/releases) for the full changes and downloads of every version.
 
+## [v0.6.5.3](/en/news/v0.6.5.3)
+
+November 10, 2026 · Security fix (response cache); navigation panels; visitor audit; network topology replay; per-path cache rules; the Web terminal checks host fingerprints by key type; resizable log panel.
+
 ## [v0.6.5.2](/en/news/v0.6.5.2)
 
 November 8, 2026 · Intrusion prevention and automatic firewall opening on Synology DSM and other kernels without nf_tables; first-label wildcards for sites; forward auth follows 401 redirects; fixes an exit on HTTP/2 requests.
