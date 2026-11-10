@@ -59,11 +59,12 @@ func TestMiddleware(t *testing.T) {
 		req.RemoteAddr = "9.9.9.9:1234"
 		h.ServeHTTP(httptest.NewRecorder(), req)
 	}
-	do("GET", "/api/ddns/tasks")          // 普通读取不记录
-	do("POST", "/api/ddns/tasks")         // 变更
-	do("GET", "/api/system/backup")       // 敏感读取
-	do("POST", "/api/nettools/run")       // 被跳过
-	do("PUT", "/api/account/ui-language") // 界面语言偏好不记录
+	do("GET", "/api/ddns/tasks")                 // 普通读取不记录
+	do("POST", "/api/ddns/tasks")                // 变更
+	do("GET", "/api/system/backup")              // 敏感读取
+	do("POST", "/api/nettools/run")              // 被跳过
+	do("PUT", "/api/account/ui-language")        // 界面语言偏好不记录
+	do("POST", "/api/webservice/panels/preview") // 导航面板预览不保存，不记录
 	do("GET", "/api/webterminal/connections/x/ws")
 	do("GET", "/api/ddns/tasks/x/secrets") // 取回密码明文
 	do("GET", "/api/backup/local")         // 备份文件列表会被轮询，不记录
