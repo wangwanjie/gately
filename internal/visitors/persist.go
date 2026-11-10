@@ -3,6 +3,7 @@ package visitors
 import (
 	"bufio"
 	"bytes"
+	"cmp"
 	"compress/gzip"
 	"encoding/json"
 	"errors"
@@ -96,26 +97,30 @@ func (s *Store) Save() error {
 	s.saveMu.Lock()
 	defer s.saveMu.Unlock()
 
-	// 在锁内只做 JSON 编码，压缩与写文件在锁外进行，不阻塞请求的记录
+	// 锁内只复制记录，排序、JSON 编码、压缩与写文件都在锁外进行，不阻塞请求的记录；
+	// 编码直接流式写入 gzip，不在内存里攒出整份未压缩的数据
 	s.mu.Lock()
 	s.pruneLocked(s.now())
-	addrs := make([]netip.Addr, 0, len(s.m))
-	for a := range s.m {
-		addrs = append(addrs, a)
-	}
-	slices.SortFunc(addrs, func(x, y netip.Addr) int { return x.Compare(y) })
-	var buf bytes.Buffer
-	enc := json.NewEncoder(&buf)
-	for _, a := range addrs {
-		if err := enc.Encode(s.m[a]); err != nil {
-			s.mu.Unlock()
-			return err
-		}
+	snap := make([]Visitor, 0, len(s.m))
+	for _, v := range s.m {
+		snap = append(snap, v.clone())
 	}
 	s.dirty = false
 	s.mu.Unlock()
 
-	size, err := writeFile(s.path, buf.Bytes())
+	// 按地址排序，文件内容稳定，便于比对
+	slices.SortFunc(snap, func(x, y Visitor) int {
+		return cmp.Compare(x.IP, y.IP)
+	})
+	size, err := writeFile(s.path, func(w io.Writer) error {
+		enc := json.NewEncoder(w)
+		for i := range snap {
+			if err := enc.Encode(&snap[i]); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if err != nil {
@@ -130,8 +135,8 @@ func (s *Store) Save() error {
 	return nil
 }
 
-// writeFile 把内容压缩后原子地写入 path，返回文件大小。
-func writeFile(path string, data []byte) (int64, error) {
+// writeFile 把 write 写出的内容压缩后原子地写入 path，返回文件大小。
+func writeFile(path string, write func(io.Writer) error) (int64, error) {
 	dir := filepath.Dir(path)
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return 0, err
@@ -143,10 +148,14 @@ func writeFile(path string, data []byte) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	zw, _ := gzip.NewWriterLevel(f, gzip.BestSpeed)
-	_, werr := zw.Write(data)
+	bw := bufio.NewWriterSize(f, 64<<10)
+	zw, _ := gzip.NewWriterLevel(bw, gzip.BestSpeed)
+	werr := write(zw)
 	if cerr := zw.Close(); werr == nil {
 		werr = cerr
+	}
+	if ferr := bw.Flush(); werr == nil {
+		werr = ferr
 	}
 	if werr == nil {
 		werr = f.Sync()
