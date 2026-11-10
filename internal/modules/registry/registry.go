@@ -34,6 +34,8 @@ type wiring struct {
 	// 以下由 Web 终端提供：经 SSH 连接上传文件并执行命令、列出 SSH 连接
 	sshPush    func(ctx context.Context, conn, dir string, files []ssl.RemoteFile, command string) (string, error)
 	sshTargets func() []ssl.SSHTarget
+	// sshExec 经 SSH 连接执行一条命令（每次新建连接），网络唤醒用它远程关机
+	sshExec func(ctx context.Context, conn, command string) (string, error)
 	// 以下由 Docker 模块提供：重启容器、列出容器名称、持续读取容器日志
 	restart      func(ctx context.Context, names []string) error
 	containers   func(ctx context.Context) ([]string, error)

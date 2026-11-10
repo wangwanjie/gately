@@ -131,3 +131,68 @@ func pushFile(sc *sftp.Client, target string, data []byte, mode os.FileMode) err
 	}
 	return nil
 }
+
+// execOutputLimit 为 Exec 保留的命令输出上限，超出部分丢弃，避免远程程序大量输出占用内存。
+const execOutputLimit = 16 << 10
+
+// limitedBuffer 只保留前 max 个字节的输出，写入始终报告成功，命令不会因输出被截断而中断。
+type limitedBuffer struct {
+	buf []byte
+	max int
+}
+
+func (b *limitedBuffer) Write(p []byte) (int, error) {
+	if room := b.max - len(b.buf); room > 0 {
+		if len(p) > room {
+			b.buf = append(b.buf, p[:room]...)
+		} else {
+			b.buf = append(b.buf, p...)
+		}
+	}
+	return len(p), nil
+}
+
+// Exec 经指定 SSH 连接执行一条命令并返回输出（最多保留 16 KB），供网络唤醒关机等功能使用。
+// 每次新建连接、执行完关闭，不经连接池：目标设备可能刚重启过，池中的旧连接已失效但还没被发现，
+// 用它打开会话会一直等到超时。无人值守时不能确认主机身份，因此要求该连接已记录主机密钥。
+// 命令执行失败时返回的错误包装了 ssh 库的原始错误（如 *ssh.ExitError、*ssh.ExitMissingError），可用 errors.As 判断。
+func (m *Module) Exec(ctx context.Context, connKey, command string) (string, error) {
+	conn, ok := m.findConn(connKey)
+	if !ok || conn.Type != TypeSSH {
+		return "", errors.New("SSH 连接不存在，可能已被删除")
+	}
+	if conn.SSH.HostKey == "" {
+		return "", fmt.Errorf("SSH 连接「%s」尚未记录主机密钥，请先在 Web 终端中连接一次以确认主机身份", conn.Name)
+	}
+	if strings.TrimSpace(command) == "" {
+		return "", errors.New("命令不能为空")
+	}
+	client, hk, err := m.dialSSH(ctx, &conn)
+	if err != nil {
+		return "", fmt.Errorf("连接 SSH 失败: %w", err)
+	}
+	defer client.Close()
+	m.recordHostKey(connKey, hk)
+	// 超时或取消时关闭整个连接，NewSession 与命令执行都会随之返回
+	stop := context.AfterFunc(ctx, func() { _ = client.Close() })
+	defer stop()
+	sess, err := client.NewSession()
+	if err != nil {
+		if ctx.Err() != nil {
+			return "", fmt.Errorf("远程命令执行超时: %w", ctx.Err())
+		}
+		return "", fmt.Errorf("打开 SSH 会话失败: %w", err)
+	}
+	defer sess.Close()
+	out := &limitedBuffer{max: execOutputLimit}
+	sess.Stdout, sess.Stderr = out, out
+	err = sess.Run(command)
+	text := string(out.buf)
+	if ctx.Err() != nil {
+		return text, fmt.Errorf("远程命令执行超时: %w", ctx.Err())
+	}
+	if err != nil {
+		return text, fmt.Errorf("远程命令执行失败: %w", err)
+	}
+	return text, nil
+}

@@ -25,6 +25,7 @@ func init() {
 				}
 				return term.Push(ctx, conn, dir, pf, command)
 			}
+			w.sshExec = term.Exec
 			w.sshTargets = func() []ssl.SSHTarget {
 				out := []ssl.SSHTarget{}
 				for _, t := range term.SSHTargets() {
