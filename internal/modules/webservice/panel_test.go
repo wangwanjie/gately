@@ -603,7 +603,7 @@ func TestPanelIPv6Host(t *testing.T) {
 	}}})
 	r := httptest.NewRequest("GET", "/", nil)
 	r.Host = "[2001:db8::1]:8443"
-	r.RemoteAddr = "[2001:db8::9]:4000"
+	r.RemoteAddr = "[2001:db8:78::9]:4000"
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, r)
 	body := w.Body.String()
