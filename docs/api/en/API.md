@@ -2900,6 +2900,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `credentialKey` | string |
 | `host` | string |
 | `hostKey` | string |
+| `hostKeyType` | string |
 | `keepAlive` | integer |
 | `keyFile` | string |
 | `passphrase` | string |
