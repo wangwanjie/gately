@@ -140,9 +140,20 @@ Manage devices under "Wake-on-LAN", and send magic packets to them (6 bytes of `
 | `port` | 9 | Target UDP port |
 | `repeat` | 3 | Number of times each MAC is sent, up to 20 |
 | `checkAddr` | Empty | Online check address in the form `host:port`, for example `192.168.1.10:3389`; leave empty to skip the check |
+| `shutdownConn` | Empty | [Web Terminal](/en/docs/modules/terminal) SSH connection used for remote shutdown; leave empty to disable shutdown |
+| `shutdownCommand` | None | Shutdown command, required when a connection is selected, single line, such as `shutdown -h now` or `shutdown /s /t 0` |
 | `remark` | Empty | Remark |
 
 Click Wake in the device list to send the magic packet, and the page shows whether the device is online according to `checkAddr`.
+
+### Remote shutdown
+
+Choose an SSH connection from Web Terminal and enter a shutdown command, and the device card gets a *Shut down* button; the API is `POST /api/wol/devices/{key}/shutdown`.
+
+- The connection must have been opened once in Web Terminal so its host key is recorded; Gately never trusts unknown hosts unattended;
+- Each shutdown opens a new SSH connection and closes it afterwards, so a stale connection from before the device rebooted is never reused; the command runs for at most 30 seconds, one at a time per device;
+- Shutting down often drops the SSH connection before an exit code is returned; this counts as the shutdown having started;
+- The form offers common commands for Linux (`shutdown -h now`), Windows (`shutdown /s /t 0`) and macOS (`sudo -n shutdown -h now`). Windows needs the OpenSSH server enabled; on Linux, non-root users can use `sudo -n shutdown -h now` with passwordless sudo for that command.
 
 ## Scheduled Tasks
 

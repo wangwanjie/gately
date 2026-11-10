@@ -140,9 +140,20 @@ WebDAV、FTP 与 SMB 共用一份「共享用户」，字段与各服务的本�
 | `port` | 9 | 目标 UDP 端口 |
 | `repeat` | 3 | 每个 MAC 重复发送次数，上限 20 |
 | `checkAddr` | 空 | 在线探测地址，格式 `主机:端口`，如 `192.168.1.10:3389`，留空不探测 |
+| `shutdownConn` | 空 | 远程关机使用的 [Web 终端](/docs/modules/terminal) SSH 连接，留空不支持关机 |
+| `shutdownCommand` | 无 | 关机命令，选择了连接时必填，单行，如 `shutdown -h now`、`shutdown /s /t 0` |
 | `remark` | 空 | 备注 |
 
 设备列表上点击唤醒即发送魔术包，并按 `checkAddr` 显示设备是否在线。
+
+### 远程关机
+
+为设备选择一个 Web 终端中的 SSH 连接并填写关机命令后，设备卡片上出现「关机」按钮，接口为 `POST /api/wol/devices/{key}/shutdown`。
+
+- 该连接必须已在 Web 终端中连接过一次、记录了主机密钥，Gately 不会无人值守地信任未知主机；
+- 每次关机新建一条 SSH 连接，执行完即关闭，设备重启后不会用到已失效的旧连接；命令最长执行 30 秒，同一设备同时只执行一次；
+- 关机常使 SSH 连接在返回退出码之前断开，这种情况视为已开始关机；
+- 界面提供 Linux（`shutdown -h now`）、Windows（`shutdown /s /t 0`）与 macOS（`sudo -n shutdown -h now`）的常用命令。Windows 需开启 OpenSSH 服务器；Linux 非 root 用户可改用 `sudo -n shutdown -h now` 并为该命令配置免密 sudo。
 
 ## 计划任务
 

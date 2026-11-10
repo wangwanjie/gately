@@ -485,7 +485,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/wol/devices-delete` | `wol:write` | 장치 깨우기 일괄 삭제 |
 | PUT | `/api/wol/devices-group` | `wol:write` | 장치 깨우기 그룹 일괄 설정 |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | 장치에 깨우기 매직 패킷 전송 |
+| POST | `/api/wol/devices/{key}/shutdown` | `wol:write` | 원격 종료 |
 | GET | `/api/wol/status` | `wol:read` | 장치 온라인 상태 보기 |
+| GET | `/api/wol/ssh-targets` | `wol:read` | 원격 종료에 쓸 수 있는 SSH 연결 목록 |
 
 ## Web 터미널
 
@@ -3071,4 +3073,15 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `port` | integer |
 | `remark` | string |
 | `repeat` | integer |
+| `shutdownCommand` | string |
+| `shutdownConn` | string |
+
+### wol.SSHTarget
+
+| 필드 | 타입 |
+| --- | --- |
+| `host` | string |
+| `key` | string |
+| `name` | string |
+| `trusted` | boolean |
 

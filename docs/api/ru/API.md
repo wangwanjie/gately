@@ -485,7 +485,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/wol/devices-delete` | `wol:write` | Пакетно удалить: Разбудить устройство |
 | PUT | `/api/wol/devices-group` | `wol:write` | Задать группу сразу для нескольких: Разбудить устройство |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | Отправить на устройство magic-пакет пробуждения |
+| POST | `/api/wol/devices/{key}/shutdown` | `wol:write` | Удалённое выключение |
 | GET | `/api/wol/status` | `wol:read` | Просмотр состояния устройства в сети |
+| GET | `/api/wol/ssh-targets` | `wol:read` | Список SSH-подключений для удалённого выключения |
 
 ## Веб-терминал
 
@@ -3071,4 +3073,15 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `port` | integer |
 | `remark` | string |
 | `repeat` | integer |
+| `shutdownCommand` | string |
+| `shutdownConn` | string |
+
+### wol.SSHTarget
+
+| Поле | Тип |
+| --- | --- |
+| `host` | string |
+| `key` | string |
+| `name` | string |
+| `trusted` | boolean |
 

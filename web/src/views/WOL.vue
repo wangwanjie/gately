@@ -8,7 +8,7 @@
 
     <GroupedList :gl="gl" :compact="compact" grid :empty-text="t('wol.empty')">
       <template #item="{ it, item: d, sorting, bind }">
-        <EntityCard v-bind="bind" :compact="compact || sorting">
+        <EntityCard v-bind="bind" :compact="compact || sorting" class="wol-card">
           <template #lead>
             <SortCheck v-if="sorting" :gl="gl" :id="it.id" />
             <div v-else class="dev-icon" :class="{ online: status[d.key ?? ''] === 'online' }"><Monitor :size="18" /></div>
@@ -23,6 +23,7 @@
           </Field>
           <Field :label="t('wol.broadcast')" mono>{{ (d.broadcastIps ?? []).length ? (d.broadcastIps ?? []).join(', ') : t('wol.auto') }}:{{ d.port }} ×{{ d.repeat }}</Field>
           <Field v-if="d.checkAddr" :label="t('wol.onlineCheck')" mono>{{ d.checkAddr }}</Field>
+          <Field v-if="d.shutdownConn" :label="t('wol.shutdownField')">{{ connName(d.shutdownConn) }}</Field>
           <template v-if="sorting" #actions>
             <SortMoves :gl="gl" :it="it" />
           </template>
@@ -32,6 +33,11 @@
             <el-popconfirm :title="t('wol.confirmDelete')" @confirm="remove(d)">
               <template #reference>
                 <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
+              </template>
+            </el-popconfirm>
+            <el-popconfirm v-if="d.shutdownConn" :title="t('wol.shutdownConfirm')" @confirm="shutdown(d)">
+              <template #reference>
+                <el-button size="small" :icon="PowerOff" :loading="stopping[d.key ?? '']" class="wake">{{ t('wol.shutdown') }}</el-button>
               </template>
             </el-popconfirm>
             <el-button type="primary" size="small" :icon="Zap" :loading="waking[d.key ?? '']" class="wake" @click="wake(d)">{{ t('wol.wake') }}</el-button>
@@ -55,6 +61,25 @@
           <el-input v-model="editing.checkAddr" :placeholder="t('wol.checkPlaceholder')" />
           <div class="form-help">{{ t('wol.checkHelp') }}</div>
         </el-form-item>
+        <!-- 远程关机：经 Web 终端中已记录主机密钥的 SSH 连接执行关机命令 -->
+        <el-form-item v-if="moduleBuilt('webterminal') || editing.shutdownConn" :label="t('wol.shutdownConn')">
+          <el-select v-model="editing.shutdownConn" filterable clearable :placeholder="t('wol.shutdownConnPlaceholder')" :no-data-text="t('wol.noConnections')" class="full" @change="onConnChange">
+            <el-option v-for="o in sshTargets" :key="o.key" :label="o.name" :value="o.key">
+              <span>{{ o.name }}</span>
+              <span class="opt-meta mono">{{ o.host }}</span>
+              <span v-if="!o.trusted" class="opt-warn">{{ t('wol.untrusted') }}</span>
+            </el-option>
+          </el-select>
+          <div v-if="editing.shutdownConn && sshTargets.find((o) => o.key === editing.shutdownConn && !o.trusted)" class="form-help warn">{{ t('wol.untrustedHelp') }}</div>
+        </el-form-item>
+        <el-form-item v-if="editing.shutdownConn" :label="t('wol.shutdownCommand')">
+          <el-input v-model="editing.shutdownCommand" class="mono" placeholder="shutdown -h now" />
+          <div class="presets">
+            <span class="form-help">{{ t('wol.shutdownPresets') }}</span>
+            <el-button v-for="p in presets" :key="p.label" size="small" text type="primary" @click="editing.shutdownCommand = p.cmd">{{ p.label }}</el-button>
+          </div>
+          <div class="form-help">{{ t('wol.shutdownHelp') }}</div>
+        </el-form-item>
         <el-form-item :label="t('common.remark')"><el-input v-model="editing.remark" /></el-form-item>
       </el-form>
       <template #footer>
@@ -62,6 +87,7 @@
         <el-button type="primary" @click="save">{{ t('common.save') }}</el-button>
       </template>
     </el-dialog>
+
   </div>
 </template>
 
@@ -69,8 +95,9 @@
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import { CopyPlus, Monitor, Pencil, Plus, Power, Trash2, Zap } from 'lucide-vue-next'
+import { CopyPlus, Monitor, Pencil, Plus, Power, PowerOff, Trash2, Zap } from 'lucide-vue-next'
 import { api } from '../api'
+import { moduleBuilt } from '../nav'
 import PageHeader from '../components/PageHeader.vue'
 import EntityCard from '../components/EntityCard.vue'
 import GroupedList from '../components/GroupedList.vue'
@@ -100,9 +127,21 @@ interface Device {
   port: number
   repeat: number
   checkAddr: string
+  // shutdownConn 为远程关机使用的 Web 终端 SSH 连接 key，空表示不支持关机
+  shutdownConn?: string
+  shutdownCommand?: string
   remark: string
   enable: boolean
 }
+
+interface SSHTarget {
+  key: string
+  name: string
+  host: string
+  // trusted 表示已记录主机密钥，可以无人值守地执行命令
+  trusted: boolean
+}
+
 
 const { t } = useI18n()
 const { isMobile, labelPosition } = useFormLayout()
@@ -120,6 +159,14 @@ const gl = useGroupedList<Device>({
 })
 const status = ref<Record<string, string>>({})
 const waking = reactive<Record<string, boolean>>({})
+const stopping = reactive<Record<string, boolean>>({})
+const sshTargets = ref<SSHTarget[]>([])
+// 常用关机命令：Linux 需以 root 登录（非 root 用户可改为 sudo -n shutdown -h now 并配置免密 sudo）
+const presets = [
+  { label: 'Linux', cmd: 'shutdown -h now' },
+  { label: 'Windows', cmd: 'shutdown /s /t 0' },
+  { label: 'macOS', cmd: 'sudo -n shutdown -h now' },
+]
 const editorVisible = ref(false)
 const editing = ref<Device>(empty())
 // 复制条目时的模板，普通新增与编辑时为 null
@@ -135,7 +182,7 @@ const bcText = useListText(() => editing.value.broadcastIps, (v) => (editing.val
 })
 
 function empty(): Device {
-  return { name: '', macs: [], broadcastIps: [], port: 9, repeat: 3, checkAddr: '', remark: '', enable: true }
+  return { name: '', macs: [], broadcastIps: [], port: 9, repeat: 3, checkAddr: '', shutdownConn: '', shutdownCommand: '', remark: '', enable: true }
 }
 
 // devStatus 计算设备在线状态；未配置探测地址时明确提示，而不是显示为等待
@@ -153,9 +200,35 @@ function devStatus(d: Device): { type: StatusType; text: string } {
   return { type: 'pending', text: t('wol.probing') }
 }
 
+// connName 返回关机连接的名称；连接已被删除时显示 key 并注明
+function connName(key: string) {
+  return sshTargets.value.find((o) => o.key === key)?.name ?? t('wol.connMissing', { key })
+}
+
 async function load() {
-  devices.value = await api.get('/api/wol/devices')
-  status.value = await api.get('/api/wol/status')
+  const [d, s] = await Promise.all([api.get<Device[]>('/api/wol/devices'), api.get<Record<string, string>>('/api/wol/status')])
+  devices.value = d
+  status.value = s
+}
+
+async function loadTargets() {
+  try {
+    sshTargets.value = await api.get<SSHTarget[]>('/api/wol/ssh-targets')
+  } catch {
+    sshTargets.value = []
+  }
+}
+
+// onConnChange 选择关机连接后若还没有命令，默认填 Linux 命令；清除连接时一并清除命令
+function onConnChange(v: string | undefined) {
+  if (!v) {
+    editing.value.shutdownConn = ''
+    editing.value.shutdownCommand = ''
+    return
+  }
+  if (!editing.value.shutdownCommand) {
+    editing.value.shutdownCommand = presets[0].cmd
+  }
 }
 
 // openEditor 打开编辑框：copy 为 true 时以 d 为模板新建副本
@@ -167,6 +240,7 @@ function openEditor(d?: Device, copy = false) {
     editing.value.key = ''
     editing.value.name = uniqueName(d.name, devices.value.map((x) => x.name))
   }
+  loadTargets()
   editorVisible.value = true
 }
 
@@ -198,6 +272,19 @@ async function wake(d: Device) {
   }
 }
 
+async function shutdown(d: Device) {
+  const k = d.key ?? ''
+  stopping[k] = true
+  try {
+    await api.post(`/api/wol/devices/${k}/shutdown`)
+    ElMessage.success(t('wol.shutdownDone'))
+  } catch (e) {
+    ElMessage.error((e as Error).message)
+  } finally {
+    stopping[k] = false
+  }
+}
+
 async function remove(d: Device) {
   try {
     await api.del(`/api/wol/devices/${d.key}`)
@@ -209,6 +296,7 @@ async function remove(d: Device) {
 
 onMounted(() => {
   load()
+  loadTargets()
   polling.start()
 })
 </script>
@@ -230,5 +318,35 @@ onMounted(() => {
 }
 .wake {
   margin-left: 6px !important;
+}
+/* 按钮较多时窄屏会换行，换行后的“关机”“唤醒”与其他卡片一样靠右 */
+.wol-card :deep(.entity-actions) {
+  justify-content: flex-end;
+}
+.full {
+  width: 100%;
+}
+.opt-meta {
+  margin-left: 8px;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+}
+.opt-warn {
+  margin-left: 8px;
+  font-size: 12px;
+  color: var(--el-color-warning);
+}
+.form-help.warn {
+  color: var(--el-color-warning);
+}
+.presets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 4px;
+  width: 100%;
+}
+.presets .el-button {
+  margin-left: 0;
 }
 </style>

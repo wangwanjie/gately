@@ -21,5 +21,18 @@
   "online": "Online",
   "offline": "Offline",
   "probing": "Wird geprüft",
-  "sent": "{count} Weckpaket(e) gesendet"
+  "sent": "{count} Weckpaket(e) gesendet",
+  "shutdown": "Herunterfahren",
+  "shutdownConfirm": "Dieses Gerät per SSH herunterfahren?",
+  "shutdownDone": "Befehl zum Herunterfahren ausgeführt",
+  "shutdownField": "Fern-Herunterfahren",
+  "shutdownConn": "Herunterfahren über",
+  "shutdownConnPlaceholder": "Kein Fern-Herunterfahren",
+  "noConnections": "Noch keine SSH-Verbindungen im Web-Terminal",
+  "untrusted": "Host-Schlüssel nicht gespeichert",
+  "untrustedHelp": "Fern-Herunterfahren vertraut keinen unbekannten Hosts. Verbinden Sie sich einmal im Web-Terminal mit diesem Host, um seinen Schlüssel zu speichern",
+  "connMissing": "Verbindung gelöscht ({key})",
+  "shutdownCommand": "Befehl",
+  "shutdownPresets": "Häufig:",
+  "shutdownHelp": "Wird über die SSH-Verbindung des Web-Terminals ausgeführt. Windows benötigt den aktivierten OpenSSH-Server; unter Linux können Nicht-Root-Benutzer sudo -n shutdown -h now mit passwortlosem sudo für diesen Befehl verwenden."
 }

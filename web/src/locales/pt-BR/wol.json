@@ -21,5 +21,18 @@
   "online": "Online",
   "offline": "Offline",
   "probing": "Verificando",
-  "sent": "{count} pacote(s) de despertar enviado(s)"
+  "sent": "{count} pacote(s) de despertar enviado(s)",
+  "shutdown": "Desligar",
+  "shutdownConfirm": "Desligar este dispositivo via SSH?",
+  "shutdownDone": "Comando de desligamento executado",
+  "shutdownField": "Desligamento remoto",
+  "shutdownConn": "Desligar via",
+  "shutdownConnPlaceholder": "Sem desligamento remoto",
+  "noConnections": "Ainda não há conexões SSH no terminal web",
+  "untrusted": "Chave do host não registrada",
+  "untrustedHelp": "O desligamento remoto não confia em hosts desconhecidos. Conecte-se uma vez a este host pelo terminal web para registrar a chave",
+  "connMissing": "Conexão excluída ({key})",
+  "shutdownCommand": "Comando de desligamento",
+  "shutdownPresets": "Comuns:",
+  "shutdownHelp": "Executado pela conexão SSH do terminal web. O Windows precisa do servidor OpenSSH ativado; no Linux, usuários não root podem usar sudo -n shutdown -h now com sudo sem senha para esse comando."
 }

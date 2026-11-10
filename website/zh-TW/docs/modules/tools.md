@@ -140,9 +140,20 @@ WebDAV、FTP 與 SMB 共用一份「共用使用者」，欄位與各服務的�
 | `port` | 9 | 目標 UDP 連接埠 |
 | `repeat` | 3 | 每個 MAC 重複發送次數，上限 20 |
 | `checkAddr` | 空 | 上線偵測位址，格式 `主機:連接埠`，如 `192.168.1.10:3389`，留空不偵測 |
+| `shutdownConn` | 空 | 遠端關機使用的 [Web 終端](/zh-TW/docs/modules/terminal) SSH 連線，留空不支援關機 |
+| `shutdownCommand` | 無 | 關機命令，選擇了連線時必填，單行，如 `shutdown -h now`、`shutdown /s /t 0` |
 | `remark` | 空 | 備註 |
 
 在裝置清單上點擊喚醒即發送魔術封包，並依 `checkAddr` 顯示裝置是否在線。
+
+### 遠端關機
+
+為裝置選擇一個 Web 終端中的 SSH 連線並填寫關機命令後，裝置卡片上出現「關機」按鈕，介面為 `POST /api/wol/devices/{key}/shutdown`。
+
+- 該連線必須已在 Web 終端中連線過一次、記錄了主機金鑰，Gately 不會無人值守地信任未知主機；
+- 每次關機新建一條 SSH 連線，執行完即關閉，裝置重新開機後不會用到已失效的舊連線；命令最長執行 30 秒，同一裝置同時只執行一次；
+- 關機常使 SSH 連線在返回結束碼之前中斷，這種情況視為已開始關機；
+- 介面提供 Linux（`shutdown -h now`）、Windows（`shutdown /s /t 0`）與 macOS（`sudo -n shutdown -h now`）的常用命令。Windows 需開啟 OpenSSH 伺服器；Linux 非 root 使用者可改用 `sudo -n shutdown -h now` 並為該命令設定免密碼 sudo。
 
 ## 排程工作
 

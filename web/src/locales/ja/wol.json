@@ -21,5 +21,18 @@
   "online": "オンライン",
   "offline": "オフライン",
   "probing": "確認中",
-  "sent": "{count} 個のパケットを送信しました"
+  "sent": "{count} 個のパケットを送信しました",
+  "shutdown": "シャットダウン",
+  "shutdownConfirm": "SSH でこのデバイスをシャットダウンしますか？",
+  "shutdownDone": "シャットダウンコマンドを実行しました",
+  "shutdownField": "リモートシャットダウン",
+  "shutdownConn": "シャットダウン接続",
+  "shutdownConnPlaceholder": "リモートシャットダウンを使わない",
+  "noConnections": "Web ターミナルに SSH 接続がまだありません",
+  "untrusted": "ホスト鍵未記録",
+  "untrustedHelp": "リモートシャットダウンは未知のホストを信頼しません。先に Web ターミナルでこのホストに一度接続してホスト鍵を記録してください",
+  "connMissing": "接続は削除されました（{key}）",
+  "shutdownCommand": "シャットダウンコマンド",
+  "shutdownPresets": "よく使う：",
+  "shutdownHelp": "Web ターミナルの SSH 接続で実行します。Windows では OpenSSH サーバーを有効にしてください。Linux の非 root ユーザーは sudo -n shutdown -h now を使い、このコマンドにパスワードなし sudo を設定してください。"
 }

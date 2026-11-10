@@ -140,9 +140,20 @@ Gérez les appareils dans « Wake-on-LAN » et envoyez-leur des paquets magiques
 | `port` | 9 | Port UDP cible |
 | `repeat` | 3 | Nombre d'envois pour chaque MAC, jusqu'à 20 |
 | `checkAddr` | Vide | Adresse de vérification de présence au format `host:port`, par exemple `192.168.1.10:3389` ; laissez vide pour ignorer la vérification |
+| `shutdownConn` | Vide | Connexion SSH du [terminal web](/fr/docs/modules/terminal) utilisée pour l’arrêt à distance ; vide pour désactiver l’arrêt |
+| `shutdownCommand` | Aucune | Commande d’arrêt, obligatoire si une connexion est choisie, sur une seule ligne, comme `shutdown -h now` ou `shutdown /s /t 0` |
 | `remark` | Vide | Remarque |
 
 Cliquez sur Réveiller dans la liste des appareils pour envoyer le paquet magique ; la page indique si l'appareil est en ligne d'après `checkAddr`.
+
+### Arrêt à distance
+
+Choisissez une connexion SSH du terminal web et saisissez une commande d’arrêt : la carte de l’appareil affiche alors un bouton *Éteindre* ; l’API est `POST /api/wol/devices/{key}/shutdown`.
+
+- La connexion doit avoir été ouverte une fois dans le terminal web pour enregistrer la clé d’hôte ; Gately ne fait jamais confiance à un hôte inconnu sans supervision ;
+- Chaque arrêt ouvre une nouvelle connexion SSH et la ferme ensuite : une connexion périmée d’avant le redémarrage de l’appareil n’est jamais réutilisée ; la commande dure au plus 30 secondes, une seule à la fois par appareil ;
+- L’arrêt coupe souvent la connexion SSH avant le retour du code de sortie ; on considère alors que l’arrêt a commencé ;
+- Le formulaire propose les commandes courantes pour Linux (`shutdown -h now`), Windows (`shutdown /s /t 0`) et macOS (`sudo -n shutdown -h now`). Windows doit avoir le serveur OpenSSH activé ; sous Linux, un utilisateur non root peut utiliser `sudo -n shutdown -h now` avec sudo sans mot de passe pour cette commande.
 
 ## Tâches planifiées
 
