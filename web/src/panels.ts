@@ -30,6 +30,8 @@ export interface Panel {
   subtitle: string
   icon: string
   theme: '' | 'light' | 'dark'
+  // skin 为皮肤（色系 ID，与管理界面的主题配色相同），空串为默认色系
+  skin: string
   lanCidrs: string[]
   links: PanelLink[]
   remark: string
@@ -48,7 +50,7 @@ export const MAX_ALTS = 8
 export const BUILTIN_PREFIX = 'builtin:'
 
 export function emptyPanel(): Panel {
-  return { name: '', enable: true, title: '', subtitle: '', icon: '', theme: '', lanCidrs: [], links: [], remark: '' }
+  return { name: '', enable: true, title: '', subtitle: '', icon: '', theme: '', skin: '', lanCidrs: [], links: [], remark: '' }
 }
 
 export function emptyLink(group = ''): PanelLink {
@@ -64,6 +66,7 @@ export function toPanel(v: PanelView | Panel): Panel {
     subtitle: v.subtitle ?? '',
     icon: v.icon ?? '',
     theme: v.theme ?? '',
+    skin: v.skin ?? '',
     lanCidrs: [...(v.lanCidrs ?? [])],
     links: (v.links ?? []).map((l) => ({ ...emptyLink(), ...l, alts: (l.alts ?? []).map((a) => ({ name: a.name, url: a.url })) })),
     remark: v.remark ?? '',

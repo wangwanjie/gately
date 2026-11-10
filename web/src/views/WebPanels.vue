@@ -124,11 +124,26 @@
             <el-form-item :label="t('panels.icon')">
               <PanelIconInput v-model="editing.icon" :name="editing.title || editing.name" />
             </el-form-item>
-            <el-form-item :label="t('panels.theme')">
+            <!-- 皮肤：与管理界面右上角的主题配色相同的色系，访客可在面板页面上自行换肤 -->
+            <el-form-item :label="t('components.themePicker.title')">
+              <el-select v-model="skinValue" class="skin-select" data-test="panel-skin">
+                <el-option-group v-for="g in skinGroups" :key="g.id" :label="t(g.key)">
+                  <el-option v-for="f in g.items" :key="f.id" :value="f.id" :label="skinName(f)">
+                    <span class="skin-opt">
+                      <span class="skin-sw" :style="skinSwatch(f)"><i /></span>
+                      <span>{{ skinName(f) }}</span>
+                      <span class="skin-desc">{{ t(f.descKey) }}</span>
+                    </span>
+                  </el-option>
+                </el-option-group>
+              </el-select>
+              <div class="form-help">{{ t('panels.skinHelp') }}</div>
+            </el-form-item>
+            <el-form-item :label="t('components.themePicker.mode')">
               <el-radio-group v-model="editing.theme">
-                <el-radio-button value="">{{ t('panels.themeAuto') }}</el-radio-button>
-                <el-radio-button value="light">{{ t('panels.themeLight') }}</el-radio-button>
-                <el-radio-button value="dark">{{ t('panels.themeDark') }}</el-radio-button>
+                <el-radio-button value="">{{ t('components.themePicker.modeAuto') }}</el-radio-button>
+                <el-radio-button value="light">{{ t('components.themePicker.modeLight') }}</el-radio-button>
+                <el-radio-button value="dark">{{ t('components.themePicker.modeDark') }}</el-radio-button>
               </el-radio-group>
             </el-form-item>
             <el-form-item :label="t('panels.lanCidrs')">
@@ -250,6 +265,7 @@ import { useFormLayout } from '../composables/useIsMobile'
 import { splitLinesOrCommas, useListText } from '../composables/useListText'
 import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import { forwardedEntry, siteLink, type ForwardSource } from '../siteUrl'
+import { DEFAULT_FAMILY, resolveTheme, themeFamilies, type ThemeFamily } from '../themes'
 import { loadForwardSources } from '../forwardSources'
 import {
   MAX_ALTS,
@@ -280,6 +296,26 @@ interface ListenerLite extends ImportListener {
 }
 
 const { t } = useI18n()
+
+// 皮肤选择：空串表示默认色系，选中默认色系时仍保存为空串，保持旧配置不变
+const skinValue = computed<string>({
+  get: () => editing.value.skin || DEFAULT_FAMILY,
+  set: (v) => {
+    editing.value.skin = v === DEFAULT_FAMILY ? '' : v
+  },
+})
+const skinGroups = [
+  { id: 'original', key: 'components.themePicker.groupOriginal', items: themeFamilies.filter((f) => f.group === 'original') },
+  { id: 'classic', key: 'components.themePicker.groupClassic', items: themeFamilies.filter((f) => f.group === 'classic') },
+]
+function skinName(f: ThemeFamily): string {
+  return f.label ?? t(f.nameKey!)
+}
+// skinSwatch 为选项前的色块：页面底色上画主色，按面板的亮暗模式取调色板（跟随系统时取亮色）
+function skinSwatch(f: ThemeFamily): Record<string, string> {
+  const p = resolveTheme(f, editing.value.theme === 'dark')
+  return { '--sw-bg': p.page, '--sw-fg': p.primary, '--sw-line': p.border }
+}
 const { isMobile, labelPosition } = useFormLayout()
 
 const panels = ref<PanelView[]>([])
@@ -603,6 +639,38 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.skin-select {
+  width: 240px;
+  max-width: 100%;
+}
+.skin-opt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.skin-sw {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 16px;
+  border-radius: 4px;
+  background: var(--sw-bg);
+  border: 1px solid var(--sw-line);
+}
+.skin-sw i {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--sw-fg);
+}
+.skin-desc {
+  color: var(--el-text-color-secondary);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .panel-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
