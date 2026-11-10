@@ -550,12 +550,18 @@ type replayRecorder struct {
 	cancel context.CancelFunc
 }
 
-// syncReplayLocked 按设置开始或停止录制。关闭时清空已录制的数据（数据中含访客地址，不再保留）。
-func (m *Module) syncReplayLocked() {
-	set := m.cfg.Replay
+// effectiveReplaySettings 返回实际生效的回放设置：补默认值，取值无效（手工编辑配置）时容量改用默认值。
+// 录制与概览接口都用它，接口上报的设置与容量和实际一致。
+func effectiveReplaySettings(set ReplaySettings) ReplaySettings {
 	if err := set.Normalize(); err != nil {
 		set = ReplaySettings{Enable: set.Enable, SizeMB: replayDefaultMB}
 	}
+	return set
+}
+
+// syncReplayLocked 按设置开始或停止录制。关闭时清空已录制的数据（数据中含访客地址，不再保留）。
+func (m *Module) syncReplayLocked() {
+	set := effectiveReplaySettings(m.cfg.Replay)
 	if m.replay.store == nil {
 		m.replay.store = newReplayStore(set.limit())
 	}
