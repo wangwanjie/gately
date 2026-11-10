@@ -3,7 +3,7 @@ package webpage
 import (
 	"bytes"
 	"crypto/rand"
-	"encoding/base64"
+	"encoding/hex"
 	"html/template"
 	"net/http"
 	"strconv"
@@ -238,7 +238,8 @@ const panelPreviewCSP = "default-src 'none'; style-src 'unsafe-inline'; img-src 
 func newNonce() string {
 	var b [16]byte
 	_, _ = rand.Read(b[:])
-	return base64.RawStdEncoding.EncodeToString(b[:])
+	// 用十六进制：base64 中的 + 在属性里会被转义成 &#43;，虽然浏览器能还原，但不便核对
+	return hex.EncodeToString(b[:])
 }
 
 // iconInitial 返回名称的首个字母或汉字（大写），名称为空时为 ?。
