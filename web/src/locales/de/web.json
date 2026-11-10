@@ -61,6 +61,7 @@
   "typeProxy": "Reverse-Proxy",
   "typeRedirect": "Weiterleitung",
   "typeStatic": "Statische Dateien",
+  "typePanel": "Navigationspanel",
   "typeText": "Fester Text",
   "typeClose": "Verbindung schließen",
   "typeCloseHelp": "Sendet nichts und schließt die Verbindung (wie nginx return 444). Geeignet für die Standardseite, damit Anfragen, die unbekannte Domains abtasten, keine Antwort erhalten; im Zugriffsprotokoll erscheinen sie als 444.",
@@ -215,5 +216,10 @@
   "siteMoveFailed": "Änderungen gespeichert, aber das Verschieben ist fehlgeschlagen: {error}",
   "siteMoved": "Gespeichert und zum gewählten Listener verschoben",
   "dropHere": "Hier ablegen, um in diesen Listener zu verschieben",
-  "autoFirewallHelp": "Gibt in der lokalen Firewall (nftables / iptables / ip6tables) nur den Port dieses Listeners frei, bei aktivem HTTP/3 auch den UDP-Port mit derselben Nummer, und bei gesetzter Listen-Adresse nur für diese Adresse; wird entfernt, wenn der Listener deaktiviert, gelöscht wird oder nicht startet, andere Ports bleiben zu. Für Gately auf einem Router wie OpenWrt oder einem Linux-Host mit Firewall; bei Docker-Bridge-Netzwerken den weitergeleiteten Port auf dem Host freigeben"
+  "autoFirewallHelp": "Gibt in der lokalen Firewall (nftables / iptables / ip6tables) nur den Port dieses Listeners frei, bei aktivem HTTP/3 auch den UDP-Port mit derselben Nummer, und bei gesetzter Listen-Adresse nur für diese Adresse; wird entfernt, wenn der Listener deaktiviert, gelöscht wird oder nicht startet, andere Ports bleiben zu. Für Gately auf einem Router wie OpenWrt oder einem Linux-Host mit Firewall; bei Docker-Bridge-Netzwerken den weitergeleiteten Port auf dem Host freigeben",
+  "panel": "Navigationspanel",
+  "panelPlaceholder": "Navigationspanel wählen",
+  "panelManage": "Navigationspanels verwalten",
+  "panelNone": "Noch keine Navigationspanels. Erstellen Sie zuerst eines unter Web → Navigationspanels.",
+  "panelHelp": "Der Stammpfad der Site zeigt das gewählte Panel. Zugriffskontrolle und Authentifizierung gelten wie gewohnt; Änderungen am Panel wirken sofort nach dem Speichern."
 }

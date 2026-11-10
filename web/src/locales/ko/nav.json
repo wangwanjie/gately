@@ -58,6 +58,9 @@
     "webvisitors": {
       "title": "방문자 감사"
     },
+    "webpanels": {
+      "title": "내비게이션 패널"
+    },
     "waf": {
       "title": "WAF 방화벽",
       "desc": "OWASP CRS 기반 웹 애플리케이션 방화벽"

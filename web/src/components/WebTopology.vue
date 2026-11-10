@@ -1005,6 +1005,7 @@ const typeKeys: Record<string, string> = {
   proxy: 'web.typeProxy',
   redirect: 'web.typeRedirect',
   static: 'web.typeStatic',
+  panel: 'web.typePanel',
   text: 'web.typeText',
   close: 'web.typeClose',
 }

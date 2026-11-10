@@ -96,7 +96,12 @@
     "export": "내보내기",
     "exportTip": "현재 필터 조건에 맞는 모든 로그를 로그 파일과 압축 아카이브에 남아 있는 기록까지 포함해 내보냅니다",
     "exportCsv": "CSV(스프레드시트)",
-    "exportJsonl": "JSON Lines"
+    "exportJsonl": "JSON Lines",
+    "fullscreen": "전체 화면",
+    "exitFullscreen": "전체 화면 종료 (Esc)",
+    "resizeTip": "끌어서 로그 영역 높이를 조절하고, 두 번 클릭하면 기본 높이로 돌아갑니다. 포커스가 있을 때는 방향키로도 조절할 수 있습니다",
+    "jumpLatest": "최신으로 이동",
+    "newLogs": "새 로그 {n}개"
   },
   "scopeTags": {
     "allWrite": "전체 읽기/쓰기",

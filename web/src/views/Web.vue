@@ -322,6 +322,7 @@
                 <el-radio-button value="proxy">{{ t('web.typeProxy') }}</el-radio-button>
                 <el-radio-button value="redirect">{{ t('web.typeRedirect') }}</el-radio-button>
                 <el-radio-button value="static">{{ t('web.typeStatic') }}</el-radio-button>
+                <el-radio-button value="panel">{{ t('web.typePanel') }}</el-radio-button>
                 <el-radio-button value="text">{{ t('web.typeText') }}</el-radio-button>
                 <el-radio-button value="close">{{ t('web.typeClose') }}</el-radio-button>
               </el-radio-group>
@@ -393,6 +394,16 @@
                 <div class="form-help">{{ t('web.cleanUrlsHelp') }}</div>
               </el-form-item>
               <el-form-item :label="t('web.notFoundPage')"><el-input v-model="site.notFoundPage" class="w-260" placeholder="404.html" /></el-form-item>
+            </template>
+            <template v-if="site.type === 'panel'">
+              <el-form-item :label="t('web.panel')" required>
+                <el-select v-model="site.panel" class="w-260" :placeholder="t('web.panelPlaceholder')" data-test="site-panel">
+                  <el-option v-for="p in panelOptions" :key="p.key" :label="p.enable ? p.name : `${p.name} (${t('common.disabled')})`" :value="p.key ?? ''" />
+                </el-select>
+                <a class="panel-manage" href="#/webpanels" target="_blank" rel="noopener">{{ t('web.panelManage') }}</a>
+                <div v-if="!panelOptions.length" class="form-help warn">{{ t('web.panelNone') }}</div>
+                <div class="form-help">{{ t('web.panelHelp') }}</div>
+              </el-form-item>
             </template>
             <template v-if="site.type === 'text'">
               <el-form-item :label="t('web.statusCode')"><el-input-number v-model="site.statusCode" :min="100" :max="599" /></el-form-item>
@@ -661,7 +672,8 @@ import LogCard from '../components/LogCard.vue'
 import CopyHint from '../components/CopyHint.vue'
 import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import UrlLink from '../components/UrlLink.vue'
-import { accessPort, accessScheme, forwardedEntry, siteLink, type ForwardEntry, type ForwardRule, type ForwardSource, type SiteLink } from '../siteUrl'
+import { accessPort, accessScheme, forwardedEntry, siteLink, type ForwardEntry, type ForwardSource, type SiteLink } from '../siteUrl'
+import { loadForwardSources } from '../forwardSources'
 import { useFormLayout } from '../composables/useIsMobile'
 import { useListText, splitLines } from '../composables/useListText'
 import ListInput from '../components/ListInput.vue'
@@ -704,6 +716,8 @@ interface Site {
   listDir: boolean
   cleanUrls: boolean
   notFoundPage: string
+  // 导航面板站点引用的面板 key
+  panel: string
   text: string
   contentType: string
   statusCode: number
@@ -829,6 +843,17 @@ const saving = ref(false)
 const listenerVisible = ref(false)
 const editingListener = ref<Listener>(emptyListener())
 const siteVisible = ref(false)
+// panelOptions 为导航面板库，供导航面板类型的站点选择，也用于列表中显示面板名称
+const panelOptions = ref<{ key?: string; name: string; enable: boolean }[]>([])
+
+async function loadPanels() {
+  try {
+    panelOptions.value = (await api.get<{ key?: string; name: string; enable: boolean }[]>('/api/webservice/panels')).map(({ key, name, enable }) => ({ key, name, enable }))
+  } catch {
+    // 读取失败时只是无法选择面板，保存时后端会报错
+  }
+}
+
 // errorPagesVisible 为自定义错误页面库对话框（从设置中打开）
 const errorPagesVisible = ref(false)
 const siteTab = ref('basic')
@@ -1014,6 +1039,7 @@ function emptySite(): Site {
     listDir: false,
     cleanUrls: false,
     notFoundPage: '',
+    panel: '',
     text: '',
     contentType: '',
     statusCode: 200,
@@ -1076,20 +1102,7 @@ function emptyListener(): Listener {
 const forwardSources = ref<ForwardSource[]>([])
 
 async function loadForwards() {
-  const kinds: ForwardSource['kind'][] = ['protoroute', 'portforward']
-  const out = await Promise.all(
-    kinds.map(async (kind) => {
-      if (!navModuleEnabled(kind)) {
-        return null
-      }
-      try {
-        return { kind, rules: await api.get<ForwardRule[]>(`/api/${kind}/rules`) }
-      } catch {
-        return null
-      }
-    }),
-  )
-  forwardSources.value = out.filter((x): x is ForwardSource => x !== null)
+  forwardSources.value = await loadForwardSources()
 }
 
 // listenerEntry 返回监听经四层转发的入口（不区分域名，按默认目标），手动填写了访问端口时不推算
@@ -1160,7 +1173,7 @@ function listenerStatus(l: ListenerView): { type: StatusType; text: string; titl
 }
 
 function typeText(ty: string) {
-  const map: Record<string, string> = { proxy: t('web.typeProxy'), redirect: t('web.typeRedirect'), static: t('web.typeStatic'), text: t('web.typeText'), close: t('web.typeClose') }
+  const map: Record<string, string> = { proxy: t('web.typeProxy'), redirect: t('web.typeRedirect'), static: t('web.typeStatic'), panel: t('web.typePanel'), text: t('web.typeText'), close: t('web.typeClose') }
   return map[ty] ?? ty
 }
 
@@ -1172,6 +1185,8 @@ function summary(s: Site) {
       return `${s.redirectCode} → ${s.redirectTo}`
     case 'static':
       return s.root
+    case 'panel':
+      return panelOptions.value.find((p) => p.key === s.panel)?.name ?? s.panel
     case 'close':
       return '444'
     default:
@@ -1648,6 +1663,7 @@ function downCount(l: ListenerView, row: SiteRow) {
 // openSite 打开站点编辑框：copy 为 true 时以 row 为模板新建站点（默认站点不能复制）
 function openSite(l: ListenerView, row?: SiteRow, copy = false) {
   loadIPLists()
+  loadPanels()
   siteOwner = l
   siteOwnerKey.value = l.key ?? ''
   siteFromKey.value = l.key ?? ''
@@ -1972,6 +1988,7 @@ onMounted(async () => {
   await prepare()
   loadIPLists()
   loadForwards()
+  loadPanels()
   await load()
   openFromQuery()
   polling.start()
@@ -2170,6 +2187,11 @@ onMounted(async () => {
 }
 .w-260 {
   width: 260px;
+}
+.panel-manage {
+  margin-left: 12px;
+  font-size: 13px;
+  color: var(--el-color-primary);
 }
 .w-160 {
   width: 160px;

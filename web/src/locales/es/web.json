@@ -61,6 +61,7 @@
   "typeProxy": "Proxy inverso",
   "typeRedirect": "Redirección",
   "typeStatic": "Archivos estáticos",
+  "typePanel": "Panel de navegación",
   "typeText": "Texto fijo",
   "typeClose": "Cerrar conexión",
   "typeCloseHelp": "No envía nada y cierra la conexión (como return 444 de nginx). Útil en el sitio predeterminado para que las peticiones que escanean dominios desconocidos no reciban respuesta; el registro de acceso las anota como 444.",
@@ -215,5 +216,10 @@
   "siteMoveFailed": "Cambios guardados, pero no se pudo mover: {error}",
   "siteMoved": "Guardado y movido al listener elegido",
   "dropHere": "Suelta aquí para mover a este listener",
-  "autoFirewallHelp": "Permite en el cortafuegos local (nftables / iptables / ip6tables) solo el puerto de esta escucha, y también el puerto UDP con el mismo número si HTTP/3 está activado, limitado a la dirección de escucha si se indica; se retira al desactivar, eliminar o fallar el inicio de la escucha, y no abre ningún otro puerto. Para Gately en un router como OpenWrt o en un host Linux con cortafuegos; con la red bridge de Docker, permite el puerto mapeado en el host"
+  "autoFirewallHelp": "Permite en el cortafuegos local (nftables / iptables / ip6tables) solo el puerto de esta escucha, y también el puerto UDP con el mismo número si HTTP/3 está activado, limitado a la dirección de escucha si se indica; se retira al desactivar, eliminar o fallar el inicio de la escucha, y no abre ningún otro puerto. Para Gately en un router como OpenWrt o en un host Linux con cortafuegos; con la red bridge de Docker, permite el puerto mapeado en el host",
+  "panel": "Panel de navegación",
+  "panelPlaceholder": "Selecciona un panel de navegación",
+  "panelManage": "Gestionar paneles de navegación",
+  "panelNone": "Aún no hay paneles de navegación. Crea uno antes en Web → Paneles de navegación.",
+  "panelHelp": "La ruta raíz del sitio muestra el panel elegido. El control de acceso y la autenticación se aplican como siempre; los cambios del panel surten efecto al guardarlos."
 }

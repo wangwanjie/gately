@@ -58,6 +58,9 @@
     "webvisitors": {
       "title": "Audit des visiteurs"
     },
+    "webpanels": {
+      "title": "Panneaux de navigation"
+    },
     "waf": {
       "title": "Pare-feu WAF",
       "desc": "Pare-feu applicatif web basé sur OWASP CRS"

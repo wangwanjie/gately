@@ -37,6 +37,7 @@ import {
   Waypoints,
   Workflow,
   Footprints,
+  LayoutGrid,
 } from 'lucide-vue-next'
 
 export interface NavItem {
@@ -90,6 +91,7 @@ export const navGroups: NavGroup[] = [
       { path: '/web', titleKey: 'nav.items.web.title', icon: Server, moduleId: 'webservice', descKey: 'nav.items.web.desc' },
       { path: '/webtopology', titleKey: 'nav.items.webtopology.title', icon: Workflow, anyModule: ['webservice'] },
       { path: '/webvisitors', titleKey: 'nav.items.webvisitors.title', icon: Footprints, anyModule: ['webservice'] },
+      { path: '/webpanels', titleKey: 'nav.items.webpanels.title', icon: LayoutGrid, anyModule: ['webservice'] },
       { path: '/waf', titleKey: 'nav.items.waf.title', icon: ShieldHalf, moduleId: 'waf', descKey: 'nav.items.waf.desc' },
       { path: '/ssl', titleKey: 'nav.items.ssl.title', icon: ShieldCheck, moduleId: 'ssl', descKey: 'nav.items.ssl.desc' },
       { path: '/webusers', titleKey: 'nav.items.webusers.title', icon: UserCog, anyModule: ['webservice'] },

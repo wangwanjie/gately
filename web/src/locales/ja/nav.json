@@ -58,6 +58,9 @@
     "webvisitors": {
       "title": "訪問者監査"
     },
+    "webpanels": {
+      "title": "ナビゲーションパネル"
+    },
     "waf": {
       "title": "WAF ファイアウォール",
       "desc": "OWASP CRS ベースのアプリケーションファイアウォール"

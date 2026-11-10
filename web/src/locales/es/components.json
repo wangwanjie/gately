@@ -96,7 +96,12 @@
     "export": "Exportar",
     "exportTip": "Exporta todos los registros que cumplen los filtros actuales, incluido el historial guardado en archivos de registro y archivos comprimidos",
     "exportCsv": "CSV (hoja de cálculo)",
-    "exportJsonl": "JSON Lines"
+    "exportJsonl": "JSON Lines",
+    "fullscreen": "Pantalla completa",
+    "exitFullscreen": "Salir de pantalla completa (Esc)",
+    "resizeTip": "Arrastra para cambiar la altura del área de registros; doble clic para restaurar la altura predeterminada; con el foco también funcionan las flechas",
+    "jumpLatest": "Ir a lo más reciente",
+    "newLogs": "{n} registros nuevos"
   },
   "scopeTags": {
     "allWrite": "Acceso total",

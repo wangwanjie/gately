@@ -58,6 +58,9 @@
     "webvisitors": {
       "title": "访客审计"
     },
+    "webpanels": {
+      "title": "导航面板"
+    },
     "waf": {
       "title": "WAF 防火墙",
       "desc": "基于 OWASP CRS 的应用防火墙"

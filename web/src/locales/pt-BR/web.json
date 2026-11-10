@@ -61,6 +61,7 @@
   "typeProxy": "Proxy reverso",
   "typeRedirect": "Redirecionamento",
   "typeStatic": "Arquivos estáticos",
+  "typePanel": "Painel de navegação",
   "typeText": "Texto fixo",
   "typeClose": "Fechar conexão",
   "typeCloseHelp": "Não envia nada e fecha a conexão (como o return 444 do nginx). Útil no site padrão para que requisições que varrem domínios desconhecidos não recebam resposta; o log de acesso as registra como 444.",
@@ -215,5 +216,10 @@
   "siteMoveFailed": "Alterações salvas, mas a movimentação falhou: {error}",
   "siteMoved": "Salvo e movido para o listener escolhido",
   "dropHere": "Solte aqui para mover para este listener",
-  "autoFirewallHelp": "Libera no firewall local (nftables / iptables / ip6tables) apenas a porta deste listener, e também a porta UDP de mesmo número quando o HTTP/3 está ativo, limitada ao endereço de escuta se houver um; é removida quando o listener é desativado, excluído ou falha ao iniciar, sem abrir outras portas. Para o Gately em um roteador como o OpenWrt ou em um host Linux com firewall; com a rede bridge do Docker, libere a porta mapeada no host"
+  "autoFirewallHelp": "Libera no firewall local (nftables / iptables / ip6tables) apenas a porta deste listener, e também a porta UDP de mesmo número quando o HTTP/3 está ativo, limitada ao endereço de escuta se houver um; é removida quando o listener é desativado, excluído ou falha ao iniciar, sem abrir outras portas. Para o Gately em um roteador como o OpenWrt ou em um host Linux com firewall; com a rede bridge do Docker, libere a porta mapeada no host",
+  "panel": "Painel de navegação",
+  "panelPlaceholder": "Selecione um painel de navegação",
+  "panelManage": "Gerenciar painéis de navegação",
+  "panelNone": "Ainda não há painéis de navegação. Crie um antes em Web → Painéis de navegação.",
+  "panelHelp": "O caminho raiz do site mostra o painel escolhido. Controle de acesso e autenticação valem normalmente; mudanças no painel valem assim que salvas."
 }

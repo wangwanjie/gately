@@ -61,6 +61,7 @@
   "typeProxy": "反向代理",
   "typeRedirect": "重定向",
   "typeStatic": "静态文件",
+  "typePanel": "导航面板",
   "typeText": "固定文本",
   "typeClose": "断开连接",
   "typeCloseHelp": "不返回任何内容，直接断开连接（相当于 nginx 的 return 444）。适合放在默认站点，让扫描未知域名的请求得不到任何响应；访问日志里记为 444。",
@@ -215,5 +216,10 @@
   "siteMoveFailed": "修改已保存，但移动失败：{error}",
   "siteMoved": "已保存并移到所选监听",
   "dropHere": "放到这里，移入此监听",
-  "autoFirewallHelp": "在本机防火墙（nftables / iptables / ip6tables）只放行这个监听的端口（开启 HTTP/3 时还有同号 UDP 端口），填写了监听地址时只放行该地址；监听停用、删除或启动失败时撤销，不会放开其他端口。适用于 Gately 运行在 OpenWrt 等路由器或开启了防火墙的 Linux 主机上；Docker bridge 网络需要在宿主机放行映射端口"
+  "autoFirewallHelp": "在本机防火墙（nftables / iptables / ip6tables）只放行这个监听的端口（开启 HTTP/3 时还有同号 UDP 端口），填写了监听地址时只放行该地址；监听停用、删除或启动失败时撤销，不会放开其他端口。适用于 Gately 运行在 OpenWrt 等路由器或开启了防火墙的 Linux 主机上；Docker bridge 网络需要在宿主机放行映射端口",
+  "panel": "导航面板",
+  "panelPlaceholder": "选择导航面板",
+  "panelManage": "管理导航面板",
+  "panelNone": "还没有导航面板，请先在 Web → 导航面板中新建。",
+  "panelHelp": "站点根路径输出所选面板的导航页，访问控制与认证设置照常生效；面板的修改保存后立即生效。"
 }

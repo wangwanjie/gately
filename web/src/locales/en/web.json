@@ -61,6 +61,7 @@
   "typeProxy": "Reverse proxy",
   "typeRedirect": "Redirect",
   "typeStatic": "Static files",
+  "typePanel": "Navigation panel",
   "typeText": "Fixed text",
   "typeClose": "Close connection",
   "typeCloseHelp": "Sends nothing and closes the connection (like nginx return 444). Useful for the default site so requests scanning unknown domains get no response; the access log records them as 444.",
@@ -215,5 +216,10 @@
   "siteMoveFailed": "Changes saved, but the move failed: {error}",
   "siteMoved": "Saved and moved to the chosen listener",
   "dropHere": "Drop here to move into this listener",
-  "autoFirewallHelp": "Allows only this listener's port in the local firewall (nftables / iptables / ip6tables), plus the UDP port with the same number when HTTP/3 is on, and only for the listen address if one is set; removed when the listener is disabled, deleted or fails to start, and no other port is opened. For Gately running on a router such as OpenWrt or on a Linux host with a firewall; with Docker bridge networking, allow the mapped port on the host"
+  "autoFirewallHelp": "Allows only this listener's port in the local firewall (nftables / iptables / ip6tables), plus the UDP port with the same number when HTTP/3 is on, and only for the listen address if one is set; removed when the listener is disabled, deleted or fails to start, and no other port is opened. For Gately running on a router such as OpenWrt or on a Linux host with a firewall; with Docker bridge networking, allow the mapped port on the host",
+  "panel": "Navigation panel",
+  "panelPlaceholder": "Select a navigation panel",
+  "panelManage": "Manage navigation panels",
+  "panelNone": "No navigation panels yet. Create one in Web → Navigation panels first.",
+  "panelHelp": "The site's root path serves the selected panel. Access control and authentication apply as usual; changes to the panel take effect as soon as they are saved."
 }

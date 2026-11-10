@@ -61,6 +61,7 @@
   "typeProxy": "反向代理",
   "typeRedirect": "重新導向",
   "typeStatic": "靜態檔案",
+  "typePanel": "導覽面板",
   "typeText": "固定文字",
   "typeClose": "中斷連線",
   "typeCloseHelp": "不回傳任何內容，直接中斷連線（相當於 nginx 的 return 444）。適合用於預設站點，讓掃描未知網域的請求得不到任何回應；存取日誌中記為 444。",
@@ -215,5 +216,10 @@
   "siteMoveFailed": "修改已儲存，但移動失敗：{error}",
   "siteMoved": "已儲存並移到所選監聽",
   "dropHere": "放到這裡，移入此監聽",
-  "autoFirewallHelp": "在本機防火牆（nftables / iptables / ip6tables）只放行這個監聽的連接埠（開啟 HTTP/3 時還有同號 UDP 連接埠），填寫了監聽位址時只放行該位址；監聽停用、刪除或啟動失敗時撤銷，不會放開其他連接埠。適用於 Gately 執行在 OpenWrt 等路由器或開啟了防火牆的 Linux 主機上；Docker bridge 網路需要在主機放行映射連接埠"
+  "autoFirewallHelp": "在本機防火牆（nftables / iptables / ip6tables）只放行這個監聽的連接埠（開啟 HTTP/3 時還有同號 UDP 連接埠），填寫了監聽位址時只放行該位址；監聽停用、刪除或啟動失敗時撤銷，不會放開其他連接埠。適用於 Gately 執行在 OpenWrt 等路由器或開啟了防火牆的 Linux 主機上；Docker bridge 網路需要在主機放行映射連接埠",
+  "panel": "導覽面板",
+  "panelPlaceholder": "選擇導覽面板",
+  "panelManage": "管理導覽面板",
+  "panelNone": "還沒有導覽面板，請先在 Web → 導覽面板中新增。",
+  "panelHelp": "站點根路徑輸出所選面板的導覽頁，存取控制與認證設定照常生效；面板的修改儲存後立即生效。"
 }
