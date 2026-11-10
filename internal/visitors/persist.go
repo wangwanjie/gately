@@ -195,6 +195,10 @@ func (s *Store) Load() error {
 		return err
 	}
 	defer zr.Close()
+	s.mu.Lock()
+	now := s.now()
+	s.mu.Unlock()
+	nowSec, today := now.Unix(), dayOf(now)
 	sc := bufio.NewScanner(io.LimitReader(zr, maxFileBytes))
 	sc.Buffer(make([]byte, 64<<10), maxLineBytes)
 	loaded := map[netip.Addr]*Visitor{}
@@ -209,7 +213,7 @@ func (s *Store) Load() error {
 			bad++
 			continue
 		}
-		a, ok := v.sanitize()
+		a, ok := v.sanitize(nowSec, today)
 		if !ok {
 			bad++
 			continue
@@ -243,8 +247,9 @@ func (s *Store) Load() error {
 	return nil
 }
 
-// sanitize 校验并规整从文件读出的记录（文件可能被手工编辑）：地址必须有效，字符串截断，列表限制条数，按天计数排序去重。
-func (v *Visitor) sanitize() (netip.Addr, bool) {
+// sanitize 校验并规整从文件读出的记录（文件可能被手工编辑）：地址必须有效，字符串截断，列表限制条数，按天计数排序去重；
+// 晚于 now 的时间截到 now、晚于 today 的按天计数丢弃（写盘时时钟曾前跳到未来）。
+func (v *Visitor) sanitize(now int64, today int32) (netip.Addr, bool) {
 	a, err := netip.ParseAddr(strings.TrimSpace(v.IP))
 	if err != nil || a.Zone() != "" {
 		return netip.Addr{}, false
@@ -266,6 +271,7 @@ func (v *Visitor) sanitize() (netip.Addr, bool) {
 	}
 	slices.SortFunc(v.Days, func(x, y Day) int { return int(x.D) - int(y.D) })
 	v.Days = slices.CompactFunc(v.Days, func(x, y Day) bool { return x.D == y.D })
+	resetFuture(v, now, today)
 	v.Sites = capList(v.Sites, maxSites)
 	for i := range v.Sites {
 		st := &v.Sites[i]
