@@ -55,6 +55,9 @@
     "webtopology": {
       "title": "Topologie"
     },
+    "webvisitors": {
+      "title": "Audit des visiteurs"
+    },
     "waf": {
       "title": "Pare-feu WAF",
       "desc": "Pare-feu applicatif web basé sur OWASP CRS"

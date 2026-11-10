@@ -55,6 +55,9 @@
     "webtopology": {
       "title": "Topologie"
     },
+    "webvisitors": {
+      "title": "Besucherprüfung"
+    },
     "waf": {
       "title": "WAF-Firewall",
       "desc": "Web Application Firewall auf Basis von OWASP CRS"

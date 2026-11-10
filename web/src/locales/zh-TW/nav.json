@@ -55,6 +55,9 @@
     "webtopology": {
       "title": "網路拓撲"
     },
+    "webvisitors": {
+      "title": "訪客稽核"
+    },
     "waf": {
       "title": "WAF 防火牆",
       "desc": "基於 OWASP CRS 的應用程式防火牆"

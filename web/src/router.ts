@@ -24,6 +24,7 @@ const router = createRouter({
         { path: 'ssl', name: 'ssl', component: () => import('./views/SSL.vue'), meta: { titleKey: 'nav.items.ssl.title' } },
         { path: 'web', name: 'web', component: () => import('./views/Web.vue'), meta: { titleKey: 'nav.items.web.title' } },
         { path: 'webtopology', name: 'webtopology', component: () => import('./views/WebTopologyPage.vue'), meta: { titleKey: 'nav.items.webtopology.title' } },
+        { path: 'webvisitors', name: 'webvisitors', component: () => import('./views/WebVisitors.vue'), meta: { titleKey: 'nav.items.webvisitors.title' } },
         { path: 'webusers', name: 'webusers', component: () => import('./views/WebUsers.vue'), meta: { titleKey: 'nav.items.webusers.title' } },
         { path: 'portforward', name: 'portforward', component: () => import('./views/PortForward.vue'), meta: { titleKey: 'nav.items.portforward.title' } },
         { path: 'protoroute', name: 'protoroute', component: () => import('./views/ProtoRoute.vue'), meta: { titleKey: 'nav.items.protoroute.title' } },

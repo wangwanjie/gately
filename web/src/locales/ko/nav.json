@@ -55,6 +55,9 @@
     "webtopology": {
       "title": "토폴로지"
     },
+    "webvisitors": {
+      "title": "방문자 감사"
+    },
     "waf": {
       "title": "WAF 방화벽",
       "desc": "OWASP CRS 기반 웹 애플리케이션 방화벽"

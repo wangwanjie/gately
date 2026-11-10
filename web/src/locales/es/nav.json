@@ -55,6 +55,9 @@
     "webtopology": {
       "title": "Topología"
     },
+    "webvisitors": {
+      "title": "Auditoría de visitantes"
+    },
     "waf": {
       "title": "Cortafuegos WAF",
       "desc": "Cortafuegos de aplicaciones web basado en OWASP CRS"

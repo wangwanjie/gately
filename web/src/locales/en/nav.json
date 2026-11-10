@@ -55,6 +55,9 @@
     "webtopology": {
       "title": "Topology"
     },
+    "webvisitors": {
+      "title": "Visitor audit"
+    },
     "waf": {
       "title": "WAF Firewall",
       "desc": "Web application firewall based on OWASP CRS"
