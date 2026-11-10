@@ -518,8 +518,13 @@ function onRemarkChanged(id: string, remark: string) {
 }
 
 // ---- 连接管理 ----
-function openEditor(c: Conn | null) {
+async function openEditor(c: Conn | null) {
   copyConnFrom.value = null
+  if (c) {
+    // 连接后后端可能刚记录或补记了主机指纹与类型，打开前取一次最新列表，避免显示并回存旧值
+    await loadConns()
+    c = conns.value.find((x) => x.key === c!.key) ?? c
+  }
   editingConn.value = c
   editorVisible.value = true
 }
