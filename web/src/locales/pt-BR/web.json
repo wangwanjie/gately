@@ -144,6 +144,7 @@
   "httpPortHelp": "Também escuta em uma porta HTTP sem criptografia (como a 80) que compartilha todos os sites com a porta acima, sem criar outro listener para HTTP. Redirecionar envia as requisições ao endereço HTTPS deste listener (porta de acesso ou de escuta); Servir responde por HTTP sem criptografia.",
   "httpPortPlainHelp": "Também escuta em outra porta HTTP que compartilha todos os sites com a porta acima.",
   "httpPortSame": "A porta HTTP deve ser diferente da porta de escuta",
+  "httpPortEntryWarn": "O redirecionamento usa a porta do endereço de acesso, ou a porta de escuta {listen} quando vazio; este listener é acessado pela porta de entrada {port} de {rule}, então informe {port} no endereço de acesso abaixo, senão os visitantes são redirecionados para uma porta inacessível de fora",
   "httpPortRedirectTag": "HTTP :{port} → HTTPS",
   "httpPortServeTag": "HTTP :{port}",
   "optSniFromHost": "Usar o domínio acessado como SNI",

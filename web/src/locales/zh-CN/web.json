@@ -144,6 +144,7 @@
   "httpPortHelp": "再监听一个明文 HTTP 端口（如 80），与上面的端口共用全部站点，无需为 HTTP 另建监听。跳转会把请求重定向到本监听的 HTTPS 地址（端口按访问地址或监听端口）；直接服务则按 HTTP 提供站点，不加密。",
   "httpPortPlainHelp": "再监听一个 HTTP 端口，与上面的端口共用全部站点。",
   "httpPortSame": "HTTP 端口不能与监听端口相同",
+  "httpPortEntryWarn": "跳转使用访问地址中的端口，未填写时为监听端口 {listen}；检测到经 {rule} 的入口端口 {port} 访问，请在下方访问地址中填写 {port}，否则会跳转到外部无法访问的端口",
   "httpPortRedirectTag": "HTTP :{port} 跳转",
   "httpPortServeTag": "HTTP :{port}",
   "optSniFromHost": "使用访问域名作为 SNI",

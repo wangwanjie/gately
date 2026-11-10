@@ -257,6 +257,8 @@
           </div>
           <div class="form-help">{{ editingListener.tls ? t('web.httpPortHelp') : t('web.httpPortPlainHelp') }}</div>
           <div v-if="editingListener.httpPort && editingListener.httpPort === editingListener.port" class="form-help warn">{{ t('web.httpPortSame') }}</div>
+          <!-- 跳转端口取访问地址中的端口（后端不识别转发入口），经协议分流/端口转发访问且未填访问端口时提醒填写 -->
+          <div v-if="httpPortEntryWarn" class="form-help warn">{{ t('web.httpPortEntryWarn', { listen: editingListener.port, port: editingEntry!.port, rule: editingEntry!.rule }) }}</div>
         </el-form-item>
         <!-- 仅用于生成站点链接：经协议分流、端口映射或 CDN 访问时，对外的协议与端口可能与监听不同 -->
         <el-form-item :label="t('web.accessAddr')">
@@ -1174,6 +1176,20 @@ const httpPortInput = computed<number | undefined>({
       l.httpPortMode = 'redirect'
     }
   },
+})
+
+// httpPortEntryWarn：额外 HTTP 端口跳转到 HTTPS，但监听经转发入口访问且未填写访问端口时，跳转地址会用到外部不可达的监听端口
+const httpPortEntryWarn = computed(() => {
+  const l = editingListener.value
+  return !!(l.tls && l.httpPort && l.httpPortMode === 'redirect' && !l.accessPort && editingEntry.value && editingEntry.value.port !== l.port)
+})
+
+// 在对话框中把 HTTPS 从关打开时，已填写的 HTTP 端口恢复默认的跳转：关闭 HTTPS 时后端会把处理方式规范化为直接服务，
+// 不恢复的话重新开启 HTTPS 后仍是直接服务。切换到另一个监听（对象变化）时不处理
+watch(() => [editingListener.value, editingListener.value.tls] as const, ([l, tls], [prevL, prevTls]) => {
+  if (l === prevL && tls && prevTls === false && l.httpPort && l.httpPortMode === 'serve') {
+    l.httpPortMode = 'redirect'
+  }
 })
 
 // httpPortText 为列表中额外 HTTP 端口的标签：开启 HTTPS 且跳转时注明跳转

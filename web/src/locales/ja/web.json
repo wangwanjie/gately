@@ -144,6 +144,7 @@
   "httpPortHelp": "平文 HTTP ポート（80 など）も待ち受け、上のポートとすべてのサイトを共有します。HTTP 用に別のリスナーを作る必要はありません。リダイレクトはこのリスナーの HTTPS アドレス（アクセスポートまたは待ち受けポート）へ転送し、そのまま提供は暗号化せず HTTP でサイトを返します。",
   "httpPortPlainHelp": "別の HTTP ポートも待ち受け、上のポートとすべてのサイトを共有します。",
   "httpPortSame": "HTTP ポートは待ち受けポートと異なる必要があります",
+  "httpPortEntryWarn": "リダイレクトはアクセスアドレスのポートを使い、未入力なら待ち受けポート {listen} になります。{rule} の入口ポート {port} 経由でアクセスされているため、下のアクセスアドレスに {port} を入力してください。入力しないと外部から到達できないポートへリダイレクトされます",
   "httpPortRedirectTag": "HTTP :{port} → HTTPS",
   "httpPortServeTag": "HTTP :{port}",
   "optSniFromHost": "アクセス先ドメインを SNI に使う",

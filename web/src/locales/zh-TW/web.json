@@ -144,6 +144,7 @@
   "httpPortHelp": "再監聽一個明文 HTTP 連接埠（如 80），與上面的連接埠共用全部站點，無需為 HTTP 另建監聽。跳轉會把請求重新導向到本監聽的 HTTPS 位址（連接埠依存取位址或監聽連接埠）；直接服務則以 HTTP 提供站點，不加密。",
   "httpPortPlainHelp": "再監聽一個 HTTP 連接埠，與上面的連接埠共用全部站點。",
   "httpPortSame": "HTTP 連接埠不能與監聽連接埠相同",
+  "httpPortEntryWarn": "跳轉使用存取位址中的連接埠，未填寫時為監聽連接埠 {listen}；偵測到經 {rule} 的入口連接埠 {port} 存取，請在下方存取位址中填寫 {port}，否則會跳轉到外部無法存取的連接埠",
   "httpPortRedirectTag": "HTTP :{port} 跳轉",
   "httpPortServeTag": "HTTP :{port}",
   "optSniFromHost": "使用造訪網域作為 SNI",

@@ -144,6 +144,7 @@
   "httpPortHelp": "Écoute aussi sur un port HTTP en clair (comme 80) qui partage tous les sites avec le port ci-dessus, sans créer d’écouteur séparé pour HTTP. Rediriger envoie les requêtes vers l’adresse HTTPS de cet écouteur (port d’accès ou port d’écoute) ; Servir répond en HTTP non chiffré.",
   "httpPortPlainHelp": "Écoute aussi sur un autre port HTTP qui partage tous les sites avec le port ci-dessus.",
   "httpPortSame": "Le port HTTP doit être différent du port d’écoute",
+  "httpPortEntryWarn": "La redirection utilise le port de l’adresse d’accès, ou le port d’écoute {listen} s’il est vide ; cet écouteur est atteint via le port d’entrée {port} de {rule}, saisissez donc {port} dans l’adresse d’accès ci-dessous, sinon les visiteurs sont redirigés vers un port inaccessible de l’extérieur",
   "httpPortRedirectTag": "HTTP :{port} → HTTPS",
   "httpPortServeTag": "HTTP :{port}",
   "optSniFromHost": "Utiliser le domaine visité comme SNI",

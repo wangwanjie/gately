@@ -144,6 +144,7 @@
   "httpPortHelp": "평문 HTTP 포트(예: 80)도 수신하며 위 포트와 모든 사이트를 공유하므로 HTTP용 리스너를 따로 만들 필요가 없습니다. 리디렉션은 요청을 이 리스너의 HTTPS 주소(접속 포트 또는 수신 포트)로 보내고, 그대로 제공은 암호화 없이 HTTP로 사이트를 제공합니다.",
   "httpPortPlainHelp": "다른 HTTP 포트도 수신하며 위 포트와 모든 사이트를 공유합니다.",
   "httpPortSame": "HTTP 포트는 수신 포트와 달라야 합니다",
+  "httpPortEntryWarn": "리디렉션은 접속 주소의 포트를 사용하며, 비어 있으면 수신 포트 {listen}입니다. {rule}의 입구 포트 {port}를 거쳐 접속되므로 아래 접속 주소에 {port}를 입력하세요. 입력하지 않으면 외부에서 닿을 수 없는 포트로 리디렉션됩니다",
   "httpPortRedirectTag": "HTTP :{port} → HTTPS",
   "httpPortServeTag": "HTTP :{port}",
   "optSniFromHost": "접속 도메인을 SNI로 사용",

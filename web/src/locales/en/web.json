@@ -144,6 +144,7 @@
   "httpPortHelp": "Also listen on a plain HTTP port (such as 80) that shares all sites with the port above, so HTTP needs no separate listener. Redirect sends requests to this listener's HTTPS address (using the access port or the listen port); Serve answers them over unencrypted HTTP.",
   "httpPortPlainHelp": "Also listen on another HTTP port that shares all sites with the port above.",
   "httpPortSame": "The HTTP port must differ from the listen port",
+  "httpPortEntryWarn": "The redirect uses the port in the access address, or the listen port {listen} when it is empty; this listener is reached through entry port {port} of {rule}, so enter {port} in the access address below, otherwise visitors are redirected to a port they cannot reach",
   "httpPortRedirectTag": "HTTP :{port} → HTTPS",
   "httpPortServeTag": "HTTP :{port}",
   "optSniFromHost": "Use the visited domain as SNI",
