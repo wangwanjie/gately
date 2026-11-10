@@ -99,5 +99,6 @@
   "range7": "7 Tage",
   "range30": "30 Tage",
   "rangeAll": "Alle",
-  "shrinkConfirm": "Nach dem Verkürzen der Aufbewahrung werden Besucher, die zuletzt vor mehr als {days} Tagen gesehen wurden, und ältere Tageswerte sofort und unwiderruflich gelöscht. Trotzdem speichern?"
+  "shrinkConfirm": "Nach dem Verkürzen der Aufbewahrung werden Besucher, die zuletzt vor mehr als {days} Tagen gesehen wurden, und ältere Tageswerte sofort und unwiderruflich gelöscht. Trotzdem speichern?",
+  "maxShrinkConfirm": "Nach dem Senken der maximalen Besucherzahl auf {max} werden die {n} überzähligen Besucher sofort und unwiderruflich gelöscht (zuerst Scanner, dann anonyme Besucher, authentifizierte Besucher zuletzt; innerhalb jeder Gruppe die am längsten nicht gesehenen zuerst). Trotzdem speichern?"
 }

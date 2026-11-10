@@ -99,5 +99,6 @@
   "range7": "7 jours",
   "range30": "30 jours",
   "rangeAll": "Tout",
-  "shrinkConfirm": "Après réduction de la conservation, les visiteurs vus pour la dernière fois il y a plus de {days} jours et les compteurs quotidiens plus anciens sont supprimés immédiatement, sans récupération possible. Enregistrer quand même ?"
+  "shrinkConfirm": "Après réduction de la conservation, les visiteurs vus pour la dernière fois il y a plus de {days} jours et les compteurs quotidiens plus anciens sont supprimés immédiatement, sans récupération possible. Enregistrer quand même ?",
+  "maxShrinkConfirm": "Après avoir réduit le nombre maximal de visiteurs à {max}, les {n} visiteurs en trop sont supprimés immédiatement, sans récupération possible (d'abord les scanners, puis les visiteurs anonymes, les visiteurs authentifiés en dernier ; dans chaque groupe, ceux absents depuis le plus longtemps d'abord). Enregistrer quand même ?"
 }
