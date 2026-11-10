@@ -175,9 +175,11 @@ func (s *Settings) Normalize() error {
 
 // Store 保存全部访客记录。零值不可用，用 New 创建；nil 的 *Store 上调用 Record 什么也不做。
 type Store struct {
-	mu  sync.Mutex
-	m   map[netip.Addr]*Visitor
-	set Settings
+	mu sync.Mutex
+	m  map[netip.Addr]*Visitor
+	// queryMu 串行化列表查询（见 Query），与 mu 无关：等待中的查询不占用 mu
+	queryMu sync.Mutex
+	set     Settings
 	// active 为“记录中”的标记，供请求路径无锁判断
 	active atomic.Bool
 	path   string
