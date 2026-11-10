@@ -168,3 +168,42 @@ func TestExec(t *testing.T) {
 		t.Fatal("不存在的连接应报错")
 	}
 }
+
+// TestExecHandshakeDeadline 验证目标只接受 TCP 连接、不回应 SSH 握手时（例如正在重启），
+// Exec 按调用方的截止时间返回，而不是等到连接超时（最长 120 秒）。
+func TestExecHandshakeDeadline(t *testing.T) {
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { ln.Close() })
+	go func() {
+		for {
+			nc, err := ln.Accept()
+			if err != nil {
+				return
+			}
+			// 不发送 SSH 版本标识，测试结束时随监听关闭
+			t.Cleanup(func() { nc.Close() })
+		}
+	}()
+	keyPEM, _ := newKey(t)
+	host, port, _ := net.SplitHostPort(ln.Addr().String())
+	m, _ := newModule(t)
+	c := Connection{Key: "s", Name: "pc", SSH: SSHConfig{Host: host, Username: "root", AuthType: "key", PrivateKey: keyPEM, Timeout: 120}}
+	c.SSH.Port, _ = strconv.Atoi(port)
+	if err := c.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	c.SSH.HostKey = "SHA256:recorded"
+	m.cfg.Connections = []Connection{c}
+	ctx, cancel := context.WithTimeout(context.Background(), 300*time.Millisecond)
+	defer cancel()
+	start := time.Now()
+	if _, err := m.Exec(ctx, "s", "echo hi"); err == nil || !errors.Is(err, context.DeadlineExceeded) {
+		t.Fatalf("握手卡住时应按上下文截止时间返回: %v", err)
+	}
+	if d := time.Since(start); d > 5*time.Second {
+		t.Fatalf("返回过慢: %v", d)
+	}
+}
