@@ -7,6 +7,10 @@ description: Release-Ankündigungen und Versionshinweise zu jeder Gately-Version
 
 Unten stehen die Ankündigungen zu wichtigen Releases. Alle Änderungen und Downloads jeder Version finden Sie unter [GitHub Releases](https://github.com/wangwanjie/gately/releases).
 
+## [v0.6.5.4](/de/news/v0.6.5.4)
+
+11. November 2026 · Wake-on-LAN mit Fern-Herunterfahren und Bemfa-Sprachsteuerung; zusätzlicher HTTP-Port an Listenern des Web-Dienstes; Designs für Navigationspanels.
+
 ## [v0.6.5.3](/de/news/v0.6.5.3)
 
 10. November 2026 · Sicherheitskorrektur (Antwort-Cache); Navigationspanels; Besucherprüfung; Wiedergabe der Netzwerktopologie; Cache-Regeln pro Pfad; das Web-Terminal prüft Host-Fingerabdrücke nach Schlüsseltyp; Protokollpanel mit anpassbarer Höhe.
