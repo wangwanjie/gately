@@ -148,6 +148,11 @@ const (
 // ForPreview 把 previewCSP 与 previewReferrer 以 meta 标签插到页面 <head> 的最前面，供管理界面预览使用。
 // 在解析树上插入：<head> 带属性或文本中出现 "<head>" 字样时也能放到正确位置。
 func ForPreview(page []byte) []byte {
+	return forPreview(page, previewCSP)
+}
+
+// forPreview 把 csp 与 previewReferrer 以 meta 标签插到页面 <head> 的最前面。
+func forPreview(page []byte, csp string) []byte {
 	doc, err := xhtml.Parse(bytes.NewReader(page))
 	if err != nil {
 		return nil
@@ -171,7 +176,7 @@ func ForPreview(page []byte) []byte {
 		return &xhtml.Node{Type: xhtml.ElementNode, Data: "meta", DataAtom: atom.Meta, Attr: attrs}
 	}
 	first := head.FirstChild
-	head.InsertBefore(meta(xhtml.Attribute{Key: "http-equiv", Val: "Content-Security-Policy"}, xhtml.Attribute{Key: "content", Val: previewCSP}), first)
+	head.InsertBefore(meta(xhtml.Attribute{Key: "http-equiv", Val: "Content-Security-Policy"}, xhtml.Attribute{Key: "content", Val: csp}), first)
 	head.InsertBefore(meta(xhtml.Attribute{Key: "name", Val: "referrer"}, xhtml.Attribute{Key: "content", Val: previewReferrer}), first)
 	var out bytes.Buffer
 	if err := xhtml.Render(&out, doc); err != nil {

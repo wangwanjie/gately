@@ -395,6 +395,16 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | POST | `/api/webservice/errorpages/check` | `webservice:write` | Comprueba la seguridad y la usabilidad de una página y genera una vista previa sin guardar |
 | GET | `/api/webservice/errorpages/styles` | `webservice:read` | Vista previa del estilo predeterminado y de todos los estilos integrados; ?code= indica el código de estado (por defecto 502) |
 | GET | `/api/webservice/errorpages/{key}/preview` | `webservice:read` | Vista previa de una página de error personalizada; ?code= indica el código de estado (por defecto 502) |
+| GET | `/api/webservice/panels` | `webservice:read` | Listar Paneles de navegación |
+| POST | `/api/webservice/panels` | `webservice:write` | Añadir Paneles de navegación |
+| POST | `/api/webservice/panels/{key}/copy` | `webservice:write` | Duplicar Paneles de navegación |
+| PUT | `/api/webservice/panels/{key}` | `webservice:write` | Modificar Paneles de navegación |
+| DELETE | `/api/webservice/panels/{key}` | `webservice:write` | Eliminar Paneles de navegación |
+| PUT | `/api/webservice/panels/{key}/enable` | `webservice:write` | Activar o desactivar Paneles de navegación |
+| PUT | `/api/webservice/panels-order` | `webservice:write` | Reordenar Paneles de navegación |
+| PUT | `/api/webservice/panels-enable` | `webservice:write` | Activar o desactivar en lote: Paneles de navegación |
+| POST | `/api/webservice/panels-delete` | `webservice:write` | Eliminar en lote: Paneles de navegación |
+| POST | `/api/webservice/panels/preview` | `webservice:write` | Vista previa del panel de navegación |
 | GET | `/api/webservice/users` | `webservice:read` | Leer usuarios compartidos y proveedor de identidad OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Guardar usuarios compartidos y proveedor de identidad OIDC, configurar sitios en bloque |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | Operaciones masivas de sitios: activar, desactivar, eliminar, añadir, quitar o reemplazar dominios, cambiar algunas opciones o mover a otro listener; solo se guarda si todos los sitios pasan la validación y no se cambia nada si alguno falla |
@@ -2397,6 +2407,48 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `issuer` | string |
 | `signingKey` | string |
 
+### webservice.Panel
+
+| Campo | Tipo |
+| --- | --- |
+| `enable` | boolean |
+| `icon` | string |
+| `key` | string |
+| `lanCidrs` | Lista de string |
+| `links` | Lista de `webservice.PanelLink` |
+| `name` | string |
+| `remark` | string |
+| `subtitle` | string |
+| `theme` | string |
+| `title` | string |
+
+### webservice.PanelLink
+
+| Campo | Tipo |
+| --- | --- |
+| `color` | string |
+| `description` | string |
+| `group` | string |
+| `hide` | boolean |
+| `icon` | string |
+| `lanUrl` | string |
+| `name` | string |
+| `sameTab` | boolean |
+| `url` | string |
+
+### webservice.PanelPreview
+
+| Campo | Tipo |
+| --- | --- |
+| `html` | string |
+
+### webservice.PanelPreviewRequest
+
+| Campo | Tipo |
+| --- | --- |
+| `lan` | boolean |
+| `panel` | `webservice.Panel` |
+
 ### webservice.PathRule
 
 | Campo | Tipo |
@@ -2565,6 +2617,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `name` | string |
 | `notFoundPage` | string |
 | `oauthUsers` | Lista de string |
+| `panel` | string |
 | `passAuthCookies` | boolean |
 | `rateLimit` | `webservice.RateLimit` |
 | `redirectCode` | integer |

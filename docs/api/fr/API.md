@@ -395,6 +395,16 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | POST | `/api/webservice/errorpages/check` | `webservice:write` | Vérifie la sécurité et l'utilisabilité d'une page et génère un aperçu sans enregistrer |
 | GET | `/api/webservice/errorpages/styles` | `webservice:read` | Aperçu du style par défaut et de tous les styles intégrés ; ?code= définit le code d'état (502 par défaut) |
 | GET | `/api/webservice/errorpages/{key}/preview` | `webservice:read` | Aperçu d'une page d'erreur personnalisée ; ?code= définit le code d'état (502 par défaut) |
+| GET | `/api/webservice/panels` | `webservice:read` | Lister Panneaux de navigation |
+| POST | `/api/webservice/panels` | `webservice:write` | Ajouter Panneaux de navigation |
+| POST | `/api/webservice/panels/{key}/copy` | `webservice:write` | Dupliquer Panneaux de navigation |
+| PUT | `/api/webservice/panels/{key}` | `webservice:write` | Modifier Panneaux de navigation |
+| DELETE | `/api/webservice/panels/{key}` | `webservice:write` | Supprimer Panneaux de navigation |
+| PUT | `/api/webservice/panels/{key}/enable` | `webservice:write` | Activer ou désactiver Panneaux de navigation |
+| PUT | `/api/webservice/panels-order` | `webservice:write` | Réordonner Panneaux de navigation |
+| PUT | `/api/webservice/panels-enable` | `webservice:write` | Activer ou désactiver en lot : Panneaux de navigation |
+| POST | `/api/webservice/panels-delete` | `webservice:write` | Supprimer en lot : Panneaux de navigation |
+| POST | `/api/webservice/panels/preview` | `webservice:write` | Aperçu du panneau de navigation |
 | GET | `/api/webservice/users` | `webservice:read` | Lire les utilisateurs partagés et le fournisseur d'identité OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Enregistrer utilisateurs partagés et fournisseur d'identité OIDC, configurer les sites en masse |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | Opérations groupées sur les sites : activer, désactiver, supprimer, ajouter, retirer ou remplacer des domaines, modifier certaines options ou déplacer vers un autre écouteur ; l'enregistrement n'a lieu que si tous les sites passent la validation, rien n'est modifié si l'un d'eux échoue |
@@ -2397,6 +2407,48 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `issuer` | string |
 | `signingKey` | string |
 
+### webservice.Panel
+
+| Champ | Type |
+| --- | --- |
+| `enable` | boolean |
+| `icon` | string |
+| `key` | string |
+| `lanCidrs` | Tableau de string |
+| `links` | Tableau de `webservice.PanelLink` |
+| `name` | string |
+| `remark` | string |
+| `subtitle` | string |
+| `theme` | string |
+| `title` | string |
+
+### webservice.PanelLink
+
+| Champ | Type |
+| --- | --- |
+| `color` | string |
+| `description` | string |
+| `group` | string |
+| `hide` | boolean |
+| `icon` | string |
+| `lanUrl` | string |
+| `name` | string |
+| `sameTab` | boolean |
+| `url` | string |
+
+### webservice.PanelPreview
+
+| Champ | Type |
+| --- | --- |
+| `html` | string |
+
+### webservice.PanelPreviewRequest
+
+| Champ | Type |
+| --- | --- |
+| `lan` | boolean |
+| `panel` | `webservice.Panel` |
+
 ### webservice.PathRule
 
 | Champ | Type |
@@ -2565,6 +2617,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `name` | string |
 | `notFoundPage` | string |
 | `oauthUsers` | Tableau de string |
+| `panel` | string |
 | `passAuthCookies` | boolean |
 | `rateLimit` | `webservice.RateLimit` |
 | `redirectCode` | integer |

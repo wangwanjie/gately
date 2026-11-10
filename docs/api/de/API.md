@@ -395,6 +395,16 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | POST | `/api/webservice/errorpages/check` | `webservice:write` | Prüft Sicherheit und Verwendbarkeit einer Seite und erzeugt eine Vorschau, ohne zu speichern |
 | GET | `/api/webservice/errorpages/styles` | `webservice:read` | Vorschau des Standardstils und aller integrierten Stile; ?code= legt den Statuscode fest (Standard 502) |
 | GET | `/api/webservice/errorpages/{key}/preview` | `webservice:read` | Vorschau einer benutzerdefinierten Fehlerseite; ?code= legt den Statuscode fest (Standard 502) |
+| GET | `/api/webservice/panels` | `webservice:read` | Navigationspanels auflisten |
+| POST | `/api/webservice/panels` | `webservice:write` | Navigationspanels hinzufügen |
+| POST | `/api/webservice/panels/{key}/copy` | `webservice:write` | Navigationspanels duplizieren |
+| PUT | `/api/webservice/panels/{key}` | `webservice:write` | Navigationspanels ändern |
+| DELETE | `/api/webservice/panels/{key}` | `webservice:write` | Navigationspanels löschen |
+| PUT | `/api/webservice/panels/{key}/enable` | `webservice:write` | Navigationspanels aktivieren oder deaktivieren |
+| PUT | `/api/webservice/panels-order` | `webservice:write` | Navigationspanels neu anordnen |
+| PUT | `/api/webservice/panels-enable` | `webservice:write` | Im Stapel aktivieren oder deaktivieren: Navigationspanels |
+| POST | `/api/webservice/panels-delete` | `webservice:write` | Im Stapel löschen: Navigationspanels |
+| POST | `/api/webservice/panels/preview` | `webservice:write` | Vorschau des Navigationspanels |
 | GET | `/api/webservice/users` | `webservice:read` | Gemeinsame Benutzer und OIDC-Identitätsanbieter lesen |
 | PUT | `/api/webservice/users` | `webservice:write` | Gemeinsame Benutzer und OIDC-Identitätsanbieter speichern, Sites gesammelt einstellen |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | Sammelaktionen für Sites: aktivieren, deaktivieren, löschen, Domains hinzufügen, entfernen oder ersetzen, einige Optionen ändern oder zu einem anderen Listener verschieben; gespeichert wird nur, wenn alle Sites die Prüfung bestehen, schlägt eine fehl, wird nichts geändert |
@@ -2397,6 +2407,48 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `issuer` | string |
 | `signingKey` | string |
 
+### webservice.Panel
+
+| Feld | Typ |
+| --- | --- |
+| `enable` | boolean |
+| `icon` | string |
+| `key` | string |
+| `lanCidrs` | Array von string |
+| `links` | Array von `webservice.PanelLink` |
+| `name` | string |
+| `remark` | string |
+| `subtitle` | string |
+| `theme` | string |
+| `title` | string |
+
+### webservice.PanelLink
+
+| Feld | Typ |
+| --- | --- |
+| `color` | string |
+| `description` | string |
+| `group` | string |
+| `hide` | boolean |
+| `icon` | string |
+| `lanUrl` | string |
+| `name` | string |
+| `sameTab` | boolean |
+| `url` | string |
+
+### webservice.PanelPreview
+
+| Feld | Typ |
+| --- | --- |
+| `html` | string |
+
+### webservice.PanelPreviewRequest
+
+| Feld | Typ |
+| --- | --- |
+| `lan` | boolean |
+| `panel` | `webservice.Panel` |
+
 ### webservice.PathRule
 
 | Feld | Typ |
@@ -2565,6 +2617,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `name` | string |
 | `notFoundPage` | string |
 | `oauthUsers` | Array von string |
+| `panel` | string |
 | `passAuthCookies` | boolean |
 | `rateLimit` | `webservice.RateLimit` |
 | `redirectCode` | integer |

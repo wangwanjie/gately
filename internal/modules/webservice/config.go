@@ -24,6 +24,8 @@ const (
 	TypeRedirect = "redirect"
 	TypeStatic   = "static"
 	TypeText     = "text"
+	// TypePanel 输出面板库中的一个导航面板，把多个服务的链接汇总在一页
+	TypePanel = "panel"
 	// TypeClose 不返回任何响应，直接断开连接（相当于 nginx 的 return 444），常用于默认站点拒绝未知域名的扫描
 	TypeClose = "close"
 )
@@ -87,6 +89,9 @@ type Site struct {
 	CleanURLs bool `json:"cleanUrls"`
 	// NotFoundPage 为文件不存在时返回的页面，相对 Root 的路径，例如 404.html
 	NotFoundPage string `json:"notFoundPage"`
+
+	// 导航面板：Panel 为引用的面板 key
+	Panel string `json:"panel"`
 
 	// 固定文本
 	Text        string `json:"text"`
@@ -244,6 +249,8 @@ type fileConfig struct {
 	Visitors visitors.Settings `json:"visitors"`
 	// Replay 为拓扑回放设置
 	Replay ReplaySettings `json:"replay"`
+	// Panels 为导航面板库，供导航面板类型的站点引用
+	Panels []Panel `json:"panels"`
 }
 
 func cleanList(in []string) []string {
@@ -439,6 +446,12 @@ func (s *Site) validate(isDefault bool) error {
 		s.NotFoundPage = strings.TrimSpace(s.NotFoundPage)
 		if strings.Contains(s.NotFoundPage, "..") {
 			return errors.New("404 页面需为站点目录内的相对路径")
+		}
+	case TypePanel:
+		// 引用的面板是否存在由 checkPanelRefsLocked 检查
+		s.Panel = strings.TrimSpace(s.Panel)
+		if s.Panel == "" {
+			return errors.New("请选择导航面板")
 		}
 	case TypeText:
 		if s.StatusCode == 0 {

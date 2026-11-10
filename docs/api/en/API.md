@@ -395,6 +395,16 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | POST | `/api/webservice/errorpages/check` | `webservice:write` | Check a page for safety and usability and generate a preview without saving |
 | GET | `/api/webservice/errorpages/styles` | `webservice:read` | Preview of the default style and all built-in styles; ?code= sets the status code (default 502) |
 | GET | `/api/webservice/errorpages/{key}/preview` | `webservice:read` | Preview of a custom error page; ?code= sets the status code (default 502) |
+| GET | `/api/webservice/panels` | `webservice:read` | List Navigation panels |
+| POST | `/api/webservice/panels` | `webservice:write` | Create Navigation panels |
+| POST | `/api/webservice/panels/{key}/copy` | `webservice:write` | Duplicate Navigation panels |
+| PUT | `/api/webservice/panels/{key}` | `webservice:write` | Update Navigation panels |
+| DELETE | `/api/webservice/panels/{key}` | `webservice:write` | Delete Navigation panels |
+| PUT | `/api/webservice/panels/{key}/enable` | `webservice:write` | Enable or disable Navigation panels |
+| PUT | `/api/webservice/panels-order` | `webservice:write` | Reorder Navigation panels |
+| PUT | `/api/webservice/panels-enable` | `webservice:write` | Enable or disable in bulk: Navigation panels |
+| POST | `/api/webservice/panels-delete` | `webservice:write` | Delete in bulk: Navigation panels |
+| POST | `/api/webservice/panels/preview` | `webservice:write` | Navigation panel preview |
 | GET | `/api/webservice/users` | `webservice:read` | Read shared users and the OIDC identity provider |
 | PUT | `/api/webservice/users` | `webservice:write` | Save shared users and the OIDC identity provider, set sites in bulk |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | Bulk site operations: enable, disable, delete, add, remove or replace domains, change some options, or move to another listener; changes are saved only if every site passes validation, and nothing changes if any site fails |
@@ -2397,6 +2407,48 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `issuer` | string |
 | `signingKey` | string |
 
+### webservice.Panel
+
+| Field | Type |
+| --- | --- |
+| `enable` | boolean |
+| `icon` | string |
+| `key` | string |
+| `lanCidrs` | Array of string |
+| `links` | Array of `webservice.PanelLink` |
+| `name` | string |
+| `remark` | string |
+| `subtitle` | string |
+| `theme` | string |
+| `title` | string |
+
+### webservice.PanelLink
+
+| Field | Type |
+| --- | --- |
+| `color` | string |
+| `description` | string |
+| `group` | string |
+| `hide` | boolean |
+| `icon` | string |
+| `lanUrl` | string |
+| `name` | string |
+| `sameTab` | boolean |
+| `url` | string |
+
+### webservice.PanelPreview
+
+| Field | Type |
+| --- | --- |
+| `html` | string |
+
+### webservice.PanelPreviewRequest
+
+| Field | Type |
+| --- | --- |
+| `lan` | boolean |
+| `panel` | `webservice.Panel` |
+
 ### webservice.PathRule
 
 | Field | Type |
@@ -2565,6 +2617,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `name` | string |
 | `notFoundPage` | string |
 | `oauthUsers` | Array of string |
+| `panel` | string |
 | `passAuthCookies` | boolean |
 | `rateLimit` | `webservice.RateLimit` |
 | `redirectCode` | integer |

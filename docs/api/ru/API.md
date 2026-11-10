@@ -395,6 +395,16 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/webservice/errorpages/check` | `webservice:write` | Проверяет безопасность и работоспособность страницы и создаёт предпросмотр без сохранения |
 | GET | `/api/webservice/errorpages/styles` | `webservice:read` | Предпросмотр стиля по умолчанию и всех встроенных стилей; ?code= задаёт код состояния (по умолчанию 502) |
 | GET | `/api/webservice/errorpages/{key}/preview` | `webservice:read` | Предпросмотр пользовательской страницы ошибки; ?code= задаёт код состояния (по умолчанию 502) |
+| GET | `/api/webservice/panels` | `webservice:read` | Список: Панели навигации |
+| POST | `/api/webservice/panels` | `webservice:write` | Добавить: Панели навигации |
+| POST | `/api/webservice/panels/{key}/copy` | `webservice:write` | Дублировать: Панели навигации |
+| PUT | `/api/webservice/panels/{key}` | `webservice:write` | Изменить: Панели навигации |
+| DELETE | `/api/webservice/panels/{key}` | `webservice:write` | Удалить: Панели навигации |
+| PUT | `/api/webservice/panels/{key}/enable` | `webservice:write` | Включить или отключить: Панели навигации |
+| PUT | `/api/webservice/panels-order` | `webservice:write` | Изменить порядок: Панели навигации |
+| PUT | `/api/webservice/panels-enable` | `webservice:write` | Пакетно включить или отключить: Панели навигации |
+| POST | `/api/webservice/panels-delete` | `webservice:write` | Пакетно удалить: Панели навигации |
+| POST | `/api/webservice/panels/preview` | `webservice:write` | Предпросмотр панели навигации |
 | GET | `/api/webservice/users` | `webservice:read` | Получить общих пользователей и поставщика удостоверений OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Сохранить общих пользователей и поставщика удостоверений OIDC, массово настроить сайты |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | Пакетные операции с сайтами: включение, отключение, удаление, добавление, удаление или замена доменов, изменение некоторых опций и перенос в другой слушатель; сохраняется только если все сайты прошли проверку, при ошибке ничего не меняется |
@@ -2397,6 +2407,48 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `issuer` | string |
 | `signingKey` | string |
 
+### webservice.Panel
+
+| Поле | Тип |
+| --- | --- |
+| `enable` | boolean |
+| `icon` | string |
+| `key` | string |
+| `lanCidrs` | Массив из string |
+| `links` | Массив из `webservice.PanelLink` |
+| `name` | string |
+| `remark` | string |
+| `subtitle` | string |
+| `theme` | string |
+| `title` | string |
+
+### webservice.PanelLink
+
+| Поле | Тип |
+| --- | --- |
+| `color` | string |
+| `description` | string |
+| `group` | string |
+| `hide` | boolean |
+| `icon` | string |
+| `lanUrl` | string |
+| `name` | string |
+| `sameTab` | boolean |
+| `url` | string |
+
+### webservice.PanelPreview
+
+| Поле | Тип |
+| --- | --- |
+| `html` | string |
+
+### webservice.PanelPreviewRequest
+
+| Поле | Тип |
+| --- | --- |
+| `lan` | boolean |
+| `panel` | `webservice.Panel` |
+
 ### webservice.PathRule
 
 | Поле | Тип |
@@ -2565,6 +2617,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `name` | string |
 | `notFoundPage` | string |
 | `oauthUsers` | Массив из string |
+| `panel` | string |
 | `passAuthCookies` | boolean |
 | `rateLimit` | `webservice.RateLimit` |
 | `redirectCode` | integer |

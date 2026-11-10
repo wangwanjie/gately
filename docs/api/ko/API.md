@@ -395,6 +395,16 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/webservice/errorpages/check` | `webservice:write` | 페이지의 안전성과 사용 가능성을 검사하고 미리보기를 생성합니다(저장하지 않음) |
 | GET | `/api/webservice/errorpages/styles` | `webservice:read` | 기본 스타일과 모든 내장 스타일 미리보기. ?code= 로 상태 코드 지정(기본값 502) |
 | GET | `/api/webservice/errorpages/{key}/preview` | `webservice:read` | 사용자 지정 오류 페이지 미리보기. ?code= 로 상태 코드 지정(기본값 502) |
+| GET | `/api/webservice/panels` | `webservice:read` | 내비게이션 패널 목록 조회 |
+| POST | `/api/webservice/panels` | `webservice:write` | 내비게이션 패널 추가 |
+| POST | `/api/webservice/panels/{key}/copy` | `webservice:write` | 내비게이션 패널 복제 |
+| PUT | `/api/webservice/panels/{key}` | `webservice:write` | 내비게이션 패널 수정 |
+| DELETE | `/api/webservice/panels/{key}` | `webservice:write` | 내비게이션 패널 삭제 |
+| PUT | `/api/webservice/panels/{key}/enable` | `webservice:write` | 내비게이션 패널 사용 설정/해제 |
+| PUT | `/api/webservice/panels-order` | `webservice:write` | 내비게이션 패널 순서 변경 |
+| PUT | `/api/webservice/panels-enable` | `webservice:write` | 내비게이션 패널 일괄 사용/사용 안 함 |
+| POST | `/api/webservice/panels-delete` | `webservice:write` | 내비게이션 패널 일괄 삭제 |
+| POST | `/api/webservice/panels/preview` | `webservice:write` | 내비게이션 패널 미리보기 |
 | GET | `/api/webservice/users` | `webservice:read` | 공유 사용자와 OIDC ID 공급자 조회 |
 | PUT | `/api/webservice/users` | `webservice:write` | 공유 사용자와 OIDC ID 공급자 저장, 사이트 일괄 설정 |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | 사이트 일괄 작업: 활성화·비활성화, 삭제, 도메인 추가·삭제·교체, 일부 옵션 변경, 다른 리스너로 이동. 모든 사이트가 검증을 통과해야 저장되며 하나라도 실패하면 아무것도 변경하지 않습니다 |
@@ -2397,6 +2407,48 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `issuer` | string |
 | `signingKey` | string |
 
+### webservice.Panel
+
+| 필드 | 타입 |
+| --- | --- |
+| `enable` | boolean |
+| `icon` | string |
+| `key` | string |
+| `lanCidrs` | Array of string |
+| `links` | Array of `webservice.PanelLink` |
+| `name` | string |
+| `remark` | string |
+| `subtitle` | string |
+| `theme` | string |
+| `title` | string |
+
+### webservice.PanelLink
+
+| 필드 | 타입 |
+| --- | --- |
+| `color` | string |
+| `description` | string |
+| `group` | string |
+| `hide` | boolean |
+| `icon` | string |
+| `lanUrl` | string |
+| `name` | string |
+| `sameTab` | boolean |
+| `url` | string |
+
+### webservice.PanelPreview
+
+| 필드 | 타입 |
+| --- | --- |
+| `html` | string |
+
+### webservice.PanelPreviewRequest
+
+| 필드 | 타입 |
+| --- | --- |
+| `lan` | boolean |
+| `panel` | `webservice.Panel` |
+
 ### webservice.PathRule
 
 | 필드 | 타입 |
@@ -2565,6 +2617,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `name` | string |
 | `notFoundPage` | string |
 | `oauthUsers` | Array of string |
+| `panel` | string |
 | `passAuthCookies` | boolean |
 | `rateLimit` | `webservice.RateLimit` |
 | `redirectCode` | integer |

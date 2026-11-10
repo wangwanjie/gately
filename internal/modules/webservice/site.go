@@ -205,6 +205,8 @@ func newSiteHandler(s Site, log *logbuf.Logger, auth *authenticator, waf WAFProv
 		})
 	case TypeStatic:
 		h.handler = h.newStatic(s)
+	case TypePanel:
+		h.handler = h.newPanel(s)
 	case TypeText:
 		h.handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			applyHeaders(w.Header(), s.ResponseHeaders)
