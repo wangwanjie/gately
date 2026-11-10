@@ -117,8 +117,9 @@ type CacheRule struct {
 	NoCache bool `json:"noCache"`
 	// TTL 为后端未给出缓存指令时的缓存秒数，0 表示沿用站点默认
 	TTL int `json:"ttl"`
-	// Override 为 true 时忽略后端的 Cache-Control，固定按缓存时间缓存 200 响应；
-	// 带 Set-Cookie 或 Vary: * 的响应、带 Cookie 或 Authorization 的请求仍然不缓存
+	// Override 为 true 时忽略后端 Cache-Control 中的 no-store、no-cache 与 max-age，固定按缓存时间缓存 200 响应，
+	// 只用于与访客身份无关的内容（例如静态资源）；后端声明 private、带 Set-Cookie 或 Vary: * 的响应，
+	// 以及带 Cookie、Authorization、X-Api-Key 等凭据的请求仍然不缓存
 	Override bool `json:"override"`
 }
 
@@ -132,6 +133,10 @@ const (
 func validateCachePath(p string) error {
 	if !strings.HasPrefix(p, "/") || strings.ContainsAny(p, " \t?#") {
 		return fmt.Errorf("缓存路径 %q 需以 / 开头且不含空格、? 或 #", p)
+	}
+	// 含 ;、%2F 等编码字符的请求不走缓存，规则按解码后的路径匹配，写成编码形式永远匹配不到，直接提示
+	if strings.Contains(p, "%") {
+		return fmt.Errorf("缓存路径 %q 不能含 %%，请直接填写解码后的路径", p)
 	}
 	// 请求路径会先规范化再匹配，含 . / .. 段或连续斜杠的写法永远匹配不到，直接提示
 	if strings.Contains(p, "//") || strings.Contains(p+"/", "/./") || strings.Contains(p+"/", "/../") {

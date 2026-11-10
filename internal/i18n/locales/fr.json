@@ -2349,6 +2349,7 @@
   "缓存容量需在 1 到 4096 MB 之间": "La capacité du cache doit être comprise entre 1 et 4096 Mo",
   "缓存时间需在 0 到 30 天之间": "La durée du cache doit être comprise entre 0 et 30 jours",
   "缓存规则不能超过 %d 条": "Pas plus de %d règles de cache",
+  "缓存路径 %q 不能含 %%，请直接填写解码后的路径": "Le chemin de cache %q ne doit pas contenir %%. Saisissez le chemin décodé",
   "缓存路径 %q 不能含 .、.. 路径段或连续的 /": "Le chemin de cache %q ne doit pas contenir de segments . ou .. ni de / consécutifs",
   "缓存路径 %q 需以 / 开头且不含空格、? 或 #": "Le chemin de cache %q doit commencer par / et ne pas contenir d'espaces, de ? ni de #",
   "缓存路径 %s 重复": "Chemin de cache %s en double",
