@@ -194,7 +194,6 @@
   ": 已存在同名条目，跳过": ": Eintrag mit gleichem Namen existiert bereits, übersprungen",
   ": 巴法云接入未随导入迁移，请在设备中填写巴法云主题并开启巴法云接入": ": Bemfa-Anbindung wurde nicht übernommen; tragen Sie das Bemfa-Topic beim Gerät ein und aktivieren Sie Bemfa",
   ": 控制台未迁移，需要时请在 Gately 中设置端口与账号密码": ": Konsole nicht migriert, legen Sie bei Bedarf Port und Zugangsdaten in Gately fest",
-  ": 点灯科技/巴法云语音接入暂不支持，已忽略": ": Sprachanbindung über Diandeng/Bemfa Cloud wird noch nicht unterstützt, ignoriert",
   ": 点灯科技语音接入暂不支持，已忽略": ": Blinker-Sprachanbindung wird nicht unterstützt und wurde ignoriert",
   ": 经代理连接服务端暂不支持，已忽略": ": Verbindung zum Server über Proxy wird noch nicht unterstützt, ignoriert",
   ": 跳过，": ": übersprungen, ",

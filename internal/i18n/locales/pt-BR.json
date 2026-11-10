@@ -194,7 +194,6 @@
   ": 已存在同名条目，跳过": ": já existe uma entrada com o mesmo nome, ignorada",
   ": 巴法云接入未随导入迁移，请在设备中填写巴法云主题并开启巴法云接入": ": a integração Bemfa não foi importada; informe o tópico Bemfa no dispositivo e ative o Bemfa",
   ": 控制台未迁移，需要时请在 Gately 中设置端口与账号密码": ": o painel não foi migrado; se necessário, defina a porta e as credenciais no Gately",
-  ": 点灯科技/巴法云语音接入暂不支持，已忽略": ": a integração de voz com Diandeng/Bemfa ainda não é suportada, ignorada",
   ": 点灯科技语音接入暂不支持，已忽略": ": a integração de voz Blinker não é suportada e foi ignorada",
   ": 经代理连接服务端暂不支持，已忽略": ": conexão ao servidor via proxy ainda não é suportada, ignorada",
   ": 跳过，": ": ignorado, ",
