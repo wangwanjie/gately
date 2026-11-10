@@ -2507,6 +2507,7 @@
   "访客审计列表": "Visitor audit list",
   "访客审计数据中有 %d 条无效记录，已跳过": "Skipped %d invalid records in visitor audit data",
   "访客审计数据写盘失败: %v": "Failed to write visitor audit data: %v",
+  "访客审计数据解压后超过大小上限，其余部分未读取": "Visitor audit data exceeds the size limit after decompression; the rest was not read",
   "访客审计的保留天数需在 1~180 之间": "Visitor audit retention must be between 1 and 180 days",
   "访客审计的最多访客数需在 100~100000 之间": "Visitor audit maximum visitors must be between 100 and 100000",
   "访客审计设置无效（%v），已改用默认值": "Invalid visitor audit settings (%v), using defaults",
