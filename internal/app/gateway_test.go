@@ -442,12 +442,25 @@ func TestGatewayTerminalWebSocket(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("本机 Shell 需要 Unix 伪终端")
 	}
-	a, err := New(Options{ConfigDir: t.TempDir(), Modules: []module.Module{webterminal.New()}})
+	// 终端会话在 WebSocket 断开后异步结束并写日志、会话记录：删除临时目录前先停止模块与落盘，
+	// 删除时仍可能撞上最后一次异步写入，所以不用 t.TempDir（删除失败即判测试失败），改为重试几次
+	cfgDir, err := os.MkdirTemp("", "gwterm")
 	if err != nil {
 		t.Fatal(err)
 	}
-	// 终端会话在 WebSocket 断开后异步结束并写日志：删除临时目录前先停止落盘，
-	// 否则日志文件可能在删除过程中被重新创建，TempDir 清理报 directory not empty
+	t.Cleanup(func() {
+		for i := 0; i < 20; i++ {
+			if os.RemoveAll(cfgDir) == nil {
+				return
+			}
+			time.Sleep(100 * time.Millisecond)
+		}
+		t.Logf("临时目录 %s 未能删除", cfgDir)
+	})
+	a, err := New(Options{ConfigDir: cfgDir, Modules: []module.Module{webterminal.New()}})
+	if err != nil {
+		t.Fatal(err)
+	}
 	t.Cleanup(func() {
 		a.stopModules()
 		a.closeLogs()
