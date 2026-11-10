@@ -2349,6 +2349,7 @@
   "缓存容量需在 1 到 4096 MB 之间": "Cache size must be between 1 and 4096 MB",
   "缓存时间需在 0 到 30 天之间": "Cache time must be between 0 and 30 days",
   "缓存规则不能超过 %d 条": "No more than %d cache rules are allowed",
+  "缓存路径 %q 不能含 %%，请直接填写解码后的路径": "Cache path %q must not contain %%. Enter the decoded path",
   "缓存路径 %q 不能含 .、.. 路径段或连续的 /": "Cache path %q must not contain . or .. segments or consecutive /",
   "缓存路径 %q 需以 / 开头且不含空格、? 或 #": "Cache path %q must start with / and must not contain spaces, ? or #",
   "缓存路径 %s 重复": "Duplicate cache path %s",
