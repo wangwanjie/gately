@@ -3600,6 +3600,110 @@
         },
         "type": "object"
       },
+      "webservice.ReplayBucket": {
+        "properties": {
+          "active": {
+            "type": "integer"
+          },
+          "bps": {
+            "type": "number"
+          },
+          "ips": {
+            "type": "integer"
+          },
+          "issue": {
+            "type": "boolean"
+          },
+          "qps": {
+            "type": "number"
+          },
+          "t": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.ReplayIndex": {
+        "properties": {
+          "bucket": {
+            "type": "integer"
+          },
+          "buckets": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.ReplayBucket"
+            },
+            "type": "array"
+          },
+          "end": {
+            "type": "integer"
+          },
+          "frames": {
+            "type": "integer"
+          },
+          "from": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "samples": {
+            "type": "integer"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/webservice.ReplaySettings"
+          },
+          "start": {
+            "type": "integer"
+          },
+          "step": {
+            "type": "integer"
+          },
+          "to": {
+            "type": "integer"
+          },
+          "used": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.ReplayMeta": {
+        "properties": {
+          "end": {
+            "type": "integer"
+          },
+          "frameEnd": {
+            "type": "integer"
+          },
+          "frameStart": {
+            "type": "integer"
+          },
+          "next": {
+            "type": "integer"
+          },
+          "prev": {
+            "type": "integer"
+          },
+          "start": {
+            "type": "integer"
+          },
+          "step": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.ReplaySettings": {
+        "properties": {
+          "enable": {
+            "type": "boolean"
+          },
+          "sizeMB": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "webservice.Rewrite": {
         "properties": {
           "code": {
@@ -4365,6 +4469,9 @@
           "rate": {
             "$ref": "#/components/schemas/webservice.Rate"
           },
+          "replay": {
+            "$ref": "#/components/schemas/webservice.ReplayMeta"
+          },
           "requests": {
             "type": "integer"
           },
@@ -4373,6 +4480,9 @@
               "$ref": "#/components/schemas/webservice.RatePoint"
             },
             "type": "array"
+          },
+          "seriesStep": {
+            "type": "integer"
           },
           "time": {
             "type": "integer"
@@ -47351,6 +47461,189 @@
           "Web 服務"
         ],
         "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/topology/replay": {
+      "get": {
+        "description": "唯讀。回傳回放設定（`settings.enable`、`settings.sizeMB`）、目前佔用 `used` 與上限 `limit`（位元組）、幀數 `frames`（內容相同的連續取樣合併為一幀）與取樣數 `samples`、錄製資料的起止時刻 `start`、`end`（Unix 秒，沒有資料時為 0）與取樣間隔 `step`（5 秒）。`buckets` 為時間軸概覽，每個桶取桶內各取樣的最大 `qps`、`bps`、`active`、`ips`，`issue` 表示桶內有監聽啟動失敗或後端不健康，沒有錄製資料的桶不回傳；`from`、`to` 限定範圍（Unix 秒），`last` 大於 0 時改為截至最後一幀的最近 `last` 秒，`points` 為桶數上限（預設 400，最多 1000），回傳的 `bucket` 為每個桶的秒數。參數不是非負整數時回傳 400。\n\n所需權限：`webservice:read`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.ReplayIndex"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "拓撲回放概覽",
+        "tags": [
+          "Web 服務"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/topology/replay/frame": {
+      "get": {
+        "description": "唯讀。`t` 為 Unix 秒，回傳與 `GET /api/webservice/topology` 相同結構的快照，`time` 為對齊到取樣間隔的回放時刻：`t` 落在兩段錄製之間的空檔時取下一段的開始，早於或晚於全部資料時取第一幀或最後一幀。`replay` 給出全部資料與所在段的起止時刻（`start`、`end`、`frameStart`、`frameEnd`）以及上一個與下一個取樣時刻 `prev`、`next`（沒有時為 0）。`focus` 為節點編號（或 internet、gately）時在 `series` 中回傳所選時刻之前 60 秒的曲線，`seriesStep` 為每個點涵蓋的秒數（5）；請求數取相鄰兩幀累計值之差，位元組數依吞吐量估算。沒有錄製資料時回傳 404，參數無效回傳 400。\n\n所需權限：`webservice:read`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.TopologyView"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "某一時刻的拓撲回放快照",
+        "tags": [
+          "Web 服務"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/topology/replay/settings": {
+      "put": {
+        "description": "需要寫入權限。`enable` 為是否錄製（預設關閉），`sizeMB` 為錄製資料佔用記憶體的上限（MiB，1–256，0 表示預設 8）。開啟後每 5 秒把拓撲快照壓縮後錄入記憶體，超過上限捨棄最舊的幀；關閉時立即停止錄製並清空已錄製的資料（其中含訪客 IP）。資料不寫入磁碟，重新啟動後清空。回傳與 `GET /api/webservice/topology/replay` 相同的概覽。容量超出範圍回傳 400。\n\n所需權限：`webservice:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/webservice.ReplaySettings"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.ReplayIndex"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "修改拓撲回放設定",
+        "tags": [
+          "Web 服務"
+        ],
+        "x-required-scope": "webservice:write",
         "x-token-allowed": true
       }
     },

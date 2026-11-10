@@ -56,6 +56,8 @@ type Module struct {
 	fw *fwopen.Group
 	// visits 为访客审计数据，Init 后可用
 	visits *visitors.Store
+	// replay 为拓扑回放的录制状态
+	replay replayRecorder
 }
 
 // New 创建模块。certs 为证书来源，可为 nil（此时不能启用 HTTPS）；waf 可为 nil（站点的 WAF 设置不生效）。
@@ -218,6 +220,7 @@ func (m *Module) Start(ctx context.Context) error {
 	defer m.mu.Unlock()
 	m.ctx = ctx
 	go m.ipListRefresher(ctx)
+	m.syncReplayLocked()
 	if !m.cfg.Settings.Enable {
 		m.logs.Add(logbuf.LevelInfo, "", "Web 服务模块已禁用")
 		return nil
@@ -242,6 +245,10 @@ func (m *Module) Stop() error {
 	// 监听已全部停止，不再有新的访问，访客审计数据写盘
 	if err := m.visits.Flush(); err != nil {
 		m.logs.Logger("").Warnf("访客审计数据写盘失败: %v", err)
+	}
+	if m.replay.cancel != nil {
+		m.replay.cancel()
+		m.replay.cancel = nil
 	}
 	return nil
 }
@@ -433,6 +440,7 @@ func (m *Module) Routes(r module.Router) {
 	r.HandleFunc("POST /visitors/delete", m.handleDeleteVisitors)
 	r.HandleFunc("GET /visitors/settings", m.handleVisitorSettings)
 	r.HandleFunc("PUT /visitors/settings", m.handlePutVisitorSettings)
+	m.registerReplay(r)
 	module.DocOf(r, "GET /topology", module.Doc{Summary: "拓扑视图快照：监听、站点、后端与监听级动作的实时速率、计数与活动 IP（?focus=节点编号&ip=地址）", Resp: &TopologyView{}})
 	r.HandleFunc("GET /connections", m.handleConns)
 	r.HandleFunc("POST /connections/close", m.handleCloseConn)

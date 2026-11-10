@@ -53,6 +53,10 @@ type TopologyView struct {
 	// Focus 为请求的 focus 参数，Series 为该节点（或 internet / gately 表示整个实例）近 60 秒每秒的请求数与字节数
 	Focus  string      `json:"focus,omitempty"`
 	Series []RatePoint `json:"series,omitempty"`
+	// SeriesStep 为曲线每个点覆盖的秒数，实时快照为 1（省略），回放快照为采样间隔
+	SeriesStep int `json:"seriesStep,omitempty"`
+	// Replay 只在回放快照中出现，给出这一帧在录制数据中的位置
+	Replay *ReplayMeta `json:"replay,omitempty"`
 }
 
 // TopoListener 是一个监听。

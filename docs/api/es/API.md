@@ -414,6 +414,9 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | POST | `/api/webservice/visitors/delete` | `webservice:write` | Eliminar registros de auditoría de visitantes |
 | GET | `/api/webservice/visitors/settings` | `webservice:read` | Leer la configuración y el estado de almacenamiento de la auditoría de visitantes |
 | PUT | `/api/webservice/visitors/settings` | `webservice:write` | Guardar la configuración de auditoría de visitantes |
+| GET | `/api/webservice/topology/replay` | `webservice:read` | Resumen de la reproducción de topología |
+| GET | `/api/webservice/topology/replay/frame` | `webservice:read` | Instantánea de reproducción de topología en un momento |
+| PUT | `/api/webservice/topology/replay/settings` | `webservice:write` | Cambiar los ajustes de reproducción de topología |
 | GET | `/api/webservice/connections` | `webservice:read` | Solicitudes en curso y solicitudes largas terminadas recientemente de un sitio (?listener=&site=&q=) |
 | POST | `/api/webservice/connections/close` | `webservice:write` | Cerrar una solicitud en curso de un sitio y, opcionalmente, bloquear su dirección de origen (banSeconds -1 significa permanente) |
 | GET | `/api/webservice/bans` | `webservice:read` | IP bloqueadas actualmente |
@@ -2441,6 +2444,53 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `requests` | integer |
 | `t` | integer |
 
+### webservice.ReplayBucket
+
+| Campo | Tipo |
+| --- | --- |
+| `active` | integer |
+| `bps` | number |
+| `ips` | integer |
+| `issue` | boolean |
+| `qps` | number |
+| `t` | integer |
+
+### webservice.ReplayIndex
+
+| Campo | Tipo |
+| --- | --- |
+| `bucket` | integer |
+| `buckets` | Lista de `webservice.ReplayBucket` |
+| `end` | integer |
+| `frames` | integer |
+| `from` | integer |
+| `limit` | integer |
+| `samples` | integer |
+| `settings` | `webservice.ReplaySettings` |
+| `start` | integer |
+| `step` | integer |
+| `to` | integer |
+| `used` | integer |
+
+### webservice.ReplayMeta
+
+| Campo | Tipo |
+| --- | --- |
+| `end` | integer |
+| `frameEnd` | integer |
+| `frameStart` | integer |
+| `next` | integer |
+| `prev` | integer |
+| `start` | integer |
+| `step` | integer |
+
+### webservice.ReplaySettings
+
+| Campo | Tipo |
+| --- | --- |
+| `enable` | boolean |
+| `sizeMB` | integer |
+
 ### webservice.Rewrite
 
 | Campo | Tipo |
@@ -2719,8 +2769,10 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `ips` | Lista de `webservice.TopoIP` |
 | `listeners` | Lista de `webservice.TopoListener` |
 | `rate` | `webservice.Rate` |
+| `replay` | `webservice.ReplayMeta` |
 | `requests` | integer |
 | `series` | Lista de `webservice.RatePoint` |
+| `seriesStep` | integer |
 | `time` | integer |
 | `window` | integer |
 

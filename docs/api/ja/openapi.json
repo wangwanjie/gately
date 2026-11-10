@@ -3600,6 +3600,110 @@
         },
         "type": "object"
       },
+      "webservice.ReplayBucket": {
+        "properties": {
+          "active": {
+            "type": "integer"
+          },
+          "bps": {
+            "type": "number"
+          },
+          "ips": {
+            "type": "integer"
+          },
+          "issue": {
+            "type": "boolean"
+          },
+          "qps": {
+            "type": "number"
+          },
+          "t": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.ReplayIndex": {
+        "properties": {
+          "bucket": {
+            "type": "integer"
+          },
+          "buckets": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.ReplayBucket"
+            },
+            "type": "array"
+          },
+          "end": {
+            "type": "integer"
+          },
+          "frames": {
+            "type": "integer"
+          },
+          "from": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "samples": {
+            "type": "integer"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/webservice.ReplaySettings"
+          },
+          "start": {
+            "type": "integer"
+          },
+          "step": {
+            "type": "integer"
+          },
+          "to": {
+            "type": "integer"
+          },
+          "used": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.ReplayMeta": {
+        "properties": {
+          "end": {
+            "type": "integer"
+          },
+          "frameEnd": {
+            "type": "integer"
+          },
+          "frameStart": {
+            "type": "integer"
+          },
+          "next": {
+            "type": "integer"
+          },
+          "prev": {
+            "type": "integer"
+          },
+          "start": {
+            "type": "integer"
+          },
+          "step": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.ReplaySettings": {
+        "properties": {
+          "enable": {
+            "type": "boolean"
+          },
+          "sizeMB": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "webservice.Rewrite": {
         "properties": {
           "code": {
@@ -4365,6 +4469,9 @@
           "rate": {
             "$ref": "#/components/schemas/webservice.Rate"
           },
+          "replay": {
+            "$ref": "#/components/schemas/webservice.ReplayMeta"
+          },
           "requests": {
             "type": "integer"
           },
@@ -4373,6 +4480,9 @@
               "$ref": "#/components/schemas/webservice.RatePoint"
             },
             "type": "array"
+          },
+          "seriesStep": {
+            "type": "integer"
           },
           "time": {
             "type": "integer"
@@ -47351,6 +47461,189 @@
           "Web サービス"
         ],
         "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/topology/replay": {
+      "get": {
+        "description": "読み取り専用。再生の設定（`settings.enable`、`settings.sizeMB`）、現在の使用量 `used` と上限 `limit`（バイト）、フレーム数 `frames`（内容が同じ連続サンプルは 1 フレーム）とサンプル数 `samples`、記録データの開始・終了時刻 `start`、`end`（Unix 秒、データがなければ 0）、サンプリング間隔 `step`（5 秒）を返します。`buckets` はタイムラインの概要で、各バケットは含まれるサンプルの `qps`、`bps`、`active`、`ips` の最大値を持ち、`issue` はリスナーの起動失敗またはバックエンドの異常があったことを示し、記録のないバケットは返しません。`from`、`to` で範囲（Unix 秒）を指定し、`last` が 0 より大きいときは最新フレームまでの直近 `last` 秒を使います。`points` はバケット数の上限（既定 400、最大 1000）で、返される `bucket` は 1 バケットの秒数です。パラメーターが 0 以上の整数でない場合は 400 を返します。\n\n必要な権限: `webservice:read`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.ReplayIndex"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "トポロジー再生の概要",
+        "tags": [
+          "Web サービス"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/topology/replay/frame": {
+      "get": {
+        "description": "読み取り専用。`t` は Unix 秒で、`GET /api/webservice/topology` と同じ構造のスナップショットを返します。`time` はサンプリング間隔にそろえた再生時刻で、`t` が 2 つの記録区間の空白にあるときは次の区間の開始、全データより前または後なら最初または最後のフレームを使います。`replay` には全データと現在の区間の開始・終了時刻（`start`、`end`、`frameStart`、`frameEnd`）、前後のサンプル時刻 `prev`、`next`（ない場合は 0）が入ります。`focus` がノード ID（または internet、gately）のとき、`series` に選んだ時点までの 60 秒の曲線を返し、`seriesStep` は 1 点あたりの秒数（5）です。リクエスト数は隣接フレームの累計値の差、バイト数はスループットからの推定です。記録がないときは 404、パラメーターが無効なら 400 を返します。\n\n必要な権限: `webservice:read`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.TopologyView"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "ある時点のトポロジー再生スナップショット",
+        "tags": [
+          "Web サービス"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/topology/replay/settings": {
+      "put": {
+        "description": "書き込み権限が必要です。`enable` は記録の有無（既定はオフ）、`sizeMB` は記録データのメモリ上限（MiB、1–256、0 は既定の 8）です。オンにすると 5 秒ごとにトポロジーのスナップショットを圧縮してメモリに記録し、上限を超えると古いフレームから破棄します。オフにすると直ちに記録を止め、記録済みのデータ（訪問者 IP を含む）を消去します。ディスクには書き込まず、再起動で消去されます。`GET /api/webservice/topology/replay` と同じ概要を返します。容量が範囲外なら 400 を返します。\n\n必要な権限: `webservice:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/webservice.ReplaySettings"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.ReplayIndex"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "トポロジー再生の設定を変更",
+        "tags": [
+          "Web サービス"
+        ],
+        "x-required-scope": "webservice:write",
         "x-token-allowed": true
       }
     },

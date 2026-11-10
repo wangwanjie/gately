@@ -242,6 +242,8 @@ type fileConfig struct {
 	ErrorPages []ErrorPage `json:"errorPages"`
 	// Visitors 为访客审计设置
 	Visitors visitors.Settings `json:"visitors"`
+	// Replay 为拓扑回放设置
+	Replay ReplaySettings `json:"replay"`
 }
 
 func cleanList(in []string) []string {

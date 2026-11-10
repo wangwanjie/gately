@@ -414,6 +414,9 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | POST | `/api/webservice/visitors/delete` | `webservice:write` | Einträge der Besucherprüfung löschen |
 | GET | `/api/webservice/visitors/settings` | `webservice:read` | Einstellungen und Speicherstatus der Besucherprüfung lesen |
 | PUT | `/api/webservice/visitors/settings` | `webservice:write` | Einstellungen der Besucherprüfung speichern |
+| GET | `/api/webservice/topology/replay` | `webservice:read` | Übersicht der Topologie-Wiedergabe |
+| GET | `/api/webservice/topology/replay/frame` | `webservice:read` | Topologie-Wiedergabe zu einem Zeitpunkt |
+| PUT | `/api/webservice/topology/replay/settings` | `webservice:write` | Einstellungen der Topologie-Wiedergabe ändern |
 | GET | `/api/webservice/connections` | `webservice:read` | Laufende und kürzlich beendete lange Anfragen einer Site (?listener=&site=&q=) |
 | POST | `/api/webservice/connections/close` | `webservice:write` | Eine laufende Anfrage einer Website trennen und optional ihre Quelladresse sperren (banSeconds -1 bedeutet dauerhaft) |
 | GET | `/api/webservice/bans` | `webservice:read` | Aktuell gesperrte IPs |
@@ -2441,6 +2444,53 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `requests` | integer |
 | `t` | integer |
 
+### webservice.ReplayBucket
+
+| Feld | Typ |
+| --- | --- |
+| `active` | integer |
+| `bps` | number |
+| `ips` | integer |
+| `issue` | boolean |
+| `qps` | number |
+| `t` | integer |
+
+### webservice.ReplayIndex
+
+| Feld | Typ |
+| --- | --- |
+| `bucket` | integer |
+| `buckets` | Array von `webservice.ReplayBucket` |
+| `end` | integer |
+| `frames` | integer |
+| `from` | integer |
+| `limit` | integer |
+| `samples` | integer |
+| `settings` | `webservice.ReplaySettings` |
+| `start` | integer |
+| `step` | integer |
+| `to` | integer |
+| `used` | integer |
+
+### webservice.ReplayMeta
+
+| Feld | Typ |
+| --- | --- |
+| `end` | integer |
+| `frameEnd` | integer |
+| `frameStart` | integer |
+| `next` | integer |
+| `prev` | integer |
+| `start` | integer |
+| `step` | integer |
+
+### webservice.ReplaySettings
+
+| Feld | Typ |
+| --- | --- |
+| `enable` | boolean |
+| `sizeMB` | integer |
+
 ### webservice.Rewrite
 
 | Feld | Typ |
@@ -2719,8 +2769,10 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `ips` | Array von `webservice.TopoIP` |
 | `listeners` | Array von `webservice.TopoListener` |
 | `rate` | `webservice.Rate` |
+| `replay` | `webservice.ReplayMeta` |
 | `requests` | integer |
 | `series` | Array von `webservice.RatePoint` |
+| `seriesStep` | integer |
 | `time` | integer |
 | `window` | integer |
 

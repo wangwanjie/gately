@@ -3600,6 +3600,110 @@
         },
         "type": "object"
       },
+      "webservice.ReplayBucket": {
+        "properties": {
+          "active": {
+            "type": "integer"
+          },
+          "bps": {
+            "type": "number"
+          },
+          "ips": {
+            "type": "integer"
+          },
+          "issue": {
+            "type": "boolean"
+          },
+          "qps": {
+            "type": "number"
+          },
+          "t": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.ReplayIndex": {
+        "properties": {
+          "bucket": {
+            "type": "integer"
+          },
+          "buckets": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.ReplayBucket"
+            },
+            "type": "array"
+          },
+          "end": {
+            "type": "integer"
+          },
+          "frames": {
+            "type": "integer"
+          },
+          "from": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "samples": {
+            "type": "integer"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/webservice.ReplaySettings"
+          },
+          "start": {
+            "type": "integer"
+          },
+          "step": {
+            "type": "integer"
+          },
+          "to": {
+            "type": "integer"
+          },
+          "used": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.ReplayMeta": {
+        "properties": {
+          "end": {
+            "type": "integer"
+          },
+          "frameEnd": {
+            "type": "integer"
+          },
+          "frameStart": {
+            "type": "integer"
+          },
+          "next": {
+            "type": "integer"
+          },
+          "prev": {
+            "type": "integer"
+          },
+          "start": {
+            "type": "integer"
+          },
+          "step": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.ReplaySettings": {
+        "properties": {
+          "enable": {
+            "type": "boolean"
+          },
+          "sizeMB": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "webservice.Rewrite": {
         "properties": {
           "code": {
@@ -4365,6 +4469,9 @@
           "rate": {
             "$ref": "#/components/schemas/webservice.Rate"
           },
+          "replay": {
+            "$ref": "#/components/schemas/webservice.ReplayMeta"
+          },
           "requests": {
             "type": "integer"
           },
@@ -4373,6 +4480,9 @@
               "$ref": "#/components/schemas/webservice.RatePoint"
             },
             "type": "array"
+          },
+          "seriesStep": {
+            "type": "integer"
           },
           "time": {
             "type": "integer"
@@ -47351,6 +47461,189 @@
           "Веб-служба"
         ],
         "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/topology/replay": {
+      "get": {
+        "description": "Только чтение. Возвращает настройки повтора (`settings.enable`, `settings.sizeMB`), текущий объём `used` и лимит `limit` (байты), число кадров `frames` (одинаковые подряд выборки считаются одним кадром) и выборок `samples`, начало и конец записанных данных `start`, `end` (секунды Unix, 0 если данных нет) и интервал выборки `step` (5 секунд). `buckets` — обзор шкалы: каждый интервал содержит максимум `qps`, `bps`, `active` и `ips` своих выборок, `issue` означает, что в нём слушатель не запустился или бэкенд был неисправен, интервалы без записи не возвращаются; `from` и `to` ограничивают диапазон (секунды Unix), `last` больше 0 вместо этого берёт последние `last` секунд до самого нового кадра, `points` ограничивает число интервалов (по умолчанию 400, не более 1000), а возвращаемый `bucket` — длительность интервала в секундах. Возвращает 400, если параметр не является неотрицательным целым числом.\n\nТребуемое разрешение: `webservice:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.ReplayIndex"
+                }
+              }
+            },
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Обзор повтора топологии",
+        "tags": [
+          "Веб-служба"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/topology/replay/frame": {
+      "get": {
+        "description": "Только чтение. `t` — секунды Unix; возвращает снимок той же структуры, что и `GET /api/webservice/topology`, где `time` — момент повтора, выровненный по интервалу выборки: если `t` попадает в промежуток между двумя записанными участками, берётся начало следующего, а до или после всех данных — первый или последний кадр. `replay` содержит начало и конец всех данных и текущего участка (`start`, `end`, `frameStart`, `frameEnd`), а также моменты предыдущей и следующей выборки `prev`, `next` (0, если их нет). Если `focus` — ID узла (или internet, gately), в `series` возвращается кривая за 60 секунд до выбранного момента, а `seriesStep` — сколько секунд охватывает точка (5); число запросов — разница счётчиков соседних кадров, байты оцениваются по пропускной способности. Возвращает 404, если записей нет, и 400 при неверных параметрах.\n\nТребуемое разрешение: `webservice:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.TopologyView"
+                }
+              }
+            },
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Снимок повтора топологии на момент",
+        "tags": [
+          "Веб-служба"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/topology/replay/settings": {
+      "put": {
+        "description": "Нужны права на запись. `enable` включает запись (по умолчанию выключена), `sizeMB` — лимит памяти для записанных данных (МиБ, 1–256, 0 — значение по умолчанию 8). После включения каждые 5 секунд сжатый снимок топологии записывается в память, а сверх лимита удаляются самые старые кадры; выключение сразу останавливает запись и очищает записанные данные (в них есть IP посетителей). На диск ничего не пишется, после перезапуска данные очищаются. Возвращает тот же обзор, что и `GET /api/webservice/topology/replay`. Возвращает 400, если объём вне диапазона.\n\nТребуемое разрешение: `webservice:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/webservice.ReplaySettings"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.ReplayIndex"
+                }
+              }
+            },
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Изменить настройки повтора топологии",
+        "tags": [
+          "Веб-служба"
+        ],
+        "x-required-scope": "webservice:write",
         "x-token-allowed": true
       }
     },

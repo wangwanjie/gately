@@ -414,6 +414,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/webservice/visitors/delete` | `webservice:write` | 訪問者監査の記録を削除 |
 | GET | `/api/webservice/visitors/settings` | `webservice:read` | 訪問者監査の設定とストレージ状態を取得 |
 | PUT | `/api/webservice/visitors/settings` | `webservice:write` | 訪問者監査の設定を保存 |
+| GET | `/api/webservice/topology/replay` | `webservice:read` | トポロジー再生の概要 |
+| GET | `/api/webservice/topology/replay/frame` | `webservice:read` | ある時点のトポロジー再生スナップショット |
+| PUT | `/api/webservice/topology/replay/settings` | `webservice:write` | トポロジー再生の設定を変更 |
 | GET | `/api/webservice/connections` | `webservice:read` | サイトの進行中リクエストと最近終了した長時間リクエスト（?listener=&site=&q=） |
 | POST | `/api/webservice/connections/close` | `webservice:write` | サイトで進行中のリクエストを切断し、送信元アドレスを同時にブロックできます（banSeconds が -1 で無期限） |
 | GET | `/api/webservice/bans` | `webservice:read` | 現在ブロックされている IP |
@@ -2441,6 +2444,53 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `requests` | integer |
 | `t` | integer |
 
+### webservice.ReplayBucket
+
+| フィールド | 型 |
+| --- | --- |
+| `active` | integer |
+| `bps` | number |
+| `ips` | integer |
+| `issue` | boolean |
+| `qps` | number |
+| `t` | integer |
+
+### webservice.ReplayIndex
+
+| フィールド | 型 |
+| --- | --- |
+| `bucket` | integer |
+| `buckets` | 配列 of `webservice.ReplayBucket` |
+| `end` | integer |
+| `frames` | integer |
+| `from` | integer |
+| `limit` | integer |
+| `samples` | integer |
+| `settings` | `webservice.ReplaySettings` |
+| `start` | integer |
+| `step` | integer |
+| `to` | integer |
+| `used` | integer |
+
+### webservice.ReplayMeta
+
+| フィールド | 型 |
+| --- | --- |
+| `end` | integer |
+| `frameEnd` | integer |
+| `frameStart` | integer |
+| `next` | integer |
+| `prev` | integer |
+| `start` | integer |
+| `step` | integer |
+
+### webservice.ReplaySettings
+
+| フィールド | 型 |
+| --- | --- |
+| `enable` | boolean |
+| `sizeMB` | integer |
+
 ### webservice.Rewrite
 
 | フィールド | 型 |
@@ -2719,8 +2769,10 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `ips` | 配列 of `webservice.TopoIP` |
 | `listeners` | 配列 of `webservice.TopoListener` |
 | `rate` | `webservice.Rate` |
+| `replay` | `webservice.ReplayMeta` |
 | `requests` | integer |
 | `series` | 配列 of `webservice.RatePoint` |
+| `seriesStep` | integer |
 | `time` | integer |
 | `window` | integer |
 
