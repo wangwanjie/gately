@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/wangwanjie/gately/internal/crud"
@@ -597,4 +598,40 @@ func matchDomain(rule, host string) int {
 		return 2
 	}
 	return 0
+}
+
+// portsOverlap 判断两个监听的地址能否同时绑定同一端口号：tcp4 与 tcp6 互不冲突（tcp6 只监听 IPv6），
+// 其余情况下监听地址相同、或任一方监听全部地址（留空、0.0.0.0、::）即冲突。
+func portsOverlap(a, b *Listener) bool {
+	if (a.Network == "tcp4" && b.Network == "tcp6") || (a.Network == "tcp6" && b.Network == "tcp4") {
+		return false
+	}
+	wild := func(ip string) bool { return ip == "" || ip == "0.0.0.0" || ip == "::" }
+	return a.ListenIP == b.ListenIP || wild(a.ListenIP) || wild(b.ListenIP)
+}
+
+// checkHTTPPortConflict 检查监听 l 的额外 HTTP 端口与其他已启用监听的端口（主端口或额外 HTTP 端口）是否冲突，
+// 以及其他监听的额外 HTTP 端口是否占用了 l 的主端口。冲突时谁先启动谁占用端口，结果取决于启动顺序，因此保存时拒绝。
+// 主端口之间的重复沿用原有行为，不在这里检查。l 未启用时不检查。
+func checkHTTPPortConflict(l *Listener, others []Listener) error {
+	if !l.Enable {
+		return nil
+	}
+	for i := range others {
+		o := &others[i]
+		if o.Key == l.Key || !o.Enable || !portsOverlap(l, o) {
+			continue
+		}
+		name := o.Name
+		if name == "" {
+			name = ":" + strconv.Itoa(o.Port)
+		}
+		if l.HTTPPort > 0 && (l.HTTPPort == o.Port || l.HTTPPort == o.HTTPPort) {
+			return fmt.Errorf("HTTP 端口 %d 已被监听「%s」使用", l.HTTPPort, name)
+		}
+		if o.HTTPPort > 0 && o.HTTPPort == l.Port {
+			return fmt.Errorf("端口 %d 已被监听「%s」用作 HTTP 端口", l.Port, name)
+		}
+	}
+	return nil
 }

@@ -406,10 +406,13 @@ func (m *Module) Routes(r module.Router) {
 			}
 			return m.checkRefsLocked(l)
 		},
-		Copy:    func(_, dst *Listener) { dst.dropShareLinks() },
-		View:    m.viewLocked,
-		Changed: m.restartLocked,
-		Removed: m.stopLocked,
+		// 额外 HTTP 端口不能与其他监听的端口冲突；启用已停用的监听时同样检查
+		Check:       func(l *Listener) error { return checkHTTPPortConflict(l, m.cfg.Listeners) },
+		CheckEnable: func(l *Listener) error { return checkHTTPPortConflict(l, m.cfg.Listeners) },
+		Copy:        func(_, dst *Listener) { dst.dropShareLinks() },
+		View:        m.viewLocked,
+		Changed:     m.restartLocked,
+		Removed:     m.stopLocked,
 	}
 	listeners.Register(r, "/listeners")
 	m.registerIPLists(r)
