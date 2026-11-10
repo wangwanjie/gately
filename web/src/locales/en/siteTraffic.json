@@ -31,7 +31,13 @@
   "cacheModeNoCache": "Don't cache",
   "cachePurgePath": "Purge cache for this path",
   "deleteRule": "Delete rule",
-  "cacheRulesHelp": "Without *, matches by path prefix (/api matches /api and /api/x); with *, matches the whole path and * can span /. More specific paths win; unmatched paths use the defaults above. Cache: honors the backend's Cache-Control and uses the duration when the backend declares none. Force cache: ignores the backend's Cache-Control and caches for the duration, but responses with Set-Cookie are still never cached. Duration 0 uses the default duration. To cache only specific paths, set / to don't cache",
+  "cacheRulesHelp": "Without *, matches by path prefix (/api matches /api and /api/x); with *, matches the whole path and * can span /. Paths are case-sensitive; enter the decoded path (no %). More specific paths win; unmatched paths use the defaults above. Cache: honors the backend's Cache-Control and uses the duration when the backend declares none. Force cache: ignores the backend's no-store, no-cache and max-age and caches for the duration, but responses the backend marks private or that carry Set-Cookie are still never cached. Duration 0 uses the default duration. To cache only specific paths, set / to don't cache",
+  "cacheForceWarn": "Force-cached responses are shared by all visitors. Use it only for content that does not depend on who the visitor is (such as static assets), and not when the backend skips authentication by source IP",
+  "cachePathError": {
+    "format": "The path must start with / and contain no spaces, ? or #",
+    "percent": "The path must not contain %. Enter the decoded path",
+    "segment": "The path must not contain . or .. segments or consecutive /"
+  },
   "cacheUsage": "Current cache",
   "cacheUsageValue": "{entries} entries, {size} / {max}",
   "cachePurgeAll": "Purge all",

@@ -31,7 +31,13 @@
   "cacheModeNoCache": "Não armazenar",
   "cachePurgePath": "Limpar o cache deste caminho",
   "deleteRule": "Excluir regra",
-  "cacheRulesHelp": "Sem *, compara pelo prefixo do caminho (/api corresponde a /api e /api/x); com *, compara o caminho inteiro e * pode abranger /. Caminhos mais específicos têm prioridade; os demais usam os padrões acima. Armazenar: segue o Cache-Control do backend e usa a duração quando o backend não declara nada. Forçar cache: ignora o Cache-Control do backend e armazena pela duração definida, mas respostas com Set-Cookie nunca são armazenadas. Duração 0 usa a duração padrão. Para armazenar apenas caminhos específicos, defina / como não armazenar",
+  "cacheRulesHelp": "Sem *, compara pelo prefixo do caminho (/api corresponde a /api e /api/x); com *, compara o caminho inteiro e * pode abranger /. Caminhos diferenciam maiúsculas; informe o caminho decodificado (sem %). Caminhos mais específicos têm prioridade; os demais usam os padrões acima. Armazenar: segue o Cache-Control do backend e usa a duração quando o backend não declara nada. Forçar cache: ignora no-store, no-cache e max-age do backend e armazena pela duração definida, mas respostas que o backend marca como private ou que trazem Set-Cookie nunca são armazenadas. Duração 0 usa a duração padrão. Para armazenar apenas caminhos específicos, defina / como não armazenar",
+  "cacheForceWarn": "Respostas com cache forçado são compartilhadas por todos os visitantes. Use apenas para conteúdo que não depende de quem visita (como recursos estáticos), e não quando o backend dispensa a autenticação pelo IP de origem",
+  "cachePathError": {
+    "format": "O caminho deve começar com / e não conter espaços, ? nem #",
+    "percent": "O caminho não pode conter %. Informe o caminho decodificado",
+    "segment": "O caminho não pode conter segmentos . ou .. nem / consecutivas"
+  },
   "cacheUsage": "Cache atual",
   "cacheUsageValue": "{entries} entradas, {size} / {max}",
   "cachePurgeAll": "Limpar tudo",

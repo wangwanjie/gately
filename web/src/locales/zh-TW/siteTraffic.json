@@ -31,7 +31,13 @@
   "cacheModeNoCache": "不快取",
   "cachePurgePath": "清空此路徑的快取",
   "deleteRule": "刪除規則",
-  "cacheRulesHelp": "不含 * 時依路徑前綴比對（/api 比對 /api 與 /api/x），含 * 時整條路徑萬用比對，* 可跨 /；越具體的路徑越優先，未命中時使用上方的預設設定。快取：遵循後端的 Cache-Control，後端未宣告時依時長快取；強制快取：忽略後端的 Cache-Control 依時長快取，帶 Set-Cookie 的回應仍不快取。時長 0 為沿用預設時長。只快取指定路徑時，可把 / 設為不快取",
+  "cacheRulesHelp": "不含 * 時依路徑前綴比對（/api 比對 /api 與 /api/x），含 * 時整條路徑萬用比對，* 可跨 /；路徑區分大小寫，填寫解碼後的路徑（不能含 %）；越具體的路徑越優先，未命中時使用上方的預設設定。快取：遵循後端的 Cache-Control，後端未宣告時依時長快取；強制快取：忽略後端的 no-store、no-cache 與 max-age 依時長快取，後端宣告 private 或帶 Set-Cookie 的回應仍不快取。時長 0 為沿用預設時長。只快取指定路徑時，可把 / 設為不快取",
+  "cacheForceWarn": "強制快取的回應由所有訪客共用，僅用於與訪客身分無關的內容（例如靜態資源）；後端依來源 IP 免認證時不要使用",
+  "cachePathError": {
+    "format": "路徑需以 / 開頭，且不含空白、? 或 #",
+    "percent": "路徑不能含 %，請直接填寫解碼後的路徑",
+    "segment": "路徑不能含 .、.. 路徑段或連續的 /"
+  },
   "cacheUsage": "目前快取",
   "cacheUsageValue": "{entries} 條，{size} / {max}",
   "cachePurgeAll": "全部清空",

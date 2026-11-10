@@ -31,7 +31,13 @@
   "cacheModeNoCache": "No cachear",
   "cachePurgePath": "Vaciar la caché de esta ruta",
   "deleteRule": "Eliminar regla",
-  "cacheRulesHelp": "Sin *, coincide por prefijo de ruta (/api coincide con /api y /api/x); con *, coincide con la ruta completa y * puede abarcar /. Las rutas más específicas tienen prioridad; las que no coinciden usan los valores por defecto de arriba. Cachear: respeta el Cache-Control del backend y usa la duración si el backend no declara nada. Forzar caché: ignora el Cache-Control del backend y cachea durante la duración indicada, pero las respuestas con Set-Cookie nunca se cachean. Duración 0 usa la duración por defecto. Para cachear solo rutas concretas, marca / como no cachear",
+  "cacheRulesHelp": "Sin *, coincide por prefijo de ruta (/api coincide con /api y /api/x); con *, coincide con la ruta completa y * puede abarcar /. Las rutas distinguen mayúsculas; escribe la ruta decodificada (sin %). Las rutas más específicas tienen prioridad; las que no coinciden usan los valores por defecto de arriba. Cachear: respeta el Cache-Control del backend y usa la duración si el backend no declara nada. Forzar caché: ignora no-store, no-cache y max-age del backend y cachea durante la duración indicada, pero las respuestas que el backend marca como private o que llevan Set-Cookie nunca se cachean. Duración 0 usa la duración por defecto. Para cachear solo rutas concretas, marca / como no cachear",
+  "cacheForceWarn": "Las respuestas con caché forzada se comparten entre todos los visitantes. Úsala solo para contenido que no depende de quién visita (como recursos estáticos), y no cuando el backend omite la autenticación según la IP de origen",
+  "cachePathError": {
+    "format": "La ruta debe empezar por / y no contener espacios, ? ni #",
+    "percent": "La ruta no puede contener %. Escribe la ruta decodificada",
+    "segment": "La ruta no puede contener segmentos . o .. ni / consecutivas"
+  },
   "cacheUsage": "Caché actual",
   "cacheUsageValue": "{entries} entradas, {size} / {max}",
   "cachePurgeAll": "Vaciar todo",
