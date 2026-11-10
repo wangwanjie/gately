@@ -488,6 +488,9 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | POST | `/api/wol/devices/{key}/shutdown` | `wol:write` | Desligamento remoto |
 | GET | `/api/wol/status` | `wol:read` | Ver o estado online do dispositivo |
 | GET | `/api/wol/ssh-targets` | `wol:read` | Listar conexões SSH utilizáveis para desligamento remoto |
+| GET | `/api/wol/bemfa` | `wol:read` | Configurações e status de conexão do Bemfa |
+| GET | `/api/wol/bemfa/secrets` | `wol:write` | Ver a chave privada do Bemfa |
+| PUT | `/api/wol/bemfa` | `wol:write` | Alterar configurações do Bemfa |
 
 ## Terminal web
 
@@ -3059,10 +3062,27 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `timeout` | integer |
 | `username` | string |
 
+### wol.BemfaSettings
+
+| Campo | Tipo |
+| --- | --- |
+| `enable` | boolean |
+| `uid` | string |
+
+### wol.BemfaStatus
+
+| Campo | Tipo |
+| --- | --- |
+| `connected` | boolean |
+| `error` | string |
+| `since` | integer |
+| `topics` | integer |
+
 ### wol.Device
 
 | Campo | Tipo |
 | --- | --- |
+| `bemfaTopic` | string |
 | `broadcastIps` | Array de string |
 | `checkAddr` | string |
 | `enable` | boolean |
@@ -3084,4 +3104,11 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `key` | string |
 | `name` | string |
 | `trusted` | boolean |
+
+### wol.bemfaView
+
+| Campo | Tipo |
+| --- | --- |
+| `settings` | `wol.BemfaSettings` |
+| `status` | `wol.BemfaStatus` |
 

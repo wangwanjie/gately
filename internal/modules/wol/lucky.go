@@ -33,8 +33,12 @@ func (m *Module) ImportLucky(doc luckyimport.Document, opts luckyimport.Options)
 	var devices []Device
 	for _, ld := range src {
 		d := Device{Name: ld.DeviceName, MACs: ld.MacList, BroadcastIPs: ld.BroadcastIPs, Port: ld.Port, Repeat: ld.Repeat}
-		if ld.IOT_DianDeng_Enable || ld.IOT_Bemfa_Enable {
-			rep.Warnings = append(rep.Warnings, ld.DeviceName+": 点灯科技/巴法云语音接入暂不支持，已忽略")
+		if ld.IOT_DianDeng_Enable {
+			rep.Warnings = append(rep.Warnings, ld.DeviceName+": 点灯科技语音接入暂不支持，已忽略")
+		}
+		// Lucky 的巴法云主题与私钥不在设备配置中，导入后需在设备与巴法云设置中重新填写
+		if ld.IOT_Bemfa_Enable {
+			rep.Warnings = append(rep.Warnings, ld.DeviceName+": 巴法云接入未随导入迁移，请在设备中填写巴法云主题并开启巴法云接入")
 		}
 		if err := d.Validate(); err != nil {
 			rep.Warnings = append(rep.Warnings, fmt.Sprintf("%s: 跳过，%v", ld.DeviceName, err))

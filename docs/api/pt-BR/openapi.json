@@ -5089,8 +5089,39 @@
         },
         "type": "object"
       },
+      "wol.BemfaSettings": {
+        "properties": {
+          "enable": {
+            "type": "boolean"
+          },
+          "uid": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "wol.BemfaStatus": {
+        "properties": {
+          "connected": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "since": {
+            "type": "integer"
+          },
+          "topics": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "wol.Device": {
         "properties": {
+          "bemfaTopic": {
+            "type": "string"
+          },
           "broadcastIps": {
             "items": {
               "type": "string"
@@ -5149,6 +5180,17 @@
           },
           "trusted": {
             "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "wol.bemfaView": {
+        "properties": {
+          "settings": {
+            "$ref": "#/components/schemas/wol.BemfaSettings"
+          },
+          "status": {
+            "$ref": "#/components/schemas/wol.BemfaStatus"
           }
         },
         "type": "object"
@@ -53152,6 +53194,190 @@
           "Terminal web"
         ],
         "x-required-scope": "webterminal:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/wol/bemfa": {
+      "get": {
+        "description": "Permissão necessária: `wol:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/wol.bemfaView"
+                }
+              }
+            },
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Configurações e status de conexão do Bemfa",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "wol:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Permissão necessária: `wol:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/wol.BemfaSettings"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/wol.bemfaView"
+                }
+              }
+            },
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Alterar configurações do Bemfa",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "wol:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/wol/bemfa/secrets": {
+      "get": {
+        "description": "Permissão necessária: `wol:write`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ver a chave privada do Bemfa",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "wol:write",
         "x-token-allowed": true
       }
     },

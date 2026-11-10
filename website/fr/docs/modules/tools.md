@@ -142,6 +142,7 @@ Gérez les appareils dans « Wake-on-LAN » et envoyez-leur des paquets magiques
 | `checkAddr` | Vide | Adresse de vérification de présence au format `host:port`, par exemple `192.168.1.10:3389` ; laissez vide pour ignorer la vérification |
 | `shutdownConn` | Vide | Connexion SSH du [terminal web](/fr/docs/modules/terminal) utilisée pour l’arrêt à distance ; vide pour désactiver l’arrêt |
 | `shutdownCommand` | Aucune | Commande d’arrêt, obligatoire si une connexion est choisie, sur une seule ligne, comme `shutdown -h now` ou `shutdown /s /t 0` |
+| `bemfaTopic` | Vide | Sujet Bemfa ; vide pour ne pas utiliser la commande vocale ; unique par appareil |
 | `remark` | Vide | Remarque |
 
 Cliquez sur Réveiller dans la liste des appareils pour envoyer le paquet magique ; la page indique si l'appareil est en ligne d'après `checkAddr`.
@@ -154,6 +155,16 @@ Choisissez une connexion SSH du terminal web et saisissez une commande d’arrê
 - Chaque arrêt ouvre une nouvelle connexion SSH et la ferme ensuite : une connexion périmée d’avant le redémarrage de l’appareil n’est jamais réutilisée ; la commande dure au plus 30 secondes, une seule à la fois par appareil ;
 - L’arrêt coupe souvent la connexion SSH avant le retour du code de sortie ; on considère alors que l’arrêt a commencé ;
 - Le formulaire propose les commandes courantes pour Linux (`shutdown -h now`), Windows (`shutdown /s /t 0`) et macOS (`sudo -n shutdown -h now`). Windows doit avoir le serveur OpenSSH activé ; sous Linux, un utilisateur non root peut utiliser `sudo -n shutdown -h now` avec sudo sans mot de passe pour cette commande.
+
+### Commande vocale Bemfa {#bemfa}
+
+Une fois [Bemfa](https://cloud.bemfa.com) connecté, des assistants vocaux comme Xiao AI, Xiaodu ou Google Assistant peuvent allumer et éteindre les appareils :
+
+1. Dans la console Bemfa, créez un sujet dans le cloud d’appareils MQTT dont le nom se termine par `001` (prise) ou `006` (interrupteur), par exemple `pc001` ;
+2. Saisissez le même sujet sur l’appareil puis, dans *Wake-on-LAN → Bemfa*, la clé privée utilisateur de la console, et activez ;
+3. Associez votre compte Bemfa dans Mi Home (Xiao AI), Xiaodu ou Google Home et synchronisez les appareils.
+
+Ensuite, « allumer » réveille l’appareil et « éteindre » l’arrête (arrêt à distance configuré requis) ; après une action réussie, l’état est réécrit dans Bemfa. Gately se connecte à `bemfa.com:9503` en MQTT 3.1.1 sur TLS et vérifie le certificat ; la clé privée sert d’ID client, n’est utilisée que sur cette connexion chiffrée et reste masquée dans l’API. Après une coupure, il réessaie à partir de 5 secondes jusqu’à toutes les 5 minutes ; les messages retenus (l’état précédent) renvoyés par le serveur à la connexion ne sont pas exécutés, et la même commande répétée en moins de 10 secondes n’est exécutée qu’une fois.
 
 ## Tâches planifiées
 

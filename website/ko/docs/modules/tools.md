@@ -142,6 +142,7 @@ API는 `GET` / `PUT /api/fileusers`이며 API 토큰에는 `fileusers:read` / `f
 | `checkAddr` | 비어 있음 | 온라인 점검 주소. 형식은 `호스트:포트`이며 예: `192.168.1.10:3389`, 비우면 점검하지 않습니다 |
 | `shutdownConn` | 비어 있음 | 원격 종료에 쓰는 [웹 터미널](/ko/docs/modules/terminal) SSH 연결. 비우면 종료를 지원하지 않음 |
 | `shutdownCommand` | 없음 | 종료 명령. 연결을 선택하면 필수이며 한 줄(예: `shutdown -h now`, `shutdown /s /t 0`) |
+| `bemfaTopic` | 비어 있음 | Bemfa 토픽. 비우면 음성 제어 없음, 다른 장치와 중복 불가 |
 | `remark` | 비어 있음 | 메모 |
 
 장치 목록에서 깨우기를 누르면 매직 패킷을 보내고 `checkAddr`에 따라 장치의 온라인 여부를 표시합니다.
@@ -154,6 +155,16 @@ API는 `GET` / `PUT /api/fileusers`이며 API 토큰에는 `fileusers:read` / `f
 - 종료할 때마다 새 SSH 연결을 만들고 끝나면 닫으므로 장치가 재부팅되기 전의 끊긴 연결을 쓰지 않습니다. 명령은 최대 30초, 같은 장치에서는 한 번에 하나만 실행합니다;
 - 종료하면서 종료 코드가 돌아오기 전에 SSH 연결이 끊기는 경우가 많으며, 이 경우 종료가 시작된 것으로 봅니다;
 - 폼에서 Linux(`shutdown -h now`), Windows(`shutdown /s /t 0`), macOS(`sudo -n shutdown -h now`) 명령을 고를 수 있습니다. Windows는 OpenSSH 서버를 켜야 하며, Linux의 root가 아닌 사용자는 `sudo -n shutdown -h now`를 쓰고 이 명령에 비밀번호 없는 sudo를 설정하세요.
+
+### Bemfa 음성 제어 {#bemfa}
+
+[Bemfa](https://cloud.bemfa.com)를 연동하면 Xiao AI, Xiaodu, Google Assistant 같은 음성 비서로 장치를 켜고 끌 수 있습니다:
+
+1. Bemfa 콘솔의 MQTT 장치 클라우드에서 이름이 `001`(콘센트) 또는 `006`(스위치)으로 끝나는 토픽을 만듭니다(예: `pc001`);
+2. 장치에 같은 토픽을 입력하고 "Wake-on-LAN → Bemfa"에서 콘솔의 사용자 개인 키를 입력해 켭니다;
+3. Mi Home(Xiao AI), Xiaodu 등의 앱에서 Bemfa 계정을 연결하고 장치를 동기화합니다.
+
+이후 "켜기"는 장치를 깨우고 "끄기"는 원격 종료합니다(원격 종료 설정 필요). 성공하면 켜짐/꺼짐 상태를 Bemfa에 다시 기록합니다. Gately는 MQTT 3.1.1 over TLS로 `bemfa.com:9503`에 연결하고 인증서를 검증합니다. 개인 키는 클라이언트 ID로 이 암호화 연결에서만 쓰이며 API에서는 가려서 표시합니다. 연결이 끊기면 5초부터 최대 5분 간격으로 다시 연결합니다. 연결 시 서버가 다시 보내는 보존 메시지(이전 상태)는 실행하지 않으며, 10초 안에 반복된 같은 명령은 한 번만 실행합니다.
 
 ## 예약 작업
 

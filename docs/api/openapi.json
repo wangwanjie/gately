@@ -5089,8 +5089,39 @@
         },
         "type": "object"
       },
+      "wol.BemfaSettings": {
+        "properties": {
+          "enable": {
+            "type": "boolean"
+          },
+          "uid": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "wol.BemfaStatus": {
+        "properties": {
+          "connected": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "since": {
+            "type": "integer"
+          },
+          "topics": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "wol.Device": {
         "properties": {
+          "bemfaTopic": {
+            "type": "string"
+          },
           "broadcastIps": {
             "items": {
               "type": "string"
@@ -5149,6 +5180,17 @@
           },
           "trusted": {
             "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "wol.bemfaView": {
+        "properties": {
+          "settings": {
+            "$ref": "#/components/schemas/wol.BemfaSettings"
+          },
+          "status": {
+            "$ref": "#/components/schemas/wol.BemfaStatus"
           }
         },
         "type": "object"
@@ -53152,6 +53194,190 @@
           "Web 终端"
         ],
         "x-required-scope": "webterminal:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/wol/bemfa": {
+      "get": {
+        "description": "所需权限：`wol:read`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/wol.bemfaView"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "巴法云接入设置与连接状态",
+        "tags": [
+          "网络唤醒"
+        ],
+        "x-required-scope": "wol:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "所需权限：`wol:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/wol.BemfaSettings"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/wol.bemfaView"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "修改巴法云接入设置",
+        "tags": [
+          "网络唤醒"
+        ],
+        "x-required-scope": "wol:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/wol/bemfa/secrets": {
+      "get": {
+        "description": "所需权限：`wol:write`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "查看巴法云私钥明文",
+        "tags": [
+          "网络唤醒"
+        ],
+        "x-required-scope": "wol:write",
         "x-token-allowed": true
       }
     },

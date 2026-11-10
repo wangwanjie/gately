@@ -488,6 +488,9 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | POST | `/api/wol/devices/{key}/shutdown` | `wol:write` | Remote shutdown |
 | GET | `/api/wol/status` | `wol:read` | View device online status |
 | GET | `/api/wol/ssh-targets` | `wol:read` | List SSH connections usable for remote shutdown |
+| GET | `/api/wol/bemfa` | `wol:read` | Bemfa settings and connection status |
+| GET | `/api/wol/bemfa/secrets` | `wol:write` | Show Bemfa private key |
+| PUT | `/api/wol/bemfa` | `wol:write` | Update Bemfa settings |
 
 ## Web terminal
 
@@ -3059,10 +3062,27 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `timeout` | integer |
 | `username` | string |
 
+### wol.BemfaSettings
+
+| Field | Type |
+| --- | --- |
+| `enable` | boolean |
+| `uid` | string |
+
+### wol.BemfaStatus
+
+| Field | Type |
+| --- | --- |
+| `connected` | boolean |
+| `error` | string |
+| `since` | integer |
+| `topics` | integer |
+
 ### wol.Device
 
 | Field | Type |
 | --- | --- |
+| `bemfaTopic` | string |
 | `broadcastIps` | Array of string |
 | `checkAddr` | string |
 | `enable` | boolean |
@@ -3084,4 +3104,11 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `key` | string |
 | `name` | string |
 | `trusted` | boolean |
+
+### wol.bemfaView
+
+| Field | Type |
+| --- | --- |
+| `settings` | `wol.BemfaSettings` |
+| `status` | `wol.BemfaStatus` |
 

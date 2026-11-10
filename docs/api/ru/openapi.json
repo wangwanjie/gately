@@ -5089,8 +5089,39 @@
         },
         "type": "object"
       },
+      "wol.BemfaSettings": {
+        "properties": {
+          "enable": {
+            "type": "boolean"
+          },
+          "uid": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "wol.BemfaStatus": {
+        "properties": {
+          "connected": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "since": {
+            "type": "integer"
+          },
+          "topics": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "wol.Device": {
         "properties": {
+          "bemfaTopic": {
+            "type": "string"
+          },
           "broadcastIps": {
             "items": {
               "type": "string"
@@ -5149,6 +5180,17 @@
           },
           "trusted": {
             "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "wol.bemfaView": {
+        "properties": {
+          "settings": {
+            "$ref": "#/components/schemas/wol.BemfaSettings"
+          },
+          "status": {
+            "$ref": "#/components/schemas/wol.BemfaStatus"
           }
         },
         "type": "object"
@@ -53152,6 +53194,190 @@
           "Веб-терминал"
         ],
         "x-required-scope": "webterminal:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/wol/bemfa": {
+      "get": {
+        "description": "Требуемое разрешение: `wol:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/wol.bemfaView"
+                }
+              }
+            },
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Настройки Bemfa и состояние подключения",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "wol:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Требуемое разрешение: `wol:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/wol.BemfaSettings"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/wol.bemfaView"
+                }
+              }
+            },
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Изменить настройки Bemfa",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "wol:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/wol/bemfa/secrets": {
+      "get": {
+        "description": "Требуемое разрешение: `wol:write`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Показать закрытый ключ Bemfa",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "wol:write",
         "x-token-allowed": true
       }
     },

@@ -488,6 +488,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/wol/devices/{key}/shutdown` | `wol:write` | 遠端關機 |
 | GET | `/api/wol/status` | `wol:read` | 檢視裝置線上狀態 |
 | GET | `/api/wol/ssh-targets` | `wol:read` | 列出可用於遠端關機的 SSH 連線 |
+| GET | `/api/wol/bemfa` | `wol:read` | 巴法雲接入設定與連線狀態 |
+| GET | `/api/wol/bemfa/secrets` | `wol:write` | 檢視巴法雲私鑰明文 |
+| PUT | `/api/wol/bemfa` | `wol:write` | 修改巴法雲接入設定 |
 
 ## Web 終端機
 
@@ -3059,10 +3062,27 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `timeout` | integer |
 | `username` | string |
 
+### wol.BemfaSettings
+
+| 欄位 | 類型 |
+| --- | --- |
+| `enable` | boolean |
+| `uid` | string |
+
+### wol.BemfaStatus
+
+| 欄位 | 類型 |
+| --- | --- |
+| `connected` | boolean |
+| `error` | string |
+| `since` | integer |
+| `topics` | integer |
+
 ### wol.Device
 
 | 欄位 | 類型 |
 | --- | --- |
+| `bemfaTopic` | string |
 | `broadcastIps` | 陣列 of string |
 | `checkAddr` | string |
 | `enable` | boolean |
@@ -3084,4 +3104,11 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `key` | string |
 | `name` | string |
 | `trusted` | boolean |
+
+### wol.bemfaView
+
+| 欄位 | 類型 |
+| --- | --- |
+| `settings` | `wol.BemfaSettings` |
+| `status` | `wol.BemfaStatus` |
 

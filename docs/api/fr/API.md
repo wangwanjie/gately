@@ -488,6 +488,9 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | POST | `/api/wol/devices/{key}/shutdown` | `wol:write` | Arrêt à distance |
 | GET | `/api/wol/status` | `wol:read` | Consulter l'état en ligne des appareils |
 | GET | `/api/wol/ssh-targets` | `wol:read` | Lister les connexions SSH utilisables pour l’arrêt à distance |
+| GET | `/api/wol/bemfa` | `wol:read` | Réglages et état de connexion Bemfa |
+| GET | `/api/wol/bemfa/secrets` | `wol:write` | Afficher la clé privée Bemfa |
+| PUT | `/api/wol/bemfa` | `wol:write` | Modifier les réglages Bemfa |
 
 ## Terminal Web
 
@@ -3059,10 +3062,27 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `timeout` | integer |
 | `username` | string |
 
+### wol.BemfaSettings
+
+| Champ | Type |
+| --- | --- |
+| `enable` | boolean |
+| `uid` | string |
+
+### wol.BemfaStatus
+
+| Champ | Type |
+| --- | --- |
+| `connected` | boolean |
+| `error` | string |
+| `since` | integer |
+| `topics` | integer |
+
 ### wol.Device
 
 | Champ | Type |
 | --- | --- |
+| `bemfaTopic` | string |
 | `broadcastIps` | Tableau de string |
 | `checkAddr` | string |
 | `enable` | boolean |
@@ -3084,4 +3104,11 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `key` | string |
 | `name` | string |
 | `trusted` | boolean |
+
+### wol.bemfaView
+
+| Champ | Type |
+| --- | --- |
+| `settings` | `wol.BemfaSettings` |
+| `status` | `wol.BemfaStatus` |
 

@@ -5089,8 +5089,39 @@
         },
         "type": "object"
       },
+      "wol.BemfaSettings": {
+        "properties": {
+          "enable": {
+            "type": "boolean"
+          },
+          "uid": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "wol.BemfaStatus": {
+        "properties": {
+          "connected": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "since": {
+            "type": "integer"
+          },
+          "topics": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "wol.Device": {
         "properties": {
+          "bemfaTopic": {
+            "type": "string"
+          },
           "broadcastIps": {
             "items": {
               "type": "string"
@@ -5149,6 +5180,17 @@
           },
           "trusted": {
             "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "wol.bemfaView": {
+        "properties": {
+          "settings": {
+            "$ref": "#/components/schemas/wol.BemfaSettings"
+          },
+          "status": {
+            "$ref": "#/components/schemas/wol.BemfaStatus"
           }
         },
         "type": "object"
@@ -53152,6 +53194,190 @@
           "Web 터미널"
         ],
         "x-required-scope": "webterminal:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/wol/bemfa": {
+      "get": {
+        "description": "필요한 권한: `wol:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/wol.bemfaView"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Bemfa 연동 설정과 연결 상태",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "wol:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "필요한 권한: `wol:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/wol.BemfaSettings"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/wol.bemfaView"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Bemfa 연동 설정 수정",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "wol:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/wol/bemfa/secrets": {
+      "get": {
+        "description": "필요한 권한: `wol:write`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Bemfa 개인 키 보기",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "wol:write",
         "x-token-allowed": true
       }
     },

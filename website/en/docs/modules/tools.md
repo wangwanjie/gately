@@ -142,6 +142,7 @@ Manage devices under "Wake-on-LAN", and send magic packets to them (6 bytes of `
 | `checkAddr` | Empty | Online check address in the form `host:port`, for example `192.168.1.10:3389`; leave empty to skip the check |
 | `shutdownConn` | Empty | [Web Terminal](/en/docs/modules/terminal) SSH connection used for remote shutdown; leave empty to disable shutdown |
 | `shutdownCommand` | None | Shutdown command, required when a connection is selected, single line, such as `shutdown -h now` or `shutdown /s /t 0` |
+| `bemfaTopic` | Empty | Bemfa topic; leave empty to skip voice control; must not repeat across devices |
 | `remark` | Empty | Remark |
 
 Click Wake in the device list to send the magic packet, and the page shows whether the device is online according to `checkAddr`.
@@ -154,6 +155,16 @@ Choose an SSH connection from Web Terminal and enter a shutdown command, and the
 - Each shutdown opens a new SSH connection and closes it afterwards, so a stale connection from before the device rebooted is never reused; the command runs for at most 30 seconds, one at a time per device;
 - Shutting down often drops the SSH connection before an exit code is returned; this counts as the shutdown having started;
 - The form offers common commands for Linux (`shutdown -h now`), Windows (`shutdown /s /t 0`) and macOS (`sudo -n shutdown -h now`). Windows needs the OpenSSH server enabled; on Linux, non-root users can use `sudo -n shutdown -h now` with passwordless sudo for that command.
+
+### Bemfa voice control {#bemfa}
+
+With [Bemfa](https://cloud.bemfa.com) connected, voice assistants such as Xiao AI, Xiaodu and Google Assistant can turn devices on and off:
+
+1. In the Bemfa console, create a topic under MQTT device cloud whose name ends with `001` (socket) or `006` (switch), for example `pc001`;
+2. Enter the same topic on the device, then enter the user private key from the console under *Wake-on-LAN → Bemfa* and enable it;
+3. Link your Bemfa account in Mi Home (Xiao AI), Xiaodu or Google Home and sync devices.
+
+"Turn on" then wakes the device and "turn off" shuts it down (remote shutdown must be set up); after a successful action the state is written back to Bemfa. Gately connects to `bemfa.com:9503` with MQTT 3.1.1 over TLS and verifies the certificate; the private key is the client ID, used only on this encrypted connection and masked in the API. After a disconnect it retries from 5 seconds up to every 5 minutes; retained messages (the previous state) replayed by the server on connect are not executed, and the same command repeated within 10 seconds runs once.
 
 ## Scheduled Tasks
 

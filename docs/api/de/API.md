@@ -488,6 +488,9 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | POST | `/api/wol/devices/{key}/shutdown` | `wol:write` | Fern-Herunterfahren |
 | GET | `/api/wol/status` | `wol:read` | Online-Status eines Geräts anzeigen |
 | GET | `/api/wol/ssh-targets` | `wol:read` | SSH-Verbindungen für Fern-Herunterfahren auflisten |
+| GET | `/api/wol/bemfa` | `wol:read` | Bemfa-Einstellungen und Verbindungsstatus |
+| GET | `/api/wol/bemfa/secrets` | `wol:write` | Privaten Bemfa-Schlüssel anzeigen |
+| PUT | `/api/wol/bemfa` | `wol:write` | Bemfa-Einstellungen ändern |
 
 ## Web-Terminal
 
@@ -3059,10 +3062,27 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `timeout` | integer |
 | `username` | string |
 
+### wol.BemfaSettings
+
+| Feld | Typ |
+| --- | --- |
+| `enable` | boolean |
+| `uid` | string |
+
+### wol.BemfaStatus
+
+| Feld | Typ |
+| --- | --- |
+| `connected` | boolean |
+| `error` | string |
+| `since` | integer |
+| `topics` | integer |
+
 ### wol.Device
 
 | Feld | Typ |
 | --- | --- |
+| `bemfaTopic` | string |
 | `broadcastIps` | Array von string |
 | `checkAddr` | string |
 | `enable` | boolean |
@@ -3084,4 +3104,11 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `key` | string |
 | `name` | string |
 | `trusted` | boolean |
+
+### wol.bemfaView
+
+| Feld | Typ |
+| --- | --- |
+| `settings` | `wol.BemfaSettings` |
+| `status` | `wol.BemfaStatus` |
 

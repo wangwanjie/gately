@@ -142,6 +142,7 @@ Gestiona los dispositivos en «Wake-on-LAN» y envíales paquetes mágicos (6 by
 | `checkAddr` | Vacío | Dirección de comprobación de conexión con la forma `host:port`, por ejemplo `192.168.1.10:3389`; déjalo vacío para omitir la comprobación |
 | `shutdownConn` | Vacío | Conexión SSH de la [terminal web](/es/docs/modules/terminal) usada para el apagado remoto; vacío para no permitir apagado |
 | `shutdownCommand` | Ninguno | Comando de apagado, obligatorio si se elige una conexión, de una sola línea, como `shutdown -h now` o `shutdown /s /t 0` |
+| `bemfaTopic` | Vacío | Tema de Bemfa; vacío para no usar control por voz; no puede repetirse entre dispositivos |
 | `remark` | Vacío | Nota |
 
 Pulsa Encender en la lista de dispositivos para enviar el paquete mágico, y la página muestra si el dispositivo está conectado según `checkAddr`.
@@ -154,6 +155,16 @@ Elige una conexión SSH de la terminal web y escribe un comando de apagado, y la
 - Cada apagado abre una conexión SSH nueva y la cierra al terminar, así que nunca se reutiliza una conexión caducada de antes de reiniciar el dispositivo; el comando dura como máximo 30 segundos y solo se ejecuta uno a la vez por dispositivo;
 - Apagar suele cortar la conexión SSH antes de devolver el código de salida; en ese caso se considera que el apagado empezó;
 - El formulario ofrece comandos habituales para Linux (`shutdown -h now`), Windows (`shutdown /s /t 0`) y macOS (`sudo -n shutdown -h now`). Windows necesita el servidor OpenSSH activado; en Linux, los usuarios no root pueden usar `sudo -n shutdown -h now` con sudo sin contraseña para ese comando.
+
+### Control por voz con Bemfa {#bemfa}
+
+Con [Bemfa](https://cloud.bemfa.com) conectado, asistentes de voz como Xiao AI, Xiaodu o Google Assistant pueden encender y apagar dispositivos:
+
+1. En la consola de Bemfa, crea un tema en la nube de dispositivos MQTT cuyo nombre termine en `001` (enchufe) o `006` (interruptor), por ejemplo `pc001`;
+2. Escribe el mismo tema en el dispositivo y, en *Wake-on-LAN → Bemfa*, la clave privada de usuario de la consola, y actívalo;
+3. Vincula tu cuenta de Bemfa en Mi Home (Xiao AI), Xiaodu o Google Home y sincroniza los dispositivos.
+
+Después, «encender» despierta el dispositivo y «apagar» lo apaga (con el apagado remoto configurado); tras una acción correcta el estado se escribe de vuelta en Bemfa. Gately se conecta a `bemfa.com:9503` con MQTT 3.1.1 sobre TLS y verifica el certificado; la clave privada es el ID de cliente, solo se usa en esta conexión cifrada y aparece enmascarada en la API. Tras una desconexión reintenta desde 5 segundos hasta cada 5 minutos; los mensajes retenidos (el estado anterior) que el servidor reenvía al conectar no se ejecutan, y la misma orden repetida en 10 segundos se ejecuta una vez.
 
 ## Tareas programadas
 

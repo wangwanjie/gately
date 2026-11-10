@@ -142,6 +142,7 @@ Verwalten Sie Geräte unter „Wake-on-LAN“ und senden Sie ihnen Magic Packets
 | `checkAddr` | Leer | Adresse für die Online-Prüfung in der Form `host:port`, zum Beispiel `192.168.1.10:3389`; leer lassen, um die Prüfung zu überspringen |
 | `shutdownConn` | Leer | SSH-Verbindung aus dem [Web-Terminal](/de/docs/modules/terminal) für das Fern-Herunterfahren; leer lassen, um es zu deaktivieren |
 | `shutdownCommand` | Keiner | Befehl zum Herunterfahren, Pflicht bei gewählter Verbindung, einzeilig, z. B. `shutdown -h now` oder `shutdown /s /t 0` |
+| `bemfaTopic` | Leer | Bemfa-Topic; leer lassen für keine Sprachsteuerung; pro Gerät eindeutig |
 | `remark` | Leer | Bemerkung |
 
 Klicken Sie in der Geräteliste auf „Aufwecken“, um das Magic Packet zu senden; die Seite zeigt anhand von `checkAddr`, ob das Gerät online ist.
@@ -154,6 +155,16 @@ Wählen Sie eine SSH-Verbindung aus dem Web-Terminal und geben Sie einen Befehl 
 - Jedes Herunterfahren öffnet eine neue SSH-Verbindung und schließt sie danach, sodass nie eine veraltete Verbindung von vor dem Neustart des Geräts genutzt wird; der Befehl läuft höchstens 30 Sekunden, pro Gerät jeweils nur einer;
 - Beim Herunterfahren bricht die SSH-Verbindung oft ab, bevor ein Exit-Code zurückkommt; das gilt als begonnenes Herunterfahren;
 - Das Formular bietet gängige Befehle für Linux (`shutdown -h now`), Windows (`shutdown /s /t 0`) und macOS (`sudo -n shutdown -h now`). Windows benötigt den aktivierten OpenSSH-Server; unter Linux können Nicht-Root-Benutzer `sudo -n shutdown -h now` mit passwortlosem sudo für diesen Befehl verwenden.
+
+### Bemfa-Sprachsteuerung {#bemfa}
+
+Mit angebundenem [Bemfa](https://cloud.bemfa.com) schalten Sprachassistenten wie Xiao AI, Xiaodu oder Google Assistant Geräte ein und aus:
+
+1. Legen Sie in der Bemfa-Konsole unter MQTT-Gerätecloud ein Topic an, dessen Name auf `001` (Steckdose) oder `006` (Schalter) endet, z. B. `pc001`;
+2. Tragen Sie dasselbe Topic beim Gerät ein, unter *Wake-on-LAN → Bemfa* den privaten Benutzerschlüssel aus der Konsole, und aktivieren Sie es;
+3. Verknüpfen Sie Ihr Bemfa-Konto in Mi Home (Xiao AI), Xiaodu oder Google Home und synchronisieren Sie die Geräte.
+
+Danach weckt „Einschalten“ das Gerät und „Ausschalten“ fährt es herunter (Fern-Herunterfahren muss eingerichtet sein); nach erfolgreicher Aktion wird der Zustand an Bemfa zurückgeschrieben. Gately verbindet sich per MQTT 3.1.1 über TLS mit `bemfa.com:9503` und prüft das Zertifikat; der private Schlüssel dient als Client-ID, wird nur über diese verschlüsselte Verbindung verwendet und in der API maskiert. Nach einer Trennung versucht Gately es ab 5 Sekunden bis höchstens alle 5 Minuten erneut; vom Server beim Verbinden erneut gesendete Retained-Nachrichten (der vorige Zustand) werden nicht ausgeführt, und derselbe Befehl innerhalb von 10 Sekunden wird nur einmal ausgeführt.
 
 ## Geplante Aufgaben
 

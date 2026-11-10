@@ -488,6 +488,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/wol/devices/{key}/shutdown` | `wol:write` | 원격 종료 |
 | GET | `/api/wol/status` | `wol:read` | 장치 온라인 상태 보기 |
 | GET | `/api/wol/ssh-targets` | `wol:read` | 원격 종료에 쓸 수 있는 SSH 연결 목록 |
+| GET | `/api/wol/bemfa` | `wol:read` | Bemfa 연동 설정과 연결 상태 |
+| GET | `/api/wol/bemfa/secrets` | `wol:write` | Bemfa 개인 키 보기 |
+| PUT | `/api/wol/bemfa` | `wol:write` | Bemfa 연동 설정 수정 |
 
 ## Web 터미널
 
@@ -3059,10 +3062,27 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `timeout` | integer |
 | `username` | string |
 
+### wol.BemfaSettings
+
+| 필드 | 타입 |
+| --- | --- |
+| `enable` | boolean |
+| `uid` | string |
+
+### wol.BemfaStatus
+
+| 필드 | 타입 |
+| --- | --- |
+| `connected` | boolean |
+| `error` | string |
+| `since` | integer |
+| `topics` | integer |
+
 ### wol.Device
 
 | 필드 | 타입 |
 | --- | --- |
+| `bemfaTopic` | string |
 | `broadcastIps` | Array of string |
 | `checkAddr` | string |
 | `enable` | boolean |
@@ -3084,4 +3104,11 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `key` | string |
 | `name` | string |
 | `trusted` | boolean |
+
+### wol.bemfaView
+
+| 필드 | 타입 |
+| --- | --- |
+| `settings` | `wol.BemfaSettings` |
+| `status` | `wol.BemfaStatus` |
 
