@@ -144,6 +144,7 @@
   "httpPortHelp": "Lauscht zusätzlich auf einem unverschlüsselten HTTP-Port (z. B. 80), der alle Sites mit dem Port oben teilt – ein eigener Listener für HTTP ist nicht nötig. Umleiten schickt Anfragen an die HTTPS-Adresse dieses Listeners (Zugriffs- oder Listen-Port); Ausliefern beantwortet sie unverschlüsselt per HTTP.",
   "httpPortPlainHelp": "Lauscht zusätzlich auf einem weiteren HTTP-Port, der alle Sites mit dem Port oben teilt.",
   "httpPortSame": "Der HTTP-Port muss sich vom Listen-Port unterscheiden",
+  "httpPortEntryWarn": "Die Weiterleitung nutzt den Port der Zugriffsadresse bzw. den Listen-Port {listen}, wenn er leer ist; dieser Listener wird über den Eingangsport {port} von {rule} erreicht – tragen Sie {port} unten in der Zugriffsadresse ein, sonst werden Besucher auf einen von außen nicht erreichbaren Port weitergeleitet",
   "httpPortRedirectTag": "HTTP :{port} → HTTPS",
   "httpPortServeTag": "HTTP :{port}",
   "optSniFromHost": "Aufgerufene Domain als SNI verwenden",
