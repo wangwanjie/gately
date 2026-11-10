@@ -70,6 +70,7 @@
   "usedBy": "사용하는 사이트",
   "varsHelp": "주소에 변수를 쓸 수 있습니다. {'{host}'}는 방문자가 패널을 연 도메인, {'{STUN_web_PORT}'}·{'{STUN_web_ADDR}'}는 STUN 규칙의 공인 포트와 주소입니다. 변수에 아직 값이 없으면 링크가 사용 불가로 표시됩니다.",
   "view": "보기",
+  "unsupported": "연결된 Gately는 내비게이션 패널을 지원하지 않습니다(백엔드가 오래되어 API가 404를 반환함). 이 기능이 포함된 버전으로 업그레이드하세요.",
   "iconPick": "선택",
   "iconPickTitle": "내장 아이콘 선택",
   "iconSearch": "아이콘 검색",

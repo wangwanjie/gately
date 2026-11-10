@@ -70,6 +70,7 @@
   "usedBy": "使用的站點",
   "varsHelp": "位址中可使用變數：{'{host}'} 為訪客存取面板所用的網域，{'{STUN_web_PORT}'}、{'{STUN_web_ADDR}'} 為 STUN 穿透的公網連接埠與位址；變數暫無值時連結顯示為暫時無法使用。",
   "view": "檢視",
+  "unsupported": "目前連線的 Gately 不支援導覽面板（後端版本過舊，介面回傳 404），請升級到包含此功能的版本。",
   "iconPick": "選擇",
   "iconPickTitle": "選擇內建圖示",
   "iconSearch": "搜尋圖示",

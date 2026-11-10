@@ -70,6 +70,7 @@
   "usedBy": "Utilisé par",
   "varsHelp": "Les adresses acceptent des variables : {'{host}'} est le domaine utilisé par le visiteur pour ouvrir le panneau ; {'{STUN_web_PORT}'} et {'{STUN_web_ADDR}'} sont le port et l’adresse publics d’une règle STUN. Un lien dont la variable n’a pas encore de valeur est affiché comme indisponible.",
   "view": "Afficher",
+  "unsupported": "Le Gately auquel vous êtes connecté ne prend pas en charge les panneaux de navigation (son backend est ancien et renvoie 404). Mettez à jour vers une version qui inclut cette fonction.",
   "iconPick": "Choisir",
   "iconPickTitle": "Choisir une icône intégrée",
   "iconSearch": "Rechercher une icône",

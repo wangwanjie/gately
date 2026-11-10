@@ -70,6 +70,7 @@
   "usedBy": "Verwendet von",
   "varsHelp": "Adressen können Variablen enthalten: {'{host}'} ist die Domain, mit der der Besucher das Panel geöffnet hat; {'{STUN_web_PORT}'} und {'{STUN_web_ADDR}'} sind öffentlicher Port und Adresse einer STUN-Regel. Ein Link, dessen Variable noch keinen Wert hat, wird als nicht verfügbar angezeigt.",
   "view": "Ansehen",
+  "unsupported": "Das verbundene Gately unterstützt keine Navigationspanels (das Backend ist älter und liefert 404). Aktualisieren Sie auf eine Version mit dieser Funktion.",
   "iconPick": "Wählen",
   "iconPickTitle": "Eingebautes Symbol wählen",
   "iconSearch": "Symbole suchen",
