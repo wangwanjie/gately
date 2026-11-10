@@ -187,93 +187,136 @@ func formatDay(d int32) string {
 	return time.Unix(int64(d)*86400, 0).UTC().Format(time.DateOnly)
 }
 
+// queryChunk 为查询时每次持锁复制的访客数：分批持锁，查询再大也不会长时间挡住请求的记录。
+const queryChunk = 512
+
+// prefilter 判断访客是否满足只依赖记录本身的筛选条件（站点、拦截、身份、扫描类），在持锁时调用，只读字段不分配内存。
+func (v *Visitor) prefilter(q *Query, denied uint64) bool {
+	if q.Site != "" && !v.hasSite(q.Site) {
+		return false
+	}
+	switch q.Filter {
+	case FilterDenied:
+		return denied > 0
+	case FilterAuthed:
+		return v.hasKind("user")
+	case FilterAdmin:
+		return v.hasKind("admin")
+	case FilterNoise:
+		return v.noise()
+	}
+	return true
+}
+
+// siteID 是汇总站点列表时的站点标识；未匹配站点的请求合为一项。
+type siteID struct {
+	listener, key string
+	unmatched     bool
+}
+
 // Query 按条件查询访客列表。
+//
+// 持锁时只做两件事：取全部记录的指针，再分批复制符合基本条件的记录；封禁与国家回调、关键词匹配、
+// 汇总与排序都在锁外进行，查询不会阻塞请求的记录。查询串行执行，并发的查询依次等待，
+// 避免多个客户端同时轮询时复制出多份全部记录。
 func (s *Store) Query(q Query) Result {
+	s.queryMu.Lock()
+	defer s.queryMu.Unlock()
+
+	type ref struct {
+		addr netip.Addr
+		v    *Visitor
+	}
 	s.mu.Lock()
-	defer s.mu.Unlock()
 	now := s.now()
+	keepDays := s.set.Days
+	refs := make([]ref, 0, len(s.m))
+	for a, v := range s.m {
+		refs = append(refs, ref{a, v})
+	}
+	s.mu.Unlock()
+
 	today := dayOf(now)
 	span := q.Days
-	if span <= 0 || span > s.set.Days {
-		span = s.set.Days
+	if span <= 0 || span > keepDays {
+		span = keepDays
 	}
 	fromDay := today - int32(span) + 1
-	fromSec := now.Unix() - int64(span)*86400
+	// 统计范围从起始那天的本地 0 点算起，“今天”的新访客即今天 0 点之后首次出现的访客
+	fromSec := time.Date(now.Year(), now.Month(), now.Day()-span+1, 0, 0, 0, 0, now.Location()).Unix()
 	kw := strings.ToLower(strings.TrimSpace(q.Q))
 
 	type hit struct {
-		v       *Visitor
+		addr    netip.Addr
+		v       Visitor
 		req     uint64
 		denied  uint64
 		banned  bool
 		country string
 	}
 	res := Result{Items: []Item{}, Daily: []DayPoint{}, Sites: []SiteRef{}}
+	siteSeen := map[siteID]int{}
+	var cands []hit
+	for i := 0; i < len(refs); i += queryChunk {
+		s.mu.Lock()
+		for _, r := range refs[i:min(i+queryChunk, len(refs))] {
+			v := r.v
+			// 取指针之后被删除或淘汰（之后可能又以新记录出现）的访客跳过
+			if s.m[r.addr] != v {
+				continue
+			}
+			for _, st := range v.Sites {
+				id := siteID{unmatched: true}
+				if !st.Unmatched {
+					id = siteID{listener: st.Listener, key: st.Key}
+				}
+				if j, ok := siteSeen[id]; ok {
+					res.Sites[j].Req += uint64(st.Req)
+					continue
+				}
+				siteSeen[id] = len(res.Sites)
+				res.Sites = append(res.Sites, SiteRef{Listener: st.Listener, Key: st.Key, Name: st.Name, Unmatched: st.Unmatched, Req: uint64(st.Req)})
+			}
+			req, denied := v.rangeCounts(fromDay)
+			if req == 0 || v.Last < fromSec {
+				continue
+			}
+			if !v.prefilter(&q, denied) {
+				continue
+			}
+			cands = append(cands, hit{addr: r.addr, v: v.clone(), req: req, denied: denied})
+		}
+		s.mu.Unlock()
+	}
+	refs = nil
+
 	daily := make([]DayPoint, span)
 	for i := range daily {
 		daily[i].Day = formatDay(fromDay + int32(i))
 	}
-	siteSeen := map[string]int{}
-	var hits []hit
-	for a, v := range s.m {
-		for _, st := range v.Sites {
-			id := "-"
-			if !st.Unmatched {
-				id = st.Listener + "/" + st.Key
-			}
-			if i, ok := siteSeen[id]; ok {
-				res.Sites[i].Req += uint64(st.Req)
-				continue
-			}
-			siteSeen[id] = len(res.Sites)
-			res.Sites = append(res.Sites, SiteRef{Listener: st.Listener, Key: st.Key, Name: st.Name, Unmatched: st.Unmatched, Req: uint64(st.Req)})
-		}
-		req, denied := v.rangeCounts(fromDay)
-		if req == 0 || v.Last < fromSec {
+	hits := make([]*hit, 0, len(cands))
+	for i := range cands {
+		h := &cands[i]
+		v := &h.v
+		h.banned = q.Banned != nil && q.Banned(h.addr)
+		if q.Filter == FilterBanned && !h.banned {
 			continue
 		}
-		if q.Site != "" && !v.hasSite(q.Site) {
-			continue
-		}
-		banned := q.Banned != nil && q.Banned(a)
-		switch q.Filter {
-		case FilterDenied:
-			if denied == 0 {
-				continue
-			}
-		case FilterAuthed:
-			if !v.hasKind("user") {
-				continue
-			}
-		case FilterAdmin:
-			if !v.hasKind("admin") {
-				continue
-			}
-		case FilterBanned:
-			if !banned {
-				continue
-			}
-		case FilterNoise:
-			if !v.noise() {
-				continue
-			}
-		}
-		country := ""
 		if q.Country != nil {
-			country = q.Country(a)
+			h.country = q.Country(h.addr)
 		}
-		if kw != "" && !v.matches(kw, country) {
+		if kw != "" && !v.matches(kw, h.country) {
 			continue
 		}
-		hits = append(hits, hit{v, req, denied, banned, country})
+		hits = append(hits, h)
 		sm := &res.Summary
 		sm.Visitors++
-		sm.Requests += req
-		sm.Denied += denied
+		sm.Requests += h.req
+		sm.Denied += h.denied
 		if v.hasKind("user") {
 			sm.Authed++
 		}
-		if banned {
+		if h.banned {
 			sm.Banned++
 		}
 		if v.noise() {
@@ -282,8 +325,8 @@ func (s *Store) Query(q Query) Result {
 		if v.First >= fromSec {
 			sm.New++
 		}
-		for i := len(v.Days) - 1; i >= 0 && v.Days[i].D >= fromDay; i-- {
-			d := v.Days[i]
+		for j := len(v.Days) - 1; j >= 0 && v.Days[j].D >= fromDay; j-- {
+			d := v.Days[j]
 			if idx := int(d.D - fromDay); idx < span {
 				daily[idx].Visitors++
 				daily[idx].Requests += uint64(d.Req)
@@ -294,7 +337,7 @@ func (s *Store) Query(q Query) Result {
 	res.Daily = daily
 	slices.SortFunc(res.Sites, func(x, y SiteRef) int { return strings.Compare(x.Name, y.Name) })
 
-	slices.SortFunc(hits, func(x, y hit) int {
+	slices.SortFunc(hits, func(x, y *hit) int {
 		var c int
 		switch q.Sort {
 		case SortFirst:
