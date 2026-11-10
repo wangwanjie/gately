@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -37,6 +38,9 @@ type SSHConfig struct {
 	Passphrase string `json:"passphrase"`
 	// HostKey 为首次连接时记录的主机密钥指纹（SHA256），为空表示下次连接时重新信任
 	HostKey string `json:"hostKey"`
+	// HostKeyType 为该指纹对应的密钥类型（如 ssh-ed25519、ecdsa-sha2-nistp256），连接时只协商这种主机密钥。
+	// 服务器通常同时有多把不同类型的主机密钥，只记指纹时无法知道该让服务器出示哪一把；为空（旧配置或手工填写的指纹）时连接会自动探测并补记
+	HostKeyType string `json:"hostKeyType"`
 	// KeepAlive 为保活间隔（秒）
 	KeepAlive int `json:"keepAlive"`
 	// WorkDir 为登录后切换到的目录
@@ -106,15 +110,146 @@ func (s *sshSession) Close() error {
 	return err
 }
 
-// connectSSH 建立并认证 SSH 连接（可经代理）。newFingerprint 非空表示首次连接（尚未记录主机密钥）。
+// hostKeyInfo 是本次连接中服务器出示的主机密钥。
+type hostKeyInfo struct {
+	Fingerprint string
+	Type        string
+	// New 表示连接前尚未记录主机密钥（首次信任）
+	New bool
+}
+
+// hostKeyMismatch 表示服务器出示的主机密钥与记录的指纹不符。
+type hostKeyMismatch struct {
+	recorded, recordedType string
+	got, gotType           string
+}
+
+func (e *hostKeyMismatch) Error() string {
+	return fmt.Sprintf("主机密钥已变化（记录 %s，当前 %s），可能存在中间人攻击；确认无误后在连接设置中重置主机密钥",
+		describeHostKey(e.recordedType, e.recorded), describeHostKey(e.gotType, e.got))
+}
+
+// describeHostKey 把密钥类型与指纹拼成「ED25519 SHA256:…」的形式，与 ssh-keygen -l 的类型写法一致，便于对照。
+func describeHostKey(typ, fp string) string {
+	if typ == "" {
+		return fp
+	}
+	return hostKeyTypeLabel(typ) + " " + fp
+}
+
+func hostKeyTypeLabel(typ string) string {
+	switch {
+	case typ == ssh.KeyAlgoED25519:
+		return "ED25519"
+	case typ == ssh.KeyAlgoRSA:
+		return "RSA"
+	case strings.HasPrefix(typ, "ecdsa-sha2-"):
+		return "ECDSA"
+	}
+	return typ
+}
+
+// hostKeyFormats 是按 x/crypto 默认偏好排列的普通主机密钥类型，记录的指纹与协商到的密钥不符时按此逐一换类型重试。
+var hostKeyFormats = []string{ssh.KeyAlgoECDSA256, ssh.KeyAlgoECDSA384, ssh.KeyAlgoECDSA521, ssh.KeyAlgoRSA, ssh.KeyAlgoED25519}
+
+// knownHostKeyTypes 是可以记录并用于限定协商的主机密钥类型（含主机证书）。
+var knownHostKeyTypes = append(slices.Clone(hostKeyFormats),
+	ssh.CertAlgoECDSA256v01, ssh.CertAlgoECDSA384v01, ssh.CertAlgoECDSA521v01, ssh.CertAlgoRSAv01, ssh.CertAlgoED25519v01)
+
+// hostKeyAlgorithms 返回协商某种主机密钥类型时可用的签名算法（RSA 密钥对应多种签名算法）。
+func hostKeyAlgorithms(format string) []string {
+	switch format {
+	case ssh.KeyAlgoRSA:
+		return []string{ssh.KeyAlgoRSASHA256, ssh.KeyAlgoRSASHA512, ssh.KeyAlgoRSA}
+	case ssh.CertAlgoRSAv01:
+		return []string{ssh.CertAlgoRSASHA256v01, ssh.CertAlgoRSASHA512v01, ssh.CertAlgoRSAv01}
+	}
+	return []string{format}
+}
+
+// isNoCommonHostKeyAlgo 判断握手是否因双方没有共同的主机密钥算法而失败（限定的类型服务器已不再提供）。
+func isNoCommonHostKeyAlgo(err error) bool {
+	return err != nil && strings.Contains(err.Error(), "no common algorithm for host key")
+}
+
+// connectSSH 建立并认证 SSH 连接（可经代理），返回服务器出示的主机密钥。
+// 已记录指纹时，只接受指纹一致的主机密钥；服务器通常有多把不同类型的主机密钥，
+// 记录了类型时只协商这种类型，未记录类型或协商到的不是记录的那把时，逐一限定其余类型重新握手查找。
+// 主机密钥校验在认证之前进行，校验不过的握手不会发送密码或签名。
 // 调用前需先用 resolveCredential 把认证预设解析为实际凭据。
-func connectSSH(ctx context.Context, c *Connection) (client *ssh.Client, newFingerprint string, err error) {
+func connectSSH(ctx context.Context, c *Connection) (*ssh.Client, hostKeyInfo, error) {
 	s := c.SSH
+	// 类型可经接口写入，只认识的类型才用于限定协商，其他值按未记录类型处理（自动探测后补正）
+	if !slices.Contains(knownHostKeyTypes, s.HostKeyType) {
+		s.HostKeyType = ""
+	}
+	var algos []string
+	if s.HostKey != "" && s.HostKeyType != "" {
+		algos = hostKeyAlgorithms(s.HostKeyType)
+	}
+	client, info, err := sshHandshake(ctx, &s, algos)
+	if err == nil || s.HostKey == "" {
+		return client, info, err
+	}
+	var mismatch *hostKeyMismatch
+	if !errors.As(err, &mismatch) && !(algos != nil && isNoCommonHostKeyAlgo(err)) {
+		return nil, hostKeyInfo{}, err
+	}
+	// 记录的指纹可能属于服务器另一种类型的主机密钥：旧版本只记指纹、手工填写或从其他工具复制的指纹
+	// （例如 ssh-keyscan 取的 Ed25519，而 x/crypto 默认优先协商 ECDSA）。只接受与记录指纹一致的密钥，安全性不变
+	firstErr := err
+	tried := map[string]bool{}
+	if s.HostKeyType != "" {
+		tried[s.HostKeyType] = true
+	}
+	if mismatch != nil {
+		tried[mismatch.gotType] = true
+	}
+	for ctx.Err() == nil {
+		var cand []string
+		for _, f := range hostKeyFormats {
+			if !tried[f] {
+				cand = append(cand, hostKeyAlgorithms(f)...)
+			}
+		}
+		if len(cand) == 0 {
+			break
+		}
+		client, info, err = sshHandshake(ctx, &s, cand)
+		if err == nil {
+			return client, info, nil
+		}
+		var m *hostKeyMismatch
+		if !errors.As(err, &m) {
+			if isNoCommonHostKeyAlgo(err) {
+				// 其余类型服务器都没有
+				break
+			}
+			// 认证失败等错误发生在主机密钥校验通过之后，网络错误则无从继续，都如实返回
+			return nil, hostKeyInfo{}, err
+		}
+		if tried[m.gotType] {
+			break
+		}
+		tried[m.gotType] = true
+		if mismatch == nil {
+			mismatch = m
+		}
+	}
+	// 服务器的所有主机密钥都与记录不符：优先报告指纹不符，让用户看到当前指纹
+	if mismatch != nil {
+		return nil, hostKeyInfo{}, mismatch
+	}
+	return nil, hostKeyInfo{}, firstErr
+}
+
+// sshHandshake 完成一次 TCP 连接、SSH 握手与认证；algos 非空时只接受这些主机密钥算法。
+func sshHandshake(ctx context.Context, s *SSHConfig, algos []string) (client *ssh.Client, info hostKeyInfo, err error) {
 	var auth []ssh.AuthMethod
 	if s.AuthType == "key" {
-		signer, err := loadSigner(&s)
+		signer, err := loadSigner(s)
 		if err != nil {
-			return nil, "", err
+			return nil, hostKeyInfo{}, err
 		}
 		auth = append(auth, ssh.PublicKeys(signer))
 	} else {
@@ -128,17 +263,18 @@ func connectSSH(ctx context.Context, c *Connection) (client *ssh.Client, newFing
 	}
 	timeout := time.Duration(clampTimeout(s.Timeout)) * time.Second
 	cfg := &ssh.ClientConfig{
-		User:    s.Username,
-		Auth:    auth,
-		Timeout: timeout,
+		User:              s.Username,
+		Auth:              auth,
+		Timeout:           timeout,
+		HostKeyAlgorithms: algos,
 		HostKeyCallback: func(_ string, _ net.Addr, key ssh.PublicKey) error {
 			fp := Fingerprint(key)
+			info = hostKeyInfo{Fingerprint: fp, Type: key.Type(), New: s.HostKey == ""}
 			if s.HostKey == "" {
-				newFingerprint = fp
 				return nil
 			}
 			if fp != s.HostKey {
-				return fmt.Errorf("主机密钥已变化（记录 %s，当前 %s），可能存在中间人攻击；确认无误后在连接设置中重置主机密钥", s.HostKey, fp)
+				return &hostKeyMismatch{recorded: s.HostKey, recordedType: s.HostKeyType, got: fp, gotType: key.Type()}
 			}
 			return nil
 		},
@@ -146,17 +282,17 @@ func connectSSH(ctx context.Context, c *Connection) (client *ssh.Client, newFing
 	addr := net.JoinHostPort(s.Host, strconv.Itoa(s.Port))
 	nc, err := dialTarget(ctx, s.Proxy, addr, timeout)
 	if err != nil {
-		return nil, "", err
+		return nil, hostKeyInfo{}, err
 	}
 	// 认证阶段同样受超时约束；握手完成后清除期限
 	_ = nc.SetDeadline(time.Now().Add(timeout))
 	cc, chans, reqs, err := ssh.NewClientConn(nc, addr, cfg)
 	if err != nil {
 		nc.Close()
-		return nil, "", err
+		return nil, hostKeyInfo{}, err
 	}
 	_ = nc.SetDeadline(time.Time{})
-	return ssh.NewClient(cc, chans, reqs), newFingerprint, nil
+	return ssh.NewClient(cc, chans, reqs), info, nil
 }
 
 // shellQuote 用单引号包裹字符串，供拼接到 Shell 命令中。
@@ -165,22 +301,22 @@ func shellQuote(s string) string {
 }
 
 // dialSSH 解析认证预设后建立 SSH 连接，不修改传入的连接配置。
-func (m *Module) dialSSH(ctx context.Context, c *Connection) (*ssh.Client, string, error) {
+func (m *Module) dialSSH(ctx context.Context, c *Connection) (*ssh.Client, hostKeyInfo, error) {
 	conn := *c
 	if err := m.resolveCredential(&conn.SSH); err != nil {
-		return nil, "", err
+		return nil, hostKeyInfo{}, err
 	}
 	return connectSSH(ctx, &conn)
 }
 
 func (m *Module) startSSH(ctx context.Context, c *Connection, cols, rows int, notice func(string)) (session, error) {
-	client, newFingerprint, err := m.dialSSH(ctx, c)
+	client, hk, err := m.dialSSH(ctx, c)
 	if err != nil {
 		return nil, err
 	}
-	if newFingerprint != "" {
-		m.recordHostKey(c.Key, newFingerprint)
-		notice("首次连接，已信任主机密钥 " + newFingerprint)
+	m.recordHostKey(c.Key, hk)
+	if hk.New {
+		notice("首次连接，已信任主机密钥 " + describeHostKey(hk.Type, hk.Fingerprint))
 	}
 	sess, err := client.NewSession()
 	if err != nil {
@@ -228,14 +364,29 @@ func (m *Module) startSSH(ctx context.Context, c *Connection, cols, rows int, no
 	return ss, nil
 }
 
-func (m *Module) recordHostKey(key, fp string) {
+// recordHostKey 在连接成功后更新记录：首次连接时信任并记录指纹与类型；
+// 指纹已记录但缺少类型（或类型不对应）时补记类型，以后连接直接协商这种密钥，不必逐一探测。
+// 只在记录的指纹与本次实际校验通过的指纹一致时补记，期间被重置或改动过的记录不受影响。
+func (m *Module) recordHostKey(key string, hk hostKeyInfo) {
+	if hk.Fingerprint == "" {
+		return
+	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	for i := range m.cfg.Connections {
-		if m.cfg.Connections[i].Key == key && m.cfg.Connections[i].SSH.HostKey == "" {
-			m.cfg.Connections[i].SSH.HostKey = fp
-			_ = m.saveLocked()
+		s := &m.cfg.Connections[i].SSH
+		if m.cfg.Connections[i].Key != key {
+			continue
 		}
+		switch {
+		case s.HostKey == "" && hk.New:
+			s.HostKey, s.HostKeyType = hk.Fingerprint, hk.Type
+		case s.HostKey == hk.Fingerprint && s.HostKeyType != hk.Type:
+			s.HostKeyType = hk.Type
+		default:
+			continue
+		}
+		_ = m.saveLocked()
 	}
 }
 
@@ -284,14 +435,18 @@ func (m *Module) runTest(w http.ResponseWriter, r *http.Request, conn *Connectio
 	start := time.Now()
 	switch conn.Type {
 	case TypeSSH:
-		client, fp, err := m.dialSSH(ctx, conn)
+		client, hk, err := m.dialSSH(ctx, conn)
 		if err != nil {
 			httpx.OK(w, map[string]any{"ok": false, "error": err.Error()})
 			return
 		}
 		version := string(client.ServerVersion())
 		client.Close()
-		httpx.OK(w, map[string]any{"ok": true, "serverVersion": version, "newHostKey": fp, "latencyMs": time.Since(start).Milliseconds()})
+		newHostKey, newHostKeyType := "", ""
+		if hk.New {
+			newHostKey, newHostKeyType = hk.Fingerprint, hk.Type
+		}
+		httpx.OK(w, map[string]any{"ok": true, "serverVersion": version, "newHostKey": newHostKey, "newHostKeyType": newHostKeyType, "latencyMs": time.Since(start).Milliseconds()})
 	case TypeTelnet:
 		t := conn.Telnet
 		nc, err := dialTelnet(ctx, &t)

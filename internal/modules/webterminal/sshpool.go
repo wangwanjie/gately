@@ -114,16 +114,14 @@ func (m *Module) acquireSSH(ctx context.Context, key string) (client *ssh.Client
 		p.entries[key] = e
 		p.mu.Unlock()
 
-		c, fp, derr := m.dialSSH(ctx, &conn)
+		c, hk, derr := m.dialSSH(ctx, &conn)
 		if derr != nil {
 			e.err = derr
 			close(e.ready)
 			m.pool.remove(key, e)
 			return nil, nil, derr
 		}
-		if fp != "" {
-			m.recordHostKey(key, fp)
-		}
+		m.recordHostKey(key, hk)
 		e.client = c
 		close(e.ready)
 		// 底层连接断开后自动摘除，下次获取会重新拨号
