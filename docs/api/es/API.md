@@ -485,7 +485,9 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | POST | `/api/wol/devices-delete` | `wol:write` | Eliminar en lote: Activar un dispositivo |
 | PUT | `/api/wol/devices-group` | `wol:write` | Asignar grupo a varios elementos: Activar un dispositivo |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | Enviar un paquete mágico de activación al dispositivo |
+| POST | `/api/wol/devices/{key}/shutdown` | `wol:write` | Apagado remoto |
 | GET | `/api/wol/status` | `wol:read` | Ver el estado en línea del dispositivo |
+| GET | `/api/wol/ssh-targets` | `wol:read` | Listar las conexiones SSH utilizables para apagado remoto |
 
 ## Terminal web
 
@@ -3071,4 +3073,15 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `port` | integer |
 | `remark` | string |
 | `repeat` | integer |
+| `shutdownCommand` | string |
+| `shutdownConn` | string |
+
+### wol.SSHTarget
+
+| Campo | Tipo |
+| --- | --- |
+| `host` | string |
+| `key` | string |
+| `name` | string |
+| `trusted` | boolean |
 

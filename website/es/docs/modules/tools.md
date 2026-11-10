@@ -140,9 +140,20 @@ Gestiona los dispositivos en «Wake-on-LAN» y envíales paquetes mágicos (6 by
 | `port` | 9 | Puerto UDP de destino |
 | `repeat` | 3 | Número de veces que se envía a cada MAC, hasta 20 |
 | `checkAddr` | Vacío | Dirección de comprobación de conexión con la forma `host:port`, por ejemplo `192.168.1.10:3389`; déjalo vacío para omitir la comprobación |
+| `shutdownConn` | Vacío | Conexión SSH de la [terminal web](/es/docs/modules/terminal) usada para el apagado remoto; vacío para no permitir apagado |
+| `shutdownCommand` | Ninguno | Comando de apagado, obligatorio si se elige una conexión, de una sola línea, como `shutdown -h now` o `shutdown /s /t 0` |
 | `remark` | Vacío | Nota |
 
 Pulsa Encender en la lista de dispositivos para enviar el paquete mágico, y la página muestra si el dispositivo está conectado según `checkAddr`.
+
+### Apagado remoto
+
+Elige una conexión SSH de la terminal web y escribe un comando de apagado, y la tarjeta del dispositivo mostrará el botón *Apagar*; la API es `POST /api/wol/devices/{key}/shutdown`.
+
+- La conexión debe haberse abierto una vez en la terminal web para registrar la clave del host; Gately nunca confía en hosts desconocidos sin supervisión;
+- Cada apagado abre una conexión SSH nueva y la cierra al terminar, así que nunca se reutiliza una conexión caducada de antes de reiniciar el dispositivo; el comando dura como máximo 30 segundos y solo se ejecuta uno a la vez por dispositivo;
+- Apagar suele cortar la conexión SSH antes de devolver el código de salida; en ese caso se considera que el apagado empezó;
+- El formulario ofrece comandos habituales para Linux (`shutdown -h now`), Windows (`shutdown /s /t 0`) y macOS (`sudo -n shutdown -h now`). Windows necesita el servidor OpenSSH activado; en Linux, los usuarios no root pueden usar `sudo -n shutdown -h now` con sudo sin contraseña para ese comando.
 
 ## Tareas programadas
 

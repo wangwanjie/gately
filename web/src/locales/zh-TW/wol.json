@@ -21,5 +21,18 @@
   "online": "線上",
   "offline": "離線",
   "probing": "探測中",
-  "sent": "已傳送 {count} 個喚醒封包"
+  "sent": "已傳送 {count} 個喚醒封包",
+  "shutdown": "關機",
+  "shutdownConfirm": "確定透過 SSH 關閉該裝置？",
+  "shutdownDone": "已執行關機命令",
+  "shutdownField": "遠端關機",
+  "shutdownConn": "關機連線",
+  "shutdownConnPlaceholder": "不啟用遠端關機",
+  "noConnections": "Web 終端中還沒有 SSH 連線",
+  "untrusted": "未記錄主機金鑰",
+  "untrustedHelp": "遠端關機不會信任未知主機，請先在 Web 終端中連線一次該主機以記錄主機金鑰",
+  "connMissing": "連線已刪除（{key}）",
+  "shutdownCommand": "關機命令",
+  "shutdownPresets": "常用：",
+  "shutdownHelp": "經 Web 終端中的 SSH 連線執行。Windows 需開啟 OpenSSH 伺服器；Linux 非 root 使用者可改用 sudo -n shutdown -h now，並為該命令設定免密碼 sudo。"
 }

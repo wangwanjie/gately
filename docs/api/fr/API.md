@@ -485,7 +485,9 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | POST | `/api/wol/devices-delete` | `wol:write` | Supprimer en lot : Réveiller l'appareil |
 | PUT | `/api/wol/devices-group` | `wol:write` | Définir le groupe de plusieurs éléments : Réveiller l'appareil |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | Envoyer un paquet magique de réveil à l'appareil |
+| POST | `/api/wol/devices/{key}/shutdown` | `wol:write` | Arrêt à distance |
 | GET | `/api/wol/status` | `wol:read` | Consulter l'état en ligne des appareils |
+| GET | `/api/wol/ssh-targets` | `wol:read` | Lister les connexions SSH utilisables pour l’arrêt à distance |
 
 ## Terminal Web
 
@@ -3071,4 +3073,15 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `port` | integer |
 | `remark` | string |
 | `repeat` | integer |
+| `shutdownCommand` | string |
+| `shutdownConn` | string |
+
+### wol.SSHTarget
+
+| Champ | Type |
+| --- | --- |
+| `host` | string |
+| `key` | string |
+| `name` | string |
+| `trusted` | boolean |
 

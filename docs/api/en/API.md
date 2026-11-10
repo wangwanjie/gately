@@ -485,7 +485,9 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | POST | `/api/wol/devices-delete` | `wol:write` | Delete in bulk: Wake a device |
 | PUT | `/api/wol/devices-group` | `wol:write` | Set group in bulk: Wake a device |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | Send a Wake-on-LAN magic packet to a device |
+| POST | `/api/wol/devices/{key}/shutdown` | `wol:write` | Remote shutdown |
 | GET | `/api/wol/status` | `wol:read` | View device online status |
+| GET | `/api/wol/ssh-targets` | `wol:read` | List SSH connections usable for remote shutdown |
 
 ## Web terminal
 
@@ -3071,4 +3073,15 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `port` | integer |
 | `remark` | string |
 | `repeat` | integer |
+| `shutdownCommand` | string |
+| `shutdownConn` | string |
+
+### wol.SSHTarget
+
+| Field | Type |
+| --- | --- |
+| `host` | string |
+| `key` | string |
+| `name` | string |
+| `trusted` | boolean |
 

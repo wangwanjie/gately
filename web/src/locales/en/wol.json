@@ -21,5 +21,18 @@
   "online": "Online",
   "offline": "Offline",
   "probing": "Probing",
-  "sent": "Sent {count} wake packet(s)"
+  "sent": "Sent {count} wake packet(s)",
+  "shutdown": "Shut down",
+  "shutdownConfirm": "Shut this device down over SSH?",
+  "shutdownDone": "Shutdown command sent",
+  "shutdownField": "Remote shutdown",
+  "shutdownConn": "Shutdown via",
+  "shutdownConnPlaceholder": "No remote shutdown",
+  "noConnections": "No SSH connections in Web Terminal yet",
+  "untrusted": "Host key not recorded",
+  "untrustedHelp": "Remote shutdown does not trust unknown hosts. Connect to this host once in Web Terminal to record its host key",
+  "connMissing": "Connection deleted ({key})",
+  "shutdownCommand": "Shutdown command",
+  "shutdownPresets": "Common:",
+  "shutdownHelp": "Runs over the Web Terminal SSH connection. Windows needs the OpenSSH server enabled; on Linux, non-root users can use sudo -n shutdown -h now with passwordless sudo for that command."
 }

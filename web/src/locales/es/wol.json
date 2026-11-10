@@ -21,5 +21,18 @@
   "online": "Conectado",
   "offline": "Desconectado",
   "probing": "Sondeando",
-  "sent": "Se enviaron {count} paquetes de encendido"
+  "sent": "Se enviaron {count} paquetes de encendido",
+  "shutdown": "Apagar",
+  "shutdownConfirm": "¿Apagar este dispositivo por SSH?",
+  "shutdownDone": "Comando de apagado ejecutado",
+  "shutdownField": "Apagado remoto",
+  "shutdownConn": "Apagar mediante",
+  "shutdownConnPlaceholder": "Sin apagado remoto",
+  "noConnections": "Todavía no hay conexiones SSH en la terminal web",
+  "untrusted": "Clave de host sin registrar",
+  "untrustedHelp": "El apagado remoto no confía en hosts desconocidos. Conéctate una vez a este host desde la terminal web para registrar su clave",
+  "connMissing": "Conexión eliminada ({key})",
+  "shutdownCommand": "Comando de apagado",
+  "shutdownPresets": "Habituales:",
+  "shutdownHelp": "Se ejecuta por la conexión SSH de la terminal web. Windows necesita el servidor OpenSSH activado; en Linux, los usuarios no root pueden usar sudo -n shutdown -h now con sudo sin contraseña para ese comando."
 }

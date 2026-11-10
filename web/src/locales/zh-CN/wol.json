@@ -21,5 +21,18 @@
   "online": "在线",
   "offline": "离线",
   "probing": "探测中",
-  "sent": "已发送 {count} 个唤醒包"
+  "sent": "已发送 {count} 个唤醒包",
+  "shutdown": "关机",
+  "shutdownConfirm": "确定通过 SSH 关闭该设备？",
+  "shutdownDone": "已执行关机命令",
+  "shutdownField": "远程关机",
+  "shutdownConn": "关机连接",
+  "shutdownConnPlaceholder": "不启用远程关机",
+  "noConnections": "Web 终端中还没有 SSH 连接",
+  "untrusted": "未记录主机密钥",
+  "untrustedHelp": "远程关机不会信任未知主机，请先在 Web 终端中连接一次该主机以记录主机密钥",
+  "connMissing": "连接已删除（{key}）",
+  "shutdownCommand": "关机命令",
+  "shutdownPresets": "常用：",
+  "shutdownHelp": "经 Web 终端中的 SSH 连接执行。Windows 需开启 OpenSSH 服务器；Linux 非 root 用户可改用 sudo -n shutdown -h now，并为该命令配置免密 sudo。"
 }

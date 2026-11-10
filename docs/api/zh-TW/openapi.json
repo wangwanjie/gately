@@ -5126,6 +5126,29 @@
           },
           "repeat": {
             "type": "integer"
+          },
+          "shutdownCommand": {
+            "type": "string"
+          },
+          "shutdownConn": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "wol.SSHTarget": {
+        "properties": {
+          "host": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "trusted": {
+            "type": "boolean"
           }
         },
         "type": "object"
@@ -53781,6 +53804,77 @@
         "x-token-allowed": true
       }
     },
+    "/api/wol/devices/{key}/shutdown": {
+      "post": {
+        "description": "所需權限：`wol:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "遠端關機",
+        "tags": [
+          "網路喚醒"
+        ],
+        "x-required-scope": "wol:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/wol/devices/{key}/wake": {
       "post": {
         "description": "所需權限：`wol:write`。",
@@ -54289,6 +54383,67 @@
           }
         ],
         "summary": "列出模組日誌的全部來源",
+        "tags": [
+          "網路喚醒"
+        ],
+        "x-required-scope": "wol:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/wol/ssh-targets": {
+      "get": {
+        "description": "所需權限：`wol:read`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/wol.SSHTarget"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出可用於遠端關機的 SSH 連線",
         "tags": [
           "網路喚醒"
         ],

@@ -1,4 +1,5 @@
-// Package wol 实现网络唤醒模块：向局域网发送魔术包唤醒设备，并可通过 TCP 端口探测设备是否在线。
+// Package wol 实现网络唤醒模块：向局域网发送魔术包唤醒设备，并可通过 TCP 端口探测设备是否在线；
+// 可经 Web 终端的 SSH 连接远程关机。
 package wol
 
 import (
@@ -35,7 +36,11 @@ type Device struct {
 	Repeat       int      `json:"repeat"`
 	// CheckAddr 为 host:port，用于探测设备是否在线（例如 192.168.1.10:3389），留空不探测
 	CheckAddr string `json:"checkAddr"`
-	Remark    string `json:"remark"`
+	// ShutdownConn 为远程关机使用的 Web 终端 SSH 连接 key，留空表示不支持关机
+	ShutdownConn string `json:"shutdownConn"`
+	// ShutdownCommand 为关机命令，例如 Linux 的 shutdown -h now、Windows 的 shutdown /s /t 0
+	ShutdownCommand string `json:"shutdownCommand"`
+	Remark          string `json:"remark"`
 	// Enable 为了复用通用接口保留，网络唤醒设备始终可用
 	Enable bool `json:"enable"`
 }
@@ -113,6 +118,16 @@ func (d *Device) Validate() error {
 			return errors.New("在线探测地址格式应为 主机:端口")
 		}
 	}
+	d.ShutdownConn = strings.TrimSpace(d.ShutdownConn)
+	d.ShutdownCommand = strings.TrimSpace(d.ShutdownCommand)
+	if d.ShutdownConn == "" {
+		d.ShutdownCommand = ""
+	} else if d.ShutdownCommand == "" {
+		return errors.New("请填写关机命令")
+	}
+	if len(d.ShutdownCommand) > 1024 || strings.ContainsAny(d.ShutdownCommand, "\r\n\x00") {
+		return errors.New("关机命令只能是一行，且不超过 1024 个字符")
+	}
 	d.Enable = true
 	return nil
 }
@@ -186,16 +201,42 @@ func Wake(d Device) (int, error) {
 	return sent, nil
 }
 
+// SSHTarget 是可用于远程关机的 Web 终端 SSH 连接。
+type SSHTarget struct {
+	Key  string `json:"key"`
+	Name string `json:"name"`
+	Host string `json:"host"`
+	// Trusted 表示已记录主机密钥，可以无人值守地执行命令
+	Trusted bool `json:"trusted"`
+}
+
+// Deps 是模块依赖的其他模块能力，经注入提供；Web 终端模块未编译时均为 nil，关机不可用。
+type Deps struct {
+	// SSHExec 经 SSH 连接执行一条命令并返回输出
+	SSHExec func(ctx context.Context, conn, command string) (string, error)
+	// SSHTargets 列出可选的 SSH 连接
+	SSHTargets func() []SSHTarget
+}
+
 // Module 是网络唤醒模块。
 type Module struct {
 	mu    sync.Mutex
 	store *config.Store
 	logs  *logbuf.Buffer
 	cfg   fileConfig
+	deps  Deps
+	// busy 记录正在关机的设备，同一设备的关机请求不重复执行
+	busy map[string]bool
 }
 
-// New 创建模块。
-func New() *Module { return &Module{} }
+// New 创建模块。deps 可省略（测试或未编译 Web 终端时）。
+func New(deps ...Deps) *Module {
+	m := &Module{busy: map[string]bool{}}
+	if len(deps) > 0 {
+		m.deps = deps[0]
+	}
+	return m
+}
 
 // ID 实现 module.Module。
 func (m *Module) ID() string { return ID }
@@ -231,7 +272,11 @@ func (m *Module) Routes(r module.Router) {
 	}
 	devices.Register(r, "/devices")
 	r.HandleFunc("POST /devices/{key}/wake", m.handleWake)
+	r.HandleFunc("POST /devices/{key}/shutdown", m.handleShutdown)
+	module.DocOf(r, "POST /devices/{key}/shutdown", module.Doc{Summary: "远程关机", Resp: map[string]string{}})
 	r.HandleFunc("GET /status", m.handleStatus)
+	r.HandleFunc("GET /ssh-targets", m.handleSSHTargets)
+	module.DocOf(r, "GET /ssh-targets", module.Doc{Summary: "列出可用于远程关机的 SSH 连接", Resp: []SSHTarget{}})
 }
 
 func (m *Module) find(key string) (Device, bool) {
@@ -251,15 +296,24 @@ func (m *Module) handleWake(w http.ResponseWriter, r *http.Request) {
 		httpx.Error(w, http.StatusNotFound, "设备不存在")
 		return
 	}
+	n, err := m.wake(d)
+	if err != nil {
+		httpx.Error(w, http.StatusInternalServerError, "发送失败: %v", err)
+		return
+	}
+	httpx.OK(w, map[string]int{"sent": n})
+}
+
+// wake 发送唤醒包并记录日志。
+func (m *Module) wake(d Device) (int, error) {
 	n, err := Wake(d)
 	log := m.logs.Logger(d.Name)
 	if err != nil {
 		log.Errorf("发送唤醒包失败: %v", err)
-		httpx.Error(w, http.StatusInternalServerError, "发送失败: %v", err)
-		return
+		return 0, err
 	}
 	log.Infof("已发送 %d 个唤醒包（%s）", n, strings.Join(d.MACs, ", "))
-	httpx.OK(w, map[string]int{"sent": n})
+	return n, nil
 }
 
 // handleStatus 并发探测所有设备的在线状态。

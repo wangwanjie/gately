@@ -140,9 +140,20 @@ Verwalten Sie Geräte unter „Wake-on-LAN“ und senden Sie ihnen Magic Packets
 | `port` | 9 | UDP-Zielport |
 | `repeat` | 3 | Wie oft jede MAC gesendet wird, bis zu 20 |
 | `checkAddr` | Leer | Adresse für die Online-Prüfung in der Form `host:port`, zum Beispiel `192.168.1.10:3389`; leer lassen, um die Prüfung zu überspringen |
+| `shutdownConn` | Leer | SSH-Verbindung aus dem [Web-Terminal](/de/docs/modules/terminal) für das Fern-Herunterfahren; leer lassen, um es zu deaktivieren |
+| `shutdownCommand` | Keiner | Befehl zum Herunterfahren, Pflicht bei gewählter Verbindung, einzeilig, z. B. `shutdown -h now` oder `shutdown /s /t 0` |
 | `remark` | Leer | Bemerkung |
 
 Klicken Sie in der Geräteliste auf „Aufwecken“, um das Magic Packet zu senden; die Seite zeigt anhand von `checkAddr`, ob das Gerät online ist.
+
+### Fern-Herunterfahren
+
+Wählen Sie eine SSH-Verbindung aus dem Web-Terminal und geben Sie einen Befehl ein, dann erhält die Gerätekarte die Schaltfläche *Herunterfahren*; die API lautet `POST /api/wol/devices/{key}/shutdown`.
+
+- Die Verbindung muss einmal im Web-Terminal geöffnet worden sein, damit ihr Host-Schlüssel gespeichert ist; Gately vertraut unbeaufsichtigt keinen unbekannten Hosts;
+- Jedes Herunterfahren öffnet eine neue SSH-Verbindung und schließt sie danach, sodass nie eine veraltete Verbindung von vor dem Neustart des Geräts genutzt wird; der Befehl läuft höchstens 30 Sekunden, pro Gerät jeweils nur einer;
+- Beim Herunterfahren bricht die SSH-Verbindung oft ab, bevor ein Exit-Code zurückkommt; das gilt als begonnenes Herunterfahren;
+- Das Formular bietet gängige Befehle für Linux (`shutdown -h now`), Windows (`shutdown /s /t 0`) und macOS (`sudo -n shutdown -h now`). Windows benötigt den aktivierten OpenSSH-Server; unter Linux können Nicht-Root-Benutzer `sudo -n shutdown -h now` mit passwortlosem sudo für diesen Befehl verwenden.
 
 ## Geplante Aufgaben
 

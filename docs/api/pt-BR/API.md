@@ -485,7 +485,9 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | POST | `/api/wol/devices-delete` | `wol:write` | Excluir em lote: Despertar dispositivo |
 | PUT | `/api/wol/devices-group` | `wol:write` | Definir o grupo de vários itens: Despertar dispositivo |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | Enviar o pacote mágico de despertar ao dispositivo |
+| POST | `/api/wol/devices/{key}/shutdown` | `wol:write` | Desligamento remoto |
 | GET | `/api/wol/status` | `wol:read` | Ver o estado online do dispositivo |
+| GET | `/api/wol/ssh-targets` | `wol:read` | Listar conexões SSH utilizáveis para desligamento remoto |
 
 ## Terminal web
 
@@ -3071,4 +3073,15 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `port` | integer |
 | `remark` | string |
 | `repeat` | integer |
+| `shutdownCommand` | string |
+| `shutdownConn` | string |
+
+### wol.SSHTarget
+
+| Campo | Tipo |
+| --- | --- |
+| `host` | string |
+| `key` | string |
+| `name` | string |
+| `trusted` | boolean |
 

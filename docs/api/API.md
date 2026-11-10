@@ -485,7 +485,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/wol/devices-delete` | `wol:write` | 批量删除唤醒设备 |
 | PUT | `/api/wol/devices-group` | `wol:write` | 批量设置唤醒设备分组 |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | 向设备发送唤醒魔术包 |
+| POST | `/api/wol/devices/{key}/shutdown` | `wol:write` | 远程关机 |
 | GET | `/api/wol/status` | `wol:read` | 查看设备在线状态 |
+| GET | `/api/wol/ssh-targets` | `wol:read` | 列出可用于远程关机的 SSH 连接 |
 
 ## Web 终端
 
@@ -3071,4 +3073,15 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `port` | integer |
 | `remark` | string |
 | `repeat` | integer |
+| `shutdownCommand` | string |
+| `shutdownConn` | string |
+
+### wol.SSHTarget
+
+| 字段 | 类型 |
+| --- | --- |
+| `host` | string |
+| `key` | string |
+| `name` | string |
+| `trusted` | boolean |
 

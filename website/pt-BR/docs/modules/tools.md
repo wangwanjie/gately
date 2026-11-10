@@ -140,9 +140,20 @@ Gerencie dispositivos em "Wake-on-LAN" e envie pacotes mágicos a eles (6 bytes 
 | `port` | 9 | Porta UDP de destino |
 | `repeat` | 3 | Número de vezes que cada MAC é enviado, até 20 |
 | `checkAddr` | Vazio | Endereço de verificação de online no formato `host:port`, por exemplo `192.168.1.10:3389`; deixe em branco para não verificar |
+| `shutdownConn` | Vazio | Conexão SSH do [terminal web](/pt-BR/docs/modules/terminal) usada para desligamento remoto; vazio para desativar |
+| `shutdownCommand` | Nenhum | Comando de desligamento, obrigatório quando há conexão, em uma linha, como `shutdown -h now` ou `shutdown /s /t 0` |
 | `remark` | Vazio | Observação |
 
 Clique em Ligar na lista de dispositivos para enviar o pacote mágico, e a página mostra se o dispositivo está online de acordo com o `checkAddr`.
+
+### Desligamento remoto
+
+Escolha uma conexão SSH do terminal web e informe um comando de desligamento, e o cartão do dispositivo ganha o botão *Desligar*; a API é `POST /api/wol/devices/{key}/shutdown`.
+
+- A conexão precisa ter sido aberta uma vez no terminal web para registrar a chave do host; o Gately nunca confia em hosts desconhecidos sem supervisão;
+- Cada desligamento abre uma nova conexão SSH e a fecha ao terminar, então uma conexão antiga de antes da reinicialização do dispositivo nunca é reutilizada; o comando dura no máximo 30 segundos, um por vez por dispositivo;
+- Desligar costuma derrubar a conexão SSH antes de o código de saída voltar; isso conta como desligamento iniciado;
+- O formulário oferece comandos comuns para Linux (`shutdown -h now`), Windows (`shutdown /s /t 0`) e macOS (`sudo -n shutdown -h now`). O Windows precisa do servidor OpenSSH ativado; no Linux, usuários não root podem usar `sudo -n shutdown -h now` com sudo sem senha para esse comando.
 
 ## Tarefas agendadas
 

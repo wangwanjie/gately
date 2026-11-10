@@ -140,9 +140,20 @@ API는 `GET` / `PUT /api/fileusers`이며 API 토큰에는 `fileusers:read` / `f
 | `port` | 9 | 대상 UDP 포트 |
 | `repeat` | 3 | MAC마다 반복 전송하는 횟수, 상한 20 |
 | `checkAddr` | 비어 있음 | 온라인 점검 주소. 형식은 `호스트:포트`이며 예: `192.168.1.10:3389`, 비우면 점검하지 않습니다 |
+| `shutdownConn` | 비어 있음 | 원격 종료에 쓰는 [웹 터미널](/ko/docs/modules/terminal) SSH 연결. 비우면 종료를 지원하지 않음 |
+| `shutdownCommand` | 없음 | 종료 명령. 연결을 선택하면 필수이며 한 줄(예: `shutdown -h now`, `shutdown /s /t 0`) |
 | `remark` | 비어 있음 | 메모 |
 
 장치 목록에서 깨우기를 누르면 매직 패킷을 보내고 `checkAddr`에 따라 장치의 온라인 여부를 표시합니다.
+
+### 원격 종료
+
+장치에 웹 터미널의 SSH 연결을 고르고 종료 명령을 입력하면 장치 카드에 "종료" 버튼이 나타납니다. API는 `POST /api/wol/devices/{key}/shutdown`입니다.
+
+- 해당 연결은 웹 터미널에서 한 번 연결해 호스트 키를 기록해 두어야 합니다. Gately는 무인 상태에서 알 수 없는 호스트를 신뢰하지 않습니다;
+- 종료할 때마다 새 SSH 연결을 만들고 끝나면 닫으므로 장치가 재부팅되기 전의 끊긴 연결을 쓰지 않습니다. 명령은 최대 30초, 같은 장치에서는 한 번에 하나만 실행합니다;
+- 종료하면서 종료 코드가 돌아오기 전에 SSH 연결이 끊기는 경우가 많으며, 이 경우 종료가 시작된 것으로 봅니다;
+- 폼에서 Linux(`shutdown -h now`), Windows(`shutdown /s /t 0`), macOS(`sudo -n shutdown -h now`) 명령을 고를 수 있습니다. Windows는 OpenSSH 서버를 켜야 하며, Linux의 root가 아닌 사용자는 `sudo -n shutdown -h now`를 쓰고 이 명령에 비밀번호 없는 sudo를 설정하세요.
 
 ## 예약 작업
 
