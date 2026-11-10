@@ -1,41 +1,61 @@
 <template>
   <!-- 访客审计的每日柱状图：柱高为请求数，红色部分为被拦截；点击（或悬停）一天在上层显示当天数字 -->
-  <div class="day-bars" :class="{ compact }">
-    <div class="bars" role="list">
-      <button
-        v-for="(d, i) in days"
-        :key="d.day"
-        type="button"
-        role="listitem"
-        class="bar"
-        :class="{ on: i === current, empty: !d.requests }"
-        :title="tip(d)"
-        :aria-label="tip(d)"
-        @mouseenter="emit('select', i)"
-        @focus="emit('select', i)"
-        @click="emit('select', i)"
-      >
-        <span class="fill" :style="{ height: pct(d.requests) }">
-          <span class="denied" :style="{ height: d.requests ? (d.denied / d.requests) * 100 + '%' : '0' }" />
-        </span>
-      </button>
-    </div>
-    <div class="axis">
-      <span>{{ short(days[0]?.day) }}</span>
-      <span v-if="days.length > 6">{{ short(days[Math.floor((days.length - 1) / 2)]?.day) }}</span>
-      <span>{{ short(days[days.length - 1]?.day) }}</span>
+  <!-- 天数多（最长 180 天）时每根柱子保留最小宽度，窄屏横向滚动，默认滚到最近一天 -->
+  <div ref="scroller" class="day-bars" :class="{ compact }">
+    <div class="inner" :style="{ minWidth: days.length * minBar + 'px' }">
+      <div class="bars" role="list">
+        <button
+          v-for="(d, i) in days"
+          :key="d.day"
+          type="button"
+          role="listitem"
+          class="bar"
+          :class="{ on: i === current, empty: !d.requests }"
+          :title="tip(d)"
+          :aria-label="tip(d)"
+          @mouseenter="emit('select', i)"
+          @focus="emit('select', i)"
+          @click="emit('select', i)"
+        >
+          <span class="fill" :style="{ height: pct(d.requests) }">
+            <span class="denied" :style="{ height: d.requests ? (d.denied / d.requests) * 100 + '%' : '0' }" />
+          </span>
+        </button>
+      </div>
+      <div class="axis">
+        <span>{{ short(days[0]?.day) }}</span>
+        <span v-if="days.length > 6">{{ short(days[Math.floor((days.length - 1) / 2)]?.day) }}</span>
+        <span>{{ short(days[days.length - 1]?.day) }}</span>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { DayPoint } from '../visitors'
 
 const props = defineProps<{ days: DayPoint[]; selected?: number; compact?: boolean }>()
 const emit = defineEmits<{ select: [index: number] }>()
 const { t } = useI18n()
+
+// 每根柱子（含间隔）的最小宽度
+const minBar = 5
+const scroller = ref<HTMLElement>()
+
+// 可横向滚动时滚到最右侧（最近一天）
+function scrollToLatest() {
+  const el = scroller.value
+  if (el && el.scrollWidth > el.clientWidth) {
+    el.scrollLeft = el.scrollWidth
+  }
+}
+watch(
+  () => props.days.length,
+  () => nextTick(scrollToLatest),
+)
+onMounted(scrollToLatest)
 
 const peak = computed(() => Math.max(1, ...props.days.map((d) => d.requests)))
 const current = computed(() => (props.selected !== undefined && props.selected >= 0 ? props.selected : props.days.length - 1))
@@ -56,6 +76,10 @@ function tip(d: DayPoint): string {
 </script>
 
 <style scoped>
+.day-bars {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
 .bars {
   display: flex;
   align-items: flex-end;
