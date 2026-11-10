@@ -96,7 +96,12 @@
     "export": "Exporter",
     "exportTip": "Exporte tous les journaux correspondant aux filtres actuels, y compris l’historique conservé dans les fichiers journaux et les archives compressées",
     "exportCsv": "CSV (tableur)",
-    "exportJsonl": "JSON Lines"
+    "exportJsonl": "JSON Lines",
+    "fullscreen": "Plein écran",
+    "exitFullscreen": "Quitter le plein écran (Échap)",
+    "resizeTip": "Faites glisser pour redimensionner la zone des journaux ; double-cliquez pour rétablir la hauteur par défaut ; les flèches fonctionnent aussi quand la poignée a le focus",
+    "jumpLatest": "Aller au plus récent",
+    "newLogs": "{n} nouveaux journaux"
   },
   "scopeTags": {
     "allWrite": "Accès complet",

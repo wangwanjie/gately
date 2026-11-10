@@ -96,7 +96,12 @@
     "export": "Exportar",
     "exportTip": "Exporta todos os logs que atendem aos filtros atuais, incluindo o histórico mantido nos arquivos de log e arquivos compactados",
     "exportCsv": "CSV (planilha)",
-    "exportJsonl": "JSON Lines"
+    "exportJsonl": "JSON Lines",
+    "fullscreen": "Tela cheia",
+    "exitFullscreen": "Sair da tela cheia (Esc)",
+    "resizeTip": "Arraste para redimensionar a área de logs; clique duas vezes para restaurar a altura padrão; com foco, as setas também funcionam",
+    "jumpLatest": "Ir para o mais recente",
+    "newLogs": "{n} novos logs"
   },
   "scopeTags": {
     "allWrite": "Acesso total",

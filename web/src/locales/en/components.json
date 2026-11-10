@@ -96,7 +96,12 @@
     "export": "Export",
     "exportTip": "Export all logs matching the current filters, including history kept in log files and compressed archives",
     "exportCsv": "CSV (spreadsheet)",
-    "exportJsonl": "JSON Lines"
+    "exportJsonl": "JSON Lines",
+    "fullscreen": "Full screen",
+    "exitFullscreen": "Exit full screen (Esc)",
+    "resizeTip": "Drag to resize the log area; double-click to restore the default height; arrow keys also work when focused",
+    "jumpLatest": "Jump to latest",
+    "newLogs": "{n} new logs"
   },
   "scopeTags": {
     "allWrite": "Full access",

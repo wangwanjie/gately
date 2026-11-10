@@ -61,6 +61,7 @@
   "typeProxy": "Proxy inverse",
   "typeRedirect": "Redirection",
   "typeStatic": "Fichiers statiques",
+  "typePanel": "Panneau de navigation",
   "typeText": "Texte fixe",
   "typeClose": "Fermer la connexion",
   "typeCloseHelp": "N'envoie rien et ferme la connexion (comme return 444 de nginx). Utile pour le site par défaut afin que les requêtes qui sondent des domaines inconnus ne reçoivent aucune réponse ; le journal d'accès les enregistre avec le code 444.",
@@ -215,5 +216,10 @@
   "siteMoveFailed": "Modifications enregistrées, mais le déplacement a échoué : {error}",
   "siteMoved": "Enregistré et déplacé vers l'écouteur choisi",
   "dropHere": "Déposez ici pour déplacer dans cet écouteur",
-  "autoFirewallHelp": "Autorise dans le pare-feu local (nftables / iptables / ip6tables) uniquement le port de cette écoute, ainsi que le port UDP de même numéro si HTTP/3 est activé, limité à l’adresse d’écoute si elle est renseignée ; retiré quand l’écoute est désactivée, supprimée ou ne démarre pas, sans ouvrir d’autre port. Pour Gately sur un routeur comme OpenWrt ou un hôte Linux avec pare-feu ; avec le réseau bridge de Docker, autorisez le port mappé sur l’hôte"
+  "autoFirewallHelp": "Autorise dans le pare-feu local (nftables / iptables / ip6tables) uniquement le port de cette écoute, ainsi que le port UDP de même numéro si HTTP/3 est activé, limité à l’adresse d’écoute si elle est renseignée ; retiré quand l’écoute est désactivée, supprimée ou ne démarre pas, sans ouvrir d’autre port. Pour Gately sur un routeur comme OpenWrt ou un hôte Linux avec pare-feu ; avec le réseau bridge de Docker, autorisez le port mappé sur l’hôte",
+  "panel": "Panneau de navigation",
+  "panelPlaceholder": "Choisir un panneau de navigation",
+  "panelManage": "Gérer les panneaux de navigation",
+  "panelNone": "Aucun panneau de navigation. Créez-en d’abord un dans Web → Panneaux de navigation.",
+  "panelHelp": "La racine du site affiche le panneau choisi. Le contrôle d’accès et l’authentification s’appliquent normalement ; les modifications du panneau prennent effet dès l’enregistrement."
 }

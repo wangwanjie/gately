@@ -96,7 +96,12 @@
     "export": "エクスポート",
     "exportTip": "現在のフィルター条件に一致するすべてのログを、ログファイルと圧縮アーカイブに残っている履歴も含めてエクスポートします",
     "exportCsv": "CSV（表計算ソフト）",
-    "exportJsonl": "JSON Lines"
+    "exportJsonl": "JSON Lines",
+    "fullscreen": "全画面",
+    "exitFullscreen": "全画面を終了（Esc）",
+    "resizeTip": "ドラッグでログ領域の高さを変更、ダブルクリックで既定の高さに戻します。フォーカス中は矢印キーでも調整できます",
+    "jumpLatest": "最新へ移動",
+    "newLogs": "新しいログ {n} 件"
   },
   "scopeTags": {
     "allWrite": "すべて読み書き",

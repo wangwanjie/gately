@@ -58,6 +58,9 @@
     "webvisitors": {
       "title": "Auditoría de visitantes"
     },
+    "webpanels": {
+      "title": "Paneles de navegación"
+    },
     "waf": {
       "title": "Cortafuegos WAF",
       "desc": "Cortafuegos de aplicaciones web basado en OWASP CRS"

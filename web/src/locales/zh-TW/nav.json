@@ -58,6 +58,9 @@
     "webvisitors": {
       "title": "訪客稽核"
     },
+    "webpanels": {
+      "title": "導覽面板"
+    },
     "waf": {
       "title": "WAF 防火牆",
       "desc": "基於 OWASP CRS 的應用程式防火牆"

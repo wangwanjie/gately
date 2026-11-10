@@ -96,7 +96,12 @@
     "export": "匯出",
     "exportTip": "匯出目前篩選條件下的全部日誌，包括日誌檔與壓縮歸檔中保留的歷史",
     "exportCsv": "CSV（試算表軟體）",
-    "exportJsonl": "JSON Lines"
+    "exportJsonl": "JSON Lines",
+    "fullscreen": "全螢幕",
+    "exitFullscreen": "退出全螢幕（Esc）",
+    "resizeTip": "拖曳調整日誌區高度；按兩下恢復預設高度；取得焦點後可用方向鍵調整",
+    "jumpLatest": "回到最新",
+    "newLogs": "{n} 則新日誌"
   },
   "scopeTags": {
     "allWrite": "全部讀寫",

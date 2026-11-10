@@ -58,6 +58,9 @@
     "webvisitors": {
       "title": "Besucherprüfung"
     },
+    "webpanels": {
+      "title": "Navigationspanels"
+    },
     "waf": {
       "title": "WAF-Firewall",
       "desc": "Web Application Firewall auf Basis von OWASP CRS"

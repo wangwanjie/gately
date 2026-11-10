@@ -96,7 +96,12 @@
     "export": "Exportieren",
     "exportTip": "Exportiert alle Protokolle, die den aktuellen Filtern entsprechen, einschließlich des Verlaufs in Protokolldateien und komprimierten Archiven",
     "exportCsv": "CSV (Tabellenkalkulation)",
-    "exportJsonl": "JSON Lines"
+    "exportJsonl": "JSON Lines",
+    "fullscreen": "Vollbild",
+    "exitFullscreen": "Vollbild beenden (Esc)",
+    "resizeTip": "Ziehen, um die Höhe des Protokollbereichs zu ändern; Doppelklick stellt die Standardhöhe wieder her; mit Fokus funktionieren auch die Pfeiltasten",
+    "jumpLatest": "Zum neuesten",
+    "newLogs": "{n} neue Protokolle"
   },
   "scopeTags": {
     "allWrite": "Vollzugriff",
