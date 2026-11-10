@@ -10,6 +10,7 @@ package visitors
 
 import (
 	"cmp"
+	"math"
 	"net/netip"
 	"slices"
 	"strings"
@@ -309,6 +310,13 @@ func isControl(r rune) bool {
 	return false
 }
 
+// inc 饱和加一：计数到上限后保持不变，避免回绕成很小的数。
+func inc(n *uint32) {
+	if *n < math.MaxUint32 {
+		*n++
+	}
+}
+
 // Record 记录一次请求。停用时直接返回。
 func (s *Store) Record(h Hit) {
 	if !s.Active() || !h.Addr.IsValid() {
@@ -349,10 +357,10 @@ func (s *Store) Record(h Hit) {
 		v.Bytes += h.Bytes
 	}
 	if c := h.Status / 100; c >= 1 && c <= 5 {
-		v.Status[c-1]++
+		inc(&v.Status[c-1])
 	}
 	if h.Status == 444 {
-		v.Closed++
+		inc(&v.Closed)
 	}
 	if denied {
 		addCount(&v.Deny, clip(h.Deny, 32))
@@ -385,7 +393,7 @@ func (s *Store) Record(h Hit) {
 func addCount(list *[]Count, name string) {
 	for i := range *list {
 		if (*list)[i].Name == name {
-			(*list)[i].N++
+			inc(&(*list)[i].N)
 			return
 		}
 	}
@@ -407,9 +415,9 @@ func addDay(v *Visitor, day int32, denied bool) {
 		}
 		d = &v.Days[i]
 	}
-	d.Req++
+	inc(&d.Req)
 	if denied {
-		d.Denied++
+		inc(&d.Denied)
 	}
 }
 
@@ -428,9 +436,9 @@ func (s *Store) addSite(v *Visitor, h Hit, now int64, denied bool) {
 	for i := range v.Sites {
 		st := &v.Sites[i]
 		if st.Listener == h.Listener && st.Key == h.Site && st.Unmatched == h.Unmatched {
-			st.Req++
+			inc(&st.Req)
 			if denied {
-				st.Denied++
+				inc(&st.Denied)
 			}
 			st.Last = now
 			// 站点改名后显示新名称
@@ -461,7 +469,7 @@ func addPath(v *Visitor, path string, now int64, status int) {
 	for i := range v.Paths {
 		p := &v.Paths[i]
 		if p.Path == path {
-			p.Req++
+			inc(&p.Req)
 			p.Last = now
 			p.Status = status
 			return
@@ -481,7 +489,7 @@ func addIdent(v *Visitor, name, kind string, now int64) {
 	for i := range v.Identities {
 		id := &v.Identities[i]
 		if id.Name == name && id.Kind == kind {
-			id.Req++
+			inc(&id.Req)
 			id.Last = now
 			return
 		}
@@ -502,7 +510,7 @@ func addAgent(v *Visitor, ua string, now int64) {
 	for i := range v.Agents {
 		a := &v.Agents[i]
 		if a.UA == ua {
-			a.Req++
+			inc(&a.Req)
 			a.Last = now
 			return
 		}
