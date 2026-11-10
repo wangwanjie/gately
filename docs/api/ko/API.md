@@ -475,9 +475,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/wol/logs/export` | `wol:read` | 모듈 로그 내보내기 |
 | DELETE | `/api/wol/logs` | `wol:write` | 모듈 실행 로그 비우기 |
 | GET | `/api/wol/devices` | `wol:read` | 장치 깨우기 목록 조회 |
-| POST | `/api/wol/devices` | `wol:write` | 장치 깨우기 추가 |
-| POST | `/api/wol/devices/{key}/copy` | `wol:write` | 장치 깨우기 복제 |
-| PUT | `/api/wol/devices/{key}` | `wol:write` | 장치 깨우기 수정 |
+| POST | `/api/wol/devices` | `wol:write,webterminal:write` | 장치 깨우기 추가 |
+| POST | `/api/wol/devices/{key}/copy` | `wol:write,webterminal:write` | 장치 깨우기 복제 |
+| PUT | `/api/wol/devices/{key}` | `wol:write,webterminal:write` | 장치 깨우기 수정 |
 | DELETE | `/api/wol/devices/{key}` | `wol:write` | 장치 깨우기 삭제 |
 | PUT | `/api/wol/devices/{key}/enable` | `wol:write` | 장치 깨우기 사용 설정/해제 |
 | PUT | `/api/wol/devices-order` | `wol:write` | 장치 깨우기 순서 변경 |
@@ -485,9 +485,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/wol/devices-delete` | `wol:write` | 장치 깨우기 일괄 삭제 |
 | PUT | `/api/wol/devices-group` | `wol:write` | 장치 깨우기 그룹 일괄 설정 |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | 장치에 깨우기 매직 패킷 전송 |
-| POST | `/api/wol/devices/{key}/shutdown` | `wol:write` | 원격 종료 |
+| POST | `/api/wol/devices/{key}/shutdown` | `wol:write,webterminal:write` | 원격 종료 |
 | GET | `/api/wol/status` | `wol:read` | 장치 온라인 상태 보기 |
-| GET | `/api/wol/ssh-targets` | `wol:read` | 원격 종료에 쓸 수 있는 SSH 연결 목록 |
+| GET | `/api/wol/ssh-targets` | `wol:read,webterminal:read` | 원격 종료에 쓸 수 있는 SSH 연결 목록 |
 | GET | `/api/wol/bemfa` | `wol:read` | Bemfa 연동 설정과 연결 상태 |
 | GET | `/api/wol/bemfa/secrets` | `wol:write` | Bemfa 개인 키 보기 |
 | PUT | `/api/wol/bemfa` | `wol:write` | Bemfa 연동 설정 수정 |

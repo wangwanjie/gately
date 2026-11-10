@@ -155,6 +155,7 @@ Choose an SSH connection from Web Terminal and enter a shutdown command, and the
 - Each shutdown opens a new SSH connection and closes it afterwards, so a stale connection from before the device rebooted is never reused; the command runs for at most 30 seconds, one at a time per device;
 - Shutting down often drops the SSH connection before an exit code is returned; this counts as the shutdown having started;
 - The form offers common commands for Linux (`shutdown -h now`), Windows (`shutdown /s /t 0`) and macOS (`sudo -n shutdown -h now`). Windows needs the OpenSSH server enabled; on Linux, non-root users can use `sudo -n shutdown -h now` with passwordless sudo for that command.
+- API tokens need `webterminal:write` in addition to `wol:write` to create, edit or copy devices or trigger a shutdown (these set or run commands over the SSH connection); listing the available SSH connections needs `wol:read` and `webterminal:read`.
 
 ### Bemfa voice control {#bemfa}
 

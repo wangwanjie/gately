@@ -104,6 +104,11 @@ func Required(method, path string) string {
 	if level == LevelWrite && tail == "shared-users" && (mod == "webdav" || mod == "ftp" || mod == "smb") {
 		return sharedFileUserScope
 	}
+	if mod == "wol" {
+		if need := wolTerminalScope(method, tail); need != "" {
+			return need
+		}
+	}
 	// 模块日志属于只读信息，清空日志属于写操作。导出日志与查看日志是同样的数据，
 	// 虽然路径含 export 片段（其他模块的 export 是镜像、数据卷导出），仍只需读权限
 	if level == LevelRead && (tail == "logs/export" || tail == "logs/sources") {
@@ -118,6 +123,23 @@ func Required(method, path string) string {
 		}
 	}
 	return mod + ":" + level
+}
+
+// wolTerminalScope 返回网络唤醒中涉及 Web 终端 SSH 连接的接口所需的权限，其他接口返回空串。
+// 远程关机会在设备选择的 Web 终端连接上执行设备里填写的命令：能新增、修改、复制设备（即能设置连接与命令）
+// 或触发关机，就等于能经这些 SSH 连接执行任意命令，因此还要求 Web 终端的写权限；列出可选的 SSH 连接
+// 会暴露连接的用户名、主机与端口，要求 Web 终端的读权限。唤醒、启停、删除、排序等不涉及 SSH，不受影响。
+func wolTerminalScope(method, tail string) string {
+	parts := strings.Split(tail, "/")
+	switch {
+	case method == http.MethodGet && tail == "ssh-targets":
+		return "wol:read,webterminal:read"
+	case method == http.MethodPost && tail == "devices",
+		method == http.MethodPut && len(parts) == 2 && parts[0] == "devices",
+		method == http.MethodPost && len(parts) == 3 && parts[0] == "devices" && (parts[2] == "copy" || parts[2] == "shutdown"):
+		return "wol:write,webterminal:write"
+	}
+	return ""
 }
 
 // Match 判断令牌权限列表 scopes 是否满足所需权限 need。

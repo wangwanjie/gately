@@ -155,6 +155,7 @@ API は `GET` / `PUT /api/fileusers` で、API トークンには `fileusers:rea
 - シャットダウンのたびに新しい SSH 接続を作り、終了後に閉じるため、デバイス再起動前の無効な接続は使われません。コマンドは最長 30 秒、同じデバイスでは同時に 1 つだけ実行します；
 - シャットダウンにより終了コードが返る前に SSH 接続が切れることが多く、その場合はシャットダウン開始とみなします；
 - フォームには Linux（`shutdown -h now`）、Windows（`shutdown /s /t 0`）、macOS（`sudo -n shutdown -h now`）のよく使うコマンドがあります。Windows では OpenSSH サーバーを有効にしてください。Linux の非 root ユーザーは `sudo -n shutdown -h now` を使い、このコマンドにパスワードなし sudo を設定してください。
+- API トークンでデバイスの追加・編集・複製やシャットダウンを行うには、`wol:write` に加えて `webterminal:write` が必要です（これらの操作は SSH 接続で実行するコマンドを設定または実行します）。選択可能な SSH 接続の一覧には `wol:read` と `webterminal:read` が必要です。
 
 ### Bemfa 音声操作 {#bemfa}
 

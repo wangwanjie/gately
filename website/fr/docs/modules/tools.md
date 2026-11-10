@@ -155,6 +155,7 @@ Choisissez une connexion SSH du terminal web et saisissez une commande d’arrê
 - Chaque arrêt ouvre une nouvelle connexion SSH et la ferme ensuite : une connexion périmée d’avant le redémarrage de l’appareil n’est jamais réutilisée ; la commande dure au plus 30 secondes, une seule à la fois par appareil ;
 - L’arrêt coupe souvent la connexion SSH avant le retour du code de sortie ; on considère alors que l’arrêt a commencé ;
 - Le formulaire propose les commandes courantes pour Linux (`shutdown -h now`), Windows (`shutdown /s /t 0`) et macOS (`sudo -n shutdown -h now`). Windows doit avoir le serveur OpenSSH activé ; sous Linux, un utilisateur non root peut utiliser `sudo -n shutdown -h now` avec sudo sans mot de passe pour cette commande.
+- Les jetons d’API ont besoin de `webterminal:write` en plus de `wol:write` pour créer, modifier ou copier des appareils ou déclencher un arrêt (ces opérations définissent ou exécutent des commandes via la connexion SSH) ; lister les connexions SSH disponibles nécessite `wol:read` et `webterminal:read`.
 
 ### Commande vocale Bemfa {#bemfa}
 

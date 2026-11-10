@@ -155,6 +155,7 @@ Elige una conexión SSH de la terminal web y escribe un comando de apagado, y la
 - Cada apagado abre una conexión SSH nueva y la cierra al terminar, así que nunca se reutiliza una conexión caducada de antes de reiniciar el dispositivo; el comando dura como máximo 30 segundos y solo se ejecuta uno a la vez por dispositivo;
 - Apagar suele cortar la conexión SSH antes de devolver el código de salida; en ese caso se considera que el apagado empezó;
 - El formulario ofrece comandos habituales para Linux (`shutdown -h now`), Windows (`shutdown /s /t 0`) y macOS (`sudo -n shutdown -h now`). Windows necesita el servidor OpenSSH activado; en Linux, los usuarios no root pueden usar `sudo -n shutdown -h now` con sudo sin contraseña para ese comando.
+- Los tokens de API necesitan `webterminal:write` además de `wol:write` para crear, editar o copiar dispositivos o iniciar un apagado (estas acciones definen o ejecutan comandos por la conexión SSH); listar las conexiones SSH disponibles requiere `wol:read` y `webterminal:read`.
 
 ### Control por voz con Bemfa {#bemfa}
 

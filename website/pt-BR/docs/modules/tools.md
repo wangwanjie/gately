@@ -155,6 +155,7 @@ Escolha uma conexão SSH do terminal web e informe um comando de desligamento, e
 - Cada desligamento abre uma nova conexão SSH e a fecha ao terminar, então uma conexão antiga de antes da reinicialização do dispositivo nunca é reutilizada; o comando dura no máximo 30 segundos, um por vez por dispositivo;
 - Desligar costuma derrubar a conexão SSH antes de o código de saída voltar; isso conta como desligamento iniciado;
 - O formulário oferece comandos comuns para Linux (`shutdown -h now`), Windows (`shutdown /s /t 0`) e macOS (`sudo -n shutdown -h now`). O Windows precisa do servidor OpenSSH ativado; no Linux, usuários não root podem usar `sudo -n shutdown -h now` com sudo sem senha para esse comando.
+- Tokens de API precisam de `webterminal:write` além de `wol:write` para criar, editar ou copiar dispositivos ou acionar um desligamento (essas ações definem ou executam comandos pela conexão SSH); listar as conexões SSH disponíveis exige `wol:read` e `webterminal:read`.
 
 ### Controle por voz Bemfa {#bemfa}
 

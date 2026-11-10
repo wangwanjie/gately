@@ -155,6 +155,7 @@ API는 `GET` / `PUT /api/fileusers`이며 API 토큰에는 `fileusers:read` / `f
 - 종료할 때마다 새 SSH 연결을 만들고 끝나면 닫으므로 장치가 재부팅되기 전의 끊긴 연결을 쓰지 않습니다. 명령은 최대 30초, 같은 장치에서는 한 번에 하나만 실행합니다;
 - 종료하면서 종료 코드가 돌아오기 전에 SSH 연결이 끊기는 경우가 많으며, 이 경우 종료가 시작된 것으로 봅니다;
 - 폼에서 Linux(`shutdown -h now`), Windows(`shutdown /s /t 0`), macOS(`sudo -n shutdown -h now`) 명령을 고를 수 있습니다. Windows는 OpenSSH 서버를 켜야 하며, Linux의 root가 아닌 사용자는 `sudo -n shutdown -h now`를 쓰고 이 명령에 비밀번호 없는 sudo를 설정하세요.
+- API 토큰으로 장치를 추가·수정·복사하거나 종료를 실행하려면 `wol:write` 외에 `webterminal:write`도 필요합니다(이 작업은 SSH 연결로 실행할 명령을 설정하거나 실행합니다). 선택 가능한 SSH 연결 목록에는 `wol:read`와 `webterminal:read`가 필요합니다.
 
 ### Bemfa 음성 제어 {#bemfa}
 

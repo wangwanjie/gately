@@ -475,9 +475,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/wol/logs/export` | `wol:read` | モジュールログをエクスポート |
 | DELETE | `/api/wol/logs` | `wol:write` | モジュールの実行ログを消去 |
 | GET | `/api/wol/devices` | `wol:read` | デバイスをウェイクアップ の一覧を取得 |
-| POST | `/api/wol/devices` | `wol:write` | デバイスをウェイクアップ を追加 |
-| POST | `/api/wol/devices/{key}/copy` | `wol:write` | デバイスをウェイクアップ を複製 |
-| PUT | `/api/wol/devices/{key}` | `wol:write` | デバイスをウェイクアップ を更新 |
+| POST | `/api/wol/devices` | `wol:write,webterminal:write` | デバイスをウェイクアップ を追加 |
+| POST | `/api/wol/devices/{key}/copy` | `wol:write,webterminal:write` | デバイスをウェイクアップ を複製 |
+| PUT | `/api/wol/devices/{key}` | `wol:write,webterminal:write` | デバイスをウェイクアップ を更新 |
 | DELETE | `/api/wol/devices/{key}` | `wol:write` | デバイスをウェイクアップ を削除 |
 | PUT | `/api/wol/devices/{key}/enable` | `wol:write` | デバイスをウェイクアップ の有効/無効を切り替え |
 | PUT | `/api/wol/devices-order` | `wol:write` | デバイスをウェイクアップ の並び順を変更 |
@@ -485,9 +485,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/wol/devices-delete` | `wol:write` | デバイスをウェイクアップ の一括削除 |
 | PUT | `/api/wol/devices-group` | `wol:write` | デバイスをウェイクアップ のグループを一括設定 |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | デバイスにウェイクアップのマジックパケットを送信 |
-| POST | `/api/wol/devices/{key}/shutdown` | `wol:write` | リモートシャットダウン |
+| POST | `/api/wol/devices/{key}/shutdown` | `wol:write,webterminal:write` | リモートシャットダウン |
 | GET | `/api/wol/status` | `wol:read` | デバイスのオンライン状態を表示 |
-| GET | `/api/wol/ssh-targets` | `wol:read` | リモートシャットダウンに使える SSH 接続の一覧 |
+| GET | `/api/wol/ssh-targets` | `wol:read,webterminal:read` | リモートシャットダウンに使える SSH 接続の一覧 |
 | GET | `/api/wol/bemfa` | `wol:read` | Bemfa 連携設定と接続状態 |
 | GET | `/api/wol/bemfa/secrets` | `wol:write` | Bemfa 秘密鍵を表示 |
 | PUT | `/api/wol/bemfa` | `wol:write` | Bemfa 連携設定を変更 |

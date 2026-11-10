@@ -155,6 +155,7 @@ Wählen Sie eine SSH-Verbindung aus dem Web-Terminal und geben Sie einen Befehl 
 - Jedes Herunterfahren öffnet eine neue SSH-Verbindung und schließt sie danach, sodass nie eine veraltete Verbindung von vor dem Neustart des Geräts genutzt wird; der Befehl läuft höchstens 30 Sekunden, pro Gerät jeweils nur einer;
 - Beim Herunterfahren bricht die SSH-Verbindung oft ab, bevor ein Exit-Code zurückkommt; das gilt als begonnenes Herunterfahren;
 - Das Formular bietet gängige Befehle für Linux (`shutdown -h now`), Windows (`shutdown /s /t 0`) und macOS (`sudo -n shutdown -h now`). Windows benötigt den aktivierten OpenSSH-Server; unter Linux können Nicht-Root-Benutzer `sudo -n shutdown -h now` mit passwortlosem sudo für diesen Befehl verwenden.
+- API-Tokens benötigen zusätzlich zu `wol:write` die Berechtigung `webterminal:write`, um Geräte anzulegen, zu bearbeiten, zu kopieren oder ein Herunterfahren auszulösen (diese Aktionen legen Befehle für die SSH-Verbindung fest oder führen sie aus); das Auflisten der verfügbaren SSH-Verbindungen benötigt `wol:read` und `webterminal:read`.
 
 ### Bemfa-Sprachsteuerung {#bemfa}
 

@@ -475,9 +475,9 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | GET | `/api/wol/logs/export` | `wol:read` | Exporter les journaux du module |
 | DELETE | `/api/wol/logs` | `wol:write` | Vider les journaux d'exécution d'un module |
 | GET | `/api/wol/devices` | `wol:read` | Lister Réveiller l'appareil |
-| POST | `/api/wol/devices` | `wol:write` | Ajouter Réveiller l'appareil |
-| POST | `/api/wol/devices/{key}/copy` | `wol:write` | Dupliquer Réveiller l'appareil |
-| PUT | `/api/wol/devices/{key}` | `wol:write` | Modifier Réveiller l'appareil |
+| POST | `/api/wol/devices` | `wol:write,webterminal:write` | Ajouter Réveiller l'appareil |
+| POST | `/api/wol/devices/{key}/copy` | `wol:write,webterminal:write` | Dupliquer Réveiller l'appareil |
+| PUT | `/api/wol/devices/{key}` | `wol:write,webterminal:write` | Modifier Réveiller l'appareil |
 | DELETE | `/api/wol/devices/{key}` | `wol:write` | Supprimer Réveiller l'appareil |
 | PUT | `/api/wol/devices/{key}/enable` | `wol:write` | Activer ou désactiver Réveiller l'appareil |
 | PUT | `/api/wol/devices-order` | `wol:write` | Réordonner Réveiller l'appareil |
@@ -485,9 +485,9 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | POST | `/api/wol/devices-delete` | `wol:write` | Supprimer en lot : Réveiller l'appareil |
 | PUT | `/api/wol/devices-group` | `wol:write` | Définir le groupe de plusieurs éléments : Réveiller l'appareil |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | Envoyer un paquet magique de réveil à l'appareil |
-| POST | `/api/wol/devices/{key}/shutdown` | `wol:write` | Arrêt à distance |
+| POST | `/api/wol/devices/{key}/shutdown` | `wol:write,webterminal:write` | Arrêt à distance |
 | GET | `/api/wol/status` | `wol:read` | Consulter l'état en ligne des appareils |
-| GET | `/api/wol/ssh-targets` | `wol:read` | Lister les connexions SSH utilisables pour l’arrêt à distance |
+| GET | `/api/wol/ssh-targets` | `wol:read,webterminal:read` | Lister les connexions SSH utilisables pour l’arrêt à distance |
 | GET | `/api/wol/bemfa` | `wol:read` | Réglages et état de connexion Bemfa |
 | GET | `/api/wol/bemfa/secrets` | `wol:write` | Afficher la clé privée Bemfa |
 | PUT | `/api/wol/bemfa` | `wol:write` | Modifier les réglages Bemfa |

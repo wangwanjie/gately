@@ -53442,7 +53442,7 @@
         "x-token-allowed": true
       },
       "post": {
-        "description": "Требуемое разрешение: `wol:write`.",
+        "description": "Требуемое разрешение: `wol:write,webterminal:write`.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -53503,7 +53503,7 @@
         "tags": [
           "Wake-on-LAN"
         ],
-        "x-required-scope": "wol:write",
+        "x-required-scope": "wol:write,webterminal:write",
         "x-token-allowed": true
       }
     },
@@ -53808,7 +53808,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "Требуемое разрешение: `wol:write`.",
+        "description": "Требуемое разрешение: `wol:write,webterminal:write`.",
         "parameters": [
           {
             "in": "path",
@@ -53879,13 +53879,13 @@
         "tags": [
           "Wake-on-LAN"
         ],
-        "x-required-scope": "wol:write",
+        "x-required-scope": "wol:write,webterminal:write",
         "x-token-allowed": true
       }
     },
     "/api/wol/devices/{key}/copy": {
       "post": {
-        "description": "Требуемое разрешение: `wol:write`.",
+        "description": "Требуемое разрешение: `wol:write,webterminal:write`.",
         "parameters": [
           {
             "in": "path",
@@ -53956,7 +53956,7 @@
         "tags": [
           "Wake-on-LAN"
         ],
-        "x-required-scope": "wol:write",
+        "x-required-scope": "wol:write,webterminal:write",
         "x-token-allowed": true
       }
     },
@@ -54032,7 +54032,7 @@
     },
     "/api/wol/devices/{key}/shutdown": {
       "post": {
-        "description": "Требуемое разрешение: `wol:write`.",
+        "description": "Требуемое разрешение: `wol:write,webterminal:write`.",
         "parameters": [
           {
             "in": "path",
@@ -54097,7 +54097,7 @@
         "tags": [
           "Wake-on-LAN"
         ],
-        "x-required-scope": "wol:write",
+        "x-required-scope": "wol:write,webterminal:write",
         "x-token-allowed": true
       }
     },
@@ -54618,7 +54618,7 @@
     },
     "/api/wol/ssh-targets": {
       "get": {
-        "description": "Требуемое разрешение: `wol:read`.",
+        "description": "Требуемое разрешение: `wol:read,webterminal:read`.",
         "responses": {
           "200": {
             "content": {
@@ -54673,7 +54673,7 @@
         "tags": [
           "Wake-on-LAN"
         ],
-        "x-required-scope": "wol:read",
+        "x-required-scope": "wol:read,webterminal:read",
         "x-token-allowed": true
       }
     },
