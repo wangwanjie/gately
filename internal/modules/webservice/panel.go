@@ -111,6 +111,17 @@ type PanelAlt struct {
 	URL string `json:"url"`
 }
 
+// clone 深拷贝面板：链接与其他访问方式的底层数组都复制一份。validate 会就地规范化字段，
+// 载入面板库时不能写到配置或正在服务的面板共用的数组上，否则与访客请求并发读写
+func (p Panel) clone() Panel {
+	p.LANCIDRs = slices.Clone(p.LANCIDRs)
+	p.Links = slices.Clone(p.Links)
+	for i := range p.Links {
+		p.Links[i].Alts = slices.Clone(p.Links[i].Alts)
+	}
+	return p
+}
+
 // runeLimit 检查文本不超过 n 个字符且不含控制字符。
 func runeLimit(s, what string, n int) error {
 	if utf8.RuneCountInString(s) > n {
@@ -401,18 +412,26 @@ type compiledPanel struct {
 type panelStore struct {
 	mu     sync.RWMutex
 	panels map[string]*compiledPanel
+	// warn 记录载入时因校验失败被忽略的面板
+	warn func(format string, args ...any)
 }
 
 func newPanelStore() *panelStore {
-	return &panelStore{panels: map[string]*compiledPanel{}}
+	return &panelStore{panels: map[string]*compiledPanel{}, warn: func(string, ...any) {}}
 }
 
-// set 替换面板库。配置文件可能被手工编辑，逐个重新校验，无效的面板视为不存在。
+// set 替换面板库。配置文件可能被手工编辑，逐个重新校验，无效的面板视为不存在并记录警告。
+// 内置图标不存在（例如降级到图标较少的版本）时只清空该图标，不因此丢弃整个面板
 func (s *panelStore) set(list []Panel) {
 	panels := make(map[string]*compiledPanel, len(list))
-	for _, p := range list {
-		p.Links = slices.Clone(p.Links)
-		if p.validate() != nil {
+	for _, src := range list {
+		p := src.clone()
+		p.Icon = dropUnknownBuiltin(p.Icon)
+		for i := range p.Links {
+			p.Links[i].Icon = dropUnknownBuiltin(p.Links[i].Icon)
+		}
+		if err := p.validate(); err != nil {
+			s.warn("导航面板 %s 无效，已忽略: %v", p.Name, err)
 			continue
 		}
 		lan, _ := parsePrefixes(p.LANCIDRs)
@@ -421,6 +440,18 @@ func (s *panelStore) set(list []Panel) {
 	s.mu.Lock()
 	s.panels = panels
 	s.mu.Unlock()
+}
+
+// dropUnknownBuiltin 把不存在的内置图标换成空图标（页面显示名称首字），其他写法原样返回。
+func dropUnknownBuiltin(icon string) string {
+	id, ok := strings.CutPrefix(strings.TrimSpace(icon), panelBuiltinPrefix)
+	if !ok {
+		return icon
+	}
+	if _, found := webpage.FindBuiltinIcon(id); !found {
+		return ""
+	}
+	return icon
 }
 
 func (s *panelStore) get(key string) (*compiledPanel, bool) {

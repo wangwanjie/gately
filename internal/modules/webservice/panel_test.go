@@ -2,6 +2,7 @@ package webservice
 
 import (
 	"encoding/base64"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"net/netip"
@@ -520,5 +521,134 @@ func TestPanelPreview(t *testing.T) {
 	p.Links[0].URL = "javascript:1"
 	if code, _ = do("POST", "/api/webservice/panels/preview", PanelPreviewRequest{Panel: p}); code != 400 {
 		t.Fatalf("无效面板应拒绝预览: %d", code)
+	}
+}
+
+// 载入面板库时深拷贝配置：validate 的规范化不写回配置，也不与正在服务的面板共用底层数组（go test -race 检查）。
+func TestPanelStoreSetCopies(t *testing.T) {
+	p := validPanel()
+	p.Key = "p1"
+	p.LANCIDRs = []string{" 100.64.0.0/10 "}
+	p.Links[0].Alts = []PanelAlt{{Name: " IPv6 ", URL: " https://[2001:db8::2]:8443 "}}
+	list := []Panel{p}
+	s := newPanelStore()
+	s.set(list)
+	if a := list[0].Links[0].Alts[0]; a.Name != " IPv6 " || a.URL != " https://[2001:db8::2]:8443 " || list[0].LANCIDRs[0] != " 100.64.0.0/10 " {
+		t.Fatalf("set 不应修改传入的配置: %+v %v", a, list[0].LANCIDRs)
+	}
+	cp, _ := s.get("p1")
+	if cp.Links[0].Alts[0].Name != "IPv6" {
+		t.Fatalf("运行时面板应已规范化: %+v", cp.Links[0].Alts)
+	}
+	// 面板库反复替换的同时访客在读取页面内容
+	r := httptest.NewRequest("GET", "http://home.nav.test/", nil)
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		for range 200 {
+			s.set(list)
+		}
+	}()
+	for range 200 {
+		if cp, ok := s.get("p1"); ok {
+			if v := cp.view(redirectRequest{r: r}, false, false, false); len(v.Groups) != 1 || v.Groups[0].Links[0].Alts[0].Name != "IPv6" {
+				t.Fatalf("页面内容: %+v", v)
+			}
+		}
+	}
+	<-done
+	if c := p.clone(); &c.Links[0] == &p.Links[0] || &c.Links[0].Alts[0] == &p.Links[0].Alts[0] || &c.LANCIDRs[0] == &p.LANCIDRs[0] {
+		t.Fatal("clone 应复制链接、访问方式与地址段")
+	}
+}
+
+// 载入时内置图标不存在只清空该图标，面板照常提供；确实无效的面板被忽略并记录警告。
+func TestPanelStoreLoadLenient(t *testing.T) {
+	var warns []string
+	s := newPanelStore()
+	s.warn = func(format string, args ...any) {
+		warns = append(warns, fmt.Sprintf(format, args...))
+	}
+	p := validPanel()
+	p.Key = "p1"
+	p.Icon = "builtin:no-such-icon"
+	p.Links[0].Icon = " builtin:no-such-icon "
+	p.Links = append(p.Links, PanelLink{Name: "JF", URL: "https://jf.example.com", Icon: "builtin:jellyfin"})
+	bad := validPanel()
+	bad.Key = "p2"
+	bad.Name = "坏面板"
+	bad.Links[0].URL = "javascript:alert(1)"
+	s.set([]Panel{p, bad})
+	cp, ok := s.get("p1")
+	if !ok || cp.Icon != "" || cp.Links[0].Icon != "" || cp.Links[1].Icon != "builtin:jellyfin" {
+		t.Fatalf("未知内置图标应降级为空图标: %v %+v", ok, cp)
+	}
+	if _, ok := s.get("p2"); ok {
+		t.Fatal("无效面板不应载入")
+	}
+	if len(warns) != 1 || !strings.Contains(warns[0], "坏面板") {
+		t.Fatalf("应记录一条警告: %q", warns)
+	}
+	// 保存时仍严格校验
+	if err := p.validate(); err == nil {
+		t.Fatal("保存时不存在的内置图标应拒绝")
+	}
+}
+
+// 用 IPv6 字面地址访问面板时 {host} 带方括号，链接可用。
+func TestPanelIPv6Host(t *testing.T) {
+	h, _ := panelHandler(t, []Panel{{Key: "p1", Name: "家", Enable: true, Links: []PanelLink{
+		{Name: "NAS", URL: "https://{host}:5001/"},
+		{Name: "原样", URL: "https://{hostAndPort}/x"},
+	}}})
+	r := httptest.NewRequest("GET", "/", nil)
+	r.Host = "[2001:db8::1]:8443"
+	r.RemoteAddr = "[2001:db8::9]:4000"
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, r)
+	body := w.Body.String()
+	for _, want := range []string{`href="https://[2001:db8::1]:5001/"`, `href="https://[2001:db8::1]:8443/x"`} {
+		if !strings.Contains(body, want) {
+			t.Errorf("页面应包含 %s: %s", want, body)
+		}
+	}
+	if strings.Contains(body, "暂不可用") {
+		t.Error("IPv6 访问时链接不应显示为暂不可用")
+	}
+}
+
+// {1} 没有值（非通配站点、预览）时链接暂不可用；展开后主机名为空标签或端口无效的地址也不可用。
+func TestPanelEmptyWildcard(t *testing.T) {
+	p := Panel{Name: "家", Links: []PanelLink{
+		{Name: "通配", URL: "https://{1}.nas.example.com/"},
+		{Name: "前缀", URL: "https://n{1}.example.com/"},
+		{Name: "越界", URL: "https://{domainPart9}.example.com/"},
+		{Name: "普通", URL: "https://a.example.com/"},
+	}}
+	if err := p.validate(); err != nil {
+		t.Fatal(err)
+	}
+	cp := &compiledPanel{Panel: p}
+	r := httptest.NewRequest("GET", "http://nas.test/", nil)
+	links := cp.view(redirectRequest{r: r}, false, false, true).Groups[0].Links
+	for i, want := range []string{"", "", "", "https://a.example.com/"} {
+		if links[i].Href != want {
+			t.Errorf("%s: href=%q，期望 %q", links[i].Name, links[i].Href, want)
+		}
+	}
+	links = cp.view(redirectRequest{r: r, wildcard: "home"}, false, false, false).Groups[0].Links
+	if links[0].Href != "https://home.nas.example.com/" || links[1].Href != "https://nhome.example.com/" {
+		t.Fatalf("{1} 有值时应可用: %+v", links)
+	}
+	for _, u := range []string{"https://.nas.example.com/", "https://a..b/", "https://a.example.com:0/", "https://a.example.com:65536/",
+		"https://a.example.com:/", "https://a.example.com:+1/", "https://2001:db8::1:8443/", "https://[zz]/", "https://[::1]x/", "https://:443/"} {
+		if err := validatePanelURL(u); err == nil {
+			t.Errorf("%q 应拒绝", u)
+		}
+	}
+	for _, u := range []string{"https://a.example.com./", "https://[::1]:65535/", "https://[fe80::1%25en0]/", "ssh://root@nas.lan:22", "smb://nas/share", "http://localhost:1"} {
+		if err := validatePanelURL(u); err != nil {
+			t.Errorf("%q 应合法: %v", u, err)
+		}
 	}
 }
