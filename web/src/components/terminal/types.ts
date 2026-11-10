@@ -22,6 +22,8 @@ export interface SSHConf {
   keyFile: string
   passphrase: string
   hostKey: string
+  // hostKeyType 为指纹对应的密钥类型（如 ssh-ed25519），旧配置可能为空
+  hostKeyType?: string
   keepAlive: number
   workDir: string
   timeout: number
@@ -191,6 +193,7 @@ export function emptyConn(): Conn {
       keyFile: '',
       passphrase: '',
       hostKey: '',
+      hostKeyType: '',
       keepAlive: 60,
       workDir: '',
       timeout: 15,
