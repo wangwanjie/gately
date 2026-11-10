@@ -291,6 +291,17 @@ func TestCacheAPI(t *testing.T) {
 			get(t, http.DefaultClient, addr, h, p, nil)
 		}
 	}
+	// 响应发给客户端之后才写入缓存，先等两个站点的条目都写完，避免读到尚未写入的状态
+	for _, site := range []string{"a", "b"} {
+		deadline := time.Now().Add(3 * time.Second)
+		for {
+			_, st := callJSON(t, m.handleCacheStats, "GET", "/cache?listener=l1&site="+site, nil, "")
+			if n, _ := st["entries"].(float64); n == 3 || time.Now().After(deadline) {
+				break
+			}
+			time.Sleep(20 * time.Millisecond)
+		}
+	}
 	code, out := callJSON(t, m.handleCacheStats, "GET", "/cache?listener=l1&site=a", nil, "")
 	if code != 200 || out["enabled"] != true || out["entries"].(float64) != 3 || out["maxBytes"].(float64) != 8<<20 {
 		t.Fatalf("站点 a 缓存状态不符: %d %v", code, out)
