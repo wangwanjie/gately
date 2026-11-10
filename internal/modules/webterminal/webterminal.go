@@ -260,10 +260,15 @@ func mergeSecrets(old, updated *Connection) {
 	crud.KeepSecret(old.SSH.Proxy.Password, &updated.SSH.Proxy.Password)
 	crud.KeepSecret(old.Telnet.Password, &updated.Telnet.Password)
 	crud.KeepSecret(old.Telnet.Proxy.Password, &updated.Telnet.Proxy.Password)
-	if old.SSH.Host != updated.SSH.Host || old.SSH.Port != updated.SSH.Port {
-		updated.SSH.HostKey = ""
-	} else if updated.SSH.HostKey == "" {
-		updated.SSH.HostKey = old.SSH.HostKey
+	switch {
+	case old.SSH.Host != updated.SSH.Host || old.SSH.Port != updated.SSH.Port:
+		updated.SSH.HostKey, updated.SSH.HostKeyType = "", ""
+	case updated.SSH.HostKey == "" || updated.SSH.HostKey == old.SSH.HostKey:
+		// 未携带或未改动指纹时沿用已记录的指纹与类型（旧版前端不带 hostKeyType）
+		updated.SSH.HostKey, updated.SSH.HostKeyType = old.SSH.HostKey, old.SSH.HostKeyType
+	case updated.SSH.HostKey != old.SSH.HostKey && updated.SSH.HostKeyType == old.SSH.HostKeyType:
+		// 指纹被改写而类型沿用旧值时，类型未必对应新指纹；清空后下次连接自动探测并补记
+		updated.SSH.HostKeyType = ""
 	}
 	// 快速访问目录由专用接口维护，编辑连接时未携带则沿用旧值
 	if updated.QuickAccessDirs == nil {
@@ -536,7 +541,7 @@ func (m *Module) handleResetHostKey(w http.ResponseWriter, r *http.Request) {
 	defer m.mu.Unlock()
 	for i := range m.cfg.Connections {
 		if m.cfg.Connections[i].Key == r.PathValue("key") {
-			m.cfg.Connections[i].SSH.HostKey = ""
+			m.cfg.Connections[i].SSH.HostKey, m.cfg.Connections[i].SSH.HostKeyType = "", ""
 			if err := m.saveLocked(); err != nil {
 				httpx.Error(w, http.StatusInternalServerError, "%v", err)
 				return
