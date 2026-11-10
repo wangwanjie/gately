@@ -22,6 +22,12 @@ Les connexions SSH et Telnet peuvent chacune utiliser leur propre proxy sortant 
 
 Lors de la première connexion SSH, l'empreinte de l'hôte du serveur est enregistrée et considérée comme fiable, puis vérifiée à chaque connexion ultérieure. Après la réinstallation d'un serveur ou un changement de ses clés, exécutez « Réinitialiser l'empreinte de l'hôte » sur la connexion pour lui refaire confiance.
 
+- Le type de clé est enregistré avec l'empreinte (`hostKeyType`). L'éditeur de connexion, l'avis de première confiance et l'erreur de non-concordance l'affichent sous la forme `ECDSA SHA256:...`, dans la notation de `ssh-keygen -l`, pour le comparer à la sortie de `ssh-keyscan` ;
+- Avec un type enregistré, la connexion ne négocie que ce type de clé d'hôte. Si le type manque, est inconnu ou n'est plus proposé par le serveur, les autres types sont essayés avec une poignée de main chacun ; seule une clé dont l'empreinte correspond à l'enregistrement est acceptée, puis le type est complété ;
+- Les serveurs ont généralement plusieurs clés d'hôte (ECDSA, RSA, Ed25519, etc.), on peut donc saisir directement une empreinte d'un autre type obtenue avec `ssh-keyscan` ou un autre outil ;
+- La vérification de la clé d'hôte a lieu avant l'authentification : si aucune clé d'hôte du serveur ne correspond à l'enregistrement, la connexion signale que la clé d'hôte a changé, affiche le type et l'empreinte enregistrés et actuels, et n'envoie ni mot de passe ni signature ;
+- « Tester la connexion » affiche l'empreinte et le type du serveur lors d'une première connexion sans rien enregistrer ; modifier une connexion conserve le type enregistré, tandis que changer l'hôte ou le port, réécrire l'empreinte à la main ou « Réinitialiser l'empreinte de l'hôte » l'effacent.
+
 ## Sessions
 
 - Les sessions sont conservées sur le serveur. Après un rafraîchissement du navigateur ou une déconnexion, vous pouvez vous rattacher depuis la liste des sessions ; au rattachement, le tampon de sortie est d'abord rejoué, puis la sortie est diffusée en direct ;

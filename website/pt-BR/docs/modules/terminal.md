@@ -22,6 +22,12 @@ Conexões SSH e Telnet podem usar, cada uma, o seu próprio proxy de saída do t
 
 Na primeira conexão SSH, a impressão digital do host do servidor é registrada e passa a ser confiável, sendo verificada em todas as conexões seguintes. Depois que um servidor é reinstalado ou suas chaves mudam, execute "Redefinir impressão digital do host" na conexão para confiar nele novamente.
 
+- O tipo de chave é registrado junto com a impressão digital (`hostKeyType`). O editor da conexão, o aviso de primeira confiança e o erro de divergência o mostram como `ECDSA SHA256:...`, na notação do `ssh-keygen -l`, para comparar com a saída do `ssh-keyscan`;
+- Com um tipo registrado, a conexão negocia apenas esse tipo de chave de host. Quando o tipo falta, é desconhecido ou o servidor não o oferece mais, os demais tipos são tentados com um handshake cada, só uma chave cuja impressão digital corresponde ao registro é aceita, e o tipo é então preenchido;
+- Servidores costumam ter várias chaves de host (ECDSA, RSA, Ed25519 etc.), então uma impressão digital de outro tipo obtida com `ssh-keyscan` ou outra ferramenta também pode ser informada diretamente;
+- A verificação da chave de host acontece antes da autenticação: quando todas as chaves de host do servidor divergem do registro, a conexão informa que a chave de host mudou, mostra o tipo e a impressão digital registrados e atuais, e não envia senha nem assinatura;
+- "Testar conexão" mostra a impressão digital e o tipo do servidor numa primeira conexão e não registra nada; editar uma conexão mantém o tipo registrado, enquanto mudar o host ou a porta, reescrever a impressão digital à mão ou "Redefinir impressão digital do host" o apagam.
+
 ## Sessões
 
 - As sessões são mantidas no servidor. Após atualizar o navegador ou se desconectar, você pode reconectar pela lista de sessões; ao reconectar, o buffer de saída é reproduzido primeiro e depois a saída é transmitida ao vivo;
