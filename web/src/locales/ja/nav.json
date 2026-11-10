@@ -55,6 +55,9 @@
     "webtopology": {
       "title": "トポロジー"
     },
+    "webvisitors": {
+      "title": "訪問者監査"
+    },
     "waf": {
       "title": "WAF ファイアウォール",
       "desc": "OWASP CRS ベースのアプリケーションファイアウォール"

@@ -55,6 +55,9 @@
     "webtopology": {
       "title": "Топология"
     },
+    "webvisitors": {
+      "title": "Аудит посетителей"
+    },
     "waf": {
       "title": "Брандмауэр WAF",
       "desc": "Брандмауэр веб-приложений на основе OWASP CRS"

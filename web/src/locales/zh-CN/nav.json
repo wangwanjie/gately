@@ -55,6 +55,9 @@
     "webtopology": {
       "title": "网络拓扑"
     },
+    "webvisitors": {
+      "title": "访客审计"
+    },
     "waf": {
       "title": "WAF 防火墙",
       "desc": "基于 OWASP CRS 的应用防火墙"
