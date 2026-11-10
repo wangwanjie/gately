@@ -377,7 +377,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | PUT | `/api/webservice/listeners-order` | `webservice:write` | Reordenar Escuta do serviço web |
 | PUT | `/api/webservice/listeners-enable` | `webservice:write` | Ativar ou desativar em lote: Escuta do serviço web |
 | POST | `/api/webservice/listeners-delete` | `webservice:write` | Excluir em lote: Escuta do serviço web |
-| GET | `/api/webservice/iplists` | `webservice:read` | Listar as listas de IP assinadas |
+| GET | `/api/webservice/iplists` | `webservice:read` | Listar 订阅 IP  |
 | POST | `/api/webservice/iplists` | `webservice:write` | Adicionar Lista de IP assinada |
 | POST | `/api/webservice/iplists/{key}/copy` | `webservice:write` | Duplicar Lista de IP assinada |
 | PUT | `/api/webservice/iplists/{key}` | `webservice:write` | Modificar Lista de IP assinada |
@@ -3111,4 +3111,10 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | --- | --- |
 | `settings` | `wol.BemfaSettings` |
 | `status` | `wol.BemfaStatus` |
+
+### wol.shutdownResult
+
+| Campo | Tipo |
+| --- | --- |
+| `output` | string |
 

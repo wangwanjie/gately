@@ -5194,6 +5194,14 @@
           }
         },
         "type": "object"
+      },
+      "wol.shutdownResult": {
+        "properties": {
+          "output": {
+            "type": "string"
+          }
+        },
+        "type": "object"
       }
     },
     "securitySchemes": {
@@ -45557,7 +45565,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "購読 IP リストの一覧を取得",
+        "summary": "订阅 IP  の一覧を取得",
         "tags": [
           "Web サービス"
         ],
@@ -54048,10 +54056,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "type": "object"
+                  "$ref": "#/components/schemas/wol.shutdownResult"
                 }
               }
             },

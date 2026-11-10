@@ -377,7 +377,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/webservice/listeners-order` | `webservice:write` | 調整Web 服務監聽排序 |
 | PUT | `/api/webservice/listeners-enable` | `webservice:write` | 批次啟用或停用Web 服務監聽 |
 | POST | `/api/webservice/listeners-delete` | `webservice:write` | 批次刪除Web 服務監聽 |
-| GET | `/api/webservice/iplists` | `webservice:read` | 取得訂閱 IP 清單 |
+| GET | `/api/webservice/iplists` | `webservice:read` | 取得订阅 IP 清單 |
 | POST | `/api/webservice/iplists` | `webservice:write` | 新增訂閱 IP 清單 |
 | POST | `/api/webservice/iplists/{key}/copy` | `webservice:write` | 複製訂閱 IP 清單 |
 | PUT | `/api/webservice/iplists/{key}` | `webservice:write` | 修改訂閱 IP 清單 |
@@ -3111,4 +3111,10 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `settings` | `wol.BemfaSettings` |
 | `status` | `wol.BemfaStatus` |
+
+### wol.shutdownResult
+
+| 欄位 | 類型 |
+| --- | --- |
+| `output` | string |
 

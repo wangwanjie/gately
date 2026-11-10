@@ -3112,3 +3112,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `settings` | `wol.BemfaSettings` |
 | `status` | `wol.BemfaStatus` |
 
+### wol.shutdownResult
+
+| 字段 | 类型 |
+| --- | --- |
+| `output` | string |
+

@@ -5194,6 +5194,14 @@
           }
         },
         "type": "object"
+      },
+      "wol.shutdownResult": {
+        "properties": {
+          "output": {
+            "type": "string"
+          }
+        },
+        "type": "object"
       }
     },
     "securitySchemes": {
@@ -54048,10 +54056,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "type": "object"
+                  "$ref": "#/components/schemas/wol.shutdownResult"
                 }
               }
             },
