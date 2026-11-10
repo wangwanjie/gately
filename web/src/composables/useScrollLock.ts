@@ -92,10 +92,18 @@ function uninstall() {
   document.removeEventListener('touchmove', onTouchMove, { capture: true })
 }
 
+// joinSelectors 把一个或多个选择器合并成逗号分隔的选择器列表，closest() 会匹配其中最近的祖先。
+export function joinSelectors(allow: string | string[]): string {
+  const list = Array.isArray(allow) ? allow : [allow]
+  return list.map((s) => s.trim()).filter((s) => s !== '').join(', ')
+}
+
 // useScrollLock 返回加锁开关：传 true 锁定页面滚动，false 解锁；组件卸载时自动解锁。
-// allow 为弹出层的选择器，其内部可滚动的区域（如较长的下拉菜单）仍可正常滚动。
-export function useScrollLock(allow = '') {
+// allow 为弹出层的选择器，其内部可滚动的区域（如较长的下拉菜单）仍可正常滚动；
+// 可传多个选择器（例如全屏面板本身与挂在 body 下的下拉弹出层），任一匹配即放行。
+export function useScrollLock(allow: string | string[] = '') {
   const id = Symbol('scroll-lock')
+  const sel = joinSelectors(allow)
 
   function setLocked(on: boolean) {
     if (on === locks.has(id)) {
@@ -105,7 +113,7 @@ export function useScrollLock(allow = '') {
       if (locks.size === 0) {
         install()
       }
-      locks.set(id, allow)
+      locks.set(id, sel)
     } else {
       locks.delete(id)
       if (locks.size === 0) {

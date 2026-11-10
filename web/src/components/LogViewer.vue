@@ -859,7 +859,8 @@ function observeBox() {
 // ---- 全屏查看：用固定定位盖住整个窗口（iOS Safari 不支持元素全屏 API），并锁住下方页面的滚动 ----
 const { nextZIndex } = useZIndex()
 const fullZ = ref(0)
-const lockScroll = useScrollLock('.log-viewer.full')
+// 全屏时工具栏里的级别、来源等下拉框弹出层挂在 body 下，同样放行其内部滚动，否则长列表滚不动
+const lockScroll = useScrollLock(['.log-viewer.full', '.el-select__popper', '.el-picker__popper', '.el-dropdown__popper', '.el-popper'])
 function toggleFull() {
   setFull(!full.value)
 }
