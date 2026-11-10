@@ -359,6 +359,8 @@ func (m *Module) wake(d Device) (int, error) {
 		return 0, err
 	}
 	log.Infof("已发送 %d 个唤醒包（%s）", n, strings.Join(d.MACs, ", "))
+	// 无论从哪里唤醒都把开关状态写回巴法云，避免云端停留在“关”：重连补发旧状态时也不会与实际相反
+	m.bemfa.publishState(d.BemfaTopic, "on")
 	return n, nil
 }
 

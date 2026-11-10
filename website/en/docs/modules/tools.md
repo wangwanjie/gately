@@ -165,7 +165,7 @@ With [Bemfa](https://cloud.bemfa.com) connected, voice assistants such as Xiao A
 2. Enter the same topic on the device, then enter the user private key from the console under *Wake-on-LAN → Bemfa* and enable it;
 3. Link your Bemfa account in Mi Home (Xiao AI), Xiaodu or Google Home and sync devices.
 
-"Turn on" then wakes the device and "turn off" shuts it down (remote shutdown must be set up); after a successful action the state is written back to Bemfa. Gately connects to `bemfa.com:9503` with MQTT 3.1.1 over TLS and verifies the certificate; the private key is the client ID, used only on this encrypted connection and masked in the API. After a disconnect it retries from 5 seconds up to every 5 minutes; retained messages (the previous state) replayed by the server on connect are not executed, and the same command repeated within 10 seconds runs once.
+"Turn on" then wakes the device and "turn off" shuts it down (remote shutdown must be set up); after a successful action the state is written back to Bemfa. Gately connects to `bemfa.com:9503` with MQTT 3.1.1 over TLS and verifies the certificate; the private key is the client ID, used only on this encrypted connection and masked in the API. After a disconnect it retries from 5 seconds up to every 5 minutes; the previous state the server replays on subscribe (retained messages and anything received within 3 seconds of subscribing) is not executed, and the same command repeated within 10 seconds runs once; waking or shutting down from the UI or API also writes the state back. Only one client can be online per private key: if another program or another Gately connects with the same key, the two keep kicking each other off.
 
 ## Scheduled Tasks
 
