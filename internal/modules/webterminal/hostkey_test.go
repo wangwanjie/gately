@@ -337,3 +337,23 @@ func TestHostKeyUnknownTypeIgnored(t *testing.T) {
 		t.Fatalf("未知类型应忽略并探测到 Ed25519: %+v %v", hk, err)
 	}
 }
+
+// TestHostKeyTypeLabel 验证主机密钥类型的短名：普通密钥与 ssh-keygen -l 一致，主机证书加 -CERT 后缀，未知类型原样显示。
+func TestHostKeyTypeLabel(t *testing.T) {
+	cases := map[string]string{
+		ssh.KeyAlgoED25519:         "ED25519",
+		ssh.KeyAlgoRSA:             "RSA",
+		ssh.KeyAlgoECDSA256:        "ECDSA",
+		ssh.KeyAlgoECDSA521:        "ECDSA",
+		ssh.CertAlgoED25519v01:     "ED25519-CERT",
+		ssh.CertAlgoRSAv01:         "RSA-CERT",
+		ssh.CertAlgoECDSA384v01:    "ECDSA-CERT",
+		"foo-cert-v01@openssh.com": "foo-cert-v01@openssh.com",
+		"ssh-unknown":              "ssh-unknown",
+	}
+	for typ, want := range cases {
+		if got := hostKeyTypeLabel(typ); got != want {
+			t.Errorf("hostKeyTypeLabel(%q) = %q，期望 %q", typ, got, want)
+		}
+	}
+}

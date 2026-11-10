@@ -138,6 +138,18 @@ func describeHostKey(typ, fp string) string {
 }
 
 func hostKeyTypeLabel(typ string) string {
+	// 主机证书（如 ssh-ed25519-cert-v01@openssh.com）显示为 ED25519-CERT，与 ssh-keygen -l 的写法一致
+	if base, ok := strings.CutSuffix(typ, "-cert-v01@openssh.com"); ok {
+		if label := plainHostKeyLabel(base); label != base {
+			return label + "-CERT"
+		}
+		return typ
+	}
+	return plainHostKeyLabel(typ)
+}
+
+// plainHostKeyLabel 返回普通主机密钥类型的短名，未知类型原样返回。
+func plainHostKeyLabel(typ string) string {
 	switch {
 	case typ == ssh.KeyAlgoED25519:
 		return "ED25519"

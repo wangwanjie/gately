@@ -149,6 +149,7 @@ import { emptyConn, normalizeConn, type Conn, type Credential } from './types'
 import CopyHint from '../CopyHint.vue'
 import { createItem, type CopySource } from '../../copyDraft'
 import { isCancel, withAccess } from './security'
+import { hostKeyTypeLabel as hostKeyLabel } from './hostKey'
 
 // groups 为已有的连接分组，用于分组输入提示；copyFrom 不为空时以该连接为模板新建（保存时调用复制接口）
 const props = defineProps<{ modelValue: boolean; conn: Conn | null; allowLocalShell: boolean; groups?: string[]; copyFrom?: CopySource | null }>()
@@ -165,19 +166,7 @@ function revealOf(field: string) {
   return secretOf(key && `/api/webterminal/connections/${key}/secrets`, field)
 }
 // 主机指纹的密钥类型，写法与 ssh-keygen -l 一致，便于和 ssh-keyscan 结果对照（服务器通常有多把不同类型的主机密钥）
-const hostKeyTypeLabel = computed(() => {
-  const typ = form.ssh.hostKeyType ?? ''
-  if (typ === 'ssh-ed25519') {
-    return 'ED25519'
-  }
-  if (typ === 'ssh-rsa') {
-    return 'RSA'
-  }
-  if (typ.startsWith('ecdsa-sha2-')) {
-    return 'ECDSA'
-  }
-  return typ
-})
+const hostKeyTypeLabel = computed(() => hostKeyLabel(form.ssh.hostKeyType ?? ''))
 const envRows = ref<{ k: string; v: string }[]>([])
 const quickText = ref('')
 const shells = ref<string[]>([])
@@ -345,6 +334,12 @@ async function test() {
 .fp-type {
   margin-right: 6px;
   vertical-align: middle;
+  /* 未知类型可能是很长的原始类型串，窄屏时允许标签内换行，避免撑出表单 */
+  max-width: 100%;
+  height: auto;
+  min-height: 20px;
+  white-space: normal;
+  word-break: break-all;
 }
 .env {
   width: 100%;
