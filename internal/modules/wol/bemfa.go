@@ -43,6 +43,9 @@ var (
 	bemfaBackoffMax = 5 * time.Minute
 	// bemfaDebounce 内同一设备的同一指令只执行一次，语音助手可能重复下发
 	bemfaDebounce = 10 * time.Second
+	// bemfaReplayGrace 为订阅成功后的一段时间，期间收到的指令一律视为服务器补发的上一条消息而不执行：
+	// 巴法云在订阅时会推送主题的最新消息，不能依赖它一定带保留标志，否则每次重连都可能把设备开关一次
+	bemfaReplayGrace = 3 * time.Second
 )
 
 // maxPacket 为接收的 MQTT 报文上限，开关指令只有几个字节，超出视为异常并断开。
@@ -288,6 +291,7 @@ func (b *bemfaClient) session(ctx context.Context, uid string, topics []string, 
 		}
 	}
 	_ = c.SetDeadline(time.Time{})
+	replayUntil := time.Now().Add(bemfaReplayGrace)
 	b.mu.Lock()
 	b.conn = c
 	b.mu.Unlock()
@@ -365,6 +369,10 @@ func (b *bemfaClient) session(ctx context.Context, uid string, topics []string, 
 			if p.flags&1 != 0 {
 				continue
 			}
+			// 订阅后立即到达的消息同样可能是补发的旧状态（未带保留标志），不执行
+			if time.Now().Before(replayUntil) {
+				continue
+			}
 			b.dispatch(topic, payload)
 		}
 	}
@@ -379,7 +387,7 @@ func (b *bemfaClient) write(c net.Conn, pkt []byte) error {
 	return err
 }
 
-// publishState 把设备状态写回巴法云（主题加 /up 只更新云端数据、不推送），语音助手与巴法 App 据此显示开关状态。
+// publishState 把设备状态写回巴法云（唤醒、关机成功后由 wake / shutdown 调用，管理界面、接口与语音指令都会写回）（主题加 /up 只更新云端数据、不推送），语音助手与巴法 App 据此显示开关状态。
 // 未连接时忽略。
 func (b *bemfaClient) publishState(topic, state string) {
 	b.mu.Lock()
@@ -424,9 +432,7 @@ func (b *bemfaClient) dispatch(topic, payload string) {
 	go func() {
 		if cmd == "on" {
 			log.Infof("收到巴法云指令 %s，唤醒设备", cmd)
-			if _, err := m.wake(dev); err == nil {
-				b.publishState(dev.BemfaTopic, "on")
-			}
+			_, _ = m.wake(dev)
 			return
 		}
 		if dev.ShutdownConn == "" {
@@ -434,9 +440,7 @@ func (b *bemfaClient) dispatch(topic, payload string) {
 			return
 		}
 		log.Infof("收到巴法云指令 %s，远程关机", cmd)
-		if _, err := m.shutdown(context.Background(), dev); err == nil {
-			b.publishState(dev.BemfaTopic, "off")
-		}
+		_, _ = m.shutdown(context.Background(), dev)
 	}()
 }
 

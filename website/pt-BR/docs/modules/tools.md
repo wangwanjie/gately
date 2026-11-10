@@ -165,7 +165,7 @@ Com o [Bemfa](https://cloud.bemfa.com) conectado, assistentes de voz como Xiao A
 2. Informe o mesmo tópico no dispositivo e, em *Wake-on-LAN → Bemfa*, a chave privada de usuário do console, e ative;
 3. Vincule sua conta Bemfa no Mi Home (Xiao AI), Xiaodu ou Google Home e sincronize os dispositivos.
 
-Depois, "ligar" acorda o dispositivo e "desligar" o desliga (com desligamento remoto configurado); após uma ação bem-sucedida o estado é gravado de volta no Bemfa. O Gately conecta a `bemfa.com:9503` com MQTT 3.1.1 sobre TLS e verifica o certificado; a chave privada é o ID do cliente, usada só nessa conexão criptografada e mascarada na API. Após uma desconexão, tenta novamente a partir de 5 segundos até a cada 5 minutos; mensagens retidas (o estado anterior) reenviadas pelo servidor ao conectar não são executadas, e o mesmo comando repetido em 10 segundos é executado uma vez.
+Depois, "ligar" acorda o dispositivo e "desligar" o desliga (com desligamento remoto configurado); após uma ação bem-sucedida o estado é gravado de volta no Bemfa. O Gately conecta a `bemfa.com:9503` com MQTT 3.1.1 sobre TLS e verifica o certificado; a chave privada é o ID do cliente, usada só nessa conexão criptografada e mascarada na API. Após uma desconexão, tenta novamente a partir de 5 segundos até a cada 5 minutos; o estado anterior que o servidor reenvia ao assinar (mensagens retidas e tudo o que chega nos 3 segundos após a assinatura) não é executado, e o mesmo comando repetido em 10 segundos é executado uma vez; acordar ou desligar com sucesso pela interface ou API também grava o estado de volta. Só um cliente pode ficar online por chave privada: se outro programa ou outro Gately se conectar com a mesma chave, os dois se derrubam mutuamente.
 
 ## Tarefas agendadas
 

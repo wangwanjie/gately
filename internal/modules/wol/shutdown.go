@@ -50,6 +50,7 @@ func (m *Module) shutdown(ctx context.Context, d Device) (string, error) {
 	var missing *ssh.ExitMissingError
 	if errors.As(err, &missing) {
 		log.Infof("已发送关机命令，连接在命令返回前断开，设备应已开始关机")
+		m.bemfa.publishState(d.BemfaTopic, "off")
 		return out, nil
 	}
 	if err != nil {
@@ -61,6 +62,7 @@ func (m *Module) shutdown(ctx context.Context, d Device) (string, error) {
 		return out, err
 	}
 	log.Infof("已执行关机命令")
+	m.bemfa.publishState(d.BemfaTopic, "off")
 	return out, nil
 }
 

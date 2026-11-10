@@ -63,15 +63,15 @@ func startBroker(t *testing.T) *fakeBroker {
 		t.Fatal(err)
 	}
 	b := &fakeBroker{t: t, ln: ln, pool: pool, connCh: make(chan *brokerConn, 8)}
-	oldAddr, oldTLS, oldKA, oldMin, oldDeb := bemfaAddr, bemfaTLSConfig, bemfaKeepAlive, bemfaBackoffMin, bemfaDebounce
+	oldAddr, oldTLS, oldKA, oldMin, oldDeb, oldGrace := bemfaAddr, bemfaTLSConfig, bemfaKeepAlive, bemfaBackoffMin, bemfaDebounce, bemfaReplayGrace
 	bemfaAddr = ln.Addr().String()
 	bemfaTLSConfig = func() *tls.Config {
 		return &tls.Config{ServerName: "bemfa.com", RootCAs: pool, MinVersion: tls.VersionTLS12}
 	}
-	bemfaKeepAlive, bemfaBackoffMin, bemfaDebounce = 2*time.Second, 50*time.Millisecond, 300*time.Millisecond
+	bemfaKeepAlive, bemfaBackoffMin, bemfaDebounce, bemfaReplayGrace = 2*time.Second, 50*time.Millisecond, 300*time.Millisecond, 0
 	t.Cleanup(func() {
 		ln.Close()
-		bemfaAddr, bemfaTLSConfig, bemfaKeepAlive, bemfaBackoffMin, bemfaDebounce = oldAddr, oldTLS, oldKA, oldMin, oldDeb
+		bemfaAddr, bemfaTLSConfig, bemfaKeepAlive, bemfaBackoffMin, bemfaDebounce, bemfaReplayGrace = oldAddr, oldTLS, oldKA, oldMin, oldDeb, oldGrace
 	})
 	go b.serve()
 	return b
@@ -451,4 +451,59 @@ func TestBemfaKeepAlive(t *testing.T) {
 	}
 	// 测试服务端不回复心跳，客户端应判定断线并重新连接
 	broker.next()
+}
+
+// TestBemfaReplayAfterSubscribe 验证订阅后立即到达的指令（服务器补发的旧状态，可能不带保留标志）不执行，
+// 以及从管理界面唤醒、关机成功后都把状态写回巴法云。
+func TestBemfaReplayAfterSubscribe(t *testing.T) {
+	broker := startBroker(t)
+	bemfaReplayGrace = 500 * time.Millisecond
+	sent := wakeRecorder(t)
+	var mu sync.Mutex
+	var shutdowns int
+	exec := func(ctx context.Context, conn, cmd string) (string, error) {
+		mu.Lock()
+		shutdowns++
+		mu.Unlock()
+		return "", nil
+	}
+	m, srv, _ := newTestModule(t, exec)
+	pc := addDevice(t, srv, map[string]any{"name": "pc", "macs": []string{"aa:bb:cc:dd:ee:ff"}, "broadcastIps": []string{"192.168.1.255"},
+		"repeat": 1, "shutdownConn": "c1", "shutdownCommand": "poweroff", "bemfaTopic": "pc001"})
+	if code, body := call(t, srv, "PUT", "/bemfa", map[string]any{"enable": true, "uid": "4d9ec352e0376f2110a0c601a2857225"}); code != 200 {
+		t.Fatalf("保存设置失败: %d %s", code, body)
+	}
+	bc := broker.next()
+	// 订阅确认后立即补发一条不带保留标志的 off：不应关机
+	bc.publish("pc001", "off", 0, false)
+	waitFor(t, "状态变为已连接", func() bool { return m.bemfa.Status().Connected })
+	time.Sleep(bemfaReplayGrace + 100*time.Millisecond)
+	mu.Lock()
+	if shutdowns != 0 {
+		t.Fatalf("订阅后补发的指令不应执行: %d", shutdowns)
+	}
+	mu.Unlock()
+	// 宽限期之后的指令正常执行
+	bc.publish("pc001", "off", 0, false)
+	waitFor(t, "关机", func() bool { mu.Lock(); defer mu.Unlock(); return shutdowns == 1 })
+	if topic, payload, _, _ := parsePublish(bc.waitPacket(t, 3)); topic != "pc001/up" || payload != "off" {
+		t.Fatalf("语音关机后应写回关闭状态: %q %q", topic, payload)
+	}
+	// 从管理界面唤醒也写回开启状态，云端不会停留在“关”
+	if code, body := call(t, srv, "POST", "/devices/"+pc+"/wake", nil); code != 200 {
+		t.Fatalf("唤醒失败: %d %s", code, body)
+	}
+	if sent() != 1 {
+		t.Fatalf("应发送唤醒包: %d", sent())
+	}
+	if topic, payload, _, _ := parsePublish(bc.waitPacket(t, 3)); topic != "pc001/up" || payload != "on" {
+		t.Fatalf("界面唤醒后应写回开启状态: %q %q", topic, payload)
+	}
+	// 从管理界面关机同样写回关闭状态
+	if code, body := call(t, srv, "POST", "/devices/"+pc+"/shutdown", nil); code != 200 {
+		t.Fatalf("关机失败: %d %s", code, body)
+	}
+	if topic, payload, _, _ := parsePublish(bc.waitPacket(t, 3)); topic != "pc001/up" || payload != "off" {
+		t.Fatalf("界面关机后应写回关闭状态: %q %q", topic, payload)
+	}
 }
