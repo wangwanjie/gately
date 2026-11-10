@@ -151,6 +151,7 @@ func (m *Module) Init(env module.Env) error {
 	errLog := m.logs.Logger("")
 	m.auth.errPages.warn = errLog.Warnf
 	m.auth.errPages.set(m.cfg.ErrorPages)
+	m.auth.panels.set(m.cfg.Panels)
 	m.initVisitors()
 	return nil
 }
@@ -397,6 +398,7 @@ func (m *Module) Routes(r module.Router) {
 	listeners.Register(r, "/listeners")
 	m.registerIPLists(r)
 	m.registerErrorPages(r)
+	m.registerPanels(r)
 	m.registerUsers(r)
 	m.registerBatch(r)
 	m.registerCache(r)

@@ -395,6 +395,16 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | POST | `/api/webservice/errorpages/check` | `webservice:write` | Verifica a segurança e a usabilidade de uma página e gera uma prévia, sem salvar |
 | GET | `/api/webservice/errorpages/styles` | `webservice:read` | Prévia do estilo padrão e de todos os estilos integrados; ?code= define o código de status (padrão 502) |
 | GET | `/api/webservice/errorpages/{key}/preview` | `webservice:read` | Prévia de uma página de erro personalizada; ?code= define o código de status (padrão 502) |
+| GET | `/api/webservice/panels` | `webservice:read` | Listar Painéis de navegação |
+| POST | `/api/webservice/panels` | `webservice:write` | Adicionar Painéis de navegação |
+| POST | `/api/webservice/panels/{key}/copy` | `webservice:write` | Duplicar Painéis de navegação |
+| PUT | `/api/webservice/panels/{key}` | `webservice:write` | Modificar Painéis de navegação |
+| DELETE | `/api/webservice/panels/{key}` | `webservice:write` | Excluir Painéis de navegação |
+| PUT | `/api/webservice/panels/{key}/enable` | `webservice:write` | Ativar ou desativar Painéis de navegação |
+| PUT | `/api/webservice/panels-order` | `webservice:write` | Reordenar Painéis de navegação |
+| PUT | `/api/webservice/panels-enable` | `webservice:write` | Ativar ou desativar em lote: Painéis de navegação |
+| POST | `/api/webservice/panels-delete` | `webservice:write` | Excluir em lote: Painéis de navegação |
+| POST | `/api/webservice/panels/preview` | `webservice:write` | Prévia do painel de navegação |
 | GET | `/api/webservice/users` | `webservice:read` | Ler usuários compartilhados e provedor de identidade OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Salvar usuários compartilhados e provedor de identidade OIDC, configurar sites em lote |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | Operações em lote de sites: ativar, desativar, excluir, adicionar, remover ou substituir domínios, alterar algumas opções ou mover para outro listener; só é salvo se todos os sites passarem na validação e nada muda se algum falhar |
@@ -2397,6 +2407,48 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `issuer` | string |
 | `signingKey` | string |
 
+### webservice.Panel
+
+| Campo | Tipo |
+| --- | --- |
+| `enable` | boolean |
+| `icon` | string |
+| `key` | string |
+| `lanCidrs` | Array de string |
+| `links` | Array de `webservice.PanelLink` |
+| `name` | string |
+| `remark` | string |
+| `subtitle` | string |
+| `theme` | string |
+| `title` | string |
+
+### webservice.PanelLink
+
+| Campo | Tipo |
+| --- | --- |
+| `color` | string |
+| `description` | string |
+| `group` | string |
+| `hide` | boolean |
+| `icon` | string |
+| `lanUrl` | string |
+| `name` | string |
+| `sameTab` | boolean |
+| `url` | string |
+
+### webservice.PanelPreview
+
+| Campo | Tipo |
+| --- | --- |
+| `html` | string |
+
+### webservice.PanelPreviewRequest
+
+| Campo | Tipo |
+| --- | --- |
+| `lan` | boolean |
+| `panel` | `webservice.Panel` |
+
 ### webservice.PathRule
 
 | Campo | Tipo |
@@ -2565,6 +2617,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `name` | string |
 | `notFoundPage` | string |
 | `oauthUsers` | Array de string |
+| `panel` | string |
 | `passAuthCookies` | boolean |
 | `rateLimit` | `webservice.RateLimit` |
 | `redirectCode` | integer |

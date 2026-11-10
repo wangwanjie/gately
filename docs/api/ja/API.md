@@ -395,6 +395,16 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/webservice/errorpages/check` | `webservice:write` | ページの安全性と可用性を確認してプレビューを生成します（保存はしません） |
 | GET | `/api/webservice/errorpages/styles` | `webservice:read` | デフォルトスタイルとすべての組み込みスタイルのプレビュー。?code= でステータスコードを指定（デフォルト 502） |
 | GET | `/api/webservice/errorpages/{key}/preview` | `webservice:read` | カスタムエラーページのプレビュー。?code= でステータスコードを指定（デフォルト 502） |
+| GET | `/api/webservice/panels` | `webservice:read` | ナビゲーションパネル の一覧を取得 |
+| POST | `/api/webservice/panels` | `webservice:write` | ナビゲーションパネル を追加 |
+| POST | `/api/webservice/panels/{key}/copy` | `webservice:write` | ナビゲーションパネル を複製 |
+| PUT | `/api/webservice/panels/{key}` | `webservice:write` | ナビゲーションパネル を更新 |
+| DELETE | `/api/webservice/panels/{key}` | `webservice:write` | ナビゲーションパネル を削除 |
+| PUT | `/api/webservice/panels/{key}/enable` | `webservice:write` | ナビゲーションパネル の有効/無効を切り替え |
+| PUT | `/api/webservice/panels-order` | `webservice:write` | ナビゲーションパネル の並び順を変更 |
+| PUT | `/api/webservice/panels-enable` | `webservice:write` | ナビゲーションパネル の一括有効化・無効化 |
+| POST | `/api/webservice/panels-delete` | `webservice:write` | ナビゲーションパネル の一括削除 |
+| POST | `/api/webservice/panels/preview` | `webservice:write` | ナビゲーションパネルのプレビュー |
 | GET | `/api/webservice/users` | `webservice:read` | 共有ユーザーと OIDC ID プロバイダーを取得 |
 | PUT | `/api/webservice/users` | `webservice:write` | 共有ユーザーと OIDC ID プロバイダーを保存し、サイトを一括設定 |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | サイトの一括操作：有効化・無効化、削除、ドメインの追加・削除・置換、一部オプションの変更、別のリスナーへの移動。すべてのサイトが検証を通過した場合のみ保存し、1 件でも失敗すると何も変更しません |
@@ -2397,6 +2407,48 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `issuer` | string |
 | `signingKey` | string |
 
+### webservice.Panel
+
+| フィールド | 型 |
+| --- | --- |
+| `enable` | boolean |
+| `icon` | string |
+| `key` | string |
+| `lanCidrs` | 配列 of string |
+| `links` | 配列 of `webservice.PanelLink` |
+| `name` | string |
+| `remark` | string |
+| `subtitle` | string |
+| `theme` | string |
+| `title` | string |
+
+### webservice.PanelLink
+
+| フィールド | 型 |
+| --- | --- |
+| `color` | string |
+| `description` | string |
+| `group` | string |
+| `hide` | boolean |
+| `icon` | string |
+| `lanUrl` | string |
+| `name` | string |
+| `sameTab` | boolean |
+| `url` | string |
+
+### webservice.PanelPreview
+
+| フィールド | 型 |
+| --- | --- |
+| `html` | string |
+
+### webservice.PanelPreviewRequest
+
+| フィールド | 型 |
+| --- | --- |
+| `lan` | boolean |
+| `panel` | `webservice.Panel` |
+
 ### webservice.PathRule
 
 | フィールド | 型 |
@@ -2565,6 +2617,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `name` | string |
 | `notFoundPage` | string |
 | `oauthUsers` | 配列 of string |
+| `panel` | string |
 | `passAuthCookies` | boolean |
 | `rateLimit` | `webservice.RateLimit` |
 | `redirectCode` | integer |

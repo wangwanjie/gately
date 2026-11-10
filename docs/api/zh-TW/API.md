@@ -395,6 +395,16 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/webservice/errorpages/check` | `webservice:write` | 檢查頁面的安全性與可用性並產生預覽，不儲存 |
 | GET | `/api/webservice/errorpages/styles` | `webservice:read` | 預設樣式與全部內建風格的預覽，?code= 指定狀態碼（預設 502） |
 | GET | `/api/webservice/errorpages/{key}/preview` | `webservice:read` | 自訂錯誤頁面的預覽，?code= 指定狀態碼（預設 502） |
+| GET | `/api/webservice/panels` | `webservice:read` | 取得導覽面板清單 |
+| POST | `/api/webservice/panels` | `webservice:write` | 新增導覽面板 |
+| POST | `/api/webservice/panels/{key}/copy` | `webservice:write` | 複製導覽面板 |
+| PUT | `/api/webservice/panels/{key}` | `webservice:write` | 修改導覽面板 |
+| DELETE | `/api/webservice/panels/{key}` | `webservice:write` | 刪除導覽面板 |
+| PUT | `/api/webservice/panels/{key}/enable` | `webservice:write` | 啟用或停用導覽面板 |
+| PUT | `/api/webservice/panels-order` | `webservice:write` | 調整導覽面板排序 |
+| PUT | `/api/webservice/panels-enable` | `webservice:write` | 批次啟用或停用導覽面板 |
+| POST | `/api/webservice/panels-delete` | `webservice:write` | 批次刪除導覽面板 |
+| POST | `/api/webservice/panels/preview` | `webservice:write` | 導覽面板預覽 |
 | GET | `/api/webservice/users` | `webservice:read` | 讀取共用使用者與 OIDC 身分提供者 |
 | PUT | `/api/webservice/users` | `webservice:write` | 儲存共用使用者與 OIDC 身分提供者，批次設定站點 |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | 批次操作站點：啟停、刪除、增刪或取代網域、修改部分選項、移到其他監聽；全部驗證通過才儲存，任一站點失敗都不修改 |
@@ -2397,6 +2407,48 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `issuer` | string |
 | `signingKey` | string |
 
+### webservice.Panel
+
+| 欄位 | 類型 |
+| --- | --- |
+| `enable` | boolean |
+| `icon` | string |
+| `key` | string |
+| `lanCidrs` | 陣列 of string |
+| `links` | 陣列 of `webservice.PanelLink` |
+| `name` | string |
+| `remark` | string |
+| `subtitle` | string |
+| `theme` | string |
+| `title` | string |
+
+### webservice.PanelLink
+
+| 欄位 | 類型 |
+| --- | --- |
+| `color` | string |
+| `description` | string |
+| `group` | string |
+| `hide` | boolean |
+| `icon` | string |
+| `lanUrl` | string |
+| `name` | string |
+| `sameTab` | boolean |
+| `url` | string |
+
+### webservice.PanelPreview
+
+| 欄位 | 類型 |
+| --- | --- |
+| `html` | string |
+
+### webservice.PanelPreviewRequest
+
+| 欄位 | 類型 |
+| --- | --- |
+| `lan` | boolean |
+| `panel` | `webservice.Panel` |
+
 ### webservice.PathRule
 
 | 欄位 | 類型 |
@@ -2565,6 +2617,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `name` | string |
 | `notFoundPage` | string |
 | `oauthUsers` | 陣列 of string |
+| `panel` | string |
 | `passAuthCookies` | boolean |
 | `rateLimit` | `webservice.RateLimit` |
 | `redirectCode` | integer |

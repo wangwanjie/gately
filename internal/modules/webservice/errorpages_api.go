@@ -141,12 +141,15 @@ func (m *Module) checkErrorPageRefsLocked(l *Listener) error {
 	return check(l.Default.ErrorPage, defaultSiteLabel(l, "默认站点"))
 }
 
-// checkRefsLocked 检查监听器引用的 IP 列表与自定义错误页面都存在。
+// checkRefsLocked 检查监听器引用的 IP 列表、自定义错误页面与导航面板都存在。
 func (m *Module) checkRefsLocked(l *Listener) error {
 	if err := m.checkIPSetsLocked(l); err != nil {
 		return err
 	}
-	return m.checkErrorPageRefsLocked(l)
+	if err := m.checkErrorPageRefsLocked(l); err != nil {
+		return err
+	}
+	return m.checkPanelRefsLocked(l)
 }
 
 func (m *Module) viewErrorPageLocked(p *ErrorPage) ErrorPageView {

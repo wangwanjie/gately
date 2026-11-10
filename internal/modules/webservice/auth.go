@@ -68,6 +68,8 @@ type authenticator struct {
 	pwChangedAt sync.Map
 	// errPages 为自定义错误页面库，全部监听的站点共用；页面库修改后整体替换，站点无需重建
 	errPages *errorPageStore
+	// panels 为导航面板库，全部监听的站点共用；面板修改后整体替换，站点无需重建
+	panels *panelStore
 }
 
 func (a *authenticator) setOAuth(env oauthEnv) {
@@ -90,7 +92,7 @@ type failCount struct {
 
 func newAuthenticator(secret string) *authenticator {
 	return &authenticator{secret: []byte(secret), fails: map[string]*failCount{}, used: map[string]int64{},
-		bans: banlist.Default, shareUses: map[string]int{}, files: fileusers.Default, errPages: newErrorPageStore()}
+		bans: banlist.Default, shareUses: map[string]int{}, files: fileusers.Default, errPages: newErrorPageStore(), panels: newPanelStore()}
 }
 
 // verifyUser 校验用户名密码，密码支持明文（导入的配置）与 bcrypt 哈希。
