@@ -377,7 +377,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | PUT | `/api/webservice/listeners-order` | `webservice:write` | Réordonner Écoute du service Web |
 | PUT | `/api/webservice/listeners-enable` | `webservice:write` | Activer ou désactiver en lot : Écoute du service Web |
 | POST | `/api/webservice/listeners-delete` | `webservice:write` | Supprimer en lot : Écoute du service Web |
-| GET | `/api/webservice/iplists` | `webservice:read` | Lister les listes d’IP abonnées |
+| GET | `/api/webservice/iplists` | `webservice:read` | Lister 订阅 IP  |
 | POST | `/api/webservice/iplists` | `webservice:write` | Ajouter Liste d'IP abonnée |
 | POST | `/api/webservice/iplists/{key}/copy` | `webservice:write` | Dupliquer Liste d'IP abonnée |
 | PUT | `/api/webservice/iplists/{key}` | `webservice:write` | Modifier Liste d'IP abonnée |
@@ -3111,4 +3111,10 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | --- | --- |
 | `settings` | `wol.BemfaSettings` |
 | `status` | `wol.BemfaStatus` |
+
+### wol.shutdownResult
+
+| Champ | Type |
+| --- | --- |
+| `output` | string |
 

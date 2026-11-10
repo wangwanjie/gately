@@ -5194,6 +5194,14 @@
           }
         },
         "type": "object"
+      },
+      "wol.shutdownResult": {
+        "properties": {
+          "output": {
+            "type": "string"
+          }
+        },
+        "type": "object"
       }
     },
     "securitySchemes": {
@@ -45557,7 +45565,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "取得訂閱 IP 清單",
+        "summary": "取得订阅 IP 清單",
         "tags": [
           "Web 服務"
         ],
@@ -54048,10 +54056,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "type": "object"
+                  "$ref": "#/components/schemas/wol.shutdownResult"
                 }
               }
             },

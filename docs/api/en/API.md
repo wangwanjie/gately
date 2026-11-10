@@ -377,7 +377,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | PUT | `/api/webservice/listeners-order` | `webservice:write` | Reorder Web service listening |
 | PUT | `/api/webservice/listeners-enable` | `webservice:write` | Enable or disable in bulk: Web service listening |
 | POST | `/api/webservice/listeners-delete` | `webservice:write` | Delete in bulk: Web service listening |
-| GET | `/api/webservice/iplists` | `webservice:read` | List subscribed IP lists |
+| GET | `/api/webservice/iplists` | `webservice:read` | List 订阅 IP  |
 | POST | `/api/webservice/iplists` | `webservice:write` | Create Subscribed IP list |
 | POST | `/api/webservice/iplists/{key}/copy` | `webservice:write` | Duplicate Subscribed IP list |
 | PUT | `/api/webservice/iplists/{key}` | `webservice:write` | Update Subscribed IP list |
@@ -3111,4 +3111,10 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | --- | --- |
 | `settings` | `wol.BemfaSettings` |
 | `status` | `wol.BemfaStatus` |
+
+### wol.shutdownResult
+
+| Field | Type |
+| --- | --- |
+| `output` | string |
 

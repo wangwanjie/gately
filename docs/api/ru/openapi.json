@@ -5194,6 +5194,14 @@
           }
         },
         "type": "object"
+      },
+      "wol.shutdownResult": {
+        "properties": {
+          "output": {
+            "type": "string"
+          }
+        },
+        "type": "object"
       }
     },
     "securitySchemes": {
@@ -45557,7 +45565,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Список подписных списков IP",
+        "summary": "Список: 订阅 IP ",
         "tags": [
           "Веб-служба"
         ],
@@ -54048,10 +54056,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "type": "object"
+                  "$ref": "#/components/schemas/wol.shutdownResult"
                 }
               }
             },

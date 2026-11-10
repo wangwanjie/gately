@@ -377,7 +377,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/webservice/listeners-order` | `webservice:write` | Изменить порядок: Прослушивание веб-службы |
 | PUT | `/api/webservice/listeners-enable` | `webservice:write` | Пакетно включить или отключить: Прослушивание веб-службы |
 | POST | `/api/webservice/listeners-delete` | `webservice:write` | Пакетно удалить: Прослушивание веб-службы |
-| GET | `/api/webservice/iplists` | `webservice:read` | Список подписных списков IP |
+| GET | `/api/webservice/iplists` | `webservice:read` | Список: 订阅 IP  |
 | POST | `/api/webservice/iplists` | `webservice:write` | Добавить: Подписной список IP |
 | POST | `/api/webservice/iplists/{key}/copy` | `webservice:write` | Дублировать: Подписной список IP |
 | PUT | `/api/webservice/iplists/{key}` | `webservice:write` | Изменить: Подписной список IP |
@@ -3111,4 +3111,10 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `settings` | `wol.BemfaSettings` |
 | `status` | `wol.BemfaStatus` |
+
+### wol.shutdownResult
+
+| Поле | Тип |
+| --- | --- |
+| `output` | string |
 

@@ -305,7 +305,7 @@ func (m *Module) Routes(r module.Router) {
 	devices.Register(r, "/devices")
 	r.HandleFunc("POST /devices/{key}/wake", m.handleWake)
 	r.HandleFunc("POST /devices/{key}/shutdown", m.handleShutdown)
-	module.DocOf(r, "POST /devices/{key}/shutdown", module.Doc{Summary: "远程关机", Resp: map[string]string{}})
+	module.DocOf(r, "POST /devices/{key}/shutdown", module.Doc{Summary: "远程关机", Resp: shutdownResult{}})
 	r.HandleFunc("GET /status", m.handleStatus)
 	r.HandleFunc("GET /ssh-targets", m.handleSSHTargets)
 	module.DocOf(r, "GET /ssh-targets", module.Doc{Summary: "列出可用于远程关机的 SSH 连接", Resp: []SSHTarget{}})

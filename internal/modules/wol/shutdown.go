@@ -66,6 +66,11 @@ func (m *Module) shutdown(ctx context.Context, d Device) (string, error) {
 	return out, nil
 }
 
+// shutdownResult 为远程关机接口的返回：命令输出（最多 16 KB，去掉首尾空白）。
+type shutdownResult struct {
+	Output string `json:"output"`
+}
+
 func (m *Module) handleShutdown(w http.ResponseWriter, r *http.Request) {
 	d, ok := m.find(r.PathValue("key"))
 	if !ok {
@@ -80,7 +85,7 @@ func (m *Module) handleShutdown(w http.ResponseWriter, r *http.Request) {
 	case err != nil:
 		httpx.Error(w, http.StatusBadGateway, "关机失败: %v", err)
 	default:
-		httpx.OK(w, map[string]string{"output": out})
+		httpx.OK(w, shutdownResult{Output: out})
 	}
 }
 
