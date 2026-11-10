@@ -103,6 +103,21 @@ export interface TopologyView {
   ipTruncated: boolean
   focus?: string
   series?: RatePoint[]
+  // seriesStep 为曲线每个点覆盖的秒数，只在回放快照中出现（实时快照每秒一个点）
+  seriesStep?: number
+  // replay 只在回放快照中出现：这一帧在录制数据中的位置
+  replay?: ReplayMeta
+}
+
+// ReplayMeta 为回放帧的位置：全部数据与所在段的起止时刻、上一个与下一个采样时刻（没有时为 0）
+export interface ReplayMeta {
+  start: number
+  end: number
+  frameStart: number
+  frameEnd: number
+  prev: number
+  next: number
+  step: number
 }
 
 // 节点种类：internet 互联网、gately 本实例、listener 监听、site 站点、action 监听级动作、
