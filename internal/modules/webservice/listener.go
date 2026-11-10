@@ -148,6 +148,17 @@ func (l *listenerRunner) route(host string) *siteHandler {
 	return t.deflt
 }
 
+// redirectable 判断明文请求能否跳转到 HTTPS：域名没有对应站点（也没有默认站点），或默认站点是断开连接时不跳转，
+// 交给后面的未知域名处理或默认站点断开，与 HTTPS 上的行为一致。否则扫描器用任意 Host 访问 HTTP 端口
+// 都会得到一个跳转，既绕过了默认站点的拒绝与路径探测计数，也对外确认了 HTTPS 监听的存在。
+func (l *listenerRunner) redirectable(r *http.Request) bool {
+	s := l.route(r.Host)
+	if s == nil {
+		return false
+	}
+	return !(s.deflt && s.site.Type == TypeClose)
+}
+
 func (l *listenerRunner) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// 先确定访客真实地址（对端为可信代理时采信其请求头），后续所有处理都使用改写后的客户端地址
 	r = l.realIP.apply(r)
@@ -162,12 +173,12 @@ func (l *listenerRunner) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// HTTPS 端口收到的明文请求按设置跳转到同端口的 https 地址，额外 HTTP 端口的请求跳转到主端口（ACME 验证已在上面应答）；
 	// 可信反向代理已终止 TLS 并以 X-Forwarded-Proto: https 转来的请求不再跳转，否则会循环跳转
 	if fromHTTPPort(r) {
-		if l.httpPortMode == PlainHTTPRedirect && !requestIsHTTPS(r) {
+		if l.httpPortMode == PlainHTTPRedirect && !requestIsHTTPS(r) && l.redirectable(r) {
 			l.acts.redirect.hit(r)
 			redirectToHTTPSPort(w, r, l.current().httpsPort)
 			return
 		}
-	} else if l.plainHTTP == PlainHTTPRedirect && !requestIsHTTPS(r) {
+	} else if l.plainHTTP == PlainHTTPRedirect && !requestIsHTTPS(r) && l.redirectable(r) {
 		l.acts.redirect.hit(r)
 		redirectToHTTPS(w, r)
 		return
