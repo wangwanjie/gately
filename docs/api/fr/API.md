@@ -2423,6 +2423,13 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `theme` | string |
 | `title` | string |
 
+### webservice.PanelAlt
+
+| Champ | Type |
+| --- | --- |
+| `name` | string |
+| `url` | string |
+
 ### webservice.PanelIconView
 
 | Champ | Type |
@@ -2438,6 +2445,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 
 | Champ | Type |
 | --- | --- |
+| `alts` | Tableau de `webservice.PanelAlt` |
 | `color` | string |
 | `description` | string |
 | `group` | string |

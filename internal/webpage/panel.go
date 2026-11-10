@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"html/template"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"unicode"
@@ -51,6 +52,14 @@ type PanelLink struct {
 	Href   string
 	NewTab bool
 	Icon   PanelIcon
+	// Alts 为其他访问方式（如 IPv6、frp、STUN、Cloudflare），显示为卡片上的小链接，始终在新标签页打开
+	Alts []PanelAlt
+}
+
+// PanelAlt 是一个其他访问方式：Href 为空表示暂不可用。
+type PanelAlt struct {
+	Name string
+	Href string
 }
 
 // PanelIcon 是链接或页面的图标：Image 为已校验的图片地址（http/https 或 data:image），
@@ -133,10 +142,15 @@ body{margin:0;min-height:100vh;display:flex;flex-direction:column;background:var
 .grp h2{display:flex;align-items:center;gap:8px;margin:0 0 12px;font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.02em}
 .grp h2 .n{min-width:20px;padding:0 6px;border-radius:999px;background:var(--input);border:1px solid var(--line);color:var(--faint);font-size:11px;font-weight:500;text-align:center}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
-.card{display:flex;align-items:center;gap:12px;min-width:0;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--card);color:inherit;text-decoration:none;box-shadow:var(--shadow);transition:border-color .15s,transform .15s,background .15s}
-a.card:hover{border-color:var(--brand);background:var(--hover);transform:translateY(-1px)}
-a.card:focus-visible{outline:none;border-color:var(--brand);box-shadow:0 0 0 4px var(--soft)}
-.card.off{opacity:.55;cursor:not-allowed}
+.card{position:relative;display:flex;align-items:center;gap:12px;min-width:0;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--card);color:inherit;box-shadow:var(--shadow);transition:border-color .15s,transform .15s,background .15s}
+.card .hit{position:absolute;inset:0;z-index:1;border-radius:inherit}
+.card.link:hover{border-color:var(--brand);background:var(--hover);transform:translateY(-1px)}
+.card .hit:focus-visible{outline:none;box-shadow:0 0 0 4px var(--soft)}
+.card.off>.ic,.card.off .nm,.card.off .ds{opacity:.55}
+.alts{position:relative;z-index:2;display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.alt{display:inline-block;max-width:100%;padding:1px 7px;border:1px solid var(--line);border-radius:999px;background:var(--input);color:var(--muted);font-size:11.5px;line-height:17px;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+a.alt:hover{border-color:var(--brand);color:var(--brand)}
+.alt.off{opacity:.5;text-decoration:line-through;cursor:not-allowed}
 .ic{width:40px;height:40px;flex:none;border-radius:11px;display:grid;place-items:center;color:#fff;background:var(--c,var(--brand));font-size:17px;font-weight:650;overflow:hidden}
 .ic.img{background:var(--input);border:1px solid var(--line)}
 .ic img{width:28px;height:28px;object-fit:contain}
@@ -185,10 +199,11 @@ const panelSrc = `<!doctype html>
 </header>
 <main>
 {{range .Groups}}<section class="grp">{{if .Name}}<h2>{{.Name}}<span class="n">{{len .Links}}</span></h2>{{end}}<div class="grid">
-{{range .Links}}{{if .Href}}<a class="card" href="{{.Href}}"{{if .NewTab}} target="_blank" rel="noopener noreferrer"{{end}} data-s="{{.Search}}" title="{{.Name}}">{{else}}<span class="card off" aria-disabled="true" data-s="{{.Search}}" title="{{$.T.off}}">{{end}}
+{{range .Links}}<div class="card{{if .Href}} link{{else}} off{{end}}" data-s="{{.Search}}"{{if not .Href}} title="{{$.T.off}}"{{end}}>
+{{if .Href}}<a class="hit" href="{{.Href}}"{{if .NewTab}} target="_blank" rel="noopener noreferrer"{{end}} title="{{.Name}}" aria-label="{{.Name}}"></a>{{end}}
 {{with .Icon}}{{if and .Image .Class}}<span class="ic tile {{.Class}}"><img src="{{.Image}}" alt="" loading="lazy"></span>{{else if .Image}}<span class="ic img"><img src="{{.Image}}" alt="" loading="lazy" referrerpolicy="no-referrer"></span>{{else}}<span class="ic {{.Class}}">{{.Text}}</span>{{end}}{{end}}
-<span class="tx"><span class="nm">{{.Name}}</span>{{if not .Href}}<span class="ds">{{$.T.off}}</span>{{else if .Description}}<span class="ds">{{.Description}}</span>{{else if .Address}}<span class="ds mono">{{.Address}}</span>{{end}}</span>
-{{if .Href}}</a>{{else}}</span>{{end}}
+<span class="tx"><span class="nm">{{.Name}}</span>{{if not .Href}}<span class="ds">{{$.T.off}}</span>{{else if .Description}}<span class="ds">{{.Description}}</span>{{else if .Address}}<span class="ds mono">{{.Address}}</span>{{end}}{{if .Alts}}<span class="alts">{{range .Alts}}{{if .Href}}<a class="alt" href="{{.Href}}" target="_blank" rel="noopener noreferrer" title="{{.Title}}">{{.Name}}</a>{{else}}<span class="alt off" title="{{$.T.off}}">{{.Name}}</span>{{end}}{{end}}</span>{{end}}</span>
+</div>
 {{end}}</div></section>
 {{end}}
 {{if .Empty}}<p class="empty">{{.T.empty}}</p>{{else}}<p id="none" class="empty" hidden>{{.T.noMatch}}</p>{{end}}
@@ -206,7 +221,7 @@ cards.forEach(function(c){var s=c.getAttribute("data-s"),ok=terms.every(function
 groups.forEach(function(g){g.hidden=!g.querySelector("[data-s]:not([hidden])")});if(none){none.hidden=shown>0}}
 q.addEventListener("input",apply);
 document.addEventListener("keydown",function(e){if(e.key==="/"&&document.activeElement!==q&&!e.metaKey&&!e.ctrlKey&&!e.altKey&&!/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)){e.preventDefault();q.focus()}});
-q.addEventListener("keydown",function(e){if(e.key==="Escape"){q.value="";apply();q.blur()}else if(e.key==="Enter"){var f=cards.filter(function(c){return !c.hidden&&c.tagName==="A"})[0];if(f){e.preventDefault();f.click()}}});
+q.addEventListener("keydown",function(e){if(e.key==="Escape"){q.value="";apply();q.blur()}else if(e.key==="Enter"){var f=cards.filter(function(c){return !c.hidden&&c.querySelector(".hit")})[0];if(f){e.preventDefault();f.querySelector(".hit").click()}}});
 if(q.value){apply()}})();`
 
 var panelTpl = template.Must(template.New("panel").Parse(panelSrc))
@@ -219,12 +234,19 @@ type panelIconData struct {
 	Class string
 }
 
+type panelAltData struct {
+	Name  string
+	Href  template.URL
+	Title string
+}
+
 type panelLinkData struct {
 	Name, Description, Address string
 	Href                       template.URL
 	NewTab                     bool
 	Search                     string
 	Icon                       panelIconData
+	Alts                       []panelAltData
 }
 
 type panelGroupData struct {
@@ -272,6 +294,14 @@ func paletteColor(name string) string {
 	return panelPalette[h%uint32(len(panelPalette))]
 }
 
+// altTitle 返回其他访问方式的提示文字：地址中的主机与端口。
+func altTitle(href string) string {
+	if u, err := url.Parse(href); err == nil && u.Host != "" {
+		return u.Host
+	}
+	return href
+}
+
 // RenderPanel 生成面板页面，返回页面内容与应放在响应头中的 CSP（预览时 CSP 已写在页面的 meta 标签中，返回空）。
 func RenderPanel(r *http.Request, v PanelView) ([]byte, string) {
 	lang := i18n.RequestLang(r)
@@ -310,9 +340,15 @@ func RenderPanel(r *http.Request, v PanelView) ([]byte, string) {
 	for _, g := range v.Groups {
 		gd := panelGroupData{Name: g.Name}
 		for _, l := range g.Links {
-			search := strings.ToLower(strings.Join([]string{l.Name, l.Description, l.Address, g.Name}, " "))
+			words := []string{l.Name, l.Description, l.Address, g.Name}
+			var alts []panelAltData
+			for _, a := range l.Alts {
+				words = append(words, a.Name)
+				alts = append(alts, panelAltData{Name: a.Name, Href: template.URL(a.Href), Title: altTitle(a.Href)})
+			}
+			search := strings.ToLower(strings.Join(words, " "))
 			gd.Links = append(gd.Links, panelLinkData{Name: l.Name, Description: l.Description, Address: l.Address,
-				Href: template.URL(l.Href), NewTab: l.NewTab, Search: search, Icon: icon(l.Icon, l.Name)})
+				Href: template.URL(l.Href), NewTab: l.NewTab, Search: search, Icon: icon(l.Icon, l.Name), Alts: alts})
 		}
 		total += len(gd.Links)
 		groups = append(groups, gd)

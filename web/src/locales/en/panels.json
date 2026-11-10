@@ -81,5 +81,11 @@
   "iconNone": "No matching icons",
   "iconBuiltin": "Built-in icon: {name}. Change the background color below.",
   "iconBuiltinMissing": "This built-in icon doesn't exist in this version",
-  "colorBuiltin": "Icon's own color"
+  "colorBuiltin": "Icon's own color",
+  "alts": "Other access methods",
+  "altsHelp": "Other ways to reach the same service, such as IPv6, frp, STUN or a Cloudflare tunnel. They appear as small links on the card, open in a new tab, and are shown to LAN and internet visitors alike.",
+  "altNamePlaceholder": "IPv6, frp…",
+  "addAlt": "Add access method",
+  "altCount": "+{n} access methods",
+  "altNameRequired": "Enter a name for each access method"
 }

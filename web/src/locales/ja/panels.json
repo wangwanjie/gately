@@ -81,5 +81,11 @@
   "iconNone": "一致するアイコンはありません",
   "iconBuiltin": "組み込みアイコン：{name}。背景色は下で変更できます。",
   "iconBuiltinMissing": "この組み込みアイコンは現在のバージョンにありません",
-  "colorBuiltin": "アイコン本来の色"
+  "colorBuiltin": "アイコン本来の色",
+  "alts": "その他のアクセス方法",
+  "altsHelp": "同じサービスへの別の入口（IPv6、frp、STUN、Cloudflare トンネルなど）です。カード上の小さなリンクとして新しいタブで開き、LAN とインターネットのどちらの訪問者にも表示されます。",
+  "altNamePlaceholder": "IPv6、frp…",
+  "addAlt": "アクセス方法を追加",
+  "altCount": "+{n} 件のアクセス方法",
+  "altNameRequired": "アクセス方法の名前を入力してください"
 }

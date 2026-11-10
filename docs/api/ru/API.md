@@ -2423,6 +2423,13 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `theme` | string |
 | `title` | string |
 
+### webservice.PanelAlt
+
+| Поле | Тип |
+| --- | --- |
+| `name` | string |
+| `url` | string |
+
 ### webservice.PanelIconView
 
 | Поле | Тип |
@@ -2438,6 +2445,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | Поле | Тип |
 | --- | --- |
+| `alts` | Массив из `webservice.PanelAlt` |
 | `color` | string |
 | `description` | string |
 | `group` | string |

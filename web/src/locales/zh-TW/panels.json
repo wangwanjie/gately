@@ -81,5 +81,11 @@
   "iconNone": "沒有符合的圖示",
   "iconBuiltin": "內建圖示：{name}。底色可在下方修改。",
   "iconBuiltinMissing": "這個內建圖示在目前版本中不存在",
-  "colorBuiltin": "使用圖示自帶顏色"
+  "colorBuiltin": "使用圖示自帶顏色",
+  "alts": "其他存取方式",
+  "altsHelp": "同一個服務的其他入口，例如 IPv6、frp、STUN 穿透、Cloudflare 通道，顯示為卡片上的小連結，在新分頁開啟，內網與外網訪客都會顯示。",
+  "altNamePlaceholder": "IPv6、frp…",
+  "addAlt": "新增存取方式",
+  "altCount": "+{n} 個存取方式",
+  "altNameRequired": "請填寫存取方式的名稱"
 }

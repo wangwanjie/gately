@@ -81,5 +81,11 @@
   "iconNone": "No hay iconos que coincidan",
   "iconBuiltin": "Icono integrado: {name}. Cambia el color de fondo abajo.",
   "iconBuiltinMissing": "Este icono integrado no existe en esta versión",
-  "colorBuiltin": "Color propio del icono"
+  "colorBuiltin": "Color propio del icono",
+  "alts": "Otras formas de acceso",
+  "altsHelp": "Otras entradas al mismo servicio, como IPv6, frp, STUN o un túnel de Cloudflare. Aparecen como enlaces pequeños en la tarjeta, se abren en una pestaña nueva y se muestran a visitantes de la LAN y de Internet.",
+  "altNamePlaceholder": "IPv6, frp…",
+  "addAlt": "Añadir forma de acceso",
+  "altCount": "+{n} formas de acceso",
+  "altNameRequired": "Introduce un nombre para cada forma de acceso"
 }

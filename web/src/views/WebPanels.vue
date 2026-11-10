@@ -92,6 +92,7 @@
                   <span class="ellipsis">{{ editing.links[i].name }}</span>
                   <el-tag v-if="editing.links[i].hide" size="small" type="info">{{ t('panels.hiddenTag') }}</el-tag>
                   <el-tag v-if="editing.links[i].sameTab" size="small" type="info">{{ t('panels.sameTabTag') }}</el-tag>
+                  <el-tag v-if="editing.links[i].alts?.length" size="small" :title="editing.links[i].alts.map((a) => a.name).join(' / ')">{{ t('panels.altCount', { n: editing.links[i].alts.length }) }}</el-tag>
                 </div>
                 <div class="link-url mono ellipsis" :title="editing.links[i].url">{{ editing.links[i].url }}</div>
                 <div v-if="editing.links[i].lanUrl" class="link-url mono ellipsis lan" :title="editing.links[i].lanUrl">
@@ -168,7 +169,18 @@
         <el-form-item :label="t('panels.lanUrl')">
           <el-input v-model="link.lanUrl" class="mono" placeholder="http://192.168.1.2:5000" data-test="link-lan-url" />
           <div class="form-help">{{ t('panels.lanUrlHelp') }}</div>
-          <div class="form-help">{{ t('panels.varsHelp') }}</div>
+        </el-form-item>
+        <el-form-item :label="t('panels.alts')">
+          <div class="alts">
+            <div v-for="(a, ai) in link.alts" :key="ai" class="alt-row" data-test="alt-row">
+              <el-input v-model="a.name" maxlength="20" class="alt-name" :placeholder="t('panels.altNamePlaceholder')" data-test="alt-name" />
+              <el-input v-model="a.url" class="mono alt-url" :placeholder="altUrlExample" data-test="alt-url" />
+              <el-button text type="danger" :icon="Trash2" :aria-label="t('common.delete')" @click="link.alts.splice(ai, 1)" />
+            </div>
+            <el-button size="small" :icon="Plus" :disabled="link.alts.length >= MAX_ALTS" data-test="alt-add" @click="link.alts.push({ name: '', url: '' })">{{ t('panels.addAlt') }}</el-button>
+            <div class="form-help">{{ t('panels.altsHelp') }}</div>
+            <div class="form-help">{{ t('panels.varsHelp') }}</div>
+          </div>
         </el-form-item>
         <el-form-item :label="t('panels.description')"><el-input v-model="link.description" maxlength="200" /></el-form-item>
         <el-form-item :label="t('panels.icon')">
@@ -236,6 +248,7 @@ import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import { forwardedEntry, siteLink, type ForwardSource } from '../siteUrl'
 import { loadForwardSources } from '../forwardSources'
 import {
+  MAX_ALTS,
   MAX_LINKS,
   emptyLink,
   emptyPanel,
@@ -429,6 +442,8 @@ async function removeLink(i: number) {
 // ---- 编辑链接 ----
 
 const linkVisible = ref(false)
+// altUrlExample 为其他访问方式地址的示例（写在模板属性里时方括号会干扰模板解析）
+const altUrlExample = 'https://[2001:db8::2]:8443'
 const link = ref<PanelLink>(emptyLink())
 const linkIndex = ref(-1)
 const palette = ['#0e7c66', '#2563eb', '#7c3aed', '#db2777', '#ea580c', '#b45309', '#15803d', '#0e7490', '#4f46e5', '#dc2626']
@@ -448,7 +463,7 @@ function openLink(i: number) {
   linkIndex.value = i
   // 新链接默认放进最后一个分组
   const lastGroup = linkGroups.value.at(-1)?.name ?? ''
-  link.value = i >= 0 ? { ...editing.value.links[i] } : emptyLink(lastGroup)
+  link.value = i >= 0 ? { ...editing.value.links[i], alts: (editing.value.links[i].alts ?? []).map((a) => ({ ...a })) } : emptyLink(lastGroup)
   linkVisible.value = true
 }
 
@@ -467,7 +482,13 @@ function saveLink() {
     ElMessage.error(t('panels.linkNameRequired'))
     return
   }
-  if (!looksLikeUrl(l.url) || (l.lanUrl && !looksLikeUrl(l.lanUrl))) {
+  // 其他访问方式：去掉名称与地址都空的行，其余必须两项都填
+  l.alts = l.alts.map((a) => ({ name: a.name.trim(), url: a.url.trim() })).filter((a) => a.name || a.url)
+  if (l.alts.some((a) => !a.name)) {
+    ElMessage.error(t('panels.altNameRequired'))
+    return
+  }
+  if (!looksLikeUrl(l.url) || (l.lanUrl && !looksLikeUrl(l.lanUrl)) || l.alts.some((a) => !looksLikeUrl(a.url))) {
     ElMessage.error(t('panels.urlInvalid'))
     return
   }
@@ -721,6 +742,28 @@ onMounted(async () => {
   border-radius: var(--g-radius);
   background: #fff;
 }
+.alts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+.alts > .el-button {
+  align-self: flex-start;
+}
+.alt-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.alt-name {
+  width: 120px;
+  flex: none;
+}
+.alt-url {
+  flex: 1;
+  min-width: 0;
+}
 .inline-help {
   margin: 0 0 0 10px;
 }
@@ -764,6 +807,21 @@ onMounted(async () => {
   /* 移动端只保留上下移动与删除按钮，点链接本身进入编辑 */
   .link-actions [data-test='link-edit'] {
     display: none;
+  }
+  /* 移动端：名称与删除按钮一行、地址占满第二行，各组之间用分隔线区分 */
+  .alt-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed var(--g-border);
+  }
+  .alt-name {
+    width: auto;
+  }
+  .alt-url {
+    grid-column: 1 / -1;
+    grid-row: 2;
   }
   .preview-frame {
     height: calc(100vh - 260px);

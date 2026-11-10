@@ -2423,6 +2423,13 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `theme` | string |
 | `title` | string |
 
+### webservice.PanelAlt
+
+| Field | Type |
+| --- | --- |
+| `name` | string |
+| `url` | string |
+
 ### webservice.PanelIconView
 
 | Field | Type |
@@ -2438,6 +2445,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 
 | Field | Type |
 | --- | --- |
+| `alts` | Array of `webservice.PanelAlt` |
 | `color` | string |
 | `description` | string |
 | `group` | string |

@@ -2423,6 +2423,13 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `theme` | string |
 | `title` | string |
 
+### webservice.PanelAlt
+
+| Campo | Tipo |
+| --- | --- |
+| `name` | string |
+| `url` | string |
+
 ### webservice.PanelIconView
 
 | Campo | Tipo |
@@ -2438,6 +2445,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 
 | Campo | Tipo |
 | --- | --- |
+| `alts` | Array de `webservice.PanelAlt` |
 | `color` | string |
 | `description` | string |
 | `group` | string |
