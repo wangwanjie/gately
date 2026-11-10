@@ -283,8 +283,12 @@ func skipped(method, path string) bool {
 	if method != http.MethodPost {
 		return false
 	}
-	// 网络诊断、自检、Passkey 注册参数下发都只是读取或计算，不改变配置
-	return strings.HasPrefix(path, "/api/nettools/") || path == "/api/system/selfcheck" || path == "/api/account/passkeys/begin"
+	// 网络诊断、自检、Passkey 注册参数下发、导航面板预览都只是读取或计算，不改变配置
+	switch path {
+	case "/api/system/selfcheck", "/api/account/passkeys/begin", "/api/webservice/panels/preview":
+		return true
+	}
+	return strings.HasPrefix(path, "/api/nettools/")
 }
 
 // Middleware 记录经过认证后的变更类请求与敏感读取。必须挂在认证中间件之内，才能取到操作者。
