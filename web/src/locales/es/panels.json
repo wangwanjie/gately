@@ -88,5 +88,7 @@
   "altNamePlaceholder": "IPv6, frp…",
   "addAlt": "Añadir forma de acceso",
   "altCount": "+{n} formas de acceso",
-  "altNameRequired": "Introduce un nombre para cada forma de acceso"
+  "altNameRequired": "Introduce un nombre para cada forma de acceso",
+  "lanDetectNote": "LAN o internet se decide por la dirección directa del visitante: cuando los visitantes de internet llegan a través de frpc, cloudflared o un mapeo de puertos de Docker en esta máquina, la dirección directa es esta máquina o una red de contenedores y cuentan como LAN. En ese caso activa el protocolo PROXY en el listener o configura proxies de confianza. Las direcciones LAN de los enlaces son visibles para quien pueda abrir el panel (se puede cambiar con ?net=lan); para ocultarlas, activa la autenticación del sitio o el control de acceso por IP.",
+  "moduleDisabled": "El módulo de servicio web está desactivado, por lo que los paneles de navegación no están disponibles. Actívalo en Ajustes → Módulos."
 }

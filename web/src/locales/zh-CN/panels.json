@@ -88,5 +88,7 @@
   "altNamePlaceholder": "IPv6、frp…",
   "addAlt": "添加访问方式",
   "altCount": "+{n} 个访问方式",
-  "altNameRequired": "请填写访问方式的名称"
+  "altNameRequired": "请填写访问方式的名称",
+  "lanDetectNote": "内外网按访客的直连地址判断：外网访客经本机的 frpc、cloudflared 或 Docker 端口映射转发进来时，直连地址是本机或容器网段，会被视为内网，此时请在监听上开启 PROXY 协议或配置可信代理。链接的内网地址对能打开面板的访客可见（访客可用 ?net=lan 切换），需要隐藏时请开启站点认证或 IP 访问控制。",
+  "moduleDisabled": "Web 服务模块已关闭，导航面板不可用。可在「设置 → 功能模块」中开启 Web 服务模块。"
 }

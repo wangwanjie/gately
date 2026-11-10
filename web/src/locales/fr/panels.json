@@ -88,5 +88,7 @@
   "altNamePlaceholder": "IPv6, frp…",
   "addAlt": "Ajouter un mode d’accès",
   "altCount": "+{n} modes d’accès",
-  "altNameRequired": "Saisissez un nom pour chaque mode d’accès"
+  "altNameRequired": "Saisissez un nom pour chaque mode d’accès",
+  "lanDetectNote": "LAN ou internet est déterminé par l'adresse directe du visiteur : lorsque des visiteurs d'internet arrivent via frpc, cloudflared ou une redirection de ports Docker sur cette machine, l'adresse directe est cette machine ou un réseau de conteneurs et ils comptent comme LAN. Dans ce cas, activez le protocole PROXY sur l'écouteur ou configurez des proxys de confiance. Les adresses LAN des liens sont visibles par toute personne pouvant ouvrir le panneau (bascule possible avec ?net=lan) ; pour les masquer, activez l'authentification du site ou le contrôle d'accès par IP.",
+  "moduleDisabled": "Le module Service Web est désactivé, les panneaux de navigation sont donc indisponibles. Activez-le dans Paramètres → Modules."
 }
