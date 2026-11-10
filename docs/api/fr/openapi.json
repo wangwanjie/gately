@@ -4773,6 +4773,9 @@
           "hostKey": {
             "type": "string"
           },
+          "hostKeyType": {
+            "type": "string"
+          },
           "keepAlive": {
             "type": "integer"
           },

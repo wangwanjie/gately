@@ -2900,6 +2900,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `credentialKey` | string |
 | `host` | string |
 | `hostKey` | string |
+| `hostKeyType` | string |
 | `keepAlive` | integer |
 | `keyFile` | string |
 | `passphrase` | string |

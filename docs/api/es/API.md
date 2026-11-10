@@ -2900,6 +2900,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `credentialKey` | string |
 | `host` | string |
 | `hostKey` | string |
+| `hostKeyType` | string |
 | `keepAlive` | integer |
 | `keyFile` | string |
 | `passphrase` | string |

@@ -2900,6 +2900,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `credentialKey` | string |
 | `host` | string |
 | `hostKey` | string |
+| `hostKeyType` | string |
 | `keepAlive` | integer |
 | `keyFile` | string |
 | `passphrase` | string |
