@@ -414,6 +414,9 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | POST | `/api/webservice/visitors/delete` | `webservice:write` | Excluir registros da auditoria de visitantes |
 | GET | `/api/webservice/visitors/settings` | `webservice:read` | Ler as configurações e o estado do armazenamento da auditoria de visitantes |
 | PUT | `/api/webservice/visitors/settings` | `webservice:write` | Salvar as configurações da auditoria de visitantes |
+| GET | `/api/webservice/topology/replay` | `webservice:read` | Visão geral do replay da topologia |
+| GET | `/api/webservice/topology/replay/frame` | `webservice:read` | Instantâneo do replay da topologia em um momento |
+| PUT | `/api/webservice/topology/replay/settings` | `webservice:write` | Alterar as configurações do replay da topologia |
 | GET | `/api/webservice/connections` | `webservice:read` | Requisições em andamento e requisições longas encerradas recentemente de um site (?listener=&site=&q=) |
 | POST | `/api/webservice/connections/close` | `webservice:write` | Encerrar uma solicitação em andamento em um site, bloqueando opcionalmente o endereço de origem (banSeconds -1 significa permanente) |
 | GET | `/api/webservice/bans` | `webservice:read` | IPs atualmente bloqueados |
@@ -2441,6 +2444,53 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `requests` | integer |
 | `t` | integer |
 
+### webservice.ReplayBucket
+
+| Campo | Tipo |
+| --- | --- |
+| `active` | integer |
+| `bps` | number |
+| `ips` | integer |
+| `issue` | boolean |
+| `qps` | number |
+| `t` | integer |
+
+### webservice.ReplayIndex
+
+| Campo | Tipo |
+| --- | --- |
+| `bucket` | integer |
+| `buckets` | Array de `webservice.ReplayBucket` |
+| `end` | integer |
+| `frames` | integer |
+| `from` | integer |
+| `limit` | integer |
+| `samples` | integer |
+| `settings` | `webservice.ReplaySettings` |
+| `start` | integer |
+| `step` | integer |
+| `to` | integer |
+| `used` | integer |
+
+### webservice.ReplayMeta
+
+| Campo | Tipo |
+| --- | --- |
+| `end` | integer |
+| `frameEnd` | integer |
+| `frameStart` | integer |
+| `next` | integer |
+| `prev` | integer |
+| `start` | integer |
+| `step` | integer |
+
+### webservice.ReplaySettings
+
+| Campo | Tipo |
+| --- | --- |
+| `enable` | boolean |
+| `sizeMB` | integer |
+
 ### webservice.Rewrite
 
 | Campo | Tipo |
@@ -2719,8 +2769,10 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `ips` | Array de `webservice.TopoIP` |
 | `listeners` | Array de `webservice.TopoListener` |
 | `rate` | `webservice.Rate` |
+| `replay` | `webservice.ReplayMeta` |
 | `requests` | integer |
 | `series` | Array de `webservice.RatePoint` |
+| `seriesStep` | integer |
 | `time` | integer |
 | `window` | integer |
 

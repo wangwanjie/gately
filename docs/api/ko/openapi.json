@@ -3600,6 +3600,110 @@
         },
         "type": "object"
       },
+      "webservice.ReplayBucket": {
+        "properties": {
+          "active": {
+            "type": "integer"
+          },
+          "bps": {
+            "type": "number"
+          },
+          "ips": {
+            "type": "integer"
+          },
+          "issue": {
+            "type": "boolean"
+          },
+          "qps": {
+            "type": "number"
+          },
+          "t": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.ReplayIndex": {
+        "properties": {
+          "bucket": {
+            "type": "integer"
+          },
+          "buckets": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.ReplayBucket"
+            },
+            "type": "array"
+          },
+          "end": {
+            "type": "integer"
+          },
+          "frames": {
+            "type": "integer"
+          },
+          "from": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "samples": {
+            "type": "integer"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/webservice.ReplaySettings"
+          },
+          "start": {
+            "type": "integer"
+          },
+          "step": {
+            "type": "integer"
+          },
+          "to": {
+            "type": "integer"
+          },
+          "used": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.ReplayMeta": {
+        "properties": {
+          "end": {
+            "type": "integer"
+          },
+          "frameEnd": {
+            "type": "integer"
+          },
+          "frameStart": {
+            "type": "integer"
+          },
+          "next": {
+            "type": "integer"
+          },
+          "prev": {
+            "type": "integer"
+          },
+          "start": {
+            "type": "integer"
+          },
+          "step": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.ReplaySettings": {
+        "properties": {
+          "enable": {
+            "type": "boolean"
+          },
+          "sizeMB": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "webservice.Rewrite": {
         "properties": {
           "code": {
@@ -4365,6 +4469,9 @@
           "rate": {
             "$ref": "#/components/schemas/webservice.Rate"
           },
+          "replay": {
+            "$ref": "#/components/schemas/webservice.ReplayMeta"
+          },
           "requests": {
             "type": "integer"
           },
@@ -4373,6 +4480,9 @@
               "$ref": "#/components/schemas/webservice.RatePoint"
             },
             "type": "array"
+          },
+          "seriesStep": {
+            "type": "integer"
           },
           "time": {
             "type": "integer"
@@ -47351,6 +47461,189 @@
           "Web 서비스"
         ],
         "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/topology/replay": {
+      "get": {
+        "description": "읽기 전용. 재생 설정(`settings.enable`, `settings.sizeMB`), 현재 사용량 `used`와 한도 `limit`(바이트), 프레임 수 `frames`(내용이 같은 연속 샘플은 한 프레임)와 샘플 수 `samples`, 기록 데이터의 시작·끝 시각 `start`, `end`(Unix 초, 데이터가 없으면 0), 샘플링 간격 `step`(5초)을 반환합니다. `buckets`는 타임라인 개요로, 각 버킷은 포함된 샘플의 `qps`, `bps`, `active`, `ips` 최댓값을 가지며 `issue`는 리스너 시작 실패나 백엔드 이상이 있었음을 뜻하고, 기록이 없는 버킷은 반환하지 않습니다. `from`, `to`로 범위(Unix 초)를 정하고, `last`가 0보다 크면 최신 프레임까지 최근 `last`초를 씁니다. `points`는 버킷 수 상한(기본 400, 최대 1000)이며 반환되는 `bucket`은 버킷당 초입니다. 매개변수가 음이 아닌 정수가 아니면 400을 반환합니다.\n\n필요한 권한: `webservice:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.ReplayIndex"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "토폴로지 재생 개요",
+        "tags": [
+          "Web 서비스"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/topology/replay/frame": {
+      "get": {
+        "description": "읽기 전용. `t`는 Unix 초이며 `GET /api/webservice/topology`와 같은 구조의 스냅숏을 반환합니다. `time`은 샘플링 간격에 맞춘 재생 시각으로, `t`가 두 기록 구간 사이의 빈 곳이면 다음 구간의 시작을, 전체 데이터보다 이르거나 늦으면 첫 프레임이나 마지막 프레임을 씁니다. `replay`에는 전체 데이터와 현재 구간의 시작·끝 시각(`start`, `end`, `frameStart`, `frameEnd`)과 이전·다음 샘플 시각 `prev`, `next`(없으면 0)가 들어 있습니다. `focus`가 노드 ID(또는 internet, gately)이면 `series`에 선택한 시점 이전 60초의 곡선을 반환하고 `seriesStep`은 점 하나가 담는 초(5)입니다. 요청 수는 인접한 두 프레임 누적값의 차이이고 바이트 수는 처리량으로 추정합니다. 기록이 없으면 404, 매개변수가 잘못되면 400을 반환합니다.\n\n필요한 권한: `webservice:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.TopologyView"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "특정 시점의 토폴로지 재생 스냅숏",
+        "tags": [
+          "Web 서비스"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/topology/replay/settings": {
+      "put": {
+        "description": "쓰기 권한이 필요합니다. `enable`은 기록 여부(기본 꺼짐), `sizeMB`는 기록 데이터의 메모리 한도(MiB, 1–256, 0은 기본값 8)입니다. 켜면 5초마다 토폴로지 스냅숏을 압축해 메모리에 기록하고 한도를 넘으면 가장 오래된 프레임을 버립니다. 끄면 즉시 기록을 멈추고 기록된 데이터(방문자 IP 포함)를 지웁니다. 디스크에는 쓰지 않으며 재시작하면 지워집니다. `GET /api/webservice/topology/replay`와 같은 개요를 반환합니다. 용량이 범위를 벗어나면 400을 반환합니다.\n\n필요한 권한: `webservice:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/webservice.ReplaySettings"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.ReplayIndex"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "토폴로지 재생 설정 변경",
+        "tags": [
+          "Web 서비스"
+        ],
+        "x-required-scope": "webservice:write",
         "x-token-allowed": true
       }
     },

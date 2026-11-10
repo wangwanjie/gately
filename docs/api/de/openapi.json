@@ -3600,6 +3600,110 @@
         },
         "type": "object"
       },
+      "webservice.ReplayBucket": {
+        "properties": {
+          "active": {
+            "type": "integer"
+          },
+          "bps": {
+            "type": "number"
+          },
+          "ips": {
+            "type": "integer"
+          },
+          "issue": {
+            "type": "boolean"
+          },
+          "qps": {
+            "type": "number"
+          },
+          "t": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.ReplayIndex": {
+        "properties": {
+          "bucket": {
+            "type": "integer"
+          },
+          "buckets": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.ReplayBucket"
+            },
+            "type": "array"
+          },
+          "end": {
+            "type": "integer"
+          },
+          "frames": {
+            "type": "integer"
+          },
+          "from": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "samples": {
+            "type": "integer"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/webservice.ReplaySettings"
+          },
+          "start": {
+            "type": "integer"
+          },
+          "step": {
+            "type": "integer"
+          },
+          "to": {
+            "type": "integer"
+          },
+          "used": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.ReplayMeta": {
+        "properties": {
+          "end": {
+            "type": "integer"
+          },
+          "frameEnd": {
+            "type": "integer"
+          },
+          "frameStart": {
+            "type": "integer"
+          },
+          "next": {
+            "type": "integer"
+          },
+          "prev": {
+            "type": "integer"
+          },
+          "start": {
+            "type": "integer"
+          },
+          "step": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.ReplaySettings": {
+        "properties": {
+          "enable": {
+            "type": "boolean"
+          },
+          "sizeMB": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "webservice.Rewrite": {
         "properties": {
           "code": {
@@ -4365,6 +4469,9 @@
           "rate": {
             "$ref": "#/components/schemas/webservice.Rate"
           },
+          "replay": {
+            "$ref": "#/components/schemas/webservice.ReplayMeta"
+          },
           "requests": {
             "type": "integer"
           },
@@ -4373,6 +4480,9 @@
               "$ref": "#/components/schemas/webservice.RatePoint"
             },
             "type": "array"
+          },
+          "seriesStep": {
+            "type": "integer"
           },
           "time": {
             "type": "integer"
@@ -47351,6 +47461,189 @@
           "Web-Dienst"
         ],
         "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/topology/replay": {
+      "get": {
+        "description": "Nur lesend. Liefert die Wiedergabeeinstellungen (`settings.enable`, `settings.sizeMB`), die aktuelle Belegung `used` und das Limit `limit` (Bytes), die Anzahl der Frames `frames` (aufeinanderfolgende gleiche Abtastungen zählen als ein Frame) und Abtastungen `samples`, Beginn und Ende der aufgezeichneten Daten `start`, `end` (Unix-Sekunden, 0 wenn keine vorhanden) und das Abtastintervall `step` (5 Sekunden). `buckets` ist die Übersicht der Zeitleiste: Jeder Abschnitt enthält das Maximum von `qps`, `bps`, `active` und `ips` seiner Abtastungen, `issue` zeigt, dass darin ein Listener nicht startete oder ein Backend ungesund war, und Abschnitte ohne Aufzeichnung werden ausgelassen; `from` und `to` begrenzen den Bereich (Unix-Sekunden), `last` größer als 0 nimmt stattdessen die letzten `last` Sekunden bis zum neuesten Frame, `points` begrenzt die Anzahl der Abschnitte (Standard 400, höchstens 1000), und das zurückgegebene `bucket` sind die Sekunden pro Abschnitt. Liefert 400, wenn ein Parameter keine nichtnegative Ganzzahl ist.\n\nErforderliche Berechtigung: `webservice:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.ReplayIndex"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Übersicht der Topologie-Wiedergabe",
+        "tags": [
+          "Web-Dienst"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/topology/replay/frame": {
+      "get": {
+        "description": "Nur lesend. `t` sind Unix-Sekunden; liefert einen Zustand mit derselben Struktur wie `GET /api/webservice/topology`, wobei `time` der auf das Abtastintervall ausgerichtete Wiedergabezeitpunkt ist: Liegt `t` in einer Lücke zwischen zwei Aufzeichnungsabschnitten, wird der Beginn des nächsten verwendet, vor oder nach allen Daten der erste oder letzte Frame. `replay` enthält Beginn und Ende aller Daten und des aktuellen Abschnitts (`start`, `end`, `frameStart`, `frameEnd`) sowie die vorherige und nächste Abtastzeit `prev`, `next` (0, wenn es keine gibt). Ist `focus` eine Knoten-ID (oder internet, gately), enthält `series` die Kurve der 60 Sekunden vor dem gewählten Zeitpunkt und `seriesStep` die Sekunden pro Punkt (5); Anfragen sind die Differenz der Zähler benachbarter Frames, Bytes werden aus dem Durchsatz geschätzt. Liefert 404, wenn nichts aufgezeichnet ist, und 400 bei ungültigen Parametern.\n\nErforderliche Berechtigung: `webservice:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.TopologyView"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Topologie-Wiedergabe zu einem Zeitpunkt",
+        "tags": [
+          "Web-Dienst"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/topology/replay/settings": {
+      "put": {
+        "description": "Erfordert Schreibrechte. `enable` schaltet die Aufzeichnung ein (standardmäßig aus), `sizeMB` ist das Speicherlimit der aufgezeichneten Daten (MiB, 1–256, 0 für den Standardwert 8). Eingeschaltet wird alle 5 Sekunden ein komprimierter Topologie-Zustand im Speicher aufgezeichnet und über dem Limit werden die ältesten Frames verworfen; Ausschalten stoppt die Aufzeichnung sofort und löscht die aufgezeichneten Daten (die Besucher-IPs enthalten). Nichts wird auf die Festplatte geschrieben, nach einem Neustart sind die Daten weg. Liefert dieselbe Übersicht wie `GET /api/webservice/topology/replay`. Liefert 400, wenn die Größe außerhalb des Bereichs liegt.\n\nErforderliche Berechtigung: `webservice:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/webservice.ReplaySettings"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.ReplayIndex"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Einstellungen der Topologie-Wiedergabe ändern",
+        "tags": [
+          "Web-Dienst"
+        ],
+        "x-required-scope": "webservice:write",
         "x-token-allowed": true
       }
     },

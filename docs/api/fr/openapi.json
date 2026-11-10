@@ -3600,6 +3600,110 @@
         },
         "type": "object"
       },
+      "webservice.ReplayBucket": {
+        "properties": {
+          "active": {
+            "type": "integer"
+          },
+          "bps": {
+            "type": "number"
+          },
+          "ips": {
+            "type": "integer"
+          },
+          "issue": {
+            "type": "boolean"
+          },
+          "qps": {
+            "type": "number"
+          },
+          "t": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.ReplayIndex": {
+        "properties": {
+          "bucket": {
+            "type": "integer"
+          },
+          "buckets": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.ReplayBucket"
+            },
+            "type": "array"
+          },
+          "end": {
+            "type": "integer"
+          },
+          "frames": {
+            "type": "integer"
+          },
+          "from": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "samples": {
+            "type": "integer"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/webservice.ReplaySettings"
+          },
+          "start": {
+            "type": "integer"
+          },
+          "step": {
+            "type": "integer"
+          },
+          "to": {
+            "type": "integer"
+          },
+          "used": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.ReplayMeta": {
+        "properties": {
+          "end": {
+            "type": "integer"
+          },
+          "frameEnd": {
+            "type": "integer"
+          },
+          "frameStart": {
+            "type": "integer"
+          },
+          "next": {
+            "type": "integer"
+          },
+          "prev": {
+            "type": "integer"
+          },
+          "start": {
+            "type": "integer"
+          },
+          "step": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.ReplaySettings": {
+        "properties": {
+          "enable": {
+            "type": "boolean"
+          },
+          "sizeMB": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "webservice.Rewrite": {
         "properties": {
           "code": {
@@ -4365,6 +4469,9 @@
           "rate": {
             "$ref": "#/components/schemas/webservice.Rate"
           },
+          "replay": {
+            "$ref": "#/components/schemas/webservice.ReplayMeta"
+          },
           "requests": {
             "type": "integer"
           },
@@ -4373,6 +4480,9 @@
               "$ref": "#/components/schemas/webservice.RatePoint"
             },
             "type": "array"
+          },
+          "seriesStep": {
+            "type": "integer"
           },
           "time": {
             "type": "integer"
@@ -47351,6 +47461,189 @@
           "Service Web"
         ],
         "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/topology/replay": {
+      "get": {
+        "description": "Lecture seule. Renvoie les paramètres de relecture (`settings.enable`, `settings.sizeMB`), l’occupation actuelle `used` et la limite `limit` (octets), le nombre d’images `frames` (des échantillons consécutifs identiques comptent pour une image) et d’échantillons `samples`, le début et la fin des données enregistrées `start`, `end` (secondes Unix, 0 s’il n’y en a pas) et l’intervalle d’échantillonnage `step` (5 secondes). `buckets` est l’aperçu de la frise : chaque tranche porte le maximum de `qps`, `bps`, `active` et `ips` de ses échantillons, `issue` signale qu’un écouteur n’a pas démarré ou qu’un backend était défaillant, et les tranches sans données enregistrées sont omises ; `from` et `to` limitent la plage (secondes Unix), `last` supérieur à 0 prend à la place les `last` dernières secondes jusqu’à l’image la plus récente, `points` plafonne le nombre de tranches (400 par défaut, 1000 au plus) et le `bucket` renvoyé est la durée d’une tranche en secondes. Renvoie 400 si un paramètre n’est pas un entier positif ou nul.\n\nPermission requise : `webservice:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.ReplayIndex"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Aperçu de la relecture de la topologie",
+        "tags": [
+          "Service Web"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/topology/replay/frame": {
+      "get": {
+        "description": "Lecture seule. `t` est en secondes Unix ; renvoie un instantané de même structure que `GET /api/webservice/topology`, où `time` est l’instant relu aligné sur l’intervalle d’échantillonnage : si `t` tombe dans un trou entre deux périodes enregistrées, le début de la suivante est utilisé, et avant ou après toutes les données la première ou la dernière image. `replay` donne le début et la fin de toutes les données et de la période courante (`start`, `end`, `frameStart`, `frameEnd`) ainsi que les instants d’échantillon précédent et suivant `prev`, `next` (0 s’il n’y en a pas). Lorsque `focus` est un ID de nœud (ou internet, gately), `series` contient la courbe des 60 secondes précédant l’instant choisi et `seriesStep` le nombre de secondes couvert par chaque point (5) ; les requêtes sont la différence entre les compteurs de deux images voisines et les octets sont estimés d’après le débit. Renvoie 404 si rien n’est enregistré et 400 si les paramètres sont invalides.\n\nPermission requise : `webservice:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.TopologyView"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Instantané de relecture de la topologie à un instant",
+        "tags": [
+          "Service Web"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/topology/replay/settings": {
+      "put": {
+        "description": "Nécessite le droit d’écriture. `enable` active l’enregistrement (désactivé par défaut), `sizeMB` est la limite de mémoire des données enregistrées (Mio, 1–256, 0 pour la valeur par défaut 8). Une fois activé, un instantané compressé de la topologie est enregistré en mémoire toutes les 5 secondes et les images les plus anciennes sont supprimées au-delà de la limite ; la désactivation arrête aussitôt l’enregistrement et efface les données enregistrées (qui contiennent les adresses IP des visiteurs). Rien n’est écrit sur disque et les données sont effacées au redémarrage. Renvoie le même aperçu que `GET /api/webservice/topology/replay`. Renvoie 400 si la taille est hors limites.\n\nPermission requise : `webservice:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/webservice.ReplaySettings"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.ReplayIndex"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Modifier les paramètres de relecture de la topologie",
+        "tags": [
+          "Service Web"
+        ],
+        "x-required-scope": "webservice:write",
         "x-token-allowed": true
       }
     },

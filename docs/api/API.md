@@ -414,6 +414,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/webservice/visitors/delete` | `webservice:write` | 删除访客审计记录 |
 | GET | `/api/webservice/visitors/settings` | `webservice:read` | 读取访客审计设置与存储状态 |
 | PUT | `/api/webservice/visitors/settings` | `webservice:write` | 保存访客审计设置 |
+| GET | `/api/webservice/topology/replay` | `webservice:read` | 拓扑回放概览 |
+| GET | `/api/webservice/topology/replay/frame` | `webservice:read` | 某一时刻的拓扑回放快照 |
+| PUT | `/api/webservice/topology/replay/settings` | `webservice:write` | 修改拓扑回放设置 |
 | GET | `/api/webservice/connections` | `webservice:read` | 站点进行中的请求与最近结束的长请求（?listener=&site=&q=） |
 | POST | `/api/webservice/connections/close` | `webservice:write` | 断开站点的一个进行中请求，可同时封禁其来源地址（banSeconds 为 -1 表示永久） |
 | GET | `/api/webservice/bans` | `webservice:read` | 当前被封禁的 IP |
@@ -2441,6 +2444,53 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `requests` | integer |
 | `t` | integer |
 
+### webservice.ReplayBucket
+
+| 字段 | 类型 |
+| --- | --- |
+| `active` | integer |
+| `bps` | number |
+| `ips` | integer |
+| `issue` | boolean |
+| `qps` | number |
+| `t` | integer |
+
+### webservice.ReplayIndex
+
+| 字段 | 类型 |
+| --- | --- |
+| `bucket` | integer |
+| `buckets` | 数组 of `webservice.ReplayBucket` |
+| `end` | integer |
+| `frames` | integer |
+| `from` | integer |
+| `limit` | integer |
+| `samples` | integer |
+| `settings` | `webservice.ReplaySettings` |
+| `start` | integer |
+| `step` | integer |
+| `to` | integer |
+| `used` | integer |
+
+### webservice.ReplayMeta
+
+| 字段 | 类型 |
+| --- | --- |
+| `end` | integer |
+| `frameEnd` | integer |
+| `frameStart` | integer |
+| `next` | integer |
+| `prev` | integer |
+| `start` | integer |
+| `step` | integer |
+
+### webservice.ReplaySettings
+
+| 字段 | 类型 |
+| --- | --- |
+| `enable` | boolean |
+| `sizeMB` | integer |
+
 ### webservice.Rewrite
 
 | 字段 | 类型 |
@@ -2719,8 +2769,10 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `ips` | 数组 of `webservice.TopoIP` |
 | `listeners` | 数组 of `webservice.TopoListener` |
 | `rate` | `webservice.Rate` |
+| `replay` | `webservice.ReplayMeta` |
 | `requests` | integer |
 | `series` | 数组 of `webservice.RatePoint` |
+| `seriesStep` | integer |
 | `time` | integer |
 | `window` | integer |
 

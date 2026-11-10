@@ -414,6 +414,9 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | POST | `/api/webservice/visitors/delete` | `webservice:write` | Supprimer des enregistrements de l'audit des visiteurs |
 | GET | `/api/webservice/visitors/settings` | `webservice:read` | Lire les paramètres et l'état du stockage de l'audit des visiteurs |
 | PUT | `/api/webservice/visitors/settings` | `webservice:write` | Enregistrer les paramètres de l'audit des visiteurs |
+| GET | `/api/webservice/topology/replay` | `webservice:read` | Aperçu de la relecture de la topologie |
+| GET | `/api/webservice/topology/replay/frame` | `webservice:read` | Instantané de relecture de la topologie à un instant |
+| PUT | `/api/webservice/topology/replay/settings` | `webservice:write` | Modifier les paramètres de relecture de la topologie |
 | GET | `/api/webservice/connections` | `webservice:read` | Requêtes en cours et longues requêtes récemment terminées d’un site (?listener=&site=&q=) |
 | POST | `/api/webservice/connections/close` | `webservice:write` | Fermer une requête en cours sur un site, en bloquant éventuellement son adresse source (banSeconds -1 signifie permanent) |
 | GET | `/api/webservice/bans` | `webservice:read` | IP actuellement bannies |
@@ -2441,6 +2444,53 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `requests` | integer |
 | `t` | integer |
 
+### webservice.ReplayBucket
+
+| Champ | Type |
+| --- | --- |
+| `active` | integer |
+| `bps` | number |
+| `ips` | integer |
+| `issue` | boolean |
+| `qps` | number |
+| `t` | integer |
+
+### webservice.ReplayIndex
+
+| Champ | Type |
+| --- | --- |
+| `bucket` | integer |
+| `buckets` | Tableau de `webservice.ReplayBucket` |
+| `end` | integer |
+| `frames` | integer |
+| `from` | integer |
+| `limit` | integer |
+| `samples` | integer |
+| `settings` | `webservice.ReplaySettings` |
+| `start` | integer |
+| `step` | integer |
+| `to` | integer |
+| `used` | integer |
+
+### webservice.ReplayMeta
+
+| Champ | Type |
+| --- | --- |
+| `end` | integer |
+| `frameEnd` | integer |
+| `frameStart` | integer |
+| `next` | integer |
+| `prev` | integer |
+| `start` | integer |
+| `step` | integer |
+
+### webservice.ReplaySettings
+
+| Champ | Type |
+| --- | --- |
+| `enable` | boolean |
+| `sizeMB` | integer |
+
 ### webservice.Rewrite
 
 | Champ | Type |
@@ -2719,8 +2769,10 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `ips` | Tableau de `webservice.TopoIP` |
 | `listeners` | Tableau de `webservice.TopoListener` |
 | `rate` | `webservice.Rate` |
+| `replay` | `webservice.ReplayMeta` |
 | `requests` | integer |
 | `series` | Tableau de `webservice.RatePoint` |
+| `seriesStep` | integer |
 | `time` | integer |
 | `window` | integer |
 

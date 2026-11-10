@@ -414,6 +414,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/webservice/visitors/delete` | `webservice:write` | Удалить записи аудита посетителей |
 | GET | `/api/webservice/visitors/settings` | `webservice:read` | Получить настройки и состояние хранилища аудита посетителей |
 | PUT | `/api/webservice/visitors/settings` | `webservice:write` | Сохранить настройки аудита посетителей |
+| GET | `/api/webservice/topology/replay` | `webservice:read` | Обзор повтора топологии |
+| GET | `/api/webservice/topology/replay/frame` | `webservice:read` | Снимок повтора топологии на момент |
+| PUT | `/api/webservice/topology/replay/settings` | `webservice:write` | Изменить настройки повтора топологии |
 | GET | `/api/webservice/connections` | `webservice:read` | Выполняющиеся и недавно завершённые длительные запросы сайта (?listener=&site=&q=) |
 | POST | `/api/webservice/connections/close` | `webservice:write` | Разорвать выполняющийся запрос сайта с возможной блокировкой адреса источника (banSeconds -1 — навсегда) |
 | GET | `/api/webservice/bans` | `webservice:read` | Заблокированные в данный момент IP |
@@ -2441,6 +2444,53 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `requests` | integer |
 | `t` | integer |
 
+### webservice.ReplayBucket
+
+| Поле | Тип |
+| --- | --- |
+| `active` | integer |
+| `bps` | number |
+| `ips` | integer |
+| `issue` | boolean |
+| `qps` | number |
+| `t` | integer |
+
+### webservice.ReplayIndex
+
+| Поле | Тип |
+| --- | --- |
+| `bucket` | integer |
+| `buckets` | Массив из `webservice.ReplayBucket` |
+| `end` | integer |
+| `frames` | integer |
+| `from` | integer |
+| `limit` | integer |
+| `samples` | integer |
+| `settings` | `webservice.ReplaySettings` |
+| `start` | integer |
+| `step` | integer |
+| `to` | integer |
+| `used` | integer |
+
+### webservice.ReplayMeta
+
+| Поле | Тип |
+| --- | --- |
+| `end` | integer |
+| `frameEnd` | integer |
+| `frameStart` | integer |
+| `next` | integer |
+| `prev` | integer |
+| `start` | integer |
+| `step` | integer |
+
+### webservice.ReplaySettings
+
+| Поле | Тип |
+| --- | --- |
+| `enable` | boolean |
+| `sizeMB` | integer |
+
 ### webservice.Rewrite
 
 | Поле | Тип |
@@ -2719,8 +2769,10 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `ips` | Массив из `webservice.TopoIP` |
 | `listeners` | Массив из `webservice.TopoListener` |
 | `rate` | `webservice.Rate` |
+| `replay` | `webservice.ReplayMeta` |
 | `requests` | integer |
 | `series` | Массив из `webservice.RatePoint` |
+| `seriesStep` | integer |
 | `time` | integer |
 | `window` | integer |
 
