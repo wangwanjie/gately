@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"sync"
 
 	"github.com/pkg/sftp"
 )
@@ -136,12 +137,16 @@ func pushFile(sc *sftp.Client, target string, data []byte, mode os.FileMode) err
 const execOutputLimit = 16 << 10
 
 // limitedBuffer 只保留前 max 个字节的输出，写入始终报告成功，命令不会因输出被截断而中断。
+// ssh 库为 stdout、stderr 各起一个 goroutine 复制数据，两路共用同一个缓冲时会并发写入，因此需要加锁。
 type limitedBuffer struct {
+	mu  sync.Mutex
 	buf []byte
 	max int
 }
 
 func (b *limitedBuffer) Write(p []byte) (int, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	if room := b.max - len(b.buf); room > 0 {
 		if len(p) > room {
 			b.buf = append(b.buf, p[:room]...)
@@ -150,6 +155,12 @@ func (b *limitedBuffer) Write(p []byte) (int, error) {
 		}
 	}
 	return len(p), nil
+}
+
+func (b *limitedBuffer) String() string {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return string(b.buf)
 }
 
 // Exec 经指定 SSH 连接执行一条命令并返回输出（最多保留 16 KB），供网络唤醒关机等功能使用。
@@ -187,7 +198,7 @@ func (m *Module) Exec(ctx context.Context, connKey, command string) (string, err
 	out := &limitedBuffer{max: execOutputLimit}
 	sess.Stdout, sess.Stderr = out, out
 	err = sess.Run(command)
-	text := string(out.buf)
+	text := out.String()
 	if ctx.Err() != nil {
 		return text, fmt.Errorf("远程命令执行超时: %w", ctx.Err())
 	}

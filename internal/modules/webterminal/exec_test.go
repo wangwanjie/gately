@@ -77,6 +77,13 @@ func startExecServer(t *testing.T, clientPub ssh.PublicKey, conns *atomic.Int32)
 							case cmd == "big":
 								_, _ = ch.Write(bytes.Repeat([]byte("x"), 100<<10))
 								status(0)
+							case cmd == "both":
+								// stdout 与 stderr 交替大量写入，客户端两路复制会并发写同一个缓冲
+								for i := 0; i < 200; i++ {
+									_, _ = io.WriteString(ch, "out-line\n")
+									_, _ = io.WriteString(ch.Stderr(), "err-line\n")
+								}
+								status(0)
 							case cmd == "drop":
 								_ = ch.Close()
 							case cmd == "hang":
@@ -138,6 +145,10 @@ func TestExec(t *testing.T) {
 	out, err = m.Exec(ctx, "s", "big")
 	if err != nil || len(out) != execOutputLimit {
 		t.Fatalf("输出应截断到上限: %d %v", len(out), err)
+	}
+	out, err = m.Exec(ctx, "s", "both")
+	if err != nil || strings.Count(out, "-line\n") != 400 {
+		t.Fatalf("stdout 与 stderr 应都写入输出: %d %v", strings.Count(out, "-line\n"), err)
 	}
 	_, err = m.Exec(ctx, "s", "drop")
 	var missing *ssh.ExitMissingError
