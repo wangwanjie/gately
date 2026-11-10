@@ -596,8 +596,9 @@ function onScroll() {
   }
 }
 
-// jumpLatest 回到最新一条并恢复自动滚动
+// jumpLatest 回到最新一条并恢复自动滚动：取消勾选“自动滚动”后点按钮同样重新开启
 function jumpLatest() {
+  follow.value = true
   away.value = false
   newCount.value = 0
   void scrollToEnd(true)
