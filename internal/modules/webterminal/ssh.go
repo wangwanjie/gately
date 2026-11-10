@@ -296,11 +296,25 @@ func sshHandshake(ctx context.Context, s *SSHConfig, algos []string) (client *ss
 	if err != nil {
 		return nil, hostKeyInfo{}, err
 	}
-	// 认证阶段同样受超时约束；握手完成后清除期限
-	_ = nc.SetDeadline(time.Now().Add(timeout))
+	// 认证阶段同样受超时约束，调用方的截止时间更早时以它为准；握手完成后清除期限
+	deadline := time.Now().Add(timeout)
+	if d, ok := ctx.Deadline(); ok && d.Before(deadline) {
+		deadline = d
+	}
+	_ = nc.SetDeadline(deadline)
+	// 握手期间 ctx 被取消（如网络唤醒关机的 30 秒期限到达）时立即让读写失败，不必等到连接超时
+	stopCancel := context.AfterFunc(ctx, func() { _ = nc.SetDeadline(time.Unix(1, 0)) })
 	cc, chans, reqs, err := ssh.NewClientConn(nc, addr, cfg)
+	if !stopCancel() && err == nil {
+		// ctx 已在握手完成的同时被取消，期限可能已被设为过去，连接不可再用
+		cc.Close()
+		return nil, hostKeyInfo{}, ctx.Err()
+	}
 	if err != nil {
 		nc.Close()
+		if ctx.Err() != nil {
+			return nil, hostKeyInfo{}, fmt.Errorf("%w: %v", ctx.Err(), err)
+		}
 		return nil, hostKeyInfo{}, err
 	}
 	_ = nc.SetDeadline(time.Time{})
