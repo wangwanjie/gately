@@ -475,9 +475,9 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | GET | `/api/wol/logs/export` | `wol:read` | Modulprotokolle exportieren |
 | DELETE | `/api/wol/logs` | `wol:write` | Modulprotokolle leeren |
 | GET | `/api/wol/devices` | `wol:read` | Gerät aufwecken auflisten |
-| POST | `/api/wol/devices` | `wol:write` | Gerät aufwecken hinzufügen |
-| POST | `/api/wol/devices/{key}/copy` | `wol:write` | Gerät aufwecken duplizieren |
-| PUT | `/api/wol/devices/{key}` | `wol:write` | Gerät aufwecken ändern |
+| POST | `/api/wol/devices` | `wol:write,webterminal:write` | Gerät aufwecken hinzufügen |
+| POST | `/api/wol/devices/{key}/copy` | `wol:write,webterminal:write` | Gerät aufwecken duplizieren |
+| PUT | `/api/wol/devices/{key}` | `wol:write,webterminal:write` | Gerät aufwecken ändern |
 | DELETE | `/api/wol/devices/{key}` | `wol:write` | Gerät aufwecken löschen |
 | PUT | `/api/wol/devices/{key}/enable` | `wol:write` | Gerät aufwecken aktivieren oder deaktivieren |
 | PUT | `/api/wol/devices-order` | `wol:write` | Gerät aufwecken neu anordnen |
@@ -485,9 +485,9 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | POST | `/api/wol/devices-delete` | `wol:write` | Im Stapel löschen: Gerät aufwecken |
 | PUT | `/api/wol/devices-group` | `wol:write` | Gruppe mehrerer Einträge festlegen: Gerät aufwecken |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | Wake-on-LAN-Magic-Packet an ein Gerät senden |
-| POST | `/api/wol/devices/{key}/shutdown` | `wol:write` | Fern-Herunterfahren |
+| POST | `/api/wol/devices/{key}/shutdown` | `wol:write,webterminal:write` | Fern-Herunterfahren |
 | GET | `/api/wol/status` | `wol:read` | Online-Status eines Geräts anzeigen |
-| GET | `/api/wol/ssh-targets` | `wol:read` | SSH-Verbindungen für Fern-Herunterfahren auflisten |
+| GET | `/api/wol/ssh-targets` | `wol:read,webterminal:read` | SSH-Verbindungen für Fern-Herunterfahren auflisten |
 | GET | `/api/wol/bemfa` | `wol:read` | Bemfa-Einstellungen und Verbindungsstatus |
 | GET | `/api/wol/bemfa/secrets` | `wol:write` | Privaten Bemfa-Schlüssel anzeigen |
 | PUT | `/api/wol/bemfa` | `wol:write` | Bemfa-Einstellungen ändern |

@@ -475,9 +475,9 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | GET | `/api/wol/logs/export` | `wol:read` | Exportar registros del módulo |
 | DELETE | `/api/wol/logs` | `wol:write` | Vaciar los registros de ejecución del módulo |
 | GET | `/api/wol/devices` | `wol:read` | Listar Activar un dispositivo |
-| POST | `/api/wol/devices` | `wol:write` | Añadir Activar un dispositivo |
-| POST | `/api/wol/devices/{key}/copy` | `wol:write` | Duplicar Activar un dispositivo |
-| PUT | `/api/wol/devices/{key}` | `wol:write` | Modificar Activar un dispositivo |
+| POST | `/api/wol/devices` | `wol:write,webterminal:write` | Añadir Activar un dispositivo |
+| POST | `/api/wol/devices/{key}/copy` | `wol:write,webterminal:write` | Duplicar Activar un dispositivo |
+| PUT | `/api/wol/devices/{key}` | `wol:write,webterminal:write` | Modificar Activar un dispositivo |
 | DELETE | `/api/wol/devices/{key}` | `wol:write` | Eliminar Activar un dispositivo |
 | PUT | `/api/wol/devices/{key}/enable` | `wol:write` | Activar o desactivar Activar un dispositivo |
 | PUT | `/api/wol/devices-order` | `wol:write` | Reordenar Activar un dispositivo |
@@ -485,9 +485,9 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | POST | `/api/wol/devices-delete` | `wol:write` | Eliminar en lote: Activar un dispositivo |
 | PUT | `/api/wol/devices-group` | `wol:write` | Asignar grupo a varios elementos: Activar un dispositivo |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | Enviar un paquete mágico de activación al dispositivo |
-| POST | `/api/wol/devices/{key}/shutdown` | `wol:write` | Apagado remoto |
+| POST | `/api/wol/devices/{key}/shutdown` | `wol:write,webterminal:write` | Apagado remoto |
 | GET | `/api/wol/status` | `wol:read` | Ver el estado en línea del dispositivo |
-| GET | `/api/wol/ssh-targets` | `wol:read` | Listar las conexiones SSH utilizables para apagado remoto |
+| GET | `/api/wol/ssh-targets` | `wol:read,webterminal:read` | Listar las conexiones SSH utilizables para apagado remoto |
 | GET | `/api/wol/bemfa` | `wol:read` | Configuración y estado de conexión de Bemfa |
 | GET | `/api/wol/bemfa/secrets` | `wol:write` | Ver la clave privada de Bemfa |
 | PUT | `/api/wol/bemfa` | `wol:write` | Modificar la configuración de Bemfa |

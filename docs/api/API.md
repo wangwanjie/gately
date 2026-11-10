@@ -475,9 +475,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/wol/logs/export` | `wol:read` | 导出模块运行日志 |
 | DELETE | `/api/wol/logs` | `wol:write` | 清空模块运行日志 |
 | GET | `/api/wol/devices` | `wol:read` | 获取唤醒设备列表 |
-| POST | `/api/wol/devices` | `wol:write` | 新增唤醒设备 |
-| POST | `/api/wol/devices/{key}/copy` | `wol:write` | 复制唤醒设备 |
-| PUT | `/api/wol/devices/{key}` | `wol:write` | 修改唤醒设备 |
+| POST | `/api/wol/devices` | `wol:write,webterminal:write` | 新增唤醒设备 |
+| POST | `/api/wol/devices/{key}/copy` | `wol:write,webterminal:write` | 复制唤醒设备 |
+| PUT | `/api/wol/devices/{key}` | `wol:write,webterminal:write` | 修改唤醒设备 |
 | DELETE | `/api/wol/devices/{key}` | `wol:write` | 删除唤醒设备 |
 | PUT | `/api/wol/devices/{key}/enable` | `wol:write` | 启用或停用唤醒设备 |
 | PUT | `/api/wol/devices-order` | `wol:write` | 调整唤醒设备排序 |
@@ -485,9 +485,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/wol/devices-delete` | `wol:write` | 批量删除唤醒设备 |
 | PUT | `/api/wol/devices-group` | `wol:write` | 批量设置唤醒设备分组 |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | 向设备发送唤醒魔术包 |
-| POST | `/api/wol/devices/{key}/shutdown` | `wol:write` | 远程关机 |
+| POST | `/api/wol/devices/{key}/shutdown` | `wol:write,webterminal:write` | 远程关机 |
 | GET | `/api/wol/status` | `wol:read` | 查看设备在线状态 |
-| GET | `/api/wol/ssh-targets` | `wol:read` | 列出可用于远程关机的 SSH 连接 |
+| GET | `/api/wol/ssh-targets` | `wol:read,webterminal:read` | 列出可用于远程关机的 SSH 连接 |
 | GET | `/api/wol/bemfa` | `wol:read` | 巴法云接入设置与连接状态 |
 | GET | `/api/wol/bemfa/secrets` | `wol:write` | 查看巴法云私钥明文 |
 | PUT | `/api/wol/bemfa` | `wol:write` | 修改巴法云接入设置 |

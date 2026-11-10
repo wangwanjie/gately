@@ -475,9 +475,9 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | GET | `/api/wol/logs/export` | `wol:read` | Exportar logs do módulo |
 | DELETE | `/api/wol/logs` | `wol:write` | Limpar logs de execução do módulo |
 | GET | `/api/wol/devices` | `wol:read` | Listar Despertar dispositivo |
-| POST | `/api/wol/devices` | `wol:write` | Adicionar Despertar dispositivo |
-| POST | `/api/wol/devices/{key}/copy` | `wol:write` | Duplicar Despertar dispositivo |
-| PUT | `/api/wol/devices/{key}` | `wol:write` | Modificar Despertar dispositivo |
+| POST | `/api/wol/devices` | `wol:write,webterminal:write` | Adicionar Despertar dispositivo |
+| POST | `/api/wol/devices/{key}/copy` | `wol:write,webterminal:write` | Duplicar Despertar dispositivo |
+| PUT | `/api/wol/devices/{key}` | `wol:write,webterminal:write` | Modificar Despertar dispositivo |
 | DELETE | `/api/wol/devices/{key}` | `wol:write` | Excluir Despertar dispositivo |
 | PUT | `/api/wol/devices/{key}/enable` | `wol:write` | Ativar ou desativar Despertar dispositivo |
 | PUT | `/api/wol/devices-order` | `wol:write` | Reordenar Despertar dispositivo |
@@ -485,9 +485,9 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | POST | `/api/wol/devices-delete` | `wol:write` | Excluir em lote: Despertar dispositivo |
 | PUT | `/api/wol/devices-group` | `wol:write` | Definir o grupo de vários itens: Despertar dispositivo |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | Enviar o pacote mágico de despertar ao dispositivo |
-| POST | `/api/wol/devices/{key}/shutdown` | `wol:write` | Desligamento remoto |
+| POST | `/api/wol/devices/{key}/shutdown` | `wol:write,webterminal:write` | Desligamento remoto |
 | GET | `/api/wol/status` | `wol:read` | Ver o estado online do dispositivo |
-| GET | `/api/wol/ssh-targets` | `wol:read` | Listar conexões SSH utilizáveis para desligamento remoto |
+| GET | `/api/wol/ssh-targets` | `wol:read,webterminal:read` | Listar conexões SSH utilizáveis para desligamento remoto |
 | GET | `/api/wol/bemfa` | `wol:read` | Configurações e status de conexão do Bemfa |
 | GET | `/api/wol/bemfa/secrets` | `wol:write` | Ver a chave privada do Bemfa |
 | PUT | `/api/wol/bemfa` | `wol:write` | Alterar configurações do Bemfa |

@@ -475,9 +475,9 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | GET | `/api/wol/logs/export` | `wol:read` | Export module logs |
 | DELETE | `/api/wol/logs` | `wol:write` | Clear module runtime logs |
 | GET | `/api/wol/devices` | `wol:read` | List Wake a device |
-| POST | `/api/wol/devices` | `wol:write` | Create Wake a device |
-| POST | `/api/wol/devices/{key}/copy` | `wol:write` | Duplicate Wake a device |
-| PUT | `/api/wol/devices/{key}` | `wol:write` | Update Wake a device |
+| POST | `/api/wol/devices` | `wol:write,webterminal:write` | Create Wake a device |
+| POST | `/api/wol/devices/{key}/copy` | `wol:write,webterminal:write` | Duplicate Wake a device |
+| PUT | `/api/wol/devices/{key}` | `wol:write,webterminal:write` | Update Wake a device |
 | DELETE | `/api/wol/devices/{key}` | `wol:write` | Delete Wake a device |
 | PUT | `/api/wol/devices/{key}/enable` | `wol:write` | Enable or disable Wake a device |
 | PUT | `/api/wol/devices-order` | `wol:write` | Reorder Wake a device |
@@ -485,9 +485,9 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | POST | `/api/wol/devices-delete` | `wol:write` | Delete in bulk: Wake a device |
 | PUT | `/api/wol/devices-group` | `wol:write` | Set group in bulk: Wake a device |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | Send a Wake-on-LAN magic packet to a device |
-| POST | `/api/wol/devices/{key}/shutdown` | `wol:write` | Remote shutdown |
+| POST | `/api/wol/devices/{key}/shutdown` | `wol:write,webterminal:write` | Remote shutdown |
 | GET | `/api/wol/status` | `wol:read` | View device online status |
-| GET | `/api/wol/ssh-targets` | `wol:read` | List SSH connections usable for remote shutdown |
+| GET | `/api/wol/ssh-targets` | `wol:read,webterminal:read` | List SSH connections usable for remote shutdown |
 | GET | `/api/wol/bemfa` | `wol:read` | Bemfa settings and connection status |
 | GET | `/api/wol/bemfa/secrets` | `wol:write` | Show Bemfa private key |
 | PUT | `/api/wol/bemfa` | `wol:write` | Update Bemfa settings |

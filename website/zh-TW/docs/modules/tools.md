@@ -155,6 +155,7 @@ WebDAV、FTP 與 SMB 共用一份「共用使用者」，欄位與各服務的�
 - 每次關機新建一條 SSH 連線，執行完即關閉，裝置重新開機後不會用到已失效的舊連線；命令最長執行 30 秒，同一裝置同時只執行一次；
 - 關機常使 SSH 連線在返回結束碼之前中斷，這種情況視為已開始關機；
 - 介面提供 Linux（`shutdown -h now`）、Windows（`shutdown /s /t 0`）與 macOS（`sudo -n shutdown -h now`）的常用命令。Windows 需開啟 OpenSSH 伺服器；Linux 非 root 使用者可改用 `sudo -n shutdown -h now` 並為該命令設定免密碼 sudo。
+- API 權杖新增、修改、複製裝置或觸發關機時，除 `wol:write` 外還需要 `webterminal:write`（這些操作能設定或執行經 SSH 連線執行的命令）；列出可選的 SSH 連線需要 `wol:read` 與 `webterminal:read`。
 
 ### 巴法雲語音控制 {#bemfa}
 

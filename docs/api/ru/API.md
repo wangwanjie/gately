@@ -475,9 +475,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/wol/logs/export` | `wol:read` | Экспорт журналов модуля |
 | DELETE | `/api/wol/logs` | `wol:write` | Очистить журнал работы модуля |
 | GET | `/api/wol/devices` | `wol:read` | Список: Разбудить устройство |
-| POST | `/api/wol/devices` | `wol:write` | Добавить: Разбудить устройство |
-| POST | `/api/wol/devices/{key}/copy` | `wol:write` | Дублировать: Разбудить устройство |
-| PUT | `/api/wol/devices/{key}` | `wol:write` | Изменить: Разбудить устройство |
+| POST | `/api/wol/devices` | `wol:write,webterminal:write` | Добавить: Разбудить устройство |
+| POST | `/api/wol/devices/{key}/copy` | `wol:write,webterminal:write` | Дублировать: Разбудить устройство |
+| PUT | `/api/wol/devices/{key}` | `wol:write,webterminal:write` | Изменить: Разбудить устройство |
 | DELETE | `/api/wol/devices/{key}` | `wol:write` | Удалить: Разбудить устройство |
 | PUT | `/api/wol/devices/{key}/enable` | `wol:write` | Включить или отключить: Разбудить устройство |
 | PUT | `/api/wol/devices-order` | `wol:write` | Изменить порядок: Разбудить устройство |
@@ -485,9 +485,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/wol/devices-delete` | `wol:write` | Пакетно удалить: Разбудить устройство |
 | PUT | `/api/wol/devices-group` | `wol:write` | Задать группу сразу для нескольких: Разбудить устройство |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | Отправить на устройство magic-пакет пробуждения |
-| POST | `/api/wol/devices/{key}/shutdown` | `wol:write` | Удалённое выключение |
+| POST | `/api/wol/devices/{key}/shutdown` | `wol:write,webterminal:write` | Удалённое выключение |
 | GET | `/api/wol/status` | `wol:read` | Просмотр состояния устройства в сети |
-| GET | `/api/wol/ssh-targets` | `wol:read` | Список SSH-подключений для удалённого выключения |
+| GET | `/api/wol/ssh-targets` | `wol:read,webterminal:read` | Список SSH-подключений для удалённого выключения |
 | GET | `/api/wol/bemfa` | `wol:read` | Настройки Bemfa и состояние подключения |
 | GET | `/api/wol/bemfa/secrets` | `wol:write` | Показать закрытый ключ Bemfa |
 | PUT | `/api/wol/bemfa` | `wol:write` | Изменить настройки Bemfa |
