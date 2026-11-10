@@ -1184,13 +1184,28 @@ const httpPortEntryWarn = computed(() => {
   return !!(l.tls && l.httpPort && l.httpPortMode === 'redirect' && !l.accessPort && editingEntry.value && editingEntry.value.port !== l.port)
 })
 
-// 在对话框中把 HTTPS 从关打开时，已填写的 HTTP 端口恢复默认的跳转：关闭 HTTPS 时后端会把处理方式规范化为直接服务，
-// 不恢复的话重新开启 HTTPS 后仍是直接服务。切换到另一个监听（对象变化）时不处理
-watch(() => [editingListener.value, editingListener.value.tls] as const, ([l, tls], [prevL, prevTls]) => {
-  if (l === prevL && tls && prevTls === false && l.httpPort && l.httpPortMode === 'serve') {
-    l.httpPortMode = 'redirect'
-  }
-})
+// 打开编辑框时监听未开启 HTTPS 且已填写 HTTP 端口：后端把处理方式规范化成了直接服务，这不是用户的选择。
+// 此后在对话框中开启 HTTPS 时恢复默认的跳转；用户在对话框里自己选过的处理方式不受影响
+const httpModeNormalized = ref(false)
+watch(
+  () => editingListener.value,
+  (l) => {
+    httpModeNormalized.value = !l.tls && !!l.httpPort
+  },
+  { immediate: true },
+)
+watch(
+  () => editingListener.value.tls,
+  (tls) => {
+    const l = editingListener.value
+    if (tls && httpModeNormalized.value && l.httpPort && l.httpPortMode === 'serve') {
+      l.httpPortMode = 'redirect'
+    }
+    if (tls) {
+      httpModeNormalized.value = false
+    }
+  },
+)
 
 // httpPortText 为列表中额外 HTTP 端口的标签：开启 HTTPS 且跳转时注明跳转
 function httpPortText(l: Listener) {
