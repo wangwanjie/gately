@@ -151,6 +151,8 @@ func (m *Module) Init(env module.Env) error {
 	errLog := m.logs.Logger("")
 	m.auth.errPages.warn = errLog.Warnf
 	m.auth.errPages.set(m.cfg.ErrorPages)
+	// 导航面板库：配置中无效的面板不提供服务，记录日志说明原因
+	m.auth.panels.warn = errLog.Warnf
 	m.auth.panels.set(m.cfg.Panels)
 	m.initVisitors()
 	return nil

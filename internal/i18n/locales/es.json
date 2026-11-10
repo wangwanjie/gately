@@ -1337,6 +1337,7 @@
   "导出脱敏诊断包": "Exportar paquete de diagnóstico anonimizado",
   "导出镜像": "Exportar una imagen",
   "导航面板": "Paneles de navegación",
+  "导航面板 %s 无效，已忽略: %v": "El panel de navegación %s no es válido y se ha ignorado: %v",
   "导航面板不可用": "Panel de navegación no disponible",
   "导航面板仍被 %s 引用，请先修改这些站点": "El panel de navegación aún lo usa %s. Modifique primero esos sitios",
   "导航面板只支持 GET 请求。": "El panel de navegación solo admite solicitudes GET.",
