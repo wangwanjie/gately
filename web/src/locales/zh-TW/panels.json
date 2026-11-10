@@ -88,5 +88,7 @@
   "altNamePlaceholder": "IPv6、frp…",
   "addAlt": "新增存取方式",
   "altCount": "+{n} 個存取方式",
-  "altNameRequired": "請填寫存取方式的名稱"
+  "altNameRequired": "請填寫存取方式的名稱",
+  "lanDetectNote": "內外網依訪客的直連位址判斷：外網訪客經本機的 frpc、cloudflared 或 Docker 連接埠對應轉發進來時，直連位址是本機或容器網段，會被視為內網，此時請在監聽上開啟 PROXY 協定或設定可信代理。連結的內網位址對能開啟面板的訪客可見（訪客可用 ?net=lan 切換），需要隱藏時請開啟站點認證或 IP 存取控制。",
+  "moduleDisabled": "Web 服務模組已關閉，導覽面板無法使用。可在「設定 → 功能模組」中開啟 Web 服務模組。"
 }

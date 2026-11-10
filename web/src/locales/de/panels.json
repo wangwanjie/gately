@@ -88,5 +88,7 @@
   "altNamePlaceholder": "IPv6, frp…",
   "addAlt": "Zugriffsweg hinzufügen",
   "altCount": "+{n} Zugriffswege",
-  "altNameRequired": "Geben Sie jedem Zugriffsweg einen Namen"
+  "altNameRequired": "Geben Sie jedem Zugriffsweg einen Namen",
+  "lanDetectNote": "LAN oder Internet wird anhand der direkten Adresse des Besuchers bestimmt: Kommen Internet-Besucher über frpc, cloudflared oder eine Docker-Portweiterleitung auf diesem Rechner, ist die direkte Adresse dieser Rechner oder ein Container-Netz und sie gelten als LAN. Aktivieren Sie dann das PROXY-Protokoll am Listener oder konfigurieren Sie vertrauenswürdige Proxys. Die LAN-Adressen der Links sind für alle sichtbar, die das Panel öffnen können (Umschalten mit ?net=lan); um sie zu verbergen, aktivieren Sie die Site-Authentifizierung oder die IP-Zugriffskontrolle.",
+  "moduleDisabled": "Das Webdienst-Modul ist ausgeschaltet, daher sind Navigationspanels nicht verfügbar. Schalten Sie es unter Einstellungen → Module ein."
 }

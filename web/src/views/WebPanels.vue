@@ -3,10 +3,11 @@
   <div class="panels-page">
     <PageHeader :title="t('panels.title')" :desc="t('panels.desc')" :icon="LayoutGrid">
       <el-button :icon="RefreshCw" :loading="loading" @click="load">{{ t('common.refresh') }}</el-button>
-      <el-button v-if="!isReadonly && !unsupported" type="primary" :icon="Plus" data-test="panel-add" @click="openEditor()">{{ t('panels.add') }}</el-button>
+      <el-button v-if="!isReadonly && !notFound" type="primary" :icon="Plus" data-test="panel-add" @click="openEditor()">{{ t('panels.add') }}</el-button>
     </PageHeader>
 
-    <el-alert v-if="unsupported" type="error" :closable="false" show-icon :title="t('panels.unsupported')" class="unsupported" data-test="panels-unsupported" />
+    <el-alert v-if="moduleOff" type="warning" :closable="false" show-icon :title="t('panels.moduleDisabled')" class="unsupported" data-test="panels-module-off" />
+    <el-alert v-else-if="unsupported" type="error" :closable="false" show-icon :title="t('panels.unsupported')" class="unsupported" data-test="panels-unsupported" />
     <div v-else-if="!loading && !panels.length" class="g-card empty-card">
       <el-empty :description="t('panels.empty')">
         <div class="form-help empty-help">{{ t('panels.emptyHelp') }}</div>
@@ -133,13 +134,15 @@
             <el-form-item :label="t('panels.lanCidrs')">
               <el-input v-model="lanText" type="textarea" :rows="2" class="mono" placeholder="100.64.0.0/10" />
               <div class="form-help">{{ t('panels.lanCidrsHelp') }}</div>
+              <div class="form-help">{{ t('panels.lanDetectNote') }}</div>
             </el-form-item>
             <el-form-item :label="t('common.enable')"><el-switch v-model="editing.enable" /></el-form-item>
             <el-form-item :label="t('common.remark')"><el-input v-model="editing.remark" /></el-form-item>
           </el-form>
         </el-tab-pane>
 
-        <el-tab-pane :label="t('panels.tabPreview')" name="preview">
+        <!-- 预览接口为 POST，只读账号没有权限调用，不显示该页签 -->
+        <el-tab-pane v-if="!isReadonly" :label="t('panels.tabPreview')" name="preview">
           <div class="preview-bar">
             <el-radio-group v-model="previewLAN" size="small" @change="renderPreview">
               <el-radio-button :value="false">{{ t('panels.previewWan') }}</el-radio-button>
@@ -242,7 +245,7 @@ import GroupInput from '../components/GroupInput.vue'
 import PanelIcon from '../components/PanelIcon.vue'
 import PanelIconInput from '../components/PanelIconInput.vue'
 import { ApiError, api } from '../api'
-import { isReadonly } from '../nav'
+import { isReadonly, moduleEnabled } from '../nav'
 import { useFormLayout } from '../composables/useIsMobile'
 import { splitLinesOrCommas, useListText } from '../composables/useListText'
 import { createItem, uniqueName, type CopySource } from '../copyDraft'
@@ -283,15 +286,18 @@ const panels = ref<PanelView[]>([])
 const listeners = ref<ListenerLite[]>([])
 const forwards = ref<ForwardSource[]>([])
 const loading = ref(true)
-// unsupported 为后端没有面板接口（连接的是不含此功能的旧版本，接口返回 404）
-const unsupported = ref(false)
+// notFound 为面板接口返回 404：Web 服务模块已关闭（接口不注册）时提示开启模块，
+// 模块开启却仍为 404 时才是连接的后端为不含此功能的旧版本
+const notFound = ref(false)
+const moduleOff = computed(() => notFound.value && !moduleEnabled('webservice'))
+const unsupported = computed(() => notFound.value && moduleEnabled('webservice'))
 const toggling = reactive<Record<string, boolean>>({})
 
 async function load() {
   loading.value = true
   try {
     panels.value = await api.get<PanelView[]>('/api/webservice/panels')
-    unsupported.value = false
+    notFound.value = false
     try {
       listeners.value = await api.get<ListenerLite[]>('/api/webservice/listeners')
     } catch {
@@ -299,7 +305,7 @@ async function load() {
     }
   } catch (e) {
     if (e instanceof ApiError && e.status === 404) {
-      unsupported.value = true
+      notFound.value = true
       return
     }
     ElMessage.error((e as Error).message)

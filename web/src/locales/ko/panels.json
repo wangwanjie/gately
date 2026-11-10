@@ -88,5 +88,7 @@
   "altNamePlaceholder": "IPv6, frp…",
   "addAlt": "접속 방식 추가",
   "altCount": "접속 방식 +{n}개",
-  "altNameRequired": "접속 방식 이름을 입력하세요"
+  "altNameRequired": "접속 방식 이름을 입력하세요",
+  "lanDetectNote": "내부망 여부는 방문자의 직접 접속 주소로 판단합니다. 인터넷 방문자가 이 장치의 frpc, cloudflared, Docker 포트 매핑을 거쳐 들어오면 접속 주소가 이 장치나 컨테이너 네트워크가 되어 내부망으로 처리됩니다. 이 경우 리스너에서 PROXY 프로토콜을 켜거나 신뢰할 프록시를 설정하세요. 링크의 내부망 주소는 패널을 열 수 있는 방문자에게 보입니다(?net=lan으로 전환 가능). 숨기려면 사이트 인증이나 IP 접근 제어를 켜세요.",
+  "moduleDisabled": "Web 서비스 모듈이 꺼져 있어 내비게이션 패널을 사용할 수 없습니다. 「설정 → 기능 모듈」에서 Web 서비스 모듈을 켜세요."
 }

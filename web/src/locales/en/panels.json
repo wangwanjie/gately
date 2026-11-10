@@ -88,5 +88,7 @@
   "altNamePlaceholder": "IPv6, frp…",
   "addAlt": "Add access method",
   "altCount": "+{n} access methods",
-  "altNameRequired": "Enter a name for each access method"
+  "altNameRequired": "Enter a name for each access method",
+  "lanDetectNote": "LAN or internet is decided by the visitor's direct address: when internet visitors come in through frpc, cloudflared or a Docker port mapping on this machine, the direct address is this machine or a container network and they count as LAN. In that case enable the PROXY protocol on the listener or configure trusted proxies. Links' LAN addresses are visible to anyone who can open the panel (visitors can switch with ?net=lan); to keep them private, enable site authentication or IP access control.",
+  "moduleDisabled": "The Web service module is turned off, so navigation panels are unavailable. Turn on the Web service module under Settings → Modules."
 }
