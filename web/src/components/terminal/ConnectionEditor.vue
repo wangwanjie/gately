@@ -74,7 +74,7 @@
           <span class="help">{{ t('termConn.editor.keepAliveHelp') }}</span>
         </el-form-item>
         <el-form-item v-if="form.ssh.hostKey" :label="t('termConn.editor.hostKey')">
-          <span class="fp mono">{{ form.ssh.hostKey }}</span>
+          <span class="fp mono"><el-tag v-if="hostKeyTypeLabel" size="small" type="info" class="fp-type">{{ hostKeyTypeLabel }}</el-tag>{{ form.ssh.hostKey }}</span>
         </el-form-item>
         <ProxyForm :proxy="form.ssh.proxy" :reveal="revealOf('ssh.proxy.password')" />
       </template>
@@ -164,6 +164,20 @@ function revealOf(field: string) {
   const key = form.key || props.copyFrom?.key
   return secretOf(key && `/api/webterminal/connections/${key}/secrets`, field)
 }
+// 主机指纹的密钥类型，写法与 ssh-keygen -l 一致，便于和 ssh-keyscan 结果对照（服务器通常有多把不同类型的主机密钥）
+const hostKeyTypeLabel = computed(() => {
+  const typ = form.ssh.hostKeyType ?? ''
+  if (typ === 'ssh-ed25519') {
+    return 'ED25519'
+  }
+  if (typ === 'ssh-rsa') {
+    return 'RSA'
+  }
+  if (typ.startsWith('ecdsa-sha2-')) {
+    return 'ECDSA'
+  }
+  return typ
+})
 const envRows = ref<{ k: string; v: string }[]>([])
 const quickText = ref('')
 const shells = ref<string[]>([])
@@ -323,8 +337,14 @@ async function test() {
 }
 .fp {
   font-size: 12px;
+  /* 移动端指纹会折行，收紧行高 */
+  line-height: 22px;
   word-break: break-all;
   color: var(--el-text-color-secondary);
+}
+.fp-type {
+  margin-right: 6px;
+  vertical-align: middle;
 }
 .env {
   width: 100%;
