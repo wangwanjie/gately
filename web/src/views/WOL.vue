@@ -418,6 +418,14 @@ onMounted(() => {
 .wol-card :deep(.entity-actions) {
   justify-content: flex-end;
 }
+/* 同一行卡片等高时，把底部操作区推到卡片底部，各卡片的按钮对齐，空白留在字段区与操作区之间（紧凑视图为单行布局，不处理） */
+.wol-card:not(.is-compact) {
+  display: flex;
+  flex-direction: column;
+}
+.wol-card:not(.is-compact) :deep(.entity-foot) {
+  margin-top: auto;
+}
 .full {
   width: 100%;
 }
