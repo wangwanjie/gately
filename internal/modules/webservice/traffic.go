@@ -119,8 +119,16 @@ func (h *siteHandler) applyRewrite(w http.ResponseWriter, r *http.Request) bool 
 		}
 		out := rw.re.ReplaceAllString(r.URL.Path, rw.to)
 		if rw.redirect {
-			// 跳转目标中的 {host} 替换为访客请求的域名，便于多个域名共用一条规则跳到各自的 HTTPS
-			out = strings.ReplaceAll(out, hostPlaceholder, hostOnly(r.Host))
+			// 跳转目标中的 {host} 替换为访客请求的域名，便于多个域名共用一条规则跳到各自的 HTTPS。
+			// 与重定向变量同样处理：IPv6 字面地址补回方括号，含域名以外字符的 Host 按非法请求拒绝
+			if strings.Contains(out, hostPlaceholder) {
+				host, ok := rewriteHost(r.Host)
+				if !ok {
+					http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+					return true
+				}
+				out = strings.ReplaceAll(out, hostPlaceholder, host)
+			}
 			if !strings.Contains(out, "?") && r.URL.RawQuery != "" {
 				out += "?" + r.URL.RawQuery
 			}
@@ -132,6 +140,19 @@ func (h *siteHandler) applyRewrite(w http.ResponseWriter, r *http.Request) bool 
 		return false
 	}
 	return false
+}
+
+// rewriteHost 返回可代入跳转地址的访客域名：IPv6 字面地址带方括号，空值或含非法字符时返回 false。
+func rewriteHost(hostport string) (string, bool) {
+	h := hostOnly(hostport)
+	if h == "" {
+		return "", false
+	}
+	if strings.Contains(h, ":") {
+		h = "[" + h + "]"
+	}
+	v, ok, err := safeHost(h)
+	return v, ok && err == nil
 }
 
 // retryAfterSeconds 把等待时间向上取整为秒。
