@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/wangwanjie/gately/internal/stunaddr"
+	"github.com/wangwanjie/gately/internal/webpage"
 )
 
 // pngIcon 为 1x1 PNG 的 data URL。
@@ -294,6 +295,38 @@ func TestPanelServing(t *testing.T) {
 	}
 }
 
+// 内置图标：写法 builtin:编号，编号不存在时拒绝；页面中画在底色方块上，底色较浅时图形为深色。
+func TestPanelBuiltinIcons(t *testing.T) {
+	if _, err := validatePanelIcon("builtin:jellyfin"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := validatePanelIcon("builtin:nope"); err == nil {
+		t.Fatal("不存在的内置图标应拒绝")
+	}
+	if _, err := validatePanelIcon("builtin:"); err == nil {
+		t.Fatal("空编号应拒绝")
+	}
+	ic := panelIcon("builtin:jellyfin", "")
+	jf, _ := webpage.FindBuiltinIcon("jellyfin")
+	if !ic.Tile || ic.Color != jf.Color || ic.Image != webpage.BuiltinIconURL(jf, false) {
+		t.Fatalf("默认颜色: %+v", ic)
+	}
+	if ic = panelIcon("builtin:jellyfin", "#ffee00"); ic.Color != "#ffee00" || ic.Image != webpage.BuiltinIconURL(jf, true) {
+		t.Fatal("浅色底色应使用深色图形")
+	}
+	h, _ := panelHandler(t, []Panel{{Key: "p1", Name: "家", Enable: true, Icon: "builtin:gately", Links: []PanelLink{{Name: "JF", URL: "https://jf.example.com", Icon: "builtin:jellyfin"}}}})
+	body := panelGet(h, "/", "192.168.1.9:4000").Body.String()
+	if !strings.Contains(body, `class="ic tile c`) || !strings.Contains(body, `class="logo tile c`) || !strings.Contains(body, "--c:"+jf.Color) {
+		t.Fatalf("页面: %s", body)
+	}
+	// 每个内置图标都能生成有效的 SVG
+	for _, x := range webpage.BuiltinIcons() {
+		if x.ID == "" || x.Name == "" || !panelColorRe.MatchString(x.Color) || (x.Kind != "brand" && x.Kind != "line") || x.Body == "" {
+			t.Fatalf("图标数据不完整: %+v", x)
+		}
+	}
+}
+
 // 没有任何链接配置内网地址时不显示内外网切换；没有可见链接时显示空提示。
 func TestPanelServingNoSwitch(t *testing.T) {
 	h, _ := panelHandler(t, []Panel{{Key: "p1", Name: "空", Enable: true, Links: []PanelLink{{Name: "A", URL: "https://a.example.com", Hide: true}}}})
@@ -372,6 +405,14 @@ func TestPanelsAPI(t *testing.T) {
 	l.Default.Panel = key
 	if code, out = do("POST", "/api/webservice/listeners", l); code != 200 {
 		t.Fatalf("引用存在的面板: %d %v", code, out)
+	}
+	// 内置图标列表
+	rec0 := httptest.NewRecorder()
+	mux0 := http.NewServeMux()
+	m.Routes(prefixRouter{mux0, "/api/webservice"})
+	mux0.ServeHTTP(rec0, httptest.NewRequest("GET", "/api/webservice/panels/icons", nil))
+	if rec0.Code != 200 || !strings.Contains(rec0.Body.String(), `"id":"jellyfin"`) || !strings.Contains(rec0.Body.String(), `"srcDark":"data:image/svg+xml;base64,`) {
+		t.Fatalf("图标列表: %d", rec0.Code)
 	}
 	// 列表带引用方；被引用时拒绝删除
 	rec := httptest.NewRecorder()

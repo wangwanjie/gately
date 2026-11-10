@@ -19,7 +19,7 @@
   "hide": "ページに表示しない",
   "icon": "アイコン",
   "iconDecodeFailed": "この画像を読み込めません",
-  "iconHelp": "絵文字か短い文字（8 文字まで）、画像 URL（http/https）を入力するか、画像をアップロードします。空欄なら名前の先頭文字を表示します。",
+  "iconHelp": "組み込みアイコン（Gately の関連モジュール、よく使うアプリなど）を選ぶか、絵文字・短い文字（8 文字まで）・画像 URL（http/https）を入力するか、画像をアップロードします。空欄なら名前の先頭文字を表示します。",
   "iconInline": "アップロードした画像は設定に保存されます（{size}）。消去すると既定のアイコンに戻ります。",
   "iconPlaceholder": "📦、NAS、https://…/icon.svg",
   "iconTextTooLong": "テキストアイコンは 8 文字までです",
@@ -69,5 +69,17 @@
   "urlInvalid": "完全な URL を入力してください（例: https://nas.example.com）",
   "usedBy": "使用中のサイト",
   "varsHelp": "アドレスには変数を使えます。{'{host}'} は訪問者がパネルを開いたドメイン、{'{STUN_web_PORT}'}・{'{STUN_web_ADDR}'} は STUN ルールの公開ポートとアドレスです。変数にまだ値がないリンクは利用不可と表示されます。",
-  "view": "表示"
+  "view": "表示",
+  "iconPick": "選択",
+  "iconPickTitle": "組み込みアイコンを選択",
+  "iconSearch": "アイコンを検索",
+  "catAll": "すべて",
+  "cat_gately": "Gately と関連",
+  "cat_apps": "アプリ",
+  "cat_system": "システムとネットワーク",
+  "cat_generic": "汎用",
+  "iconNone": "一致するアイコンはありません",
+  "iconBuiltin": "組み込みアイコン：{name}。背景色は下で変更できます。",
+  "iconBuiltinMissing": "この組み込みアイコンは現在のバージョンにありません",
+  "colorBuiltin": "アイコン本来の色"
 }

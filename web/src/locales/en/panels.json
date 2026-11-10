@@ -19,7 +19,7 @@
   "hide": "Hide on the page",
   "icon": "Icon",
   "iconDecodeFailed": "This image can't be read",
-  "iconHelp": "Use an emoji or short text (up to 8 characters), an image URL (http/https), or upload an image. Leave empty to show the first letter of the name.",
+  "iconHelp": "Choose a built-in icon (Gately modules, common apps and more), or enter an emoji, short text (up to 8 characters) or an image URL (http/https), or upload an image. Leave empty to show the first letter of the name.",
   "iconInline": "The uploaded image is stored in the configuration ({size}). Clear it to use the default icon.",
   "iconPlaceholder": "📦, NAS or https://…/icon.svg",
   "iconTextTooLong": "Text icons can have up to 8 characters",
@@ -69,5 +69,17 @@
   "urlInvalid": "Enter a full URL, for example https://nas.example.com",
   "usedBy": "Used by",
   "varsHelp": "Addresses can use variables: {'{host}'} is the domain the visitor used to open the panel, {'{STUN_web_PORT}'} and {'{STUN_web_ADDR}'} are a STUN rule's public port and address. A link whose variable has no value yet shows as unavailable.",
-  "view": "View"
+  "view": "View",
+  "iconPick": "Choose",
+  "iconPickTitle": "Choose a built-in icon",
+  "iconSearch": "Search icons",
+  "catAll": "All",
+  "cat_gately": "Gately & modules",
+  "cat_apps": "Apps",
+  "cat_system": "Systems & network",
+  "cat_generic": "General",
+  "iconNone": "No matching icons",
+  "iconBuiltin": "Built-in icon: {name}. Change the background color below.",
+  "iconBuiltinMissing": "This built-in icon doesn't exist in this version",
+  "colorBuiltin": "Icon's own color"
 }

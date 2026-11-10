@@ -19,7 +19,7 @@
   "hide": "Auf der Seite ausblenden",
   "icon": "Symbol",
   "iconDecodeFailed": "Dieses Bild kann nicht gelesen werden",
-  "iconHelp": "Ein Emoji oder kurzer Text (bis zu 8 Zeichen), eine Bild-URL (http/https) oder ein hochgeladenes Bild. Leer zeigt den Anfangsbuchstaben des Namens.",
+  "iconHelp": "Wählen Sie ein eingebautes Symbol (Gately-Module, gängige Apps usw.) oder geben Sie ein Emoji, kurzen Text (bis zu 8 Zeichen) oder eine Bild-URL (http/https) ein, oder laden Sie ein Bild hoch. Leer zeigt den Anfangsbuchstaben des Namens.",
   "iconInline": "Das hochgeladene Bild wird in der Konfiguration gespeichert ({size}). Leeren Sie das Feld für das Standardsymbol.",
   "iconPlaceholder": "📦, NAS oder https://…/icon.svg",
   "iconTextTooLong": "Textsymbole dürfen bis zu 8 Zeichen haben",
@@ -69,5 +69,17 @@
   "urlInvalid": "Geben Sie eine vollständige URL ein, z. B. https://nas.example.com",
   "usedBy": "Verwendet von",
   "varsHelp": "Adressen können Variablen enthalten: {'{host}'} ist die Domain, mit der der Besucher das Panel geöffnet hat; {'{STUN_web_PORT}'} und {'{STUN_web_ADDR}'} sind öffentlicher Port und Adresse einer STUN-Regel. Ein Link, dessen Variable noch keinen Wert hat, wird als nicht verfügbar angezeigt.",
-  "view": "Ansehen"
+  "view": "Ansehen",
+  "iconPick": "Wählen",
+  "iconPickTitle": "Eingebautes Symbol wählen",
+  "iconSearch": "Symbole suchen",
+  "catAll": "Alle",
+  "cat_gately": "Gately & Module",
+  "cat_apps": "Apps",
+  "cat_system": "Systeme & Netzwerk",
+  "cat_generic": "Allgemein",
+  "iconNone": "Keine passenden Symbole",
+  "iconBuiltin": "Eingebautes Symbol: {name}. Die Hintergrundfarbe lässt sich unten ändern.",
+  "iconBuiltinMissing": "Dieses eingebaute Symbol gibt es in dieser Version nicht",
+  "colorBuiltin": "Eigene Farbe des Symbols"
 }

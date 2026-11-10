@@ -3544,6 +3544,29 @@
         },
         "type": "object"
       },
+      "webservice.PanelIconView": {
+        "properties": {
+          "cat": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "src": {
+            "type": "string"
+          },
+          "srcDark": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "webservice.PanelLink": {
         "properties": {
           "color": {
@@ -47434,6 +47457,67 @@
           "Web 服务"
         ],
         "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/panels/icons": {
+      "get": {
+        "description": "所需权限：`webservice:read`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/webservice.PanelIconView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "导航面板的内置图标列表",
+        "tags": [
+          "Web 服务"
+        ],
+        "x-required-scope": "webservice:read",
         "x-token-allowed": true
       }
     },

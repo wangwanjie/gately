@@ -98,7 +98,32 @@ func (m *Module) registerPanels(r module.Router) {
 	}
 	panels.Register(r, "/panels")
 	r.HandleFunc("POST /panels/preview", m.handlePanelPreview)
+	r.HandleFunc("GET /panels/icons", handlePanelIcons)
+	module.DocOf(r, "GET /panels/icons", module.Doc{Summary: "导航面板的内置图标列表", Resp: []PanelIconView{}})
 	module.DocOf(r, "POST /panels/preview", module.Doc{Summary: "按编辑中的内容生成导航面板预览，不保存", Req: &PanelPreviewRequest{}, Resp: &PanelPreview{}})
+}
+
+// PanelIconView 是内置图标列表中的一项：图标写为 builtin:编号；src 为白色图形、srcDark 为深色图形，
+// 管理界面按底色深浅选用，与访客页面一致。
+type PanelIconView struct {
+	ID      string `json:"id"`
+	Name    string `json:"name"`
+	Cat     string `json:"cat"`
+	Color   string `json:"color"`
+	Src     string `json:"src"`
+	SrcDark string `json:"srcDark"`
+}
+
+func handlePanelIcons(w http.ResponseWriter, _ *http.Request) {
+	list := webpage.BuiltinIcons()
+	out := make([]PanelIconView, 0, len(list))
+	for i := range list {
+		ic := &list[i]
+		out = append(out, PanelIconView{ID: ic.ID, Name: ic.Name, Cat: ic.Cat, Color: ic.Color, Src: webpage.BuiltinIconURL(ic, false), SrcDark: webpage.BuiltinIconURL(ic, true)})
+	}
+	// 图标随版本固定，允许浏览器缓存一段时间
+	w.Header().Set("Cache-Control", "private, max-age=3600")
+	httpx.OK(w, out)
 }
 
 // handlePanelPreview 校验编辑中的面板并生成预览页面。{host} 等变量按管理后台的访问地址展开，

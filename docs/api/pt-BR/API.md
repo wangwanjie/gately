@@ -405,6 +405,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | PUT | `/api/webservice/panels-enable` | `webservice:write` | Ativar ou desativar em lote: Painéis de navegação |
 | POST | `/api/webservice/panels-delete` | `webservice:write` | Excluir em lote: Painéis de navegação |
 | POST | `/api/webservice/panels/preview` | `webservice:write` | Prévia do painel de navegação |
+| GET | `/api/webservice/panels/icons` | `webservice:read` | Ícones embutidos dos painéis de navegação |
 | GET | `/api/webservice/users` | `webservice:read` | Ler usuários compartilhados e provedor de identidade OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Salvar usuários compartilhados e provedor de identidade OIDC, configurar sites em lote |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | Operações em lote de sites: ativar, desativar, excluir, adicionar, remover ou substituir domínios, alterar algumas opções ou mover para outro listener; só é salvo se todos os sites passarem na validação e nada muda se algum falhar |
@@ -2421,6 +2422,17 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `subtitle` | string |
 | `theme` | string |
 | `title` | string |
+
+### webservice.PanelIconView
+
+| Campo | Tipo |
+| --- | --- |
+| `cat` | string |
+| `color` | string |
+| `id` | string |
+| `name` | string |
+| `src` | string |
+| `srcDark` | string |
 
 ### webservice.PanelLink
 

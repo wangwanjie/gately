@@ -110,3 +110,26 @@ test('hasVars 与 toPanel', () => {
   assert.equal(p.links[0].lanUrl, '')
   assert.deepEqual(p.lanCidrs, [])
 })
+
+test('内置图标写法、底色深浅与筛选', async () => {
+  const { builtinId, lightColor, filterIcons, iconKind } = await import('../src/panels.ts')
+  assert.equal(iconKind('builtin:jellyfin'), 'builtin')
+  assert.equal(builtinId(' builtin:jellyfin '), 'jellyfin')
+  assert.equal(builtinId('https://x'), '')
+  // 与 Go 端 webpage.LightColor 相同的阈值
+  assert.ok(lightColor('#ffc135'))
+  assert.ok(lightColor('#b5b5b6'))
+  assert.ok(!lightColor('#0e7c66'))
+  assert.ok(!lightColor('#f38020'))
+  assert.ok(!lightColor('red'))
+  const list = [
+    { id: 'jellyfin', name: 'Jellyfin', cat: 'apps' },
+    { id: 'frp', name: 'frp', cat: 'gately' },
+    { id: 'house', name: '主页', cat: 'generic' },
+  ]
+  assert.deepEqual(filterIcons(list, '', '').map((i) => i.id), ['jellyfin', 'frp', 'house'])
+  assert.deepEqual(filterIcons(list, 'gately', '').map((i) => i.id), ['frp'])
+  assert.deepEqual(filterIcons(list, '', 'JELLY').map((i) => i.id), ['jellyfin'])
+  assert.deepEqual(filterIcons(list, '', '主').map((i) => i.id), ['house'])
+  assert.deepEqual(filterIcons(list, 'apps', 'frp'), [])
+})

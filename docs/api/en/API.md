@@ -405,6 +405,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | PUT | `/api/webservice/panels-enable` | `webservice:write` | Enable or disable in bulk: Navigation panels |
 | POST | `/api/webservice/panels-delete` | `webservice:write` | Delete in bulk: Navigation panels |
 | POST | `/api/webservice/panels/preview` | `webservice:write` | Navigation panel preview |
+| GET | `/api/webservice/panels/icons` | `webservice:read` | Built-in icons for navigation panels |
 | GET | `/api/webservice/users` | `webservice:read` | Read shared users and the OIDC identity provider |
 | PUT | `/api/webservice/users` | `webservice:write` | Save shared users and the OIDC identity provider, set sites in bulk |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | Bulk site operations: enable, disable, delete, add, remove or replace domains, change some options, or move to another listener; changes are saved only if every site passes validation, and nothing changes if any site fails |
@@ -2421,6 +2422,17 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `subtitle` | string |
 | `theme` | string |
 | `title` | string |
+
+### webservice.PanelIconView
+
+| Field | Type |
+| --- | --- |
+| `cat` | string |
+| `color` | string |
+| `id` | string |
+| `name` | string |
+| `src` | string |
+| `srcDark` | string |
 
 ### webservice.PanelLink
 

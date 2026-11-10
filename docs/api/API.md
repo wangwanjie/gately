@@ -405,6 +405,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/webservice/panels-enable` | `webservice:write` | 批量启用或停用导航面板 |
 | POST | `/api/webservice/panels-delete` | `webservice:write` | 批量删除导航面板 |
 | POST | `/api/webservice/panels/preview` | `webservice:write` | 导航面板预览 |
+| GET | `/api/webservice/panels/icons` | `webservice:read` | 导航面板的内置图标列表 |
 | GET | `/api/webservice/users` | `webservice:read` | 读取共享用户与 OIDC 身份提供方 |
 | PUT | `/api/webservice/users` | `webservice:write` | 保存共享用户与 OIDC 身份提供方，批量设置站点 |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | 批量操作站点：启停、删除、增删或替换域名、修改部分选项、移到其他监听器；全部校验通过才保存，任一站点失败都不修改 |
@@ -2421,6 +2422,17 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `subtitle` | string |
 | `theme` | string |
 | `title` | string |
+
+### webservice.PanelIconView
+
+| 字段 | 类型 |
+| --- | --- |
+| `cat` | string |
+| `color` | string |
+| `id` | string |
+| `name` | string |
+| `src` | string |
+| `srcDark` | string |
 
 ### webservice.PanelLink
 

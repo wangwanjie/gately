@@ -3544,6 +3544,29 @@
         },
         "type": "object"
       },
+      "webservice.PanelIconView": {
+        "properties": {
+          "cat": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "src": {
+            "type": "string"
+          },
+          "srcDark": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "webservice.PanelLink": {
         "properties": {
           "color": {
@@ -47434,6 +47457,67 @@
           "Servicio web"
         ],
         "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/panels/icons": {
+      "get": {
+        "description": "Permiso necesario: `webservice:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/webservice.PanelIconView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Iconos integrados de los paneles de navegación",
+        "tags": [
+          "Servicio web"
+        ],
+        "x-required-scope": "webservice:read",
         "x-token-allowed": true
       }
     },
