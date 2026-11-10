@@ -47544,6 +47544,277 @@
         "x-token-allowed": true
       }
     },
+    "/api/webservice/visitors": {
+      "get": {
+        "description": "Requêtes vers tous les sites (y compris les sites non reconnus) agrégées par adresse du visiteur, que le journal d'accès du site soit activé ou non ; seuls des compteurs agrégés sont conservés, jamais les requêtes individuelles ni les chaînes de requête. Paramètres : `days` compte les N derniers jours, aujourd'hui inclus (0 pour toute la période de conservation), `q` mot-clé (adresse, code pays, identité, site, domaine, chemin, User-Agent), `filter` vaut denied (requêtes bloquées), authed (authentifié sur un site), admin (session de la console d'administration), banned (banni actuellement) ou noise (uniquement bloqué ou uniquement des sites non reconnus), `site` vaut `cléÉcoute/cléSite` ou `-` (sites non reconnus), `sort` vaut last, first, requests ou denied, plus `offset` et `limit` (200 au maximum). Renvoie `items`, `total`, le résumé filtré `summary`, le résumé quotidien `daily`, les sites visités `sites`, l'état du stockage `info` et les noms des écoutes `listeners`. `country` vaut LAN pour les adresses privées.\n\nPermission requise : `webservice:read`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Liste de l'audit des visiteurs",
+        "tags": [
+          "Service Web"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/visitors/delete": {
+      "post": {
+        "description": "Le corps `{\"ips\": [\"adresse\"]}` supprime les visiteurs indiqués (1000 au maximum à la fois), `{\"all\": true}` efface tout ; renvoie le nombre supprimé et écrit immédiatement sur le disque.\n\nPermission requise : `webservice:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Supprimer des enregistrements de l'audit des visiteurs",
+        "tags": [
+          "Service Web"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/visitors/detail": {
+      "get": {
+        "description": "Paramètre `ip`. Renvoie la première et la dernière visite, les requêtes et blocages par jour sur la période de conservation dans `daily`, la répartition des codes d'état, les motifs de blocage, les sites visités, les chemins les plus demandés, les identités (`kind` vaut user ou admin) et les User-Agent, ainsi que l'état de bannissement actuel.\n\nPermission requise : `webservice:read`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Enregistrement d'audit d'un visiteur",
+        "tags": [
+          "Service Web"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/visitors/settings": {
+      "get": {
+        "description": "Permission requise : `webservice:read`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Lire les paramètres et l'état du stockage de l'audit des visiteurs",
+        "tags": [
+          "Service Web"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Corps `{\"disable\": false, \"days\": 30, \"max\": 10000}` : `days` est la conservation en jours (1-180), `max` le nombre maximal de visiteurs conservés (100-100000) ; 0 signifie la valeur par défaut. Au-delà de la limite, les adresses uniquement bloquées ou n'ayant visité que des sites non reconnus sont supprimées en premier, puis celles absentes depuis le plus longtemps. Une fois désactivé, plus rien n'est enregistré et les données existantes sont conservées.\n\nPermission requise : `webservice:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Enregistrer les paramètres de l'audit des visiteurs",
+        "tags": [
+          "Service Web"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/webterminal/connections": {
       "get": {
         "description": "Permission requise : `webterminal:read`.",

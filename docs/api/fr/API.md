@@ -409,6 +409,11 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | GET | `/api/webservice/stats` | `webservice:read` | Statistiques par minute du site (?listener=&site=&minutes=) |
 | GET | `/api/webservice/metrics` | `webservice:read` | Métriques au format texte Prometheus |
 | GET | `/api/webservice/topology` | `webservice:read` | Instantané de la topologie des services Web |
+| GET | `/api/webservice/visitors` | `webservice:read` | Liste de l'audit des visiteurs |
+| GET | `/api/webservice/visitors/detail` | `webservice:read` | Enregistrement d'audit d'un visiteur |
+| POST | `/api/webservice/visitors/delete` | `webservice:write` | Supprimer des enregistrements de l'audit des visiteurs |
+| GET | `/api/webservice/visitors/settings` | `webservice:read` | Lire les paramètres et l'état du stockage de l'audit des visiteurs |
+| PUT | `/api/webservice/visitors/settings` | `webservice:write` | Enregistrer les paramètres de l'audit des visiteurs |
 | GET | `/api/webservice/connections` | `webservice:read` | Requêtes en cours et longues requêtes récemment terminées d’un site (?listener=&site=&q=) |
 | POST | `/api/webservice/connections/close` | `webservice:write` | Fermer une requête en cours sur un site, en bloquant éventuellement son adresse source (banSeconds -1 signifie permanent) |
 | GET | `/api/webservice/bans` | `webservice:read` | IP actuellement bannies |

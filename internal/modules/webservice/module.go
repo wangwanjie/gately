@@ -25,6 +25,7 @@ import (
 	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
+	"github.com/wangwanjie/gately/internal/visitors"
 )
 
 // ID 是模块标识。
@@ -53,6 +54,8 @@ type Module struct {
 	moveMu sync.Mutex
 	// fw 管理各监听的自动放行防火墙，key 为监听 key
 	fw *fwopen.Group
+	// visits 为访客审计数据，Init 后可用
+	visits *visitors.Store
 }
 
 // New 创建模块。certs 为证书来源，可为 nil（此时不能启用 HTTPS）；waf 可为 nil（站点的 WAF 设置不生效）。
@@ -146,6 +149,7 @@ func (m *Module) Init(env module.Env) error {
 	errLog := m.logs.Logger("")
 	m.auth.errPages.warn = errLog.Warnf
 	m.auth.errPages.set(m.cfg.ErrorPages)
+	m.initVisitors()
 	return nil
 }
 
@@ -235,6 +239,10 @@ func (m *Module) Stop() error {
 	}
 	// 同步撤销自动放行，进程退出前关闭端口
 	m.fw.ClearAll()
+	// 监听已全部停止，不再有新的访问，访客审计数据写盘
+	if err := m.visits.Flush(); err != nil {
+		m.logs.Logger("").Warnf("访客审计数据写盘失败: %v", err)
+	}
 	return nil
 }
 
@@ -419,6 +427,12 @@ func (m *Module) Routes(r module.Router) {
 	module.DocOf(r, "GET /stats", module.Doc{Summary: "站点分钟级统计（?listener=&site=&minutes=）", Resp: &SiteStatsView{}})
 	module.DocOf(r, "GET /metrics", module.Doc{Summary: "Prometheus 文本格式指标"})
 	r.HandleFunc("GET /topology", m.handleTopology)
+	// 访客审计
+	r.HandleFunc("GET /visitors", m.handleVisitors)
+	r.HandleFunc("GET /visitors/detail", m.handleVisitorDetail)
+	r.HandleFunc("POST /visitors/delete", m.handleDeleteVisitors)
+	r.HandleFunc("GET /visitors/settings", m.handleVisitorSettings)
+	r.HandleFunc("PUT /visitors/settings", m.handlePutVisitorSettings)
 	module.DocOf(r, "GET /topology", module.Doc{Summary: "拓扑视图快照：监听、站点、后端与监听级动作的实时速率、计数与活动 IP（?focus=节点编号&ip=地址）", Resp: &TopologyView{}})
 	r.HandleFunc("GET /connections", m.handleConns)
 	r.HandleFunc("POST /connections/close", m.handleCloseConn)

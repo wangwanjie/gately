@@ -409,6 +409,11 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | GET | `/api/webservice/stats` | `webservice:read` | Estatísticas por minuto do site (?listener=&site=&minutes=) |
 | GET | `/api/webservice/metrics` | `webservice:read` | Métricas em formato de texto do Prometheus |
 | GET | `/api/webservice/topology` | `webservice:read` | Instantâneo da topologia dos Serviços Web |
+| GET | `/api/webservice/visitors` | `webservice:read` | Lista da auditoria de visitantes |
+| GET | `/api/webservice/visitors/detail` | `webservice:read` | Registro de auditoria de um visitante |
+| POST | `/api/webservice/visitors/delete` | `webservice:write` | Excluir registros da auditoria de visitantes |
+| GET | `/api/webservice/visitors/settings` | `webservice:read` | Ler as configurações e o estado do armazenamento da auditoria de visitantes |
+| PUT | `/api/webservice/visitors/settings` | `webservice:write` | Salvar as configurações da auditoria de visitantes |
 | GET | `/api/webservice/connections` | `webservice:read` | Requisições em andamento e requisições longas encerradas recentemente de um site (?listener=&site=&q=) |
 | POST | `/api/webservice/connections/close` | `webservice:write` | Encerrar uma solicitação em andamento em um site, bloqueando opcionalmente o endereço de origem (banSeconds -1 significa permanente) |
 | GET | `/api/webservice/bans` | `webservice:read` | IPs atualmente bloqueados |

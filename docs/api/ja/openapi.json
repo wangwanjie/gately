@@ -47544,6 +47544,277 @@
         "x-token-allowed": true
       }
     },
+    "/api/webservice/visitors": {
+      "get": {
+        "description": "すべてのサイト（一致しないサイトを含む）へのリクエストを訪問者アドレスごとに集計します。サイトのアクセスログの有無には関係しません。集計値のみを保存し、個々のリクエストやクエリ文字列は保存しません。パラメータ：`days` 今日を含む直近の日数（0 は保持期間全体）、`q` キーワード（アドレス、国コード、ID、サイト、ドメイン、パス、User-Agent）、`filter` は denied（ブロックあり）、authed（サイト認証済み）、admin（管理画面のログイン状態あり）、banned（BAN 中）、noise（ブロックのみ、または一致しないサイトへのアクセスのみ）、`site` は `リスナーkey/サイトkey` または `-`（一致しないサイト）、`sort` は last、first、requests、denied、`offset`、`limit`（最大 200）。`items`、`total`、絞り込み後の集計 `summary`、日別集計 `daily`、アクセスされたサイト `sites`、ストレージ状態 `info`、リスナー名 `listeners` を返します。プライベートアドレスの `country` は LAN です。\n\n必要な権限: `webservice:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "訪問者監査の一覧",
+        "tags": [
+          "Web サービス"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/visitors/delete": {
+      "post": {
+        "description": "リクエスト本文 `{\"ips\": [\"アドレス\"]}` で指定した訪問者を削除（一度に最大 1000 件）、`{\"all\": true}` ですべて削除します。削除件数を返し、すぐにディスクへ書き込みます。\n\n必要な権限: `webservice:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "訪問者監査の記録を削除",
+        "tags": [
+          "Web サービス"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/visitors/detail": {
+      "get": {
+        "description": "パラメータ `ip`。初回・最終アクセス、保持期間中の日別リクエスト数とブロック数 `daily`、ステータスコードの分布、ブロック理由、アクセスしたサイト、リクエストの多いパス、ID（`kind` は user または admin）と User-Agent、現在 BAN 中かどうかを返します。\n\n必要な権限: `webservice:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "訪問者 1 件の監査記録",
+        "tags": [
+          "Web サービス"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/visitors/settings": {
+      "get": {
+        "description": "必要な権限: `webservice:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "訪問者監査の設定とストレージ状態を取得",
+        "tags": [
+          "Web サービス"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "リクエスト本文 `{\"disable\": false, \"days\": 30, \"max\": 10000}`：`days` は保持日数（1~180）、`max` は保持する最大訪問者数（100~100000）、0 は既定値です。上限を超えると、ブロックのみまたは一致しないサイトへのアクセスのみのアドレスを先に削除し、次に最も長く現れていないものを削除します。無効にすると新しい記録は行わず、既存のデータは保持します。\n\n必要な権限: `webservice:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "訪問者監査の設定を保存",
+        "tags": [
+          "Web サービス"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/webterminal/connections": {
       "get": {
         "description": "必要な権限: `webterminal:read`。",

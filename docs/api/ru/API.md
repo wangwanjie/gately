@@ -409,6 +409,11 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/webservice/stats` | `webservice:read` | Поминутная статистика сайта (?listener=&site=&minutes=) |
 | GET | `/api/webservice/metrics` | `webservice:read` | Метрики в текстовом формате Prometheus |
 | GET | `/api/webservice/topology` | `webservice:read` | Снимок топологии веб-сервисов |
+| GET | `/api/webservice/visitors` | `webservice:read` | Список аудита посетителей |
+| GET | `/api/webservice/visitors/detail` | `webservice:read` | Запись аудита одного посетителя |
+| POST | `/api/webservice/visitors/delete` | `webservice:write` | Удалить записи аудита посетителей |
+| GET | `/api/webservice/visitors/settings` | `webservice:read` | Получить настройки и состояние хранилища аудита посетителей |
+| PUT | `/api/webservice/visitors/settings` | `webservice:write` | Сохранить настройки аудита посетителей |
 | GET | `/api/webservice/connections` | `webservice:read` | Выполняющиеся и недавно завершённые длительные запросы сайта (?listener=&site=&q=) |
 | POST | `/api/webservice/connections/close` | `webservice:write` | Разорвать выполняющийся запрос сайта с возможной блокировкой адреса источника (banSeconds -1 — навсегда) |
 | GET | `/api/webservice/bans` | `webservice:read` | Заблокированные в данный момент IP |

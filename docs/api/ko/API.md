@@ -409,6 +409,11 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/webservice/stats` | `webservice:read` | 사이트 분 단위 통계 (?listener=&site=&minutes=) |
 | GET | `/api/webservice/metrics` | `webservice:read` | Prometheus 텍스트 형식 지표 |
 | GET | `/api/webservice/topology` | `webservice:read` | Web 서비스 토폴로지 스냅숏 |
+| GET | `/api/webservice/visitors` | `webservice:read` | 방문자 감사 목록 |
+| GET | `/api/webservice/visitors/detail` | `webservice:read` | 방문자 한 명의 감사 기록 |
+| POST | `/api/webservice/visitors/delete` | `webservice:write` | 방문자 감사 기록 삭제 |
+| GET | `/api/webservice/visitors/settings` | `webservice:read` | 방문자 감사 설정과 저장소 상태 조회 |
+| PUT | `/api/webservice/visitors/settings` | `webservice:write` | 방문자 감사 설정 저장 |
 | GET | `/api/webservice/connections` | `webservice:read` | 사이트의 진행 중인 요청과 최근 종료된 장시간 요청 (?listener=&site=&q=) |
 | POST | `/api/webservice/connections/close` | `webservice:write` | 사이트에서 진행 중인 요청을 끊고 출발지 주소를 함께 차단할 수 있음(banSeconds가 -1이면 영구) |
 | GET | `/api/webservice/bans` | `webservice:read` | 현재 차단된 IP |

@@ -47544,6 +47544,277 @@
         "x-token-allowed": true
       }
     },
+    "/api/webservice/visitors": {
+      "get": {
+        "description": "Запросы ко всем сайтам (включая несопоставленные), сгруппированные по адресу посетителя, независимо от того, включён ли журнал доступа сайта; хранятся только агрегированные счётчики, без отдельных запросов и строк запроса. Параметры: `days` — последние N дней включая сегодня (0 — весь срок хранения), `q` — ключевое слово (адрес, код страны, личность, сайт, домен, путь, User-Agent), `filter` — denied (есть блокировки), authed (прошёл аутентификацию сайта), admin (с сеансом панели управления), banned (заблокирован сейчас) или noise (только блокировки или только несопоставленные сайты), `site` — `ключПрослушивателя/ключСайта` или `-` (несопоставленные сайты), `sort` — last, first, requests или denied, а также `offset` и `limit` (не более 200). Возвращает `items`, `total`, сводку с учётом фильтров `summary`, сводку по дням `daily`, посещённые сайты `sites`, состояние хранилища `info` и имена прослушивателей `listeners`. Для частных адресов `country` равен LAN.\n\nТребуемое разрешение: `webservice:read`.",
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Список аудита посетителей",
+        "tags": [
+          "Веб-служба"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/visitors/delete": {
+      "post": {
+        "description": "Тело `{\"ips\": [\"адрес\"]}` удаляет указанных посетителей (не более 1000 за раз), `{\"all\": true}` очищает всё; возвращает число удалённых записей и сразу записывает данные на диск.\n\nТребуемое разрешение: `webservice:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Удалить записи аудита посетителей",
+        "tags": [
+          "Веб-служба"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/visitors/detail": {
+      "get": {
+        "description": "Параметр `ip`. Возвращает первое и последнее посещение, число запросов и блокировок по дням за срок хранения в `daily`, распределение кодов состояния, причины блокировок, посещённые сайты, самые запрашиваемые пути, личности (`kind` — user или admin) и User-Agent, а также признак текущей блокировки.\n\nТребуемое разрешение: `webservice:read`.",
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Запись аудита одного посетителя",
+        "tags": [
+          "Веб-служба"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/visitors/settings": {
+      "get": {
+        "description": "Требуемое разрешение: `webservice:read`.",
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Получить настройки и состояние хранилища аудита посетителей",
+        "tags": [
+          "Веб-служба"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Тело `{\"disable\": false, \"days\": 30, \"max\": 10000}`: `days` — срок хранения в днях (1–180), `max` — максимальное число хранимых посетителей (100–100000); 0 означает значение по умолчанию. При превышении лимита сначала удаляются адреса, которые только блокировались или обращались только к несопоставленным сайтам, затем дольше всего не появлявшиеся. После отключения новые данные не записываются, существующие сохраняются.\n\nТребуемое разрешение: `webservice:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Сохранить настройки аудита посетителей",
+        "tags": [
+          "Веб-служба"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/webterminal/connections": {
       "get": {
         "description": "Требуемое разрешение: `webterminal:read`.",

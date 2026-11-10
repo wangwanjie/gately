@@ -734,9 +734,9 @@ func (h *siteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// 重写规则会原地改写 r.URL，访问日志与路径探测要用访客实际请求的路径
 	origPath, origURI := r.URL.Path, r.URL.RequestURI()
 	// 带本实例管理后台登录态的请求（管理员经这个站点访问后台，例如日志页的轮询）在访问日志中标记用户名，
-	// 日志页可以隐藏它们。在处理前取得：之后请求头可能被改写；只在记录访问日志时校验
+	// 日志页可以隐藏它们，访客审计据此标记管理员。在处理前取得：之后请求头可能被改写；只在记录访问日志或访客审计时校验
 	admin := ""
-	if h.site.AccessLog {
+	if h.site.AccessLog || h.auth.recordsVisits() {
 		admin = httpx.SessionUser(r)
 	}
 
@@ -747,6 +747,7 @@ func (h *siteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			lat = rec.firstByte.Sub(start)
 		}
 		h.metrics.record(client.Addr(), rec.status, rec.bytes, lat, time.Now())
+		h.recordVisit(r, client.Addr(), rec, origPath, adminTag(admin, rec.deny))
 		if h.site.AccessLog {
 			uri := origURI
 			// 认证路径的查询串含票据、授权码等敏感信息，不写入日志
@@ -951,6 +952,13 @@ func (h *siteHandler) serveInner(rec http.ResponseWriter, r *http.Request) {
 	} else if h.usesIdentity() && h.fwd == nil {
 		// 无需认证的路径上，已网页登录的访客仍按身份分流，同一应用的页面不会落到不同后端
 		id = h.auth.sessionIdentity(r, h.site)
+	}
+	// 认证识别出的身份记到实时连接登记项上，请求结束时随访客审计一并记录
+	if len(id.names) > 0 {
+		if a, ok := r.Context().Value(ctxKeyActiveReq{}).(*activeReq); ok {
+			name := id.names[0]
+			a.user.Store(&name)
+		}
 	}
 	if h.usesIdentity() {
 		r = h.withIdentity(r, id)

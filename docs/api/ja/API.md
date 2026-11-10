@@ -409,6 +409,11 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/webservice/stats` | `webservice:read` | サイトの分単位統計（?listener=&site=&minutes=） |
 | GET | `/api/webservice/metrics` | `webservice:read` | Prometheus テキスト形式のメトリクス |
 | GET | `/api/webservice/topology` | `webservice:read` | Web サービスのトポロジースナップショット |
+| GET | `/api/webservice/visitors` | `webservice:read` | 訪問者監査の一覧 |
+| GET | `/api/webservice/visitors/detail` | `webservice:read` | 訪問者 1 件の監査記録 |
+| POST | `/api/webservice/visitors/delete` | `webservice:write` | 訪問者監査の記録を削除 |
+| GET | `/api/webservice/visitors/settings` | `webservice:read` | 訪問者監査の設定とストレージ状態を取得 |
+| PUT | `/api/webservice/visitors/settings` | `webservice:write` | 訪問者監査の設定を保存 |
 | GET | `/api/webservice/connections` | `webservice:read` | サイトの進行中リクエストと最近終了した長時間リクエスト（?listener=&site=&q=） |
 | POST | `/api/webservice/connections/close` | `webservice:write` | サイトで進行中のリクエストを切断し、送信元アドレスを同時にブロックできます（banSeconds が -1 で無期限） |
 | GET | `/api/webservice/bans` | `webservice:read` | 現在ブロックされている IP |

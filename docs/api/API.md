@@ -409,6 +409,11 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/webservice/stats` | `webservice:read` | 站点分钟级统计（?listener=&site=&minutes=） |
 | GET | `/api/webservice/metrics` | `webservice:read` | Prometheus 文本格式指标 |
 | GET | `/api/webservice/topology` | `webservice:read` | Web 服务拓扑视图快照 |
+| GET | `/api/webservice/visitors` | `webservice:read` | 访客审计列表 |
+| GET | `/api/webservice/visitors/detail` | `webservice:read` | 单个访客的审计记录 |
+| POST | `/api/webservice/visitors/delete` | `webservice:write` | 删除访客审计记录 |
+| GET | `/api/webservice/visitors/settings` | `webservice:read` | 读取访客审计设置与存储状态 |
+| PUT | `/api/webservice/visitors/settings` | `webservice:write` | 保存访客审计设置 |
 | GET | `/api/webservice/connections` | `webservice:read` | 站点进行中的请求与最近结束的长请求（?listener=&site=&q=） |
 | POST | `/api/webservice/connections/close` | `webservice:write` | 断开站点的一个进行中请求，可同时封禁其来源地址（banSeconds 为 -1 表示永久） |
 | GET | `/api/webservice/bans` | `webservice:read` | 当前被封禁的 IP |
