@@ -2507,6 +2507,7 @@
   "访客审计列表": "Lista de auditoría de visitantes",
   "访客审计数据中有 %d 条无效记录，已跳过": "Se omitieron %d registros no válidos en los datos de auditoría de visitantes",
   "访客审计数据写盘失败: %v": "No se pudieron escribir los datos de auditoría de visitantes: %v",
+  "访客审计数据解压后超过大小上限，其余部分未读取": "Los datos de auditoría de visitantes superan el límite de tamaño tras descomprimirse; el resto no se ha leído",
   "访客审计的保留天数需在 1~180 之间": "La retención de la auditoría de visitantes debe estar entre 1 y 180 días",
   "访客审计的最多访客数需在 100~100000 之间": "El máximo de visitantes de la auditoría debe estar entre 100 y 100000",
   "访客审计设置无效（%v），已改用默认值": "Configuración de auditoría de visitantes no válida (%v); se usan los valores predeterminados",

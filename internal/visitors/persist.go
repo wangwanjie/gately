@@ -22,10 +22,10 @@ import (
 var saveDelay = 10 * time.Minute
 
 // 读取落盘文件的上限：解压后总大小与单行长度，防止损坏或被替换的文件耗尽内存。
-const (
-	maxFileBytes = 512 << 20
-	maxLineBytes = 1 << 20
-)
+// maxFileBytes 为变量便于测试调小。
+var maxFileBytes int64 = 512 << 20
+
+const maxLineBytes = 1 << 20
 
 // Info 是存储状态。
 type Info struct {
@@ -178,7 +178,34 @@ func writeFile(path string, write func(io.Writer) error) (int64, error) {
 	return st.Size(), nil
 }
 
-// Load 读取落盘文件，无效的行跳过；文件不存在时不报错。读取后按保留天数与上限清理。
+// errTooLarge 表示落盘文件解压后超过 maxFileBytes。
+var errTooLarge = errors.New("访客审计数据解压后超过大小上限，其余部分未读取")
+
+// limitReader 读取到 n 字节后返回 errTooLarge。与 io.LimitReader 不同，超限时报错而不是像正常结束一样静默截断。
+type limitReader struct {
+	r io.Reader
+	n int64
+}
+
+func (l *limitReader) Read(p []byte) (int, error) {
+	if l.n <= 0 {
+		// 恰好读到上限且后面已没有数据时不算超限
+		var one [1]byte
+		if n, _ := l.r.Read(one[:]); n == 0 {
+			return 0, io.EOF
+		}
+		return 0, errTooLarge
+	}
+	if int64(len(p)) > l.n {
+		p = p[:l.n]
+	}
+	n, err := l.r.Read(p)
+	l.n -= int64(n)
+	return n, err
+}
+
+// Load 读取落盘文件，无效的行跳过；文件不存在时不报错。读取时跳过已过期的记录，
+// 记录数超出上限时边读边淘汰，读取后按保留天数与上限清理。
 func (s *Store) Load() error {
 	if s.path == "" {
 		return nil
@@ -199,19 +226,33 @@ func (s *Store) Load() error {
 		return err
 	}
 	defer f.Close()
+	// Lstat 与 Open 之间文件可能被换成符号链接或其他文件，打开后再确认是同一个普通文件
+	fst, err := f.Stat()
+	if err != nil {
+		return err
+	}
+	if !fst.Mode().IsRegular() || !os.SameFile(st, fst) {
+		return fmt.Errorf("%s 不是普通文件", s.path)
+	}
 	zr, err := gzip.NewReader(f)
 	if err != nil {
 		return err
 	}
 	defer zr.Close()
+
 	s.mu.Lock()
+	set := s.set
 	now := s.now()
 	s.mu.Unlock()
 	nowSec, today := now.Unix(), dayOf(now)
-	sc := bufio.NewScanner(io.LimitReader(zr, maxFileBytes))
+	cutSec := nowSec - int64(set.Days)*86400
+	// 超出上限一定比例后才淘汰一次，避免每读一条就排序一遍
+	evictAt := set.Max + max(1, set.Max/20)
+
+	sc := bufio.NewScanner(&limitReader{r: zr, n: maxFileBytes})
 	sc.Buffer(make([]byte, 64<<10), maxLineBytes)
 	loaded := map[netip.Addr]*Visitor{}
-	bad := 0
+	bad, dropped := 0, false
 	for sc.Scan() {
 		line := sc.Bytes()
 		if len(bytes.TrimSpace(line)) == 0 {
@@ -227,13 +268,25 @@ func (s *Store) Load() error {
 			bad++
 			continue
 		}
+		// 已超过保留天数的记录直接跳过，不占用内存
+		if v.Last < cutSec {
+			dropped = true
+			continue
+		}
 		if old := loaded[a]; old != nil && old.Last >= v.Last {
 			continue
 		}
 		loaded[a] = &v
+		if len(loaded) >= evictAt {
+			evictFrom(loaded, len(loaded)-set.Max)
+			dropped = true
+		}
 	}
 	// 文件被截断（异常退出时的旧版本等）只影响末尾，已读出的记录照常使用
 	scanErr := sc.Err()
+	if errors.Is(scanErr, errTooLarge) && s.warn != nil {
+		s.warn("%v", scanErr)
+	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.m = loaded
@@ -244,7 +297,7 @@ func (s *Store) Load() error {
 		s.evictLocked(len(s.m) - s.set.Max)
 		changed = true
 	}
-	if changed || bad > 0 {
+	if changed || dropped || bad > 0 {
 		s.markDirtyLocked()
 	}
 	if bad > 0 && s.warn != nil {
