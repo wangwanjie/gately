@@ -70,6 +70,7 @@
   "usedBy": "使用的站点",
   "varsHelp": "地址中可使用变量：{'{host}'} 为访客访问面板所用的域名，{'{STUN_web_PORT}'}、{'{STUN_web_ADDR}'} 为 STUN 穿透的公网端口与地址；变量暂无值时链接显示为暂不可用。",
   "view": "查看",
+  "unsupported": "当前连接的 Gately 不支持导航面板（后端版本过旧，接口返回 404），请升级到包含此功能的版本。",
   "iconPick": "选择",
   "iconPickTitle": "选择内置图标",
   "iconSearch": "搜索图标",

@@ -3,10 +3,11 @@
   <div class="panels-page">
     <PageHeader :title="t('panels.title')" :desc="t('panels.desc')" :icon="LayoutGrid">
       <el-button :icon="RefreshCw" :loading="loading" @click="load">{{ t('common.refresh') }}</el-button>
-      <el-button v-if="!isReadonly" type="primary" :icon="Plus" data-test="panel-add" @click="openEditor()">{{ t('panels.add') }}</el-button>
+      <el-button v-if="!isReadonly && !unsupported" type="primary" :icon="Plus" data-test="panel-add" @click="openEditor()">{{ t('panels.add') }}</el-button>
     </PageHeader>
 
-    <div v-if="!loading && !panels.length" class="g-card empty-card">
+    <el-alert v-if="unsupported" type="error" :closable="false" show-icon :title="t('panels.unsupported')" class="unsupported" data-test="panels-unsupported" />
+    <div v-else-if="!loading && !panels.length" class="g-card empty-card">
       <el-empty :description="t('panels.empty')">
         <div class="form-help empty-help">{{ t('panels.emptyHelp') }}</div>
         <el-button v-if="!isReadonly" type="primary" :icon="Plus" @click="openEditor()">{{ t('panels.add') }}</el-button>
@@ -240,7 +241,7 @@ import CopyHint from '../components/CopyHint.vue'
 import GroupInput from '../components/GroupInput.vue'
 import PanelIcon from '../components/PanelIcon.vue'
 import PanelIconInput from '../components/PanelIconInput.vue'
-import { api } from '../api'
+import { ApiError, api } from '../api'
 import { isReadonly } from '../nav'
 import { useFormLayout } from '../composables/useIsMobile'
 import { splitLinesOrCommas, useListText } from '../composables/useListText'
@@ -282,18 +283,25 @@ const panels = ref<PanelView[]>([])
 const listeners = ref<ListenerLite[]>([])
 const forwards = ref<ForwardSource[]>([])
 const loading = ref(true)
+// unsupported 为后端没有面板接口（连接的是不含此功能的旧版本，接口返回 404）
+const unsupported = ref(false)
 const toggling = reactive<Record<string, boolean>>({})
 
 async function load() {
   loading.value = true
   try {
     panels.value = await api.get<PanelView[]>('/api/webservice/panels')
+    unsupported.value = false
     try {
       listeners.value = await api.get<ListenerLite[]>('/api/webservice/listeners')
     } catch {
       listeners.value = []
     }
   } catch (e) {
+    if (e instanceof ApiError && e.status === 404) {
+      unsupported.value = true
+      return
+    }
     ElMessage.error((e as Error).message)
   } finally {
     loading.value = false
@@ -741,6 +749,9 @@ onMounted(async () => {
   border: 1px solid var(--g-border);
   border-radius: var(--g-radius);
   background: #fff;
+}
+.unsupported {
+  margin-bottom: 14px;
 }
 .alts {
   display: flex;
