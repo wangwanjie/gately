@@ -38,6 +38,12 @@
           <span class="kpi" :title="t('webTopology.activeHelp')"><b>{{ data.active }}</b> {{ t('webTopology.active') }}</span>
           <span class="kpi" :title="t('webTopology.activeIpsHelp')"><b>{{ data.ipTotal }}</b> IP</span>
         </div>
+        <!-- 回放：切换到录制的历史快照，用时间轴回看过去某一时刻的拓扑 -->
+        <el-tooltip :content="replayOn ? t('webTopology.replayOff') : t('webTopology.replayHelp')" placement="bottom" :disabled="noHover">
+          <el-button class="replay-btn" :type="replayOn ? 'primary' : 'default'" :aria-pressed="replayOn" @click="toggleReplay">
+            <History :size="14" class="btn-ic" />{{ t('webTopology.replay') }}
+          </el-button>
+        </el-tooltip>
         <!-- 聚焦活动：一键只看最近 60 秒有请求或有进行中请求的站点与后端，忽略折叠与收起，计数为当前活动中的站点数 -->
         <!-- 触屏轻点会触发悬停提示且不会自动关闭，挡住相邻按钮，触屏上不显示 -->
         <el-tooltip :content="activeOnly ? t('webTopology.activeOnlyOff') : t('webTopology.activeOnlyHelp')" placement="bottom" :disabled="noHover">
@@ -131,6 +137,9 @@
         </el-button>
       </div>
     </div>
+
+    <!-- 回放控制条：开启后停止实时刷新，画布显示所选时刻的快照 -->
+    <TopologyReplay v-if="replayOn" :focus="detailFocus" @frame="onReplayFrame" @empty="onReplayEmpty" @close="exitReplay" />
 
     <div class="topo-main">
       <div class="canvas-wrap">
@@ -365,7 +374,7 @@
           </div>
           <template v-if="seriesFor === detailFocus && data?.series?.length">
             <div class="chart-title">
-              {{ t('webTopology.curve') }}
+              {{ data.seriesStep ? t('webTopology.curveReplay', { s: data.seriesStep }) : t('webTopology.curve') }}
               <span class="chart-meta">{{ t('webTopology.curveMeta', { max: formatQps(seriesMax) }) }}</span>
             </div>
             <Sparkline :series="[{ values: data.series.map((p) => p.requests), color: 'var(--el-color-primary)' }]" :capacity="data.series.length" :height="56" />
@@ -406,8 +415,9 @@
     </div>
 
     <div class="topo-foot">
-      <span class="pulse" :class="{ off: paused || !!loadError }" />
-      <span>{{ paused ? t('webTopology.paused') : loadError ? loadError : t('webTopology.updated', { time: updatedAt }) }}</span>
+      <span class="pulse" :class="{ off: paused || !!loadError, replay: !!data?.replay }" />
+      <span v-if="data?.replay">{{ t('webTopology.replaying', { time: new Date(data.time * 1000).toLocaleString() }) }}</span>
+      <span v-else>{{ paused ? t('webTopology.paused') : loadError ? loadError : t('webTopology.updated', { time: updatedAt }) }}</span>
       <span class="foot-note">{{ t('webTopology.note') }}</span>
     </div>
   </div>
@@ -441,6 +451,7 @@ import {
   FolderOpen,
   Globe,
   Hand,
+  History,
   Info,
   LayoutDashboard,
   ListFilter,
@@ -463,6 +474,7 @@ import {
 } from 'lucide-vue-next'
 import { api, formatBytes, formatRate } from '../api'
 import Sparkline from './Sparkline.vue'
+import TopologyReplay from './TopologyReplay.vue'
 import type { SiteLogTarget } from './SiteLogDialog.vue'
 import { useCollapsed } from '../composables/useCollapsed'
 import { useScrollLock } from '../composables/useScrollLock'
@@ -527,6 +539,10 @@ const data = ref<TopologyView>()
 const loadError = ref('')
 const updatedAt = ref('')
 const paused = ref(false)
+// replayOn 为是否打开了回放控制条；replayShown 为画布是否正显示回放快照（控制条取到的历史快照直接替换 data，
+// 与实时快照走同样的渲染）。录制未开启或还没有数据时控制条打开但画布继续实时刷新
+const replayOn = ref(false)
+const replayShown = ref(false)
 // selected 为点击选中的节点（详情面板展示它），hover 为悬停中的节点（只影响高亮）
 const selected = ref('gately')
 const hover = ref('')
@@ -1173,7 +1189,8 @@ const detailFocus = computed(() => {
   return id === 'internet' ? 'gately' : id
 })
 
-const seriesMax = computed(() => Math.max(0, ...(data.value?.series ?? []).map((p) => p.requests)))
+// 峰值按每秒计：回放曲线每个点覆盖 seriesStep 秒
+const seriesMax = computed(() => Math.max(0, ...(data.value?.series ?? []).map((p) => p.requests)) / (data.value?.seriesStep || 1))
 
 function rateMetrics(r: { qps: number; bps: number; qps60: number }, bpsHelp?: string): Metric[] {
   return [
@@ -1268,7 +1285,10 @@ const detail = computed<Detail | undefined>(() => {
       }
       if (s.running) {
         d.actions.push({ key: 'stats', label: t('webTopology.openStats'), icon: BarChart3, run: () => emit('stats', lk, s.key, siteName(s)) })
-        d.actions.push({ key: 'conns', label: t('webTopology.openConns'), icon: ArrowRightLeft, run: () => emit('conns', lk, s.key, siteName(s)) })
+        // 连接列表是当前的实时状态，回放时不提供，以免当成回放时刻的连接
+        if (!data.value?.replay) {
+          d.actions.push({ key: 'conns', label: t('webTopology.openConns'), icon: ArrowRightLeft, run: () => emit('conns', lk, s.key, siteName(s)) })
+        }
       }
       // 未命名默认站点无法按站点过滤，只在已按 IP 筛选时提供（查看该 IP 在全部站点的日志）
       if (logSite.value || ipFilter.value) {
@@ -1892,6 +1912,10 @@ let seq = 0
 let alive = true
 
 async function load() {
+  // 画布显示回放快照时不再取实时数据
+  if (replayShown.value) {
+    return
+  }
   const my = ++seq
   const focus = detailFocus.value
   try {
@@ -1901,7 +1925,7 @@ async function load() {
       q.set('ip', ipFilter.value)
     }
     const v = await api.get<TopologyView>('/api/webservice/topology?' + q.toString())
-    if (my !== seq || !alive) {
+    if (my !== seq || !alive || replayShown.value) {
       return
     }
     data.value = v
@@ -1919,7 +1943,7 @@ async function load() {
 function schedule() {
   window.clearTimeout(timer)
   timer = window.setTimeout(async () => {
-    if (!alive) {
+    if (!alive || replayShown.value) {
       return
     }
     if (document.hidden) {
@@ -1937,9 +1961,53 @@ function schedule() {
 
 async function reload() {
   window.clearTimeout(timer)
+  if (replayShown.value) {
+    return
+  }
   await load()
   if (alive) {
     schedule()
+  }
+}
+
+// ---- 回放 ----
+
+function toggleReplay() {
+  if (replayOn.value) {
+    exitReplay()
+    return
+  }
+  replayOn.value = true
+}
+function onReplayFrame(v: TopologyView) {
+  if (!replayOn.value) {
+    return
+  }
+  if (!replayShown.value) {
+    // 开始显示回放快照：停止实时刷新，并使未完成的实时请求作废，避免它覆盖画布
+    replayShown.value = true
+    seq++
+    window.clearTimeout(timer)
+    paused.value = false
+  }
+  data.value = v
+  seriesFor.value = v.focus ?? ''
+  loadError.value = ''
+}
+// 录制被关闭或数据已清空：画布回到实时视图，控制条保留以便重新开启
+function onReplayEmpty() {
+  if (replayShown.value) {
+    replayShown.value = false
+    seriesFor.value = ''
+    reload()
+  }
+}
+function exitReplay() {
+  replayOn.value = false
+  if (replayShown.value) {
+    replayShown.value = false
+    seriesFor.value = ''
+    reload()
   }
 }
 
@@ -3008,6 +3076,11 @@ defineExpose({ reload })
 }
 .pulse.off {
   background: var(--el-text-color-placeholder);
+  animation: none;
+}
+/* 回放中：指示灯改为警示色且不闪烁，提醒画布不是实时数据 */
+.pulse.replay {
+  background: var(--el-color-warning);
   animation: none;
 }
 @keyframes topo-pulse {
