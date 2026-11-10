@@ -559,23 +559,37 @@ async function saveSettings() {
   }
 }
 
+// observeTrack 开始跟踪时间轴的宽度（时间轴可能晚于挂载才出现，或被替换成新元素）
+function observeTrack(el: HTMLElement | undefined, old?: HTMLElement) {
+  if (!alive) {
+    return
+  }
+  if (!resizeObs) {
+    resizeObs = new ResizeObserver(() => {
+      const w = trackEl.value?.clientWidth
+      if (w) {
+        trackW.value = w
+      }
+      compact.value = window.innerWidth < 768
+    })
+  }
+  if (old && old !== el) {
+    resizeObs.unobserve(old)
+  }
+  if (el) {
+    resizeObs.observe(el)
+    trackW.value = el.clientWidth || trackW.value
+  }
+}
+
+// 在 setup 顶层注册，组件卸载时随之停止；放在 onMounted 的 await 之后注册的 watch 不会自动停止
+watch(trackEl, (el, old) => observeTrack(el, old), { flush: 'post' })
+
 onMounted(async () => {
   document.addEventListener('keydown', onKeydown)
   await nextTick()
-  resizeObs = new ResizeObserver(() => {
-    const w = trackEl.value?.clientWidth
-    if (w) {
-      trackW.value = w
-    }
-    compact.value = window.innerWidth < 768
-  })
   compact.value = window.innerWidth < 768
-  watch(trackEl, (el) => {
-    if (el) {
-      resizeObs?.observe(el)
-      trackW.value = el.clientWidth || trackW.value
-    }
-  }, { immediate: true })
+  observeTrack(trackEl.value)
   await loadIndex()
   // 录制在继续：定期刷新时间轴，新帧追加到末尾、超出容量的旧帧从开头淘汰
   indexTimer = window.setInterval(() => {
