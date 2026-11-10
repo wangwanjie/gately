@@ -81,5 +81,11 @@
   "iconNone": "Keine passenden Symbole",
   "iconBuiltin": "Eingebautes Symbol: {name}. Die Hintergrundfarbe lässt sich unten ändern.",
   "iconBuiltinMissing": "Dieses eingebaute Symbol gibt es in dieser Version nicht",
-  "colorBuiltin": "Eigene Farbe des Symbols"
+  "colorBuiltin": "Eigene Farbe des Symbols",
+  "alts": "Weitere Zugriffswege",
+  "altsHelp": "Weitere Zugänge zum selben Dienst, etwa IPv6, frp, STUN oder ein Cloudflare-Tunnel. Sie erscheinen als kleine Links auf der Karte, öffnen sich in einem neuen Tab und werden Besuchern aus LAN und Internet angezeigt.",
+  "altNamePlaceholder": "IPv6, frp…",
+  "addAlt": "Zugriffsweg hinzufügen",
+  "altCount": "+{n} Zugriffswege",
+  "altNameRequired": "Geben Sie jedem Zugriffsweg einen Namen"
 }

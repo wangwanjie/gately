@@ -229,7 +229,7 @@ func TestPanelServing(t *testing.T) {
 	if strings.Index(body, ">存储<") > strings.Index(body, ">工具<") {
 		t.Error("分组顺序应为首次出现的顺序")
 	}
-	if !regexp.MustCompile(`href="http://203.0.113.7:51234/" data-s=`).MatchString(body) {
+	if !regexp.MustCompile(`class="hit" href="http://203.0.113.7:51234/" title=`).MatchString(body) {
 		t.Error("SameTab 链接不应在新标签页打开")
 	}
 	// CSP 带 nonce，与页面中的样式、脚本一致；不允许内联脚本
@@ -324,6 +324,48 @@ func TestPanelBuiltinIcons(t *testing.T) {
 		if x.ID == "" || x.Name == "" || !panelColorRe.MatchString(x.Color) || (x.Kind != "brand" && x.Kind != "line") || x.Body == "" {
 			t.Fatalf("图标数据不完整: %+v", x)
 		}
+	}
+}
+
+// 其他访问方式：校验名称与地址，页面中显示为小链接；变量暂无值时显示为不可用，主地址不可用时仍可点。
+func TestPanelAlts(t *testing.T) {
+	p := validPanel()
+	p.Links[0].Alts = []PanelAlt{{Name: " IPv6 ", URL: " https://[2001:db8::2]:8443 "}, {Name: "STUN", URL: "http://{STUN_web_ADDR}/"}}
+	if err := p.validate(); err != nil || p.Links[0].Alts[0].Name != "IPv6" || p.Links[0].Alts[0].URL != "https://[2001:db8::2]:8443" {
+		t.Fatalf("合法: %v %+v", err, p.Links[0].Alts)
+	}
+	for name, alts := range map[string][]PanelAlt{
+		"缺名称":  {{URL: "https://a.example.com"}},
+		"缺地址":  {{Name: "x"}},
+		"危险地址": {{Name: "x", URL: "javascript:alert(1)"}},
+		"请求变量": {{Name: "x", URL: "https://{args}"}},
+		"名称过长": {{Name: strings.Repeat("长", maxPanelAltName+1), URL: "https://a.example.com"}},
+		"数量过多": make([]PanelAlt, maxPanelAlts+1),
+	} {
+		p := validPanel()
+		for i := range alts {
+			if alts[i].Name == "" && name == "数量过多" {
+				alts[i] = PanelAlt{Name: "x", URL: "https://a.example.com"}
+			}
+		}
+		p.Links[0].Alts = alts
+		if err := p.validate(); err == nil {
+			t.Errorf("%s 应拒绝", name)
+		}
+	}
+	stunaddr.Set("rule-alt", "frpweb", netip.MustParseAddrPort("203.0.113.8:40001"))
+	defer stunaddr.Delete("rule-alt")
+	h, _ := panelHandler(t, []Panel{{Key: "p1", Name: "家", Enable: true, Links: []PanelLink{
+		{Name: "NAS", URL: "http://{STUN_none_ADDR}/", Alts: []PanelAlt{{Name: "IPv6", URL: "https://[2001:db8::2]:8443"}, {Name: "STUN", URL: "http://{STUN_frpweb_ADDR}/"}, {Name: "<b>坏</b>", URL: "http://{STUN_none_ADDR}/"}}},
+	}}})
+	body := panelGet(h, "/", "203.0.113.9:4000").Body.String()
+	for _, want := range []string{`class="alt" href="https://[2001:db8::2]:8443"`, `href="http://203.0.113.8:40001/"`, `<span class="alt off"`, "&lt;b&gt;坏&lt;/b&gt;", `class="card off"`} {
+		if !strings.Contains(body, want) {
+			t.Errorf("页面应包含 %s", want)
+		}
+	}
+	if strings.Contains(body, `class="hit"`) {
+		t.Error("主地址不可用时不应有整卡链接")
 	}
 }
 

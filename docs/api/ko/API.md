@@ -2423,6 +2423,13 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `theme` | string |
 | `title` | string |
 
+### webservice.PanelAlt
+
+| 필드 | 타입 |
+| --- | --- |
+| `name` | string |
+| `url` | string |
+
 ### webservice.PanelIconView
 
 | 필드 | 타입 |
@@ -2438,6 +2445,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | 필드 | 타입 |
 | --- | --- |
+| `alts` | Array of `webservice.PanelAlt` |
 | `color` | string |
 | `description` | string |
 | `group` | string |

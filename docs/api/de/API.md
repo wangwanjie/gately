@@ -2423,6 +2423,13 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `theme` | string |
 | `title` | string |
 
+### webservice.PanelAlt
+
+| Feld | Typ |
+| --- | --- |
+| `name` | string |
+| `url` | string |
+
 ### webservice.PanelIconView
 
 | Feld | Typ |
@@ -2438,6 +2445,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 
 | Feld | Typ |
 | --- | --- |
+| `alts` | Array von `webservice.PanelAlt` |
 | `color` | string |
 | `description` | string |
 | `group` | string |

@@ -3544,6 +3544,17 @@
         },
         "type": "object"
       },
+      "webservice.PanelAlt": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "webservice.PanelIconView": {
         "properties": {
           "cat": {
@@ -3569,6 +3580,12 @@
       },
       "webservice.PanelLink": {
         "properties": {
+          "alts": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.PanelAlt"
+            },
+            "type": "array"
+          },
           "color": {
             "type": "string"
           },

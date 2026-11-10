@@ -2423,6 +2423,13 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `theme` | string |
 | `title` | string |
 
+### webservice.PanelAlt
+
+| Campo | Tipo |
+| --- | --- |
+| `name` | string |
+| `url` | string |
+
 ### webservice.PanelIconView
 
 | Campo | Tipo |
@@ -2438,6 +2445,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 
 | Campo | Tipo |
 | --- | --- |
+| `alts` | Lista de `webservice.PanelAlt` |
 | `color` | string |
 | `description` | string |
 | `group` | string |

@@ -133,3 +133,10 @@ test('内置图标写法、底色深浅与筛选', async () => {
   assert.deepEqual(filterIcons(list, '', '主').map((i) => i.id), ['house'])
   assert.deepEqual(filterIcons(list, 'apps', 'frp'), [])
 })
+
+test('toPanel 规范化其他访问方式', () => {
+  const p = toPanel({ name: 'n', enable: true, links: [{ name: 'x', url: 'https://x', alts: [{ name: 'v6', url: 'https://[::1]', extra: 1 }] }, { name: 'y', url: 'https://y' }] })
+  assert.deepEqual(p.links[0].alts, [{ name: 'v6', url: 'https://[::1]' }])
+  assert.deepEqual(p.links[1].alts, [])
+  assert.deepEqual(emptyLink().alts, [])
+})

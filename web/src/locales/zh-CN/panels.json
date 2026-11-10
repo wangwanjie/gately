@@ -81,5 +81,11 @@
   "iconNone": "没有匹配的图标",
   "iconBuiltin": "内置图标：{name}。底色可在下方修改。",
   "iconBuiltinMissing": "这个内置图标在当前版本中不存在",
-  "colorBuiltin": "使用图标自带颜色"
+  "colorBuiltin": "使用图标自带颜色",
+  "alts": "其他访问方式",
+  "altsHelp": "同一个服务的其他入口，例如 IPv6、frp、STUN 穿透、Cloudflare 隧道，显示为卡片上的小链接，在新标签页打开，内网与外网访客都会显示。",
+  "altNamePlaceholder": "IPv6、frp…",
+  "addAlt": "添加访问方式",
+  "altCount": "+{n} 个访问方式",
+  "altNameRequired": "请填写访问方式的名称"
 }

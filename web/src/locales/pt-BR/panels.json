@@ -81,5 +81,11 @@
   "iconNone": "Nenhum ícone correspondente",
   "iconBuiltin": "Ícone embutido: {name}. Mude a cor de fundo abaixo.",
   "iconBuiltinMissing": "Este ícone embutido não existe nesta versão",
-  "colorBuiltin": "Cor própria do ícone"
+  "colorBuiltin": "Cor própria do ícone",
+  "alts": "Outras formas de acesso",
+  "altsHelp": "Outras entradas para o mesmo serviço, como IPv6, frp, STUN ou um túnel Cloudflare. Aparecem como links pequenos no cartão, abrem em nova aba e são mostradas a visitantes da LAN e da internet.",
+  "altNamePlaceholder": "IPv6, frp…",
+  "addAlt": "Adicionar forma de acesso",
+  "altCount": "+{n} formas de acesso",
+  "altNameRequired": "Informe um nome para cada forma de acesso"
 }

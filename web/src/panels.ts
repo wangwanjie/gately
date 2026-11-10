@@ -1,6 +1,12 @@
 // 导航面板（Web → 导航面板）的数据结构与纯函数：链接分组、排序、从 Web 服务站点生成链接、图标写法判断。
 // 与界面无关，便于单元测试（tests/panels.test.mjs）。
 
+// PanelAlt 是链接的其他访问方式（如 IPv6、frp、STUN、Cloudflare 隧道），访客页面显示为卡片上的小链接
+export interface PanelAlt {
+  name: string
+  url: string
+}
+
 export interface PanelLink {
   name: string
   group: string
@@ -8,6 +14,7 @@ export interface PanelLink {
   // url 为外网地址；lanUrl 为内网地址，留空时内网访客也用 url。两者都可用 {host}、{STUN_规则名_PORT} 等变量
   url: string
   lanUrl: string
+  alts: PanelAlt[]
   // icon 为内置图标（builtin:编号）、http(s) 图片地址、data:image 内联图片或不超过 8 个字符的文字，留空显示名称首字
   icon: string
   color: string
@@ -37,6 +44,7 @@ export interface PanelView extends Panel {
 export const MAX_LINKS = 500
 export const MAX_ICON_BYTES = 96 * 1024
 export const MAX_TEXT_ICON = 8
+export const MAX_ALTS = 8
 export const BUILTIN_PREFIX = 'builtin:'
 
 export function emptyPanel(): Panel {
@@ -44,7 +52,7 @@ export function emptyPanel(): Panel {
 }
 
 export function emptyLink(group = ''): PanelLink {
-  return { name: '', group, description: '', url: '', lanUrl: '', icon: '', color: '', sameTab: false, hide: false }
+  return { name: '', group, description: '', url: '', lanUrl: '', alts: [], icon: '', color: '', sameTab: false, hide: false }
 }
 
 // toPanel 去掉列表接口附带的只读字段（usedBy、key），得到可提交的面板；后端拒绝未知字段
@@ -57,7 +65,7 @@ export function toPanel(v: PanelView | Panel): Panel {
     icon: v.icon ?? '',
     theme: v.theme ?? '',
     lanCidrs: [...(v.lanCidrs ?? [])],
-    links: (v.links ?? []).map((l) => ({ ...emptyLink(), ...l })),
+    links: (v.links ?? []).map((l) => ({ ...emptyLink(), ...l, alts: (l.alts ?? []).map((a) => ({ name: a.name, url: a.url })) })),
     remark: v.remark ?? '',
   }
 }

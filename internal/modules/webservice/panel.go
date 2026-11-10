@@ -36,6 +36,9 @@ const (
 	// maxPanelTextIcon 为文字图标的最多字符数（按字形簇不好算，按码点与字节同时限制，足够放下组合 emoji）
 	maxPanelTextIconRunes = 8
 	maxPanelTextIconBytes = 32
+	// maxPanelAlts 为每个链接的其他访问方式数量上限，maxPanelAltName 为其名称的最多字符数
+	maxPanelAlts    = 8
+	maxPanelAltName = 20
 )
 
 // panelBuiltinPrefix 为内置图标的写法前缀，例如 builtin:jellyfin，图标列表见 webpage.BuiltinIcons
@@ -87,6 +90,8 @@ type PanelLink struct {
 	// 变量暂无值时链接显示为暂不可用；取自请求路径、查询串的变量不支持，见 panelVarAllowed
 	URL    string `json:"url"`
 	LANURL string `json:"lanUrl"`
+	// Alts 为其他访问方式（如 IPv6、frp、STUN、Cloudflare 隧道），显示为卡片上的小链接，内网与外网访客都显示
+	Alts []PanelAlt `json:"alts"`
 	// Icon 为内置图标（builtin:编号）、http(s) 图片地址、data:image 内联图片，或不超过 8 个字符的文字（如 emoji），留空时显示名称首字
 	Icon string `json:"icon"`
 	// Color 为文字图标与内置图标的底色（#rrggbb），留空时文字图标按名称挑选、内置图标用图标自带的颜色
@@ -95,6 +100,14 @@ type PanelLink struct {
 	SameTab bool `json:"sameTab"`
 	// Hide 为 true 时不在页面中显示
 	Hide bool `json:"hide"`
+}
+
+// PanelAlt 是链接的一个其他访问方式。
+type PanelAlt struct {
+	// Name 为显示的名称，如 IPv6、frp
+	Name string `json:"name"`
+	// URL 的写法与可用变量同 PanelLink.URL
+	URL string `json:"url"`
 }
 
 // runeLimit 检查文本不超过 n 个字符且不含控制字符。
@@ -302,6 +315,26 @@ func (l *PanelLink) validate() (int, error) {
 			return 0, fmt.Errorf("内网地址: %w", err)
 		}
 	}
+	if len(l.Alts) > maxPanelAlts {
+		return 0, fmt.Errorf("其他访问方式最多 %d 个", maxPanelAlts)
+	}
+	for i := range l.Alts {
+		a := &l.Alts[i]
+		a.Name = strings.TrimSpace(a.Name)
+		a.URL = strings.TrimSpace(a.URL)
+		if a.Name == "" {
+			return 0, errors.New("请填写其他访问方式的名称")
+		}
+		if err := runeLimit(a.Name, "访问方式名称", maxPanelAltName); err != nil {
+			return 0, err
+		}
+		if a.URL == "" {
+			return 0, fmt.Errorf("请填写访问方式 %s 的地址", a.Name)
+		}
+		if err := validatePanelTemplate(a.URL); err != nil {
+			return 0, fmt.Errorf("访问方式 %s: %w", a.Name, err)
+		}
+	}
 	if l.Color != "" && !panelColorRe.MatchString(l.Color) {
 		return 0, errors.New("颜色需为 #rrggbb 格式")
 	}
@@ -408,11 +441,15 @@ func (p *compiledPanel) view(q redirectRequest, lan, forced, preview bool) webpa
 		}
 		link := webpage.PanelLink{Name: l.Name, Description: l.Description, NewTab: !l.SameTab, Icon: panelIcon(l.Icon, l.Color)}
 		// 变量暂无值（例如 STUN 规则还没有公网地址）或展开后不再是允许的地址时，卡片显示为暂不可用
-		if href, err := expandVars(raw, panelLookup(q.lookup)); err == nil && validatePanelURL(href) == nil {
+		if href, ok := expandPanelURL(raw, q); ok {
 			if u, err := url.Parse(href); err == nil {
 				link.Href = href
 				link.Address = linkAddress(u)
 			}
+		}
+		for _, a := range l.Alts {
+			href, _ := expandPanelURL(a.URL, q)
+			link.Alts = append(link.Alts, webpage.PanelAlt{Name: a.Name, Href: href})
 		}
 		i, ok := order[l.Group]
 		if !ok {
@@ -423,6 +460,15 @@ func (p *compiledPanel) view(q redirectRequest, lan, forced, preview bool) webpa
 		v.Groups[i].Links = append(v.Groups[i].Links, link)
 	}
 	return v
+}
+
+// expandPanelURL 展开链接地址中的变量并校验，不可用时返回 false。
+func expandPanelURL(raw string, q redirectRequest) (string, bool) {
+	href, err := expandVars(raw, panelLookup(q.lookup))
+	if err != nil || validatePanelURL(href) != nil {
+		return "", false
+	}
+	return href, true
 }
 
 // panelIcon 把配置中的图标写法转换为页面图标。图片地址已在保存与载入时校验。
