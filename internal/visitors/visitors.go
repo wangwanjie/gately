@@ -2,12 +2,14 @@
 // 以什么身份访问、被拦截了多少次。数据只保存聚合结果（每个访客一条记录、按天计数），不保存逐条请求，
 // 逐条请求仍以站点访问日志为准。
 //
-// 内存占用有上限：访客数超过上限时先淘汰只被拦截或只访问未匹配站点的地址（扫描器），再淘汰最久未出现的；
+// 内存占用有上限：访客数超过上限时依次淘汰只被拦截或只访问未匹配站点的地址（扫描器）、匿名访客、
+// 曾以站点用户或管理员身份访问的访客，同一类中最久未出现的先淘汰；
 // 每条记录内的站点、路径、身份、User-Agent 列表都有条数上限，访客可控的字符串一律截断。
 // 数据在有变化后延迟写盘（gzip 压缩的 JSON Lines），程序退出时同步写盘，启动时读回并按保留天数清理。
 package visitors
 
 import (
+	"cmp"
 	"net/netip"
 	"slices"
 	"strings"
@@ -490,37 +492,48 @@ func (v *Visitor) noise() bool {
 	return v.Noise >= v.Requests && len(v.Identities) == 0
 }
 
-// evictLocked 淘汰 n 个访客：先淘汰扫描类访客，同类中最久未出现的先淘汰。
+// keepTier 是淘汰时的保留等级，越小越先淘汰：扫描类为 0，匿名访客为 1，曾以站点用户或管理员身份访问的为 2。
+// 分三档是为了让攻击者无法用大量地址（如 IPv6 段内随意换地址）各访问一次就把认证用户与管理员的记录挤掉。
+func (v *Visitor) keepTier() int {
+	if len(v.Identities) > 0 {
+		return 2
+	}
+	if v.noise() {
+		return 0
+	}
+	return 1
+}
+
+// evictLocked 淘汰 n 个访客，规则见 evictFrom。
 func (s *Store) evictLocked(n int) {
-	if n <= 0 || len(s.m) == 0 {
+	evictFrom(s.m, n)
+}
+
+// evictFrom 从 m 中淘汰 n 个访客：按保留等级从低到高，同一等级中最久未出现的先淘汰。
+func evictFrom(m map[netip.Addr]*Visitor, n int) {
+	if n <= 0 || len(m) == 0 {
 		return
 	}
 	type cand struct {
-		addr  netip.Addr
-		noise bool
-		last  int64
+		addr netip.Addr
+		tier int
+		last int64
 	}
-	all := make([]cand, 0, len(s.m))
-	for a, v := range s.m {
-		all = append(all, cand{a, v.noise(), v.Last})
+	all := make([]cand, 0, len(m))
+	for a, v := range m {
+		all = append(all, cand{a, v.keepTier(), v.Last})
 	}
 	slices.SortFunc(all, func(x, y cand) int {
-		if x.noise != y.noise {
-			if x.noise {
-				return -1
-			}
-			return 1
+		if c := cmp.Compare(x.tier, y.tier); c != 0 {
+			return c
 		}
-		if x.last != y.last {
-			if x.last < y.last {
-				return -1
-			}
-			return 1
+		if c := cmp.Compare(x.last, y.last); c != 0 {
+			return c
 		}
 		return x.addr.Compare(y.addr)
 	})
 	for i := 0; i < n && i < len(all); i++ {
-		delete(s.m, all[i].addr)
+		delete(m, all[i].addr)
 	}
 }
 
