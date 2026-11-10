@@ -80,6 +80,7 @@ func TestPanelValidate(t *testing.T) {
 	cases := map[string]func(p *Panel){
 		"缺少名称":   func(p *Panel) { p.Name = "" },
 		"主题无效":   func(p *Panel) { p.Theme = "blue" },
+		"皮肤无效":   func(p *Panel) { p.Skin = "unknown" },
 		"地址段无效":  func(p *Panel) { p.LANCIDRs = []string{"x"} },
 		"链接缺名称":  func(p *Panel) { p.Links[0].Name = "" },
 		"链接缺地址":  func(p *Panel) { p.Links[0].URL = "" },

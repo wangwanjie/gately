@@ -377,7 +377,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | PUT | `/api/webservice/listeners-order` | `webservice:write` | Web-Dienst lauscht neu anordnen |
 | PUT | `/api/webservice/listeners-enable` | `webservice:write` | Im Stapel aktivieren oder deaktivieren: Web-Dienst lauscht |
 | POST | `/api/webservice/listeners-delete` | `webservice:write` | Im Stapel löschen: Web-Dienst lauscht |
-| GET | `/api/webservice/iplists` | `webservice:read` | 订阅 IP  auflisten |
+| GET | `/api/webservice/iplists` | `webservice:read` | Abonnierte IP-Listen auflisten |
 | POST | `/api/webservice/iplists` | `webservice:write` | Abonnierte IP-Liste hinzufügen |
 | POST | `/api/webservice/iplists/{key}/copy` | `webservice:write` | Abonnierte IP-Liste duplizieren |
 | PUT | `/api/webservice/iplists/{key}` | `webservice:write` | Abonnierte IP-Liste ändern |
@@ -2426,6 +2426,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `links` | Array von `webservice.PanelLink` |
 | `name` | string |
 | `remark` | string |
+| `skin` | string |
 | `subtitle` | string |
 | `theme` | string |
 | `title` | string |

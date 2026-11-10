@@ -2426,6 +2426,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `links` | 数组 of `webservice.PanelLink` |
 | `name` | string |
 | `remark` | string |
+| `skin` | string |
 | `subtitle` | string |
 | `theme` | string |
 | `title` | string |

@@ -3538,6 +3538,9 @@
           "remark": {
             "type": "string"
           },
+          "skin": {
+            "type": "string"
+          },
           "subtitle": {
             "type": "string"
           },
@@ -45565,7 +45568,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "订阅 IP  목록 조회",
+        "summary": "구독 IP 목록 조회",
         "tags": [
           "Web 서비스"
         ],

@@ -3538,6 +3538,9 @@
           "remark": {
             "type": "string"
           },
+          "skin": {
+            "type": "string"
+          },
           "subtitle": {
             "type": "string"
           },

@@ -72,6 +72,8 @@ type Panel struct {
 	Icon string `json:"icon"`
 	// Theme 为 ""（跟随访客系统）、light、dark
 	Theme string `json:"theme"`
+	// Skin 为皮肤（色系 ID，与管理界面的主题配色相同），为空时用默认色系。访客可在页面上换肤，选择保存在浏览器中
+	Skin string `json:"skin"`
 	// LANCIDRs 为额外视为内网的访客地址（IP 或 CIDR）。回环、私有地址（10/8、172.16/12、192.168/16、fc00::/7）
 	// 与链路本地地址始终视为内网；经 Tailscale、ZeroTier 等组网访问时可在这里加上对应网段
 	LANCIDRs []string `json:"lanCidrs"`
@@ -314,6 +316,10 @@ func (p *Panel) validate() error {
 	default:
 		return fmt.Errorf("不支持的主题 %q", p.Theme)
 	}
+	p.Skin = strings.TrimSpace(p.Skin)
+	if !webpage.ValidSkin(p.Skin) {
+		return fmt.Errorf("不支持的皮肤 %q", p.Skin)
+	}
 	total, err := validatePanelIcon(p.Icon)
 	if err != nil {
 		return fmt.Errorf("页面图标: %w", err)
@@ -501,7 +507,7 @@ func linkAddress(u *url.URL) string {
 
 // view 生成页面内容。q 用于展开链接地址中的变量；lan 为使用内网地址。
 func (p *compiledPanel) view(q redirectRequest, lan, forced, preview bool) webpage.PanelView {
-	v := webpage.PanelView{Title: p.Title, Subtitle: p.Subtitle, Theme: p.Theme, LAN: lan, Forced: forced, Preview: preview}
+	v := webpage.PanelView{Title: p.Title, Subtitle: p.Subtitle, Theme: p.Theme, Skin: p.Skin, LAN: lan, Forced: forced, Preview: preview}
 	if v.Title == "" {
 		v.Title = p.Name
 	}

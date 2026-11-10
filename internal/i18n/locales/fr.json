@@ -601,6 +601,7 @@
   "不支持的渠道类型 %q": "Type de canal %q non pris en charge",
   "不支持的界面语言 %q": "Langue d’interface non prise en charge %q",
   "不支持的登录方式 %q": "Méthode de connexion non prise en charge %q",
+  "不支持的皮肤 %q": "thème visuel non pris en charge %q",
   "不支持的级别 %q": "Niveau %q non pris en charge",
   "不支持的网络类型 %q": "Type de réseau %q non pris en charge",
   "不支持的记录类型 %q": "Type d'enregistrement %q non pris en charge",

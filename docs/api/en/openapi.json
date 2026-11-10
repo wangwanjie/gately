@@ -3538,6 +3538,9 @@
           "remark": {
             "type": "string"
           },
+          "skin": {
+            "type": "string"
+          },
           "subtitle": {
             "type": "string"
           },
@@ -45565,7 +45568,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "List 订阅 IP ",
+        "summary": "List subscribed IP lists",
         "tags": [
           "Web service"
         ],
