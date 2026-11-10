@@ -40,6 +40,11 @@ func TestRedirectTargetVars(t *testing.T) {
 			"http://a.test/p?q=1", "https://a.test/p?q=1"},
 		{"端口与 hostAndPort", []string{"a.test"}, "https://{host}:{port}/{PATH}?{Args}&h={hostAndPort}", false,
 			"http://a.test:8080/x/y?k=v", "https://a.test:8080/x/y?k=v&h=a.test:8080"},
+		// IPv6 字面地址访问时 {host} 带方括号，{hostAndPort} 原样保留
+		{"IPv6 字面地址", []string{"*"}, "https://{host}:9443{path}?h={hostAndPort}", false,
+			"http://[2001:DB8::1]:8443/x", "https://[2001:db8::1]:9443/x?h=[2001:db8::1]:8443"},
+		{"IPv6 字面地址保留路径", []string{"*"}, "https://{host}", true,
+			"http://[2001:db8::1]/p?q=1", "https://[2001:db8::1]/p?q=1"},
 		{"规则名含下划线与中文", []string{"a.test"}, "https://{STUN_443_穿透_IP}:{STUN_443_穿透_PORT}/{STUN_wz_ADDR}", false,
 			"http://a.test/", "https://198.51.100.2:40001/203.0.113.7:51234"},
 		{"域名与路径分段", []string{"*.b.test"}, "https://{domainPart2}.c.test/{pathPart2}/{domainPart9}", false,

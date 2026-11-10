@@ -17,7 +17,7 @@ import (
 
 // 重定向目标支持的变量：
 //
-//	{host} {port} {hostAndPort}      访客请求的域名、访问端口、域名加端口
+//	{host} {port} {hostAndPort}      访客请求的域名（IPv6 地址带方括号）、访问端口、域名加端口
 //	{path} {PATH} {args} {Args}      请求路径（带/不带开头的 /）、查询串（带/不带开头的 ?）
 //	{ClientIP} {RemoteIP} {time}     客户端 IP、当前时间
 //	{domainPartN} {pathPartN}        域名第 N 段（以 . 分隔）、路径第 N 段（以 / 分隔），N 从 1 开始
@@ -176,7 +176,12 @@ func (q redirectRequest) lookup(name string) (string, bool, error) {
 	}
 	switch name {
 	case "host":
-		return safeHost(hostOnly(r.Host))
+		// hostOnly 去掉了 IPv6 字面地址的方括号，代入 URL 时需要补回，否则 https://{host}:8443 会变成无法使用的地址
+		h := hostOnly(r.Host)
+		if strings.Contains(h, ":") {
+			h = "[" + h + "]"
+		}
+		return safeHost(h)
 	case "port":
 		return requestPort(r), true, nil
 	case "hostAndPort":
