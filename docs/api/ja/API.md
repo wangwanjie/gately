@@ -405,6 +405,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/webservice/panels-enable` | `webservice:write` | ナビゲーションパネル の一括有効化・無効化 |
 | POST | `/api/webservice/panels-delete` | `webservice:write` | ナビゲーションパネル の一括削除 |
 | POST | `/api/webservice/panels/preview` | `webservice:write` | ナビゲーションパネルのプレビュー |
+| GET | `/api/webservice/panels/icons` | `webservice:read` | ナビゲーションパネルの組み込みアイコン一覧 |
 | GET | `/api/webservice/users` | `webservice:read` | 共有ユーザーと OIDC ID プロバイダーを取得 |
 | PUT | `/api/webservice/users` | `webservice:write` | 共有ユーザーと OIDC ID プロバイダーを保存し、サイトを一括設定 |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | サイトの一括操作：有効化・無効化、削除、ドメインの追加・削除・置換、一部オプションの変更、別のリスナーへの移動。すべてのサイトが検証を通過した場合のみ保存し、1 件でも失敗すると何も変更しません |
@@ -2421,6 +2422,17 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `subtitle` | string |
 | `theme` | string |
 | `title` | string |
+
+### webservice.PanelIconView
+
+| フィールド | 型 |
+| --- | --- |
+| `cat` | string |
+| `color` | string |
+| `id` | string |
+| `name` | string |
+| `src` | string |
+| `srcDark` | string |
 
 ### webservice.PanelLink
 

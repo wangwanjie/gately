@@ -8,7 +8,7 @@ export interface PanelLink {
   // url 为外网地址；lanUrl 为内网地址，留空时内网访客也用 url。两者都可用 {host}、{STUN_规则名_PORT} 等变量
   url: string
   lanUrl: string
-  // icon 为 http(s) 图片地址、data:image 内联图片或不超过 8 个字符的文字，留空显示名称首字
+  // icon 为内置图标（builtin:编号）、http(s) 图片地址、data:image 内联图片或不超过 8 个字符的文字，留空显示名称首字
   icon: string
   color: string
   sameTab: boolean
@@ -37,6 +37,7 @@ export interface PanelView extends Panel {
 export const MAX_LINKS = 500
 export const MAX_ICON_BYTES = 96 * 1024
 export const MAX_TEXT_ICON = 8
+export const BUILTIN_PREFIX = 'builtin:'
 
 export function emptyPanel(): Panel {
   return { name: '', enable: true, title: '', subtitle: '', icon: '', theme: '', lanCidrs: [], links: [], remark: '' }
@@ -190,12 +191,15 @@ export function linksFromSites(sites: readonly ImportSite[], existing: readonly 
 
 // ---- 图标 ----
 
-export type IconKind = 'none' | 'image' | 'text'
+export type IconKind = 'none' | 'builtin' | 'image' | 'text'
 
 export function iconKind(icon: string): IconKind {
   const v = icon.trim()
   if (!v) {
     return 'none'
+  }
+  if (v.startsWith(BUILTIN_PREFIX)) {
+    return 'builtin'
   }
   if (/^data:image\//i.test(v) || /^https?:\/\//i.test(v)) {
     return 'image'
@@ -251,4 +255,35 @@ export function textIconOk(icon: string): boolean {
 // hasVars 判断地址中是否用了变量（如 {host}、{STUN_web_PORT}），列表中按原样显示并提示
 export function hasVars(url: string): boolean {
   return /\{[^{}]+\}/.test(url)
+}
+
+// builtinId 返回内置图标写法中的编号，不是内置图标时为空
+export function builtinId(icon: string): string {
+  const v = icon.trim()
+  return v.startsWith(BUILTIN_PREFIX) ? v.slice(BUILTIN_PREFIX.length) : ''
+}
+
+// lightColor 与后端 webpage.LightColor 相同：底色相对亮度高于 0.66 时内置图标用深色图形
+export function lightColor(hex: string): boolean {
+  if (!/^#[0-9a-f]{6}$/i.test(hex)) {
+    return false
+  }
+  const ch = (i: number) => parseInt(hex.slice(i, i + 2), 16) / 255
+  return 0.2126 * ch(1) + 0.7152 * ch(3) + 0.0722 * ch(5) > 0.66
+}
+
+// BuiltinIcon 为 GET /api/webservice/panels/icons 返回的内置图标：src 为白色图形，srcDark 为深色图形
+export interface BuiltinIcon {
+  id: string
+  name: string
+  cat: 'gately' | 'apps' | 'system' | 'generic'
+  color: string
+  src: string
+  srcDark: string
+}
+
+// filterIcons 按分类与关键词（名称或编号）筛选内置图标
+export function filterIcons(list: readonly BuiltinIcon[], cat: string, q: string): BuiltinIcon[] {
+  const k = q.trim().toLowerCase()
+  return list.filter((i) => (!cat || i.cat === cat) && (!k || i.name.toLowerCase().includes(k) || i.id.includes(k)))
 }

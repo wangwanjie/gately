@@ -55,10 +55,12 @@ type PanelLink struct {
 
 // PanelIcon 是链接或页面的图标：Image 为已校验的图片地址（http/https 或 data:image），
 // 否则显示 Text（文字或 emoji，为空时取名称首字）；Color 为 #rrggbb 的背景色，为空时按名称挑选。
+// Tile 为 true 时图片画在 Color 底色的方块上（内置图标），否则画在浅色框中
 type PanelIcon struct {
 	Image string
 	Text  string
 	Color string
+	Tile  bool
 }
 
 // panelTexts 为页面文案（中文原文），按访客语言翻译。
@@ -109,6 +111,8 @@ body{margin:0;min-height:100vh;display:flex;flex-direction:column;background:var
 .logo svg{width:24px;height:24px}
 .logo.img{background:var(--card);border:1px solid var(--line);box-shadow:none}
 .logo img{width:34px;height:34px;object-fit:contain}
+.logo.tile{background:var(--c)}
+.logo.tile img{width:26px;height:26px}
 .brand h1{margin:0;font-size:22px;line-height:1.3;font-weight:650;letter-spacing:-.01em;overflow-wrap:anywhere}
 .brand p{margin:2px 0 0;color:var(--muted);overflow-wrap:anywhere}
 .tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -136,6 +140,7 @@ a.card:focus-visible{outline:none;border-color:var(--brand);box-shadow:0 0 0 4px
 .ic{width:40px;height:40px;flex:none;border-radius:11px;display:grid;place-items:center;color:#fff;background:var(--c,var(--brand));font-size:17px;font-weight:650;overflow:hidden}
 .ic.img{background:var(--input);border:1px solid var(--line)}
 .ic img{width:28px;height:28px;object-fit:contain}
+.ic.tile img{width:22px;height:22px}
 .tx{display:flex;flex-direction:column;min-width:0}
 .nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ds{margin-top:1px;color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -156,6 +161,7 @@ a.card:focus-visible{outline:none;border-color:var(--brand);box-shadow:0 0 0 4px
 .card{gap:10px;padding:10px 11px;border-radius:12px}
 .ic{width:34px;height:34px;border-radius:10px;font-size:15px}
 .ic img{width:24px;height:24px}
+.ic.tile img{width:19px;height:19px}
 .nm{font-size:13.5px}
 .ds{font-size:12px}
 }
@@ -170,7 +176,7 @@ const panelSrc = `<!doctype html>
 <body><div class="bg" aria-hidden="true"></div>
 <div class="page">
 <header class="top">
-<div class="brand">{{with .Icon}}{{if .Image}}<span class="logo img"><img src="{{.Image}}" alt="" referrerpolicy="no-referrer"></span>{{else if .Text}}<span class="logo {{.Class}}">{{.Text}}</span>{{else}}<span class="logo">{{$.GridIcon}}</span>{{end}}{{end}}
+<div class="brand">{{with .Icon}}{{if and .Image .Class}}<span class="logo tile {{.Class}}"><img src="{{.Image}}" alt=""></span>{{else if .Image}}<span class="logo img"><img src="{{.Image}}" alt="" referrerpolicy="no-referrer"></span>{{else if .Text}}<span class="logo {{.Class}}">{{.Text}}</span>{{else}}<span class="logo">{{$.GridIcon}}</span>{{end}}{{end}}
 <div><h1>{{.Title}}</h1>{{if .Subtitle}}<p>{{.Subtitle}}</p>{{end}}</div></div>
 <div class="tools">
 {{if not .Preview}}<label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="search" placeholder="{{.T.search}}" aria-label="{{.T.search}}" title="{{.T.clearHint}}" autocomplete="off" spellcheck="false"><kbd>/</kbd></label>{{end}}
@@ -180,7 +186,7 @@ const panelSrc = `<!doctype html>
 <main>
 {{range .Groups}}<section class="grp">{{if .Name}}<h2>{{.Name}}<span class="n">{{len .Links}}</span></h2>{{end}}<div class="grid">
 {{range .Links}}{{if .Href}}<a class="card" href="{{.Href}}"{{if .NewTab}} target="_blank" rel="noopener noreferrer"{{end}} data-s="{{.Search}}" title="{{.Name}}">{{else}}<span class="card off" aria-disabled="true" data-s="{{.Search}}" title="{{$.T.off}}">{{end}}
-{{with .Icon}}{{if .Image}}<span class="ic img"><img src="{{.Image}}" alt="" loading="lazy" referrerpolicy="no-referrer"></span>{{else}}<span class="ic {{.Class}}">{{.Text}}</span>{{end}}{{end}}
+{{with .Icon}}{{if and .Image .Class}}<span class="ic tile {{.Class}}"><img src="{{.Image}}" alt="" loading="lazy"></span>{{else if .Image}}<span class="ic img"><img src="{{.Image}}" alt="" loading="lazy" referrerpolicy="no-referrer"></span>{{else}}<span class="ic {{.Class}}">{{.Text}}</span>{{end}}{{end}}
 <span class="tx"><span class="nm">{{.Name}}</span>{{if not .Href}}<span class="ds">{{$.T.off}}</span>{{else if .Description}}<span class="ds">{{.Description}}</span>{{else if .Address}}<span class="ds mono">{{.Address}}</span>{{end}}</span>
 {{if .Href}}</a>{{else}}</span>{{end}}
 {{end}}</div></section>
@@ -209,6 +215,7 @@ var panelTpl = template.Must(template.New("panel").Parse(panelSrc))
 type panelIconData struct {
 	Image template.URL
 	Text  string
+	// Class 为底色类名；图片图标只有画在底色方块上（内置图标）时才有
 	Class string
 }
 
@@ -272,25 +279,31 @@ func RenderPanel(r *http.Request, v PanelView) ([]byte, string) {
 	// colors 为页面用到的底色，按出现顺序编号为 .c0、.c1……；颜色已由调用方校验为 #rrggbb
 	var colors []template.CSS
 	colorIdx := map[string]int{}
-	icon := func(ic PanelIcon, name string) panelIconData {
-		if ic.Image != "" {
-			return panelIconData{Image: template.URL(ic.Image)}
-		}
-		text := ic.Text
-		if text == "" {
-			text = iconInitial(name)
-		}
-		c := ic.Color
-		if c == "" {
-			c = paletteColor(name)
-		}
+	colorClass := func(c string) string {
 		i, ok := colorIdx[c]
 		if !ok {
 			i = len(colors)
 			colorIdx[c] = i
 			colors = append(colors, template.CSS(c))
 		}
-		return panelIconData{Text: text, Class: "c" + strconv.Itoa(i)}
+		return "c" + strconv.Itoa(i)
+	}
+	icon := func(ic PanelIcon, name string) panelIconData {
+		c := ic.Color
+		if c == "" {
+			c = paletteColor(name)
+		}
+		if ic.Image != "" {
+			if ic.Tile {
+				return panelIconData{Image: template.URL(ic.Image), Class: colorClass(c)}
+			}
+			return panelIconData{Image: template.URL(ic.Image)}
+		}
+		text := ic.Text
+		if text == "" {
+			text = iconInitial(name)
+		}
+		return panelIconData{Text: text, Class: colorClass(c)}
 	}
 	groups := make([]panelGroupData, 0, len(v.Groups))
 	total := 0
@@ -308,8 +321,11 @@ func RenderPanel(r *http.Request, v PanelView) ([]byte, string) {
 	favicon := template.URL(panelDefaultFavicon)
 	switch {
 	case v.Icon.Image != "":
-		head = panelIconData{Image: template.URL(v.Icon.Image)}
-		favicon = template.URL(v.Icon.Image)
+		head = icon(v.Icon, v.Title)
+		if !v.Icon.Tile {
+			// 内置图标是透明底的白色图形，不适合作标签页图标，沿用默认图标
+			favicon = template.URL(v.Icon.Image)
+		}
 	case v.Icon.Text != "":
 		head = icon(v.Icon, v.Title)
 	}

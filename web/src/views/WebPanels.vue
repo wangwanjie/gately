@@ -176,7 +176,7 @@
         </el-form-item>
         <el-form-item v-if="iconKind(link.icon) !== 'image'" :label="t('panels.color')">
           <el-color-picker v-model="colorModel" :predefine="palette" />
-          <span class="form-help inline-help">{{ link.color ? link.color : t('panels.colorAuto') }}</span>
+          <span class="form-help inline-help">{{ link.color ? link.color : iconKind(link.icon) === 'builtin' ? t('panels.colorBuiltin') : t('panels.colorAuto') }}</span>
         </el-form-item>
         <el-form-item :label="t('panels.options')">
           <el-checkbox v-model="link.sameTab">{{ t('panels.sameTab') }}</el-checkbox>

@@ -405,6 +405,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/webservice/panels-enable` | `webservice:write` | 내비게이션 패널 일괄 사용/사용 안 함 |
 | POST | `/api/webservice/panels-delete` | `webservice:write` | 내비게이션 패널 일괄 삭제 |
 | POST | `/api/webservice/panels/preview` | `webservice:write` | 내비게이션 패널 미리보기 |
+| GET | `/api/webservice/panels/icons` | `webservice:read` | 내비게이션 패널 내장 아이콘 목록 |
 | GET | `/api/webservice/users` | `webservice:read` | 공유 사용자와 OIDC ID 공급자 조회 |
 | PUT | `/api/webservice/users` | `webservice:write` | 공유 사용자와 OIDC ID 공급자 저장, 사이트 일괄 설정 |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | 사이트 일괄 작업: 활성화·비활성화, 삭제, 도메인 추가·삭제·교체, 일부 옵션 변경, 다른 리스너로 이동. 모든 사이트가 검증을 통과해야 저장되며 하나라도 실패하면 아무것도 변경하지 않습니다 |
@@ -2421,6 +2422,17 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `subtitle` | string |
 | `theme` | string |
 | `title` | string |
+
+### webservice.PanelIconView
+
+| 필드 | 타입 |
+| --- | --- |
+| `cat` | string |
+| `color` | string |
+| `id` | string |
+| `name` | string |
+| `src` | string |
+| `srcDark` | string |
 
 ### webservice.PanelLink
 

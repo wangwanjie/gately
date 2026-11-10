@@ -38,6 +38,9 @@ const (
 	maxPanelTextIconBytes = 32
 )
 
+// panelBuiltinPrefix 为内置图标的写法前缀，例如 builtin:jellyfin，图标列表见 webpage.BuiltinIcons
+const panelBuiltinPrefix = "builtin:"
+
 // panelNetCookie 记录访客手动选择的内网（lan）或外网（wan），没有时按访客地址自动判断。
 const panelNetCookie = "gately_panel_net"
 
@@ -84,9 +87,9 @@ type PanelLink struct {
 	// 变量暂无值时链接显示为暂不可用；取自请求路径、查询串的变量不支持，见 panelVarAllowed
 	URL    string `json:"url"`
 	LANURL string `json:"lanUrl"`
-	// Icon 为 http(s) 图片地址、data:image 内联图片，或不超过 8 个字符的文字（如 emoji），留空时显示名称首字
+	// Icon 为内置图标（builtin:编号）、http(s) 图片地址、data:image 内联图片，或不超过 8 个字符的文字（如 emoji），留空时显示名称首字
 	Icon string `json:"icon"`
-	// Color 为文字图标的底色（#rrggbb），留空时按名称挑选
+	// Color 为文字图标与内置图标的底色（#rrggbb），留空时文字图标按名称挑选、内置图标用图标自带的颜色
 	Color string `json:"color"`
 	// SameTab 为 true 时在当前页打开，默认在新标签页打开
 	SameTab bool `json:"sameTab"`
@@ -169,6 +172,11 @@ func validatePanelTemplate(raw string) error {
 func validatePanelIcon(icon string) (int, error) {
 	switch {
 	case icon == "":
+		return 0, nil
+	case strings.HasPrefix(icon, panelBuiltinPrefix):
+		if _, ok := webpage.FindBuiltinIcon(strings.TrimPrefix(icon, panelBuiltinPrefix)); !ok {
+			return 0, errors.New("内置图标不存在")
+		}
 		return 0, nil
 	case strings.HasPrefix(icon, "data:"):
 		if len(icon) > maxPanelIconLen {
@@ -418,7 +426,17 @@ func (p *compiledPanel) view(q redirectRequest, lan, forced, preview bool) webpa
 }
 
 // panelIcon 把配置中的图标写法转换为页面图标。图片地址已在保存与载入时校验。
+// 内置图标画在底色方块上：底色为链接设置的颜色，未设置时用图标自带的颜色；底色较浅时图形用深色
 func panelIcon(icon, color string) webpage.PanelIcon {
+	if id, ok := strings.CutPrefix(icon, panelBuiltinPrefix); ok {
+		if ic, found := webpage.FindBuiltinIcon(id); found {
+			if color == "" {
+				color = ic.Color
+			}
+			return webpage.PanelIcon{Image: webpage.BuiltinIconURL(ic, webpage.LightColor(color)), Color: color, Tile: true}
+		}
+		return webpage.PanelIcon{Color: color}
+	}
 	if strings.HasPrefix(icon, "data:") || hasHTTPPrefix(icon) {
 		return webpage.PanelIcon{Image: icon}
 	}

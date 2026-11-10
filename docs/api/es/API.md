@@ -405,6 +405,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | PUT | `/api/webservice/panels-enable` | `webservice:write` | Activar o desactivar en lote: Paneles de navegación |
 | POST | `/api/webservice/panels-delete` | `webservice:write` | Eliminar en lote: Paneles de navegación |
 | POST | `/api/webservice/panels/preview` | `webservice:write` | Vista previa del panel de navegación |
+| GET | `/api/webservice/panels/icons` | `webservice:read` | Iconos integrados de los paneles de navegación |
 | GET | `/api/webservice/users` | `webservice:read` | Leer usuarios compartidos y proveedor de identidad OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Guardar usuarios compartidos y proveedor de identidad OIDC, configurar sitios en bloque |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | Operaciones masivas de sitios: activar, desactivar, eliminar, añadir, quitar o reemplazar dominios, cambiar algunas opciones o mover a otro listener; solo se guarda si todos los sitios pasan la validación y no se cambia nada si alguno falla |
@@ -2421,6 +2422,17 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `subtitle` | string |
 | `theme` | string |
 | `title` | string |
+
+### webservice.PanelIconView
+
+| Campo | Tipo |
+| --- | --- |
+| `cat` | string |
+| `color` | string |
+| `id` | string |
+| `name` | string |
+| `src` | string |
+| `srcDark` | string |
 
 ### webservice.PanelLink
 

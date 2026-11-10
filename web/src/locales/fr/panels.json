@@ -19,7 +19,7 @@
   "hide": "Masquer sur la page",
   "icon": "Icône",
   "iconDecodeFailed": "Impossible de lire cette image",
-  "iconHelp": "Saisissez un emoji ou un texte court (8 caractères au plus), une URL d’image (http/https), ou importez une image. Vide : l’initiale du nom est affichée.",
+  "iconHelp": "Choisissez une icône intégrée (modules Gately, applications courantes, etc.), ou saisissez un emoji, un texte court (8 caractères au plus) ou une URL d’image (http/https), ou importez une image. Vide : l’initiale du nom est affichée.",
   "iconInline": "L’image importée est enregistrée dans la configuration ({size}). Effacez-la pour revenir à l’icône par défaut.",
   "iconPlaceholder": "📦, NAS ou https://…/icon.svg",
   "iconTextTooLong": "Une icône texte compte au plus 8 caractères",
@@ -69,5 +69,17 @@
   "urlInvalid": "Saisissez une URL complète, par exemple https://nas.example.com",
   "usedBy": "Utilisé par",
   "varsHelp": "Les adresses acceptent des variables : {'{host}'} est le domaine utilisé par le visiteur pour ouvrir le panneau ; {'{STUN_web_PORT}'} et {'{STUN_web_ADDR}'} sont le port et l’adresse publics d’une règle STUN. Un lien dont la variable n’a pas encore de valeur est affiché comme indisponible.",
-  "view": "Afficher"
+  "view": "Afficher",
+  "iconPick": "Choisir",
+  "iconPickTitle": "Choisir une icône intégrée",
+  "iconSearch": "Rechercher une icône",
+  "catAll": "Toutes",
+  "cat_gately": "Gately et modules",
+  "cat_apps": "Applications",
+  "cat_system": "Systèmes et réseau",
+  "cat_generic": "Générales",
+  "iconNone": "Aucune icône correspondante",
+  "iconBuiltin": "Icône intégrée : {name}. Modifiez la couleur de fond ci-dessous.",
+  "iconBuiltinMissing": "Cette icône intégrée n’existe pas dans cette version",
+  "colorBuiltin": "Couleur propre à l’icône"
 }

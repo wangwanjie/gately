@@ -405,6 +405,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | PUT | `/api/webservice/panels-enable` | `webservice:write` | Activer ou désactiver en lot : Panneaux de navigation |
 | POST | `/api/webservice/panels-delete` | `webservice:write` | Supprimer en lot : Panneaux de navigation |
 | POST | `/api/webservice/panels/preview` | `webservice:write` | Aperçu du panneau de navigation |
+| GET | `/api/webservice/panels/icons` | `webservice:read` | Icônes intégrées des panneaux de navigation |
 | GET | `/api/webservice/users` | `webservice:read` | Lire les utilisateurs partagés et le fournisseur d'identité OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Enregistrer utilisateurs partagés et fournisseur d'identité OIDC, configurer les sites en masse |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | Opérations groupées sur les sites : activer, désactiver, supprimer, ajouter, retirer ou remplacer des domaines, modifier certaines options ou déplacer vers un autre écouteur ; l'enregistrement n'a lieu que si tous les sites passent la validation, rien n'est modifié si l'un d'eux échoue |
@@ -2421,6 +2422,17 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `subtitle` | string |
 | `theme` | string |
 | `title` | string |
+
+### webservice.PanelIconView
+
+| Champ | Type |
+| --- | --- |
+| `cat` | string |
+| `color` | string |
+| `id` | string |
+| `name` | string |
+| `src` | string |
+| `srcDark` | string |
 
 ### webservice.PanelLink
 

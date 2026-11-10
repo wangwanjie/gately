@@ -5,10 +5,14 @@
     <el-input v-model="model" clearable class="icon-text" :placeholder="t('panels.iconPlaceholder')" :maxlength="inline ? undefined : 2048">
       <template v-if="inline" #prefix><ImageIcon :size="14" /></template>
     </el-input>
+    <el-button :icon="Shapes" data-test="icon-pick" @click="pickerVisible = true">{{ t('panels.iconPick') }}</el-button>
     <el-button :icon="Upload" @click="pick">{{ t('panels.iconUpload') }}</el-button>
     <input ref="file" type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml,image/x-icon,.ico" hidden @change="onFile" />
   </div>
-  <div v-if="inline" class="form-help">{{ t('panels.iconInline', { size: formatBytes(model.length) }) }}</div>
+  <PanelIconPicker v-model:visible="pickerVisible" :model-value="model" @select="(v: string) => (model = v)" />
+  <div v-if="builtin" class="form-help">{{ t('panels.iconBuiltin', { name: builtin.name }) }}</div>
+  <div v-else-if="kind === 'builtin'" class="form-help warn">{{ t('panels.iconBuiltinMissing') }}</div>
+  <div v-else-if="inline" class="form-help">{{ t('panels.iconInline', { size: formatBytes(model.length) }) }}</div>
   <div v-else-if="kind === 'text' && !textIconOk(model)" class="form-help warn">{{ t('panels.iconTextTooLong') }}</div>
   <div v-else class="form-help">{{ t('panels.iconHelp') }}</div>
 </template>
@@ -17,10 +21,12 @@
 import { computed, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import { Image as ImageIcon, Upload } from 'lucide-vue-next'
+import { Image as ImageIcon, Shapes, Upload } from 'lucide-vue-next'
 import PanelIcon from './PanelIcon.vue'
+import PanelIconPicker from './PanelIconPicker.vue'
 import { formatBytes } from '../api'
-import { MAX_ICON_BYTES, iconKind, textIconOk } from '../panels'
+import { MAX_ICON_BYTES, builtinId, iconKind, textIconOk } from '../panels'
+import { usePanelIcons } from '../composables/usePanelIcons'
 
 // name 与 color 用于预览默认的首字图标
 defineProps<{ name?: string; color?: string }>()
@@ -29,6 +35,9 @@ const { t } = useI18n()
 const file = ref<HTMLInputElement>()
 
 const kind = computed(() => iconKind(model.value))
+const pickerVisible = ref(false)
+const { byId } = usePanelIcons()
+const builtin = computed(() => byId.value.get(builtinId(model.value)) ?? null)
 // inline 为上传的内联图片：输入框里是很长的 data URL，提示占用大小
 const inline = computed(() => model.value.startsWith('data:'))
 
@@ -103,5 +112,16 @@ async function onFile(e: Event) {
 .icon-text {
   flex: 1;
   min-width: 0;
+}
+.icon-input .el-button + .el-button {
+  margin-left: 0;
+}
+@media (max-width: 768px) {
+  .icon-input {
+    flex-wrap: wrap;
+  }
+  .icon-text {
+    flex-basis: calc(100% - 44px);
+  }
 }
 </style>

@@ -19,7 +19,7 @@
   "hide": "在頁面中隱藏",
   "icon": "圖示",
   "iconDecodeFailed": "無法讀取這張圖片",
-  "iconHelp": "可填寫 emoji 或短文字（最多 8 個字元）、圖片位址（http/https），或上傳圖片；留空顯示名稱首字。",
+  "iconHelp": "可選擇內建圖示（Gately 與周邊模組、常用應用等），或填寫 emoji、短文字（最多 8 個字元）、圖片位址（http/https），也可以上傳圖片；留空顯示名稱首字。",
   "iconInline": "已上傳的圖片儲存在設定中（{size}），清空可恢復預設圖示。",
   "iconPlaceholder": "📦、NAS 或 https://…/icon.svg",
   "iconTextTooLong": "文字圖示最多 8 個字元",
@@ -69,5 +69,17 @@
   "urlInvalid": "位址需為完整 URL，例如 https://nas.example.com",
   "usedBy": "使用的站點",
   "varsHelp": "位址中可使用變數：{'{host}'} 為訪客存取面板所用的網域，{'{STUN_web_PORT}'}、{'{STUN_web_ADDR}'} 為 STUN 穿透的公網連接埠與位址；變數暫無值時連結顯示為暫時無法使用。",
-  "view": "檢視"
+  "view": "檢視",
+  "iconPick": "選擇",
+  "iconPickTitle": "選擇內建圖示",
+  "iconSearch": "搜尋圖示",
+  "catAll": "全部",
+  "cat_gately": "Gately 與周邊",
+  "cat_apps": "常用應用",
+  "cat_system": "系統與網路",
+  "cat_generic": "通用",
+  "iconNone": "沒有符合的圖示",
+  "iconBuiltin": "內建圖示：{name}。底色可在下方修改。",
+  "iconBuiltinMissing": "這個內建圖示在目前版本中不存在",
+  "colorBuiltin": "使用圖示自帶顏色"
 }

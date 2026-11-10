@@ -19,7 +19,7 @@
   "hide": "페이지에서 숨기기",
   "icon": "아이콘",
   "iconDecodeFailed": "이 이미지를 읽을 수 없습니다",
-  "iconHelp": "이모지나 짧은 텍스트(최대 8자), 이미지 주소(http/https)를 입력하거나 이미지를 업로드하세요. 비워 두면 이름의 첫 글자를 표시합니다.",
+  "iconHelp": "내장 아이콘(Gately 관련 모듈, 자주 쓰는 앱 등)을 고르거나 이모지, 짧은 텍스트(최대 8자), 이미지 주소(http/https)를 입력하거나 이미지를 업로드하세요. 비워 두면 이름의 첫 글자를 표시합니다.",
   "iconInline": "업로드한 이미지는 설정에 저장됩니다({size}). 지우면 기본 아이콘으로 돌아갑니다.",
   "iconPlaceholder": "📦, NAS 또는 https://…/icon.svg",
   "iconTextTooLong": "텍스트 아이콘은 최대 8자입니다",
@@ -69,5 +69,17 @@
   "urlInvalid": "전체 URL을 입력하세요. 예: https://nas.example.com",
   "usedBy": "사용하는 사이트",
   "varsHelp": "주소에 변수를 쓸 수 있습니다. {'{host}'}는 방문자가 패널을 연 도메인, {'{STUN_web_PORT}'}·{'{STUN_web_ADDR}'}는 STUN 규칙의 공인 포트와 주소입니다. 변수에 아직 값이 없으면 링크가 사용 불가로 표시됩니다.",
-  "view": "보기"
+  "view": "보기",
+  "iconPick": "선택",
+  "iconPickTitle": "내장 아이콘 선택",
+  "iconSearch": "아이콘 검색",
+  "catAll": "전체",
+  "cat_gately": "Gately 및 관련",
+  "cat_apps": "앱",
+  "cat_system": "시스템 및 네트워크",
+  "cat_generic": "일반",
+  "iconNone": "일치하는 아이콘이 없습니다",
+  "iconBuiltin": "내장 아이콘: {name}. 배경색은 아래에서 바꿀 수 있습니다.",
+  "iconBuiltinMissing": "이 내장 아이콘은 현재 버전에 없습니다",
+  "colorBuiltin": "아이콘 기본 색상"
 }

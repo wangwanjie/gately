@@ -405,6 +405,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/webservice/panels-enable` | `webservice:write` | Пакетно включить или отключить: Панели навигации |
 | POST | `/api/webservice/panels-delete` | `webservice:write` | Пакетно удалить: Панели навигации |
 | POST | `/api/webservice/panels/preview` | `webservice:write` | Предпросмотр панели навигации |
+| GET | `/api/webservice/panels/icons` | `webservice:read` | Встроенные значки панелей навигации |
 | GET | `/api/webservice/users` | `webservice:read` | Получить общих пользователей и поставщика удостоверений OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Сохранить общих пользователей и поставщика удостоверений OIDC, массово настроить сайты |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | Пакетные операции с сайтами: включение, отключение, удаление, добавление, удаление или замена доменов, изменение некоторых опций и перенос в другой слушатель; сохраняется только если все сайты прошли проверку, при ошибке ничего не меняется |
@@ -2421,6 +2422,17 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `subtitle` | string |
 | `theme` | string |
 | `title` | string |
+
+### webservice.PanelIconView
+
+| Поле | Тип |
+| --- | --- |
+| `cat` | string |
+| `color` | string |
+| `id` | string |
+| `name` | string |
+| `src` | string |
+| `srcDark` | string |
 
 ### webservice.PanelLink
 
