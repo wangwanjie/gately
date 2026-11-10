@@ -1,5 +1,5 @@
 // Package wol 实现网络唤醒模块：向局域网发送魔术包唤醒设备，并可通过 TCP 端口探测设备是否在线；
-// 可经 Web 终端的 SSH 连接远程关机。
+// 可经 Web 终端的 SSH 连接远程关机，并可接入巴法云，用小爱同学、小度等语音助手开关设备。
 package wol
 
 import (
@@ -40,13 +40,17 @@ type Device struct {
 	ShutdownConn string `json:"shutdownConn"`
 	// ShutdownCommand 为关机命令，例如 Linux 的 shutdown -h now、Windows 的 shutdown /s /t 0
 	ShutdownCommand string `json:"shutdownCommand"`
-	Remark          string `json:"remark"`
+	// BemfaTopic 为巴法云主题，留空不接入。收到 on 时唤醒，收到 off 时关机（需配置关机）
+	BemfaTopic string `json:"bemfaTopic"`
+	Remark     string `json:"remark"`
 	// Enable 为了复用通用接口保留，网络唤醒设备始终可用
 	Enable bool `json:"enable"`
 }
 
 type fileConfig struct {
 	Devices []Device `json:"devices"`
+	// Bemfa 为巴法云接入设置
+	Bemfa BemfaSettings `json:"bemfa"`
 }
 
 // MagicPacket 生成魔术包：6 字节 0xFF 后跟 16 次 MAC。
@@ -127,6 +131,10 @@ func (d *Device) Validate() error {
 	}
 	if len(d.ShutdownCommand) > 1024 || strings.ContainsAny(d.ShutdownCommand, "\r\n\x00") {
 		return errors.New("关机命令只能是一行，且不超过 1024 个字符")
+	}
+	d.BemfaTopic = strings.TrimSpace(d.BemfaTopic)
+	if d.BemfaTopic != "" && !validTopic(d.BemfaTopic) {
+		return errors.New("巴法云主题只能包含字母、数字、下划线与连字符，且不超过 64 个字符")
 	}
 	d.Enable = true
 	return nil
@@ -227,6 +235,9 @@ type Module struct {
 	deps  Deps
 	// busy 记录正在关机的设备，同一设备的关机请求不重复执行
 	busy map[string]bool
+	// bemfa 为巴法云连接，Start 后运行
+	bemfa  *bemfaClient
+	cancel context.CancelFunc
 }
 
 // New 创建模块。deps 可省略（测试或未编译 Web 终端时）。
@@ -235,6 +246,7 @@ func New(deps ...Deps) *Module {
 	if len(deps) > 0 {
 		m.deps = deps[0]
 	}
+	m.bemfa = newBemfaClient(m)
 	return m
 }
 
@@ -251,11 +263,27 @@ func (m *Module) Init(env module.Env) error {
 	return err
 }
 
-// Start 实现 module.Module。
-func (m *Module) Start(context.Context) error { return nil }
+// Start 实现 module.Module：启动巴法云连接（未开启时等待设置变化）。
+func (m *Module) Start(ctx context.Context) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	ctx, m.cancel = context.WithCancel(ctx)
+	m.bemfa.start(ctx)
+	return nil
+}
 
 // Stop 实现 module.Module。
-func (m *Module) Stop() error { return nil }
+func (m *Module) Stop() error {
+	m.mu.Lock()
+	cancel := m.cancel
+	m.cancel = nil
+	m.mu.Unlock()
+	if cancel != nil {
+		cancel()
+		m.bemfa.wait()
+	}
+	return nil
+}
 
 func (m *Module) saveLocked() error { return m.store.Save(ID, m.cfg) }
 
@@ -269,6 +297,10 @@ func (m *Module) Routes(r module.Router) {
 		Enabled:  func(d *Device) *bool { return &d.Enable },
 		Group:    func(d *Device) *string { return &d.Group },
 		Validate: func(d *Device) error { return d.Validate() },
+		// 巴法云主题不能被两台设备同时使用（复制设备时界面会清空主题）
+		Check:   m.checkLocked,
+		Changed: func(string) { m.bemfa.kick() },
+		Removed: func(string) { m.bemfa.kick() },
 	}
 	devices.Register(r, "/devices")
 	r.HandleFunc("POST /devices/{key}/wake", m.handleWake)
@@ -277,6 +309,20 @@ func (m *Module) Routes(r module.Router) {
 	r.HandleFunc("GET /status", m.handleStatus)
 	r.HandleFunc("GET /ssh-targets", m.handleSSHTargets)
 	module.DocOf(r, "GET /ssh-targets", module.Doc{Summary: "列出可用于远程关机的 SSH 连接", Resp: []SSHTarget{}})
+	m.bemfaRoutes(r)
+}
+
+// checkLocked 检查设备之间不能冲突的设置：巴法云主题不能被两台设备同时使用。
+func (m *Module) checkLocked(d *Device) error {
+	if d.BemfaTopic == "" {
+		return nil
+	}
+	for _, o := range m.cfg.Devices {
+		if o.Key != d.Key && strings.EqualFold(o.BemfaTopic, d.BemfaTopic) {
+			return fmt.Errorf("巴法云主题 %s 已被设备「%s」使用", d.BemfaTopic, o.Name)
+		}
+	}
+	return nil
 }
 
 func (m *Module) find(key string) (Device, bool) {
@@ -304,7 +350,7 @@ func (m *Module) handleWake(w http.ResponseWriter, r *http.Request) {
 	httpx.OK(w, map[string]int{"sent": n})
 }
 
-// wake 发送唤醒包并记录日志。
+// wake 发送唤醒包并记录日志，管理界面、接口与巴法云共用。
 func (m *Module) wake(d Device) (int, error) {
 	n, err := Wake(d)
 	log := m.logs.Logger(d.Name)

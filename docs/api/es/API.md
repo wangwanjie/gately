@@ -488,6 +488,9 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | POST | `/api/wol/devices/{key}/shutdown` | `wol:write` | Apagado remoto |
 | GET | `/api/wol/status` | `wol:read` | Ver el estado en línea del dispositivo |
 | GET | `/api/wol/ssh-targets` | `wol:read` | Listar las conexiones SSH utilizables para apagado remoto |
+| GET | `/api/wol/bemfa` | `wol:read` | Configuración y estado de conexión de Bemfa |
+| GET | `/api/wol/bemfa/secrets` | `wol:write` | Ver la clave privada de Bemfa |
+| PUT | `/api/wol/bemfa` | `wol:write` | Modificar la configuración de Bemfa |
 
 ## Terminal web
 
@@ -3059,10 +3062,27 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `timeout` | integer |
 | `username` | string |
 
+### wol.BemfaSettings
+
+| Campo | Tipo |
+| --- | --- |
+| `enable` | boolean |
+| `uid` | string |
+
+### wol.BemfaStatus
+
+| Campo | Tipo |
+| --- | --- |
+| `connected` | boolean |
+| `error` | string |
+| `since` | integer |
+| `topics` | integer |
+
 ### wol.Device
 
 | Campo | Tipo |
 | --- | --- |
+| `bemfaTopic` | string |
 | `broadcastIps` | Lista de string |
 | `checkAddr` | string |
 | `enable` | boolean |
@@ -3084,4 +3104,11 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `key` | string |
 | `name` | string |
 | `trusted` | boolean |
+
+### wol.bemfaView
+
+| Campo | Tipo |
+| --- | --- |
+| `settings` | `wol.BemfaSettings` |
+| `status` | `wol.BemfaStatus` |
 

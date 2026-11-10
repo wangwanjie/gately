@@ -488,6 +488,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/wol/devices/{key}/shutdown` | `wol:write` | Удалённое выключение |
 | GET | `/api/wol/status` | `wol:read` | Просмотр состояния устройства в сети |
 | GET | `/api/wol/ssh-targets` | `wol:read` | Список SSH-подключений для удалённого выключения |
+| GET | `/api/wol/bemfa` | `wol:read` | Настройки Bemfa и состояние подключения |
+| GET | `/api/wol/bemfa/secrets` | `wol:write` | Показать закрытый ключ Bemfa |
+| PUT | `/api/wol/bemfa` | `wol:write` | Изменить настройки Bemfa |
 
 ## Веб-терминал
 
@@ -3059,10 +3062,27 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `timeout` | integer |
 | `username` | string |
 
+### wol.BemfaSettings
+
+| Поле | Тип |
+| --- | --- |
+| `enable` | boolean |
+| `uid` | string |
+
+### wol.BemfaStatus
+
+| Поле | Тип |
+| --- | --- |
+| `connected` | boolean |
+| `error` | string |
+| `since` | integer |
+| `topics` | integer |
+
 ### wol.Device
 
 | Поле | Тип |
 | --- | --- |
+| `bemfaTopic` | string |
 | `broadcastIps` | Массив из string |
 | `checkAddr` | string |
 | `enable` | boolean |
@@ -3084,4 +3104,11 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `key` | string |
 | `name` | string |
 | `trusted` | boolean |
+
+### wol.bemfaView
+
+| Поле | Тип |
+| --- | --- |
+| `settings` | `wol.BemfaSettings` |
+| `status` | `wol.BemfaStatus` |
 

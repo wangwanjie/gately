@@ -142,6 +142,7 @@ API は `GET` / `PUT /api/fileusers` で、API トークンには `fileusers:rea
 | `checkAddr` | 空 | オンライン確認のアドレス。形式は `ホスト:ポート`（例：`192.168.1.10:3389`）で、空欄の場合は確認しません |
 | `shutdownConn` | 空 | リモートシャットダウンに使う [Web ターミナル](/ja/docs/modules/terminal)の SSH 接続。空ならシャットダウンなし |
 | `shutdownCommand` | なし | シャットダウンコマンド。接続を選んだ場合は必須、1 行（例：`shutdown -h now`、`shutdown /s /t 0`） |
+| `bemfaTopic` | 空 | Bemfa トピック。空なら音声操作なし、他のデバイスと重複不可 |
 | `remark` | 空 | メモ |
 
 デバイス一覧で「起動」を押すとマジックパケットが送信され、`checkAddr` に基づいてデバイスがオンラインかどうかが表示されます。
@@ -154,6 +155,16 @@ API は `GET` / `PUT /api/fileusers` で、API トークンには `fileusers:rea
 - シャットダウンのたびに新しい SSH 接続を作り、終了後に閉じるため、デバイス再起動前の無効な接続は使われません。コマンドは最長 30 秒、同じデバイスでは同時に 1 つだけ実行します；
 - シャットダウンにより終了コードが返る前に SSH 接続が切れることが多く、その場合はシャットダウン開始とみなします；
 - フォームには Linux（`shutdown -h now`）、Windows（`shutdown /s /t 0`）、macOS（`sudo -n shutdown -h now`）のよく使うコマンドがあります。Windows では OpenSSH サーバーを有効にしてください。Linux の非 root ユーザーは `sudo -n shutdown -h now` を使い、このコマンドにパスワードなし sudo を設定してください。
+
+### Bemfa 音声操作 {#bemfa}
+
+[Bemfa](https://cloud.bemfa.com) と連携すると、Xiao AI、Xiaodu、Google Assistant などの音声アシスタントでデバイスをオン・オフできます：
+
+1. Bemfa コンソールの MQTT デバイスクラウドで、名前が `001`（コンセント）または `006`（スイッチ）で終わるトピックを作成します（例：`pc001`）；
+2. デバイスに同じトピックを入力し、「Wake-on-LAN → Bemfa」でコンソールのユーザー秘密鍵を入力して有効にします；
+3. Mi Home（Xiao AI）、Xiaodu などのアプリで Bemfa アカウントを連携し、デバイスを同期します。
+
+以降「オン」でデバイスを起動、「オフ」でリモートシャットダウン（設定が必要）し、成功するとオン・オフ状態を Bemfa に書き戻します。Gately は MQTT 3.1.1 over TLS で `bemfa.com:9503` に接続して証明書を検証します。秘密鍵はクライアント ID としてこの暗号化接続でのみ使い、API ではマスク表示します。切断後は 5 秒から最長 5 分間隔で再接続します。接続時にサーバーが再送する保持メッセージ（前回の状態）は実行せず、10 秒以内に繰り返された同じ指示は 1 回だけ実行します。
 
 ## スケジュールタスク
 

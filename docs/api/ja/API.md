@@ -488,6 +488,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/wol/devices/{key}/shutdown` | `wol:write` | リモートシャットダウン |
 | GET | `/api/wol/status` | `wol:read` | デバイスのオンライン状態を表示 |
 | GET | `/api/wol/ssh-targets` | `wol:read` | リモートシャットダウンに使える SSH 接続の一覧 |
+| GET | `/api/wol/bemfa` | `wol:read` | Bemfa 連携設定と接続状態 |
+| GET | `/api/wol/bemfa/secrets` | `wol:write` | Bemfa 秘密鍵を表示 |
+| PUT | `/api/wol/bemfa` | `wol:write` | Bemfa 連携設定を変更 |
 
 ## Web ターミナル
 
@@ -3059,10 +3062,27 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `timeout` | integer |
 | `username` | string |
 
+### wol.BemfaSettings
+
+| フィールド | 型 |
+| --- | --- |
+| `enable` | boolean |
+| `uid` | string |
+
+### wol.BemfaStatus
+
+| フィールド | 型 |
+| --- | --- |
+| `connected` | boolean |
+| `error` | string |
+| `since` | integer |
+| `topics` | integer |
+
 ### wol.Device
 
 | フィールド | 型 |
 | --- | --- |
+| `bemfaTopic` | string |
 | `broadcastIps` | 配列 of string |
 | `checkAddr` | string |
 | `enable` | boolean |
@@ -3084,4 +3104,11 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `key` | string |
 | `name` | string |
 | `trusted` | boolean |
+
+### wol.bemfaView
+
+| フィールド | 型 |
+| --- | --- |
+| `settings` | `wol.BemfaSettings` |
+| `status` | `wol.BemfaStatus` |
 
