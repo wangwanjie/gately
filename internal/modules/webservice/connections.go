@@ -74,6 +74,8 @@ type activeReq struct {
 	mu   sync.Mutex
 	conn net.Conn
 	done bool
+	// user 为站点认证识别出的访客身份，访客审计据此记录；未认证时为 nil
+	user atomic.Pointer[string]
 	// upstream 为反向代理为这个请求选中的后端（非代理站点为 nil），拓扑视图据此把访客地址归到具体后端
 	upstream atomic.Pointer[upstream]
 }

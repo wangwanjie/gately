@@ -19,6 +19,7 @@ import (
 	"github.com/wangwanjie/gately/internal/fileusers"
 	"github.com/wangwanjie/gately/internal/i18n"
 	"github.com/wangwanjie/gately/internal/thirdauth"
+	"github.com/wangwanjie/gately/internal/visitors"
 	"github.com/wangwanjie/gately/internal/webpage"
 )
 
@@ -46,6 +47,8 @@ type authenticator struct {
 	banMu     sync.Mutex
 	autoBan   time.Duration
 	shareUses map[string]int
+	// visits 为访客审计数据，站点处理请求后上报；为 nil 时不记录（测试中单独创建的认证器）
+	visits *visitors.Store
 
 	// shared 为共享认证用户与单点登录域，设置变更时整体替换
 	shared sharedStore

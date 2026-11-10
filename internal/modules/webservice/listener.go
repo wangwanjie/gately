@@ -19,6 +19,7 @@ import (
 
 	"github.com/wangwanjie/gately/internal/acmehttp"
 	"github.com/wangwanjie/gately/internal/logbuf"
+	"github.com/wangwanjie/gately/internal/visitors"
 	"github.com/wangwanjie/gately/internal/webprobe"
 )
 
@@ -188,6 +189,10 @@ func (l *listenerRunner) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// 未知域名且没有默认站点时，同样交给路径探测规则计数
 		webprobe.Report(webprobe.Hit{Addr: clientAddr(r).Addr(), Listener: l.key, Unknown: true,
 			Method: r.Method, Host: r.Host, Path: r.URL.Path, Status: http.StatusNotFound})
+		if l.auth != nil {
+			l.auth.visits.Record(visitors.Hit{Addr: clientAddr(r).Addr(), Listener: l.key, Unmatched: true, Host: hostOnly(r.Host),
+				Method: r.Method, Path: r.URL.Path, Status: http.StatusNotFound, UA: r.UserAgent()})
+		}
 		return
 	}
 	s.ServeHTTP(w, r)

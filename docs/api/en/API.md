@@ -409,6 +409,11 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | GET | `/api/webservice/stats` | `webservice:read` | Per-minute site statistics (?listener=&site=&minutes=) |
 | GET | `/api/webservice/metrics` | `webservice:read` | Metrics in Prometheus text format |
 | GET | `/api/webservice/topology` | `webservice:read` | Web Services topology snapshot |
+| GET | `/api/webservice/visitors` | `webservice:read` | Visitor audit list |
+| GET | `/api/webservice/visitors/detail` | `webservice:read` | Audit record of one visitor |
+| POST | `/api/webservice/visitors/delete` | `webservice:write` | Delete visitor audit records |
+| GET | `/api/webservice/visitors/settings` | `webservice:read` | Read visitor audit settings and storage status |
+| PUT | `/api/webservice/visitors/settings` | `webservice:write` | Save visitor audit settings |
 | GET | `/api/webservice/connections` | `webservice:read` | Requests in progress and recently ended long requests of a site (?listener=&site=&q=) |
 | POST | `/api/webservice/connections/close` | `webservice:write` | Close a request in progress on a site, optionally banning its source address (banSeconds -1 means permanent) |
 | GET | `/api/webservice/bans` | `webservice:read` | Currently banned IPs |

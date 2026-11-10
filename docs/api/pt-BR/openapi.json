@@ -47544,6 +47544,277 @@
         "x-token-allowed": true
       }
     },
+    "/api/webservice/visitors": {
+      "get": {
+        "description": "Requisições a todos os sites (incluindo sites sem correspondência) agregadas por endereço do visitante, independentemente de o log de acesso do site estar ativado; apenas contagens agregadas são mantidas, nunca requisições individuais ou query strings. Parâmetros: `days` conta os últimos N dias incluindo hoje (0 para todo o período de retenção), `q` palavra-chave (endereço, código do país, identidade, site, domínio, caminho, User-Agent), `filter` é denied (com requisições bloqueadas), authed (autenticado em um site), admin (com sessão do console de administração), banned (banido no momento) ou noise (apenas bloqueado ou apenas sites sem correspondência), `site` é `chaveDoListener/chaveDoSite` ou `-` (sites sem correspondência), `sort` é last, first, requests ou denied, além de `offset` e `limit` (no máximo 200). Retorna `items`, `total`, o resumo filtrado `summary`, o resumo diário `daily`, os sites visitados `sites`, o estado do armazenamento `info` e os nomes dos listeners `listeners`. `country` é LAN para endereços privados.\n\nPermissão necessária: `webservice:read`.",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Lista da auditoria de visitantes",
+        "tags": [
+          "Serviço web"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/visitors/delete": {
+      "post": {
+        "description": "O corpo `{\"ips\": [\"endereço\"]}` exclui os visitantes indicados (no máximo 1000 por vez) e `{\"all\": true}` apaga tudo; retorna a quantidade excluída e grava no disco imediatamente.\n\nPermissão necessária: `webservice:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Excluir registros da auditoria de visitantes",
+        "tags": [
+          "Serviço web"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/visitors/detail": {
+      "get": {
+        "description": "Parâmetro `ip`. Retorna a primeira e a última visita, as requisições e bloqueios por dia no período de retenção em `daily`, a distribuição dos códigos de status, os motivos de bloqueio, os sites visitados, os caminhos mais requisitados, as identidades (`kind` é user ou admin) e os User-Agents, e se o endereço está banido no momento.\n\nPermissão necessária: `webservice:read`.",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Registro de auditoria de um visitante",
+        "tags": [
+          "Serviço web"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/visitors/settings": {
+      "get": {
+        "description": "Permissão necessária: `webservice:read`.",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ler as configurações e o estado do armazenamento da auditoria de visitantes",
+        "tags": [
+          "Serviço web"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Corpo `{\"disable\": false, \"days\": 30, \"max\": 10000}`: `days` é a retenção em dias (1-180), `max` o número máximo de visitantes mantidos (100-100000); 0 significa o padrão. Ao exceder o limite, primeiro são removidos os endereços apenas bloqueados ou que só acessaram sites sem correspondência, depois os que estão há mais tempo sem aparecer. Quando desativada, nada novo é registrado e os dados existentes são mantidos.\n\nPermissão necessária: `webservice:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Salvar as configurações da auditoria de visitantes",
+        "tags": [
+          "Serviço web"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/webterminal/connections": {
       "get": {
         "description": "Permissão necessária: `webterminal:read`.",

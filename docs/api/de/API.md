@@ -409,6 +409,11 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | GET | `/api/webservice/stats` | `webservice:read` | Minutenstatistik einer Site (?listener=&site=&minutes=) |
 | GET | `/api/webservice/metrics` | `webservice:read` | Metriken im Prometheus-Textformat |
 | GET | `/api/webservice/topology` | `webservice:read` | Topologie-Snapshot der Webdienste |
+| GET | `/api/webservice/visitors` | `webservice:read` | Liste der Besucherprüfung |
+| GET | `/api/webservice/visitors/detail` | `webservice:read` | Prüfeintrag eines Besuchers |
+| POST | `/api/webservice/visitors/delete` | `webservice:write` | Einträge der Besucherprüfung löschen |
+| GET | `/api/webservice/visitors/settings` | `webservice:read` | Einstellungen und Speicherstatus der Besucherprüfung lesen |
+| PUT | `/api/webservice/visitors/settings` | `webservice:write` | Einstellungen der Besucherprüfung speichern |
 | GET | `/api/webservice/connections` | `webservice:read` | Laufende und kürzlich beendete lange Anfragen einer Site (?listener=&site=&q=) |
 | POST | `/api/webservice/connections/close` | `webservice:write` | Eine laufende Anfrage einer Website trennen und optional ihre Quelladresse sperren (banSeconds -1 bedeutet dauerhaft) |
 | GET | `/api/webservice/bans` | `webservice:read` | Aktuell gesperrte IPs |

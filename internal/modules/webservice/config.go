@@ -14,6 +14,7 @@ import (
 	"github.com/wangwanjie/gately/internal/hostname"
 	"github.com/wangwanjie/gately/internal/iplist"
 	"github.com/wangwanjie/gately/internal/thirdauth"
+	"github.com/wangwanjie/gately/internal/visitors"
 	"golang.org/x/net/http/httpguts"
 )
 
@@ -239,6 +240,8 @@ type fileConfig struct {
 	IPLists []IPList `json:"ipLists"`
 	// ErrorPages 为自定义错误页面库，供站点的错误页设置引用
 	ErrorPages []ErrorPage `json:"errorPages"`
+	// Visitors 为访客审计设置
+	Visitors visitors.Settings `json:"visitors"`
 }
 
 func cleanList(in []string) []string {

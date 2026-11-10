@@ -47544,6 +47544,277 @@
         "x-token-allowed": true
       }
     },
+    "/api/webservice/visitors": {
+      "get": {
+        "description": "按访客地址聚合全部站点（含未匹配站点）的请求，与站点是否开启访问日志无关；只保存聚合计数，不保存逐条请求与查询串。参数：`days` 统计最近几天（含今天，0 为整个保留期），`q` 关键词（地址、国家代码、身份、站点、域名、路径、User-Agent），`filter` 为 denied（有拦截）、authed（站点认证过）、admin（带管理后台登录态）、banned（封禁中）、noise（只被拦截或只访问未匹配站点），`site` 为 `监听key/站点key` 或 `-`（未匹配站点），`sort` 为 last、first、requests、denied，`offset`、`limit`（最多 200）。返回 `items`、`total`、筛选后的汇总 `summary`、每日汇总 `daily`、访问过的站点 `sites`、存储状态 `info` 与监听名称 `listeners`。内网地址的 `country` 为 LAN。\n\n所需权限：`webservice:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "访客审计列表",
+        "tags": [
+          "Web 服务"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/visitors/delete": {
+      "post": {
+        "description": "请求体 `{\"ips\": [\"地址\"]}` 删除指定访客（一次最多 1000 个），或 `{\"all\": true}` 清空全部；返回删除的条数，删除后立即写盘。\n\n所需权限：`webservice:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "删除访客审计记录",
+        "tags": [
+          "Web 服务"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/visitors/detail": {
+      "get": {
+        "description": "参数 `ip`。返回首次与最近访问、保留期内每天的请求与拦截数 `daily`、状态码分布、拦截原因、访问过的站点、请求最多的路径、身份（`kind` 为 user 或 admin）与 User-Agent，以及是否封禁中。\n\n所需权限：`webservice:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "单个访客的审计记录",
+        "tags": [
+          "Web 服务"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/visitors/settings": {
+      "get": {
+        "description": "所需权限：`webservice:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "读取访客审计设置与存储状态",
+        "tags": [
+          "Web 服务"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "请求体 `{\"disable\": false, \"days\": 30, \"max\": 10000}`：`days` 保留天数 1~180，`max` 最多保留的访客数 100~100000，0 表示默认值。超出上限时优先淘汰只被拦截或只访问未匹配站点的地址，再淘汰最久未出现的。停用后不再记录，已有数据保留。\n\n所需权限：`webservice:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "保存访客审计设置",
+        "tags": [
+          "Web 服务"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/webterminal/connections": {
       "get": {
         "description": "所需权限：`webterminal:read`。",

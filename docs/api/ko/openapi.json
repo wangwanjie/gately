@@ -47544,6 +47544,277 @@
         "x-token-allowed": true
       }
     },
+    "/api/webservice/visitors": {
+      "get": {
+        "description": "모든 사이트(일치하지 않는 사이트 포함)에 대한 요청을 방문자 주소별로 집계하며, 사이트의 액세스 로그 사용 여부와 무관합니다. 집계 값만 저장하고 개별 요청과 쿼리 문자열은 저장하지 않습니다. 매개변수: `days` 오늘을 포함한 최근 일수(0은 보존 기간 전체), `q` 키워드(주소, 국가 코드, 신원, 사이트, 도메인, 경로, User-Agent), `filter`는 denied(차단 있음), authed(사이트 인증됨), admin(관리 콘솔 로그인 상태 포함), banned(차단 중), noise(차단되었거나 일치하지 않는 사이트만 방문), `site`는 `리스너key/사이트key` 또는 `-`(일치하지 않는 사이트), `sort`는 last, first, requests, denied, `offset`, `limit`(최대 200). `items`, `total`, 필터 적용 후 집계 `summary`, 일별 집계 `daily`, 방문한 사이트 `sites`, 저장소 상태 `info`, 리스너 이름 `listeners`를 반환합니다. 사설 주소의 `country`는 LAN입니다.\n\n필요한 권한: `webservice:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "방문자 감사 목록",
+        "tags": [
+          "Web 서비스"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/visitors/delete": {
+      "post": {
+        "description": "요청 본문 `{\"ips\": [\"주소\"]}`로 지정한 방문자를 삭제(한 번에 최대 1000개)하거나 `{\"all\": true}`로 전부 삭제합니다. 삭제된 수를 반환하고 즉시 디스크에 기록합니다.\n\n필요한 권한: `webservice:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "방문자 감사 기록 삭제",
+        "tags": [
+          "Web 서비스"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/visitors/detail": {
+      "get": {
+        "description": "매개변수 `ip`. 최초·최근 방문, 보존 기간 동안의 일별 요청 수와 차단 수 `daily`, 상태 코드 분포, 차단 사유, 방문한 사이트, 요청이 많은 경로, 신원(`kind`는 user 또는 admin)과 User-Agent, 현재 차단 중인지 여부를 반환합니다.\n\n필요한 권한: `webservice:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "방문자 한 명의 감사 기록",
+        "tags": [
+          "Web 서비스"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/visitors/settings": {
+      "get": {
+        "description": "필요한 권한: `webservice:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "방문자 감사 설정과 저장소 상태 조회",
+        "tags": [
+          "Web 서비스"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "요청 본문 `{\"disable\": false, \"days\": 30, \"max\": 10000}`: `days`는 보존 일수(1~180), `max`는 보관할 최대 방문자 수(100~100000)이며 0은 기본값입니다. 한도를 넘으면 차단만 되었거나 일치하지 않는 사이트만 방문한 주소를 먼저 제거하고, 그다음 가장 오래 나타나지 않은 주소를 제거합니다. 사용 중지하면 새로 기록하지 않으며 기존 데이터는 유지됩니다.\n\n필요한 권한: `webservice:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "방문자 감사 설정 저장",
+        "tags": [
+          "Web 서비스"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/webterminal/connections": {
       "get": {
         "description": "필요한 권한: `webterminal:read`.",
