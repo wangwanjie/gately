@@ -16,6 +16,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+	"unicode"
 	"unicode/utf8"
 )
 
@@ -276,8 +277,36 @@ func reuse(old, v string, n int) string {
 	return clip(v, n)
 }
 
+// isControl 判断访客可控字符串中需要去掉的字符：ASCII 与 Unicode 控制字符、无效编码，
+// 以及可在界面上伪造显示顺序或隐藏内容的双向控制符、零宽字符与行/段分隔符。
 func isControl(r rune) bool {
-	return r < 0x20 || r == 0x7f || r == utf8.RuneError
+	if r < 0x20 || r == 0x7f || r == utf8.RuneError {
+		return true
+	}
+	if r < 0x80 {
+		return false
+	}
+	switch {
+	case unicode.IsControl(r):
+		// C1 控制字符 U+0080–U+009F
+		return true
+	case r >= 0x200b && r <= 0x200f:
+		// 零宽空格、零宽（不）连接符、LRM、RLM
+		return true
+	case r == 0x2028 || r == 0x2029:
+		// 行分隔符、段分隔符
+		return true
+	case r >= 0x202a && r <= 0x202e:
+		// LRE、RLE、PDF、LRO、RLO
+		return true
+	case r >= 0x2066 && r <= 0x2069:
+		// LRI、RLI、FSI、PDI
+		return true
+	case r == 0xfeff:
+		// 零宽不换行空格（BOM）
+		return true
+	}
+	return false
 }
 
 // Record 记录一次请求。停用时直接返回。
