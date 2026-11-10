@@ -474,6 +474,25 @@ Reglas de caché:
 - Un acierto devuelve las cabeceras `X-Cache: HIT` y `Age`, y un fallo devuelve `X-Cache: MISS`;
 - La clave de caché incluye el Host, la URI completa de la petición y `Accept-Encoding`; con el [reparto por usuario](#user-routes), incluye también la regla de usuario elegida, y la identidad enviada al backend cuando se configura [Pasar identidad](#identity-headers).
 
+Caché por ruta (`rules`, «Caché por ruta» en la pestaña «Tráfico» del editor del sitio, hasta 200 reglas):
+
+| Campo | Descripción |
+| --- | --- |
+| `path` | Ruta que se compara. Empieza por `/`, no contiene espacios, `?` ni `#`, ni segmentos `.` o `..` ni `/` consecutivas, y es única dentro del sitio. Sin `*` se compara como prefijo en límites de segmento: `/api` coincide con `/api` y `/api/x`, y deja fuera `/apix`; con `*` se compara la ruta completa como comodín, y `*` coincide con cualquier carácter, incluida `/`, como `/api/products/*` o `/static/*.js` |
+| `noCache` | Activado equivale a «No cachear»: la ruta no lee ni escribe la caché |
+| `ttl` | Duración de la caché, de 0 a 30 días (en segundos); 0 usa la duración por defecto del sitio |
+| `override` | Activado equivale a «Forzar caché»: se ignora el `Cache-Control` del backend y las respuestas 200 se almacenan durante la duración indicada; la regla o el sitio necesitan una duración mayor que 0 |
+
+- La interfaz ofrece tres modos: «Cachear» respeta el `Cache-Control` del backend y usa la duración cuando el backend no declara nada; «Forzar caché» corresponde a `override`; «No cachear» corresponde a `noCache`;
+- Gana la regla más específica: se comparan primero las reglas con más caracteres al quitar `*`, y en caso de empate se mantiene el orden configurado; las rutas que no coinciden con ninguna regla usan los valores por defecto del sitio. Para cachear solo ciertas rutas, configura `/` como no cachear;
+- Las reglas comparan la ruta de la petición normalizada, así que `//api` y `/x/../api` se tratan como `/api`;
+- En cualquier modo, las peticiones con `Cookie` o `Authorization` y las respuestas con `Set-Cookie` o `Vary: *` nunca se almacenan.
+
+Ver y vaciar la caché: al editar un sitio guardado, la pestaña «Tráfico» muestra el número de entradas y el tamaño de la caché en ejecución del sitio («Caché actual»), con «Actualizar» y «Vaciar todo», y cada regla puede vaciar la caché de su ruta. La API correspondiente:
+
+- `GET /api/webservice/cache?listener=&site=` devuelve `enabled`, `entries`, `bytes` y `maxBytes`; `site` es la clave del sitio, `default` para el sitio por defecto; devuelve 404 si el sitio no existe o su listener no está en ejecución;
+- `POST /api/webservice/cache/purge` con el cuerpo `{"listener", "site", "path"}`: un `path` vacío vacía toda la caché del sitio; con un valor, solo las entradas cuya ruta coincide, con la misma sintaxis y comparación que el `path` de una regla; devuelve el número de entradas eliminadas `removed` y el estado posterior, y 400 si el sitio no tiene la caché activada.
+
 ### Reescritura y redirección de rutas
 
 Las reglas se evalúan en orden y la evaluación se detiene en la primera coincidencia.

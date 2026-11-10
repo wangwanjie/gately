@@ -474,6 +474,25 @@ Cache-Regeln:
 - Ein Treffer liefert die Header `X-Cache: HIT` und `Age`, ein Fehlschlag liefert `X-Cache: MISS`;
 - Der Cache-Schlüssel enthält Host, die vollständige Anfrage-URI und `Accept-Encoding`; mit [Verteilung nach Benutzer](#user-routes) zusätzlich die gewählte Benutzerroute und, wenn [Identität weitergeben](#identity-headers) eingerichtet ist, auch die an das Backend übergebene Identität.
 
+Cache pro Pfad (`rules`, „Cache pro Pfad“ im Tab „Datenverkehr“ des Site-Editors, bis zu 200 Regeln):
+
+| Feld | Beschreibung |
+| --- | --- |
+| `path` | Zu prüfender Pfad. Er beginnt mit `/`, enthält keine Leerzeichen, `?` oder `#`, keine Segmente `.` oder `..` und keine aufeinanderfolgenden `/` und ist innerhalb der Site eindeutig. Ohne `*` gilt er als Präfix an Segmentgrenzen: `/api` trifft `/api` und `/api/x`, `/apix` bleibt außen vor; mit `*` wird der ganze Pfad als Platzhaltermuster geprüft, und `*` steht für beliebige Zeichen einschließlich `/`, etwa `/api/products/*` oder `/static/*.js` |
+| `noCache` | Eingeschaltet bedeutet „Nicht cachen“: Der Pfad liest und schreibt den Cache nicht |
+| `ttl` | Cache-Dauer, 0 bis 30 Tage (in Sekunden); 0 übernimmt die Standarddauer der Site |
+| `override` | Eingeschaltet bedeutet „Cache erzwingen“: `Cache-Control` des Backends wird ignoriert und 200er-Antworten werden für die Cache-Dauer gecacht; Regel oder Site brauchen eine Dauer größer als 0 |
+
+- Die Oberfläche bietet drei Modi: „Cachen“ folgt dem `Cache-Control` des Backends und nutzt die Dauer, wenn das Backend nichts angibt; „Cache erzwingen“ entspricht `override`; „Nicht cachen“ entspricht `noCache`;
+- Die spezifischere Regel gewinnt: Regeln mit mehr Zeichen ohne `*` werden zuerst geprüft, bei Gleichstand gilt die konfigurierte Reihenfolge; Pfade ohne passende Regel nutzen die Standardwerte der Site. Um nur bestimmte Pfade zu cachen, setzen Sie `/` auf „Nicht cachen“;
+- Regeln prüfen den normalisierten Anfragepfad, `//api` und `/x/../api` werden also als `/api` behandelt;
+- In jedem Modus werden Anfragen mit `Cookie` oder `Authorization` und Antworten mit `Set-Cookie` oder `Vary: *` nie gecacht.
+
+Cache ansehen und leeren: Beim Bearbeiten einer gespeicherten Site zeigt der Tab „Datenverkehr“ Anzahl der Einträge und Belegung des laufenden Caches („Aktueller Cache“), mit „Aktualisieren“ und „Alles leeren“; jede Regel kann den Cache für ihren Pfad leeren. Die zugehörige API:
+
+- `GET /api/webservice/cache?listener=&site=` liefert `enabled`, `entries`, `bytes` und `maxBytes`; `site` ist der Site-Schlüssel, `default` für die Standard-Site; existiert die Site nicht oder läuft ihr Listener nicht, kommt 404;
+- `POST /api/webservice/cache/purge` mit dem Body `{"listener", "site", "path"}`: Ein leerer `path` leert den gesamten Cache der Site, sonst nur die Einträge, deren Pfad passt, mit derselben Schreibweise und Prüfung wie der `path` einer Regel; die Antwort enthält die Zahl entfernter Einträge `removed` und den Zustand danach, 400, wenn für die Site kein Cache aktiviert ist.
+
 ### Pfad umschreiben und weiterleiten
 
 Regeln werden der Reihe nach abgeglichen, und beim ersten Treffer endet der Abgleich.

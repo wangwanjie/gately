@@ -474,6 +474,25 @@ Règles de mise en cache :
 - Un succès (hit) renvoie les en-têtes `X-Cache: HIT` et `Age`, et un échec (miss) renvoie `X-Cache: MISS` ;
 - La clé de cache inclut Host, l'URI complète de la requête et `Accept-Encoding` ; avec la [répartition par utilisateur](#user-routes), elle inclut aussi la règle utilisateur choisie, ainsi que l'identité transmise au backend lorsque [Transmettre l’identité](#identity-headers) est configuré.
 
+Cache par chemin (`rules`, « Cache par chemin » dans l'onglet « Trafic » de l'éditeur de site, jusqu'à 200 règles) :
+
+| Champ | Description |
+| --- | --- |
+| `path` | Chemin à faire correspondre. Il commence par `/`, ne contient ni espace, ni `?`, ni `#`, ni segment `.` ou `..`, ni `/` consécutifs, et est unique dans le site. Sans `*`, il correspond comme préfixe aux limites de segment : `/api` correspond à `/api` et `/api/x`, et laisse `/apix` de côté ; avec `*`, tout le chemin est comparé comme un motif, et `*` correspond à n'importe quels caractères, `/` compris, par exemple `/api/products/*` ou `/static/*.js` |
+| `noCache` | Activé, c'est « Pas de cache » : le chemin ne lit ni n'écrit le cache |
+| `ttl` | Durée de cache, de 0 à 30 jours (en secondes) ; 0 reprend la durée par défaut du site |
+| `override` | Activé, c'est « Cache forcé » : le `Cache-Control` du backend est ignoré et les réponses 200 sont mises en cache pendant la durée indiquée ; la règle ou le site doit avoir une durée supérieure à 0 |
+
+- L'interface propose trois modes : « En cache » suit le `Cache-Control` du backend et utilise la durée quand le backend ne déclare rien ; « Cache forcé » correspond à `override` ; « Pas de cache » correspond à `noCache` ;
+- La règle la plus précise l'emporte : les règles comptant le plus de caractères hors `*` sont testées en premier, l'ordre configuré départage les égalités ; les chemins sans règle correspondante utilisent les valeurs par défaut du site. Pour ne mettre en cache que certains chemins, réglez `/` sur pas de cache ;
+- Les règles comparent le chemin de requête normalisé : `//api` et `/x/../api` sont traités comme `/api` ;
+- Dans tous les modes, les requêtes avec `Cookie` ou `Authorization` et les réponses avec `Set-Cookie` ou `Vary: *` ne sont jamais mises en cache.
+
+Consulter et vider le cache : lors de l'édition d'un site enregistré, l'onglet « Trafic » affiche le nombre d'entrées et la taille du cache en service du site (« Cache actuel »), avec « Actualiser » et « Tout vider », et chaque règle peut vider le cache de son chemin. L'API correspondante :
+
+- `GET /api/webservice/cache?listener=&site=` renvoie `enabled`, `entries`, `bytes` et `maxBytes` ; `site` est la clé du site, `default` pour le site par défaut ; renvoie 404 si le site n'existe pas ou si son écouteur ne tourne pas ;
+- `POST /api/webservice/cache/purge` avec le corps `{"listener", "site", "path"}` : un `path` vide vide tout le cache du site ; sinon seules les entrées dont le chemin correspond sont supprimées, avec la même syntaxe et la même correspondance que le `path` d'une règle ; renvoie le nombre d'entrées supprimées `removed` et l'état du cache ensuite, et 400 si le cache n'est pas activé pour le site.
+
 ### Réécriture et redirection de chemin
 
 Les règles sont évaluées dans l'ordre, et l'évaluation s'arrête à la première correspondance.
