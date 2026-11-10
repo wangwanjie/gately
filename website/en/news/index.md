@@ -7,6 +7,10 @@ description: Release announcements and notes for each Gately version.
 
 Announcements for major releases are listed below. See [GitHub Releases](https://github.com/wangwanjie/gately/releases) for the full changes and downloads of every version.
 
+## [v0.6.5.4](/en/news/v0.6.5.4)
+
+November 11, 2026 · Wake-on-LAN remote shutdown and Bemfa voice control; extra HTTP port on Web service listeners; navigation panel themes.
+
 ## [v0.6.5.3](/en/news/v0.6.5.3)
 
 November 10, 2026 · Security fix (response cache); navigation panels; visitor audit; network topology replay; per-path cache rules; the Web terminal checks host fingerprints by key type; resizable log panel.

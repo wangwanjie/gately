@@ -83,8 +83,8 @@
   "home": {
     "pill": "Gratuito e de código aberto · Apache-2.0",
     "announce": {
-      "text": "v0.6.5.3: painéis de navegação, auditoria de visitantes, replay da topologia, cache por caminho e correção de segurança do cache →",
-      "link": "/pt-BR/news/v0.6.5.3"
+      "text": "v0.6.5.4: desligamento remoto e controle por voz Bemfa no Wake-on-LAN, porta HTTP adicional no listener, temas dos painéis de navegação →",
+      "link": "/pt-BR/news/v0.6.5.4"
     },
     "titleLine1": "O gateway de rede tudo em um",
     "titleLine2": "Código aberto e pronto para usar",
