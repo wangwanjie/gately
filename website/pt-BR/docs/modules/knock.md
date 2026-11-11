@@ -109,4 +109,4 @@ Antes da autenticação, a taxa é limitada por faixa de origem (no máximo 10 p
 
 - Só há suporte ao modo Rijndael (AES) CBC do fwknop com HMAC; GnuPG, o modo IV antigo e pacotes sem HMAC não são suportados;
 - Não executa mensagens de comando (`fwknop -C`) e não suporta solicitações de acesso NAT (`-N`);
-- As autorizações de knock ficam na memória; depois de reiniciar o Gately, é preciso dar o knock de novo (conexões já estabelecidas não são afetadas).
+- As autorizações de knock ficam na memória; depois de reiniciar o Gately, é preciso dar o knock de novo (conexões já estabelecidas não são afetadas). Os registros antirreplay também ficam só na memória, então após um reinício qualquer pacote com carimbo de tempo anterior à inicialização é recusado; se o relógio do cliente estiver atrasado em relação ao servidor, um knock nos primeiros segundos após o reinício pode ser recusado, e basta bater de novo.

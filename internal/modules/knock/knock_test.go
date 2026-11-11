@@ -168,6 +168,12 @@ func newEnv(t *testing.T, rules ...Rule) *testEnv {
 	return env
 }
 
+func (e *testEnv) setStartedAt(at time.Time) {
+	e.m.stateMu.Lock()
+	e.m.startedAt = at
+	e.m.stateMu.Unlock()
+}
+
 func (e *testEnv) eventsOf(typ string) []events.Event {
 	e.mu.Lock()
 	defer e.mu.Unlock()
@@ -475,6 +481,8 @@ func TestFwknopVector(t *testing.T) {
 	r.EncKey, r.HMACKey = vf.EncKey, vf.HMACKey
 	r.Ports = []string{"tcp/22", "udp/51820", "tcp/2222"}
 	env := newEnv(t, r)
+	// 向量的时间戳早于测试时钟的启动时刻
+	env.setStartedAt(time.Time{})
 	ok := 0
 	for _, v := range vf.Vectors {
 		if v.HMAC != spa.HMACSHA256 || v.Name == "cmd" || v.Name == "nat" {
@@ -646,6 +654,7 @@ func TestUDPListener(t *testing.T) {
 	}
 	// 时钟用真实时间，报文时间戳才在有效期内
 	env.clock.set(time.Now())
+	env.setStartedAt(time.Now().Add(-time.Minute))
 	r := env.rule("r-ssh")
 	pkt := env.packet(t, r, spa.Message{Addr: netip.MustParseAddr("198.51.100.20")})
 	c, err := net.Dial("udp", fmt.Sprintf("127.0.0.1:%d", port))
@@ -828,5 +837,56 @@ func TestInvalidPacketsSummarized(t *testing.T) {
 	}
 	if n != 1 {
 		t.Fatalf("汇总后应清零，不重复记录: %d", n)
+	}
+}
+
+// 调大报文有效期后，旧报文的摘要仍在缓存中，不能重放。
+func TestReplayAfterMaxAgeRaised(t *testing.T) {
+	env := newEnv(t, sshRule("ssh"))
+	pkt := env.packet(t, env.rule("r-ssh"), spa.Message{})
+	if err := env.m.handle(pkt, src, transportUDP, "UDP"); err != nil {
+		t.Fatal(err)
+	}
+	// 有效期 120 秒过后调大到 3600 秒，并触发定期清理
+	env.clock.set(env.clock.now().Add(200 * time.Second))
+	env.m.mu.Lock()
+	env.m.cfg.Settings.MaxAge = maxMaxAge
+	env.m.applyLocked()
+	env.m.mu.Unlock()
+	env.m.stateMu.Lock()
+	now := env.clock.now()
+	for k, until := range env.m.replay {
+		if !now.Before(until) {
+			delete(env.m.replay, k)
+		}
+	}
+	env.m.stateMu.Unlock()
+	if err := env.m.handle(pkt, src, transportUDP, "UDP"); err == nil || !strings.Contains(err.Error(), "重放") {
+		t.Fatalf("调大有效期后旧报文应仍被识别为重放: %v", err)
+	}
+}
+
+// 重启后防重放缓存为空：时间戳早于本次启动的报文被拒绝，启动后发出的报文正常放行。
+func TestReplayAfterRestart(t *testing.T) {
+	env := newEnv(t, sshRule("ssh"))
+	r := env.rule("r-ssh")
+	pkt := env.packet(t, r, spa.Message{})
+	if err := env.m.handle(pkt, src, transportUDP, "UDP"); err != nil {
+		t.Fatal(err)
+	}
+	// 模拟进程重启：缓存清空，启动时刻晚于报文时间戳
+	env.clock.set(env.clock.now().Add(10 * time.Second))
+	_ = env.m.Stop()
+	env.m.stateMu.Lock()
+	env.m.replay = map[string]time.Time{}
+	env.m.stateMu.Unlock()
+	if err := env.m.Start(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if err := env.m.handle(pkt, src, transportUDP, "UDP"); err == nil || !strings.Contains(err.Error(), "本次启动") {
+		t.Fatalf("重启前发出的报文应被拒绝: %v", err)
+	}
+	if err := env.m.handle(env.packet(t, r, spa.Message{}), src, transportUDP, "UDP"); err != nil {
+		t.Fatalf("启动后发出的报文应放行: %v", err)
 	}
 }

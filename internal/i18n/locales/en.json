@@ -1651,6 +1651,7 @@
   "把容器提交为镜像": "Commit a container as an image",
   "把证书部署到全部启用的目标（经 SSH 上传并执行命令，或重启 Docker 容器），忽略是否已部署与失败退避，同步返回每个目标的结果。": "Deploys the certificate to all enabled targets (upload over SSH and run a command, or restart Docker containers), ignoring whether it is already deployed and the failure backoff, and returns the result for each target synchronously.",
   "报文时间戳与本机时间相差 %s，超过有效期 %d 秒（请检查两端的时钟）": "Packet timestamp differs from this host's time by %s, beyond the validity of %d seconds (check the clocks on both ends)",
+  "报文时间早于 Gately 本次启动，无法确认是否为重放，请重新敲门": "The packet is older than this Gately start, so it cannot be ruled out as a replay; please knock again",
   "报文有效期应在 %d～%d 秒之间": "Packet validity must be between %d and %d seconds",
   "报文过大（%d 字节）": "Packet too large (%d bytes)",
   "报文长度编码无效": "Invalid packet length encoding",

@@ -109,4 +109,4 @@ Before authentication, packets are rate-limited per source range (at most 10 per
 
 - Only fwknop's Rijndael (AES) CBC mode with HMAC is supported; GnuPG, the legacy IV mode and packets without HMAC are not;
 - Command messages (`fwknop -C`) are not executed, and NAT access requests (`-N`) are not supported;
-- Knock grants are kept in memory, so after Gately restarts you need to knock again (established connections are unaffected).
+- Knock grants are kept in memory, so after Gately restarts you need to knock again (established connections are unaffected). Replay records are also kept only in memory, so after a restart any packet whose timestamp is earlier than the start is refused; if the client clock is behind the server, a knock in the first few seconds after a restart may be refused, and knocking again works.

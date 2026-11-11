@@ -1651,6 +1651,7 @@
   "把容器提交为镜像": "Confirmar o contêiner como imagem",
   "把证书部署到全部启用的目标（经 SSH 上传并执行命令，或重启 Docker 容器），忽略是否已部署与失败退避，同步返回每个目标的结果。": "Implanta o certificado em todos os destinos ativos (envio via SSH e execução de comando, ou reinício de contêineres Docker), ignorando se já foi implantado e a espera após falhas, e retorna o resultado de cada destino de forma síncrona.",
   "报文时间戳与本机时间相差 %s，超过有效期 %d 秒（请检查两端的时钟）": "O carimbo de data/hora do pacote difere em %s do horário desta máquina, além da validade de %d segundos (verifique os relógios dos dois lados)",
+  "报文时间早于 Gately 本次启动，无法确认是否为重放，请重新敲门": "O pacote é anterior a esta inicialização do Gately e não dá para descartar replay; bata de novo",
   "报文有效期应在 %d～%d 秒之间": "A validade do pacote deve estar entre %d e %d segundos",
   "报文过大（%d 字节）": "Pacote grande demais (%d bytes)",
   "报文长度编码无效": "Codificação de comprimento do pacote inválida",

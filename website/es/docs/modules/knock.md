@@ -109,4 +109,4 @@ Antes de autenticar se limita la tasa por rango de origen (como máximo 10 paque
 
 - Solo admite el modo Rijndael (AES) CBC con HMAC de fwknop; no admite GnuPG, el modo IV antiguo ni paquetes sin HMAC;
 - No ejecuta mensajes de comando (`fwknop -C`) ni admite solicitudes de acceso NAT (`-N`);
-- Las autorizaciones se guardan en memoria; tras reiniciar Gately hay que volver a llamar (las conexiones ya establecidas no se ven afectadas).
+- Las autorizaciones se guardan en memoria; tras reiniciar Gately hay que volver a llamar (las conexiones ya establecidas no se ven afectadas). Los registros contra repetición también están solo en memoria, así que tras un reinicio se rechaza cualquier paquete con marca de tiempo anterior al arranque; si el reloj del cliente va por detrás del servidor, una llamada en los primeros segundos tras el reinicio puede rechazarse y basta con volver a llamar.

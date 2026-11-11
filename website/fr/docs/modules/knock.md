@@ -109,4 +109,4 @@ Avant l'authentification, le débit est limité par plage source (au plus 10 paq
 
 - Seul le mode Rijndael (AES) CBC de fwknop avec HMAC est pris en charge ; GnuPG, l'ancien mode IV et les paquets sans HMAC ne le sont pas ;
 - Aucun message de commande n'est exécuté (`fwknop -C`) et les demandes d'accès NAT (`-N`) ne sont pas prises en charge ;
-- Les autorisations de knock sont conservées en mémoire : après un redémarrage de Gately, il faut frapper à nouveau (les connexions déjà établies ne sont pas affectées).
+- Les autorisations de knock sont conservées en mémoire : après un redémarrage de Gately, il faut frapper à nouveau (les connexions déjà établies ne sont pas affectées). Les traces anti-rejeu ne sont elles aussi qu'en mémoire : après un redémarrage, tout paquet dont l'horodatage précède le démarrage est refusé ; si l'horloge du client retarde sur celle du serveur, un knock dans les premières secondes après le redémarrage peut être refusé, il suffit de recommencer.
