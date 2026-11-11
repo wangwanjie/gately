@@ -259,10 +259,15 @@ func (f *firewall) stop() {
 	f.pendingAdd, f.pendingDel = nil, nil
 }
 
-// apply 按 plan 重建规则（设置或规则变化时调用）。
-func (f *firewall) apply(ctx context.Context, plan fwPlan) {
+// apply 按 plan 重建规则（设置或规则变化时调用）。grants 返回仍有效的放行，在持有 f.mu 时调用（可为 nil）：
+// 放行快照与清空待写入队列在同一把锁内完成，grant 要么在快照之前（已包含在快照中），要么在之后（留在队列中），
+// 不会因为先取快照、后清空队列而丢掉中间登记的放行。
+func (f *firewall) apply(ctx context.Context, plan fwPlan, grants func(ports []spa.Access) []fwGrant) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
+	if grants != nil {
+		plan.Grants = grants(plan.Ports)
+	}
 	f.plan = plan
 	f.grants = map[fwKey]time.Time{}
 	for _, g := range plan.Grants {

@@ -142,7 +142,7 @@ func TestIPTPartialFailure(t *testing.T) {
 
 	f := newFirewall(testLogger())
 	f.detect = func(context.Context) (backend, string, string) { return be, "", "" }
-	f.apply(context.Background(), plan)
+	f.apply(context.Background(), plan, nil)
 	if f.snapshot().Active {
 		t.Fatal("写入失败不应生效")
 	}
@@ -164,8 +164,79 @@ func TestFirewallNoIPv6(t *testing.T) {
 	be := &fakeBackend{noIPv6: true}
 	f := newFirewall(testLogger())
 	f.detect = func(context.Context) (backend, string, string) { return be, "", "" }
-	f.apply(context.Background(), fwPlan{Ports: []spa.Access{{Proto: "tcp", Port: 22}}})
+	f.apply(context.Background(), fwPlan{Ports: []spa.Access{{Proto: "tcp", Port: 22}}}, nil)
 	if st := f.snapshot(); !st.Active || !st.NoIPv6 {
 		t.Fatalf("应生效并标明 IPv6 未覆盖: %+v", st)
 	}
+}
+
+// 重建规则与收包协程登记放行并发进行：每个登记过的放行最终都在防火墙中，不会被重建时的旧快照覆盖（配合 -race）。
+func TestFirewallGrantDuringRebuild(t *testing.T) {
+	env := newEnv(t, sshRule("ssh"))
+	r := env.rule("r-ssh")
+	const n = 60
+	pkts := make([][]byte, n)
+	for i := range pkts {
+		pkts[i] = env.packet(t, r, spa.Message{})
+	}
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		for i := range n {
+			a := netip.AddrFrom4([4]byte{203, 0, byte(i), 1})
+			if err := env.m.handle(pkts[i], a, transportUDP, "UDP"); err != nil {
+				t.Error(err)
+			}
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		for range n {
+			env.m.mu.Lock()
+			env.m.applyLocked()
+			env.m.mu.Unlock()
+		}
+	}()
+	wg.Wait()
+	waitFor(t, "全部放行写入防火墙", func() bool {
+		env.be.mu.Lock()
+		defer env.be.mu.Unlock()
+		for i := range n {
+			k := fwKey{netip.AddrFrom4([4]byte{203, 0, byte(i), 1}), spa.Access{Proto: "tcp", Port: 22}}
+			if !env.be.set[k] {
+				return false
+			}
+		}
+		return true
+	})
+}
+
+// 放行恰好在重建取快照之后登记：留在待写入队列中，重建完成后写入，不被清空。
+func TestFirewallGrantAfterSnapshot(t *testing.T) {
+	be := &fakeBackend{}
+	f := newFirewall(testLogger())
+	f.detect = func(context.Context) (backend, string, string) { return be, "", "" }
+	f.start(context.Background(), nil)
+	t.Cleanup(f.stop)
+	ssh := spa.Access{Proto: "tcp", Port: 22}
+	plan := fwPlan{Ports: []spa.Access{ssh}}
+	f.apply(context.Background(), plan, nil)
+	g := fwGrant{Addr: netip.MustParseAddr("203.0.113.50"), Access: ssh, Until: time.Now().Add(time.Minute)}
+	done := make(chan struct{})
+	f.apply(context.Background(), plan, func([]spa.Access) []fwGrant {
+		// 快照不含 g；g 在快照之后由“收包协程”登记
+		go func() {
+			f.grant([]fwGrant{g})
+			close(done)
+		}()
+		time.Sleep(20 * time.Millisecond)
+		return nil
+	})
+	<-done
+	waitFor(t, "快照之后登记的放行写入防火墙", func() bool {
+		be.mu.Lock()
+		defer be.mu.Unlock()
+		return be.set[fwKey{g.Addr, g.Access}]
+	})
 }
