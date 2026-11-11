@@ -243,7 +243,7 @@ Cloudflare、阿里云、DNSPod、Route 53 等都能用。IPv4 与 IPv6，IP 可
 | 通知中心 | Webhook、Telegram、Bark、ntfy、Gotify、Pushover、Discord、Slack、Server酱、PushPlus、企业微信、钉钉、飞书、邮件；级别、通配与静默去重规则；通知可经代理发送（全局或按渠道设置，支持 HTTP 与 SOCKS5）；内置规则模板（关键故障、证书到期、地址变化、登录、配置变更、版本更新） |
 | 配置备份 | 加密备份（scrypt + AES-GCM）、保留策略、定时备份到本地目录或存储挂载点 |
 | 命令行与 MCP | `gately ctl` 调用运行中的实例，`gately mcp` 以 stdio 提供 MCP 服务（默认只读） |
-| 网络唤醒 | 魔术包广播、在线探测；经 Web 终端 SSH 连接远程关机（Linux/Windows/macOS 预设命令）；巴法云语音控制（小爱同学、小度、Google Assistant） |
+| 网络唤醒 | 魔术包广播、在线探测；远程关机、重启与睡眠：设备上的客户端（Windows/Linux/macOS/OpenWrt，主动连接，无需开放端口）、Web 终端 SSH 命令或 HTTP 请求；巴法云语音控制（小爱同学、小度、Google Assistant） |
 | WebDAV | 多用户、独立目录、只读；WebDAV、FTP、SMB 共用一份共享用户 |
 | FTP | 多用户、独立目录、只读，支持 FTPS 与被动端口范围；WebDAV、FTP、SMB 共用一份共享用户 |
 | SMB | 多用户、按用户共享多个目录、只读，支持 SMB 2/3、加密与 Bonjour 发现；WebDAV、FTP、SMB 共用一份共享用户 |

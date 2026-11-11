@@ -140,8 +140,11 @@ WebDAV、FTP 與 SMB 共用一份「共用使用者」，欄位與各服務的�
 | `port` | 9 | 目標 UDP 連接埠 |
 | `repeat` | 3 | 每個 MAC 重複發送次數，上限 20 |
 | `checkAddr` | 空 | 上線偵測位址，格式 `主機:連接埠`，如 `192.168.1.10:3389`，留空不偵測 |
-| `shutdownConn` | 空 | 遠端關機使用的 [Web 終端](/zh-TW/docs/modules/terminal) SSH 連線，留空不支援關機 |
-| `shutdownCommand` | 無 | 關機命令，選擇了連線時必填，單行，如 `shutdown -h now`、`shutdown /s /t 0` |
+| `shutdownMode` | 空 | 遠端關機方式：`agent`（裝置上的用戶端）、`ssh`（SSH 命令）、`http`（HTTP 請求），留空不支援關機 |
+| `shutdownConn` | 空 | `ssh` 方式使用的 [Web 終端](/zh-TW/docs/modules/terminal) SSH 連線 |
+| `shutdownCommand` | 無 | `ssh` 方式的關機命令，單行，如 `shutdown -h now`、`shutdown /s /t 0` |
+| `agentToken` | 自動產生 | `agent` 方式的用戶端憑據，介面中遮蔽顯示 |
+| `shutdownHttp` | 空 | `http` 方式的請求：`method`、`url`、`headers`、`body`、`insecure` |
 | `bemfaTopic` | 空 | 巴法雲主題，留空不接入語音控制，不能與其他裝置重複 |
 | `remark` | 空 | 備註 |
 
@@ -149,13 +152,54 @@ WebDAV、FTP 與 SMB 共用一份「共用使用者」，欄位與各服務的�
 
 ### 遠端關機
 
-為裝置選擇一個 Web 終端中的 SSH 連線並填寫關機命令後，裝置卡片上出現「關機」按鈕，介面為 `POST /api/wol/devices/{key}/shutdown`。
+在裝置的「遠端關機」中選擇一種方式後，裝置卡片上出現關機按鈕，介面為 `POST /api/wol/devices/{key}/shutdown`，請求本文可省略，或用 `{"action": "reboot"}`、`{"action": "sleep"}` 重新開機、睡眠（只有用戶端方式支援）。同一裝置同時只執行一次，最長 30 秒；關機、睡眠成功後把巴法雲開關狀態寫為關。
+
+| 方式 | 適用情境 | 支援的操作 |
+| --- | --- | --- |
+| 用戶端 | Windows、Linux、macOS、OpenWrt，裝置不必開放連接埠或開啟 SSH | 關機、重新開機、睡眠 |
+| SSH 命令 | 已開啟 SSH 服務、已在 Web 終端中儲存的主機 | 關機 |
+| HTTP 請求 | Home Assistant、智慧插座、裝置上已有的關機工具等提供 HTTP 介面的服務 | 關機 |
+
+#### 用戶端 {#agent}
+
+被控裝置上執行一個用戶端指令碼，由它主動連線 Gately、長輪詢取指令，收到後在本機執行關機、重新開機或睡眠。用戶端只認這三種固定操作，Gately 無法讓它執行其他命令；裝置不必開放任何連接埠，Gately 也不儲存裝置的登入憑據。
+
+1. 把裝置的關機方式設為「用戶端」並儲存，Gately 為裝置產生憑據並開啟安裝說明（之後可在裝置卡片的「用戶端」中再次開啟）；
+2. 確認「Gately 位址」是裝置能存取到的管理後台位址（預設為瀏覽器目前位址；經飛牛統一閘道存取時需改為直連位址），Gately 使用自簽憑證時開啟「不驗證憑證」；
+3. 選擇裝置的系統，複製安裝命令到裝置上執行：
+
+| 系統 | 在哪裡執行 | 安裝為 | 日誌 |
+| --- | --- | --- | --- |
+| Windows | 以系統管理員身分執行的 PowerShell | SYSTEM 帳戶的開機排程工作「Gately Agent」 | `C:\ProgramData\GatelyAgent\agent.log` |
+| Linux | 終端機（需要 sudo，以及 curl 或 wget） | systemd 或 OpenRC 服務 `gately-agent` | `journalctl -u gately-agent` 或 `/var/log/gately-agent.log` |
+| macOS | 終端機（需要系統管理員密碼） | launchd 常駐程式 `cn.gately.agent` | `/var/log/gately-agent.log` |
+| OpenWrt | SSH（root），可用 curl 或系統內建的 wget | procd 服務 `gately-agent`，升級系統時保留設定 | `logread -e gately-agent` |
+
+安裝命令從 Gately 下載指令碼（也可在安裝說明中直接下載），憑據經請求本文與環境變數傳遞，不出現在網址中。用戶端連上後裝置卡片顯示在線，以及用戶端回報的主機名稱、系統與來源位址；用戶端方式的裝置不需要填寫上線偵測位址。
+
+- 憑據等同於該裝置的電源開關，設定檔只有 root（Windows 為 SYSTEM 與系統管理員）可讀；同一憑據只能用於一台裝置，另一台機器用同一憑據連線時會被拒絕，並在日誌中提示；
+- 指令只在發出後 10 秒內有效：用戶端先確認、Gately 回覆後才執行，用戶端離線時直接報錯，不會排隊到下次上線再執行；
+- 「重新產生」憑據或把關機方式改為其他方式後，舊用戶端立即中斷，需要用新命令重新安裝；
+- 用戶端每 25 秒輪詢一次，連線中斷後按 5 秒起、最長 60 秒的間隔重試；
+- 解除安裝：在安裝說明中複製解除安裝命令，Windows 為 `powershell -ExecutionPolicy Bypass -File "$env:ProgramData\GatelyAgent\gately-agent.ps1" uninstall`，Linux、macOS 為 `sudo sh /usr/local/bin/gately-agent uninstall`，OpenWrt 為 `sh /usr/bin/gately-agent uninstall`；
+- 睡眠：Windows 暫停到記憶體（關閉了睡眠的機器會失敗並在日誌中提示），Linux 為 `systemctl suspend`，macOS 為 `pmset sleepnow`；要用網路喚醒叫醒睡眠中的裝置，需在網卡或系統中允許網路喚醒。
+
+用戶端介面掛在 `/api/wol/public/agent/` 下，不需要登入，只認裝置憑據；設定了安全入口時帶有效憑據的請求同樣可以存取，「僅限內網存取」與封鎖清單照常生效。
+
+#### SSH 命令
+
+選擇一個 Web 終端中的 SSH 連線並填寫關機命令：
 
 - 該連線必須已在 Web 終端中連線過一次、記錄了主機金鑰，Gately 不會無人值守地信任未知主機；
-- 每次關機新建一條 SSH 連線，執行完即關閉，裝置重新開機後不會用到已失效的舊連線；命令最長執行 30 秒，同一裝置同時只執行一次；
+- 每次關機新建一條 SSH 連線，執行完即關閉，裝置重新開機後不會用到已失效的舊連線；
 - 關機常使 SSH 連線在返回結束碼之前中斷，這種情況視為已開始關機；
 - 介面提供 Linux（`shutdown -h now`）、Windows（`shutdown /s /t 0`）與 macOS（`sudo -n shutdown -h now`）的常用命令。Windows 需開啟 OpenSSH 伺服器；Linux 非 root 使用者可改用 `sudo -n shutdown -h now` 並為該命令設定免密碼 sudo。
-- API 權杖新增、修改、複製裝置或觸發關機時，除 `wol:write` 外還需要 `webterminal:write`（這些操作能設定或執行經 SSH 連線執行的命令）；列出可選的 SSH 連線需要 `wol:read` 與 `webterminal:read`。
+
+#### HTTP 請求
+
+填寫請求位址（`http://` 或 `https://`）、方法、請求標頭與請求本文，回應狀態碼為 2xx 視為成功，回應內容顯示在結果中。方法選「自動」時有請求本文用 `POST`，否則用 `GET`；請求本文以 `{` 或 `[` 開頭且沒有指定 `Content-Type` 時按 JSON 發送。憑據（如 `Authorization: Bearer …`）放在請求標頭中，唯讀帳號看到的值被遮蔽；日誌中的位址不含查詢參數。目標使用自簽憑證時可開啟「不驗證憑證」。
+
+API 權杖新增、修改、複製裝置或觸發關機時，除 `wol:write` 外還需要 `webterminal:write`（SSH 方式能設定或執行經 SSH 連線執行的命令）；列出可選的 SSH 連線需要 `wol:read` 與 `webterminal:read`；檢視用戶端憑據（`GET /api/wol/devices/{key}/secrets`）與重新產生憑據（`POST /api/wol/devices/{key}/agent-token`）需要 `wol:write`。
 
 ### 巴法雲語音控制 {#bemfa}
 

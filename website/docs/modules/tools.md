@@ -140,8 +140,11 @@ WebDAV、FTP 与 SMB 共用一份「共享用户」，字段与各服务的本�
 | `port` | 9 | 目标 UDP 端口 |
 | `repeat` | 3 | 每个 MAC 重复发送次数，上限 20 |
 | `checkAddr` | 空 | 在线探测地址，格式 `主机:端口`，如 `192.168.1.10:3389`，留空不探测 |
-| `shutdownConn` | 空 | 远程关机使用的 [Web 终端](/docs/modules/terminal) SSH 连接，留空不支持关机 |
-| `shutdownCommand` | 无 | 关机命令，选择了连接时必填，单行，如 `shutdown -h now`、`shutdown /s /t 0` |
+| `shutdownMode` | 空 | 远程关机方式：`agent`（设备上的客户端）、`ssh`（SSH 命令）、`http`（HTTP 请求），留空不支持关机 |
+| `shutdownConn` | 空 | `ssh` 方式使用的 [Web 终端](/docs/modules/terminal) SSH 连接 |
+| `shutdownCommand` | 无 | `ssh` 方式的关机命令，单行，如 `shutdown -h now`、`shutdown /s /t 0` |
+| `agentToken` | 自动生成 | `agent` 方式的客户端凭据，接口中脱敏显示 |
+| `shutdownHttp` | 空 | `http` 方式的请求：`method`、`url`、`headers`、`body`、`insecure` |
 | `bemfaTopic` | 空 | 巴法云主题，留空不接入语音控制，不能与其他设备重复 |
 | `remark` | 空 | 备注 |
 
@@ -149,13 +152,54 @@ WebDAV、FTP 与 SMB 共用一份「共享用户」，字段与各服务的本�
 
 ### 远程关机
 
-为设备选择一个 Web 终端中的 SSH 连接并填写关机命令后，设备卡片上出现「关机」按钮，接口为 `POST /api/wol/devices/{key}/shutdown`。
+在设备的「远程关机」中选择一种方式后，设备卡片上出现关机按钮，接口为 `POST /api/wol/devices/{key}/shutdown`，请求体可省略，或用 `{"action": "reboot"}`、`{"action": "sleep"}` 重启、睡眠（只有客户端方式支持）。同一设备同时只执行一次，最长 30 秒；关机、睡眠成功后把巴法云开关状态写为关。
+
+| 方式 | 适用场景 | 支持的操作 |
+| --- | --- | --- |
+| 客户端 | Windows、Linux、macOS、OpenWrt，设备不必开放端口或开启 SSH | 关机、重启、睡眠 |
+| SSH 命令 | 已开启 SSH 服务、已在 Web 终端中保存的主机 | 关机 |
+| HTTP 请求 | Home Assistant、智能插座、设备上已有的关机工具等提供 HTTP 接口的服务 | 关机 |
+
+#### 客户端 {#agent}
+
+被控设备上运行一个客户端脚本，由它主动连接 Gately、长轮询取指令，收到后在本机执行关机、重启或睡眠。客户端只认这三种固定操作，Gately 无法让它执行其他命令；设备不必开放任何端口，Gately 也不保存设备的登录凭据。
+
+1. 把设备的关机方式设为「客户端」并保存，Gately 为设备生成凭据并打开安装说明（之后可在设备卡片的「客户端」中再次打开）；
+2. 确认「Gately 地址」是设备能访问到的管理后台地址（默认为浏览器当前地址；经飞牛统一网关访问时需改为直连地址），Gately 使用自签名证书时打开「不校验证书」；
+3. 选择设备的系统，复制安装命令到设备上执行：
+
+| 系统 | 在哪里执行 | 安装为 | 日志 |
+| --- | --- | --- | --- |
+| Windows | 以管理员身份运行的 PowerShell | SYSTEM 账户的开机计划任务「Gately Agent」 | `C:\ProgramData\GatelyAgent\agent.log` |
+| Linux | 终端（需要 sudo，以及 curl 或 wget） | systemd 或 OpenRC 服务 `gately-agent` | `journalctl -u gately-agent` 或 `/var/log/gately-agent.log` |
+| macOS | 终端（需要管理员密码） | launchd 守护进程 `cn.gately.agent` | `/var/log/gately-agent.log` |
+| OpenWrt | SSH（root），可用 curl 或系统自带的 wget | procd 服务 `gately-agent`，升级系统时保留配置 | `logread -e gately-agent` |
+
+安装命令从 Gately 下载脚本（也可在安装说明中直接下载），凭据经请求体与环境变量传递，不出现在网址中。客户端连上后设备卡片显示在线，以及客户端上报的主机名、系统与来源地址；客户端方式的设备不需要填写在线探测地址。
+
+- 凭据等同于该设备的电源开关，配置文件只有 root（Windows 为 SYSTEM 与管理员）可读；同一凭据只能用于一台设备，另一台机器用同一凭据连接时会被拒绝，并在日志中提示；
+- 指令只在发出后 10 秒内有效：客户端先确认、Gately 回复后才执行，客户端离线时直接报错，不会排队到下次上线再执行；
+- 「重新生成」凭据或把关机方式改为其他方式后，旧客户端立即断开，需要用新命令重新安装；
+- 客户端每 25 秒轮询一次，连接断开后按 5 秒起、最长 60 秒的间隔重试；
+- 卸载：在安装说明中复制卸载命令，Windows 为 `powershell -ExecutionPolicy Bypass -File "$env:ProgramData\GatelyAgent\gately-agent.ps1" uninstall`，Linux、macOS 为 `sudo sh /usr/local/bin/gately-agent uninstall`，OpenWrt 为 `sh /usr/bin/gately-agent uninstall`；
+- 睡眠：Windows 挂起到内存（关闭了睡眠的机器会失败并在日志中提示），Linux 为 `systemctl suspend`，macOS 为 `pmset sleepnow`；要用网络唤醒叫醒睡眠中的设备，需在网卡或系统中允许网络唤醒。
+
+客户端接口挂在 `/api/wol/public/agent/` 下，不需要登录，只认设备凭据；设置了安全入口时带有效凭据的请求同样可以访问，「仅限内网访问」与封禁名单照常生效。
+
+#### SSH 命令
+
+选择一个 Web 终端中的 SSH 连接并填写关机命令：
 
 - 该连接必须已在 Web 终端中连接过一次、记录了主机密钥，Gately 不会无人值守地信任未知主机；
-- 每次关机新建一条 SSH 连接，执行完即关闭，设备重启后不会用到已失效的旧连接；命令最长执行 30 秒，同一设备同时只执行一次；
+- 每次关机新建一条 SSH 连接，执行完即关闭，设备重启后不会用到已失效的旧连接；
 - 关机常使 SSH 连接在返回退出码之前断开，这种情况视为已开始关机；
 - 界面提供 Linux（`shutdown -h now`）、Windows（`shutdown /s /t 0`）与 macOS（`sudo -n shutdown -h now`）的常用命令。Windows 需开启 OpenSSH 服务器；Linux 非 root 用户可改用 `sudo -n shutdown -h now` 并为该命令配置免密 sudo。
-- API 令牌新增、修改、复制设备或触发关机时，除 `wol:write` 外还需要 `webterminal:write`（这些操作能设置或执行经 SSH 连接运行的命令）；列出可选的 SSH 连接需要 `wol:read` 与 `webterminal:read`。
+
+#### HTTP 请求
+
+填写请求地址（`http://` 或 `https://`）、方法、请求头与请求体，响应状态码为 2xx 视为成功，响应内容显示在结果中。方法选「自动」时有请求体用 `POST`，否则用 `GET`；请求体以 `{` 或 `[` 开头且没有指定 `Content-Type` 时按 JSON 发送。凭据（如 `Authorization: Bearer …`）放在请求头中，只读账号看到的值被脱敏；日志中的地址不含查询参数。目标使用自签名证书时可打开「不校验证书」。
+
+API 令牌新增、修改、复制设备或触发关机时，除 `wol:write` 外还需要 `webterminal:write`（SSH 方式能设置或执行经 SSH 连接运行的命令）；列出可选的 SSH 连接需要 `wol:read` 与 `webterminal:read`；查看客户端凭据（`GET /api/wol/devices/{key}/secrets`）与重新生成凭据（`POST /api/wol/devices/{key}/agent-token`）需要 `wol:write`。
 
 ### 巴法云语音控制 {#bemfa}
 

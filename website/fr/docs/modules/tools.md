@@ -140,8 +140,11 @@ Gérez les appareils dans « Wake-on-LAN » et envoyez-leur des paquets magiques
 | `port` | 9 | Port UDP cible |
 | `repeat` | 3 | Nombre d'envois pour chaque MAC, jusqu'à 20 |
 | `checkAddr` | Vide | Adresse de vérification de présence au format `host:port`, par exemple `192.168.1.10:3389` ; laissez vide pour ignorer la vérification |
-| `shutdownConn` | Vide | Connexion SSH du [terminal web](/fr/docs/modules/terminal) utilisée pour l’arrêt à distance ; vide pour désactiver l’arrêt |
-| `shutdownCommand` | Aucune | Commande d’arrêt, obligatoire si une connexion est choisie, sur une seule ligne, comme `shutdown -h now` ou `shutdown /s /t 0` |
+| `shutdownMode` | Vide | Méthode d’arrêt à distance : `agent` (agent sur l’appareil), `ssh` (commande SSH) ou `http` (requête HTTP) ; vide pour désactiver l’arrêt |
+| `shutdownConn` | Vide | Connexion SSH du [terminal web](/fr/docs/modules/terminal) utilisée par la méthode `ssh` |
+| `shutdownCommand` | Aucune | Commande d’arrêt de la méthode `ssh`, sur une seule ligne, comme `shutdown -h now` ou `shutdown /s /t 0` |
+| `agentToken` | Généré automatiquement | Jeton de l’agent de la méthode `agent`, masqué dans l’API |
+| `shutdownHttp` | Vide | Requête de la méthode `http` : `method`, `url`, `headers`, `body`, `insecure` |
 | `bemfaTopic` | Vide | Sujet Bemfa ; vide pour ne pas utiliser la commande vocale ; unique par appareil |
 | `remark` | Vide | Remarque |
 
@@ -149,13 +152,54 @@ Cliquez sur Réveiller dans la liste des appareils pour envoyer le paquet magiqu
 
 ### Arrêt à distance
 
-Choisissez une connexion SSH du terminal web et saisissez une commande d’arrêt : la carte de l’appareil affiche alors un bouton *Éteindre* ; l’API est `POST /api/wol/devices/{key}/shutdown`.
+Choisissez une méthode dans *Extinction à distance* de l’appareil : la carte de l’appareil affiche alors un bouton d’arrêt ; l’API est `POST /api/wol/devices/{key}/shutdown`. Le corps de la requête peut être omis, ou utiliser `{"action": "reboot"}` ou `{"action": "sleep"}` pour redémarrer ou mettre en veille (méthode de l’agent uniquement). Une seule action à la fois par appareil, 30 secondes au plus ; après un arrêt ou une mise en veille réussis, l’état de l’interrupteur Bemfa est écrit sur éteint.
+
+| Méthode | Cas d’usage | Actions prises en charge |
+| --- | --- | --- |
+| Agent | Windows, Linux, macOS et OpenWrt ; l’appareil n’a pas besoin d’ouvrir de port ni d’activer SSH | Arrêter, redémarrer, mettre en veille |
+| Commande SSH | Hôtes dont le service SSH est activé et déjà enregistrés dans le terminal web | Arrêter |
+| Requête HTTP | Services offrant une interface HTTP, comme Home Assistant, les prises connectées ou un outil d’arrêt déjà présent sur l’appareil | Arrêter |
+
+#### Agent {#agent}
+
+Un script d’agent s’exécute sur l’appareil contrôlé. Il se connecte lui-même à Gately, interroge les instructions par long polling et, à la réception d’une instruction, exécute localement l’arrêt, le redémarrage ou la mise en veille. L’agent n’accepte que ces trois actions fixes : Gately ne peut pas lui faire exécuter d’autre commande ; l’appareil n’a besoin d’ouvrir aucun port, et Gately ne conserve pas les identifiants de connexion de l’appareil.
+
+1. Réglez la méthode d’arrêt de l’appareil sur *Agent* et enregistrez ; Gately génère un jeton pour l’appareil et ouvre les instructions d’installation (vous pouvez les rouvrir ensuite depuis *Agent* sur la carte de l’appareil) ;
+2. Vérifiez que *Adresse de Gately* est une adresse d’administration accessible depuis l’appareil (par défaut l’adresse actuelle du navigateur ; en passant par la passerelle unifiée fnOS, remplacez-la par l’adresse directe), et activez *Ne pas vérifier le certificat* si Gately utilise un certificat auto-signé ;
+3. Sélectionnez le système de l’appareil, copiez la commande d’installation et exécutez-la sur l’appareil :
+
+| Système | Où l’exécuter | Installé comme | Journal |
+| --- | --- | --- | --- |
+| Windows | PowerShell exécuté en administrateur | Tâche planifiée au démarrage « Gately Agent » du compte SYSTEM | `C:\ProgramData\GatelyAgent\agent.log` |
+| Linux | Terminal (nécessite sudo, ainsi que curl ou wget) | Service systemd ou OpenRC `gately-agent` | `journalctl -u gately-agent` ou `/var/log/gately-agent.log` |
+| macOS | Terminal (nécessite le mot de passe administrateur) | Démon launchd `cn.gately.agent` | `/var/log/gately-agent.log` |
+| OpenWrt | SSH (root), avec curl ou le wget du système | Service procd `gately-agent`, configuration conservée lors des mises à niveau du système | `logread -e gately-agent` |
+
+La commande d’installation télécharge le script depuis Gately (il peut aussi être téléchargé directement depuis les instructions d’installation) ; le jeton est transmis dans le corps de la requête et par une variable d’environnement, jamais dans l’URL. Une fois l’agent connecté, la carte de l’appareil le montre en ligne, avec le nom d’hôte, le système et l’adresse source que l’agent signale ; un appareil utilisant la méthode de l’agent n’a pas besoin d’adresse de vérification de présence.
+
+- Le jeton équivaut à l’interrupteur d’alimentation de l’appareil. Le fichier de configuration n’est lisible que par root (sous Windows, SYSTEM et les administrateurs). Un même jeton ne sert que pour un seul appareil : si une autre machine se connecte avec le même jeton, elle est refusée et un message apparaît dans le journal ;
+- Une instruction n’est valable que pendant les 10 secondes suivant son émission : l’agent confirme d’abord, puis l’exécute une fois que Gately a répondu. Lorsque l’agent est hors ligne, une erreur est renvoyée aussitôt et l’instruction n’est pas mise en file d’attente jusqu’à sa prochaine connexion ;
+- Après avoir *Régénéré* le jeton ou choisi une autre méthode d’arrêt, l’ancien agent est déconnecté immédiatement et doit être réinstallé avec la nouvelle commande ;
+- L’agent interroge toutes les 25 secondes et, après une déconnexion, réessaie à des intervalles de 5 secondes jusqu’à 60 secondes ;
+- Désinstallation : copiez la commande de désinstallation depuis les instructions d’installation. Sous Windows, c’est `powershell -ExecutionPolicy Bypass -File "$env:ProgramData\GatelyAgent\gately-agent.ps1" uninstall`, sous Linux et macOS `sudo sh /usr/local/bin/gately-agent uninstall`, et sous OpenWrt `sh /usr/bin/gately-agent uninstall` ;
+- Veille : Windows suspend en mémoire (une machine dont la veille est désactivée échoue et le journal l’indique), Linux utilise `systemctl suspend`, macOS utilise `pmset sleepnow` ; pour réveiller par Wake-on-LAN un appareil en veille, autorisez le Wake-on-LAN dans la carte réseau ou le système.
+
+Les interfaces de l’agent se trouvent sous `/api/wol/public/agent/`. Elles ne demandent pas de connexion et n’acceptent que le jeton de l’appareil ; lorsqu’un chemin d’accès secret est défini, les requêtes portant un jeton valide peuvent aussi y accéder, et « Accès réseau local uniquement » ainsi que la liste de blocage s’appliquent toujours.
+
+#### Commande SSH
+
+Choisissez une connexion SSH du terminal web et saisissez une commande d’arrêt :
 
 - La connexion doit avoir été ouverte une fois dans le terminal web pour enregistrer la clé d’hôte ; Gately ne fait jamais confiance à un hôte inconnu sans supervision ;
-- Chaque arrêt ouvre une nouvelle connexion SSH et la ferme ensuite : une connexion périmée d’avant le redémarrage de l’appareil n’est jamais réutilisée ; la commande dure au plus 30 secondes, une seule à la fois par appareil ;
+- Chaque arrêt ouvre une nouvelle connexion SSH et la ferme ensuite : une connexion périmée d’avant le redémarrage de l’appareil n’est jamais réutilisée ;
 - L’arrêt coupe souvent la connexion SSH avant le retour du code de sortie ; on considère alors que l’arrêt a commencé ;
 - Le formulaire propose les commandes courantes pour Linux (`shutdown -h now`), Windows (`shutdown /s /t 0`) et macOS (`sudo -n shutdown -h now`). Windows doit avoir le serveur OpenSSH activé ; sous Linux, un utilisateur non root peut utiliser `sudo -n shutdown -h now` avec sudo sans mot de passe pour cette commande.
-- Les jetons d’API ont besoin de `webterminal:write` en plus de `wol:write` pour créer, modifier ou copier des appareils ou déclencher un arrêt (ces opérations définissent ou exécutent des commandes via la connexion SSH) ; lister les connexions SSH disponibles nécessite `wol:read` et `webterminal:read`.
+
+#### Requête HTTP
+
+Saisissez l’URL de la requête (`http://` ou `https://`), la méthode, les en-têtes et le corps ; un code d’état 2xx dans la réponse compte comme un succès, et le contenu de la réponse s’affiche dans le résultat. Avec la méthode réglée sur *Auto*, une requête avec corps utilise `POST`, sinon `GET` ; un corps commençant par `{` ou `[` sans `Content-Type` précisé est envoyé en JSON. Placez les identifiants (comme `Authorization: Bearer …`) dans les en-têtes ; les comptes en lecture seule voient les valeurs masquées, et l’adresse figurant dans les journaux ne contient pas les paramètres de requête. Si la cible utilise un certificat auto-signé, activez *Ne pas vérifier le certificat*.
+
+Les jetons d’API ont besoin de `webterminal:write` en plus de `wol:write` pour créer, modifier ou copier des appareils ou déclencher un arrêt (la méthode SSH peut définir ou exécuter des commandes via une connexion SSH) ; lister les connexions SSH disponibles nécessite `wol:read` et `webterminal:read` ; consulter le jeton de l’agent (`GET /api/wol/devices/{key}/secrets`) et le régénérer (`POST /api/wol/devices/{key}/agent-token`) nécessitent `wol:write`.
 
 ### Commande vocale Bemfa {#bemfa}
 

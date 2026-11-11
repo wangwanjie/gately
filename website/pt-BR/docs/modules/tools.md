@@ -140,8 +140,11 @@ Gerencie dispositivos em "Wake-on-LAN" e envie pacotes mágicos a eles (6 bytes 
 | `port` | 9 | Porta UDP de destino |
 | `repeat` | 3 | Número de vezes que cada MAC é enviado, até 20 |
 | `checkAddr` | Vazio | Endereço de verificação de online no formato `host:port`, por exemplo `192.168.1.10:3389`; deixe em branco para não verificar |
-| `shutdownConn` | Vazio | Conexão SSH do [terminal web](/pt-BR/docs/modules/terminal) usada para desligamento remoto; vazio para desativar |
-| `shutdownCommand` | Nenhum | Comando de desligamento, obrigatório quando há conexão, em uma linha, como `shutdown -h now` ou `shutdown /s /t 0` |
+| `shutdownMode` | Vazio | Método de desligamento remoto: `agent` (agente no dispositivo), `ssh` (comando SSH) ou `http` (requisição HTTP); vazio para desativar |
+| `shutdownConn` | Vazio | Conexão SSH do [terminal web](/pt-BR/docs/modules/terminal) usada pelo método `ssh` |
+| `shutdownCommand` | Nenhum | Comando de desligamento do método `ssh`, em uma linha, como `shutdown -h now` ou `shutdown /s /t 0` |
+| `agentToken` | Gerado automaticamente | Token do agente do método `agent`, mascarado na API |
+| `shutdownHttp` | Vazio | Requisição do método `http`: `method`, `url`, `headers`, `body`, `insecure` |
 | `bemfaTopic` | Vazio | Tópico Bemfa; vazio para não usar controle por voz; não pode se repetir entre dispositivos |
 | `remark` | Vazio | Observação |
 
@@ -149,13 +152,54 @@ Clique em Ligar na lista de dispositivos para enviar o pacote mágico, e a pági
 
 ### Desligamento remoto
 
-Escolha uma conexão SSH do terminal web e informe um comando de desligamento, e o cartão do dispositivo ganha o botão *Desligar*; a API é `POST /api/wol/devices/{key}/shutdown`.
+Escolha um método em *Desligamento remoto* no dispositivo, e o cartão do dispositivo ganha um botão de desligamento; a API é `POST /api/wol/devices/{key}/shutdown`. O corpo da requisição pode ser omitido, ou usar `{"action": "reboot"}` ou `{"action": "sleep"}` para reiniciar ou suspender (somente no método de agente). Apenas uma ação por vez é executada em cada dispositivo, por no máximo 30 segundos; depois de um desligamento ou suspensão bem-sucedidos, o estado do interruptor do Bemfa é gravado como desligado.
+
+| Método | Quando usar | Ações compatíveis |
+| --- | --- | --- |
+| Agente | Windows, Linux, macOS e OpenWrt; o dispositivo não precisa abrir portas nem ativar o SSH | Desligar, reiniciar, suspender |
+| Comando SSH | Hosts com o serviço SSH ativado e já salvos no terminal web | Desligar |
+| Requisição HTTP | Serviços que oferecem interface HTTP, como Home Assistant, tomadas inteligentes ou uma ferramenta de desligamento já existente no dispositivo | Desligar |
+
+#### Agente {#agent}
+
+No dispositivo controlado roda um script de agente. Ele se conecta ao Gately por conta própria, busca instruções por long polling e, ao receber uma, executa localmente o desligamento, a reinicialização ou a suspensão. O agente aceita apenas essas três ações fixas, então o Gately não consegue fazê-lo executar nenhum outro comando; o dispositivo não precisa abrir nenhuma porta, e o Gately não guarda as credenciais de login do dispositivo.
+
+1. Defina o método de desligamento do dispositivo como *Agente* e salve; o Gately gera um token para o dispositivo e abre as instruções de instalação (depois, você pode abri-las de novo em *Agente* no cartão do dispositivo);
+2. Confirme que o *Endereço do Gately* é um endereço do painel de administração que o dispositivo consegue acessar (por padrão, o endereço atual do navegador; ao acessar pelo gateway unificado do fnOS, troque pelo endereço direto) e ative *Não verificar o certificado* se o Gately usar um certificado autoassinado;
+3. Selecione o sistema do dispositivo, copie o comando de instalação e execute-o no dispositivo:
+
+| Sistema | Onde executar | Instalado como | Log |
+| --- | --- | --- | --- |
+| Windows | PowerShell executado como administrador | Tarefa agendada de inicialização "Gately Agent" da conta SYSTEM | `C:\ProgramData\GatelyAgent\agent.log` |
+| Linux | Terminal (requer sudo, além de curl ou wget) | Serviço systemd ou OpenRC `gately-agent` | `journalctl -u gately-agent` ou `/var/log/gately-agent.log` |
+| macOS | Terminal (requer a senha de administrador) | Daemon do launchd `cn.gately.agent` | `/var/log/gately-agent.log` |
+| OpenWrt | SSH (root), com curl ou o wget do sistema | Serviço do procd `gately-agent`, configuração mantida nas atualizações do sistema | `logread -e gately-agent` |
+
+O comando de instalação baixa o script do Gately (também é possível baixá-lo direto nas instruções de instalação); o token é enviado no corpo da requisição e em uma variável de ambiente, nunca na URL. Quando o agente se conecta, o cartão do dispositivo mostra online, junto com o nome do host, o sistema e o endereço de origem informados pelo agente; dispositivos no método de agente não precisam de endereço de verificação de online.
+
+- O token equivale ao botão de energia do dispositivo. O arquivo de configuração só pode ser lido por root (no Windows, SYSTEM e administradores). Um mesmo token só serve para um dispositivo: se outra máquina se conectar com o mesmo token, ela é recusada e uma mensagem aparece no log;
+- Uma instrução só vale por 10 segundos depois de emitida: o agente confirma primeiro e só executa depois que o Gately responde. Com o agente offline, um erro é retornado na hora, e a instrução não fica na fila até a próxima vez que ele ficar online;
+- Depois de *Gerar novamente* o token ou trocar o método de desligamento por outro, o agente antigo é desconectado imediatamente e precisa ser reinstalado com o novo comando;
+- O agente consulta a cada 25 segundos e, após uma desconexão, tenta de novo em intervalos de 5 até 60 segundos;
+- Desinstalação: copie o comando de desinstalação nas instruções de instalação. No Windows é `powershell -ExecutionPolicy Bypass -File "$env:ProgramData\GatelyAgent\gately-agent.ps1" uninstall`, no Linux e no macOS `sudo sh /usr/local/bin/gately-agent uninstall` e no OpenWrt `sh /usr/bin/gately-agent uninstall`;
+- Suspensão: o Windows suspende para a memória (uma máquina com a suspensão desativada falha e o log avisa), o Linux usa `systemctl suspend` e o macOS usa `pmset sleepnow`; para acordar com Wake-on-LAN um dispositivo suspenso, permita o Wake-on-LAN na placa de rede ou no sistema.
+
+As interfaces do agente ficam em `/api/wol/public/agent/`. Elas não exigem login e só aceitam o token do dispositivo; quando há uma entrada segura configurada, requisições com token válido também conseguem acessá-las, e o "Acesso somente pela rede local" e a lista de bloqueio continuam valendo.
+
+#### Comando SSH
+
+Escolha uma conexão SSH do terminal web e informe um comando de desligamento:
 
 - A conexão precisa ter sido aberta uma vez no terminal web para registrar a chave do host; o Gately nunca confia em hosts desconhecidos sem supervisão;
-- Cada desligamento abre uma nova conexão SSH e a fecha ao terminar, então uma conexão antiga de antes da reinicialização do dispositivo nunca é reutilizada; o comando dura no máximo 30 segundos, um por vez por dispositivo;
+- Cada desligamento abre uma nova conexão SSH e a fecha ao terminar, então uma conexão antiga de antes da reinicialização do dispositivo nunca é reutilizada;
 - Desligar costuma derrubar a conexão SSH antes de o código de saída voltar; isso conta como desligamento iniciado;
 - O formulário oferece comandos comuns para Linux (`shutdown -h now`), Windows (`shutdown /s /t 0`) e macOS (`sudo -n shutdown -h now`). O Windows precisa do servidor OpenSSH ativado; no Linux, usuários não root podem usar `sudo -n shutdown -h now` com sudo sem senha para esse comando.
-- Tokens de API precisam de `webterminal:write` além de `wol:write` para criar, editar ou copiar dispositivos ou acionar um desligamento (essas ações definem ou executam comandos pela conexão SSH); listar as conexões SSH disponíveis exige `wol:read` e `webterminal:read`.
+
+#### Requisição HTTP
+
+Informe a URL da requisição (`http://` ou `https://`), o método, os cabeçalhos e o corpo; um status de resposta 2xx conta como sucesso, e o conteúdo da resposta aparece no resultado. Com o método em *Automático*, uma requisição com corpo usa `POST` e, sem corpo, `GET`; um corpo que começa com `{` ou `[` sem `Content-Type` definido é enviado como JSON. Coloque credenciais (como `Authorization: Bearer …`) nos cabeçalhos; contas somente leitura veem os valores mascarados, e o endereço nos logs não inclui parâmetros de consulta. Quando o destino usa um certificado autoassinado, ative *Não verificar o certificado*.
+
+Tokens de API precisam de `webterminal:write` além de `wol:write` para criar, editar ou copiar dispositivos ou acionar um desligamento (o método SSH pode definir ou executar comandos pela conexão SSH); listar as conexões SSH disponíveis exige `wol:read` e `webterminal:read`; ver o token do agente (`GET /api/wol/devices/{key}/secrets`) e gerá-lo novamente (`POST /api/wol/devices/{key}/agent-token`) exige `wol:write`.
 
 ### Controle por voz Bemfa {#bemfa}
 

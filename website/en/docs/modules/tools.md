@@ -140,8 +140,11 @@ Manage devices under "Wake-on-LAN", and send magic packets to them (6 bytes of `
 | `port` | 9 | Target UDP port |
 | `repeat` | 3 | Number of times each MAC is sent, up to 20 |
 | `checkAddr` | Empty | Online check address in the form `host:port`, for example `192.168.1.10:3389`; leave empty to skip the check |
-| `shutdownConn` | Empty | [Web Terminal](/en/docs/modules/terminal) SSH connection used for remote shutdown; leave empty to disable shutdown |
-| `shutdownCommand` | None | Shutdown command, required when a connection is selected, single line, such as `shutdown -h now` or `shutdown /s /t 0` |
+| `shutdownMode` | Empty | Remote shutdown method: `agent` (agent on the device), `ssh` (SSH command) or `http` (HTTP request); leave empty to disable shutdown |
+| `shutdownConn` | Empty | [Web Terminal](/en/docs/modules/terminal) SSH connection used by the `ssh` method |
+| `shutdownCommand` | None | Shutdown command of the `ssh` method, single line, such as `shutdown -h now` or `shutdown /s /t 0` |
+| `agentToken` | Generated automatically | Agent token of the `agent` method, masked in the API |
+| `shutdownHttp` | Empty | Request of the `http` method: `method`, `url`, `headers`, `body`, `insecure` |
 | `bemfaTopic` | Empty | Bemfa topic; leave empty to skip voice control; must not repeat across devices |
 | `remark` | Empty | Remark |
 
@@ -149,13 +152,54 @@ Click Wake in the device list to send the magic packet, and the page shows wheth
 
 ### Remote shutdown
 
-Choose an SSH connection from Web Terminal and enter a shutdown command, and the device card gets a *Shut down* button; the API is `POST /api/wol/devices/{key}/shutdown`.
+Choose a method under *Remote shutdown* on the device, and the device card gets a shutdown button; the API is `POST /api/wol/devices/{key}/shutdown`. The request body can be omitted, or use `{"action": "reboot"}` or `{"action": "sleep"}` to reboot or put the device to sleep (the agent method only). Only one action runs at a time per device, for at most 30 seconds; after a successful shutdown or sleep, the Bemfa switch state is written as off.
+
+| Method | Suitable for | Supported actions |
+| --- | --- | --- |
+| Agent | Windows, Linux, macOS and OpenWrt; the device does not need to open a port or enable SSH | Shut down, reboot, sleep |
+| SSH command | Hosts with an SSH service enabled and already saved in Web Terminal | Shut down |
+| HTTP request | Services that offer an HTTP interface, such as Home Assistant, smart plugs, or a shutdown tool already on the device | Shut down |
+
+#### Agent {#agent}
+
+An agent script runs on the controlled device. It connects to Gately on its own, long-polls for instructions, and on receiving one performs the shutdown, reboot or sleep locally. The agent only accepts these three fixed actions, so Gately cannot make it run any other command; the device does not need to open any port, and Gately does not store the device's login credentials.
+
+1. Set the device's shutdown method to *Agent* and save; Gately generates a token for the device and opens the install instructions (open them again later from *Agent* on the device card);
+2. Make sure *Gately address* is an admin address the device can reach (by default the address currently in the browser; when accessing through the fnOS unified gateway, change it to the direct address), and turn on *Skip certificate verification* if Gately uses a self-signed certificate;
+3. Select the device's operating system, copy the install command and run it on the device:
+
+| System | Where to run | Installed as | Log |
+| --- | --- | --- | --- |
+| Windows | PowerShell run as administrator | A boot-time scheduled task "Gately Agent" under the SYSTEM account | `C:\ProgramData\GatelyAgent\agent.log` |
+| Linux | Terminal (needs sudo, and curl or wget) | systemd or OpenRC service `gately-agent` | `journalctl -u gately-agent` or `/var/log/gately-agent.log` |
+| macOS | Terminal (needs the administrator password) | launchd daemon `cn.gately.agent` | `/var/log/gately-agent.log` |
+| OpenWrt | SSH (root), with curl or the system's own wget | procd service `gately-agent`, configuration kept across system upgrades | `logread -e gately-agent` |
+
+The install command downloads the script from Gately (it can also be downloaded directly from the install instructions); the token is passed in the request body and an environment variable, never in the URL. Once the agent connects, the device card shows online, along with the hostname, system and source address the agent reports; devices using the agent method do not need a check address.
+
+- The token is equivalent to the device's power switch. The configuration file is readable only by root (on Windows, SYSTEM and administrators). One token works for one device only: if another machine connects with the same token it is rejected and a message appears in the log;
+- An instruction is valid for 10 seconds after it is issued: the agent confirms first, and runs it only after Gately replies. When the agent is offline an error is returned right away, and the instruction is not queued until the next time it comes online;
+- After you *Regenerate* the token or switch the shutdown method to another one, the old agent is disconnected immediately and must be reinstalled with the new command;
+- The agent polls every 25 seconds, and after a disconnect retries at intervals from 5 seconds up to 60 seconds;
+- Uninstall: copy the uninstall command from the install instructions. On Windows it is `powershell -ExecutionPolicy Bypass -File "$env:ProgramData\GatelyAgent\gately-agent.ps1" uninstall`, on Linux and macOS `sudo sh /usr/local/bin/gately-agent uninstall`, and on OpenWrt `sh /usr/bin/gately-agent uninstall`;
+- Sleep: Windows suspends to memory (a machine with sleep turned off fails, and the log says so), Linux uses `systemctl suspend`, macOS uses `pmset sleepnow`; to wake a sleeping device with Wake-on-LAN, allow wake-on-LAN in the network adapter or the system.
+
+The agent endpoints live under `/api/wol/public/agent/`. They need no login and only accept the device token; when a security entry is set, requests carrying a valid token can still reach them, and "Local network only" and the ban list still apply.
+
+#### SSH command
+
+Choose an SSH connection from Web Terminal and enter a shutdown command:
 
 - The connection must have been opened once in Web Terminal so its host key is recorded; Gately never trusts unknown hosts unattended;
-- Each shutdown opens a new SSH connection and closes it afterwards, so a stale connection from before the device rebooted is never reused; the command runs for at most 30 seconds, one at a time per device;
+- Each shutdown opens a new SSH connection and closes it afterwards, so a stale connection from before the device rebooted is never reused;
 - Shutting down often drops the SSH connection before an exit code is returned; this counts as the shutdown having started;
 - The form offers common commands for Linux (`shutdown -h now`), Windows (`shutdown /s /t 0`) and macOS (`sudo -n shutdown -h now`). Windows needs the OpenSSH server enabled; on Linux, non-root users can use `sudo -n shutdown -h now` with passwordless sudo for that command.
-- API tokens need `webterminal:write` in addition to `wol:write` to create, edit or copy devices or trigger a shutdown (these set or run commands over the SSH connection); listing the available SSH connections needs `wol:read` and `webterminal:read`.
+
+#### HTTP request
+
+Enter the request URL (`http://` or `https://`), method, headers and body; a 2xx response status counts as success, and the response content is shown in the result. With the method set to *Auto*, a request with a body uses `POST` and otherwise `GET`; a body starting with `{` or `[` without a specified `Content-Type` is sent as JSON. Put credentials (such as `Authorization: Bearer …`) in the headers; read-only accounts see the values masked, and the address in logs contains no query parameters. When the target uses a self-signed certificate, turn on *Skip certificate verification*.
+
+API tokens need `webterminal:write` in addition to `wol:write` to create, edit or copy devices or trigger a shutdown (the SSH method can set or run commands over an SSH connection); listing the available SSH connections needs `wol:read` and `webterminal:read`; viewing the agent token (`GET /api/wol/devices/{key}/secrets`) and regenerating it (`POST /api/wol/devices/{key}/agent-token`) need `wol:write`.
 
 ### Bemfa voice control {#bemfa}
 

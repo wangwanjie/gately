@@ -140,8 +140,11 @@ API는 `GET` / `PUT /api/fileusers`이며 API 토큰에는 `fileusers:read` / `f
 | `port` | 9 | 대상 UDP 포트 |
 | `repeat` | 3 | MAC마다 반복 전송하는 횟수, 상한 20 |
 | `checkAddr` | 비어 있음 | 온라인 점검 주소. 형식은 `호스트:포트`이며 예: `192.168.1.10:3389`, 비우면 점검하지 않습니다 |
-| `shutdownConn` | 비어 있음 | 원격 종료에 쓰는 [웹 터미널](/ko/docs/modules/terminal) SSH 연결. 비우면 종료를 지원하지 않음 |
-| `shutdownCommand` | 없음 | 종료 명령. 연결을 선택하면 필수이며 한 줄(예: `shutdown -h now`, `shutdown /s /t 0`) |
+| `shutdownMode` | 비어 있음 | 원격 종료 방식: `agent`(장치의 에이전트), `ssh`(SSH 명령), `http`(HTTP 요청). 비우면 종료를 지원하지 않음 |
+| `shutdownConn` | 비어 있음 | `ssh` 방식에 쓰는 [웹 터미널](/ko/docs/modules/terminal) SSH 연결 |
+| `shutdownCommand` | 없음 | `ssh` 방식의 종료 명령, 한 줄(예: `shutdown -h now`, `shutdown /s /t 0`) |
+| `agentToken` | 자동 생성 | `agent` 방식의 에이전트 토큰. API에서는 마스킹되어 표시 |
+| `shutdownHttp` | 비어 있음 | `http` 방식의 요청: `method`, `url`, `headers`, `body`, `insecure` |
 | `bemfaTopic` | 비어 있음 | Bemfa 토픽. 비우면 음성 제어 없음, 다른 장치와 중복 불가 |
 | `remark` | 비어 있음 | 메모 |
 
@@ -149,13 +152,54 @@ API는 `GET` / `PUT /api/fileusers`이며 API 토큰에는 `fileusers:read` / `f
 
 ### 원격 종료
 
-장치에 웹 터미널의 SSH 연결을 고르고 종료 명령을 입력하면 장치 카드에 "종료" 버튼이 나타납니다. API는 `POST /api/wol/devices/{key}/shutdown`입니다.
+장치의 "원격 종료"에서 방식을 고르면 장치 카드에 종료 버튼이 나타납니다. API는 `POST /api/wol/devices/{key}/shutdown`이며, 요청 본문은 생략할 수 있고 `{"action": "reboot"}`, `{"action": "sleep"}`으로 재부팅이나 절전도 할 수 있습니다(에이전트 방식만 지원). 같은 장치에서는 한 번에 하나만 실행하며 최대 30초입니다. 종료나 절전에 성공하면 Bemfa 스위치 상태를 꺼짐으로 기록합니다.
+
+| 방식 | 적합한 경우 | 지원하는 작업 |
+| --- | --- | --- |
+| 에이전트 | Windows, Linux, macOS, OpenWrt. 장치에서 포트를 열거나 SSH를 켤 필요가 없음 | 종료, 재부팅, 절전 |
+| SSH 명령 | SSH 서비스가 켜져 있고 웹 터미널에 저장해 둔 호스트 | 종료 |
+| HTTP 요청 | Home Assistant, 스마트 플러그, 장치에 이미 있는 종료 도구 등 HTTP 인터페이스를 제공하는 서비스 | 종료 |
+
+#### 에이전트 {#agent}
+
+제어할 장치에서 에이전트 스크립트를 실행합니다. 에이전트가 스스로 Gately에 연결해 롱 폴링으로 지시를 가져오고, 지시를 받으면 해당 장치에서 종료, 재부팅, 절전을 실행합니다. 에이전트는 이 세 가지 고정된 작업만 받아들이며 Gately가 다른 명령을 실행하게 할 수 없습니다. 장치에서 포트를 열 필요가 없고 Gately도 장치의 로그인 자격 증명을 저장하지 않습니다.
+
+1. 장치의 종료 방식을 "에이전트"로 설정하고 저장하면 Gately가 장치용 토큰을 생성하고 설치 안내를 엽니다(이후에는 장치 카드의 "에이전트"에서 다시 열 수 있습니다);
+2. "Gately 주소"가 장치에서 접근할 수 있는 관리 페이지 주소인지 확인합니다(기본값은 브라우저의 현재 주소이며, fnOS 통합 게이트웨이로 접속할 때는 직접 접속 주소로 바꿔야 합니다). Gately가 자체 서명 인증서를 쓰면 "인증서 검증 안 함"을 켭니다;
+3. 장치의 운영체제를 고르고 설치 명령을 복사해 장치에서 실행합니다:
+
+| 운영체제 | 실행 위치 | 설치 형태 | 로그 |
+| --- | --- | --- | --- |
+| Windows | 관리자 권한으로 실행한 PowerShell | SYSTEM 계정의 부팅 시 작업 스케줄러 작업 "Gately Agent" | `C:\ProgramData\GatelyAgent\agent.log` |
+| Linux | 터미널(sudo와 curl 또는 wget 필요) | systemd 또는 OpenRC 서비스 `gately-agent` | `journalctl -u gately-agent` 또는 `/var/log/gately-agent.log` |
+| macOS | 터미널(관리자 비밀번호 필요) | launchd 데몬 `cn.gately.agent` | `/var/log/gately-agent.log` |
+| OpenWrt | SSH(root), curl 또는 시스템 기본 wget 사용 가능 | procd 서비스 `gately-agent`, 시스템 업그레이드 시 설정 유지 | `logread -e gately-agent` |
+
+설치 명령은 Gately에서 스크립트를 내려받습니다(설치 안내에서 직접 내려받을 수도 있습니다). 토큰은 요청 본문과 환경 변수로 전달되며 URL에는 나타나지 않습니다. 에이전트가 연결되면 장치 카드에 온라인으로 표시되고 에이전트가 보고한 호스트 이름, 운영체제, 접속 출처 주소도 표시됩니다. 에이전트 방식의 장치는 온라인 점검 주소를 입력할 필요가 없습니다.
+
+- 토큰은 해당 장치의 전원 스위치와 같습니다. 설정 파일은 root(Windows에서는 SYSTEM과 관리자)만 읽을 수 있습니다. 같은 토큰은 한 장치에서만 쓸 수 있으며, 다른 기기가 같은 토큰으로 연결하면 거부되고 로그에 안내가 남습니다;
+- 지시는 발행 후 10초 동안만 유효합니다. 에이전트가 먼저 확인하고 Gately가 응답한 뒤에 실행합니다. 에이전트가 오프라인이면 바로 오류를 반환하며, 다음에 온라인이 될 때까지 대기열에 쌓아 두었다가 실행하지 않습니다;
+- 토큰을 "재생성"하거나 종료 방식을 다른 방식으로 바꾸면 기존 에이전트는 즉시 연결이 끊어지므로 새 명령으로 다시 설치해야 합니다;
+- 에이전트는 25초마다 폴링하며, 연결이 끊기면 5초부터 최대 60초 간격으로 재시도합니다;
+- 제거: 설치 안내에서 제거 명령을 복사합니다. Windows는 `powershell -ExecutionPolicy Bypass -File "$env:ProgramData\GatelyAgent\gately-agent.ps1" uninstall`, Linux와 macOS는 `sudo sh /usr/local/bin/gately-agent uninstall`, OpenWrt는 `sh /usr/bin/gately-agent uninstall`입니다;
+- 절전: Windows는 메모리로 일시 중단합니다(절전을 끈 기기는 실패하며 로그에 안내가 남습니다). Linux는 `systemctl suspend`, macOS는 `pmset sleepnow`를 사용합니다. 절전 중인 장치를 Wake-on-LAN으로 깨우려면 네트워크 어댑터나 시스템에서 Wake-on-LAN을 허용해야 합니다.
+
+에이전트 인터페이스는 `/api/wol/public/agent/` 아래에 있으며 로그인이 필요 없고 장치 토큰만 확인합니다. 보안 진입 경로를 설정한 경우에도 유효한 토큰이 있는 요청은 접근할 수 있고, 「내부망 접근만 허용」과 차단 목록은 그대로 적용됩니다.
+
+#### SSH 명령
+
+웹 터미널의 SSH 연결을 고르고 종료 명령을 입력합니다:
 
 - 해당 연결은 웹 터미널에서 한 번 연결해 호스트 키를 기록해 두어야 합니다. Gately는 무인 상태에서 알 수 없는 호스트를 신뢰하지 않습니다;
-- 종료할 때마다 새 SSH 연결을 만들고 끝나면 닫으므로 장치가 재부팅되기 전의 끊긴 연결을 쓰지 않습니다. 명령은 최대 30초, 같은 장치에서는 한 번에 하나만 실행합니다;
+- 종료할 때마다 새 SSH 연결을 만들고 끝나면 닫으므로 장치가 재부팅되기 전의 끊긴 연결을 쓰지 않습니다;
 - 종료하면서 종료 코드가 돌아오기 전에 SSH 연결이 끊기는 경우가 많으며, 이 경우 종료가 시작된 것으로 봅니다;
 - 폼에서 Linux(`shutdown -h now`), Windows(`shutdown /s /t 0`), macOS(`sudo -n shutdown -h now`) 명령을 고를 수 있습니다. Windows는 OpenSSH 서버를 켜야 하며, Linux의 root가 아닌 사용자는 `sudo -n shutdown -h now`를 쓰고 이 명령에 비밀번호 없는 sudo를 설정하세요.
-- API 토큰으로 장치를 추가·수정·복사하거나 종료를 실행하려면 `wol:write` 외에 `webterminal:write`도 필요합니다(이 작업은 SSH 연결로 실행할 명령을 설정하거나 실행합니다). 선택 가능한 SSH 연결 목록에는 `wol:read`와 `webterminal:read`가 필요합니다.
+
+#### HTTP 요청
+
+요청 주소(`http://` 또는 `https://`), 메서드, 헤더, 본문을 입력합니다. 응답 상태 코드가 2xx이면 성공으로 보며 응답 내용은 결과에 표시됩니다. 메서드를 "자동"으로 두면 본문이 있을 때 `POST`, 없으면 `GET`을 사용하고, 본문이 `{` 또는 `[`로 시작하고 `Content-Type`을 지정하지 않았으면 JSON으로 보냅니다. 자격 증명(`Authorization: Bearer …` 등)은 헤더에 넣습니다. 읽기 전용 계정에는 값이 마스킹되어 보이며 로그의 주소에는 쿼리 매개변수가 포함되지 않습니다. 대상이 자체 서명 인증서를 쓰면 "인증서 검증 안 함"을 켤 수 있습니다.
+
+API 토큰으로 장치를 추가·수정·복사하거나 종료를 실행하려면 `wol:write` 외에 `webterminal:write`도 필요합니다(SSH 방식은 SSH 연결로 실행할 명령을 설정하거나 실행할 수 있습니다). 선택 가능한 SSH 연결 목록에는 `wol:read`와 `webterminal:read`가 필요하며, 에이전트 토큰 조회(`GET /api/wol/devices/{key}/secrets`)와 재생성(`POST /api/wol/devices/{key}/agent-token`)에는 `wol:write`가 필요합니다.
 
 ### Bemfa 음성 제어 {#bemfa}
 
