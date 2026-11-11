@@ -80,7 +80,9 @@ type siteHandler struct {
 	handler http.Handler
 	// pipeline 为 WAF（可选）→ 跨域 → 认证 → 站点处理器
 	pipeline http.Handler
-	pool     *pool
+	// inner 为不经过 WAF 的跨域 → 认证 → 站点处理器，带本实例管理员登录态的请求走这里（见 ServeHTTP）
+	inner http.Handler
+	pool  *pool
 	// locations 为按路径前缀分流的子后端（最长前缀在前）
 	locations []*locationHandler
 	// userRoutes 为按认证用户分流的后端，顺序与配置一致
@@ -138,6 +140,7 @@ func newSiteHandler(s Site, log *logbuf.Logger, auth *authenticator, waf WAFProv
 			panic(http.ErrAbortHandler)
 		})
 		h.pipeline = h.handler
+		h.inner = h.handler
 		return h, nil
 	}
 	if auth != nil {
@@ -219,6 +222,7 @@ func newSiteHandler(s Site, log *logbuf.Logger, auth *authenticator, waf WAFProv
 		h.handler = httpcompress.Handler(h.handler)
 	}
 	h.pipeline = http.HandlerFunc(h.serveInner)
+	h.inner = h.pipeline
 	// WAF 放在认证之前，登录页同样受保护
 	if s.WAF != "" && waf != nil {
 		h.pipeline = waf.Middleware(s.WAF, h.pipeline)
@@ -736,9 +740,10 @@ func (h *siteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// 重写规则会原地改写 r.URL，访问日志与路径探测要用访客实际请求的路径
 	origPath, origURI := r.URL.Path, r.URL.RequestURI()
 	// 带本实例管理后台登录态的请求（管理员经这个站点访问后台，例如日志页的轮询）在访问日志中标记用户名，
-	// 日志页可以隐藏它们，访客审计据此标记管理员。在处理前取得：之后请求头可能被改写；只在记录访问日志或访客审计时校验
+	// 日志页可以隐藏它们，访客审计据此标记管理员。在处理前取得：之后请求头可能被改写；
+	// 只在记录访问日志、访客审计或站点挂了 WAF（管理员请求跳过 WAF，见下方 pipeline 的选择）时校验
 	admin := ""
-	if h.site.AccessLog || h.auth.recordsVisits() {
+	if h.site.AccessLog || h.auth.recordsVisits() || h.site.WAF != "" {
 		admin = httpx.SessionUser(r)
 	}
 
@@ -822,11 +827,20 @@ func (h *siteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	defer release()
 	// WAF（Coraza 规则组或雷池）拦截时在请求上下文中置位标记，认证、后端等返回的 403 不算 WAF 拦截
+	// 带本实例有效管理员登录态的请求不经过 WAF：管理后台经站点反代时，保存配置的请求体里常有文件路径
+	// （nginx 导入写入的备注、证书路径）、HTML（自定义错误页、拒绝页）、脚本（证书部署、Webhook）等内容，
+	// 会被 CRS 的 LFI、XSS、RCE 规则误拦成 403。登录态由服务端签名，只认管理员角色，访客无法伪造；
+	// 管理员本就能修改 WAF 设置与执行命令，放行不扩大权限。只读账号的请求仍经过 WAF
+	pipeline := h.pipeline
 	var wafBlocked *atomic.Bool
 	if h.site.WAF != "" {
-		r, wafBlocked = httpx.WithWAFFlag(r)
+		if admin != "" {
+			pipeline = h.inner
+		} else {
+			r, wafBlocked = httpx.WithWAFFlag(r)
+		}
 	}
-	h.pipeline.ServeHTTP(rec, r)
+	pipeline.ServeHTTP(rec, r)
 	if wafBlocked != nil && wafBlocked.Load() && !ar.killed.Load() {
 		h.block(rec, blockWAF)
 	}

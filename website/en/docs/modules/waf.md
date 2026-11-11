@@ -19,6 +19,10 @@ A web application firewall based on [Coraza](https://coraza.io/) and OWASP CRS v
 2. Adjust rule files or add custom exceptions for any false positives;
 3. Then switch to "Block".
 
+## Admin UI requests
+
+When the admin UI is reverse proxied through a site with WAF, requests carrying a valid administrator session of this instance skip the WAF (SafeLine included). Saved configurations often contain file paths (such as the remarks written by the nginx import), HTML (custom error pages) and scripts (certificate deployment), which CRS path traversal, XSS and command injection rules would block with 403. The session is signed by the server and only the administrator role counts; requests from read-only accounts, visitors and other instances' admin UIs are still checked.
+
 ## Rule group order
 
 The rule groups of an instance load from top to bottom; use the move up and move down buttons to reorder them. Within the same phase, earlier rules run first:

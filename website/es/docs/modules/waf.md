@@ -19,6 +19,10 @@ Un cortafuegos de aplicaciones web basado en [Coraza](https://coraza.io/) y OWAS
 2. Ajusta los archivos de reglas o añade excepciones personalizadas para los falsos positivos;
 3. Después cambia a «Bloquear».
 
+## Solicitudes del panel de administración
+
+Cuando el panel de administración se publica mediante proxy inverso a través de un sitio con WAF, las solicitudes con una sesión de administrador válida de esta instancia no pasan por el WAF (SafeLine incluido). Las configuraciones guardadas suelen contener rutas de archivo (como las notas que escribe la importación de nginx), HTML (páginas de error personalizadas) y scripts (despliegue de certificados), que las reglas de CRS contra recorrido de rutas, XSS e inyección de comandos bloquearían con 403. La sesión está firmada por el servidor y solo cuenta el rol de administrador; las solicitudes de cuentas de solo lectura, visitantes y paneles de otras instancias se siguen comprobando.
+
 ## Orden de los grupos de reglas
 
 Los grupos de reglas de una instancia se cargan de arriba abajo; usa los botones subir y bajar para reordenarlos. Dentro de la misma fase, las reglas anteriores se ejecutan primero:

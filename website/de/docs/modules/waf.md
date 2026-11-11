@@ -19,6 +19,10 @@ Eine Web Application Firewall auf Basis von [Coraza](https://coraza.io/) und OWA
 2. Passen Sie bei Fehlalarmen die Regeldateien an oder fügen Sie eigene Ausnahmen hinzu;
 3. Wechseln Sie danach auf „Blockieren“.
 
+## Anfragen der Verwaltungsoberfläche
+
+Wird die Verwaltungsoberfläche über eine Website mit WAF per Reverse Proxy erreicht, umgehen Anfragen mit einer gültigen Administratorsitzung dieser Instanz die WAF (einschließlich SafeLine). Gespeicherte Konfigurationen enthalten oft Dateipfade (etwa die Bemerkungen des nginx-Imports), HTML (eigene Fehlerseiten) und Skripte (Zertifikatsbereitstellung), die von den CRS-Regeln gegen Path Traversal, XSS und Command Injection mit 403 blockiert würden. Die Sitzung ist vom Server signiert, und nur die Administratorrolle zählt; Anfragen von Nur-Lese-Konten, Besuchern und Verwaltungsoberflächen anderer Instanzen werden weiterhin geprüft.
+
 ## Reihenfolge der Regelgruppen
 
 Die Regelgruppen einer Instanz werden von oben nach unten geladen; mit den Schaltflächen nach oben und nach unten lässt sich die Reihenfolge ändern. Innerhalb derselben Phase laufen frühere Regeln zuerst:

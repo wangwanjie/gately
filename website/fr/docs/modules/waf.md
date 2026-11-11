@@ -19,6 +19,10 @@ Un pare-feu applicatif web basé sur [Coraza](https://coraza.io/) et OWASP CRS v
 2. Ajustez les fichiers de règles ou ajoutez des exceptions personnalisées en cas de faux positifs ;
 3. Passez ensuite en « Blocage ».
 
+## Requêtes de l'interface d'administration
+
+Lorsque l'interface d'administration passe par un site protégé par un WAF en proxy inverse, les requêtes portant une session administrateur valide de cette instance contournent le WAF (SafeLine compris). Les configurations enregistrées contiennent souvent des chemins de fichiers (comme les remarques écrites par l'import nginx), du HTML (pages d'erreur personnalisées) et des scripts (déploiement de certificats), que les règles CRS de traversée de chemin, XSS et injection de commandes bloqueraient avec un 403. La session est signée par le serveur et seul le rôle administrateur compte ; les requêtes des comptes en lecture seule, des visiteurs et des interfaces d'administration d'autres instances restent contrôlées.
+
 ## Ordre des groupes de règles
 
 Les groupes de règles d'une instance se chargent de haut en bas ; les boutons monter et descendre permettent de les réordonner. Dans une même phase, les règles placées avant s'exécutent d'abord :
