@@ -47,4 +47,14 @@ defineProps<{ authOn: boolean }>()
   align-items: center;
   gap: 4px;
 }
+/* 窄屏下长选项文字换行，避免“向后端发送 PROXY v2（…）”等被裁掉 */
+@media (max-width: 768px) {
+  .el-checkbox {
+    height: auto;
+    min-height: 32px;
+    padding: 4px 0;
+    line-height: 1.4;
+    white-space: normal;
+  }
+}
 </style>
