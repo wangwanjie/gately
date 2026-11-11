@@ -70,6 +70,8 @@ type authenticator struct {
 	errPages *errorPageStore
 	// panels 为导航面板库，全部监听的站点共用；面板修改后整体替换，站点无需重建
 	panels *panelStore
+	// trustBasic 缓存开启了信任已认证用户的站点上验证通过的基本认证凭据，见 trustauth.go
+	trustBasic basicTrust
 }
 
 func (a *authenticator) setOAuth(env oauthEnv) {
@@ -361,16 +363,20 @@ func (a *authenticator) checkUser(w http.ResponseWriter, r *http.Request, s Site
 		}
 		valid := verifyUser(s.Users, name, pass)
 		v := visitor{names: []string{name}}
+		// shared 表示按共享用户通过
+		shared := false
 		if !valid && s.SharedUsers {
 			// 基本认证无法输入动态验证码，启用了 TOTP 的共享用户只能通过网页登录
 			if u, ok := a.shared.get().checkPassword(name, pass); ok && u.TOTPSecret == "" {
-				valid = true
+				valid, shared = true, true
 				// 只有按共享用户通过时才带邮箱等信息：与共享用户同名的站点用户优先，不能拿到共享用户的信息
 				v = sharedVisitor(u)
 			}
 		}
 		a.release(key, valid)
 		if valid {
+			// 记下验证通过的凭据，之后同一凭据的请求可在 WAF 之前识别为已认证用户（站点开启信任已认证用户时）
+			a.rememberBasic(s, name, pass, shared)
 			return v, true
 		}
 	}

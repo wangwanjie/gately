@@ -2780,6 +2780,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `targets` | Array de string |
 | `text` | string |
 | `timeouts` | `webservice.BackendTimeouts` |
+| `trustAuthUsers` | boolean |
 | `type` | string |
 | `upstreamSniFromHost` | boolean |
 | `useTargetHost` | boolean |

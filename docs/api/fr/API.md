@@ -2780,6 +2780,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `targets` | Tableau de string |
 | `text` | string |
 | `timeouts` | `webservice.BackendTimeouts` |
+| `trustAuthUsers` | boolean |
 | `type` | string |
 | `upstreamSniFromHost` | boolean |
 | `useTargetHost` | boolean |

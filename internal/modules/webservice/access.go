@@ -156,6 +156,11 @@ func (s *Site) validateAccess() error {
 	if s.PassAuthCookies && hasAuth {
 		return errors.New("转发 Gately 登录 Cookie 时本站点不能启用认证，认证由后端 Gately 负责")
 	}
+	// 信任已认证用户只认 Gately 自己的认证，没有启用基本认证或网页认证时不生效，直接关闭，
+	// 避免关闭认证（包括批量操作）后残留一个看不到的开关
+	if s.TrustAuthUsers && !s.BasicAuth && !s.WebAuth {
+		s.TrustAuthUsers = false
+	}
 	if s.AuthOptional && !hasAuth {
 		return errors.New("仅对指定路径认证需要先启用基本认证、网页认证或转发认证")
 	}
