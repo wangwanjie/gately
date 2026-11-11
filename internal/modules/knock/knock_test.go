@@ -680,3 +680,35 @@ func TestRevoke(t *testing.T) {
 		t.Fatal("应撤销全部授权")
 	}
 }
+
+// 本机 IPv6 网段：/64 及更短的前缀按实际前缀纳入，更长的前缀（云主机 /124、/128）只纳入自身，不扩大到 /64。
+func TestLocalPrefix(t *testing.T) {
+	cases := []struct {
+		cidr string
+		want string
+	}{
+		{"2001:db8:1:2::10/64", "2001:db8:1:2::/64"},
+		{"2001:db8:1::10/56", "2001:db8:1::/56"},
+		{"2001:db8:1:2::10/124", "2001:db8:1:2::10/124"},
+		{"2001:db8:1:2::abcd/128", "2001:db8:1:2::abcd/128"},
+		{"fd00::1/64", ""},
+		{"fe80::1/64", ""},
+		{"192.168.1.2/24", ""},
+		{"2001:db8::1/0", ""},
+	}
+	for _, c := range cases {
+		ip, ipn, err := net.ParseCIDR(c.cidr)
+		if err != nil {
+			t.Fatal(err)
+		}
+		ipn.IP = ip
+		p, ok := localPrefix(ipn)
+		got := ""
+		if ok {
+			got = p.String()
+		}
+		if got != c.want {
+			t.Fatalf("%s: 得到 %q，期望 %q", c.cidr, got, c.want)
+		}
+	}
+}
