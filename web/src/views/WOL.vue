@@ -27,7 +27,7 @@
           </Field>
           <Field :label="t('wol.broadcast')" mono>{{ (d.broadcastIps ?? []).length ? (d.broadcastIps ?? []).join(', ') : t('wol.auto') }}:{{ d.port }} ×{{ d.repeat }}</Field>
           <Field v-if="d.checkAddr" :label="t('wol.onlineCheck')" mono>{{ d.checkAddr }}</Field>
-          <Field v-if="d.shutdownConn" :label="t('wol.shutdownField')">{{ connName(d.shutdownConn) }}</Field>
+          <Field v-if="d.shutdownMode" :label="t('wol.shutdownField')" :mono="d.shutdownMode === 'http'">{{ shutdownSummary(d) }}</Field>
           <Field v-if="d.bemfaTopic" :label="t('wol.bemfa')" mono>{{ d.bemfaTopic }}</Field>
           <template v-if="sorting" #actions>
             <SortMoves :gl="gl" :it="it" />
@@ -35,12 +35,26 @@
           <template v-else #actions>
             <el-button text size="small" :icon="Pencil" @click="openEditor(d)">{{ t('common.edit') }}</el-button>
             <el-button text size="small" :icon="CopyPlus" @click="openEditor(d, true)">{{ t('common.duplicate') }}</el-button>
+            <el-button v-if="d.shutdownMode === 'agent'" text size="small" :icon="Plug" @click="openAgent(d)">{{ t('wol.agent') }}</el-button>
             <el-popconfirm :title="t('wol.confirmDelete')" @confirm="remove(d)">
               <template #reference>
                 <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
               </template>
             </el-popconfirm>
-            <el-popconfirm v-if="d.shutdownConn" :title="t('wol.shutdownConfirm')" @confirm="shutdown(d)">
+            <!-- 客户端方式支持关机、重启、睡眠，收在下拉菜单里，选择后再确认 -->
+            <el-dropdown v-if="d.shutdownMode === 'agent'" trigger="click" class="wake" @command="(a: string) => confirmPower(d, a)">
+              <el-button size="small" :icon="PowerOff" :loading="stopping[d.key ?? '']">
+                {{ t('wol.power') }}<ChevronDown :size="14" class="caret" />
+              </el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="shutdown" :icon="PowerOff">{{ t('wol.shutdown') }}</el-dropdown-item>
+                  <el-dropdown-item command="reboot" :icon="RotateCcw">{{ t('wol.reboot') }}</el-dropdown-item>
+                  <el-dropdown-item command="sleep" :icon="Moon">{{ t('wol.sleep') }}</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+            <el-popconfirm v-else-if="d.shutdownMode" :title="t('wol.shutdownConfirm')" @confirm="power(d, 'shutdown')">
               <template #reference>
                 <el-button size="small" :icon="PowerOff" :loading="stopping[d.key ?? '']" class="wake">{{ t('wol.shutdown') }}</el-button>
               </template>
@@ -66,25 +80,65 @@
           <el-input v-model="editing.checkAddr" :placeholder="t('wol.checkPlaceholder')" />
           <div class="form-help">{{ t('wol.checkHelp') }}</div>
         </el-form-item>
-        <!-- 远程关机：经 Web 终端中已记录主机密钥的 SSH 连接执行关机命令 -->
-        <el-form-item v-if="moduleBuilt('webterminal') || editing.shutdownConn" :label="t('wol.shutdownConn')">
-          <el-select v-model="editing.shutdownConn" filterable clearable :placeholder="t('wol.shutdownConnPlaceholder')" :no-data-text="t('wol.noConnections')" class="full" @change="onConnChange">
-            <el-option v-for="o in sshTargets" :key="o.key" :label="o.name" :value="o.key">
-              <span>{{ o.name }}</span>
-              <span class="opt-meta mono">{{ o.host }}</span>
-              <span v-if="!o.trusted" class="opt-warn">{{ t('wol.untrusted') }}</span>
+        <!-- 远程关机方式：SSH 命令、设备上的客户端、HTTP 请求 -->
+        <el-form-item :label="t('wol.shutdownMode')">
+          <el-select v-model="editing.shutdownMode" class="full" popper-class="wol-mode-popper" :placeholder="t('wol.modeNone')" @change="onModeChange">
+            <el-option v-for="o in modeOptions" :key="o.value" :label="o.label" :value="o.value" :disabled="o.disabled">
+              <div class="mode-opt">
+                <span>{{ o.label }}</span>
+                <span class="mode-desc">{{ o.desc }}</span>
+              </div>
             </el-option>
           </el-select>
-          <div v-if="editing.shutdownConn && sshTargets.find((o) => o.key === editing.shutdownConn && !o.trusted)" class="form-help warn">{{ t('wol.untrustedHelp') }}</div>
+          <div v-if="editing.shutdownMode" class="form-help">{{ modeOptions.find((o) => o.value === editing.shutdownMode)?.desc }}</div>
         </el-form-item>
-        <el-form-item v-if="editing.shutdownConn" :label="t('wol.shutdownCommand')">
-          <el-input v-model="editing.shutdownCommand" class="mono" placeholder="shutdown -h now" />
-          <div class="presets">
-            <span class="form-help">{{ t('wol.shutdownPresets') }}</span>
-            <el-button v-for="p in presets" :key="p.label" size="small" text type="primary" @click="editing.shutdownCommand = p.cmd">{{ p.label }}</el-button>
-          </div>
-          <div class="form-help">{{ t('wol.shutdownHelp') }}</div>
+        <!-- SSH：经 Web 终端中已记录主机密钥的 SSH 连接执行关机命令 -->
+        <template v-if="editing.shutdownMode === 'ssh'">
+          <el-form-item :label="t('wol.shutdownConn')">
+            <el-select v-model="editing.shutdownConn" filterable :placeholder="t('wol.shutdownConnPick')" :no-data-text="t('wol.noConnections')" class="full" @change="onConnChange">
+              <el-option v-for="o in sshTargets" :key="o.key" :label="o.name" :value="o.key">
+                <span>{{ o.name }}</span>
+                <span class="opt-meta mono">{{ o.host }}</span>
+                <span v-if="!o.trusted" class="opt-warn">{{ t('wol.untrusted') }}</span>
+              </el-option>
+            </el-select>
+            <div v-if="editing.shutdownConn && sshTargets.find((o) => o.key === editing.shutdownConn && !o.trusted)" class="form-help warn">{{ t('wol.untrustedHelp') }}</div>
+          </el-form-item>
+          <el-form-item :label="t('wol.shutdownCommand')">
+            <el-input v-model="editing.shutdownCommand" class="mono" placeholder="shutdown -h now" />
+            <div class="presets">
+              <span class="form-help">{{ t('wol.shutdownPresets') }}</span>
+              <el-button v-for="p in presets" :key="p.label" size="small" text type="primary" @click="editing.shutdownCommand = p.cmd">{{ p.label }}</el-button>
+            </div>
+            <div class="form-help">{{ t('wol.shutdownHelp') }}</div>
+          </el-form-item>
+        </template>
+        <el-form-item v-else-if="editing.shutdownMode === 'agent'" :label="t('wol.agent')">
+          <div class="form-help">{{ editing.key && editing.agentToken ? t('wol.agentEditHint') : t('wol.agentSaveHint') }}</div>
         </el-form-item>
+        <!-- HTTP：向设备或其他服务（Home Assistant、智能插座等）发送请求 -->
+        <template v-else-if="editing.shutdownMode === 'http'">
+          <el-form-item :label="t('wol.httpURL')">
+            <div class="http-url">
+              <el-select v-model="editing.shutdownHttp.method" class="http-method" :placeholder="t('wol.httpAuto')">
+                <el-option :label="t('wol.httpAuto')" value="" />
+                <el-option v-for="m in httpMethods" :key="m" :label="m" :value="m" />
+              </el-select>
+              <el-input v-model="editing.shutdownHttp.url" class="mono" :placeholder="t('wol.httpURLPlaceholder')" />
+            </div>
+            <div class="form-help">{{ t('wol.httpHelp') }}</div>
+          </el-form-item>
+          <el-form-item :label="t('wol.httpHeaders')">
+            <HeaderEditor v-model="editing.shutdownHttp.headers" direction="request" :placeholder="t('wol.httpHeadersHelp')" />
+          </el-form-item>
+          <el-form-item :label="t('wol.httpBody')">
+            <el-input v-model="editing.shutdownHttp.body" type="textarea" :autosize="{ minRows: 2, maxRows: 8 }" class="mono" :placeholder="t('wol.httpBodyPlaceholder')" />
+          </el-form-item>
+          <el-form-item v-if="editing.shutdownHttp.url.trim().startsWith('https://')" :label="t('wol.httpInsecure')">
+            <el-switch v-model="editing.shutdownHttp.insecure" />
+            <div class="form-help">{{ t('wol.httpInsecureHelp') }}</div>
+          </el-form-item>
+        </template>
         <el-form-item :label="t('wol.bemfaTopic')">
           <el-input v-model="editing.bemfaTopic" class="mono" :placeholder="t('wol.bemfaTopicPlaceholder')" />
           <div class="form-help">{{ t('wol.bemfaTopicHelp') }}</div>
@@ -121,17 +175,21 @@
         <el-button type="primary" :loading="bemfaSaving" @click="saveBemfa">{{ t('common.save') }}</el-button>
       </template>
     </el-dialog>
+
+    <WolAgentDialog v-model="agentVisible" :device="agentDevice" :info="agentDevice?.key ? agents[agentDevice.key] : undefined" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import { CopyPlus, Mic, Monitor, Pencil, Plus, Power, PowerOff, Trash2, Zap } from 'lucide-vue-next'
+import { ChevronDown, CopyPlus, Mic, Monitor, Moon, Pencil, Plug, Plus, Power, PowerOff, RotateCcw, Trash2, Zap } from 'lucide-vue-next'
 import { api } from '../api'
 import { moduleBuilt } from '../nav'
 import SecretInput from '../components/SecretInput.vue'
+import HeaderEditor from '../components/HeaderEditor.vue'
+import WolAgentDialog, { type AgentInfo } from '../components/WolAgentDialog.vue'
 import { secretOf } from '../secrets'
 import PageHeader from '../components/PageHeader.vue'
 import EntityCard from '../components/EntityCard.vue'
@@ -162,13 +220,26 @@ interface Device {
   port: number
   repeat: number
   checkAddr: string
-  // shutdownConn 为远程关机使用的 Web 终端 SSH 连接 key，空表示不支持关机
+  // shutdownMode 为远程关机方式：ssh、agent（设备上的客户端）、http，空表示不支持关机
+  shutdownMode?: '' | 'ssh' | 'agent' | 'http'
+  // shutdownConn 为 ssh 方式使用的 Web 终端 SSH 连接 key
   shutdownConn?: string
   shutdownCommand?: string
+  // agentToken 为客户端凭据，接口中脱敏，明文经 secrets 接口查看
+  agentToken?: string
+  shutdownHttp: HTTPAction
   // bemfaTopic 为巴法云主题，空表示不接入语音控制
   bemfaTopic?: string
   remark: string
   enable: boolean
+}
+
+interface HTTPAction {
+  method: string
+  url: string
+  headers: string[] | null
+  body: string
+  insecure: boolean
 }
 
 interface SSHTarget {
@@ -196,9 +267,16 @@ const gl = useGroupedList<Device>({
   // 唤醒设备没有启用开关
   batch: { enable: false },
   reload: load,
-  matches: (d, q) => [d.name, d.group ?? '', d.remark, ...d.macs, d.checkAddr, d.bemfaTopic ?? ''].join('\n').toLowerCase().includes(q),
+  matches: (d, q) =>
+    [d.name, d.group ?? '', d.remark, ...d.macs, d.checkAddr, d.bemfaTopic ?? '', d.shutdownHttp?.url ?? '', agents.value[d.key ?? '']?.host ?? '']
+      .join('\n')
+      .toLowerCase()
+      .includes(q),
 })
 const status = ref<Record<string, string>>({})
+const agents = ref<Record<string, AgentInfo>>({})
+const agentVisible = ref(false)
+const agentDevice = ref<Device | null>(null)
 const waking = reactive<Record<string, boolean>>({})
 const stopping = reactive<Record<string, boolean>>({})
 const sshTargets = ref<SSHTarget[]>([])
@@ -226,13 +304,68 @@ const bcText = useListText(() => editing.value.broadcastIps, (v) => (editing.val
   separator: ', ',
 })
 
+function emptyHTTP(): HTTPAction {
+  return { method: '', url: '', headers: [], body: '', insecure: false }
+}
+
 function empty(): Device {
-  return { name: '', macs: [], broadcastIps: [], port: 9, repeat: 3, checkAddr: '', shutdownConn: '', shutdownCommand: '', bemfaTopic: '', remark: '', enable: true }
+  return {
+    name: '',
+    macs: [],
+    broadcastIps: [],
+    port: 9,
+    repeat: 3,
+    checkAddr: '',
+    shutdownMode: '',
+    shutdownConn: '',
+    shutdownCommand: '',
+    agentToken: '',
+    shutdownHttp: emptyHTTP(),
+    bemfaTopic: '',
+    remark: '',
+    enable: true,
+  }
+}
+
+const httpMethods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
+
+// 关机方式选项；SSH 方式需要 Web 终端模块，未编译时只在已选中时保留
+const modeOptions = computed(() => [
+  { value: '', label: t('wol.modeNone'), desc: '' },
+  { value: 'agent', label: t('wol.modeAgent'), desc: t('wol.modeAgentDesc') },
+  { value: 'ssh', label: t('wol.modeSSH'), desc: t('wol.modeSSHDesc'), disabled: !moduleBuilt('webterminal') && editing.value.shutdownMode !== 'ssh' },
+  { value: 'http', label: t('wol.modeHTTP'), desc: t('wol.modeHTTPDesc') },
+])
+
+// shutdownSummary 返回卡片上远程关机一栏的内容
+function shutdownSummary(d: Device): string {
+  switch (d.shutdownMode) {
+    case 'ssh':
+      return connName(d.shutdownConn ?? '')
+    case 'agent': {
+      const a = agents.value[d.key ?? '']
+      if (a?.online) {
+        return t('wol.agentOnlineAt', { host: a.host || '-' })
+      }
+      return a ? t('wol.agentOfflineAt', { host: a.host || '-' }) : t('wol.agentNotInstalled')
+    }
+    case 'http': {
+      let host = d.shutdownHttp?.url ?? ''
+      try {
+        host = new URL(host).host
+      } catch {
+        // 地址无效时原样显示
+      }
+      return `HTTP ${d.shutdownHttp?.method || 'GET'} ${host}`
+    }
+  }
+  return ''
 }
 
 // devStatus 计算设备在线状态；未配置探测地址时明确提示，而不是显示为等待
 function devStatus(d: Device): { type: StatusType; text: string } {
-  if (!d.checkAddr) {
+  // 客户端方式以客户端连接为准，不需要探测地址
+  if (!d.checkAddr && d.shutdownMode !== 'agent') {
     return { type: 'info', text: t('wol.noCheck') }
   }
   const s = status.value[d.key ?? '']
@@ -274,14 +407,16 @@ function connName(key: string) {
 }
 
 async function load() {
-  const [d, s, b] = await Promise.all([
+  const [d, s, b, a] = await Promise.all([
     api.get<Device[]>('/api/wol/devices'),
     api.get<Record<string, string>>('/api/wol/status'),
     api.get<BemfaView>('/api/wol/bemfa'),
+    api.get<Record<string, AgentInfo>>('/api/wol/agents'),
   ])
-  devices.value = d
+  devices.value = d.map((x) => ({ ...x, shutdownHttp: { ...emptyHTTP(), ...(x.shutdownHttp ?? {}) } }))
   status.value = s
   bemfa.value = b
+  agents.value = a
 }
 
 async function loadTargets() {
@@ -292,27 +427,30 @@ async function loadTargets() {
   }
 }
 
-// onConnChange 选择关机连接后若还没有命令，默认填 Linux 命令；清除连接时一并清除命令
+// onConnChange 选择关机连接后若还没有命令，默认填 Linux 命令
 function onConnChange(v: string | undefined) {
-  if (!v) {
-    editing.value.shutdownConn = ''
-    editing.value.shutdownCommand = ''
-    return
-  }
-  if (!editing.value.shutdownCommand) {
+  if (v && !editing.value.shutdownCommand) {
     editing.value.shutdownCommand = presets[0].cmd
+  }
+}
+
+// onModeChange 换成 SSH 方式时加载可选连接
+function onModeChange(v: string) {
+  if (v === 'ssh') {
+    loadTargets()
   }
 }
 
 // openEditor 打开编辑框：copy 为 true 时以 d 为模板新建副本
 function openEditor(d?: Device, copy = false) {
   editing.value = d ? JSON.parse(JSON.stringify(d)) : empty()
+  editing.value.shutdownHttp = { ...emptyHTTP(), ...(editing.value.shutdownHttp ?? {}) }
   copyFrom.value = null
   if (d && copy) {
     copyFrom.value = { key: d.key ?? '', name: d.name }
     editing.value.key = ''
     editing.value.name = uniqueName(d.name, devices.value.map((x) => x.name))
-    // 巴法云主题不能被两台设备同时使用，副本不沿用
+    // 巴法云主题不能被两台设备同时使用，副本不沿用；客户端凭据由后端为副本重新生成
     editing.value.bemfaTopic = ''
   }
   loadTargets()
@@ -322,13 +460,27 @@ function openEditor(d?: Device, copy = false) {
 async function save() {
   try {
     const { key, ...body } = editing.value
+    // 只提交所选方式的设置：旧版后端把只填了连接的设备视为 SSH 方式
+    if (body.shutdownMode !== 'ssh') {
+      body.shutdownConn = ''
+      body.shutdownCommand = ''
+    }
+    if (body.shutdownMode !== 'http') {
+      body.shutdownHttp = emptyHTTP()
+    }
+    const wasAgent = !!key && devices.value.find((x) => x.key === key)?.shutdownMode === 'agent'
+    let saved: Device
     if (key) {
-      await api.put(`/api/wol/devices/${key}`, body)
+      saved = await api.put<Device>(`/api/wol/devices/${key}`, body)
     } else {
-      await createItem('/api/wol/devices', body, copyFrom.value)
+      saved = await createItem<Device>('/api/wol/devices', body, copyFrom.value)
     }
     editorVisible.value = false
     await load()
+    // 刚换成客户端方式：直接打开安装说明
+    if (saved?.shutdownMode === 'agent' && !wasAgent) {
+      openAgent(saved)
+    }
   } catch (e) {
     ElMessage.error((e as Error).message)
   }
@@ -347,17 +499,37 @@ async function wake(d: Device) {
   }
 }
 
-async function shutdown(d: Device) {
+// confirmPower 确认后执行客户端的电源操作
+async function confirmPower(d: Device, action: string) {
+  const text: Record<string, string> = { shutdown: t('wol.shutdownConfirm'), reboot: t('wol.rebootConfirm'), sleep: t('wol.sleepConfirm') }
+  try {
+    await ElMessageBox.confirm(text[action] ?? text.shutdown, d.name, { type: 'warning' })
+  } catch {
+    return
+  }
+  await power(d, action)
+}
+
+// power 执行电源操作：关机三种方式都支持，重启与睡眠只有客户端方式支持
+async function power(d: Device, action: string) {
   const k = d.key ?? ''
   stopping[k] = true
   try {
-    await api.post(`/api/wol/devices/${k}/shutdown`)
-    ElMessage.success(t('wol.shutdownDone'))
+    await api.post(`/api/wol/devices/${k}/shutdown`, { action })
+    const done: Record<string, string> = { shutdown: t('wol.shutdownDone'), reboot: t('wol.rebootDone'), sleep: t('wol.sleepDone') }
+    ElMessage.success(done[action] ?? done.shutdown)
+    // 客户端确认后即离线，刷新状态
+    load()
   } catch (e) {
     ElMessage.error((e as Error).message)
   } finally {
     stopping[k] = false
   }
+}
+
+function openAgent(d: Device) {
+  agentDevice.value = d
+  agentVisible.value = true
 }
 
 function openBemfa() {
@@ -442,6 +614,29 @@ onMounted(() => {
 .form-help.warn {
   color: var(--el-color-warning);
 }
+.caret {
+  margin-left: 2px;
+}
+.mode-opt {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.4;
+  padding: 4px 0;
+}
+.mode-desc {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  white-space: normal;
+}
+.http-url {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+}
+.http-method {
+  width: 110px;
+  flex: none;
+}
 .presets {
   display: flex;
   flex-wrap: wrap;
@@ -473,5 +668,13 @@ onMounted(() => {
   margin: 0;
   padding-left: 18px;
   line-height: 1.7;
+}
+</style>
+
+<style>
+/* 关机方式下拉的选项有两行（名称与说明），取消固定行高；窄屏时说明换行 */
+.wol-mode-popper .el-select-dropdown__item {
+  height: auto;
+  max-width: min(520px, 92vw);
 }
 </style>
