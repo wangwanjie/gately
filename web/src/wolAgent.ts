@@ -76,6 +76,8 @@ export function uninstallCommand(platform: AgentPlatform): string {
       return 'powershell -NoProfile -ExecutionPolicy Bypass -File "$env:ProgramData\\GatelyAgent\\gately-agent.ps1" uninstall'
     case 'openwrt':
       return 'sh /usr/bin/gately-agent uninstall'
+    case 'macos':
+      return 'sudo sh /Library/Gately/gately-agent uninstall'
     default:
       return 'sudo sh /usr/local/bin/gately-agent uninstall'
   }

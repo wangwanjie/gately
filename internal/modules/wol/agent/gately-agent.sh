@@ -40,13 +40,30 @@ has_openrc() {
 	[ -x /sbin/openrc-run ] && command -v rc-update >/dev/null 2>&1
 }
 
-# 脚本安装位置：OpenWrt 没有 /usr/local
+# 脚本安装位置：OpenWrt 没有 /usr/local；macOS 上 /usr/local/bin 常被 Homebrew 交给普通用户，
+# 以 root 运行的服务不能放在普通用户可写的目录里，改用 root 独占的 /Library/Gately
 bin_path() {
 	if is_openwrt; then
 		echo /usr/bin/gately-agent
+	elif [ "$(uname -s)" = Darwin ]; then
+		echo /Library/Gately/gately-agent
 	else
 		echo /usr/local/bin/gately-agent
 	fi
+}
+
+# check_bin_dir 确认安装目录属于 root 且其他用户不可写：服务以 root 运行该目录中的脚本，
+# 普通用户可写时可以替换脚本，借服务以 root 执行任意代码
+check_bin_dir() {
+	d=$1
+	# ls -ld 的输出：权限 链接数 所有者 …
+	set -- $(ls -ld "$d" 2>/dev/null)
+	case "$1" in
+	d???????w?*) die "安装目录 $d 其他用户可写，为安全起见不安装" ;;
+	d*) ;;
+	*) die "安装目录 $d 无效" ;;
+	esac
+	[ "$3" = root ] || die "安装目录 $d 的所有者不是 root（$3），为安全起见不安装"
 }
 
 # check_server / check_token 校验地址与凭据，它们会写进配置文件、拼进请求，不允许出现引号、空白等字符
@@ -314,12 +331,18 @@ install_service() {
 	if [ "$CODE" != 200 ] || ! head -n 1 "$TMPD/resp" | grep -q '^#!/bin/sh'; then
 		die "无法从 $SERVER 下载客户端（HTTP $CODE），请检查地址、凭据与网络: $(head -c 200 "$TMPD/err")"
 	fi
-	mkdir -p "$(dirname "$bin")"
+	dir=$(dirname "$bin")
+	if [ ! -d "$dir" ]; then
+		(umask 022 && mkdir -p "$dir") || die "无法创建 $dir"
+	fi
+	check_bin_dir "$dir"
 	# 安装正在运行的这份脚本（安装命令已校验过它的 SHA-256）；经管道运行没有脚本文件时才用刚下载的内容
 	src="$TMPD/resp"
 	if [ -f "$0" ] && head -n 1 "$0" | grep -q '^#!/bin/sh' && grep -q 'Gately 网络唤醒客户端' "$0"; then
 		src=$0
 	fi
+	# 先删掉可能残留或被预置成链接的临时文件，cp 不会顺着链接写到别处
+	rm -f "$bin.tmp"
 	cp "$src" "$bin.tmp" && chmod 755 "$bin.tmp" && mv -f "$bin.tmp" "$bin" || die "无法写入 $bin"
 	# 配置文件只有 root 可读
 	(umask 077 && printf 'SERVER=%s\nTOKEN=%s\nINSECURE=%s\n' "$SERVER" "$TOKEN" "$INSECURE" >"$CONF.tmp") && mv -f "$CONF.tmp" "$CONF" || die "无法写入 $CONF"
@@ -432,6 +455,9 @@ uninstall_service() {
 		rm -f /etc/init.d/$SERVICE
 	fi
 	rm -f "$(bin_path)" "$CONF"
+	if [ "$(uname -s)" = Darwin ]; then
+		rmdir /Library/Gately 2>/dev/null
+	fi
 	echo "已卸载"
 }
 

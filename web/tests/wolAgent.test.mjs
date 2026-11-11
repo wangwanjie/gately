@@ -89,6 +89,7 @@ test('scriptURL、uninstallCommand 与 guessPlatform', () => {
   assert.ok(uninstallCommand('windows').includes('ProgramData\\GatelyAgent\\gately-agent.ps1" uninstall'))
   assert.equal(uninstallCommand('openwrt'), 'sh /usr/bin/gately-agent uninstall')
   assert.equal(uninstallCommand('linux'), 'sudo sh /usr/local/bin/gately-agent uninstall')
+  assert.equal(uninstallCommand('macos'), 'sudo sh /Library/Gately/gately-agent uninstall')
   assert.equal(guessPlatform('OpenWrt-24.10.6-x86_64'), 'openwrt')
   assert.equal(guessPlatform('macOS-15.1-arm64'), 'macos')
   assert.equal(guessPlatform('ubuntu-24.04-x86_64'), 'linux')
