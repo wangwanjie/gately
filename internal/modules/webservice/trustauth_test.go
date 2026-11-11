@@ -296,8 +296,9 @@ func TestTrustAuthUsersWildcardThirdParty(t *testing.T) {
 	}
 }
 
-// 只靠 提供方:* 通配进来的第三方身份认证通过后仍计入路径探测，逐个列出的身份不计入。
-func TestTrustAuthUsersWildcardProbe(t *testing.T) {
+// 只靠 提供方:* 通配进来的第三方身份认证通过后仍计入路径探测，也不给外层 Gately 签发认证标记；
+// 逐个列出的身份不计入并签发标记。
+func TestTrustAuthUsersWildcardProbeAndMarker(t *testing.T) {
 	var mu sync.Mutex
 	var hits []string
 	webprobe.SetHandler(func(h webprobe.Hit) {
@@ -311,6 +312,7 @@ func TestTrustAuthUsersWildcardProbe(t *testing.T) {
 			OAuthUsers: []string{"github:*", "google:bob@example.com"}, TrustAuthUsers: true},
 	}}
 	addr, r := startRunner(t, l, nil, nil)
+	r.auth.marker.set(testMarkerKey)
 	session := func(user string) map[string]string {
 		v := r.auth.signBlob("session", siteSession{User: user, Host: "any.test", Scope: "w/any"}, time.Hour)
 		return map[string]string{"Cookie": cookieName(Site{scope: "w/any"}) + "=" + v, "User-Agent": "Mozilla/5.0", "Accept": "text/html"}
@@ -319,6 +321,9 @@ func TestTrustAuthUsersWildcardProbe(t *testing.T) {
 	listed, _ := get(t, noRedirect(), addr, "any.test", "/listed", session("google:bob@example.com"))
 	if wild.StatusCode != http.StatusNotFound || listed.StatusCode != http.StatusNotFound {
 		t.Fatalf("两种身份都应通过认证: %d %d", wild.StatusCode, listed.StatusCode)
+	}
+	if wild.Header.Get(authMarkerHeader) != "" || listed.Header.Get(authMarkerHeader) == "" {
+		t.Fatalf("只应给逐个列出的身份签发标记: %q %q", wild.Header.Get(authMarkerHeader), listed.Header.Get(authMarkerHeader))
 	}
 	deadline := time.Now().Add(2 * time.Second)
 	for {

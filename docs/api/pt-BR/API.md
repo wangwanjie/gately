@@ -416,6 +416,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | GET | `/api/webservice/settings` | `webservice:read` | Ler configurações globais do serviço web |
 | GET | `/api/webservice/settings/secrets/totp` | `webservice:write` | Ver segredos TOTP dos usuários compartilhados em texto puro (por nome de usuário) |
 | GET | `/api/webservice/settings/secrets/oauth` | `webservice:write` | Ver Client Secrets dos logins de terceiros em texto puro (por identificador do método) |
+| GET | `/api/webservice/settings/secrets/marker` | `webservice:write` | Ver a chave da marca de autenticação em texto puro (authMarkerKey) |
 | POST | `/api/webservice/totp-secret` | `webservice:write` | Gerar nova chave TOTP para um usuário compartilhado (não salva; vale após salvar as configurações) |
 | PUT | `/api/webservice/settings` | `webservice:write` | Salvar configurações globais do serviço web |
 | GET | `/api/webservice/stats` | `webservice:read` | Estatísticas por minuto do site (?listener=&site=&minutes=) |
@@ -2707,6 +2708,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 
 | Campo | Tipo |
 | --- | --- |
+| `authMarkerKey` | string |
 | `authSecret` | string |
 | `authUsers` | Array de `webservice.AuthUser` |
 | `autoBanSeconds` | integer |
@@ -2787,6 +2789,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `text` | string |
 | `timeouts` | `webservice.BackendTimeouts` |
 | `trustAuthUsers` | boolean |
+| `trustBackendAuth` | boolean |
 | `type` | string |
 | `upstreamSniFromHost` | boolean |
 | `useTargetHost` | boolean |

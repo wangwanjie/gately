@@ -116,30 +116,41 @@ func (a *authenticator) trustedBasic(r *http.Request, s Site) bool {
 }
 
 // trustedAuth 判断请求是否带有本站点 Gately 认证的有效凭据（站点开启了信任已认证用户时）。
-// 在 WAF 之前调用：只校验签名与凭据指纹，不写响应、不计登录失败，也不处理登录页等认证保留路径。
 func (h *siteHandler) trustedAuth(r *http.Request) bool {
+	return h.trustedCred(r) != ""
+}
+
+// trustedCred 返回请求中受信任的本站点 Gately 认证凭据（见 credSession / credBasic），没有时返回空。
+// 在 WAF 之前调用：只校验签名与凭据指纹，不写响应、不计登录失败，也不处理登录页等认证保留路径。
+// 返回的凭据用于给反向代理到这里的外层 Gately 签发认证标记（见 authmarker.go）。
+func (h *siteHandler) trustedCred(r *http.Request) string {
 	s := h.site
 	if !s.TrustAuthUsers || (!s.WebAuth && !s.BasicAuth) {
-		return false
+		return ""
 	}
 	if s.WebAuth {
 		if sess, ok := h.auth.cookieSession(r, s); ok {
 			// 第三方登录会话只在身份被允许列表逐个列出时信任：提供方key:* 通配让任何人注册个账号就能登录，
 			// 信任它等于对所有人关闭 WAF
 			provider, id, third := strings.Cut(sess.User, ":")
-			if !third || sess.Shared || sess.Cred != "" {
-				return true
-			}
-			if thirdauth.AllowedExplicit(s.OAuthUsers, thirdauth.Identity{Provider: provider, Primary: id, Aliases: sess.Aliases}) {
-				return true
+			if !third || sess.Shared || sess.Cred != "" ||
+				thirdauth.AllowedExplicit(s.OAuthUsers, thirdauth.Identity{Provider: provider, Primary: id, Aliases: sess.Aliases}) {
+				if c, err := r.Cookie(cookieName(s)); err == nil {
+					return credSession(c.Value)
+				}
 			}
 		}
 		if s.SharedUsers {
 			if _, ok := h.auth.ssoSession(r, s); ok {
-				return true
+				if c, err := r.Cookie(ssoCookie); err == nil {
+					return credSession(c.Value)
+				}
 			}
 		}
 	}
 	// 网页认证对非浏览器客户端同样回退到基本认证
-	return h.auth.trustedBasic(r, s)
+	if h.auth.trustedBasic(r, s) {
+		return credBasic(r.Header.Get("Authorization"))
+	}
+	return ""
 }

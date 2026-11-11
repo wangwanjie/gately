@@ -128,6 +128,10 @@ type Site struct {
 	// 基本认证）的请求不经过 WAF，也不交给入侵防护的路径探测规则计数（issue #81，见 trustauth.go）。
 	// 需启用基本认证或网页认证；转发认证由外部服务判断身份，不适用
 	TrustAuthUsers bool `json:"trustAuthUsers"`
+	// TrustBackendAuth 为 true 时（仅反向代理站点、本站点不启用认证），后端是另一台负责认证的 Gately：
+	// 后端对受信任的已登录用户返回带签名的认证标记（全局设置的认证标记密钥须一致），本站点校验后让该凭据的请求
+	// 不经过 WAF、不计入路径探测，并在返回访客前去掉标记头（issue #81，见 authmarker.go）
+	TrustBackendAuth bool `json:"trustBackendAuth"`
 	// Rules 为按路径前缀覆盖认证与 IP 访问控制的规则
 	Rules []PathRule `json:"rules"`
 	// ShareLinks 为临时分享链接，持令牌访客可绕过认证
@@ -247,6 +251,9 @@ type Settings struct {
 	OIDC OIDCSettings `json:"oidc"`
 	// SelfServicePassword 为 true 时共享用户可在开启“使用共享用户”的站点与 OIDC 签发者域名上自助修改密码（认证路径下的 /password）
 	SelfServicePassword bool `json:"selfServicePassword"`
+	// AuthMarkerKey 为认证标记密钥（至少 16 个字符），双层 Gately（外层只做 WAF、内层负责认证）两端填写相同的值：
+	// 内层给受信任的已登录用户签发认证标记，外层开启信任后端 Gately 的认证标记的站点据此放行。留空不启用
+	AuthMarkerKey string `json:"authMarkerKey"`
 }
 
 type fileConfig struct {

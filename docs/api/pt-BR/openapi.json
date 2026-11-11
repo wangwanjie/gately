@@ -4076,6 +4076,9 @@
       },
       "webservice.Settings": {
         "properties": {
+          "authMarkerKey": {
+            "type": "string"
+          },
           "authSecret": {
             "type": "string"
           },
@@ -4349,6 +4352,9 @@
             "$ref": "#/components/schemas/webservice.BackendTimeouts"
           },
           "trustAuthUsers": {
+            "type": "boolean"
+          },
+          "trustBackendAuth": {
             "type": "boolean"
           },
           "type": {
@@ -49839,6 +49845,67 @@
           }
         ],
         "summary": "Salvar configurações globais do serviço web",
+        "tags": [
+          "Serviço web"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/settings/secrets/marker": {
+      "get": {
+        "description": "Permissão necessária: `webservice:write`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ver a chave da marca de autenticação em texto puro (authMarkerKey)",
         "tags": [
           "Serviço web"
         ],

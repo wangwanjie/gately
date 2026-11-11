@@ -161,6 +161,11 @@ func (s *Site) validateAccess() error {
 	if s.TrustAuthUsers && !s.BasicAuth && !s.WebAuth {
 		s.TrustAuthUsers = false
 	}
+	// 信任后端 Gately 的认证标记只用于不自己认证的反向代理站点：本站点启用认证时由本站点判断身份，
+	// 其他类型的站点没有后端，同样直接关闭
+	if s.TrustBackendAuth && (hasAuth || s.Type != TypeProxy) {
+		s.TrustBackendAuth = false
+	}
 	if s.AuthOptional && !hasAuth {
 		return errors.New("仅对指定路径认证需要先启用基本认证、网页认证或转发认证")
 	}

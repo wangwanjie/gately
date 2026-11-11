@@ -416,6 +416,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | GET | `/api/webservice/settings` | `webservice:read` | Lire les paramètres globaux du service Web |
 | GET | `/api/webservice/settings/secrets/totp` | `webservice:write` | Afficher en clair les secrets TOTP des utilisateurs partagés (indexés par nom d'utilisateur) |
 | GET | `/api/webservice/settings/secrets/oauth` | `webservice:write` | Afficher en clair les Client Secret des connexions tierces (indexés par identifiant de méthode) |
+| GET | `/api/webservice/settings/secrets/marker` | `webservice:write` | Afficher en clair la clé du marqueur d'authentification (authMarkerKey) |
 | POST | `/api/webservice/totp-secret` | `webservice:write` | Générer une nouvelle clé TOTP pour un utilisateur partagé (non enregistrée ; effective après enregistrement) |
 | PUT | `/api/webservice/settings` | `webservice:write` | Enregistrer les paramètres globaux du service Web |
 | GET | `/api/webservice/stats` | `webservice:read` | Statistiques par minute du site (?listener=&site=&minutes=) |
@@ -2707,6 +2708,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 
 | Champ | Type |
 | --- | --- |
+| `authMarkerKey` | string |
 | `authSecret` | string |
 | `authUsers` | Tableau de `webservice.AuthUser` |
 | `autoBanSeconds` | integer |
@@ -2787,6 +2789,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `text` | string |
 | `timeouts` | `webservice.BackendTimeouts` |
 | `trustAuthUsers` | boolean |
+| `trustBackendAuth` | boolean |
 | `type` | string |
 | `upstreamSniFromHost` | boolean |
 | `useTargetHost` | boolean |

@@ -4076,6 +4076,9 @@
       },
       "webservice.Settings": {
         "properties": {
+          "authMarkerKey": {
+            "type": "string"
+          },
           "authSecret": {
             "type": "string"
           },
@@ -4349,6 +4352,9 @@
             "$ref": "#/components/schemas/webservice.BackendTimeouts"
           },
           "trustAuthUsers": {
+            "type": "boolean"
+          },
+          "trustBackendAuth": {
             "type": "boolean"
           },
           "type": {
@@ -49839,6 +49845,67 @@
           }
         ],
         "summary": "儲存 Web 服務全域設定",
+        "tags": [
+          "Web 服務"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/settings/secrets/marker": {
+      "get": {
+        "description": "所需權限：`webservice:write`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "檢視驗證標記金鑰明文（authMarkerKey）",
         "tags": [
           "Web 服務"
         ],

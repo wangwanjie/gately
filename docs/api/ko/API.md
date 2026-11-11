@@ -416,6 +416,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/webservice/settings` | `webservice:read` | Web 서비스 전역 설정 읽기 |
 | GET | `/api/webservice/settings/secrets/totp` | `webservice:write` | 공유 사용자의 TOTP 비밀 키 평문 보기(사용자 이름으로 색인) |
 | GET | `/api/webservice/settings/secrets/oauth` | `webservice:write` | 서드파티 로그인의 Client Secret 평문 보기(로그인 방식 ID로 색인) |
+| GET | `/api/webservice/settings/secrets/marker` | `webservice:write` | 인증 표시 키 평문 보기(authMarkerKey) |
 | POST | `/api/webservice/totp-secret` | `webservice:write` | 공유 사용자의 새 TOTP 키 생성(저장하지 않음, 설정 저장 후 적용) |
 | PUT | `/api/webservice/settings` | `webservice:write` | Web 서비스 전역 설정 저장 |
 | GET | `/api/webservice/stats` | `webservice:read` | 사이트 분 단위 통계 (?listener=&site=&minutes=) |
@@ -2707,6 +2708,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | 필드 | 타입 |
 | --- | --- |
+| `authMarkerKey` | string |
 | `authSecret` | string |
 | `authUsers` | Array of `webservice.AuthUser` |
 | `autoBanSeconds` | integer |
@@ -2787,6 +2789,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `text` | string |
 | `timeouts` | `webservice.BackendTimeouts` |
 | `trustAuthUsers` | boolean |
+| `trustBackendAuth` | boolean |
 | `type` | string |
 | `upstreamSniFromHost` | boolean |
 | `useTargetHost` | boolean |
