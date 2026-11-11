@@ -27,6 +27,8 @@ When the admin UI is reverse proxied through a site with WAF, requests carrying 
 
 When a site enables "Trust signed-in users" (see [Web service](./web)), visitors authenticated by that site's Gately authentication (web authentication, third-party login identities listed one by one in the allow list, shared-user single sign-on, verified basic authentication) skip the WAF. Visitors who are not signed in, requests to the login page itself, third-party login identities allowed through a wildcard such as `github:*`, forward authentication and share links are still checked.
 
+With two-tier Gately (the outer instance only runs the WAF, the inner one handles sign-in), once the outer site enables "Trust backend auth marker" and both use the same auth marker key, users confirmed as signed in by the inner instance also skip the WAF on the outer one; see [Web service](./web).
+
 ## Rule group order
 
 The rule groups of an instance load from top to bottom; use the move up and move down buttons to reorder them. Within the same phase, earlier rules run first:

@@ -27,6 +27,8 @@ Wird die Verwaltungsoberfläche über eine Website mit WAF per Reverse Proxy err
 
 Aktiviert eine Site „Angemeldeten Benutzern vertrauen“ (siehe [Webdienst](./web)), umgehen Besucher, die von der Gately-Authentifizierung dieser Site authentifiziert wurden (Web-Authentifizierung, einzeln in der Erlaubnisliste aufgeführte Identitäten der Drittanbieter-Anmeldung, Single Sign-on gemeinsamer Benutzer, geprüfte Basic-Authentifizierung), die WAF. Nicht angemeldete Besucher, Anfragen an die Anmeldeseite selbst, über einen Platzhalter wie `github:*` erlaubte Drittanbieter-Identitäten, Weiterleitungs-Authentifizierung und Freigabelinks werden weiterhin geprüft.
 
+Bei zweistufigem Gately (die äußere Instanz nur WAF, die innere übernimmt die Anmeldung) umgehen von der inneren Instanz als angemeldet bestätigte Benutzer auch auf der äußeren die WAF, sobald die äußere Site „Auth-Markierung des Backends vertrauen“ aktiviert und beide denselben Auth-Markierungsschlüssel verwenden; siehe [Webdienst](./web).
+
 ## Reihenfolge der Regelgruppen
 
 Die Regelgruppen einer Instanz werden von oben nach unten geladen; mit den Schaltflächen nach oben und nach unten lässt sich die Reihenfolge ändern. Innerhalb derselben Phase laufen frühere Regeln zuerst:

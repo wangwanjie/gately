@@ -91,6 +91,8 @@ Drei Vorlagen sind enthalten:
 
 Aktiviert eine Site „Angemeldeten Benutzern vertrauen“ (siehe [Webdienst](./web)), werden Anfragen von Besuchern, die von der Gately-Authentifizierung dieser Site authentifiziert wurden, bei der Pfadsondierung nicht gezählt. Anfragen an unbekannte Domains, die die Standard-Site bearbeitet, und nicht angemeldete Besucher werden weiterhin gezählt; andere Regeln wie Portscans, Köder-Ports und fehlgeschlagene Anmeldungen sind nicht betroffen.
 
+Aktiviert eine äußere Site eines zweistufigen Gately „Auth-Markierung des Backends vertrauen“, werden Anfragen von Benutzern, die die innere Instanz als angemeldet bestätigt hat, auch auf der äußeren nicht bei der Pfadsondierung gezählt.
+
 ::: warning Wirkung der Sperre
 Egal welcher Listener auslöst: Die Sperre landet in derselben Sperrliste und gilt für alle Listener, Sites und übrigen Dienste von Gately; mit Firewall-Synchronisation verwirft auch die Systemfirewall den gesamten Verkehr dieser Adresse.
 :::

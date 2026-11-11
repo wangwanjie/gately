@@ -91,6 +91,8 @@ Three templates are included:
 
 When a site enables "Trust signed-in users" (see [Web service](./web)), requests from visitors authenticated by that site's Gately authentication are not counted by path probing. Unknown-domain requests handled by the default site and visitors who are not signed in are still counted, and other rules such as port scans, decoy ports and failed logins are not affected.
 
+When an outer site of a two-tier Gately enables "Trust backend auth marker", requests from users confirmed as signed in by the inner instance are not counted by path probing on the outer one either.
+
 ::: warning Ban scope
 Whichever listener triggers it, the ban goes into the same ban list and applies to all listeners, sites and Gately's other services; with firewall sync on, the system firewall also drops all traffic from the address.
 :::
