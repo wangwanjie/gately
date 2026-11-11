@@ -175,16 +175,17 @@ API는 `GET` / `PUT /api/fileusers`이며 API 토큰에는 `fileusers:read` / `f
 | macOS | 터미널(관리자 비밀번호 필요) | launchd 데몬 `cn.gately.agent` | `/var/log/gately-agent.log` |
 | OpenWrt | SSH(root), curl 또는 시스템 기본 wget 사용 가능 | procd 서비스 `gately-agent`, 시스템 업그레이드 시 설정 유지 | `logread -e gately-agent` |
 
-설치 명령은 Gately에서 스크립트를 내려받습니다(설치 안내에서 직접 내려받을 수도 있습니다). 토큰은 요청 본문과 환경 변수로 전달되며 URL에는 나타나지 않습니다. 에이전트가 연결되면 장치 카드에 온라인으로 표시되고 에이전트가 보고한 호스트 이름, 운영체제, 접속 출처 주소도 표시됩니다. 에이전트 방식의 장치는 온라인 점검 주소를 입력할 필요가 없습니다.
+설치 명령은 Gately에서 스크립트를 내려받고(설치 안내에서 직접 내려받을 수도 있습니다) 먼저 SHA-256을 검증합니다(Linux와 OpenWrt는 `sha256sum`, macOS는 `shasum -a 256`, Windows는 `Get-FileHash`). Gately가 제시한 체크섬과 다르면 `gately-agent: checksum mismatch`를 출력하고 중단하며, 일치하면 검증한 그 스크립트를 그대로 설치합니다. 토큰은 요청 본문과 환경 변수로 전달되며 URL에도, 어떤 프로세스의 명령줄 인수에도 나타나지 않습니다. curl과 wget은 `mktemp`로 만든 임시 파일에서 토큰을 읽고, sudo는 `--preserve-env`로 환경 변수를 넘깁니다. 따라서 평문 HTTP나 "인증서 검증 안 함"으로 내려받아도 변조된 스크립트는 실행되지 않습니다. 다만 토큰은 평문으로 전송되므로 HTTPS 주소를 쓰는 것을 권장합니다. 에이전트가 연결되면 장치 카드에 온라인으로 표시되고 에이전트가 보고한 호스트 이름, 운영체제, 접속 출처 주소도 표시됩니다. 에이전트 방식의 장치는 온라인 점검 주소를 입력할 필요가 없습니다.
 
 - 토큰은 해당 장치의 전원 스위치와 같습니다. 설정 파일은 root(Windows에서는 SYSTEM과 관리자)만 읽을 수 있습니다. 같은 토큰은 한 장치에서만 쓸 수 있으며, 다른 기기가 같은 토큰으로 연결하면 거부되고 로그에 안내가 남습니다;
 - 지시는 발행 후 10초 동안만 유효합니다. 에이전트가 먼저 확인하고 Gately가 응답한 뒤에 실행합니다. 에이전트가 오프라인이면 바로 오류를 반환하며, 다음에 온라인이 될 때까지 대기열에 쌓아 두었다가 실행하지 않습니다;
 - 토큰을 "재생성"하거나 종료 방식을 다른 방식으로 바꾸면 기존 에이전트는 즉시 연결이 끊어지므로 새 명령으로 다시 설치해야 합니다;
 - 에이전트는 25초마다 폴링하며, 연결이 끊기면 5초부터 최대 60초 간격으로 재시도합니다;
-- 제거: 설치 안내에서 제거 명령을 복사합니다. Windows는 `powershell -ExecutionPolicy Bypass -File "$env:ProgramData\GatelyAgent\gately-agent.ps1" uninstall`, Linux와 macOS는 `sudo sh /usr/local/bin/gately-agent uninstall`, OpenWrt는 `sh /usr/bin/gately-agent uninstall`입니다;
+- 설치 위치: Linux는 `/usr/local/bin/gately-agent`, macOS는 `/Library/Gately/gately-agent`(`/usr/local/bin`은 Homebrew가 일반 사용자에게 넘겨 두는 경우가 많습니다), OpenWrt는 `/usr/bin/gately-agent`입니다. 설치 디렉터리는 root 소유이고 다른 사용자가 쓸 수 없어야 하며, 그렇지 않으면 설치를 거부합니다. Windows는 `C:\ProgramData\GatelyAgent`이며 디렉터리 권한을 SYSTEM과 관리자만 접근할 수 있도록 통째로 바꿉니다. 이 디렉터리가 이미 있는데 링크(정션 또는 심볼릭 링크)이거나 소유자가 SYSTEM·관리자가 아니면 설치를 거부하고, 확인한 뒤 디렉터리를 삭제하라고 안내합니다;
+- 제거: 설치 안내에서 제거 명령을 복사합니다. Windows는 `powershell -ExecutionPolicy Bypass -File "$env:ProgramData\GatelyAgent\gately-agent.ps1" uninstall`, Linux는 `sudo sh /usr/local/bin/gately-agent uninstall`, macOS는 `sudo sh /Library/Gately/gately-agent uninstall`, OpenWrt는 `sh /usr/bin/gately-agent uninstall`입니다;
 - 절전: Windows는 메모리로 일시 중단합니다(절전을 끈 기기는 실패하며 로그에 안내가 남습니다). Linux는 `systemctl suspend`, macOS는 `pmset sleepnow`를 사용합니다. 절전 중인 장치를 Wake-on-LAN으로 깨우려면 네트워크 어댑터나 시스템에서 Wake-on-LAN을 허용해야 합니다.
 
-에이전트 인터페이스는 `/api/wol/public/agent/` 아래에 있으며 로그인이 필요 없고 장치 토큰만 확인합니다. 보안 진입 경로를 설정한 경우에도 유효한 토큰이 있는 요청은 접근할 수 있고, 「내부망 접근만 허용」과 차단 목록은 그대로 적용됩니다.
+에이전트 인터페이스는 `/api/wol/public/agent/` 아래에 있으며 로그인이 필요 없고 장치 토큰만 확인합니다. 보안 진입 경로를 설정한 경우에도 유효한 토큰이 있는 요청은 접근할 수 있고, 「내부망 접근만 허용」과 차단 목록은 그대로 적용됩니다. 관리 인터페이스 `GET /api/wol/agent-scripts`는 각 에이전트 스크립트의 SHA-256을 파일 이름별로 반환합니다.
 
 #### SSH 명령
 

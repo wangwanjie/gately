@@ -175,16 +175,17 @@ WebDAV、FTP 與 SMB 共用一份「共用使用者」，欄位與各服務的�
 | macOS | 終端機（需要系統管理員密碼） | launchd 常駐程式 `cn.gately.agent` | `/var/log/gately-agent.log` |
 | OpenWrt | SSH（root），可用 curl 或系統內建的 wget | procd 服務 `gately-agent`，升級系統時保留設定 | `logread -e gately-agent` |
 
-安裝命令從 Gately 下載指令碼（也可在安裝說明中直接下載），憑據經請求本文與環境變數傳遞，不出現在網址中。用戶端連上後裝置卡片顯示在線，以及用戶端回報的主機名稱、系統與來源位址；用戶端方式的裝置不需要填寫上線偵測位址。
+安裝命令從 Gately 下載指令碼（也可在安裝說明中直接下載），先用 SHA-256 校驗（Linux、OpenWrt 用 `sha256sum`，macOS 用 `shasum -a 256`，Windows 用 `Get-FileHash`），與 Gately 給出的校驗值不一致時報 `gately-agent: checksum mismatch` 並停止，一致時安裝的就是這份已校驗的指令碼。憑據經請求本文與環境變數傳遞，不出現在網址與任何處理程序的命令列參數中：curl、wget 從 `mktemp` 新建的暫存檔讀取憑據，sudo 用 `--preserve-env` 傳遞環境變數。因此經明文 HTTP 或「不驗證憑證」下載時，被竄改的指令碼也不會執行；憑據則仍以明文傳輸，建議使用 HTTPS 位址。用戶端連上後裝置卡片顯示在線，以及用戶端回報的主機名稱、系統與來源位址；用戶端方式的裝置不需要填寫上線偵測位址。
 
 - 憑據等同於該裝置的電源開關，設定檔只有 root（Windows 為 SYSTEM 與系統管理員）可讀；同一憑據只能用於一台裝置，另一台機器用同一憑據連線時會被拒絕，並在日誌中提示；
 - 指令只在發出後 10 秒內有效：用戶端先確認、Gately 回覆後才執行，用戶端離線時直接報錯，不會排隊到下次上線再執行；
 - 「重新產生」憑據或把關機方式改為其他方式後，舊用戶端立即中斷，需要用新命令重新安裝；
 - 用戶端每 25 秒輪詢一次，連線中斷後按 5 秒起、最長 60 秒的間隔重試；
-- 解除安裝：在安裝說明中複製解除安裝命令，Windows 為 `powershell -ExecutionPolicy Bypass -File "$env:ProgramData\GatelyAgent\gately-agent.ps1" uninstall`，Linux、macOS 為 `sudo sh /usr/local/bin/gately-agent uninstall`，OpenWrt 為 `sh /usr/bin/gately-agent uninstall`；
+- 安裝位置：Linux 為 `/usr/local/bin/gately-agent`，macOS 為 `/Library/Gately/gately-agent`（`/usr/local/bin` 常被 Homebrew 交給一般使用者），OpenWrt 為 `/usr/bin/gately-agent`，安裝目錄必須屬於 root 且其他使用者不可寫入，否則拒絕安裝；Windows 為 `C:\ProgramData\GatelyAgent`，目錄權限整體替換為只有 SYSTEM 與系統管理員可存取，該目錄已存在但是連結（junction 或符號連結）或擁有者不是 SYSTEM、系統管理員時拒絕安裝，並提示確認後刪除該目錄；
+- 解除安裝：在安裝說明中複製解除安裝命令，Windows 為 `powershell -ExecutionPolicy Bypass -File "$env:ProgramData\GatelyAgent\gately-agent.ps1" uninstall`，Linux 為 `sudo sh /usr/local/bin/gately-agent uninstall`，macOS 為 `sudo sh /Library/Gately/gately-agent uninstall`，OpenWrt 為 `sh /usr/bin/gately-agent uninstall`；
 - 睡眠：Windows 暫停到記憶體（關閉了睡眠的機器會失敗並在日誌中提示），Linux 為 `systemctl suspend`，macOS 為 `pmset sleepnow`；要用網路喚醒叫醒睡眠中的裝置，需在網卡或系統中允許網路喚醒。
 
-用戶端介面掛在 `/api/wol/public/agent/` 下，不需要登入，只認裝置憑據；設定了安全入口時帶有效憑據的請求同樣可以存取，「僅限內網存取」與封鎖清單照常生效。
+用戶端介面掛在 `/api/wol/public/agent/` 下，不需要登入，只認裝置憑據；設定了安全入口時帶有效憑據的請求同樣可以存取，「僅限內網存取」與封鎖清單照常生效。管理介面 `GET /api/wol/agent-scripts` 回傳各用戶端指令碼的 SHA-256，按檔名索引。
 
 #### SSH 命令
 
