@@ -141,7 +141,8 @@ func (f *forwardAuther) check(w http.ResponseWriter, r *http.Request, h *siteHan
 		}
 		req.Header[k] = vs
 	}
-	client := clientAddr(r).Addr().String()
+	clientAP := clientAddr(r)
+	client := clientAP.Addr().String()
 	orig := originalURL(r)
 	scheme := "http"
 	if requestIsHTTPS(r) {
@@ -156,6 +157,9 @@ func (f *forwardAuther) check(w http.ResponseWriter, r *http.Request, h *siteHan
 	req.Header.Set("X-Forwarded-Uri", r.URL.RequestURI())
 	req.Header.Set("X-Forwarded-For", client)
 	req.Header.Set("X-Real-Ip", client)
+	// 访客自带的源端口头不可信，换成 Gately 所见的源端口（未知时不带）
+	stripClientPort(req.Header)
+	setClientPort(req.Header, clientAP)
 	req.Host = ""
 
 	resp, err := forwardAuthClient.Do(req)
