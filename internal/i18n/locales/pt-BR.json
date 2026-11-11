@@ -1867,6 +1867,7 @@
   "最多返回的条数，取符合条件的最新几条；0 或不传表示不限": "Número máximo de entradas retornadas, pegando as mais recentes que correspondem; 0 ou omitido significa sem limite",
   "最大重启次数不能为负数": "O número máximo de reinícios não pode ser negativo",
   "最小请求数必须在 1 到 %d 之间": "O mínimo de requisições deve estar entre 1 e %d",
+  "最近 1 分钟收到 %[1]d 个来源的 %[2]d 个无效敲门报文（没有规则的密钥能通过 HMAC 认证），其中一个来源为 %[3]s": "No último minuto chegaram %[2]d pacotes de knock inválidos de %[1]d origens (nenhuma chave de regra passa na autenticação HMAC), um deles de %[3]s",
   "最近一次备份结果与下次执行时间": "Resultado do último backup e horário da próxima execução",
   "最近到期": "Expirando em breve",
   "最近的投递记录": "Registros de entrega recentes",

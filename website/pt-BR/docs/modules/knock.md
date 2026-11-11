@@ -103,7 +103,7 @@ ssh -p 443 user@example.com
 
 Knocks recusados publicam o evento «Knock recusado» (o campo `via` é `udp` ou `tcp`), no máximo uma vez a cada 5 segundos por origem. O endereço de origem de um pacote UDP pode ser forjado; para que ninguém use a Prevenção de intrusão para bloquear IPs arbitrários, pacotes UDP que falham na autenticação HMAC só são contados, sem evento. O evento só é publicado quando o pacote passou no HMAC (veio de um cliente com a chave) mas foi recusado pela regra (falha na descriptografia, replay, expirado, pedido de porta não autorizada, usuário diferente etc.). Pacotes que chegam por uma porta TCP do Roteamento por protocolo vêm de um handshake completo e não podem ser forjados, então ali um HMAC diferente também publica o evento. Na Prevenção de intrusão, crie uma regra com o modelo «Falha de port knocking» (por padrão, 5 ocorrências em 10 minutos bloqueiam por 1 dia): origens que continuam enviando pacotes forjados são bloqueadas, e knocks de endereços bloqueados são descartados direto. Dados que não têm o formato de knock (varredura de portas, outros protocolos) só são contados, sem gerar evento.
 
-São autenticados no máximo 200 pacotes por segundo; o excedente é descartado, e uma enxurrada de pacotes forjados não ocupa toda a CPU.
+Antes da autenticação, a taxa é limitada por faixa de origem (no máximo 10 pacotes por segundo para cada /24 IPv4 e cada /64 IPv6) e depois por um limite global de 200 por segundo; o excedente é descartado. Assim, uma enxurrada de pacotes forjados não ocupa toda a CPU e a enxurrada de uma origem não expulsa os knocks normais de outras. Pacotes que falham no HMAC não são registrados um a um: a cada minuto viram uma linha «M pacotes de knock inválidos de N origens».
 
 ## Limitações
 

@@ -103,7 +103,7 @@ ssh -p 443 user@example.com
 
 Rejected knocks publish a "Port knock rejected" event (its `via` field is `udp` or `tcp`), at most once every 5 seconds per source. The source address of a UDP packet can be forged, so to keep attackers from using Intrusion Prevention to ban arbitrary IPs, UDP packets that fail HMAC authentication are only counted and publish no event; an event is published only when the packet passed HMAC authentication (it came from a client holding the key) but was refused by the rule (decryption failure, replay, expiry, request for an unauthorized port, wrong user name and so on). Packets sent over a Protocol Routing TCP port come from a completed handshake and cannot be spoofed, so an HMAC mismatch there also publishes an event. Create a jail in Intrusion Prevention from the "Port knock failures" template (by default 5 events within 10 minutes ban for 1 day), and sources that keep sending forged packets are banned; knocks from banned addresses are dropped immediately. Data that is not in knock format (port scans, other protocols) is only counted and publishes no event.
 
-At most 200 packets are authenticated per second and the rest are dropped, so a flood of forged packets cannot use up the CPU.
+Before authentication, packets are rate-limited per source range (at most 10 per second for each IPv4 /24 and each IPv6 /64) and then by a global limit of 200 per second; the rest are dropped, so a flood of forged packets cannot use up the CPU and a flood from one source does not crowd out normal knocks from others. Packets that fail HMAC authentication are not logged one by one; they are summarized once a minute as "M invalid knock packets from N sources".
 
 ## Limitations
 

@@ -408,9 +408,13 @@ type Module struct {
 	fwGrants map[fwGrantKey]time.Time
 	replay   map[string]time.Time
 	counters Counters
-	bucket   tokenBucket
+	// bucket 为全局令牌桶，perSrc 为按来源网段的令牌桶，均在 HMAC 认证之前判断
+	bucket tokenBucket
+	perSrc *srcLimiter
 	// failSeen 为各来源最近一次记录失败日志、发布失败事件的时间，用于限速
 	failSeen map[netip.Addr]time.Time
+	// invalid 汇总 HMAC 认证失败的报文，按时间窗记一条日志
+	invalid invalidStats
 
 	// now 可在测试中替换
 	now func() time.Time
@@ -429,7 +433,8 @@ type Counters struct {
 // New 创建模块。
 func New() *Module {
 	return &Module{now: time.Now, stats: map[string]*ruleStats{}, fwGrants: map[fwGrantKey]time.Time{},
-		replay: map[string]time.Time{}, failSeen: map[netip.Addr]time.Time{}, bucket: tokenBucket{rate: 200, burst: 400}}
+		replay: map[string]time.Time{}, failSeen: map[netip.Addr]time.Time{}, bucket: tokenBucket{rate: 200, burst: 400},
+		perSrc: newSrcLimiter()}
 }
 
 // ID 实现 module.Module。
@@ -683,8 +688,10 @@ func (m *Module) handle(packet []byte, src netip.Addr, transport, via string) er
 		return errBanned
 	}
 	now := m.now()
+	// 先按来源网段限速，再过全局令牌桶：单个来源（或伪造来源集中的网段）的洪水只耗尽自己网段的令牌，
+	// 不会占满全局速率、挤掉其他来源的合法敲门
 	m.stateMu.Lock()
-	ok := m.bucket.take(now)
+	ok := m.perSrc.take(src, now) && m.bucket.take(now)
 	m.stateMu.Unlock()
 	if !ok {
 		m.count(func(c *Counters) { c.Ignored++ })
@@ -855,6 +862,7 @@ const failInterval = 5 * time.Second
 // 失败事件会被入侵防护用来封禁事件中的地址，所以只为可信的来源发布：经 TCP（协议分流）发来的报文来源经过握手，
 // 照常发布；UDP 报文的来源地址可以伪造，只有通过 HMAC 认证（r 不为空，报文出自持有密钥的客户端）但被规则拒绝时
 // 才发布。HMAC 认证失败的 UDP 包任何人都能以任意来源地址发出，若发布事件，攻击者可以借入侵防护封禁任意 IP。
+// HMAC 认证失败的报文不逐条记录日志，由 flushInvalid 每分钟汇总一条。
 func (m *Module) reject(r *compiledRule, src netip.Addr, transport, via, reason string) {
 	now := m.now()
 	m.stateMu.Lock()
@@ -866,6 +874,13 @@ func (m *Module) reject(r *compiledRule, src netip.Addr, transport, via, reason 
 	}
 	last, seen := m.failSeen[src]
 	report := !seen || now.Sub(last) >= failInterval
+	if r == nil {
+		// HMAC 认证失败：来源可能是伪造的，也可能是扫描器的随机数据，不逐个记录日志，按时间窗汇总（见 flushInvalid）
+		m.invalid.add(src, now)
+		if transport != transportTCP {
+			report = false
+		}
+	}
 	if report {
 		if len(m.failSeen) >= 4096 {
 			for k, t := range m.failSeen {
@@ -885,9 +900,8 @@ func (m *Module) reject(r *compiledRule, src netip.Addr, transport, via, reason 
 	if !report {
 		return
 	}
-	m.logs.Logger(name).Warnf("拒绝来自 %s 的敲门（经 %s）：%s", src, via, reason)
-	if r == nil && transport != transportTCP {
-		return
+	if r != nil {
+		m.logs.Logger(name).Warnf("拒绝来自 %s 的敲门（经 %s）：%s", src, via, reason)
 	}
 	events.Publish(events.Event{
 		Type:    events.KnockFailed,
@@ -943,7 +957,9 @@ func (m *Module) loop(ctx context.Context) {
 				delete(m.failSeen, k)
 			}
 		}
+		m.perSrc.prune(now)
 		m.stateMu.Unlock()
+		m.flushInvalid(now)
 		tick++
 		if tick%4 == 0 {
 			m.refreshLocal()
@@ -1028,4 +1044,95 @@ func (b *tokenBucket) take(now time.Time) bool {
 	}
 	b.tokens--
 	return true
+}
+
+// 按来源网段限速的参数：同一网段每秒最多认证 srcRate 个报文；网段数超过 srcCap 时，新网段共用 overflow 桶
+const (
+	srcRate      = 10
+	srcBurst     = 20
+	srcCap       = 4096
+	overflowRate = 50
+)
+
+// srcLimiter 按来源网段（IPv4 /24、IPv6 /64）分桶限速，网段数有上限，空闲的桶定期清理。调用方持有 stateMu。
+type srcLimiter struct {
+	buckets  map[netip.Prefix]*tokenBucket
+	overflow tokenBucket
+}
+
+func newSrcLimiter() *srcLimiter {
+	return &srcLimiter{buckets: map[netip.Prefix]*tokenBucket{}, overflow: tokenBucket{rate: overflowRate, burst: overflowRate * 2}}
+}
+
+// srcPrefix 返回来源地址所属的限速网段。
+func srcPrefix(a netip.Addr) netip.Prefix {
+	bits := 64
+	if a.Is4() {
+		bits = 24
+	}
+	p, _ := a.Prefix(bits)
+	return p
+}
+
+func (l *srcLimiter) take(src netip.Addr, now time.Time) bool {
+	p := srcPrefix(src)
+	b := l.buckets[p]
+	if b == nil {
+		if len(l.buckets) >= srcCap {
+			l.prune(now)
+		}
+		if len(l.buckets) >= srcCap {
+			// 网段过多（大量伪造来源）：新网段共用一个桶，已有网段的桶不受影响
+			return l.overflow.take(now)
+		}
+		b = &tokenBucket{rate: srcRate, burst: srcBurst}
+		l.buckets[p] = b
+	}
+	return b.take(now)
+}
+
+// prune 删除已经回满（空闲足够久）的桶：重新创建时同样是满的，删除不改变限速结果。
+func (l *srcLimiter) prune(now time.Time) {
+	full := time.Duration(float64(time.Second) * srcBurst / srcRate)
+	for p, b := range l.buckets {
+		if now.Sub(b.last) >= full {
+			delete(l.buckets, p)
+		}
+	}
+}
+
+// invalidWindow 为 HMAC 认证失败汇总日志的时间窗
+const invalidWindow = time.Minute
+
+// invalidStats 汇总一个时间窗内 HMAC 认证失败的报文数与来源数（来源最多记录 srcCap 个）。调用方持有 stateMu。
+type invalidStats struct {
+	since   time.Time
+	packets int
+	sources map[netip.Addr]struct{}
+	sample  netip.Addr
+}
+
+func (s *invalidStats) add(src netip.Addr, now time.Time) {
+	if s.packets == 0 {
+		s.since, s.sources, s.sample = now, map[netip.Addr]struct{}{}, src
+	}
+	s.packets++
+	if len(s.sources) < srcCap {
+		s.sources[src] = struct{}{}
+	}
+}
+
+// flushInvalid 在时间窗结束后把 HMAC 认证失败的报文汇总成一条日志：伪造来源的洪水不会逐个来源刷屏。
+func (m *Module) flushInvalid(now time.Time) {
+	m.stateMu.Lock()
+	st := m.invalid
+	due := st.packets > 0 && now.Sub(st.since) >= invalidWindow
+	if due {
+		m.invalid = invalidStats{}
+	}
+	m.stateMu.Unlock()
+	if !due {
+		return
+	}
+	m.logs.Logger("").Warnf("最近 1 分钟收到 %[1]d 个来源的 %[2]d 个无效敲门报文（没有规则的密钥能通过 HMAC 认证），其中一个来源为 %[3]s", len(st.sources), st.packets, st.sample)
 }
