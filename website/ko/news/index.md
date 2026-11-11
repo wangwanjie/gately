@@ -7,6 +7,10 @@ description: Gately 각 버전의 릴리스 공지와 변경 사항입니다.
 
 주요 버전의 릴리스 공지는 아래와 같습니다. 모든 버전의 전체 변경 사항과 다운로드 파일은 [GitHub Releases](https://github.com/wangwanjie/gately/releases)에서 확인하세요.
 
+## [v0.6.5.5](/ko/news/v0.6.5.5)
+
+2026년 11월 11일 · 포트 노킹, Wake-on-LAN 에이전트 원격 종료와 HTTP 요청 방식, 웹 서비스의 로그인한 사용자 신뢰, 사용자별 분배 사이트 유형 확대, 관리자 요청의 사이트 WAF 건너뛰기, OpenWrt apk가 다른 아키텍처 프로그램으로 교체하던 문제 수정.
+
 ## [v0.6.5.4](/ko/news/v0.6.5.4)
 
 2026년 11월 11일 · Wake-on-LAN 원격 종료와 Bemfa 음성 제어, Web 서비스 리스너에 HTTP 포트 추가, 내비게이션 패널 테마 변경.

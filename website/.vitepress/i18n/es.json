@@ -84,8 +84,8 @@
   "home": {
     "pill": "Gratis y de código abierto · Apache-2.0",
     "announce": {
-      "text": "v0.6.5.4: apagado remoto y control por voz con Bemfa en Wake-on-LAN, puerto HTTP adicional en el listener, temas de los paneles de navegación →",
-      "link": "/es/news/v0.6.5.4"
+      "text": "v0.6.5.5: Port Knocking, apagado de Wake-on-LAN mediante un agente, confiar en usuarios autenticados para omitir el WAF y corrección del paquete de OpenWrt →",
+      "link": "/es/news/v0.6.5.5"
     },
     "titleLine1": "La pasarela de red todo en uno",
     "titleLine2": "Código abierto y lista para usar",
