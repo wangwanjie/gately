@@ -64,7 +64,7 @@ type Settings struct {
 	// AutoFirewall 为 true 时在系统防火墙（OpenWrt fw4、firewalld 等）放行敲门端口；
 	// 防火墙拦截生效后也放行受保护端口，使是否可访问只由敲门决定
 	AutoFirewall bool `json:"autoFirewall"`
-	// AllowLAN 为 true 时内网、回环地址与本机所在的 IPv6 /64 无需敲门即可访问受保护端口
+	// AllowLAN 为 true 时内网、回环地址与本机网卡所在的公网 IPv6 网段无需敲门即可访问受保护端口
 	AllowLAN bool `json:"allowLan"`
 	// AllowList 为无需敲门即可访问受保护端口的 IP 或网段
 	AllowList []string `json:"allowList"`
@@ -292,7 +292,7 @@ var lanPrefixes = []netip.Prefix{
 	netip.MustParsePrefix("fc00::/7"), netip.MustParsePrefix("fe80::/10"),
 }
 
-// localPrefixes 返回本机网卡所在的公网 IPv6 /64（家庭网络常把同一个 /64 分给局域网全部设备），可在测试中替换。
+// localPrefixes 返回本机网卡所在的公网 IPv6 网段（家庭网络常把同一个 /64 分给局域网全部设备），可在测试中替换。
 var localPrefixes = func() []netip.Prefix {
 	var out []netip.Prefix
 	ifaces, _ := net.Interfaces()
@@ -303,22 +303,32 @@ var localPrefixes = func() []netip.Prefix {
 		addrs, _ := iface.Addrs()
 		for _, a := range addrs {
 			ipn, ok := a.(*net.IPNet)
-			if !ok || ipn.IP.To4() != nil {
+			if !ok {
 				continue
 			}
-			ip, ok := netip.AddrFromSlice(ipn.IP)
-			bits, _ := ipn.Mask.Size()
-			if !ok || bits < 64 || !ip.IsGlobalUnicast() || ip.IsPrivate() {
-				continue
-			}
-			p := netip.PrefixFrom(ip, 64).Masked()
-			if !slices.Contains(out, p) {
+			p, ok := localPrefix(ipn)
+			if ok && !slices.Contains(out, p) {
 				out = append(out, p)
 			}
 		}
 	}
 	slices.SortFunc(out, func(a, b netip.Prefix) int { return a.Addr().Compare(b.Addr()) })
 	return out
+}
+
+// localPrefix 返回网卡地址按实际前缀长度计算的免敲门网段。只处理公网 IPv6：网卡前缀为 /64 或更短时
+// （家庭宽带把 /64 分给局域网）按该前缀纳入；更长的前缀（云主机常见的 /124、/128）只纳入网卡自身的前缀，
+// 不扩大到 /64，免得同一 /64 中其他租户的主机无需敲门。
+func localPrefix(ipn *net.IPNet) (netip.Prefix, bool) {
+	if ipn.IP.To4() != nil {
+		return netip.Prefix{}, false
+	}
+	ip, ok := netip.AddrFromSlice(ipn.IP)
+	ones, total := ipn.Mask.Size()
+	if !ok || total != 128 || ones == 0 || !ip.IsGlobalUnicast() || ip.IsPrivate() {
+		return netip.Prefix{}, false
+	}
+	return netip.PrefixFrom(ip, ones).Masked(), true
 }
 
 // exemptPrefixes 返回无需敲门的网段。
