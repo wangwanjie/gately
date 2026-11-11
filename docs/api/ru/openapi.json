@@ -1245,6 +1245,9 @@
           "needed": {
             "type": "boolean"
           },
+          "noIPv6": {
+            "type": "boolean"
+          },
           "ports": {
             "items": {
               "type": "string"
@@ -55013,6 +55016,67 @@
         "x-token-allowed": true
       }
     },
+    "/api/wol/agent-scripts": {
+      "get": {
+        "description": "Требуемое разрешение: `wol:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "SHA-256 скриптов агента по имени файла; команды установки проверяют по нему скачанный скрипт",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "wol:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/wol/agents": {
       "get": {
         "description": "Требуемое разрешение: `wol:read`.",
@@ -56639,6 +56703,167 @@
         ],
         "x-required-scope": "wol:read",
         "x-token-allowed": true
+      }
+    },
+    "/api/wol/public/agent/ack": {
+      "post": {
+        "description": "Тело формы: `token`, `instance`, `id` — идентификатор команды, `result` — `ok` (сейчас будет выполнена) или `fail` (ошибка, можно указать причину в `msg`). Агент сначала подтверждает и выполняет команду только после ответа ok от сервера; команда, не подтверждённая за 10 секунд, отменяется. Возвращает простой текст.\n\n**Эндпоинт без входа**: использует не сеанс входа и не API-токен, а собственные учётные данные модуля; запросы с действительными учётными данными проходят защищённый вход, а блокировки и доступ только из локальной сети по-прежнему действуют.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "description": "Недействительные учётные данные"
+          }
+        },
+        "summary": "Агент Wake-on-LAN подтверждает команду или сообщает результат",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
+      }
+    },
+    "/api/wol/public/agent/poll": {
+      "post": {
+        "description": "Вызывается агентом на управляемом устройстве. Тело формы: `token` — токен агента устройства (также принимается в заголовке `Authorization: Bearer`), `instance` — случайный идентификатор этого запуска (от 8 до 64 букв, цифр, подчёркиваний или дефисов), `host`, `os` и `version` — имя хоста, система и версия агента; тело не больше 4 КБ. Ждёт до 25 секунд и возвращает простой текст: `noop`, если команды нет, `cmd \u003cid\u003e \u003caction\u003e` — команда для выполнения (action: shutdown, reboot или sleep). Возвращает 409, пока в сети другой агент с тем же токеном.\n\n**Эндпоинт без входа**: использует не сеанс входа и не API-токен, а собственные учётные данные модуля; запросы с действительными учётными данными проходят защищённый вход, а блокировки и доступ только из локальной сети по-прежнему действуют.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "description": "Недействительные учётные данные"
+          }
+        },
+        "summary": "Длинный опрос команд агентом Wake-on-LAN",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
+      }
+    },
+    "/api/wol/public/agent/{name}": {
+      "get": {
+        "description": "`name` — gately-agent.sh или gately-agent.ps1. Требуется токен агента устройства (заголовок `Authorization: Bearer`).\n\n**Эндпоинт без входа**: использует не сеанс входа и не API-токен, а собственные учётные данные модуля; запросы с действительными учётными данными проходят защищённый вход, а блокировки и доступ только из локальной сети по-прежнему действуют.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "description": "Недействительные учётные данные"
+          }
+        },
+        "summary": "Скачать скрипт агента Wake-on-LAN",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
+      },
+      "post": {
+        "description": "`name` — gately-agent.sh или gately-agent.ps1; поле формы `token` — токен агента устройства. Команды установки скачивают здесь скрипт и перед запуском сверяют его с SHA-256 из `GET /api/wol/agent-scripts`.\n\n**Эндпоинт без входа**: использует не сеанс входа и не API-токен, а собственные учётные данные модуля; запросы с действительными учётными данными проходят защищённый вход, а блокировки и доступ только из локальной сети по-прежнему действуют.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "description": "Недействительные учётные данные"
+          }
+        },
+        "summary": "Скачать скрипт агента Wake-on-LAN",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
       }
     },
     "/api/wol/ssh-targets": {

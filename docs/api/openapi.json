@@ -1245,6 +1245,9 @@
           "needed": {
             "type": "boolean"
           },
+          "noIPv6": {
+            "type": "boolean"
+          },
           "ports": {
             "items": {
               "type": "string"
@@ -55013,6 +55016,67 @@
         "x-token-allowed": true
       }
     },
+    "/api/wol/agent-scripts": {
+      "get": {
+        "description": "所需权限：`wol:read`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "客户端脚本的 SHA-256，按文件名索引；安装命令据此校验下载的脚本",
+        "tags": [
+          "网络唤醒"
+        ],
+        "x-required-scope": "wol:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/wol/agents": {
       "get": {
         "description": "所需权限：`wol:read`。",
@@ -56639,6 +56703,167 @@
         ],
         "x-required-scope": "wol:read",
         "x-token-allowed": true
+      }
+    },
+    "/api/wol/public/agent/ack": {
+      "post": {
+        "description": "表单请求体：`token`、`instance`，`id` 为指令编号，`result` 为 `ok`（即将执行）或 `fail`（执行失败，可带 `msg` 说明原因）。客户端须先确认、服务端返回 ok 后才执行；指令下发 10 秒内未确认即作废。返回纯文本。\n\n**免登录接口**：不使用登录会话或 API 令牌，凭模块自己的凭据访问；带有效凭据的请求可越过安全入口，封禁与仅限内网访问仍然生效。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "description": "凭据无效"
+          }
+        },
+        "summary": "网络唤醒客户端确认或报告指令结果",
+        "tags": [
+          "网络唤醒"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
+      }
+    },
+    "/api/wol/public/agent/poll": {
+      "post": {
+        "description": "被控设备上的客户端调用。表单请求体：`token` 设备的客户端凭据（也可放在 `Authorization: Bearer` 头），`instance` 本次运行的随机标识（8 到 64 个字母、数字、下划线或连字符），`host`、`os`、`version` 为上报的主机名、系统与客户端版本；请求体不超过 4 KB。最多挂起 25 秒，返回纯文本：`noop` 表示没有指令，`cmd \u003cid\u003e \u003caction\u003e` 为待执行的指令（action 为 shutdown、reboot 或 sleep）。同一凭据另一个客户端在线时返回 409。\n\n**免登录接口**：不使用登录会话或 API 令牌，凭模块自己的凭据访问；带有效凭据的请求可越过安全入口，封禁与仅限内网访问仍然生效。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "description": "凭据无效"
+          }
+        },
+        "summary": "网络唤醒客户端长轮询指令",
+        "tags": [
+          "网络唤醒"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
+      }
+    },
+    "/api/wol/public/agent/{name}": {
+      "get": {
+        "description": "`name` 为 gately-agent.sh 或 gately-agent.ps1。须带设备的客户端凭据（`Authorization: Bearer` 头）。\n\n**免登录接口**：不使用登录会话或 API 令牌，凭模块自己的凭据访问；带有效凭据的请求可越过安全入口，封禁与仅限内网访问仍然生效。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "description": "凭据无效"
+          }
+        },
+        "summary": "下载网络唤醒客户端脚本",
+        "tags": [
+          "网络唤醒"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
+      },
+      "post": {
+        "description": "`name` 为 gately-agent.sh 或 gately-agent.ps1，表单请求体 `token` 为设备的客户端凭据。安装命令据此下载脚本，并先与 `GET /api/wol/agent-scripts` 给出的 SHA-256 比对再执行。\n\n**免登录接口**：不使用登录会话或 API 令牌，凭模块自己的凭据访问；带有效凭据的请求可越过安全入口，封禁与仅限内网访问仍然生效。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "description": "凭据无效"
+          }
+        },
+        "summary": "下载网络唤醒客户端脚本",
+        "tags": [
+          "网络唤醒"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
       }
     },
     "/api/wol/ssh-targets": {

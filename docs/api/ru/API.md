@@ -516,11 +516,16 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/wol/agents` | `wol:read` | Сведения о подключении агентов, индексируются по key устройства |
 | POST | `/api/wol/devices/{key}/agent-token` | `wol:write` | Создать токен агента заново; подключённые агенты будут сразу отключены |
 | GET | `/api/wol/agent-script/{name}` | `wol:read` | Скачать скрипт агента (gately-agent.sh или gately-agent.ps1) |
+| GET | `/api/wol/agent-scripts` | `wol:read` | SHA-256 скриптов агента по имени файла; команды установки проверяют по нему скачанный скрипт |
 | GET | `/api/wol/status` | `wol:read` | Просмотр состояния устройства в сети |
 | GET | `/api/wol/ssh-targets` | `wol:read,webterminal:read` | Список SSH-подключений для удалённого выключения |
 | GET | `/api/wol/bemfa` | `wol:read` | Настройки Bemfa и состояние подключения |
 | GET | `/api/wol/bemfa/secrets` | `wol:write` | Показать закрытый ключ Bemfa |
 | PUT | `/api/wol/bemfa` | `wol:write` | Изменить настройки Bemfa |
+| POST | `/api/wol/public/agent/poll` | Без входа | Длинный опрос команд агентом Wake-on-LAN |
+| POST | `/api/wol/public/agent/ack` | Без входа | Агент Wake-on-LAN подтверждает команду или сообщает результат |
+| GET | `/api/wol/public/agent/{name}` | Без входа | Скачать скрипт агента Wake-on-LAN |
+| POST | `/api/wol/public/agent/{name}` | Без входа | Скачать скрипт агента Wake-on-LAN |
 
 ## Веб-терминал
 
@@ -1517,6 +1522,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `dropped` | integer |
 | `error` | string |
 | `needed` | boolean |
+| `noIPv6` | boolean |
 | `ports` | Массив из string |
 | `reason` | string |
 | `version` | string |

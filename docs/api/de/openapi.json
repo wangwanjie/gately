@@ -1245,6 +1245,9 @@
           "needed": {
             "type": "boolean"
           },
+          "noIPv6": {
+            "type": "boolean"
+          },
           "ports": {
             "items": {
               "type": "string"
@@ -55013,6 +55016,67 @@
         "x-token-allowed": true
       }
     },
+    "/api/wol/agent-scripts": {
+      "get": {
+        "description": "Erforderliche Berechtigung: `wol:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "SHA-256 der Agent-Skripte nach Dateiname; Installationsbefehle prüfen damit das heruntergeladene Skript",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "wol:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/wol/agents": {
       "get": {
         "description": "Erforderliche Berechtigung: `wol:read`.",
@@ -56639,6 +56703,167 @@
         ],
         "x-required-scope": "wol:read",
         "x-token-allowed": true
+      }
+    },
+    "/api/wol/public/agent/ack": {
+      "post": {
+        "description": "Formular-Body: `token`, `instance`, `id` die Befehls-ID, `result` `ok` (wird gleich ausgeführt) oder `fail` (fehlgeschlagen, optional mit `msg` als Grund). Der Agent bestätigt zuerst und führt den Befehl erst aus, wenn der Server ok antwortet; ein Befehl, der nicht innerhalb von 10 Sekunden bestätigt wird, verfällt. Gibt Klartext zurück.\n\n**Endpunkt ohne Anmeldung**: nutzt weder eine Anmeldesitzung noch ein API-Token, sondern die eigenen Zugangsdaten des Moduls; Anfragen mit gültigen Zugangsdaten passieren den Sicherheitseinstieg, Sperren und der Zugriff nur aus dem lokalen Netz gelten weiterhin.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "description": "Ungültige Zugangsdaten"
+          }
+        },
+        "summary": "Wake-on-LAN-Agent bestätigt einen Befehl oder meldet sein Ergebnis",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
+      }
+    },
+    "/api/wol/public/agent/poll": {
+      "post": {
+        "description": "Wird vom Agent auf dem gesteuerten Gerät aufgerufen. Formular-Body: `token` das Agent-Token des Geräts (auch im Header `Authorization: Bearer`), `instance` eine zufällige ID dieses Laufs (8 bis 64 Buchstaben, Ziffern, Unterstriche oder Bindestriche), `host`, `os` und `version` gemeldeter Hostname, System und Agent-Version; der Body ist höchstens 4 KB groß. Wartet bis zu 25 Sekunden und gibt Klartext zurück: `noop` ohne Befehl, `cmd \u003cid\u003e \u003caction\u003e` für einen auszuführenden Befehl (action ist shutdown, reboot oder sleep). Gibt 409 zurück, solange ein anderer Agent mit demselben Token online ist.\n\n**Endpunkt ohne Anmeldung**: nutzt weder eine Anmeldesitzung noch ein API-Token, sondern die eigenen Zugangsdaten des Moduls; Anfragen mit gültigen Zugangsdaten passieren den Sicherheitseinstieg, Sperren und der Zugriff nur aus dem lokalen Netz gelten weiterhin.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "description": "Ungültige Zugangsdaten"
+          }
+        },
+        "summary": "Long Polling des Wake-on-LAN-Agents nach Befehlen",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
+      }
+    },
+    "/api/wol/public/agent/{name}": {
+      "get": {
+        "description": "`name` ist gately-agent.sh oder gately-agent.ps1. Erfordert das Agent-Token des Geräts (Header `Authorization: Bearer`).\n\n**Endpunkt ohne Anmeldung**: nutzt weder eine Anmeldesitzung noch ein API-Token, sondern die eigenen Zugangsdaten des Moduls; Anfragen mit gültigen Zugangsdaten passieren den Sicherheitseinstieg, Sperren und der Zugriff nur aus dem lokalen Netz gelten weiterhin.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "description": "Ungültige Zugangsdaten"
+          }
+        },
+        "summary": "Wake-on-LAN-Agent-Skript herunterladen",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
+      },
+      "post": {
+        "description": "`name` ist gately-agent.sh oder gately-agent.ps1; das Formularfeld `token` ist das Agent-Token des Geräts. Installationsbefehle laden das Skript hier herunter und vergleichen es vor der Ausführung mit dem SHA-256 aus `GET /api/wol/agent-scripts`.\n\n**Endpunkt ohne Anmeldung**: nutzt weder eine Anmeldesitzung noch ein API-Token, sondern die eigenen Zugangsdaten des Moduls; Anfragen mit gültigen Zugangsdaten passieren den Sicherheitseinstieg, Sperren und der Zugriff nur aus dem lokalen Netz gelten weiterhin.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "description": "Ungültige Zugangsdaten"
+          }
+        },
+        "summary": "Wake-on-LAN-Agent-Skript herunterladen",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
       }
     },
     "/api/wol/ssh-targets": {

@@ -1245,6 +1245,9 @@
           "needed": {
             "type": "boolean"
           },
+          "noIPv6": {
+            "type": "boolean"
+          },
           "ports": {
             "items": {
               "type": "string"
@@ -55013,6 +55016,67 @@
         "x-token-allowed": true
       }
     },
+    "/api/wol/agent-scripts": {
+      "get": {
+        "description": "Permission requise : `wol:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "SHA-256 des scripts de l'agent, par nom de fichier ; les commandes d'installation l'utilisent pour vérifier le script téléchargé",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "wol:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/wol/agents": {
       "get": {
         "description": "Permission requise : `wol:read`.",
@@ -56639,6 +56703,167 @@
         ],
         "x-required-scope": "wol:read",
         "x-token-allowed": true
+      }
+    },
+    "/api/wol/public/agent/ack": {
+      "post": {
+        "description": "Corps de formulaire : `token`, `instance`, `id` l'identifiant de la commande, `result` `ok` (sur le point de s'exécuter) ou `fail` (échec, éventuellement avec `msg` pour la raison). L'agent confirme d'abord et n'exécute la commande qu'après la réponse ok du serveur ; une commande non confirmée sous 10 secondes expire. Renvoie du texte brut.\n\n**Point de terminaison sans connexion** : n'utilise ni session ni jeton d'API, mais les identifiants propres au module ; les requêtes munies d'identifiants valides franchissent l'entrée de sécurité, tandis que les bannissements et l'accès réservé au réseau local s'appliquent toujours.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "description": "Identifiants invalides"
+          }
+        },
+        "summary": "L'agent Wake-on-LAN confirme une commande ou en signale le résultat",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
+      }
+    },
+    "/api/wol/public/agent/poll": {
+      "post": {
+        "description": "Appelé par l'agent de l'appareil contrôlé. Corps de formulaire : `token` le jeton d'agent de l'appareil (accepté aussi dans l'en-tête `Authorization: Bearer`), `instance` un identifiant aléatoire de cette exécution (8 à 64 lettres, chiffres, traits de soulignement ou tirets), `host`, `os` et `version` le nom d'hôte, le système et la version de l'agent ; le corps fait au plus 4 Ko. Attend jusqu'à 25 secondes et renvoie du texte brut : `noop` sans commande, `cmd \u003cid\u003e \u003caction\u003e` pour une commande à exécuter (action vaut shutdown, reboot ou sleep). Renvoie 409 tant qu'un autre agent avec le même jeton est en ligne.\n\n**Point de terminaison sans connexion** : n'utilise ni session ni jeton d'API, mais les identifiants propres au module ; les requêtes munies d'identifiants valides franchissent l'entrée de sécurité, tandis que les bannissements et l'accès réservé au réseau local s'appliquent toujours.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "description": "Identifiants invalides"
+          }
+        },
+        "summary": "Interrogation longue des commandes par l'agent Wake-on-LAN",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
+      }
+    },
+    "/api/wol/public/agent/{name}": {
+      "get": {
+        "description": "`name` vaut gately-agent.sh ou gately-agent.ps1. Nécessite le jeton d'agent de l'appareil (en-tête `Authorization: Bearer`).\n\n**Point de terminaison sans connexion** : n'utilise ni session ni jeton d'API, mais les identifiants propres au module ; les requêtes munies d'identifiants valides franchissent l'entrée de sécurité, tandis que les bannissements et l'accès réservé au réseau local s'appliquent toujours.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "description": "Identifiants invalides"
+          }
+        },
+        "summary": "Télécharger un script de l'agent Wake-on-LAN",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
+      },
+      "post": {
+        "description": "`name` vaut gately-agent.sh ou gately-agent.ps1 ; le champ de formulaire `token` est le jeton d'agent de l'appareil. Les commandes d'installation téléchargent ici le script et le comparent au SHA-256 de `GET /api/wol/agent-scripts` avant de l'exécuter.\n\n**Point de terminaison sans connexion** : n'utilise ni session ni jeton d'API, mais les identifiants propres au module ; les requêtes munies d'identifiants valides franchissent l'entrée de sécurité, tandis que les bannissements et l'accès réservé au réseau local s'appliquent toujours.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "description": "Identifiants invalides"
+          }
+        },
+        "summary": "Télécharger un script de l'agent Wake-on-LAN",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
       }
     },
     "/api/wol/ssh-targets": {

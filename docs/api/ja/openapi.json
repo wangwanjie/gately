@@ -1245,6 +1245,9 @@
           "needed": {
             "type": "boolean"
           },
+          "noIPv6": {
+            "type": "boolean"
+          },
           "ports": {
             "items": {
               "type": "string"
@@ -55013,6 +55016,67 @@
         "x-token-allowed": true
       }
     },
+    "/api/wol/agent-scripts": {
+      "get": {
+        "description": "必要な権限: `wol:read`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "エージェントスクリプトの SHA-256（ファイル名ごと）。インストールコマンドがダウンロードしたスクリプトの検証に使います",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "wol:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/wol/agents": {
       "get": {
         "description": "必要な権限: `wol:read`。",
@@ -56639,6 +56703,167 @@
         ],
         "x-required-scope": "wol:read",
         "x-token-allowed": true
+      }
+    },
+    "/api/wol/public/agent/ack": {
+      "post": {
+        "description": "フォーム本文：`token`、`instance`、`id` はコマンド ID、`result` は `ok`（これから実行）または `fail`（実行失敗、`msg` で理由を付けられます）。エージェントは先に確認し、サーバーが ok を返してから実行します。送信後 10 秒以内に確認されないコマンドは無効になります。プレーンテキストを返します。\n\n**ログイン不要のエンドポイント**：ログインセッションや API トークンではなく、モジュール独自の資格情報でアクセスします。有効な資格情報を持つリクエストはセキュリティ入口を通過できますが、BAN とローカルネットワーク限定は引き続き適用されます。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "description": "資格情報が無効です"
+          }
+        },
+        "summary": "Wake-on-LAN エージェントがコマンドを確認または結果を報告",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
+      }
+    },
+    "/api/wol/public/agent/poll": {
+      "post": {
+        "description": "制御対象デバイスのエージェントが呼び出します。フォーム本文：`token` はデバイスのエージェントトークン（`Authorization: Bearer` ヘッダーでも可）、`instance` は今回の実行のランダム ID（英数字・アンダースコア・ハイフン 8〜64 文字）、`host`・`os`・`version` は報告するホスト名、システム、エージェントのバージョン。本文は 4 KB まで。最大 25 秒待機し、プレーンテキストを返します：`noop` はコマンドなし、`cmd \u003cid\u003e \u003caction\u003e` は実行するコマンド（action は shutdown、reboot、sleep）。同じトークンの別のエージェントがオンラインの間は 409 を返します。\n\n**ログイン不要のエンドポイント**：ログインセッションや API トークンではなく、モジュール独自の資格情報でアクセスします。有効な資格情報を持つリクエストはセキュリティ入口を通過できますが、BAN とローカルネットワーク限定は引き続き適用されます。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "description": "資格情報が無効です"
+          }
+        },
+        "summary": "Wake-on-LAN エージェントのコマンド取得（ロングポーリング）",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
+      }
+    },
+    "/api/wol/public/agent/{name}": {
+      "get": {
+        "description": "`name` は gately-agent.sh または gately-agent.ps1。デバイスのエージェントトークン（`Authorization: Bearer` ヘッダー）が必要です。\n\n**ログイン不要のエンドポイント**：ログインセッションや API トークンではなく、モジュール独自の資格情報でアクセスします。有効な資格情報を持つリクエストはセキュリティ入口を通過できますが、BAN とローカルネットワーク限定は引き続き適用されます。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "description": "資格情報が無効です"
+          }
+        },
+        "summary": "Wake-on-LAN エージェントのスクリプトをダウンロード",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
+      },
+      "post": {
+        "description": "`name` は gately-agent.sh または gately-agent.ps1、フォーム本文の `token` はデバイスのエージェントトークンです。インストールコマンドはここからスクリプトをダウンロードし、`GET /api/wol/agent-scripts` の SHA-256 と照合してから実行します。\n\n**ログイン不要のエンドポイント**：ログインセッションや API トークンではなく、モジュール独自の資格情報でアクセスします。有効な資格情報を持つリクエストはセキュリティ入口を通過できますが、BAN とローカルネットワーク限定は引き続き適用されます。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "description": "資格情報が無効です"
+          }
+        },
+        "summary": "Wake-on-LAN エージェントのスクリプトをダウンロード",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
       }
     },
     "/api/wol/ssh-targets": {

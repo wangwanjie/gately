@@ -86,10 +86,18 @@ func TestModulePublicRoutes(t *testing.T) {
 	if resp.StatusCode != http.StatusUnauthorized {
 		t.Fatalf("模块的其他接口仍需登录: %d", resp.StatusCode)
 	}
-	// 免登录接口不出现在接口文档中
+	// 免登录接口写进接口文档，标明不使用登录会话与 API 令牌
 	_, doc := doJSON(t, c, "GET", srv.URL+"/api/openapi.json", nil)
-	if strings.Contains(string(doc), "/public/hello") {
-		t.Fatal("免登录接口不应出现在接口文档中")
+	var spec struct {
+		Paths map[string]map[string]map[string]any `json:"paths"`
+	}
+	_ = json.Unmarshal(doc, &spec)
+	op := spec.Paths["/api/pubstub/public/hello"]["post"]
+	if op == nil {
+		t.Fatalf("免登录接口应出现在接口文档中: %s", doc)
+	}
+	if _, ok := op["security"]; ok || op["x-token-allowed"] != false || op["x-required-scope"] != scopePublic {
+		t.Fatalf("免登录接口应标明不使用令牌: %v", op)
 	}
 
 	_, body := doJSON(t, c, "GET", srv.URL+"/api/system/settings", nil)

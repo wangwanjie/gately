@@ -516,11 +516,16 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | GET | `/api/wol/agents` | `wol:read` | Agent connection info, indexed by device key |
 | POST | `/api/wol/devices/{key}/agent-token` | `wol:write` | Regenerate the agent token; connected agents will be disconnected |
 | GET | `/api/wol/agent-script/{name}` | `wol:read` | Download the agent script (gately-agent.sh or gately-agent.ps1) |
+| GET | `/api/wol/agent-scripts` | `wol:read` | SHA-256 of the agent scripts, keyed by file name; install commands use it to verify the downloaded script |
 | GET | `/api/wol/status` | `wol:read` | View device online status |
 | GET | `/api/wol/ssh-targets` | `wol:read,webterminal:read` | List SSH connections usable for remote shutdown |
 | GET | `/api/wol/bemfa` | `wol:read` | Bemfa settings and connection status |
 | GET | `/api/wol/bemfa/secrets` | `wol:write` | Show Bemfa private key |
 | PUT | `/api/wol/bemfa` | `wol:write` | Update Bemfa settings |
+| POST | `/api/wol/public/agent/poll` | Login-free | Wake-on-LAN agent long poll for commands |
+| POST | `/api/wol/public/agent/ack` | Login-free | Wake-on-LAN agent acknowledges a command or reports its result |
+| GET | `/api/wol/public/agent/{name}` | Login-free | Download a Wake-on-LAN agent script |
+| POST | `/api/wol/public/agent/{name}` | Login-free | Download a Wake-on-LAN agent script |
 
 ## Web terminal
 
@@ -1517,6 +1522,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `dropped` | integer |
 | `error` | string |
 | `needed` | boolean |
+| `noIPv6` | boolean |
 | `ports` | Array of string |
 | `reason` | string |
 | `version` | string |

@@ -14,6 +14,8 @@ type routeInfo struct {
 	Path   string
 	// Module 为所属模块 ID，应用自身接口为空
 	Module string
+	// Public 表示模块的免登录接口（/api/<ID>/public 下），凭模块自己的凭据访问，只用于生成文档
+	Public bool
 }
 
 // routeRecorder 在向 mux 注册接口的同时记录路由表和文档信息。
@@ -30,4 +32,13 @@ func (r *routeRecorder) add(pattern string, h http.HandlerFunc, mod string) {
 		return
 	}
 	r.routes = append(r.routes, routeInfo{Method: method, Path: path, Module: mod})
+}
+
+// addPublic 登记一条免登录接口供文档使用；接口本身由 publicRouter 直接挂到外层 mux。
+func (r *routeRecorder) addPublic(pattern, mod string) {
+	method, path, ok := strings.Cut(pattern, " ")
+	if !ok {
+		return
+	}
+	r.routes = append(r.routes, routeInfo{Method: method, Path: path, Module: mod, Public: true})
 }
