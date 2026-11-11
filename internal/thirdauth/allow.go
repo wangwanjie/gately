@@ -30,12 +30,22 @@ func ValidateEntries(entries []string) error {
 // Allowed 判断身份是否在允许列表中。列表项的标识可匹配主标识或任一别名（不区分大小写），
 // 提供方key:* 表示该提供方的所有用户。
 func Allowed(entries []string, id Identity) bool {
+	return allowed(entries, id, true)
+}
+
+// AllowedExplicit 判断身份是否被允许列表逐个列出：不计 提供方key:* 通配。
+// 通配允许的是任何能在该提供方注册账号的人，不能据此认定访客可信（例如跳过 WAF）。
+func AllowedExplicit(entries []string, id Identity) bool {
+	return allowed(entries, id, false)
+}
+
+func allowed(entries []string, id Identity, wildcard bool) bool {
 	for _, e := range entries {
 		p, v, ok := ParseEntry(e)
 		if !ok || !strings.EqualFold(p, id.Provider) {
 			continue
 		}
-		if v == "*" || strings.EqualFold(v, id.Primary) {
+		if (wildcard && v == "*") || strings.EqualFold(v, id.Primary) {
 			return true
 		}
 		for _, a := range id.Aliases {
