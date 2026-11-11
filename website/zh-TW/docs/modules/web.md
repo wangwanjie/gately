@@ -96,7 +96,7 @@
 | 略過後端憑證驗證 | 連線 HTTPS 後端時不驗證憑證 | 後端使用自簽或過期憑證，如 NAS、路由器管理頁的 https 連接埠。關閉驗證後無法確認後端身分，只建議用於內網後端 |
 | Host 使用後端位址 | 送往後端的 Host 標頭改為後端位址；關閉時（預設）保留訪客請求的 Host | 後端只認自己的位址，例如回傳 400 / 403、跳到錯誤位址或提示 Host 不符；反向代理到公網網站或 CDN 時通常需要。後端按網域區分站點，或需要用造訪網域產生連結時保持關閉 |
 | 停用連線重用 | 每個請求都建立新的後端連線（關閉 Keep-Alive） | 後端偶爾出現連線被重設、請求卡住，或不支援長連線。會增加一些延遲，正常情況保持關閉 |
-| 新增 X-Forwarded-* | 寫入 `X-Forwarded-For` / `X-Forwarded-Proto` / `X-Forwarded-Host` / `X-Forwarded-Port` 與 `X-Real-IP`，告訴後端訪客的真實 IP、原始協定、網域和連接埠 | 後端需要記錄真實 IP，或要知道外部是 HTTPS 才能產生正確連結（否則可能跳回 http 或登入後循環跳轉）。多數應用建議開啟 |
+| 新增 X-Forwarded-* | 寫入 `X-Forwarded-For` / `X-Forwarded-Proto` / `X-Forwarded-Host` / `X-Forwarded-Port` 與 `X-Real-IP`，告訴後端訪客的真實 IP、原始協定、網域和連接埠；訪客來源連接埠寫入 `X-Real-Port` 與 `X-Forwarded-For-Port`（`X-Forwarded-Port` 是訪客存取 Gately 用的連接埠） | 後端需要記錄真實 IP，或要知道外部是 HTTPS 才能產生正確連結（否則可能跳回 http 或登入後循環跳轉）。多數應用建議開啟 |
 | 向後端傳送 PROXY v2 | 在 TCP 連線開頭附加 PROXY 協定 v2 標頭，傳遞真實用戶端 IP。開啟後每個請求都新建連線，也不再用 HTTP/2 連線後端。後端是 Gately 時，需在其監聽上開啟接收 PROXY 協定，並把本機加入可信 PROXY 來源。 | 後端不讀 HTTP 標頭但支援 PROXY 協定，如另一層 Gately、haproxy、開啟 `proxy_protocol` 的 nginx。後端未設定接收時所有請求都會失敗，不確定時保持關閉 |
 | 使用造訪網域作為 SNI | 僅 HTTPS 後端：交握時傳送訪客使用的網域並據此驗證憑證，相當於 nginx 的 `proxy_ssl_server_name on; proxy_ssl_name $host` | 後端在同一連接埠按網域選擇憑證或分流，如 frp 的 `vhost_https`、託管多個 HTTPS 站點的 nginx。每個後端使用獨立的連線池，不同網域的連線不會互相重用 |
 | 轉發 Gately 登入 Cookie | 把 Gately 自己的登入 Cookie（單一登入 `gately_sso`、站點工作階段、第三方登入隨機數）原樣轉發給後端；關閉時（預設）這些 Cookie 不發給後端，避免洩露登入憑據 | 後端是另一台負責認證的 Gately，本站點不開認證。例如公網 Gately 只做 WAF 與存取控制、反代到內網 Gately，由內網 Gately 負責網頁認證與單一登入。本站點啟用認證時不能開啟；只在後端是自己的 Gately 時使用 |
@@ -164,6 +164,7 @@
 - 不能填寫 `0.0.0.0/0`、`::/0`，儲存時會被拒絕；
 - 協定分流把連線經迴環轉給 Web 服務時，請在協定分流中開啟傳送 PROXY 標頭、在監聽上開啟接收 PROXY 協定，不要把 `127.0.0.1` 填進可信代理，否則直接連到協定分流的訪客也能偽造請求標頭。協定分流的透傳路由仍是純 TCP 轉發，不受此設定影響；
 - 經可信代理進入、帶 `X-Forwarded-Proto: https` 的請求按 HTTPS 處理；
+- 訪客來源連接埠：從請求標頭取得訪客位址時，來源連接埠只來自「真實連接埠請求標頭」中設定的標頭（如代理以 `proxy_set_header X-Real-Port $remote_port` 寫入的 `X-Real-Port`，有多項時取最右一項）。未設定或取不到時連接埠未知，開啟「新增 X-Forwarded-*」的站點不向後端傳送 `X-Real-Port` / `X-Forwarded-For-Port`，即時連線中只顯示位址。只填你的代理會覆寫的標頭，否則訪客可以偽造連接埠；
 - 未填寫可信代理時保持原有行為。連線層面的封鎖（入侵防護寫入防火牆的規則）針對的是 TCP 來源，在 CDN 之後對訪客不起作用，Web 服務自身的封鎖依真實位址生效。
 
 ## 驗證

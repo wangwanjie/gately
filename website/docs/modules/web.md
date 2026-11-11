@@ -96,7 +96,7 @@
 | 跳过后端证书校验 | 连接 HTTPS 后端时不验证证书 | 后端使用自签名或过期证书，如 NAS、路由器管理页的 https 端口。关闭校验后无法确认后端身份，只建议用于内网后端 |
 | Host 使用后端地址 | 发往后端的 Host 头改为后端地址；关闭时（默认）保留访客请求的 Host | 后端只认自己的地址，例如返回 400 / 403、跳转到错误地址或提示 Host 不匹配；反代到公网网站或 CDN 时通常需要。后端按域名区分站点，或需要用访问域名生成链接时保持关闭 |
 | 禁用连接复用 | 每个请求都新建到后端的连接（关闭 Keep-Alive） | 后端偶尔出现连接被重置、请求卡住，或不支持长连接。会增加一些延迟，正常情况保持关闭 |
-| 添加 X-Forwarded-* | 写入 `X-Forwarded-For` / `X-Forwarded-Proto` / `X-Forwarded-Host` / `X-Forwarded-Port` 与 `X-Real-IP`，告诉后端访客的真实 IP、原始协议、域名和端口 | 后端需要记录真实 IP，或要知道外部是 HTTPS 才能生成正确链接（否则可能跳回 http 或登录后循环跳转）。多数应用建议开启 |
+| 添加 X-Forwarded-* | 写入 `X-Forwarded-For` / `X-Forwarded-Proto` / `X-Forwarded-Host` / `X-Forwarded-Port` 与 `X-Real-IP`，告诉后端访客的真实 IP、原始协议、域名和端口；访客源端口写入 `X-Real-Port` 与 `X-Forwarded-For-Port`（`X-Forwarded-Port` 是访客访问 Gately 用的端口） | 后端需要记录真实 IP，或要知道外部是 HTTPS 才能生成正确链接（否则可能跳回 http 或登录后循环跳转）。多数应用建议开启 |
 | 向后端发送 PROXY v2 | 在 TCP 连接开头附加 PROXY 协议 v2 头，传递真实客户端 IP。开启后每个请求都新建连接，也不再用 HTTP/2 连接后端。后端是 Gately 时，需在其监听上开启接收 PROXY 协议，并把本机加入可信 PROXY 来源。 | 后端不读 HTTP 头但支持 PROXY 协议，如另一层 Gately、haproxy、开启 `proxy_protocol` 的 nginx。后端未配置接收时所有请求都会失败，不确定时保持关闭 |
 | 使用访问域名作为 SNI | 仅 HTTPS 后端：握手时发送访客使用的域名并按它校验证书，相当于 nginx 的 `proxy_ssl_server_name on; proxy_ssl_name $host` | 后端在同一端口按域名选择证书或分流，如 frp 的 `vhost_https`、托管多个 HTTPS 站点的 nginx。每个后端使用独立的连接池，不同域名的连接不会互相复用 |
 | 转发 Gately 登录 Cookie | 把 Gately 自己的登录 Cookie（单点登录 `gately_sso`、站点会话、第三方登录随机数）原样转发给后端；关闭时（默认）这些 Cookie 不发给后端，避免泄露登录凭据 | 后端是另一台负责认证的 Gately，本站点不开认证。例如公网 Gately 只做 WAF 与访问控制、反代到内网 Gately，由内网 Gately 负责网页认证与单点登录。本站点启用认证时不能开启；只在后端是自己的 Gately 时使用 |
@@ -164,6 +164,7 @@
 - 不能填写 `0.0.0.0/0`、`::/0`，保存时会被拒绝；
 - 协议分流把连接经回环转给 Web 服务时，请在协议分流中开启发送 PROXY 头、在监听上开启接收 PROXY 协议，不要把 `127.0.0.1` 填进可信代理，否则直接连到协议分流的访客也能伪造请求头。协议分流的透传路由仍是纯 TCP 转发，不受此设置影响；
 - 经可信代理进入、带 `X-Forwarded-Proto: https` 的请求按 HTTPS 处理；
+- 访客源端口：从请求头取得访客地址时，源端口只来自「真实端口请求头」中配置的头（如代理以 `proxy_set_header X-Real-Port $remote_port` 写入的 `X-Real-Port`，有多项时取最右一项）。未配置或取不到时端口未知，开启「添加 X-Forwarded-*」的站点不向后端发送 `X-Real-Port` / `X-Forwarded-For-Port`，实时连接中只显示地址。只填你的代理会覆盖写入的头，否则访客可以伪造端口；
 - 未填写可信代理时保持原有行为。连接层面的封禁（入侵防护写入防火墙的规则）针对的是 TCP 来源，在 CDN 之后对访客不起作用，Web 服务自身的封禁按真实地址生效。
 
 ## 认证

@@ -2718,6 +2718,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `oidc` | `webservice.OIDCSettings` |
 | `realIPFrom` | 配列 of string |
 | `realIPHeaders` | 配列 of string |
+| `realPortHeader` | string |
 | `selfServicePassword` | boolean |
 | `ssoDomain` | string |
 | `trustedProxies` | 配列 of string |

@@ -2718,6 +2718,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `oidc` | `webservice.OIDCSettings` |
 | `realIPFrom` | Array de string |
 | `realIPHeaders` | Array de string |
+| `realPortHeader` | string |
 | `selfServicePassword` | boolean |
 | `ssoDomain` | string |
 | `trustedProxies` | Array de string |

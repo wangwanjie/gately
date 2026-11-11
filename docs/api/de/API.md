@@ -2718,6 +2718,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `oidc` | `webservice.OIDCSettings` |
 | `realIPFrom` | Array von string |
 | `realIPHeaders` | Array von string |
+| `realPortHeader` | string |
 | `selfServicePassword` | boolean |
 | `ssoDomain` | string |
 | `trustedProxies` | Array von string |

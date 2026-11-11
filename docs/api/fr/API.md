@@ -2718,6 +2718,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `oidc` | `webservice.OIDCSettings` |
 | `realIPFrom` | Tableau de string |
 | `realIPHeaders` | Tableau de string |
+| `realPortHeader` | string |
 | `selfServicePassword` | boolean |
 | `ssoDomain` | string |
 | `trustedProxies` | Tableau de string |
