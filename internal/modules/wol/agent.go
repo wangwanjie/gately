@@ -156,7 +156,7 @@ type AgentInfo struct {
 	Version string `json:"version"`
 	// Addr 为客户端的来源地址
 	Addr string `json:"addr"`
-	// Since 为本次上线时间，LastSeen 为最近一次轮询的时间（Unix 毫秒）
+	// Since 为本次上线时间，LastSeen 为最近一次轮询的时间（Unix 毫秒），未知时为 0
 	Since    int64 `json:"since"`
 	LastSeen int64 `json:"lastSeen"`
 }
@@ -172,8 +172,12 @@ func (h *agentHub) info() map[string]AgentInfo {
 		if c.poll != nil {
 			seen = now
 		}
-		out[k] = AgentInfo{Online: c.active(now), Host: c.host, OS: c.os, Version: c.version, Addr: c.addr,
-			Since: c.since.UnixMilli(), LastSeen: seen.UnixMilli()}
+		info := AgentInfo{Online: c.active(now), Host: c.host, OS: c.os, Version: c.version, Addr: c.addr, Since: c.since.UnixMilli()}
+		// 确认关机等指令后 lastSeen 被清零以立即显示离线，此时没有可显示的通信时间，输出 0
+		if !seen.IsZero() {
+			info.LastSeen = seen.UnixMilli()
+		}
+		out[k] = info
 	}
 	return out
 }
