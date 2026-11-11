@@ -1867,6 +1867,7 @@
   "最多返回的条数，取符合条件的最新几条；0 或不传表示不限": "Maximale Anzahl zurückgegebener Einträge, wobei die neuesten passenden genommen werden; 0 oder weggelassen bedeutet unbegrenzt",
   "最大重启次数不能为负数": "Die maximale Anzahl an Neustarts darf nicht negativ sein",
   "最小请求数必须在 1 到 %d 之间": "Die Mindestanzahl Anfragen muss zwischen 1 und %d liegen",
+  "最近 1 分钟收到 %[1]d 个来源的 %[2]d 个无效敲门报文（没有规则的密钥能通过 HMAC 认证），其中一个来源为 %[3]s": "In der letzten Minute %[2]d ungültige Knock-Pakete von %[1]d Quellen empfangen (kein Regelschlüssel besteht die HMAC-Prüfung), eines davon von %[3]s",
   "最近一次备份结果与下次执行时间": "Ergebnis des letzten Backups und nächster Ausführungszeitpunkt",
   "最近到期": "Zuletzt ablaufend",
   "最近的投递记录": "Letzte Zustellungsprotokolle",

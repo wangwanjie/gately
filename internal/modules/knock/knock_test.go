@@ -747,3 +747,86 @@ func TestLocalPrefix(t *testing.T) {
 		}
 	}
 }
+
+// 按来源网段限速：同一 /24 的洪水只耗尽自己的令牌，其他网段的合法敲门不受影响；IPv6 按 /64 归并。
+func TestPerSourceRateLimit(t *testing.T) {
+	env := newEnv(t, sshRule("ssh"))
+	other := sshRule("x")
+	_ = other.Validate()
+	junk := env.packet(t, other, spa.Message{})
+	limited := 0
+	for i := range 100 {
+		a := netip.AddrFrom4([4]byte{198, 51, 100, byte(i)})
+		if errors.Is(env.m.handle(junk, a, transportUDP, "UDP"), errLimited) {
+			limited++
+		}
+	}
+	if limited != 100-srcBurst {
+		t.Fatalf("同一 /24 应只认证 %d 个报文，被限速 %d 个", srcBurst, limited)
+	}
+	if err := env.m.handle(env.packet(t, env.rule("r-ssh"), spa.Message{}), src, transportUDP, "UDP"); err != nil {
+		t.Fatalf("其他网段的合法敲门不应被限速: %v", err)
+	}
+	v6 := netip.MustParsePrefix("2001:db8:1:2::/64")
+	if srcPrefix(netip.MustParseAddr("2001:db8:1:2::abcd")) != v6 || srcPrefix(netip.MustParseAddr("198.51.100.9")) != netip.MustParsePrefix("198.51.100.0/24") {
+		t.Fatal("限速网段不对")
+	}
+	// 令牌按速率恢复，空闲回满的桶会被清理
+	env.clock.set(env.clock.now().Add(time.Second))
+	if errors.Is(env.m.handle(junk, netip.MustParseAddr("198.51.100.1"), transportUDP, "UDP"), errLimited) {
+		t.Fatal("1 秒后应恢复令牌")
+	}
+	env.clock.set(env.clock.now().Add(10 * time.Second))
+	env.m.stateMu.Lock()
+	env.m.perSrc.prune(env.clock.now())
+	n := len(env.m.perSrc.buckets)
+	env.m.stateMu.Unlock()
+	if n != 0 {
+		t.Fatalf("空闲的桶应被清理: %d", n)
+	}
+}
+
+// 网段数达到上限后新网段共用一个桶，不会无限增长。
+func TestSrcLimiterBounded(t *testing.T) {
+	l := newSrcLimiter()
+	now := time.Unix(1000, 0)
+	for i := range srcCap + 100 {
+		a := netip.AddrFrom4([4]byte{10, byte(i >> 8), byte(i), 1})
+		l.take(a, now)
+	}
+	if len(l.buckets) != srcCap {
+		t.Fatalf("桶数应封顶在 %d: %d", srcCap, len(l.buckets))
+	}
+}
+
+// HMAC 认证失败的报文不逐条记日志，每分钟汇总一条“N 个来源 M 个无效报文”。
+func TestInvalidPacketsSummarized(t *testing.T) {
+	env := newEnv(t, sshRule("ssh"))
+	other := sshRule("x")
+	_ = other.Validate()
+	junk := env.packet(t, other, spa.Message{})
+	for i := range 5 {
+		_ = env.m.handle(junk, netip.AddrFrom4([4]byte{198, 51, byte(i % 3), 1}), transportUDP, "UDP")
+	}
+	if env.hasLog("拒绝来自") {
+		t.Fatal("HMAC 失败不应逐条记录日志")
+	}
+	env.m.flushInvalid(env.clock.now().Add(30 * time.Second))
+	if env.hasLog("无效敲门报文") {
+		t.Fatal("时间窗未结束时不应汇总")
+	}
+	env.m.flushInvalid(env.clock.now().Add(invalidWindow))
+	if !env.hasLog("最近 1 分钟收到 3 个来源的 5 个无效敲门报文") {
+		t.Fatal("应汇总为一条日志")
+	}
+	env.m.flushInvalid(env.clock.now().Add(3 * invalidWindow))
+	n := 0
+	for _, l := range env.logs.Since(0) {
+		if strings.Contains(l.Message, "无效敲门报文") {
+			n++
+		}
+	}
+	if n != 1 {
+		t.Fatalf("汇总后应清零，不重复记录: %d", n)
+	}
+}
