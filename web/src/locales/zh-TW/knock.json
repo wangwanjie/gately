@@ -126,6 +126,7 @@
     },
     "ports": "請求連接埠",
     "command": "命令列",
+    "commandWarn": "命令列中的金鑰會留在 shell 歷史與行程列表（ps）中，建議優先使用上面的 ~/.fwknoprc 設定段。",
     "rc": "~/.fwknoprc 設定區段",
     "rcHelp": "儲存到 ~/.fwknoprc 後執行 fwknop -n {name} 即可敲門。",
     "install": "fwknop 用戶端：macOS 用 brew install fwknop，Debian / Ubuntu 用 apt install fwknop-client，Windows 可在 WSL 中安裝。fwknop 用戶端只能經 IPv4 傳送敲門封包，伺服器位址需要能經 IPv4 存取。命令與設定含金鑰，請妥善保管。",

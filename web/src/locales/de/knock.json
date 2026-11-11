@@ -126,6 +126,7 @@
     },
     "ports": "Angeforderte Ports",
     "command": "Befehlszeile",
+    "commandWarn": "Schlüssel auf der Befehlszeile bleiben im Shell-Verlauf und in der Prozessliste (ps); verwenden Sie bevorzugt den ~/.fwknoprc-Abschnitt oben.",
     "rc": "Abschnitt in ~/.fwknoprc",
     "rcHelp": "Nach dem Speichern in ~/.fwknoprc genügt fwknop -n {name}, um zu klopfen.",
     "install": "fwknop-Client: unter macOS brew install fwknop, unter Debian / Ubuntu apt install fwknop-client, unter Windows in WSL installieren. Der fwknop-Client kann Klopfpakete nur über IPv4 senden, der Server muss daher über IPv4 erreichbar sein. Befehl und Konfiguration enthalten Schlüssel, bewahren Sie sie sicher auf.",

@@ -126,6 +126,7 @@
     },
     "ports": "Puertos solicitados",
     "command": "Línea de comandos",
+    "commandWarn": "Las claves en la línea de comandos quedan en el historial de la shell y en la lista de procesos (ps); es preferible usar el bloque de ~/.fwknoprc de arriba.",
     "rc": "Sección de ~/.fwknoprc",
     "rcHelp": "Tras guardarla en ~/.fwknoprc, ejecuta fwknop -n {name} para llamar.",
     "install": "Cliente fwknop: brew install fwknop en macOS, apt install fwknop-client en Debian / Ubuntu, o instálalo en WSL en Windows. El cliente fwknop solo puede enviar paquetes de llamada por IPv4, así que la dirección del servidor debe ser accesible por IPv4. El comando y la configuración contienen claves; guárdalos con cuidado.",

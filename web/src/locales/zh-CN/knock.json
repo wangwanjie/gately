@@ -126,6 +126,7 @@
     },
     "ports": "请求端口",
     "command": "命令行",
+    "commandWarn": "命令行中的密钥会留在 shell 历史与进程列表（ps）中，建议优先使用上面的 ~/.fwknoprc 配置段。",
     "rc": "~/.fwknoprc 配置段",
     "rcHelp": "保存到 ~/.fwknoprc 后执行 fwknop -n {name} 即可敲门。",
     "install": "fwknop 客户端：macOS 用 brew install fwknop，Debian / Ubuntu 用 apt install fwknop-client，Windows 可在 WSL 中安装。fwknop 客户端只能经 IPv4 发送敲门包，服务器地址需要能经 IPv4 访问。命令与配置含密钥，请妥善保管。",

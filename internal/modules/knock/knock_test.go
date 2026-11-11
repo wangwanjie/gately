@@ -943,3 +943,18 @@ func TestInitSavesGeneratedKeys(t *testing.T) {
 		t.Fatal("重启后密钥应不变")
 	}
 }
+
+// 密钥保存时规范化：去掉空白换行、补齐末尾填充，解码结果不变。
+func TestKeyNormalized(t *testing.T) {
+	enc := genKey(32)
+	mac := genKey(64)
+	r := Rule{Name: "x", Ports: []string{"tcp/22"},
+		EncKey:  " " + enc[:10] + "\n" + enc[10:20] + " \t" + strings.TrimRight(enc[20:], "=") + "\n",
+		HMACKey: mac[:40] + "\r\n" + mac[40:]}
+	if err := r.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	if r.EncKey != enc || r.HMACKey != mac {
+		t.Fatalf("应规范化为标准 base64:\n%q\n%q", r.EncKey, r.HMACKey)
+	}
+}

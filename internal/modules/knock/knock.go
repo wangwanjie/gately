@@ -169,6 +169,10 @@ func (r *Rule) Validate() error {
 	if _, err := r.spaKey(); err != nil {
 		return err
 	}
+	// 统一保存为标准 base64：粘贴时带进来的换行、空格与省略的末尾 "=" 都去掉或补齐，
+	// 生成的客户端命令与 ~/.fwknoprc 中的密钥是一个完整的单词
+	r.EncKey, _ = normalizeKey(r.EncKey)
+	r.HMACKey, _ = normalizeKey(r.HMACKey)
 	if r.Timeout == 0 {
 		r.Timeout = defaultTimeout
 	}
@@ -203,13 +207,22 @@ func (r *Rule) spaKey() (spa.Key, error) {
 	return k, k.Validate()
 }
 
-// decodeKey 解码 base64 密钥，兼容省略了末尾 "=" 的写法。
+// decodeKey 解码 base64 密钥，忽略其中的空白与换行（从终端或文档复制时常带进来），兼容省略了末尾 "=" 的写法。
 func decodeKey(s string) ([]byte, error) {
-	s = strings.TrimSpace(s)
+	s = strings.Join(strings.Fields(s), "")
 	if b, err := base64.StdEncoding.DecodeString(s); err == nil {
 		return b, nil
 	}
 	return base64.RawStdEncoding.DecodeString(strings.TrimRight(s, "="))
+}
+
+// normalizeKey 把 base64 密钥规范化为不含空白、带末尾填充的标准编码。
+func normalizeKey(s string) (string, error) {
+	b, err := decodeKey(s)
+	if err != nil {
+		return "", err
+	}
+	return base64.StdEncoding.EncodeToString(b), nil
 }
 
 // genKey 生成 n 字节随机密钥（base64），与 fwknop --key-gen 的长度一致：加密密钥 32 字节、HMAC 密钥 64 字节。

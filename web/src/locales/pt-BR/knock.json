@@ -126,6 +126,7 @@
     },
     "ports": "Portas solicitadas",
     "command": "Linha de comando",
+    "commandWarn": "Chaves na linha de comando ficam no histórico do shell e na lista de processos (ps); prefira o bloco do ~/.fwknoprc acima.",
     "rc": "Seção de ~/.fwknoprc",
     "rcHelp": "Depois de salvar em ~/.fwknoprc, execute fwknop -n {name} para bater.",
     "install": "Cliente fwknop: brew install fwknop no macOS, apt install fwknop-client no Debian / Ubuntu, ou instale no WSL no Windows. O cliente fwknop só consegue enviar pacotes de batida por IPv4, então o endereço do servidor precisa ser acessível por IPv4. O comando e a configuração contêm chaves, guarde-os com cuidado.",

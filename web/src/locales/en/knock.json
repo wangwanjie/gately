@@ -126,6 +126,7 @@
     },
     "ports": "Requested ports",
     "command": "Command line",
+    "commandWarn": "Keys on the command line stay in the shell history and the process list (ps); prefer the ~/.fwknoprc stanza above.",
     "rc": "~/.fwknoprc section",
     "rcHelp": "After saving it to ~/.fwknoprc, run fwknop -n {name} to knock.",
     "install": "fwknop client: brew install fwknop on macOS, apt install fwknop-client on Debian / Ubuntu, or install it in WSL on Windows. The fwknop client can only send knock packets over IPv4, so the server address must be reachable over IPv4. The command and config contain keys, so keep them safe.",
