@@ -91,6 +91,8 @@ Se incluyen tres plantillas:
 
 Cuando un sitio activa «Confiar en usuarios autenticados» (consulte [Servicio web](./web)), las solicitudes de visitantes autenticados por la autenticación de Gately de ese sitio no cuentan en el sondeo de rutas. Las solicitudes a dominios desconocidos que atiende el sitio predeterminado y los visitantes sin sesión se siguen contando; las demás reglas, como escaneos de puertos, puertos señuelo e inicios de sesión fallidos, no se ven afectadas.
 
+Cuando un sitio externo de un Gately en dos niveles activa «Confiar en la marca de autenticación del backend», las solicitudes de usuarios que la instancia interna confirma como autenticados tampoco cuentan en el sondeo de rutas de la instancia externa.
+
 ::: warning Alcance del bloqueo
 Sea cual sea la escucha que lo active, el bloqueo entra en la misma lista y se aplica a todas las escuchas, sitios y demás servicios de Gately; con la sincronización del cortafuegos activa, el cortafuegos del sistema también descarta todo el tráfico de esa dirección.
 :::

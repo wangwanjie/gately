@@ -91,6 +91,8 @@ Há três modelos:
 
 Quando um site ativa "Confiar em usuários autenticados" (veja [Serviço web](./web)), as requisições de visitantes autenticados pela autenticação do Gately desse site não contam na sondagem de caminhos. Requisições a domínios desconhecidos atendidas pelo site padrão e visitantes sem login continuam sendo contados; outras regras, como varreduras de portas, portas isca e falhas de login, não são afetadas.
 
+Quando um site externo de um Gately em dois níveis ativa "Confiar na marca de autenticação do backend", as requisições de usuários que a instância interna confirma como autenticados também não contam na sondagem de caminhos da instância externa.
+
 ::: warning Alcance do bloqueio
 Seja qual for o listener que disparar, o bloqueio vai para a mesma lista e vale para todos os listeners, sites e demais serviços do Gately; com a sincronização do firewall ligada, o firewall do sistema também descarta todo o tráfego desse endereço.
 :::

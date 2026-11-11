@@ -91,6 +91,8 @@ Trois modèles sont fournis :
 
 Lorsqu'un site active « Faire confiance aux utilisateurs connectés » (voir [Service web](./web)), les requêtes des visiteurs authentifiés par l'authentification Gately de ce site ne sont pas comptées par le sondage de chemins. Les requêtes vers des domaines inconnus traitées par le site par défaut et les visiteurs non connectés sont toujours comptés ; les autres règles, comme les scans de ports, les ports leurres et les échecs de connexion, ne sont pas affectées.
 
+Quand un site externe d'un Gately à deux niveaux active « Faire confiance au marqueur d'authentification du backend », les requêtes des utilisateurs confirmés comme connectés par l'instance interne ne sont pas non plus comptées par le sondage de chemins sur l'instance externe.
+
 ::: warning Portée du bannissement
 Quel que soit l’écouteur déclencheur, le bannissement entre dans la même liste et s’applique à tous les écouteurs, sites et autres services de Gately ; avec la synchronisation du pare-feu, le pare-feu du système rejette aussi tout le trafic de cette adresse.
 :::

@@ -27,6 +27,8 @@ Quando o painel de administração é acessado por proxy reverso através de um 
 
 Quando um site ativa "Confiar em usuários autenticados" (veja [Serviço web](./web)), visitantes autenticados pela autenticação do Gately desse site (autenticação web, identidades de login de terceiros listadas uma a uma na lista de permitidos, login único de usuários compartilhados, autenticação básica verificada) ignoram o WAF. Visitantes sem login, requisições à própria página de login, identidades de terceiros permitidas por um curinga como `github:*`, autenticação encaminhada e links de compartilhamento continuam sendo verificados.
 
+Com Gately em dois níveis (a instância externa só faz WAF e a interna cuida do login), quando o site externo ativa "Confiar na marca de autenticação do backend" e as duas usam a mesma chave, os usuários que a instância interna confirma como autenticados também ignoram o WAF externo; veja [Serviço web](./web).
+
 ## Ordem dos grupos de regras
 
 Os grupos de regras de uma instância são carregados de cima para baixo; use os botões mover para cima e para baixo para reordená-los. Na mesma fase, as regras anteriores executam primeiro:
