@@ -1,0 +1,6 @@
+{
+  "placeholder": "不要求敲门",
+  "empty": "还没有端口敲门规则",
+  "missing": "规则不存在",
+  "disabled": "已停用"
+}

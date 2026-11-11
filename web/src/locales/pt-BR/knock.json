@@ -1,0 +1,135 @@
+{
+  "title": "Port knocking",
+  "desc": "Autorização por pacote único (SPA) compatível com fwknop: o cliente envia um pacote de batida criptografado e protegido contra repetição, e só depois de autenticado as portas como SSH são abertas para esse endereço por um tempo limitado. As portas podem ser bloqueadas no firewall do sistema, ou o redirecionamento de portas, o roteamento por protocolo e o STUN podem abri-las conforme o resultado da batida.",
+  "unit": {
+    "seconds": "s",
+    "s": "{s} s",
+    "ms": "{m} min {s} s",
+    "hm": "{h} h {m} min"
+  },
+  "status": {
+    "title": "Status",
+    "listen": "Porta de batida",
+    "firewall": "Bloqueio no firewall",
+    "listening": "Recebendo em UDP {port}",
+    "listenFailed": "Falha ao escutar em UDP {port}",
+    "listenError": "Falha ao escutar na porta de batida: {err}",
+    "udpOff": "Sem escuta UDP; só recebe batidas encaminhadas pelo roteamento por protocolo",
+    "noRules": "Nenhuma regra ativada, sem escuta",
+    "fwNotNeeded": "Nenhuma regra tem o bloqueio no firewall ativado",
+    "fwActive": "Ativo",
+    "fwInactive": "Inativo",
+    "viewRules": "Ver regras do firewall",
+    "accepted": "Batidas aceitas",
+    "rejected": "Batidas recusadas",
+    "dropped": "Novas conexões bloqueadas",
+    "allowed": "Conexões após a batida"
+  },
+  "reason": {
+    "os": {
+      "title": "Este sistema não oferece suporte ao bloqueio no firewall",
+      "hint": "O bloqueio no firewall exige nftables ou iptables + ipset no Linux. A opção \"Exigir batida\" do redirecionamento de portas, do roteamento por protocolo e do STUN não depende do firewall e funciona normalmente."
+    },
+    "missing": {
+      "title": "nft ou iptables + ipset não encontrado",
+      "hint": "Instale nftables (recomendado) ou iptables e ipset, depois salve as configurações para tentar de novo."
+    },
+    "permission": {
+      "title": "Sem permissão para modificar o firewall",
+      "hint": "O Gately precisa rodar como root; com Docker, use a rede host e adicione cap_add: NET_ADMIN."
+    },
+    "unsupported": {
+      "title": "O kernel não tem nf_tables nem iptables + ipset utilizável",
+      "hint": "No Synology e sistemas semelhantes, use a imagem Docker oficial do Gately (inclui iptables e ipset)."
+    },
+    "error": {
+      "title": "Falha ao gravar as regras do firewall",
+      "hint": "O Gately tenta de novo a cada minuto. Veja o erro abaixo e o log de execução."
+    }
+  },
+  "grants": {
+    "title": "Autorizações ativas ({count})",
+    "empty": "Nenhum endereço bateu com sucesso e ainda está dentro do tempo de acesso",
+    "gatelyOnly": "Somente para redirecionamento de portas, roteamento por protocolo e STUN",
+    "remain": "Restam {t}",
+    "revoke": "Revogar",
+    "revokeConfirm": "Depois de revogar, este endereço precisará bater de novo. As conexões já estabelecidas não são afetadas. Revogar?"
+  },
+  "rule": {
+    "add": "Adicionar regra",
+    "edit": "Editar regra",
+    "empty": "Ainda não há regras de batida",
+    "namePlaceholder": "Por exemplo SSH",
+    "confirmDelete": "Excluir esta regra de batida?",
+    "ports": "Portas",
+    "portsHelp": "Portas que um cliente pode pedir para abrir, como tcp/22 ou udp/51820, separadas por vírgulas. Apenas o número da porta é tratado como TCP. Todas as portas da opção -A do cliente precisam estar nesta lista.",
+    "firewall": "Bloqueio no firewall",
+    "firewallTag": "Bloqueio no firewall",
+    "firewallHelp": "Ativado, essas portas são bloqueadas no firewall do sistema e só passam os endereços que bateram com sucesso, protegendo serviços como o sshd deste host (somente Linux). Desativado, o firewall não é alterado e a regra serve apenas para \"Exigir batida\" no redirecionamento de portas, no roteamento por protocolo e no STUN.",
+    "firewallWarn": "Antes de ativar, confirme que você consegue entrar neste host pela rede local (isenta de batida por padrão nas configurações globais) ou de outra forma: se o Gately for encerrado à força, as regras de bloqueio permanecem até o Gately iniciar de novo. As conexões já estabelecidas não são afetadas.",
+    "encKey": "Chave de criptografia",
+    "hmacKey": "Chave HMAC",
+    "keyAuto": "Vazio para gerar",
+    "generate": "Gerar de novo",
+    "keysHelp": "Codificadas em base64, correspondem a KEY_BASE64 e HMAC_KEY_BASE64 do fwknop. Você pode informar chaves geradas por fwknop -k. Depois de trocar as chaves, os clientes antigos não conseguem mais bater.",
+    "hmacType": "Algoritmo HMAC",
+    "timeout": "Tempo de acesso",
+    "timeoutHelp": "Após uma batida bem-sucedida, novas conexões podem ser feitas durante este tempo. As conexões já estabelecidas continuam ativas depois que ele expira.",
+    "timeoutValue": "{n} s",
+    "timeoutWithMax": "{n} s (o cliente pode pedir até {max} s)",
+    "maxTimeout": "Máximo do cliente",
+    "maxTimeoutHelp": "Limite quando o cliente pede um tempo maior com -f; 0 ignora o tempo pedido pelo cliente. Um pedido menor que o tempo de acesso é sempre aceito.",
+    "user": "Limitar nome de usuário",
+    "userPlaceholder": "Vazio para não limitar",
+    "userHelp": "Só aceita batidas cujo pacote traga este nome de usuário. O fwknop envia por padrão o nome de login local; use -U para defini-lo.",
+    "requireAddr": "Exigir endereço explícito",
+    "requireAddrHelp": "Recusa batidas sem endereço (fwknop -s). O cliente precisa informar o endereço a abrir com -R ou -a, para que um pacote interceptado no caminho não possa ser repetido antes a partir de outro endereço.",
+    "knocks": "Batidas",
+    "knockStats": "{ok} aceitas, {bad} recusadas",
+    "lastKnock": "Última: {addr}, {time}",
+    "usedBy": "Usada por"
+  },
+  "settings": {
+    "button": "Configurações globais",
+    "title": "Configurações de port knocking",
+    "port": "Porta UDP de batida",
+    "portHelp": "Porta UDP que recebe os pacotes de batida; o cliente fwknop usa 62201 por padrão. Com 0, não escuta UDP e só recebe batidas enviadas por uma porta TCP do roteamento por protocolo (fwknop -P tcp).",
+    "autoFirewall": "Liberar porta no firewall",
+    "autoFirewallHelp": "Libera a porta de batida no firewall do sistema (OpenWrt fw4, firewalld, ufw etc.). Com o bloqueio no firewall ativo, também libera as portas protegidas, e o acesso é decidido apenas pela batida.",
+    "allowLan": "Rede local isenta de batida",
+    "allowLanHelp": "A rede local, o Tailscale (100.64.0.0/10), endereços link-local e o IPv6 /64 deste host acessam as portas protegidas sem bater, para você não se trancar do lado de fora. Afeta apenas o bloqueio no firewall.",
+    "allowList": "Lista de isentos de batida",
+    "allowListHelp": "IPs ou faixas que acessam as portas protegidas sem bater, um por linha. Afeta apenas o bloqueio no firewall.",
+    "maxAge": "Validade do pacote",
+    "maxAgeHelp": "Diferença máxima entre o carimbo de tempo do pacote e a hora deste host; acima disso, é considerado expirado ou repetido. Os relógios do cliente e do servidor precisam estar corretos."
+  },
+  "client": {
+    "button": "Cliente",
+    "title": "Configuração do cliente fwknop: {name}",
+    "server": "Endereço do servidor",
+    "serverPlaceholder": "Domínio ou IP público",
+    "via": "Enviar por",
+    "viaUdp": "UDP {port}",
+    "viaTcp": "Roteamento por protocolo (TCP)",
+    "tcpHelp": "Porta de escuta da regra de roteamento por protocolo, que precisa de uma rota \"Port knocking\"",
+    "udpOff": "A porta UDP de batida não está ativada nas configurações globais. Use o roteamento por protocolo ou defina a porta antes",
+    "addr": "Endereço a abrir",
+    "addrResolve": "Detectar IP público",
+    "addrSource": "Endereço de origem",
+    "addrFixed": "Endereço específico",
+    "addrHelp": {
+      "resolve": "-R: o cliente consulta seu próprio IPv4 público e o grava no pacote, então um pacote interceptado não serve para outro endereço.",
+      "source": "-s: abre o endereço de origem do pacote. Indicado para redes em que consultar o IP público é inconveniente.",
+      "fixed": "-a: abre o endereço indicado, por exemplo para bater em nome de outro dispositivo."
+    },
+    "ports": "Portas solicitadas",
+    "command": "Linha de comando",
+    "rc": "Seção de ~/.fwknoprc",
+    "rcHelp": "Depois de salvar em ~/.fwknoprc, execute fwknop -n {name} para bater.",
+    "install": "Cliente fwknop: brew install fwknop no macOS, apt install fwknop-client no Debian / Ubuntu, ou instale no WSL no Windows. O cliente fwknop só consegue enviar pacotes de batida por IPv4, então o endereço do servidor precisa ser acessível por IPv4. O comando e a configuração contêm chaves, guarde-os com cuidado.",
+    "loading": "Lendo as chaves…",
+    "needServer": "Informe o endereço do servidor",
+    "needPorts": "Selecione pelo menos uma porta",
+    "needFixed": "Informe o endereço a abrir"
+  }
+}

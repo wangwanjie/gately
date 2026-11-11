@@ -79,7 +79,8 @@
     "git": "Git(git://)",
     "bittorrent": "BitTorrent",
     "adb": "ADB(Android 디버그 브리지)",
-    "irc": "IRC"
+    "irc": "IRC",
+    "spa": "포트 노킹 (fwknop -P tcp)"
   },
   "protoHelp": {
     "tls": "ALPN으로 애플리케이션 프로토콜별로 더 나눌 수 있습니다. 예: acme-tls/1(TLS-ALPN-01 인증서 검증), postgresql(PostgreSQL 17 직접 TLS 연결)",
@@ -97,9 +98,15 @@
     "git": "git daemon의 git:// 프로토콜입니다. HTTPS나 SSH로 접근하는 Git은 TLS, HTTP, SSH 라우트를 사용하세요",
     "bittorrent": "프로토콜 암호화를 쓰지 않는 피어 연결입니다. 암호화(MSE)된 연결은 특징이 없어 기본 대상으로 갑니다",
     "adb": "adb connect의 평문 연결입니다. Android 11부터의 무선 디버깅은 TLS를 씁니다",
-    "irc": "평문 IRC 클라이언트(먼저 CAP, PASS, NICK, USER를 보냄)입니다. TLS를 쓰는 IRC는 TLS 라우트를 사용하세요"
+    "irc": "평문 IRC 클라이언트(먼저 CAP, PASS, NICK, USER를 보냄)입니다. TLS를 쓰는 IRC는 TLS 라우트를 사용하세요",
+    "spa": "fwknop 클라이언트가 TCP로 보내는 노크 패킷(fwknop -P tcp -p 이 포트)을 받아 포트 노킹 모듈에 넘겨 인증하며, 전달도 응답도 하지 않습니다. 포트 하나만 열어 두어도 노크할 수 있고, \"노크 필요\"를 설정한 라우트는 노크에 성공한 뒤에 사용할 수 있습니다."
   },
   "routeMinecraftPlaceholder": "서버 주소, 한 줄에 하나: mc.example.com, *.example.com 또는 *. 비우면 모든 Minecraft 연결과 일치합니다",
   "ipAccessNote": "프로토콜을 식별하기 전에 판단하며, 거부된 연결은 데이터를 읽지 않고 경로 적중에도 포함하지 않습니다. 목록을 수정해도 수신 대기는 중단되지 않습니다.",
-  "autoFirewallHelp": "로컬 방화벽(nftables / iptables / ip6tables)에서 이 규칙이 수신에 성공한 포트만 허용합니다. 연속된 포트는 하나의 규칙으로 합치고, 수신 주소를 지정하면 그 주소로 오는 연결만 허용합니다. 규칙을 끄거나 삭제하면 취소됩니다. OpenWrt 같은 라우터나 방화벽을 켠 Linux 호스트에서 Gately를 실행할 때 사용합니다"
+  "autoFirewallHelp": "로컬 방화벽(nftables / iptables / ip6tables)에서 이 규칙이 수신에 성공한 포트만 허용합니다. 연속된 포트는 하나의 규칙으로 합치고, 수신 주소를 지정하면 그 주소로 오는 연결만 허용합니다. 규칙을 끄거나 삭제하면 취소됩니다. OpenWrt 같은 라우터나 방화벽을 켠 Linux 호스트에서 Gately를 실행할 때 사용합니다",
+  "protoSpaShort": "노크",
+  "spaTarget": "포트 노킹",
+  "routeKnock": "노크 필요",
+  "routeKnockTag": "노크 필요: {name}",
+  "knockDenied": "노크하지 않아 연결 끊김"
 }

@@ -1,0 +1,6 @@
+{
+  "placeholder": "Kein Klopfen erforderlich",
+  "empty": "Noch keine Port-Knocking-Regeln",
+  "missing": "Regel existiert nicht",
+  "disabled": "Deaktiviert"
+}

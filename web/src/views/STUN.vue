@@ -47,6 +47,7 @@
             <div class="meta">↑ {{ formatBytes(r.state.stats.bytesIn) }} · ↓ {{ formatBytes(r.state.stats.bytesOut) }}</div>
           </Field>
           <Field v-if="r.ipMode && !r.disableForward" :label="t('ipAccessEditor.title')">{{ r.ipMode === 'whitelist' ? t('ipAccessEditor.whitelist') : t('ipAccessEditor.blacklist') }}</Field>
+          <Field v-if="r.knock && !r.disableForward" :label="t('ipAccessEditor.knock')">{{ knockRuleName(r.knock) }}</Field>
           <Field v-if="r.state.stats.denied" :label="t('ipAccessEditor.denied')" mono>{{ r.state.stats.denied }}</Field>
           <template v-if="!sorting && (r.enable && !moduleOff && (r.state.error || r.state.mapping || r.state.firewall))" #extra>
             <div v-if="r.state.error" class="err-line">{{ r.state.error }}</div>
@@ -104,7 +105,7 @@
               <el-form-item :label="t('stun.targetPort')" required>
                 <el-input-number v-model="editing.targetPort" :min="1" :max="65535" />
               </el-form-item>
-              <IPAccessEditor v-model:mode="editing.ipMode" v-model:list="editing.ipList" v-model:sets="editing.ipSets" :note="t('stun.ipAccessNote')" />
+              <IPAccessEditor v-model:mode="editing.ipMode" v-model:list="editing.ipList" v-model:sets="editing.ipSets" v-model:knock="editing.knock" :note="t('stun.ipAccessNote')" />
             </template>
             <el-form-item :label="t('common.remark')"><el-input v-model="editing.remark" /></el-form-item>
             <el-form-item :label="t('common.enable')"><el-switch v-model="editing.enable" /></el-form-item>
@@ -229,6 +230,7 @@ import EntityCard from '../components/EntityCard.vue'
 import GroupedList from '../components/GroupedList.vue'
 import GroupInput from '../components/GroupInput.vue'
 import IPAccessEditor from '../components/IPAccessEditor.vue'
+import { knockRuleName, useKnockRules } from '../composables/useKnockRules'
 import ListTools from '../components/ListTools.vue'
 import SortCheck from '../components/SortCheck.vue'
 import SortMoves from '../components/SortMoves.vue'
@@ -286,6 +288,8 @@ interface Rule {
   ipMode: string
   ipList: string[]
   ipSets: string[]
+  // knock 为端口敲门规则 key，非空时来源地址还必须敲门成功
+  knock?: string
   remark: string
 }
 
@@ -315,6 +319,8 @@ interface Settings {
 
 const vars = ['ruleName', 'time', 'ip', 'port', 'ipAddr']
 const { t } = useI18n()
+// 读取端口敲门规则目录，卡片上显示“需要敲门”的规则名称
+useKnockRules()
 const { isMobile, labelPosition } = useFormLayout()
 // moduleEnabled 为模块全局开关，undefined 表示尚未加载
 const moduleEnabled = ref<boolean>()
@@ -404,6 +410,7 @@ function emptyRule(): Rule {
     ipMode: '',
     ipList: [],
     ipSets: [],
+    knock: '',
     remark: '',
   }
 }
@@ -453,6 +460,7 @@ function openEditor(row?: RuleView, copy = false) {
     editing.value.ipMode = editing.value.ipMode ?? ''
     editing.value.ipList = editing.value.ipList ?? []
     editing.value.ipSets = editing.value.ipSets ?? []
+    editing.value.knock = editing.value.knock ?? ''
     if (copy) {
       copyFrom.value = { key: row.key ?? '', name: row.name }
       editing.value.key = ''

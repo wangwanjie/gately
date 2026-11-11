@@ -12,5 +12,7 @@
   "setNotLoaded": "não carregada",
   "setsHelp": "Verificadas junto com as faixas acima; corresponder a qualquer uma conta como estar na lista. Uma assinatura atualizada vale na hora, sem reiniciar a regra",
   "setsWhitelistHelp": "Verificadas junto com as faixas acima; corresponder a qualquer uma permite a conexão. Uma assinatura atualizada vale na hora, sem reiniciar a regra. As listas são baixadas periodicamente pelo módulo Serviços Web e contam como vazias até o primeiro download bem-sucedido",
-  "denied": "Recusados"
+  "denied": "Recusados",
+  "knock": "Exigir batida",
+  "knockHelp": "Ao escolher uma regra de port knocking, o endereço de origem também precisa ter batido antes com fwknop e só pode fazer novas conexões durante o tempo de acesso; as demais conexões são encerradas. O próprio Gately decide, sem precisar de permissão no firewall. Se uma lista também estiver definida, as duas condições precisam ser atendidas."
 }

@@ -23,6 +23,11 @@
       <div class="form-help">{{ mode === 'whitelist' ? t('ipAccessEditor.setsWhitelistHelp') : t('ipAccessEditor.setsHelp') }}</div>
     </el-form-item>
   </template>
+  <!-- 需要敲门：来源地址还必须持有所选端口敲门规则的有效授权；敲门模块未编译时不显示（已设置的引用仍显示以便清除） -->
+  <el-form-item v-if="knock !== undefined && (moduleBuilt('knock') || knock)" :label="t('ipAccessEditor.knock')">
+    <KnockSelect v-model="knock" />
+    <div class="form-help">{{ t('ipAccessEditor.knockHelp') }}</div>
+  </el-form-item>
 </template>
 
 <script setup lang="ts">
@@ -30,6 +35,8 @@ import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api'
 import { useListText, splitLines } from '../composables/useListText'
+import { moduleBuilt } from '../nav'
+import KnockSelect from './KnockSelect.vue'
 
 // note 为附加在说明后的模块提示，例如 STUN 修改名单不会重新打洞
 defineProps<{ note?: string }>()
@@ -39,6 +46,8 @@ defineProps<{ note?: string }>()
 const mode = defineModel<string>('mode', { required: true })
 const list = defineModel<string[]>('list', { required: true })
 const sets = defineModel<string[]>('sets', { required: true })
+// knock 为端口敲门规则 key，留空表示不要求敲门；调用方不绑定时不显示该项
+const knock = defineModel<string | undefined>('knock')
 
 const { t } = useI18n()
 // 输入框保留原始文本，回车可正常换行（见 useListText）

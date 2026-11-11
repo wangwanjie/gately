@@ -1,0 +1,6 @@
+{
+  "placeholder": "Стук не требуется",
+  "empty": "Правил port knocking пока нет",
+  "missing": "Правило не найдено",
+  "disabled": "Отключено"
+}

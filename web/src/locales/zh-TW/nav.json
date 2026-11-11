@@ -28,6 +28,10 @@
       "title": "入侵防護",
       "desc": "封鎖惡意 IP，聯動系統防火牆"
     },
+    "knock": {
+      "title": "連接埠敲門",
+      "desc": "敲門成功才放行 SSH 等連接埠"
+    },
     "stun": {
       "title": "STUN 穿透",
       "desc": "NAT1 網路下無公網 IP 穿透"

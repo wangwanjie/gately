@@ -79,7 +79,8 @@
     "git": "Git (git://)",
     "bittorrent": "BitTorrent",
     "adb": "ADB (Android Debug Bridge)",
-    "irc": "IRC"
+    "irc": "IRC",
+    "spa": "Port Knocking (fwknop -P tcp)"
   },
   "protoHelp": {
     "tls": "ALPN unterscheidet nach Anwendungsprotokoll, z. B. acme-tls/1 (TLS-ALPN-01-Zertifikatsprüfung) oder postgresql (direkte TLS-Verbindungen von PostgreSQL 17)",
@@ -97,9 +98,15 @@
     "git": "Das git://-Protokoll von git daemon; Git über HTTPS oder SSH nutzt die TLS-, HTTP- oder SSH-Routen",
     "bittorrent": "Peer-Verbindungen ohne Protokollverschlüsselung; verschlüsselte (MSE) Verbindungen haben keine Signatur und gehen an das Standardziel",
     "adb": "Klartext-Sitzungen von adb connect; drahtloses Debugging ab Android 11 nutzt TLS",
-    "irc": "Klartext-IRC-Clients (sie senden zuerst CAP, PASS, NICK oder USER); für IRC über TLS eine TLS-Route verwenden"
+    "irc": "Klartext-IRC-Clients (sie senden zuerst CAP, PASS, NICK oder USER); für IRC über TLS eine TLS-Route verwenden",
+    "spa": "Empfängt Klopfpakete, die fwknop-Clients über TCP senden (fwknop -P tcp -p dieser Port), und übergibt sie zur Authentifizierung an das Port-Knocking-Modul, ohne weiterzuleiten oder zu antworten. So genügt ein einziger offener Port zum Klopfen; Routen mit „Klopfen erforderlich“ funktionieren erst nach erfolgreichem Klopfen."
   },
   "routeMinecraftPlaceholder": "Serveradressen, eine pro Zeile: mc.example.com, *.example.com oder *. Leer = alle Minecraft-Verbindungen",
   "ipAccessNote": "Wird vor der Protokollerkennung geprüft; abgewiesene Verbindungen werden nicht gelesen und nicht als Routentreffer gezählt. Das Bearbeiten der Liste unterbricht das Lauschen nicht.",
-  "autoFirewallHelp": "Gibt in der lokalen Firewall (nftables / iptables / ip6tables) nur die Ports frei, auf denen diese Regel erfolgreich lauscht, fasst aufeinanderfolgende Ports zu einer Regel zusammen und beschränkt sie bei gesetzter Listen-Adresse auf diese Adresse; wird entfernt, wenn die Regel deaktiviert oder gelöscht wird. Für Gately auf einem Router wie OpenWrt oder einem Linux-Host mit Firewall"
+  "autoFirewallHelp": "Gibt in der lokalen Firewall (nftables / iptables / ip6tables) nur die Ports frei, auf denen diese Regel erfolgreich lauscht, fasst aufeinanderfolgende Ports zu einer Regel zusammen und beschränkt sie bei gesetzter Listen-Adresse auf diese Adresse; wird entfernt, wenn die Regel deaktiviert oder gelöscht wird. Für Gately auf einem Router wie OpenWrt oder einem Linux-Host mit Firewall",
+  "protoSpaShort": "Klopfen",
+  "spaTarget": "Port Knocking",
+  "routeKnock": "Klopfen erforderlich",
+  "routeKnockTag": "Klopfen erforderlich: {name}",
+  "knockDenied": "Getrennt, nicht geklopft"
 }

@@ -1,0 +1,6 @@
+{
+  "placeholder": "No requiere llamada",
+  "empty": "Aún no hay reglas de port knocking",
+  "missing": "La regla no existe",
+  "disabled": "Desactivada"
+}

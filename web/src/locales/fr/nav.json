@@ -28,6 +28,10 @@
       "title": "Prévention d'intrusion",
       "desc": "Bannit les IP malveillantes au niveau du pare-feu"
     },
+    "knock": {
+      "title": "Port knocking",
+      "desc": "N'ouvre SSH et d'autres ports qu'après une frappe réussie"
+    },
     "stun": {
       "title": "Traversée STUN",
       "desc": "Accédez à des services derrière un NAT1 sans IP publique"

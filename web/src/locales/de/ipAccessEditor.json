@@ -12,5 +12,7 @@
   "setNotLoaded": "nicht geladen",
   "setsHelp": "Wird zusammen mit den Bereichen oben geprüft; ein Treffer in einem davon gilt als auf der Liste. Eine aktualisierte Liste wirkt sofort, die Regel muss nicht neu starten",
   "setsWhitelistHelp": "Wird zusammen mit den Bereichen oben geprüft; ein Treffer in einem davon erlaubt die Verbindung. Eine aktualisierte Liste wirkt sofort, die Regel muss nicht neu starten. Die Listen lädt das Webdienste-Modul regelmäßig herunter; bis zum ersten erfolgreichen Download gelten sie als leer",
-  "denied": "Abgewiesen"
+  "denied": "Abgewiesen",
+  "knock": "Klopfen erforderlich",
+  "knockHelp": "Ist eine Port-Knocking-Regel gewählt, muss die Quelladresse zuvor mit fwknop erfolgreich geklopft haben und kann nur während der Freigabedauer neue Verbindungen aufbauen; andere Verbindungen werden getrennt. Gately entscheidet selbst und braucht keine Firewall-Berechtigung. Ist zusätzlich eine Liste gesetzt, müssen beide Bedingungen erfüllt sein."
 }

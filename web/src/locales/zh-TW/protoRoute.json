@@ -79,7 +79,8 @@
     "git": "Git（git://）",
     "bittorrent": "BitTorrent",
     "adb": "ADB 偵錯橋",
-    "irc": "IRC"
+    "irc": "IRC",
+    "spa": "連接埠敲門（fwknop -P tcp）"
   },
   "protoHelp": {
     "tls": "ALPN 可依應用層協定細分，例如 acme-tls/1（TLS-ALPN-01 憑證驗證）、postgresql（PostgreSQL 17 直接 TLS 連線）",
@@ -97,9 +98,15 @@
     "git": "git daemon 提供的 git:// 協定；經 HTTPS 或 SSH 存取的 Git 請用 TLS、HTTP 或 SSH 路由",
     "bittorrent": "未啟用協定加密的對等連線；啟用加密（MSE）後沒有特徵，會交給預設目標",
     "adb": "adb connect 的明文連線；Android 11 起的無線偵錯使用 TLS",
-    "irc": "明文 IRC 用戶端（先送出 CAP、PASS、NICK 或 USER）；使用 TLS 的 IRC 請用 TLS 路由"
+    "irc": "明文 IRC 用戶端（先送出 CAP、PASS、NICK 或 USER）；使用 TLS 的 IRC 請用 TLS 路由",
+    "spa": "接收 fwknop 用戶端經 TCP 傳來的敲門封包（fwknop -P tcp -p 本連接埠），交給連接埠敲門模組認證，不轉發、不回覆。這樣只開放這一個連接埠也能敲門；敲門成功後才能使用設定了「需要敲門」的路由。"
   },
   "routeMinecraftPlaceholder": "伺服器位址，每行一個：mc.example.com、*.example.com 或 *；留空比對全部 Minecraft 連線",
   "ipAccessNote": "在識別協定之前判斷，被拒絕的連線不會讀取資料，也不計入路由命中。修改名單不會中斷監聽。",
-  "autoFirewallHelp": "在本機防火牆（nftables / iptables / ip6tables）只放行本規則監聽成功的連接埠，連續連接埠合併為一條規則，填寫了監聽位址時只放行該位址；規則停用或刪除時撤銷。適用於 Gately 執行在 OpenWrt 等路由器或開啟了防火牆的 Linux 主機上"
+  "autoFirewallHelp": "在本機防火牆（nftables / iptables / ip6tables）只放行本規則監聽成功的連接埠，連續連接埠合併為一條規則，填寫了監聽位址時只放行該位址；規則停用或刪除時撤銷。適用於 Gately 執行在 OpenWrt 等路由器或開啟了防火牆的 Linux 主機上",
+  "protoSpaShort": "敲門",
+  "spaTarget": "連接埠敲門",
+  "routeKnock": "需要敲門",
+  "routeKnockTag": "需敲門：{name}",
+  "knockDenied": "未敲門被中斷"
 }

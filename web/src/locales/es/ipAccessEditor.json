@@ -12,5 +12,7 @@
   "setNotLoaded": "sin cargar",
   "setsHelp": "Se comprueban junto con los rangos de arriba; coincidir con cualquiera cuenta como estar en la lista. Una suscripción actualizada se aplica al instante, sin reiniciar la regla",
   "setsWhitelistHelp": "Se comprueban junto con los rangos de arriba; coincidir con cualquiera permite la conexión. Una suscripción actualizada se aplica al instante, sin reiniciar la regla. El módulo Servicios web descarga las listas periódicamente; hasta la primera descarga correcta cuentan como vacías",
-  "denied": "Rechazados"
+  "denied": "Rechazados",
+  "knock": "Requiere llamada",
+  "knockHelp": "Al elegir una regla de port knocking, la dirección de origen debe además llamar antes con fwknop y solo puede crear conexiones nuevas durante el tiempo de acceso; el resto de conexiones se cortan. Lo decide el propio Gately y no necesita permisos de cortafuegos. Si también se define una lista, deben cumplirse ambas."
 }

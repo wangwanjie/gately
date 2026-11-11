@@ -48,6 +48,7 @@
         <Field :label="t('portForward.connections')">{{ t('portForward.connectionsValue', { active: it.item.stats.activeConns, total: it.item.stats.totalConns }) }}</Field>
         <Field :label="t('portForward.traffic')">↑ {{ formatBytes(it.item.stats.bytesIn) }} · ↓ {{ formatBytes(it.item.stats.bytesOut) }}</Field>
         <Field v-if="it.item.ipMode" :label="t('ipAccessEditor.title')">{{ it.item.ipMode === 'whitelist' ? t('ipAccessEditor.whitelist') : t('ipAccessEditor.blacklist') }}</Field>
+        <Field v-if="it.item.knock" :label="t('ipAccessEditor.knock')">{{ knockRuleName(it.item.knock) }}</Field>
         <Field v-if="it.item.stats.denied" :label="t('ipAccessEditor.denied')" mono>{{ it.item.stats.denied }}</Field>
         <template v-if="sorting" #actions>
           <SortMoves :gl="gl" :it="it" />
@@ -112,7 +113,7 @@
           </el-select>
           <div class="help">{{ t('portForward.proxyProtocolHelp') }}</div>
         </el-form-item>
-        <IPAccessEditor v-model:mode="editing.ipMode" v-model:list="editing.ipList" v-model:sets="editing.ipSets" :note="t('portForward.ipAccessNote')" />
+        <IPAccessEditor v-model:mode="editing.ipMode" v-model:list="editing.ipList" v-model:sets="editing.ipSets" v-model:knock="editing.knock" :note="t('portForward.ipAccessNote')" />
         <el-form-item :label="t('common.remark')">
           <el-input v-model="editing.remark" />
         </el-form-item>
@@ -151,6 +152,7 @@ import { api, formatBytes } from '../api'
 import GroupedList from '../components/GroupedList.vue'
 import GroupInput from '../components/GroupInput.vue'
 import IPAccessEditor from '../components/IPAccessEditor.vue'
+import { knockRuleName, useKnockRules } from '../composables/useKnockRules'
 import ListTools from '../components/ListTools.vue'
 import SortCheck from '../components/SortCheck.vue'
 import SortMoves from '../components/SortMoves.vue'
@@ -189,6 +191,8 @@ interface Rule {
   ipMode: string
   ipList: string[]
   ipSets: string[]
+  // knock 为端口敲门规则 key，非空时来源地址还必须敲门成功
+  knock?: string
   remark: string
 }
 
@@ -227,6 +231,8 @@ const protocols = [
 ]
 
 const { t } = useI18n()
+// 读取端口敲门规则目录，卡片上显示“需要敲门”的规则名称
+useKnockRules()
 const compact = useCompactView('portforward')
 const { isMobile, labelPosition } = useFormLayout()
 const rules = ref<RuleView[]>([])
@@ -275,6 +281,7 @@ function emptyRule(): Rule {
     ipMode: '',
     ipList: [],
     ipSets: [],
+    knock: '',
     remark: '',
   }
 }
@@ -323,6 +330,7 @@ function openEditor(row?: RuleView, copy = false) {
     editing.value.ipMode = editing.value.ipMode ?? ''
     editing.value.ipList = editing.value.ipList ?? []
     editing.value.ipSets = editing.value.ipSets ?? []
+    editing.value.knock = editing.value.knock ?? ''
     if (copy) {
       copyFrom.value = { key: row.key ?? '', name: row.name }
       editing.value.key = ''
