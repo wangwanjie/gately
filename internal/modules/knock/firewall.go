@@ -109,11 +109,17 @@ type FirewallStatus struct {
 }
 
 // firewall 管理拦截规则：设置变化时同步重建，放行与撤销由后台协程异步写入，定期检查规则是否被外部清除。
+//
+// 两把锁：cmdMu 串行化全部外部命令（重建、增量写入、轮询、删除），mu 保护状态字段。执行外部命令（最长 cmdTimeout）
+// 期间释放 mu（见 outside），收包协程调用的 grant / revoke 只需要 mu，不会被命令阻塞。
+// be、plan、status、base、dirty、resync、lastErr 只在同时持有两把锁时修改；grants 与待写入队列由 grant / revoke 只持 mu 修改。
+// 加锁顺序：cmdMu → mu。
 type firewall struct {
 	log *logbuf.Logger
 	// detect 查找可用的后端，返回不可用原因与说明，可在测试中替换
 	detect func(ctx context.Context) (backend, string, string)
 
+	cmdMu  sync.Mutex
 	mu     sync.Mutex
 	be     backend
 	plan   fwPlan
@@ -249,6 +255,8 @@ func (f *firewall) stop() {
 		cancel()
 		<-done
 	}
+	f.cmdMu.Lock()
+	defer f.cmdMu.Unlock()
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	if f.cleanupLocked(context.Background()) {
@@ -263,6 +271,8 @@ func (f *firewall) stop() {
 // 放行快照与清空待写入队列在同一把锁内完成，grant 要么在快照之前（已包含在快照中），要么在之后（留在队列中），
 // 不会因为先取快照、后清空队列而丢掉中间登记的放行。
 func (f *firewall) apply(ctx context.Context, plan fwPlan, grants func(ports []spa.Access) []fwGrant) {
+	f.cmdMu.Lock()
+	defer f.cmdMu.Unlock()
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	if grants != nil {
@@ -277,7 +287,15 @@ func (f *firewall) apply(ctx context.Context, plan fwPlan, grants func(ports []s
 	f.rebuildLocked(ctx)
 }
 
-// rebuildLocked 按当前 plan 与放行重建规则；没有受保护端口时删除规则。
+// outside 在执行外部命令期间释放 f.mu，调用方持有 cmdMu 与 f.mu：命令最长可执行 cmdTimeout，
+// 期间收包协程仍可登记放行（grant 只需要 f.mu），登记的放行留在队列中，命令结束后由后台协程写入。
+func (f *firewall) outside(fn func()) {
+	f.mu.Unlock()
+	defer f.mu.Lock()
+	fn()
+}
+
+// rebuildLocked 按当前 plan 与放行重建规则；没有受保护端口时删除规则。调用方持有 cmdMu 与 f.mu。
 func (f *firewall) rebuildLocked(ctx context.Context) {
 	wasActive := f.status.Active
 	f.status.Needed = len(f.plan.Ports) > 0
@@ -295,7 +313,11 @@ func (f *firewall) rebuildLocked(ctx context.Context) {
 		return
 	}
 	if f.be == nil {
-		be, reason, msg := f.detect(ctx)
+		var (
+			be          backend
+			reason, msg string
+		)
+		f.outside(func() { be, reason, msg = f.detect(ctx) })
 		if be == nil {
 			f.status.Active, f.status.Reason, f.status.Error = false, reason, msg
 			f.logErrLocked(reason + ":" + msg)
@@ -315,7 +337,10 @@ func (f *firewall) rebuildLocked(ctx context.Context) {
 	plan := f.plan
 	plan.Grants = f.liveGrantsLocked(now)
 	f.dirty = true
-	if err := f.be.apply(ctx, plan, now); err != nil {
+	be := f.be
+	var err error
+	f.outside(func() { err = be.apply(ctx, plan, now) })
+	if err != nil {
 		reason := ReasonError
 		if isPermission(err) {
 			reason = ReasonPermission
@@ -340,18 +365,23 @@ func (f *firewall) rebuildLocked(ctx context.Context) {
 
 // cleanupLocked 在系统防火墙中可能留有本模块规则时删除它们（幂等：表、链、集合不存在时不报错），
 // 返回是否删除了规则。没有后端时重新探测；删除失败时保持 dirty，之后取消拦截、停止或重试时再删。
+// 调用方持有 cmdMu 与 f.mu。
 func (f *firewall) cleanupLocked(ctx context.Context) bool {
 	if !f.dirty {
 		return false
 	}
 	if f.be == nil {
-		be, _, _ := f.detect(ctx)
+		var be backend
+		f.outside(func() { be, _, _ = f.detect(ctx) })
 		if be == nil {
 			return false
 		}
 		f.be = be
 	}
-	if err := f.be.remove(ctx); err != nil {
+	be := f.be
+	var err error
+	f.outside(func() { err = be.remove(ctx) })
+	if err != nil {
 		f.log.Warnf("删除防火墙规则失败: %v", err)
 		return false
 	}
@@ -391,12 +421,19 @@ func (f *firewall) liveGrantsLocked(now time.Time) []fwGrant {
 	return out
 }
 
-// keepCountsLocked 在删除或重建规则前把当前计数并入基数。
+// keepCountsLocked 在删除或重建规则前把当前计数并入基数。调用方持有 cmdMu 与 f.mu。
 func (f *firewall) keepCountsLocked(ctx context.Context) {
 	if f.be == nil {
 		return
 	}
-	if ok, c, err := f.be.check(ctx); err == nil && ok {
+	be := f.be
+	var (
+		ok  bool
+		c   fwCounts
+		err error
+	)
+	f.outside(func() { ok, c, err = be.check(ctx) })
+	if err == nil && ok {
 		f.base.dropped += c.dropped
 		f.base.allowed += c.allowed
 	}
@@ -495,6 +532,8 @@ func (f *firewall) loop(ctx context.Context) {
 
 // flush 写入等待中的放行与撤销。失败时标记 resync，由下一次轮询完整重建。
 func (f *firewall) flush(ctx context.Context) {
+	f.cmdMu.Lock()
+	defer f.cmdMu.Unlock()
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	add, del := f.pendingAdd, f.pendingDel
@@ -502,14 +541,20 @@ func (f *firewall) flush(ctx context.Context) {
 	if !f.status.Active || f.be == nil {
 		return
 	}
+	be := f.be
 	if len(del) > 0 {
-		if err := f.be.del(ctx, del); err != nil {
+		var err error
+		f.outside(func() { err = be.del(ctx, del) })
+		if err != nil {
 			f.log.Warnf("从防火墙删除放行失败，将重建规则: %v", err)
 			f.resync = true
 		}
 	}
 	if len(add) > 0 {
-		if err := f.be.add(ctx, add, f.now()); err != nil {
+		var err error
+		now := f.now()
+		f.outside(func() { err = be.add(ctx, add, now) })
+		if err != nil {
 			f.log.Warnf("写入防火墙放行失败，将重建规则: %v", err)
 			f.resync = true
 		}
@@ -521,6 +566,7 @@ func (f *firewall) flush(ctx context.Context) {
 
 // poll 定期检查规则：被外部清除时重建，写入失败的每隔 retryEvery 次轮询重试，并更新计数。
 func (f *firewall) poll(ctx context.Context, tick int) {
+	f.cmdMu.Lock()
 	f.mu.Lock()
 	before := f.status.Active
 	switch {
@@ -534,7 +580,13 @@ func (f *firewall) poll(ctx context.Context, tick int) {
 		f.log.Infof("重建防火墙规则")
 		f.rebuildLocked(ctx)
 	default:
-		ok, c, err := f.be.check(ctx)
+		be := f.be
+		var (
+			ok  bool
+			c   fwCounts
+			err error
+		)
+		f.outside(func() { ok, c, err = be.check(ctx) })
 		switch {
 		case err != nil:
 			f.log.Warnf("读取防火墙规则失败: %v", err)
@@ -549,6 +601,8 @@ func (f *firewall) poll(ctx context.Context, tick int) {
 	after := f.status.Active
 	onActive := f.onActive
 	f.mu.Unlock()
+	f.cmdMu.Unlock()
+	// onActive 会获取模块锁（模块持锁时调用 apply，会等待 cmdMu），必须在释放两把锁之后调用
 	if before != after && onActive != nil {
 		onActive()
 	}

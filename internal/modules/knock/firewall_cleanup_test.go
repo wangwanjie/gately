@@ -240,3 +240,51 @@ func TestFirewallGrantAfterSnapshot(t *testing.T) {
 		return be.set[fwKey{g.Addr, g.Access}]
 	})
 }
+
+// blockingBackend 的 apply 在 release 关闭前一直阻塞，模拟执行很慢的外部命令。
+type blockingBackend struct {
+	fakeBackend
+	entered chan struct{}
+	release chan struct{}
+}
+
+func (b *blockingBackend) apply(ctx context.Context, plan fwPlan, now time.Time) error {
+	close(b.entered)
+	<-b.release
+	return b.fakeBackend.apply(ctx, plan, now)
+}
+
+// 外部命令执行期间（最长 15 秒）收包协程登记放行不被阻塞，放行在命令结束后写入。
+func TestFirewallGrantNotBlockedByCommand(t *testing.T) {
+	be := &blockingBackend{entered: make(chan struct{}), release: make(chan struct{})}
+	f := newFirewall(testLogger())
+	f.detect = func(context.Context) (backend, string, string) { return be, "", "" }
+	f.start(context.Background(), nil)
+	t.Cleanup(f.stop)
+	ssh := spa.Access{Proto: "tcp", Port: 22}
+	applied := make(chan struct{})
+	go func() {
+		f.apply(context.Background(), fwPlan{Ports: []spa.Access{ssh}}, nil)
+		close(applied)
+	}()
+	<-be.entered
+	g := fwGrant{Addr: netip.MustParseAddr("203.0.113.60"), Access: ssh, Until: time.Now().Add(time.Minute)}
+	granted := make(chan struct{})
+	go func() {
+		f.grant([]fwGrant{g})
+		_ = f.snapshot()
+		close(granted)
+	}()
+	select {
+	case <-granted:
+	case <-time.After(time.Second):
+		t.Fatal("grant 与 snapshot 不应等待外部命令")
+	}
+	close(be.release)
+	<-applied
+	waitFor(t, "命令结束后写入放行", func() bool {
+		be.mu.Lock()
+		defer be.mu.Unlock()
+		return be.set[fwKey{g.Addr, g.Access}]
+	})
+}
