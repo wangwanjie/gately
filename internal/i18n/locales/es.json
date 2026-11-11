@@ -2366,6 +2366,7 @@
   "端口扫描": "Escaneo de puertos",
   "端口探测": "Sondeo de puertos",
   "端口敲门": "Port knocking",
+  "端口敲门失败": "Error de port knocking",
   "端口敲门拒绝了 %s": "El port knocking rechazó a %s",
   "端口敲门放行了 %s": "El port knocking permitió a %s",
   "端口敲门模块未运行": "El módulo de port knocking no está en ejecución",

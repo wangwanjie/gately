@@ -1110,3 +1110,31 @@ func TestFirewallRegisteredOpenPorts(t *testing.T) {
 		t.Fatalf("关闭严格模式不应再提示，得到 %d 次", n)
 	}
 }
+
+// 端口敲门被拒绝的事件可以作为规则来源，按次数封禁；内置模板引用该事件。
+func TestKnockFailedJail(t *testing.T) {
+	m := newTestModule(t)
+	j := Jail{Key: "jk", Name: "knock", Enable: true, Source: SourceEvent, Target: events.KnockFailed, MaxRetry: 2, FindTime: 60}
+	if err := j.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	m.mu.Lock()
+	m.cfg.Jails = append(m.cfg.Jails, j)
+	m.startJailLocked(j)
+	m.mu.Unlock()
+	for range 2 {
+		m.onEvent(events.Event{Type: events.KnockFailed, Fields: map[string]string{"ip": "198.51.100.77"}})
+	}
+	if !banlist.Default.Banned(netip.MustParseAddr("198.51.100.77")) {
+		t.Fatal("敲门失败达到次数应封禁")
+	}
+	found := false
+	for _, p := range Presets {
+		if p.Preset == "gately-knock" && p.Target == events.KnockFailed {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatal("应提供端口敲门失败的模板")
+	}
+}

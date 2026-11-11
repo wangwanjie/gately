@@ -87,7 +87,8 @@
   },
   "event": {
     "authFailed": "管理後台登入失敗",
-    "wafBlocked": "WAF 攔截請求"
+    "wafBlocked": "WAF 攔截請求",
+    "knockFailed": "連接埠敲門被拒絕"
   },
   "sourceHelp": {
     "file": "持續讀取檔案新增的內容，輪替後自動切換到新檔案。每行一個路徑。",
@@ -228,6 +229,10 @@
     "gately-waf": {
       "name": "WAF 攔截",
       "desc": "被 WAF 多次攔截的來源。站點經 CDN 回源（以請求標頭傳遞真實 IP）時不要使用，否則封鎖的會是 CDN 節點"
+    },
+    "gately-knock": {
+      "name": "連接埠敲門失敗",
+      "desc": "多次傳送認證失敗、重放或請求未授權連接埠的敲門封包的來源（同一來源每 5 秒最多計一次）"
     },
     "web-decoy": {
       "name": "Web 誘餌路徑",

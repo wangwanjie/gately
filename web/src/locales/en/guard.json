@@ -87,7 +87,8 @@
   },
   "event": {
     "authFailed": "Admin console login failed",
-    "wafBlocked": "Request blocked by the WAF"
+    "wafBlocked": "Request blocked by the WAF",
+    "knockFailed": "Port knock rejected"
   },
   "sourceHelp": {
     "file": "Follows new lines appended to the file and switches to the new file after rotation. One path per line.",
@@ -228,6 +229,10 @@
     "gately-waf": {
       "name": "WAF blocks",
       "desc": "Sources blocked by the WAF repeatedly. Do not use it for sites behind a CDN that passes the real IP in a header, or the CDN's nodes get banned"
+    },
+    "gately-knock": {
+      "name": "Failed port knocks",
+      "desc": "Sources that repeatedly send knock packets that fail authentication, are replayed or request unauthorized ports (counted at most once every 5 seconds per source)"
     },
     "web-decoy": {
       "name": "Web decoy paths",

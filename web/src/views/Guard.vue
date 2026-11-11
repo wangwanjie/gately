@@ -501,7 +501,7 @@ const router = useRouter()
 const { isMobile, labelPosition } = useFormLayout()
 
 const sources = ['file', 'journal', 'command', 'docker', 'event', 'web']
-const eventTypes = ['auth.failed', 'waf.blocked']
+const eventTypes = ['auth.failed', 'waf.blocked', 'knock.failed']
 const defaultTrapPorts = '23,135,1433,1521,3389,5900,6379,11211'
 
 const tab = ref('bans')
@@ -704,8 +704,10 @@ function applyWebPreset(id: string) {
   testResults.value = undefined
 }
 
+// eventKey 把事件类型映射为 guard.event.* 文案键
 function eventKey(e: string) {
-  return e === 'auth.failed' ? 'authFailed' : 'wafBlocked'
+  const keys: Record<string, string> = { 'auth.failed': 'authFailed', 'waf.blocked': 'wafBlocked', 'knock.failed': 'knockFailed' }
+  return keys[e] ?? e
 }
 
 function sourceLabel(source: string) {

@@ -57,6 +57,11 @@ Invalid TOTP code! Server time: .* IP: <HOST>\s*$`,
 		MaxRetry: 5, FindTime: 300, BanTime: 86400,
 	},
 	{
+		// 端口敲门对同一来源每 5 秒最多发布一次失败事件，持续伪造报文的来源约半分钟内被封禁
+		Preset: "gately-knock", Name: "端口敲门失败", Source: SourceEvent, Target: events.KnockFailed,
+		MaxRetry: 5, FindTime: 600, BanTime: 86400,
+	},
+	{
 		// 正常访客不会请求这些路径，任何状态码都计数（单页应用会对任意路径返回 200），一次即封
 		Preset: "web-decoy", Name: "Web 诱饵路径", Source: SourceWeb,
 		Filter:    decoyPaths,

@@ -87,7 +87,8 @@
   },
   "event": {
     "authFailed": "Fehlgeschlagene Anmeldung an der Oberfläche",
-    "wafBlocked": "Von der WAF blockierte Anfrage"
+    "wafBlocked": "Von der WAF blockierte Anfrage",
+    "knockFailed": "Port-Knocking abgelehnt"
   },
   "sourceHelp": {
     "file": "Liest neu angehängte Zeilen und wechselt nach einer Rotation zur neuen Datei. Ein Pfad pro Zeile.",
@@ -228,6 +229,10 @@
     "gately-waf": {
       "name": "WAF-Blockierungen",
       "desc": "Quellen, die die WAF wiederholt blockiert hat. Nicht für Sites hinter einem CDN verwenden, das die echte IP per Header übergibt, sonst werden die CDN-Knoten gesperrt"
+    },
+    "gately-knock": {
+      "name": "Fehlgeschlagenes Port Knocking",
+      "desc": "Quellen, die wiederholt Klopfpakete senden, deren Authentifizierung fehlschlägt, die wiederholt wurden oder nicht autorisierte Ports anfordern (dieselbe Quelle zählt höchstens alle 5 Sekunden einmal)"
     },
     "web-decoy": {
       "name": "Web-Köderpfade",

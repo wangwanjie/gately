@@ -87,7 +87,8 @@
   },
   "event": {
     "authFailed": "Falha de login no painel",
-    "wafBlocked": "Requisição bloqueada pelo WAF"
+    "wafBlocked": "Requisição bloqueada pelo WAF",
+    "knockFailed": "Batida de port knocking recusada"
   },
   "sourceHelp": {
     "file": "Lê as linhas novas do arquivo e passa para o arquivo novo após a rotação. Um caminho por linha.",
@@ -228,6 +229,10 @@
     "gately-waf": {
       "name": "Bloqueios do WAF",
       "desc": "Origens bloqueadas repetidamente pelo WAF. Não use em sites atrás de uma CDN que passa o IP real em um cabeçalho, ou os nós da CDN serão bloqueados"
+    },
+    "gately-knock": {
+      "name": "Batidas de port knocking com falha",
+      "desc": "Origens que enviam repetidamente pacotes de batida que falham na autenticação, são repetidos ou pedem portas não autorizadas (uma mesma origem conta no máximo uma vez a cada 5 segundos)"
     },
     "web-decoy": {
       "name": "Caminhos isca web",
