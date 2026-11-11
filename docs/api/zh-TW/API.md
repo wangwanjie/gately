@@ -416,6 +416,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/webservice/settings` | `webservice:read` | 讀取 Web 服務全域設定 |
 | GET | `/api/webservice/settings/secrets/totp` | `webservice:write` | 查看共用使用者的 TOTP 金鑰明文（依使用者名稱索引） |
 | GET | `/api/webservice/settings/secrets/oauth` | `webservice:write` | 查看第三方登入的 Client Secret 明文（依登入方式識別索引） |
+| GET | `/api/webservice/settings/secrets/marker` | `webservice:write` | 檢視驗證標記金鑰明文（authMarkerKey） |
 | POST | `/api/webservice/totp-secret` | `webservice:write` | 為共用使用者產生新的 TOTP 金鑰（不儲存，儲存設定後生效） |
 | PUT | `/api/webservice/settings` | `webservice:write` | 儲存 Web 服務全域設定 |
 | GET | `/api/webservice/stats` | `webservice:read` | 站點分鐘級統計（?listener=&site=&minutes=） |
@@ -2707,6 +2708,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | 欄位 | 類型 |
 | --- | --- |
+| `authMarkerKey` | string |
 | `authSecret` | string |
 | `authUsers` | 陣列 of `webservice.AuthUser` |
 | `autoBanSeconds` | integer |
@@ -2787,6 +2789,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `text` | string |
 | `timeouts` | `webservice.BackendTimeouts` |
 | `trustAuthUsers` | boolean |
+| `trustBackendAuth` | boolean |
 | `type` | string |
 | `upstreamSniFromHost` | boolean |
 | `useTargetHost` | boolean |

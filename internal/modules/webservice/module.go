@@ -124,6 +124,12 @@ func (m *Module) Init(env module.Env) error {
 		m.realIP.set(from, headers)
 	}
 	m.auth.shared.set(m.cfg.Settings.AuthUsers, m.cfg.Settings.SSODomain)
+	// 手工编辑配置填入过短的认证标记密钥时不启用，避免弱密钥被猜出后伪造标记
+	if k := m.cfg.Settings.AuthMarkerKey; k != "" && len(k) < minAuthMarkerKey {
+		m.logs.Logger("").Errorf("认证标记密钥少于 %d 个字符，未启用", minAuthMarkerKey)
+	} else {
+		m.auth.marker.set(k)
+	}
 	m.auth.selfAuth.Store(m.cfg.Settings.SelfServicePassword)
 	m.auth.changeShared = m.changeSharedPassword
 	m.auth.onPasswordChanged = func(kind, name, ip string) {
@@ -427,6 +433,7 @@ func (m *Module) Routes(r module.Router) {
 		defer m.mu.Unlock()
 		s := m.cfg.Settings
 		s.AuthSecret = ""
+		s.AuthMarkerKey = crud.Mask(s.AuthMarkerKey)
 		s.OAuthProviders = append([]OAuthProvider{}, s.OAuthProviders...)
 		for i := range s.OAuthProviders {
 			s.OAuthProviders[i].ClientSecret = crud.Mask(s.OAuthProviders[i].ClientSecret)
@@ -443,6 +450,10 @@ func (m *Module) Routes(r module.Router) {
 	r.HandleFunc("GET /settings/secrets/oauth", crud.SecretsHandler(&m.mu, func() map[string]string {
 		return oauthSecrets(m.cfg.Settings.OAuthProviders)
 	}))
+	r.HandleFunc("GET /settings/secrets/marker", crud.SecretsHandler(&m.mu, func() map[string]string {
+		return map[string]string{"authMarkerKey": m.cfg.Settings.AuthMarkerKey}
+	}))
+	module.DocOf(r, "GET /settings/secrets/marker", module.Doc{Summary: "查看认证标记密钥明文（authMarkerKey）", Resp: map[string]string{}})
 	module.DocOf(r, "GET /settings/secrets/totp", module.Doc{Summary: "查看共享用户的 TOTP 密钥明文（按用户名索引）", Resp: map[string]string{}})
 	module.DocOf(r, "GET /settings/secrets/oauth", module.Doc{Summary: "查看第三方登录的 Client Secret 明文（按登录方式标识索引）", Resp: map[string]string{}})
 	r.HandleFunc("POST /totp-secret", m.handleNewTOTP)
@@ -533,6 +544,12 @@ func (m *Module) handlePutSettings(w http.ResponseWriter, r *http.Request) {
 	defer m.mu.Unlock()
 	old := m.cfg.Settings
 	s.AuthSecret = old.AuthSecret
+	crud.KeepSecret(old.AuthMarkerKey, &s.AuthMarkerKey)
+	s.AuthMarkerKey = strings.TrimSpace(s.AuthMarkerKey)
+	if s.AuthMarkerKey != "" && len(s.AuthMarkerKey) < minAuthMarkerKey {
+		httpx.Error(w, http.StatusBadRequest, "认证标记密钥至少 %d 个字符", minAuthMarkerKey)
+		return
+	}
 	// 保留被脱敏的 Client Secret
 	oldSecrets := map[string]string{}
 	for _, p := range old.OAuthProviders {
@@ -603,6 +620,10 @@ func (m *Module) handlePutSettings(w http.ResponseWriter, r *http.Request) {
 	}
 	m.applyOAuthLocked()
 	m.applyUsersLocked(s)
+	m.auth.marker.set(s.AuthMarkerKey)
+	if s.AuthMarkerKey != old.AuthMarkerKey {
+		m.auth.backends.reset()
+	}
 	// 真实 IP 在每个请求进入时判断，替换设置即可生效，不需要重新监听
 	m.realIP.set(s.RealIPFrom, s.RealIPHeaders)
 	// 可信代理在监听层校验 PROXY 协议来源，变化时接收 PROXY 协议的监听器需要重新监听；
@@ -615,6 +636,7 @@ func (m *Module) handlePutSettings(w http.ResponseWriter, r *http.Request) {
 		m.restartLocked(l.Key)
 	}
 	s.AuthSecret = ""
+	s.AuthMarkerKey = crud.Mask(s.AuthMarkerKey)
 	for i := range s.OAuthProviders {
 		s.OAuthProviders[i].ClientSecret = crud.Mask(s.OAuthProviders[i].ClientSecret)
 	}

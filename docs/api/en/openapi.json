@@ -4076,6 +4076,9 @@
       },
       "webservice.Settings": {
         "properties": {
+          "authMarkerKey": {
+            "type": "string"
+          },
           "authSecret": {
             "type": "string"
           },
@@ -4349,6 +4352,9 @@
             "$ref": "#/components/schemas/webservice.BackendTimeouts"
           },
           "trustAuthUsers": {
+            "type": "boolean"
+          },
+          "trustBackendAuth": {
             "type": "boolean"
           },
           "type": {
@@ -49839,6 +49845,67 @@
           }
         ],
         "summary": "Save Web service global settings",
+        "tags": [
+          "Web service"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/settings/secrets/marker": {
+      "get": {
+        "description": "Required permission: `webservice:write`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "View the auth marker key in plain text (authMarkerKey)",
         "tags": [
           "Web service"
         ],

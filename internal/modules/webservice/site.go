@@ -643,6 +643,16 @@ type statusRecorder struct {
 	firstByte time.Time
 	// dl 为访客写出空闲超时，每次写出前设置截止时间，写完清除；nil 表示不限制
 	dl *clientDeadlines
+	// beforeHeaders 在最终响应头写出前调用一次，用于签发、校验并清理认证标记头（见 authmarker.go）；nil 表示不需要
+	beforeHeaders func(http.Header)
+}
+
+// runBeforeHeaders 在写出最终响应头前执行 beforeHeaders（只执行一次）。
+func (s *statusRecorder) runBeforeHeaders() {
+	if f := s.beforeHeaders; f != nil {
+		s.beforeHeaders = nil
+		f(s.ResponseWriter.Header())
+	}
 }
 
 // countsForLatency 判断这次请求是否计入首字节延迟：必须写出过响应，且不是协议升级、断开连接或被管理员断开的请求。
@@ -664,6 +674,9 @@ func (s *statusRecorder) Write(p []byte) (int, error) {
 	// 被管理员断开后不再写出任何内容，让正在拷贝响应体的处理器（静态文件、反向代理）尽快结束
 	if s.req != nil && s.req.killed.Load() {
 		return 0, errConnClosed
+	}
+	if !s.wroteHeader {
+		s.runBeforeHeaders()
 	}
 	s.wroteHeader = true
 	s.markFirstByte()
@@ -689,6 +702,7 @@ func (s *statusRecorder) WriteHeader(code int) {
 	s.status = code
 	// 1xx 是中间响应，之后还会写出最终的响应头
 	if code >= 200 || code == http.StatusSwitchingProtocols {
+		s.runBeforeHeaders()
 		s.wroteHeader = true
 		s.markFirstByte()
 	}
@@ -845,8 +859,21 @@ func (h *siteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// 管理员本就能修改 WAF 设置与执行命令，放行不扩大权限。只读账号的请求仍经过 WAF
 	// 开启信任已认证用户的站点上，带本站点 Gately 认证有效凭据的请求同样不经过 WAF（#81）：
 	// 只认 Gately 签发的会话与验证过的基本认证凭据，访客无法伪造；转发认证与分享链接不算
+	// 外层 Gately 开启信任后端 Gately 的认证标记时，凭据近期得到后端带签名的认证标记的请求同样不经过 WAF（见 authmarker.go）
 	pipeline := h.pipeline
-	trusted = h.site.TrustAuthUsers && h.trustedAuth(r)
+	switch {
+	case h.site.TrustAuthUsers:
+		if cred := h.trustedCred(r); cred != "" {
+			trusted = true
+			ar.markCred.Store(&cred)
+		}
+	case h.site.TrustBackendAuth:
+		trusted = h.trustedBackend(r)
+	}
+	// 响应头写出前签发或校验认证标记，只在配置了认证标记密钥时启用
+	if f := h.markerHook(r, ar); f != nil {
+		rec.beforeHeaders = f
+	}
 	var wafBlocked *atomic.Bool
 	if h.site.WAF != "" {
 		if admin != "" || trusted {
@@ -979,10 +1006,14 @@ func (h *siteHandler) serveInner(rec http.ResponseWriter, r *http.Request) {
 					return
 				}
 				// 经 Gately 认证通过：开启信任已认证用户时，受信任的凭据（首次带基本认证凭据的请求在 checkUser 中
-				// 刚记下，这里已能识别）不计入路径探测（见 ServeHTTP）。只按允许列表通配放行的第三方登录身份不受信任，照常计入
-				if h.site.TrustAuthUsers && h.trustedAuth(r) {
+				// 刚记下，这里已能识别）不计入路径探测，并给外层 Gately 签发认证标记（见 ServeHTTP）。
+				// 只按允许列表通配放行的第三方登录身份不受信任，照常计入
+				if h.site.TrustAuthUsers {
 					if a, ok := r.Context().Value(ctxKeyActiveReq{}).(*activeReq); ok {
-						a.authed.Store(true)
+						if cred := h.trustedCred(r); cred != "" {
+							a.authed.Store(true)
+							a.markCred.Store(&cred)
+						}
 					}
 				}
 			}

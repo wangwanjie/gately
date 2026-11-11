@@ -416,6 +416,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/webservice/settings` | `webservice:read` | Чтение глобальных настроек веб-службы |
 | GET | `/api/webservice/settings/secrets/totp` | `webservice:write` | Показать секреты TOTP общих пользователей открытым текстом (по имени пользователя) |
 | GET | `/api/webservice/settings/secrets/oauth` | `webservice:write` | Показать Client Secret сторонних входов открытым текстом (по идентификатору способа входа) |
+| GET | `/api/webservice/settings/secrets/marker` | `webservice:write` | Показать ключ метки аутентификации открытым текстом (authMarkerKey) |
 | POST | `/api/webservice/totp-secret` | `webservice:write` | Создать новый ключ TOTP для общего пользователя (не сохраняется; действует после сохранения настроек) |
 | PUT | `/api/webservice/settings` | `webservice:write` | Сохранить глобальные настройки веб-службы |
 | GET | `/api/webservice/stats` | `webservice:read` | Поминутная статистика сайта (?listener=&site=&minutes=) |
@@ -2707,6 +2708,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | Поле | Тип |
 | --- | --- |
+| `authMarkerKey` | string |
 | `authSecret` | string |
 | `authUsers` | Массив из `webservice.AuthUser` |
 | `autoBanSeconds` | integer |
@@ -2787,6 +2789,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `text` | string |
 | `timeouts` | `webservice.BackendTimeouts` |
 | `trustAuthUsers` | boolean |
+| `trustBackendAuth` | boolean |
 | `type` | string |
 | `upstreamSniFromHost` | boolean |
 | `useTargetHost` | boolean |

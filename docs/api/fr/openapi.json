@@ -4076,6 +4076,9 @@
       },
       "webservice.Settings": {
         "properties": {
+          "authMarkerKey": {
+            "type": "string"
+          },
           "authSecret": {
             "type": "string"
           },
@@ -4349,6 +4352,9 @@
             "$ref": "#/components/schemas/webservice.BackendTimeouts"
           },
           "trustAuthUsers": {
+            "type": "boolean"
+          },
+          "trustBackendAuth": {
             "type": "boolean"
           },
           "type": {
@@ -49839,6 +49845,67 @@
           }
         ],
         "summary": "Enregistrer les paramètres globaux du service Web",
+        "tags": [
+          "Service Web"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/settings/secrets/marker": {
+      "get": {
+        "description": "Permission requise : `webservice:write`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Afficher en clair la clé du marqueur d'authentification (authMarkerKey)",
         "tags": [
           "Service Web"
         ],

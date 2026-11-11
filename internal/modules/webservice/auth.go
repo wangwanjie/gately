@@ -72,6 +72,9 @@ type authenticator struct {
 	panels *panelStore
 	// trustBasic 缓存开启了信任已认证用户的站点上验证通过的基本认证凭据，见 trustauth.go
 	trustBasic basicTrust
+	// marker 为认证标记密钥，backends 记录得到后端 Gately 认证标记的凭据，见 authmarker.go
+	marker   markerKey
+	backends backendTrust
 }
 
 func (a *authenticator) setOAuth(env oauthEnv) {

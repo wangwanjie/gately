@@ -416,6 +416,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | GET | `/api/webservice/settings` | `webservice:read` | Globale Web-Dienst-Einstellungen lesen |
 | GET | `/api/webservice/settings/secrets/totp` | `webservice:write` | TOTP-Geheimnisse der gemeinsamen Benutzer im Klartext anzeigen (nach Benutzername) |
 | GET | `/api/webservice/settings/secrets/oauth` | `webservice:write` | Client Secrets der Drittanbieter-Anmeldungen im Klartext anzeigen (nach Kennung der Anmeldemethode) |
+| GET | `/api/webservice/settings/secrets/marker` | `webservice:write` | Auth-Markierungsschlüssel im Klartext anzeigen (authMarkerKey) |
 | POST | `/api/webservice/totp-secret` | `webservice:write` | Neuen TOTP-Schlüssel für einen gemeinsamen Benutzer erzeugen (nicht gespeichert; wirksam nach dem Speichern) |
 | PUT | `/api/webservice/settings` | `webservice:write` | Globale Web-Dienst-Einstellungen speichern |
 | GET | `/api/webservice/stats` | `webservice:read` | Minutenstatistik einer Site (?listener=&site=&minutes=) |
@@ -2707,6 +2708,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 
 | Feld | Typ |
 | --- | --- |
+| `authMarkerKey` | string |
 | `authSecret` | string |
 | `authUsers` | Array von `webservice.AuthUser` |
 | `autoBanSeconds` | integer |
@@ -2787,6 +2789,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `text` | string |
 | `timeouts` | `webservice.BackendTimeouts` |
 | `trustAuthUsers` | boolean |
+| `trustBackendAuth` | boolean |
 | `type` | string |
 | `upstreamSniFromHost` | boolean |
 | `useTargetHost` | boolean |

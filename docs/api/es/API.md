@@ -416,6 +416,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | GET | `/api/webservice/settings` | `webservice:read` | Leer los ajustes globales del servicio web |
 | GET | `/api/webservice/settings/secrets/totp` | `webservice:write` | Ver en texto plano los secretos TOTP de los usuarios compartidos (por nombre de usuario) |
 | GET | `/api/webservice/settings/secrets/oauth` | `webservice:write` | Ver en texto plano los Client Secret de los inicios de sesión de terceros (por identificador del método) |
+| GET | `/api/webservice/settings/secrets/marker` | `webservice:write` | Ver la clave de la marca de autenticación en texto plano (authMarkerKey) |
 | POST | `/api/webservice/totp-secret` | `webservice:write` | Generar una nueva clave TOTP para un usuario compartido (no se guarda; se aplica al guardar la configuración) |
 | PUT | `/api/webservice/settings` | `webservice:write` | Guardar los ajustes globales del servicio web |
 | GET | `/api/webservice/stats` | `webservice:read` | Estadísticas por minuto del sitio (?listener=&site=&minutes=) |
@@ -2707,6 +2708,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 
 | Campo | Tipo |
 | --- | --- |
+| `authMarkerKey` | string |
 | `authSecret` | string |
 | `authUsers` | Lista de `webservice.AuthUser` |
 | `autoBanSeconds` | integer |
@@ -2787,6 +2789,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `text` | string |
 | `timeouts` | `webservice.BackendTimeouts` |
 | `trustAuthUsers` | boolean |
+| `trustBackendAuth` | boolean |
 | `type` | string |
 | `upstreamSniFromHost` | boolean |
 | `useTargetHost` | boolean |

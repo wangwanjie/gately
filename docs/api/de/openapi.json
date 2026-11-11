@@ -4076,6 +4076,9 @@
       },
       "webservice.Settings": {
         "properties": {
+          "authMarkerKey": {
+            "type": "string"
+          },
           "authSecret": {
             "type": "string"
           },
@@ -4349,6 +4352,9 @@
             "$ref": "#/components/schemas/webservice.BackendTimeouts"
           },
           "trustAuthUsers": {
+            "type": "boolean"
+          },
+          "trustBackendAuth": {
             "type": "boolean"
           },
           "type": {
@@ -49839,6 +49845,67 @@
           }
         ],
         "summary": "Globale Web-Dienst-Einstellungen speichern",
+        "tags": [
+          "Web-Dienst"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/settings/secrets/marker": {
+      "get": {
+        "description": "Erforderliche Berechtigung: `webservice:write`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Auth-Markierungsschlüssel im Klartext anzeigen (authMarkerKey)",
         "tags": [
           "Web-Dienst"
         ],

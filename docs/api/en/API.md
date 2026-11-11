@@ -416,6 +416,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | GET | `/api/webservice/settings` | `webservice:read` | Read Web service global settings |
 | GET | `/api/webservice/settings/secrets/totp` | `webservice:write` | View the TOTP secrets of shared users in plain text (indexed by username) |
 | GET | `/api/webservice/settings/secrets/oauth` | `webservice:write` | View the Client Secrets of third-party logins in plain text (indexed by login method ID) |
+| GET | `/api/webservice/settings/secrets/marker` | `webservice:write` | View the auth marker key in plain text (authMarkerKey) |
 | POST | `/api/webservice/totp-secret` | `webservice:write` | Generate a new TOTP key for a shared user (not saved; takes effect after saving settings) |
 | PUT | `/api/webservice/settings` | `webservice:write` | Save Web service global settings |
 | GET | `/api/webservice/stats` | `webservice:read` | Per-minute site statistics (?listener=&site=&minutes=) |
@@ -2707,6 +2708,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 
 | Field | Type |
 | --- | --- |
+| `authMarkerKey` | string |
 | `authSecret` | string |
 | `authUsers` | Array of `webservice.AuthUser` |
 | `autoBanSeconds` | integer |
@@ -2787,6 +2789,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `text` | string |
 | `timeouts` | `webservice.BackendTimeouts` |
 | `trustAuthUsers` | boolean |
+| `trustBackendAuth` | boolean |
 | `type` | string |
 | `upstreamSniFromHost` | boolean |
 | `useTargetHost` | boolean |
