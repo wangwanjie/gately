@@ -84,8 +84,8 @@
   "home": {
     "pill": "開源免費 · Apache-2.0",
     "announce": {
-      "text": "v0.6.5.4 發佈：網路喚醒遠端關機與巴法雲語音、監聽附加 HTTP 埠、導覽面板換膚 →",
-      "link": "/zh-TW/news/v0.6.5.4"
+      "text": "v0.6.5.5 發佈：連接埠敲門、網路喚醒用戶端關機、信任已登入使用者略過 WAF 與 OpenWrt 安裝包修正 →",
+      "link": "/zh-TW/news/v0.6.5.5"
     },
     "titleLine1": "一站式網路閘道",
     "titleLine2": "開源透明，開箱即用",

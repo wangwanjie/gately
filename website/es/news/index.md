@@ -7,6 +7,10 @@ description: Anuncios y notas de cada versión de Gately.
 
 A continuación se listan los anuncios de las versiones principales. Consulta [GitHub Releases](https://github.com/wangwanjie/gately/releases) para ver todos los cambios y las descargas de cada versión.
 
+## [v0.6.5.5](/es/news/v0.6.5.5)
+
+11 de noviembre de 2026 · Port Knocking; apagado remoto de Wake-on-LAN mediante un agente y peticiones HTTP; confiar en usuarios autenticados en el servicio web; reparto por usuario en más tipos de sitio; las solicitudes de administradores omiten el WAF del sitio; el apk de OpenWrt ya no sustituye el programa por uno de otra arquitectura.
+
 ## [v0.6.5.4](/es/news/v0.6.5.4)
 
 11 de noviembre de 2026 · Apagado remoto y control por voz con Bemfa en Wake-on-LAN; puerto HTTP adicional en los listeners del servicio web; temas de los paneles de navegación.

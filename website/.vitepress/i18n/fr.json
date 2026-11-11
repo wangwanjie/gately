@@ -84,8 +84,8 @@
   "home": {
     "pill": "Gratuit et open source · Apache-2.0",
     "announce": {
-      "text": "v0.6.5.4 : arrêt à distance et commande vocale Bemfa pour le Wake-on-LAN, port HTTP supplémentaire sur l’écouteur, thèmes des panneaux de navigation →",
-      "link": "/fr/news/v0.6.5.4"
+      "text": "v0.6.5.5 : Port Knocking, arrêt Wake-on-LAN par un agent, confiance aux utilisateurs connectés pour contourner le WAF et correctif du paquet OpenWrt →",
+      "link": "/fr/news/v0.6.5.5"
     },
     "titleLine1": "La passerelle réseau tout-en-un",
     "titleLine2": "Open source, prête à l'emploi",

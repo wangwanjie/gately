@@ -84,8 +84,8 @@
   "home": {
     "pill": "Kostenlos und Open Source · Apache-2.0",
     "announce": {
-      "text": "v0.6.5.4: Fern-Herunterfahren und Bemfa-Sprachsteuerung für Wake-on-LAN, zusätzlicher HTTP-Port am Listener, Designs für Navigationspanels →",
-      "link": "/de/news/v0.6.5.4"
+      "text": "v0.6.5.5: Port-Knocking, Wake-on-LAN-Herunterfahren über einen Agenten, angemeldeten Benutzern vertrauen statt WAF und Korrektur der OpenWrt-Pakete →",
+      "link": "/de/news/v0.6.5.5"
     },
     "titleLine1": "Das All-in-one-Netzwerk-Gateway",
     "titleLine2": "Open Source, sofort einsatzbereit",

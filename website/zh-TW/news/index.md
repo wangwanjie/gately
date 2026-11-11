@@ -7,6 +7,10 @@ description: Gately 各版本的發布公告與更新說明。
 
 重要版本的發布公告如下，每個版本的完整變更與下載檔案見 [GitHub Releases](https://github.com/wangwanjie/gately/releases)。
 
+## [v0.6.5.5](/zh-TW/news/v0.6.5.5)
+
+2026 年 11 月 11 日 · 連接埠敲門；網路喚醒用戶端遠端關機與 HTTP 請求方式；Web 服務信任已登入使用者；依使用者分流支援更多站台類型；管理員請求略過站台 WAF；修正 OpenWrt apk 裝錯架構時替換程式。
+
 ## [v0.6.5.4](/zh-TW/news/v0.6.5.4)
 
 2026 年 11 月 11 日 · 網路喚醒遠端關機與巴法雲語音控制；Web 服務監聽附加 HTTP 埠；導覽面板換膚。
