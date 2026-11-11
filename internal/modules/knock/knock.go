@@ -53,7 +53,7 @@ const (
 	maxRulePorts      = 16
 	maxNameLen        = 64
 	maxUserLen        = 64
-	// replayCap 为防重放缓存最多保存的摘要数；报文只在 MaxAge 内有效，缓存按此时长保留
+	// replayCap 为防重放缓存最多保存的摘要数；摘要按报文时间戳加 maxMaxAge 保留，见 check
 	replayCap = 100000
 )
 
@@ -407,7 +407,9 @@ type Module struct {
 	stats    map[string]*ruleStats
 	fwGrants map[fwGrantKey]time.Time
 	replay   map[string]time.Time
-	counters Counters
+	// startedAt 为模块本次启动的时间：防重放缓存只在内存中，早于此刻的报文无法确认是否已被使用过
+	startedAt time.Time
+	counters  Counters
 	// bucket 为全局令牌桶，perSrc 为按来源网段的令牌桶，均在 HMAC 认证之前判断
 	bucket tokenBucket
 	perSrc *srcLimiter
@@ -478,6 +480,9 @@ func (m *Module) Start(ctx context.Context) error {
 	defer m.mu.Unlock()
 	m.ctx, m.cancel = context.WithCancel(ctx)
 	m.started = true
+	m.stateMu.Lock()
+	m.startedAt = m.now()
+	m.stateMu.Unlock()
 	m.local = localPrefixes()
 	m.fw.start(m.ctx, m.onFirewallActive)
 	m.applyLocked()
@@ -744,8 +749,15 @@ func (m *Module) check(r *compiledRule, msg *spa.Message, s Settings, now time.T
 	if d := now.Sub(ts); d > maxAge || d < -maxAge {
 		return fmt.Sprintf("报文时间戳与本机时间相差 %s，超过有效期 %d 秒（请检查两端的时钟）", d.Round(time.Second).Abs(), s.MaxAge)
 	}
-	// 防重放：每个报文的摘要只接受一次。摘要在有效期过后无需保留，那时时间戳校验会拒绝重放
+	// 防重放：每个报文的摘要只接受一次。摘要按报文时间戳加允许的最大有效期（maxMaxAge）保留，而不是写入时的 MaxAge：
+	// 之后调大有效期时，旧报文的摘要仍在缓存中，不会因此可以重放
 	m.stateMu.Lock()
+	// 缓存只在内存中，重启后为空：时间戳早于本次启动的报文可能在重启前已经用过，一律拒绝。
+	// 客户端时钟比本机慢时，重启后的头几秒内新敲门也会被拒绝，重新敲门即可
+	if ts.Unix() < m.startedAt.Unix() {
+		m.stateMu.Unlock()
+		return "报文时间早于 Gately 本次启动，无法确认是否为重放，请重新敲门"
+	}
 	if until, seen := m.replay[msg.Digest]; seen && now.Before(until) {
 		m.stateMu.Unlock()
 		return "重放的报文（同一报文只能使用一次）"
@@ -761,7 +773,7 @@ func (m *Module) check(r *compiledRule, msg *spa.Message, s Settings, now time.T
 		m.stateMu.Unlock()
 		return "防重放缓存已满，暂时拒绝新的敲门"
 	}
-	m.replay[msg.Digest] = ts.Add(maxAge + time.Second)
+	m.replay[msg.Digest] = ts.Add(maxMaxAge*time.Second + time.Second)
 	m.stateMu.Unlock()
 	if !msg.IsAccess() {
 		switch msg.Type {

@@ -109,4 +109,4 @@ Vor der Prüfung wird pro Quellbereich begrenzt (höchstens 10 Pakete pro Sekund
 
 - Unterstützt wird nur der Rijndael-(AES-)CBC-Modus von fwknop mit HMAC; GnuPG, der alte IV-Modus und Pakete ohne HMAC werden nicht unterstützt;
 - Befehlsnachrichten (`fwknop -C`) werden nicht ausgeführt, NAT-Zugriffsanfragen (`-N`) werden nicht unterstützt;
-- Knock-Freigaben liegen im Arbeitsspeicher; nach einem Neustart von Gately muss erneut geklopft werden (bestehende Verbindungen bleiben unberührt).
+- Knock-Freigaben liegen im Arbeitsspeicher; nach einem Neustart von Gately muss erneut geklopft werden (bestehende Verbindungen bleiben unberührt). Auch die Replay-Einträge liegen nur im Speicher; nach einem Neustart wird daher jedes Paket abgelehnt, dessen Zeitstempel vor dem Start liegt. Geht die Uhr des Clients nach, kann ein Knock in den ersten Sekunden nach dem Neustart abgelehnt werden; ein erneuter Knock funktioniert.
