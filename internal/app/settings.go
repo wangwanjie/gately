@@ -457,13 +457,15 @@ func isEntryPath(r *http.Request, safePath string) bool {
 	return r.URL.Path == safePath || r.URL.Path == safePath+"/"
 }
 
-// entryPassed 判断请求能否越过安全入口：带有效的入口 Cookie、签过名的主屏幕图标地址、API 令牌或已登录的会话。
+// entryPassed 判断请求能否越过安全入口：带有效的入口 Cookie、签过名的主屏幕图标地址、API 令牌、
+// 模块免登录接口的有效凭据或已登录的会话。
 func (a *App) entryPassed(r *http.Request, safePath string) bool {
 	if c, err := r.Cookie(entryCookie); err == nil && hmac.Equal([]byte(c.Value), []byte(a.entryValue(safePath))) {
 		return true
 	}
 	// 主屏幕图标请求不带 Cookie，凭页面中签过名的地址放行（见 webclip.go）
-	if a.iconKeyValid(r, safePath) || a.tokenPeek(r) {
+	// 模块免登录接口（如网络唤醒客户端）带有效凭据时放行，客户端无法先访问入口路径拿 Cookie
+	if a.iconKeyValid(r, safePath) || a.tokenPeek(r) || a.publicAuth(r) {
 		return true
 	}
 	// 已登录的会话（例如修改安全入口之前登录）仍可访问

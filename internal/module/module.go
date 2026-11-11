@@ -52,6 +52,16 @@ type Module interface {
 	Routes(r Router)
 }
 
+// PublicRouter 由需要提供免登录接口的模块实现，例如被控设备上的客户端向管理后台取指令。
+// PublicRoutes 注册的接口挂载在 /api/<ID>/public 下（pattern 写法同 Router，路径相对该前缀），
+// 不经过登录鉴权、角色检查与审计，由模块在处理函数中自行校验凭据；模块关闭时不注册。
+// PublicAuth 判断请求是否带有该模块认可的有效凭据，管理后台据此让这类请求越过安全入口，
+// 须是不访问网络、开销很小的检查；读取请求体时要还原 r.Body，供处理函数再次读取。
+type PublicRouter interface {
+	PublicRoutes(r Router)
+	PublicAuth(r *http.Request) bool
+}
+
 // Migrator 由需要在全部模块初始化之前迁移配置的模块实现，例如从其他模块的配置文件中接收拆分出来的规则。
 // 返回的 from 非空表示本次有配置从模块 from 迁来：已有 from 权限的 API 令牌会同时获得本模块的同级权限，
 // from 被关闭时本模块也一并关闭，保持迁移前的行为。没有需要迁移的内容时返回空串。
