@@ -978,8 +978,9 @@ func (h *siteHandler) serveInner(rec http.ResponseWriter, r *http.Request) {
 				if id, ok = h.auth.checkUser(rec, r, h.site); !ok {
 					return
 				}
-				// 经 Gately 认证通过：开启信任已认证用户时，这次请求不计入路径探测（见 ServeHTTP）
-				if h.site.TrustAuthUsers {
+				// 经 Gately 认证通过：开启信任已认证用户时，受信任的凭据（首次带基本认证凭据的请求在 checkUser 中
+				// 刚记下，这里已能识别）不计入路径探测（见 ServeHTTP）。只按允许列表通配放行的第三方登录身份不受信任，照常计入
+				if h.site.TrustAuthUsers && h.trustedAuth(r) {
 					if a, ok := r.Context().Value(ctxKeyActiveReq{}).(*activeReq); ok {
 						a.authed.Store(true)
 					}
