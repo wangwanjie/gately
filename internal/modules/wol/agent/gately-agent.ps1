@@ -140,6 +140,11 @@ function Invoke-Action([string]$Action) {
 				}
 			}
 			'sleep' {
+				# 先确认系统支持睡眠：不支持（如很多虚拟机、关闭了睡眠的机器）时 SetSuspendState 仍可能返回成功却什么都不做
+				Add-Type -Namespace GatelyAgent -Name Power -MemberDefinition '[DllImport("powrprof.dll")] public static extern bool IsPwrSuspendAllowed();'
+				if (-not [GatelyAgent.Power]::IsPwrSuspendAllowed()) {
+					return 'sleep is not supported on this system (see powercfg /a)'
+				}
 				# 挂起到内存；系统开启了休眠且禁用了混合睡眠时，部分机器会进入休眠
 				Add-Type -AssemblyName System.Windows.Forms
 				$ok = [System.Windows.Forms.Application]::SetSuspendState([System.Windows.Forms.PowerState]::Suspend, $false, $false)
