@@ -17,6 +17,7 @@ import (
 	"github.com/wangwanjie/gately/internal/fwopen"
 	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/iplist"
+	"github.com/wangwanjie/gately/internal/knockgate"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
 )
@@ -184,6 +185,25 @@ func (m *Module) publishIPSetUsersLocked() {
 	iplist.PublishUsers(ID, m.cfg.Rules, func(r *Rule) (*iplist.Access, string) {
 		return &r.Access, ID + " / " + ruleLabel(*r)
 	})
+	// 敲门规则的引用还包括各路由要求的敲门，覆盖 PublishUsers 只按规则登记的结果
+	knocks := map[string][]string{}
+	for _, r := range m.cfg.Rules {
+		label := ID + " / " + ruleLabel(r)
+		if r.Knock != "" {
+			knocks[r.Knock] = append(knocks[r.Knock], label)
+		}
+		for i, rt := range r.Routes {
+			if rt.Knock == "" {
+				continue
+			}
+			name := rt.Name
+			if name == "" {
+				name = fmt.Sprintf("#%d", i+1)
+			}
+			knocks[rt.Knock] = append(knocks[rt.Knock], label+" / "+name)
+		}
+	}
+	knockgate.Default.SetUsers(ID, knocks)
 }
 
 func ruleLabel(r Rule) string {
@@ -233,7 +253,7 @@ func (m *Module) Routes(r module.Router) {
 		Enabled:  func(r *Rule) *bool { return &r.Enable },
 		Group:    func(r *Rule) *string { return &r.Group },
 		Validate: func(r *Rule) error { return r.Validate() },
-		Check:    func(r *Rule) error { return r.Access.CheckSets() },
+		Check:    func(r *Rule) error { return r.checkKnocks() },
 		View:     func(r *Rule) any { return m.viewLocked(*r) },
 		Changed: func(key string) {
 			m.publishIPSetUsersLocked()

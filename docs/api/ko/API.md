@@ -1935,6 +1935,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `alpn` | Array of string |
 | `disabled` | boolean |
 | `domains` | Array of string |
+| `knock` | string |
 | `name` | string |
 | `protocol` | string |
 | `proxyProtocol` | string |

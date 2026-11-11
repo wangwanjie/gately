@@ -21,6 +21,10 @@ type target struct {
 	// conns 为该目标累计分到的连接数。热更新时新旧 target 共享同一个计数器，
 	// 仍在使用旧路由表的连接计入后也不会丢失
 	conns *atomic.Int64
+	// knock 非空时只有持有该敲门规则有效授权的来源地址才能使用此路由
+	knock string
+	// spa 表示敲门路由：报文交给端口敲门模块，不转发
+	spa bool
 }
 
 // router 按识别出的协议选择目标。TLS 与 HTTP 路由按域名（SNI 或 Host）匹配，其余协议每种至多一条路由。
@@ -195,6 +199,8 @@ func newRouter(rule Rule) *router {
 			proxyProtocol: route.ProxyProtocol,
 			match:         routeMatchKey(route),
 			conns:         new(atomic.Int64),
+			knock:         route.Knock,
+			spa:           routeProtocol(route) == ProtoSPA,
 		}
 		// 停用的路由保留在 targets 中，让统计与路由一一对应、重新启用后沿用原计数，但不加入匹配表
 		rt.targets = append(rt.targets, t)

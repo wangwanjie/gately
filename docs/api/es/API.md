@@ -1935,6 +1935,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `alpn` | Lista de string |
 | `disabled` | boolean |
 | `domains` | Lista de string |
+| `knock` | string |
 | `name` | string |
 | `protocol` | string |
 | `proxyProtocol` | string |

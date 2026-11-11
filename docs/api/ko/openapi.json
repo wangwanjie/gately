@@ -2254,6 +2254,9 @@
             },
             "type": "array"
           },
+          "knock": {
+            "type": "string"
+          },
           "name": {
             "type": "string"
           },

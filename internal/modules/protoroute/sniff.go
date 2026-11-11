@@ -49,6 +49,8 @@ const (
 	ProtoADB = "adb"
 	// ProtoIRC 为明文 IRC 客户端
 	ProtoIRC = "irc"
+	// ProtoSPA 为经 TCP 发来的端口敲门报文（fwknop 客户端 -P tcp），交给端口敲门模块认证，不转发
+	ProtoSPA = "spa"
 	// ProtoTimeout 表示客户端在识别超时内没有发送任何数据，用于 VNC、MySQL、FTP、SMTP 等由服务端先发送数据的协议
 	ProtoTimeout = "timeout"
 )
@@ -59,7 +61,7 @@ var routeProtocols = map[string]bool{
 	ProtoOpenVPN: true, ProtoXMPP: true, ProtoMQTT: true, ProtoPostgres: true,
 	ProtoRTSP: true, ProtoSIP: true, ProtoMinecraft: true, ProtoRedis: true, ProtoAMQP: true,
 	ProtoSMB: true, ProtoGit: true, ProtoBitTorrent: true, ProtoADB: true, ProtoIRC: true,
-	ProtoTimeout: true,
+	ProtoSPA: true, ProtoTimeout: true,
 }
 
 // protocolUsesDomains 判断该协议的路由是否按域名匹配：TLS 看 SNI，HTTP 看 Host，Minecraft 看握手包中的服务器地址。
@@ -132,6 +134,12 @@ var probes = []probe{
 
 // detectProtocol 根据已收到的数据识别协议。done 为 false 时需要继续读取；done 为 true 且 proto 为空表示无法识别。
 func detectProtocol(b []byte) (proto string, done bool) {
+	return detect(b, false)
+}
+
+// detect 识别协议；spa 为 true 时还识别端口敲门报文。敲门报文只是一串 base64 字符，
+// 只有规则中有敲门路由时才检查，避免没有敲门路由的规则为等待更多字符而推迟判断其他无法识别的数据。
+func detect(b []byte, spa bool) (proto string, done bool) {
 	if len(b) == 0 {
 		return "", false
 	}
@@ -144,7 +152,33 @@ func detectProtocol(b []byte) (proto string, done bool) {
 			more = true
 		}
 	}
+	if spa {
+		switch probeSPA(b) {
+		case probeYes:
+			return ProtoSPA, true
+		case probeMore:
+			more = true
+		}
+	}
 	return "", !more
+}
+
+// spaPrefix 为判定敲门报文需要的 base64 字符数：fwknop 报文至少约 180 个字符，全部是 base64 字符（不含 "="）。
+// 其他协议的开头几十个字节内都有空格、换行、"-" 或二进制字节，不会与之重叠
+const spaPrefix = 64
+
+// probeSPA 检查开头 spaPrefix 个字节是否全是 base64 字符。只看固定长度的前缀，结果不随后续数据改变。
+func probeSPA(b []byte) probeResult {
+	n := min(len(b), spaPrefix)
+	for _, c := range b[:n] {
+		if !(c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || c == '+' || c == '/') {
+			return probeNo
+		}
+	}
+	if n < spaPrefix {
+		return probeMore
+	}
+	return probeYes
 }
 
 // hasPrefixPartial 检查 b 与 prefix 在较短的长度内是否一致，返回 probeYes（b 已包含完整前缀）、probeMore 或 probeNo。
@@ -193,6 +227,11 @@ var errClientGone = errors.New("客户端在识别完成前断开")
 // 超时未收到任何数据时 Proto 为 ProtoTimeout；收到了数据但无法识别时 Proto 为空。
 // 客户端在识别完成前断开时返回 errClientGone。
 func sniffConn(conn net.Conn, timeout time.Duration) (raw []byte, res sniffResult, err error) {
+	return sniffConnWith(conn, timeout, false)
+}
+
+// sniffConnWith 同 sniffConn，spa 为 true 时还识别端口敲门报文（见 detect）。
+func sniffConnWith(conn net.Conn, timeout time.Duration, spa bool) (raw []byte, res sniffResult, err error) {
 	s := &sniffer{conn: conn}
 	_ = conn.SetReadDeadline(time.Now().Add(timeout))
 	defer func() {
@@ -200,7 +239,7 @@ func sniffConn(conn net.Conn, timeout time.Duration) (raw []byte, res sniffResul
 	}()
 
 	for {
-		proto, done := detectProtocol(s.buf)
+		proto, done := detect(s.buf, spa)
 		if done {
 			res.Proto = proto
 			break

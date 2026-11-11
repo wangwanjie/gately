@@ -1935,6 +1935,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `alpn` | Tableau de string |
 | `disabled` | boolean |
 | `domains` | Tableau de string |
+| `knock` | string |
 | `name` | string |
 | `protocol` | string |
 | `proxyProtocol` | string |

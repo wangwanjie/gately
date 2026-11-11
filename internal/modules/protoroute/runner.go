@@ -12,9 +12,11 @@ import (
 	"time"
 
 	"github.com/wangwanjie/gately/internal/iplist"
+	"github.com/wangwanjie/gately/internal/knockgate"
 	"github.com/wangwanjie/gately/internal/l4proxy"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/netpipe"
+	"github.com/wangwanjie/gately/internal/spa"
 )
 
 // StatsSnapshot 是规则统计的快照，用于 API 输出。
@@ -30,6 +32,8 @@ type StatsSnapshot struct {
 	Rejected int64 `json:"rejected"`
 	// Denied 是不满足来源 IP 访问控制而被断开的连接数
 	Denied int64 `json:"denied"`
+	// KnockDenied 是没有有效敲门授权（规则或路由要求敲门）而被断开的连接数
+	KnockDenied int64 `json:"knockDenied"`
 }
 
 // runtime 是规则运行时可热替换的部分：路由表、默认目标、识别超时、来源 IP 访问控制、日志名与全局参数。
@@ -69,8 +73,10 @@ type runner struct {
 	rejected atomic.Int64
 	// denied 为不满足来源 IP 访问控制而被断开的连接数
 	denied atomic.Int64
-	cur    atomic.Pointer[runtime]
-	srv    l4proxy.Server
+	// knockDenied 为没有有效敲门授权而被断开的连接数
+	knockDenied atomic.Int64
+	cur         atomic.Pointer[runtime]
+	srv         l4proxy.Server
 	// listenErrors 记录启动失败的监听项，供界面展示
 	listenErrors []string
 	// listening 为监听成功的端口（协议 -> 端口），自动放行防火墙只放行这些端口
@@ -99,6 +105,7 @@ func (r *runner) snapshot() StatsSnapshot {
 		RouteConns:  make([]int64, len(rt.targets)),
 		Rejected:    r.rejected.Load(),
 		Denied:      r.denied.Load(),
+		KnockDenied: r.knockDenied.Load(),
 	}
 	for i, t := range rt.targets {
 		snap.RouteConns[i] = t.conns.Load()
@@ -193,11 +200,22 @@ func (r *runner) stop() {
 // 超时未收到任何数据的连接交给「等待超时」路由，没有该路由时同样交给默认目标。
 func (r *runner) handle(ctx context.Context, rt *runtime, client net.Conn, pair l4proxy.PortPair) {
 	defer client.Close()
-	// 封禁地址已在 Accept 时拒绝，这里再按名单判断：不命中时不预读数据、不连接任何目标
-	if !rt.filter.Allows(client.RemoteAddr()) {
+	// 封禁地址已在 Accept 时拒绝，这里再按名单与敲门判断：不满足时不预读数据、不连接任何目标。
+	// 规则要求敲门且有敲门路由时，还没敲门的来源仍可以发送敲门报文：继续识别，但只允许交给敲门路由
+	spa := rt.rule.hasSPARoute()
+	knockOnly := false
+	switch rt.filter.Reason(client.RemoteAddr()) {
+	case iplist.DenyList:
 		r.denied.Add(1)
 		rt.log.Debugf("%s 不满足来源 IP 访问控制，已断开", client.RemoteAddr())
 		return
+	case iplist.DenyKnock:
+		if !spa {
+			r.knockDenied.Add(1)
+			rt.log.Debugf("%s 没有有效的敲门授权，已断开", client.RemoteAddr())
+			return
+		}
+		knockOnly = true
 	}
 	// 规则停止时立即关闭仍在识别或连接目标的客户端，不必等识别超时（最长 60 秒），停止与重启不会被拖住
 	stopClose := context.AfterFunc(ctx, func() { _ = client.Close() })
@@ -206,7 +224,7 @@ func (r *runner) handle(ctx context.Context, rt *runtime, client net.Conn, pair 
 	r.stats.TotalConns.Add(1)
 	defer r.stats.ActiveConns.Add(-1)
 
-	peeked, res, err := sniffConn(client, rt.sniffTimeout())
+	peeked, res, err := sniffConnWith(client, rt.sniffTimeout(), spa)
 	if err != nil {
 		// 客户端在识别完成前断开
 		return
@@ -218,7 +236,16 @@ func (r *runner) handle(ctx context.Context, rt *runtime, client net.Conn, pair 
 		rt.log.Debugf("%s %s 未命中路由且未设置默认目标，已断开", client.RemoteAddr(), describeSniff(res))
 		return
 	}
+	if (knockOnly && !t.spa) || (t.knock != "" && !knockAllowed(client.RemoteAddr(), t.knock)) {
+		r.knockDenied.Add(1)
+		rt.log.Debugf("%s %s 没有有效的敲门授权，已断开", client.RemoteAddr(), describeSniff(res))
+		return
+	}
 	t.conns.Add(1)
+	if t.spa {
+		r.handleSPA(rt, client, peeked)
+		return
+	}
 	port := t.port
 	if t == rt.router.fallback {
 		port = pair.Target
@@ -241,6 +268,41 @@ func (r *runner) handle(ctx context.Context, rt *runtime, client net.Conn, pair 
 	in, out := netpipe.Join(ctx, client, conn)
 	r.stats.BytesIn.Add(in + int64(len(peeked)))
 	r.stats.BytesOut.Add(out)
+}
+
+// knockAllowed 判断来源地址是否持有敲门规则的有效授权。
+func knockAllowed(addr net.Addr, rule string) bool {
+	a, ok := iplist.AddrOf(addr)
+	return ok && knockgate.Default.Allowed(a, rule)
+}
+
+// spaReadTimeout 为读取敲门报文剩余部分的最长时间：fwknop 客户端连接后一次发完报文就关闭连接
+var spaReadTimeout = 2 * time.Second
+
+// handleSPA 读完客户端发来的敲门报文（直到对方关闭连接，最多 spa.MaxPacketLen 字节）交给端口敲门模块，不回复任何数据。
+func (r *runner) handleSPA(rt *runtime, client net.Conn, peeked []byte) {
+	buf := append([]byte{}, peeked...)
+	_ = client.SetReadDeadline(time.Now().Add(spaReadTimeout))
+	tmp := make([]byte, 2048)
+	for len(buf) <= spa.MaxPacketLen {
+		n, err := client.Read(tmp)
+		buf = append(buf, tmp[:n]...)
+		if err != nil {
+			break
+		}
+	}
+	if len(buf) > spa.MaxPacketLen {
+		rt.log.Debugf("%s 敲门报文超过 %d 字节，已丢弃", client.RemoteAddr(), spa.MaxPacketLen)
+		return
+	}
+	a, ok := iplist.AddrOf(client.RemoteAddr())
+	if !ok {
+		return
+	}
+	// 认证结果由端口敲门模块记录日志，这里只在模块未运行时提示
+	if err := knockgate.Default.Submit(buf, a, "TCP "+rt.log.Source()); errors.Is(err, knockgate.ErrUnavailable) {
+		rt.log.Warnf("%s 发来敲门报文，但端口敲门模块未运行", client.RemoteAddr())
+	}
 }
 
 // describeSniff 生成识别结果的日志描述，例如 "tls SNI \"a.example.com\" ALPN [h2]"。

@@ -1935,6 +1935,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `alpn` | Array of string |
 | `disabled` | boolean |
 | `domains` | Array of string |
+| `knock` | string |
 | `name` | string |
 | `protocol` | string |
 | `proxyProtocol` | string |
