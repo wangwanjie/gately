@@ -25,7 +25,7 @@ Lorsque l'interface d'administration passe par un site protégé par un WAF en p
 
 ## Utilisateurs connectés
 
-Lorsqu'un site active « Faire confiance aux utilisateurs connectés » (voir [Service web](./web)), les visiteurs authentifiés par l'authentification Gately de ce site (authentification web, connexion tierce, authentification unique des utilisateurs partagés, authentification basique vérifiée) contournent le WAF. Les visiteurs non connectés, les requêtes vers la page de connexion elle-même, l'authentification déléguée et les liens de partage restent vérifiés.
+Lorsqu'un site active « Faire confiance aux utilisateurs connectés » (voir [Service web](./web)), les visiteurs authentifiés par l'authentification Gately de ce site (authentification web, identités de connexion tierce listées une à une dans la liste d'autorisation, authentification unique des utilisateurs partagés, authentification basique vérifiée) contournent le WAF. Les visiteurs non connectés, les requêtes vers la page de connexion elle-même, les identités tierces autorisées par un joker comme `github:*`, l'authentification déléguée et les liens de partage restent vérifiés.
 
 ## Ordre des groupes de règles
 
