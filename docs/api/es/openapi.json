@@ -4118,6 +4118,9 @@
             },
             "type": "array"
           },
+          "realPortHeader": {
+            "type": "string"
+          },
           "selfServicePassword": {
             "type": "boolean"
           },

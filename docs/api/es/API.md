@@ -2718,6 +2718,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `oidc` | `webservice.OIDCSettings` |
 | `realIPFrom` | Lista de string |
 | `realIPHeaders` | Lista de string |
+| `realPortHeader` | string |
 | `selfServicePassword` | boolean |
 | `ssoDomain` | string |
 | `trustedProxies` | Lista de string |
