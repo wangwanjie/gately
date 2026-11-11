@@ -335,6 +335,8 @@ Para um site de proxy reverso, envie as requisições sob um prefixo de caminho 
 
 Em um site de proxy reverso, envie as requisições de cada usuário autenticado para os backends dele, como o `map $remote_user $backend` do nginx. O site precisa ter antes autenticação básica, autenticação web ou autenticação delegada. Depois, adicione regras em "Distribuir por usuário", na página "Segurança" do editor do site: cada regra lista um conjunto de usuários e os backends desses usuários, escritos como os backends do site.
 
+Sites de redirecionamento, arquivos estáticos, painel de navegação e texto fixo também podem rotear por usuário: usuários que correspondem a uma regra passam pelo proxy reverso para os backends dela, e usuários não listados e visitantes sem login em caminhos públicos recebem a resposta normal do tipo de site. Por exemplo, administradores chegam ao backend de administração e os demais usuários autenticados são redirecionados para uma página de ajuda ou veem um texto fixo de "sem acesso". Nesse caso, as opções de backend da aba Básico e o balanceamento de carga, os tempos limite do backend e as verificações de saúde da aba Tráfego se aplicam aos backends por usuário; o cache de respostas continua apenas para sites de proxy reverso. Sites que encerram a conexão não passam pela autenticação e não podem rotear por usuário.
+
 Os usuários são identificados por:
 
 - O nome de usuário de um usuário do site ou de um [usuário compartilhado](#shared-users);

@@ -335,6 +335,8 @@ Leiten Sie bei einer Reverse-Proxy-Site Anfragen unter einem Pfadpräfix an ande
 
 Leiten Sie bei einer Reverse-Proxy-Site die Anfragen jedes angemeldeten Benutzers an eigene Backends weiter, wie nginx `map $remote_user $backend`. Die Site braucht dafür zuerst Basic-Authentifizierung, Web-Authentifizierung oder Forward-Auth. Fügen Sie dann unter „Nach Benutzer verteilen“ auf der Seite „Sicherheit“ des Site-Editors Regeln hinzu: Jede Regel nennt eine Gruppe von Benutzern und deren Backends, in derselben Schreibweise wie die Backends der Site.
 
+Auch Sites vom Typ Weiterleitung, statische Dateien, Navigationspanel und fester Text können nach Benutzer weiterleiten: Benutzer, die einer Regel entsprechen, gehen per Reverse Proxy an deren Backends; nicht aufgeführte Benutzer und nicht angemeldete Besucher auf öffentlichen Pfaden erhalten die normale Antwort des Site-Typs. So gelangen etwa Administratoren zum Admin-Backend, während andere angemeldete Benutzer auf eine Hilfeseite weitergeleitet werden oder einen festen Text „kein Zugriff“ sehen. Die Backend-Optionen im Tab „Allgemein“ sowie Lastverteilung, Backend-Timeouts und Health Checks im Tab „Datenverkehr“ gelten dann für die benutzerspezifischen Backends; der Antwort-Cache bleibt Reverse-Proxy-Sites vorbehalten. Sites, die die Verbindung trennen, durchlaufen keine Authentifizierung und können nicht nach Benutzer weiterleiten.
+
 Benutzer werden über diese Kennungen zugeordnet:
 
 - den Benutzernamen eines Site-Benutzers oder [gemeinsamen Benutzers](#shared-users);

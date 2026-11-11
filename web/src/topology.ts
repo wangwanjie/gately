@@ -339,7 +339,8 @@ export function filterView(v: TopologyView, f: TopoFilter): TopologyView {
   const seen = seenNodes(v)
   const listeners: TopoListener[] = []
   for (const l of out.listeners) {
-    const sites = l.sites.filter((s) => siteActive(s, seen)).map((s) => (s.type === 'proxy' ? { ...s, upstreams: s.upstreams.filter((u) => upstreamActive(u, seen)) } : s))
+    // 非反向代理站点也可能带按用户分流的后端（#79），同样只保留活动中的后端
+    const sites = l.sites.filter((s) => siteActive(s, seen)).map((s) => (s.upstreams.length ? { ...s, upstreams: s.upstreams.filter((u) => upstreamActive(u, seen)) } : s))
     const actions = l.actions.filter((a) => actionActive(a, seen))
     if (!sites.length && !actions.length) {
       continue
@@ -473,7 +474,9 @@ function buildTree(v: TopologyView, collapsed: Set<string>, query: string, opts:
           leaves = s.upstreams.map((u) => ({ id: u.id, kind: 'upstream' as const, parent: s.id, upstream: u, site: s, kids: [] }))
           leaves = cap(s.id, leaves, upLimit, 'upstream')
         } else {
-          leaves = [{ id: terminalId(s.id), kind: 'terminal', parent: s.id, site: s, kids: [] }]
+          // 非反向代理站点先列出自身的去向，配置了按用户分流时再列出分流到的后端（#79）
+          const ups: TNode[] = s.upstreams.map((u) => ({ id: u.id, kind: 'upstream' as const, parent: s.id, upstream: u, site: s, kids: [] }))
+          leaves = [{ id: terminalId(s.id), kind: 'terminal', parent: s.id, site: s, kids: [] }, ...cap(s.id, ups, upLimit, 'upstream')]
         }
         kids.push({ id: s.id, kind: 'site', parent: l.id, site: s, kids: leaves })
       }

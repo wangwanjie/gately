@@ -178,16 +178,6 @@ func newSiteHandler(s Site, log *logbuf.Logger, auth *authenticator, waf WAFProv
 			}
 			h.handler = h.dispatchLocations(h.locations, h.handler)
 		}
-		if len(s.UserRoutes) > 0 {
-			if err := h.buildUserRoutes(); err != nil {
-				return nil, err
-			}
-			h.handler = h.dispatchUserRoutes(h.handler)
-		}
-		if s.Cache.Enable {
-			h.cache = newRespCache(s.Cache)
-			h.handler = h.cache.wrap(h.handler)
-		}
 	case TypeRedirect:
 		h.handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// 目标中的 {host}、{path}、{1}、{STUN_规则名_PORT} 等变量按本次请求替换，见 redirectvars.go
@@ -218,7 +208,20 @@ func newSiteHandler(s Site, log *logbuf.Logger, auth *authenticator, waf WAFProv
 			_, _ = w.Write([]byte(s.Text))
 		})
 	}
-	if s.Compress && s.Type != TypeRedirect {
+	// 按用户分流：命中规则的用户反向代理到规则的后端，其余请求交给上面按站点类型建好的处理器（#79）
+	if len(s.UserRoutes) > 0 {
+		if err := h.buildUserRoutes(); err != nil {
+			return nil, err
+		}
+		h.handler = h.dispatchUserRoutes(h.handler)
+	}
+	// 响应缓存只用于反向代理站点，包在按用户分流外层，缓存键带所选的用户路由
+	if s.Type == TypeProxy && s.Cache.Enable {
+		h.cache = newRespCache(s.Cache)
+		h.handler = h.cache.wrap(h.handler)
+	}
+	// 重定向没有响应体，无需压缩；重定向站点配置了按用户分流时，分流到的后端响应仍可压缩
+	if s.Compress && (s.Type != TypeRedirect || len(s.UserRoutes) > 0) {
 		h.handler = httpcompress.Handler(h.handler)
 	}
 	h.pipeline = http.HandlerFunc(h.serveInner)

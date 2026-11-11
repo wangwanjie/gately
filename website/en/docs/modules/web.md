@@ -335,6 +335,8 @@ For a reverse proxy site, send requests under a path prefix to other backends, l
 
 For a reverse proxy site, send each signed-in user's requests to their own backends, like nginx `map $remote_user $backend`. The site needs basic auth, web auth or forward auth first. Then add rules under "Route by user" on the "Security" page of the site editor: each rule lists a set of users and the backends for those users, written like the site's backends.
 
+Redirect, static file, navigation panel and fixed text sites can route by user too: users matching a rule are reverse proxied to that rule's backends, while users not listed and visitors who are not signed in on public paths get the site type's normal response. For example, administrators reach the admin backend while other signed-in users are redirected to a help page or see a fixed "no access" text. The backend options on the Basic tab and the load balancing, backend timeouts and health checks on the Traffic tab then apply to the per-user backends; the response cache is still only for reverse proxy sites. Close-connection sites skip authentication and cannot route by user.
+
 Users are matched by these identifiers:
 
 - The user name of a site user or a [shared user](#shared-users);

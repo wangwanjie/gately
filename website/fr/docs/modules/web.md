@@ -335,6 +335,8 @@ Pour un site en proxy inverse, envoyez les requêtes sous un préfixe de chemin 
 
 Pour un site en proxy inverse, envoyez les requêtes de chaque utilisateur connecté vers ses propres backends, comme `map $remote_user $backend` de nginx. Le site doit d'abord avoir l'authentification Basic, l'authentification web ou l'authentification déléguée activée. Ajoutez ensuite des règles sous « Répartir par utilisateur » dans la page « Sécurité » de l'éditeur de site : chaque règle indique un ensemble d'utilisateurs et les backends de ces utilisateurs, écrits comme les backends du site.
 
+Les sites de redirection, de fichiers statiques, de panneau de navigation et de texte fixe peuvent aussi router par utilisateur : les utilisateurs correspondant à une règle passent par le proxy inverse vers ses backends, tandis que les utilisateurs non listés et les visiteurs non connectés sur les chemins publics reçoivent la réponse normale du type de site. Par exemple, les administrateurs accèdent au backend d'administration et les autres utilisateurs connectés sont redirigés vers une page d'aide ou voient un texte fixe « accès refusé ». Les options de backend de l'onglet Général ainsi que l'équilibrage de charge, les délais du backend et les contrôles de santé de l'onglet Trafic s'appliquent alors aux backends par utilisateur ; le cache des réponses reste réservé aux sites en proxy inverse. Les sites qui ferment la connexion ne passent pas par l'authentification et ne peuvent pas router par utilisateur.
+
 Les utilisateurs sont reconnus par ces identifiants :
 
 - Le nom d'un utilisateur du site ou d'un [utilisateur partagé](#shared-users) ;

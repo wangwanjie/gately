@@ -335,6 +335,8 @@ Para un sitio de proxy inverso, envía las peticiones bajo un prefijo de ruta a 
 
 Para un sitio de proxy inverso, envía las peticiones de cada usuario con sesión iniciada a sus propios backends, como `map $remote_user $backend` de nginx. Primero el sitio necesita autenticación básica, autenticación web o autenticación delegada. Después añade reglas en «Repartir por usuario», en la página «Seguridad» del editor del sitio: cada regla indica un conjunto de usuarios y los backends de esos usuarios, escritos como los backends del sitio.
 
+Los sitios de redirección, archivos estáticos, panel de navegación y texto fijo también pueden enrutar por usuario: los usuarios que coinciden con una regla pasan por proxy inverso a los backends de esa regla, y los usuarios no listados y los visitantes sin sesión en rutas públicas reciben la respuesta normal del tipo de sitio. Por ejemplo, los administradores llegan al backend de administración y los demás usuarios con sesión se redirigen a una página de ayuda o ven un texto fijo de «sin acceso». En ese caso, las opciones de backend de la pestaña Básico y el balanceo de carga, los tiempos de espera del backend y las comprobaciones de salud de la pestaña Tráfico se aplican a los backends por usuario; la caché de respuestas sigue siendo solo para sitios de proxy inverso. Los sitios que cierran la conexión no pasan por la autenticación y no pueden enrutar por usuario.
+
 Los usuarios se reconocen por estos identificadores:
 
 - El nombre de un usuario del sitio o de un [usuario compartido](#shared-users);

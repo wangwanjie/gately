@@ -11,7 +11,8 @@ import (
 )
 
 // UserRoute 把指定认证用户的请求分到另一组后端，相当于 nginx 的 map $remote_user $backend。
-// 未匹配任何规则的用户（以及无需认证路径上的未登录访客）使用站点后端。
+// 未匹配任何规则的用户（以及无需认证路径上的未登录访客）按站点类型处理：反向代理站点使用站点后端，
+// 重定向、静态文件、导航面板、固定文本站点照常跳转或返回内容。
 // 分路径规则中填写了后端的路径仍按分路径规则转发；只追加请求头、沿用站点后端的路径改用该用户的后端。
 type UserRoute struct {
 	// Users 为身份标识：站点用户或共享用户的用户名，第三方登录身份写 提供方key:标识，转发认证为认证服务返回的 Remote-User
@@ -44,8 +45,17 @@ func (s *Site) validateUserRoutes() error {
 		s.IdentityHeaders = nil
 		return nil
 	}
-	if s.Type != TypeProxy {
-		return errors.New("按用户分流与传递身份信息仅适用于反向代理站点")
+	// 按用户分流可用于反向代理、重定向、静态文件、导航面板与固定文本站点：站点类型即未命中规则时的默认处理方式，
+	// 命中规则的用户反向代理到规则的后端（#79）。断开连接站点不经过认证，无法识别用户
+	switch s.Type {
+	case TypeProxy:
+	case TypeRedirect, TypeStatic, TypePanel, TypeText:
+		// 传递身份信息只写给反向代理的后端，非反向代理站点只有按用户分流的后端能收到
+		if len(s.UserRoutes) == 0 {
+			return errors.New("非反向代理站点需要先添加按用户分流规则才能传递身份信息")
+		}
+	default:
+		return errors.New("按用户分流与传递身份信息不适用于断开连接站点")
 	}
 	if !s.BasicAuth && !s.WebAuth && s.ForwardAuth.URL == "" {
 		return errors.New("按用户分流与传递身份信息需要先启用基本认证、网页认证或转发认证")

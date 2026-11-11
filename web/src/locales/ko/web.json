@@ -197,6 +197,8 @@
   "userRouteTargetsPlaceholder": "이 사용자들의 백엔드, 쉼표로 구분",
   "addUserRoute": "규칙 추가",
   "userRoutesHelp": "인증 후 사용자별로 다른 백엔드로 보냅니다. 목록에 없는 사용자와 공개 경로의 로그인하지 않은 방문자는 사이트 백엔드를 사용합니다. 사이트 사용자 또는 공유 사용자의 사용자 이름, 타사 로그인은 제공자key:식별자, 전달 인증은 인증 서비스가 반환한 Remote-User로 일치시킵니다. 자체 백엔드가 있는 경로 규칙이 우선하며, 요청 헤더만 추가하는 경로 규칙은 해당 사용자의 백엔드를 사용합니다. nginx의 map $remote_user $backend와 같습니다",
+  "userRoutesDefaultHelp": "현재 「{type}」 사이트입니다. 규칙에 일치하는 사용자는 해당 규칙의 백엔드로 리버스 프록시되고, 목록에 없는 사용자와 공개 경로의 로그인하지 않은 방문자는 평소대로 「{type}」(으)로 처리됩니다",
+  "optUserRoutesOnly": "이 옵션은 사용자별 분기 백엔드에만 적용됩니다",
   "identityHeaders": "신원 정보 전달",
   "identityField": "항목",
   "identityHeaderName": "헤더 이름",
