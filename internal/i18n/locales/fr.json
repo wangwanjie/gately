@@ -2308,6 +2308,8 @@
   "目标端口数量(%d)需与监听端口数量(%d)相同或只填一个": "Le nombre de ports cibles (%d) doit être égal au nombre de ports d'écoute (%d) ou se limiter à un seul",
   "直接拉取失败（": "Échec du téléchargement direct (",
   "真实 IP 设置无效，未启用: %v": "Paramètres d'IP réelle invalides, non activés : %v",
+  "真实端口请求头无效，未启用: %v": "En-tête du port réel invalide, non activé : %v",
+  "真实端口请求头：%v": "En-tête du port réel : %v",
   "睡眠失败: %v": "Échec de la mise en veille : %v",
   "短期证书剩余 %.0f 小时": "Certificat de courte durée : %.0f heures restantes",
   "确认新密码": "Confirmer le nouveau mot de passe",

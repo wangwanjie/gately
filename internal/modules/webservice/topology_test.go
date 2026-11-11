@@ -142,7 +142,7 @@ func TestBlockedReasons(t *testing.T) {
 		{Enable: true, Key: "rl", Domains: []string{"rl.test"}, Targets: []string{backend.URL}, RateLimit: RateLimit{Enable: true, Rate: 0.001, Burst: 1}},
 		{Enable: true, Key: "auth", Domains: []string{"auth.test"}, Targets: []string{backend.URL}, BasicAuth: true, Users: []string{"u:p"}},
 	}, Site{})
-	m.realIP.set([]string{"127.0.0.0/8"}, nil)
+	m.realIP.set([]string{"127.0.0.0/8"}, nil, "")
 	t.Cleanup(func() { m.auth.unban("203.0.113.9") })
 	send := func(host, path, ip string) int {
 		resp, _ := get(t, http.DefaultClient, addr, host, path, map[string]string{"X-Forwarded-For": ip})
@@ -473,7 +473,7 @@ func TestTopologyAPI(t *testing.T) {
 		{Enable: false, Key: "off", Domains: []string{"off.test"}, Targets: []string{"http://u:pw@10.0.0.9:80"}},
 		{Enable: true, Key: "r", Domains: []string{"*.r.test"}, Type: TypeRedirect, RedirectTo: "https://example.com", RedirectCode: 302, AccessLog: true},
 	}, Site{Enable: true, Type: TypeClose})
-	m.realIP.set([]string{"127.0.0.0/8"}, nil)
+	m.realIP.set([]string{"127.0.0.0/8"}, nil, "")
 
 	// 备用后端只在主后端不可用时使用；把主后端标为不可用，请求都走 backend
 	m.mu.Lock()

@@ -235,6 +235,9 @@ type Settings struct {
 	RealIPFrom []string `json:"realIPFrom"`
 	// RealIPHeaders 为携带真实地址的请求头，按顺序查找，例如 CF-Connecting-IP、X-Forwarded-For、X-Real-IP
 	RealIPHeaders []string `json:"realIPHeaders"`
+	// RealPortHeader 为可信代理写入访客源端口的请求头（如 X-Real-Port），为空表示代理不提供端口。
+	// 从请求头取得访客地址时，源端口只能来自这个头；取不到时端口未知，不向后端传递端口头
+	RealPortHeader string `json:"realPortHeader"`
 	// AuthSecret 用于签名网页认证 Cookie，首次启动自动生成
 	AuthSecret string `json:"authSecret"`
 	// OAuthProviders 为自建的第三方登录配置

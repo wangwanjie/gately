@@ -2308,6 +2308,8 @@
   "目标端口数量(%d)需与监听端口数量(%d)相同或只填一个": "El número de puertos de destino (%d) debe ser igual al de puertos de escucha (%d), o indicar uno solo",
   "直接拉取失败（": "Error en la descarga directa (",
   "真实 IP 设置无效，未启用: %v": "La configuración de IP real no es válida y no se activa: %v",
+  "真实端口请求头无效，未启用: %v": "Cabecera del puerto real no válida, no habilitada: %v",
+  "真实端口请求头：%v": "Cabecera del puerto real: %v",
   "睡眠失败: %v": "Error al suspender: %v",
   "短期证书剩余 %.0f 小时": "Al certificado de corta duración le quedan %.0f horas",
   "确认新密码": "Confirmar nueva contraseña",
