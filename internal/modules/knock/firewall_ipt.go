@@ -92,8 +92,9 @@ func findIPTFam(name string, v6 bool) (iptFam, bool) {
 	return f, f.bin != "" && f.restore != ""
 }
 
-func (b *iptBackend) kind() string    { return BackendIPT }
-func (b *iptBackend) version() string { return b.ver }
+func (b *iptBackend) kind() string     { return BackendIPT }
+func (b *iptBackend) version() string  { return b.ver }
+func (b *iptBackend) coversIPv6() bool { return b.hasFam(true) }
 
 // iptSetName 返回端口在某个地址族的集合名，如 gkn4_tcp_22。
 func iptSetName(v6 bool, a spa.Access) string {

@@ -19,6 +19,8 @@
     "fwNotNeeded": "Keine Regel hat die Firewall-Sperre aktiviert",
     "fwActive": "Aktiv",
     "fwInactive": "Inaktiv",
+    "noIPv6": "Die Firewall-Sperre gilt nur für IPv4",
+    "noIPv6Hint": "Kein nutzbares ip6tables gefunden (oder dem Kernel fehlt die IPv6-mangle-Tabelle), daher sind die geschützten Ports über IPv6 weiterhin direkt erreichbar. Installieren Sie ip6tables und das Modul ip6table_mangle oder beschränken Sie diese Ports unter IPv6 auf andere Weise.",
     "viewRules": "Firewall-Regeln anzeigen",
     "accepted": "Klopfen akzeptiert",
     "rejected": "Klopfen abgelehnt",

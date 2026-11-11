@@ -74,6 +74,8 @@ type fwCounts struct {
 type backend interface {
 	kind() string
 	version() string
+	// coversIPv6 返回是否同时拦截 IPv6（iptables 后端在 ip6tables 不可用时只处理 IPv4）
+	coversIPv6() bool
 	// apply 删除旧规则，按 plan 重建全部规则与放行
 	apply(ctx context.Context, plan fwPlan, now time.Time) error
 	// add 写入放行（已存在时刷新到期时间），del 删除放行（不存在时忽略）
@@ -96,6 +98,8 @@ type FirewallStatus struct {
 	Error   string `json:"error,omitempty"`
 	Backend string `json:"backend,omitempty"`
 	Version string `json:"version,omitempty"`
+	// NoIPv6 表示后端只拦截 IPv4（iptables 后端没有可用的 ip6tables），受保护端口经 IPv6 仍可直接访问
+	NoIPv6 bool `json:"noIPv6,omitempty"`
 	// Ports 为受保护端口
 	Ports []string `json:"ports"`
 	// Dropped 为被拦截的连接数，Allowed 为敲门放行后建立的连接数（规则重建后累计）
@@ -294,6 +298,10 @@ func (f *firewall) rebuildLocked(ctx context.Context) {
 		}
 		f.be = be
 		f.status.Backend, f.status.Version = be.kind(), be.version()
+		f.status.NoIPv6 = !be.coversIPv6()
+		if f.status.NoIPv6 {
+			f.log.Warnf("没有可用的 ip6tables（或内核没有 IPv6 mangle 表），防火墙拦截只覆盖 IPv4，受保护端口经 IPv6 仍可直接访问")
+		}
 	}
 	if wasActive {
 		f.keepCountsLocked(ctx)

@@ -26,8 +26,9 @@ type nftBackend struct {
 	run func(ctx context.Context, stdin, bin string, args ...string) (string, error)
 }
 
-func (b *nftBackend) kind() string    { return BackendNFT }
-func (b *nftBackend) version() string { return b.ver }
+func (b *nftBackend) kind() string     { return BackendNFT }
+func (b *nftBackend) version() string  { return b.ver }
+func (b *nftBackend) coversIPv6() bool { return true }
 
 // nftScript 生成重建整张表的脚本：先确保表存在再删除，避免首次写入时删除不存在的表导致整批失败。
 func nftScript(plan fwPlan, now time.Time) string {

@@ -43,11 +43,14 @@ type fakeBackend struct {
 	// removeErr 不为空时 remove 失败（规则保持原状）
 	removeErr error
 	removed   int
-	counts    fwCounts
+	// noIPv6 模拟只有 iptables、没有 ip6tables
+	noIPv6 bool
+	counts fwCounts
 }
 
-func (b *fakeBackend) kind() string    { return "fake" }
-func (b *fakeBackend) version() string { return "1" }
+func (b *fakeBackend) kind() string     { return "fake" }
+func (b *fakeBackend) version() string  { return "1" }
+func (b *fakeBackend) coversIPv6() bool { return !b.noIPv6 }
 func (b *fakeBackend) apply(_ context.Context, plan fwPlan, _ time.Time) error {
 	b.mu.Lock()
 	defer b.mu.Unlock()

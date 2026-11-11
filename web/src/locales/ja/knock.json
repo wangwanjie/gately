@@ -19,6 +19,8 @@
     "fwNotNeeded": "ファイアウォールでのブロックを有効にしたルールはありません",
     "fwActive": "有効",
     "fwInactive": "無効",
+    "noIPv6": "ファイアウォールブロックは IPv4 のみ",
+    "noIPv6Hint": "使用できる ip6tables がない（またはカーネルに IPv6 の mangle テーブルがない）ため、保護対象ポートには IPv6 経由で直接アクセスできてしまいます。ip6tables と ip6table_mangle モジュールを導入するか、IPv6 では別の方法でこれらのポートを制限してください。",
     "viewRules": "ファイアウォールのルールを表示",
     "accepted": "ノック成功",
     "rejected": "ノック拒否",

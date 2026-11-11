@@ -19,6 +19,8 @@
     "fwNotNeeded": "没有规则开启防火墙拦截",
     "fwActive": "已生效",
     "fwInactive": "未生效",
+    "noIPv6": "防火墙拦截只覆盖 IPv4",
+    "noIPv6Hint": "没有可用的 ip6tables（或内核缺少 IPv6 的 mangle 表），受保护端口经 IPv6 仍可直接访问。请安装 ip6tables 与 ip6table_mangle 模块，或在 IPv6 上另行限制这些端口。",
     "viewRules": "查看防火墙规则",
     "accepted": "敲门成功",
     "rejected": "敲门被拒绝",

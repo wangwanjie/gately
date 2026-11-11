@@ -19,6 +19,8 @@
     "fwNotNeeded": "Ninguna regla tiene activado el bloqueo en cortafuegos",
     "fwActive": "Activo",
     "fwInactive": "Inactivo",
+    "noIPv6": "El bloqueo en cortafuegos solo cubre IPv4",
+    "noIPv6Hint": "No hay ip6tables utilizable (o el kernel no tiene la tabla mangle de IPv6), así que los puertos protegidos siguen accesibles directamente por IPv6. Instala ip6tables y el módulo ip6table_mangle, o restringe estos puertos en IPv6 de otra forma.",
     "viewRules": "Ver reglas del cortafuegos",
     "accepted": "Llamadas aceptadas",
     "rejected": "Llamadas rechazadas",
