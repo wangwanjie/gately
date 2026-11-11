@@ -251,17 +251,19 @@
       </el-form>
       <div v-if="clientError" class="form-help warn">{{ clientError }}</div>
       <template v-else>
-        <div class="snippet-head">
-          <span>{{ t('knock.client.command') }}</span>
-          <el-button size="small" :icon="Copy" @click="copyText(commandText)">{{ t('common.copy') }}</el-button>
-        </div>
-        <pre class="snippet mono">{{ commandText }}</pre>
+        <!-- 推荐 ~/.fwknoprc：命令行中的密钥会留在 shell 历史与进程列表中 -->
         <div class="snippet-head">
           <span>{{ t('knock.client.rc') }}</span>
           <el-button size="small" :icon="Copy" @click="copyText(rcText)">{{ t('common.copy') }}</el-button>
         </div>
         <pre class="snippet mono">{{ rcText }}</pre>
         <div class="form-help">{{ t('knock.client.rcHelp', { name: stanzaName }) }}</div>
+        <div class="snippet-head">
+          <span>{{ t('knock.client.command') }}</span>
+          <el-button size="small" :icon="Copy" @click="copyText(commandText)">{{ t('common.copy') }}</el-button>
+        </div>
+        <pre class="snippet mono">{{ commandText }}</pre>
+        <div class="form-help warn">{{ t('knock.client.commandWarn') }}</div>
       </template>
       <div class="form-help">{{ t('knock.client.install') }}</div>
     </el-dialog>
@@ -665,7 +667,7 @@ const clientError = computed(() => {
 
 const clientPort = computed(() => (client.via === 'tcp' ? client.tcpPort : settings.value?.port || 62201))
 
-// shellQuote 为命令行参数加单引号，密钥中的 + / = 不需要转义，但服务器地址等由用户填写
+// shellQuote 为命令行参数加单引号：只含安全字符（包括 base64 的 + / =）时原样输出，否则用单引号包住
 function shellQuote(s: string) {
   return /^[A-Za-z0-9_./:+=@%-]+$/.test(s) ? s : `'${s.replace(/'/g, `'\\''`)}'`
 }
@@ -690,7 +692,8 @@ const commandText = computed(() => {
   if (r.user) {
     args.push('-U', shellQuote(r.user))
   }
-  args.push('--use-hmac', '--key-base64-rijndael', k.encKey, '--key-base64-hmac', k.hmacKey)
+  // 密钥由服务端规范化为标准 base64，这里仍按参数加引号，防止手改配置等情况下带入空白或特殊字符
+  args.push('--use-hmac', '--key-base64-rijndael', shellQuote(k.encKey), '--key-base64-hmac', shellQuote(k.hmacKey))
   if (r.hmacType !== 'sha256') {
     args.push('--hmac-digest-type', r.hmacType)
   }

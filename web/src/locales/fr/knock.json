@@ -126,6 +126,7 @@
     },
     "ports": "Ports demandés",
     "command": "Ligne de commande",
+    "commandWarn": "Les clés passées en ligne de commande restent dans l'historique du shell et la liste des processus (ps) ; préférez la section ~/.fwknoprc ci-dessus.",
     "rc": "Section de ~/.fwknoprc",
     "rcHelp": "Après l'avoir enregistrée dans ~/.fwknoprc, exécutez fwknop -n {name} pour frapper.",
     "install": "Client fwknop : brew install fwknop sous macOS, apt install fwknop-client sous Debian / Ubuntu, ou installation dans WSL sous Windows. Le client fwknop ne peut envoyer les paquets de frappe qu'en IPv4 : l'adresse du serveur doit donc être joignable en IPv4. La commande et la configuration contiennent des clés, conservez-les avec soin.",

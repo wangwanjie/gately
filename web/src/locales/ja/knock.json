@@ -126,6 +126,7 @@
     },
     "ports": "要求するポート",
     "command": "コマンドライン",
+    "commandWarn": "コマンドラインの鍵はシェル履歴やプロセス一覧（ps）に残ります。上の ~/.fwknoprc 設定ブロックを優先して使ってください。",
     "rc": "~/.fwknoprc のセクション",
     "rcHelp": "~/.fwknoprc に保存したら、fwknop -n {name} を実行するとノックできます。",
     "install": "fwknop クライアント: macOS は brew install fwknop、Debian / Ubuntu は apt install fwknop-client、Windows は WSL にインストールできます。fwknop クライアントは IPv4 でしかノックパケットを送信できないため、サーバーアドレスに IPv4 で到達できる必要があります。コマンドと設定にはキーが含まれるため、大切に保管してください。",
