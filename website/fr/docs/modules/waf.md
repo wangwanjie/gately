@@ -23,6 +23,10 @@ Un pare-feu applicatif web basé sur [Coraza](https://coraza.io/) et OWASP CRS v
 
 Lorsque l'interface d'administration passe par un site protégé par un WAF en proxy inverse, les requêtes portant une session administrateur valide de cette instance contournent le WAF (SafeLine compris). Les configurations enregistrées contiennent souvent des chemins de fichiers (comme les remarques écrites par l'import nginx), du HTML (pages d'erreur personnalisées) et des scripts (déploiement de certificats), que les règles CRS de traversée de chemin, XSS et injection de commandes bloqueraient avec un 403. La session est signée par le serveur et seul le rôle administrateur compte ; les requêtes des comptes en lecture seule, des visiteurs et des interfaces d'administration d'autres instances restent contrôlées.
 
+## Utilisateurs connectés
+
+Lorsqu'un site active « Faire confiance aux utilisateurs connectés » (voir [Service web](./web)), les visiteurs authentifiés par l'authentification Gately de ce site (authentification web, connexion tierce, authentification unique des utilisateurs partagés, authentification basique vérifiée) contournent le WAF. Les visiteurs non connectés, les requêtes vers la page de connexion elle-même, l'authentification déléguée et les liens de partage restent vérifiés.
+
 ## Ordre des groupes de règles
 
 Les groupes de règles d'une instance se chargent de haut en bas ; les boutons monter et descendre permettent de les réordonner. Dans une même phase, les règles placées avant s'exécutent d'abord :

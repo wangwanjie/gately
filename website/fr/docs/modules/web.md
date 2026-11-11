@@ -282,6 +282,8 @@ Règles de correspondance :
 
 L'option « Portée de l'authentification » (`authOptional`) : une fois cochée, l'authentification ne s'applique qu'aux chemins marqués « Requis » dans les règles, et tous les autres chemins sont publics. Cette option nécessite d'activer d'abord l'authentification Basic ou web.
 
+L'option « Faire confiance aux utilisateurs connectés » (`trustAuthUsers`) : une fois cochée, les visiteurs authentifiés par l'authentification Gately de ce site contournent le WAF et leurs requêtes ne sont pas comptées par le sondage de chemins web de la prévention d'intrusion. Elle sert quand le WAF ou les règles 404 / chemins leurres bloquent vos propres utilisateurs par erreur. Seuls les identifiants émis par Gately comptent : sessions d'authentification web et de connexion tierce, authentification unique des utilisateurs partagés et authentification basique (les identifiants basiques ne sont considérés comme fiables qu'après une première vérification réussie et cessent de l'être dès que le mot de passe change ou que l'utilisateur est supprimé) ; l'authentification déléguée et les liens de partage ne comptent pas. Les adresses bannies, le contrôle d'accès par IP et par pays et la limitation de débit restent appliqués, et les échecs de connexion sont toujours comptés. Cette option nécessite d'activer d'abord l'authentification Basic ou web ; les requêtes des utilisateurs connectés ne sont alors plus protégées par le WAF, n'activez-la que pour des utilisateurs de confiance.
+
 ### Liens de partage temporaires
 
 Une fois l'authentification Basic ou web activée, vous pouvez créer des liens de partage pour un site afin que des visiteurs y accèdent sans compte :

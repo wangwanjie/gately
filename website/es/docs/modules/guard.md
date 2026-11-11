@@ -89,6 +89,8 @@ Se incluyen tres plantillas:
 
 «Bloqueo de sondeos» en la tarjeta de una escucha del servicio web abre esta página con esa escucha elegida y la plantilla de señuelos aplicada; la regla se guarda y se aplica en la protección contra intrusiones. Al editar una regla puede pegar rutas de solicitud para probar las reglas de ruta.
 
+Cuando un sitio activa «Confiar en usuarios autenticados» (consulte [Servicio web](./web)), las solicitudes de visitantes autenticados por la autenticación de Gately de ese sitio no cuentan en el sondeo de rutas. Las solicitudes a dominios desconocidos que atiende el sitio predeterminado y los visitantes sin sesión se siguen contando; las demás reglas, como escaneos de puertos, puertos señuelo e inicios de sesión fallidos, no se ven afectadas.
+
 ::: warning Alcance del bloqueo
 Sea cual sea la escucha que lo active, el bloqueo entra en la misma lista y se aplica a todas las escuchas, sitios y demás servicios de Gately; con la sincronización del cortafuegos activa, el cortafuegos del sistema también descarta todo el tráfico de esa dirección.
 :::

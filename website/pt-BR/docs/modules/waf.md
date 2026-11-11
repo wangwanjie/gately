@@ -23,6 +23,10 @@ Um firewall de aplicações web baseado no [Coraza](https://coraza.io/) e no OWA
 
 Quando o painel de administração é acessado por proxy reverso através de um site com WAF, as requisições com uma sessão de administrador válida desta instância não passam pelo WAF (SafeLine incluído). As configurações salvas costumam conter caminhos de arquivo (como as observações gravadas pela importação do nginx), HTML (páginas de erro personalizadas) e scripts (implantação de certificados), que as regras do CRS contra travessia de caminho, XSS e injeção de comandos bloqueariam com 403. A sessão é assinada pelo servidor e só o papel de administrador conta; requisições de contas somente leitura, visitantes e painéis de outras instâncias continuam sendo verificadas.
 
+## Usuários autenticados
+
+Quando um site ativa "Confiar em usuários autenticados" (veja [Serviço web](./web)), visitantes autenticados pela autenticação do Gately desse site (autenticação web, login de terceiros, login único de usuários compartilhados, autenticação básica verificada) ignoram o WAF. Visitantes sem login, requisições à própria página de login, autenticação encaminhada e links de compartilhamento continuam sendo verificados.
+
 ## Ordem dos grupos de regras
 
 Os grupos de regras de uma instância são carregados de cima para baixo; use os botões mover para cima e para baixo para reordená-los. Na mesma fase, as regras anteriores executam primeiro:

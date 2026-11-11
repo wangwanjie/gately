@@ -89,6 +89,8 @@ Trois modèles sont fournis :
 
 « Bannir les sondages » sur la carte d’un écouteur du service web ouvre cette page avec cet écouteur sélectionné et le modèle de leurres appliqué ; la règle est stockée et appliquée par la protection contre les intrusions. En modifiant une règle, vous pouvez coller des chemins de requête pour tester les règles de chemin.
 
+Lorsqu'un site active « Faire confiance aux utilisateurs connectés » (voir [Service web](./web)), les requêtes des visiteurs authentifiés par l'authentification Gately de ce site ne sont pas comptées par le sondage de chemins. Les requêtes vers des domaines inconnus traitées par le site par défaut et les visiteurs non connectés sont toujours comptés ; les autres règles, comme les scans de ports, les ports leurres et les échecs de connexion, ne sont pas affectées.
+
 ::: warning Portée du bannissement
 Quel que soit l’écouteur déclencheur, le bannissement entre dans la même liste et s’applique à tous les écouteurs, sites et autres services de Gately ; avec la synchronisation du pare-feu, le pare-feu du système rejette aussi tout le trafic de cette adresse.
 :::
