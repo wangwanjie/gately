@@ -30,7 +30,7 @@ Un software que vive en el borde de la red y guarda claves DNS y claves privadas
 
 ## Resumen de funciones
 
-DNS dinámico, traversal STUN, reenvío de puertos, certificados SSL, servicios web (proxy inverso, control de acceso, comprobaciones de estado, caché y límite de peticiones, estadísticas de tráfico, inicio de sesión único OIDC), cortafuegos WAF, Tailscale, frp, Cloudflare Tunnel, gestión de Docker, terminal web, diagnóstico de red, Wake-on-LAN, WebDAV, FTP, SMB, File Browser (gestor de archivos web FileBrowser Quantum administrado por Gately), montajes de almacenamiento, tareas programadas, centro de notificaciones y copia de seguridad de la configuración, además de autenticación de dos factores, ruta de acceso segura, tokens de API, CLI y MCP. Consulta el [Resumen de módulos](/es/docs/modules/) para más detalles.
+DNS dinámico, traversal STUN, reenvío de puertos, enrutamiento por protocolo, certificados SSL, servicios web (proxy inverso, control de acceso, comprobaciones de estado, caché y límite de peticiones, estadísticas de tráfico, inicio de sesión único OIDC), cortafuegos WAF, prevención de intrusiones, port knocking, Tailscale, frp, Cloudflare Tunnel, gestión de Docker, terminal web, diagnóstico de red, Wake-on-LAN, WebDAV, FTP, SMB, File Browser (gestor de archivos web FileBrowser Quantum administrado por Gately), montajes de almacenamiento, tareas programadas, centro de notificaciones y copia de seguridad de la configuración, además de autenticación de dos factores, ruta de acceso segura, tokens de API, CLI y MCP. Consulta el [Resumen de módulos](/es/docs/modules/) para más detalles.
 
 ## Siguientes pasos
 

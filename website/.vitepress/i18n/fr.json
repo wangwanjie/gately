@@ -170,7 +170,7 @@
       },
       {
         "title": "Tâches planifiées et Wake-on-LAN",
-        "text": "Tâches cron qui exécutent des commandes ou des requêtes HTTP avec historique ; diffusion de paquets magiques Wake-on-LAN et détection de présence."
+        "text": "Tâches cron qui exécutent des commandes ou des requêtes HTTP avec historique ; diffusion de paquets magiques Wake-on-LAN et détection de présence ; extinction, redémarrage et mise en veille à distance via le client, SSH ou HTTP."
       },
       {
         "title": "Durcissement de la sécurité",
@@ -178,7 +178,7 @@
       },
       {
         "title": "Contrôle d'accès",
-        "text": "Règles de chemins par site, liens de partage temporaires, bannissement automatique après échecs d'authentification répétés, filtrage GeoIP par pays et listes d'autorisation / blocage d'IP."
+        "text": "Règles de chemins par site, liens de partage temporaires, bannissement automatique après échecs d'authentification répétés, filtrage GeoIP par pays et listes d'autorisation / blocage d'IP ; port knocking (SPA) compatible fwknop qui n'ouvre SSH et les autres ports qu'après un knock valide."
       },
       {
         "title": "Statistiques et supervision",

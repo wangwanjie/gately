@@ -30,7 +30,7 @@ Gately は、オープンソースで監査可能なネットワークゲート�
 
 ## 機能一覧
 
-ダイナミック DNS、STUN 穿孔、ポート転送、SSL 証明書、Web サービス（リバースプロキシ、アクセス制御、ヘルスチェック、キャッシュとレート制限、アクセス統計、OIDC シングルサインオン）、WAF ファイアウォール、Tailscale、frp、Cloudflare トンネル、Docker 管理、Web ターミナル、ネットワーク診断、Wake-on-LAN、WebDAV、FTP、SMB、File Browser（FileBrowser Quantum による Web ファイル管理）、ストレージマウント、スケジュールタスク、通知センター、設定バックアップ、さらに2 段階認証、セキュアエントリー、API トークン、コマンドラインと MCP を備えています。詳しくは [モジュール一覧](/ja/docs/modules/) を参照してください。
+ダイナミック DNS、STUN 穿孔、ポート転送、プロトコル振り分け、SSL 証明書、Web サービス（リバースプロキシ、アクセス制御、ヘルスチェック、キャッシュとレート制限、アクセス統計、OIDC シングルサインオン）、WAF ファイアウォール、侵入防御、ポートノッキング、Tailscale、frp、Cloudflare トンネル、Docker 管理、Web ターミナル、ネットワーク診断、Wake-on-LAN、WebDAV、FTP、SMB、File Browser（FileBrowser Quantum による Web ファイル管理）、ストレージマウント、スケジュールタスク、通知センター、設定バックアップ、さらに2 段階認証、セキュアエントリー、API トークン、コマンドラインと MCP を備えています。詳しくは [モジュール一覧](/ja/docs/modules/) を参照してください。
 
 ## 次のステップ
 

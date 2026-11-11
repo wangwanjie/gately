@@ -30,7 +30,7 @@ Gately는 가정 네트워크, NAS, 클라우드 호스트 등 다양한 서버�
 
 ## 기능 한눈에 보기
 
-동적 DNS, STUN 통과, 포트 포워딩, SSL 인증서, 웹 서비스(리버스 프록시, 접근 제어, 헬스 체크, 캐시와 속도 제한, 접속 통계, OIDC 통합 로그인), WAF 방화벽, Tailscale, frp, Cloudflare 터널, Docker 관리, 웹 터미널, 네트워크 진단, Wake-on-LAN, WebDAV, FTP, SMB, File Browser(관리형 FileBrowser Quantum 웹 파일 관리), 스토리지 마운트, 예약 작업, 알림 센터, 설정 백업, 그리고 2단계 인증, 보안 진입 경로, API 토큰, 명령줄과 MCP를 제공합니다. 자세한 내용은 [모듈 개요](/ko/docs/modules/)를 참고하세요.
+동적 DNS, STUN 통과, 포트 포워딩, 프로토콜 라우팅, SSL 인증서, 웹 서비스(리버스 프록시, 접근 제어, 헬스 체크, 캐시와 속도 제한, 접속 통계, OIDC 통합 로그인), WAF 방화벽, 침입 방지, 포트 노킹, Tailscale, frp, Cloudflare 터널, Docker 관리, 웹 터미널, 네트워크 진단, Wake-on-LAN, WebDAV, FTP, SMB, File Browser(관리형 FileBrowser Quantum 웹 파일 관리), 스토리지 마운트, 예약 작업, 알림 센터, 설정 백업, 그리고 2단계 인증, 보안 진입 경로, API 토큰, 명령줄과 MCP를 제공합니다. 자세한 내용은 [모듈 개요](/ko/docs/modules/)를 참고하세요.
 
 ## 다음 단계
 

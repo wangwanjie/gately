@@ -30,7 +30,7 @@ Gately 把 DDNS、STUN 穿透、反向代理等能力整合在一起，并选择
 
 ## 功能一览
 
-动态域名、STUN 穿透、端口转发、SSL 证书、Web 服务（反向代理、访问控制、健康检查、缓存与限流、访问统计、OIDC 单点登录）、WAF 防火墙、Tailscale、frp、Cloudflare 隧道、Docker 管理、Web 终端、网络诊断、网络唤醒、WebDAV、FTP、SMB、File Browser（托管 FileBrowser Quantum 网页文件管理）、存储挂载、计划任务、通知中心、配置备份，以及两步验证、安全入口、API 令牌、命令行与 MCP。详见 [模块总览](/docs/modules/)。
+动态域名、STUN 穿透、端口转发、协议分流、SSL 证书、Web 服务（反向代理、访问控制、健康检查、缓存与限流、访问统计、OIDC 单点登录）、WAF 防火墙、入侵防护、端口敲门、Tailscale、frp、Cloudflare 隧道、Docker 管理、Web 终端、网络诊断、网络唤醒、WebDAV、FTP、SMB、File Browser（托管 FileBrowser Quantum 网页文件管理）、存储挂载、计划任务、通知中心、配置备份，以及两步验证、安全入口、API 令牌、命令行与 MCP。详见 [模块总览](/docs/modules/)。
 
 ## 下一步
 

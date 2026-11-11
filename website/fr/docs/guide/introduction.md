@@ -30,7 +30,7 @@ Un logiciel placé à la frontière du réseau, qui détient des clés DNS et de
 
 ## Aperçu des fonctions
 
-DNS dynamique, traversée STUN, redirection de ports, certificats SSL, services Web (proxy inverse, contrôle d'accès, vérifications d'état, cache et limitation de débit, statistiques de trafic, authentification unique OIDC), pare-feu WAF, Tailscale, frp, tunnel Cloudflare, gestion de Docker, terminal Web, diagnostic réseau, Wake-on-LAN, WebDAV, FTP, SMB, File Browser (gestionnaire de fichiers Web FileBrowser Quantum géré par Gately), montages de stockage, tâches planifiées, centre de notifications et sauvegarde de la configuration, ainsi que l'authentification à deux facteurs, le chemin d'accès secret, les jetons d'API, la CLI et MCP. Consultez la [vue d'ensemble des modules](/fr/docs/modules/) pour les détails.
+DNS dynamique, traversée STUN, redirection de ports, routage par protocole, certificats SSL, services Web (proxy inverse, contrôle d'accès, vérifications d'état, cache et limitation de débit, statistiques de trafic, authentification unique OIDC), pare-feu WAF, prévention d'intrusion, port knocking, Tailscale, frp, tunnel Cloudflare, gestion de Docker, terminal Web, diagnostic réseau, Wake-on-LAN, WebDAV, FTP, SMB, File Browser (gestionnaire de fichiers Web FileBrowser Quantum géré par Gately), montages de stockage, tâches planifiées, centre de notifications et sauvegarde de la configuration, ainsi que l'authentification à deux facteurs, le chemin d'accès secret, les jetons d'API, la CLI et MCP. Consultez la [vue d'ensemble des modules](/fr/docs/modules/) pour les détails.
 
 ## Étapes suivantes
 

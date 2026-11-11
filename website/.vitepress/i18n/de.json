@@ -170,7 +170,7 @@
       },
       {
         "title": "Geplante Aufgaben & Wake-on-LAN",
-        "text": "Cron-Jobs führen Befehle oder HTTP-Anfragen aus und protokollieren jeden Lauf; Wake-on-LAN-Magic-Packets per Broadcast und Online-Prüfung."
+        "text": "Cron-Jobs führen Befehle oder HTTP-Anfragen aus und protokollieren jeden Lauf; Wake-on-LAN-Magic-Packets per Broadcast und Online-Prüfung; Herunterfahren, Neustart und Ruhezustand aus der Ferne per Client, SSH oder HTTP."
       },
       {
         "title": "Sicherheitshärtung",
@@ -178,7 +178,7 @@
       },
       {
         "title": "Zugriffskontrolle",
-        "text": "Pfadregeln pro Site, temporäre Freigabelinks, automatische Sperren bei wiederholten Anmeldefehlern, GeoIP-Länderfilter sowie IP-Allow- und Blocklisten."
+        "text": "Pfadregeln pro Site, temporäre Freigabelinks, automatische Sperren bei wiederholten Anmeldefehlern, GeoIP-Länderfilter sowie IP-Allow- und Blocklisten; fwknop-kompatibles Port-Knocking (SPA), das SSH und andere Ports erst nach einem gültigen Knock freigibt."
       },
       {
         "title": "Zugriffsstatistik & Monitoring",

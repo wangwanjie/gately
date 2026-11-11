@@ -30,7 +30,7 @@ Software that sits on the network edge and holds DNS keys and certificate privat
 
 ## Feature overview
 
-Dynamic DNS, STUN traversal, port forwarding, SSL certificates, web services (reverse proxy, access control, health checks, caching and rate limiting, traffic stats, OIDC single sign-on), WAF firewall, Tailscale, frp, Cloudflare Tunnel, Docker management, web terminal, network diagnostics, Wake-on-LAN, WebDAV, FTP, SMB, File Browser (managed FileBrowser Quantum web file manager), storage mounts, scheduled tasks, notification center and configuration backup, plus two-factor authentication, secure entrance path, API tokens, CLI and MCP. See the [Modules Overview](/en/docs/modules/) for details.
+Dynamic DNS, STUN traversal, port forwarding, protocol routing, SSL certificates, web services (reverse proxy, access control, health checks, caching and rate limiting, traffic stats, OIDC single sign-on), WAF firewall, intrusion prevention, port knocking, Tailscale, frp, Cloudflare Tunnel, Docker management, web terminal, network diagnostics, Wake-on-LAN, WebDAV, FTP, SMB, File Browser (managed FileBrowser Quantum web file manager), storage mounts, scheduled tasks, notification center and configuration backup, plus two-factor authentication, secure entrance path, API tokens, CLI and MCP. See the [Modules Overview](/en/docs/modules/) for details.
 
 ## Next steps
 
