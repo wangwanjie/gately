@@ -526,6 +526,11 @@
                 <el-option v-if="site.waf && !wafInstances.some((w) => w.key === site.waf)" :label="site.waf + t('web.wafMissingSuffix')" :value="site.waf" />
               </el-select>
             </el-form-item>
+            <!-- 信任已认证用户（#81）：只认 Gately 自己的基本认证与网页认证，转发认证由外部服务判断身份，不显示 -->
+            <el-form-item v-if="site.webAuth || site.basicAuth" :label="t('web.trustAuthUsers')" data-test="trust-auth-users">
+              <el-checkbox v-model="site.trustAuthUsers">{{ t('web.trustAuthUsersLabel') }}</el-checkbox>
+              <div class="form-help">{{ t('web.trustAuthUsersHelp') }}</div>
+            </el-form-item>
             <el-form-item :label="t('web.cors')"><el-switch v-model="site.cors" /></el-form-item>
           </el-tab-pane>
           <el-tab-pane v-if="site.type !== 'close'" :label="t('web.tabTraffic')" name="traffic">
@@ -742,6 +747,8 @@ interface Site {
   waf: string
   remark: string
   authOptional: boolean
+  // trustAuthUsers 为 true 时通过本站点 Gately 认证的访客跳过 WAF 与路径探测计数（#81），需启用基本认证或网页认证
+  trustAuthUsers?: boolean
   forwardAuth: { url: string; loginUrl: string; loginFromLocation?: boolean; copyHeaders: string[] | null }
   countryMode: string
   countries: string[] | null
@@ -1067,6 +1074,7 @@ function emptySite(): Site {
     waf: '',
     remark: '',
     authOptional: false,
+    trustAuthUsers: false,
     forwardAuth: { url: '', loginUrl: '', loginFromLocation: false, copyHeaders: [] },
     countryMode: '',
     countries: [],
@@ -1842,6 +1850,10 @@ async function saveSite() {
   // 非反向代理站点没有分流规则时身份信息无处可传，同样清空
   if (site.value.type === 'close' || !localAuthOn.value) {
     site.value.userRoutes = []
+  }
+  // 信任已认证用户只对基本认证与网页认证生效，关闭这两种认证后一并关闭（后端保存时同样会关闭）
+  if (!site.value.webAuth && !site.value.basicAuth) {
+    site.value.trustAuthUsers = false
   }
   if (!hasBackends.value) {
     site.value.identityHeaders = []
