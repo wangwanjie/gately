@@ -32,6 +32,9 @@ const (
 	AuthFailed      = "auth.failed"
 	AuthBanned      = "auth.banned"
 	GuardBanned     = "guard.banned"
+	// KnockOpened / KnockFailed 由端口敲门发布：敲门成功放行、敲门被拒绝（入侵防护可按后者计数封禁）
+	KnockOpened     = "knock.opened"
+	KnockFailed     = "knock.failed"
 	NotifyTest      = "notify.test"
 	STUNChanged     = "stun.changed"
 	LoginSuccessful = "login.success"
@@ -85,6 +88,8 @@ var Catalog = []TypeInfo{
 	{AuthFailed, "认证：连续失败", LevelWarn},
 	{AuthBanned, "认证：IP 已被封禁", LevelWarn},
 	{GuardBanned, "入侵防护：IP 已被封禁", LevelWarn},
+	{KnockOpened, "端口敲门：敲门成功", LevelInfo},
+	{KnockFailed, "端口敲门：敲门被拒绝", LevelWarn},
 	{LoginSuccessful, "管理后台：登录成功", LevelInfo},
 	{AuditChange, "管理后台：配置变更", LevelInfo},
 	{AuditAccess, "管理后台：访问敏感内容", LevelWarn},

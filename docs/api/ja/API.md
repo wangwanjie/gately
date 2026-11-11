@@ -43,6 +43,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `waf` | WAF ファイアウォール | `waf:read`、`waf:write` |
 | `webservice` | Web サービス | `webservice:read`、`webservice:write` |
 | `guard` | 侵入防御 | `guard:read`、`guard:write` |
+| `knock` | ポートノッキング | `knock:read`、`knock:write` |
 | `wol` | Wake-on-LAN | `wol:read`、`wol:write` |
 | `webterminal` | Web ターミナル | `webterminal:read`、`webterminal:write` |
 | `cron` | スケジュールタスク | `cron:read`、`cron:write` |
@@ -465,6 +466,31 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/guard/bans` | `guard:write` | IP またはネットワークを手動でブロック（seconds が 0 で既定の期間、-1 で無期限） |
 | DELETE | `/api/guard/bans` | `guard:write` | ブロックを解除（body は {"key": アドレス}） |
 | GET | `/api/guard/firewall/rules` | `guard:read` | Gately がシステムファイアウォールに書き込んだルール（テキスト） |
+
+## ポートノッキング
+
+| メソッド | パス | 必要な権限 | 説明 |
+| --- | --- | --- | --- |
+| GET | `/api/knock/logs` | `knock:read` | モジュールの実行ログを表示 |
+| GET | `/api/knock/logs/sources` | `knock:read` | モジュールログのすべてのソースを一覧表示 |
+| GET | `/api/knock/logs/export` | `knock:read` | モジュールログをエクスポート |
+| DELETE | `/api/knock/logs` | `knock:write` | モジュールの実行ログを消去 |
+| GET | `/api/knock/rules` | `knock:read` | ポートノッキングルール の一覧を取得 |
+| POST | `/api/knock/rules` | `knock:write` | ポートノッキングルール を追加 |
+| POST | `/api/knock/rules/{key}/copy` | `knock:write` | ポートノッキングルール を複製 |
+| PUT | `/api/knock/rules/{key}` | `knock:write` | ポートノッキングルール を更新 |
+| DELETE | `/api/knock/rules/{key}` | `knock:write` | ポートノッキングルール を削除 |
+| PUT | `/api/knock/rules/{key}/enable` | `knock:write` | ポートノッキングルール の有効/無効を切り替え |
+| PUT | `/api/knock/rules-order` | `knock:write` | ポートノッキングルール の並び順を変更 |
+| PUT | `/api/knock/rules-enable` | `knock:write` | ポートノッキングルール の一括有効化・無効化 |
+| POST | `/api/knock/rules-delete` | `knock:write` | ポートノッキングルール の一括削除 |
+| PUT | `/api/knock/rules-group` | `knock:write` | ポートノッキングルール のグループを一括設定 |
+| GET | `/api/knock/rules/{key}/secrets` | `knock:write` | シークレットを平文で表示 |
+| GET | `/api/knock/settings` | `knock:read` | グローバル設定 |
+| PUT | `/api/knock/settings` | `knock:write` | 全体設定を変更 |
+| GET | `/api/knock/status` | `knock:read` | 待ち受け、ファイアウォールのブロック状態、現在有効な許可 |
+| DELETE | `/api/knock/grants` | `knock:write` | 許可を取り消す（body は {"addr": アドレス, "rule": ルール key}。rule を空にするとそのアドレスの全許可を取り消します） |
+| GET | `/api/knock/firewall/rules` | `knock:read` | Gately がシステムファイアウォールに書き込んだブロックルール（テキスト） |
 
 ## Wake-on-LAN
 
@@ -1471,6 +1497,89 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `regex` | string |
 | `type` | string |
 | `urls` | 配列 of string |
+
+### knock.Counters
+
+| フィールド | 型 |
+| --- | --- |
+| `accepted` | integer |
+| `ignored` | integer |
+| `rejected` | integer |
+
+### knock.FirewallStatus
+
+| フィールド | 型 |
+| --- | --- |
+| `active` | boolean |
+| `allowed` | integer |
+| `backend` | string |
+| `checkedAt` | 時刻 (RFC 3339) |
+| `dropped` | integer |
+| `error` | string |
+| `needed` | boolean |
+| `ports` | 配列 of string |
+| `reason` | string |
+| `version` | string |
+
+### knock.GrantView
+
+| フィールド | 型 |
+| --- | --- |
+| `addr` | string |
+| `ports` | 配列 of string |
+| `rule` | string |
+| `ruleName` | string |
+| `until` | 時刻 (RFC 3339) |
+
+### knock.Rule
+
+| フィールド | 型 |
+| --- | --- |
+| `enable` | boolean |
+| `encKey` | string |
+| `firewall` | boolean |
+| `group` | string |
+| `hmacKey` | string |
+| `hmacType` | string |
+| `key` | string |
+| `maxTimeout` | integer |
+| `name` | string |
+| `ports` | 配列 of string |
+| `remark` | string |
+| `requireAddr` | boolean |
+| `timeout` | integer |
+| `user` | string |
+
+### knock.Settings
+
+| フィールド | 型 |
+| --- | --- |
+| `allowLan` | boolean |
+| `allowList` | 配列 of string |
+| `autoFirewall` | boolean |
+| `maxAge` | integer |
+| `port` | integer |
+
+### knock.Status
+
+| フィールド | 型 |
+| --- | --- |
+| `counters` | `knock.Counters` |
+| `firewall` | `knock.FirewallStatus` |
+| `grants` | 配列 of `knock.GrantView` |
+| `listenError` | string |
+| `listening` | boolean |
+| `now` | 時刻 (RFC 3339) |
+| `openStatus` | string |
+| `os` | string |
+| `port` | integer |
+
+### knock.revokeRequest
+
+| フィールド | 型 |
+| --- | --- |
+| `addr` | string |
+| `rule` | string |
 
 ### netbird.ConnView
 

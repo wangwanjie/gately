@@ -43,6 +43,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `waf` | Pare-feu WAF | `waf:read`、`waf:write` |
 | `webservice` | Service Web | `webservice:read`、`webservice:write` |
 | `guard` | Prévention d'intrusion | `guard:read`、`guard:write` |
+| `knock` | Port knocking | `knock:read`、`knock:write` |
 | `wol` | Wake-on-LAN | `wol:read`、`wol:write` |
 | `webterminal` | Terminal Web | `webterminal:read`、`webterminal:write` |
 | `cron` | Tâche planifiée | `cron:read`、`cron:write` |
@@ -465,6 +466,31 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | POST | `/api/guard/bans` | `guard:write` | Bloquer manuellement une IP ou un réseau (seconds : 0 utilise la durée par défaut, -1 signifie permanent) |
 | DELETE | `/api/guard/bans` | `guard:write` | Lever un bannissement (le body est {"key": adresse}) |
 | GET | `/api/guard/firewall/rules` | `guard:read` | Règles écrites par Gately dans le pare-feu du système (texte) |
+
+## Port knocking
+
+| Méthode | Chemin | Permission requise | Description |
+| --- | --- | --- | --- |
+| GET | `/api/knock/logs` | `knock:read` | Consulter les journaux d'exécution d'un module |
+| GET | `/api/knock/logs/sources` | `knock:read` | Lister toutes les sources des journaux du module |
+| GET | `/api/knock/logs/export` | `knock:read` | Exporter les journaux du module |
+| DELETE | `/api/knock/logs` | `knock:write` | Vider les journaux d'exécution d'un module |
+| GET | `/api/knock/rules` | `knock:read` | Lister Règles de port knocking |
+| POST | `/api/knock/rules` | `knock:write` | Ajouter Règles de port knocking |
+| POST | `/api/knock/rules/{key}/copy` | `knock:write` | Dupliquer Règles de port knocking |
+| PUT | `/api/knock/rules/{key}` | `knock:write` | Modifier Règles de port knocking |
+| DELETE | `/api/knock/rules/{key}` | `knock:write` | Supprimer Règles de port knocking |
+| PUT | `/api/knock/rules/{key}/enable` | `knock:write` | Activer ou désactiver Règles de port knocking |
+| PUT | `/api/knock/rules-order` | `knock:write` | Réordonner Règles de port knocking |
+| PUT | `/api/knock/rules-enable` | `knock:write` | Activer ou désactiver en lot : Règles de port knocking |
+| POST | `/api/knock/rules-delete` | `knock:write` | Supprimer en lot : Règles de port knocking |
+| PUT | `/api/knock/rules-group` | `knock:write` | Définir le groupe de plusieurs éléments : Règles de port knocking |
+| GET | `/api/knock/rules/{key}/secrets` | `knock:write` | Afficher les secrets en clair |
+| GET | `/api/knock/settings` | `knock:read` | Paramètres globaux |
+| PUT | `/api/knock/settings` | `knock:write` | Modifier les paramètres globaux |
+| GET | `/api/knock/status` | `knock:read` | Écoute, état du blocage par pare-feu et autorisations actuellement valides |
+| DELETE | `/api/knock/grants` | `knock:write` | Révoquer des autorisations (body = {"addr": adresse, "rule": clé de règle} ; laissez rule vide pour révoquer toutes les autorisations de l'adresse) |
+| GET | `/api/knock/firewall/rules` | `knock:read` | Règles de blocage écrites par Gately dans le pare-feu du système (texte) |
 
 ## Wake-on-LAN
 
@@ -1471,6 +1497,89 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `regex` | string |
 | `type` | string |
 | `urls` | Tableau de string |
+
+### knock.Counters
+
+| Champ | Type |
+| --- | --- |
+| `accepted` | integer |
+| `ignored` | integer |
+| `rejected` | integer |
+
+### knock.FirewallStatus
+
+| Champ | Type |
+| --- | --- |
+| `active` | boolean |
+| `allowed` | integer |
+| `backend` | string |
+| `checkedAt` | Heure (RFC 3339) |
+| `dropped` | integer |
+| `error` | string |
+| `needed` | boolean |
+| `ports` | Tableau de string |
+| `reason` | string |
+| `version` | string |
+
+### knock.GrantView
+
+| Champ | Type |
+| --- | --- |
+| `addr` | string |
+| `ports` | Tableau de string |
+| `rule` | string |
+| `ruleName` | string |
+| `until` | Heure (RFC 3339) |
+
+### knock.Rule
+
+| Champ | Type |
+| --- | --- |
+| `enable` | boolean |
+| `encKey` | string |
+| `firewall` | boolean |
+| `group` | string |
+| `hmacKey` | string |
+| `hmacType` | string |
+| `key` | string |
+| `maxTimeout` | integer |
+| `name` | string |
+| `ports` | Tableau de string |
+| `remark` | string |
+| `requireAddr` | boolean |
+| `timeout` | integer |
+| `user` | string |
+
+### knock.Settings
+
+| Champ | Type |
+| --- | --- |
+| `allowLan` | boolean |
+| `allowList` | Tableau de string |
+| `autoFirewall` | boolean |
+| `maxAge` | integer |
+| `port` | integer |
+
+### knock.Status
+
+| Champ | Type |
+| --- | --- |
+| `counters` | `knock.Counters` |
+| `firewall` | `knock.FirewallStatus` |
+| `grants` | Tableau de `knock.GrantView` |
+| `listenError` | string |
+| `listening` | boolean |
+| `now` | Heure (RFC 3339) |
+| `openStatus` | string |
+| `os` | string |
+| `port` | integer |
+
+### knock.revokeRequest
+
+| Champ | Type |
+| --- | --- |
+| `addr` | string |
+| `rule` | string |
 
 ### netbird.ConnView
 

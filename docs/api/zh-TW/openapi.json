@@ -1207,6 +1207,203 @@
         },
         "type": "object"
       },
+      "knock.Counters": {
+        "properties": {
+          "accepted": {
+            "type": "integer"
+          },
+          "ignored": {
+            "type": "integer"
+          },
+          "rejected": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "knock.FirewallStatus": {
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "allowed": {
+            "type": "integer"
+          },
+          "backend": {
+            "type": "string"
+          },
+          "checkedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "dropped": {
+            "type": "integer"
+          },
+          "error": {
+            "type": "string"
+          },
+          "needed": {
+            "type": "boolean"
+          },
+          "ports": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "knock.GrantView": {
+        "properties": {
+          "addr": {
+            "type": "string"
+          },
+          "ports": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "rule": {
+            "type": "string"
+          },
+          "ruleName": {
+            "type": "string"
+          },
+          "until": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "knock.Rule": {
+        "properties": {
+          "enable": {
+            "type": "boolean"
+          },
+          "encKey": {
+            "type": "string"
+          },
+          "firewall": {
+            "type": "boolean"
+          },
+          "group": {
+            "type": "string"
+          },
+          "hmacKey": {
+            "type": "string"
+          },
+          "hmacType": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "maxTimeout": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "ports": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "remark": {
+            "type": "string"
+          },
+          "requireAddr": {
+            "type": "boolean"
+          },
+          "timeout": {
+            "type": "integer"
+          },
+          "user": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "knock.Settings": {
+        "properties": {
+          "allowLan": {
+            "type": "boolean"
+          },
+          "allowList": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "autoFirewall": {
+            "type": "boolean"
+          },
+          "maxAge": {
+            "type": "integer"
+          },
+          "port": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "knock.Status": {
+        "properties": {
+          "counters": {
+            "$ref": "#/components/schemas/knock.Counters"
+          },
+          "firewall": {
+            "$ref": "#/components/schemas/knock.FirewallStatus"
+          },
+          "grants": {
+            "items": {
+              "$ref": "#/components/schemas/knock.GrantView"
+            },
+            "type": "array"
+          },
+          "listenError": {
+            "type": "string"
+          },
+          "listening": {
+            "type": "boolean"
+          },
+          "now": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "openStatus": {
+            "type": "string"
+          },
+          "os": {
+            "type": "string"
+          },
+          "port": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "knock.revokeRequest": {
+        "properties": {
+          "addr": {
+            "type": "string"
+          },
+          "rule": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "netbird.ConnView": {
         "properties": {
           "connected": {
@@ -24632,6 +24829,1472 @@
           "設定匯入"
         ],
         "x-required-scope": "import:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/firewall/rules": {
+      "get": {
+        "description": "所需權限：`knock:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Gately 寫入系統防火牆的攔截規則（文字）",
+        "tags": [
+          "連接埠敲門"
+        ],
+        "x-required-scope": "knock:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/grants": {
+      "delete": {
+        "description": "所需權限：`knock:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/knock.revokeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "撤銷授權（body 為 {\"addr\": 位址, \"rule\": 規則 key}，rule 留空則撤銷該位址的全部授權）",
+        "tags": [
+          "連接埠敲門"
+        ],
+        "x-required-scope": "knock:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/logs": {
+      "delete": {
+        "description": "同時刪除落盤的日誌檔案、歷史檔案、歸檔與來源記錄。\n\n所需權限：`knock:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "清空模組執行日誌",
+        "tags": [
+          "連接埠敲門"
+        ],
+        "x-required-scope": "knock:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "支援 `since` 參數增量拉取，返回序號大於該值的日誌；`before` 返回序號小於該值的日誌，用於載入更早的記錄；`limit` 只返回其中最新的若干條，記憶體中不夠時繼續查找日誌檔案裡保留的歷史。過濾參數：`level` 最低級別，`source` 來源，`q` 關鍵字（空格分隔表示同時包含，雙引號包住短語，前綴 `-` 表示排除），`ip` 用戶端位址（完整位址、CIDR 或位址片段，多個以逗號分隔），`host` 站點名稱或網域（部分比對），`site` 站點名稱（完整比對，只回傳該站點的存取記錄），`status` 狀態碼（如 `404`、`4xx`、`500-599`），`from`、`to` 時間範圍（RFC 3339 或毫秒時間戳）。`exclude` 為排除詞，包含其中任意一個的日誌不回傳，寫法同 `q`，前綴 `-` 可省略。\n\n所需權限：`knock:read`。",
+        "parameters": [
+          {
+            "description": "增量拉取：只回傳序號大於該值的日誌",
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "載入更早的日誌：只返回序號小於該值的日誌",
+            "in": "query",
+            "name": "before",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "最多返回的條數，取符合條件的最新幾條；0 或不傳表示不限",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "最低層級：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "來源標籤，不區分大小寫精確比對",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "關鍵字：空格分隔表示同時包含，雙引號包住短語，前綴 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的關鍵字：空格分隔，雙引號包住短語，包含其中任意一個即排除；與 q 同時生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "用戶端位址：完整位址、CIDR 或位址片段，多個以逗號分隔，前綴 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱或網域的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服務監聽器 key，完整比對；用於區分同名站點或同名監聽器（例如分開監聽的 IPv4 與 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "狀態碼，如 404、4xx、500-599，多個以逗號分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏被封鎖來源的存取日誌：封鎖後被拒絕的請求，以及目前仍在封鎖中的來源的全部請求（包括觸發封鎖的請求）；只影響回傳結果，日誌照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏帶管理後台登入狀態的請求，即管理員經 Web 服務站點存取後台產生的存取日誌",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "結束時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "檢視模組執行日誌",
+        "tags": [
+          "連接埠敲門"
+        ],
+        "x-required-scope": "knock:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/logs/export": {
+      "get": {
+        "description": "以附件串流返回符合篩選條件的全部日誌，按時間從舊到新，包括落盤的歷史檔案與壓縮歸檔。`format` 為 `jsonl`（預設，每行一條 JSON）或 `csv`（UTF-8 帶 BOM，以 = + - @ 開頭的儲存格加單引號防止公式注入）。篩選參數與查看日誌介面相同。唯讀身分匯出的內容與查看時一樣做憑證遮蔽。`lang` 指定匯出內容的語言（如 `en`），不填時按 Accept-Language。\n\n所需權限：`knock:read`。",
+        "parameters": [
+          {
+            "description": "匯出格式：jsonl（預設，每行一條 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "匯出內容的語言，例如 en；不填時按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低層級：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "來源標籤，不區分大小寫精確比對",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "關鍵字：空格分隔表示同時包含，雙引號包住短語，前綴 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的關鍵字：空格分隔，雙引號包住短語，包含其中任意一個即排除；與 q 同時生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "用戶端位址：完整位址、CIDR 或位址片段，多個以逗號分隔，前綴 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱或網域的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服務監聽器 key，完整比對；用於區分同名站點或同名監聽器（例如分開監聽的 IPv4 與 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "狀態碼，如 404、4xx、500-599，多個以逗號分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏被封鎖來源的存取日誌：封鎖後被拒絕的請求，以及目前仍在封鎖中的來源的全部請求（包括觸發封鎖的請求）；只影響回傳結果，日誌照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏帶管理後台登入狀態的請求，即管理員經 Web 服務站點存取後台產生的存取日誌",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "結束時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "匯出模組執行日誌",
+        "tags": [
+          "連接埠敲門"
+        ],
+        "x-required-scope": "knock:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/logs/sources": {
+      "get": {
+        "description": "返回按名稱排序的來源標籤陣列：日誌中出現過的來源（落盤時跨重啟保留），以及模組設定中的來源（例如 Web 服務的全部監聽器與 IP 清單），用於按 `source` 篩選。來源與日誌一樣按請求語言翻譯。\n\n所需權限：`knock:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模組日誌的全部來源",
+        "tags": [
+          "連接埠敲門"
+        ],
+        "x-required-scope": "knock:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/rules": {
+      "get": {
+        "description": "所需權限：`knock:read`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/knock.Rule"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "取得連接埠敲門規則清單",
+        "tags": [
+          "連接埠敲門"
+        ],
+        "x-required-scope": "knock:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "所需權限：`knock:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/knock.Rule"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/knock.Rule"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "新增連接埠敲門規則",
+        "tags": [
+          "連接埠敲門"
+        ],
+        "x-required-scope": "knock:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/rules-delete": {
+      "post": {
+        "description": "所需權限：`knock:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchDeleteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "批次刪除連接埠敲門規則",
+        "tags": [
+          "連接埠敲門"
+        ],
+        "x-required-scope": "knock:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/rules-enable": {
+      "put": {
+        "description": "所需權限：`knock:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchEnableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "批次啟用或停用連接埠敲門規則",
+        "tags": [
+          "連接埠敲門"
+        ],
+        "x-required-scope": "knock:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/rules-group": {
+      "put": {
+        "description": "所需權限：`knock:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "批次設定連接埠敲門規則分組",
+        "tags": [
+          "連接埠敲門"
+        ],
+        "x-required-scope": "knock:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/rules-order": {
+      "put": {
+        "description": "所需權限：`knock:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.orderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "調整連接埠敲門規則排序",
+        "tags": [
+          "連接埠敲門"
+        ],
+        "x-required-scope": "knock:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/rules/{key}": {
+      "delete": {
+        "description": "所需權限：`knock:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "刪除連接埠敲門規則",
+        "tags": [
+          "連接埠敲門"
+        ],
+        "x-required-scope": "knock:write",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "所需權限：`knock:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/knock.Rule"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/knock.Rule"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "修改連接埠敲門規則",
+        "tags": [
+          "連接埠敲門"
+        ],
+        "x-required-scope": "knock:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/rules/{key}/copy": {
+      "post": {
+        "description": "所需權限：`knock:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/knock.Rule"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/knock.Rule"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "複製連接埠敲門規則",
+        "tags": [
+          "連接埠敲門"
+        ],
+        "x-required-scope": "knock:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/rules/{key}/enable": {
+      "put": {
+        "description": "所需權限：`knock:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.enableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "啟用或停用連接埠敲門規則",
+        "tags": [
+          "連接埠敲門"
+        ],
+        "x-required-scope": "knock:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/rules/{key}/secrets": {
+      "get": {
+        "description": "所需權限：`knock:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "查看金鑰明文",
+        "tags": [
+          "連接埠敲門"
+        ],
+        "x-required-scope": "knock:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/settings": {
+      "get": {
+        "description": "所需權限：`knock:read`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/knock.Settings"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "全域設定",
+        "tags": [
+          "連接埠敲門"
+        ],
+        "x-required-scope": "knock:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "所需權限：`knock:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/knock.Settings"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/knock.Settings"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "修改全域設定",
+        "tags": [
+          "連接埠敲門"
+        ],
+        "x-required-scope": "knock:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/status": {
+      "get": {
+        "description": "所需權限：`knock:read`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/knock.Status"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "監聽、防火牆攔截狀態與目前有效的授權",
+        "tags": [
+          "連接埠敲門"
+        ],
+        "x-required-scope": "knock:read",
         "x-token-allowed": true
       }
     },
@@ -55129,6 +56792,9 @@
       "name": "入侵防護"
     },
     {
+      "name": "連接埠敲門"
+    },
+    {
       "name": "網路喚醒"
     },
     {
@@ -55196,6 +56862,7 @@
     "waf",
     "webservice",
     "guard",
+    "knock",
     "wol",
     "webterminal",
     "cron",
