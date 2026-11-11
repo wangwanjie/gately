@@ -1,6 +1,7 @@
 #!/bin/sh
 # OpenWrt 安装包冒烟测试：打出 amd64 的 .ipk / .apk 与 LuCI 插件，分别在 OpenWrt 24.10（opkg）与 25.12（apk）的官方 rootfs 容器中
-# 安装、确认服务启动并登记到包管理器，检查 LuCI 插件的 rpcd 接口（状态、启停、UCI 端口覆盖），再卸载确认服务停止。需要 Docker，CI 中运行。
+# 安装、确认服务启动并登记到包管理器，检查 LuCI 插件的 rpcd 接口（状态、启停、UCI 端口覆盖），再卸载确认服务停止。
+# 另外在 apk 中用 arm64 安装包覆盖安装（同版本替换与升级到新版本两种情况），确认装错架构时原有程序不被替换（issue #82）。需要 Docker，CI 中运行。
 #
 # 用法：deploy/openwrt/smoke-test.sh <linux/amd64 的 gately 二进制>
 set -eu
@@ -18,11 +19,13 @@ HERE=$(cd "$(dirname "$0")" && pwd)
 REPO=$(cd "$HERE/../.." && pwd)
 WORK=$(mktemp -d)
 NAME=gately-openwrt-smoke-$$
-trap 'docker rm -f "$NAME" >/dev/null 2>&1 || true; docker run --rm -v "$WORK:/work" "$ALPINE" rm -rf /work/out /work/gately >/dev/null 2>&1 || true; rm -rf "$WORK"' EXIT
+trap 'docker rm -f "$NAME" >/dev/null 2>&1 || true; docker run --rm -v "$WORK:/work" "$ALPINE" rm -rf /work/out /work/wrong /work/gately /work/fake >/dev/null 2>&1 || true; rm -rf "$WORK"' EXIT
 cp "$1" "$WORK/gately"
 
 docker run --rm -v "$REPO:/w:ro" -v "$WORK:/work" -w /w "$ALPINE" \
-	sh -ec 'deploy/openwrt/build.sh v0.0.0-rc1 amd64 /work/gately /work/out && deploy/openwrt/build-luci.sh v0.0.0-rc1 /work/out'
+	sh -ec 'deploy/openwrt/build.sh v0.0.0-rc1 amd64 /work/gately /work/out && deploy/openwrt/build-luci.sh v0.0.0-rc1 /work/out
+		printf "not an amd64 program\n" >/work/fake && deploy/openwrt/build.sh v0.0.0-rc1 arm64 /work/fake /work/wrong
+		deploy/openwrt/build.sh v0.0.1 arm64 /work/fake /work/wrong'
 
 # 在容器中以 procd 为 init 启动 OpenWrt，执行安装、检查与卸载。
 # sh -e 不会因 ! 取反的命令失败而退出，卸载后的检查用 if 显式判断
@@ -30,7 +33,7 @@ check() {
 	image=$1
 	script=$2
 	echo "==== $image"
-	docker run -d --name "$NAME" -v "$WORK/out:/pkgs:ro" "$image" /sbin/init >/dev/null
+	docker run -d --name "$NAME" -v "$WORK/out:/pkgs:ro" -v "$WORK/wrong:/wrong:ro" "$image" /sbin/init >/dev/null
 	sleep 5
 	docker exec "$NAME" sh -ec "$script"
 	docker rm -f "$NAME" >/dev/null
@@ -78,6 +81,28 @@ sleep 2
 [ "$(ubus call luci.gately status | jsonfilter -e @.running)" = true ]
 ubus call luci.gately action "{\"name\":\"rm\"}" | grep -q error
 '
+# 装错架构（apk）：arm64 安装包必须失败，且不能替换已装好的程序，服务一直运行、开机自启不变。
+# WRONG_ARCH_INSTALL 为覆盖安装命令，可以有多条，以分号分隔。
+# opkg 在 preinst 失败时中止安装、不替换文件，不在此检查（中止升级后 opkg 自身的包状态会变成 deinstall，影响后续卸载检查）
+WRONG_ARCH_CHECK='
+sum=$(md5sum /usr/bin/gately)
+IFS=";"
+for cmd in $WRONG_ARCH_INSTALL; do
+	IFS=" "
+	if $cmd; then
+		echo "装错架构的安装包没有报错: $cmd" >&2
+		exit 1
+	fi
+	[ "$(md5sum /usr/bin/gately)" = "$sum" ]
+done
+unset IFS
+[ ! -e /usr/bin/.gately.arch-keep ]
+pidof gately
+/etc/init.d/gately enabled
+/etc/init.d/gately restart
+sleep 2
+pidof gately
+'
 GONE_CHECK='
 if pidof gately || [ -e /etc/init.d/gately ] || [ -n "$(ls /etc/rc.d | grep gately)" ] || [ -e /usr/libexec/rpcd/luci.gately ]; then
 	echo "卸载后仍有残留" >&2
@@ -106,7 +131,8 @@ pidof gately
 /etc/init.d/gately enabled
 grep -qx "P:gately" /lib/apk/db/installed
 grep -qx "P:luci-app-gately" /lib/apk/db/installed
-'"$LUCI_CHECK"'
+WRONG_ARCH_INSTALL="apk add --allow-untrusted /wrong/gately_v0.0.0-rc1_openwrt_arm64.apk;apk add --allow-untrusted /wrong/gately_v0.0.1_openwrt_arm64.apk"
+'"$WRONG_ARCH_CHECK$LUCI_CHECK"'
 apk del luci-app-gately gately
 sleep 1
 '"$GONE_CHECK"'
