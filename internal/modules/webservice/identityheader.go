@@ -41,6 +41,7 @@ var forbiddenUserHeaders = map[string]bool{
 	"Content-Length": true, "Content-Type": true, "Transfer-Encoding": true, "Connection": true,
 	"Upgrade": true, "Te": true, "Trailer": true, "Keep-Alive": true, "Proxy-Connection": true,
 	"X-Forwarded-For": true, "X-Forwarded-Host": true, "X-Forwarded-Proto": true, "X-Forwarded-Port": true, "X-Real-Ip": true,
+	"X-Real-Port": true, "X-Forwarded-For-Port": true,
 }
 
 // headerVariantKey 返回请求头的比较键：不区分大小写，- 与 _ 视为相同（部分后端把两者映射为同一个变量）。

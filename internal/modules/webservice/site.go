@@ -115,6 +115,32 @@ func clientAddr(r *http.Request) netip.AddrPort {
 	return netip.AddrPortFrom(ap.Addr().Unmap(), ap.Port())
 }
 
+// clientPortHeaders 为向后端传递访客源端口的请求头（#83）：X-Real-Port 与 X-Real-IP 成对，
+// 是 nginx 常用的写法（proxy_set_header X-Real-Port $remote_port）；X-Forwarded-For-Port 与 X-Forwarded-For 成对。
+// 两者取值相同，后端按自己的约定读取其一。X-Forwarded-Port 表示访客连接 Gately 的端口（监听端口），与它们不同。
+var clientPortHeaders = []string{"X-Real-Port", "X-Forwarded-For-Port"}
+
+// stripClientPort 删除源端口头，连同 X_Real_Port 等写法变体：部分后端把 - 与 _ 映射为同一个变量，
+// 访客自带的变体同样可能被当成源端口。
+func stripClientPort(h http.Header) {
+	for _, k := range clientPortHeaders {
+		delHeaderVariants(h, k)
+	}
+}
+
+// setClientPort 写入访客源端口。端口未知（为 0）时不写：从可信代理的请求头取得访客地址，
+// 而代理没有通过端口头告知源端口时就是这种情况（见 realIPSource.apply），这时写任何值都不是访客的真实端口。
+// 调用前应已用 stripClientPort 删除访客自带的同名头。
+func setClientPort(h http.Header, ap netip.AddrPort) {
+	if ap.Port() == 0 {
+		return
+	}
+	port := strconv.Itoa(int(ap.Port()))
+	for _, k := range clientPortHeaders {
+		h.Set(k, port)
+	}
+}
+
 // reqLog 返回附带本次请求结构化字段（客户端 IP、域名、站点、方法、路径）的写入器，日志页可按这些字段过滤。
 func (h *siteHandler) reqLog(r *http.Request) *logbuf.Logger {
 	// 地址无效（例如经 unix socket 进入）时 String() 会得到 "invalid IP"，留空让 With 忽略该字段
@@ -473,8 +499,9 @@ func (h *siteHandler) newProxy(s Site, p *pool) http.Handler {
 		BufferPool: sharedBufferPool,
 		Rewrite: func(pr *httputil.ProxyRequest) {
 			target(pr, attemptFrom(pr.In.Context()).current())
-			// 客户端自带的 X-Real-IP 不可信，只在开启转发头时由 Gately 写入
+			// 客户端自带的 X-Real-IP 与源端口头不可信，只在开启转发头时由 Gately 写入
 			pr.Out.Header.Del("X-Real-Ip")
+			stripClientPort(pr.Out.Header)
 			if s.ForwardedHeaders {
 				pr.SetXForwarded()
 				// SetXForwarded 只看本连接是否为 TLS；访客经可信反向代理以 HTTPS 访问时，向后端如实写 https
@@ -485,6 +512,7 @@ func (h *siteHandler) newProxy(s Site, p *pool) http.Handler {
 				if port := localPort(pr.In); port != "" {
 					pr.Out.Header.Set("X-Forwarded-Port", port)
 				}
+				setClientPort(pr.Out.Header, clientAddr(pr.In))
 			}
 			// 站点会话 Cookie 只用于 Gately 自身认证，不转发给后端；后端是负责认证的另一台 Gately 时按站点设置原样转发
 			if !s.PassAuthCookies {
