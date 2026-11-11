@@ -134,7 +134,7 @@ func TestRealIPEndToEnd(t *testing.T) {
 	// 127.0.0.1 作为可信 PROXY 来源（模拟协议分流经回环转来），可信代理只有 CDN 段 198.51.100.0/24
 	addr, r := startRunner(t, Listener{AcceptProxyProtocol: true, Sites: sites}, nil, []string{"127.0.0.1"})
 	r.realIP = &realIPSource{}
-	r.realIP.set([]string{"198.51.100.0/24"}, []string{"Cf-Connecting-Ip", "X-Forwarded-For"})
+	r.realIP.set([]string{"198.51.100.0/24"}, []string{"Cf-Connecting-Ip", "X-Forwarded-For"}, "")
 
 	req := func(host string, hdr map[string]string) *http.Request {
 		q, _ := http.NewRequest("GET", "http://"+host+"/", nil)
@@ -169,7 +169,7 @@ func TestRealIPEndToEnd(t *testing.T) {
 		t.Fatalf("其他访客应放行: %d", code)
 	}
 	// 未启用时保持原行为
-	r.realIP.set(nil, nil)
+	r.realIP.set(nil, nil, "")
 	if _, body := sendViaProxyBody(t, addr, "198.51.100.7", req("app.test", map[string]string{"CF-Connecting-IP": "203.0.113.9"})); ipOf(body) != "198.51.100.7" {
 		t.Fatalf("未启用时应使用对端地址: %q", body)
 	}
@@ -178,13 +178,13 @@ func TestRealIPEndToEnd(t *testing.T) {
 // 可信代理以明文转发并标明 X-Forwarded-Proto: https 时按 HTTPS 处理，即使客户端地址已改写为公网访客。
 func TestRealIPForwardedProto(t *testing.T) {
 	src := &realIPSource{}
-	src.set([]string{"198.51.100.0/24"}, []string{"X-Forwarded-For"})
+	src.set([]string{"198.51.100.0/24"}, []string{"X-Forwarded-For"}, "")
 	r := httptest.NewRequest("GET", "http://app.test/", nil)
 	r.RemoteAddr = "198.51.100.7:1234"
 	r.Header.Set("X-Forwarded-For", "203.0.113.9")
 	r.Header.Set("X-Forwarded-Proto", "https")
 	r = src.apply(r)
-	if r.RemoteAddr != "203.0.113.9:1234" || !requestIsHTTPS(r) {
+	if r.RemoteAddr != "203.0.113.9:0" || !requestIsHTTPS(r) {
 		t.Fatalf("可信代理的 X-Forwarded-Proto 应被采信: %s %v", r.RemoteAddr, requestIsHTTPS(r))
 	}
 }

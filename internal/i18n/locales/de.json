@@ -2308,6 +2308,8 @@
   "目标端口数量(%d)需与监听端口数量(%d)相同或只填一个": "Die Anzahl der Zielports (%d) muss der Anzahl der Listen-Ports (%d) entsprechen oder es darf nur einer angegeben werden",
   "直接拉取失败（": "Direktes Pullen fehlgeschlagen (",
   "真实 IP 设置无效，未启用: %v": "Ungültige Real-IP-Einstellungen, nicht aktiviert: %v",
+  "真实端口请求头无效，未启用: %v": "Ungültiger Header für echten Port, nicht aktiviert: %v",
+  "真实端口请求头：%v": "Header für echten Port: %v",
   "睡眠失败: %v": "Ruhezustand fehlgeschlagen: %v",
   "短期证书剩余 %.0f 小时": "Das kurzlebige Zertifikat läuft in %.0f Stunden ab",
   "确认新密码": "Neues Passwort bestätigen",

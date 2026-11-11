@@ -20,6 +20,8 @@ const defaultRealIPHeader = "X-Forwarded-For"
 type realIPPolicy struct {
 	from    []netip.Prefix
 	headers []string
+	// portHeader 为可信代理写入访客源端口的请求头，为空表示代理不提供端口（见 resolvePort）
+	portHeader string
 }
 
 // realIPSource 在模块的全部监听器间共享当前生效的设置，保存全局设置时整体替换，不需要重新监听。
@@ -77,8 +79,21 @@ func normalizeRealIP(from, headers []string) ([]string, []string, error) {
 	return from, names, nil
 }
 
+// normalizeRealPort 校验并规范化真实端口请求头：未启用真实 IP（可信代理为空）时清空。
+func normalizeRealPort(from []string, header string) (string, error) {
+	header = strings.TrimSpace(header)
+	if len(cleanList(from)) == 0 || header == "" {
+		return "", nil
+	}
+	if !httpguts.ValidHeaderFieldName(header) {
+		return "", fmt.Errorf("无效的请求头名称 %q", header)
+	}
+	return header, nil
+}
+
 // set 按全局设置更新当前生效的策略；设置已在保存时校验，这里解析失败时视为未启用。
-func (s *realIPSource) set(from, headers []string) {
+// portHeader 为可信代理写入访客源端口的请求头，可为空。
+func (s *realIPSource) set(from, headers []string, portHeader string) {
 	prefixes, err := parsePrefixes(from)
 	if err != nil || len(prefixes) == 0 {
 		s.p.Store(nil)
@@ -87,7 +102,10 @@ func (s *realIPSource) set(from, headers []string) {
 	if len(headers) == 0 {
 		headers = []string{defaultRealIPHeader}
 	}
-	s.p.Store(&realIPPolicy{from: prefixes, headers: headers})
+	if !httpguts.ValidHeaderFieldName(portHeader) {
+		portHeader = ""
+	}
+	s.p.Store(&realIPPolicy{from: prefixes, headers: headers, portHeader: portHeader})
 }
 
 // apply 在请求进入站点路由前确定访客的真实地址：原始对端在可信代理列表中时，按配置的头依次查找，
@@ -110,8 +128,9 @@ func (s *realIPSource) apply(r *http.Request) *http.Request {
 	info.trusted = true
 	r = r.WithContext(context.WithValue(r.Context(), ctxKeyPeer{}, info))
 	if a, ok := p.resolve(r.Header); ok {
-		// 访客的源端口不可知，沿用对端端口，保持 RemoteAddr 为 host:port 形式
-		r.RemoteAddr = netip.AddrPortFrom(a, peer.Port()).String()
+		// 访客的源端口只能由可信代理在端口头中告知；代理没有提供时端口记为 0（未知），
+		// 不能沿用对端端口：那是代理到 Gately 这段连接的端口，向后端传递或在实时连接中显示都会误导
+		r.RemoteAddr = netip.AddrPortFrom(a, p.resolvePort(r.Header)).String()
 	}
 	return r
 }
@@ -158,6 +177,40 @@ func (p *realIPPolicy) resolve(h http.Header) (netip.Addr, bool) {
 		}
 	}
 	return netip.Addr{}, false
+}
+
+// resolvePort 从端口头取得访客源端口，取不到或无效时返回 0。
+// 代理通常覆盖写入该头（如 nginx 的 proxy_set_header X-Real-Port $remote_port），有多项时取最右一项，
+// 即最近的代理写入的值；左侧的值可能是客户端自带的，不采用。
+func (p *realIPPolicy) resolvePort(h http.Header) uint16 {
+	if p.portHeader == "" {
+		return 0
+	}
+	vals := h.Values(p.portHeader)
+	if len(vals) == 0 {
+		return 0
+	}
+	items := strings.Split(vals[len(vals)-1], ",")
+	return parsePort(items[len(items)-1])
+}
+
+// parsePort 解析 1–65535 的十进制端口号，无效时返回 0。只接受纯数字，拒绝符号、空格内夹杂与前导加号。
+func parsePort(s string) uint16 {
+	s = strings.TrimSpace(s)
+	if s == "" || len(s) > 5 {
+		return 0
+	}
+	n := 0
+	for _, c := range s {
+		if c < '0' || c > '9' {
+			return 0
+		}
+		n = n*10 + int(c-'0')
+	}
+	if n < 1 || n > 65535 {
+		return 0
+	}
+	return uint16(n)
 }
 
 // parseHeaderAddr 解析头中的一项地址，兼容带端口（1.2.3.4:5678、[::1]:80）与方括号包裹的 IPv6。

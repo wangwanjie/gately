@@ -588,7 +588,7 @@ func TestConnsAPI(t *testing.T) {
 		{Enable: true, Key: "b", Domains: []string{"b.test"}, Targets: []string{backend.URL}},
 	}, Site{Enable: true, Targets: []string{backend.URL}})
 	// 测试客户端都经回环连入，回环地址不允许封禁：把回环设为可信代理，用 X-Forwarded-For 带上访客地址
-	m.realIP.set([]string{"127.0.0.0/8"}, nil)
+	m.realIP.set([]string{"127.0.0.0/8"}, nil, "")
 	// 封禁列表为全局共享，结束时解除，避免影响其他测试
 	t.Cleanup(func() { m.auth.unban("203.0.113.5") })
 
@@ -722,7 +722,7 @@ func TestConnsBanRefusesLoopbackAndProxy(t *testing.T) {
 	}
 	<-done
 
-	m.realIP.set([]string{"198.51.100.0/24", "2001:db8:1::/48"}, nil)
+	m.realIP.set([]string{"198.51.100.0/24", "2001:db8:1::/48"}, nil, "")
 	for a, want := range map[string]bool{
 		"198.51.100.7":        true,
 		"::ffff:198.51.100.7": true,
@@ -735,12 +735,12 @@ func TestConnsBanRefusesLoopbackAndProxy(t *testing.T) {
 		"0.0.0.0":         true,
 	} {
 		if a == "2001:db8:2:3::1" {
-			m.realIP.set([]string{"198.51.100.0/24", "2001:db8:1::/48", "2001:db8:2:3::8/126"}, nil)
+			m.realIP.set([]string{"198.51.100.0/24", "2001:db8:1::/48", "2001:db8:2:3::8/126"}, nil, "")
 		}
 		if got := m.unbannableReason(netip.MustParseAddr(a)) != ""; got != want {
 			t.Errorf("%s 拒绝封禁 = %v，应为 %v", a, got, want)
 		}
-		m.realIP.set([]string{"198.51.100.0/24", "2001:db8:1::/48"}, nil)
+		m.realIP.set([]string{"198.51.100.0/24", "2001:db8:1::/48"}, nil, "")
 	}
 }
 
@@ -881,9 +881,9 @@ func TestAddBanDurations(t *testing.T) {
 // 手动封禁接口同样拒绝可信代理（IPv6 按 /64 与代理网段有重叠也拒绝），其他地址照常封禁。
 func TestAddBanRejectsTrustedProxy(t *testing.T) {
 	m, _ := newConnsModule(t, []Site{}, Site{})
-	m.realIP.set([]string{"198.51.100.0/24", "2001:db8:1::/48"}, nil)
+	m.realIP.set([]string{"198.51.100.0/24", "2001:db8:1::/48"}, nil, "")
 	t.Cleanup(func() {
-		m.realIP.set(nil, nil)
+		m.realIP.set(nil, nil, "")
 		m.auth.unban("203.0.113.9")
 	})
 	for _, key := range []string{"198.51.100.7", "2001:db8:1:2::5"} {

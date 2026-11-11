@@ -121,7 +121,12 @@ func (m *Module) Init(env module.Env) error {
 	if from, headers, err := normalizeRealIP(m.cfg.Settings.RealIPFrom, m.cfg.Settings.RealIPHeaders); err != nil {
 		m.logs.Logger("").Errorf("真实 IP 设置无效，未启用: %v", err)
 	} else {
-		m.realIP.set(from, headers)
+		// 端口头无效时只是不采信端口，真实 IP 照常启用
+		port, perr := normalizeRealPort(from, m.cfg.Settings.RealPortHeader)
+		if perr != nil {
+			m.logs.Logger("").Errorf("真实端口请求头无效，未启用: %v", perr)
+		}
+		m.realIP.set(from, headers, port)
 	}
 	m.auth.shared.set(m.cfg.Settings.AuthUsers, m.cfg.Settings.SSODomain)
 	// 手工编辑配置填入过短的认证标记密钥时不启用，避免弱密钥被猜出后伪造标记
@@ -539,7 +544,12 @@ func (m *Module) handlePutSettings(w http.ResponseWriter, r *http.Request) {
 		httpx.Error(w, http.StatusBadRequest, "%v", err)
 		return
 	}
-	s.RealIPFrom, s.RealIPHeaders = from, headers
+	port, err := normalizeRealPort(from, s.RealPortHeader)
+	if err != nil {
+		httpx.Error(w, http.StatusBadRequest, "真实端口请求头：%v", err)
+		return
+	}
+	s.RealIPFrom, s.RealIPHeaders, s.RealPortHeader = from, headers, port
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	old := m.cfg.Settings
@@ -625,7 +635,7 @@ func (m *Module) handlePutSettings(w http.ResponseWriter, r *http.Request) {
 		m.auth.backends.reset()
 	}
 	// 真实 IP 在每个请求进入时判断，替换设置即可生效，不需要重新监听
-	m.realIP.set(s.RealIPFrom, s.RealIPHeaders)
+	m.realIP.set(s.RealIPFrom, s.RealIPHeaders, s.RealPortHeader)
 	// 可信代理在监听层校验 PROXY 协议来源，变化时接收 PROXY 协议的监听器需要重新监听；
 	// 其余设置只需热替换站点表，避免断开正经由这些监听器访问的管理界面（包括本次保存请求）
 	trustedChanged := !slices.Equal(old.TrustedProxies, s.TrustedProxies)
