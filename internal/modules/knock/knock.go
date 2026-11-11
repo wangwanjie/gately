@@ -557,11 +557,11 @@ func (m *Module) applyLocked() {
 		}
 	}
 	m.spaPorts = knockgate.Default.SPAPorts()
-	m.fw.apply(m.ctx, m.planLocked())
+	m.fw.apply(m.ctx, m.planLocked(), m.liveFWGrants)
 	m.updateOpenLocked()
 }
 
-// planLocked 计算防火墙规则：开启防火墙拦截的启用规则的端口、免敲门网段与仍有效的放行。
+// planLocked 计算防火墙规则：开启防火墙拦截的启用规则的端口与免敲门网段（放行由 liveFWGrants 在写入时取快照）。
 // 本模块的 UDP 敲门端口与协议分流接收敲门报文的 TCP 端口始终排除：保存规则时已检查冲突，
 // 这里兜底处理手改配置文件、之后修改敲门端口等情况，拦截这些端口会让敲门报文本身无法送达。
 func (m *Module) planLocked() fwPlan {
@@ -583,17 +583,25 @@ func (m *Module) planLocked() fwPlan {
 		return plan
 	}
 	plan.Exempt = m.cfg.Settings.exemptPrefixes(m.local)
+	return plan
+}
+
+// liveFWGrants 返回仍有效、且端口在 ports 中的防火墙放行，并清除到期记录。
+// 由 firewall.apply 在持有防火墙锁时调用：快照与清空待写入放行在同一把锁内完成，收包协程在快照之后登记的放行
+// 留在待写入队列中，不会被重建时用旧快照覆盖而丢失；快照之前登记的放行已在 fwGrants 中，包含在快照里。
+func (m *Module) liveFWGrants(ports []spa.Access) []fwGrant {
 	now := m.now()
 	m.stateMu.Lock()
+	defer m.stateMu.Unlock()
+	var out []fwGrant
 	for k, until := range m.fwGrants {
-		if !now.Before(until) || !slices.Contains(plan.Ports, k.access) {
+		if !now.Before(until) || !slices.Contains(ports, k.access) {
 			delete(m.fwGrants, k)
 			continue
 		}
-		plan.Grants = append(plan.Grants, fwGrant{Addr: k.addr, Access: k.access, Until: until})
+		out = append(out, fwGrant{Addr: k.addr, Access: k.access, Until: until})
 	}
-	m.stateMu.Unlock()
-	return plan
+	return out
 }
 
 // knockExcluded 返回不能在防火墙中拦截的端口：UDP 敲门端口（port 为 0 时没有）与协议分流接收敲门报文的 TCP 端口。
@@ -1009,7 +1017,7 @@ func (m *Module) refreshSPAPorts() {
 		return
 	}
 	m.spaPorts = ports
-	m.fw.apply(m.ctx, m.planLocked())
+	m.fw.apply(m.ctx, m.planLocked(), m.liveFWGrants)
 	m.updateOpenLocked()
 }
 
@@ -1023,7 +1031,7 @@ func (m *Module) refreshLocal() {
 	}
 	m.local = local
 	if m.cfg.Settings.AllowLAN {
-		m.fw.apply(m.ctx, m.planLocked())
+		m.fw.apply(m.ctx, m.planLocked(), m.liveFWGrants)
 	}
 }
 

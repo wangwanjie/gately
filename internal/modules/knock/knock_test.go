@@ -45,6 +45,8 @@ type fakeBackend struct {
 	removed   int
 	// noIPv6 模拟只有 iptables、没有 ip6tables
 	noIPv6 bool
+	// set 模拟内核中的放行集合：apply 按 plan 重建，add / del 增删
+	set    map[fwKey]bool
 	counts fwCounts
 }
 
@@ -61,18 +63,31 @@ func (b *fakeBackend) apply(_ context.Context, plan fwPlan, _ time.Time) error {
 	}
 	b.applies = append(b.applies, plan)
 	b.present = true
+	b.set = map[fwKey]bool{}
+	for _, g := range plan.Grants {
+		b.set[fwKey{g.Addr, g.Access}] = true
+	}
 	return nil
 }
 func (b *fakeBackend) add(_ context.Context, g []fwGrant, _ time.Time) error {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.added = append(b.added, g...)
+	if b.set == nil {
+		b.set = map[fwKey]bool{}
+	}
+	for _, x := range g {
+		b.set[fwKey{x.Addr, x.Access}] = true
+	}
 	return nil
 }
 func (b *fakeBackend) del(_ context.Context, g []fwGrant) error {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.deleted = append(b.deleted, g...)
+	for _, x := range g {
+		delete(b.set, fwKey{x.Addr, x.Access})
+	}
 	return nil
 }
 func (b *fakeBackend) check(context.Context) (bool, fwCounts, error) {
