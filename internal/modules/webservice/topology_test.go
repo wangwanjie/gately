@@ -221,6 +221,39 @@ func TestBlockedWAF(t *testing.T) {
 	}
 }
 
+// TestWAFSkipsAdminSession 验证带本实例管理员登录态的请求不经过 WAF：管理后台经挂了 WAF 的站点反代时，
+// 保存配置的请求体含文件路径、HTML 等内容会被规则误拦。无效或伪造的登录态仍被拦截，也不标记后台用户。
+func TestWAFSkipsAdminSession(t *testing.T) {
+	httpx.SetSessionCheck(func(r *http.Request) string {
+		if c, err := r.Cookie("gately_token"); err == nil && c.Value == "valid" {
+			return "admin"
+		}
+		return ""
+	})
+	t.Cleanup(func() { httpx.SetSessionCheck(nil) })
+
+	l := Listener{Sites: []Site{{Enable: true, Key: "w", Domains: []string{"w.test"}, Type: TypeText, Text: "ok", StatusCode: 200, WAF: "k", AccessLog: true}}}
+	logs := testLogs()
+	addr, run := startRunnerWAFLogs(t, l, blockingWAF{}, logs)
+	if resp, _ := get(t, http.DefaultClient, addr, "w.test", "/attack", map[string]string{"Cookie": "gately_token=valid"}); resp.StatusCode != 200 {
+		t.Fatalf("管理员请求应跳过 WAF: %d", resp.StatusCode)
+	}
+	if resp, _ := get(t, http.DefaultClient, addr, "w.test", "/attack", map[string]string{"Cookie": "gately_token=forged"}); resp.StatusCode != 403 {
+		t.Fatalf("伪造登录态的请求仍应被 WAF 拦截: %d", resp.StatusCode)
+	}
+	if resp, _ := get(t, http.DefaultClient, addr, "w.test", "/attack", nil); resp.StatusCode != 403 {
+		t.Fatalf("访客请求应被 WAF 拦截: %d", resp.StatusCode)
+	}
+	if n := siteOf(run).stats.Blocked[blockWAF].Load(); n != 2 {
+		t.Fatalf("WAF 拦截数应为 2: %d", n)
+	}
+	es := logs.Query(0, 0, 0, &logbuf.Filter{Status: []logbuf.StatusRange{{Min: 100, Max: 599}}})
+	if len(es) != 3 || es[0].Fields[logbuf.FieldAdmin] != "admin" || es[0].Fields[logbuf.FieldDeny] != "" ||
+		es[1].Fields[logbuf.FieldDeny] != "waf" || es[1].Fields[logbuf.FieldAdmin] != "" || es[2].Fields[logbuf.FieldDeny] != "waf" {
+		t.Fatalf("访问日志应标记管理员请求、拦截其余请求: %+v", es)
+	}
+}
+
 // blockingWAF 拦截路径为 /attack 的请求。
 type blockingWAF struct{}
 
