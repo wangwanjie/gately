@@ -531,6 +531,11 @@
               <el-checkbox v-model="site.trustAuthUsers">{{ t('web.trustAuthUsersLabel') }}</el-checkbox>
               <div class="form-help">{{ t('web.trustAuthUsersHelp') }}</div>
             </el-form-item>
+            <!-- 双层 Gately（#81）：本站点只做反向代理与 WAF、由后端 Gately 负责登录时，按后端签发的认证标记放行已登录用户 -->
+            <el-form-item v-if="site.type === 'proxy' && !localAuthOn" :label="t('web.trustBackendAuth')" data-test="trust-backend-auth">
+              <el-checkbox v-model="site.trustBackendAuth">{{ t('web.trustBackendAuthLabel') }}</el-checkbox>
+              <div class="form-help">{{ t('web.trustBackendAuthHelp') }}</div>
+            </el-form-item>
             <el-form-item :label="t('web.cors')"><el-switch v-model="site.cors" /></el-form-item>
           </el-tab-pane>
           <el-tab-pane v-if="site.type !== 'close'" :label="t('web.tabTraffic')" name="traffic">
@@ -583,6 +588,16 @@
             <el-option v-for="h in realIPHeaderOptions" :key="h" :label="h" :value="h" />
           </el-select>
           <div class="form-help">{{ t('web.realIPHeadersHelp') }}</div>
+        </el-form-item>
+        <!-- 双层 Gately（#81）：外层只做 WAF、内层负责登录时，两端填写相同的密钥，内层签发认证标记、外层校验放行 -->
+        <el-divider content-position="left">{{ t('web.authMarkerDivider') }}</el-divider>
+        <el-form-item :label="t('web.authMarkerKey')" data-test="auth-marker-key">
+          <div class="marker-key">
+            <SecretInput v-model="settings.authMarkerKey" class="mono" :placeholder="t('web.authMarkerKeyPlaceholder')" :reveal="secretOf('/api/webservice/settings/secrets/marker', 'authMarkerKey')" />
+            <el-button @click="generateMarkerKey">{{ t('web.authMarkerGenerate') }}</el-button>
+            <el-button :disabled="!settings.authMarkerKey" @click="copyMarkerKey">{{ t('common.copy') }}</el-button>
+          </div>
+          <div class="form-help">{{ t('web.authMarkerKeyHelp') }}</div>
         </el-form-item>
         <el-divider content-position="left">{{ t('web.thirdPartyDivider') }}</el-divider>
         <el-form-item :label="t('web.callbackBase')">
@@ -666,6 +681,9 @@ import EntityCard from '../components/EntityCard.vue'
 import { useCompactView } from '../composables/useCompactView'
 import { useCollapsed } from '../composables/useCollapsed'
 import OAuthProviders from '../components/OAuthProviders.vue'
+import SecretInput from '../components/SecretInput.vue'
+import { SECRET_MASK, fetchSecret, secretOf } from '../secrets'
+import { copyText } from '../composables/useClipboard'
 import { oidcFromAPI, type OIDCSettings } from '../oidc'
 import { type AuthUser, fromAPI } from '../sharedUsers'
 import AccessSettings from '../components/AccessSettings.vue'
@@ -749,6 +767,8 @@ interface Site {
   authOptional: boolean
   // trustAuthUsers 为 true 时通过本站点 Gately 认证的访客跳过 WAF 与路径探测计数（#81），需启用基本认证或网页认证
   trustAuthUsers?: boolean
+  // trustBackendAuth 为 true 时按后端 Gately 签发的认证标记放行已登录用户（双层 Gately，#81），仅不自己认证的反向代理站点
+  trustBackendAuth?: boolean
   forwardAuth: { url: string; loginUrl: string; loginFromLocation?: boolean; copyHeaders: string[] | null }
   countryMode: string
   countries: string[] | null
@@ -925,6 +945,8 @@ interface WebSettings {
   oidc: OIDCSettings
   // selfServicePassword 为是否允许共享用户自助修改密码
   selfServicePassword: boolean
+  // authMarkerKey 为认证标记密钥（双层 Gately 两端相同），已保存时为脱敏占位符
+  authMarkerKey?: string
 }
 const settings = ref<WebSettings>()
 // 定时刷新，标签页在后台时暂停
@@ -1075,6 +1097,7 @@ function emptySite(): Site {
     remark: '',
     authOptional: false,
     trustAuthUsers: false,
+    trustBackendAuth: false,
     forwardAuth: { url: '', loginUrl: '', loginFromLocation: false, copyHeaders: [] },
     countryMode: '',
     countries: [],
@@ -1855,6 +1878,10 @@ async function saveSite() {
   if (!site.value.webAuth && !site.value.basicAuth) {
     site.value.trustAuthUsers = false
   }
+  // 信任后端认证标记只用于不自己认证的反向代理站点（后端保存时同样会关闭）
+  if (site.value.type !== 'proxy' || localAuthOn.value) {
+    site.value.trustBackendAuth = false
+  }
   if (!hasBackends.value) {
     site.value.identityHeaders = []
   }
@@ -1952,6 +1979,31 @@ async function fetchSettings() {
 function settingsBody(s: WebSettings) {
   const { authUsers: _u, ssoDomain: _d, selfServicePassword: _p, oidc: _o, ...rest } = s
   return rest
+}
+
+// generateMarkerKey 在浏览器中生成 32 个字符的随机认证标记密钥，保存后生效；另一端填写同一个值
+function generateMarkerKey() {
+  if (!settings.value) {
+    return
+  }
+  const b = new Uint8Array(24)
+  crypto.getRandomValues(b)
+  settings.value.authMarkerKey = btoa(String.fromCharCode(...b)).replace(/\+/g, '-').replace(/\//g, '_')
+}
+
+// copyMarkerKey 复制认证标记密钥，已保存的密钥先取回明文
+async function copyMarkerKey() {
+  let v = settings.value?.authMarkerKey
+  try {
+    if (v === SECRET_MASK) {
+      v = await fetchSecret('/api/webservice/settings/secrets/marker', 'authMarkerKey')
+    }
+    if (v) {
+      copyText(v)
+    }
+  } catch (e) {
+    ElMessage.error((e as Error).message)
+  }
 }
 
 async function openSettings() {
@@ -2069,6 +2121,20 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* 认证标记密钥：输入框占满剩余宽度，窄屏时按钮换到下一行 */
+.marker-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}
+.marker-key > .el-input {
+  flex: 1 1 280px;
+  min-width: 0;
+}
+.marker-key > .el-button {
+  margin-left: 0;
+}
 .users-summary {
   display: flex;
   flex-wrap: wrap;
