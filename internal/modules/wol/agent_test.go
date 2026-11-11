@@ -319,6 +319,9 @@ func TestAgentShutdownFlow(t *testing.T) {
 	if m.agents.online(key) {
 		t.Fatal("确认后应立即显示离线")
 	}
+	if info := m.agents.info()[key]; info.LastSeen != 0 || info.Online {
+		t.Fatalf("确认后最近通信时间应为 0: %+v", info)
+	}
 	// 执行失败的报告写入日志
 	if code, _ := agentPost(t, srv, "ack", url.Values{"token": {tok}, "instance": {inst}, "id": {parts[1]}, "result": {"fail"}, "msg": {"access\ndenied"}}); code != 200 {
 		t.Fatalf("失败报告应被接受: %d", code)
