@@ -4,8 +4,11 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
+
+	"github.com/wangwanjie/gately/internal/thirdauth"
 )
 
 // 信任已认证用户（Site.TrustAuthUsers，issue #81）：通过本站点 Gately 认证的访客不经过 WAF，
@@ -120,8 +123,16 @@ func (h *siteHandler) trustedAuth(r *http.Request) bool {
 		return false
 	}
 	if s.WebAuth {
-		if _, ok := h.auth.cookieSession(r, s); ok {
-			return true
+		if sess, ok := h.auth.cookieSession(r, s); ok {
+			// 第三方登录会话只在身份被允许列表逐个列出时信任：提供方key:* 通配让任何人注册个账号就能登录，
+			// 信任它等于对所有人关闭 WAF
+			provider, id, third := strings.Cut(sess.User, ":")
+			if !third || sess.Shared || sess.Cred != "" {
+				return true
+			}
+			if thirdauth.AllowedExplicit(s.OAuthUsers, thirdauth.Identity{Provider: provider, Primary: id, Aliases: sess.Aliases}) {
+				return true
+			}
 		}
 		if s.SharedUsers {
 			if _, ok := h.auth.ssoSession(r, s); ok {

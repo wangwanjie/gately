@@ -236,7 +236,7 @@ func TestTrustAuthUsersSkipsWebProbe(t *testing.T) {
 	get(t, noRedirect(), addr, "on.test", "/anon", nil)
 	get(t, noRedirect(), addr, "off.test", "/off", map[string]string{"Cookie": off})
 	get(t, noRedirect(), addr, "unknown.test", "/unknown", basicHeader("alice", "pw"))
-	got := strings.Join(paths(base+3)[base:], ",")
+	got := strings.Join(paths(base + 3)[base:], ",")
 	if got != "on.test/anon,off.test/off,unknown.test/unknown" {
 		t.Fatalf("上报不符: %s", got)
 	}
@@ -254,5 +254,44 @@ func TestTrustAuthUsersRequiresGatelyAuth(t *testing.T) {
 	s = Site{TrustAuthUsers: true, WebAuth: true, Users: []string{"a:b"}}
 	if err := s.validateAccess(); err != nil || !s.TrustAuthUsers {
 		t.Fatalf("启用网页认证时应保留: %v %v", err, s.TrustAuthUsers)
+	}
+}
+
+// 第三方登录：允许列表逐个列出的身份跳过 WAF；只靠 提供方:* 通配进来的身份可以登录站点，但不被信任，
+// 否则任何人注册一个账号就能对该站点关闭 WAF。
+func TestTrustAuthUsersWildcardThirdParty(t *testing.T) {
+	browser := map[string]string{"User-Agent": "Mozilla/5.0", "Accept": "text/html"}
+	l := Listener{Sites: []Site{
+		{Enable: true, Key: "exact", Domains: []string{"exact.test"}, Type: TypeText, Text: "ok", WebAuth: true, OAuthUsers: []string{"github:12345 #alice"}, TrustAuthUsers: true, WAF: "w"},
+		{Enable: true, Key: "any", Domains: []string{"any.test"}, Type: TypeText, Text: "ok", WebAuth: true, OAuthUsers: []string{"github:*", "google:bob@example.com"}, TrustAuthUsers: true, WAF: "w"},
+	}}
+	addr, r := startRunnerWAF(t, l, blockingWAF{})
+	session := func(key, host, user string, aliases ...string) map[string]string {
+		v := r.auth.signBlob("session", siteSession{User: user, Host: host, Scope: l.Key + "/" + key, Aliases: aliases}, time.Hour)
+		h := map[string]string{"Cookie": cookieName(Site{scope: l.Key + "/" + key}) + "=" + v}
+		for k, val := range browser {
+			h[k] = val
+		}
+		return h
+	}
+	cases := []struct {
+		name, host string
+		hdr        map[string]string
+		want       int
+	}{
+		{"逐个列出的身份", "exact.test", session("exact", "exact.test", "github:12345"), http.StatusOK},
+		{"别名匹配的身份", "exact.test", session("exact", "exact.test", "github:999", "12345"), http.StatusOK},
+		{"通配允许的身份", "any.test", session("any", "any.test", "github:777"), http.StatusForbidden},
+		{"通配站点里逐个列出的身份", "any.test", session("any", "any.test", "google:bob@example.com"), http.StatusOK},
+		{"不在允许列表的身份", "exact.test", session("exact", "exact.test", "github:777"), http.StatusForbidden},
+	}
+	for _, c := range cases {
+		if resp, _ := get(t, noRedirect(), addr, c.host, "/attack", c.hdr); resp.StatusCode != c.want {
+			t.Errorf("%s: 状态码 %d，期望 %d", c.name, resp.StatusCode, c.want)
+		}
+	}
+	// 通配身份仍可正常访问站点（只是要经过 WAF）
+	if resp, body := get(t, noRedirect(), addr, "any.test", "/", session("any", "any.test", "github:777")); resp.StatusCode != http.StatusOK || body != "ok" {
+		t.Fatalf("通配身份应能登录访问: %d %q", resp.StatusCode, body)
 	}
 }
