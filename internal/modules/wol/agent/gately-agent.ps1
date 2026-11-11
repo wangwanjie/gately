@@ -324,9 +324,9 @@ function Uninstall-Agent {
 		Stop-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
 		Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false
 	}
-	# 计划任务停止后脚本进程可能还在等待轮询返回，按命令行结束它
+	# 计划任务停止后脚本进程可能还在等待轮询返回，按命令行结束它；排除当前进程（卸载命令本身就是用这个脚本运行的）
 	Get-CimInstance Win32_Process -Filter "Name='powershell.exe' OR Name='pwsh.exe'" -ErrorAction SilentlyContinue |
-		Where-Object { $_.CommandLine -and $_.CommandLine.Contains($ScriptPath) } |
+		Where-Object { $_.ProcessId -ne $PID -and $_.CommandLine -and $_.CommandLine.Contains($ScriptPath) } |
 		ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
 	Remove-Item -Recurse -Force -Path $Dir -ErrorAction SilentlyContinue
 	Write-Output '已卸载'
