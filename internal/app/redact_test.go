@@ -90,13 +90,13 @@ func TestRedactReadOnlyOnly(t *testing.T) {
 // 网络唤醒设备的客户端凭据与关机请求头对只读身份脱敏（配置历史对比等接口返回原始配置）。
 func TestRedactWOLAgent(t *testing.T) {
 	var v any
-	raw := `{"devices":[{"name":"pc","agentToken":"0123456789abcdef0123456789abcdef","shutdownHttp":{"url":"http://ha.lan/api?token=s3cretS3cret123","headers":["Authorization: Bearer hatoken"]}}]}`
+	raw := `{"devices":[{"name":"pc","agentToken":"0123456789abcdef0123456789abcdef","shutdownHttp":{"url":"http://ha.lan/api?token=s3cretS3cret123","headers":["Authorization: Bearer hatoken"],"body":"{\"apikey\":\"bodysecret42\"}"}}]}`
 	if err := json.Unmarshal([]byte(raw), &v); err != nil {
 		t.Fatal(err)
 	}
 	out, _ := json.Marshal(redactJSON(v))
 	s := string(out)
-	for _, leak := range []string{"0123456789abcdef", "hatoken", "s3cretS3cret123"} {
+	for _, leak := range []string{"0123456789abcdef", "hatoken", "s3cretS3cret123", "bodysecret42"} {
 		if strings.Contains(s, leak) {
 			t.Errorf("脱敏后仍含明文 %q: %s", leak, s)
 		}

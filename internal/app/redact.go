@@ -51,6 +51,14 @@ func redactJSON(v any) any {
 				t[k] = redactHeaders(val)
 			case lk == "users":
 				t[k] = redactUsers(val)
+			case lk == "shutdownhttp":
+				// 网络唤醒的 HTTP 关机请求体常含接口密钥（如 {"token": "…"} 或表单 key=…），整段脱敏
+				if m, ok := val.(map[string]any); ok {
+					if b, ok := m["body"].(string); ok && b != "" {
+						m["body"] = crud.SecretMask
+					}
+				}
+				t[k] = redactJSON(val)
 			default:
 				t[k] = redactJSON(val)
 			}

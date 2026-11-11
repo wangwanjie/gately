@@ -135,6 +135,11 @@ func (m *Module) httpShutdown(ctx context.Context, d Device) (string, error) {
 	}
 	resp, err := httpClientFor(h.Insecure).Do(req)
 	if err != nil {
+		// url.Error 里带完整地址，只去掉了密码，查询参数中的凭据（?token=…）会进入日志与接口返回
+		var ue *url.Error
+		if errors.As(err, &ue) {
+			ue.URL = redactURL(h.URL)
+		}
 		log.Errorf("关机请求失败: %v", err)
 		return "", err
 	}

@@ -612,6 +612,16 @@ func TestHTTPShutdown(t *testing.T) {
 	if text := fmt.Sprint(logs.Since(0)); strings.Contains(text, "s3cret") || !strings.Contains(text, "已发送关机请求") {
 		t.Fatalf("日志错误: %s", text)
 	}
+	// 连接失败时 url.Error 带完整地址：日志与接口返回都不能含查询参数里的凭据
+	dead := addDevice(t, srv, map[string]any{"name": "dead", "macs": []string{"aa:bb:cc:dd:ee:01"}, "shutdownMode": "http",
+		"shutdownHttp": map[string]any{"url": "http://127.0.0.1:1/off?token=deadS3cret"}})
+	code, body = call(t, srv, "POST", "/devices/"+dead+"/shutdown", nil)
+	if code == 200 || strings.Contains(body, "deadS3cret") {
+		t.Fatalf("连接失败应报错且不含凭据: %d %s", code, body)
+	}
+	if text := fmt.Sprint(logs.Since(0)); strings.Contains(text, "deadS3cret") || !strings.Contains(text, "关机请求失败") {
+		t.Fatalf("连接失败的日志不应含凭据: %s", text)
+	}
 }
 
 // 客户端断开连接（进程退出、断网、关机）后立即显示离线，换一台机器的客户端不必等宽限期即可接入。
