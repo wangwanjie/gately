@@ -589,6 +589,23 @@
           </el-select>
           <div class="form-help">{{ t('web.realIPHeadersHelp') }}</div>
         </el-form-item>
+        <!-- 可信代理写入访客源端口的请求头（#83）；从请求头取得访客地址时源端口只能来自这里 -->
+        <el-form-item :label="t('web.realPortHeader')">
+          <el-select
+            v-model="realPortHeader"
+            filterable
+            allow-create
+            clearable
+            default-first-option
+            :reserve-keyword="false"
+            :disabled="!settings.realIPFrom?.length"
+            :placeholder="t('web.realPortHeaderPlaceholder')"
+            style="width: 100%"
+          >
+            <el-option v-for="h in realPortHeaderOptions" :key="h" :label="h" :value="h" />
+          </el-select>
+          <div class="form-help">{{ t('web.realPortHeaderHelp') }}</div>
+        </el-form-item>
         <!-- 双层 Gately（#81）：外层只做 WAF、内层负责登录时，两端填写相同的密钥，内层签发认证标记、外层校验放行 -->
         <el-divider content-position="left">{{ t('web.authMarkerDivider') }}</el-divider>
         <el-form-item :label="t('web.authMarkerKey')" data-test="auth-marker-key">
@@ -937,6 +954,8 @@ interface WebSettings {
   // realIPFrom 为可信代理（CDN / WAF 回源地址段），为空不启用真实 IP；realIPHeaders 为按顺序查找的真实 IP 头
   realIPFrom: string[] | null
   realIPHeaders: string[] | null
+  // realPortHeader 为可信代理写入访客源端口的请求头，为空表示代理不提供端口
+  realPortHeader?: string
   oauthCallbackBase: string
   oauthProviders: OAuthProvider[]
   autoBanSeconds: number
@@ -1048,6 +1067,16 @@ const realIPHeaders = computed({
   set: (v: string[]) => {
     if (settings.value) {
       settings.value.realIPHeaders = v
+    }
+  },
+})
+// 常见代理写入访客源端口的请求头（如 nginx 的 proxy_set_header X-Real-Port $remote_port），也可输入自定义头名
+const realPortHeaderOptions = ['X-Real-Port', 'X-Forwarded-For-Port', 'X-Client-Port']
+const realPortHeader = computed({
+  get: () => settings.value?.realPortHeader ?? '',
+  set: (v: string | undefined) => {
+    if (settings.value) {
+      settings.value.realPortHeader = (v ?? '').trim()
     }
   },
 })

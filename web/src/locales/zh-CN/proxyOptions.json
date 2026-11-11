@@ -4,7 +4,7 @@
   "skipVerify": "后端是 HTTPS 且用自签名或过期证书时开启，如 NAS、路由器后台的 https 端口。开启后不再验证后端身份，只建议用于内网后端。",
   "targetHost": "默认把访客访问的域名原样交给后端。后端只认自己的地址时开启，例如出现 400 / 403、跳到错误地址或提示 Host 不匹配；反代到公网服务时通常需要。",
   "noKeepAlive": "默认复用到后端的连接以降低延迟。后端偶尔出现连接被重置、请求卡住，或不支持长连接时开启，每个请求都会新建连接。",
-  "forwarded": "把访客的真实 IP、原始协议（http / https）、域名和端口告诉后端。后端要记录真实 IP，或需要知道外部是 HTTPS 来生成正确链接时开启，多数应用建议开启。",
+  "forwarded": "把访客的真实 IP 与源端口、原始协议（http / https）、域名和访问端口告诉后端（X-Real-IP、X-Real-Port、X-Forwarded-*）。后端要记录真实 IP 与端口，或需要知道外部是 HTTPS 来生成正确链接时开启，多数应用建议开启。",
   "sendProxy": "在连接开头附带 PROXY 协议头传递真实 IP，适合不看 HTTP 头的后端，如另一层 Gately、haproxy 或开启了 proxy_protocol 的 nginx。后端没有配置接收时会直接报错，不确定时保持关闭。开启后每个请求都新建连接，也不再用 HTTP/2 连接后端。后端是 Gately 时，需在其监听上开启接收 PROXY 协议，并把本机加入可信 PROXY 来源。",
   "sniFromHost": "仅对 HTTPS 后端生效：握手时发送访客使用的域名，并按它校验证书。后端在同一端口按域名区分证书或分流时开启，如 frp 的 vhost_https、托管多个 HTTPS 站点的 nginx。",
   "passAuthCookies": "默认会去掉 Gately 自己的登录 Cookie（单点登录、站点会话、第三方登录），避免把登录凭据交给后端程序。后端是另一台负责认证的 Gately 时开启，例如公网 Gately 只做 WAF 与访问控制、内网 Gately 负责登录。本站点启用认证时不能开启；只对后端是自己的 Gately 时使用，普通应用拿到这些 Cookie 就能冒用访客的登录状态。"
