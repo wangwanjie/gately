@@ -8,6 +8,7 @@ import (
 	"github.com/wangwanjie/gately/internal/crud"
 	"github.com/wangwanjie/gately/internal/hostname"
 	"github.com/wangwanjie/gately/internal/iplist"
+	"github.com/wangwanjie/gately/internal/knockgate"
 	"github.com/wangwanjie/gately/internal/l4proxy"
 )
 
@@ -69,6 +70,9 @@ type Route struct {
 	TargetPort int `json:"targetPort"`
 	// ProxyProtocol 为发给该目标的 PROXY 协议版本（v1/v2），空为不发送
 	ProxyProtocol string `json:"proxyProtocol"`
+	// Knock 为端口敲门规则 key：非空时只有持有该规则有效敲门授权的来源地址才能使用这条路由，其余连接直接断开。
+	// 敲门路由（协议 spa）不能设置
+	Knock string `json:"knock,omitempty"`
 }
 
 // Settings 是模块级配置。
@@ -219,6 +223,18 @@ func (r *Rule) validateRoutes() error {
 			protoOwner[rt.Protocol] = label
 		}
 
+		rt.Knock = strings.TrimSpace(rt.Knock)
+		if rt.Protocol == ProtoSPA {
+			// 敲门报文交给端口敲门模块处理，不转发，没有目标
+			if len(l4proxy.CleanTargets(rt.TargetAddresses)) > 0 || rt.TargetPort != 0 || rt.ProxyProtocol != "" {
+				return fmt.Errorf("%s: 敲门路由把报文交给端口敲门模块处理，不能填写目标", label)
+			}
+			if rt.Knock != "" {
+				return fmt.Errorf("%s: 敲门路由本身不能要求敲门", label)
+			}
+			rt.TargetAddresses = []string{}
+			continue
+		}
 		rt.TargetAddresses = l4proxy.CleanTargets(rt.TargetAddresses)
 		if len(rt.TargetAddresses) == 0 {
 			return fmt.Errorf("%s: 至少填写一个目标地址", label)
@@ -228,6 +244,36 @@ func (r *Rule) validateRoutes() error {
 		}
 		if err := l4proxy.ValidateProxyProtocol(rt.ProxyProtocol); err != nil {
 			return fmt.Errorf("%s: %v", label, err)
+		}
+	}
+	return nil
+}
+
+// hasSPARoute 判断规则是否有启用的敲门路由。
+func (r *Rule) hasSPARoute() bool {
+	for _, rt := range r.Routes {
+		if !rt.Disabled && rt.Protocol == ProtoSPA {
+			return true
+		}
+	}
+	return false
+}
+
+// checkKnocks 检查规则与各路由引用的敲门规则都存在，供保存规则时持锁调用。
+func (r *Rule) checkKnocks() error {
+	if err := r.Access.CheckSets(); err != nil {
+		return err
+	}
+	for i, rt := range r.Routes {
+		if rt.Knock == "" {
+			continue
+		}
+		if _, ok := knockgate.Default.RuleName(rt.Knock); !ok {
+			label := rt.Name
+			if label == "" {
+				label = fmt.Sprintf("第 %d 条路由", i+1)
+			}
+			return fmt.Errorf("%s: 引用的敲门规则 %q 不存在", label, rt.Knock)
 		}
 	}
 	return nil
