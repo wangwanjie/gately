@@ -435,7 +435,7 @@ func (b *bemfaClient) dispatch(topic, payload string) {
 			_, _ = m.wake(dev)
 			return
 		}
-		if dev.ShutdownConn == "" {
+		if dev.ShutdownMode == "" {
 			log.Warnf("收到巴法云关机指令，但该设备未配置远程关机")
 			return
 		}

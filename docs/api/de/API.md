@@ -484,8 +484,12 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | PUT | `/api/wol/devices-enable` | `wol:write` | Im Stapel aktivieren oder deaktivieren: Gerät aufwecken |
 | POST | `/api/wol/devices-delete` | `wol:write` | Im Stapel löschen: Gerät aufwecken |
 | PUT | `/api/wol/devices-group` | `wol:write` | Gruppe mehrerer Einträge festlegen: Gerät aufwecken |
+| GET | `/api/wol/devices/{key}/secrets` | `wol:write` | Geheimnisse im Klartext anzeigen |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | Wake-on-LAN-Magic-Packet an ein Gerät senden |
-| POST | `/api/wol/devices/{key}/shutdown` | `wol:write,webterminal:write` | Fern-Herunterfahren |
+| POST | `/api/wol/devices/{key}/shutdown` | `wol:write,webterminal:write` | Fernabschaltung (die Agent-Methode kann auch neu starten und in den Ruhezustand versetzen) |
+| GET | `/api/wol/agents` | `wol:read` | Verbindungsinformationen der Agents, indiziert nach Geräte-key |
+| POST | `/api/wol/devices/{key}/agent-token` | `wol:write` | Agent-Token neu generieren; verbundene Agents werden sofort getrennt |
+| GET | `/api/wol/agent-script/{name}` | `wol:read` | Agent-Skript herunterladen (gately-agent.sh oder gately-agent.ps1) |
 | GET | `/api/wol/status` | `wol:read` | Online-Status eines Geräts anzeigen |
 | GET | `/api/wol/ssh-targets` | `wol:read,webterminal:read` | SSH-Verbindungen für Fern-Herunterfahren auflisten |
 | GET | `/api/wol/bemfa` | `wol:read` | Bemfa-Einstellungen und Verbindungsstatus |
@@ -3063,6 +3067,18 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `timeout` | integer |
 | `username` | string |
 
+### wol.AgentInfo
+
+| Feld | Typ |
+| --- | --- |
+| `addr` | string |
+| `host` | string |
+| `lastSeen` | integer |
+| `online` | boolean |
+| `os` | string |
+| `since` | integer |
+| `version` | string |
+
 ### wol.BemfaSettings
 
 | Feld | Typ |
@@ -3083,6 +3099,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 
 | Feld | Typ |
 | --- | --- |
+| `agentToken` | string |
 | `bemfaTopic` | string |
 | `broadcastIps` | Array von string |
 | `checkAddr` | string |
@@ -3096,6 +3113,18 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `repeat` | integer |
 | `shutdownCommand` | string |
 | `shutdownConn` | string |
+| `shutdownHttp` | `wol.HTTPAction` |
+| `shutdownMode` | string |
+
+### wol.HTTPAction
+
+| Feld | Typ |
+| --- | --- |
+| `body` | string |
+| `headers` | Array von string |
+| `insecure` | boolean |
+| `method` | string |
+| `url` | string |
 
 ### wol.SSHTarget
 
@@ -3112,6 +3141,12 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | --- | --- |
 | `settings` | `wol.BemfaSettings` |
 | `status` | `wol.BemfaStatus` |
+
+### wol.powerRequest
+
+| Feld | Typ |
+| --- | --- |
+| `action` | string |
 
 ### wol.shutdownResult
 

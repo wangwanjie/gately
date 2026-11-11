@@ -484,8 +484,12 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/wol/devices-enable` | `wol:write` | 장치 깨우기 일괄 사용/사용 안 함 |
 | POST | `/api/wol/devices-delete` | `wol:write` | 장치 깨우기 일괄 삭제 |
 | PUT | `/api/wol/devices-group` | `wol:write` | 장치 깨우기 그룹 일괄 설정 |
+| GET | `/api/wol/devices/{key}/secrets` | `wol:write` | 비밀 값 평문 보기 |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | 장치에 깨우기 매직 패킷 전송 |
-| POST | `/api/wol/devices/{key}/shutdown` | `wol:write,webterminal:write` | 원격 종료 |
+| POST | `/api/wol/devices/{key}/shutdown` | `wol:write,webterminal:write` | 원격 종료(에이전트 방식은 재시작·절전도 가능) |
+| GET | `/api/wol/agents` | `wol:read` | 에이전트 연결 정보(장치 key 기준 색인) |
+| POST | `/api/wol/devices/{key}/agent-token` | `wol:write` | 에이전트 토큰을 다시 생성합니다. 연결된 에이전트는 즉시 끊어집니다 |
+| GET | `/api/wol/agent-script/{name}` | `wol:read` | 에이전트 스크립트 다운로드(gately-agent.sh 또는 gately-agent.ps1) |
 | GET | `/api/wol/status` | `wol:read` | 장치 온라인 상태 보기 |
 | GET | `/api/wol/ssh-targets` | `wol:read,webterminal:read` | 원격 종료에 쓸 수 있는 SSH 연결 목록 |
 | GET | `/api/wol/bemfa` | `wol:read` | Bemfa 연동 설정과 연결 상태 |
@@ -3063,6 +3067,18 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `timeout` | integer |
 | `username` | string |
 
+### wol.AgentInfo
+
+| 필드 | 타입 |
+| --- | --- |
+| `addr` | string |
+| `host` | string |
+| `lastSeen` | integer |
+| `online` | boolean |
+| `os` | string |
+| `since` | integer |
+| `version` | string |
+
 ### wol.BemfaSettings
 
 | 필드 | 타입 |
@@ -3083,6 +3099,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | 필드 | 타입 |
 | --- | --- |
+| `agentToken` | string |
 | `bemfaTopic` | string |
 | `broadcastIps` | Array of string |
 | `checkAddr` | string |
@@ -3096,6 +3113,18 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `repeat` | integer |
 | `shutdownCommand` | string |
 | `shutdownConn` | string |
+| `shutdownHttp` | `wol.HTTPAction` |
+| `shutdownMode` | string |
+
+### wol.HTTPAction
+
+| 필드 | 타입 |
+| --- | --- |
+| `body` | string |
+| `headers` | Array of string |
+| `insecure` | boolean |
+| `method` | string |
+| `url` | string |
 
 ### wol.SSHTarget
 
@@ -3112,6 +3141,12 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `settings` | `wol.BemfaSettings` |
 | `status` | `wol.BemfaStatus` |
+
+### wol.powerRequest
+
+| 필드 | 타입 |
+| --- | --- |
+| `action` | string |
 
 ### wol.shutdownResult
 

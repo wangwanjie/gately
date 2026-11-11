@@ -484,8 +484,12 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/wol/devices-enable` | `wol:write` | Пакетно включить или отключить: Разбудить устройство |
 | POST | `/api/wol/devices-delete` | `wol:write` | Пакетно удалить: Разбудить устройство |
 | PUT | `/api/wol/devices-group` | `wol:write` | Задать группу сразу для нескольких: Разбудить устройство |
+| GET | `/api/wol/devices/{key}/secrets` | `wol:write` | Показать секреты открытым текстом |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | Отправить на устройство magic-пакет пробуждения |
-| POST | `/api/wol/devices/{key}/shutdown` | `wol:write,webterminal:write` | Удалённое выключение |
+| POST | `/api/wol/devices/{key}/shutdown` | `wol:write,webterminal:write` | Удалённое выключение (способ через агента также позволяет перезагрузку и спящий режим) |
+| GET | `/api/wol/agents` | `wol:read` | Сведения о подключении агентов, индексируются по key устройства |
+| POST | `/api/wol/devices/{key}/agent-token` | `wol:write` | Создать токен агента заново; подключённые агенты будут сразу отключены |
+| GET | `/api/wol/agent-script/{name}` | `wol:read` | Скачать скрипт агента (gately-agent.sh или gately-agent.ps1) |
 | GET | `/api/wol/status` | `wol:read` | Просмотр состояния устройства в сети |
 | GET | `/api/wol/ssh-targets` | `wol:read,webterminal:read` | Список SSH-подключений для удалённого выключения |
 | GET | `/api/wol/bemfa` | `wol:read` | Настройки Bemfa и состояние подключения |
@@ -3063,6 +3067,18 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `timeout` | integer |
 | `username` | string |
 
+### wol.AgentInfo
+
+| Поле | Тип |
+| --- | --- |
+| `addr` | string |
+| `host` | string |
+| `lastSeen` | integer |
+| `online` | boolean |
+| `os` | string |
+| `since` | integer |
+| `version` | string |
+
 ### wol.BemfaSettings
 
 | Поле | Тип |
@@ -3083,6 +3099,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | Поле | Тип |
 | --- | --- |
+| `agentToken` | string |
 | `bemfaTopic` | string |
 | `broadcastIps` | Массив из string |
 | `checkAddr` | string |
@@ -3096,6 +3113,18 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `repeat` | integer |
 | `shutdownCommand` | string |
 | `shutdownConn` | string |
+| `shutdownHttp` | `wol.HTTPAction` |
+| `shutdownMode` | string |
+
+### wol.HTTPAction
+
+| Поле | Тип |
+| --- | --- |
+| `body` | string |
+| `headers` | Массив из string |
+| `insecure` | boolean |
+| `method` | string |
+| `url` | string |
 
 ### wol.SSHTarget
 
@@ -3112,6 +3141,12 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `settings` | `wol.BemfaSettings` |
 | `status` | `wol.BemfaStatus` |
+
+### wol.powerRequest
+
+| Поле | Тип |
+| --- | --- |
+| `action` | string |
 
 ### wol.shutdownResult
 

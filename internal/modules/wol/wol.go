@@ -1,5 +1,6 @@
 // Package wol 实现网络唤醒模块：向局域网发送魔术包唤醒设备，并可通过 TCP 端口探测设备是否在线；
-// 可经 Web 终端的 SSH 连接远程关机，并可接入巴法云，用小爱同学、小度等语音助手开关设备。
+// 远程关机有三种方式：经 Web 终端的 SSH 连接执行命令、由设备上运行的客户端执行（客户端主动连接，
+// 还支持重启与睡眠）、向设备或其他服务发送 HTTP 请求；并可接入巴法云，用小爱同学、小度等语音助手开关设备。
 package wol
 
 import (
@@ -36,10 +37,17 @@ type Device struct {
 	Repeat       int      `json:"repeat"`
 	// CheckAddr 为 host:port，用于探测设备是否在线（例如 192.168.1.10:3389），留空不探测
 	CheckAddr string `json:"checkAddr"`
-	// ShutdownConn 为远程关机使用的 Web 终端 SSH 连接 key，留空表示不支持关机
+	// ShutdownMode 为远程关机方式：ssh 经 Web 终端的 SSH 连接执行命令，agent 由设备上运行的客户端执行，
+	// http 发送 HTTP 请求；留空表示不支持关机。旧配置没有该字段、只填了 ShutdownConn 时视为 ssh
+	ShutdownMode string `json:"shutdownMode"`
+	// ShutdownConn 为 ssh 方式使用的 Web 终端 SSH 连接 key
 	ShutdownConn string `json:"shutdownConn"`
-	// ShutdownCommand 为关机命令，例如 Linux 的 shutdown -h now、Windows 的 shutdown /s /t 0
+	// ShutdownCommand 为 ssh 方式的关机命令，例如 Linux 的 shutdown -h now、Windows 的 shutdown /s /t 0
 	ShutdownCommand string `json:"shutdownCommand"`
+	// AgentToken 为 agent 方式的客户端凭据，由服务端生成，接口输出时脱敏；换成其他方式时清空，旧客户端随即失效
+	AgentToken string `json:"agentToken"`
+	// ShutdownHTTP 为 http 方式发送的请求
+	ShutdownHTTP HTTPAction `json:"shutdownHttp"`
 	// BemfaTopic 为巴法云主题，留空不接入。收到 on 时唤醒，收到 off 时关机（需配置关机）
 	BemfaTopic string `json:"bemfaTopic"`
 	Remark     string `json:"remark"`
@@ -122,21 +130,71 @@ func (d *Device) Validate() error {
 			return errors.New("在线探测地址格式应为 主机:端口")
 		}
 	}
-	d.ShutdownConn = strings.TrimSpace(d.ShutdownConn)
-	d.ShutdownCommand = strings.TrimSpace(d.ShutdownCommand)
-	if d.ShutdownConn == "" {
-		d.ShutdownCommand = ""
-	} else if d.ShutdownCommand == "" {
-		return errors.New("请填写关机命令")
-	}
-	if len(d.ShutdownCommand) > 1024 || strings.ContainsAny(d.ShutdownCommand, "\r\n\x00") {
-		return errors.New("关机命令只能是一行，且不超过 1024 个字符")
+	if err := d.validateShutdown(); err != nil {
+		return err
 	}
 	d.BemfaTopic = strings.TrimSpace(d.BemfaTopic)
 	if d.BemfaTopic != "" && !validTopic(d.BemfaTopic) {
 		return errors.New("巴法云主题只能包含字母、数字、下划线与连字符，且不超过 64 个字符")
 	}
 	d.Enable = true
+	return nil
+}
+
+// 远程关机方式
+const (
+	ModeSSH   = "ssh"
+	ModeAgent = "agent"
+	ModeHTTP  = "http"
+)
+
+// normalizeMode 补全旧配置的关机方式：没有 ShutdownMode、只填了 ShutdownConn 的设备视为 ssh。
+func (d *Device) normalizeMode() {
+	d.ShutdownMode = strings.TrimSpace(d.ShutdownMode)
+	if d.ShutdownMode == "" && strings.TrimSpace(d.ShutdownConn) != "" {
+		d.ShutdownMode = ModeSSH
+	}
+}
+
+// validateShutdown 校验远程关机设置，并清空与所选方式无关的字段：换成其他方式后旧的凭据、命令不再保留。
+func (d *Device) validateShutdown() error {
+	d.normalizeMode()
+	d.ShutdownConn = strings.TrimSpace(d.ShutdownConn)
+	d.ShutdownCommand = strings.TrimSpace(d.ShutdownCommand)
+	if d.ShutdownMode != ModeSSH {
+		d.ShutdownConn, d.ShutdownCommand = "", ""
+	}
+	if d.ShutdownMode != ModeAgent {
+		d.AgentToken = ""
+	}
+	if d.ShutdownMode != ModeHTTP {
+		d.ShutdownHTTP = HTTPAction{}
+	}
+	switch d.ShutdownMode {
+	case "":
+		return nil
+	case ModeSSH:
+		if d.ShutdownConn == "" {
+			return errors.New("请选择关机使用的 SSH 连接")
+		}
+		if d.ShutdownCommand == "" {
+			return errors.New("请填写关机命令")
+		}
+		if len(d.ShutdownCommand) > 1024 || strings.ContainsAny(d.ShutdownCommand, "\r\n\x00") {
+			return errors.New("关机命令只能是一行，且不超过 1024 个字符")
+		}
+	case ModeAgent:
+		// 新增、复制设备或刚换成客户端方式时生成凭据；修改时脱敏占位符已由 Merge 还原为原值
+		if d.AgentToken == "" || d.AgentToken == crud.SecretMask {
+			d.AgentToken = newAgentToken()
+		} else if !validAgentToken(d.AgentToken) {
+			return errors.New("客户端凭据格式无效，请重新生成")
+		}
+	case ModeHTTP:
+		return d.ShutdownHTTP.Validate()
+	default:
+		return fmt.Errorf("不支持的关机方式 %q", d.ShutdownMode)
+	}
 	return nil
 }
 
@@ -235,6 +293,8 @@ type Module struct {
 	deps  Deps
 	// busy 记录正在关机的设备，同一设备的关机请求不重复执行
 	busy map[string]bool
+	// agents 为设备上运行的客户端连接状态（agent 方式）
+	agents *agentHub
 	// bemfa 为巴法云连接，Start 后运行
 	bemfa  *bemfaClient
 	cancel context.CancelFunc
@@ -242,7 +302,7 @@ type Module struct {
 
 // New 创建模块。deps 可省略（测试或未编译 Web 终端时）。
 func New(deps ...Deps) *Module {
-	m := &Module{busy: map[string]bool{}}
+	m := &Module{busy: map[string]bool{}, agents: newAgentHub()}
 	if len(deps) > 0 {
 		m.deps = deps[0]
 	}
@@ -259,8 +319,13 @@ func (m *Module) Title() string { return "网络唤醒" }
 // Init 实现 module.Module。
 func (m *Module) Init(env module.Env) error {
 	m.store, m.logs = env.Store, env.Logs
-	_, err := m.store.Load(ID, &m.cfg)
-	return err
+	if _, err := m.store.Load(ID, &m.cfg); err != nil {
+		return err
+	}
+	for i := range m.cfg.Devices {
+		m.cfg.Devices[i].normalizeMode()
+	}
+	return nil
 }
 
 // Start 实现 module.Module：启动巴法云连接（未开启时等待设置变化）。
@@ -298,14 +363,20 @@ func (m *Module) Routes(r module.Router) {
 		Group:    func(d *Device) *string { return &d.Group },
 		Validate: func(d *Device) error { return d.Validate() },
 		// 巴法云主题不能被两台设备同时使用（复制设备时界面会清空主题）
-		Check:   m.checkLocked,
-		Changed: func(string) { m.bemfa.kick() },
-		Removed: func(string) { m.bemfa.kick() },
+		Check: m.checkLocked,
+		// 列表与详情中客户端凭据脱敏，修改时原样提交的占位符还原为原值；复制的设备重新生成凭据，不与模板共用
+		View:    func(d *Device) any { v := *d; v.AgentToken = crud.Mask(v.AgentToken); return v },
+		Merge:   func(old, d *Device) { crud.KeepSecret(old.AgentToken, &d.AgentToken) },
+		Copy:    func(_, dst *Device) { dst.AgentToken = "" },
+		Secrets: func(d *Device) map[string]string { return map[string]string{"agentToken": d.AgentToken} },
+		Changed: func(key string) { m.bemfa.kick(); m.syncAgentLocked(key) },
+		Removed: func(key string) { m.bemfa.kick(); m.agents.drop(key) },
 	}
 	devices.Register(r, "/devices")
 	r.HandleFunc("POST /devices/{key}/wake", m.handleWake)
 	r.HandleFunc("POST /devices/{key}/shutdown", m.handleShutdown)
-	module.DocOf(r, "POST /devices/{key}/shutdown", module.Doc{Summary: "远程关机", Resp: shutdownResult{}})
+	module.DocOf(r, "POST /devices/{key}/shutdown", module.Doc{Summary: "远程关机（客户端方式还可重启、睡眠）", Req: &powerRequest{}, Resp: shutdownResult{}})
+	m.agentRoutes(r)
 	r.HandleFunc("GET /status", m.handleStatus)
 	r.HandleFunc("GET /ssh-targets", m.handleSSHTargets)
 	module.DocOf(r, "GET /ssh-targets", module.Doc{Summary: "列出可用于远程关机的 SSH 连接", Resp: []SSHTarget{}})
@@ -373,7 +444,19 @@ func (m *Module) handleStatus(w http.ResponseWriter, r *http.Request) {
 	var mu sync.Mutex
 	var wg sync.WaitGroup
 	for _, d := range devices {
+		// 客户端方式以客户端连接为准：已连接即在线；未连接时有探测地址再探测，没有则为离线
+		if d.ShutdownMode == ModeAgent && m.agents.online(d.Key) {
+			mu.Lock()
+			out[d.Key] = "online"
+			mu.Unlock()
+			continue
+		}
 		if d.CheckAddr == "" {
+			if d.ShutdownMode == ModeAgent {
+				mu.Lock()
+				out[d.Key] = "offline"
+				mu.Unlock()
+			}
 			continue
 		}
 		wg.Add(1)

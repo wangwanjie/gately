@@ -25,6 +25,8 @@ var secretKeys = map[string]bool{
 	"password": true, "passwordhash": true, "secret": true, "token": true, "authsecret": true,
 	"privatekey": true, "passphrase": true, "clientsecret": true, "apitoken": true, "secretkey": true,
 	"adminpassword": true, "totpsecret": true, "psk": true, "sessionsecret": true,
+	// 网络唤醒客户端凭据：设备列表本身已脱敏，这里兜住配置历史对比等其他返回原始配置的接口
+	"agenttoken": true,
 }
 
 // headerKeys 是值为 "名称: 值" 列表（或名称到值的映射）的字段名（小写），只脱敏值的部分。

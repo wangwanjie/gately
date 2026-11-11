@@ -484,8 +484,12 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | PUT | `/api/wol/devices-enable` | `wol:write` | Enable or disable in bulk: Wake a device |
 | POST | `/api/wol/devices-delete` | `wol:write` | Delete in bulk: Wake a device |
 | PUT | `/api/wol/devices-group` | `wol:write` | Set group in bulk: Wake a device |
+| GET | `/api/wol/devices/{key}/secrets` | `wol:write` | View secrets in plain text |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | Send a Wake-on-LAN magic packet to a device |
-| POST | `/api/wol/devices/{key}/shutdown` | `wol:write,webterminal:write` | Remote shutdown |
+| POST | `/api/wol/devices/{key}/shutdown` | `wol:write,webterminal:write` | Remote shutdown (the agent method can also restart and sleep) |
+| GET | `/api/wol/agents` | `wol:read` | Agent connection info, indexed by device key |
+| POST | `/api/wol/devices/{key}/agent-token` | `wol:write` | Regenerate the agent token; connected agents will be disconnected |
+| GET | `/api/wol/agent-script/{name}` | `wol:read` | Download the agent script (gately-agent.sh or gately-agent.ps1) |
 | GET | `/api/wol/status` | `wol:read` | View device online status |
 | GET | `/api/wol/ssh-targets` | `wol:read,webterminal:read` | List SSH connections usable for remote shutdown |
 | GET | `/api/wol/bemfa` | `wol:read` | Bemfa settings and connection status |
@@ -3063,6 +3067,18 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `timeout` | integer |
 | `username` | string |
 
+### wol.AgentInfo
+
+| Field | Type |
+| --- | --- |
+| `addr` | string |
+| `host` | string |
+| `lastSeen` | integer |
+| `online` | boolean |
+| `os` | string |
+| `since` | integer |
+| `version` | string |
+
 ### wol.BemfaSettings
 
 | Field | Type |
@@ -3083,6 +3099,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 
 | Field | Type |
 | --- | --- |
+| `agentToken` | string |
 | `bemfaTopic` | string |
 | `broadcastIps` | Array of string |
 | `checkAddr` | string |
@@ -3096,6 +3113,18 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `repeat` | integer |
 | `shutdownCommand` | string |
 | `shutdownConn` | string |
+| `shutdownHttp` | `wol.HTTPAction` |
+| `shutdownMode` | string |
+
+### wol.HTTPAction
+
+| Field | Type |
+| --- | --- |
+| `body` | string |
+| `headers` | Array of string |
+| `insecure` | boolean |
+| `method` | string |
+| `url` | string |
 
 ### wol.SSHTarget
 
@@ -3112,6 +3141,12 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | --- | --- |
 | `settings` | `wol.BemfaSettings` |
 | `status` | `wol.BemfaStatus` |
+
+### wol.powerRequest
+
+| Field | Type |
+| --- | --- |
+| `action` | string |
 
 ### wol.shutdownResult
 
