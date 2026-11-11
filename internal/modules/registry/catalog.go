@@ -20,6 +20,7 @@ var Catalog = []Info{
 	{ID: "waf", Title: "WAF 防火墙"},
 	{ID: "webservice", Title: "Web 服务"},
 	{ID: "guard", Title: "入侵防护"},
+	{ID: "knock", Title: "端口敲门"},
 	{ID: "wol", Title: "网络唤醒"},
 	{ID: "webterminal", Title: "Web 终端"},
 	{ID: "cron", Title: "计划任务"},

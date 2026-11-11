@@ -43,6 +43,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `waf` | Брандмауэр WAF | `waf:read`、`waf:write` |
 | `webservice` | Веб-служба | `webservice:read`、`webservice:write` |
 | `guard` | Защита от вторжений | `guard:read`、`guard:write` |
+| `knock` | Стук по портам | `knock:read`、`knock:write` |
 | `wol` | Wake-on-LAN | `wol:read`、`wol:write` |
 | `webterminal` | Веб-терминал | `webterminal:read`、`webterminal:write` |
 | `cron` | Запланированная задача | `cron:read`、`cron:write` |
@@ -465,6 +466,31 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/guard/bans` | `guard:write` | Заблокировать IP или сеть вручную (seconds: 0 — срок по умолчанию, -1 — навсегда) |
 | DELETE | `/api/guard/bans` | `guard:write` | Снять блокировку (body: {"key": адрес}) |
 | GET | `/api/guard/firewall/rules` | `guard:read` | Правила, записанные Gately в системный брандмауэр (текст) |
+
+## Стук по портам
+
+| Метод | Путь | Необходимое право | Описание |
+| --- | --- | --- | --- |
+| GET | `/api/knock/logs` | `knock:read` | Просмотр журнала работы модуля |
+| GET | `/api/knock/logs/sources` | `knock:read` | Список всех источников журналов модуля |
+| GET | `/api/knock/logs/export` | `knock:read` | Экспорт журналов модуля |
+| DELETE | `/api/knock/logs` | `knock:write` | Очистить журнал работы модуля |
+| GET | `/api/knock/rules` | `knock:read` | Список: Правила стука по портам |
+| POST | `/api/knock/rules` | `knock:write` | Добавить: Правила стука по портам |
+| POST | `/api/knock/rules/{key}/copy` | `knock:write` | Дублировать: Правила стука по портам |
+| PUT | `/api/knock/rules/{key}` | `knock:write` | Изменить: Правила стука по портам |
+| DELETE | `/api/knock/rules/{key}` | `knock:write` | Удалить: Правила стука по портам |
+| PUT | `/api/knock/rules/{key}/enable` | `knock:write` | Включить или отключить: Правила стука по портам |
+| PUT | `/api/knock/rules-order` | `knock:write` | Изменить порядок: Правила стука по портам |
+| PUT | `/api/knock/rules-enable` | `knock:write` | Пакетно включить или отключить: Правила стука по портам |
+| POST | `/api/knock/rules-delete` | `knock:write` | Пакетно удалить: Правила стука по портам |
+| PUT | `/api/knock/rules-group` | `knock:write` | Задать группу сразу для нескольких: Правила стука по портам |
+| GET | `/api/knock/rules/{key}/secrets` | `knock:write` | Показать секреты открытым текстом |
+| GET | `/api/knock/settings` | `knock:read` | Глобальные настройки |
+| PUT | `/api/knock/settings` | `knock:write` | Изменить общие настройки |
+| GET | `/api/knock/status` | `knock:read` | Прослушивание, состояние блокировки брандмауэром и действующие разрешения |
+| DELETE | `/api/knock/grants` | `knock:write` | Отзыв разрешений (body: {"addr": адрес, "rule": key правила}; пустой rule отзывает все разрешения адреса) |
+| GET | `/api/knock/firewall/rules` | `knock:read` | Правила блокировки, записанные Gately в системный брандмауэр (текст) |
 
 ## Wake-on-LAN
 
@@ -1471,6 +1497,89 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `regex` | string |
 | `type` | string |
 | `urls` | Массив из string |
+
+### knock.Counters
+
+| Поле | Тип |
+| --- | --- |
+| `accepted` | integer |
+| `ignored` | integer |
+| `rejected` | integer |
+
+### knock.FirewallStatus
+
+| Поле | Тип |
+| --- | --- |
+| `active` | boolean |
+| `allowed` | integer |
+| `backend` | string |
+| `checkedAt` | Время (RFC 3339) |
+| `dropped` | integer |
+| `error` | string |
+| `needed` | boolean |
+| `ports` | Массив из string |
+| `reason` | string |
+| `version` | string |
+
+### knock.GrantView
+
+| Поле | Тип |
+| --- | --- |
+| `addr` | string |
+| `ports` | Массив из string |
+| `rule` | string |
+| `ruleName` | string |
+| `until` | Время (RFC 3339) |
+
+### knock.Rule
+
+| Поле | Тип |
+| --- | --- |
+| `enable` | boolean |
+| `encKey` | string |
+| `firewall` | boolean |
+| `group` | string |
+| `hmacKey` | string |
+| `hmacType` | string |
+| `key` | string |
+| `maxTimeout` | integer |
+| `name` | string |
+| `ports` | Массив из string |
+| `remark` | string |
+| `requireAddr` | boolean |
+| `timeout` | integer |
+| `user` | string |
+
+### knock.Settings
+
+| Поле | Тип |
+| --- | --- |
+| `allowLan` | boolean |
+| `allowList` | Массив из string |
+| `autoFirewall` | boolean |
+| `maxAge` | integer |
+| `port` | integer |
+
+### knock.Status
+
+| Поле | Тип |
+| --- | --- |
+| `counters` | `knock.Counters` |
+| `firewall` | `knock.FirewallStatus` |
+| `grants` | Массив из `knock.GrantView` |
+| `listenError` | string |
+| `listening` | boolean |
+| `now` | Время (RFC 3339) |
+| `openStatus` | string |
+| `os` | string |
+| `port` | integer |
+
+### knock.revokeRequest
+
+| Поле | Тип |
+| --- | --- |
+| `addr` | string |
+| `rule` | string |
 
 ### netbird.ConnView
 

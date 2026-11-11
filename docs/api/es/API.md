@@ -43,6 +43,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `waf` | Firewall WAF | `waf:read`、`waf:write` |
 | `webservice` | Servicio web | `webservice:read`、`webservice:write` |
 | `guard` | Prevención de intrusiones | `guard:read`、`guard:write` |
+| `knock` | Port knocking | `knock:read`、`knock:write` |
 | `wol` | Wake-on-LAN | `wol:read`、`wol:write` |
 | `webterminal` | Terminal web | `webterminal:read`、`webterminal:write` |
 | `cron` | Tarea programada | `cron:read`、`cron:write` |
@@ -465,6 +466,31 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | POST | `/api/guard/bans` | `guard:write` | Bloquear manualmente una IP o red (seconds: 0 usa la duración predeterminada, -1 significa permanente) |
 | DELETE | `/api/guard/bans` | `guard:write` | Quitar un bloqueo (el body es {"key": dirección}) |
 | GET | `/api/guard/firewall/rules` | `guard:read` | Reglas que Gately escribió en el cortafuegos del sistema (texto) |
+
+## Port knocking
+
+| Método | Ruta | Permiso requerido | Descripción |
+| --- | --- | --- | --- |
+| GET | `/api/knock/logs` | `knock:read` | Ver los registros de ejecución del módulo |
+| GET | `/api/knock/logs/sources` | `knock:read` | Listar todos los orígenes de los registros del módulo |
+| GET | `/api/knock/logs/export` | `knock:read` | Exportar registros del módulo |
+| DELETE | `/api/knock/logs` | `knock:write` | Vaciar los registros de ejecución del módulo |
+| GET | `/api/knock/rules` | `knock:read` | Listar Reglas de port knocking |
+| POST | `/api/knock/rules` | `knock:write` | Añadir Reglas de port knocking |
+| POST | `/api/knock/rules/{key}/copy` | `knock:write` | Duplicar Reglas de port knocking |
+| PUT | `/api/knock/rules/{key}` | `knock:write` | Modificar Reglas de port knocking |
+| DELETE | `/api/knock/rules/{key}` | `knock:write` | Eliminar Reglas de port knocking |
+| PUT | `/api/knock/rules/{key}/enable` | `knock:write` | Activar o desactivar Reglas de port knocking |
+| PUT | `/api/knock/rules-order` | `knock:write` | Reordenar Reglas de port knocking |
+| PUT | `/api/knock/rules-enable` | `knock:write` | Activar o desactivar en lote: Reglas de port knocking |
+| POST | `/api/knock/rules-delete` | `knock:write` | Eliminar en lote: Reglas de port knocking |
+| PUT | `/api/knock/rules-group` | `knock:write` | Asignar grupo a varios elementos: Reglas de port knocking |
+| GET | `/api/knock/rules/{key}/secrets` | `knock:write` | Ver secretos en texto plano |
+| GET | `/api/knock/settings` | `knock:read` | Ajustes globales |
+| PUT | `/api/knock/settings` | `knock:write` | Modificar la configuración global |
+| GET | `/api/knock/status` | `knock:read` | Escucha, estado del bloqueo por firewall y autorizaciones vigentes |
+| DELETE | `/api/knock/grants` | `knock:write` | Revocar autorizaciones (el body es {"addr": dirección, "rule": clave de regla}; deje rule vacío para revocar todas las autorizaciones de la dirección) |
+| GET | `/api/knock/firewall/rules` | `knock:read` | Reglas de bloqueo que Gately escribió en el firewall del sistema (texto) |
 
 ## Wake-on-LAN
 
@@ -1471,6 +1497,89 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `regex` | string |
 | `type` | string |
 | `urls` | Lista de string |
+
+### knock.Counters
+
+| Campo | Tipo |
+| --- | --- |
+| `accepted` | integer |
+| `ignored` | integer |
+| `rejected` | integer |
+
+### knock.FirewallStatus
+
+| Campo | Tipo |
+| --- | --- |
+| `active` | boolean |
+| `allowed` | integer |
+| `backend` | string |
+| `checkedAt` | Hora (RFC 3339) |
+| `dropped` | integer |
+| `error` | string |
+| `needed` | boolean |
+| `ports` | Lista de string |
+| `reason` | string |
+| `version` | string |
+
+### knock.GrantView
+
+| Campo | Tipo |
+| --- | --- |
+| `addr` | string |
+| `ports` | Lista de string |
+| `rule` | string |
+| `ruleName` | string |
+| `until` | Hora (RFC 3339) |
+
+### knock.Rule
+
+| Campo | Tipo |
+| --- | --- |
+| `enable` | boolean |
+| `encKey` | string |
+| `firewall` | boolean |
+| `group` | string |
+| `hmacKey` | string |
+| `hmacType` | string |
+| `key` | string |
+| `maxTimeout` | integer |
+| `name` | string |
+| `ports` | Lista de string |
+| `remark` | string |
+| `requireAddr` | boolean |
+| `timeout` | integer |
+| `user` | string |
+
+### knock.Settings
+
+| Campo | Tipo |
+| --- | --- |
+| `allowLan` | boolean |
+| `allowList` | Lista de string |
+| `autoFirewall` | boolean |
+| `maxAge` | integer |
+| `port` | integer |
+
+### knock.Status
+
+| Campo | Tipo |
+| --- | --- |
+| `counters` | `knock.Counters` |
+| `firewall` | `knock.FirewallStatus` |
+| `grants` | Lista de `knock.GrantView` |
+| `listenError` | string |
+| `listening` | boolean |
+| `now` | Hora (RFC 3339) |
+| `openStatus` | string |
+| `os` | string |
+| `port` | integer |
+
+### knock.revokeRequest
+
+| Campo | Tipo |
+| --- | --- |
+| `addr` | string |
+| `rule` | string |
 
 ### netbird.ConnView
 

@@ -43,6 +43,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `waf` | WAF 방화벽 | `waf:read`、`waf:write` |
 | `webservice` | Web 서비스 | `webservice:read`、`webservice:write` |
 | `guard` | 침입 방지 | `guard:read`、`guard:write` |
+| `knock` | 포트 노킹 | `knock:read`、`knock:write` |
 | `wol` | Wake-on-LAN | `wol:read`、`wol:write` |
 | `webterminal` | Web 터미널 | `webterminal:read`、`webterminal:write` |
 | `cron` | 예약 작업 | `cron:read`、`cron:write` |
@@ -465,6 +466,31 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/guard/bans` | `guard:write` | IP 또는 네트워크 수동 차단(seconds가 0이면 기본 시간, -1이면 영구) |
 | DELETE | `/api/guard/bans` | `guard:write` | 차단 해제 (body는 {"key": 주소}) |
 | GET | `/api/guard/firewall/rules` | `guard:read` | Gately가 시스템 방화벽에 기록한 규칙(텍스트) |
+
+## 포트 노킹
+
+| 메서드 | 경로 | 필요 권한 | 설명 |
+| --- | --- | --- | --- |
+| GET | `/api/knock/logs` | `knock:read` | 모듈 실행 로그 보기 |
+| GET | `/api/knock/logs/sources` | `knock:read` | 모듈 로그의 모든 소스 목록 |
+| GET | `/api/knock/logs/export` | `knock:read` | 모듈 로그 내보내기 |
+| DELETE | `/api/knock/logs` | `knock:write` | 모듈 실행 로그 비우기 |
+| GET | `/api/knock/rules` | `knock:read` | 포트 노킹 규칙 목록 조회 |
+| POST | `/api/knock/rules` | `knock:write` | 포트 노킹 규칙 추가 |
+| POST | `/api/knock/rules/{key}/copy` | `knock:write` | 포트 노킹 규칙 복제 |
+| PUT | `/api/knock/rules/{key}` | `knock:write` | 포트 노킹 규칙 수정 |
+| DELETE | `/api/knock/rules/{key}` | `knock:write` | 포트 노킹 규칙 삭제 |
+| PUT | `/api/knock/rules/{key}/enable` | `knock:write` | 포트 노킹 규칙 사용 설정/해제 |
+| PUT | `/api/knock/rules-order` | `knock:write` | 포트 노킹 규칙 순서 변경 |
+| PUT | `/api/knock/rules-enable` | `knock:write` | 포트 노킹 규칙 일괄 사용/사용 안 함 |
+| POST | `/api/knock/rules-delete` | `knock:write` | 포트 노킹 규칙 일괄 삭제 |
+| PUT | `/api/knock/rules-group` | `knock:write` | 포트 노킹 규칙 그룹 일괄 설정 |
+| GET | `/api/knock/rules/{key}/secrets` | `knock:write` | 비밀 값 평문 보기 |
+| GET | `/api/knock/settings` | `knock:read` | 전역 설정 |
+| PUT | `/api/knock/settings` | `knock:write` | 전역 설정 변경 |
+| GET | `/api/knock/status` | `knock:read` | 수신 대기, 방화벽 차단 상태 및 현재 유효한 허가 |
+| DELETE | `/api/knock/grants` | `knock:write` | 허가 취소(body 는 {"addr": 주소, "rule": 규칙 key}, rule 을 비우면 해당 주소의 모든 허가를 취소) |
+| GET | `/api/knock/firewall/rules` | `knock:read` | Gately 가 시스템 방화벽에 기록한 차단 규칙(텍스트) |
 
 ## Wake-on-LAN
 
@@ -1471,6 +1497,89 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `regex` | string |
 | `type` | string |
 | `urls` | Array of string |
+
+### knock.Counters
+
+| 필드 | 타입 |
+| --- | --- |
+| `accepted` | integer |
+| `ignored` | integer |
+| `rejected` | integer |
+
+### knock.FirewallStatus
+
+| 필드 | 타입 |
+| --- | --- |
+| `active` | boolean |
+| `allowed` | integer |
+| `backend` | string |
+| `checkedAt` | 시간 (RFC 3339) |
+| `dropped` | integer |
+| `error` | string |
+| `needed` | boolean |
+| `ports` | Array of string |
+| `reason` | string |
+| `version` | string |
+
+### knock.GrantView
+
+| 필드 | 타입 |
+| --- | --- |
+| `addr` | string |
+| `ports` | Array of string |
+| `rule` | string |
+| `ruleName` | string |
+| `until` | 시간 (RFC 3339) |
+
+### knock.Rule
+
+| 필드 | 타입 |
+| --- | --- |
+| `enable` | boolean |
+| `encKey` | string |
+| `firewall` | boolean |
+| `group` | string |
+| `hmacKey` | string |
+| `hmacType` | string |
+| `key` | string |
+| `maxTimeout` | integer |
+| `name` | string |
+| `ports` | Array of string |
+| `remark` | string |
+| `requireAddr` | boolean |
+| `timeout` | integer |
+| `user` | string |
+
+### knock.Settings
+
+| 필드 | 타입 |
+| --- | --- |
+| `allowLan` | boolean |
+| `allowList` | Array of string |
+| `autoFirewall` | boolean |
+| `maxAge` | integer |
+| `port` | integer |
+
+### knock.Status
+
+| 필드 | 타입 |
+| --- | --- |
+| `counters` | `knock.Counters` |
+| `firewall` | `knock.FirewallStatus` |
+| `grants` | Array of `knock.GrantView` |
+| `listenError` | string |
+| `listening` | boolean |
+| `now` | 시간 (RFC 3339) |
+| `openStatus` | string |
+| `os` | string |
+| `port` | integer |
+
+### knock.revokeRequest
+
+| 필드 | 타입 |
+| --- | --- |
+| `addr` | string |
+| `rule` | string |
 
 ### netbird.ConnView
 

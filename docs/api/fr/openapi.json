@@ -1207,6 +1207,203 @@
         },
         "type": "object"
       },
+      "knock.Counters": {
+        "properties": {
+          "accepted": {
+            "type": "integer"
+          },
+          "ignored": {
+            "type": "integer"
+          },
+          "rejected": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "knock.FirewallStatus": {
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "allowed": {
+            "type": "integer"
+          },
+          "backend": {
+            "type": "string"
+          },
+          "checkedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "dropped": {
+            "type": "integer"
+          },
+          "error": {
+            "type": "string"
+          },
+          "needed": {
+            "type": "boolean"
+          },
+          "ports": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "knock.GrantView": {
+        "properties": {
+          "addr": {
+            "type": "string"
+          },
+          "ports": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "rule": {
+            "type": "string"
+          },
+          "ruleName": {
+            "type": "string"
+          },
+          "until": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "knock.Rule": {
+        "properties": {
+          "enable": {
+            "type": "boolean"
+          },
+          "encKey": {
+            "type": "string"
+          },
+          "firewall": {
+            "type": "boolean"
+          },
+          "group": {
+            "type": "string"
+          },
+          "hmacKey": {
+            "type": "string"
+          },
+          "hmacType": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "maxTimeout": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "ports": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "remark": {
+            "type": "string"
+          },
+          "requireAddr": {
+            "type": "boolean"
+          },
+          "timeout": {
+            "type": "integer"
+          },
+          "user": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "knock.Settings": {
+        "properties": {
+          "allowLan": {
+            "type": "boolean"
+          },
+          "allowList": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "autoFirewall": {
+            "type": "boolean"
+          },
+          "maxAge": {
+            "type": "integer"
+          },
+          "port": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "knock.Status": {
+        "properties": {
+          "counters": {
+            "$ref": "#/components/schemas/knock.Counters"
+          },
+          "firewall": {
+            "$ref": "#/components/schemas/knock.FirewallStatus"
+          },
+          "grants": {
+            "items": {
+              "$ref": "#/components/schemas/knock.GrantView"
+            },
+            "type": "array"
+          },
+          "listenError": {
+            "type": "string"
+          },
+          "listening": {
+            "type": "boolean"
+          },
+          "now": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "openStatus": {
+            "type": "string"
+          },
+          "os": {
+            "type": "string"
+          },
+          "port": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "knock.revokeRequest": {
+        "properties": {
+          "addr": {
+            "type": "string"
+          },
+          "rule": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "netbird.ConnView": {
         "properties": {
           "connected": {
@@ -24632,6 +24829,1472 @@
           "Import de configuration"
         ],
         "x-required-scope": "import:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/firewall/rules": {
+      "get": {
+        "description": "Permission requise : `knock:read`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Règles de blocage écrites par Gately dans le pare-feu du système (texte)",
+        "tags": [
+          "Port knocking"
+        ],
+        "x-required-scope": "knock:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/grants": {
+      "delete": {
+        "description": "Permission requise : `knock:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/knock.revokeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Révoquer des autorisations (body = {\"addr\": adresse, \"rule\": clé de règle} ; laissez rule vide pour révoquer toutes les autorisations de l'adresse)",
+        "tags": [
+          "Port knocking"
+        ],
+        "x-required-scope": "knock:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/logs": {
+      "delete": {
+        "description": "Supprime aussi les fichiers journaux sur disque, les fichiers tournés, les archives et la liste des sources.\n\nPermission requise : `knock:write`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Vider les journaux d'exécution d'un module",
+        "tags": [
+          "Port knocking"
+        ],
+        "x-required-scope": "knock:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "Prend en charge la récupération incrémentale avec le paramètre `since`, qui renvoie les journaux dont le numéro de séquence est supérieur à cette valeur ; `before` renvoie les journaux dont le numéro de séquence est inférieur à cette valeur, pour charger les entrées plus anciennes ; `limit` ne renvoie que les entrées les plus récentes et, si la mémoire n’en contient pas assez, recherche aussi dans l’historique conservé dans les fichiers journaux. Paramètres de filtre : `level` niveau minimal, `source` source, `q` mots-clés (séparés par des espaces, tous doivent correspondre ; les guillemets doubles regroupent une expression ; un `-` initial exclut), `ip` adresse du client (adresse complète, CIDR ou partie d’adresse, séparées par des virgules), `host` nom du site ou domaine (correspondance partielle), `site` nom du site (correspondance exacte, ne renvoie que le journal d'accès de ce site), `status` code d’état (par exemple `404`, `4xx`, `500-599`), `from` et `to` plage horaire (RFC 3339 ou horodatage en millisecondes). `exclude` liste les termes à exclure : les entrées contenant l’un d’eux ne sont pas renvoyées ; même syntaxe que `q`, le `-` initial est facultatif.\n\nPermission requise : `knock:read`.",
+        "parameters": [
+          {
+            "description": "Récupération incrémentale : ne renvoie que les journaux dont le numéro de séquence est supérieur à cette valeur",
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Charger les journaux plus anciens : ne renvoie que les journaux dont le numéro de séquence est inférieur à cette valeur",
+            "in": "query",
+            "name": "before",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Nombre maximal d'entrées renvoyées, en prenant les plus récentes qui correspondent ; 0 ou absent signifie sans limite",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Niveau minimal : debug, info, warn ou error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Étiquette de source, correspondance exacte sans tenir compte de la casse",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Mots-clés : séparés par des espaces, tous doivent correspondre ; les guillemets doubles regroupent une expression ; un - initial exclut",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Mots-clés exclus : séparés par des espaces, les guillemets doubles regroupent une expression ; une entrée contenant l’un d’eux est exclue ; s’applique avec q",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Adresse du client : adresse complète, CIDR ou partie d'adresse, séparées par des virgules ; le préfixe ! ou - exclut",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Partie du nom du site ou du domaine",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nom du site, correspondance exacte sans tenir compte de la casse ; ne renvoie que les journaux d'accès de ce site",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Clé de l’écouteur des services Web, correspondance exacte ; distingue les sites ou écouteurs de même nom (par exemple des écouteurs IPv4 et IPv6 séparés)",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Code d’état comme 404, 4xx, 500-599, séparés par des virgules",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "À 1, masque les journaux d'accès des sources bannies : les requêtes refusées à cause du bannissement et toutes celles des sources encore bannies, y compris celles qui l'ont déclenché (n'affecte que la réponse ; les journaux sont conservés)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Avec 1, masque les requêtes portant une session de la console d'administration, c'est-à-dire les journaux d'accès produits par les administrateurs qui accèdent à la console via un site du Service Web",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Heure de début, RFC 3339 ou horodatage en millisecondes",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Heure de fin, RFC 3339 ou horodatage en millisecondes",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Consulter les journaux d'exécution d'un module",
+        "tags": [
+          "Port knocking"
+        ],
+        "x-required-scope": "knock:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/logs/export": {
+      "get": {
+        "description": "Renvoie en flux, en pièce jointe, tous les journaux correspondant aux filtres, du plus ancien au plus récent, y compris les fichiers tournés et les archives compressées sur disque. `format` vaut `jsonl` (par défaut, un objet JSON par ligne) ou `csv` (UTF-8 avec BOM ; les cellules commençant par = + - @ sont préfixées d’une apostrophe pour empêcher l’injection de formules). Les paramètres de filtre sont les mêmes que pour consulter les journaux. Pour les identités en lecture seule, les identifiants sont masqués dans l’export comme lors de la consultation. `lang` définit la langue du contenu exporté (par exemple `en`) ; par défaut, Accept-Language est utilisé.\n\nPermission requise : `knock:read`.",
+        "parameters": [
+          {
+            "description": "Format d'export : jsonl (par défaut, un objet JSON par ligne) ou csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Langue du contenu exporté, par exemple en ; par défaut, Accept-Language est utilisé",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Niveau minimal : debug, info, warn ou error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Étiquette de source, correspondance exacte sans tenir compte de la casse",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Mots-clés : séparés par des espaces, tous doivent correspondre ; les guillemets doubles regroupent une expression ; un - initial exclut",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Mots-clés exclus : séparés par des espaces, les guillemets doubles regroupent une expression ; une entrée contenant l’un d’eux est exclue ; s’applique avec q",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Adresse du client : adresse complète, CIDR ou partie d'adresse, séparées par des virgules ; le préfixe ! ou - exclut",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Partie du nom du site ou du domaine",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nom du site, correspondance exacte sans tenir compte de la casse ; ne renvoie que les journaux d'accès de ce site",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Clé de l’écouteur des services Web, correspondance exacte ; distingue les sites ou écouteurs de même nom (par exemple des écouteurs IPv4 et IPv6 séparés)",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Code d’état comme 404, 4xx, 500-599, séparés par des virgules",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "À 1, masque les journaux d'accès des sources bannies : les requêtes refusées à cause du bannissement et toutes celles des sources encore bannies, y compris celles qui l'ont déclenché (n'affecte que la réponse ; les journaux sont conservés)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Avec 1, masque les requêtes portant une session de la console d'administration, c'est-à-dire les journaux d'accès produits par les administrateurs qui accèdent à la console via un site du Service Web",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Heure de début, RFC 3339 ou horodatage en millisecondes",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Heure de fin, RFC 3339 ou horodatage en millisecondes",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Exporter les journaux du module",
+        "tags": [
+          "Port knocking"
+        ],
+        "x-required-scope": "knock:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/logs/sources": {
+      "get": {
+        "description": "Renvoie un tableau des libellés de source triés par nom : les sources apparues dans les journaux (conservées après redémarrage lorsqu’ils sont enregistrés sur disque) et celles de la configuration du module (par exemple tous les écouteurs et listes d’IP des Services Web), pour filtrer avec `source`. Les sources sont traduites dans la langue de la requête comme les journaux.\n\nPermission requise : `knock:read`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Lister toutes les sources des journaux du module",
+        "tags": [
+          "Port knocking"
+        ],
+        "x-required-scope": "knock:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/rules": {
+      "get": {
+        "description": "Permission requise : `knock:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/knock.Rule"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Lister Règles de port knocking",
+        "tags": [
+          "Port knocking"
+        ],
+        "x-required-scope": "knock:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "Permission requise : `knock:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/knock.Rule"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/knock.Rule"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ajouter Règles de port knocking",
+        "tags": [
+          "Port knocking"
+        ],
+        "x-required-scope": "knock:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/rules-delete": {
+      "post": {
+        "description": "Permission requise : `knock:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchDeleteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Supprimer en lot : Règles de port knocking",
+        "tags": [
+          "Port knocking"
+        ],
+        "x-required-scope": "knock:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/rules-enable": {
+      "put": {
+        "description": "Permission requise : `knock:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchEnableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Activer ou désactiver en lot : Règles de port knocking",
+        "tags": [
+          "Port knocking"
+        ],
+        "x-required-scope": "knock:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/rules-group": {
+      "put": {
+        "description": "Permission requise : `knock:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Définir le groupe de plusieurs éléments : Règles de port knocking",
+        "tags": [
+          "Port knocking"
+        ],
+        "x-required-scope": "knock:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/rules-order": {
+      "put": {
+        "description": "Permission requise : `knock:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.orderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Réordonner Règles de port knocking",
+        "tags": [
+          "Port knocking"
+        ],
+        "x-required-scope": "knock:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/rules/{key}": {
+      "delete": {
+        "description": "Permission requise : `knock:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Supprimer Règles de port knocking",
+        "tags": [
+          "Port knocking"
+        ],
+        "x-required-scope": "knock:write",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Permission requise : `knock:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/knock.Rule"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/knock.Rule"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Modifier Règles de port knocking",
+        "tags": [
+          "Port knocking"
+        ],
+        "x-required-scope": "knock:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/rules/{key}/copy": {
+      "post": {
+        "description": "Permission requise : `knock:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/knock.Rule"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/knock.Rule"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Dupliquer Règles de port knocking",
+        "tags": [
+          "Port knocking"
+        ],
+        "x-required-scope": "knock:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/rules/{key}/enable": {
+      "put": {
+        "description": "Permission requise : `knock:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.enableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Activer ou désactiver Règles de port knocking",
+        "tags": [
+          "Port knocking"
+        ],
+        "x-required-scope": "knock:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/rules/{key}/secrets": {
+      "get": {
+        "description": "Permission requise : `knock:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Afficher les secrets en clair",
+        "tags": [
+          "Port knocking"
+        ],
+        "x-required-scope": "knock:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/settings": {
+      "get": {
+        "description": "Permission requise : `knock:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/knock.Settings"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Paramètres globaux",
+        "tags": [
+          "Port knocking"
+        ],
+        "x-required-scope": "knock:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Permission requise : `knock:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/knock.Settings"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/knock.Settings"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Modifier les paramètres globaux",
+        "tags": [
+          "Port knocking"
+        ],
+        "x-required-scope": "knock:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/knock/status": {
+      "get": {
+        "description": "Permission requise : `knock:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/knock.Status"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Écoute, état du blocage par pare-feu et autorisations actuellement valides",
+        "tags": [
+          "Port knocking"
+        ],
+        "x-required-scope": "knock:read",
         "x-token-allowed": true
       }
     },
@@ -55129,6 +56792,9 @@
       "name": "Prévention d'intrusion"
     },
     {
+      "name": "Port knocking"
+    },
+    {
       "name": "Wake-on-LAN"
     },
     {
@@ -55196,6 +56862,7 @@
     "waf",
     "webservice",
     "guard",
+    "knock",
     "wol",
     "webterminal",
     "cron",

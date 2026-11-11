@@ -264,6 +264,24 @@
       "sizeKB": 256
     },
     {
+      "id": "knock",
+      "group": "network",
+      "core": false,
+      "tag": "no_knock",
+      "title": {
+        "zh-CN": "端口敲门",
+        "zh-TW": "連接埠敲門",
+        "en": "Port Knocking"
+      },
+      "desc": {
+        "zh-CN": "fwknop 兼容的单包敲门，按需放行 SSH 等端口",
+        "zh-TW": "相容 fwknop 的單封包敲門，按需放行 SSH 等連接埠",
+        "en": "fwknop-compatible single packet knocking to open SSH and other ports on demand"
+      },
+      "requires": [],
+      "sizeKB": 96
+    },
+    {
       "id": "wol",
       "group": "tools",
       "core": false,
@@ -697,6 +715,7 @@
         "stun",
         "frp",
         "guard",
+        "knock",
         "wol",
         "cron",
         "notify",
@@ -718,6 +737,7 @@
         "frp",
         "cloudflared",
         "guard",
+        "knock",
         "wol",
         "webterminal",
         "cron",

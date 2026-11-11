@@ -42,6 +42,7 @@ var crudNouns = map[string]string{
 	"perf/rules":              "性能告警规则",
 	"backup/targets":          "备份目的地",
 	"guard/jails":             "入侵防护规则",
+	"knock/rules":             "端口敲门规则",
 	"storage/mounts":          "存储挂载",
 }
 

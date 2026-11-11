@@ -43,6 +43,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `waf` | WAF 防火牆 | `waf:read`、`waf:write` |
 | `webservice` | Web 服務 | `webservice:read`、`webservice:write` |
 | `guard` | 入侵防護 | `guard:read`、`guard:write` |
+| `knock` | 連接埠敲門 | `knock:read`、`knock:write` |
 | `wol` | 網路喚醒 | `wol:read`、`wol:write` |
 | `webterminal` | Web 終端機 | `webterminal:read`、`webterminal:write` |
 | `cron` | 排程任務 | `cron:read`、`cron:write` |
@@ -465,6 +466,31 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/guard/bans` | `guard:write` | 手動封鎖 IP 或網段（seconds 為 0 表示預設時長，-1 表示永久） |
 | DELETE | `/api/guard/bans` | `guard:write` | 解除封鎖（body 為 {"key": 位址}） |
 | GET | `/api/guard/firewall/rules` | `guard:read` | Gately 寫入系統防火牆的規則（文字） |
+
+## 連接埠敲門
+
+| 方法 | 路徑 | 所需權限 | 說明 |
+| --- | --- | --- | --- |
+| GET | `/api/knock/logs` | `knock:read` | 檢視模組執行日誌 |
+| GET | `/api/knock/logs/sources` | `knock:read` | 列出模組日誌的全部來源 |
+| GET | `/api/knock/logs/export` | `knock:read` | 匯出模組執行日誌 |
+| DELETE | `/api/knock/logs` | `knock:write` | 清空模組執行日誌 |
+| GET | `/api/knock/rules` | `knock:read` | 取得連接埠敲門規則清單 |
+| POST | `/api/knock/rules` | `knock:write` | 新增連接埠敲門規則 |
+| POST | `/api/knock/rules/{key}/copy` | `knock:write` | 複製連接埠敲門規則 |
+| PUT | `/api/knock/rules/{key}` | `knock:write` | 修改連接埠敲門規則 |
+| DELETE | `/api/knock/rules/{key}` | `knock:write` | 刪除連接埠敲門規則 |
+| PUT | `/api/knock/rules/{key}/enable` | `knock:write` | 啟用或停用連接埠敲門規則 |
+| PUT | `/api/knock/rules-order` | `knock:write` | 調整連接埠敲門規則排序 |
+| PUT | `/api/knock/rules-enable` | `knock:write` | 批次啟用或停用連接埠敲門規則 |
+| POST | `/api/knock/rules-delete` | `knock:write` | 批次刪除連接埠敲門規則 |
+| PUT | `/api/knock/rules-group` | `knock:write` | 批次設定連接埠敲門規則分組 |
+| GET | `/api/knock/rules/{key}/secrets` | `knock:write` | 查看金鑰明文 |
+| GET | `/api/knock/settings` | `knock:read` | 全域設定 |
+| PUT | `/api/knock/settings` | `knock:write` | 修改全域設定 |
+| GET | `/api/knock/status` | `knock:read` | 監聽、防火牆攔截狀態與目前有效的授權 |
+| DELETE | `/api/knock/grants` | `knock:write` | 撤銷授權（body 為 {"addr": 位址, "rule": 規則 key}，rule 留空則撤銷該位址的全部授權） |
+| GET | `/api/knock/firewall/rules` | `knock:read` | Gately 寫入系統防火牆的攔截規則（文字） |
 
 ## 網路喚醒
 
@@ -1471,6 +1497,89 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `regex` | string |
 | `type` | string |
 | `urls` | 陣列 of string |
+
+### knock.Counters
+
+| 欄位 | 類型 |
+| --- | --- |
+| `accepted` | integer |
+| `ignored` | integer |
+| `rejected` | integer |
+
+### knock.FirewallStatus
+
+| 欄位 | 類型 |
+| --- | --- |
+| `active` | boolean |
+| `allowed` | integer |
+| `backend` | string |
+| `checkedAt` | 時間 (RFC 3339) |
+| `dropped` | integer |
+| `error` | string |
+| `needed` | boolean |
+| `ports` | 陣列 of string |
+| `reason` | string |
+| `version` | string |
+
+### knock.GrantView
+
+| 欄位 | 類型 |
+| --- | --- |
+| `addr` | string |
+| `ports` | 陣列 of string |
+| `rule` | string |
+| `ruleName` | string |
+| `until` | 時間 (RFC 3339) |
+
+### knock.Rule
+
+| 欄位 | 類型 |
+| --- | --- |
+| `enable` | boolean |
+| `encKey` | string |
+| `firewall` | boolean |
+| `group` | string |
+| `hmacKey` | string |
+| `hmacType` | string |
+| `key` | string |
+| `maxTimeout` | integer |
+| `name` | string |
+| `ports` | 陣列 of string |
+| `remark` | string |
+| `requireAddr` | boolean |
+| `timeout` | integer |
+| `user` | string |
+
+### knock.Settings
+
+| 欄位 | 類型 |
+| --- | --- |
+| `allowLan` | boolean |
+| `allowList` | 陣列 of string |
+| `autoFirewall` | boolean |
+| `maxAge` | integer |
+| `port` | integer |
+
+### knock.Status
+
+| 欄位 | 類型 |
+| --- | --- |
+| `counters` | `knock.Counters` |
+| `firewall` | `knock.FirewallStatus` |
+| `grants` | 陣列 of `knock.GrantView` |
+| `listenError` | string |
+| `listening` | boolean |
+| `now` | 時間 (RFC 3339) |
+| `openStatus` | string |
+| `os` | string |
+| `port` | integer |
+
+### knock.revokeRequest
+
+| 欄位 | 類型 |
+| --- | --- |
+| `addr` | string |
+| `rule` | string |
 
 ### netbird.ConnView
 
