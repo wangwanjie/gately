@@ -647,14 +647,20 @@ func (m *Module) serve(conn net.PacketConn, done chan struct{}) {
 		if !ok {
 			continue
 		}
-		_ = m.handle(buf[:n], src.Unmap(), "UDP")
+		_ = m.handle(buf[:n], src.Unmap(), transportUDP, "UDP")
 	}
 }
 
-// submit 处理经协议分流发来的报文（knockgate.Submitter）。
+// submit 处理经协议分流发来的报文（knockgate.Submitter）。协议分流只经 TCP 连接转交报文，来源地址经过握手。
 func (m *Module) submit(packet []byte, src netip.Addr, via string) error {
-	return m.handle(packet, src, via)
+	return m.handle(packet, src, transportTCP, via)
 }
+
+// 报文的传输方式，写入失败事件的 via 字段。UDP 报文的来源地址可以伪造，TCP 连接的来源地址经过三次握手、无法伪造
+const (
+	transportUDP = "udp"
+	transportTCP = "tcp"
+)
 
 // 处理结果，供调用方（协议分流）记录日志
 var (
@@ -663,8 +669,8 @@ var (
 	errLimited = errors.New("敲门报文过多，已丢弃")
 )
 
-// handle 认证并处理一个报文。
-func (m *Module) handle(packet []byte, src netip.Addr, via string) error {
+// handle 认证并处理一个报文。transport 为 transportUDP 或 transportTCP，via 为日志中的通道说明。
+func (m *Module) handle(packet []byte, src netip.Addr, transport, via string) error {
 	if !src.IsValid() {
 		return errIgnored
 	}
@@ -699,16 +705,16 @@ func (m *Module) handle(packet []byte, src netip.Addr, via string) error {
 		break
 	}
 	if rule == nil {
-		m.reject(nil, src, via, "没有规则的密钥能通过 HMAC 认证")
+		m.reject(nil, src, transport, via, "没有规则的密钥能通过 HMAC 认证")
 		return errors.New("认证失败")
 	}
 	if err != nil {
 		// HMAC 正确而解密失败：HMAC 密钥一致，加密密钥不一致
-		m.reject(rule, src, via, "HMAC 认证通过但解密失败，请检查加密密钥是否一致")
+		m.reject(rule, src, transport, via, "HMAC 认证通过但解密失败，请检查加密密钥是否一致")
 		return errors.New("解密失败")
 	}
 	if reason := m.check(rule, msg, snap.settings, now); reason != "" {
-		m.reject(rule, src, via, reason)
+		m.reject(rule, src, transport, via, reason)
 		return errors.New(reason)
 	}
 	addr := msg.Addr
@@ -716,7 +722,7 @@ func (m *Module) handle(packet []byte, src netip.Addr, via string) error {
 		addr = src
 	}
 	if reason := checkAddr(addr); reason != "" {
-		m.reject(rule, src, via, reason)
+		m.reject(rule, src, transport, via, reason)
 		return errors.New(reason)
 	}
 	ttl := effectiveTimeout(rule.rule, msg.ClientTimeout)
@@ -845,7 +851,11 @@ func (m *Module) grant(r *compiledRule, addr, src netip.Addr, msg *spa.Message, 
 const failInterval = 5 * time.Second
 
 // reject 统计一次被拒绝的敲门；同一来源每 failInterval 最多记录一条日志、发布一个失败事件（供入侵防护计数封禁）。
-func (m *Module) reject(r *compiledRule, src netip.Addr, via, reason string) {
+//
+// 失败事件会被入侵防护用来封禁事件中的地址，所以只为可信的来源发布：经 TCP（协议分流）发来的报文来源经过握手，
+// 照常发布；UDP 报文的来源地址可以伪造，只有通过 HMAC 认证（r 不为空，报文出自持有密钥的客户端）但被规则拒绝时
+// 才发布。HMAC 认证失败的 UDP 包任何人都能以任意来源地址发出，若发布事件，攻击者可以借入侵防护封禁任意 IP。
+func (m *Module) reject(r *compiledRule, src netip.Addr, transport, via, reason string) {
 	now := m.now()
 	m.stateMu.Lock()
 	m.counters.Rejected++
@@ -876,13 +886,16 @@ func (m *Module) reject(r *compiledRule, src netip.Addr, via, reason string) {
 		return
 	}
 	m.logs.Logger(name).Warnf("拒绝来自 %s 的敲门（经 %s）：%s", src, via, reason)
+	if r == nil && transport != transportTCP {
+		return
+	}
 	events.Publish(events.Event{
 		Type:    events.KnockFailed,
 		Source:  name,
 		Level:   events.LevelWarn,
 		Title:   fmt.Sprintf("端口敲门拒绝了 %s", src),
 		Message: reason,
-		Fields:  map[string]string{"ip": src.String(), "reason": reason},
+		Fields:  map[string]string{"ip": src.String(), "reason": reason, "via": transport},
 	})
 }
 
