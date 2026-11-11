@@ -259,10 +259,15 @@ func (r *Rule) hasSPARoute() bool {
 	return false
 }
 
-// checkKnocks 检查规则与各路由引用的敲门规则都存在，供保存规则时持锁调用。
+// checkKnocks 检查规则与各路由引用的敲门规则都存在、启用的敲门路由端口没有被敲门防火墙拦截，供保存规则时持锁调用。
 func (r *Rule) checkKnocks() error {
 	if err := r.Access.CheckSets(); err != nil {
 		return err
+	}
+	if r.Enable {
+		if err := r.checkSPAPorts(); err != nil {
+			return err
+		}
 	}
 	for i, rt := range r.Routes {
 		if rt.Knock == "" {
@@ -274,6 +279,23 @@ func (r *Rule) checkKnocks() error {
 				label = fmt.Sprintf("第 %d 条路由", i+1)
 			}
 			return fmt.Errorf("%s: 引用的敲门规则 %q 不存在", label, rt.Knock)
+		}
+	}
+	return nil
+}
+
+// checkSPAPorts 检查带敲门路由的规则的监听端口没有被端口敲门在防火墙中拦截：拦截后 TCP 敲门报文无法送达。
+func (r *Rule) checkSPAPorts() error {
+	if !r.hasSPARoute() {
+		return nil
+	}
+	ports, err := l4proxy.ParsePorts(r.ListenPorts)
+	if err != nil {
+		return nil
+	}
+	for _, p := range ports {
+		if knockgate.Default.Protected("tcp", p) {
+			return fmt.Errorf("TCP %d 在端口敲门的防火墙拦截中，经该端口发来的敲门报文会被丢弃，请先在端口敲门规则中取消拦截", p)
 		}
 	}
 	return nil

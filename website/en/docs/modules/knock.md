@@ -97,7 +97,8 @@ ssh -p 443 user@example.com
 - The knock route hands the packet to the Port Knocking module; it neither forwards nor replies. The port in `-A` must be in the knock rule's port list (for example `tcp/443`);
 - When the whole rule requires a knock, sources that have not knocked can use only the knock route, and after knocking they can use the other routes and the default target;
 - Knock packets are recognized only when the rule has a knock route, so protocol detection of other rules is unaffected;
-- The UDP port of the knock rule can be set to 0 so that only the Protocol Routing port is open to the outside.
+- The UDP port of the knock rule can be set to 0 so that only the Protocol Routing port is open to the outside;
+- The Protocol Routing ports that carry a knock route and the UDP knock port cannot be listed in a rule with firewall blocking (checked on save and on enable, since blocking them would stop the knock packets themselves), and they are always left out when the firewall rules are generated.
 
 ## Works with Intrusion Prevention
 

@@ -391,6 +391,8 @@ type Module struct {
 	cancel  context.CancelFunc
 	started bool
 	local   []netip.Prefix
+	// spaPorts 为上次计算防火墙规则时协议分流接收敲门报文的端口，变化时重新计算
+	spaPorts []int
 
 	snap atomic.Pointer[snapshot]
 	fw   *firewall
@@ -506,6 +508,7 @@ func (m *Module) Stop() error {
 	m.fw.stop()
 	m.open.ClearAll()
 	knockgate.Default.Clear()
+	knockgate.Default.SetProtected(nil)
 	m.stateMu.Lock()
 	m.fwGrants = map[fwGrantKey]time.Time{}
 	m.stateMu.Unlock()
@@ -553,24 +556,29 @@ func (m *Module) applyLocked() {
 			m.openListenerLocked(wantPort)
 		}
 	}
+	m.spaPorts = knockgate.Default.SPAPorts()
 	m.fw.apply(m.ctx, m.planLocked())
 	m.updateOpenLocked()
 }
 
 // planLocked 计算防火墙规则：开启防火墙拦截的启用规则的端口、免敲门网段与仍有效的放行。
+// 本模块的 UDP 敲门端口与协议分流接收敲门报文的 TCP 端口始终排除：保存规则时已检查冲突，
+// 这里兜底处理手改配置文件、之后修改敲门端口等情况，拦截这些端口会让敲门报文本身无法送达。
 func (m *Module) planLocked() fwPlan {
 	plan := fwPlan{}
+	exclude := knockExcluded(m.cfg.Settings.Port)
 	for _, r := range m.snap.Load().rules {
 		if !r.rule.Firewall {
 			continue
 		}
 		for _, a := range r.ports {
-			if !slices.Contains(plan.Ports, a) {
+			if !slices.Contains(plan.Ports, a) && !slices.Contains(exclude, a) {
 				plan.Ports = append(plan.Ports, a)
 			}
 		}
 	}
 	sortAccess(plan.Ports)
+	knockgate.Default.SetProtected(formatPorts(plan.Ports))
 	if len(plan.Ports) == 0 {
 		return plan
 	}
@@ -586,6 +594,18 @@ func (m *Module) planLocked() fwPlan {
 	}
 	m.stateMu.Unlock()
 	return plan
+}
+
+// knockExcluded 返回不能在防火墙中拦截的端口：UDP 敲门端口（port 为 0 时没有）与协议分流接收敲门报文的 TCP 端口。
+func knockExcluded(port int) []spa.Access {
+	var out []spa.Access
+	if port != 0 {
+		out = append(out, spa.Access{Proto: "udp", Port: port})
+	}
+	for _, p := range knockgate.Default.SPAPorts() {
+		out = append(out, spa.Access{Proto: "tcp", Port: p})
+	}
+	return out
 }
 
 // updateOpenLocked 按设置在系统防火墙放行敲门端口；拦截规则生效后也放行受保护端口（访问仍由敲门控制）。
@@ -973,10 +993,24 @@ func (m *Module) loop(ctx context.Context) {
 		m.stateMu.Unlock()
 		m.flushInvalid(now)
 		tick++
+		m.refreshSPAPorts()
 		if tick%4 == 0 {
 			m.refreshLocal()
 		}
 	}
+}
+
+// refreshSPAPorts 在协议分流接收敲门报文的端口变化后重新计算防火墙规则（排除这些端口）。
+func (m *Module) refreshSPAPorts() {
+	ports := knockgate.Default.SPAPorts()
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if !m.started || slices.Equal(ports, m.spaPorts) {
+		return
+	}
+	m.spaPorts = ports
+	m.fw.apply(m.ctx, m.planLocked())
+	m.updateOpenLocked()
 }
 
 // refreshLocal 在本机 IPv6 网段变化（运营商重新分配前缀）时更新免敲门网段。

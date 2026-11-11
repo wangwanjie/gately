@@ -69,6 +69,8 @@ func (m *Module) Routes(r module.Router) {
 		Group:    func(x *Rule) *string { return &x.Group },
 		Validate: func(x *Rule) error { return x.Validate() },
 		Check:    m.checkRuleLocked,
+		// 启用（单个与批量）同样检查：停用的规则保存时可能没有冲突，之后修改敲门端口或协议分流后才冲突
+		CheckEnable: m.checkRuleLocked,
 		Merge: func(old, upd *Rule) {
 			crud.KeepSecret(old.EncKey, &upd.EncKey)
 			crud.KeepSecret(old.HMACKey, &upd.HMACKey)
@@ -110,14 +112,21 @@ func (m *Module) Routes(r module.Router) {
 	module.DocOf(r, "GET /firewall/rules", module.Doc{Summary: "Gately 写入系统防火墙的拦截规则（文本）"})
 }
 
-// checkRuleLocked 检查规则与全局设置的冲突：开启防火墙拦截时不能拦截敲门端口自己。
+// checkRuleLocked 检查规则与全局设置、协议分流的冲突：开启防火墙拦截时不能拦截敲门端口自己，
+// 也不能拦截协议分流接收敲门报文（敲门路由）的 TCP 端口，否则敲门报文在建立连接前就被丢弃。
 func (m *Module) checkRuleLocked(x *Rule) error {
-	if !x.Firewall || m.cfg.Settings.Port == 0 {
+	if !x.Firewall {
 		return nil
 	}
+	spaPorts := knockgate.Default.SPAPorts()
 	for _, p := range x.Ports {
-		if p == "udp/"+strconv.Itoa(m.cfg.Settings.Port) {
+		if m.cfg.Settings.Port != 0 && p == "udp/"+strconv.Itoa(m.cfg.Settings.Port) {
 			return errors.New("不能在防火墙中拦截敲门端口本身")
+		}
+		for _, sp := range spaPorts {
+			if p == "tcp/"+strconv.Itoa(sp) {
+				return fmt.Errorf("TCP %d 是协议分流接收敲门报文的端口，不能在防火墙中拦截", sp)
+			}
 		}
 	}
 	return nil

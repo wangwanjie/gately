@@ -294,3 +294,30 @@ func TestKnockRouteValidate(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+// 带敲门路由的规则：监听端口被端口敲门的防火墙拦截时不能保存或启用；启用的规则登记接收敲门报文的端口。
+func TestSPARoutePortProtected(t *testing.T) {
+	knockgate.Default.SetProtected([]string{"tcp/443"})
+	t.Cleanup(func() { knockgate.Default.SetProtected(nil) })
+	r := Rule{Enable: true, Protocols: []string{"tcp"}, ListenPorts: "443", TargetAddresses: []string{"127.0.0.1"},
+		Routes: []Route{{Name: "k", Protocol: ProtoSPA}}}
+	if err := r.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	if err := r.checkKnocks(); err == nil || !strings.Contains(err.Error(), "443") {
+		t.Fatalf("监听端口被敲门防火墙拦截时应拒绝: %v", err)
+	}
+	if err := r.checkSPAPorts(); err == nil {
+		t.Fatal("启用检查应拒绝")
+	}
+	r.ListenPorts = "8443"
+	if err := r.checkKnocks(); err != nil {
+		t.Fatal(err)
+	}
+	off := r
+	off.Enable = false
+	plain := Rule{Enable: true, ListenPorts: "80", Routes: []Route{{Name: "w", Protocol: ProtoHTTP}}}
+	if got := spaListenPorts([]Rule{r, off, plain}); len(got) != 1 || got[0] != 8443 {
+		t.Fatalf("只登记启用且带敲门路由的规则端口: %v", got)
+	}
+}

@@ -97,7 +97,8 @@ ssh -p 443 user@example.com
 - La route de knock remet le paquet au module Port Knocking ; elle ne relaie ni ne répond ; le port de `-A` doit figurer dans la liste des ports de la règle de knock (par exemple `tcp/443`) ;
 - Quand toute la règle exige un knock, une source n'ayant pas frappé ne peut utiliser que la route de knock, et n'accède aux autres routes et à la cible par défaut qu'après le knock ;
 - Les paquets de knock ne sont reconnus que si la règle contient une route de knock, sans effet sur la détection de protocole des autres règles ;
-- Le port UDP de la règle de knock peut être mis à 0 : seul le port du routage par protocole est alors exposé.
+- Le port UDP de la règle de knock peut être mis à 0 : seul le port du routage par protocole est alors exposé;
+- Les ports du routage par protocole qui portent une route de knock et le port UDP de knock ne peuvent pas figurer dans une règle avec blocage par pare-feu (vérifié à l'enregistrement et à l'activation, car les bloquer empêcherait les paquets de knock eux-mêmes d'arriver), et ils sont toujours exclus lors de la génération des règles du pare-feu.
 
 ## Lien avec la prévention d'intrusion
 
