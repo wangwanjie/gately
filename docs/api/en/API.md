@@ -2780,6 +2780,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `targets` | Array of string |
 | `text` | string |
 | `timeouts` | `webservice.BackendTimeouts` |
+| `trustAuthUsers` | boolean |
 | `type` | string |
 | `upstreamSniFromHost` | boolean |
 | `useTargetHost` | boolean |

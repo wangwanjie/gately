@@ -64,6 +64,8 @@ type activeReq struct {
 	// upgraded 表示连接已被接管（WebSocket 等协议升级）
 	upgraded atomic.Bool
 	killed   atomic.Bool
+	// authed 表示请求经本站点 Gately 认证通过，且站点开启了信任已认证用户（#81），不计入路径探测
+	authed atomic.Bool
 	// cancel 取消请求上下文；断开时以 errConnClosed 为原因，反向代理据此区分管理员断开与后端错误
 	cancel context.CancelCauseFunc
 	// w 为服务器交给处理器的原始 ResponseWriter（各层包装之前），断开时用于让阻塞中的读写立即失败

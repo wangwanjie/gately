@@ -4345,6 +4345,9 @@
           "timeouts": {
             "$ref": "#/components/schemas/webservice.BackendTimeouts"
           },
+          "trustAuthUsers": {
+            "type": "boolean"
+          },
           "type": {
             "type": "string"
           },

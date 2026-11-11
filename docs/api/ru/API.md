@@ -2780,6 +2780,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `targets` | Массив из string |
 | `text` | string |
 | `timeouts` | `webservice.BackendTimeouts` |
+| `trustAuthUsers` | boolean |
 | `type` | string |
 | `upstreamSniFromHost` | boolean |
 | `useTargetHost` | boolean |

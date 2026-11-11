@@ -2780,6 +2780,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `targets` | Lista de string |
 | `text` | string |
 | `timeouts` | `webservice.BackendTimeouts` |
+| `trustAuthUsers` | boolean |
 | `type` | string |
 | `upstreamSniFromHost` | boolean |
 | `useTargetHost` | boolean |

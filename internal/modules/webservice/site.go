@@ -749,6 +749,9 @@ func (h *siteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if h.site.AccessLog || h.auth.recordsVisits() || h.site.WAF != "" {
 		admin = httpx.SessionUser(r)
 	}
+	// trusted 表示请求带有本站点 Gately 认证的有效凭据且站点开启了信任已认证用户（#81），
+	// 在访问控制通过后、WAF 之前判断，见下方 pipeline 的选择与 defer 中的路径探测上报
+	trusted := false
 
 	defer func() {
 		// 首字节延迟：协议升级（长连接）、被管理员断开与未写出响应（断开连接）的请求不计入（-1）
@@ -776,6 +779,12 @@ func (h *siteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// 默认站点改用“反向代理 + 白名单 + 拒绝时断开连接”放行自家 IP 后，未知域名扫描仍能被统计
 		// 管理员手动断开的请求不是访客行为，不计入路径探测
 		if rec.req != nil && rec.req.killed.Load() {
+			return
+		}
+		// 信任的已认证用户（#81）的请求不计入路径探测：开启该选项的站点上，登录用户访问不存在的页面或命中诱饵路径
+		// 规则多半是误报。在 WAF 之前已识别出的凭据，或本次请求经 Gately 认证通过（首次带基本认证凭据）都算。
+		// 默认站点例外：它处理的是未知域名的请求，扫描未知域名照常计数
+		if !h.deflt && (trusted || (rec.req != nil && rec.req.authed.Load())) {
 			return
 		}
 		status := rec.status
@@ -834,10 +843,13 @@ func (h *siteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// （nginx 导入写入的备注、证书路径）、HTML（自定义错误页、拒绝页）、脚本（证书部署、Webhook）等内容，
 	// 会被 CRS 的 LFI、XSS、RCE 规则误拦成 403。登录态由服务端签名，只认管理员角色，访客无法伪造；
 	// 管理员本就能修改 WAF 设置与执行命令，放行不扩大权限。只读账号的请求仍经过 WAF
+	// 开启信任已认证用户的站点上，带本站点 Gately 认证有效凭据的请求同样不经过 WAF（#81）：
+	// 只认 Gately 签发的会话与验证过的基本认证凭据，访客无法伪造；转发认证与分享链接不算
 	pipeline := h.pipeline
+	trusted = h.site.TrustAuthUsers && h.trustedAuth(r)
 	var wafBlocked *atomic.Bool
 	if h.site.WAF != "" {
-		if admin != "" {
+		if admin != "" || trusted {
 			pipeline = h.inner
 		} else {
 			r, wafBlocked = httpx.WithWAFFlag(r)
@@ -965,6 +977,12 @@ func (h *siteHandler) serveInner(rec http.ResponseWriter, r *http.Request) {
 				var ok bool
 				if id, ok = h.auth.checkUser(rec, r, h.site); !ok {
 					return
+				}
+				// 经 Gately 认证通过：开启信任已认证用户时，这次请求不计入路径探测（见 ServeHTTP）
+				if h.site.TrustAuthUsers {
+					if a, ok := r.Context().Value(ctxKeyActiveReq{}).(*activeReq); ok {
+						a.authed.Store(true)
+					}
 				}
 			}
 		}

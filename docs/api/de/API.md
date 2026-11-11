@@ -2780,6 +2780,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `targets` | Array von string |
 | `text` | string |
 | `timeouts` | `webservice.BackendTimeouts` |
+| `trustAuthUsers` | boolean |
 | `type` | string |
 | `upstreamSniFromHost` | boolean |
 | `useTargetHost` | boolean |
