@@ -423,6 +423,9 @@ func validInstance(s string) bool {
 	return true
 }
 
+// agentPollHook 仅供测试：在轮询校验凭据之后、登记连接之前调用，用于复现两者之间的并发修改。
+var agentPollHook func()
+
 // handleAgentPoll 处理客户端的长轮询。同一设备同时只保留一个轮询：同一客户端重连时替换旧轮询，
 // 其他客户端（例如同一凭据装在了两台机器上）在原客户端在线期间被拒绝，避免互相抢占、指令落到别的机器上。
 func (m *Module) handleAgentPoll(w http.ResponseWriter, r *http.Request) {
@@ -442,6 +445,9 @@ func (m *Module) handleAgentPoll(w http.ResponseWriter, r *http.Request) {
 	log := m.logs.Logger(d.Name)
 	now := time.Now()
 
+	if agentPollHook != nil {
+		agentPollHook()
+	}
 	h := m.agents
 	h.mu.Lock()
 	c := h.conns[d.Key]
@@ -495,6 +501,17 @@ func (m *Module) handleAgentPoll(w http.ResponseWriter, r *http.Request) {
 	p := &agentPoll{ch: make(chan *agentCmd, 1), stop: make(chan struct{})}
 	c.poll = p
 	h.mu.Unlock()
+	// 校验凭据与登记连接之间，管理员可能已重新生成凭据或让设备改用其他关机方式（随后的 drop 先于登记执行），
+	// 旧凭据的轮询就会留在连接表里接收之后的指令：登记后再校验一次，凭据已失效时撤销登记
+	if _, _, ok := m.agentDevice(tok); !ok {
+		h.mu.Lock()
+		if cur := h.conns[d.Key]; cur == c && c.poll == p {
+			delete(h.conns, d.Key)
+		}
+		h.mu.Unlock()
+		agentText(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
 	if fresh {
 		log.Infof("客户端已连接：%s（%s，版本 %s，来自 %s）", host, osName, version, addr)
 	}

@@ -482,6 +482,34 @@ func TestAgentDroppedOnChange(t *testing.T) {
 	}
 }
 
+// 轮询已通过凭据校验、尚未登记连接时凭据被重新生成：旧凭据的轮询不能留在连接表里接收之后的指令。
+func TestAgentPollTokenRegeneratedBeforeRegister(t *testing.T) {
+	m, srv, _ := newAgentModule(t)
+	key, tok := addAgentDevice(t, srv, "pc")
+	var once sync.Once
+	agentPollHook = func() {
+		once.Do(func() {
+			if code, body := call(t, srv, "POST", "/devices/"+key+"/agent-token", nil); code != 200 {
+				t.Errorf("重新生成凭据失败: %d %s", code, body)
+			}
+		})
+	}
+	t.Cleanup(func() { agentPollHook = nil })
+	code, _ := agentPost(t, srv, "poll", pollForm(tok, "inst-0006aaaa"))
+	if code != http.StatusUnauthorized {
+		t.Fatalf("凭据已重新生成时轮询应返回 401: %d", code)
+	}
+	m.agents.mu.Lock()
+	c := m.agents.conns[key]
+	m.agents.mu.Unlock()
+	if c != nil {
+		t.Fatal("旧凭据的轮询不应留在连接表中")
+	}
+	if m.agents.online(key) {
+		t.Fatal("旧凭据的客户端不应显示在线")
+	}
+}
+
 // 请求格式与凭据校验：错误凭据、缺少运行标识、超大请求体、未知操作、非客户端方式的重启。
 func TestAgentRequestChecks(t *testing.T) {
 	m, srv, _ := newAgentModule(t)
