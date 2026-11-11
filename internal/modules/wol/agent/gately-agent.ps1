@@ -270,11 +270,49 @@ function Read-Target {
 	}
 }
 
-# Protect-Dir 让目录只有 SYSTEM 与管理员可访问：配置文件含凭据，计划任务以 SYSTEM 运行该目录中的脚本
-function Protect-Dir([string]$Path) {
-	& icacls.exe $Path /inheritance:r /grant:r '*S-1-5-18:(OI)(CI)F' '*S-1-5-32-544:(OI)(CI)F' | Out-Null
-	if ($LASTEXITCODE -ne 0) {
-		Stop-WithError "设置 $Path 的访问权限失败"
+# New-AgentAcl 返回只允许 SYSTEM 与管理员访问的目录权限（不继承上级目录）：配置文件含凭据，计划任务以 SYSTEM 运行该目录中的脚本
+function New-AgentAcl {
+	$acl = New-Object System.Security.AccessControl.DirectorySecurity
+	$acl.SetAccessRuleProtection($true, $false)
+	foreach ($sid in @('S-1-5-18', 'S-1-5-32-544')) {
+		$id = New-Object System.Security.Principal.SecurityIdentifier($sid)
+		$rule = New-Object System.Security.AccessControl.FileSystemAccessRule($id, 'FullControl', 'ContainerInherit,ObjectInherit', 'None', 'Allow')
+		$acl.AddAccessRule($rule)
+	}
+	return $acl
+}
+
+# Initialize-Dir 准备安装目录。ProgramData 默认允许普通用户新建子目录且新建者成为所有者：
+# 目录若被其他用户抢先创建（或换成指向别处的链接），对方就能改写以 SYSTEM 运行的脚本。
+# 因此已有目录必须是普通目录且所有者为 SYSTEM、管理员组或当前管理员，否则拒绝安装；
+# 新目录在创建时就带上权限，不留普通用户可写的间隙；已有目录的授权整体替换，不保留其他授权。
+function Initialize-Dir {
+	$acl = New-AgentAcl
+	if (Test-Path -LiteralPath $Dir) {
+		$item = Get-Item -LiteralPath $Dir -Force
+		if (-not $item.PSIsContainer -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+			Stop-WithError "$Dir 不是普通目录（可能是链接），为安全起见不安装；请确认后删除它再重试"
+		}
+		$owner = (Get-Acl -LiteralPath $Dir).GetOwner([System.Security.Principal.SecurityIdentifier]).Value
+		$me = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+		if (@('S-1-5-18', 'S-1-5-32-544', $me) -notcontains $owner) {
+			Stop-WithError "$Dir 的所有者（$owner）不是管理员或 SYSTEM，可能被其他用户预先创建；为安全起见不安装，请确认后删除它再重试"
+		}
+		Set-Acl -LiteralPath $Dir -AclObject $acl
+	} else {
+		try {
+			# Windows PowerShell 5.1（.NET Framework）支持创建时指定权限
+			[IO.Directory]::CreateDirectory($Dir, $acl) | Out-Null
+		} catch {
+			# PowerShell 7（.NET）没有该重载：用扩展方法在创建时指定权限
+			[System.IO.FileSystemAclExtensions]::Create((New-Object IO.DirectoryInfo($Dir)), $acl)
+		}
+	}
+	# 已有的脚本与配置文件先删除再写，新文件继承目录权限
+	foreach ($f in @($ScriptPath, $ConfPath)) {
+		if (Test-Path -LiteralPath $f) {
+			Remove-Item -LiteralPath $f -Force
+		}
 	}
 }
 
@@ -284,13 +322,12 @@ function Install-Agent {
 	}
 	Read-Target
 	Initialize-Http
-	# 安装正在运行的这份脚本（安装命令已校验过它的 SHA-256），在写入安装目录之前读出（重装时它可能就在安装目录里）
+	# 安装正在运行的这份脚本（安装命令已校验过它的 SHA-256），在清理安装目录之前读出（重装时它可能就在安装目录里）
 	$self = $null
 	if ($PSCommandPath -and (Test-Path -LiteralPath $PSCommandPath)) {
 		$self = [IO.File]::ReadAllText($PSCommandPath, [Text.Encoding]::UTF8)
 	}
-	New-Item -ItemType Directory -Force -Path $Dir | Out-Null
-	Protect-Dir $Dir
+	Initialize-Dir
 	# 向 Gately 请求脚本，验证地址与凭据可用
 	$r = Invoke-Agent '/api/wol/public/agent/gately-agent.ps1' @{} 30
 	if ($r.Code -ne 200 -or -not $r.Body.Contains('Gately')) {
