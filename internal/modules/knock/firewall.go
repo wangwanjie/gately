@@ -121,6 +121,9 @@ type firewall struct {
 	pendingAdd, pendingDel []fwGrant
 	// resync 表示增量写入失败，下一次轮询完整重建
 	resync bool
+	// dirty 表示系统防火墙中可能留有本模块的规则（写入过或写入到一半失败），取消拦截与停止时据此清理，
+	// 不依赖 status.Active：写入失败时 Active 为 false，但 iptables 多步写入、nft 旧表都可能已经生效
+	dirty bool
 	// lastErr 为最近一次记录到日志的错误，相同错误不重复记录
 	lastErr  string
 	onActive func()
@@ -244,12 +247,8 @@ func (f *firewall) stop() {
 	}
 	f.mu.Lock()
 	defer f.mu.Unlock()
-	if f.status.Active && f.be != nil {
-		if err := f.be.remove(context.Background()); err != nil {
-			f.log.Warnf("删除防火墙规则失败: %v", err)
-		} else {
-			f.log.Infof("已移除防火墙规则，受保护端口恢复原状")
-		}
+	if f.cleanupLocked(context.Background()) {
+		f.log.Infof("已移除防火墙规则，受保护端口恢复原状")
 	}
 	f.status.Active = false
 	f.grants = map[fwKey]time.Time{}
@@ -276,13 +275,11 @@ func (f *firewall) rebuildLocked(ctx context.Context) {
 	f.status.Ports = formatPorts(f.plan.Ports)
 	f.resync = false
 	if !f.status.Needed {
-		if wasActive && f.be != nil {
+		if wasActive {
 			f.keepCountsLocked(ctx)
-			if err := f.be.remove(ctx); err != nil {
-				f.log.Warnf("删除防火墙规则失败: %v", err)
-			} else {
-				f.log.Infof("没有需要拦截的端口，已移除防火墙规则")
-			}
+		}
+		if f.cleanupLocked(ctx) {
+			f.log.Infof("没有需要拦截的端口，已移除防火墙规则")
 		}
 		f.status.Active, f.status.Reason, f.status.Error = false, "", ""
 		f.lastErr = ""
@@ -304,6 +301,7 @@ func (f *firewall) rebuildLocked(ctx context.Context) {
 	now := f.now()
 	plan := f.plan
 	plan.Grants = f.liveGrantsLocked(now)
+	f.dirty = true
 	if err := f.be.apply(ctx, plan, now); err != nil {
 		reason := ReasonError
 		if isPermission(err) {
@@ -311,8 +309,12 @@ func (f *firewall) rebuildLocked(ctx context.Context) {
 		}
 		f.status.Active, f.status.Reason, f.status.Error = false, reason, err.Error()
 		f.logErrLocked(err.Error())
-		// 写入失败后重新探测后端（例如 nft 被卸载、权限被收回）
-		f.be = nil
+		// 写入到一半的规则（如 iptables 的 IPv4 已写入、IPv6 失败）或事务回滚后留下的旧表仍会拦截，而状态已是未生效、
+		// 放行不会再写入，必须立即删除。删除成功后丢弃后端，下次重试重新探测（例如 nft 被卸载、权限被收回）；
+		// 删除也失败时保留后端，取消拦截与停止时继续用它清理
+		if f.cleanupLocked(ctx) {
+			f.be = nil
+		}
 		return
 	}
 	f.status.Active, f.status.Reason, f.status.Error = true, "", ""
@@ -321,6 +323,27 @@ func (f *firewall) rebuildLocked(ctx context.Context) {
 		f.log.Infof("已在 %s 中拦截 %s，敲门成功的地址才能访问", f.status.Backend, strings.Join(f.status.Ports, ", "))
 	}
 	f.lastErr = ""
+}
+
+// cleanupLocked 在系统防火墙中可能留有本模块规则时删除它们（幂等：表、链、集合不存在时不报错），
+// 返回是否删除了规则。没有后端时重新探测；删除失败时保持 dirty，之后取消拦截、停止或重试时再删。
+func (f *firewall) cleanupLocked(ctx context.Context) bool {
+	if !f.dirty {
+		return false
+	}
+	if f.be == nil {
+		be, _, _ := f.detect(ctx)
+		if be == nil {
+			return false
+		}
+		f.be = be
+	}
+	if err := f.be.remove(ctx); err != nil {
+		f.log.Warnf("删除防火墙规则失败: %v", err)
+		return false
+	}
+	f.dirty = false
+	return true
 }
 
 func (f *firewall) logErrLocked(msg string) {
