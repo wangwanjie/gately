@@ -321,3 +321,142 @@ func TestSPARoutePortProtected(t *testing.T) {
 		t.Fatalf("只登记启用且带敲门路由的规则端口: %v", got)
 	}
 }
+
+// greeter 启动一个服务端先发言的后端：连接建立后立即发送 "name\n"（模拟 SSH、SMTP 等）。
+func greeter(t *testing.T, name string) int {
+	t.Helper()
+	ln, err := net.Listen("tcp4", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { ln.Close() })
+	go func() {
+		for {
+			c, err := ln.Accept()
+			if err != nil {
+				return
+			}
+			_, _ = c.Write([]byte(name + "\n"))
+			go func() {
+				defer c.Close()
+				_, _ = io.Copy(io.Discard, c)
+			}()
+		}
+	}()
+	return ln.Addr().(*net.TCPAddr).Port
+}
+
+// silentReaches 连接后不发送任何数据，返回等待超时路由的后端发来的标签，被断开时返回空串。
+func silentReaches(t *testing.T, port int) string {
+	t.Helper()
+	c, err := net.Dial("tcp4", "127.0.0.1:"+strconv.Itoa(port))
+	if err != nil {
+		return ""
+	}
+	defer c.Close()
+	_ = c.SetReadDeadline(time.Now().Add(2 * time.Second))
+	buf := make([]byte, 64)
+	n, _ := c.Read(buf)
+	return strings.TrimSpace(string(buf[:n]))
+}
+
+// unknownReaches 发送无法识别的数据，返回默认目标回显的标签，被断开时返回空串。
+func unknownReaches(t *testing.T, port int) string {
+	t.Helper()
+	c, err := net.Dial("tcp4", "127.0.0.1:"+strconv.Itoa(port))
+	if err != nil {
+		return ""
+	}
+	defer c.Close()
+	_, _ = c.Write([]byte("\x00\x01hello\r\n"))
+	_ = c.SetReadDeadline(time.Now().Add(2 * time.Second))
+	buf := make([]byte, 64)
+	n, _ := c.Read(buf)
+	name, _, _ := strings.Cut(string(buf[:n]), "\n")
+	return name
+}
+
+// 整条规则要求敲门且有敲门路由时，未敲门的来源命中默认目标或等待超时路由都被拒绝；敲门后两者都能使用。
+func TestRuleKnockFallbackAndTimeoutDenied(t *testing.T) {
+	installFakeKnock(t, "k1")
+	web := tagEcho(t, "web")
+	slow := greeter(t, "slow")
+	port := freePort(t)
+	rule := Rule{
+		Name: "gated", Protocols: []string{"tcp4"}, ListenAddress: "127.0.0.1", ListenPorts: strconv.Itoa(port),
+		Routes: []Route{
+			{Name: "knock", Protocol: ProtoSPA},
+			{Name: "slow", Protocol: ProtoTimeout, TargetAddresses: []string{"127.0.0.1"}, TargetPort: slow},
+		},
+		TargetAddresses: []string{"127.0.0.1"}, TargetPorts: strconv.Itoa(web),
+		SniffTimeout: 0.3,
+		Access:       iplist.Access{Knock: "k1"},
+	}
+	if err := rule.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	r := testRunner(rule)
+	if err := r.start(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(r.stop)
+	if got := unknownReaches(t, port); got != "" {
+		t.Fatalf("未敲门时默认目标应拒绝: %q", got)
+	}
+	if got := silentReaches(t, port); got != "" {
+		t.Fatalf("未敲门时等待超时路由应拒绝: %q", got)
+	}
+	if s := r.snapshot(); s.KnockDenied != 2 {
+		t.Fatalf("应计入 2 次未敲门拒绝: %+v", s)
+	}
+	_ = knockgate.Default.Allow(netip.MustParseAddr("127.0.0.1"), "k1", time.Now().Add(time.Minute))
+	if got := unknownReaches(t, port); got != "web" {
+		t.Fatalf("敲门后应转发到默认目标: %q", got)
+	}
+	if got := silentReaches(t, port); got != "slow" {
+		t.Fatalf("敲门后应转发到等待超时路由: %q", got)
+	}
+}
+
+// 敲门路由停用后不再识别敲门报文：报文按无法识别交给默认目标，不提交给端口敲门模块，也不产生授权。
+func TestDisabledSPARouteNotRecognized(t *testing.T) {
+	fk := installFakeKnock(t, "k1")
+	web := tagEcho(t, "web")
+	port := freePort(t)
+	rule := Rule{
+		Name: "mux", Enable: true, Protocols: []string{"tcp4"}, ListenAddress: "127.0.0.1", ListenPorts: strconv.Itoa(port),
+		Routes:          []Route{{Name: "knock", Protocol: ProtoSPA, Disabled: true}},
+		TargetAddresses: []string{"127.0.0.1"}, TargetPorts: strconv.Itoa(web),
+	}
+	if err := rule.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	if rule.hasSPARoute() {
+		t.Fatal("停用的敲门路由不应算作敲门路由")
+	}
+	r := testRunner(rule)
+	if err := r.start(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(r.stop)
+	c, err := net.Dial("tcp4", "127.0.0.1:"+strconv.Itoa(port))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Close()
+	if _, err := c.Write(spaPacket(true)); err != nil {
+		t.Fatal(err)
+	}
+	_ = c.SetReadDeadline(time.Now().Add(2 * time.Second))
+	buf := make([]byte, 64)
+	n, _ := c.Read(buf)
+	if name, _, _ := strings.Cut(string(buf[:n]), "\n"); name != "web" {
+		t.Fatalf("停用敲门路由后报文应交给默认目标: %q", name)
+	}
+	if len(fk.packets()) != 0 || knockgate.Default.Allowed(netip.MustParseAddr("127.0.0.1"), "k1") {
+		t.Fatal("停用敲门路由后不应提交报文或产生授权")
+	}
+	if spaListenPorts([]Rule{rule}) != nil {
+		t.Fatal("停用敲门路由的规则不应登记接收敲门报文的端口")
+	}
+}
