@@ -1795,6 +1795,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `ipMode` | string |
 | `ipSets` | Array of string |
 | `key` | string |
+| `knock` | string |
 | `listenAddress` | string |
 | `listenPorts` | string |
 | `maxConnections` | integer |
@@ -1842,6 +1843,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `ipMode` | string |
 | `ipSets` | Array of string |
 | `key` | string |
+| `knock` | string |
 | `listenAddress` | string |
 | `listenPorts` | string |
 | `maxConnections` | integer |
@@ -1976,6 +1978,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `ipSets` | Array of string |
 | `keepAliveServers` | Array of string |
 | `key` | string |
+| `knock` | string |
 | `localPort` | integer |
 | `maxConnections` | integer |
 | `name` | string |

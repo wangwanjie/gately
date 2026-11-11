@@ -1795,6 +1795,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `ipMode` | string |
 | `ipSets` | Lista de string |
 | `key` | string |
+| `knock` | string |
 | `listenAddress` | string |
 | `listenPorts` | string |
 | `maxConnections` | integer |
@@ -1842,6 +1843,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `ipMode` | string |
 | `ipSets` | Lista de string |
 | `key` | string |
+| `knock` | string |
 | `listenAddress` | string |
 | `listenPorts` | string |
 | `maxConnections` | integer |
@@ -1976,6 +1978,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `ipSets` | Lista de string |
 | `keepAliveServers` | Lista de string |
 | `key` | string |
+| `knock` | string |
 | `localPort` | integer |
 | `maxConnections` | integer |
 | `name` | string |

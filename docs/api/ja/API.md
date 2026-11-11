@@ -1795,6 +1795,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `ipMode` | string |
 | `ipSets` | 配列 of string |
 | `key` | string |
+| `knock` | string |
 | `listenAddress` | string |
 | `listenPorts` | string |
 | `maxConnections` | integer |
@@ -1842,6 +1843,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `ipMode` | string |
 | `ipSets` | 配列 of string |
 | `key` | string |
+| `knock` | string |
 | `listenAddress` | string |
 | `listenPorts` | string |
 | `maxConnections` | integer |
@@ -1976,6 +1978,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `ipSets` | 配列 of string |
 | `keepAliveServers` | 配列 of string |
 | `key` | string |
+| `knock` | string |
 | `localPort` | integer |
 | `maxConnections` | integer |
 | `name` | string |

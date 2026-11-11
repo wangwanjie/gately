@@ -1795,6 +1795,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `ipMode` | string |
 | `ipSets` | Tableau de string |
 | `key` | string |
+| `knock` | string |
 | `listenAddress` | string |
 | `listenPorts` | string |
 | `maxConnections` | integer |
@@ -1842,6 +1843,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `ipMode` | string |
 | `ipSets` | Tableau de string |
 | `key` | string |
+| `knock` | string |
 | `listenAddress` | string |
 | `listenPorts` | string |
 | `maxConnections` | integer |
@@ -1976,6 +1978,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `ipSets` | Tableau de string |
 | `keepAliveServers` | Tableau de string |
 | `key` | string |
+| `knock` | string |
 | `localPort` | integer |
 | `maxConnections` | integer |
 | `name` | string |
