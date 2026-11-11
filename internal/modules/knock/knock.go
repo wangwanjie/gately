@@ -468,14 +468,28 @@ func (m *Module) Init(env module.Env) error {
 	if m.cfg.Rules == nil {
 		m.cfg.Rules = []Rule{}
 	}
+	// 配置文件中密钥留空（手写配置或导入）时 Validate 会生成新密钥：必须保存，否则每次启动密钥都不同，
+	// 已配置好的客户端在重启后全部失效
+	generated := false
 	for i := range m.cfg.Rules {
 		r := &m.cfg.Rules[i]
+		noKey := strings.TrimSpace(r.EncKey) == "" || strings.TrimSpace(r.HMACKey) == ""
 		if err := r.Validate(); err != nil {
 			m.logs.Add(logbuf.LevelWarn, r.Name, "规则无效，已停用: "+err.Error())
 			r.Enable = false
+			continue
+		}
+		if noKey {
+			generated = true
+			m.logs.Logger(r.Name).Infof("规则没有密钥，已生成新密钥并保存")
 		}
 	}
 	crud.AssignKeys(len(m.cfg.Rules), func(i int) *string { return &m.cfg.Rules[i].Key }, "k")
+	if generated {
+		if err := m.saveLocked(); err != nil {
+			m.logs.Logger("").Warnf("保存生成的密钥失败，下次启动会重新生成: %v", err)
+		}
+	}
 	m.fw = newFirewall(m.logs.Logger("防火墙"))
 	m.open = fwopen.NewGroup("knock")
 	fwopen.Setup(m.store.Dir())

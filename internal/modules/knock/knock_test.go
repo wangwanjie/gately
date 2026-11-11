@@ -908,3 +908,38 @@ func TestReplayAfterRestart(t *testing.T) {
 		t.Fatalf("启动后发出的报文应放行: %v", err)
 	}
 }
+
+// 配置文件中规则的密钥留空时，启动时生成并保存，重启后密钥不变。
+func TestInitSavesGeneratedKeys(t *testing.T) {
+	dir := t.TempDir()
+	store, err := config.Open(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := Rule{Key: "k1", Name: "ssh", Enable: true, Ports: []string{"tcp/22"}}
+	if err := store.Save(ID, fileConfig{Settings: defaultSettings(), Rules: []Rule{r}}); err != nil {
+		t.Fatal(err)
+	}
+	load := func() Rule {
+		t.Helper()
+		m := New()
+		if err := m.Init(module.Env{Store: store, Logs: logbuf.New(50, nil)}); err != nil {
+			t.Fatal(err)
+		}
+		return m.cfg.Rules[0]
+	}
+	first := load()
+	if first.EncKey == "" || first.HMACKey == "" || !first.Enable {
+		t.Fatalf("应生成密钥并保持启用: %+v", first)
+	}
+	var saved fileConfig
+	if _, err := store.Load(ID, &saved); err != nil {
+		t.Fatal(err)
+	}
+	if saved.Rules[0].EncKey != first.EncKey || saved.Rules[0].HMACKey != first.HMACKey {
+		t.Fatal("生成的密钥应写入配置文件")
+	}
+	if second := load(); second.EncKey != first.EncKey || second.HMACKey != first.HMACKey {
+		t.Fatal("重启后密钥应不变")
+	}
+}
