@@ -5,7 +5,7 @@ Prevenção de intrusão no estilo fail2ban: o Gately encontra tentativas de for
 ## Recursos
 
 - **Regras de logs**: leem arquivos de log, o journal do systemd, a saída de um comando (como `logread -f` no OpenWrt) ou os logs de um contêiner Docker, encontram falhas com expressões regulares e bloqueiam o IP que atinge o número de falhas na janela de tempo. Há modelos para SSH, Dropbear, Nginx, Vaultwarden, Home Assistant, Proxmox VE e outros, e no editor você pode colar linhas de exemplo para testar os filtros;
-- **Eventos do Gately**: falhas de login no painel e bloqueios do WAF também podem alimentar uma regra, sem expressão regular;
+- **Eventos do Gately**: falhas de login no painel, bloqueios do WAF e knocks recusados do [Port Knocking](/pt-BR/docs/modules/knock) também podem alimentar uma regra, sem expressão regular;
 - **Sondagem de caminhos web**: conta diretamente as requisições tratadas pelo serviço web por listener, caminho e código de status, sem ler logs; origens que pedem caminhos isca como `/.env` ou `/.git`, ou que varrem domínios desconhecidos sem parar, são bloqueadas;
 - **Portas armadilha**: armadilhas em portas que este host não usa (por padrão 23, 135, 1433, 3389, 5900, 6379 e outras). Qualquer origem que se conecte é bloqueada;
 - **Detecção de varredura de portas**: a origem que se conecta a portas fechadas deste host mais vezes por minuto que o limite é bloqueada;
@@ -57,7 +57,7 @@ Sem isso, os bloqueios continuam valendo para os serviços do Gately. Para ler l
 | Journal do systemd | Unidades de serviço como `ssh.service` | Lido com `journalctl -f` |
 | Saída de comando | Um comando como `logread -f` | Reiniciado quando termina |
 | Contêiner Docker | Nome do contêiner | Lido pela conexão com o Docker do módulo Docker |
-| Evento do Gately | Falha de login / bloqueio do WAF | Os eventos trazem o IP de origem; não precisa de filtro |
+| Evento do Gately | Falha de login / bloqueio do WAF / knock recusado | Os eventos trazem o IP de origem; não precisa de filtro |
 | Sondagem de caminhos web | Listeners (opcional) e regras de caminho | Conta as requisições do serviço web, veja abaixo |
 
 Os filtros são expressões regulares Go (sintaxe RE2), uma por linha, e `<HOST>` representa o endereço de origem, por exemplo:

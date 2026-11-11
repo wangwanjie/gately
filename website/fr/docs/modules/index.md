@@ -21,6 +21,7 @@ Pour les modules non compilés dans une version personnalisée : leurs fichiers 
 | Authentification unique OIDC | Propose les utilisateurs partagés à Gitea, OpenList, Grafana et d'autres applications via OpenID Connect ; remplace l'OIDC d'Authelia | [Consulter](/fr/docs/modules/oidc) |
 | Pare-feu WAF | Coraza + OWASP CRS v4 | [Consulter](/fr/docs/modules/waf) |
 | Prévention d'intrusion | Règles de journaux (à la fail2ban), ports pièges et détection de scan, bannissements synchronisés dans nftables | [Consulter](/fr/docs/modules/guard) |
+| Port Knocking | Single Packet Authorization compatible avec fwknop : blocage par le pare-feu de SSH et d'autres ports ; redirection de ports, routage par protocole et STUN autorisés par knock | [Consulter](/fr/docs/modules/knock) |
 | Tailscale / NetBird / frp / cloudflared | Réseau et traversée NAT avec des binaires officiels gérés | [Consulter](/fr/docs/modules/tunnels) |
 | Docker | Création et édition de conteneurs, journaux et terminal, Compose, mises à jour et montées de version d'images, réseaux et volumes | [Consulter](/fr/docs/modules/docker) |
 | Terminal Web | SSH, Telnet, shell local, gestionnaire de fichiers SFTP, sessions persistantes | [Consulter](/fr/docs/modules/terminal) |

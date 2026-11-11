@@ -38,7 +38,7 @@ Ist bei einer Regel „Firewall-Port freigeben" aktiviert, gibt Gately den Kanal
 
 ## Quell-IP-Zugriffskontrolle
 
-Mit der eingebauten Weiterleitung kann jede Regel eine Zulassungs- oder Sperrliste nutzen, die anhand der Quell-IP entscheidet, ob zum Ziel weitergeleitet wird. Listen und abonnierte IP-Listen funktionieren wie bei der [Portweiterleitung](/de/docs/modules/portforward#quell-ip-zugriffskontrolle), Sperren des Einbruchschutzes haben auch hier Vorrang. Die Liste gilt nur für die Weiterleitung; STUN-Abfragen und die Kanalprüfung bleiben unberührt. Das Bearbeiten der Liste startet keine neue Durchdringung, der öffentliche Port bleibt gleich. UDP wird pro Paket geprüft. Ohne eingebaute Weiterleitung laufen externe Verbindungen nicht über Gately, die Liste wirkt dann nicht.
+Mit der eingebauten Weiterleitung kann jede Regel eine Zulassungs- oder Sperrliste nutzen, die anhand der Quell-IP entscheidet, ob zum Ziel weitergeleitet wird. Listen und abonnierte IP-Listen funktionieren wie bei der [Portweiterleitung](/de/docs/modules/portforward#quell-ip-zugriffskontrolle), Sperren des Einbruchschutzes haben auch hier Vorrang. Die Liste gilt nur für die Weiterleitung; STUN-Abfragen und die Kanalprüfung bleiben unberührt. Das Bearbeiten der Liste startet keine neue Durchdringung, der öffentliche Port bleibt gleich. UDP wird pro Paket geprüft. Ohne eingebaute Weiterleitung laufen externe Verbindungen nicht über Gately, die Liste wirkt dann nicht. Ebenso lässt sich „Knock erforderlich“ wählen: Nur Quellen, die erfolgreich mit fwknop geklopft haben, werden weitergeleitet, siehe [Port-Knocking](/de/docs/modules/knock#gately-entries).
 
 ## Hinweis zur Bereitstellung
 

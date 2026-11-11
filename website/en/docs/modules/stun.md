@@ -38,7 +38,7 @@ When a rule has "Open firewall port" turned on, Gately allows the channel port i
 
 ## Source IP access control
 
-With the built-in forwarding, each rule can use an allowlist or a blocklist that decides by source IP whether traffic is forwarded to the target. Lists and subscribed IP lists work the same as in [Port Forwarding](/en/docs/modules/portforward#source-ip-access-control), and Intrusion Prevention bans come first here too. The list only applies to forwarding; STUN queries and the channel check are unaffected. Editing the list does not redo the traversal, so the public port stays the same. UDP is checked per packet. Without the built-in forwarding, outside connections do not pass through Gately and the list has no effect.
+With the built-in forwarding, each rule can use an allowlist or a blocklist that decides by source IP whether traffic is forwarded to the target. Lists and subscribed IP lists work the same as in [Port Forwarding](/en/docs/modules/portforward#source-ip-access-control), and Intrusion Prevention bans come first here too. The list only applies to forwarding; STUN queries and the channel check are unaffected. Editing the list does not redo the traversal, so the public port stays the same. UDP is checked per packet. Without the built-in forwarding, outside connections do not pass through Gately and the list has no effect. "Require knock" can be chosen as well: only sources that knocked successfully with fwknop are forwarded, see [Port Knocking](/en/docs/modules/knock#gately-entries).
 
 ## Deployment tip
 

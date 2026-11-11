@@ -38,6 +38,7 @@
       "modules/oidc": "Login único OIDC",
       "modules/waf": "Firewall WAF",
       "modules/guard": "Prevenção de intrusão",
+      "modules/knock": "Port Knocking",
       "modules/tunnels": "Tailscale / NetBird / frp / cloudflared",
       "modules/docker": "Gerenciamento do Docker",
       "modules/terminal": "Terminal Web",

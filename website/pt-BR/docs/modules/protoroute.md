@@ -60,6 +60,7 @@ Cada rota tem um interruptor à esquerda, e as linhas de rota no cartão da regr
 - Ao editar uma regra com atualização a quente (observação, rotas, destino padrão, lista de IP de origem etc.), as rotas que mantêm protocolo, domínios e ALPN preservam a contagem de acertos, inclusive quando são movidas, renomeadas ou trocam de destino; rotas novas e rotas com protocolo, domínios ou ALPN alterados começam do 0; desativar e reativar ou reiniciar a regra faz todas as contagens começarem do 0;
 - Alterações em rotas, destino padrão e tempo de detecção valem na hora, sem parar a escuta, e as conexões abertas continuam.
 - Cada regra pode usar uma lista de permissões ou de bloqueio por IP de origem (que pode usar as listas de IP assinadas dos Serviços Web), verificada antes de identificar o protocolo: uma conexão reprovada é fechada sem ler dados e não conta como acerto de rota; os banimentos da Prevenção de intrusão têm prioridade. Editar a lista não interrompe a escuta, e o cartão da regra mostra o número de recusas. Funciona como no [Redirecionamento de portas](/pt-BR/docs/modules/portforward#controle-de-acesso-por-ip-de-origem).
+- A regra inteira ou uma rota individual pode usar «Exigir knock»: só origens que fizeram o knock com o fwknop podem usá-la; ao adicionar uma rota «Port Knocking» (protocolo `spa`), o cliente pode enviar o pacote de knock com `fwknop -P tcp` à mesma porta, expondo apenas essa porta. Veja [Port Knocking](/pt-BR/docs/modules/knock#gately-entries).
 
 ## Exemplo: substituindo o haproxy
 

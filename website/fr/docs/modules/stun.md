@@ -38,7 +38,7 @@ Lorsque « Ouvrir le port dans le pare-feu » est activé sur une règle, Gately
 
 ## Contrôle d'accès par IP source
 
-Avec le relais intégré, chaque règle peut utiliser une liste d'autorisation ou de blocage qui décide d'après l'IP source si le trafic est relayé vers la cible. Les listes et les listes d'IP abonnées fonctionnent comme pour la [Redirection de ports](/fr/docs/modules/portforward#controle-d-acces-par-ip-source), et les bannissements de la Prévention des intrusions passent aussi en premier. La liste ne s'applique qu'au relais ; les requêtes STUN et la vérification du canal ne sont pas affectées. Modifier la liste ne refait pas la traversée, le port public reste le même. UDP est vérifié par paquet. Sans le relais intégré, les connexions externes ne passent pas par Gately et la liste est sans effet.
+Avec le relais intégré, chaque règle peut utiliser une liste d'autorisation ou de blocage qui décide d'après l'IP source si le trafic est relayé vers la cible. Les listes et les listes d'IP abonnées fonctionnent comme pour la [Redirection de ports](/fr/docs/modules/portforward#controle-d-acces-par-ip-source), et les bannissements de la Prévention des intrusions passent aussi en premier. La liste ne s'applique qu'au relais ; les requêtes STUN et la vérification du canal ne sont pas affectées. Modifier la liste ne refait pas la traversée, le port public reste le même. UDP est vérifié par paquet. Sans le relais intégré, les connexions externes ne passent pas par Gately et la liste est sans effet. Vous pouvez aussi choisir « Exiger un knock » : seules les sources ayant frappé avec succès via fwknop sont relayées, voir [Port Knocking](/fr/docs/modules/knock#gately-entries).
 
 ## Conseil de déploiement
 

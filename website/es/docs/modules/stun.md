@@ -38,7 +38,7 @@ Con «Abrir puerto en el cortafuegos» activado en una regla, Gately permite el 
 
 ## Control de acceso por IP de origen
 
-Con el reenvío integrado, cada regla puede usar una lista de permitidos o de bloqueo que decide por IP de origen si el tráfico se reenvía al destino. Las listas y las listas de IP suscritas funcionan igual que en [Reenvío de puertos](/es/docs/modules/portforward#control-de-acceso-por-ip-de-origen), y los bloqueos de Prevención de intrusiones también tienen prioridad. La lista solo afecta al reenvío; las consultas STUN y la comprobación del canal no cambian. Editar la lista no repite la travesía, así que el puerto público se mantiene. UDP se comprueba por paquete. Sin el reenvío integrado, las conexiones externas no pasan por Gately y la lista no tiene efecto.
+Con el reenvío integrado, cada regla puede usar una lista de permitidos o de bloqueo que decide por IP de origen si el tráfico se reenvía al destino. Las listas y las listas de IP suscritas funcionan igual que en [Reenvío de puertos](/es/docs/modules/portforward#control-de-acceso-por-ip-de-origen), y los bloqueos de Prevención de intrusiones también tienen prioridad. La lista solo afecta al reenvío; las consultas STUN y la comprobación del canal no cambian. Editar la lista no repite la travesía, así que el puerto público se mantiene. UDP se comprueba por paquete. Sin el reenvío integrado, las conexiones externas no pasan por Gately y la lista no tiene efecto. También se puede elegir «Requerir llamada»: solo se reenvía el tráfico de los orígenes que han llamado con éxito con fwknop; véase [Port Knocking](/es/docs/modules/knock#gately-entries).
 
 ## Consejo de despliegue
 

@@ -38,7 +38,7 @@ Com "Liberar porta no firewall" ativado em uma regra, o Gately libera a porta do
 
 ## Controle de acesso por IP de origem
 
-Com o encaminhamento integrado, cada regra pode usar uma lista de permissões ou de bloqueio que decide pelo IP de origem se o tráfego é encaminhado ao destino. As listas e as listas de IP assinadas funcionam como no [Redirecionamento de portas](/pt-BR/docs/modules/portforward#controle-de-acesso-por-ip-de-origem), e os banimentos da Prevenção de intrusão também têm prioridade. A lista vale só para o encaminhamento; consultas STUN e a verificação do canal não são afetadas. Editar a lista não refaz a travessia, então a porta pública continua a mesma. O UDP é verificado por pacote. Sem o encaminhamento integrado, as conexões externas não passam pelo Gately e a lista não tem efeito.
+Com o encaminhamento integrado, cada regra pode usar uma lista de permissões ou de bloqueio que decide pelo IP de origem se o tráfego é encaminhado ao destino. As listas e as listas de IP assinadas funcionam como no [Redirecionamento de portas](/pt-BR/docs/modules/portforward#controle-de-acesso-por-ip-de-origem), e os banimentos da Prevenção de intrusão também têm prioridade. A lista vale só para o encaminhamento; consultas STUN e a verificação do canal não são afetadas. Editar a lista não refaz a travessia, então a porta pública continua a mesma. O UDP é verificado por pacote. Sem o encaminhamento integrado, as conexões externas não passam pelo Gately e a lista não tem efeito. Também é possível escolher «Exigir knock»: só origens que fizeram o knock com o fwknop são encaminhadas; veja [Port Knocking](/pt-BR/docs/modules/knock#gately-entries).
 
 ## Dica de implantação
 

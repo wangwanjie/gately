@@ -5,7 +5,7 @@ Prevención de intrusiones al estilo de fail2ban: Gately detecta ataques de fuer
 ## Funciones
 
 - **Reglas de registros**: leen archivos de registro, el diario de systemd, la salida de un comando (como `logread -f` en OpenWrt) o los registros de un contenedor Docker, buscan fallos con expresiones regulares y bloquean la IP que alcanza el número de fallos en la ventana de tiempo. Incluye plantillas para SSH, Dropbear, Nginx, Vaultwarden, Home Assistant, Proxmox VE y otros, y en el editor puedes pegar líneas de ejemplo para probar los filtros;
-- **Eventos de Gately**: los inicios de sesión fallidos en el panel y los bloqueos del WAF también pueden alimentar una regla, sin expresiones regulares;
+- **Eventos de Gately**: los inicios de sesión fallidos en el panel y los bloqueos del WAF y las llamadas rechazadas de [Port Knocking](/es/docs/modules/knock) también pueden alimentar una regla, sin expresiones regulares;
 - **Sondeo de rutas web**: cuenta directamente las solicitudes que atiende el servicio web por escucha, ruta y código de estado, sin leer registros; se bloquean los orígenes que piden rutas señuelo como `/.env` o `/.git`, o que escanean una y otra vez dominios desconocidos;
 - **Puertos trampa**: trampas en puertos que este equipo no usa (por defecto 23, 135, 1433, 3389, 5900, 6379 y otros). Cualquier origen que se conecte queda bloqueado;
 - **Detección de escaneos**: se bloquea el origen que se conecta a puertos cerrados de este equipo más veces por minuto que el umbral;
@@ -57,7 +57,7 @@ Sin ello, los bloqueos siguen aplicándose a los servicios de Gately. Para leer 
 | Diario de systemd | Unidades de servicio como `ssh.service` | Se lee con `journalctl -f` |
 | Salida de un comando | Un comando como `logread -f` | Se reinicia si termina |
 | Contenedor Docker | Nombre del contenedor | Se lee a través de la conexión a Docker del módulo Docker |
-| Evento de Gately | Inicio de sesión fallido / bloqueo del WAF | Los eventos incluyen la IP de origen; no hace falta filtro |
+| Evento de Gately | Inicio de sesión fallido / bloqueo del WAF / llamada de Port Knocking rechazada | Los eventos incluyen la IP de origen; no hace falta filtro |
 | Sondeo de rutas web | Escuchas (opcional) y reglas de ruta | Cuenta las solicitudes del servicio web, ver más abajo |
 
 Los filtros son expresiones regulares de Go (sintaxis RE2), una por línea, y `<HOST>` representa la dirección de origen, por ejemplo:
