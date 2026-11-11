@@ -1245,6 +1245,9 @@
           "needed": {
             "type": "boolean"
           },
+          "noIPv6": {
+            "type": "boolean"
+          },
           "ports": {
             "items": {
               "type": "string"
@@ -55013,6 +55016,67 @@
         "x-token-allowed": true
       }
     },
+    "/api/wol/agent-scripts": {
+      "get": {
+        "description": "필요한 권한: `wol:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "에이전트 스크립트의 SHA-256(파일 이름별). 설치 명령이 내려받은 스크립트를 검증하는 데 사용합니다",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "wol:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/wol/agents": {
       "get": {
         "description": "필요한 권한: `wol:read`.",
@@ -56639,6 +56703,167 @@
         ],
         "x-required-scope": "wol:read",
         "x-token-allowed": true
+      }
+    },
+    "/api/wol/public/agent/ack": {
+      "post": {
+        "description": "폼 본문: `token`, `instance`, `id`는 명령 ID, `result`는 `ok`(곧 실행) 또는 `fail`(실행 실패, `msg`로 이유 첨부 가능). 에이전트는 먼저 확인하고 서버가 ok를 반환한 뒤에만 실행하며, 보낸 뒤 10초 안에 확인되지 않은 명령은 무효가 됩니다. 일반 텍스트를 반환합니다.\n\n**로그인 없는 엔드포인트**: 로그인 세션이나 API 토큰 대신 모듈 자체 자격 증명으로 접근합니다. 유효한 자격 증명을 가진 요청은 보안 입구를 통과할 수 있으며, 차단과 내부망 전용 접근은 그대로 적용됩니다.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "description": "자격 증명이 올바르지 않습니다"
+          }
+        },
+        "summary": "Wake-on-LAN 에이전트의 명령 확인 또는 결과 보고",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
+      }
+    },
+    "/api/wol/public/agent/poll": {
+      "post": {
+        "description": "제어 대상 장치의 에이전트가 호출합니다. 폼 본문: `token`은 장치의 에이전트 토큰(`Authorization: Bearer` 헤더도 가능), `instance`는 이번 실행의 임의 ID(영문자·숫자·밑줄·하이픈 8~64자), `host`·`os`·`version`은 보고하는 호스트 이름, 시스템, 에이전트 버전이며 본문은 4KB 이하입니다. 최대 25초 대기 후 일반 텍스트를 반환합니다: `noop`은 명령 없음, `cmd \u003cid\u003e \u003caction\u003e`은 실행할 명령(action은 shutdown, reboot, sleep). 같은 토큰의 다른 에이전트가 온라인이면 409를 반환합니다.\n\n**로그인 없는 엔드포인트**: 로그인 세션이나 API 토큰 대신 모듈 자체 자격 증명으로 접근합니다. 유효한 자격 증명을 가진 요청은 보안 입구를 통과할 수 있으며, 차단과 내부망 전용 접근은 그대로 적용됩니다.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "description": "자격 증명이 올바르지 않습니다"
+          }
+        },
+        "summary": "Wake-on-LAN 에이전트의 명령 롱 폴링",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
+      }
+    },
+    "/api/wol/public/agent/{name}": {
+      "get": {
+        "description": "`name`은 gately-agent.sh 또는 gately-agent.ps1입니다. 장치의 에이전트 토큰(`Authorization: Bearer` 헤더)이 필요합니다.\n\n**로그인 없는 엔드포인트**: 로그인 세션이나 API 토큰 대신 모듈 자체 자격 증명으로 접근합니다. 유효한 자격 증명을 가진 요청은 보안 입구를 통과할 수 있으며, 차단과 내부망 전용 접근은 그대로 적용됩니다.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "description": "자격 증명이 올바르지 않습니다"
+          }
+        },
+        "summary": "Wake-on-LAN 에이전트 스크립트 다운로드",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
+      },
+      "post": {
+        "description": "`name`은 gately-agent.sh 또는 gately-agent.ps1이고, 폼 본문의 `token`은 장치의 에이전트 토큰입니다. 설치 명령은 여기서 스크립트를 내려받아 `GET /api/wol/agent-scripts`의 SHA-256과 비교한 뒤 실행합니다.\n\n**로그인 없는 엔드포인트**: 로그인 세션이나 API 토큰 대신 모듈 자체 자격 증명으로 접근합니다. 유효한 자격 증명을 가진 요청은 보안 입구를 통과할 수 있으며, 차단과 내부망 전용 접근은 그대로 적용됩니다.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "description": "자격 증명이 올바르지 않습니다"
+          }
+        },
+        "summary": "Wake-on-LAN 에이전트 스크립트 다운로드",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
       }
     },
     "/api/wol/ssh-targets": {

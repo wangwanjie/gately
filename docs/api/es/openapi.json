@@ -1245,6 +1245,9 @@
           "needed": {
             "type": "boolean"
           },
+          "noIPv6": {
+            "type": "boolean"
+          },
           "ports": {
             "items": {
               "type": "string"
@@ -55013,6 +55016,67 @@
         "x-token-allowed": true
       }
     },
+    "/api/wol/agent-scripts": {
+      "get": {
+        "description": "Permiso necesario: `wol:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "SHA-256 de los scripts del agente, por nombre de archivo; los comandos de instalación lo usan para verificar el script descargado",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "wol:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/wol/agents": {
       "get": {
         "description": "Permiso necesario: `wol:read`.",
@@ -56639,6 +56703,167 @@
         ],
         "x-required-scope": "wol:read",
         "x-token-allowed": true
+      }
+    },
+    "/api/wol/public/agent/ack": {
+      "post": {
+        "description": "Cuerpo de formulario: `token`, `instance`, `id` el ID del comando, `result` `ok` (a punto de ejecutarse) o `fail` (falló, opcionalmente con `msg` indicando el motivo). El agente confirma primero y solo ejecuta el comando cuando el servidor responde ok; un comando no confirmado en 10 segundos caduca. Devuelve texto plano.\n\n**Endpoint sin inicio de sesión**: no usa sesión ni token de API, sino las credenciales propias del módulo; las solicitudes con credenciales válidas pasan la entrada de seguridad, mientras que los bloqueos y el acceso solo desde la red local siguen aplicándose.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "description": "Credenciales no válidas"
+          }
+        },
+        "summary": "El agente de Wake-on-LAN confirma un comando o informa de su resultado",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
+      }
+    },
+    "/api/wol/public/agent/poll": {
+      "post": {
+        "description": "Lo llama el agente del dispositivo controlado. Cuerpo de formulario: `token` el token del agente del dispositivo (también se acepta en la cabecera `Authorization: Bearer`), `instance` un ID aleatorio de esta ejecución (de 8 a 64 letras, dígitos, guiones bajos o guiones), `host`, `os` y `version` el nombre de host, el sistema y la versión del agente; el cuerpo tiene como máximo 4 KB. Espera hasta 25 segundos y devuelve texto plano: `noop` si no hay comando, `cmd \u003cid\u003e \u003caction\u003e` para un comando que ejecutar (action es shutdown, reboot o sleep). Devuelve 409 mientras otro agente con el mismo token está en línea.\n\n**Endpoint sin inicio de sesión**: no usa sesión ni token de API, sino las credenciales propias del módulo; las solicitudes con credenciales válidas pasan la entrada de seguridad, mientras que los bloqueos y el acceso solo desde la red local siguen aplicándose.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "description": "Credenciales no válidas"
+          }
+        },
+        "summary": "Sondeo largo de comandos del agente de Wake-on-LAN",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
+      }
+    },
+    "/api/wol/public/agent/{name}": {
+      "get": {
+        "description": "`name` es gately-agent.sh o gately-agent.ps1. Requiere el token del agente del dispositivo (cabecera `Authorization: Bearer`).\n\n**Endpoint sin inicio de sesión**: no usa sesión ni token de API, sino las credenciales propias del módulo; las solicitudes con credenciales válidas pasan la entrada de seguridad, mientras que los bloqueos y el acceso solo desde la red local siguen aplicándose.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "description": "Credenciales no válidas"
+          }
+        },
+        "summary": "Descargar un script del agente de Wake-on-LAN",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
+      },
+      "post": {
+        "description": "`name` es gately-agent.sh o gately-agent.ps1; el campo `token` del formulario es el token del agente del dispositivo. Los comandos de instalación descargan aquí el script y lo comparan con el SHA-256 de `GET /api/wol/agent-scripts` antes de ejecutarlo.\n\n**Endpoint sin inicio de sesión**: no usa sesión ni token de API, sino las credenciales propias del módulo; las solicitudes con credenciales válidas pasan la entrada de seguridad, mientras que los bloqueos y el acceso solo desde la red local siguen aplicándose.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "description": "Credenciales no válidas"
+          }
+        },
+        "summary": "Descargar un script del agente de Wake-on-LAN",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
       }
     },
     "/api/wol/ssh-targets": {

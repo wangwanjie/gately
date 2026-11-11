@@ -516,11 +516,16 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | GET | `/api/wol/agents` | `wol:read` | Verbindungsinformationen der Agents, indiziert nach Geräte-key |
 | POST | `/api/wol/devices/{key}/agent-token` | `wol:write` | Agent-Token neu generieren; verbundene Agents werden sofort getrennt |
 | GET | `/api/wol/agent-script/{name}` | `wol:read` | Agent-Skript herunterladen (gately-agent.sh oder gately-agent.ps1) |
+| GET | `/api/wol/agent-scripts` | `wol:read` | SHA-256 der Agent-Skripte nach Dateiname; Installationsbefehle prüfen damit das heruntergeladene Skript |
 | GET | `/api/wol/status` | `wol:read` | Online-Status eines Geräts anzeigen |
 | GET | `/api/wol/ssh-targets` | `wol:read,webterminal:read` | SSH-Verbindungen für Fern-Herunterfahren auflisten |
 | GET | `/api/wol/bemfa` | `wol:read` | Bemfa-Einstellungen und Verbindungsstatus |
 | GET | `/api/wol/bemfa/secrets` | `wol:write` | Privaten Bemfa-Schlüssel anzeigen |
 | PUT | `/api/wol/bemfa` | `wol:write` | Bemfa-Einstellungen ändern |
+| POST | `/api/wol/public/agent/poll` | Ohne Anmeldung | Long Polling des Wake-on-LAN-Agents nach Befehlen |
+| POST | `/api/wol/public/agent/ack` | Ohne Anmeldung | Wake-on-LAN-Agent bestätigt einen Befehl oder meldet sein Ergebnis |
+| GET | `/api/wol/public/agent/{name}` | Ohne Anmeldung | Wake-on-LAN-Agent-Skript herunterladen |
+| POST | `/api/wol/public/agent/{name}` | Ohne Anmeldung | Wake-on-LAN-Agent-Skript herunterladen |
 
 ## Web-Terminal
 
@@ -1517,6 +1522,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `dropped` | integer |
 | `error` | string |
 | `needed` | boolean |
+| `noIPv6` | boolean |
 | `ports` | Array von string |
 | `reason` | string |
 | `version` | string |

@@ -1245,6 +1245,9 @@
           "needed": {
             "type": "boolean"
           },
+          "noIPv6": {
+            "type": "boolean"
+          },
           "ports": {
             "items": {
               "type": "string"
@@ -55013,6 +55016,67 @@
         "x-token-allowed": true
       }
     },
+    "/api/wol/agent-scripts": {
+      "get": {
+        "description": "Required permission: `wol:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "SHA-256 of the agent scripts, keyed by file name; install commands use it to verify the downloaded script",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "wol:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/wol/agents": {
       "get": {
         "description": "Required permission: `wol:read`.",
@@ -56639,6 +56703,167 @@
         ],
         "x-required-scope": "wol:read",
         "x-token-allowed": true
+      }
+    },
+    "/api/wol/public/agent/ack": {
+      "post": {
+        "description": "Form body: `token`, `instance`, `id` the command ID, `result` `ok` (about to run) or `fail` (failed, optionally with `msg` giving the reason). The agent acknowledges first and only runs the command after the server answers ok; a command not acknowledged within 10 seconds expires. Returns plain text.\n\n**Login-free endpoint**: uses neither a login session nor an API token but the module's own credentials; requests with valid credentials pass the security entry, while bans and local-network-only access still apply.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          }
+        },
+        "summary": "Wake-on-LAN agent acknowledges a command or reports its result",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
+      }
+    },
+    "/api/wol/public/agent/poll": {
+      "post": {
+        "description": "Called by the agent on the controlled device. Form body: `token` the device's agent token (also accepted in an `Authorization: Bearer` header), `instance` a random ID for this run (8 to 64 letters, digits, underscores or hyphens), `host`, `os` and `version` the reported host name, system and agent version; the body is at most 4 KB. Waits up to 25 seconds and returns plain text: `noop` when there is no command, `cmd \u003cid\u003e \u003caction\u003e` for a command to run (action is shutdown, reboot or sleep). Returns 409 while another agent with the same token is online.\n\n**Login-free endpoint**: uses neither a login session nor an API token but the module's own credentials; requests with valid credentials pass the security entry, while bans and local-network-only access still apply.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          }
+        },
+        "summary": "Wake-on-LAN agent long poll for commands",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
+      }
+    },
+    "/api/wol/public/agent/{name}": {
+      "get": {
+        "description": "`name` is gately-agent.sh or gately-agent.ps1. Requires the device's agent token (`Authorization: Bearer` header).\n\n**Login-free endpoint**: uses neither a login session nor an API token but the module's own credentials; requests with valid credentials pass the security entry, while bans and local-network-only access still apply.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          }
+        },
+        "summary": "Download a Wake-on-LAN agent script",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
+      },
+      "post": {
+        "description": "`name` is gately-agent.sh or gately-agent.ps1; the form body field `token` is the device's agent token. Install commands download the script here and compare it with the SHA-256 from `GET /api/wol/agent-scripts` before running it.\n\n**Login-free endpoint**: uses neither a login session nor an API token but the module's own credentials; requests with valid credentials pass the security entry, while bans and local-network-only access still apply.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          }
+        },
+        "summary": "Download a Wake-on-LAN agent script",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
       }
     },
     "/api/wol/ssh-targets": {

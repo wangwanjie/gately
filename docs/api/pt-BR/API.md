@@ -516,11 +516,16 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | GET | `/api/wol/agents` | `wol:read` | Informações de conexão dos agentes, indexadas pela key do dispositivo |
 | POST | `/api/wol/devices/{key}/agent-token` | `wol:write` | Gerar novamente o token do agente; os agentes conectados serão desconectados imediatamente |
 | GET | `/api/wol/agent-script/{name}` | `wol:read` | Baixar o script do agente (gately-agent.sh ou gately-agent.ps1) |
+| GET | `/api/wol/agent-scripts` | `wol:read` | SHA-256 dos scripts do agente, por nome de arquivo; os comandos de instalação o usam para verificar o script baixado |
 | GET | `/api/wol/status` | `wol:read` | Ver o estado online do dispositivo |
 | GET | `/api/wol/ssh-targets` | `wol:read,webterminal:read` | Listar conexões SSH utilizáveis para desligamento remoto |
 | GET | `/api/wol/bemfa` | `wol:read` | Configurações e status de conexão do Bemfa |
 | GET | `/api/wol/bemfa/secrets` | `wol:write` | Ver a chave privada do Bemfa |
 | PUT | `/api/wol/bemfa` | `wol:write` | Alterar configurações do Bemfa |
+| POST | `/api/wol/public/agent/poll` | Sem login | Long polling de comandos do agente de Wake-on-LAN |
+| POST | `/api/wol/public/agent/ack` | Sem login | O agente de Wake-on-LAN confirma um comando ou informa o resultado |
+| GET | `/api/wol/public/agent/{name}` | Sem login | Baixar um script do agente de Wake-on-LAN |
+| POST | `/api/wol/public/agent/{name}` | Sem login | Baixar um script do agente de Wake-on-LAN |
 
 ## Terminal web
 
@@ -1517,6 +1522,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `dropped` | integer |
 | `error` | string |
 | `needed` | boolean |
+| `noIPv6` | boolean |
 | `ports` | Array de string |
 | `reason` | string |
 | `version` | string |

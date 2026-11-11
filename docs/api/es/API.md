@@ -516,11 +516,16 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | GET | `/api/wol/agents` | `wol:read` | Información de conexión de los agentes, indexada por la key del dispositivo |
 | POST | `/api/wol/devices/{key}/agent-token` | `wol:write` | Regenerar el token del agente; los agentes conectados se desconectarán de inmediato |
 | GET | `/api/wol/agent-script/{name}` | `wol:read` | Descargar el script del agente (gately-agent.sh o gately-agent.ps1) |
+| GET | `/api/wol/agent-scripts` | `wol:read` | SHA-256 de los scripts del agente, por nombre de archivo; los comandos de instalación lo usan para verificar el script descargado |
 | GET | `/api/wol/status` | `wol:read` | Ver el estado en línea del dispositivo |
 | GET | `/api/wol/ssh-targets` | `wol:read,webterminal:read` | Listar las conexiones SSH utilizables para apagado remoto |
 | GET | `/api/wol/bemfa` | `wol:read` | Configuración y estado de conexión de Bemfa |
 | GET | `/api/wol/bemfa/secrets` | `wol:write` | Ver la clave privada de Bemfa |
 | PUT | `/api/wol/bemfa` | `wol:write` | Modificar la configuración de Bemfa |
+| POST | `/api/wol/public/agent/poll` | Sin inicio de sesión | Sondeo largo de comandos del agente de Wake-on-LAN |
+| POST | `/api/wol/public/agent/ack` | Sin inicio de sesión | El agente de Wake-on-LAN confirma un comando o informa de su resultado |
+| GET | `/api/wol/public/agent/{name}` | Sin inicio de sesión | Descargar un script del agente de Wake-on-LAN |
+| POST | `/api/wol/public/agent/{name}` | Sin inicio de sesión | Descargar un script del agente de Wake-on-LAN |
 
 ## Terminal web
 
@@ -1517,6 +1522,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `dropped` | integer |
 | `error` | string |
 | `needed` | boolean |
+| `noIPv6` | boolean |
 | `ports` | Lista de string |
 | `reason` | string |
 | `version` | string |

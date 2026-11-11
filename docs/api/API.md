@@ -516,11 +516,16 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/wol/agents` | `wol:read` | 客户端连接信息，按设备 key 索引 |
 | POST | `/api/wol/devices/{key}/agent-token` | `wol:write` | 重新生成客户端凭据，已连接的客户端随即断开 |
 | GET | `/api/wol/agent-script/{name}` | `wol:read` | 下载客户端脚本（gately-agent.sh 或 gately-agent.ps1） |
+| GET | `/api/wol/agent-scripts` | `wol:read` | 客户端脚本的 SHA-256，按文件名索引；安装命令据此校验下载的脚本 |
 | GET | `/api/wol/status` | `wol:read` | 查看设备在线状态 |
 | GET | `/api/wol/ssh-targets` | `wol:read,webterminal:read` | 列出可用于远程关机的 SSH 连接 |
 | GET | `/api/wol/bemfa` | `wol:read` | 巴法云接入设置与连接状态 |
 | GET | `/api/wol/bemfa/secrets` | `wol:write` | 查看巴法云私钥明文 |
 | PUT | `/api/wol/bemfa` | `wol:write` | 修改巴法云接入设置 |
+| POST | `/api/wol/public/agent/poll` | 免登录 | 网络唤醒客户端长轮询指令 |
+| POST | `/api/wol/public/agent/ack` | 免登录 | 网络唤醒客户端确认或报告指令结果 |
+| GET | `/api/wol/public/agent/{name}` | 免登录 | 下载网络唤醒客户端脚本 |
+| POST | `/api/wol/public/agent/{name}` | 免登录 | 下载网络唤醒客户端脚本 |
 
 ## Web 终端
 
@@ -1517,6 +1522,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `dropped` | integer |
 | `error` | string |
 | `needed` | boolean |
+| `noIPv6` | boolean |
 | `ports` | 数组 of string |
 | `reason` | string |
 | `version` | string |

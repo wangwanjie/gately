@@ -516,11 +516,16 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/wol/agents` | `wol:read` | 에이전트 연결 정보(장치 key 기준 색인) |
 | POST | `/api/wol/devices/{key}/agent-token` | `wol:write` | 에이전트 토큰을 다시 생성합니다. 연결된 에이전트는 즉시 끊어집니다 |
 | GET | `/api/wol/agent-script/{name}` | `wol:read` | 에이전트 스크립트 다운로드(gately-agent.sh 또는 gately-agent.ps1) |
+| GET | `/api/wol/agent-scripts` | `wol:read` | 에이전트 스크립트의 SHA-256(파일 이름별). 설치 명령이 내려받은 스크립트를 검증하는 데 사용합니다 |
 | GET | `/api/wol/status` | `wol:read` | 장치 온라인 상태 보기 |
 | GET | `/api/wol/ssh-targets` | `wol:read,webterminal:read` | 원격 종료에 쓸 수 있는 SSH 연결 목록 |
 | GET | `/api/wol/bemfa` | `wol:read` | Bemfa 연동 설정과 연결 상태 |
 | GET | `/api/wol/bemfa/secrets` | `wol:write` | Bemfa 개인 키 보기 |
 | PUT | `/api/wol/bemfa` | `wol:write` | Bemfa 연동 설정 수정 |
+| POST | `/api/wol/public/agent/poll` | 로그인 없음 | Wake-on-LAN 에이전트의 명령 롱 폴링 |
+| POST | `/api/wol/public/agent/ack` | 로그인 없음 | Wake-on-LAN 에이전트의 명령 확인 또는 결과 보고 |
+| GET | `/api/wol/public/agent/{name}` | 로그인 없음 | Wake-on-LAN 에이전트 스크립트 다운로드 |
+| POST | `/api/wol/public/agent/{name}` | 로그인 없음 | Wake-on-LAN 에이전트 스크립트 다운로드 |
 
 ## Web 터미널
 
@@ -1517,6 +1522,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `dropped` | integer |
 | `error` | string |
 | `needed` | boolean |
+| `noIPv6` | boolean |
 | `ports` | Array of string |
 | `reason` | string |
 | `version` | string |

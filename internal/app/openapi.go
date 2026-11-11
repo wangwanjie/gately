@@ -44,6 +44,9 @@ type docModel struct {
 
 var pathParamRe = regexp.MustCompile(`\{([^}/]+)\}`)
 
+// scopePublic 标记模块的免登录接口（/api/<模块>/public 下）：不接受登录会话与 API 令牌，凭模块自己的凭据访问。
+const scopePublic = "!public"
+
 // buildDoc 根据已登记的路由生成文档模型。
 func (a *App) buildDoc() docModel {
 	// 路由表来自处理器构建，重复构建只会刷新登记结果
@@ -59,6 +62,9 @@ func (a *App) buildDoc() docModel {
 	for _, r := range a.routes {
 		key := r.Method + " " + r.Path
 		ep := endpoint{Method: r.Method, Path: r.Path, Scope: apitoken.Required(r.Method, r.Path)}
+		if r.Public {
+			ep.Scope = scopePublic
+		}
 		ep.Tag = docTag(r, titles)
 		// 日志接口支持 since 增量拉取、before 加载更早的日志、limit 限制条数，以及按级别、关键词、IP 等过滤
 		if r.Method == http.MethodGet && (r.Path == "/api/logs" || (r.Module != "" && r.Path == "/api/"+r.Module+"/logs")) {
@@ -260,6 +266,8 @@ func (m docModel) operation(e endpoint) map[string]any {
 	switch e.Scope {
 	case apitoken.Denied:
 		desc += "\n\n" + "**仅登录会话可用，API 令牌无法访问此接口。**"
+	case scopePublic:
+		desc += "\n\n" + "**免登录接口**：不使用登录会话或 API 令牌，凭模块自己的凭据访问；带有效凭据的请求可越过安全入口，封禁与仅限内网访问仍然生效。"
 	case apitoken.Any:
 		desc += "\n\n" + "任何有效的 API 令牌均可访问，无需特定权限。"
 	default:
@@ -267,8 +275,8 @@ func (m docModel) operation(e endpoint) map[string]any {
 	}
 	op["description"] = strings.TrimSpace(desc)
 	op["x-required-scope"] = e.Scope
-	op["x-token-allowed"] = e.Scope != apitoken.Denied
-	if e.Scope != apitoken.Denied {
+	op["x-token-allowed"] = e.Scope != apitoken.Denied && e.Scope != scopePublic
+	if e.Scope != apitoken.Denied && e.Scope != scopePublic {
 		op["security"] = []map[string][]string{{"bearerAuth": {}}}
 	}
 	var params []map[string]any
@@ -303,7 +311,9 @@ func (m docModel) operation(e endpoint) map[string]any {
 			"schema": map[string]any{"$ref": "#/components/schemas/Error"}}}}
 	}
 	responses := map[string]any{"200": ok, "400": errResp("请求参数错误"), "401": errResp("令牌无效、已过期或未登录")}
-	if e.Scope != apitoken.Any {
+	if e.Scope == scopePublic {
+		responses["401"] = map[string]any{"description": "凭据无效"}
+	} else if e.Scope != apitoken.Any {
 		responses["403"] = errResp("令牌缺少所需权限")
 	}
 	op["responses"] = responses

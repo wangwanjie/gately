@@ -1245,6 +1245,9 @@
           "needed": {
             "type": "boolean"
           },
+          "noIPv6": {
+            "type": "boolean"
+          },
           "ports": {
             "items": {
               "type": "string"
@@ -55013,6 +55016,67 @@
         "x-token-allowed": true
       }
     },
+    "/api/wol/agent-scripts": {
+      "get": {
+        "description": "所需權限：`wol:read`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "用戶端指令碼的 SHA-256，依檔名索引；安裝指令據此校驗下載的指令碼",
+        "tags": [
+          "網路喚醒"
+        ],
+        "x-required-scope": "wol:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/wol/agents": {
       "get": {
         "description": "所需權限：`wol:read`。",
@@ -56639,6 +56703,167 @@
         ],
         "x-required-scope": "wol:read",
         "x-token-allowed": true
+      }
+    },
+    "/api/wol/public/agent/ack": {
+      "post": {
+        "description": "表單請求本文：`token`、`instance`，`id` 為指令編號，`result` 為 `ok`（即將執行）或 `fail`（執行失敗，可帶 `msg` 說明原因）。用戶端須先確認、伺服器回傳 ok 後才執行；指令下發 10 秒內未確認即作廢。回傳純文字。\n\n**免登入介面**：不使用登入工作階段或 API 權杖，憑模組自己的憑證存取；帶有效憑證的請求可越過安全入口，封鎖與僅限內網存取仍然生效。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "description": "憑證無效"
+          }
+        },
+        "summary": "網路喚醒用戶端確認或回報指令結果",
+        "tags": [
+          "網路喚醒"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
+      }
+    },
+    "/api/wol/public/agent/poll": {
+      "post": {
+        "description": "被控裝置上的用戶端呼叫。表單請求本文：`token` 裝置的用戶端憑證（也可放在 `Authorization: Bearer` 標頭），`instance` 本次執行的隨機識別碼（8 到 64 個字母、數字、底線或連字號），`host`、`os`、`version` 為回報的主機名稱、系統與用戶端版本；請求本文不超過 4 KB。最多等待 25 秒，回傳純文字：`noop` 表示沒有指令，`cmd \u003cid\u003e \u003caction\u003e` 為待執行的指令（action 為 shutdown、reboot 或 sleep）。同一憑證另一個用戶端在線時回傳 409。\n\n**免登入介面**：不使用登入工作階段或 API 權杖，憑模組自己的憑證存取；帶有效憑證的請求可越過安全入口，封鎖與僅限內網存取仍然生效。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "description": "憑證無效"
+          }
+        },
+        "summary": "網路喚醒用戶端長輪詢指令",
+        "tags": [
+          "網路喚醒"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
+      }
+    },
+    "/api/wol/public/agent/{name}": {
+      "get": {
+        "description": "`name` 為 gately-agent.sh 或 gately-agent.ps1。須帶裝置的用戶端憑證（`Authorization: Bearer` 標頭）。\n\n**免登入介面**：不使用登入工作階段或 API 權杖，憑模組自己的憑證存取；帶有效憑證的請求可越過安全入口，封鎖與僅限內網存取仍然生效。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "description": "憑證無效"
+          }
+        },
+        "summary": "下載網路喚醒用戶端指令碼",
+        "tags": [
+          "網路喚醒"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
+      },
+      "post": {
+        "description": "`name` 為 gately-agent.sh 或 gately-agent.ps1，表單請求本文 `token` 為裝置的用戶端憑證。安裝指令據此下載指令碼，並先與 `GET /api/wol/agent-scripts` 給出的 SHA-256 比對再執行。\n\n**免登入介面**：不使用登入工作階段或 API 權杖，憑模組自己的憑證存取；帶有效憑證的請求可越過安全入口，封鎖與僅限內網存取仍然生效。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "description": "憑證無效"
+          }
+        },
+        "summary": "下載網路喚醒用戶端指令碼",
+        "tags": [
+          "網路喚醒"
+        ],
+        "x-required-scope": "!public",
+        "x-token-allowed": false
       }
     },
     "/api/wol/ssh-targets": {

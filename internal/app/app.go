@@ -363,7 +363,7 @@ func (a *App) Handler() http.Handler {
 		// 模块的免登录接口（例如被控设备上的客户端）直接挂在外层 mux 上，比 /api/ 更具体，不经过登录鉴权；
 		// 仍经过 accessControl 的封禁、仅限内网与安全入口检查（凭据有效时越过安全入口，见 entryPassed）
 		if pr, ok := e.mod.(module.PublicRouter); ok {
-			pr.PublicRoutes(publicRouter{mux: mux, prefix: prefix + publicSegment})
+			pr.PublicRoutes(publicRouter{mux: mux, rec: rec, prefix: prefix + publicSegment, module: e.mod.ID()})
 		}
 	}
 	for _, m := range a.opts.Absent {
@@ -1026,10 +1026,13 @@ func (p prefixRouter) HandleFunc(pattern string, h http.HandlerFunc) {
 // publicSegment 是模块免登录接口在模块前缀下的路径片段。
 const publicSegment = "/public"
 
-// publicRouter 把模块的免登录接口挂到 /api/<ID>/public 前缀下，不登记到受保护接口的路由表与文档。
+// publicRouter 把模块的免登录接口挂到 /api/<ID>/public 前缀下，不经过受保护接口的鉴权；
+// 同时在路由表中标记为免登录接口，仅用于接口文档。
 type publicRouter struct {
 	mux    *http.ServeMux
+	rec    *routeRecorder
 	prefix string
+	module string
 }
 
 func (p publicRouter) HandleFunc(pattern string, h http.HandlerFunc) {
@@ -1039,6 +1042,9 @@ func (p publicRouter) HandleFunc(pattern string, h http.HandlerFunc) {
 		return
 	}
 	p.mux.HandleFunc(method+" "+p.prefix+path, h)
+	if p.rec != nil {
+		p.rec.addPublic(method+" "+p.prefix+path, p.module)
+	}
 }
 
 // publicAuth 判断请求是否为某个已开启模块的免登录接口，且带有该模块认可的有效凭据。

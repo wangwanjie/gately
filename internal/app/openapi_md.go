@@ -51,6 +51,8 @@ func (m docModel) markdown(tr func(string) string) string {
 				scope = tr("仅登录会话")
 			case apitoken.Any:
 				scope = tr("任意有效令牌")
+			case scopePublic:
+				scope = tr("免登录")
 			}
 			fmt.Fprintf(&b, "| %s | `%s` | %s | %s |\n", e.Method, e.Path, scope, tr(e.Summary))
 		}

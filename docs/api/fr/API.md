@@ -516,11 +516,16 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | GET | `/api/wol/agents` | `wol:read` | Informations de connexion des agents, indexées par la key de l'appareil |
 | POST | `/api/wol/devices/{key}/agent-token` | `wol:write` | Régénérer le jeton de l'agent ; les agents connectés seront déconnectés immédiatement |
 | GET | `/api/wol/agent-script/{name}` | `wol:read` | Télécharger le script de l'agent (gately-agent.sh ou gately-agent.ps1) |
+| GET | `/api/wol/agent-scripts` | `wol:read` | SHA-256 des scripts de l'agent, par nom de fichier ; les commandes d'installation l'utilisent pour vérifier le script téléchargé |
 | GET | `/api/wol/status` | `wol:read` | Consulter l'état en ligne des appareils |
 | GET | `/api/wol/ssh-targets` | `wol:read,webterminal:read` | Lister les connexions SSH utilisables pour l’arrêt à distance |
 | GET | `/api/wol/bemfa` | `wol:read` | Réglages et état de connexion Bemfa |
 | GET | `/api/wol/bemfa/secrets` | `wol:write` | Afficher la clé privée Bemfa |
 | PUT | `/api/wol/bemfa` | `wol:write` | Modifier les réglages Bemfa |
+| POST | `/api/wol/public/agent/poll` | Sans connexion | Interrogation longue des commandes par l'agent Wake-on-LAN |
+| POST | `/api/wol/public/agent/ack` | Sans connexion | L'agent Wake-on-LAN confirme une commande ou en signale le résultat |
+| GET | `/api/wol/public/agent/{name}` | Sans connexion | Télécharger un script de l'agent Wake-on-LAN |
+| POST | `/api/wol/public/agent/{name}` | Sans connexion | Télécharger un script de l'agent Wake-on-LAN |
 
 ## Terminal Web
 
@@ -1517,6 +1522,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `dropped` | integer |
 | `error` | string |
 | `needed` | boolean |
+| `noIPv6` | boolean |
 | `ports` | Tableau de string |
 | `reason` | string |
 | `version` | string |

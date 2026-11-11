@@ -516,11 +516,16 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/wol/agents` | `wol:read` | 用戶端連線資訊，依裝置 key 索引 |
 | POST | `/api/wol/devices/{key}/agent-token` | `wol:write` | 重新產生用戶端憑證，已連線的用戶端隨即中斷 |
 | GET | `/api/wol/agent-script/{name}` | `wol:read` | 下載用戶端指令碼（gately-agent.sh 或 gately-agent.ps1） |
+| GET | `/api/wol/agent-scripts` | `wol:read` | 用戶端指令碼的 SHA-256，依檔名索引；安裝指令據此校驗下載的指令碼 |
 | GET | `/api/wol/status` | `wol:read` | 檢視裝置線上狀態 |
 | GET | `/api/wol/ssh-targets` | `wol:read,webterminal:read` | 列出可用於遠端關機的 SSH 連線 |
 | GET | `/api/wol/bemfa` | `wol:read` | 巴法雲接入設定與連線狀態 |
 | GET | `/api/wol/bemfa/secrets` | `wol:write` | 檢視巴法雲私鑰明文 |
 | PUT | `/api/wol/bemfa` | `wol:write` | 修改巴法雲接入設定 |
+| POST | `/api/wol/public/agent/poll` | 免登入 | 網路喚醒用戶端長輪詢指令 |
+| POST | `/api/wol/public/agent/ack` | 免登入 | 網路喚醒用戶端確認或回報指令結果 |
+| GET | `/api/wol/public/agent/{name}` | 免登入 | 下載網路喚醒用戶端指令碼 |
+| POST | `/api/wol/public/agent/{name}` | 免登入 | 下載網路喚醒用戶端指令碼 |
 
 ## Web 終端機
 
@@ -1517,6 +1522,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `dropped` | integer |
 | `error` | string |
 | `needed` | boolean |
+| `noIPv6` | boolean |
 | `ports` | 陣列 of string |
 | `reason` | string |
 | `version` | string |

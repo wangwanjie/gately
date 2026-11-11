@@ -516,11 +516,16 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/wol/agents` | `wol:read` | エージェントの接続情報（デバイスの key で索引） |
 | POST | `/api/wol/devices/{key}/agent-token` | `wol:write` | エージェントのトークンを再生成します。接続中のエージェントは切断されます |
 | GET | `/api/wol/agent-script/{name}` | `wol:read` | エージェントのスクリプトをダウンロード（gately-agent.sh または gately-agent.ps1） |
+| GET | `/api/wol/agent-scripts` | `wol:read` | エージェントスクリプトの SHA-256（ファイル名ごと）。インストールコマンドがダウンロードしたスクリプトの検証に使います |
 | GET | `/api/wol/status` | `wol:read` | デバイスのオンライン状態を表示 |
 | GET | `/api/wol/ssh-targets` | `wol:read,webterminal:read` | リモートシャットダウンに使える SSH 接続の一覧 |
 | GET | `/api/wol/bemfa` | `wol:read` | Bemfa 連携設定と接続状態 |
 | GET | `/api/wol/bemfa/secrets` | `wol:write` | Bemfa 秘密鍵を表示 |
 | PUT | `/api/wol/bemfa` | `wol:write` | Bemfa 連携設定を変更 |
+| POST | `/api/wol/public/agent/poll` | ログイン不要 | Wake-on-LAN エージェントのコマンド取得（ロングポーリング） |
+| POST | `/api/wol/public/agent/ack` | ログイン不要 | Wake-on-LAN エージェントがコマンドを確認または結果を報告 |
+| GET | `/api/wol/public/agent/{name}` | ログイン不要 | Wake-on-LAN エージェントのスクリプトをダウンロード |
+| POST | `/api/wol/public/agent/{name}` | ログイン不要 | Wake-on-LAN エージェントのスクリプトをダウンロード |
 
 ## Web ターミナル
 
@@ -1517,6 +1522,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `dropped` | integer |
 | `error` | string |
 | `needed` | boolean |
+| `noIPv6` | boolean |
 | `ports` | 配列 of string |
 | `reason` | string |
 | `version` | string |
