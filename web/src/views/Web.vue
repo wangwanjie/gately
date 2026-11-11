@@ -346,26 +346,12 @@
               <!-- 断开连接类型没有安全页，“名单内放行、其余断开”需改用反向代理 + IP 访问控制 + 拒绝时断开连接（#53） -->
               <div v-if="site.type === 'close'" class="form-help">{{ t('web.typeCloseAllow') }}</div>
             </el-form-item>
+            <el-form-item v-if="site.type === 'proxy'" :label="t('web.targets')" required>
+              <el-input v-model="targetsText" type="textarea" :rows="2" class="mono" :placeholder="t('web.targetsPlaceholder')" />
+            </el-form-item>
+            <!-- 反向代理站点的后端连接选项紧跟后端地址；其他类型站点的放在安全页的按用户分流下面（#79） -->
+            <ProxyOptions v-if="site.type === 'proxy'" v-model:site="site" :auth-on="localAuthOn" />
             <template v-if="site.type === 'proxy'">
-              <el-form-item :label="t('web.targets')" required>
-                <el-input v-model="targetsText" type="textarea" :rows="2" class="mono" :placeholder="t('web.targetsPlaceholder')" />
-              </el-form-item>
-              <el-form-item>
-                <template #label>
-                  <!-- 表单标签是顶端对齐的 flex 容器，文字与问号需包一层才能垂直居中 -->
-                  <span class="label-with-help">{{ t('web.options') }}<ProxyOptionsHelp /></span>
-                </template>
-                <el-checkbox v-model="site.insecureSkipVerify">{{ t('web.optSkipVerify') }}</el-checkbox>
-                <el-checkbox v-model="site.useTargetHost">{{ t('web.optTargetHost') }}</el-checkbox>
-                <el-checkbox v-model="site.disableKeepAlives">{{ t('web.optNoKeepAlive') }}</el-checkbox>
-                <el-checkbox v-model="site.forwardedHeaders">{{ t('web.optForwarded') }}</el-checkbox>
-                <el-checkbox v-model="site.sendProxyProtocol">{{ t('web.optSendProxy') }}</el-checkbox>
-                <el-checkbox v-model="site.upstreamSniFromHost">{{ t('web.optSniFromHost') }}</el-checkbox>
-                <!-- 认证交给后端 Gately 时才能转发登录 Cookie，本站点开了认证就不可勾选 -->
-                <el-checkbox v-model="site.passAuthCookies" :disabled="localAuthOn && !site.passAuthCookies">{{ t('web.optPassAuthCookies') }}</el-checkbox>
-                <div class="form-help">{{ t('web.optSniFromHostHelp') }}</div>
-                <div v-if="site.passAuthCookies" class="form-help">{{ t('web.optPassAuthCookiesHelp') }}</div>
-              </el-form-item>
               <el-form-item :label="t('web.locations')">
                 <div class="locations">
                   <div v-for="(loc, i) in site.locations" :key="locKey(loc)" class="location">
@@ -464,9 +450,9 @@
               <el-input v-model="oauthUsersText" type="textarea" :rows="2" class="mono" :placeholder="t('web.oauthUsersPlaceholder')" />
               <div class="form-help">{{ t('web.providerHelp') }}</div>
             </el-form-item>
-            <!-- 按用户分流与传递身份信息依赖认证结果，只在反向代理站点启用认证后显示 -->
-            <template v-if="site.type === 'proxy' && localAuthOn">
-              <el-form-item :label="t('web.userRoutes')">
+            <!-- 按用户分流与传递身份信息依赖认证结果，启用认证后显示；非反向代理站点未命中规则的用户按站点类型处理（#79） -->
+            <template v-if="localAuthOn">
+              <el-form-item :label="t('web.userRoutes')" data-test="user-routes">
                 <div class="locations">
                   <div v-for="(ur, i) in site.userRoutes" :key="locKey(ur)" class="location">
                     <div class="location-row">
@@ -477,10 +463,13 @@
                   </div>
                   <el-button size="small" :icon="Plus" @click="site.userRoutes.push({ users: [], targets: [] })">{{ t('web.addUserRoute') }}</el-button>
                   <div class="form-help">{{ t('web.userRoutesHelp') }}</div>
+                  <div v-if="site.type !== 'proxy'" class="form-help" data-test="user-routes-default">{{ t('web.userRoutesDefaultHelp', { type: typeText(site.type) }) }}</div>
                 </div>
               </el-form-item>
+              <ProxyOptions v-if="site.type !== 'proxy' && hasBackends" v-model:site="site" :auth-on="localAuthOn" />
               <!-- 身份请求头：每行把一项身份信息写入一个请求头；邮箱、显示名、分组只有共享用户或转发认证才有 -->
-              <el-form-item :label="t('web.identityHeaders')">
+              <!-- 身份信息只写给反向代理的后端：非反向代理站点要有按用户分流规则才显示 -->
+              <el-form-item v-if="hasBackends" :label="t('web.identityHeaders')" data-test="identity-headers">
                 <div class="locations">
                   <div v-for="(ih, i) in site.identityHeaders" :key="locKey(ih)" class="location-row">
                     <el-select v-model="ih.field" class="identity-field" :aria-label="t('web.identityField')">
@@ -540,7 +529,7 @@
             <el-form-item :label="t('web.cors')"><el-switch v-model="site.cors" /></el-form-item>
           </el-tab-pane>
           <el-tab-pane v-if="site.type !== 'close'" :label="t('web.tabTraffic')" name="traffic">
-            <SiteTraffic v-model:site="site" :cache-target="siteCacheTarget" />
+            <SiteTraffic v-model:site="site" :cache-target="siteCacheTarget" :has-backends="hasBackends" />
           </el-tab-pane>
           <!-- 错误页：断开连接与固定文本站点不产生错误页；默认站点的设置同时用于未匹配任何站点的 404，始终显示 -->
           <el-tab-pane v-if="siteIsDefault || (site.type !== 'close' && site.type !== 'text')" :label="t('errorPages.tab')" name="errorPage" lazy>
@@ -694,7 +683,7 @@ import { useListText, splitLines } from '../composables/useListText'
 import ListInput from '../components/ListInput.vue'
 import HeaderEditor from '../components/HeaderEditor.vue'
 import ContentTypeInput from '../components/ContentTypeInput.vue'
-import ProxyOptionsHelp from '../components/ProxyOptionsHelp.vue'
+import ProxyOptions from '../components/ProxyOptions.vue'
 import ErrorPagePicker from '../components/ErrorPagePicker.vue'
 import ErrorPagesManager from '../components/ErrorPagesManager.vue'
 import { emptyErrorPage, normalizeErrorPage, type ErrorPageOptions } from '../errorPages'
@@ -967,6 +956,8 @@ const fwdHeadersText = useListText(() => site.value.forwardAuth?.copyHeaders, (v
 const forwardAuthOn = ref(false)
 // 本站点是否启用了任一认证方式，启用时不能转发 Gately 登录 Cookie
 const localAuthOn = computed(() => site.value.webAuth || site.value.basicAuth || forwardAuthOn.value)
+// 站点是否有反向代理后端：反向代理站点，或启用认证并配置了按用户分流的其他类型站点（#79）
+const hasBackends = computed(() => site.value.type === 'proxy' || (localAuthOn.value && site.value.userRoutes.length > 0))
 // 有邮箱、显示名、分组可传的认证方式：使用共享用户的基本/网页认证，或转发认证
 const richIdentityOn = computed(() => forwardAuthOn.value || ((site.value.webAuth || site.value.basicAuth) && site.value.sharedUsers))
 const identityFields: IdentityField[] = ['user', 'email', 'name', 'groups']
@@ -1847,9 +1838,12 @@ async function saveSite() {
   if (!forwardAuthOn.value) {
     site.value.forwardAuth = { url: '', loginUrl: '', loginFromLocation: false, copyHeaders: [] }
   }
-  // 关闭认证或改为其他类型后，按用户分流不再显示，也不再生效，一并清空，避免保存时被隐藏的设置拦住
-  if (site.value.type !== 'proxy' || !localAuthOn.value) {
+  // 关闭认证或改为断开连接后，按用户分流不再显示，也不再生效，一并清空，避免保存时被隐藏的设置拦住；
+  // 非反向代理站点没有分流规则时身份信息无处可传，同样清空
+  if (site.value.type === 'close' || !localAuthOn.value) {
     site.value.userRoutes = []
+  }
+  if (!hasBackends.value) {
     site.value.identityHeaders = []
   }
   // 未填写请求头名的行视为不传；当前认证方式没有邮箱等信息时，这些行已不可选，一并去掉
@@ -2075,11 +2069,6 @@ onMounted(async () => {
 }
 .users-link:hover {
   text-decoration: underline;
-}
-.label-with-help {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
 }
 .listener-hint {
   margin-bottom: 16px;

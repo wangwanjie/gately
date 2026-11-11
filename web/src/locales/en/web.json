@@ -197,6 +197,8 @@
   "userRouteTargetsPlaceholder": "Backends for these users, separated by commas",
   "addUserRoute": "Add rule",
   "userRoutesHelp": "After sign-in, send each user to a different backend. Users not listed, and visitors who are not signed in on public paths, use the site backends. Use the site user or shared user name, provider-key:id for third-party sign-in, or the Remote-User returned by forward auth. Path rules with their own backends take priority; path rules that only add headers use the user's backends. Like nginx map $remote_user $backend",
+  "userRoutesDefaultHelp": "This is a “{type}” site: users matching a rule are proxied to that rule's backends; users not listed, and visitors who are not signed in on public paths, still get the “{type}” response",
+  "optUserRoutesOnly": "These options apply only to the per-user backends",
   "identityHeaders": "Pass identity",
   "identityField": "Field",
   "identityHeaderName": "Header name",

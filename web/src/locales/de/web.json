@@ -197,6 +197,8 @@
   "userRouteTargetsPlaceholder": "Backends für diese Benutzer, durch Kommas getrennt",
   "addUserRoute": "Regel hinzufügen",
   "userRoutesHelp": "Nach der Anmeldung wird jeder Benutzer an ein eigenes Backend geleitet. Nicht aufgeführte Benutzer und nicht angemeldete Besucher auf öffentlichen Pfaden nutzen die Backends der Site. Verwenden Sie den Namen des Site- oder gemeinsamen Benutzers, Anbieter-key:ID für Drittanbieter-Anmeldung oder den von der Weiterleitungsauthentifizierung gelieferten Remote-User. Pfadregeln mit eigenen Backends haben Vorrang; Pfadregeln, die nur Header hinzufügen, nutzen die Backends des Benutzers. Entspricht nginx map $remote_user $backend",
+  "userRoutesDefaultHelp": "Dies ist eine Site vom Typ „{type}“: Benutzer, die einer Regel entsprechen, werden per Reverse Proxy an deren Backends geleitet; nicht aufgeführte Benutzer und nicht angemeldete Besucher auf öffentlichen Pfaden erhalten weiterhin die Antwort „{type}“",
+  "optUserRoutesOnly": "Diese Optionen gelten nur für die benutzerspezifischen Backends",
   "identityHeaders": "Identität weitergeben",
   "identityField": "Feld",
   "identityHeaderName": "Header-Name",

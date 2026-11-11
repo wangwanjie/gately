@@ -197,6 +197,8 @@
   "userRouteTargetsPlaceholder": "这些用户的后端，多个用逗号分隔",
   "addUserRoute": "添加分流规则",
   "userRoutesHelp": "认证通过后按用户把请求分到不同后端，未列出的用户和公开路径上的未登录访客使用站点后端；用户名为站点用户或共享用户的用户名，第三方登录写 提供方key:标识，转发认证按认证服务返回的 Remote-User 匹配。填写了后端的分路径规则优先，只追加请求头的分路径规则改用该用户的后端。相当于 nginx 的 map $remote_user $backend",
+  "userRoutesDefaultHelp": "当前为「{type}」站点：命中规则的用户反向代理到规则的后端，未列出的用户和公开路径上的未登录访客照常按「{type}」处理",
+  "optUserRoutesOnly": "这些选项只作用于按用户分流的后端",
   "identityHeaders": "传递身份信息",
   "identityField": "字段",
   "identityHeaderName": "请求头名称",

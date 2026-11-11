@@ -197,6 +197,8 @@
   "userRouteTargetsPlaceholder": "Backends de estos usuarios, separados por comas",
   "addUserRoute": "Añadir regla",
   "userRoutesHelp": "Tras iniciar sesión, cada usuario se envía a su propio backend. Los usuarios no listados y los visitantes sin sesión en rutas públicas usan los backends del sitio. Usa el nombre del usuario del sitio o compartido, proveedor-key:identificador para inicio de sesión de terceros, o el Remote-User devuelto por la autenticación delegada. Las reglas de ruta con backends propios tienen prioridad; las que solo añaden cabeceras usan los backends del usuario. Equivale a map $remote_user $backend de nginx",
+  "userRoutesDefaultHelp": "Este es un sitio «{type}»: los usuarios que coinciden con una regla se envían por proxy inverso a sus backends; los usuarios no listados y los visitantes sin sesión en rutas públicas siguen recibiendo la respuesta «{type}»",
+  "optUserRoutesOnly": "Estas opciones solo se aplican a los backends por usuario",
   "identityHeaders": "Pasar identidad",
   "identityField": "Campo",
   "identityHeaderName": "Nombre de cabecera",

@@ -1,7 +1,7 @@
 <template>
   <div>
-    <template v-if="site.type === 'proxy'">
-      <el-form-item :label="t('siteTraffic.loadBalance')">
+    <template v-if="hasBackends || site.type === 'proxy'">
+      <el-form-item :label="t('siteTraffic.loadBalance')" data-test="lb-policy">
         <el-select v-model="site.lbPolicy" class="w-200" :empty-values="[null, undefined]">
           <el-option :label="t('siteTraffic.lbRoundRobin')" value="" />
           <el-option :label="t('siteTraffic.lbRandom')" value="random" />
@@ -63,7 +63,9 @@
           <span class="inline-help">{{ t('siteTraffic.passesRecover') }}</span>
         </el-form-item>
       </template>
+    </template>
 
+    <template v-if="site.type === 'proxy'">
       <el-form-item :label="t('siteTraffic.responseCache')">
         <el-switch v-model="site.cache.enable" />
         <span class="inline-help">{{ t('siteTraffic.cacheHelp') }}</span>
@@ -135,7 +137,8 @@
       <div class="form-help">{{ t('siteTraffic.clientTimeoutsHelp') }}</div>
     </el-form-item>
 
-    <el-form-item v-if="site.type !== 'redirect'" :label="t('siteTraffic.compress')">
+    <!-- 重定向没有响应体；配置了按用户分流时分流到的后端响应仍可压缩 -->
+    <el-form-item v-if="site.type !== 'redirect' || hasBackends" :label="t('siteTraffic.compress')">
       <el-switch v-model="site.compress" />
       <span class="inline-help">{{ t('siteTraffic.compressHelp') }}</span>
     </el-form-item>
@@ -264,7 +267,9 @@ interface CacheStats {
 
 const { t } = useI18n()
 const site = defineModel<TrafficFields>('site', { required: true })
-const props = defineProps<{ cacheTarget?: CacheTarget | null }>()
+// hasBackends 表示站点有反向代理后端：反向代理站点，或配置了按用户分流的其他类型站点（#79），
+// 有后端时显示负载均衡、后端超时与健康检查；响应缓存仍只用于反向代理站点
+const props = defineProps<{ cacheTarget?: CacheTarget | null; hasBackends?: boolean }>()
 
 // cacheStats 为站点运行中的缓存状态；站点未保存、未运行或运行中的配置未启用缓存时不显示占用与清空按钮
 const cacheStats = ref<CacheStats | null>(null)

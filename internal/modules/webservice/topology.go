@@ -204,7 +204,8 @@ func siteTarget(s Site) string {
 
 // configUpstreams 列出未运行站点在配置中的后端（无运行状态）。
 func configUpstreams(s Site) []TopoUpstream {
-	if s.Type != TypeProxy {
+	// 非反向代理站点只有按用户分流的后端（#79），断开连接站点没有后端
+	if s.Type == TypeClose || (s.Type != TypeProxy && len(s.UserRoutes) == 0) {
 		return []TopoUpstream{}
 	}
 	out := []TopoUpstream{}
@@ -218,7 +219,9 @@ func configUpstreams(s Site) []TopoUpstream {
 			out = append(out, TopoUpstream{URL: u.displayURL(), Scope: scope, Match: match, Weight: spec.Weight, Backup: spec.Backup})
 		}
 	}
-	add(s.Targets, "", "")
+	if s.Type == TypeProxy {
+		add(s.Targets, "", "")
+	}
 	for _, l := range s.Locations {
 		if len(l.Targets) > 0 {
 			add(l.Targets, scopeLocation, l.Prefix)

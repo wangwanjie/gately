@@ -197,6 +197,8 @@
   "userRouteTargetsPlaceholder": "Backends de ces utilisateurs, séparés par des virgules",
   "addUserRoute": "Ajouter une règle",
   "userRoutesHelp": "Après connexion, chaque utilisateur est envoyé vers son propre backend. Les utilisateurs non listés et les visiteurs non connectés sur les chemins publics utilisent les backends du site. Indiquez le nom de l’utilisateur du site ou partagé, fournisseur-key:identifiant pour une connexion tierce, ou le Remote-User renvoyé par l’authentification déléguée. Les règles de chemin ayant leurs propres backends sont prioritaires ; celles qui ajoutent seulement des en-têtes utilisent les backends de l’utilisateur. Équivaut à map $remote_user $backend de nginx",
+  "userRoutesDefaultHelp": "Ce site est de type « {type} » : les utilisateurs correspondant à une règle passent par le proxy inverse vers ses backends ; les utilisateurs non listés et les visiteurs non connectés sur les chemins publics reçoivent toujours la réponse « {type} »",
+  "optUserRoutesOnly": "Ces options s’appliquent uniquement aux backends par utilisateur",
   "identityHeaders": "Transmettre l’identité",
   "identityField": "Champ",
   "identityHeaderName": "Nom de l’en-tête",

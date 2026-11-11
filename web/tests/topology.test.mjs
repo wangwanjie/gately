@@ -556,3 +556,19 @@ test('countActive 统计活动中的站点并按搜索词过滤', () => {
   v.ips = [{ ip: '1.1.1.1', nodes: ['s:b/nas'], active: 1, last: 99 }]
   assert.equal(countActive(v), 1)
 })
+
+test('buildLayout 非反向代理站点先列去向节点，再列按用户分流的后端（#79）', () => {
+  const v = view()
+  v.listeners[0].sites.splice(1, 0, site('s:a/st', { type: 'static', target: '/data/www', upstreams: [up('u:a/st/0', 'http://10.0.0.9:80')] }))
+  const l = buildLayout(v, new Set(), '')
+  const kids = l.nodes.filter((n) => n.parent === 's:a/st').map((n) => n.id)
+  assert.deepEqual(kids, ['t:a/st', 'u:a/st/0'])
+  assert.equal(l.edges.find((x) => x.to === 'u:a/st/0').from, 's:a/st')
+  // 只看活动时去掉空闲的分流后端，去向节点保留
+  v.listeners[0].sites[1].upstreams = [idleUp('u:a/st/0', 'http://10.0.0.9:80')]
+  const act = filterView(v, { active: true })
+  const st = act.listeners[0].sites.find((s) => s.id === 's:a/st')
+  assert.deepEqual(st.upstreams, [])
+  const kids2 = buildLayout(act, new Set(), '').nodes.filter((n) => n.parent === 's:a/st').map((n) => n.id)
+  assert.deepEqual(kids2, ['t:a/st'])
+})
