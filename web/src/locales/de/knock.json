@@ -97,7 +97,7 @@
     "autoFirewall": "Firewall-Port freigeben",
     "autoFirewallHelp": "Öffnet den Klopf-Port in der System-Firewall (OpenWrt fw4, firewalld, ufw usw.). Ist die Firewall-Sperre aktiv, werden auch die geschützten Ports geöffnet; ob ein Zugriff möglich ist, entscheidet dann nur das Klopfen.",
     "allowLan": "LAN vom Klopfen ausnehmen",
-    "allowLanHelp": "LAN, Tailscale (100.64.0.0/10), Link-Local-Adressen und das IPv6-/64 dieses Hosts erreichen geschützte Ports ohne Klopfen, damit Sie sich nicht aussperren. Betrifft nur die Firewall-Sperre.",
+    "allowLanHelp": "Private Adressen, Link-Local-Adressen und die öffentlichen IPv6-Bereiche der Schnittstellen dieses Hosts (das tatsächliche Präfix bei /64 oder kürzer; bei längeren Präfixen nur das eigene Präfix des Hosts) erreichen geschützte Ports ohne Klopfen, damit Sie sich nicht aussperren. Carrier-Grade-NAT-Adressen (100.64.0.0/10) sind nicht enthalten, da andere Kunden desselben Providers sie nutzen; mit Tailscale tragen Sie den Bereich unten in die Ausnahmeliste ein. Betrifft nur die Firewall-Sperre.",
     "allowList": "Ausnahmeliste vom Klopfen",
     "allowListHelp": "IPs oder Bereiche, die geschützte Ports ohne Klopfen erreichen, eine pro Zeile. Betrifft nur die Firewall-Sperre.",
     "maxAge": "Gültigkeit des Pakets",

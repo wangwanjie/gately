@@ -97,7 +97,7 @@
     "autoFirewall": "Ouvrir le port dans le pare-feu",
     "autoFirewallHelp": "Ouvre le port de frappe dans le pare-feu du système (OpenWrt fw4, firewalld, ufw, etc.). Une fois le blocage par pare-feu actif, il ouvre aussi les ports protégés : l'accès n'est alors décidé que par la frappe.",
     "allowLan": "Réseau local exempté de frappe",
-    "allowLanHelp": "Le réseau local, Tailscale (100.64.0.0/10), les adresses lien-local et l'IPv6 /64 de cet hôte accèdent aux ports protégés sans frapper, pour éviter de vous enfermer dehors. N'affecte que le blocage par pare-feu.",
+    "allowLanHelp": "Les adresses privées, les adresses lien-local et les plages IPv6 publiques des interfaces de cet hôte (le préfixe réel s'il fait /64 ou moins ; seulement le propre préfixe de l'hôte s'il est plus long) accèdent aux ports protégés sans frapper, pour éviter de vous enfermer dehors. Les adresses du NAT opérateur (100.64.0.0/10) ne sont pas incluses, car d'autres clients du même opérateur les utilisent ; avec Tailscale, ajoutez cette plage à la liste blanche ci-dessous. N'affecte que le blocage par pare-feu.",
     "allowList": "Liste d'exemption de frappe",
     "allowListHelp": "IP ou plages pouvant accéder aux ports protégés sans frapper, une par ligne. N'affecte que le blocage par pare-feu.",
     "maxAge": "Validité du paquet",

@@ -97,7 +97,7 @@
     "autoFirewall": "Liberar porta no firewall",
     "autoFirewallHelp": "Libera a porta de batida no firewall do sistema (OpenWrt fw4, firewalld, ufw etc.). Com o bloqueio no firewall ativo, também libera as portas protegidas, e o acesso é decidido apenas pela batida.",
     "allowLan": "Rede local isenta de batida",
-    "allowLanHelp": "A rede local, o Tailscale (100.64.0.0/10), endereços link-local e o IPv6 /64 deste host acessam as portas protegidas sem bater, para você não se trancar do lado de fora. Afeta apenas o bloqueio no firewall.",
+    "allowLanHelp": "Endereços privados, endereços link-local e as faixas IPv6 públicas das interfaces deste host (o prefixo real quando é /64 ou mais curto; só o próprio prefixo do host quando é mais longo) acessam as portas protegidas sem bater, para você não se trancar do lado de fora. Endereços de CGNAT (100.64.0.0/10) não entram porque outros clientes do mesmo provedor os usam; se usa Tailscale, adicione essa faixa à lista abaixo. Afeta apenas o bloqueio no firewall.",
     "allowList": "Lista de isentos de batida",
     "allowListHelp": "IPs ou faixas que acessam as portas protegidas sem bater, um por linha. Afeta apenas o bloqueio no firewall.",
     "maxAge": "Validade do pacote",

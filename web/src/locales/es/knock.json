@@ -97,7 +97,7 @@
     "autoFirewall": "Abrir puerto en el cortafuegos",
     "autoFirewallHelp": "Abre el puerto de llamada en el cortafuegos del sistema (OpenWrt fw4, firewalld, ufw, etc.). Con el bloqueo en cortafuegos activo, también abre los puertos protegidos, de modo que el acceso lo decide solo la llamada.",
     "allowLan": "Red local exenta de llamada",
-    "allowLanHelp": "La red local, Tailscale (100.64.0.0/10), las direcciones de enlace local y el IPv6 /64 de este equipo pueden acceder a los puertos protegidos sin llamar, para que no te quedes fuera. Solo afecta al bloqueo en cortafuegos.",
+    "allowLanHelp": "Las direcciones privadas, las de enlace local y los rangos IPv6 públicos de las interfaces de este equipo (el prefijo real si es /64 o más corto; solo el propio prefijo del equipo si es más largo) pueden acceder a los puertos protegidos sin llamar, para que no te quedes fuera. Las direcciones de NAT de operador (100.64.0.0/10) no se incluyen porque otros clientes del mismo operador las usan; si usas Tailscale, añade ese rango a la lista de abajo. Solo afecta al bloqueo en cortafuegos.",
     "allowList": "Lista de exentos de llamada",
     "allowListHelp": "IP o rangos que pueden acceder a los puertos protegidos sin llamar, uno por línea. Solo afecta al bloqueo en cortafuegos.",
     "maxAge": "Validez del paquete",

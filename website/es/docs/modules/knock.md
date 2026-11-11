@@ -26,7 +26,7 @@ fwknop -n gately-ssh && ssh user@example.com
 Los paquetes de llamada se envían por defecto al puerto UDP 62201. Si Gately está detrás de un router, hay que reenviar el UDP 62201 junto con el puerto protegido al equipo donde se ejecuta Gately; con «Abrir automáticamente en el cortafuegos» activado, el cortafuegos local (OpenWrt fw4, firewalld, ufw, etc.) abre el puerto de llamada y, una vez activo el bloqueo, también el puerto protegido, de modo que solo la llamada decide si se puede conectar.
 
 ::: warning Evita quedarte fuera
-- «Red interna sin llamada» está activado por defecto: la red interna, Tailscale (100.64.0.0/10), las direcciones de enlace local y el /64 IPv6 del propio equipo no necesitan llamar; en los ajustes puedes añadir una lista de permitidos sin llamada;
+- «Red interna sin llamada» está activado por defecto: las direcciones privadas, las de enlace local y los rangos IPv6 públicos de las interfaces del equipo (el prefijo de la interfaz si es /64 o más corto; solo el propio prefijo para los /124 o /128 habituales en servidores en la nube) no necesitan llamar; en los ajustes puedes añadir una lista de permitidos sin llamada. Las direcciones de NAT de operador (100.64.0.0/10) no se incluyen, porque otros clientes del mismo operador también las usan; si usas Tailscale, añade 100.64.0.0/10 a la lista;
 - Al activar el bloqueo, las conexiones ya establecidas no se ven afectadas, y tampoco cuando caduca la autorización;
 - Al detener Gately con normalidad se eliminan las reglas de bloqueo; si se termina a la fuerza (`kill -9`, `docker rm -f`) las reglas permanecen hasta que Gately vuelve a arrancar. Asegúrate de poder acceder a la máquina desde la red interna o por otra vía.
 :::
