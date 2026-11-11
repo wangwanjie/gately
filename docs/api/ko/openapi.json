@@ -1971,6 +1971,9 @@
           "key": {
             "type": "string"
           },
+          "knock": {
+            "type": "string"
+          },
           "listenAddress": {
             "type": "string"
           },
@@ -2102,6 +2105,9 @@
             "type": "array"
           },
           "key": {
+            "type": "string"
+          },
+          "knock": {
             "type": "string"
           },
           "listenAddress": {
@@ -2456,6 +2462,9 @@
             "type": "array"
           },
           "key": {
+            "type": "string"
+          },
+          "knock": {
             "type": "string"
           },
           "localPort": {
