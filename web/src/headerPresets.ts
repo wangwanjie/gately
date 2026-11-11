@@ -89,6 +89,8 @@ const tokenRe = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/
 const ctlRe = /[\x00-\x08\x0a-\x1f\x7f]/
 // 由连接自动管理的头，手动设置会被忽略或破坏传输
 const managedHeaders = new Set(['connection', 'keep-alive', 'proxy-connection', 'transfer-encoding', 'te', 'trailer', 'upgrade', 'content-length'])
+// 开启「添加 X-Forwarded-*」时由 Gately 写入访客地址与源端口的请求头，写固定值会覆盖真实值
+const clientAddrHeaders = new Set(['x-forwarded-for', 'x-real-ip', 'x-real-port', 'x-forwarded-for-port'])
 
 export interface HeaderRow {
   key: string
@@ -119,7 +121,7 @@ export function checkHeader(dir: HeaderDirection, rows: HeaderRow[], index: numb
     issues.push({ level: 'warning', msg: 'host' })
   } else if (managedHeaders.has(lower)) {
     issues.push({ level: 'warning', msg: 'managed' })
-  } else if (dir === 'request' && (lower === 'x-forwarded-for' || lower === 'x-real-ip')) {
+  } else if (dir === 'request' && clientAddrHeaders.has(lower)) {
     issues.push({ level: 'warning', msg: 'clientIp' })
   }
   if (/\$[a-z_]\w*/i.test(value)) {

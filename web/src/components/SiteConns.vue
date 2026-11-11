@@ -168,6 +168,10 @@ const banPermanent = ref(false)
 const banning = ref(false)
 
 function hostPort(c: Conn) {
+  // 端口为 0 表示源端口未知（经可信代理取得访客地址而代理没有告知端口），只显示地址
+  if (!c.port) {
+    return c.ip
+  }
   return c.ip.includes(':') ? `[${c.ip}]:${c.port}` : `${c.ip}:${c.port}`
 }
 
