@@ -175,16 +175,17 @@ API は `GET` / `PUT /api/fileusers` で、API トークンには `fileusers:rea
 | macOS | ターミナル（管理者パスワードが必要） | launchd デーモン `cn.gately.agent` | `/var/log/gately-agent.log` |
 | OpenWrt | SSH（root）。curl またはシステム標準の wget を使用 | procd サービス `gately-agent`。システムアップグレード時も設定を保持 | `logread -e gately-agent` |
 
-インストールコマンドは Gately からスクリプトをダウンロードします（インストール手順から直接ダウンロードすることもできます）。トークンはリクエストボディと環境変数で渡され、URL には現れません。エージェントが接続するとデバイスカードがオンライン表示になり、エージェントが報告するホスト名、OS、接続元アドレスも表示されます。エージェント方式のデバイスではオンライン確認のアドレスを入力する必要はありません。
+インストールコマンドは Gately からスクリプトをダウンロードし（インストール手順から直接ダウンロードすることもできます）、まず SHA-256 を検証します（Linux と OpenWrt は `sha256sum`、macOS は `shasum -a 256`、Windows は `Get-FileHash`）。Gately が示すチェックサムと一致しない場合は `gately-agent: checksum mismatch` と表示して中止し、一致した場合は検証済みのそのスクリプト自体をインストールします。トークンはリクエストボディと環境変数で渡され、URL にもどのプロセスのコマンドライン引数にも現れません。curl と wget は `mktemp` で作成した一時ファイルからトークンを読み取り、sudo は `--preserve-env` で環境変数を引き継ぎます。そのため平文の HTTP や「証明書を検証しない」でダウンロードしても改ざんされたスクリプトは実行されません。ただしトークンは平文で送られるため、HTTPS のアドレスを使うことをおすすめします。エージェントが接続するとデバイスカードがオンライン表示になり、エージェントが報告するホスト名、OS、接続元アドレスも表示されます。エージェント方式のデバイスではオンライン確認のアドレスを入力する必要はありません。
 
 - トークンはそのデバイスの電源スイッチに相当します。設定ファイルは root（Windows では SYSTEM と管理者）だけが読み取れます。同じトークンは 1 台のデバイスでしか使えず、別のマシンが同じトークンで接続すると拒否され、ログに表示されます；
 - 指示は発行から 10 秒間だけ有効です。エージェントが先に確認し、Gately が応答してから実行します。エージェントがオフラインのときはすぐにエラーとなり、次にオンラインになるまで待機して実行されることはありません；
 - トークンを「再生成」するか、シャットダウン方式を別の方式に変更すると、古いエージェントはすぐに切断され、新しいコマンドで再インストールする必要があります；
 - エージェントは 25 秒ごとにポーリングし、切断後は 5 秒から最長 60 秒の間隔で再接続します；
-- アンインストール：インストール手順からアンインストールコマンドをコピーします。Windows は `powershell -ExecutionPolicy Bypass -File "$env:ProgramData\GatelyAgent\gately-agent.ps1" uninstall`、Linux と macOS は `sudo sh /usr/local/bin/gately-agent uninstall`、OpenWrt は `sh /usr/bin/gately-agent uninstall` です；
+- インストール先：Linux は `/usr/local/bin/gately-agent`、macOS は `/Library/Gately/gately-agent`（`/usr/local/bin` は Homebrew によって一般ユーザーの所有になっていることが多いため）、OpenWrt は `/usr/bin/gately-agent` です。インストール先のディレクトリは root が所有し、ほかのユーザーが書き込めない必要があり、そうでない場合はインストールを拒否します。Windows は `C:\ProgramData\GatelyAgent` で、ディレクトリの権限は SYSTEM と管理者だけがアクセスできるよう丸ごと置き換えられます。このディレクトリが既に存在し、リンク（ジャンクションまたはシンボリックリンク）であるか所有者が SYSTEM・管理者以外の場合はインストールを拒否し、確認のうえ削除するよう案内します；
+- アンインストール：インストール手順からアンインストールコマンドをコピーします。Windows は `powershell -ExecutionPolicy Bypass -File "$env:ProgramData\GatelyAgent\gately-agent.ps1" uninstall`、Linux は `sudo sh /usr/local/bin/gately-agent uninstall`、macOS は `sudo sh /Library/Gately/gately-agent uninstall`、OpenWrt は `sh /usr/bin/gately-agent uninstall` です；
 - スリープ：Windows はメモリへのサスペンド（スリープを無効にしたマシンでは失敗し、ログに表示されます）、Linux は `systemctl suspend`、macOS は `pmset sleepnow` を使います。スリープ中のデバイスを Wake-on-LAN で起こすには、ネットワークアダプターまたは OS で Wake-on-LAN を許可してください。
 
-エージェント用インターフェースは `/api/wol/public/agent/` 以下にあり、ログインは不要でデバイスのトークンだけで認証します。セキュリティエントランスを設定している場合も、有効なトークンを付けたリクエストはアクセスできます。「内部ネットワークのみ」とブロックリストは通常どおり適用されます。
+エージェント用インターフェースは `/api/wol/public/agent/` 以下にあり、ログインは不要でデバイスのトークンだけで認証します。セキュリティエントランスを設定している場合も、有効なトークンを付けたリクエストはアクセスできます。「内部ネットワークのみ」とブロックリストは通常どおり適用されます。管理用インターフェース `GET /api/wol/agent-scripts` は各エージェントスクリプトの SHA-256 をファイル名ごとに返します。
 
 #### SSH コマンド
 

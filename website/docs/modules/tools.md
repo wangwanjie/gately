@@ -175,16 +175,17 @@ WebDAV、FTP 与 SMB 共用一份「共享用户」，字段与各服务的本�
 | macOS | 终端（需要管理员密码） | launchd 守护进程 `cn.gately.agent` | `/var/log/gately-agent.log` |
 | OpenWrt | SSH（root），可用 curl 或系统自带的 wget | procd 服务 `gately-agent`，升级系统时保留配置 | `logread -e gately-agent` |
 
-安装命令从 Gately 下载脚本（也可在安装说明中直接下载），凭据经请求体与环境变量传递，不出现在网址中。客户端连上后设备卡片显示在线，以及客户端上报的主机名、系统与来源地址；客户端方式的设备不需要填写在线探测地址。
+安装命令从 Gately 下载脚本（也可在安装说明中直接下载），先用 SHA-256 校验（Linux、OpenWrt 用 `sha256sum`，macOS 用 `shasum -a 256`，Windows 用 `Get-FileHash`），与 Gately 给出的校验值不一致时报 `gately-agent: checksum mismatch` 并停止，一致时安装的就是这份已校验的脚本。凭据经请求体与环境变量传递，不出现在网址与任何进程的命令行参数中：curl、wget 从 `mktemp` 新建的临时文件读取凭据，sudo 用 `--preserve-env` 传递环境变量。因此经明文 HTTP 或「不校验证书」下载时，被篡改的脚本也不会执行；凭据则仍以明文传输，建议使用 HTTPS 地址。客户端连上后设备卡片显示在线，以及客户端上报的主机名、系统与来源地址；客户端方式的设备不需要填写在线探测地址。
 
 - 凭据等同于该设备的电源开关，配置文件只有 root（Windows 为 SYSTEM 与管理员）可读；同一凭据只能用于一台设备，另一台机器用同一凭据连接时会被拒绝，并在日志中提示；
 - 指令只在发出后 10 秒内有效：客户端先确认、Gately 回复后才执行，客户端离线时直接报错，不会排队到下次上线再执行；
 - 「重新生成」凭据或把关机方式改为其他方式后，旧客户端立即断开，需要用新命令重新安装；
 - 客户端每 25 秒轮询一次，连接断开后按 5 秒起、最长 60 秒的间隔重试；
-- 卸载：在安装说明中复制卸载命令，Windows 为 `powershell -ExecutionPolicy Bypass -File "$env:ProgramData\GatelyAgent\gately-agent.ps1" uninstall`，Linux、macOS 为 `sudo sh /usr/local/bin/gately-agent uninstall`，OpenWrt 为 `sh /usr/bin/gately-agent uninstall`；
+- 安装位置：Linux 为 `/usr/local/bin/gately-agent`，macOS 为 `/Library/Gately/gately-agent`（`/usr/local/bin` 常被 Homebrew 交给普通用户），OpenWrt 为 `/usr/bin/gately-agent`，安装目录必须属于 root 且其他用户不可写，否则拒绝安装；Windows 为 `C:\ProgramData\GatelyAgent`，目录权限整体替换为只有 SYSTEM 与管理员可访问，该目录已存在但是链接（junction 或符号链接）或所有者不是 SYSTEM、管理员时拒绝安装，并提示确认后删除该目录；
+- 卸载：在安装说明中复制卸载命令，Windows 为 `powershell -ExecutionPolicy Bypass -File "$env:ProgramData\GatelyAgent\gately-agent.ps1" uninstall`，Linux 为 `sudo sh /usr/local/bin/gately-agent uninstall`，macOS 为 `sudo sh /Library/Gately/gately-agent uninstall`，OpenWrt 为 `sh /usr/bin/gately-agent uninstall`；
 - 睡眠：Windows 挂起到内存（关闭了睡眠的机器会失败并在日志中提示），Linux 为 `systemctl suspend`，macOS 为 `pmset sleepnow`；要用网络唤醒叫醒睡眠中的设备，需在网卡或系统中允许网络唤醒。
 
-客户端接口挂在 `/api/wol/public/agent/` 下，不需要登录，只认设备凭据；设置了安全入口时带有效凭据的请求同样可以访问，「仅限内网访问」与封禁名单照常生效。
+客户端接口挂在 `/api/wol/public/agent/` 下，不需要登录，只认设备凭据；设置了安全入口时带有效凭据的请求同样可以访问，「仅限内网访问」与封禁名单照常生效。管理接口 `GET /api/wol/agent-scripts` 返回各客户端脚本的 SHA-256，按文件名索引。
 
 #### SSH 命令
 
