@@ -255,8 +255,10 @@ func (r *runner) startUDP(ctx context.Context, network, addr string, targetPort 
 			}
 			// 新会话使用当前配置的目标与上限，已有会话保持原目标
 			rt := r.current()
-			// 封禁优先，再按来源 IP 名单判断；每个数据包都判断，名单变化后已有会话的上行也立即被拦下
-			if !rt.filter.Allows(clientAddr) {
+			// 封禁优先，再按来源 IP 名单判断；名单每个数据包都判断，名单变化后已有会话的上行也立即被拦下。
+			// 敲门只在新建会话时检查：与防火墙拦截保持已建立连接一致，授权到期后 WireGuard 等已有会话不被切断
+			reason := rt.filter.Reason(clientAddr)
+			if reason == iplist.DenyList {
 				r.denied.Add(1)
 				continue
 			}
@@ -264,6 +266,11 @@ func (r *runner) startUDP(ctx context.Context, network, addr string, targetPort 
 			mu.Lock()
 			sess := sessions[key]
 			if sess == nil {
+				if reason == iplist.DenyKnock {
+					mu.Unlock()
+					r.denied.Add(1)
+					continue
+				}
 				if len(sessions) >= rt.settings.MaxUDPSessions {
 					mu.Unlock()
 					rt.log.Warnf("%s UDP 会话数达到上限 %d，丢弃 %s 的数据包", addr, rt.settings.MaxUDPSessions, key)

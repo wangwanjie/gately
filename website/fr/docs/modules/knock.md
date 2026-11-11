@@ -80,7 +80,7 @@ Une connexion redirigée par Gately vers `127.0.0.1:22` de la machine passe par 
 
 ## Entrées de Gately autorisées par knock {#gately-entries}
 
-Dans le « Contrôle d'accès par IP » de la redirection de ports, du routage par protocole et de STUN (relais intégré), vous pouvez choisir une règle de knock comme « Exiger un knock » : l'adresse source doit détenir une autorisation non expirée de cette règle pour établir une nouvelle connexion (UDP est jugé par paquet) ; les autres connexions sont coupées. Combiné à une liste d'autorisation / de blocage, les deux conditions doivent être remplies. La règle de knock peut désactiver le « Blocage par le pare-feu » et servir uniquement à ces entrées.
+Dans le « Contrôle d'accès par IP » de la redirection de ports, du routage par protocole et de STUN (relais intégré), vous pouvez choisir une règle de knock comme « Exiger un knock » : l'adresse source doit détenir une autorisation non expirée de cette règle pour établir une nouvelle connexion (en UDP, à la création d'une nouvelle session : après l'expiration de l'autorisation, les sessions existantes comme WireGuard continuent d'être relayées, comme les connexions établies avec le blocage par pare-feu ; les listes d'autorisation / de blocage restent vérifiées paquet par paquet) ; les autres connexions sont coupées. Combiné à une liste d'autorisation / de blocage, les deux conditions doivent être remplies. La règle de knock peut désactiver le « Blocage par le pare-feu » et servir uniquement à ces entrées.
 
 Le routage par protocole permet aussi de choisir « Exiger un knock » sur une route individuelle, par exemple : sur le port 443, la route HTTPS reste ouverte à tous et la route SSH n'est ouverte qu'aux adresses ayant frappé avec succès.
 

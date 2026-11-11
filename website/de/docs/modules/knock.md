@@ -80,7 +80,7 @@ Verbindungen, die Gately per Portweiterleitung an `127.0.0.1:22` des Hosts weite
 
 ## Gately-Einstiege nach Knock freigeben {#gately-entries}
 
-In der „IP-Zugriffskontrolle“ von Portweiterleitung, Protokollrouting und STUN (eingebaute Weiterleitung) lässt sich eine Knock-Regel als „Knock erforderlich“ wählen: Die Quelladresse braucht eine nicht abgelaufene Freigabe dieser Regel, um neue Verbindungen aufzubauen (bei UDP pro Paket geprüft), alle anderen Verbindungen werden getrennt; zusammen mit einer Zulassungs- / Sperrliste müssen beide erfüllt sein. Bei der Knock-Regel kann „Firewall-Blockierung“ ausgeschaltet bleiben, sie dient dann nur diesen Einstiegen.
+In der „IP-Zugriffskontrolle“ von Portweiterleitung, Protokollrouting und STUN (eingebaute Weiterleitung) lässt sich eine Knock-Regel als „Knock erforderlich“ wählen: Die Quelladresse braucht eine nicht abgelaufene Freigabe dieser Regel, um neue Verbindungen aufzubauen (bei UDP beim Anlegen einer neuen Sitzung: Nach Ablauf der Freigabe werden bestehende Sitzungen wie WireGuard weiter weitergeleitet, so wie bestehende Verbindungen bei der Firewall-Sperre erhalten bleiben; Zulassungs- / Sperrlisten werden weiterhin pro Paket geprüft), alle anderen Verbindungen werden getrennt; zusammen mit einer Zulassungs- / Sperrliste müssen beide erfüllt sein. Bei der Knock-Regel kann „Firewall-Blockierung“ ausgeschaltet bleiben, sie dient dann nur diesen Einstiegen.
 
 Beim Protokollrouting kann auch eine einzelne Route „Knock erforderlich“ verlangen, etwa: Auf Port 443 ist die HTTPS-Route für alle offen, die SSH-Route nur für Adressen, die erfolgreich geklopft haben.
 

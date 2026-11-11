@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/wangwanjie/gately/internal/banlist"
+	"github.com/wangwanjie/gately/internal/iplist"
 	"github.com/wangwanjie/gately/internal/reuseport"
 	stunproto "github.com/wangwanjie/gately/internal/stun"
 )
@@ -227,18 +228,27 @@ func (d *udpDispatcher) readLoop(ctx context.Context) {
 		if d.r.rule.DisableForward || banlist.Default.BannedAddr(from) {
 			continue
 		}
-		// 再按来源 IP 名单判断；每个数据包都判断，名单变化后已有会话的上行也立即被拦下
-		if !d.r.allows(from) {
+		// 再按来源 IP 名单判断；名单每个数据包都判断，名单变化后已有会话的上行也立即被拦下。
+		// 敲门只在新建会话时检查（见 forward），授权到期后已有会话照常转发，与防火墙拦截保持已建立连接一致
+		reason := d.r.filter.Load().Reason(from)
+		if reason == iplist.DenyList {
+			d.r.stats.denied.Add(1)
 			continue
 		}
-		d.forward(ctx, from, pkt)
+		d.forward(ctx, from, pkt, reason == iplist.DenyKnock)
 	}
 }
 
-func (d *udpDispatcher) forward(ctx context.Context, from net.Addr, pkt []byte) {
+// forward 把数据包转发到来源对应的会话，没有会话时新建；noKnock 为 true 表示来源没有有效的敲门授权，不新建会话。
+func (d *udpDispatcher) forward(ctx context.Context, from net.Addr, pkt []byte, noKnock bool) {
 	key := from.String()
 	d.sessMu.Lock()
 	s := d.sessions[key]
+	if s == nil && noKnock {
+		d.sessMu.Unlock()
+		d.r.stats.denied.Add(1)
+		return
+	}
 	if s == nil {
 		// 拨号（可能需要解析域名）放到锁外；只有读循环会新建会话，解锁期间不会出现重复会话
 		d.sessMu.Unlock()
