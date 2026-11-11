@@ -582,6 +582,23 @@ func TestAgentScripts(t *testing.T) {
 	if code != 200 || !strings.Contains(body, "Register-ScheduledTask") {
 		t.Fatalf("管理接口下载失败: %d", code)
 	}
+	// 安装命令用的校验值与客户端实际下载到的内容一致
+	code, body = call(t, srv, "GET", "/agent-scripts", nil)
+	var sums map[string]string
+	if code != 200 || json.Unmarshal([]byte(body), &sums) != nil || len(sums) != 2 {
+		t.Fatalf("脚本校验值接口错误: %d %s", code, body)
+	}
+	for _, name := range []string{"gately-agent.sh", "gately-agent.ps1"} {
+		resp, err := http.PostForm(srv.URL+"/api/wol/public/agent/"+name, url.Values{"token": {tok}})
+		if err != nil {
+			t.Fatal(err)
+		}
+		raw, _ := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		if sum := sha256.Sum256(raw); fmt.Sprintf("%x", sum) != sums[name] {
+			t.Fatalf("%s 的校验值与下载内容不符", name)
+		}
+	}
 }
 
 // PublicAuth 只认有效凭据，读取请求体后处理函数仍能读到。

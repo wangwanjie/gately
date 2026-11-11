@@ -284,15 +284,25 @@ function Install-Agent {
 	}
 	Read-Target
 	Initialize-Http
+	# 安装正在运行的这份脚本（安装命令已校验过它的 SHA-256），在写入安装目录之前读出（重装时它可能就在安装目录里）
+	$self = $null
+	if ($PSCommandPath -and (Test-Path -LiteralPath $PSCommandPath)) {
+		$self = [IO.File]::ReadAllText($PSCommandPath, [Text.Encoding]::UTF8)
+	}
 	New-Item -ItemType Directory -Force -Path $Dir | Out-Null
 	Protect-Dir $Dir
-	# 从 Gately 下载脚本本身，同时验证地址与凭据可用
+	# 向 Gately 请求脚本，验证地址与凭据可用
 	$r = Invoke-Agent '/api/wol/public/agent/gately-agent.ps1' @{} 30
 	if ($r.Code -ne 200 -or -not $r.Body.Contains('Gately')) {
 		Stop-WithError "无法从 $($script:Server) 下载客户端（HTTP $($r.Code)），请检查地址、凭据与网络: $($r.Body)"
 	}
+	# 没有脚本文件（例如经管道运行）时才用刚下载的内容
+	$body = $r.Body
+	if ($null -ne $self -and $self.Contains('Gately')) {
+		$body = $self
+	}
 	# 写成带 BOM 的 UTF-8：PowerShell 5.1 按系统代码页读取没有 BOM 的脚本
-	[IO.File]::WriteAllText($ScriptPath, $r.Body.TrimStart([char]0xFEFF), (New-Object Text.UTF8Encoding($true)))
+	[IO.File]::WriteAllText($ScriptPath, $body.TrimStart([char]0xFEFF), (New-Object Text.UTF8Encoding($true)))
 	$ins = '0'
 	if ($script:Insecure) {
 		$ins = '1'
