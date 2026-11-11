@@ -1,0 +1,128 @@
+{
+ "comment": "由 fwknop 2.6.11 客户端（brew）以 -T -B 生成，密钥见 encKey / hmacKey",
+ "encKey": "DGd6F7S+qai58mkDptPFKhYTccZVeufHQo+P+RIi+nU=",
+ "hmacKey": "8xUv48d5AKKXxV8XB8agtVMp7e1t0mv2dVPLsDkXaX/5V8yddnjXGbNk5cdJ8PF2jQHIxjNDRmVeQm9a4Y9kIg==",
+ "vectors": [
+  {
+   "name": "allowip",
+   "packet": "/bv1oaJDy1K7/YrtikEzmXsiI7NgNgs98yAld+wCsRth5ZrXC4lNlzZUjZ5QS9gVjpZLIHE0tOpnRyXCDqODnr22tpbUFLxt14dgPszErzCvwoQHf/Ik1426m8yOv1QyoShzspfDrVgtFz63b6lek212fZ4Wg4j8dIcY9TAfasu2OsPBFtfQ8IrRjBl9eDvxPrg8xhLVBUtvFpTXgBwbMlZ4tbmUB+Q9E",
+   "hmac": "sha256",
+   "type": 1,
+   "user": "VanJay",
+   "timestamp": 1794365606,
+   "message": "203.0.113.7,tcp/22",
+   "timeout": 0,
+   "nat": "<NULL>"
+  },
+  {
+   "name": "basic",
+   "packet": "95K319liyKkaD6wT3cGaczkP6tCe72cXordikmJOMvpiYU1Jbo7GUWajnaP7wkdjClE4SMOv0LaEXBQXfiVGzecxjM5IQEEoJzKB2ZVbbet/84WUokRue5DIgdYvFo5+fIn8KdN2je1CYEMr6g6uH27GIgy61ybgIh5uOcHjpGwWWO4DqddLkLfN14J8m++2ufLa3TGoSRrY",
+   "hmac": "sha256",
+   "type": 1,
+   "user": "VanJay",
+   "timestamp": 1794365606,
+   "message": "0.0.0.0,tcp/22",
+   "timeout": 0,
+   "nat": "<NULL>"
+  },
+  {
+   "name": "cmd",
+   "packet": "/6Wfp2QfJwzsSXLNiNDDHlnZJ2bS34VuHZ3gBTAwlULysItVjkzflAxndb4XWhu9De7DPMFamaeoYYgzq2YFX9ru6EBcBc40xAOxyJrUQjIEI0Urwsu4Z53LYudi76OKDFLt9DjAHpvyOcAu7oUxPTMoMK8fNwDrAtD7KvDVSv1s2bCedr2UJmtDwLv2EPhf/Haz8H+xdN5Q",
+   "hmac": "sha256",
+   "type": 0,
+   "user": "VanJay",
+   "timestamp": 1794365606,
+   "message": "0.0.0.0,uptime",
+   "timeout": 0,
+   "nat": "<NULL>"
+  },
+  {
+   "name": "dig1",
+   "packet": "8+bQ+XFQk94EShIPi7NVQ05TjwaTbHOgznM5ygl+lf0XPIl8XI3FhyxirlsMBDGXOATZ85hchWJEna9CBm1xEVTHpCKgppd8X9Ek2H4S4t17Mot1ZFcdDZvqiWvysce4bvs5puffxz4AHw0KDcxfxYZsggL5juTiV7Th4aA+bTuycm30W7YnH1Y",
+   "hmac": "sha256",
+   "type": 1,
+   "user": "VanJay",
+   "timestamp": 1794365606,
+   "message": "0.0.0.0,tcp/22",
+   "timeout": 0,
+   "nat": "<NULL>"
+  },
+  {
+   "name": "dig384",
+   "packet": "/xveUqwQTKE3FFOjePXaj9vbw49mO1EyBXJcGjQcDQ+lfg6cVU6EZqNT3pkBK6d8ZditMQs9My21q1pncqfB4gVXEnuE3Idz7WKa76T1xY3NpHXCYGZMeUMjgTqq1kZPHT21R+DyLSBB/Ys/hAszlB7LEELz9bckaNYMgnf9W2PgTIWQccImep62UUpZrMCIUfabgs5N6rYQXr++NlJqKjGaDQ2kWHjHi/1rKlMfm7xHRuvLp4WMzPg",
+   "hmac": "sha256",
+   "type": 1,
+   "user": "VanJay",
+   "timestamp": 1794365606,
+   "message": "0.0.0.0,tcp/22",
+   "timeout": 0,
+   "nat": "<NULL>"
+  },
+  {
+   "name": "dig5",
+   "packet": "9rKQow4zAZtkvnIzjDB269ezXbPHNu9lOI7HcE7Y3FYOWr2nkbZYi/xp5rRYuaXaBy2Hq0ls9IeQlO3GTCEx83IAg7ZAOoJUklJ7dp9qSzmnRGIWIss0Yu2D7gBPrRCUT3bARbYczffQ0qCIWjU+gHZtfaAz6xt8rkrItU4kEIefy3Oa4XQ+9fs",
+   "hmac": "sha256",
+   "type": 1,
+   "user": "VanJay",
+   "timestamp": 1794365606,
+   "message": "0.0.0.0,tcp/22",
+   "timeout": 0,
+   "nat": "<NULL>"
+  },
+  {
+   "name": "dig512",
+   "packet": "9XEyLZpJ+BECccvG7Z04i29795IwyifE1LclhvTp0wRcseOlaojsLCJnXmHZfxtnw8469WfeAHEWLH4xwKxClzpLAdAfb+Np7FFV25JLXF9XGKzKLdQwP2Cf84gPR8BHg3uLZPkxfxy/m76heMQko1/qEptGd4rg6dRL6L1QFSzDiGWJFlm+JesJwFTRc8WeElsBHMw/D69pIZbaj544/ByGh5ZtxQl30AMDkPTVXDIyplAMznZaBn2OQVbSy/scwAUy6K2yWfno",
+   "hmac": "sha256",
+   "type": 1,
+   "user": "VanJay",
+   "timestamp": 1794365606,
+   "message": "0.0.0.0,tcp/22",
+   "timeout": 0,
+   "nat": "<NULL>"
+  },
+  {
+   "name": "hmac384",
+   "packet": "+OvL/srYjRjr34EbihI6PZs088WopA0X3XSmfd++jJiPKtXdVZmIZxBZbH548NRGQVzdhcEUOKLFMPM08YQtzK4bvaNxeww5+2W0gZ3OEc7Tur9H6veAG/scyT87i4LgtFLORCEfF1e5iyzHcK0ZG4N4nHnHxBe3U0VlZ2rYMVDaMBwhhPWVYW02tQ7Ozdk7zLc+rgW9tkUGbA0nXkCu5DLvUaIW4yRdK",
+   "hmac": "sha384",
+   "type": 1,
+   "user": "VanJay",
+   "timestamp": 1794365606,
+   "message": "0.0.0.0,tcp/2222",
+   "timeout": 0,
+   "nat": "<NULL>"
+  },
+  {
+   "name": "hmac512",
+   "packet": "80ArYQHCTAEV3O+QrcUu0vMUE4wEGSY1Z5QhKaBtOfK2Epi6yeVw6cP3kHAR6+1cb/G3L4t8qin0LKu5fNhWdEgP14xr3bHEFi0dw9MZC1FKWDNKBvzaXbxSkXilMwYODLjLX5J4SmlCko5F0rdNTQE4F/Twdhnw8kW9qDVzrgJSqaKll+4Gl7ayg6Bmdtk7q9oENVhKx27jAftnojaqKwDUB0WUCcHCUHi/FWB25AzxvP99yD4r7Mg",
+   "hmac": "sha512",
+   "type": 1,
+   "user": "VanJay",
+   "timestamp": 1794365606,
+   "message": "0.0.0.0,tcp/2222",
+   "timeout": 0,
+   "nat": "<NULL>"
+  },
+  {
+   "name": "nat",
+   "packet": "9ZCxSqEiFEtwO5WKr5T12dwjl67Kyfm2dbDWuZH+xdKvmCT2k4I5h3tPdblxheEZy6HDk456NDuAG+fYX1rVqnDhpCnGxrT3DBVeR8G4qhFV240sqx4XxuZzxzEs45ecyzWjr41tlayjmJqqSsyrtamInn7V4v7qBM3OSPqYC4EMVQ33zdshFpP1V6wk8NhYNhtk/EYR+kxgGNFyxHIBnSyhJmC8l+/OApsYnS63z0bkfOgp/GXGI6o",
+   "hmac": "sha256",
+   "type": 2,
+   "user": "VanJay",
+   "timestamp": 1794365606,
+   "message": "0.0.0.0,tcp/22",
+   "timeout": 0,
+   "nat": "192.168.1.10,22"
+  },
+  {
+   "name": "timeout",
+   "packet": "+Skhu+wSDUJZdpClirwzbXquj0+8FFnvUDORDXMCuMYlvWqczuVM6P3YHcpIa3V7gv/4i4URjet6YzPX/TdBQBjK0YBeNDDV0gQckt7c0gD6CCS+JXFOqVD/A6TeQkV39PsMsU7d3qbvCWc13gKRtiOo2RuWep/MysklqQlH9tiKKvAzR2hPKTQgt+XBHh0UEGO8QFV8W3AQRVZCj5kquJytCktO8WCeUjkntQBUSx18HGK+HfdFFCY",
+   "hmac": "sha256",
+   "type": 3,
+   "user": "alice",
+   "timestamp": 1794365606,
+   "message": "203.0.113.7,tcp/22,udp/51820",
+   "timeout": 90,
+   "nat": "<NULL>"
+  }
+ ]
+}
