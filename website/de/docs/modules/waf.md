@@ -25,7 +25,7 @@ Wird die Verwaltungsoberfläche über eine Website mit WAF per Reverse Proxy err
 
 ## Angemeldete Benutzer
 
-Aktiviert eine Site „Angemeldeten Benutzern vertrauen“ (siehe [Webdienst](./web)), umgehen Besucher, die von der Gately-Authentifizierung dieser Site authentifiziert wurden (Web-Authentifizierung, Drittanbieter-Anmeldung, Single Sign-on gemeinsamer Benutzer, geprüfte Basic-Authentifizierung), die WAF. Nicht angemeldete Besucher, Anfragen an die Anmeldeseite selbst, Weiterleitungs-Authentifizierung und Freigabelinks werden weiterhin geprüft.
+Aktiviert eine Site „Angemeldeten Benutzern vertrauen“ (siehe [Webdienst](./web)), umgehen Besucher, die von der Gately-Authentifizierung dieser Site authentifiziert wurden (Web-Authentifizierung, einzeln in der Erlaubnisliste aufgeführte Identitäten der Drittanbieter-Anmeldung, Single Sign-on gemeinsamer Benutzer, geprüfte Basic-Authentifizierung), die WAF. Nicht angemeldete Besucher, Anfragen an die Anmeldeseite selbst, über einen Platzhalter wie `github:*` erlaubte Drittanbieter-Identitäten, Weiterleitungs-Authentifizierung und Freigabelinks werden weiterhin geprüft.
 
 ## Reihenfolge der Regelgruppen
 

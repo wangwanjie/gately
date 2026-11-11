@@ -25,7 +25,7 @@ Cuando el panel de administración se publica mediante proxy inverso a través d
 
 ## Usuarios autenticados
 
-Cuando un sitio activa «Confiar en usuarios autenticados» (consulte [Servicio web](./web)), los visitantes autenticados por la autenticación de Gately de ese sitio (autenticación web, inicio de sesión de terceros, inicio de sesión único de usuarios compartidos, autenticación básica verificada) omiten el WAF. Los visitantes sin sesión, las solicitudes a la propia página de inicio de sesión, la autenticación delegada y los enlaces compartidos se siguen comprobando.
+Cuando un sitio activa «Confiar en usuarios autenticados» (consulte [Servicio web](./web)), los visitantes autenticados por la autenticación de Gately de ese sitio (autenticación web, identidades de inicio de sesión de terceros enumeradas una a una en la lista de permitidos, inicio de sesión único de usuarios compartidos, autenticación básica verificada) omiten el WAF. Los visitantes sin sesión, las solicitudes a la propia página de inicio de sesión, las identidades de terceros permitidas mediante un comodín como `github:*`, la autenticación delegada y los enlaces compartidos se siguen comprobando.
 
 ## Orden de los grupos de reglas
 
