@@ -243,7 +243,7 @@ fail2ban 방식 규칙이 로그 파일, journald, 컨테이너 로그를 읽고
 | 알림 센터 | Webhook, Telegram, Bark, ntfy, Gotify, Pushover, Discord, Slack, ServerChan, PushPlus, WeCom, DingTalk, Feishu, 이메일. 수준, 와일드카드, 무음 및 중복 제거 규칙. 알림을 프록시로 전송 가능(전역 또는 채널별 설정, HTTP와 SOCKS5 지원). 기본 제공 규칙 템플릿(심각한 장애, 인증서 만료, 주소 변경, 로그인, 설정 변경, 버전 업데이트) |
 | 설정 백업 | 암호화 백업(scrypt + AES-GCM), 보존 정책, 로컬 디렉터리 또는 스토리지 마운트 지점으로 예약 백업 |
 | 명령줄 및 MCP | `gately ctl`로 실행 중인 인스턴스를 호출하고, `gately mcp`로 stdio MCP 서비스를 제공(기본 읽기 전용) |
-| Wake-on-LAN | 매직 패킷 브로드캐스트, 온라인 탐지, Web 터미널 SSH 연결을 통한 원격 종료(Linux/Windows/macOS 프리셋), Bemfa 음성 제어(Xiao AI, Xiaodu, Google Assistant) |
+| Wake-on-LAN | 매직 패킷 브로드캐스트, 온라인 탐지, 원격 종료·재부팅·절전(장치의 에이전트(Windows/Linux/macOS/OpenWrt, 장치가 먼저 연결하므로 포트 개방 불필요), Web 터미널 SSH 명령 또는 HTTP 요청), Bemfa 음성 제어(Xiao AI, Xiaodu, Google Assistant) |
 | WebDAV | 다중 사용자, 사용자별 디렉터리, 읽기 전용. WebDAV·FTP·SMB 공통 공유 사용자 |
 | FTP | 다중 사용자, 사용자별 디렉터리, 읽기 전용. FTPS 및 패시브 포트 범위 지원. WebDAV·FTP·SMB 공통 공유 사용자 |
 | SMB | 다중 사용자, 사용자별 여러 디렉터리 공유, 읽기 전용. SMB 2/3, 암호화 및 Bonjour 검색 지원. WebDAV·FTP·SMB 공통 공유 사용자 |

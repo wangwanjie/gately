@@ -140,8 +140,11 @@ Verwalten Sie Geräte unter „Wake-on-LAN“ und senden Sie ihnen Magic Packets
 | `port` | 9 | UDP-Zielport |
 | `repeat` | 3 | Wie oft jede MAC gesendet wird, bis zu 20 |
 | `checkAddr` | Leer | Adresse für die Online-Prüfung in der Form `host:port`, zum Beispiel `192.168.1.10:3389`; leer lassen, um die Prüfung zu überspringen |
-| `shutdownConn` | Leer | SSH-Verbindung aus dem [Web-Terminal](/de/docs/modules/terminal) für das Fern-Herunterfahren; leer lassen, um es zu deaktivieren |
-| `shutdownCommand` | Keiner | Befehl zum Herunterfahren, Pflicht bei gewählter Verbindung, einzeilig, z. B. `shutdown -h now` oder `shutdown /s /t 0` |
+| `shutdownMode` | Leer | Methode für das Fern-Herunterfahren: `agent` (Agent auf dem Gerät), `ssh` (SSH-Befehl) oder `http` (HTTP-Anfrage); leer lassen, um es zu deaktivieren |
+| `shutdownConn` | Leer | SSH-Verbindung aus dem [Web-Terminal](/de/docs/modules/terminal), die die Methode `ssh` verwendet |
+| `shutdownCommand` | Keiner | Befehl zum Herunterfahren der Methode `ssh`, einzeilig, z. B. `shutdown -h now` oder `shutdown /s /t 0` |
+| `agentToken` | Automatisch erzeugt | Agent-Token der Methode `agent`, in der API maskiert |
+| `shutdownHttp` | Leer | Anfrage der Methode `http`: `method`, `url`, `headers`, `body`, `insecure` |
 | `bemfaTopic` | Leer | Bemfa-Topic; leer lassen für keine Sprachsteuerung; pro Gerät eindeutig |
 | `remark` | Leer | Bemerkung |
 
@@ -149,13 +152,54 @@ Klicken Sie in der Geräteliste auf „Aufwecken“, um das Magic Packet zu send
 
 ### Fern-Herunterfahren
 
-Wählen Sie eine SSH-Verbindung aus dem Web-Terminal und geben Sie einen Befehl ein, dann erhält die Gerätekarte die Schaltfläche *Herunterfahren*; die API lautet `POST /api/wol/devices/{key}/shutdown`.
+Wählen Sie beim Gerät unter *Fernabschaltung* eine Methode, dann erhält die Gerätekarte eine Schaltfläche zum Herunterfahren; die API lautet `POST /api/wol/devices/{key}/shutdown`. Der Anfragekörper kann entfallen, oder mit `{"action": "reboot"}` bzw. `{"action": "sleep"}` wird neu gestartet bzw. in den Ruhezustand versetzt (nur bei der Agent-Methode). Pro Gerät läuft jeweils nur eine Aktion, höchstens 30 Sekunden; nach erfolgreichem Herunterfahren oder Ruhezustand wird der Bemfa-Schalterzustand auf „aus“ gesetzt.
+
+| Methode | Geeignet für | Unterstützte Aktionen |
+| --- | --- | --- |
+| Agent | Windows, Linux, macOS und OpenWrt; das Gerät muss keinen Port öffnen und SSH nicht aktivieren | Herunterfahren, Neustart, Ruhezustand |
+| SSH-Befehl | Hosts mit aktiviertem SSH-Dienst, die im Web-Terminal gespeichert sind | Herunterfahren |
+| HTTP-Anfrage | Dienste mit HTTP-Schnittstelle, etwa Home Assistant, smarte Steckdosen oder ein bereits auf dem Gerät vorhandenes Abschaltwerkzeug | Herunterfahren |
+
+#### Agent {#agent}
+
+Auf dem gesteuerten Gerät läuft ein Agent-Skript. Es verbindet sich selbstständig mit Gately, holt Anweisungen per Long Polling und führt nach dem Empfang lokal das Herunterfahren, den Neustart oder den Ruhezustand aus. Der Agent akzeptiert nur diese drei festen Aktionen, Gately kann ihn also keinen anderen Befehl ausführen lassen; das Gerät muss keinen Port öffnen, und Gately speichert keine Anmeldedaten des Geräts.
+
+1. Stellen Sie die Methode des Geräts auf *Agent* und speichern Sie; Gately erzeugt ein Token für das Gerät und öffnet die Installationsanleitung (später lässt sie sich über *Agent* auf der Gerätekarte erneut öffnen);
+2. Prüfen Sie, dass *Gately-Adresse* eine vom Gerät erreichbare Adresse der Verwaltungsoberfläche ist (standardmäßig die aktuelle Adresse des Browsers; beim Zugriff über das einheitliche fnOS-Gateway auf die direkte Adresse ändern), und aktivieren Sie *Zertifikat nicht prüfen*, wenn Gately ein selbstsigniertes Zertifikat verwendet;
+3. Wählen Sie das Betriebssystem des Geräts, kopieren Sie den Installationsbefehl und führen Sie ihn auf dem Gerät aus:
+
+| System | Wo ausführen | Installiert als | Protokoll |
+| --- | --- | --- | --- |
+| Windows | PowerShell als Administrator | Beim Start ausgeführte geplante Aufgabe „Gately Agent“ des SYSTEM-Kontos | `C:\ProgramData\GatelyAgent\agent.log` |
+| Linux | Terminal (benötigt sudo sowie curl oder wget) | systemd- oder OpenRC-Dienst `gately-agent` | `journalctl -u gately-agent` oder `/var/log/gately-agent.log` |
+| macOS | Terminal (benötigt das Administratorpasswort) | launchd-Daemon `cn.gately.agent` | `/var/log/gately-agent.log` |
+| OpenWrt | SSH (root), mit curl oder dem systemeigenen wget | procd-Dienst `gately-agent`, Konfiguration bleibt bei Systemupgrades erhalten | `logread -e gately-agent` |
+
+Der Installationsbefehl lädt das Skript von Gately herunter (es lässt sich auch direkt in der Installationsanleitung herunterladen); das Token wird im Anfragekörper und über eine Umgebungsvariable übergeben, nie in der URL. Sobald der Agent verbunden ist, zeigt die Gerätekarte „online“ sowie den vom Agent gemeldeten Hostnamen, das System und die Quelladresse; Geräte mit der Agent-Methode brauchen keine Adresse für die Online-Prüfung.
+
+- Das Token entspricht dem Ein-/Ausschalter des Geräts. Die Konfigurationsdatei ist nur für root lesbar (unter Windows für SYSTEM und Administratoren). Ein Token gilt nur für ein Gerät: Verbindet sich ein anderer Rechner mit demselben Token, wird er abgewiesen und ein Hinweis im Protokoll erscheint;
+- Eine Anweisung gilt nur 10 Sekunden nach der Ausgabe: Der Agent bestätigt zuerst und führt sie erst nach der Antwort von Gately aus. Ist der Agent offline, kommt sofort ein Fehler, und die Anweisung wird nicht bis zum nächsten Online-Gehen vorgehalten;
+- Nach dem *Neu erzeugen* des Tokens oder dem Wechsel auf eine andere Methode wird der alte Agent sofort getrennt und muss mit dem neuen Befehl neu installiert werden;
+- Der Agent fragt alle 25 Sekunden ab und versucht es nach einem Verbindungsabbruch in Abständen von 5 Sekunden bis zu 60 Sekunden erneut;
+- Deinstallation: Kopieren Sie den Deinstallationsbefehl aus der Installationsanleitung. Unter Windows lautet er `powershell -ExecutionPolicy Bypass -File "$env:ProgramData\GatelyAgent\gately-agent.ps1" uninstall`, unter Linux und macOS `sudo sh /usr/local/bin/gately-agent uninstall` und unter OpenWrt `sh /usr/bin/gately-agent uninstall`;
+- Ruhezustand: Windows hält in den Arbeitsspeicher an (ein Rechner mit deaktiviertem Ruhezustand scheitert, und das Protokoll weist darauf hin), Linux verwendet `systemctl suspend`, macOS `pmset sleepnow`; um ein schlafendes Gerät per Wake-on-LAN aufzuwecken, muss Wake-on-LAN in der Netzwerkkarte oder im System erlaubt sein.
+
+Die Agent-Schnittstellen liegen unter `/api/wol/public/agent/`. Sie verlangen keine Anmeldung und akzeptieren nur das Token des Geräts; ist ein sicherer Einstieg gesetzt, erreichen auch Anfragen mit gültigem Token die Schnittstellen, und „Nur LAN-Zugriff“ sowie die Sperrliste gelten weiterhin.
+
+#### SSH-Befehl
+
+Wählen Sie eine SSH-Verbindung aus dem Web-Terminal und geben Sie einen Befehl zum Herunterfahren ein:
 
 - Die Verbindung muss einmal im Web-Terminal geöffnet worden sein, damit ihr Host-Schlüssel gespeichert ist; Gately vertraut unbeaufsichtigt keinen unbekannten Hosts;
-- Jedes Herunterfahren öffnet eine neue SSH-Verbindung und schließt sie danach, sodass nie eine veraltete Verbindung von vor dem Neustart des Geräts genutzt wird; der Befehl läuft höchstens 30 Sekunden, pro Gerät jeweils nur einer;
+- Jedes Herunterfahren öffnet eine neue SSH-Verbindung und schließt sie danach, sodass nie eine veraltete Verbindung von vor dem Neustart des Geräts genutzt wird;
 - Beim Herunterfahren bricht die SSH-Verbindung oft ab, bevor ein Exit-Code zurückkommt; das gilt als begonnenes Herunterfahren;
 - Das Formular bietet gängige Befehle für Linux (`shutdown -h now`), Windows (`shutdown /s /t 0`) und macOS (`sudo -n shutdown -h now`). Windows benötigt den aktivierten OpenSSH-Server; unter Linux können Nicht-Root-Benutzer `sudo -n shutdown -h now` mit passwortlosem sudo für diesen Befehl verwenden.
-- API-Tokens benötigen zusätzlich zu `wol:write` die Berechtigung `webterminal:write`, um Geräte anzulegen, zu bearbeiten, zu kopieren oder ein Herunterfahren auszulösen (diese Aktionen legen Befehle für die SSH-Verbindung fest oder führen sie aus); das Auflisten der verfügbaren SSH-Verbindungen benötigt `wol:read` und `webterminal:read`.
+
+#### HTTP-Anfrage
+
+Geben Sie die Anfrage-URL (`http://` oder `https://`), die Methode, die Header und den Körper an; ein Antwortstatus 2xx gilt als Erfolg, und der Antwortinhalt erscheint im Ergebnis. Steht die Methode auf *Automatisch*, verwendet eine Anfrage mit Körper `POST`, sonst `GET`; beginnt der Körper mit `{` oder `[` und ist kein `Content-Type` angegeben, wird er als JSON gesendet. Legen Sie Zugangsdaten (etwa `Authorization: Bearer …`) in den Headern ab; Konten mit reinem Lesezugriff sehen die Werte maskiert, und die Adresse in den Protokollen enthält keine Abfrageparameter. Verwendet das Ziel ein selbstsigniertes Zertifikat, können Sie *Zertifikat nicht prüfen* aktivieren.
+
+API-Tokens benötigen zusätzlich zu `wol:write` die Berechtigung `webterminal:write`, um Geräte anzulegen, zu bearbeiten, zu kopieren oder ein Herunterfahren auszulösen (die SSH-Methode kann Befehle über eine SSH-Verbindung festlegen oder ausführen); das Auflisten der verfügbaren SSH-Verbindungen benötigt `wol:read` und `webterminal:read`; das Anzeigen des Agent-Tokens (`GET /api/wol/devices/{key}/secrets`) und das Neuerzeugen (`POST /api/wol/devices/{key}/agent-token`) benötigen `wol:write`.
 
 ### Bemfa-Sprachsteuerung {#bemfa}
 

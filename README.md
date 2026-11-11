@@ -243,7 +243,7 @@ Run several frpc and frps instances side by side, next to Tailscale and cloudfla
 | Notification center | Webhook, Telegram, Bark, ntfy, Gotify, Pushover, Discord, Slack, ServerChan, PushPlus, WeCom, DingTalk, Feishu, email; severity levels, wildcard, and silencing / dedup rules; notifications can go through a proxy (global or per channel, HTTP and SOCKS5); built-in rule templates (critical failures, certificate expiry, address changes, sign-ins, configuration changes, version updates) |
 | Config backup | Encrypted backups (scrypt + AES-GCM), retention policy, scheduled backups to a local directory or storage mount |
 | CLI and MCP | `gately ctl` talks to a running instance; `gately mcp` serves MCP over stdio (read-only by default) |
-| Wake-on-LAN | Magic packet broadcast, online detection; remote shutdown over a Web terminal SSH connection (Linux/Windows/macOS presets); Bemfa voice control (Xiao AI, Xiaodu, Google Assistant) |
+| Wake-on-LAN | Magic packet broadcast, online detection; remote shutdown, reboot and sleep through an agent on the device (Windows/Linux/macOS/OpenWrt, connects out, no open port needed), a Web terminal SSH command or an HTTP request; Bemfa voice control (Xiao AI, Xiaodu, Google Assistant) |
 | WebDAV | Multiple users, per-user directories, read-only mode; shared users common to WebDAV, FTP and SMB |
 | FTP | Multiple users, per-user directories, read-only mode, FTPS and passive port ranges; shared users common to WebDAV, FTP and SMB |
 | SMB | Multiple users, per-user shares backed by one or more directories, read-only mode, SMB 2/3, encryption and Bonjour discovery; shared users common to WebDAV, FTP and SMB |

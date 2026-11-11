@@ -243,7 +243,7 @@ fail2ban 風のルールがログファイル、journald、コンテナのログ
 | 通知センター | Webhook、Telegram、Bark、ntfy、Gotify、Pushover、Discord、Slack、ServerChan、PushPlus、WeCom、DingTalk、Feishu、メール。レベル、ワイルドカード、サイレント・重複排除ルール。通知はプロキシ経由でも送信可能（全体またはチャネルごと、HTTP と SOCKS5 に対応）。組み込みルールテンプレート（重大な障害、証明書の期限、アドレス変更、ログイン、設定変更、バージョン更新） |
 | 設定バックアップ | 暗号化バックアップ（scrypt + AES-GCM）、保持ポリシー、ローカルディレクトリやストレージのマウントポイントへの定期バックアップ |
 | コマンドラインと MCP | `gately ctl` で稼働中のインスタンスを操作、`gately mcp` で stdio 経由の MCP サービスを提供（既定は読み取り専用） |
-| Wake-on-LAN | マジックパケットのブロードキャスト、オンライン検出、Web ターミナルの SSH 接続によるリモートシャットダウン（Linux/Windows/macOS のプリセット）、Bemfa 音声操作（Xiao AI、Xiaodu、Google Assistant） |
+| Wake-on-LAN | マジックパケットのブロードキャスト、オンライン検出、リモートシャットダウン・再起動・スリープ（デバイス上のエージェント（Windows/Linux/macOS/OpenWrt、デバイス側から接続するためポート開放は不要）、Web ターミナルの SSH コマンド、HTTP リクエスト）、Bemfa 音声操作（Xiao AI、Xiaodu、Google Assistant） |
 | WebDAV | 複数ユーザー、ユーザーごとのディレクトリ、読み取り専用。WebDAV・FTP・SMB で共通の共有ユーザー |
 | FTP | 複数ユーザー、ユーザーごとのディレクトリ、読み取り専用、FTPS とパッシブポート範囲に対応。WebDAV・FTP・SMB で共通の共有ユーザー |
 | SMB | 複数ユーザー、ユーザーごとに複数ディレクトリを共有、読み取り専用、SMB 2/3・暗号化・Bonjour 検出に対応。WebDAV・FTP・SMB で共通の共有ユーザー |
