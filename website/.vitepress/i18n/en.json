@@ -170,7 +170,7 @@
       },
       {
         "title": "Scheduled Tasks & Wake-on-LAN",
-        "text": "Cron jobs that run commands or HTTP requests and keep run history; Wake-on-LAN magic packet broadcast and online probing."
+        "text": "Cron jobs that run commands or HTTP requests and keep run history; Wake-on-LAN magic packet broadcast and online probing; remote shutdown, reboot and sleep through the client, SSH or HTTP."
       },
       {
         "title": "Security Hardening",
@@ -178,7 +178,7 @@
       },
       {
         "title": "Access Control",
-        "text": "Per-site path rules, temporary share links, automatic bans on repeated auth failures, GeoIP country filtering and IP allow/block lists."
+        "text": "Per-site path rules, temporary share links, automatic bans on repeated auth failures, GeoIP country filtering and IP allow/block lists; fwknop-compatible port knocking (SPA) that opens SSH and other ports only after a valid knock."
       },
       {
         "title": "Traffic Stats & Monitoring",

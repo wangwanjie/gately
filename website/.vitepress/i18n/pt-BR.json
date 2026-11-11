@@ -170,7 +170,7 @@
       },
       {
         "title": "Tarefas agendadas e Wake-on-LAN",
-        "text": "Tarefas cron que executam comandos ou requisições HTTP e mantêm o histórico de execuções; broadcast do pacote mágico de Wake-on-LAN e verificação de status online."
+        "text": "Tarefas cron que executam comandos ou requisições HTTP e mantêm o histórico de execuções; broadcast do pacote mágico de Wake-on-LAN e verificação de status online; desligamento, reinício e suspensão remotos pelo cliente, SSH ou HTTP."
       },
       {
         "title": "Reforço de segurança",
@@ -178,7 +178,7 @@
       },
       {
         "title": "Controle de acesso",
-        "text": "Regras de caminho por site, links de compartilhamento temporários, banimento automático após falhas de autenticação, filtro de países por GeoIP e listas de IPs permitidos e bloqueados."
+        "text": "Regras de caminho por site, links de compartilhamento temporários, banimento automático após falhas de autenticação, filtro de países por GeoIP e listas de IPs permitidos e bloqueados; port knocking (SPA) compatível com fwknop que libera o SSH e outras portas apenas após um knock válido."
       },
       {
         "title": "Estatísticas e monitoramento",

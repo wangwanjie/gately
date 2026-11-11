@@ -30,7 +30,7 @@ Gately 把 DDNS、STUN 穿透、反向代理等能力整合在一起，並選擇
 
 ## 功能一覽
 
-動態網域、STUN 穿透、連接埠轉發、SSL 憑證、Web 服務（反向代理、存取控制、健康檢查、快取與限流、存取統計、OIDC 單一登入）、WAF 防火牆、Tailscale、frp、Cloudflare 通道、Docker 管理、Web 終端機、網路診斷、網路喚醒、WebDAV、FTP、SMB、File Browser（託管 FileBrowser Quantum 網頁檔案管理）、儲存掛載、排程工作、通知中心、設定備份，以及兩步驟驗證、安全入口、API 權杖、命令列與 MCP。詳見 [模組總覽](/zh-TW/docs/modules/)。
+動態網域、STUN 穿透、連接埠轉發、協定分流、SSL 憑證、Web 服務（反向代理、存取控制、健康檢查、快取與限流、存取統計、OIDC 單一登入）、WAF 防火牆、入侵防護、連接埠敲門、Tailscale、frp、Cloudflare 通道、Docker 管理、Web 終端機、網路診斷、網路喚醒、WebDAV、FTP、SMB、File Browser（託管 FileBrowser Quantum 網頁檔案管理）、儲存掛載、排程工作、通知中心、設定備份，以及兩步驟驗證、安全入口、API 權杖、命令列與 MCP。詳見 [模組總覽](/zh-TW/docs/modules/)。
 
 ## 下一步
 

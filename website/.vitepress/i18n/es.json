@@ -170,7 +170,7 @@
       },
       {
         "title": "Tareas programadas y Wake-on-LAN",
-        "text": "Tareas cron que ejecutan comandos o peticiones HTTP y conservan el historial; difusión de paquetes mágicos de Wake-on-LAN y comprobación de conexión."
+        "text": "Tareas cron que ejecutan comandos o peticiones HTTP y conservan el historial; difusión de paquetes mágicos de Wake-on-LAN y comprobación de conexión; apagado, reinicio y suspensión remotos mediante cliente, SSH o HTTP."
       },
       {
         "title": "Refuerzo de seguridad",
@@ -178,7 +178,7 @@
       },
       {
         "title": "Control de acceso",
-        "text": "Reglas por ruta en cada sitio, enlaces temporales para compartir, bloqueo automático tras fallos repetidos de autenticación, filtrado por país con GeoIP y listas de IP permitidas o bloqueadas."
+        "text": "Reglas por ruta en cada sitio, enlaces temporales para compartir, bloqueo automático tras fallos repetidos de autenticación, filtrado por país con GeoIP y listas de IP permitidas o bloqueadas; port knocking (SPA) compatible con fwknop que abre SSH y otros puertos solo tras un knock válido."
       },
       {
         "title": "Estadísticas y monitorización de tráfico",

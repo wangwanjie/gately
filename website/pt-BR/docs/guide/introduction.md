@@ -30,7 +30,7 @@ O Gately reúne DDNS, travessia STUN, proxy reverso e outros recursos e é total
 
 ## Visão geral dos recursos
 
-DNS dinâmico, travessia STUN, redirecionamento de portas, certificados SSL, serviços Web (proxy reverso, controle de acesso, health checks, cache e limitação de taxa, estatísticas de tráfego, login único OIDC), firewall WAF, Tailscale, frp, Cloudflare Tunnel, gerenciamento do Docker, terminal Web, diagnóstico de rede, Wake-on-LAN, WebDAV, FTP, SMB, File Browser (gerenciador de arquivos Web FileBrowser Quantum gerenciado pelo Gately), montagens de armazenamento, tarefas agendadas, central de notificações e backup da configuração, além de autenticação em dois fatores, caminho de entrada seguro, tokens de API, CLI e MCP. Veja os detalhes na [Visão geral dos módulos](/pt-BR/docs/modules/).
+DNS dinâmico, travessia STUN, redirecionamento de portas, roteamento por protocolo, certificados SSL, serviços Web (proxy reverso, controle de acesso, health checks, cache e limitação de taxa, estatísticas de tráfego, login único OIDC), firewall WAF, prevenção de intrusão, port knocking, Tailscale, frp, Cloudflare Tunnel, gerenciamento do Docker, terminal Web, diagnóstico de rede, Wake-on-LAN, WebDAV, FTP, SMB, File Browser (gerenciador de arquivos Web FileBrowser Quantum gerenciado pelo Gately), montagens de armazenamento, tarefas agendadas, central de notificações e backup da configuração, além de autenticação em dois fatores, caminho de entrada seguro, tokens de API, CLI e MCP. Veja os detalhes na [Visão geral dos módulos](/pt-BR/docs/modules/).
 
 ## Próximos passos
 
