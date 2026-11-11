@@ -396,7 +396,7 @@ type Module struct {
 
 	snap atomic.Pointer[snapshot]
 	fw   *firewall
-	open *fwopen.Group
+	open portOpener
 
 	// conn 为 UDP 监听，listenErr 为监听失败的原因；均受 mu 保护
 	conn      net.PacketConn
@@ -422,6 +422,13 @@ type Module struct {
 
 	// now 可在测试中替换
 	now func() time.Time
+}
+
+// portOpener 在系统防火墙（fw4、firewalld 等）自动放行端口，即 *fwopen.Group，可在测试中替换。
+type portOpener interface {
+	Want(key string, ports []fwopen.Port, log *logbuf.Logger)
+	Status(key string) string
+	ClearAll()
 }
 
 // Counters 是全部报文的处理结果统计。
@@ -505,8 +512,9 @@ func (m *Module) Stop() error {
 	m.closeListenerLocked()
 	m.cancel()
 	m.mu.Unlock()
-	m.fw.stop()
+	// 先同步撤销系统防火墙中对受保护端口的自动放行，再删除拦截规则：反过来时两步之间受保护端口完全开放
 	m.open.ClearAll()
+	m.fw.stop()
 	knockgate.Default.Clear()
 	knockgate.Default.SetProtected(nil)
 	m.stateMu.Lock()

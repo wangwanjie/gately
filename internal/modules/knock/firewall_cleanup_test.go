@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/wangwanjie/gately/internal/fwopen"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/spa"
 )
@@ -287,4 +288,34 @@ func TestFirewallGrantNotBlockedByCommand(t *testing.T) {
 		defer be.mu.Unlock()
 		return be.set[fwKey{g.Addr, g.Access}]
 	})
+}
+
+// orderOpener 记录撤销自动放行时拦截规则是否仍在。
+type orderOpener struct {
+	be           *fakeBackend
+	clearedFirst bool
+	cleared      bool
+}
+
+func (o *orderOpener) Want(string, []fwopen.Port, *logbuf.Logger) {}
+func (o *orderOpener) Status(string) string                       { return "" }
+func (o *orderOpener) ClearAll() {
+	present, _ := o.be.state()
+	o.cleared, o.clearedFirst = true, present
+}
+
+// 停止模块时先撤销对受保护端口的自动放行，再删除拦截规则，中间不会有端口完全开放的窗口。
+func TestStopRevokesOpenBeforeRemovingRules(t *testing.T) {
+	env := newEnv(t, sshRule("ssh"))
+	o := &orderOpener{be: env.be}
+	env.m.mu.Lock()
+	env.m.open = o
+	env.m.mu.Unlock()
+	_ = env.m.Stop()
+	if !o.cleared || !o.clearedFirst {
+		t.Fatalf("应在删除拦截规则之前撤销自动放行: %+v", o)
+	}
+	if present, _ := env.be.state(); present {
+		t.Fatal("停止后应删除拦截规则")
+	}
 }
