@@ -109,6 +109,29 @@ arch_ok() {
 }
 EOF
 
+# 保留与还原现有程序（issue #82）。各架构的安装包同名同版本，OpenWrt 25.12 的 apk 在 pre 脚本失败后仍会替换文件，
+# 离线目录里混有其他架构的安装包时（如注入固件时一并装入），能运行的 /usr/bin/gately 会被换成无法运行的程序，开机后反复崩溃。
+# apk 的 pre 脚本在架构不符时先用硬链接留住现有程序（apk 以改名方式替换文件，硬链接仍指向原文件，不占额外空间），
+# post 脚本再放回原处。opkg 在 preinst 失败时会中止安装，ipk 不需要这一步
+cat >"$SCRIPTS/keep_bin" <<'EOF'
+GATELY_BIN="${IPKG_INSTROOT}/usr/bin/gately"
+GATELY_KEEP="${IPKG_INSTROOT}/usr/bin/.gately.arch-keep"
+keep_bin() {
+	rm -f "$GATELY_KEEP"
+	if [ -f "$GATELY_BIN" ]; then
+		ln -f "$GATELY_BIN" "$GATELY_KEEP" 2>/dev/null || cp -p "$GATELY_BIN" "$GATELY_KEEP"
+	fi
+}
+# restore_bin 放回 keep_bin 留住的程序，没有留存时返回失败
+restore_bin() {
+	if [ -f "$GATELY_KEEP" ]; then
+		mv -f "$GATELY_KEEP" "$GATELY_BIN"
+		return 0
+	fi
+	return 1
+}
+EOF
+
 {
 	echo '#!/bin/sh'
 	cat "$SCRIPTS/arch_check"
@@ -116,13 +139,33 @@ EOF
 	echo 'arch_ok || exit 1'
 } >"$SCRIPTS/preinst"
 
+# apk 的 pre-install / pre-upgrade：架构不符时除报错外，还要留住现有程序，供 post 脚本还原
 {
 	echo '#!/bin/sh'
-	cat "$SCRIPTS/arch_check"
+	cat "$SCRIPTS/arch_check" "$SCRIPTS/keep_bin"
 	cat <<'EOF'
-# OpenWrt 25.12 的 apk 在 pre-install 失败时仍会继续安装，这里再校验一次，架构不符时不启用、不启动
+# 架构一致时清掉上次失败可能留下的文件，避免之后误还原旧程序
+if arch_ok; then
+	rm -f "$GATELY_KEEP"
+	exit 0
+fi
+keep_bin
+exit 1
+EOF
+} >"$SCRIPTS/apk_pre"
+
+{
+	echo '#!/bin/sh'
+	cat "$SCRIPTS/arch_check" "$SCRIPTS/keep_bin"
+	cat <<'EOF'
+# OpenWrt 25.12 的 apk 在 pre-install 失败时仍会继续安装，这里再校验一次，架构不符时不启用、不启动。
+# 安装前已有能运行的程序（升级或覆盖手动部署）时放回原程序，服务保持原样
 if ! arch_ok; then
-	echo "gately: 已跳过启动，请执行 apk del gately 移除后安装正确架构的安装包" >&2
+	if restore_bin; then
+		echo "gately: 已保留原有程序，未替换为其他架构的版本" >&2
+	else
+		echo "gately: 已跳过启动，请执行 apk del gately 移除后安装正确架构的安装包" >&2
+	fi
 	exit 1
 fi
 # UCI 配置 /etc/config/gately 只在缺失时创建，不随包分发，升级时不会覆盖用户在 LuCI 中的设置
@@ -160,6 +203,8 @@ EOF
 
 cat >"$SCRIPTS/prerm" <<'EOF'
 #!/bin/sh
+# 卸载时一并清掉装错架构时留存的程序（见 keep_bin）
+rm -f "${IPKG_INSTROOT}/usr/bin/.gately.arch-keep"
 if [ -n "${IPKG_INSTROOT}" ]; then
 	rm -f "${IPKG_INSTROOT}/etc/rc.d/S99gately" "${IPKG_INSTROOT}/etc/rc.d/K10gately"
 	exit 0
@@ -201,8 +246,8 @@ echo "2.0" >"$IPK/debian-binary"
 # apk 不设置 PKG_UPGRADE，升级与安装分别调用 post-upgrade 与 post-install，升级脚本里显式标记为升级
 APKS="$WORK/apk"
 mkdir -p "$APKS"
-cp "$SCRIPTS/preinst" "$APKS/pre-install"
-cp "$SCRIPTS/preinst" "$APKS/pre-upgrade"
+cp "$SCRIPTS/apk_pre" "$APKS/pre-install"
+cp "$SCRIPTS/apk_pre" "$APKS/pre-upgrade"
 cp "$SCRIPTS/postinst" "$APKS/post-install"
 {
 	echo '#!/bin/sh'
