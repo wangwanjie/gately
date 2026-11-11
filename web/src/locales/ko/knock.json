@@ -19,6 +19,8 @@
     "fwNotNeeded": "방화벽 차단을 켠 규칙이 없습니다",
     "fwActive": "적용됨",
     "fwInactive": "적용 안 됨",
+    "noIPv6": "방화벽 차단이 IPv4만 적용됨",
+    "noIPv6Hint": "사용할 수 있는 ip6tables가 없어(또는 커널에 IPv6 mangle 테이블이 없어) 보호 대상 포트에 IPv6로는 여전히 직접 접속할 수 있습니다. ip6tables와 ip6table_mangle 모듈을 설치하거나 IPv6에서는 다른 방법으로 이 포트들을 제한하세요.",
     "viewRules": "방화벽 규칙 보기",
     "accepted": "노크 성공",
     "rejected": "노크 거부",

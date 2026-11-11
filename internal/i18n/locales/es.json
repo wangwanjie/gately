@@ -2132,6 +2132,7 @@
   "没有可导入的站点": "No hay sitios para importar",
   "没有可执行的部署目标（未启用或正在部署）": "No hay destinos de despliegue que ejecutar (desactivados o en curso)",
   "没有可用的 DNS 服务器": "No hay servidores DNS disponibles",
+  "没有可用的 ip6tables（或内核没有 IPv6 mangle 表），防火墙拦截只覆盖 IPv4，受保护端口经 IPv6 仍可直接访问": "No hay ip6tables utilizable (o el kernel no tiene tabla mangle de IPv6): el bloqueo en cortafuegos solo cubre IPv4 y los puertos protegidos siguen accesibles directamente por IPv6",
   "没有可用的域名，作为默认站点导入": "No hay dominio utilizable; se importa como sitio predeterminado",
   "没有可转换的反向代理、静态目录、跳转或固定内容": "Nada que convertir: no hay proxy inverso, directorio estático, redirección ni contenido fijo",
   "没有找到 PEM 证书": "No se encontró ningún certificado PEM",

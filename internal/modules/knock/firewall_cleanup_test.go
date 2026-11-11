@@ -152,3 +152,20 @@ func TestIPTPartialFailure(t *testing.T) {
 		}
 	}
 }
+
+// iptables 后端没有 ip6tables 时，状态标明 IPv6 不受保护并记录警告。
+func TestFirewallNoIPv6(t *testing.T) {
+	if (&iptBackend{fams: []iptFam{{bin: "iptables"}}}).coversIPv6() {
+		t.Fatal("只有 IPv4 时不应覆盖 IPv6")
+	}
+	if !(&nftBackend{}).coversIPv6() {
+		t.Fatal("nftables 同时处理 IPv4 与 IPv6")
+	}
+	be := &fakeBackend{noIPv6: true}
+	f := newFirewall(testLogger())
+	f.detect = func(context.Context) (backend, string, string) { return be, "", "" }
+	f.apply(context.Background(), fwPlan{Ports: []spa.Access{{Proto: "tcp", Port: 22}}})
+	if st := f.snapshot(); !st.Active || !st.NoIPv6 {
+		t.Fatalf("应生效并标明 IPv6 未覆盖: %+v", st)
+	}
+}

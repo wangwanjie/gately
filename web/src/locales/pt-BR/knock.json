@@ -19,6 +19,8 @@
     "fwNotNeeded": "Nenhuma regra tem o bloqueio no firewall ativado",
     "fwActive": "Ativo",
     "fwInactive": "Inativo",
+    "noIPv6": "O bloqueio no firewall cobre só IPv4",
+    "noIPv6Hint": "Não há ip6tables utilizável (ou o kernel não tem a tabela mangle do IPv6), então as portas protegidas continuam acessíveis direto por IPv6. Instale o ip6tables e o módulo ip6table_mangle, ou restrinja essas portas no IPv6 de outra forma.",
     "viewRules": "Ver regras do firewall",
     "accepted": "Batidas aceitas",
     "rejected": "Batidas recusadas",

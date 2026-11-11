@@ -33,6 +33,10 @@
           <div>{{ fwProblem.hint }}</div>
           <div v-if="status.firewall.error" class="mono err-detail">{{ status.firewall.error }}</div>
         </el-alert>
+        <!-- iptables 后端没有 ip6tables 时只拦截 IPv4，受保护端口经 IPv6 仍可直接访问 -->
+        <el-alert v-if="status.firewall.active && status.firewall.noIPv6" type="warning" :title="t('knock.status.noIPv6')" :closable="false" show-icon class="status-alert">
+          <div>{{ t('knock.status.noIPv6Hint') }}</div>
+        </el-alert>
         <div class="stats">
           <div class="stat">
             <div class="stat-value">{{ status.counters.accepted }}</div>
@@ -352,6 +356,8 @@ interface Status {
     error?: string
     backend?: string
     version?: string
+    // noIPv6 为 true 时防火墙拦截只覆盖 IPv4
+    noIPv6?: boolean
     ports: string[]
     dropped: number
     allowed: number

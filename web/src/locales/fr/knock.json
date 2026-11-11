@@ -19,6 +19,8 @@
     "fwNotNeeded": "Aucune règle n'active le blocage par pare-feu",
     "fwActive": "Actif",
     "fwInactive": "Inactif",
+    "noIPv6": "Le blocage par pare-feu ne couvre que l'IPv4",
+    "noIPv6Hint": "Aucun ip6tables utilisable (ou le noyau n'a pas de table mangle IPv6) : les ports protégés restent accessibles directement en IPv6. Installez ip6tables et le module ip6table_mangle, ou restreignez ces ports en IPv6 autrement.",
     "viewRules": "Voir les règles du pare-feu",
     "accepted": "Frappes acceptées",
     "rejected": "Frappes rejetées",

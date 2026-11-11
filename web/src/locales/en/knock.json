@@ -19,6 +19,8 @@
     "fwNotNeeded": "No rule has firewall blocking turned on",
     "fwActive": "Active",
     "fwInactive": "Inactive",
+    "noIPv6": "Firewall blocking covers IPv4 only",
+    "noIPv6Hint": "No usable ip6tables was found (or the kernel lacks the IPv6 mangle table), so protected ports can still be reached directly over IPv6. Install ip6tables and the ip6table_mangle module, or restrict these ports on IPv6 another way.",
     "viewRules": "View firewall rules",
     "accepted": "Knocks accepted",
     "rejected": "Knocks rejected",
