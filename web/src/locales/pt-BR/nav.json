@@ -28,6 +28,10 @@
       "title": "Prevenção de intrusão",
       "desc": "Bloqueia IPs maliciosos no firewall do sistema"
     },
+    "knock": {
+      "title": "Port knocking",
+      "desc": "Abre SSH e outras portas só após uma batida bem-sucedida"
+    },
     "stun": {
       "title": "Travessia STUN",
       "desc": "Acesse serviços atrás de NAT1 sem IP público"

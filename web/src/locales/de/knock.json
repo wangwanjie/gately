@@ -1,0 +1,135 @@
+{
+  "title": "Port Knocking",
+  "desc": "fwknop-kompatible Single Packet Authorization (SPA): Der Client sendet ein verschlüsseltes, gegen Wiederholung geschütztes Klopfpaket, und erst nach erfolgreicher Authentifizierung werden Ports wie SSH für diese Adresse für begrenzte Zeit geöffnet. Ports lassen sich in der System-Firewall blockieren, oder Portweiterleitung, Protokoll-Routing und STUN öffnen sie anhand des Klopfergebnisses.",
+  "unit": {
+    "seconds": "s",
+    "s": "{s} s",
+    "ms": "{m} Min. {s} s",
+    "hm": "{h} Std. {m} Min."
+  },
+  "status": {
+    "title": "Status",
+    "listen": "Klopf-Port",
+    "firewall": "Firewall-Sperre",
+    "listening": "Empfang auf UDP {port}",
+    "listenFailed": "Abhören von UDP {port} fehlgeschlagen",
+    "listenError": "Abhören des Klopf-Ports fehlgeschlagen: {err}",
+    "udpOff": "Kein UDP-Empfang; nur über Protokoll-Routing weitergeleitetes Klopfen wird empfangen",
+    "noRules": "Keine aktivierten Regeln, kein Empfang",
+    "fwNotNeeded": "Keine Regel hat die Firewall-Sperre aktiviert",
+    "fwActive": "Aktiv",
+    "fwInactive": "Inaktiv",
+    "viewRules": "Firewall-Regeln anzeigen",
+    "accepted": "Klopfen akzeptiert",
+    "rejected": "Klopfen abgelehnt",
+    "dropped": "Blockierte neue Verbindungen",
+    "allowed": "Verbindungen nach dem Klopfen"
+  },
+  "reason": {
+    "os": {
+      "title": "Firewall-Sperre wird auf diesem System nicht unterstützt",
+      "hint": "Die Firewall-Sperre benötigt unter Linux nftables oder iptables + ipset. „Klopfen erforderlich“ bei Portweiterleitung, Protokoll-Routing und STUN hängt nicht von der Firewall ab und funktioniert wie gewohnt."
+    },
+    "missing": {
+      "title": "nft oder iptables + ipset nicht gefunden",
+      "hint": "Installieren Sie nftables (empfohlen) oder iptables und ipset und speichern Sie die Einstellungen, um es erneut zu versuchen."
+    },
+    "permission": {
+      "title": "Keine Berechtigung zum Ändern der Firewall",
+      "hint": "Gately muss als root laufen; bei Docker das Host-Netzwerk verwenden und cap_add: NET_ADMIN hinzufügen."
+    },
+    "unsupported": {
+      "title": "Der Kernel hat kein nf_tables und kein nutzbares iptables + ipset",
+      "hint": "Auf Synology und ähnlichen Systemen das offizielle Gately-Docker-Image verwenden (enthält iptables und ipset)."
+    },
+    "error": {
+      "title": "Firewall-Regeln konnten nicht geschrieben werden",
+      "hint": "Gately versucht es jede Minute erneut. Details zum Fehler siehe unten und im Laufzeitprotokoll."
+    }
+  },
+  "grants": {
+    "title": "Aktive Freigaben ({count})",
+    "empty": "Keine Adresse hat erfolgreich geklopft und ist noch innerhalb ihrer Freigabedauer",
+    "gatelyOnly": "Nur für Portweiterleitung, Protokoll-Routing und STUN",
+    "remain": "Noch {t}",
+    "revoke": "Widerrufen",
+    "revokeConfirm": "Nach dem Widerruf muss diese Adresse erneut klopfen. Bestehende Verbindungen bleiben unberührt. Widerrufen?"
+  },
+  "rule": {
+    "add": "Regel hinzufügen",
+    "edit": "Regel bearbeiten",
+    "empty": "Noch keine Klopf-Regeln",
+    "namePlaceholder": "Zum Beispiel SSH",
+    "confirmDelete": "Diese Klopf-Regel löschen?",
+    "ports": "Ports",
+    "portsHelp": "Ports, deren Öffnung ein Client anfordern darf, etwa tcp/22 oder udp/51820, durch Kommas getrennt. Eine bloße Portnummer gilt als TCP. Alle Ports der -A-Option des Clients müssen in dieser Liste stehen.",
+    "firewall": "Firewall-Sperre",
+    "firewallTag": "Firewall-Sperre",
+    "firewallHelp": "Wenn aktiv, werden diese Ports in der System-Firewall blockiert und nur Adressen durchgelassen, die erfolgreich geklopft haben. Das schützt Dienste wie den sshd dieses Hosts (nur Linux). Wenn aus, bleibt die Firewall unverändert und die Regel dient nur „Klopfen erforderlich“ bei Portweiterleitung, Protokoll-Routing und STUN.",
+    "firewallWarn": "Stellen Sie vor dem Aktivieren sicher, dass Sie sich aus dem LAN (standardmäßig vom Klopfen ausgenommen, siehe globale Einstellungen) oder anderweitig an diesem Host anmelden können: Wird Gately zwangsbeendet, bleiben die Sperrregeln bis zum nächsten Start von Gately bestehen. Bestehende Verbindungen bleiben unberührt.",
+    "encKey": "Verschlüsselungsschlüssel",
+    "hmacKey": "HMAC-Schlüssel",
+    "keyAuto": "Leer lassen zum Erzeugen",
+    "generate": "Neu erzeugen",
+    "keysHelp": "base64-kodiert, entspricht KEY_BASE64 und HMAC_KEY_BASE64 von fwknop. Mit fwknop -k erzeugte Schlüssel können eingetragen werden. Nach einem Schlüsselwechsel können alte Clients nicht mehr klopfen.",
+    "hmacType": "HMAC-Algorithmus",
+    "timeout": "Freigabedauer",
+    "timeoutHelp": "Nach erfolgreichem Klopfen können in dieser Zeit neue Verbindungen aufgebaut werden. Bestehende Verbindungen bleiben nach Ablauf erhalten.",
+    "timeoutValue": "{n} s",
+    "timeoutWithMax": "{n} s (Clients dürfen bis zu {max} s anfordern)",
+    "maxTimeout": "Maximale Client-Dauer",
+    "maxTimeoutHelp": "Obergrenze, wenn ein Client mit -f eine längere Dauer anfordert; 0 ignoriert die vom Client angeforderte Dauer. Eine Anforderung unter der Freigabedauer wird immer übernommen.",
+    "user": "Benutzername einschränken",
+    "userPlaceholder": "Leer lassen für keine Einschränkung",
+    "userHelp": "Akzeptiert nur Klopfen, deren Paket diesen Benutzernamen trägt. fwknop sendet standardmäßig den lokalen Anmeldenamen; mit -U lässt er sich festlegen.",
+    "requireAddr": "Explizite Adresse verlangen",
+    "requireAddrHelp": "Lehnt Klopfen ohne Adresse ab (fwknop -s). Der Client muss die zu öffnende Adresse mit -R oder -a angeben, damit ein unterwegs abgefangenes Paket nicht zuvor von einer anderen Adresse wiederholt werden kann.",
+    "knocks": "Klopfen",
+    "knockStats": "{ok} akzeptiert, {bad} abgelehnt",
+    "lastKnock": "Zuletzt: {addr}, {time}",
+    "usedBy": "Verwendet von"
+  },
+  "settings": {
+    "button": "Globale Einstellungen",
+    "title": "Port-Knocking-Einstellungen",
+    "port": "UDP-Klopf-Port",
+    "portHelp": "UDP-Port, der Klopfpakete empfängt; der fwknop-Client verwendet standardmäßig 62201. Bei 0 wird kein UDP abgehört und nur Klopfen über einen TCP-Port des Protokoll-Routings empfangen (fwknop -P tcp).",
+    "autoFirewall": "Firewall-Port freigeben",
+    "autoFirewallHelp": "Öffnet den Klopf-Port in der System-Firewall (OpenWrt fw4, firewalld, ufw usw.). Ist die Firewall-Sperre aktiv, werden auch die geschützten Ports geöffnet; ob ein Zugriff möglich ist, entscheidet dann nur das Klopfen.",
+    "allowLan": "LAN vom Klopfen ausnehmen",
+    "allowLanHelp": "LAN, Tailscale (100.64.0.0/10), Link-Local-Adressen und das IPv6-/64 dieses Hosts erreichen geschützte Ports ohne Klopfen, damit Sie sich nicht aussperren. Betrifft nur die Firewall-Sperre.",
+    "allowList": "Ausnahmeliste vom Klopfen",
+    "allowListHelp": "IPs oder Bereiche, die geschützte Ports ohne Klopfen erreichen, eine pro Zeile. Betrifft nur die Firewall-Sperre.",
+    "maxAge": "Gültigkeit des Pakets",
+    "maxAgeHelp": "Maximale Abweichung zwischen Zeitstempel des Pakets und der Zeit dieses Hosts; darüber gilt es als abgelaufen oder wiederholt. Die Uhren von Client und Server müssen genau gehen."
+  },
+  "client": {
+    "button": "Client",
+    "title": "fwknop-Client-Konfiguration: {name}",
+    "server": "Serveradresse",
+    "serverPlaceholder": "Domain oder öffentliche IP",
+    "via": "Senden über",
+    "viaUdp": "UDP {port}",
+    "viaTcp": "Protokoll-Routing (TCP)",
+    "tcpHelp": "Abhör-Port der Protokoll-Routing-Regel, die eine Route „Port Knocking“ benötigt",
+    "udpOff": "In den globalen Einstellungen ist kein UDP-Klopf-Port aktiviert. Verwenden Sie Protokoll-Routing oder legen Sie zuerst den Port fest",
+    "addr": "Zu öffnende Adresse",
+    "addrResolve": "Öffentliche IP automatisch ermitteln",
+    "addrSource": "Quelladresse",
+    "addrFixed": "Bestimmte Adresse",
+    "addrHelp": {
+      "resolve": "-R: Der Client ermittelt seine eigene öffentliche IPv4 und schreibt sie ins Paket, ein abgefangenes Paket ist so für andere Adressen wertlos.",
+      "source": "-s: Öffnet die Adresse, von der das Paket stammt. Geeignet für Netze, in denen die Abfrage der öffentlichen IP unpraktisch ist.",
+      "fixed": "-a: Öffnet die angegebene Adresse, zum Beispiel um für ein anderes Gerät zu klopfen."
+    },
+    "ports": "Angeforderte Ports",
+    "command": "Befehlszeile",
+    "rc": "Abschnitt in ~/.fwknoprc",
+    "rcHelp": "Nach dem Speichern in ~/.fwknoprc genügt fwknop -n {name}, um zu klopfen.",
+    "install": "fwknop-Client: unter macOS brew install fwknop, unter Debian / Ubuntu apt install fwknop-client, unter Windows in WSL installieren. Der fwknop-Client kann Klopfpakete nur über IPv4 senden, der Server muss daher über IPv4 erreichbar sein. Befehl und Konfiguration enthalten Schlüssel, bewahren Sie sie sicher auf.",
+    "loading": "Schlüssel werden gelesen …",
+    "needServer": "Serveradresse eingeben",
+    "needPorts": "Mindestens einen Port auswählen",
+    "needFixed": "Zu öffnende Adresse eingeben"
+  }
+}

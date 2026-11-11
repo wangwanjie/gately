@@ -79,7 +79,8 @@
     "git": "Git (git://)",
     "bittorrent": "BitTorrent",
     "adb": "ADB (Android Debug Bridge)",
-    "irc": "IRC"
+    "irc": "IRC",
+    "spa": "Port knocking (fwknop -P tcp)"
   },
   "protoHelp": {
     "tls": "L'ALPN permet de distinguer le protocole applicatif, par ex. acme-tls/1 (validation de certificat TLS-ALPN-01) ou postgresql (connexions TLS directes de PostgreSQL 17)",
@@ -97,9 +98,15 @@
     "git": "Le protocole git:// de git daemon ; Git via HTTPS ou SSH passe par les routes TLS, HTTP ou SSH",
     "bittorrent": "Connexions entre pairs sans chiffrement du protocole ; les connexions chiffrées (MSE) n’ont pas de signature et vont à la cible par défaut",
     "adb": "Sessions adb connect en clair ; le débogage sans fil depuis Android 11 utilise TLS",
-    "irc": "Clients IRC en clair (ils envoient d’abord CAP, PASS, NICK ou USER) ; utilisez une route TLS pour l’IRC sur TLS"
+    "irc": "Clients IRC en clair (ils envoient d’abord CAP, PASS, NICK ou USER) ; utilisez une route TLS pour l’IRC sur TLS",
+    "spa": "Reçoit les paquets de frappe que les clients fwknop envoient en TCP (fwknop -P tcp -p ce port) et les confie au module de port knocking pour authentification, sans transfert ni réponse. Un seul port ouvert suffit ainsi pour frapper ; les routes réglées sur « Frappe requise » ne fonctionnent qu'après une frappe réussie."
   },
   "routeMinecraftPlaceholder": "Adresses du serveur, une par ligne : mc.example.com, *.example.com ou *. Laisser vide pour toutes les connexions Minecraft",
   "ipAccessNote": "Vérifié avant la détection du protocole ; les connexions refusées ne sont pas lues et ne comptent pas comme des correspondances de route. Modifier la liste n'interrompt pas l'écoute.",
-  "autoFirewallHelp": "Autorise dans le pare-feu local (nftables / iptables / ip6tables) uniquement les ports sur lesquels cette règle écoute, les ports consécutifs étant regroupés en une seule règle et limités à l’adresse d’écoute si elle est renseignée ; retiré quand la règle est désactivée ou supprimée. Pour Gately sur un routeur comme OpenWrt ou un hôte Linux avec pare-feu"
+  "autoFirewallHelp": "Autorise dans le pare-feu local (nftables / iptables / ip6tables) uniquement les ports sur lesquels cette règle écoute, les ports consécutifs étant regroupés en une seule règle et limités à l’adresse d’écoute si elle est renseignée ; retiré quand la règle est désactivée ou supprimée. Pour Gately sur un routeur comme OpenWrt ou un hôte Linux avec pare-feu",
+  "protoSpaShort": "Frappe",
+  "spaTarget": "Port knocking",
+  "routeKnock": "Frappe requise",
+  "routeKnockTag": "Frappe requise : {name}",
+  "knockDenied": "Déconnecté, pas de frappe"
 }

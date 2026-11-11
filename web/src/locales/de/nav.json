@@ -28,6 +28,10 @@
       "title": "Einbruchschutz",
       "desc": "Bösartige IPs in der System-Firewall sperren"
     },
+    "knock": {
+      "title": "Port Knocking",
+      "desc": "SSH und andere Ports erst nach erfolgreichem Klopfen öffnen"
+    },
     "stun": {
       "title": "STUN-Traversal",
       "desc": "Dienste hinter NAT1 ohne öffentliche IP erreichen"

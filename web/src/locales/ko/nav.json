@@ -28,6 +28,10 @@
       "title": "침입 방지",
       "desc": "시스템 방화벽에서 악성 IP 차단"
     },
+    "knock": {
+      "title": "포트 노킹",
+      "desc": "노크에 성공해야 SSH 등의 포트 허용"
+    },
     "stun": {
       "title": "STUN 홀 펀칭",
       "desc": "NAT1 환경에서 공인 IP 없이 외부 접속"

@@ -1,0 +1,6 @@
+{
+  "placeholder": "No knock required",
+  "empty": "No Port Knocking rules yet",
+  "missing": "Rule not found",
+  "disabled": "Disabled"
+}

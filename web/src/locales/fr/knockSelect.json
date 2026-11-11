@@ -1,0 +1,6 @@
+{
+  "placeholder": "Aucune frappe requise",
+  "empty": "Aucune règle de port knocking pour le moment",
+  "missing": "La règle n'existe pas",
+  "disabled": "Désactivée"
+}

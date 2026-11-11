@@ -12,5 +12,7 @@
   "setNotLoaded": "not loaded",
   "setsHelp": "Checked together with the ranges above; matching any of them counts as being on the list. A refreshed subscription takes effect at once, the rule keeps running",
   "setsWhitelistHelp": "Checked together with the ranges above; matching any of them allows the connection. A refreshed subscription takes effect at once, the rule keeps running. Lists are downloaded on schedule by the Web Services module and count as empty until the first download succeeds",
-  "denied": "Refused"
+  "denied": "Refused",
+  "knock": "Require knock",
+  "knockHelp": "Once a Port Knocking rule is selected, the source address must also knock successfully with fwknop first, and can only make new connections during the access duration; other connections are dropped. Gately checks this itself and needs no firewall permission. If a list is also set, both must be satisfied."
 }

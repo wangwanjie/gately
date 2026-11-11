@@ -12,5 +12,7 @@
   "setNotLoaded": "non chargée",
   "setsHelp": "Vérifiées avec les plages ci-dessus ; correspondre à l'une d'elles revient à figurer dans la liste. Une liste actualisée s'applique immédiatement, sans redémarrer la règle",
   "setsWhitelistHelp": "Vérifiées avec les plages ci-dessus ; correspondre à l'une d'elles autorise la connexion. Une liste actualisée s'applique immédiatement, sans redémarrer la règle. Les listes sont téléchargées périodiquement par le module Services Web et comptent comme vides jusqu'au premier téléchargement réussi",
-  "denied": "Refusés"
+  "denied": "Refusés",
+  "knock": "Frappe requise",
+  "knockHelp": "Une fois une règle de port knocking choisie, l'adresse source doit aussi avoir frappé avec succès via fwknop, et ne peut établir de nouvelles connexions que pendant la durée d'accès ; les autres connexions sont coupées. Gately décide lui-même, sans droits sur le pare-feu. Si une liste est aussi définie, les deux conditions doivent être remplies."
 }

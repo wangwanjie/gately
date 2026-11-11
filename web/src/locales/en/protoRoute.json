@@ -79,7 +79,8 @@
     "git": "Git (git://)",
     "bittorrent": "BitTorrent",
     "adb": "ADB (Android Debug Bridge)",
-    "irc": "IRC"
+    "irc": "IRC",
+    "spa": "Port Knocking (fwknop -P tcp)"
   },
   "protoHelp": {
     "tls": "ALPN narrows a route down by application protocol, e.g. acme-tls/1 (TLS-ALPN-01 certificate validation) or postgresql (PostgreSQL 17 direct TLS connections)",
@@ -97,9 +98,15 @@
     "git": "The git:// protocol served by git daemon; Git over HTTPS or SSH uses the TLS, HTTP or SSH routes",
     "bittorrent": "Peer connections without protocol encryption; encrypted (MSE) connections have no signature and go to the default target",
     "adb": "Plain adb connect sessions; wireless debugging since Android 11 uses TLS",
-    "irc": "Plain IRC clients (they send CAP, PASS, NICK or USER first); use a TLS route for IRC over TLS"
+    "irc": "Plain IRC clients (they send CAP, PASS, NICK or USER first); use a TLS route for IRC over TLS",
+    "spa": "Receives knock packets that fwknop clients send over TCP (fwknop -P tcp -p this port) and hands them to Port Knocking for authentication, without forwarding or replying. This way a single open port is enough to knock; routes set to \"Require knock\" only work after a successful knock."
   },
   "routeMinecraftPlaceholder": "Server addresses, one per line: mc.example.com, *.example.com or *. Leave empty to match every Minecraft connection",
   "ipAccessNote": "Checked before the protocol is detected; refused connections are not read and do not count as route hits. Editing the list does not interrupt listening.",
-  "autoFirewallHelp": "Allows only the ports this rule is listening on in the local firewall (nftables / iptables / ip6tables), with consecutive ports merged into one rule and only for the listen address if one is set; removed when the rule is disabled or deleted. For Gately running on a router such as OpenWrt or on a Linux host with a firewall"
+  "autoFirewallHelp": "Allows only the ports this rule is listening on in the local firewall (nftables / iptables / ip6tables), with consecutive ports merged into one rule and only for the listen address if one is set; removed when the rule is disabled or deleted. For Gately running on a router such as OpenWrt or on a Linux host with a firewall",
+  "protoSpaShort": "Knock",
+  "spaTarget": "Port Knocking",
+  "routeKnock": "Require knock",
+  "routeKnockTag": "Knock required: {name}",
+  "knockDenied": "Disconnected, no knock"
 }

@@ -79,7 +79,8 @@
     "git": "Git (git://)",
     "bittorrent": "BitTorrent",
     "adb": "ADB (Android Debug Bridge)",
-    "irc": "IRC"
+    "irc": "IRC",
+    "spa": "Port knocking (fwknop -P tcp)"
   },
   "protoHelp": {
     "tls": "ALPN permite separar por protocolo de aplicación, p. ej. acme-tls/1 (validación de certificados TLS-ALPN-01) o postgresql (conexiones TLS directas de PostgreSQL 17)",
@@ -97,9 +98,15 @@
     "git": "El protocolo git:// de git daemon; Git por HTTPS o SSH usa las rutas TLS, HTTP o SSH",
     "bittorrent": "Conexiones entre pares sin cifrado del protocolo; las cifradas (MSE) no tienen firma y van al destino predeterminado",
     "adb": "Sesiones de adb connect en claro; la depuración inalámbrica desde Android 11 usa TLS",
-    "irc": "Clientes IRC en claro (envían primero CAP, PASS, NICK o USER); usa una ruta TLS para IRC sobre TLS"
+    "irc": "Clientes IRC en claro (envían primero CAP, PASS, NICK o USER); usa una ruta TLS para IRC sobre TLS",
+    "spa": "Recibe los paquetes de llamada que los clientes fwknop envían por TCP (fwknop -P tcp -p este puerto) y los entrega al módulo de port knocking para autenticarlos, sin reenviar ni responder. Así basta con un solo puerto abierto para llamar; las rutas con «Requiere llamada» solo funcionan tras una llamada correcta."
   },
   "routeMinecraftPlaceholder": "Direcciones del servidor, una por línea: mc.example.com, *.example.com o *. Déjalo vacío para todas las conexiones de Minecraft",
   "ipAccessNote": "Se comprueba antes de detectar el protocolo; las conexiones rechazadas no se leen ni cuentan como aciertos de ruta. Editar la lista no interrumpe la escucha.",
-  "autoFirewallHelp": "Permite en el cortafuegos local (nftables / iptables / ip6tables) solo los puertos en los que esta regla escucha, con los puertos consecutivos unidos en una sola regla y limitado a la dirección de escucha si se indica; se retira al desactivar o eliminar la regla. Para Gately en un router como OpenWrt o en un host Linux con cortafuegos"
+  "autoFirewallHelp": "Permite en el cortafuegos local (nftables / iptables / ip6tables) solo los puertos en los que esta regla escucha, con los puertos consecutivos unidos en una sola regla y limitado a la dirección de escucha si se indica; se retira al desactivar o eliminar la regla. Para Gately en un router como OpenWrt o en un host Linux con cortafuegos",
+  "protoSpaShort": "Llamada",
+  "spaTarget": "Port knocking",
+  "routeKnock": "Requiere llamada",
+  "routeKnockTag": "Requiere llamada: {name}",
+  "knockDenied": "Desconectado por no llamar"
 }

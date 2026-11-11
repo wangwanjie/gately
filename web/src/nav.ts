@@ -73,6 +73,7 @@ export const navGroups: NavGroup[] = [
       { path: '/protoroute', titleKey: 'nav.items.protoroute.title', icon: Split, moduleId: 'protoroute', descKey: 'nav.items.protoroute.desc' },
       { path: '/ddns', titleKey: 'nav.items.ddns.title', icon: Globe, moduleId: 'ddns', descKey: 'nav.items.ddns.desc' },
       { path: '/guard', titleKey: 'nav.items.guard.title', icon: ShieldBan, moduleId: 'guard', descKey: 'nav.items.guard.desc' },
+      { path: '/knock', titleKey: 'nav.items.knock.title', icon: KeyRound, moduleId: 'knock', descKey: 'nav.items.knock.desc' },
     ],
   },
   {

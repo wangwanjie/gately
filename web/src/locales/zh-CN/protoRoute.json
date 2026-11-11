@@ -79,7 +79,8 @@
     "git": "Git（git://）",
     "bittorrent": "BitTorrent",
     "adb": "ADB 调试桥",
-    "irc": "IRC"
+    "irc": "IRC",
+    "spa": "端口敲门（fwknop -P tcp）"
   },
   "protoHelp": {
     "tls": "ALPN 可按应用层协议细分，例如 acme-tls/1（TLS-ALPN-01 证书验证）、postgresql（PostgreSQL 17 直接 TLS 连接）",
@@ -97,9 +98,15 @@
     "git": "git daemon 提供的 git:// 协议；经 HTTPS 或 SSH 访问的 Git 请用 TLS、HTTP 或 SSH 路由",
     "bittorrent": "未启用协议加密的对等连接；启用加密（MSE）后没有特征，会交给默认目标",
     "adb": "adb connect 的明文连接；Android 11 起的无线调试使用 TLS",
-    "irc": "明文 IRC 客户端（先发送 CAP、PASS、NICK 或 USER）；使用 TLS 的 IRC 请用 TLS 路由"
+    "irc": "明文 IRC 客户端（先发送 CAP、PASS、NICK 或 USER）；使用 TLS 的 IRC 请用 TLS 路由",
+    "spa": "接收 fwknop 客户端经 TCP 发来的敲门报文（fwknop -P tcp -p 本端口），交给端口敲门模块认证，不转发、不回复。这样只开放这一个端口也能敲门；敲门成功后才能使用设置了“需要敲门”的路由。"
   },
   "routeMinecraftPlaceholder": "服务器地址，每行一个：mc.example.com、*.example.com 或 *；留空匹配全部 Minecraft 连接",
   "ipAccessNote": "在识别协议之前判断，被拒绝的连接不会读取数据，也不计入路由命中。修改名单不会中断监听。",
-  "autoFirewallHelp": "在本机防火墙（nftables / iptables / ip6tables）只放行本规则监听成功的端口，连续端口合并为一条规则，填写了监听地址时只放行该地址；规则停用或删除时撤销。适用于 Gately 运行在 OpenWrt 等路由器或开启了防火墙的 Linux 主机上"
+  "autoFirewallHelp": "在本机防火墙（nftables / iptables / ip6tables）只放行本规则监听成功的端口，连续端口合并为一条规则，填写了监听地址时只放行该地址；规则停用或删除时撤销。适用于 Gately 运行在 OpenWrt 等路由器或开启了防火墙的 Linux 主机上",
+  "protoSpaShort": "敲门",
+  "spaTarget": "端口敲门",
+  "routeKnock": "需要敲门",
+  "routeKnockTag": "需敲门：{name}",
+  "knockDenied": "未敲门被断开"
 }

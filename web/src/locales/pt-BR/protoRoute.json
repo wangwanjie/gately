@@ -79,7 +79,8 @@
     "git": "Git (git://)",
     "bittorrent": "BitTorrent",
     "adb": "ADB (Android Debug Bridge)",
-    "irc": "IRC"
+    "irc": "IRC",
+    "spa": "Port knocking (fwknop -P tcp)"
   },
   "protoHelp": {
     "tls": "O ALPN separa por protocolo de aplicação, por ex. acme-tls/1 (validação de certificado TLS-ALPN-01) ou postgresql (conexões TLS diretas do PostgreSQL 17)",
@@ -97,9 +98,15 @@
     "git": "O protocolo git:// do git daemon; Git via HTTPS ou SSH usa as rotas TLS, HTTP ou SSH",
     "bittorrent": "Conexões entre pares sem criptografia do protocolo; as criptografadas (MSE) não têm assinatura e vão para o destino padrão",
     "adb": "Sessões do adb connect em texto claro; a depuração sem fio desde o Android 11 usa TLS",
-    "irc": "Clientes IRC em texto claro (enviam primeiro CAP, PASS, NICK ou USER); use uma rota TLS para IRC sobre TLS"
+    "irc": "Clientes IRC em texto claro (enviam primeiro CAP, PASS, NICK ou USER); use uma rota TLS para IRC sobre TLS",
+    "spa": "Recebe os pacotes de batida que os clientes fwknop enviam por TCP (fwknop -P tcp -p esta porta) e os entrega ao módulo de port knocking para autenticação, sem encaminhar nem responder. Assim basta uma única porta aberta para bater; rotas com \"Exigir batida\" só funcionam após uma batida bem-sucedida."
   },
   "routeMinecraftPlaceholder": "Endereços do servidor, um por linha: mc.example.com, *.example.com ou *. Vazio corresponde a todas as conexões Minecraft",
   "ipAccessNote": "Verificado antes de identificar o protocolo; conexões recusadas não são lidas nem contam como acertos de rota. Editar a lista não interrompe a escuta.",
-  "autoFirewallHelp": "Libera no firewall local (nftables / iptables / ip6tables) apenas as portas em que esta regra está escutando, juntando portas consecutivas em uma regra e limitando ao endereço de escuta se houver um; é removida quando a regra é desativada ou excluída. Para o Gately em um roteador como o OpenWrt ou em um host Linux com firewall"
+  "autoFirewallHelp": "Libera no firewall local (nftables / iptables / ip6tables) apenas as portas em que esta regra está escutando, juntando portas consecutivas em uma regra e limitando ao endereço de escuta se houver um; é removida quando a regra é desativada ou excluída. Para o Gately em um roteador como o OpenWrt ou em um host Linux com firewall",
+  "protoSpaShort": "Batida",
+  "spaTarget": "Port knocking",
+  "routeKnock": "Exigir batida",
+  "routeKnockTag": "Exige batida: {name}",
+  "knockDenied": "Desconectado por falta de batida"
 }

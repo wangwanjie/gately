@@ -1,0 +1,135 @@
+{
+  "title": "Port knocking",
+  "desc": "Autorisation par paquet unique (SPA) compatible avec fwknop : le client envoie un paquet de frappe chiffré et protégé contre le rejeu, et ce n'est qu'après son authentification que des ports comme SSH sont ouverts pour cette adresse pendant une durée limitée. Les ports peuvent être bloqués dans le pare-feu du système, ou la redirection de ports, le routage par protocole et STUN peuvent les ouvrir selon le résultat de la frappe.",
+  "unit": {
+    "seconds": "s",
+    "s": "{s} s",
+    "ms": "{m} min {s} s",
+    "hm": "{h} h {m} min"
+  },
+  "status": {
+    "title": "État",
+    "listen": "Port de frappe",
+    "firewall": "Blocage par pare-feu",
+    "listening": "Réception sur UDP {port}",
+    "listenFailed": "Échec de l'écoute sur UDP {port}",
+    "listenError": "Échec de l'écoute du port de frappe : {err}",
+    "udpOff": "Pas d'écoute UDP ; seules les frappes relayées par le routage par protocole sont reçues",
+    "noRules": "Aucune règle activée, pas d'écoute",
+    "fwNotNeeded": "Aucune règle n'active le blocage par pare-feu",
+    "fwActive": "Actif",
+    "fwInactive": "Inactif",
+    "viewRules": "Voir les règles du pare-feu",
+    "accepted": "Frappes acceptées",
+    "rejected": "Frappes rejetées",
+    "dropped": "Nouvelles connexions bloquées",
+    "allowed": "Connexions établies après frappe"
+  },
+  "reason": {
+    "os": {
+      "title": "Le blocage par pare-feu n'est pas pris en charge sur ce système",
+      "hint": "Le blocage par pare-feu nécessite nftables ou iptables + ipset sous Linux. L'option « Frappe requise » de la redirection de ports, du routage par protocole et de STUN ne dépend pas du pare-feu et fonctionne normalement."
+    },
+    "missing": {
+      "title": "nft ou iptables + ipset introuvable",
+      "hint": "Installez nftables (recommandé) ou iptables et ipset, puis enregistrez les paramètres pour réessayer."
+    },
+    "permission": {
+      "title": "Pas d'autorisation pour modifier le pare-feu",
+      "hint": "Gately doit s'exécuter en root ; avec Docker, utilisez le réseau host et ajoutez cap_add: NET_ADMIN."
+    },
+    "unsupported": {
+      "title": "Le noyau n'a pas nf_tables ni d'iptables + ipset utilisable",
+      "hint": "Sur Synology et systèmes similaires, utilisez l'image Docker officielle de Gately (elle inclut iptables et ipset)."
+    },
+    "error": {
+      "title": "Échec de l'écriture des règles du pare-feu",
+      "hint": "Gately réessaie chaque minute. Consultez l'erreur ci-dessous et le journal d'exécution."
+    }
+  },
+  "grants": {
+    "title": "Autorisations actives ({count})",
+    "empty": "Aucune adresse n'a frappé avec succès et reste dans sa durée d'accès",
+    "gatelyOnly": "Uniquement pour la redirection de ports, le routage par protocole et STUN",
+    "remain": "{t} restantes",
+    "revoke": "Révoquer",
+    "revokeConfirm": "Après révocation, cette adresse devra frapper à nouveau. Les connexions déjà établies ne sont pas affectées. Révoquer ?"
+  },
+  "rule": {
+    "add": "Ajouter une règle",
+    "edit": "Modifier la règle",
+    "empty": "Aucune règle de frappe pour le moment",
+    "namePlaceholder": "Par exemple SSH",
+    "confirmDelete": "Supprimer cette règle de frappe ?",
+    "ports": "Ports",
+    "portsHelp": "Ports qu'un client peut demander d'ouvrir, comme tcp/22 ou udp/51820, séparés par des virgules. Un simple numéro de port est traité comme TCP. Tous les ports de l'option -A du client doivent figurer dans cette liste.",
+    "firewall": "Blocage par pare-feu",
+    "firewallTag": "Blocage par pare-feu",
+    "firewallHelp": "Activé, ces ports sont bloqués dans le pare-feu du système et seules les adresses ayant frappé avec succès passent, ce qui protège des services comme le sshd de cet hôte (Linux uniquement). Désactivé, le pare-feu n'est pas modifié et la règle ne sert qu'à « Frappe requise » dans la redirection de ports, le routage par protocole et STUN.",
+    "firewallWarn": "Avant de l'activer, vérifiez que vous pouvez vous connecter à cet hôte depuis le réseau local (exempté de frappe par défaut dans les paramètres globaux) ou autrement : si Gately est arrêté de force, les règles de blocage restent jusqu'au redémarrage de Gately. Les connexions déjà établies ne sont pas affectées.",
+    "encKey": "Clé de chiffrement",
+    "hmacKey": "Clé HMAC",
+    "keyAuto": "Laisser vide pour générer",
+    "generate": "Régénérer",
+    "keysHelp": "Encodées en base64, elles correspondent à KEY_BASE64 et HMAC_KEY_BASE64 de fwknop. Vous pouvez saisir des clés générées par fwknop -k. Après changement des clés, les anciens clients ne peuvent plus frapper.",
+    "hmacType": "Algorithme HMAC",
+    "timeout": "Durée d'accès",
+    "timeoutHelp": "Après une frappe réussie, de nouvelles connexions peuvent être établies pendant cette durée. Les connexions déjà établies restent actives à l'expiration.",
+    "timeoutValue": "{n} s",
+    "timeoutWithMax": "{n} s (le client peut demander jusqu'à {max} s)",
+    "maxTimeout": "Durée max. du client",
+    "maxTimeoutHelp": "Limite lorsqu'un client demande une durée plus longue avec -f ; 0 ignore la durée demandée par le client. Une demande plus courte que la durée d'accès est toujours respectée.",
+    "user": "Limiter à un utilisateur",
+    "userPlaceholder": "Vide pour ne pas limiter",
+    "userHelp": "N'accepte que les frappes dont le paquet porte ce nom d'utilisateur. fwknop envoie par défaut le nom de connexion local ; utilisez -U pour le définir.",
+    "requireAddr": "Exiger une adresse explicite",
+    "requireAddrHelp": "Rejette les frappes sans adresse (fwknop -s). Le client doit indiquer l'adresse à ouvrir avec -R ou -a, afin qu'un paquet intercepté en route ne puisse pas être rejoué en premier depuis une autre adresse.",
+    "knocks": "Frappes",
+    "knockStats": "{ok} acceptées, {bad} rejetées",
+    "lastKnock": "Dernière : {addr}, {time}",
+    "usedBy": "Utilisée par"
+  },
+  "settings": {
+    "button": "Paramètres globaux",
+    "title": "Paramètres du port knocking",
+    "port": "Port UDP de frappe",
+    "portHelp": "Port UDP qui reçoit les paquets de frappe ; le client fwknop utilise 62201 par défaut. Avec 0, aucune écoute UDP : seules les frappes envoyées via un port TCP du routage par protocole sont reçues (fwknop -P tcp).",
+    "autoFirewall": "Ouvrir le port dans le pare-feu",
+    "autoFirewallHelp": "Ouvre le port de frappe dans le pare-feu du système (OpenWrt fw4, firewalld, ufw, etc.). Une fois le blocage par pare-feu actif, il ouvre aussi les ports protégés : l'accès n'est alors décidé que par la frappe.",
+    "allowLan": "Réseau local exempté de frappe",
+    "allowLanHelp": "Le réseau local, Tailscale (100.64.0.0/10), les adresses lien-local et l'IPv6 /64 de cet hôte accèdent aux ports protégés sans frapper, pour éviter de vous enfermer dehors. N'affecte que le blocage par pare-feu.",
+    "allowList": "Liste d'exemption de frappe",
+    "allowListHelp": "IP ou plages pouvant accéder aux ports protégés sans frapper, une par ligne. N'affecte que le blocage par pare-feu.",
+    "maxAge": "Validité du paquet",
+    "maxAgeHelp": "Écart maximal entre l'horodatage du paquet et l'heure de cet hôte ; au-delà, le paquet est considéré comme expiré ou rejoué. Les horloges du client et du serveur doivent être exactes."
+  },
+  "client": {
+    "button": "Client",
+    "title": "Configuration du client fwknop : {name}",
+    "server": "Adresse du serveur",
+    "serverPlaceholder": "Nom de domaine ou IP publique",
+    "via": "Envoyer par",
+    "viaUdp": "UDP {port}",
+    "viaTcp": "Routage par protocole (TCP)",
+    "tcpHelp": "Port d'écoute de la règle de routage par protocole, qui doit avoir une route « Port knocking »",
+    "udpOff": "Le port UDP de frappe n'est pas activé dans les paramètres globaux. Utilisez le routage par protocole ou définissez d'abord le port",
+    "addr": "Adresse à ouvrir",
+    "addrResolve": "Détecter l'IP publique",
+    "addrSource": "Adresse source",
+    "addrFixed": "Adresse précise",
+    "addrHelp": {
+      "resolve": "-R : le client cherche sa propre IPv4 publique et l'écrit dans le paquet, un paquet intercepté est donc inutilisable pour une autre adresse.",
+      "source": "-s : ouvre l'adresse d'où provient le paquet. Adapté aux réseaux où chercher l'IP publique est peu pratique.",
+      "fixed": "-a : ouvre l'adresse indiquée, par exemple pour frapper à la place d'un autre appareil."
+    },
+    "ports": "Ports demandés",
+    "command": "Ligne de commande",
+    "rc": "Section de ~/.fwknoprc",
+    "rcHelp": "Après l'avoir enregistrée dans ~/.fwknoprc, exécutez fwknop -n {name} pour frapper.",
+    "install": "Client fwknop : brew install fwknop sous macOS, apt install fwknop-client sous Debian / Ubuntu, ou installation dans WSL sous Windows. Le client fwknop ne peut envoyer les paquets de frappe qu'en IPv4 : l'adresse du serveur doit donc être joignable en IPv4. La commande et la configuration contiennent des clés, conservez-les avec soin.",
+    "loading": "Lecture des clés…",
+    "needServer": "Saisissez l'adresse du serveur",
+    "needPorts": "Sélectionnez au moins un port",
+    "needFixed": "Saisissez l'adresse à ouvrir"
+  }
+}

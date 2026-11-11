@@ -31,6 +31,7 @@ const router = createRouter({
         { path: 'protoroute', name: 'protoroute', component: () => import('./views/ProtoRoute.vue'), meta: { titleKey: 'nav.items.protoroute.title' } },
         { path: 'waf', name: 'waf', component: () => import('./views/WAF.vue'), meta: { titleKey: 'nav.items.waf.title' } },
         { path: 'guard', name: 'guard', component: () => import('./views/Guard.vue'), meta: { titleKey: 'nav.items.guard.title' } },
+        { path: 'knock', name: 'knock', component: () => import('./views/Knock.vue'), meta: { titleKey: 'nav.items.knock.title' } },
         { path: 'wol', name: 'wol', component: () => import('./views/WOL.vue'), meta: { titleKey: 'nav.items.wol.title' } },
         { path: 'terminal', name: 'terminal', component: () => import('./views/Terminal.vue'), meta: { titleKey: 'nav.items.terminal.title' } },
         { path: 'docker', name: 'docker', component: () => import('./views/Docker.vue'), meta: { titleKey: 'nav.items.docker.title' } },

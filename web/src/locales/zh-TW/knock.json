@@ -1,0 +1,135 @@
+{
+  "title": "連接埠敲門",
+  "desc": "相容 fwknop 的單封包敲門（SPA）：用戶端傳送一個加密且防重放的敲門封包，認證通過後才在限定時間內為它放行 SSH 等連接埠。可在系統防火牆中攔截連接埠，也可供連接埠轉發、協定分流與 STUN 依敲門結果放行。",
+  "unit": {
+    "seconds": "秒",
+    "s": "{s} 秒",
+    "ms": "{m} 分 {s} 秒",
+    "hm": "{h} 小時 {m} 分"
+  },
+  "status": {
+    "title": "執行狀態",
+    "listen": "敲門連接埠",
+    "firewall": "防火牆攔截",
+    "listening": "UDP {port} 接收中",
+    "listenFailed": "UDP {port} 監聽失敗",
+    "listenError": "敲門連接埠監聽失敗：{err}",
+    "udpOff": "未監聽 UDP，只接收經協定分流傳來的敲門",
+    "noRules": "沒有啟用的規則，未監聽",
+    "fwNotNeeded": "沒有規則開啟防火牆攔截",
+    "fwActive": "已生效",
+    "fwInactive": "未生效",
+    "viewRules": "檢視防火牆規則",
+    "accepted": "敲門成功",
+    "rejected": "敲門被拒絕",
+    "dropped": "攔截的新連線",
+    "allowed": "敲門後建立的連線"
+  },
+  "reason": {
+    "os": {
+      "title": "目前系統不支援防火牆攔截",
+      "hint": "防火牆攔截需要 Linux 的 nftables 或 iptables + ipset。連接埠轉發、協定分流與 STUN 的敲門放行不依賴防火牆，可以照常使用。"
+    },
+    "missing": {
+      "title": "找不到 nft 或 iptables + ipset",
+      "hint": "請安裝 nftables（建議）或 iptables 與 ipset 後儲存設定重試。"
+    },
+    "permission": {
+      "title": "沒有修改防火牆的權限",
+      "hint": "Gately 需要以 root 執行；Docker 部署需要 host 網路並加入 cap_add: NET_ADMIN。"
+    },
+    "unsupported": {
+      "title": "核心沒有 nf_tables，也沒有可用的 iptables + ipset",
+      "hint": "群暉等系統請使用 Gately 官方 Docker 映像（內建 iptables 與 ipset）。"
+    },
+    "error": {
+      "title": "寫入防火牆規則失敗",
+      "hint": "Gately 每分鐘會自動重試，具體錯誤見下方與執行記錄。"
+    }
+  },
+  "grants": {
+    "title": "目前授權（{count}）",
+    "empty": "暫時沒有敲門成功、仍在有效期內的位址",
+    "gatelyOnly": "僅用於連接埠轉發、協定分流與 STUN",
+    "remain": "剩餘 {t}",
+    "revoke": "撤銷",
+    "revokeConfirm": "撤銷後該位址需要重新敲門，已建立的連線不受影響。確定撤銷？"
+  },
+  "rule": {
+    "add": "新增規則",
+    "edit": "編輯規則",
+    "empty": "還沒有敲門規則",
+    "namePlaceholder": "例如 SSH",
+    "confirmDelete": "確定刪除這條敲門規則？",
+    "ports": "連接埠",
+    "portsHelp": "用戶端可以請求放行的連接埠，如 tcp/22、udp/51820，多個以逗號分隔，只寫連接埠號時視為 TCP。用戶端 -A 參數中的連接埠必須全部在此清單中。",
+    "firewall": "防火牆攔截",
+    "firewallTag": "防火牆攔截",
+    "firewallHelp": "開啟後在系統防火牆中攔截這些連接埠，只放行敲門成功的位址，用於保護本機的 sshd 等服務（僅 Linux）。關閉時不改動防火牆，只供連接埠轉發、協定分流與 STUN 的「需要敲門」使用。",
+    "firewallWarn": "開啟前請確認能從內網（全域設定中預設免敲門）或其他途徑登入本機：Gately 被強制結束時攔截規則會保留，直到 Gately 重新啟動。已建立的連線不受影響。",
+    "encKey": "加密金鑰",
+    "hmacKey": "HMAC 金鑰",
+    "keyAuto": "留空自動產生",
+    "generate": "重新產生",
+    "keysHelp": "base64 編碼，對應 fwknop 的 KEY_BASE64 與 HMAC_KEY_BASE64，可填入 fwknop -k 產生的金鑰。更換金鑰後舊用戶端無法再敲門。",
+    "hmacType": "HMAC 演算法",
+    "timeout": "放行時長",
+    "timeoutHelp": "敲門成功後在這段時間內可以建立新連線，已建立的連線在到期後照常保持。",
+    "timeoutValue": "{n} 秒",
+    "timeoutWithMax": "{n} 秒（用戶端最長可請求 {max} 秒）",
+    "maxTimeout": "用戶端最長時長",
+    "maxTimeoutHelp": "用戶端用 -f 請求更長時長時的上限，0 表示忽略用戶端請求的時長。請求比放行時長短時一律採用。",
+    "user": "限定使用者名稱",
+    "userPlaceholder": "留空不限",
+    "userHelp": "只接受封包中使用者名稱為此值的敲門。fwknop 預設傳送本機登入名稱，可用 -U 指定。",
+    "requireAddr": "要求寫明位址",
+    "requireAddrHelp": "拒絕不帶位址的敲門（fwknop -s），用戶端必須用 -R 或 -a 寫明要放行的位址，防止封包在途中被截獲後搶先從其他位址重放。",
+    "knocks": "敲門",
+    "knockStats": "成功 {ok} 次，拒絕 {bad} 次",
+    "lastKnock": "最近：{addr}，{time}",
+    "usedBy": "被引用"
+  },
+  "settings": {
+    "button": "全域設定",
+    "title": "連接埠敲門設定",
+    "port": "UDP 敲門連接埠",
+    "portHelp": "接收敲門封包的 UDP 連接埠，fwknop 用戶端預設 62201。填 0 不監聽 UDP，只接收經協定分流 TCP 連接埠傳來的敲門（fwknop -P tcp）。",
+    "autoFirewall": "自動放行防火牆",
+    "autoFirewallHelp": "在系統防火牆（OpenWrt fw4、firewalld、ufw 等）中放行敲門連接埠；防火牆攔截生效後也放行受保護連接埠，是否可以存取只由敲門決定。",
+    "allowLan": "內網免敲門",
+    "allowLanHelp": "內網、Tailscale（100.64.0.0/10）、鏈路本機位址與本機所在的 IPv6 /64 無需敲門即可存取受保護連接埠，避免把自己鎖在外面。只影響防火牆攔截。",
+    "allowList": "免敲門白名單",
+    "allowListHelp": "無需敲門即可存取受保護連接埠的 IP 或網段，每行一個。只影響防火牆攔截。",
+    "maxAge": "封包有效期",
+    "maxAgeHelp": "封包時間戳記與本機時間的最大偏差，超出視為過期或重放。用戶端與伺服器的時鐘都需要準確。"
+  },
+  "client": {
+    "button": "用戶端",
+    "title": "fwknop 用戶端設定：{name}",
+    "server": "伺服器位址",
+    "serverPlaceholder": "網域名稱或公網 IP",
+    "via": "傳送方式",
+    "viaUdp": "UDP {port}",
+    "viaTcp": "經協定分流（TCP）",
+    "tcpHelp": "協定分流規則的監聽連接埠，規則中需要有「連接埠敲門」路由",
+    "udpOff": "全域設定中沒有開啟 UDP 敲門連接埠，請改用協定分流或先設定連接埠",
+    "addr": "放行位址",
+    "addrResolve": "自動取得公網 IP",
+    "addrSource": "來源位址",
+    "addrFixed": "指定位址",
+    "addrHelp": {
+      "resolve": "-R：用戶端先查詢自己的公網 IPv4 並寫入封包，封包被截獲也無法用於其他位址。",
+      "source": "-s：放行封包的來源位址，適合查詢公網 IP 不方便的網路。",
+      "fixed": "-a：放行指定的位址，例如替另一台裝置敲門。"
+    },
+    "ports": "請求連接埠",
+    "command": "命令列",
+    "rc": "~/.fwknoprc 設定區段",
+    "rcHelp": "儲存到 ~/.fwknoprc 後執行 fwknop -n {name} 即可敲門。",
+    "install": "fwknop 用戶端：macOS 用 brew install fwknop，Debian / Ubuntu 用 apt install fwknop-client，Windows 可在 WSL 中安裝。fwknop 用戶端只能經 IPv4 傳送敲門封包，伺服器位址需要能經 IPv4 存取。命令與設定含金鑰，請妥善保管。",
+    "loading": "正在讀取金鑰…",
+    "needServer": "請填寫伺服器位址",
+    "needPorts": "請至少選擇一個連接埠",
+    "needFixed": "請填寫要放行的位址"
+  }
+}

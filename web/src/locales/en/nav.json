@@ -28,6 +28,10 @@
       "title": "Intrusion Prevention",
       "desc": "Ban malicious IPs at the system firewall"
     },
+    "knock": {
+      "title": "Port Knocking",
+      "desc": "Open SSH and other ports only after a successful knock"
+    },
     "stun": {
       "title": "STUN Traversal",
       "desc": "Reach services behind NAT1 without a public IP"

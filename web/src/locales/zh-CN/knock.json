@@ -1,0 +1,135 @@
+{
+  "title": "端口敲门",
+  "desc": "兼容 fwknop 的单包敲门（SPA）：客户端发送一个加密且防重放的敲门包，认证通过后才在限定时间内为它放行 SSH 等端口。可在系统防火墙中拦截端口，也可供端口转发、协议分流与 STUN 按敲门结果放行。",
+  "unit": {
+    "seconds": "秒",
+    "s": "{s} 秒",
+    "ms": "{m} 分 {s} 秒",
+    "hm": "{h} 小时 {m} 分"
+  },
+  "status": {
+    "title": "运行状态",
+    "listen": "敲门端口",
+    "firewall": "防火墙拦截",
+    "listening": "UDP {port} 接收中",
+    "listenFailed": "UDP {port} 监听失败",
+    "listenError": "敲门端口监听失败：{err}",
+    "udpOff": "未监听 UDP，只接收经协议分流发来的敲门",
+    "noRules": "没有启用的规则，未监听",
+    "fwNotNeeded": "没有规则开启防火墙拦截",
+    "fwActive": "已生效",
+    "fwInactive": "未生效",
+    "viewRules": "查看防火墙规则",
+    "accepted": "敲门成功",
+    "rejected": "敲门被拒绝",
+    "dropped": "拦截的新连接",
+    "allowed": "敲门后建立的连接"
+  },
+  "reason": {
+    "os": {
+      "title": "当前系统不支持防火墙拦截",
+      "hint": "防火墙拦截需要 Linux 的 nftables 或 iptables + ipset。端口转发、协议分流与 STUN 按敲门放行不依赖防火墙，可以照常使用。"
+    },
+    "missing": {
+      "title": "没有找到 nft 或 iptables + ipset",
+      "hint": "请安装 nftables（推荐）或 iptables 与 ipset 后保存设置重试。"
+    },
+    "permission": {
+      "title": "没有修改防火墙的权限",
+      "hint": "Gately 需要以 root 运行；Docker 部署需要 host 网络并添加 cap_add: NET_ADMIN。"
+    },
+    "unsupported": {
+      "title": "内核没有 nf_tables，也没有可用的 iptables + ipset",
+      "hint": "群晖等系统请使用 Gately 官方 Docker 镜像（内置 iptables 与 ipset）。"
+    },
+    "error": {
+      "title": "写入防火墙规则失败",
+      "hint": "Gately 每分钟会自动重试，具体错误见下方与运行日志。"
+    }
+  },
+  "grants": {
+    "title": "当前授权（{count}）",
+    "empty": "暂时没有敲门成功、仍在有效期内的地址",
+    "gatelyOnly": "仅用于端口转发、协议分流与 STUN",
+    "remain": "剩余 {t}",
+    "revoke": "撤销",
+    "revokeConfirm": "撤销后该地址需要重新敲门，已建立的连接不受影响。确定撤销？"
+  },
+  "rule": {
+    "add": "添加规则",
+    "edit": "编辑规则",
+    "empty": "还没有敲门规则",
+    "namePlaceholder": "例如 SSH",
+    "confirmDelete": "确定删除这条敲门规则？",
+    "ports": "端口",
+    "portsHelp": "客户端可以请求放行的端口，如 tcp/22、udp/51820，多个以逗号分隔，只写端口号时按 TCP 处理。客户端 -A 参数中的端口必须全部在此列表中。",
+    "firewall": "防火墙拦截",
+    "firewallTag": "防火墙拦截",
+    "firewallHelp": "开启后在系统防火墙中拦截这些端口，只放行敲门成功的地址，用于保护本机的 sshd 等服务（仅 Linux）。关闭时不改动防火墙，只供端口转发、协议分流与 STUN 的“需要敲门”使用。",
+    "firewallWarn": "开启前请确认能从内网（全局设置中默认免敲门）或其他途径登录本机：Gately 被强制结束时拦截规则会保留，直到 Gately 重新启动。已建立的连接不受影响。",
+    "encKey": "加密密钥",
+    "hmacKey": "HMAC 密钥",
+    "keyAuto": "留空自动生成",
+    "generate": "重新生成",
+    "keysHelp": "base64 编码，对应 fwknop 的 KEY_BASE64 与 HMAC_KEY_BASE64，可填写 fwknop -k 生成的密钥。更换密钥后旧客户端无法再敲门。",
+    "hmacType": "HMAC 算法",
+    "timeout": "放行时长",
+    "timeoutHelp": "敲门成功后在这段时间内可以建立新连接，已建立的连接在到期后照常保持。",
+    "timeoutValue": "{n} 秒",
+    "timeoutWithMax": "{n} 秒（客户端最长可请求 {max} 秒）",
+    "maxTimeout": "客户端最长时长",
+    "maxTimeoutHelp": "客户端用 -f 请求更长时长时的上限，0 表示忽略客户端请求的时长。请求比放行时长短时总是采用。",
+    "user": "限定用户名",
+    "userPlaceholder": "留空不限",
+    "userHelp": "只接受报文中用户名为此值的敲门。fwknop 默认发送本机登录名，可用 -U 指定。",
+    "requireAddr": "要求写明地址",
+    "requireAddrHelp": "拒绝不带地址的敲门（fwknop -s），客户端必须用 -R 或 -a 写明要放行的地址，防止报文在途中被截获后抢先从其他地址重放。",
+    "knocks": "敲门",
+    "knockStats": "成功 {ok} 次，拒绝 {bad} 次",
+    "lastKnock": "最近：{addr}，{time}",
+    "usedBy": "被引用"
+  },
+  "settings": {
+    "button": "全局设置",
+    "title": "端口敲门设置",
+    "port": "UDP 敲门端口",
+    "portHelp": "接收敲门报文的 UDP 端口，fwknop 客户端默认 62201。填 0 不监听 UDP，只接收经协议分流 TCP 端口发来的敲门（fwknop -P tcp）。",
+    "autoFirewall": "自动放行防火墙",
+    "autoFirewallHelp": "在系统防火墙（OpenWrt fw4、firewalld、ufw 等）中放行敲门端口；防火墙拦截生效后也放行受保护端口，是否可以访问只由敲门决定。",
+    "allowLan": "内网免敲门",
+    "allowLanHelp": "内网、Tailscale（100.64.0.0/10）、链路本地地址与本机所在的 IPv6 /64 无需敲门即可访问受保护端口，避免把自己锁在外面。只影响防火墙拦截。",
+    "allowList": "免敲门白名单",
+    "allowListHelp": "无需敲门即可访问受保护端口的 IP 或网段，每行一个。只影响防火墙拦截。",
+    "maxAge": "报文有效期",
+    "maxAgeHelp": "报文时间戳与本机时间的最大偏差，超出视为过期或重放。客户端与服务器的时钟都需要准确。"
+  },
+  "client": {
+    "button": "客户端",
+    "title": "fwknop 客户端配置：{name}",
+    "server": "服务器地址",
+    "serverPlaceholder": "域名或公网 IP",
+    "via": "发送方式",
+    "viaUdp": "UDP {port}",
+    "viaTcp": "经协议分流（TCP）",
+    "tcpHelp": "协议分流规则的监听端口，规则中需要有“端口敲门”路由",
+    "udpOff": "全局设置中没有开启 UDP 敲门端口，请改用协议分流或先设置端口",
+    "addr": "放行地址",
+    "addrResolve": "自动获取公网 IP",
+    "addrSource": "来源地址",
+    "addrFixed": "指定地址",
+    "addrHelp": {
+      "resolve": "-R：客户端先查询自己的公网 IPv4 并写入报文，报文被截获也无法用于其他地址。",
+      "source": "-s：放行报文的来源地址，适合查询公网 IP 不方便的网络。",
+      "fixed": "-a：放行指定的地址，例如替另一台设备敲门。"
+    },
+    "ports": "请求端口",
+    "command": "命令行",
+    "rc": "~/.fwknoprc 配置段",
+    "rcHelp": "保存到 ~/.fwknoprc 后执行 fwknop -n {name} 即可敲门。",
+    "install": "fwknop 客户端：macOS 用 brew install fwknop，Debian / Ubuntu 用 apt install fwknop-client，Windows 可在 WSL 中安装。fwknop 客户端只能经 IPv4 发送敲门包，服务器地址需要能经 IPv4 访问。命令与配置含密钥，请妥善保管。",
+    "loading": "正在读取密钥…",
+    "needServer": "请填写服务器地址",
+    "needPorts": "请至少选择一个端口",
+    "needFixed": "请填写要放行的地址"
+  }
+}

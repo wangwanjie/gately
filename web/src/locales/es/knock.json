@@ -1,0 +1,135 @@
+{
+  "title": "Port knocking",
+  "desc": "Autorización de paquete único (SPA) compatible con fwknop: el cliente envía un paquete de llamada cifrado y protegido contra repetición, y solo tras autenticarlo se abren puertos como SSH para esa dirección durante un tiempo limitado. Los puertos pueden bloquearse en el cortafuegos del sistema, o el reenvío de puertos, el enrutamiento por protocolo y STUN pueden abrirlos según el resultado de la llamada.",
+  "unit": {
+    "seconds": "s",
+    "s": "{s} s",
+    "ms": "{m} min {s} s",
+    "hm": "{h} h {m} min"
+  },
+  "status": {
+    "title": "Estado",
+    "listen": "Puerto de llamada",
+    "firewall": "Bloqueo en cortafuegos",
+    "listening": "Recibiendo en UDP {port}",
+    "listenFailed": "Error al escuchar en UDP {port}",
+    "listenError": "Error al escuchar en el puerto de llamada: {err}",
+    "udpOff": "No escucha en UDP; solo recibe llamadas enviadas a través del enrutamiento por protocolo",
+    "noRules": "No hay reglas activas, no escucha",
+    "fwNotNeeded": "Ninguna regla tiene activado el bloqueo en cortafuegos",
+    "fwActive": "Activo",
+    "fwInactive": "Inactivo",
+    "viewRules": "Ver reglas del cortafuegos",
+    "accepted": "Llamadas aceptadas",
+    "rejected": "Llamadas rechazadas",
+    "dropped": "Conexiones nuevas bloqueadas",
+    "allowed": "Conexiones tras llamar"
+  },
+  "reason": {
+    "os": {
+      "title": "Este sistema no admite el bloqueo en cortafuegos",
+      "hint": "El bloqueo en cortafuegos requiere nftables o iptables + ipset en Linux. La opción «Requiere llamada» del reenvío de puertos, el enrutamiento por protocolo y STUN no depende del cortafuegos y funciona con normalidad."
+    },
+    "missing": {
+      "title": "No se encontró nft ni iptables + ipset",
+      "hint": "Instala nftables (recomendado) o iptables e ipset, y guarda los ajustes para reintentar."
+    },
+    "permission": {
+      "title": "Sin permiso para modificar el cortafuegos",
+      "hint": "Gately debe ejecutarse como root; con Docker, usa la red host y añade cap_add: NET_ADMIN."
+    },
+    "unsupported": {
+      "title": "El kernel no tiene nf_tables ni un iptables + ipset utilizable",
+      "hint": "En Synology y sistemas similares, usa la imagen Docker oficial de Gately (incluye iptables e ipset)."
+    },
+    "error": {
+      "title": "Error al escribir las reglas del cortafuegos",
+      "hint": "Gately reintenta cada minuto. Consulta el error de abajo y el registro de ejecución."
+    }
+  },
+  "grants": {
+    "title": "Autorizaciones activas ({count})",
+    "empty": "Ninguna dirección ha llamado con éxito y sigue dentro de su tiempo de acceso",
+    "gatelyOnly": "Solo para reenvío de puertos, enrutamiento por protocolo y STUN",
+    "remain": "Quedan {t}",
+    "revoke": "Revocar",
+    "revokeConfirm": "Tras revocar, esta dirección tendrá que volver a llamar. Las conexiones ya establecidas no se ven afectadas. ¿Revocar?"
+  },
+  "rule": {
+    "add": "Añadir regla",
+    "edit": "Editar regla",
+    "empty": "Aún no hay reglas de llamada",
+    "namePlaceholder": "Por ejemplo SSH",
+    "confirmDelete": "¿Eliminar esta regla de llamada?",
+    "ports": "Puertos",
+    "portsHelp": "Puertos que un cliente puede pedir que se abran, como tcp/22 o udp/51820, separados por comas. Un número de puerto solo se trata como TCP. Todos los puertos de la opción -A del cliente deben estar en esta lista.",
+    "firewall": "Bloqueo en cortafuegos",
+    "firewallTag": "Bloqueo en cortafuegos",
+    "firewallHelp": "Si se activa, estos puertos se bloquean en el cortafuegos del sistema y solo pasan las direcciones que han llamado con éxito, lo que protege servicios como el sshd de este equipo (solo Linux). Si se desactiva, el cortafuegos no se modifica y la regla solo sirve para «Requiere llamada» en reenvío de puertos, enrutamiento por protocolo y STUN.",
+    "firewallWarn": "Antes de activarlo, comprueba que puedes entrar en este equipo desde la red local (exenta de llamada por defecto en los ajustes globales) o por otra vía: si Gately se cierra a la fuerza, las reglas de bloqueo se mantienen hasta que Gately vuelva a iniciarse. Las conexiones ya establecidas no se ven afectadas.",
+    "encKey": "Clave de cifrado",
+    "hmacKey": "Clave HMAC",
+    "keyAuto": "Vacío para generar",
+    "generate": "Regenerar",
+    "keysHelp": "Codificadas en base64, equivalen a KEY_BASE64 y HMAC_KEY_BASE64 de fwknop. Puedes introducir claves generadas con fwknop -k. Al cambiar las claves, los clientes antiguos dejan de poder llamar.",
+    "hmacType": "Algoritmo HMAC",
+    "timeout": "Tiempo de acceso",
+    "timeoutHelp": "Tras una llamada correcta se pueden crear conexiones nuevas durante este tiempo. Las conexiones ya establecidas se mantienen al expirar.",
+    "timeoutValue": "{n} s",
+    "timeoutWithMax": "{n} s (el cliente puede pedir hasta {max} s)",
+    "maxTimeout": "Máximo del cliente",
+    "maxTimeoutHelp": "Límite cuando el cliente pide más tiempo con -f; 0 ignora el tiempo que pida el cliente. Una petición menor que el tiempo de acceso siempre se respeta.",
+    "user": "Limitar usuario",
+    "userPlaceholder": "Vacío para no limitar",
+    "userHelp": "Solo acepta llamadas cuyo paquete lleve este nombre de usuario. fwknop envía por defecto el nombre de inicio de sesión local; usa -U para indicarlo.",
+    "requireAddr": "Exigir dirección explícita",
+    "requireAddrHelp": "Rechaza llamadas sin dirección (fwknop -s). El cliente debe indicar con -R o -a la dirección que se abre, para que un paquete interceptado en tránsito no pueda repetirse antes desde otra dirección.",
+    "knocks": "Llamadas",
+    "knockStats": "{ok} aceptadas, {bad} rechazadas",
+    "lastKnock": "Última: {addr}, {time}",
+    "usedBy": "Usada por"
+  },
+  "settings": {
+    "button": "Ajustes globales",
+    "title": "Ajustes de port knocking",
+    "port": "Puerto UDP de llamada",
+    "portHelp": "Puerto UDP que recibe los paquetes de llamada; el cliente fwknop usa 62201 por defecto. Con 0 no se escucha en UDP y solo se reciben llamadas enviadas por un puerto TCP del enrutamiento por protocolo (fwknop -P tcp).",
+    "autoFirewall": "Abrir puerto en el cortafuegos",
+    "autoFirewallHelp": "Abre el puerto de llamada en el cortafuegos del sistema (OpenWrt fw4, firewalld, ufw, etc.). Con el bloqueo en cortafuegos activo, también abre los puertos protegidos, de modo que el acceso lo decide solo la llamada.",
+    "allowLan": "Red local exenta de llamada",
+    "allowLanHelp": "La red local, Tailscale (100.64.0.0/10), las direcciones de enlace local y el IPv6 /64 de este equipo pueden acceder a los puertos protegidos sin llamar, para que no te quedes fuera. Solo afecta al bloqueo en cortafuegos.",
+    "allowList": "Lista de exentos de llamada",
+    "allowListHelp": "IP o rangos que pueden acceder a los puertos protegidos sin llamar, uno por línea. Solo afecta al bloqueo en cortafuegos.",
+    "maxAge": "Validez del paquete",
+    "maxAgeHelp": "Diferencia máxima entre la marca de tiempo del paquete y la hora de este equipo; si se supera, se considera caducado o repetido. Los relojes de cliente y servidor deben ser precisos."
+  },
+  "client": {
+    "button": "Cliente",
+    "title": "Configuración del cliente fwknop: {name}",
+    "server": "Dirección del servidor",
+    "serverPlaceholder": "Dominio o IP pública",
+    "via": "Enviar por",
+    "viaUdp": "UDP {port}",
+    "viaTcp": "Enrutamiento por protocolo (TCP)",
+    "tcpHelp": "Puerto de escucha de la regla de enrutamiento por protocolo, que necesita una ruta «Port knocking»",
+    "udpOff": "El puerto UDP de llamada no está activado en los ajustes globales. Usa el enrutamiento por protocolo o configura antes el puerto",
+    "addr": "Dirección a abrir",
+    "addrResolve": "Detectar IP pública",
+    "addrSource": "Dirección de origen",
+    "addrFixed": "Dirección concreta",
+    "addrHelp": {
+      "resolve": "-R: el cliente consulta su IPv4 pública y la escribe en el paquete, así que un paquete interceptado no sirve para otra dirección.",
+      "source": "-s: abre la dirección de origen del paquete. Adecuado para redes donde consultar la IP pública resulta incómodo.",
+      "fixed": "-a: abre la dirección indicada, por ejemplo para llamar en nombre de otro dispositivo."
+    },
+    "ports": "Puertos solicitados",
+    "command": "Línea de comandos",
+    "rc": "Sección de ~/.fwknoprc",
+    "rcHelp": "Tras guardarla en ~/.fwknoprc, ejecuta fwknop -n {name} para llamar.",
+    "install": "Cliente fwknop: brew install fwknop en macOS, apt install fwknop-client en Debian / Ubuntu, o instálalo en WSL en Windows. El cliente fwknop solo puede enviar paquetes de llamada por IPv4, así que la dirección del servidor debe ser accesible por IPv4. El comando y la configuración contienen claves; guárdalos con cuidado.",
+    "loading": "Leyendo claves…",
+    "needServer": "Introduce la dirección del servidor",
+    "needPorts": "Selecciona al menos un puerto",
+    "needFixed": "Introduce la dirección a abrir"
+  }
+}

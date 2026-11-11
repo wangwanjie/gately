@@ -1,0 +1,6 @@
+{
+  "placeholder": "Sem exigir batida",
+  "empty": "Ainda não há regras de port knocking",
+  "missing": "A regra não existe",
+  "disabled": "Desativada"
+}

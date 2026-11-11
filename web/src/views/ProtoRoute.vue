@@ -51,7 +51,9 @@
           <Field :label="t('protoRoute.connections')">{{ t('protoRoute.connectionsValue', { active: it.item.stats.activeConns, total: it.item.stats.totalConns }) }}</Field>
           <Field :label="t('protoRoute.traffic')">↑ {{ formatBytes(it.item.stats.bytesIn) }} · ↓ {{ formatBytes(it.item.stats.bytesOut) }}</Field>
           <Field v-if="it.item.ipMode" :label="t('ipAccessEditor.title')">{{ it.item.ipMode === 'whitelist' ? t('ipAccessEditor.whitelist') : t('ipAccessEditor.blacklist') }}</Field>
+          <Field v-if="it.item.knock" :label="t('ipAccessEditor.knock')">{{ knockRuleName(it.item.knock) }}</Field>
           <Field v-if="it.item.stats.denied" :label="t('ipAccessEditor.denied')" mono>{{ it.item.stats.denied }}</Field>
+          <Field v-if="it.item.stats.knockDenied" :label="t('protoRoute.knockDenied')" mono>{{ it.item.stats.knockDenied }}</Field>
           <Field :label="t('protoRoute.routes')" wide>
             <div v-for="(rt, i) in it.item.routes" :key="i" class="route-line" :class="{ 'route-off': rt.disabled }">
               <el-switch
@@ -63,7 +65,9 @@
               />
               <el-tag size="small" type="info" effect="plain">{{ protoShort(rt.protocol) }}</el-tag>
               <span class="route-name">{{ routeTitle(rt) }}</span>
-              <span class="mono">→ {{ routeTargetText(it.item, rt) }}</span>
+              <span v-if="rt.protocol === 'spa'" class="route-meta">→ {{ t('protoRoute.spaTarget') }}</span>
+              <span v-else class="mono">→ {{ routeTargetText(it.item, rt) }}</span>
+              <el-tag v-if="rt.knock" size="small" type="warning" effect="plain">{{ t('protoRoute.routeKnockTag', { name: knockRuleName(rt.knock) }) }}</el-tag>
               <el-tag v-if="rt.proxyProtocol" size="small" effect="plain">{{ rt.proxyProtocol }}</el-tag>
               <el-tag v-for="a in rt.alpn ?? []" :key="a" size="small" effect="plain">{{ a }}</el-tag>
               <el-tag v-if="rt.disabled" size="small" type="info">{{ t('protoRoute.routeDisabled') }}</el-tag>
@@ -135,7 +139,7 @@
               />
               <el-input v-if="rt.protocol === 'tls'" v-model="rt.alpnText" :placeholder="t('protoRoute.routeAlpnPlaceholder')" />
               <div v-if="protoHelp(rt.protocol)" class="form-help">{{ protoHelp(rt.protocol) }}</div>
-              <div class="route-row">
+              <div v-if="rt.protocol !== 'spa'" class="route-row">
                 <el-input v-model="rt.targetsText" :placeholder="t('protoRoute.routeTargetsPlaceholder')" class="route-targets" />
                 <el-input-number v-model="rt.targetPort" :min="0" :max="65535" :controls="false" :placeholder="t('protoRoute.routePortPlaceholder')" class="route-port" />
                 <el-select v-model="rt.proxyProtocol" class="route-proxy" :empty-values="[null, undefined]">
@@ -143,6 +147,10 @@
                   <el-option label="PROXY v1" value="v1" />
                   <el-option label="PROXY v2" value="v2" />
                 </el-select>
+              </div>
+              <div v-if="rt.protocol !== 'spa' && (moduleBuilt('knock') || rt.knock)" class="route-knock">
+                <span class="route-knock-label">{{ t('protoRoute.routeKnock') }}</span>
+                <KnockSelect v-model="rt.knock" size="small" />
               </div>
             </div>
             <el-button :icon="Plus" size="small" @click="addRoute">{{ t('protoRoute.addRoute') }}</el-button>
@@ -176,7 +184,7 @@
           <el-input-number v-model="editing.maxConnections" :min="0" :max="100000" />
           <span class="help">{{ t('protoRoute.useGlobalDefault') }}</span>
         </el-form-item>
-        <IPAccessEditor v-model:mode="editing.ipMode" v-model:list="editing.ipList" v-model:sets="editing.ipSets" :note="t('protoRoute.ipAccessNote')" />
+        <IPAccessEditor v-model:mode="editing.ipMode" v-model:list="editing.ipList" v-model:sets="editing.ipSets" v-model:knock="editing.knock" :note="t('protoRoute.ipAccessNote')" />
         <el-form-item :label="t('common.remark')">
           <el-input v-model="editing.remark" />
         </el-form-item>
@@ -213,6 +221,9 @@ import { api, formatBytes } from '../api'
 import GroupedList from '../components/GroupedList.vue'
 import GroupInput from '../components/GroupInput.vue'
 import IPAccessEditor from '../components/IPAccessEditor.vue'
+import { knockRuleName, useKnockRules } from '../composables/useKnockRules'
+import KnockSelect from '../components/KnockSelect.vue'
+import { moduleBuilt } from '../nav'
 import ListTools from '../components/ListTools.vue'
 import SortCheck from '../components/SortCheck.vue'
 import SortMoves from '../components/SortMoves.vue'
@@ -253,6 +264,8 @@ interface Rule {
   ipMode: string
   ipList: string[]
   ipSets: string[]
+  // knock 为端口敲门规则 key，非空时来源地址还必须敲门成功
+  knock?: string
   remark: string
 }
 
@@ -270,6 +283,8 @@ interface Route {
   // 0 表示与监听端口相同
   targetPort: number
   proxyProtocol: string
+  // knock 为端口敲门规则 key：非空时只有敲门成功的来源才能使用此路由；敲门路由（spa）不设置
+  knock?: string
 }
 
 // RouteForm 是编辑中的路由，域名、ALPN 与目标以文本形式编辑
@@ -284,6 +299,7 @@ interface RouteForm {
   targetsText: string
   targetPort: number | undefined
   proxyProtocol: string
+  knock: string
 }
 
 interface RuleView extends Rule {
@@ -304,6 +320,8 @@ interface RuleView extends Rule {
     rejected?: number
     // 不满足来源 IP 访问控制而被断开的连接
     denied?: number
+    // 没有有效敲门授权而被断开的连接
+    knockDenied?: number
   }
 }
 
@@ -334,6 +352,7 @@ const routeProtocols = [
   'irc',
   'adb',
   'bittorrent',
+  'spa',
   'timeout',
 ]
 
@@ -345,6 +364,8 @@ const protocols = [
 ]
 
 const { t, te } = useI18n()
+// 读取端口敲门规则目录，卡片上显示“需要敲门”的规则名称
+useKnockRules()
 const compact = useCompactView('protoroute')
 const { isMobile, labelPosition } = useFormLayout()
 const rules = ref<RuleView[]>([])
@@ -405,6 +426,7 @@ function emptyRule(): Rule {
     ipMode: '',
     ipList: [],
     ipSets: [],
+    knock: '',
     remark: '',
   }
 }
@@ -436,6 +458,7 @@ function protoShort(p?: string) {
     bittorrent: 'BitTorrent',
     adb: 'ADB',
     irc: 'IRC',
+    spa: t('protoRoute.protoSpaShort'),
   }
   return p === 'timeout' ? t('protoRoute.protoTimeoutShort') : (names[p || 'tls'] ?? p)
 }
@@ -486,6 +509,7 @@ function toRouteForm(rt?: Route): RouteForm {
     targetsText: (rt?.targetAddresses ?? []).join(', '),
     targetPort: rt?.targetPort || undefined,
     proxyProtocol: rt?.proxyProtocol ?? '',
+    knock: rt?.knock ?? '',
   }
 }
 
@@ -551,6 +575,7 @@ function openEditor(row?: RuleView, copy = false) {
   editing.value.ipMode = editing.value.ipMode ?? ''
   editing.value.ipList = editing.value.ipList ?? []
   editing.value.ipSets = editing.value.ipSets ?? []
+  editing.value.knock = editing.value.knock ?? ''
   targetsText.value = (editing.value.targetAddresses ?? []).join('\n')
   routeForms.value = (editing.value.routes ?? []).map(toRouteForm)
   // 新规则预置一条空路由
@@ -578,9 +603,11 @@ async function save() {
     // 不按域名匹配的协议不提交域名与 ALPN，避免切换协议后残留的输入导致校验失败
     domains: usesDomains(f.protocol) ? splitList(f.domainsText) : [],
     alpn: f.protocol === 'tls' ? splitList(f.alpnText) : [],
-    targetAddresses: splitList(f.targetsText),
-    targetPort: f.targetPort || 0,
-    proxyProtocol: f.proxyProtocol,
+    // 敲门路由把报文交给端口敲门模块，不提交目标
+    targetAddresses: f.protocol === 'spa' ? [] : splitList(f.targetsText),
+    targetPort: f.protocol === 'spa' ? 0 : f.targetPort || 0,
+    proxyProtocol: f.protocol === 'spa' ? '' : f.proxyProtocol,
+    knock: f.protocol === 'spa' ? '' : f.knock,
   }))
   saving.value = true
   try {
@@ -773,5 +800,15 @@ onMounted(() => {
   .route-targets {
     flex-basis: 100%;
   }
+}
+.route-knock {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.route-knock-label {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
 }
 </style>

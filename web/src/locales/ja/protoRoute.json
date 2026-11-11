@@ -79,7 +79,8 @@
     "git": "Git（git://）",
     "bittorrent": "BitTorrent",
     "adb": "ADB（Android デバッグブリッジ）",
-    "irc": "IRC"
+    "irc": "IRC",
+    "spa": "ポートノッキング（fwknop -P tcp）"
   },
   "protoHelp": {
     "tls": "ALPN でアプリケーションプロトコルごとに細かく分けられます。例：acme-tls/1（TLS-ALPN-01 証明書検証）、postgresql（PostgreSQL 17 の直接 TLS 接続）",
@@ -97,9 +98,15 @@
     "git": "git daemon の git:// プロトコル。HTTPS や SSH 経由の Git は TLS・HTTP・SSH ルートを使います",
     "bittorrent": "プロトコル暗号化を使わないピア接続。暗号化（MSE）された接続には特徴がなく、デフォルトターゲットへ送られます",
     "adb": "adb connect の平文接続。Android 11 以降のワイヤレスデバッグは TLS を使います",
-    "irc": "平文の IRC クライアント（最初に CAP・PASS・NICK・USER を送ります）。TLS を使う IRC には TLS ルートを使います"
+    "irc": "平文の IRC クライアント（最初に CAP・PASS・NICK・USER を送ります）。TLS を使う IRC には TLS ルートを使います",
+    "spa": "fwknop クライアントが TCP で送るノックパケット（fwknop -P tcp -p このポート）を受信し、ポートノッキングモジュールに渡して認証します。転送も応答もしません。これにより 1 つのポートを開けるだけでノックできます。「ノック必須」を設定したルートは、ノックに成功した後に使えます。"
   },
   "routeMinecraftPlaceholder": "サーバーアドレス（1 行に 1 つ）：mc.example.com、*.example.com または *。空にするとすべての Minecraft 接続に一致します",
   "ipAccessNote": "プロトコル判別の前に判定し、拒否した接続はデータを読み取らず、ルートのヒット数にも数えません。リストを編集しても待ち受けは中断しません。",
-  "autoFirewallHelp": "ローカルのファイアウォール（nftables / iptables / ip6tables）でこのルールがリッスンに成功したポートだけを許可します。連続するポートは 1 つのルールにまとめ、リッスンアドレスを指定した場合はそのアドレス宛てだけを許可します。ルールの無効化・削除時に取り消します。OpenWrt などのルーターやファイアウォールを有効にした Linux ホストで Gately を動かす場合に使います"
+  "autoFirewallHelp": "ローカルのファイアウォール（nftables / iptables / ip6tables）でこのルールがリッスンに成功したポートだけを許可します。連続するポートは 1 つのルールにまとめ、リッスンアドレスを指定した場合はそのアドレス宛てだけを許可します。ルールの無効化・削除時に取り消します。OpenWrt などのルーターやファイアウォールを有効にした Linux ホストで Gately を動かす場合に使います",
+  "protoSpaShort": "ノック",
+  "spaTarget": "ポートノッキング",
+  "routeKnock": "ノック必須",
+  "routeKnockTag": "ノック必須: {name}",
+  "knockDenied": "ノックなしで切断"
 }
