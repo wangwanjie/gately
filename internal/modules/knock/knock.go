@@ -284,11 +284,12 @@ func parsePrefix(s string) (netip.Prefix, error) {
 	return p.Masked(), nil
 }
 
-// lanPrefixes 是“内网免敲门”包含的网段：私有地址、运营商级 NAT（Tailscale 也使用该段）、链路本地与 IPv6 ULA。
-// 回环地址由防火墙规则单独放行（iif lo）。
+// lanPrefixes 是“内网免敲门”包含的网段：私有地址、链路本地与 IPv6 ULA。回环地址由防火墙规则单独放行（iif lo）。
+// 不含运营商级 NAT 的 100.64.0.0/10：CGNAT 下同一运营商的其他用户也使用这段地址，纳入后他们无需敲门；
+// Tailscale 同样使用该段，需要时由用户加到免敲门白名单。
 var lanPrefixes = []netip.Prefix{
 	netip.MustParsePrefix("10.0.0.0/8"), netip.MustParsePrefix("172.16.0.0/12"), netip.MustParsePrefix("192.168.0.0/16"),
-	netip.MustParsePrefix("100.64.0.0/10"), netip.MustParsePrefix("169.254.0.0/16"),
+	netip.MustParsePrefix("169.254.0.0/16"),
 	netip.MustParsePrefix("fc00::/7"), netip.MustParsePrefix("fe80::/10"),
 }
 

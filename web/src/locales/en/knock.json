@@ -97,7 +97,7 @@
     "autoFirewall": "Open firewall port",
     "autoFirewallHelp": "Opens the knock port in the system firewall (OpenWrt fw4, firewalld, ufw, etc.). Once firewall blocking is active it also opens the protected ports, so access is decided only by knocking.",
     "allowLan": "LAN knock-exempt",
-    "allowLanHelp": "LAN, Tailscale (100.64.0.0/10), link-local addresses and this host's IPv6 /64 can reach protected ports without knocking, so you do not lock yourself out. Affects firewall blocking only.",
+    "allowLanHelp": "Private addresses, link-local addresses and the public IPv6 ranges of this host's interfaces (the actual prefix when it is /64 or shorter; only the host's own prefix when it is longer) can reach protected ports without knocking, so you do not lock yourself out. Carrier-grade NAT addresses (100.64.0.0/10) are not included because other customers of the same ISP use them; add that range to the allowlist below if you use Tailscale. Affects firewall blocking only.",
     "allowList": "Knock-exempt allowlist",
     "allowListHelp": "IPs or ranges that can reach protected ports without knocking, one per line. Affects firewall blocking only.",
     "maxAge": "Packet validity",

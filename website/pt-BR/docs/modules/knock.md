@@ -26,7 +26,7 @@ fwknop -n gately-ssh && ssh user@example.com
 Por padrão, o pacote de knock é enviado à porta UDP 62201. Se o Gately estiver atrás de um roteador, encaminhe a UDP 62201 junto com a porta protegida para o host do Gately; com «Liberar no firewall automaticamente» ativado, o firewall local (OpenWrt fw4, firewalld, ufw etc.) libera a porta de knock e, quando o bloqueio entra em vigor, também a porta protegida, e só o knock decide se é possível conectar.
 
 ::: warning Evite se trancar para fora
-- «Knock dispensado na rede local» vem ativado: rede local, Tailscale (100.64.0.0/10), endereços link-local e o /64 IPv6 do próprio host não precisam de knock, e você pode acrescentar uma lista de dispensa nas configurações;
+- «Knock dispensado na rede local» vem ativado: endereços privados, endereços link-local e as faixas IPv6 públicas das interfaces do host (o prefixo da interface quando é /64 ou mais curto; só o próprio prefixo nos /124 ou /128 comuns em servidores na nuvem) não precisam de knock, e você pode acrescentar uma lista de dispensa nas configurações. Endereços de CGNAT (100.64.0.0/10) não entram, porque outros clientes do mesmo provedor também os usam; quem usa Tailscale pode adicionar 100.64.0.0/10 à lista;
 - Com o bloqueio no firewall ativado, as conexões já estabelecidas não são afetadas, e continuam normalmente mesmo depois que a autorização expira;
 - Quando o Gately para normalmente, as regras de bloqueio são removidas; se ele é encerrado à força (`kill -9`, `docker rm -f`), as regras permanecem até o Gately iniciar de novo. Confirme que consegue entrar na máquina pela rede local ou por outro caminho.
 :::

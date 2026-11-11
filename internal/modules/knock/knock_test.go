@@ -586,6 +586,12 @@ func TestExemptPrefixes(t *testing.T) {
 	if len(want) != 0 {
 		t.Fatalf("缺少网段: %v", want)
 	}
+	// 运营商级 NAT 地址不属于内网免敲门，需要时自己加到白名单
+	for _, p := range got {
+		if p.Overlaps(netip.MustParsePrefix("100.64.0.0/10")) {
+			t.Fatalf("内网免敲门不应包含运营商级 NAT 网段: %v", p)
+		}
+	}
 	s.AllowLAN = false
 	if got := s.exemptPrefixes(local); len(got) != 1 {
 		t.Fatalf("关闭内网免敲门后只应有白名单: %v", got)

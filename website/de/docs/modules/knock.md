@@ -26,7 +26,7 @@ fwknop -n gately-ssh && ssh user@example.com
 Knock-Pakete gehen standardmäßig an UDP-Port 62201. Steht Gately hinter einem Router, leiten Sie UDP 62201 zusammen mit dem geschützten Port an den Host von Gately weiter. Mit eingeschalteter „Firewall automatisch freigeben“ öffnet die lokale Firewall (OpenWrt fw4, firewalld, ufw usw.) den Knock-Port automatisch und nach Aktivierung der Blockierung auch den geschützten Port; ob eine Verbindung möglich ist, entscheidet allein der Knock.
 
 ::: warning Sperren Sie sich nicht aus
-- „Interne Netze ohne Knock“ ist standardmäßig an: Das lokale Netz, Tailscale (100.64.0.0/10), Link-Local-Adressen und das IPv6-/64 des Hosts brauchen keinen Knock; in den Einstellungen lässt sich eine weitere Ausnahmeliste ergänzen;
+- „Interne Netze ohne Knock“ ist standardmäßig an: Private Adressen, Link-Local-Adressen und die öffentlichen IPv6-Bereiche der Netzwerkschnittstellen des Hosts (das Präfix der Schnittstelle, wenn es /64 oder kürzer ist; bei den auf Cloud-Servern üblichen /124 oder /128 nur dieses Präfix selbst) brauchen keinen Knock; in den Einstellungen lässt sich eine weitere Ausnahmeliste ergänzen. Carrier-Grade-NAT-Adressen (100.64.0.0/10) gehören nicht dazu, da auch andere Kunden desselben Providers sie nutzen; mit Tailscale tragen Sie 100.64.0.0/10 in die Ausnahmeliste ein;
 - Bei eingeschalteter Firewall-Blockierung bleiben bestehende Verbindungen unberührt, auch nach Ablauf der Freigabe;
 - Beim normalen Beenden löscht Gately die Blockierungsregeln; wird es zwangsweise beendet (`kill -9`, `docker rm -f`), bleiben die Regeln bis zum nächsten Start von Gately bestehen. Stellen Sie sicher, dass Sie sich aus dem lokalen Netz oder auf anderem Weg an diesem Rechner anmelden können.
 :::

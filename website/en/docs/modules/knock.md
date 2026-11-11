@@ -26,7 +26,7 @@ fwknop -n gately-ssh && ssh user@example.com
 Knock packets are sent to UDP port 62201 by default. When Gately sits behind a router, forward UDP 62201 together with the protected port to the host running Gately. With "Auto-open firewall" on, the local firewall (OpenWrt fw4, firewalld, ufw and so on) opens the knock port automatically, and also opens the protected port once blocking is active, so only the knock decides whether a connection works.
 
 ::: warning Avoid locking yourself out
-- "LAN knock-exempt" is on by default: the LAN, Tailscale (100.64.0.0/10), link-local addresses and the IPv6 /64 of this machine need no knock, and you can add a knock-exempt allowlist in the settings;
+- "LAN knock-exempt" is on by default: private addresses, link-local addresses and the public IPv6 ranges of this machine's interfaces (the interface prefix when it is /64 or shorter; only the machine's own prefix for the /124 or /128 common on cloud servers) need no knock, and you can add a knock-exempt allowlist in the settings. Carrier-grade NAT addresses (100.64.0.0/10) are not included, because other customers of the same ISP use them too; Tailscale users can add 100.64.0.0/10 to the allowlist;
 - With firewall blocking on, established connections are unaffected, and they also stay up after a grant expires;
 - When Gately stops normally it removes the blocking rules; when it is killed (`kill -9`, `docker rm -f`) the rules stay until Gately starts again. Make sure you can still log in to the machine from the LAN or another route.
 :::
