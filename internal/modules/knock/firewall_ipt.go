@@ -171,7 +171,7 @@ func (b *iptBackend) ipsetRestore(ctx context.Context, stmts []string) error {
 }
 
 func (b *iptBackend) apply(ctx context.Context, plan fwPlan, now time.Time) error {
-	// 先建集合（规则引用的集合必须存在），再写链，最后把跳转放到正确位置
+	// 先建集合并写入放行（规则引用的集合必须存在），再写链，最后把跳转放到正确位置
 	var create []string
 	for _, f := range b.fams {
 		family := "inet"
@@ -183,19 +183,21 @@ func (b *iptBackend) apply(ctx context.Context, plan fwPlan, now time.Time) erro
 			create = append(create, fmt.Sprintf("create %s hash:ip family %s timeout 0", name, family), "flush "+name)
 		}
 	}
+	// 放行先于跳转写入，跳转生效时已授权的地址不会被丢弃
+	create = append(create, b.ipsetAddStmts(plan.Grants, now)...)
 	if err := b.ipsetRestore(ctx, create); err != nil {
 		return err
 	}
+	// 先写完全部地址族的链，最后再插跳转：某个地址族写入失败时，其他地址族的拦截还没有生效
 	for _, f := range b.fams {
 		if _, err := b.run(ctx, iptRules(plan, f.v6), f.restore, "-w", "--noflush"); err != nil {
 			return err
 		}
+	}
+	for _, f := range b.fams {
 		if err := b.fixJump(ctx, f); err != nil {
 			return err
 		}
-	}
-	if err := b.ipsetRestore(ctx, b.ipsetAddStmts(plan.Grants, now)); err != nil {
-		return err
 	}
 	b.destroyUnused(ctx, plan)
 	return nil

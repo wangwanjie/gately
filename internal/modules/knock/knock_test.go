@@ -40,8 +40,10 @@ type fakeBackend struct {
 	deleted  []fwGrant
 	present  bool
 	applyErr error
-	removed  int
-	counts   fwCounts
+	// removeErr 不为空时 remove 失败（规则保持原状）
+	removeErr error
+	removed   int
+	counts    fwCounts
 }
 
 func (b *fakeBackend) kind() string    { return "fake" }
@@ -50,6 +52,8 @@ func (b *fakeBackend) apply(_ context.Context, plan fwPlan, _ time.Time) error {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	if b.applyErr != nil {
+		// 模拟写入到一半失败：部分规则已经生效
+		b.present = true
 		return b.applyErr
 	}
 	b.applies = append(b.applies, plan)
@@ -76,6 +80,9 @@ func (b *fakeBackend) check(context.Context) (bool, fwCounts, error) {
 func (b *fakeBackend) remove(context.Context) error {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	if b.removeErr != nil {
+		return b.removeErr
+	}
 	b.present = false
 	b.removed++
 	return nil
