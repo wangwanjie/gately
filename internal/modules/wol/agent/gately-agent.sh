@@ -315,7 +315,12 @@ install_service() {
 		die "无法从 $SERVER 下载客户端（HTTP $CODE），请检查地址、凭据与网络: $(head -c 200 "$TMPD/err")"
 	fi
 	mkdir -p "$(dirname "$bin")"
-	cp "$TMPD/resp" "$bin.tmp" && chmod 755 "$bin.tmp" && mv -f "$bin.tmp" "$bin" || die "无法写入 $bin"
+	# 安装正在运行的这份脚本（安装命令已校验过它的 SHA-256）；经管道运行没有脚本文件时才用刚下载的内容
+	src="$TMPD/resp"
+	if [ -f "$0" ] && head -n 1 "$0" | grep -q '^#!/bin/sh' && grep -q 'Gately 网络唤醒客户端' "$0"; then
+		src=$0
+	fi
+	cp "$src" "$bin.tmp" && chmod 755 "$bin.tmp" && mv -f "$bin.tmp" "$bin" || die "无法写入 $bin"
 	# 配置文件只有 root 可读
 	(umask 077 && printf 'SERVER=%s\nTOKEN=%s\nINSECURE=%s\n' "$SERVER" "$TOKEN" "$INSECURE" >"$CONF.tmp") && mv -f "$CONF.tmp" "$CONF" || die "无法写入 $CONF"
 	chmod 600 "$CONF"

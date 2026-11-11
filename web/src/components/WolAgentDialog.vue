@@ -104,9 +104,14 @@ const installEl = ref<HTMLElement | null>(null)
 const uninstallEl = ref<HTMLElement | null>(null)
 
 const serverOk = computed(() => normalizeServer(server.value) !== '')
-const install = computed(() => installCommand(platform.value, server.value, token.value, insecure.value && server.value.trim().startsWith('https://')))
+// 客户端脚本的 SHA-256，按文件名索引：安装命令先校验下载的脚本再执行
+const scriptSums = ref<Record<string, string>>({})
+const scriptName = computed(() => (platform.value === 'windows' ? 'gately-agent.ps1' : 'gately-agent.sh'))
+const install = computed(() =>
+  installCommand(platform.value, server.value, token.value, insecure.value && server.value.trim().startsWith('https://'), scriptSums.value[scriptName.value] ?? ''),
+)
 const uninstall = computed(() => uninstallCommand(platform.value))
-const scriptHref = computed(() => `/api/wol/agent-script/${platform.value === 'windows' ? 'gately-agent.ps1' : 'gately-agent.sh'}`)
+const scriptHref = computed(() => `/api/wol/agent-script/${scriptName.value}`)
 const installHelp = computed(() => {
   switch (platform.value) {
     case 'windows':
@@ -145,12 +150,21 @@ async function loadToken() {
   }
 }
 
+async function loadSums() {
+  try {
+    scriptSums.value = await api.get<Record<string, string>>('/api/wol/agent-scripts')
+  } catch (e) {
+    ElMessage.error((e as Error).message)
+  }
+}
+
 function onOpen() {
   server.value = localStorage.getItem(SERVER_KEY) || apiOrigin
   insecure.value = localStorage.getItem(SERVER_KEY + '.insecure') === '1'
   tokenShown.value = false
   platform.value = guessPlatform(props.info?.os)
   loadToken()
+  loadSums()
 }
 
 // 记住修改过的地址与证书设置

@@ -24,39 +24,48 @@ export function scriptURL(server: string, platform: AgentPlatform): string {
   return `${server}/api/wol/public/agent/${platform === 'windows' ? 'gately-agent.ps1' : 'gately-agent.sh'}`
 }
 
-// installCommand 生成在被控设备上执行的安装命令；地址或凭据无效时返回空串。
-// 凭据经请求体与环境变量传递，不放进 URL（避免出现在代理与访问日志中）
-export function installCommand(platform: AgentPlatform, server: string, token: string, insecure: boolean): string {
+const SHA_RE = /^[0-9a-f]{64}$/
+
+// installCommand 生成在被控设备上执行的安装命令；地址、凭据或脚本校验值无效时返回空串。
+// 凭据经请求体与环境变量传递，不放进 URL（避免出现在代理与访问日志中），也不出现在任何进程的命令行参数里
+// （其他本地用户可以用 ps 看到命令行）。下载的脚本先比对 sha256（GET /api/wol/agent-scripts）再以 root / SYSTEM 执行，
+// 经明文 HTTP 或跳过证书校验下载时被同一网络中的人篡改也不会执行。
+export function installCommand(platform: AgentPlatform, server: string, token: string, insecure: boolean, sha256: string): string {
   const s = normalizeServer(server)
-  if (!s || !validToken(token)) {
+  if (!s || !validToken(token) || !SHA_RE.test(sha256)) {
     return ''
   }
   const url = scriptURL(s, platform)
   if (platform === 'windows') {
-    // Windows PowerShell 5.1 默认可能不启用 TLS 1.2；-Insecure 时下载前也要跳过证书校验
+    // Windows PowerShell 5.1 默认可能不启用 TLS 1.2；-Insecure 时下载前也要跳过证书校验。
+    // $env:TEMP 是当前用户独有的目录；Get-FileHash 的结果为大写，-ne 比较不区分大小写
     const tls = "[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12; "
     const skip = insecure ? '[Net.ServicePointManager]::ServerCertificateValidationCallback = { $true }; ' : ''
     return (
       `${tls}${skip}$env:GATELY_TOKEN = '${token}'; ` +
       `Invoke-WebRequest -UseBasicParsing -Method Post -Body @{ token = $env:GATELY_TOKEN } '${url}' -OutFile "$env:TEMP\\gately-agent.ps1"; ` +
+      `if ((Get-FileHash "$env:TEMP\\gately-agent.ps1" -Algorithm SHA256).Hash -ne '${sha256}') { throw 'gately-agent: checksum mismatch' }; ` +
       `powershell -NoProfile -ExecutionPolicy Bypass -File "$env:TEMP\\gately-agent.ps1" install -Server '${s}'${insecure ? ' -Insecure' : ''}`
     )
   }
   const k = insecure ? ' -k' : ''
   const flag = insecure ? ' --insecure' : ''
-  // 下载到 mktemp 新建的临时文件（只有当前用户可写）再用 sudo 执行：固定的 /tmp 路径可能被其他本地用户
-  // 抢先创建并在执行前改写，借 sudo 以 root 运行任意代码。
-  // macOS 自带 curl；Linux 与 OpenWrt 可能只有 wget（OpenWrt 默认是 uclient-fetch），没有 curl 时用 wget 下载。
-  // OpenWrt 以 root 登录、没有 sudo
-  if (platform === 'macos') {
-    return `f=$(mktemp) && curl -fsSL${k} -d 'token=${token}' -o "$f" '${url}' && sudo GATELY_TOKEN='${token}' sh "$f" install '${s}'${flag}; rm -f "$f"`
-  }
   const wk = insecure ? ' --no-check-certificate' : ''
-  const sudo = platform === 'openwrt' ? '' : 'sudo '
+  // 下载到 mktemp 新建的临时文件（只有当前用户可写）再用 sudo 执行：固定的 /tmp 路径可能被其他本地用户
+  // 抢先创建并在执行前改写，借 sudo 以 root 运行任意代码。凭据由内置命令 printf 写进同样由 mktemp 新建的文件，
+  // 再由 curl -d @文件 / wget --post-file 读取；sudo 用 --preserve-env 传递环境变量，不把凭据写进参数。
+  // macOS 自带 curl；Linux 与 OpenWrt 可能只有 wget（OpenWrt 默认是 uclient-fetch），没有 curl 时用 wget 下载。
+  // sha256sum 不存在时（macOS）用 shasum -a 256。整段放在子 shell 中，环境变量不会留在当前会话里。
+  // OpenWrt 以 root 登录、没有 sudo
+  const sudo = platform === 'openwrt' ? '' : 'sudo --preserve-env=GATELY_TOKEN '
+  const fetch =
+    platform === 'macos'
+      ? `curl -fsSL${k} -d @"$t" -o "$f" '${url}'`
+      : `if command -v curl >/dev/null; then curl -fsSL${k} -d @"$t" -o "$f" '${url}'; else wget -q${wk} --post-file="$t" -O "$f" '${url}'; fi`
   return (
-    `f=$(mktemp) && if command -v curl >/dev/null; then curl -fsSL${k} -d 'token=${token}' -o "$f" '${url}'; ` +
-    `else wget -q${wk} --post-data='token=${token}' -O "$f" '${url}'; fi && ` +
-    `${sudo}GATELY_TOKEN='${token}' sh "$f" install '${s}'${flag}; rm -f "$f"`
+    `(export GATELY_TOKEN='${token}'; f=$(mktemp) && t=$(mktemp) && printf 'token=%s' "$GATELY_TOKEN" >"$t" && ${fetch} && ` +
+    `h=$( (sha256sum "$f" || shasum -a 256 "$f") 2>/dev/null) && { [ "\${h%% *}" = '${sha256}' ] || { echo 'gately-agent: checksum mismatch' >&2; false; }; } && ` +
+    `${sudo}sh "$f" install '${s}'${flag}; r=$?; rm -f "$f" "$t"; exit $r)`
   )
 }
 

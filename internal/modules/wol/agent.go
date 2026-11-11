@@ -321,6 +321,23 @@ func (m *Module) agentRoutes(r module.Router) {
 		m.writeAgentScript(w, req.PathValue("name"))
 	})
 	module.DocOf(r, "GET /agent-script/{name}", module.Doc{Summary: "下载客户端脚本（gately-agent.sh 或 gately-agent.ps1）"})
+	r.HandleFunc("GET /agent-scripts", func(w http.ResponseWriter, _ *http.Request) {
+		httpx.OK(w, agentScriptSums())
+	})
+	module.DocOf(r, "GET /agent-scripts", module.Doc{Summary: "客户端脚本的 SHA-256，按文件名索引；安装命令据此校验下载的脚本", Resp: map[string]string{}})
+}
+
+// agentScriptSums 返回各客户端脚本的 SHA-256（十六进制小写）。安装命令先校验下载的脚本再以 root / SYSTEM 执行，
+// 经明文 HTTP 或跳过证书校验下载时，同一网络中的人篡改脚本也会被发现。
+func agentScriptSums() map[string]string {
+	out := map[string]string{}
+	for name, p := range agentScriptFiles {
+		if b, err := agentScripts.ReadFile(p); err == nil {
+			sum := sha256.Sum256(b)
+			out[name] = hex.EncodeToString(sum[:])
+		}
+	}
+	return out
 }
 
 // handleAgentToken 重新生成设备的客户端凭据并断开旧客户端。
