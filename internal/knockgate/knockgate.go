@@ -14,6 +14,7 @@ import (
 	"net/netip"
 	"slices"
 	"sort"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -50,6 +51,10 @@ type Registry struct {
 	submit Submitter
 	// users 为各模块对敲门规则的引用：模块 -> 规则 key -> 引用方描述
 	users map[string]map[string][]string
+	// spaPorts 为各模块接收敲门报文的 TCP 端口：模块 -> 端口（协议分流中带敲门路由的启用规则的监听端口）
+	spaPorts map[string][]int
+	// protected 为敲门模块在系统防火墙中拦截的端口，形如 "tcp/22"
+	protected []string
 	// now 可在测试中替换
 	now func() time.Time
 }
@@ -260,4 +265,45 @@ func (r *Registry) Submit(packet []byte, src netip.Addr, via string) error {
 		return ErrUnavailable
 	}
 	return f(packet, src.Unmap(), via)
+}
+
+// SetSPAPorts 登记 owner（模块）接收敲门报文的 TCP 端口。敲门模块不会在防火墙中拦截这些端口：
+// 拦截后经这些端口发来的敲门报文（fwknop -P tcp）会在建立连接前被丢弃，永远无法敲门。
+func (r *Registry) SetSPAPorts(owner string, ports []int) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if r.spaPorts == nil {
+		r.spaPorts = map[string][]int{}
+	}
+	if len(ports) == 0 {
+		delete(r.spaPorts, owner)
+		return
+	}
+	r.spaPorts[owner] = slices.Clone(ports)
+}
+
+// SPAPorts 返回各模块登记的接收敲门报文的 TCP 端口，升序、去重。
+func (r *Registry) SPAPorts() []int {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	var out []int
+	for _, ports := range r.spaPorts {
+		out = append(out, ports...)
+	}
+	slices.Sort(out)
+	return slices.Compact(out)
+}
+
+// SetProtected 发布敲门模块在系统防火墙中拦截的端口（形如 "tcp/22"），供协议分流保存敲门路由时检查冲突。
+func (r *Registry) SetProtected(ports []string) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.protected = slices.Clone(ports)
+}
+
+// Protected 判断端口是否被敲门模块的防火墙拦截。
+func (r *Registry) Protected(proto string, port int) bool {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	return slices.Contains(r.protected, proto+"/"+strconv.Itoa(port))
 }

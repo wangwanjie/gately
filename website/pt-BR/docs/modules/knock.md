@@ -97,7 +97,8 @@ ssh -p 443 user@example.com
 - A rota de knock entrega o pacote ao módulo de port knocking, sem encaminhar nem responder; a porta em `-A` precisa estar na lista de portas da regra de knock (por exemplo `tcp/443`);
 - Quando a regra inteira exige knock, a origem que ainda não fez o knock só pode usar a rota de knock, e só depois do knock acessa as outras rotas e o destino padrão;
 - Pacotes de knock só são reconhecidos quando a regra tem uma rota de knock, sem afetar a identificação de protocolos das outras regras;
-- A porta UDP da regra de knock pode ser 0, expondo apenas a porta do roteamento por protocolo.
+- A porta UDP da regra de knock pode ser 0, expondo apenas a porta do roteamento por protocolo;
+- As portas do Roteamento por protocolo com rota de knock e a porta UDP de knock não podem estar numa regra com bloqueio no firewall (verificado ao salvar e ao ativar, porque bloqueá-las impediria a chegada dos próprios pacotes de knock), e são sempre excluídas ao gerar as regras do firewall.
 
 ## Integração com a Prevenção de intrusão
 

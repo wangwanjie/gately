@@ -407,6 +407,8 @@
   "STUN 规则“%s”暂无公网地址": "A regra STUN \"%s\" ainda não tem endereço público",
   "STUN：穿透地址变化": "STUN: endereço de travessia alterado",
   "Server酱 需要填写 SendKey": "O ServerChan requer uma SendKey",
+  "TCP %d 在端口敲门的防火墙拦截中，经该端口发来的敲门报文会被丢弃，请先在端口敲门规则中取消拦截": "TCP %d está bloqueada pelo firewall do port knocking, então os pacotes de knock enviados a ela seriam descartados; remova o bloqueio nas regras de port knocking primeiro",
+  "TCP %d 是协议分流接收敲门报文的端口，不能在防火墙中拦截": "TCP %d é a porta em que o roteamento por protocolo recebe os pacotes de knock e não pode ser bloqueada no firewall",
   "TLS 握手失败: ": "Falha no handshake TLS: ",
   "TLS 握手失败（来自 %s）: %s": "Falha no handshake TLS (de %s): %s",
   "TLS 模式无效": "Modo TLS inválido",

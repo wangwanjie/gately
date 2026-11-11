@@ -18,6 +18,7 @@ import (
 	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/iplist"
 	"github.com/wangwanjie/gately/internal/knockgate"
+	"github.com/wangwanjie/gately/internal/l4proxy"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
 )
@@ -204,6 +205,24 @@ func (m *Module) publishIPSetUsersLocked() {
 		}
 	}
 	knockgate.Default.SetUsers(ID, knocks)
+	knockgate.Default.SetSPAPorts(ID, spaListenPorts(m.cfg.Rules))
+}
+
+// spaListenPorts 返回启用且带敲门路由的规则监听的 TCP 端口：端口敲门模块不会在防火墙中拦截它们，
+// 否则经这些端口发来的敲门报文在建立连接前就被丢弃。
+func spaListenPorts(rules []Rule) []int {
+	var out []int
+	for _, r := range rules {
+		if !r.Enable || !r.hasSPARoute() {
+			continue
+		}
+		ports, err := l4proxy.ParsePorts(r.ListenPorts)
+		if err != nil {
+			continue
+		}
+		out = append(out, ports...)
+	}
+	return out
 }
 
 func ruleLabel(r Rule) string {
@@ -254,7 +273,9 @@ func (m *Module) Routes(r module.Router) {
 		Group:    func(r *Rule) *string { return &r.Group },
 		Validate: func(r *Rule) error { return r.Validate() },
 		Check:    func(r *Rule) error { return r.checkKnocks() },
-		View:     func(r *Rule) any { return m.viewLocked(*r) },
+		// 启用时检查敲门路由的监听端口是否被端口敲门的防火墙拦截
+		CheckEnable: func(r *Rule) error { return r.checkSPAPorts() },
+		View:        func(r *Rule) any { return m.viewLocked(*r) },
 		Changed: func(key string) {
 			m.publishIPSetUsersLocked()
 			m.restartLocked(key)

@@ -97,7 +97,8 @@ ssh -p 443 user@example.com
 - La ruta de llamada entrega el paquete al módulo de Port Knocking, sin reenviarlo ni responder; el puerto de `-A` debe estar en la lista de puertos de la regla de Port Knocking (por ejemplo `tcp/443`);
 - Si toda la regla exige llamada, el origen que no ha llamado solo puede usar la ruta de llamada, y tras llamar puede usar las demás rutas y el destino predeterminado;
 - Los paquetes de llamada solo se reconocen si la regla tiene una ruta de llamada, sin afectar a la detección de protocolos de otras reglas;
-- El puerto UDP de la regla de Port Knocking puede ponerse en 0, de modo que solo quede abierto al exterior el puerto del Enrutamiento por protocolo.
+- El puerto UDP de la regla de Port Knocking puede ponerse en 0, de modo que solo quede abierto al exterior el puerto del Enrutamiento por protocolo;
+- Los puertos de Enrutamiento por protocolo con ruta de llamada y el puerto UDP de llamada no pueden figurar en una regla con bloqueo en cortafuegos (se comprueba al guardar y al activar, porque bloquearlos impediría que llegaran los propios paquetes de llamada), y siempre se excluyen al generar las reglas del cortafuegos.
 
 ## Integración con Prevención de intrusiones
 
