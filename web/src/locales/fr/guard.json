@@ -87,7 +87,8 @@
   },
   "event": {
     "authFailed": "Échec de connexion à la console",
-    "wafBlocked": "Requête bloquée par le WAF"
+    "wafBlocked": "Requête bloquée par le WAF",
+    "knockFailed": "Frappe de port knocking rejetée"
   },
   "sourceHelp": {
     "file": "Lit les nouvelles lignes du fichier et passe au nouveau fichier après une rotation. Un chemin par ligne.",
@@ -228,6 +229,10 @@
     "gately-waf": {
       "name": "Blocages du WAF",
       "desc": "Sources bloquées à plusieurs reprises par le WAF. Ne l'utilisez pas pour des sites derrière un CDN qui transmet l'IP réelle dans un en-tête, sinon ce sont les nœuds du CDN qui seront bannis"
+    },
+    "gately-knock": {
+      "name": "Échecs de port knocking",
+      "desc": "Sources qui envoient à répétition des paquets de frappe dont l'authentification échoue, rejoués ou demandant des ports non autorisés (une même source compte au plus une fois toutes les 5 secondes)"
     },
     "web-decoy": {
       "name": "Chemins leurres web",

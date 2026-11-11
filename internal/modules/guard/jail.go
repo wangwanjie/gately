@@ -28,7 +28,7 @@ const (
 	SourceCommand = "command"
 	// SourceDocker 跟踪 Docker 容器的日志，Target 为容器名
 	SourceDocker = "docker"
-	// SourceEvent 统计 Gately 内部事件（管理后台登录失败、WAF 拦截），Target 为事件类型
+	// SourceEvent 统计 Gately 内部事件（管理后台登录失败、WAF 拦截、端口敲门被拒绝），Target 为事件类型
 	SourceEvent = "event"
 	// SourceWeb 统计 Web 服务的请求（路径探测），Target 为限定的监听 key，每行一个，留空表示全部监听；
 	// Filter、Ignore 为路径规则，见 compilePaths
@@ -36,7 +36,7 @@ const (
 )
 
 // eventSources 是可作为规则来源的内部事件，事件中必须带有来源 IP。
-var eventSources = map[string]bool{events.AuthFailed: true, events.WAFBlocked: true}
+var eventSources = map[string]bool{events.AuthFailed: true, events.WAFBlocked: true, events.KnockFailed: true}
 
 const (
 	defaultMaxRetry = 5
