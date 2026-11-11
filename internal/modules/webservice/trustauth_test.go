@@ -295,3 +295,42 @@ func TestTrustAuthUsersWildcardThirdParty(t *testing.T) {
 		t.Fatalf("通配身份应能登录访问: %d %q", resp.StatusCode, body)
 	}
 }
+
+// 只靠 提供方:* 通配进来的第三方身份认证通过后仍计入路径探测，逐个列出的身份不计入。
+func TestTrustAuthUsersWildcardProbe(t *testing.T) {
+	var mu sync.Mutex
+	var hits []string
+	webprobe.SetHandler(func(h webprobe.Hit) {
+		mu.Lock()
+		hits = append(hits, h.Path)
+		mu.Unlock()
+	})
+	t.Cleanup(func() { webprobe.SetHandler(nil) })
+	l := Listener{Key: "w", Sites: []Site{
+		{Enable: true, Key: "any", Domains: []string{"any.test"}, Type: TypeText, Text: "nope", StatusCode: 404, WebAuth: true,
+			OAuthUsers: []string{"github:*", "google:bob@example.com"}, TrustAuthUsers: true},
+	}}
+	addr, r := startRunner(t, l, nil, nil)
+	session := func(user string) map[string]string {
+		v := r.auth.signBlob("session", siteSession{User: user, Host: "any.test", Scope: "w/any"}, time.Hour)
+		return map[string]string{"Cookie": cookieName(Site{scope: "w/any"}) + "=" + v, "User-Agent": "Mozilla/5.0", "Accept": "text/html"}
+	}
+	wild, _ := get(t, noRedirect(), addr, "any.test", "/wild", session("github:777"))
+	listed, _ := get(t, noRedirect(), addr, "any.test", "/listed", session("google:bob@example.com"))
+	if wild.StatusCode != http.StatusNotFound || listed.StatusCode != http.StatusNotFound {
+		t.Fatalf("两种身份都应通过认证: %d %d", wild.StatusCode, listed.StatusCode)
+	}
+	deadline := time.Now().Add(2 * time.Second)
+	for {
+		mu.Lock()
+		got := strings.Join(hits, ",")
+		mu.Unlock()
+		if got == "/wild" {
+			return
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("应只上报通配身份的请求: %s", got)
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+}
