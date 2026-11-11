@@ -282,6 +282,8 @@ Regras de correspondência:
 
 A opção "Escopo da autenticação" (`authOptional`): quando marcada, a autenticação se aplica apenas aos caminhos marcados como "Obrigatória" nas regras, e todos os outros caminhos são públicos. Essa opção exige que a autenticação básica ou web esteja ativada antes.
 
+A opção "Confiar em usuários autenticados" (`trustAuthUsers`): quando marcada, visitantes autenticados pela autenticação do Gately deste site ignoram o WAF e suas requisições não contam na sondagem de caminhos web da prevenção de intrusão. Serve para quando o WAF ou as regras de 404 / caminhos isca bloqueiam seus próprios usuários por engano. Só contam credenciais emitidas pelo Gately: sessões de autenticação web e de login de terceiros, login único de usuários compartilhados e autenticação básica (credenciais básicas só passam a ser confiáveis depois da primeira verificação bem-sucedida e deixam de ser assim que a senha muda ou o usuário é excluído); autenticação encaminhada e links de compartilhamento não contam. Endereços banidos, controle de acesso por IP e país e limite de taxa continuam valendo, e falhas de login continuam sendo contadas. Essa opção exige que a autenticação básica ou web esteja ativada antes; as requisições de usuários autenticados deixam de ser protegidas pelo WAF, então ative apenas se os usuários forem confiáveis.
+
 ### Links de compartilhamento temporários
 
 Depois que a autenticação básica ou web é ativada, você pode criar links de compartilhamento para um site, para que os visitantes o acessem sem conta:

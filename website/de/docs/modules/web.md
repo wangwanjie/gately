@@ -282,6 +282,8 @@ Zuordnungsregeln:
 
 Die Option „Authentifizierungsbereich“ (`authOptional`): Ist sie angekreuzt, gilt die Authentifizierung nur für Pfade, die in den Regeln als „Erforderlich“ markiert sind, alle anderen Pfade sind öffentlich. Für diese Option muss zuerst die Basic- oder Web-Authentifizierung aktiviert sein.
 
+Die Option „Angemeldeten Benutzern vertrauen“ (`trustAuthUsers`): Ist sie angekreuzt, umgehen Besucher, die von der Gately-Authentifizierung dieser Site authentifiziert wurden, die WAF, und ihre Anfragen werden von der Web-Pfadsondierung des Einbruchschutzes nicht gezählt. Gedacht für WAF-, 404- oder Köderpfad-Regeln, die eigene Benutzer fälschlich blockieren. Es zählen nur von Gately ausgestellte Zugangsdaten: Sitzungen der Web-Authentifizierung und Drittanbieter-Anmeldung, Single Sign-on gemeinsamer Benutzer und Basic-Authentifizierung (Basic-Zugangsdaten gelten erst nach der ersten erfolgreichen Prüfung als vertrauenswürdig und verlieren das Vertrauen sofort, wenn das Passwort geändert oder der Benutzer gelöscht wird); Weiterleitungs-Authentifizierung und Freigabelinks zählen nicht. Gesperrte Adressen, IP- und Länder-Zugriffskontrolle sowie Ratenbegrenzung gelten weiterhin, fehlgeschlagene Anmeldungen werden weiterhin gezählt. Für diese Option muss zuerst die Basic- oder Web-Authentifizierung aktiviert sein; Anfragen angemeldeter Benutzer sind danach nicht mehr durch die WAF geschützt – nur aktivieren, wenn die Benutzer vertrauenswürdig sind.
+
 ### Temporäre Freigabelinks
 
 Ist die Basic- oder Web-Authentifizierung aktiviert, können Sie für eine Site Freigabelinks erstellen, damit Besucher ohne Konto zugreifen können:

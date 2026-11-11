@@ -89,6 +89,8 @@ Há três modelos:
 
 "Bloquear sondagem" no cartão de um listener do serviço web abre esta página com esse listener selecionado e o modelo de iscas aplicado; a regra é guardada e aplicada pela proteção contra intrusões. Ao editar uma regra, você pode colar caminhos de requisição para testar as regras de caminho.
 
+Quando um site ativa "Confiar em usuários autenticados" (veja [Serviço web](./web)), as requisições de visitantes autenticados pela autenticação do Gately desse site não contam na sondagem de caminhos. Requisições a domínios desconhecidos atendidas pelo site padrão e visitantes sem login continuam sendo contados; outras regras, como varreduras de portas, portas isca e falhas de login, não são afetadas.
+
 ::: warning Alcance do bloqueio
 Seja qual for o listener que disparar, o bloqueio vai para a mesma lista e vale para todos os listeners, sites e demais serviços do Gately; com a sincronização do firewall ligada, o firewall do sistema também descarta todo o tráfego desse endereço.
 :::

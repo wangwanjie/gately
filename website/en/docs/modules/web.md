@@ -282,6 +282,8 @@ Matching rules:
 
 The "Authentication scope" option (`authOptional`): when ticked, authentication applies only to paths marked "Required" in the rules, and all other paths are public. This option needs Basic or web authentication to be enabled first.
 
+The "Trust signed-in users" option (`trustAuthUsers`): when ticked, visitors authenticated by this site's Gately authentication skip the WAF and their requests are not counted by intrusion prevention's web path probing. It is meant for WAF, 404 or decoy path rules that block your own users by mistake. Only credentials issued by Gately count: web authentication and third-party login sessions, shared-user single sign-on and basic authentication (basic credentials are trusted only after they are first verified, and stop being trusted as soon as the password changes or the user is deleted); forward authentication and share links do not. Banned addresses, IP and country access control and rate limits still apply, and failed logins are still counted. This option needs Basic or web authentication to be enabled first; requests from signed-in users are no longer protected by the WAF, so only enable it when the users are trusted.
+
 ### Temporary share links
 
 After Basic or web authentication is enabled, you can create share links for a site so that visitors can access it without an account:

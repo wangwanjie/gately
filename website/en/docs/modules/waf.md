@@ -23,6 +23,10 @@ A web application firewall based on [Coraza](https://coraza.io/) and OWASP CRS v
 
 When the admin UI is reverse proxied through a site with WAF, requests carrying a valid administrator session of this instance skip the WAF (SafeLine included). Saved configurations often contain file paths (such as the remarks written by the nginx import), HTML (custom error pages) and scripts (certificate deployment), which CRS path traversal, XSS and command injection rules would block with 403. The session is signed by the server and only the administrator role counts; requests from read-only accounts, visitors and other instances' admin UIs are still checked.
 
+## Signed-in users
+
+When a site enables "Trust signed-in users" (see [Web service](./web)), visitors authenticated by that site's Gately authentication (web authentication, third-party login, shared-user single sign-on, verified basic authentication) skip the WAF. Visitors who are not signed in, requests to the login page itself, forward authentication and share links are still checked.
+
 ## Rule group order
 
 The rule groups of an instance load from top to bottom; use the move up and move down buttons to reorder them. Within the same phase, earlier rules run first:
