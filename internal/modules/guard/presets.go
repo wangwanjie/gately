@@ -57,7 +57,8 @@ Invalid TOTP code! Server time: .* IP: <HOST>\s*$`,
 		MaxRetry: 5, FindTime: 300, BanTime: 86400,
 	},
 	{
-		// 端口敲门对同一来源每 5 秒最多发布一次失败事件，持续伪造报文的来源约半分钟内被封禁
+		// 端口敲门对同一来源每 5 秒最多发布一次失败事件，持续伪造报文的来源约半分钟内被封禁。UDP 来源可以伪造，
+		// HMAC 认证失败的 UDP 包不发布事件，事件中的地址都来自 TCP 连接或持有密钥的客户端，不会被借来封禁任意 IP
 		Preset: "gately-knock", Name: "端口敲门失败", Source: SourceEvent, Target: events.KnockFailed,
 		MaxRetry: 5, FindTime: 600, BanTime: 86400,
 	},

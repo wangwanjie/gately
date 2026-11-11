@@ -257,7 +257,7 @@ func TestKnockGrants(t *testing.T) {
 		t.Fatalf("拦截端口不对: %+v", p.Ports)
 	}
 	pkt := env.packet(t, r, spa.Message{Access: []spa.Access{{Proto: "tcp", Port: 22}}})
-	if err := env.m.handle(pkt, src, "UDP"); err != nil {
+	if err := env.m.handle(pkt, src, transportUDP, "UDP"); err != nil {
 		t.Fatal(err)
 	}
 	if !knockgate.Default.Allowed(src, "r-ssh") {
@@ -279,7 +279,7 @@ func TestKnockGrants(t *testing.T) {
 		t.Fatalf("统计不对: %+v %+v", st, c)
 	}
 	// 同一报文重放被拒绝
-	if err := env.m.handle(pkt, src, "UDP"); err == nil || !strings.Contains(err.Error(), "重放") {
+	if err := env.m.handle(pkt, src, transportUDP, "UDP"); err == nil || !strings.Contains(err.Error(), "重放") {
 		t.Fatalf("重放应被拒绝: %v", err)
 	}
 	// 授权到期
@@ -296,18 +296,18 @@ func TestKnockAddress(t *testing.T) {
 	r2.RequireAddr = true
 	env := newEnv(t, r1, r2)
 	other := netip.MustParseAddr("198.51.100.4")
-	if err := env.m.handle(env.packet(t, env.rule("r-a"), spa.Message{Addr: other}), src, "UDP"); err != nil {
+	if err := env.m.handle(env.packet(t, env.rule("r-a"), spa.Message{Addr: other}), src, transportUDP, "UDP"); err != nil {
 		t.Fatal(err)
 	}
 	if !knockgate.Default.Allowed(other, "r-a") || knockgate.Default.Allowed(src, "r-a") {
 		t.Fatal("应放行报文中的地址而不是来源地址")
 	}
-	err := env.m.handle(env.packet(t, env.rule("r-b"), spa.Message{}), src, "UDP")
+	err := env.m.handle(env.packet(t, env.rule("r-b"), spa.Message{}), src, transportUDP, "UDP")
 	if err == nil || !strings.Contains(err.Error(), "-s") {
 		t.Fatalf("要求写明地址时应拒绝 -s 报文: %v", err)
 	}
 	// 回环、组播地址不能被放行
-	err = env.m.handle(env.packet(t, env.rule("r-a"), spa.Message{Addr: netip.MustParseAddr("127.0.0.1")}), src, "UDP")
+	err = env.m.handle(env.packet(t, env.rule("r-a"), spa.Message{Addr: netip.MustParseAddr("127.0.0.1")}), src, transportUDP, "UDP")
 	if err == nil {
 		t.Fatal("不能放行回环地址")
 	}
@@ -332,7 +332,7 @@ func TestKnockRejects(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			err := env.m.handle(env.packet(t, r, c.msg), src, "UDP")
+			err := env.m.handle(env.packet(t, r, c.msg), src, transportUDP, "UDP")
 			if err == nil || !strings.Contains(err.Error(), c.want) {
 				t.Fatalf("应因 %s 拒绝: %v", c.want, err)
 			}
@@ -346,18 +346,18 @@ func TestKnockRejects(t *testing.T) {
 	if err := other.Validate(); err != nil {
 		t.Fatal(err)
 	}
-	if err := env.m.handle(env.packet(t, other, spa.Message{}), src, "UDP"); err == nil {
+	if err := env.m.handle(env.packet(t, other, spa.Message{}), src, transportUDP, "UDP"); err == nil {
 		t.Fatal("其他密钥应被拒绝")
 	}
 	// HMAC 密钥相同、加密密钥不同：提示加密密钥不一致
 	mixed := r
 	mixed.EncKey = genKey(32)
-	if err := env.m.handle(env.packet(t, mixed, spa.Message{}), src, "UDP"); err == nil || !strings.Contains(err.Error(), "解密") {
+	if err := env.m.handle(env.packet(t, mixed, spa.Message{}), src, transportUDP, "UDP"); err == nil || !strings.Contains(err.Error(), "解密") {
 		t.Fatalf("加密密钥不一致应解密失败: %v", err)
 	}
 	// 非 SPA 报文直接忽略，不计入拒绝、不发事件
 	before := env.m.counters.Rejected
-	if err := env.m.handle([]byte("GET / HTTP/1.1\r\n\r\n"), src, "UDP"); !errors.Is(err, errIgnored) {
+	if err := env.m.handle([]byte("GET / HTTP/1.1\r\n\r\n"), src, transportUDP, "UDP"); !errors.Is(err, errIgnored) {
 		t.Fatalf("非 SPA 报文应被忽略: %v", err)
 	}
 	if env.m.counters.Rejected != before {
@@ -365,27 +365,56 @@ func TestKnockRejects(t *testing.T) {
 	}
 }
 
-// 失败事件按来源限速：同一来源 failInterval 内只发一次，供入侵防护计数。
+// 失败事件按来源限速：同一来源 failInterval 内只发一次，供入侵防护计数。经 TCP 发来的报文来源不可伪造，HMAC 失败也发布。
 func TestRejectEventsRateLimited(t *testing.T) {
 	env := newEnv(t, sshRule("ssh"))
 	other := sshRule("x")
 	_ = other.Validate()
 	for range 5 {
-		_ = env.m.handle(env.packet(t, other, spa.Message{}), src, "UDP")
+		_ = env.m.handle(env.packet(t, other, spa.Message{}), src, transportTCP, "TCP x")
 	}
 	waitFor(t, "失败事件", func() bool { return len(env.eventsOf(events.KnockFailed)) >= 1 })
 	time.Sleep(50 * time.Millisecond)
 	if n := len(env.eventsOf(events.KnockFailed)); n != 1 {
 		t.Fatalf("限速期内应只有 1 个失败事件，实际 %d", n)
 	}
-	if e := env.eventsOf(events.KnockFailed)[0]; e.Fields["ip"] != src.String() {
-		t.Fatalf("事件应带来源地址: %+v", e)
+	if e := env.eventsOf(events.KnockFailed)[0]; e.Fields["ip"] != src.String() || e.Fields["via"] != "tcp" {
+		t.Fatalf("事件应带来源地址与通道: %+v", e)
 	}
 	env.clock.set(env.clock.now().Add(failInterval))
-	_ = env.m.handle(env.packet(t, other, spa.Message{}), src, "UDP")
+	_ = env.m.handle(env.packet(t, other, spa.Message{}), src, transportTCP, "TCP x")
 	waitFor(t, "第二个失败事件", func() bool { return len(env.eventsOf(events.KnockFailed)) == 2 })
 	if env.m.counters.Rejected != 6 {
 		t.Fatalf("拒绝计数应为 6，实际 %d", env.m.counters.Rejected)
+	}
+}
+
+// UDP 报文的来源可以伪造：HMAC 认证失败的 UDP 包只计数，不发布可用于封禁的失败事件；
+// 通过 HMAC 认证但被规则拒绝（如时间戳过期）时才发布，并注明 via=udp。
+func TestUDPRejectEventsTrusted(t *testing.T) {
+	env := newEnv(t, sshRule("ssh"))
+	other := sshRule("x")
+	_ = other.Validate()
+	victim := netip.MustParseAddr("198.51.100.77")
+	for range 3 {
+		if err := env.m.handle(env.packet(t, other, spa.Message{}), victim, transportUDP, "UDP"); err == nil {
+			t.Fatal("其他密钥应被拒绝")
+		}
+	}
+	time.Sleep(50 * time.Millisecond)
+	if n := len(env.eventsOf(events.KnockFailed)); n != 0 {
+		t.Fatalf("HMAC 失败的 UDP 包不应发布失败事件，实际 %d", n)
+	}
+	if env.m.counters.Rejected != 3 {
+		t.Fatalf("仍应计入拒绝: %d", env.m.counters.Rejected)
+	}
+	old := env.packet(t, env.rule("r-ssh"), spa.Message{Timestamp: env.clock.now().Unix() - 600})
+	if err := env.m.handle(old, src, transportUDP, "UDP"); err == nil {
+		t.Fatal("过期报文应被拒绝")
+	}
+	waitFor(t, "HMAC 通过后被拒绝的失败事件", func() bool { return len(env.eventsOf(events.KnockFailed)) == 1 })
+	if e := env.eventsOf(events.KnockFailed)[0]; e.Fields["ip"] != src.String() || e.Fields["via"] != "udp" {
+		t.Fatalf("事件不对: %+v", e)
 	}
 }
 
@@ -398,16 +427,16 @@ func TestBannedAndRateLimit(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { banlist.Default.Unban(banlist.KeyFor(bad)) })
-	if err := env.m.handle(env.packet(t, r, spa.Message{}), bad, "UDP"); !errors.Is(err, errBanned) {
+	if err := env.m.handle(env.packet(t, r, spa.Message{}), bad, transportUDP, "UDP"); !errors.Is(err, errBanned) {
 		t.Fatalf("封禁来源应被丢弃: %v", err)
 	}
 	env.m.stateMu.Lock()
 	env.m.bucket = tokenBucket{rate: 1, burst: 2}
 	env.m.stateMu.Unlock()
 	pkt := env.packet(t, r, spa.Message{})
-	_ = env.m.handle(pkt, src, "UDP")
-	_ = env.m.handle(pkt, src, "UDP")
-	if err := env.m.handle(pkt, src, "UDP"); !errors.Is(err, errLimited) {
+	_ = env.m.handle(pkt, src, transportUDP, "UDP")
+	_ = env.m.handle(pkt, src, transportUDP, "UDP")
+	if err := env.m.handle(pkt, src, transportUDP, "UDP"); !errors.Is(err, errLimited) {
 		t.Fatalf("超出速率应被丢弃: %v", err)
 	}
 }
@@ -452,7 +481,7 @@ func TestFwknopVector(t *testing.T) {
 			continue
 		}
 		env.clock.set(time.Unix(v.Timestamp+5, 0))
-		if err := env.m.handle([]byte(v.Packet), src, "UDP"); err != nil {
+		if err := env.m.handle([]byte(v.Packet), src, transportUDP, "UDP"); err != nil {
 			t.Fatalf("%s: %v", v.Name, err)
 		}
 		ok++
@@ -468,7 +497,7 @@ func TestFwknopVector(t *testing.T) {
 // 修改或停用规则后撤销它的授权，并重建防火墙规则。
 func TestRuleChangeRevokes(t *testing.T) {
 	env := newEnv(t, sshRule("ssh"))
-	if err := env.m.handle(env.packet(t, env.rule("r-ssh"), spa.Message{}), src, "UDP"); err != nil {
+	if err := env.m.handle(env.packet(t, env.rule("r-ssh"), spa.Message{}), src, transportUDP, "UDP"); err != nil {
 		t.Fatal(err)
 	}
 	env.m.mu.Lock()
@@ -489,7 +518,7 @@ func TestRuleChangeRevokes(t *testing.T) {
 // 防火墙规则被外部删除时轮询重建，且带上仍有效的放行；停止模块时删除规则。
 func TestFirewallRecreate(t *testing.T) {
 	env := newEnv(t, sshRule("ssh"))
-	if err := env.m.handle(env.packet(t, env.rule("r-ssh"), spa.Message{}), src, "UDP"); err != nil {
+	if err := env.m.handle(env.packet(t, env.rule("r-ssh"), spa.Message{}), src, transportUDP, "UDP"); err != nil {
 		t.Fatal(err)
 	}
 	waitFor(t, "写入放行", func() bool { return len(env.be.addedList()) == 1 })
@@ -662,7 +691,7 @@ func TestSubmit(t *testing.T) {
 func TestRevoke(t *testing.T) {
 	env := newEnv(t, sshRule("a"), sshRule("b"))
 	for _, k := range []string{"r-a", "r-b"} {
-		if err := env.m.handle(env.packet(t, env.rule(k), spa.Message{}), src, "UDP"); err != nil {
+		if err := env.m.handle(env.packet(t, env.rule(k), spa.Message{}), src, transportUDP, "UDP"); err != nil {
 			t.Fatal(err)
 		}
 	}
