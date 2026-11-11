@@ -5,7 +5,7 @@ fail2ban-style intrusion prevention: Gately finds brute-force attempts in logs, 
 ## Capabilities
 
 - **Log jails**: read log files, the systemd journal, command output (such as `logread -f` on OpenWrt) or Docker container logs, find failures with regular expressions and ban an IP that reaches the count within the time window. Templates are included for SSH, Dropbear, Nginx, Vaultwarden, Home Assistant, Proxmox VE and more, and you can paste sample lines into the editor to test the filters;
-- **Gately events**: failed admin console logins and WAF blocks can also feed a jail, no regular expression needed;
+- **Gately events**: failed admin console logins, WAF blocks and rejected [port knocks](/en/docs/modules/knock) can also feed a jail, no regular expression needed;
 - **Web path probing**: counts requests handled by the web service by listener, path and status code, without reading logs; sources that request decoy paths such as `/.env` or `/.git`, or keep scanning unknown domains, are banned;
 - **Trap ports**: traps on ports this host does not use (23, 135, 1433, 3389, 5900, 6379 and others by default). Any source that connects is banned;
 - **Port-scan detection**: a source that connects to closed ports on this host more often than the threshold per minute is banned;
@@ -57,7 +57,7 @@ Without it, bans still apply to Gately's own services. To read host logs, mount 
 | systemd journal | Service units such as `ssh.service` | Read through `journalctl -f` |
 | Command output | One command such as `logread -f` | Restarted when it exits |
 | Docker container | Container name | Read through the Docker connection of the Docker module |
-| Gately event | Admin login failure / WAF block | Events carry the source IP, no filter needed |
+| Gately event | Admin login failure / WAF block / port knock rejected | Events carry the source IP, no filter needed |
 | Web path probing | Listeners (optional) and path rules | Counts web service requests, see below |
 
 Filters are Go regular expressions (RE2 syntax), one per line, with `<HOST>` standing for the source address, for example:

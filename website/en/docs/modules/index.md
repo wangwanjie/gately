@@ -21,6 +21,7 @@ For modules not compiled into a custom build, the configuration files stay untou
 | OIDC single sign-on | Offers the shared users to Gitea, OpenList, Grafana and other apps over OpenID Connect, replacing Authelia's OIDC provider | [View](/en/docs/modules/oidc) |
 | WAF Firewall | Coraza + OWASP CRS v4 | [View](/en/docs/modules/waf) |
 | Intrusion Prevention | Log jails (fail2ban-style), trap ports and port-scan detection, with bans synced to nftables | [View](/en/docs/modules/guard) |
+| Port Knocking | fwknop-compatible single packet authorization (SPA): firewall blocking of ports such as SSH, with Port Forwarding, Protocol Routing and STUN opening by knock | [View](/en/docs/modules/knock) |
 | Tailscale / NetBird / frp / cloudflared | Networking and NAT traversal with managed official binaries | [View](/en/docs/modules/tunnels) |
 | Docker | Container creation and editing, logs and terminal, Compose, image updates and upgrades, networks and volumes | [View](/en/docs/modules/docker) |
 | Web Terminal | SSH, Telnet, local shell, SFTP file manager, persistent sessions | [View](/en/docs/modules/terminal) |

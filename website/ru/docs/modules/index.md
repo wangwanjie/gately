@@ -21,6 +21,7 @@
 | Единый вход OIDC | Предоставляет общих пользователей Gitea, OpenList, Grafana и другим приложениям по OpenID Connect, заменяет OIDC Authelia | [Открыть](/ru/docs/modules/oidc) |
 | Брандмауэр WAF | Coraza + OWASP CRS v4 | [Открыть](/ru/docs/modules/waf) |
 | Защита от вторжений | Правила журналов (в духе fail2ban), порты-ловушки и обнаружение сканирования, блокировки синхронизируются с nftables | [Открыть](/ru/docs/modules/guard) |
+| Port Knocking | Односторонний стук одним пакетом (SPA), совместимый с fwknop: блокировка SSH и других портов брандмауэром, допуск проброса портов, протокольной маршрутизации и STUN по стуку | [Открыть](/ru/docs/modules/knock) |
 | Tailscale / NetBird / frp / cloudflared | Сеть и проброс во внутреннюю сеть через управляемые официальные бинарные файлы | [Открыть](/ru/docs/modules/tunnels) |
 | Docker | Создание и редактирование контейнеров, журналы и терминал, Compose, обновление образов, сети и тома | [Открыть](/ru/docs/modules/docker) |
 | Веб-терминал | SSH, Telnet, локальный Shell, файловый менеджер SFTP, постоянные сессии | [Открыть](/ru/docs/modules/terminal) |

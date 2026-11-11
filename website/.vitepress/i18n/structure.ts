@@ -57,6 +57,7 @@ export const sidebarGroups: SidebarGroup[] = [
       'modules/oidc',
       'modules/waf',
       'modules/guard',
+      'modules/knock',
       'modules/tunnels',
       'modules/docker',
       'modules/terminal',

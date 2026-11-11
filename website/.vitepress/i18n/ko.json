@@ -38,6 +38,7 @@
       "modules/oidc": "OIDC 통합 로그인",
       "modules/waf": "WAF 방화벽",
       "modules/guard": "침입 방지",
+      "modules/knock": "포트 노킹",
       "modules/tunnels": "Tailscale / NetBird / frp / cloudflared",
       "modules/docker": "Docker 관리",
       "modules/terminal": "웹 터미널",

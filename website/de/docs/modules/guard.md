@@ -5,7 +5,7 @@ Einbruchschutz im Stil von fail2ban: Gately erkennt Brute-Force-Versuche in Prot
 ## Funktionen
 
 - **Protokollregeln**: lesen Protokolldateien, das systemd-Journal, Befehlsausgaben (etwa `logread -f` unter OpenWrt) oder Docker-Container-Protokolle, finden Fehlschläge per regulärem Ausdruck und sperren eine IP, die die Anzahl im Zeitfenster erreicht. Vorlagen gibt es für SSH, Dropbear, Nginx, Vaultwarden, Home Assistant, Proxmox VE und weitere; im Editor lassen sich Beispielzeilen einfügen, um die Filter zu testen;
-- **Gately-Ereignisse**: fehlgeschlagene Anmeldungen an der Oberfläche und WAF-Blockierungen können ebenfalls eine Regel speisen, ganz ohne regulären Ausdruck;
+- **Gately-Ereignisse**: fehlgeschlagene Anmeldungen an der Oberfläche und WAF-Blockierungen und abgelehnte [Port-Knocking](/de/docs/modules/knock)-Knocks können ebenfalls eine Regel speisen, ganz ohne regulären Ausdruck;
 - **Web-Pfadsondierung**: zählt direkt die vom Webdienst verarbeiteten Anfragen nach Listener, Pfad und Statuscode, ganz ohne Protokolle; Quellen, die Köderpfade wie `/.env` oder `/.git` abfragen oder immer wieder unbekannte Domains scannen, werden gesperrt;
 - **Köderports**: Köder auf Ports, die dieser Host nicht nutzt (standardmäßig 23, 135, 1433, 3389, 5900, 6379 und weitere). Jede Quelle, die sich verbindet, wird gesperrt;
 - **Portscan-Erkennung**: Eine Quelle, die sich öfter als der Schwellenwert pro Minute zu geschlossenen Ports dieses Hosts verbindet, wird gesperrt;
@@ -57,7 +57,7 @@ Ohne diese Berechtigung gelten Sperren weiterhin für Gatelys eigene Dienste. Um
 | systemd-Journal | Diensteinheiten wie `ssh.service` | Gelesen über `journalctl -f` |
 | Befehlsausgabe | Ein Befehl wie `logread -f` | Wird nach dem Beenden neu gestartet |
 | Docker-Container | Containername | Gelesen über die Docker-Verbindung des Docker-Moduls |
-| Gately-Ereignis | Fehlgeschlagene Anmeldung / WAF-Blockierung | Ereignisse enthalten die Quell-IP, kein Filter nötig |
+| Gately-Ereignis | Fehlgeschlagene Anmeldung / WAF-Blockierung / abgelehnter Knock | Ereignisse enthalten die Quell-IP, kein Filter nötig |
 | Web-Pfadsondierung | Listener (optional) und Pfadregeln | Zählt Anfragen des Webdienstes, siehe unten |
 
 Filter sind reguläre Ausdrücke in Go (RE2-Syntax), einer pro Zeile; `<HOST>` steht für die Quelladresse, zum Beispiel:

@@ -34,7 +34,8 @@ Cada regla puede usar una lista de permitidos o de bloqueo que decide por IP de 
 - Los bloqueos de Prevención de intrusiones tienen prioridad: una dirección bloqueada se rechaza aunque esté dentro de una subred permitida;
 - Editar la lista no interrumpe la escucha y las conexiones TCP establecidas no se ven afectadas;
 - La tarjeta de la regla muestra cuántas veces se rechazó un origen desde que arrancó Gately (conexiones en TCP, paquetes en UDP), y el nivel de depuración del registro anota cada rechazo;
-- Si hay un proxy inverso u otro reenvío delante de la regla, el origen que ve Gately es su dirección.
+- Si hay un proxy inverso u otro reenvío delante de la regla, el origen que ve Gately es su dirección;
+- Se puede elegir además una regla de Port Knocking como «Requerir llamada»: la dirección de origen debe llamar antes con éxito con fwknop para poder establecer nuevas conexiones durante la duración del acceso; si también hay lista, deben cumplirse ambas, y no se necesitan permisos de cortafuegos. Véase [Port Knocking](/es/docs/modules/knock#gately-entries).
 
 Al importar desde Lucky también se convierte el modo seguro de la regla: el modo de lista de permitidos toma las IP / subredes de la «lista blanca» del filtro IP de Lucky, y el modo de bloqueo toma la «lista negra» y la «lista negra global». Suba `lucky_ipfilter.lkcf` (o una copia completa) en la misma importación; las entradas de base de datos IP, registro automático o rango de direcciones no se pueden importar y el resultado lo indica. Si el modo seguro está desactivado no se define ninguna lista; si apunta a una regla de filtro IP propia, decide su acción: aceptar se importa como lista de permitidos y denegar como lista de bloqueo (también combinada con la lista negra global).
 

@@ -38,6 +38,7 @@
       "modules/oidc": "OIDC 单点登录",
       "modules/waf": "WAF 防火墙",
       "modules/guard": "入侵防护",
+      "modules/knock": "端口敲门",
       "modules/tunnels": "Tailscale / NetBird / frp / cloudflared",
       "modules/docker": "Docker 管理",
       "modules/terminal": "Web 终端",

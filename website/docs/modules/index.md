@@ -21,6 +21,7 @@ Gately 的每项能力是一个独立模块，可单独启停、单独配置，�
 | OIDC 单点登录 | 把共享用户以 OpenID Connect 提供给 Gitea、OpenList、Grafana 等应用登录，可替代 Authelia 的 OIDC | [查看](/docs/modules/oidc) |
 | WAF 防火墙 | Coraza + OWASP CRS v4 | [查看](/docs/modules/waf) |
 | 入侵防护 | 日志规则（类 fail2ban）、诱饵端口、端口扫描检测，封禁同步到 nftables | [查看](/docs/modules/guard) |
+| 端口敲门 | 兼容 fwknop 的单包敲门（SPA），防火墙拦截 SSH 等端口，端口转发、协议分流、STUN 按敲门放行 | [查看](/docs/modules/knock) |
 | Tailscale / NetBird / frp / cloudflared | 托管官方二进制的组网与内网穿透 | [查看](/docs/modules/tunnels) |
 | Docker 管理 | 容器创建与编辑、日志与终端、Compose、镜像更新与升级、网络与卷 | [查看](/docs/modules/docker) |
 | Web 终端 | SSH、Telnet、本机 Shell、SFTP 文件管理、持久会话 | [查看](/docs/modules/terminal) |

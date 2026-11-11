@@ -34,7 +34,8 @@ Chaque règle peut utiliser une liste d'autorisation ou de blocage qui décide d
 - Les bannissements de la Prévention des intrusions passent en premier : une adresse bannie est refusée même dans un sous-réseau autorisé ;
 - Modifier la liste n'interrompt pas l'écoute et les connexions TCP établies ne sont pas affectées ;
 - La carte de la règle affiche le nombre de refus depuis le démarrage de Gately (connexions en TCP, paquets en UDP), et le niveau débogage du journal consigne chaque refus ;
-- Si un proxy inverse ou un autre relais se trouve devant la règle, la source vue par Gately est son adresse.
+- Si un proxy inverse ou un autre relais se trouve devant la règle, la source vue par Gately est son adresse ;
+- Vous pouvez aussi choisir une règle de Port Knocking comme « Exiger un knock » : l'adresse source doit d'abord frapper avec succès via fwknop pour pouvoir établir de nouvelles connexions pendant la durée d'accès ; combiné à une liste, les deux conditions doivent être remplies ; aucun privilège de pare-feu n'est nécessaire, voir [Port Knocking](/fr/docs/modules/knock#gately-entries).
 
 Lors d'une importation depuis Lucky, le mode sécurisé de la règle est aussi converti : le mode liste d'autorisation reprend les IP / sous-réseaux de la « liste blanche » du filtre IP de Lucky, le mode liste de blocage reprend la « liste noire » et la « liste noire globale ». Envoyez `lucky_ipfilter.lkcf` (ou une sauvegarde complète) dans la même importation ; les entrées de base IP, d'enregistrement automatique ou de plage d'adresses ne peuvent pas être importées, le résultat le signale. Si le mode sécurisé est désactivé, aucune liste n'est définie ; s'il désigne une règle de filtre IP personnalisée, son action décide : accepter devient une liste d'autorisation, refuser une liste de blocage (fusionnée elle aussi avec la liste noire globale).
 

@@ -5,7 +5,7 @@ Prévention d'intrusion à la fail2ban : Gately repère les attaques par force b
 ## Fonctionnalités
 
 - **Règles de journaux** : lisent des fichiers journaux, le journal systemd, la sortie d'une commande (comme `logread -f` sur OpenWrt) ou les journaux d'un conteneur Docker, repèrent les échecs avec des expressions régulières et bannissent l'IP qui atteint le nombre d'échecs dans la fenêtre de temps. Des modèles sont fournis pour SSH, Dropbear, Nginx, Vaultwarden, Home Assistant, Proxmox VE et d'autres, et l'éditeur permet de coller des lignes d'exemple pour tester les filtres ;
-- **Événements Gately** : les échecs de connexion à la console et les blocages du WAF peuvent aussi alimenter une règle, sans expression régulière ;
+- **Événements Gately** : les échecs de connexion à la console, les blocages du WAF et les knocks refusés du [Port Knocking](/fr/docs/modules/knock) peuvent aussi alimenter une règle, sans expression régulière ;
 - **Sondage de chemins web** : compte directement les requêtes traitées par le service web par écouteur, chemin et code d’état, sans lire de journal ; les sources qui demandent des chemins leurres comme `/.env` ou `/.git`, ou qui scannent sans cesse des domaines inconnus, sont bannies ;
 - **Ports pièges** : pièges sur des ports que cet hôte n'utilise pas (23, 135, 1433, 3389, 5900, 6379 et d'autres par défaut). Toute source qui s'y connecte est bannie ;
 - **Détection de scan de ports** : une source qui se connecte à des ports fermés de cet hôte plus souvent que le seuil par minute est bannie ;
@@ -57,7 +57,7 @@ Sans cela, les bannissements s'appliquent toujours aux services de Gately. Pour 
 | Journal systemd | Unités de service comme `ssh.service` | Lu via `journalctl -f` |
 | Sortie de commande | Une commande comme `logread -f` | Relancée si elle s'arrête |
 | Conteneur Docker | Nom du conteneur | Lu via la connexion Docker du module Docker |
-| Événement Gately | Échec de connexion / blocage WAF | Les événements contiennent l'IP source, aucun filtre n'est nécessaire |
+| Événement Gately | Échec de connexion / blocage WAF / knock refusé | Les événements contiennent l'IP source, aucun filtre n'est nécessaire |
 | Sondage de chemins web | Écouteurs (facultatif) et règles de chemin | Compte les requêtes du service web, voir plus bas |
 
 Les filtres sont des expressions régulières Go (syntaxe RE2), une par ligne, où `<HOST>` représente l'adresse source, par exemple :

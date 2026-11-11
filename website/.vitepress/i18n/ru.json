@@ -38,6 +38,7 @@
       "modules/oidc": "Единый вход OIDC",
       "modules/waf": "Брандмауэр WAF",
       "modules/guard": "Защита от вторжений",
+      "modules/knock": "Port Knocking",
       "modules/tunnels": "Tailscale / NetBird / frp / cloudflared",
       "modules/docker": "Управление Docker",
       "modules/terminal": "Веб-терминал",

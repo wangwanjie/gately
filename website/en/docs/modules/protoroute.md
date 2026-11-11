@@ -60,6 +60,7 @@ Each route has a switch on its left, and the route lines on the rule card can be
 - When an edited rule is hot-updated (remark, routes, default target, source IP list and so on), routes whose protocol, domains and ALPN stay the same keep their hit counts, also when they are moved, renamed or given a new target; new routes and routes whose protocol, domains or ALPN changed start from 0; disabling and re-enabling or restarting the rule starts all counts from 0;
 - Changes to routes, the default target and the detection timeout take effect immediately without stopping the listener, and open connections are not affected.
 - Each rule can use a source IP allowlist or blocklist (which can reference the subscribed IP lists of Web Services), checked before the protocol is detected: a connection that fails it is closed without reading any data and does not count as a route hit; Intrusion Prevention bans come first. Editing the list does not interrupt listening, and the rule card shows the refusal count. It works the same as in [Port Forwarding](/en/docs/modules/portforward#source-ip-access-control).
+- A whole rule or a single route can be set to "Require knock", so only sources that knocked successfully with fwknop can use it; after adding a "Port Knocking" route (protocol `spa`), clients can send the knock packet to the same port with `fwknop -P tcp`, leaving only that one port open to the outside. See [Port Knocking](/en/docs/modules/knock#gately-entries).
 
 ## Example: replacing haproxy
 
