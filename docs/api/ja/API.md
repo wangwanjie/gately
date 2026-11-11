@@ -484,8 +484,12 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/wol/devices-enable` | `wol:write` | デバイスをウェイクアップ の一括有効化・無効化 |
 | POST | `/api/wol/devices-delete` | `wol:write` | デバイスをウェイクアップ の一括削除 |
 | PUT | `/api/wol/devices-group` | `wol:write` | デバイスをウェイクアップ のグループを一括設定 |
+| GET | `/api/wol/devices/{key}/secrets` | `wol:write` | シークレットを平文で表示 |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | デバイスにウェイクアップのマジックパケットを送信 |
-| POST | `/api/wol/devices/{key}/shutdown` | `wol:write,webterminal:write` | リモートシャットダウン |
+| POST | `/api/wol/devices/{key}/shutdown` | `wol:write,webterminal:write` | リモートシャットダウン（エージェント方式では再起動・スリープも可能） |
+| GET | `/api/wol/agents` | `wol:read` | エージェントの接続情報（デバイスの key で索引） |
+| POST | `/api/wol/devices/{key}/agent-token` | `wol:write` | エージェントのトークンを再生成します。接続中のエージェントは切断されます |
+| GET | `/api/wol/agent-script/{name}` | `wol:read` | エージェントのスクリプトをダウンロード（gately-agent.sh または gately-agent.ps1） |
 | GET | `/api/wol/status` | `wol:read` | デバイスのオンライン状態を表示 |
 | GET | `/api/wol/ssh-targets` | `wol:read,webterminal:read` | リモートシャットダウンに使える SSH 接続の一覧 |
 | GET | `/api/wol/bemfa` | `wol:read` | Bemfa 連携設定と接続状態 |
@@ -3063,6 +3067,18 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `timeout` | integer |
 | `username` | string |
 
+### wol.AgentInfo
+
+| フィールド | 型 |
+| --- | --- |
+| `addr` | string |
+| `host` | string |
+| `lastSeen` | integer |
+| `online` | boolean |
+| `os` | string |
+| `since` | integer |
+| `version` | string |
+
 ### wol.BemfaSettings
 
 | フィールド | 型 |
@@ -3083,6 +3099,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | フィールド | 型 |
 | --- | --- |
+| `agentToken` | string |
 | `bemfaTopic` | string |
 | `broadcastIps` | 配列 of string |
 | `checkAddr` | string |
@@ -3096,6 +3113,18 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `repeat` | integer |
 | `shutdownCommand` | string |
 | `shutdownConn` | string |
+| `shutdownHttp` | `wol.HTTPAction` |
+| `shutdownMode` | string |
+
+### wol.HTTPAction
+
+| フィールド | 型 |
+| --- | --- |
+| `body` | string |
+| `headers` | 配列 of string |
+| `insecure` | boolean |
+| `method` | string |
+| `url` | string |
 
 ### wol.SSHTarget
 
@@ -3112,6 +3141,12 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `settings` | `wol.BemfaSettings` |
 | `status` | `wol.BemfaStatus` |
+
+### wol.powerRequest
+
+| フィールド | 型 |
+| --- | --- |
+| `action` | string |
 
 ### wol.shutdownResult
 

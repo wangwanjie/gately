@@ -484,8 +484,12 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/wol/devices-enable` | `wol:write` | 批量启用或停用唤醒设备 |
 | POST | `/api/wol/devices-delete` | `wol:write` | 批量删除唤醒设备 |
 | PUT | `/api/wol/devices-group` | `wol:write` | 批量设置唤醒设备分组 |
+| GET | `/api/wol/devices/{key}/secrets` | `wol:write` | 查看密钥明文 |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | 向设备发送唤醒魔术包 |
-| POST | `/api/wol/devices/{key}/shutdown` | `wol:write,webterminal:write` | 远程关机 |
+| POST | `/api/wol/devices/{key}/shutdown` | `wol:write,webterminal:write` | 远程关机（客户端方式还可重启、睡眠） |
+| GET | `/api/wol/agents` | `wol:read` | 客户端连接信息，按设备 key 索引 |
+| POST | `/api/wol/devices/{key}/agent-token` | `wol:write` | 重新生成客户端凭据，已连接的客户端随即断开 |
+| GET | `/api/wol/agent-script/{name}` | `wol:read` | 下载客户端脚本（gately-agent.sh 或 gately-agent.ps1） |
 | GET | `/api/wol/status` | `wol:read` | 查看设备在线状态 |
 | GET | `/api/wol/ssh-targets` | `wol:read,webterminal:read` | 列出可用于远程关机的 SSH 连接 |
 | GET | `/api/wol/bemfa` | `wol:read` | 巴法云接入设置与连接状态 |
@@ -3063,6 +3067,18 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `timeout` | integer |
 | `username` | string |
 
+### wol.AgentInfo
+
+| 字段 | 类型 |
+| --- | --- |
+| `addr` | string |
+| `host` | string |
+| `lastSeen` | integer |
+| `online` | boolean |
+| `os` | string |
+| `since` | integer |
+| `version` | string |
+
 ### wol.BemfaSettings
 
 | 字段 | 类型 |
@@ -3083,6 +3099,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | 字段 | 类型 |
 | --- | --- |
+| `agentToken` | string |
 | `bemfaTopic` | string |
 | `broadcastIps` | 数组 of string |
 | `checkAddr` | string |
@@ -3096,6 +3113,18 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `repeat` | integer |
 | `shutdownCommand` | string |
 | `shutdownConn` | string |
+| `shutdownHttp` | `wol.HTTPAction` |
+| `shutdownMode` | string |
+
+### wol.HTTPAction
+
+| 字段 | 类型 |
+| --- | --- |
+| `body` | string |
+| `headers` | 数组 of string |
+| `insecure` | boolean |
+| `method` | string |
+| `url` | string |
 
 ### wol.SSHTarget
 
@@ -3112,6 +3141,12 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `settings` | `wol.BemfaSettings` |
 | `status` | `wol.BemfaStatus` |
+
+### wol.powerRequest
+
+| 字段 | 类型 |
+| --- | --- |
+| `action` | string |
 
 ### wol.shutdownResult
 

@@ -484,8 +484,12 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | PUT | `/api/wol/devices-enable` | `wol:write` | Activer ou désactiver en lot : Réveiller l'appareil |
 | POST | `/api/wol/devices-delete` | `wol:write` | Supprimer en lot : Réveiller l'appareil |
 | PUT | `/api/wol/devices-group` | `wol:write` | Définir le groupe de plusieurs éléments : Réveiller l'appareil |
+| GET | `/api/wol/devices/{key}/secrets` | `wol:write` | Afficher les secrets en clair |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | Envoyer un paquet magique de réveil à l'appareil |
-| POST | `/api/wol/devices/{key}/shutdown` | `wol:write,webterminal:write` | Arrêt à distance |
+| POST | `/api/wol/devices/{key}/shutdown` | `wol:write,webterminal:write` | Arrêt à distance (la méthode par agent permet aussi le redémarrage et la mise en veille) |
+| GET | `/api/wol/agents` | `wol:read` | Informations de connexion des agents, indexées par la key de l'appareil |
+| POST | `/api/wol/devices/{key}/agent-token` | `wol:write` | Régénérer le jeton de l'agent ; les agents connectés seront déconnectés immédiatement |
+| GET | `/api/wol/agent-script/{name}` | `wol:read` | Télécharger le script de l'agent (gately-agent.sh ou gately-agent.ps1) |
 | GET | `/api/wol/status` | `wol:read` | Consulter l'état en ligne des appareils |
 | GET | `/api/wol/ssh-targets` | `wol:read,webterminal:read` | Lister les connexions SSH utilisables pour l’arrêt à distance |
 | GET | `/api/wol/bemfa` | `wol:read` | Réglages et état de connexion Bemfa |
@@ -3063,6 +3067,18 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `timeout` | integer |
 | `username` | string |
 
+### wol.AgentInfo
+
+| Champ | Type |
+| --- | --- |
+| `addr` | string |
+| `host` | string |
+| `lastSeen` | integer |
+| `online` | boolean |
+| `os` | string |
+| `since` | integer |
+| `version` | string |
+
 ### wol.BemfaSettings
 
 | Champ | Type |
@@ -3083,6 +3099,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 
 | Champ | Type |
 | --- | --- |
+| `agentToken` | string |
 | `bemfaTopic` | string |
 | `broadcastIps` | Tableau de string |
 | `checkAddr` | string |
@@ -3096,6 +3113,18 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `repeat` | integer |
 | `shutdownCommand` | string |
 | `shutdownConn` | string |
+| `shutdownHttp` | `wol.HTTPAction` |
+| `shutdownMode` | string |
+
+### wol.HTTPAction
+
+| Champ | Type |
+| --- | --- |
+| `body` | string |
+| `headers` | Tableau de string |
+| `insecure` | boolean |
+| `method` | string |
+| `url` | string |
 
 ### wol.SSHTarget
 
@@ -3112,6 +3141,12 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | --- | --- |
 | `settings` | `wol.BemfaSettings` |
 | `status` | `wol.BemfaStatus` |
+
+### wol.powerRequest
+
+| Champ | Type |
+| --- | --- |
+| `action` | string |
 
 ### wol.shutdownResult
 

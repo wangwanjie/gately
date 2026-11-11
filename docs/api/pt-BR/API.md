@@ -484,8 +484,12 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | PUT | `/api/wol/devices-enable` | `wol:write` | Ativar ou desativar em lote: Despertar dispositivo |
 | POST | `/api/wol/devices-delete` | `wol:write` | Excluir em lote: Despertar dispositivo |
 | PUT | `/api/wol/devices-group` | `wol:write` | Definir o grupo de vários itens: Despertar dispositivo |
+| GET | `/api/wol/devices/{key}/secrets` | `wol:write` | Ver segredos em texto puro |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | Enviar o pacote mágico de despertar ao dispositivo |
-| POST | `/api/wol/devices/{key}/shutdown` | `wol:write,webterminal:write` | Desligamento remoto |
+| POST | `/api/wol/devices/{key}/shutdown` | `wol:write,webterminal:write` | Desligamento remoto (o método por agente também permite reiniciar e suspender) |
+| GET | `/api/wol/agents` | `wol:read` | Informações de conexão dos agentes, indexadas pela key do dispositivo |
+| POST | `/api/wol/devices/{key}/agent-token` | `wol:write` | Gerar novamente o token do agente; os agentes conectados serão desconectados imediatamente |
+| GET | `/api/wol/agent-script/{name}` | `wol:read` | Baixar o script do agente (gately-agent.sh ou gately-agent.ps1) |
 | GET | `/api/wol/status` | `wol:read` | Ver o estado online do dispositivo |
 | GET | `/api/wol/ssh-targets` | `wol:read,webterminal:read` | Listar conexões SSH utilizáveis para desligamento remoto |
 | GET | `/api/wol/bemfa` | `wol:read` | Configurações e status de conexão do Bemfa |
@@ -3063,6 +3067,18 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `timeout` | integer |
 | `username` | string |
 
+### wol.AgentInfo
+
+| Campo | Tipo |
+| --- | --- |
+| `addr` | string |
+| `host` | string |
+| `lastSeen` | integer |
+| `online` | boolean |
+| `os` | string |
+| `since` | integer |
+| `version` | string |
+
 ### wol.BemfaSettings
 
 | Campo | Tipo |
@@ -3083,6 +3099,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 
 | Campo | Tipo |
 | --- | --- |
+| `agentToken` | string |
 | `bemfaTopic` | string |
 | `broadcastIps` | Array de string |
 | `checkAddr` | string |
@@ -3096,6 +3113,18 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `repeat` | integer |
 | `shutdownCommand` | string |
 | `shutdownConn` | string |
+| `shutdownHttp` | `wol.HTTPAction` |
+| `shutdownMode` | string |
+
+### wol.HTTPAction
+
+| Campo | Tipo |
+| --- | --- |
+| `body` | string |
+| `headers` | Array de string |
+| `insecure` | boolean |
+| `method` | string |
+| `url` | string |
 
 ### wol.SSHTarget
 
@@ -3112,6 +3141,12 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | --- | --- |
 | `settings` | `wol.BemfaSettings` |
 | `status` | `wol.BemfaStatus` |
+
+### wol.powerRequest
+
+| Campo | Tipo |
+| --- | --- |
+| `action` | string |
 
 ### wol.shutdownResult
 

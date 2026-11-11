@@ -5092,6 +5092,32 @@
         },
         "type": "object"
       },
+      "wol.AgentInfo": {
+        "properties": {
+          "addr": {
+            "type": "string"
+          },
+          "host": {
+            "type": "string"
+          },
+          "lastSeen": {
+            "type": "integer"
+          },
+          "online": {
+            "type": "boolean"
+          },
+          "os": {
+            "type": "string"
+          },
+          "since": {
+            "type": "integer"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "wol.BemfaSettings": {
         "properties": {
           "enable": {
@@ -5122,6 +5148,9 @@
       },
       "wol.Device": {
         "properties": {
+          "agentToken": {
+            "type": "string"
+          },
           "bemfaTopic": {
             "type": "string"
           },
@@ -5166,6 +5195,35 @@
           },
           "shutdownConn": {
             "type": "string"
+          },
+          "shutdownHttp": {
+            "$ref": "#/components/schemas/wol.HTTPAction"
+          },
+          "shutdownMode": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "wol.HTTPAction": {
+        "properties": {
+          "body": {
+            "type": "string"
+          },
+          "headers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "insecure": {
+            "type": "boolean"
+          },
+          "method": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
           }
         },
         "type": "object"
@@ -5194,6 +5252,14 @@
           },
           "status": {
             "$ref": "#/components/schemas/wol.BemfaStatus"
+          }
+        },
+        "type": "object"
+      },
+      "wol.powerRequest": {
+        "properties": {
+          "action": {
+            "type": "string"
           }
         },
         "type": "object"
@@ -53208,6 +53274,128 @@
         "x-token-allowed": true
       }
     },
+    "/api/wol/agent-script/{name}": {
+      "get": {
+        "description": "Required permission: `wol:read`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Download the agent script (gately-agent.sh or gately-agent.ps1)",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "wol:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/wol/agents": {
+      "get": {
+        "description": "Required permission: `wol:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "$ref": "#/components/schemas/wol.AgentInfo"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Agent connection info, indexed by device key",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "wol:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/wol/bemfa": {
       "get": {
         "description": "Required permission: `wol:read`.",
@@ -53894,6 +54082,77 @@
         "x-token-allowed": true
       }
     },
+    "/api/wol/devices/{key}/agent-token": {
+      "post": {
+        "description": "Required permission: `wol:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Regenerate the agent token; connected agents will be disconnected",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "wol:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/wol/devices/{key}/copy": {
       "post": {
         "description": "Required permission: `wol:write,webterminal:write`.",
@@ -54041,6 +54300,77 @@
         "x-token-allowed": true
       }
     },
+    "/api/wol/devices/{key}/secrets": {
+      "get": {
+        "description": "Required permission: `wol:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "View secrets in plain text",
+        "tags": [
+          "Wake-on-LAN"
+        ],
+        "x-required-scope": "wol:write",
+        "x-token-allowed": true
+      }
+    },
     "/api/wol/devices/{key}/shutdown": {
       "post": {
         "description": "Required permission: `wol:write,webterminal:write`.",
@@ -54054,6 +54384,15 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/wol.powerRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "content": {
@@ -54101,7 +54440,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Remote shutdown",
+        "summary": "Remote shutdown (the agent method can also restart and sleep)",
         "tags": [
           "Wake-on-LAN"
         ],

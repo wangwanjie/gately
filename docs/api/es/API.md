@@ -484,8 +484,12 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | PUT | `/api/wol/devices-enable` | `wol:write` | Activar o desactivar en lote: Activar un dispositivo |
 | POST | `/api/wol/devices-delete` | `wol:write` | Eliminar en lote: Activar un dispositivo |
 | PUT | `/api/wol/devices-group` | `wol:write` | Asignar grupo a varios elementos: Activar un dispositivo |
+| GET | `/api/wol/devices/{key}/secrets` | `wol:write` | Ver secretos en texto plano |
 | POST | `/api/wol/devices/{key}/wake` | `wol:write` | Enviar un paquete mágico de activación al dispositivo |
-| POST | `/api/wol/devices/{key}/shutdown` | `wol:write,webterminal:write` | Apagado remoto |
+| POST | `/api/wol/devices/{key}/shutdown` | `wol:write,webterminal:write` | Apagado remoto (el método de agente también permite reiniciar y suspender) |
+| GET | `/api/wol/agents` | `wol:read` | Información de conexión de los agentes, indexada por la key del dispositivo |
+| POST | `/api/wol/devices/{key}/agent-token` | `wol:write` | Regenerar el token del agente; los agentes conectados se desconectarán de inmediato |
+| GET | `/api/wol/agent-script/{name}` | `wol:read` | Descargar el script del agente (gately-agent.sh o gately-agent.ps1) |
 | GET | `/api/wol/status` | `wol:read` | Ver el estado en línea del dispositivo |
 | GET | `/api/wol/ssh-targets` | `wol:read,webterminal:read` | Listar las conexiones SSH utilizables para apagado remoto |
 | GET | `/api/wol/bemfa` | `wol:read` | Configuración y estado de conexión de Bemfa |
@@ -3063,6 +3067,18 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `timeout` | integer |
 | `username` | string |
 
+### wol.AgentInfo
+
+| Campo | Tipo |
+| --- | --- |
+| `addr` | string |
+| `host` | string |
+| `lastSeen` | integer |
+| `online` | boolean |
+| `os` | string |
+| `since` | integer |
+| `version` | string |
+
 ### wol.BemfaSettings
 
 | Campo | Tipo |
@@ -3083,6 +3099,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 
 | Campo | Tipo |
 | --- | --- |
+| `agentToken` | string |
 | `bemfaTopic` | string |
 | `broadcastIps` | Lista de string |
 | `checkAddr` | string |
@@ -3096,6 +3113,18 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `repeat` | integer |
 | `shutdownCommand` | string |
 | `shutdownConn` | string |
+| `shutdownHttp` | `wol.HTTPAction` |
+| `shutdownMode` | string |
+
+### wol.HTTPAction
+
+| Campo | Tipo |
+| --- | --- |
+| `body` | string |
+| `headers` | Lista de string |
+| `insecure` | boolean |
+| `method` | string |
+| `url` | string |
 
 ### wol.SSHTarget
 
@@ -3112,6 +3141,12 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | --- | --- |
 | `settings` | `wol.BemfaSettings` |
 | `status` | `wol.BemfaStatus` |
+
+### wol.powerRequest
+
+| Campo | Tipo |
+| --- | --- |
+| `action` | string |
 
 ### wol.shutdownResult
 
