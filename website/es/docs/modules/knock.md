@@ -80,7 +80,7 @@ Las conexiones reenviadas por el Reenvío de puertos de Gately a `127.0.0.1:22` 
 
 ## Entradas de Gately abiertas por llamada {#gately-entries}
 
-En el «Control de acceso por IP» de Reenvío de puertos, Enrutamiento por protocolo y STUN (reenvío integrado) se puede elegir una regla de Port Knocking como «Requerir llamada»: la dirección de origen debe tener una autorización vigente de esa regla para establecer nuevas conexiones (UDP se comprueba por paquete) y el resto de conexiones se cierran; si también hay lista de permitidos / de bloqueo, deben cumplirse ambas. La regla de Port Knocking puede tener desactivado el «Bloqueo en el cortafuegos» y servir solo a estas entradas.
+En el «Control de acceso por IP» de Reenvío de puertos, Enrutamiento por protocolo y STUN (reenvío integrado) se puede elegir una regla de Port Knocking como «Requerir llamada»: la dirección de origen debe tener una autorización vigente de esa regla para establecer nuevas conexiones (en UDP, al crear una sesión nueva: cuando la autorización caduca, las sesiones existentes como WireGuard se siguen reenviando, igual que las conexiones establecidas con el bloqueo en cortafuegos; las listas de permitidos / de bloqueo se siguen comprobando por paquete) y el resto de conexiones se cierran; si también hay lista de permitidos / de bloqueo, deben cumplirse ambas. La regla de Port Knocking puede tener desactivado el «Bloqueo en el cortafuegos» y servir solo a estas entradas.
 
 El Enrutamiento por protocolo también permite elegir «Requerir llamada» en una ruta concreta; por ejemplo, en el puerto 443 la ruta HTTPS está abierta a todos y la ruta SSH solo a las direcciones que han llamado con éxito.
 

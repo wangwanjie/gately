@@ -106,15 +106,6 @@ func (r *runner) setAccess(a iplist.Access) {
 	r.log.Infof("来源 IP 访问控制已更新，穿透未中断")
 }
 
-// allows 判断来源能否使用内置转发。
-func (r *runner) allows(addr net.Addr) bool {
-	if r.filter.Load().Allows(addr) {
-		return true
-	}
-	r.stats.denied.Add(1)
-	return false
-}
-
 func (r *runner) start(parent context.Context) {
 	ctx, cancel := context.WithCancel(parent)
 	r.cancel = cancel

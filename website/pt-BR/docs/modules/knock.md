@@ -80,7 +80,7 @@ Conexões encaminhadas pelo redirecionamento de portas do Gately para `127.0.0.1
 
 ## Entradas do Gately liberadas por knock {#gately-entries}
 
-Em «Controle de acesso por IP» de redirecionamento de portas, roteamento por protocolo e STUN (encaminhamento integrado), é possível escolher uma regra de knock como «Exigir knock»: o endereço de origem precisa ter uma autorização ainda válida dessa regra para estabelecer novas conexões (no UDP, a verificação é por pacote), e as demais conexões são fechadas; quando combinada com lista de permissões / de bloqueio, as duas condições precisam ser atendidas. A regra de knock pode desativar o «Bloqueio no firewall» e servir apenas a essas entradas.
+Em «Controle de acesso por IP» de redirecionamento de portas, roteamento por protocolo e STUN (encaminhamento integrado), é possível escolher uma regra de knock como «Exigir knock»: o endereço de origem precisa ter uma autorização ainda válida dessa regra para estabelecer novas conexões (no UDP, ao criar uma sessão nova: depois que a autorização expira, sessões existentes como WireGuard continuam sendo encaminhadas, como as conexões estabelecidas no bloqueio pelo firewall; listas de permissões / de bloqueio continuam sendo verificadas por pacote), e as demais conexões são fechadas; quando combinada com lista de permissões / de bloqueio, as duas condições precisam ser atendidas. A regra de knock pode desativar o «Bloqueio no firewall» e servir apenas a essas entradas.
 
 O roteamento por protocolo também permite «Exigir knock» em uma rota individual, por exemplo: na porta 443, a rota HTTPS fica aberta a todos e a rota SSH só aos endereços que fizeram o knock.
 

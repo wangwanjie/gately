@@ -80,7 +80,7 @@ Connections forwarded by Gately Port Forwarding to local `127.0.0.1:22` come fro
 
 ## Gately entries open by knock {#gately-entries}
 
-In the "IP access control" of Port Forwarding, Protocol Routing and STUN (built-in forwarding) you can pick a knock rule as "Require knock": a source address needs an unexpired grant of that rule to open a new connection (UDP is checked per packet), and other connections are closed at once; when set together with an allowlist / blocklist, both must be satisfied. A knock rule can turn off "Firewall blocking" and serve only these entries.
+In the "IP access control" of Port Forwarding, Protocol Routing and STUN (built-in forwarding) you can pick a knock rule as "Require knock": a source address needs an unexpired grant of that rule to open a new connection (for UDP, when a new session is created: after the grant expires, existing sessions such as WireGuard keep being forwarded, the same as established connections under firewall blocking; allowlists / blocklists are still checked per packet), and other connections are closed at once; when set together with an allowlist / blocklist, both must be satisfied. A knock rule can turn off "Firewall blocking" and serve only these entries.
 
 Protocol Routing can also set "Require knock" on a single route, for example on port 443 the HTTPS route is open to everyone while the SSH route is open only to addresses that knocked successfully.
 
