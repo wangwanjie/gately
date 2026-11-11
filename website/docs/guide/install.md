@@ -97,7 +97,8 @@ apk add --allow-untrusted ./gately_<版本>_openwrt_amd64.apk
 - 安装后自动启用开机自启并启动，管理界面为 `http://<路由器地址>:16680`。配置目录 `/etc/gately`，刷写固件（sysupgrade）时自动保留；
 - 升级：下载新版安装包，同样执行 `opkg install` 或 `apk add --allow-untrusted`，配置保留。停用了开机自启的，升级后保持停用；
 - 卸载：`opkg remove gately` 或 `apk del gately`。配置目录会保留，彻底删除再执行 `rm -rf /etc/gately`；
-- 安装前会核对设备架构。装错架构时 opkg 会中止安装；OpenWrt 25.12 的 apk 仍会装上但不启动服务，执行 `apk del gately` 后换用正确的安装包；
+- 安装前会核对设备架构。装错架构时 opkg 会中止安装；OpenWrt 25.12 的 apk 仍会继续安装：已装有能运行的 gately 时（升级、覆盖安装），会保留原有程序，服务保持原样，并提示「已保留原有程序」；首次安装时会装上但不启动服务，执行 `apk del gately` 后换用正确的安装包；
+- 把安装包注入固件或从离线目录安装时，目录里只放与设备架构一致的 gately 安装包（`luci-app-gately` 为 all 架构，可一并放入）；
 - 程序约 32 MB，安装需要同等大小的可用空间（`df -h /overlay` 查看），适合 x86 软路由、ARM64 盒子等存储较大的设备，16 MB / 32 MB 闪存的路由器装不下；
 - arm 安装包需要 ARMv7 且带硬件浮点，ARMv5 / ARMv6 以及 `arm_cortex-a9` 这类没有浮点单元的设备暂不支持。
 
