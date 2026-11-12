@@ -21,6 +21,7 @@ import (
 	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/i18n"
 	"github.com/wangwanjie/gately/internal/logbuf"
+	"github.com/wangwanjie/gately/internal/outbound"
 	"github.com/wangwanjie/gately/internal/resolver"
 	"github.com/wangwanjie/gately/internal/thirdauth"
 )
@@ -69,6 +70,10 @@ type Settings struct {
 	// UpdateProxy 为检查更新与在线升级访问 GitHub 时使用的代理，支持 http、https 与 socks5；
 	// 为空时直连（仍遵循 HTTPS_PROXY 等环境变量）
 	UpdateProxy string `json:"updateProxy"`
+	// RestrictOutbound 为 true 时，管理员配置的出站 HTTP 请求（Webhook、通知、IP 列表订阅、DDNS 回调与查询地址、
+	// 更新与程序下载、第三方登录等）在拨号层拒绝访问回环、私网、链路本地（含 169.254.169.254）与 ULA 等地址，
+	// 同时覆盖重定向与 DNS 重绑定。默认关闭以保持内网用法；反向代理上游、WOL、存储挂载等面向内网的功能不受影响
+	RestrictOutbound bool `json:"restrictOutbound"`
 	// DisableUpdateCheck 为 true 时不再定期检查更新与安全公告，只在点击“检查更新”时访问 GitHub。
 	// 默认开启：安全修复版本发布后需要尽快让用户知道
 	DisableUpdateCheck bool `json:"disableUpdateCheck"`
@@ -244,6 +249,8 @@ func (a *App) applyRuntime() {
 	// 已通过 Validate，解析不会失败
 	extra, _ := httpx.ParsePrefixes(s.TrustedProxies)
 	httpx.SetProxyTrust(!s.DisableProxyHeaders, extra)
+	// 出站请求限制随设置立即生效，已缓存的客户端在下次建立连接时读取
+	outbound.SetRestricted(s.RestrictOutbound)
 	// 时区变化时才替换 time.Local：它是全局变量，其他协程随时在读，未改时不重复写
 	if s.TimeZone != "" && time.Local.String() != s.TimeZone {
 		if loc, err := time.LoadLocation(s.TimeZone); err == nil {

@@ -26,6 +26,7 @@ import (
 	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/i18n"
 	"github.com/wangwanjie/gately/internal/logbuf"
+	"github.com/wangwanjie/gately/internal/outbound"
 	"github.com/wangwanjie/gately/internal/version"
 )
 
@@ -186,16 +187,14 @@ func validateProxyURL(raw string) error {
 func (a *App) updateClient() *http.Client {
 	p := a.settingsSnapshot().UpdateProxy
 	if p == "" {
-		return http.DefaultClient
+		return outbound.DefaultClient()
 	}
 	u, err := url.Parse(p)
 	if err != nil {
 		// 保存设置时已校验，这里仅防御异常配置
-		return http.DefaultClient
+		return outbound.DefaultClient()
 	}
-	tr := http.DefaultTransport.(*http.Transport).Clone()
-	tr.Proxy = http.ProxyURL(u)
-	return &http.Client{Transport: tr}
+	return &http.Client{Transport: outbound.ProxyTransport(u)}
 }
 
 // releaseAPI 是检查更新使用的地址，只在用户点击“检查更新”或执行在线升级时访问。

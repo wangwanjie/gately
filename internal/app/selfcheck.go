@@ -15,6 +15,7 @@ import (
 	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/ipsource"
 	"github.com/wangwanjie/gately/internal/module"
+	"github.com/wangwanjie/gately/internal/outbound"
 )
 
 // cgnatPrefix 是运营商级 NAT 使用的地址段。
@@ -178,7 +179,7 @@ func natChecks(publicIPv4, publicIPv6 string) []module.CheckResult {
 // clockCheck 用 HTTP 响应的 Date 头估算本机时钟偏差；偏差过大会让两步验证码、证书校验失败。
 // 依次尝试各个公网 IP 查询地址，取第一个带有效 Date 头的响应（不论状态码），全部失败时只作提示。
 func clockCheck(ctx context.Context) module.CheckResult {
-	client := &http.Client{Timeout: 8 * time.Second}
+	client := outbound.NewClient(8 * time.Second)
 	for _, u := range append(append([]string{}, ipsource.DefaultIPv4URLs...), ipsource.DefaultIPv6URLs...) {
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
 		if err != nil {

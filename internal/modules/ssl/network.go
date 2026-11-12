@@ -14,6 +14,8 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/miekg/dns"
+
+	"github.com/wangwanjie/gately/internal/outbound"
 )
 
 // 本文件实现签发证书时限定 IPv4 / IPv6 出站（ACMEConfig.Network）。
@@ -38,7 +40,7 @@ func forceNetwork(c *http.Client, network string) *http.Client {
 	if !ok || tr == nil {
 		tr = http.DefaultTransport.(*http.Transport)
 	}
-	tr = tr.Clone()
+	tr = outbound.Guard(tr.Clone())
 	// 经代理（如 HTTPS_PROXY）访问时，到目标的连接由代理建立，本机只连代理；
 	// 代理地址按自身情况选择地址族，不受 network 限制，否则代理只有另一种地址时会连不上
 	var proxies sync.Map
@@ -51,10 +53,12 @@ func forceNetwork(c *http.Client, network string) *http.Client {
 			return u, err
 		}
 	}
-	d := &net.Dialer{Timeout: 30 * time.Second, KeepAlive: 30 * time.Second}
+	// 直连目标时校验解析后的真实 IP；连接代理本身不受限
+	d := outbound.NewDialer(30 * time.Second)
+	plain := &net.Dialer{Timeout: 30 * time.Second, KeepAlive: 30 * time.Second}
 	tr.DialContext = func(ctx context.Context, _, addr string) (net.Conn, error) {
 		if _, ok := proxies.Load(addr); ok {
-			return d.DialContext(ctx, "tcp", addr)
+			return plain.DialContext(ctx, "tcp", addr)
 		}
 		return d.DialContext(ctx, network, addr)
 	}

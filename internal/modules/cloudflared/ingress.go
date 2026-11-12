@@ -17,6 +17,7 @@ import (
 
 	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/module"
+	"github.com/wangwanjie/gately/internal/outbound"
 )
 
 // 令牌隧道的路由规则（ingress）保存在 Cloudflare 的远程配置中，cloudflared 运行时自动拉取，
@@ -151,7 +152,7 @@ type cfClient struct {
 }
 
 func newCFClient(apiToken string) *cfClient {
-	return &cfClient{token: apiToken, hc: &http.Client{Timeout: 30 * time.Second}}
+	return &cfClient{token: apiToken, hc: outbound.NewClient(30 * time.Second)}
 }
 
 func (c *cfClient) call(ctx context.Context, method, path string, body, out any) error {

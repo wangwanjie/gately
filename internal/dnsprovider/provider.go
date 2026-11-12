@@ -13,6 +13,8 @@ import (
 	"net/http"
 	"sort"
 	"strings"
+
+	"github.com/wangwanjie/gately/internal/outbound"
 )
 
 // 记录同步结果
@@ -147,7 +149,7 @@ func New(name string, c Credentials, hc *http.Client) (Provider, error) {
 		return nil, fmt.Errorf("不支持的 DNS 服务商 %q", name)
 	}
 	if hc == nil {
-		hc = http.DefaultClient
+		hc = outbound.DefaultClient()
 	}
 	return e.factory(c, hc)
 }

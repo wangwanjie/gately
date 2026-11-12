@@ -27,6 +27,7 @@ import (
 	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
+	"github.com/wangwanjie/gately/internal/outbound"
 	"github.com/wangwanjie/gately/internal/proc"
 )
 
@@ -116,7 +117,7 @@ func New() *Module {
 	return &Module{
 		runs:       map[string]*instRuntime{},
 		versions:   map[string]string{},
-		httpClient: func() *http.Client { return http.DefaultClient },
+		httpClient: func() *http.Client { return outbound.DefaultClient() },
 	}
 }
 
