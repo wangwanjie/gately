@@ -26,7 +26,9 @@ type limiter struct {
 	burst    float64
 	maxConns int
 	buckets  map[string]*bucket
-	now      func() time.Time
+	// lastSweep 为最近一次清理过期桶的时间
+	lastSweep time.Time
+	now       func() time.Time
 }
 
 func newLimiter(c RateLimit) *limiter {
@@ -39,7 +41,10 @@ func (l *limiter) acquire(key string) (release func(), retry time.Duration, ok b
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	now := l.now()
-	if len(l.buckets) > 10000 {
+	// 来源很多时清理过期桶，但最多每秒一次：分布式扫描或攻击时表里有上万个近期来源，
+	// 每个请求都遍历整张表会在限流器的全局锁内花掉几百微秒
+	if len(l.buckets) > 10000 && now.Sub(l.lastSweep) >= time.Second {
+		l.lastSweep = now
 		for k, b := range l.buckets {
 			if b.conns == 0 && now.Sub(b.last) > 10*time.Minute {
 				delete(l.buckets, k)
