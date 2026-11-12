@@ -87,3 +87,5 @@ La altura del área de registros se puede ajustar: arrastra la barra situada deb
 ## Copia de seguridad y restauración
 
 «Ajustes» ofrece la copia de seguridad y la restauración de la configuración, y es también el punto de entrada para importar configuraciones de Lucky.
+
+Al restaurar puede marcar «Conservar la cuenta de administrador actual» (parámetro de API `keepAccount=1`): se ignora `account.json` de la copia, la cuenta, la contraseña, la verificación en dos pasos y los usuarios de solo lectura actuales no cambian, y también se puede restaurar una copia sin `account.json`, lo que resulta útil para traer la configuración de otra instancia. Mientras se use la contraseña predeterminada, la restauración se rechaza; cambie antes la contraseña.

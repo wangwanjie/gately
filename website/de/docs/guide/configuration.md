@@ -87,3 +87,5 @@ Die Höhe des Protokollbereichs lässt sich anpassen: Ziehen Sie die Leiste daru
 ## Sicherung und Wiederherstellung
 
 Unter „Einstellungen“ finden Sie Konfigurationssicherung und -wiederherstellung; dort liegt auch der Einstieg für den Import von Lucky-Konfigurationen.
+
+Beim Wiederherstellen können Sie „Aktuelles Administratorkonto beibehalten“ aktivieren (API-Parameter `keepAccount=1`): `account.json` aus der Sicherung wird ignoriert, aktuelles Konto, Passwort, Zwei-Faktor-Authentifizierung und Nur-Lese-Benutzer bleiben unverändert, und auch eine Sicherung ohne `account.json` lässt sich wiederherstellen – passend, um die Konfiguration einer anderen Instanz zu übernehmen. Solange das Standardpasswort verwendet wird, wird die Wiederherstellung abgelehnt; ändern Sie zuerst das Passwort.

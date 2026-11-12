@@ -87,3 +87,5 @@ The log area can be resized: drag the bar below it (on touch screens, press and 
 ## Backup and restore
 
 "Settings" provides configuration backup and restore, and is also the entry point for importing Lucky configurations.
+
+When restoring, you can check "Keep the current administrator account" (API parameter `keepAccount=1`): `account.json` in the backup is ignored, the current account, password, two-step verification and read-only users stay unchanged, and a backup without `account.json` can also be restored, which suits moving the configuration of another instance over. Restoring is refused while the default password is in use; change the password first.
