@@ -18,7 +18,7 @@ Design principles:
 | Backend | Go 1.26+ | Mature libraries such as lego, pion/stun, frp, cloudflared, coraza, and rclone can be reused directly; static builds cross-compile to arm/arm64/mips/riscv routers and NAS boxes |
 | HTTP | Standard library `net/http` (Go 1.22 routing syntax) | Minimal dependencies, easy to audit |
 | Storage | One plain-text JSON file per module, written atomically | Easy to import, back up, and git diff |
-| Authentication | bcrypt passwords + HMAC-signed session tokens, login failure rate limiting, TOTP support planned | No external dependencies |
+| Authentication | bcrypt passwords + HMAC-signed session tokens, login failure rate limiting, TOTP two-step verification and Passkeys | No external dependencies |
 | Logging | In-memory ring buffer per module + batched JSON Lines files (size-based rotation, restored after restart; Web access logs archived and compressed daily) + incremental fetch endpoint | Simple log polling endpoint, incremental refresh in the frontend |
 | Frontend | Vue 3 + TypeScript + Vite + Element Plus, bundled with `go:embed` | Rich component set, fast development |
 | Release | GoReleaser multi-arch binaries + multi-arch Docker images | — |

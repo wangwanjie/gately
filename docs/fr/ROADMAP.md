@@ -18,7 +18,7 @@ Principes de conception :
 | Backend | Go 1.26+ | Réutilisation directe de bibliothèques éprouvées comme lego, pion/stun, frp, cloudflared, coraza et rclone ; compilation statique et compilation croisée pour les routeurs et NAS arm/arm64/mips/riscv |
 | HTTP | Bibliothèque standard `net/http` (syntaxe de routage de Go 1.22) | Dépendances minimales, audit facilité |
 | Stockage | Un fichier JSON en clair par module, écriture atomique | Import, sauvegarde et git diff faciles |
-| Authentification | Mot de passe bcrypt + jeton de session signé HMAC, limitation des échecs de connexion, TOTP prévu ensuite | Aucune dépendance externe |
+| Authentification | Mot de passe bcrypt + jeton de session signé HMAC, limitation des échecs de connexion, authentification à deux facteurs TOTP et Passkeys | Aucune dépendance externe |
 | Journaux | Tampon circulaire en mémoire par module + fichiers JSON Lines écrits par lots (rotation par taille, restaurés après redémarrage ; journaux d'accès web archivés et compressés par jour) + API de lecture incrémentale | API d'interrogation des journaux simple, rafraîchissement incrémental côté frontend |
 | Frontend | Vue 3 + TypeScript + Vite + Element Plus, empaqueté avec `go:embed` | Composants nombreux, développement rapide |
 | Publication | Binaires multi-architectures avec GoReleaser + images Docker multi-architectures | — |

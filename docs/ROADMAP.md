@@ -18,7 +18,7 @@
 | 后端 | Go 1.26+ | 可直接复用 lego、pion/stun、frp、cloudflared、coraza、rclone 等成熟库；静态编译，交叉编译到 arm/arm64/mips/riscv 路由器和 NAS |
 | HTTP | 标准库 `net/http`（Go 1.22 路由语法） | 依赖最少，便于审计 |
 | 存储 | 每模块一个明文 JSON 文件，原子写入 | 便于导入、备份和 git diff |
-| 认证 | bcrypt 密码 + HMAC 签名会话令牌，登录失败限流，后续支持 TOTP | 无外部依赖 |
+| 认证 | bcrypt 密码 + HMAC 签名会话令牌，登录失败限流，支持 TOTP 两步验证与 Passkey | 无外部依赖 |
 | 日志 | 每模块内存环形缓冲 + JSON Lines 批量落盘（按大小轮转，重启后恢复；Web 访问日志按天压缩归档）+ 增量拉取接口 | 日志轮询接口简单，前端增量刷新 |
 | 前端 | Vue 3 + TypeScript + Vite + Element Plus，`go:embed` 打包 | 组件丰富，开发效率高 |
 | 发布 | GoReleaser 多架构二进制 + 多架构 Docker 镜像 | — |
