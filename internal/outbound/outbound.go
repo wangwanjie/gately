@@ -18,6 +18,8 @@ import (
 	"net/http"
 	"net/netip"
 	"net/url"
+	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"syscall"
@@ -134,20 +136,28 @@ func NewDialer(timeout time.Duration) *net.Dialer {
 
 // CheckHost 在经代理访问时预先检查目标主机：连接由代理建立，本机拨号层看不到真实目标，
 // 因此开关开启时在这里解析并检查（尽力而为，无法防御代理侧的 DNS 重绑定）。
+// 本机解析失败的主机名一律拒绝：代理侧可能把它解析成内网地址，例如只有代理所在网络才能解析的内网域名。
 func CheckHost(ctx context.Context, host string) error {
 	if !restricted.Load() || host == "" {
 		return nil
 	}
-	if ip, err := netip.ParseAddr(host); err == nil {
+	host = strings.TrimSuffix(host, ".")
+	ip, err := netip.ParseAddr(host)
+	if err != nil {
+		// 127.1、0x7f000001、2130706433、0177.0.0.1 这类写法会被代理按 inet_aton 解释为 IPv4
+		if v4, ok := parseLegacyIPv4(host); ok {
+			ip, err = v4, nil
+		}
+	}
+	if err == nil {
 		if IsBlocked(ip) {
 			return fmt.Errorf("%w: %s", ErrBlocked, ip)
 		}
 		return nil
 	}
 	addrs, err := resolver.Current().LookupNetIP(ctx, "ip", host)
-	if err != nil {
-		// 解析失败时交给代理处理
-		return nil
+	if err != nil || len(addrs) == 0 {
+		return fmt.Errorf("%w: %s（本机无法解析）", ErrBlocked, host)
 	}
 	for _, a := range addrs {
 		if IsBlocked(a) {
@@ -155,6 +165,47 @@ func CheckHost(ctx context.Context, host string) error {
 		}
 	}
 	return nil
+}
+
+// parseLegacyIPv4 按 inet_aton 的规则解析 IPv4 写法：1~4 段，每段可为十进制、0 开头的八进制或 0x 开头的十六进制，
+// 最后一段占满剩余字节。纯域名返回 false。
+func parseLegacyIPv4(s string) (netip.Addr, bool) {
+	parts := strings.Split(s, ".")
+	if len(parts) == 0 || len(parts) > 4 {
+		return netip.Addr{}, false
+	}
+	vals := make([]uint64, len(parts))
+	for i, p := range parts {
+		if p == "" {
+			return netip.Addr{}, false
+		}
+		base := 10
+		switch {
+		case len(p) > 2 && (p[:2] == "0x" || p[:2] == "0X"):
+			base, p = 16, p[2:]
+		case len(p) > 1 && p[0] == '0':
+			base, p = 8, p[1:]
+		}
+		v, err := strconv.ParseUint(p, base, 32)
+		if err != nil {
+			return netip.Addr{}, false
+		}
+		vals[i] = v
+	}
+	// 前面各段各占一个字节，最后一段占满剩余字节
+	var n uint64
+	for i, v := range vals[:len(vals)-1] {
+		if v > 0xff {
+			return netip.Addr{}, false
+		}
+		n |= v << (24 - 8*uint(i))
+	}
+	last := vals[len(vals)-1]
+	if last >= 1<<(8*uint(5-len(vals))) {
+		return netip.Addr{}, false
+	}
+	n |= last
+	return netip.AddrFrom4([4]byte{byte(n >> 24), byte(n >> 16), byte(n >> 8), byte(n)}), true
 }
 
 // Guard 给 Transport 加上限制并返回它本身：直连时在拨号层校验解析后的 IP；

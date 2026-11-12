@@ -134,7 +134,10 @@ func TestProxyTargetChecked(t *testing.T) {
 		t.Fatalf("响应异常: %q", body)
 	}
 	before := hits
-	for _, target := range []string{"http://169.254.169.254/", "http://10.1.2.3/", "http://localhost/"} {
+	// 代理会按 inet_aton 解释 127.1、0x7f000001 这类写法；本机解析不了的主机名也可能被代理解析成内网地址
+	for _, target := range []string{"http://169.254.169.254/", "http://10.1.2.3/", "http://localhost/",
+		"http://127.1/", "http://0x7f000001/", "http://2130706433/", "http://0177.0.0.1/", "http://127.0.0.1./",
+		"http://no-such-host.invalid/"} {
 		if _, err := client.Get(target); !errors.Is(err, ErrBlocked) {
 			t.Fatalf("%s 经代理访问也应被拒绝，实际: %v", target, err)
 		}
@@ -158,3 +161,21 @@ func TestWrapKeepsCustomRoundTripper(t *testing.T) {
 type roundTripFunc func(*http.Request) (*http.Response, error)
 
 func (f roundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) { return f(r) }
+
+func TestParseLegacyIPv4(t *testing.T) {
+	cases := map[string]string{
+		"127.1": "127.0.0.1", "0x7f000001": "127.0.0.1", "2130706433": "127.0.0.1", "0177.0.0.1": "127.0.0.1",
+		"10.1.2.3": "10.1.2.3", "169.254.43518": "169.254.169.254", "0xa9.0xfe.0xa9.0xfe": "169.254.169.254",
+	}
+	for in, want := range cases {
+		got, ok := parseLegacyIPv4(in)
+		if !ok || got.String() != want {
+			t.Errorf("%s 得到 %v %v，期望 %s", in, got, ok, want)
+		}
+	}
+	for _, in := range []string{"example.com", "1.2.3.4.5", "256.1.1.1", "1..2", "", "0x", "4294967296", "1.2.65536"} {
+		if _, ok := parseLegacyIPv4(in); ok {
+			t.Errorf("%q 不应解析为 IPv4", in)
+		}
+	}
+}
