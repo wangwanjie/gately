@@ -75,6 +75,16 @@ func Validate(list []string) error {
 	return nil
 }
 
+// installMu 保护对 net.DefaultResolver 的写入与 Current 的读取，避免保存 DNS 设置时与并发的出站检查竞争。
+var installMu sync.RWMutex
+
+// Current 返回当前生效的全局解析器，供需要显式解析的代码使用（不要直接读 net.DefaultResolver）。
+func Current() *net.Resolver {
+	installMu.RLock()
+	defer installMu.RUnlock()
+	return net.DefaultResolver
+}
+
 // Install 设置全局解析器；list 为空时恢复系统默认。无效项被忽略并返回错误。
 func Install(list []string) error {
 	var (
@@ -89,6 +99,8 @@ func Install(list []string) error {
 		}
 		servers = append(servers, srv)
 	}
+	installMu.Lock()
+	defer installMu.Unlock()
 	if len(servers) == 0 {
 		net.DefaultResolver = &net.Resolver{}
 		return errors.Join(errs...)

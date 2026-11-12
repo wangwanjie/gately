@@ -13,6 +13,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/wangwanjie/gately/internal/resolver"
 	"net"
 	"net/http"
 	"net/netip"
@@ -118,7 +119,7 @@ func CheckHost(ctx context.Context, host string) error {
 		}
 		return nil
 	}
-	addrs, err := net.DefaultResolver.LookupNetIP(ctx, "ip", host)
+	addrs, err := resolver.Current().LookupNetIP(ctx, "ip", host)
 	if err != nil {
 		// 解析失败时交给代理处理
 		return nil
@@ -150,10 +151,17 @@ func Guard(tr *http.Transport) *http.Transport {
 	guarded := NewDialer(30 * time.Second)
 	plain := &net.Dialer{Timeout: 30 * time.Second, KeepAlive: 30 * time.Second}
 	tr.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
+		// 标准库的 Dialer 在 Resolver 为空时会直接读 net.DefaultResolver，与保存 DNS 设置时的写入竞争；
+		// 这里每次拨号取受锁保护的当前解析器，复制一份拨号器后再使用
+		r := resolver.Current()
 		if _, ok := proxies.Load(addr); ok {
-			return plain.DialContext(ctx, network, addr)
+			d := *plain
+			d.Resolver = r
+			return d.DialContext(ctx, network, addr)
 		}
-		return guarded.DialContext(ctx, network, addr)
+		d := *guarded
+		d.Resolver = r
+		return d.DialContext(ctx, network, addr)
 	}
 	return tr
 }
