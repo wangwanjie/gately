@@ -18,6 +18,7 @@ import (
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
 	"github.com/wangwanjie/gately/internal/mountfs"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func TestWebDAVUsers(t *testing.T) {
@@ -179,5 +180,36 @@ func TestServeThrottle(t *testing.T) {
 	}
 	if c := do("198.51.100.6:1000", "good"); c == 401 || c == 429 {
 		t.Fatalf("其他来源不应受影响: %d", c)
+	}
+}
+
+// 近期验证通过的凭据不占限流名额：同一来源有多个正在校验的请求时，凭据正确的请求不被误拒。
+func TestServeThrottleKnownGood(t *testing.T) {
+	m := &Module{handlers: map[string]*userHandler{}, logs: logbuf.New(20, log.New(io.Discard, "", 0))}
+	hash, err := bcrypt.GenerateFromPassword([]byte("good"), bcrypt.MinCost)
+	if err != nil {
+		t.Fatal(err)
+	}
+	m.handlers["u"] = newUserHandler(User{Name: "u", Password: string(hash), Root: t.TempDir()})
+	do := func(pass string) int {
+		req := httptest.NewRequest("GET", "/", nil)
+		req.RemoteAddr = "198.51.100.7:1000"
+		req.SetBasicAuth("u", pass)
+		w := httptest.NewRecorder()
+		m.serve(w, req)
+		return w.Code
+	}
+	if c := do("good"); c == 401 || c == 429 {
+		t.Fatalf("首次正确密码应通过: %d", c)
+	}
+	// 模拟同一来源有大量并发的校验正在进行
+	for i := 0; i < fileusers.ThrottleMaxFailures; i++ {
+		m.throttle.Reserve("198.51.100.7")
+	}
+	if c := do("good"); c == 401 || c == 429 {
+		t.Fatalf("近期验证通过的凭据不应被进行中的校验挡住: %d", c)
+	}
+	if c := do("bad"); c != 429 {
+		t.Fatalf("未缓存的凭据仍按名额限流: %d", c)
 	}
 }

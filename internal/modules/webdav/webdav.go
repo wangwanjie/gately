@@ -303,17 +303,26 @@ func (m *Module) lookupLocked(name string) (uh *userHandler, shared bool) {
 
 func (m *Module) serve(w http.ResponseWriter, r *http.Request) {
 	name, pass, ok := r.BasicAuth()
-	// 带凭据的请求先占位：来源地址的失败次数达到上限后直接拒绝，不再校验密码
 	ip := httpx.ClientIP(r)
-	if ok && !m.throttle.Reserve(ip) {
+	// 失败次数已达上限的来源一律拒绝，包括凭据正确的请求，避免被拒绝的来源借响应判断密码是否猜中
+	if ok && m.throttle.Blocked(ip) {
 		http.Error(w, "429 Too Many Requests", http.StatusTooManyRequests)
 		return
 	}
 	m.mu.Lock()
 	uh, shared := m.lookupLocked(name)
 	m.mu.Unlock()
-	authed := ok && uh != nil && fileusers.CheckPassword(uh.user.Password, pass)
-	if ok {
+	var authed bool
+	if ok && uh != nil && fileusers.KnownGood(uh.user.Password, pass) {
+		// 近期验证通过的凭据不占限流名额：客户端并发的多个请求（rclone 等）不会因进行中的校验被误拒
+		authed = true
+	} else if ok {
+		// 其余带凭据的请求先占位：失败次数加进行中的校验达到上限时直接拒绝，不再校验密码
+		if !m.throttle.Reserve(ip) {
+			http.Error(w, "429 Too Many Requests", http.StatusTooManyRequests)
+			return
+		}
+		authed = uh != nil && fileusers.CheckPassword(uh.user.Password, pass)
 		m.throttle.Done(ip, authed)
 	}
 	if !authed {

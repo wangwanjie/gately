@@ -125,6 +125,18 @@ func CheckPassword(stored, given string) bool {
 	return subtle.ConstantTimeCompare([]byte(stored), []byte(given)) == 1
 }
 
+// KnownGood 只做廉价判断：明文密码直接比较，bcrypt 哈希只查近期验证通过的缓存，不运行 bcrypt。
+// 返回 true 表示凭据正确；返回 false 时调用方应走限流后再用 CheckPassword 完整校验。
+func KnownGood(stored, given string) bool {
+	if stored == "" {
+		return false
+	}
+	if strings.HasPrefix(stored, "$2") {
+		return verifiedHit(verifiedKey(stored, given), time.Now())
+	}
+	return subtle.ConstantTimeCompare([]byte(stored), []byte(given)) == 1
+}
+
 // Registry 保存当前的共享用户，并在修改后通知各文件服务。
 type Registry struct {
 	mu    sync.RWMutex
