@@ -37,7 +37,7 @@ Gately 可以直接读取 Lucky 的 `.lkcf` 配置文件或 Lucky「备份配置
 | lucky_webdav.lkcf | WebDAV | 用户的挂载列表转为多个目录，同名同密码的用户合并；引用存储管理的挂载解析为对应的本地目录 |
 | lucky_ftpserver.lkcf | FTP | 监听端口、被动端口范围、TLS 与超时参数，以及用户（处理方式同 WebDAV） |
 | lucky_storagemanagement.lkcf | 存储挂载 | 本地目录与 WebDAV 存储；阿里云盘、系统挂载与访问代理不迁移 |
-| lucky_frp.lkcf | frp | 第一个客户端实例（服务端地址、令牌、传输协议与代理）与第一个服务端实例；访问者、插件代理与控制台不迁移 |
+| lucky_frp.lkcf | frp | 每个客户端、服务端实例分别导入为 Gately 的 frpc、frps 实例（服务端地址、令牌、传输协议与代理）；访问者、插件代理与控制台不迁移 |
 | lucky_cloudflared.lkcf | Cloudflare 隧道 | 使用隧道令牌的隧道（API 令牌一并迁移）；Access 访问端与只填写 API 令牌的隧道不迁移 |
 | lucky_base.lkcf | 全局设置、Web 服务 | 仅允许内网访问、登录失败上限、会话时长、时区、自定义 DNS（含 doh@ 写法）、GC 参数、PROXY 协议可信来源。管理端口、安全入口、管理员账号与两步验证不迁移 |
 
@@ -79,7 +79,7 @@ Gately 镜像内置 `sh`、`bash` 与 `curl`，常见的通知脚本可以直接
   - QQ 的 openid 对每个 QQ 互联应用不同：换成自己的应用后，首次登录会被拒绝并提示新的账号标识，把它加入允许列表即可。
   - 只依赖第三方登录、且找不到可迁移身份的站点导入后保持停用。
 - **ZeroSSL 证书**：沿用 Lucky 中的 EAB 凭据注册新的 ACME 账户；若 ZeroSSL 拒绝，在 ZeroSSL 后台重新生成 EAB。
-- **frp 实例**：Gately 只有一个 frpc 与一个 frps，Lucky 中多余的实例会在报告中列出，请改用其他机器或合并到同一实例；Gately 中已配置连接其他服务端的 frpc、或已启用的 frps 不会被覆盖。frps 控制台的账号由 Lucky 管理，迁移后如需控制台请重新设置端口与密码。
+- **frp 实例**：每个客户端、服务端实例分别导入为独立的 frpc、frps 实例。Gately 中已有连接同一服务端（地址、端口与用户相同）的 frpc 时，保留其设置并只追加代理；已有相同连接端口的 frps 会被跳过，不会被覆盖。frps 控制台的账号由 Lucky 管理，迁移后如需控制台请重新设置端口与密码。
 - **存储引用**：Lucky 的 FTP / WebDAV 用户可以挂载「存储管理」中的存储。导入时请同时选择 `lucky_storagemanagement.lkcf`（或直接导入整站 zip），本地存储会解析为对应目录；WebDAV、阿里云盘存储与 rclone 挂载暂不支持，会在报告中提示。
 - **未迁移的内容**：DLNA、rclone 网盘挂载、阿里云盘、IP 库（`lucky_ipdb.lkcf`）等不在迁移范围内，导入时会跳过。
 - **Lucky 官方服务器**：Gately 不会连接 `66666.host`、`lucky666.cn` 等地址，迁移后公网 IP 查询使用第三方公共服务（可在 DDNS 任务中修改）。
