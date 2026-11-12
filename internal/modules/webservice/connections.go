@@ -2,13 +2,14 @@ package webservice
 
 import (
 	"bufio"
+	"cmp"
 	"context"
 	"errors"
 	"io"
 	"net"
 	"net/http"
 	"net/netip"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -298,20 +299,28 @@ func (t *connTracker) snapshot(q string, now time.Time) ConnsView {
 	all := t.active()
 	v := ConnsView{Total: len(all), Active: []ConnView{}, History: []ConnView{}, Closed: t.closed.Load()}
 	// 持续时间最长的排在前面，同时开始的按编号排序保证顺序稳定
-	sort.Slice(all, func(i, j int) bool {
-		if !all[i].start.Equal(all[j].start) {
-			return all[i].start.Before(all[j].start)
+	slices.SortFunc(all, func(a, b *activeReq) int {
+		if c := a.start.Compare(b.start); c != 0 {
+			return c
 		}
-		return all[i].id < all[j].id
+		return cmp.Compare(a.id, b.id)
 	})
-	for _, a := range all {
-		cv := a.view(now)
-		if !connMatches(cv, q) {
-			continue
+	if q == "" {
+		// 没有搜索词时全部匹配，只为最终返回的前 maxConnList 条生成视图（地址格式化等有分配开销，连接数很大时不必全部生成）
+		v.Matched = len(all)
+		for _, a := range all[:min(len(all), maxConnList)] {
+			v.Active = append(v.Active, a.view(now))
 		}
-		v.Matched++
-		if len(v.Active) < maxConnList {
-			v.Active = append(v.Active, cv)
+	} else {
+		for _, a := range all {
+			cv := a.view(now)
+			if !connMatches(cv, q) {
+				continue
+			}
+			v.Matched++
+			if len(v.Active) < maxConnList {
+				v.Active = append(v.Active, cv)
+			}
 		}
 	}
 	t.histMu.Lock()
