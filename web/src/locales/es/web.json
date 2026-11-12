@@ -170,6 +170,8 @@
   "locationHeadersPlaceholder": "Cabeceras adicionales, una Key: Value por línea",
   "addLocation": "Añadir ruta",
   "locationsHelp": "Envía las peticiones de un prefijo de ruta a otros backends. Gana el prefijo más largo y la ruta se reenvía sin cambios. Equivale a location /api/ + proxy_pass de nginx",
+  "locationStrip": "Quitar el prefijo de ruta al reenviar",
+  "locationStripHelp": "Con «Quitar el prefijo de ruta», /api/zyqd/abc llega al backend como /abc y la ruta de la dirección del backend se antepone. Equivale a proxy_pass de nginx con URI (proxy_pass http://x:9999/;). Desactivado, la ruta se reenvía sin cambios",
   "redirectHostHelp": "Usa {'{host}'} para el dominio del visitante, p. ej. https://{'{host}'} con «Conservar ruta» para llevar todo HTTP a HTTPS",
   "redirectVarsHelp": "También: {'{path}'}{'{args}'} (ruta y consulta originales; si se usan, «Conservar ruta» ya no las añade), {'{port}'}, {'{1}'} (la parte que coincide con * en un dominio como *.example.com), {'{STUN_nombre de regla_PORT}'}, {'{STUN_nombre de regla_IP}'}, {'{STUN_nombre de regla_ADDR}'} (dirección pública actual de la regla STUN). P. ej. https://{'{1}'}.v4.example.com:{'{STUN_web_PORT}'}{'{path}'}{'{args}'}",
   "cleanUrls": "URL sin extensión",

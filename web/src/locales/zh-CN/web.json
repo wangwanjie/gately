@@ -170,6 +170,8 @@
   "locationHeadersPlaceholder": "附加请求头，每行一个 Key: Value",
   "addLocation": "添加路径",
   "locationsHelp": "按路径前缀把请求分到另一组后端，最长前缀优先，路径原样转发；相当于 nginx 的 location /api/ + proxy_pass",
+  "locationStrip": "转发时去掉路径前缀",
+  "locationStripHelp": "开启「去掉路径前缀」后，/api/zyqd/abc 发往后端为 /abc，后端地址自带的路径会接在前面；相当于 nginx 的 proxy_pass 带 URI（如 proxy_pass http://x:9999/;）。关闭时路径原样转发",
   "redirectHostHelp": "可用 {'{host}'} 代表访客请求的域名，例如 https://{'{host}'} 配合“保留路径”把 HTTP 统一跳到 HTTPS",
   "redirectVarsHelp": "还可用 {'{path}'}{'{args}'}（原路径与查询串，写了就不再按“保留路径”追加）、{'{port}'}、{'{1}'}（站点域名 *.example.com 中 * 匹配的部分）、{'{STUN_规则名_PORT}'}、{'{STUN_规则名_IP}'}、{'{STUN_规则名_ADDR}'}（STUN 规则当前的公网地址），例如 https://{'{1}'}.v4.example.com:{'{STUN_web_PORT}'}{'{path}'}{'{args}'}",
   "cleanUrls": "无扩展名地址",

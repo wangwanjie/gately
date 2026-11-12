@@ -170,6 +170,8 @@
   "locationHeadersPlaceholder": "附加請求標頭，每行一個 Key: Value",
   "addLocation": "新增路徑",
   "locationsHelp": "依路徑前綴把請求分到另一組後端，最長前綴優先，路徑原樣轉發；相當於 nginx 的 location /api/ + proxy_pass",
+  "locationStrip": "轉發時去掉路徑前綴",
+  "locationStripHelp": "開啟「去掉路徑前綴」後，/api/zyqd/abc 發往後端為 /abc，後端位址自帶的路徑會接在前面；相當於 nginx 的 proxy_pass 帶 URI（如 proxy_pass http://x:9999/;）。關閉時路徑原樣轉發",
   "redirectHostHelp": "可用 {'{host}'} 代表訪客請求的網域，例如 https://{'{host}'} 搭配「保留路徑」把 HTTP 統一跳轉到 HTTPS",
   "redirectVarsHelp": "還可用 {'{path}'}{'{args}'}（原路徑與查詢字串，寫了就不再依「保留路徑」附加）、{'{port}'}、{'{1}'}（網站網域 *.example.com 中 * 比對到的部分）、{'{STUN_規則名_PORT}'}、{'{STUN_規則名_IP}'}、{'{STUN_規則名_ADDR}'}（STUN 規則目前的公網位址），例如 https://{'{1}'}.v4.example.com:{'{STUN_web_PORT}'}{'{path}'}{'{args}'}",
   "cleanUrls": "無副檔名網址",

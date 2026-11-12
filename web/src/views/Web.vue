@@ -366,11 +366,14 @@
                       />
                       <el-button text type="danger" :icon="Trash2" @click="site.locations.splice(i, 1)" />
                     </div>
+                    <!-- 去掉路径前缀：/api/zyqd/abc 发往后端为 /abc，相当于 nginx 的 proxy_pass 带 URI（#86） -->
+                    <el-checkbox v-model="loc.stripPrefix" class="location-strip">{{ t('web.locationStrip') }}</el-checkbox>
                     <!-- 该路径追加的请求头，与站点请求头共用预设和校验 -->
                     <HeaderEditor v-model="loc.requestHeaders" direction="request" :placeholder="t('web.locationHeadersPlaceholder')" :show-help="false" />
                   </div>
-                  <el-button size="small" :icon="Plus" @click="site.locations.push({ prefix: '', targets: [], requestHeaders: [] })">{{ t('web.addLocation') }}</el-button>
+                  <el-button size="small" :icon="Plus" @click="site.locations.push({ prefix: '', targets: [], stripPrefix: false, requestHeaders: [] })">{{ t('web.addLocation') }}</el-button>
                   <div class="form-help">{{ t('web.locationsHelp') }}</div>
+                  <div class="form-help">{{ t('web.locationStripHelp') }}</div>
                 </div>
               </el-form-item>
             </template>
@@ -811,6 +814,7 @@ interface Site {
 interface Location {
   prefix: string
   targets: string[] | null
+  stripPrefix: boolean
   requestHeaders: string[] | null
 }
 

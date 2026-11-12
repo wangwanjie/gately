@@ -170,6 +170,8 @@
   "locationHeadersPlaceholder": "Zusätzliche Request-Header, ein Key: Value pro Zeile",
   "addLocation": "Pfad hinzufügen",
   "locationsHelp": "Leitet Anfragen unter einem Pfadpräfix an andere Backends. Das längste Präfix gewinnt, der Pfad bleibt unverändert. Entspricht nginx location /api/ + proxy_pass",
+  "locationStrip": "Pfadpräfix beim Weiterleiten entfernen",
+  "locationStripHelp": "Mit „Pfadpräfix entfernen“ erreicht /api/zyqd/abc das Backend als /abc; ein Pfad in der Backend-Adresse wird davorgesetzt. Entspricht nginx proxy_pass mit URI (proxy_pass http://x:9999/;). Ausgeschaltet bleibt der Pfad unverändert",
   "redirectHostHelp": "{'{host}'} steht für die Domain des Besuchers, z. B. https://{'{host}'} mit „Pfad beibehalten“, um alles von HTTP auf HTTPS umzuleiten",
   "redirectVarsHelp": "Außerdem: {'{path}'}{'{args}'} (ursprünglicher Pfad und Query; wenn verwendet, hängt „Pfad beibehalten“ sie nicht erneut an), {'{port}'}, {'{1}'} (der von * erfasste Teil einer Domain wie *.example.com), {'{STUN_Name der Regel_PORT}'}, {'{STUN_Name der Regel_IP}'}, {'{STUN_Name der Regel_ADDR}'} (aktuelle öffentliche Adresse der STUN-Regel). Z. B. https://{'{1}'}.v4.example.com:{'{STUN_web_PORT}'}{'{path}'}{'{args}'}",
   "cleanUrls": "URLs ohne Endung",
