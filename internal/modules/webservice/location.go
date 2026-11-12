@@ -4,17 +4,20 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"sort"
 	"strings"
 )
 
 // Location 把站点下某个路径前缀的请求分到另一组后端，相当于 nginx 的 location /api/ { proxy_pass ...; }。
-// 路径原样转发（不去掉前缀）；其余反向代理设置（Host、转发头、TLS 校验等）沿用站点。
+// 默认路径原样转发；StripPrefix 开启时去掉前缀再转发（nginx 的 proxy_pass 带 URI 的写法）。其余反向代理设置（Host、转发头、TLS 校验等）沿用站点。
 type Location struct {
 	// Prefix 为路径前缀，按路径段边界匹配：/api 与 /api/ 都匹配 /api 及 /api/x，不匹配 /apix
 	Prefix string `json:"prefix"`
 	// Targets 为该路径的后端，格式同站点后端；留空时沿用站点后端，只追加请求头
 	Targets []string `json:"targets"`
+	// StripPrefix 开启时转发前去掉路径前缀：/api/zyqd/abc 发往后端为 /abc，后端地址自带的路径会接在前面
+	StripPrefix bool `json:"stripPrefix"`
 	// RequestHeaders 追加在站点请求头之后，同名时覆盖站点的设置
 	RequestHeaders []string `json:"requestHeaders"`
 }
@@ -22,6 +25,8 @@ type Location struct {
 // locationHandler 是编译后的分路径规则。
 type locationHandler struct {
 	prefix string
+	// stripPrefix 为转发前是否去掉前缀，按用户分流为沿用站点后端的路径重建处理器时需要
+	stripPrefix bool
 	// headers 为该路径追加的请求头，按用户分流时为沿用站点后端的路径重建处理器
 	headers []string
 	// pool 为该路径自己的后端，沿用站点后端时为 nil
@@ -58,8 +63,8 @@ func (s *Site) validateLocations() error {
 		if err := validateHeaderLines(l.RequestHeaders); err != nil {
 			return err
 		}
-		if len(l.Targets) == 0 && len(l.RequestHeaders) == 0 {
-			return fmt.Errorf("路径 %s 需要填写后端或请求头", l.Prefix)
+		if len(l.Targets) == 0 && len(l.RequestHeaders) == 0 && !l.StripPrefix {
+			return fmt.Errorf("路径 %s 需要填写后端、请求头或开启去掉前缀", l.Prefix)
 		}
 	}
 	return nil
@@ -81,7 +86,7 @@ func (h *siteHandler) buildLocations() error {
 			p.site = siteLabel(h.site) + " " + loc.Prefix
 			p.scope, p.match = scopeLocation, loc.Prefix
 		}
-		lh := &locationHandler{prefix: loc.Prefix, headers: loc.RequestHeaders, handler: h.newProxy(s, p)}
+		lh := &locationHandler{prefix: loc.Prefix, headers: loc.RequestHeaders, stripPrefix: loc.StripPrefix, handler: h.newProxy(s, p, stripPrefixOf(loc))}
 		if p != h.pool {
 			lh.pool = p
 		}
@@ -104,4 +109,35 @@ func (h *siteHandler) dispatchLocations(locs []*locationHandler, fallback http.H
 		}
 		fallback.ServeHTTP(w, r)
 	})
+}
+
+// stripPrefixOf 返回需要在转发前去掉的路径前缀，未开启时为空。
+func stripPrefixOf(l Location) string {
+	if !l.StripPrefix {
+		return ""
+	}
+	return l.Prefix
+}
+
+// stripLocationPrefix 去掉请求路径的前缀并保留查询串，结果始终以 / 开头。
+// 先按与分流匹配相同的方式清理路径（合并 //、解析 . 与 ..），避免用 /api/../x 这类写法越过前缀；
+// 去掉前缀后原路径若以 / 结尾则保留，后端对 /dir 与 /dir/ 的处理可能不同。
+func stripLocationPrefix(u *url.URL, prefix string) {
+	if prefix == "" || prefix == "/" {
+		return
+	}
+	p := cleanReqPath(u.Path)
+	if !prefixMatch(prefix, p) {
+		return
+	}
+	rest := strings.TrimPrefix(p, strings.TrimRight(prefix, "/"))
+	if rest == "" {
+		rest = "/"
+	}
+	if strings.HasSuffix(u.Path, "/") && !strings.HasSuffix(rest, "/") {
+		rest += "/"
+	}
+	u.Path = rest
+	// 路径已按解码后的值重建，原始编码需让标准库重新生成
+	u.RawPath = ""
 }
