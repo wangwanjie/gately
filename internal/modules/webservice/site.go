@@ -440,7 +440,7 @@ func newTransport(s Site, up *upstream) *http.Transport {
 type upstreamRoundTripper struct {
 	trs  map[*upstream]*http.Transport
 	pool *pool
-	// target 把请求改写为发往指定后端（URL、Host 与 SNI），重试换后端时使用
+	// target 把请求改写为发往指定后端（去路径前缀、URL、Host 与 SNI），重试换后端时使用
 	target func(pr *httputil.ProxyRequest, up *upstream)
 	log    func(r *http.Request) *logbuf.Logger
 }
@@ -503,7 +503,13 @@ func (h *siteHandler) newProxy(s Site, p *pool, strip string) http.Handler {
 			}
 		}
 	}
-	rt := &upstreamRoundTripper{trs: map[*upstream]*http.Transport{}, pool: p, target: target, log: h.reqLog}
+	// retarget 先去前缀再指向后端；首次转发与建连失败换后端重试都走它，重试时才不会把前缀带给下一个后端
+	retarget := func(pr *httputil.ProxyRequest, up *upstream) {
+		// 后端地址自带的路径接在去掉前缀后的路径前面
+		stripLocationPrefix(pr.Out.URL, strip)
+		target(pr, up)
+	}
+	rt := &upstreamRoundTripper{trs: map[*upstream]*http.Transport{}, pool: p, target: retarget, log: h.reqLog}
 	for _, up := range p.ups {
 		tr := newTransport(s, up)
 		rt.trs[up] = tr
@@ -513,9 +519,7 @@ func (h *siteHandler) newProxy(s Site, p *pool, strip string) http.Handler {
 		Transport:  rt,
 		BufferPool: sharedBufferPool,
 		Rewrite: func(pr *httputil.ProxyRequest) {
-			// 先去前缀再拼后端路径，后端地址自带的路径接在去掉前缀后的路径前面
-			stripLocationPrefix(pr.Out.URL, strip)
-			target(pr, attemptFrom(pr.In.Context()).current())
+			retarget(pr, attemptFrom(pr.In.Context()).current())
 			// 客户端自带的 X-Real-IP、X-Forwarded-* 与源端口头不可信（含下划线写法的变体），只在开启转发头时由 Gately 写入
 			stripForwardedHeaders(pr.Out.Header)
 			stripClientPort(pr.Out.Header)
