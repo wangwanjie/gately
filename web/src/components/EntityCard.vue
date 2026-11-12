@@ -52,6 +52,9 @@ const { t } = useI18n()
   border-radius: var(--g-radius);
   transition: border-color 0.2s;
   min-width: 0;
+  /* 网格中同一行的卡片等高：纵向排列，操作栏贴底，各卡片的按钮才能上下对齐 */
+  display: flex;
+  flex-direction: column;
 }
 .entity:hover {
   border-color: var(--el-border-color);
@@ -128,8 +131,9 @@ const { t } = useI18n()
 }
 .entity-body {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  gap: 12px 20px;
+  /* 卡片只有 400px 左右宽时也排成两列，一行放得下的字段不换行 */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr));
+  gap: 12px 16px;
   padding: 14px 16px;
 }
 .entity-extra {
@@ -148,8 +152,12 @@ const { t } = useI18n()
   border-top: 1px solid var(--g-border);
   min-height: 36px;
 }
-.entity-head + .entity-foot {
-  margin-top: 14px;
+.entity-foot {
+  margin-top: auto;
+}
+/* 没有字段区与扩展区时，标题与操作栏之间保留间距 */
+.entity-head:has(+ .entity-foot) {
+  padding-bottom: 14px;
 }
 .entity-meta {
   font-size: 12px;
@@ -169,6 +177,7 @@ const { t } = useI18n()
 .entity-actions :deep(.el-button + .el-button) {
   margin-left: 0;
 }
+
 .is-off .entity-title {
   color: var(--el-text-color-secondary);
 }
@@ -180,6 +189,7 @@ const { t } = useI18n()
 @media (min-width: 768px) {
   .is-compact {
     display: flex;
+    flex-direction: row;
     align-items: center;
     flex-wrap: wrap;
     column-gap: 14px;
@@ -252,18 +262,20 @@ const { t } = useI18n()
     padding-top: 0;
   }
   .is-compact .entity-foot {
+    margin-top: 0;
     flex: 0 0 auto;
     padding: 0;
     min-height: 0;
     border-top: none;
     flex-wrap: nowrap;
   }
-  .is-compact .entity-head + .entity-foot {
-    margin-top: 0;
+  .is-compact .entity-head:has(+ .entity-foot) {
+    padding-bottom: 0;
   }
   .is-compact .entity-meta {
     display: none;
   }
+
 }
 @media (max-width: 767.98px) {
   .entity-head {
@@ -284,6 +296,30 @@ const { t } = useI18n()
   }
   .entity-foot {
     padding: 6px 8px 6px 12px;
+  }
+}
+</style>
+
+<!-- 插槽里的开关不带本组件的 scoped 标记，这几条规则不能写在 scoped 样式里 -->
+<style>
+/* 操作栏以开关开头时，开关固定在左侧，按钮换行后与第一个按钮的左边对齐，而不是退回到开关下面 */
+.entity-actions:has(> .el-switch:first-child) {
+  position: relative;
+  padding-left: 52px;
+}
+.entity-actions > .el-switch:first-child {
+  position: absolute;
+  left: 8px;
+  top: 2px;
+}
+/* 紧凑视图单行排列，开关回到正常流 */
+@media (min-width: 768px) {
+  .is-compact .entity-actions:has(> .el-switch:first-child) {
+    position: static;
+    padding-left: 0;
+  }
+  .is-compact .entity-actions > .el-switch:first-child {
+    position: static;
   }
 }
 </style>
