@@ -542,6 +542,11 @@ func (h *siteHandler) newProxy(s Site, p *pool, strip string) http.Handler {
 			applyHeaders(pr.Out.Header, s.RequestHeaders)
 		},
 		ModifyResponse: func(resp *http.Response) error {
+			// 101 协议升级时反向代理接管连接后直接写出后端响应头，不经过 WriteHeader，认证标记钩子不会执行；
+			// 配置了认证标记密钥时在这里去掉后端写出的标记，避免传给访客（升级响应不签发、也不据此信任凭据）
+			if resp.StatusCode == http.StatusSwitchingProtocols && h.auth != nil && h.auth.marker.get() != nil {
+				resp.Header.Del(authMarkerHeader)
+			}
 			applyHeaders(resp.Header, s.ResponseHeaders)
 			if att := attemptFrom(resp.Request.Context()); att != nil {
 				up := att.current()

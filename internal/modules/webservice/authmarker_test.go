@@ -1,6 +1,9 @@
 package webservice
 
 import (
+	"bufio"
+	"io"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -218,5 +221,43 @@ func TestBackendTrustBound(t *testing.T) {
 	}
 	if n := len(b.m); n == 0 || n > backendTrustMax {
 		t.Fatalf("条数应在上限内: %d", n)
+	}
+}
+
+// WebSocket 升级的 101 响应不经过 WriteHeader：后端写出的标记同样要在接管连接前去掉，不能传给访客。
+func TestAuthMarkerStrippedOnUpgrade(t *testing.T) {
+	key := []byte(testMarkerKey)
+	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		conn, brw, err := http.NewResponseController(w).Hijack()
+		if err != nil {
+			return
+		}
+		defer conn.Close()
+		_, _ = brw.WriteString("HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n" +
+			authMarkerHeader + ": " + signAuthMarker(key, credSession("x"), time.Now()) + "\r\n\r\n")
+		_ = brw.Flush()
+	}))
+	t.Cleanup(backend.Close)
+	for _, site := range []Site{
+		// 外层：信任后端标记的反代站点
+		{Enable: true, Key: "edge", Domains: []string{"ws.test"}, Targets: []string{backend.URL}, TrustBackendAuth: true},
+		// 内层：信任已登录用户的站点，应用写出的标记要去掉
+		{Enable: true, Key: "app", Domains: []string{"ws.test"}, Targets: []string{backend.URL}, BasicAuth: true, Users: []string{"alice:pw"}, TrustAuthUsers: true, AuthOptional: true},
+	} {
+		addr, run := startRunner(t, Listener{Key: site.Key, Sites: []Site{site}}, nil, nil)
+		run.auth.marker.set(testMarkerKey)
+		c, err := net.Dial("tcp", addr)
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, _ = io.WriteString(c, "GET /ws HTTP/1.1\r\nHost: ws.test\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n\r\n")
+		resp, err := http.ReadResponse(bufio.NewReader(c), nil)
+		c.Close()
+		if err != nil || resp.StatusCode != http.StatusSwitchingProtocols {
+			t.Fatalf("%s 升级失败: %v %v", site.Key, resp, err)
+		}
+		if v := resp.Header.Get(authMarkerHeader); v != "" {
+			t.Fatalf("%s 的 101 响应不应带后端写出的标记: %q", site.Key, v)
+		}
 	}
 }
