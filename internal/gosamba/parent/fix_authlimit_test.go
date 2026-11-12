@@ -111,3 +111,27 @@ func TestAuthLimit_AnonymousNotCounted(t *testing.T) {
 		t.Fatalf("匿名试探不应让正确密码被限流: %v", err)
 	}
 }
+
+// TestAuthLimit_GuestNamedUserCounted 验证存在名为 guest 的真实用户时，用该名登录照常校验密码并计入失败次数。
+func TestAuthLimit_GuestNamedUserCounted(t *testing.T) {
+	var lim fileusers.Throttle
+	users := fixCryptoUsers("test123")
+	users[0].Name = "Guest"
+	attempt := func(password string) error {
+		hs := newFixCryptoHarness(t, smb2.CipherAES128GCM, users)
+		hs.h.Limiter = &lim
+		hs.h.RemoteIP = "198.51.100.3"
+		leg := hs.leg1(t, 1)
+		auth := buildAuthenticate(t, leg, "guest", "WORKGROUP", password, true, nil)
+		hdr, body, frame := sessionSetupFrame(auth.secBuf, 2, leg.sessionID)
+		hs.out.Reset()
+		_, err := hs.h.HandleSessionSetup(hs.pipe, hdr, body, frame)
+		return err
+	}
+	for i := 0; i < fileusers.ThrottleMaxFailures; i++ {
+		_ = attempt("wrong")
+	}
+	if err := attempt("test123"); err == nil || !strings.Contains(err.Error(), "too many") {
+		t.Fatalf("名为 guest 的真实用户应照常限流，得到 err=%v", err)
+	}
+}
