@@ -99,3 +99,15 @@ func TestAuthLimit_NilLimiterUnchanged(t *testing.T) {
 		t.Fatalf("无限流器时应能登录: %v", err)
 	}
 }
+
+// TestAuthLimit_AnonymousNotCounted 验证匿名与来宾试探（没有来宾共享时会失败）不计入失败次数。
+func TestAuthLimit_AnonymousNotCounted(t *testing.T) {
+	var lim fileusers.Throttle
+	for i := 0; i < fileusers.ThrottleMaxFailures+2; i++ {
+		_, _ = authAttempt(t, &lim, "198.51.100.2", "", "")
+		_, _ = authAttempt(t, &lim, "198.51.100.2", "guest", "")
+	}
+	if sess, err := authAttempt(t, &lim, "198.51.100.2", "alice", "test123"); err != nil || sess == nil {
+		t.Fatalf("匿名试探不应让正确密码被限流: %v", err)
+	}
+}
