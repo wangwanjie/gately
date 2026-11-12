@@ -70,13 +70,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { Cpu, RefreshCw } from 'lucide-vue-next'
 import { api } from '../../api'
 import Sparkline from '../../components/Sparkline.vue'
 import { useIsMobile } from '../../composables/useIsMobile'
+import { usePolling } from '../../composables/usePolling'
 import { formatBytes } from './format'
 import type { ContainerStats } from './types'
 
@@ -99,7 +100,8 @@ const brRate = ref<number>()
 const bwRate = ref<number>()
 const procs = ref<{ titles: string[]; processes: string[][] }>({ titles: [], processes: [] })
 let prev: { at: number; s: ContainerStats } | undefined
-let timer: number | undefined
+// docker stats 单次采样本身要 1~2 秒：用统一轮询，上一次未返回时跳过本轮，标签页在后台时暂停
+const { start: startPolling } = usePolling(() => sample(), 2000)
 let warned = false
 
 // 多核 CPU 占用可能超过 100%，纵轴上限随数据放大
@@ -156,9 +158,8 @@ async function loadProcs() {
 onMounted(() => {
   sample()
   loadProcs()
-  timer = window.setInterval(sample, 2000)
+  startPolling()
 })
-onBeforeUnmount(() => window.clearInterval(timer))
 </script>
 
 <style scoped>

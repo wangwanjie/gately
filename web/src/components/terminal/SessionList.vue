@@ -63,6 +63,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { BarChart3, Link2, Power, RefreshCw, StickyNote } from 'lucide-vue-next'
 import { api, formatBytes, formatDuration } from '../../api'
 import { useIsMobile } from '../../composables/useIsMobile'
+import { usePolling } from '../../composables/usePolling'
 import { fmtTime, type SessionInfo, type SessionStats } from './types'
 
 defineProps<{ modelValue: boolean; openIds: string[] }>()
@@ -78,7 +79,8 @@ function typeName(type: string): string {
   return ['ssh', 'telnet', 'local'].includes(type) ? t(`termConn.type.${type}`) : type
 }
 
-let timer: ReturnType<typeof setInterval> | undefined
+// 打开期间每 5 秒自动刷新：标签页在后台时暂停，上一次请求未结束时跳过本轮
+const { start: startPolling, stop: stopPolling } = usePolling(() => load(), 5000)
 
 async function load() {
   loading.value = true
@@ -92,10 +94,7 @@ async function load() {
 }
 
 function stopTimer() {
-  if (timer) {
-    clearInterval(timer)
-    timer = undefined
-  }
+  stopPolling()
 }
 
 // 打开期间每 5 秒自动刷新一次
@@ -103,7 +102,7 @@ function onOpen() {
   stats.value = {}
   load()
   stopTimer()
-  timer = setInterval(load, 5000)
+  startPolling()
 }
 
 async function showStats(s: SessionInfo) {
