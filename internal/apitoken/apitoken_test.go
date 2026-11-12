@@ -70,6 +70,10 @@ func TestRequiredAndMatch(t *testing.T) {
 		{"POST", "/api/netbird/instances/abc/logout", "netbird:write"},
 		{"POST", "/api/netbird/instances/abc/restart", "netbird:write"},
 		{"POST", "/api/netbird/instances/abc/copy", "netbird:write"},
+		{"GET", "/api/easytier/instances/abc/secrets", "easytier:write"},
+		{"GET", "/api/easytier/instances/abc/status", "easytier:read"},
+		{"GET", "/api/easytier/status", "easytier:read"},
+		{"POST", "/api/easytier/instances/abc/restart", "easytier:write"},
 		// 复制条目会沿用模板的密钥，需要写权限
 		{"POST", "/api/frp/clients/abc/copy", "frp:write"},
 		{"POST", "/api/webterminal/connections/abc/copy", "webterminal:write"},
