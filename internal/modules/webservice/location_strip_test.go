@@ -107,3 +107,23 @@ func TestLocationStripPrefixValidate(t *testing.T) {
 		t.Fatal("没有后端、请求头也未开启去前缀的规则应被拒绝")
 	}
 }
+
+// TestLocationStripPrefixRetry 覆盖分路径后端去前缀时与第一个后端建连失败、换下一个后端重试：重试的请求同样去掉前缀。
+func TestLocationStripPrefixRetry(t *testing.T) {
+	main, live := pathEcho(t, "main"), pathEcho(t, "live")
+	// 先占一个端口再关闭，得到一个拒绝连接的地址
+	dead := httptest.NewServer(http.NotFoundHandler())
+	deadURL := dead.URL
+	dead.Close()
+	l := Listener{Sites: []Site{{
+		Enable: true, Domains: []string{"app.test"}, Targets: []string{main.URL},
+		Locations: []Location{{Prefix: "/api/", Targets: []string{deadURL + "/", live.URL + "/"}, StripPrefix: true}},
+	}}}
+	addr, _ := startRunner(t, l, nil, nil)
+	// 轮询会让死后端多次成为首选，连续请求都必须去掉前缀
+	for i := 0; i < 6; i++ {
+		if _, body := get(t, http.DefaultClient, addr, "app.test", "/api/abc?x=1", nil); body != "live|/abc?x=1" {
+			t.Fatalf("第 %d 次请求得到 %q，期望 live|/abc?x=1", i+1, body)
+		}
+	}
+}
