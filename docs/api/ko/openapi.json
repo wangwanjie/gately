@@ -444,6 +444,210 @@
         },
         "type": "object"
       },
+      "easytier.Instance": {
+        "properties": {
+          "devName": {
+            "type": "string"
+          },
+          "dhcp": {
+            "type": "boolean"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "enableExitNode": {
+            "type": "boolean"
+          },
+          "env": {
+            "type": "string"
+          },
+          "exitNodes": {
+            "type": "string"
+          },
+          "extraArgs": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "hostname": {
+            "type": "string"
+          },
+          "ipv4": {
+            "type": "string"
+          },
+          "kcpProxy": {
+            "type": "boolean"
+          },
+          "key": {
+            "type": "string"
+          },
+          "latencyFirst": {
+            "type": "boolean"
+          },
+          "listeners": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "networkName": {
+            "type": "string"
+          },
+          "networkSecret": {
+            "type": "string"
+          },
+          "noTun": {
+            "type": "boolean"
+          },
+          "peers": {
+            "type": "string"
+          },
+          "portForwards": {
+            "type": "string"
+          },
+          "proxyNetworks": {
+            "type": "string"
+          },
+          "quicProxy": {
+            "type": "boolean"
+          },
+          "remark": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.PeerView": {
+        "properties": {
+          "cost": {
+            "type": "string"
+          },
+          "direct": {
+            "type": "boolean"
+          },
+          "ip": {
+            "type": "string"
+          },
+          "latencyMs": {
+            "type": "number"
+          },
+          "loss": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nat": {
+            "type": "string"
+          },
+          "rx": {
+            "type": "string"
+          },
+          "tunnel": {
+            "type": "string"
+          },
+          "tx": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.SelfView": {
+        "properties": {
+          "ip": {
+            "type": "string"
+          },
+          "listeners": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nat": {
+            "type": "string"
+          },
+          "publicIps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.Settings": {
+        "properties": {
+          "corePath": {
+            "type": "string"
+          },
+          "installProxy": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.SettingsView": {
+        "properties": {
+          "core": {
+            "type": "string"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/easytier.Settings"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.StatusView": {
+        "properties": {
+          "cli": {
+            "type": "string"
+          },
+          "core": {
+            "type": "string"
+          },
+          "daemon": {
+            "$ref": "#/components/schemas/proc.State"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "peers": {
+            "items": {
+              "$ref": "#/components/schemas/easytier.PeerView"
+            },
+            "type": "array"
+          },
+          "peersDirect": {
+            "type": "integer"
+          },
+          "self": {
+            "$ref": "#/components/schemas/easytier.SelfView"
+          },
+          "status": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "events.TypeInfo": {
         "properties": {
           "level": {
@@ -7918,7 +8122,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "frp, Cloudflare 터널, Tailscale, NetBird, File Browser 에서 제공합니다. 설정 디렉터리 bin 에 설치된 버전, 저장된 이전 버전(`backups`, 최대 3개), 이 프로그램에 따로 지정한 다운로드 프록시 `proxy`, 현재 플랫폼, 설치 진행 상태 `state`(`stage` 는 checking, downloading, verifying, extracting, done, uptodate, failed 중 하나)를 반환합니다. `unsupported` 가 비어 있지 않으면 업스트림이 현재 플랫폼용 프로그램을 제공하지 않는다는 뜻입니다.\n\n필요한 권한: `cloudflared:read`.",
+        "description": "frp, Cloudflare 터널, Tailscale, NetBird, EasyTier, File Browser에서 제공됩니다. 설정 디렉터리 bin에 설치된 버전, 저장된 이전 버전(`backups`, 최대 3개), 해당 프로그램에 별도로 설정한 다운로드 프록시 `proxy`, 현재 플랫폼, 설치 진행 상태 `state`(`stage`는 checking, downloading, verifying, extracting, done, uptodate 또는 failed)를 반환합니다. `unsupported`가 비어 있지 않으면 업스트림이 현재 플랫폼용 프로그램을 제공하지 않는다는 뜻입니다.\n\n필요한 권한: `cloudflared:read`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -8653,7 +8857,7 @@
     },
     "/api/cloudflared/reset": {
       "post": {
-        "description": "frp, Cloudflare 터널, Tailscale, NetBird, File Browser 에서 제공하며 요청 본문이 필요 없습니다. 모듈의 모든 프로세스를 중지하고 설정(프로그램 경로와 다운로드 프록시 포함)을 기본값으로 되돌리며, Gately 가 생성한 파일을 삭제합니다: frp 설정 파일, File Browser 각 인스턴스의 데이터 디렉터리(사용자, 공유 링크, 캐시), Tailscale 기본 상태 디렉터리의 로그인 상태(Gately 가 관리하는 tailscaled 가 실행 중이면 먼저 로그아웃하며, 사용자 지정 상태 디렉터리와 시스템의 기존 tailscaled 는 처리하지 않음), NetBird 기본 상태 디렉터리의 로그인 상태와 키(Gately 가 관리하는 데몬이 실행 중이면 먼저 로그아웃하며 이 기기는 네트워크에서 삭제됨, 사용자 지정 상태 디렉터리와 시스템의 기존 NetBird 서비스는 처리하지 않음). 이전 설정은 설정 기록에 남아 복원할 수 있으며, 설치된 프로그램은 영향을 받지 않습니다. 제거는 `DELETE /api/{module}/install` 을 사용합니다.\n\n필요한 권한: `cloudflared:write`.",
+        "description": "frp, Cloudflare 터널, Tailscale, NetBird, EasyTier, File Browser에서 제공되며 요청 본문은 필요 없습니다. 해당 모듈의 모든 프로세스를 중지하고, 설정(프로그램 경로와 다운로드 프록시 포함)을 기본값으로 되돌리며, Gately가 생성한 파일을 삭제합니다. frp 설정 파일, File Browser 각 인스턴스의 데이터 디렉터리(사용자, 공유 링크, 캐시), Tailscale 기본 상태 디렉터리의 로그인 상태(Gately가 관리하는 tailscaled가 실행 중이면 먼저 로그아웃하며, 사용자 지정 상태 디렉터리와 시스템에 있는 tailscaled는 처리하지 않음), NetBird 기본 상태 디렉터리의 로그인 상태와 키(Gately가 관리하는 데몬이 실행 중이면 먼저 로그아웃하며 이 기기는 네트워크에서 삭제됨, 사용자 지정 상태 디렉터리와 시스템에 있는 NetBird 서비스는 처리하지 않음)가 대상입니다. 이전 설정은 설정 기록에 남아 복원할 수 있고, 설치된 프로그램은 영향을 받지 않으며, 제거는 `DELETE /api/{module}/install`을 사용합니다.\n\n필요한 권한: `cloudflared:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -17096,6 +17300,1867 @@
         "x-token-allowed": true
       }
     },
+    "/api/easytier/install": {
+      "delete": {
+        "description": "설정 디렉터리 bin 에 설치된 프로그램과 저장된 모든 이전 버전을 삭제한 뒤 이 프로그램을 사용하는 프로세스를 다시 시작합니다. PATH 에 같은 이름의 프로그램이 있으면 그것을 사용하고, 없으면 프로세스를 시작할 수 없습니다. 모듈 설정은 영향을 받지 않으며, 설정 삭제는 `POST /api/{module}/reset` 을 사용합니다.\n\n필요한 권한: `easytier:write`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "관리 프로그램 제거",
+        "tags": [
+          "EasyTier 네트워크"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "frp, Cloudflare 터널, Tailscale, NetBird, EasyTier, File Browser에서 제공됩니다. 설정 디렉터리 bin에 설치된 버전, 저장된 이전 버전(`backups`, 최대 3개), 해당 프로그램에 별도로 설정한 다운로드 프록시 `proxy`, 현재 플랫폼, 설치 진행 상태 `state`(`stage`는 checking, downloading, verifying, extracting, done, uptodate 또는 failed)를 반환합니다. `unsupported`가 비어 있지 않으면 업스트림이 현재 플랫폼용 프로그램을 제공하지 않는다는 뜻입니다.\n\n필요한 권한: `easytier:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "관리 프로그램의 설치 정보와 진행 상태 보기",
+        "tags": [
+          "EasyTier 네트워크"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "요청 본문 `{\"version\": \"\", \"proxy\": \"\"}`: `version` 이 비어 있으면 최신 정식 버전을 설치하고(이미 최신이면 다운로드하지 않으며 `stage` 는 uptodate), 아니면 지정한 버전을 설치합니다. `proxy` 는 다운로드 프록시(http, https, socks5)로 다음에도 쓰도록 저장되며, 비어 있으면 전역 설정 `updateProxy` 를 사용합니다. 다운로드 후 SHA-256 을 검증해 설정 디렉터리 bin 에 설치하고, 기존 버전은 이전 버전 목록으로 옮기며, 이 프로그램을 사용하는 프로세스를 다시 시작합니다. 즉시 반환하며 진행 상태는 `GET /api/{module}/install` 로 조회합니다.\n\n필요한 권한: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "관리 프로그램 온라인 설치 또는 업데이트",
+        "tags": [
+          "EasyTier 네트워크"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/install/backups/{id}": {
+      "delete": {
+        "description": "필요한 권한: `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "저장된 이전 버전 삭제",
+        "tags": [
+          "EasyTier 네트워크"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/install/check": {
+      "post": {
+        "description": "요청 본문이 필요 없습니다. 업스트림의 최신 정식 버전을 조회하며(해당 프로그램의 다운로드 프록시, 없으면 전역 설정 `updateProxy` 사용) 다운로드하거나 설치된 프로그램을 변경하지 않습니다. 반환값은 `GET /api/{module}/install` 과 같으며 `latest` 는 `{version, checkedAt, error, hasUpdate}`, `hasUpdate` 는 최신 버전이 bin 에 설치된 버전보다 새로움을 뜻합니다. 자동 업데이트 확인이 켜져 있으면 Gately 가 설치된 관리 프로그램에 대해 이 확인을 주기적으로 실행합니다. 다른 확인이 진행 중이면 409 를 반환합니다.\n\n필요한 권한: `easytier:write`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "관리 프로그램 업데이트 확인",
+        "tags": [
+          "EasyTier 네트워크"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/install/rollback": {
+      "post": {
+        "description": "요청 본문 `{\"id\": \"\u003c이전 버전 ID\u003e\"}`. 현재 버전은 이전 버전으로 저장되어 나중에 다시 전환할 수 있으며, 완료 후 이 프로그램을 사용하는 프로세스를 다시 시작합니다.\n\n필요한 권한: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "저장된 이전 버전으로 전환",
+        "tags": [
+          "EasyTier 네트워크"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances": {
+      "get": {
+        "description": "필요한 권한: `easytier:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/easytier.Instance"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier 인스턴스 목록 조회",
+        "tags": [
+          "EasyTier 네트워크"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "각 인스턴스는 독립된 `easytier-core` 프로세스를 실행하며 서로 다른 EasyTier 네트워크에 참여할 수 있습니다. 요청 본문 필드: `name` 이름(중복 불가), `enable` 활성화 여부, `networkName` 네트워크 이름(필수, 1-64자, 영문자·숫자와 `. _ @ : + -`)과 `networkSecret` 네트워크 비밀키(이름과 비밀키가 모두 같은 노드끼리만 통신 가능하며, 환경 변수 `ET_NETWORK_SECRET`로 프로세스에 전달되어 프로세스 인자에 나타나지 않고 로그에서도 숨겨짐), `peers` 시작 시 연결할 노드 주소(한 줄에 하나, 예: `tcp://public.easytier.cn:11010`, 프로토콜은 tcp, udp, ws, wss, quic, wg, faketcp와 노드 탐색용 http, https, txt, srv), `listeners` 수신 주소(한 줄에 하나, 반드시 `프로토콜://주소:포트` 형식으로 작성하며, 비워 두면 어떤 포트도 수신하지 않고 다른 노드에만 연결), `dhcp` 가상 IP 자동 할당(끄면 `ipv4`로 고정 가상 IP 지정 가능, 예: `10.126.126.2/24`, 둘 다 없으면 이 노드는 데이터 전달만 하고 네트워크 장치를 만들지 않음), `hostname`, `noTun` 사용자 공간 네트워킹을 사용하고 TUN 장치를 만들지 않음(권한 불필요), `devName` 장치 이름, `proxyNetworks` 네트워크에 공유할 로컬 네트워크(한 줄에 하나, `192.168.1.0/24-\u003e10.1.0.0/24`처럼 써서 네트워크 매핑 가능), `portForwards` 포트 포워딩(한 줄에 하나, 예: `tcp://127.0.0.1:2222/10.126.126.1:22`, 바인드 주소는 직접 지정하며 127.0.0.1 권장), `enableExitNode` 이 기기를 출구 노드로 허용, `exitNodes` 사용할 출구 노드(가상 IPv4, 한 줄에 하나), `latencyFirst` 지연 시간 우선 경로 선택, `kcpProxy`·`quicProxy` KCP·QUIC로 TCP 트래픽 프록시, `extraArgs` `easytier-core` 뒤에 추가할 인자(공백으로 구분), `env` 프로세스에 전달할 환경 변수(한 줄에 `KEY=VALUE` 하나). SOCKS5 옵션은 제공하지 않습니다. EasyTier의 SOCKS5는 모든 주소에서 수신하며 인증이 없기 때문입니다. 관리 포트는 Gately가 127.0.0.1에서 무작위로 할당하며 이 기기에서만 접근할 수 있습니다. 다음 경우 400을 반환합니다. 동시에 활성화된 인스턴스가 같은 포트를 수신하는 경우(TCP와 UDP는 따로 판단) 또는 포트 포워딩이 같은 로컬 포트에 바인드되는 경우, 동시에 활성화되어 TUN을 쓰는 인스턴스의 장치 이름이 같은 경우, 이름이 중복된 경우. 활성화, 일괄 활성화, 복사 시에도 같은 검사를 합니다.\n\n필요한 권한: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/easytier.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.Instance"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier 인스턴스 추가",
+        "tags": [
+          "EasyTier 네트워크"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances-delete": {
+      "post": {
+        "description": "필요한 권한: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchDeleteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier 인스턴스 일괄 삭제",
+        "tags": [
+          "EasyTier 네트워크"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances-enable": {
+      "put": {
+        "description": "필요한 권한: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchEnableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier 인스턴스 일괄 사용/사용 안 함",
+        "tags": [
+          "EasyTier 네트워크"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances-group": {
+      "put": {
+        "description": "필요한 권한: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier 인스턴스 그룹 일괄 설정",
+        "tags": [
+          "EasyTier 네트워크"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances-order": {
+      "put": {
+        "description": "필요한 권한: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.orderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier 인스턴스 순서 변경",
+        "tags": [
+          "EasyTier 네트워크"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}": {
+      "delete": {
+        "description": "필요한 권한: `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier 인스턴스 삭제",
+        "tags": [
+          "EasyTier 네트워크"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "필요한 권한: `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/easytier.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.Instance"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier 인스턴스 수정",
+        "tags": [
+          "EasyTier 네트워크"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/copy": {
+      "post": {
+        "description": "필요한 권한: `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/easytier.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.Instance"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier 인스턴스 복제",
+        "tags": [
+          "EasyTier 네트워크"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/enable": {
+      "put": {
+        "description": "필요한 권한: `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.enableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier 인스턴스 사용 설정/해제",
+        "tags": [
+          "EasyTier 네트워크"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/restart": {
+      "post": {
+        "description": "이 인스턴스의 `easytier-core` 프로세스를 다시 시작합니다. 다른 인스턴스에는 영향이 없습니다.\n\n필요한 권한: `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier 인스턴스 다시 시작",
+        "tags": [
+          "EasyTier 네트워크"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/secrets": {
+      "get": {
+        "description": "필요한 권한: `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "비밀 값 평문 보기",
+        "tags": [
+          "EasyTier 네트워크"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/status": {
+      "get": {
+        "description": "`status`는 stopped(비활성 또는 프로세스 미실행), starting(프로세스는 시작되었으나 관리 포트가 아직 준비되지 않음), running 중 하나입니다. `self`는 이 노드의 정보(가상 IP, 실제 수신 주소, STUN으로 탐지한 공인 주소와 NAT 유형)이고, `peers`는 네트워크의 다른 노드입니다. `cost`는 p2p(직접 연결) 또는 relay(N)(N홉 중계 경유), `direct`는 직접 연결 여부, `latencyMs`는 지연 시간, `tunnel`은 연결 프로토콜입니다. `peersDirect`는 직접 연결된 노드 수입니다.\n\n필요한 권한: `easytier:read`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.StatusView"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier 인스턴스의 실행 상태 보기",
+        "tags": [
+          "EasyTier 네트워크"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/logs": {
+      "delete": {
+        "description": "디스크의 로그 파일, 순환된 파일, 아카이브와 소스 기록도 함께 삭제합니다.\n\n필요한 권한: `easytier:write`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 실행 로그 비우기",
+        "tags": [
+          "EasyTier 네트워크"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "`since` 매개변수로 증분 조회하며 시퀀스 번호가 이 값보다 큰 로그를 반환합니다. `before`는 시퀀스 번호가 이 값보다 작은 로그를 반환하여 이전 기록을 불러올 때 사용합니다. `limit`은 그중 최신 항목만 반환하며, 메모리에 부족하면 로그 파일에 보관된 기록도 검색합니다. 필터 매개변수: `level` 최소 수준, `source` 소스, `q` 키워드(공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 `-`는 제외), `ip` 클라이언트 주소(전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분), `host` 사이트 이름 또는 도메인(부분 일치), `site` 사이트 이름(완전 일치, 해당 사이트의 접근 로그만 반환), `status` 상태 코드(`404`, `4xx`, `500-599` 등), `from`·`to` 시간 범위(RFC 3339 또는 밀리초 타임스탬프). `exclude`는 제외어로, 그중 하나라도 포함한 로그는 반환하지 않습니다. 작성법은 `q`와 같고 앞의 `-`는 생략할 수 있습니다.\n\n필요한 권한: `easytier:read`.",
+        "parameters": [
+          {
+            "description": "증분 조회: 일련번호가 이 값보다 큰 로그만 반환",
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "이전 로그 불러오기: 순번이 이 값보다 작은 로그만 반환",
+            "in": "query",
+            "name": "before",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "반환할 최대 개수로, 조건에 맞는 최신 항목부터 가져옵니다. 0 또는 생략 시 제한 없음",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "최소 수준: debug, info, warn 또는 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "소스 레이블, 대소문자 구분 없이 정확히 일치",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "키워드: 공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 - 는 제외",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "제외 키워드: 공백으로 구분, 큰따옴표로 구문을 묶음, 하나라도 포함하면 제외되며 q와 함께 적용",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "클라이언트 주소: 전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분, 앞에 ! 또는 -를 붙이면 제외",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름 또는 도메인의 일부",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "웹 서비스 리스너 key, 완전 일치. 이름이 같은 사이트나 리스너(예: IPv4와 IPv6를 따로 수신하는 경우)를 구분합니다",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "상태 코드(예: 404, 4xx, 500-599), 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 차단된 출처의 접근 로그를 숨깁니다. 차단되어 거부된 요청과 현재 차단 중인 출처의 모든 요청(차단을 일으킨 요청 포함)이 대상입니다(반환 결과에만 영향, 로그는 그대로 보관)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 관리 콘솔 로그인 세션이 있는 요청, 즉 관리자가 Web 서비스 사이트를 통해 콘솔에 접근하며 생긴 액세스 로그를 숨깁니다",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "시작 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "종료 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 실행 로그 보기",
+        "tags": [
+          "EasyTier 네트워크"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/logs/export": {
+      "get": {
+        "description": "필터 조건에 맞는 모든 로그를 첨부 파일로 스트리밍하여 반환합니다. 오래된 순서이며 디스크의 순환된 파일과 압축 아카이브도 포함합니다. `format`은 `jsonl`(기본값, 한 줄에 JSON 하나) 또는 `csv`(BOM 포함 UTF-8, = + - @로 시작하는 셀에는 수식 주입 방지를 위해 작은따옴표를 앞에 붙임)입니다. 필터 매개변수는 로그 조회 API와 같습니다. 읽기 전용 신원이 내보내는 내용은 조회할 때와 마찬가지로 자격 증명이 가려집니다. `lang`은 내보낼 내용의 언어(예: `en`)를 지정하며, 생략하면 Accept-Language를 따릅니다.\n\n필요한 권한: `easytier:read`.",
+        "parameters": [
+          {
+            "description": "내보내기 형식: jsonl(기본값, 한 줄에 JSON 하나) 또는 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "내보낼 내용의 언어(예: en). 생략하면 Accept-Language를 따릅니다",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "최소 수준: debug, info, warn 또는 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "소스 레이블, 대소문자 구분 없이 정확히 일치",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "키워드: 공백으로 구분하면 모두 포함, 큰따옴표로 구문 묶기, 앞의 - 는 제외",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "제외 키워드: 공백으로 구분, 큰따옴표로 구문을 묶음, 하나라도 포함하면 제외되며 q와 함께 적용",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "클라이언트 주소: 전체 주소, CIDR 또는 주소 일부, 여러 개는 쉼표로 구분, 앞에 ! 또는 -를 붙이면 제외",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름 또는 도메인의 일부",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "사이트 이름. 대소문자를 구분하지 않고 정확히 일치하며 해당 사이트의 접근 로그만 반환합니다",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "웹 서비스 리스너 key, 완전 일치. 이름이 같은 사이트나 리스너(예: IPv4와 IPv6를 따로 수신하는 경우)를 구분합니다",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "상태 코드(예: 404, 4xx, 500-599), 여러 개는 쉼표로 구분",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 차단된 출처의 접근 로그를 숨깁니다. 차단되어 거부된 요청과 현재 차단 중인 출처의 모든 요청(차단을 일으킨 요청 포함)이 대상입니다(반환 결과에만 영향, 로그는 그대로 보관)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1이면 관리 콘솔 로그인 세션이 있는 요청, 즉 관리자가 Web 서비스 사이트를 통해 콘솔에 접근하며 생긴 액세스 로그를 숨깁니다",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "시작 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "종료 시간, RFC 3339 또는 밀리초 타임스탬프",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그 내보내기",
+        "tags": [
+          "EasyTier 네트워크"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/logs/sources": {
+      "get": {
+        "description": "이름순으로 정렬된 소스 레이블 배열을 반환합니다. 로그에 나타난 소스(디스크 저장 시 재시작 후에도 유지)와 모듈 설정의 소스(예: Web 서비스의 모든 리스너와 IP 목록)를 포함하며 `source` 필터에 사용합니다. 소스는 로그와 마찬가지로 요청 언어로 번역됩니다.\n\n필요한 권한: `easytier:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 로그의 모든 소스 목록",
+        "tags": [
+          "EasyTier 네트워크"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/reset": {
+      "post": {
+        "description": "frp, Cloudflare 터널, Tailscale, NetBird, EasyTier, File Browser에서 제공되며 요청 본문은 필요 없습니다. 해당 모듈의 모든 프로세스를 중지하고, 설정(프로그램 경로와 다운로드 프록시 포함)을 기본값으로 되돌리며, Gately가 생성한 파일을 삭제합니다. frp 설정 파일, File Browser 각 인스턴스의 데이터 디렉터리(사용자, 공유 링크, 캐시), Tailscale 기본 상태 디렉터리의 로그인 상태(Gately가 관리하는 tailscaled가 실행 중이면 먼저 로그아웃하며, 사용자 지정 상태 디렉터리와 시스템에 있는 tailscaled는 처리하지 않음), NetBird 기본 상태 디렉터리의 로그인 상태와 키(Gately가 관리하는 데몬이 실행 중이면 먼저 로그아웃하며 이 기기는 네트워크에서 삭제됨, 사용자 지정 상태 디렉터리와 시스템에 있는 NetBird 서비스는 처리하지 않음)가 대상입니다. 이전 설정은 설정 기록에 남아 복원할 수 있고, 설치된 프로그램은 영향을 받지 않으며, 제거는 `DELETE /api/{module}/install`을 사용합니다.\n\n필요한 권한: `easytier:write`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모듈 기본 설정 복원",
+        "tags": [
+          "EasyTier 네트워크"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/settings": {
+      "get": {
+        "description": "`settings`(`corePath`와 다운로드 프록시 `installProxy`, 모든 인스턴스 공용)와 실제로 사용되는 easytier-core 프로그램 경로 `core`를 반환합니다. easytier-cli는 easytier-core가 있는 디렉터리에서 찾고, 없으면 설정 디렉터리 bin, PATH 순으로 찾습니다.\n\n필요한 권한: `easytier:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.SettingsView"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier 프로그램 설정 읽기",
+        "tags": [
+          "EasyTier 네트워크"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "요청 본문 `{\"corePath\": \"\"}`. 비워 두면 설정 디렉터리 bin, PATH 순으로 easytier-core를 찾습니다. `installProxy`는 설치 API로만 변경됩니다. 경로가 바뀌면 활성화된 인스턴스를 다시 시작하세요.\n\n필요한 권한: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/easytier.Settings"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier 프로그램 설정 저장",
+        "tags": [
+          "EasyTier 네트워크"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/status": {
+      "get": {
+        "description": "인스턴스 목록과 같은 순서의 배열을 반환하며, 각 항목에는 인스턴스 `key`, `name`과 해당 인스턴스의 상태가 포함되고 필드는 `GET /api/easytier/instances/{key}/status`와 같습니다. 비활성화된 인스턴스는 프로세스 상태만 반환하고 노드는 조회하지 않습니다.\n\n필요한 권한: `easytier:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/easytier.StatusView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "모든 EasyTier 인스턴스의 실행 상태 보기",
+        "tags": [
+          "EasyTier 네트워크"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/filebrowser/install": {
       "delete": {
         "description": "설정 디렉터리 bin 에 설치된 프로그램과 저장된 모든 이전 버전을 삭제한 뒤 이 프로그램을 사용하는 프로세스를 다시 시작합니다. PATH 에 같은 이름의 프로그램이 있으면 그것을 사용하고, 없으면 프로세스를 시작할 수 없습니다. 모듈 설정은 영향을 받지 않으며, 설정 삭제는 `POST /api/{module}/reset` 을 사용합니다.\n\n필요한 권한: `filebrowser:write`.",
@@ -17147,7 +19212,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "frp, Cloudflare 터널, Tailscale, NetBird, File Browser 에서 제공합니다. 설정 디렉터리 bin 에 설치된 버전, 저장된 이전 버전(`backups`, 최대 3개), 이 프로그램에 따로 지정한 다운로드 프록시 `proxy`, 현재 플랫폼, 설치 진행 상태 `state`(`stage` 는 checking, downloading, verifying, extracting, done, uptodate, failed 중 하나)를 반환합니다. `unsupported` 가 비어 있지 않으면 업스트림이 현재 플랫폼용 프로그램을 제공하지 않는다는 뜻입니다.\n\n필요한 권한: `filebrowser:read`.",
+        "description": "frp, Cloudflare 터널, Tailscale, NetBird, EasyTier, File Browser에서 제공됩니다. 설정 디렉터리 bin에 설치된 버전, 저장된 이전 버전(`backups`, 최대 3개), 해당 프로그램에 별도로 설정한 다운로드 프록시 `proxy`, 현재 플랫폼, 설치 진행 상태 `state`(`stage`는 checking, downloading, verifying, extracting, done, uptodate 또는 failed)를 반환합니다. `unsupported`가 비어 있지 않으면 업스트림이 현재 플랫폼용 프로그램을 제공하지 않는다는 뜻입니다.\n\n필요한 권한: `filebrowser:read`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -18663,7 +20728,7 @@
     },
     "/api/filebrowser/reset": {
       "post": {
-        "description": "frp, Cloudflare 터널, Tailscale, NetBird, File Browser 에서 제공하며 요청 본문이 필요 없습니다. 모듈의 모든 프로세스를 중지하고 설정(프로그램 경로와 다운로드 프록시 포함)을 기본값으로 되돌리며, Gately 가 생성한 파일을 삭제합니다: frp 설정 파일, File Browser 각 인스턴스의 데이터 디렉터리(사용자, 공유 링크, 캐시), Tailscale 기본 상태 디렉터리의 로그인 상태(Gately 가 관리하는 tailscaled 가 실행 중이면 먼저 로그아웃하며, 사용자 지정 상태 디렉터리와 시스템의 기존 tailscaled 는 처리하지 않음), NetBird 기본 상태 디렉터리의 로그인 상태와 키(Gately 가 관리하는 데몬이 실행 중이면 먼저 로그아웃하며 이 기기는 네트워크에서 삭제됨, 사용자 지정 상태 디렉터리와 시스템의 기존 NetBird 서비스는 처리하지 않음). 이전 설정은 설정 기록에 남아 복원할 수 있으며, 설치된 프로그램은 영향을 받지 않습니다. 제거는 `DELETE /api/{module}/install` 을 사용합니다.\n\n필요한 권한: `filebrowser:write`.",
+        "description": "frp, Cloudflare 터널, Tailscale, NetBird, EasyTier, File Browser에서 제공되며 요청 본문은 필요 없습니다. 해당 모듈의 모든 프로세스를 중지하고, 설정(프로그램 경로와 다운로드 프록시 포함)을 기본값으로 되돌리며, Gately가 생성한 파일을 삭제합니다. frp 설정 파일, File Browser 각 인스턴스의 데이터 디렉터리(사용자, 공유 링크, 캐시), Tailscale 기본 상태 디렉터리의 로그인 상태(Gately가 관리하는 tailscaled가 실행 중이면 먼저 로그아웃하며, 사용자 지정 상태 디렉터리와 시스템에 있는 tailscaled는 처리하지 않음), NetBird 기본 상태 디렉터리의 로그인 상태와 키(Gately가 관리하는 데몬이 실행 중이면 먼저 로그아웃하며 이 기기는 네트워크에서 삭제됨, 사용자 지정 상태 디렉터리와 시스템에 있는 NetBird 서비스는 처리하지 않음)가 대상입니다. 이전 설정은 설정 기록에 남아 복원할 수 있고, 설치된 프로그램은 영향을 받지 않으며, 제거는 `DELETE /api/{module}/install`을 사용합니다.\n\n필요한 권한: `filebrowser:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -19890,7 +21955,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "frp, Cloudflare 터널, Tailscale, NetBird, File Browser 에서 제공합니다. 설정 디렉터리 bin 에 설치된 버전, 저장된 이전 버전(`backups`, 최대 3개), 이 프로그램에 따로 지정한 다운로드 프록시 `proxy`, 현재 플랫폼, 설치 진행 상태 `state`(`stage` 는 checking, downloading, verifying, extracting, done, uptodate, failed 중 하나)를 반환합니다. `unsupported` 가 비어 있지 않으면 업스트림이 현재 플랫폼용 프로그램을 제공하지 않는다는 뜻입니다.\n\n필요한 권한: `frp:read`.",
+        "description": "frp, Cloudflare 터널, Tailscale, NetBird, EasyTier, File Browser에서 제공됩니다. 설정 디렉터리 bin에 설치된 버전, 저장된 이전 버전(`backups`, 최대 3개), 해당 프로그램에 별도로 설정한 다운로드 프록시 `proxy`, 현재 플랫폼, 설치 진행 상태 `state`(`stage`는 checking, downloading, verifying, extracting, done, uptodate 또는 failed)를 반환합니다. `unsupported`가 비어 있지 않으면 업스트림이 현재 플랫폼용 프로그램을 제공하지 않는다는 뜻입니다.\n\n필요한 권한: `frp:read`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -21345,7 +23410,7 @@
     },
     "/api/frp/reset": {
       "post": {
-        "description": "frp, Cloudflare 터널, Tailscale, NetBird, File Browser 에서 제공하며 요청 본문이 필요 없습니다. 모듈의 모든 프로세스를 중지하고 설정(프로그램 경로와 다운로드 프록시 포함)을 기본값으로 되돌리며, Gately 가 생성한 파일을 삭제합니다: frp 설정 파일, File Browser 각 인스턴스의 데이터 디렉터리(사용자, 공유 링크, 캐시), Tailscale 기본 상태 디렉터리의 로그인 상태(Gately 가 관리하는 tailscaled 가 실행 중이면 먼저 로그아웃하며, 사용자 지정 상태 디렉터리와 시스템의 기존 tailscaled 는 처리하지 않음), NetBird 기본 상태 디렉터리의 로그인 상태와 키(Gately 가 관리하는 데몬이 실행 중이면 먼저 로그아웃하며 이 기기는 네트워크에서 삭제됨, 사용자 지정 상태 디렉터리와 시스템의 기존 NetBird 서비스는 처리하지 않음). 이전 설정은 설정 기록에 남아 복원할 수 있으며, 설치된 프로그램은 영향을 받지 않습니다. 제거는 `DELETE /api/{module}/install` 을 사용합니다.\n\n필요한 권한: `frp:write`.",
+        "description": "frp, Cloudflare 터널, Tailscale, NetBird, EasyTier, File Browser에서 제공되며 요청 본문은 필요 없습니다. 해당 모듈의 모든 프로세스를 중지하고, 설정(프로그램 경로와 다운로드 프록시 포함)을 기본값으로 되돌리며, Gately가 생성한 파일을 삭제합니다. frp 설정 파일, File Browser 각 인스턴스의 데이터 디렉터리(사용자, 공유 링크, 캐시), Tailscale 기본 상태 디렉터리의 로그인 상태(Gately가 관리하는 tailscaled가 실행 중이면 먼저 로그아웃하며, 사용자 지정 상태 디렉터리와 시스템에 있는 tailscaled는 처리하지 않음), NetBird 기본 상태 디렉터리의 로그인 상태와 키(Gately가 관리하는 데몬이 실행 중이면 먼저 로그아웃하며 이 기기는 네트워크에서 삭제됨, 사용자 지정 상태 디렉터리와 시스템에 있는 NetBird 서비스는 처리하지 않음)가 대상입니다. 이전 설정은 설정 기록에 남아 복원할 수 있고, 설치된 프로그램은 영향을 받지 않으며, 제거는 `DELETE /api/{module}/install`을 사용합니다.\n\n필요한 권한: `frp:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -26872,7 +28937,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "frp, Cloudflare 터널, Tailscale, NetBird, File Browser 에서 제공합니다. 설정 디렉터리 bin 에 설치된 버전, 저장된 이전 버전(`backups`, 최대 3개), 이 프로그램에 따로 지정한 다운로드 프록시 `proxy`, 현재 플랫폼, 설치 진행 상태 `state`(`stage` 는 checking, downloading, verifying, extracting, done, uptodate, failed 중 하나)를 반환합니다. `unsupported` 가 비어 있지 않으면 업스트림이 현재 플랫폼용 프로그램을 제공하지 않는다는 뜻입니다.\n\n필요한 권한: `netbird:read`.",
+        "description": "frp, Cloudflare 터널, Tailscale, NetBird, EasyTier, File Browser에서 제공됩니다. 설정 디렉터리 bin에 설치된 버전, 저장된 이전 버전(`backups`, 최대 3개), 해당 프로그램에 별도로 설정한 다운로드 프록시 `proxy`, 현재 플랫폼, 설치 진행 상태 `state`(`stage`는 checking, downloading, verifying, extracting, done, uptodate 또는 failed)를 반환합니다. `unsupported`가 비어 있지 않으면 업스트림이 현재 플랫폼용 프로그램을 제공하지 않는다는 뜻입니다.\n\n필요한 권한: `netbird:read`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -28517,7 +30582,7 @@
     },
     "/api/netbird/reset": {
       "post": {
-        "description": "frp, Cloudflare 터널, Tailscale, NetBird, File Browser 에서 제공하며 요청 본문이 필요 없습니다. 모듈의 모든 프로세스를 중지하고 설정(프로그램 경로와 다운로드 프록시 포함)을 기본값으로 되돌리며, Gately 가 생성한 파일을 삭제합니다: frp 설정 파일, File Browser 각 인스턴스의 데이터 디렉터리(사용자, 공유 링크, 캐시), Tailscale 기본 상태 디렉터리의 로그인 상태(Gately 가 관리하는 tailscaled 가 실행 중이면 먼저 로그아웃하며, 사용자 지정 상태 디렉터리와 시스템의 기존 tailscaled 는 처리하지 않음), NetBird 기본 상태 디렉터리의 로그인 상태와 키(Gately 가 관리하는 데몬이 실행 중이면 먼저 로그아웃하며 이 기기는 네트워크에서 삭제됨, 사용자 지정 상태 디렉터리와 시스템의 기존 NetBird 서비스는 처리하지 않음). 이전 설정은 설정 기록에 남아 복원할 수 있으며, 설치된 프로그램은 영향을 받지 않습니다. 제거는 `DELETE /api/{module}/install` 을 사용합니다.\n\n필요한 권한: `netbird:write`.",
+        "description": "frp, Cloudflare 터널, Tailscale, NetBird, EasyTier, File Browser에서 제공되며 요청 본문은 필요 없습니다. 해당 모듈의 모든 프로세스를 중지하고, 설정(프로그램 경로와 다운로드 프록시 포함)을 기본값으로 되돌리며, Gately가 생성한 파일을 삭제합니다. frp 설정 파일, File Browser 각 인스턴스의 데이터 디렉터리(사용자, 공유 링크, 캐시), Tailscale 기본 상태 디렉터리의 로그인 상태(Gately가 관리하는 tailscaled가 실행 중이면 먼저 로그아웃하며, 사용자 지정 상태 디렉터리와 시스템에 있는 tailscaled는 처리하지 않음), NetBird 기본 상태 디렉터리의 로그인 상태와 키(Gately가 관리하는 데몬이 실행 중이면 먼저 로그아웃하며 이 기기는 네트워크에서 삭제됨, 사용자 지정 상태 디렉터리와 시스템에 있는 NetBird 서비스는 처리하지 않음)가 대상입니다. 이전 설정은 설정 기록에 남아 복원할 수 있고, 설치된 프로그램은 영향을 받지 않으며, 제거는 `DELETE /api/{module}/install`을 사용합니다.\n\n필요한 권한: `netbird:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -41775,7 +43840,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "frp, Cloudflare 터널, Tailscale, NetBird, File Browser 에서 제공합니다. 설정 디렉터리 bin 에 설치된 버전, 저장된 이전 버전(`backups`, 최대 3개), 이 프로그램에 따로 지정한 다운로드 프록시 `proxy`, 현재 플랫폼, 설치 진행 상태 `state`(`stage` 는 checking, downloading, verifying, extracting, done, uptodate, failed 중 하나)를 반환합니다. `unsupported` 가 비어 있지 않으면 업스트림이 현재 플랫폼용 프로그램을 제공하지 않는다는 뜻입니다.\n\n필요한 권한: `tailscale:read`.",
+        "description": "frp, Cloudflare 터널, Tailscale, NetBird, EasyTier, File Browser에서 제공됩니다. 설정 디렉터리 bin에 설치된 버전, 저장된 이전 버전(`backups`, 최대 3개), 해당 프로그램에 별도로 설정한 다운로드 프록시 `proxy`, 현재 플랫폼, 설치 진행 상태 `state`(`stage`는 checking, downloading, verifying, extracting, done, uptodate 또는 failed)를 반환합니다. `unsupported`가 비어 있지 않으면 업스트림이 현재 플랫폼용 프로그램을 제공하지 않는다는 뜻입니다.\n\n필요한 권한: `tailscale:read`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -43420,7 +45485,7 @@
     },
     "/api/tailscale/reset": {
       "post": {
-        "description": "frp, Cloudflare 터널, Tailscale, NetBird, File Browser 에서 제공하며 요청 본문이 필요 없습니다. 모듈의 모든 프로세스를 중지하고 설정(프로그램 경로와 다운로드 프록시 포함)을 기본값으로 되돌리며, Gately 가 생성한 파일을 삭제합니다: frp 설정 파일, File Browser 각 인스턴스의 데이터 디렉터리(사용자, 공유 링크, 캐시), Tailscale 기본 상태 디렉터리의 로그인 상태(Gately 가 관리하는 tailscaled 가 실행 중이면 먼저 로그아웃하며, 사용자 지정 상태 디렉터리와 시스템의 기존 tailscaled 는 처리하지 않음), NetBird 기본 상태 디렉터리의 로그인 상태와 키(Gately 가 관리하는 데몬이 실행 중이면 먼저 로그아웃하며 이 기기는 네트워크에서 삭제됨, 사용자 지정 상태 디렉터리와 시스템의 기존 NetBird 서비스는 처리하지 않음). 이전 설정은 설정 기록에 남아 복원할 수 있으며, 설치된 프로그램은 영향을 받지 않습니다. 제거는 `DELETE /api/{module}/install` 을 사용합니다.\n\n필요한 권한: `tailscale:write`.",
+        "description": "frp, Cloudflare 터널, Tailscale, NetBird, EasyTier, File Browser에서 제공되며 요청 본문은 필요 없습니다. 해당 모듈의 모든 프로세스를 중지하고, 설정(프로그램 경로와 다운로드 프록시 포함)을 기본값으로 되돌리며, Gately가 생성한 파일을 삭제합니다. frp 설정 파일, File Browser 각 인스턴스의 데이터 디렉터리(사용자, 공유 링크, 캐시), Tailscale 기본 상태 디렉터리의 로그인 상태(Gately가 관리하는 tailscaled가 실행 중이면 먼저 로그아웃하며, 사용자 지정 상태 디렉터리와 시스템에 있는 tailscaled는 처리하지 않음), NetBird 기본 상태 디렉터리의 로그인 상태와 키(Gately가 관리하는 데몬이 실행 중이면 먼저 로그아웃하며 이 기기는 네트워크에서 삭제됨, 사용자 지정 상태 디렉터리와 시스템에 있는 NetBird 서비스는 처리하지 않음)가 대상입니다. 이전 설정은 설정 기록에 남아 복원할 수 있고, 설치된 프로그램은 영향을 받지 않으며, 제거는 `DELETE /api/{module}/install`을 사용합니다.\n\n필요한 권한: `tailscale:write`.",
         "responses": {
           "200": {
             "description": "성공"
@@ -57124,6 +59189,9 @@
       "name": "NetBird 네트워크"
     },
     {
+      "name": "EasyTier 네트워크"
+    },
+    {
       "name": "frp 내부망 터널링"
     },
     {
@@ -57206,6 +59274,7 @@
     "stun",
     "tailscale",
     "netbird",
+    "easytier",
     "frp",
     "cloudflared",
     "ssl",

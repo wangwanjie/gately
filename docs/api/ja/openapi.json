@@ -444,6 +444,210 @@
         },
         "type": "object"
       },
+      "easytier.Instance": {
+        "properties": {
+          "devName": {
+            "type": "string"
+          },
+          "dhcp": {
+            "type": "boolean"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "enableExitNode": {
+            "type": "boolean"
+          },
+          "env": {
+            "type": "string"
+          },
+          "exitNodes": {
+            "type": "string"
+          },
+          "extraArgs": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "hostname": {
+            "type": "string"
+          },
+          "ipv4": {
+            "type": "string"
+          },
+          "kcpProxy": {
+            "type": "boolean"
+          },
+          "key": {
+            "type": "string"
+          },
+          "latencyFirst": {
+            "type": "boolean"
+          },
+          "listeners": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "networkName": {
+            "type": "string"
+          },
+          "networkSecret": {
+            "type": "string"
+          },
+          "noTun": {
+            "type": "boolean"
+          },
+          "peers": {
+            "type": "string"
+          },
+          "portForwards": {
+            "type": "string"
+          },
+          "proxyNetworks": {
+            "type": "string"
+          },
+          "quicProxy": {
+            "type": "boolean"
+          },
+          "remark": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.PeerView": {
+        "properties": {
+          "cost": {
+            "type": "string"
+          },
+          "direct": {
+            "type": "boolean"
+          },
+          "ip": {
+            "type": "string"
+          },
+          "latencyMs": {
+            "type": "number"
+          },
+          "loss": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nat": {
+            "type": "string"
+          },
+          "rx": {
+            "type": "string"
+          },
+          "tunnel": {
+            "type": "string"
+          },
+          "tx": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.SelfView": {
+        "properties": {
+          "ip": {
+            "type": "string"
+          },
+          "listeners": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nat": {
+            "type": "string"
+          },
+          "publicIps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.Settings": {
+        "properties": {
+          "corePath": {
+            "type": "string"
+          },
+          "installProxy": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.SettingsView": {
+        "properties": {
+          "core": {
+            "type": "string"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/easytier.Settings"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.StatusView": {
+        "properties": {
+          "cli": {
+            "type": "string"
+          },
+          "core": {
+            "type": "string"
+          },
+          "daemon": {
+            "$ref": "#/components/schemas/proc.State"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "peers": {
+            "items": {
+              "$ref": "#/components/schemas/easytier.PeerView"
+            },
+            "type": "array"
+          },
+          "peersDirect": {
+            "type": "integer"
+          },
+          "self": {
+            "$ref": "#/components/schemas/easytier.SelfView"
+          },
+          "status": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "events.TypeInfo": {
         "properties": {
           "level": {
@@ -7918,7 +8122,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、File Browser が提供します。設定ディレクトリの bin にインストール済みのバージョン、保存された旧バージョン（`backups`、最大 3 個）、このプログラム個別のダウンロードプロキシ `proxy`、現在のプラットフォーム、インストール進捗 `state`（`stage` は checking、downloading、verifying、extracting、done、uptodate、failed のいずれか）を返します。`unsupported` が空でない場合、上流は現在のプラットフォーム用のプログラムを提供していません。\n\n必要な権限: `cloudflared:read`。",
+        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、EasyTier、File Browser で利用できます。設定ディレクトリの bin にインストール済みのバージョン、保存された旧バージョン（`backups`、最大 3 件）、そのプログラム専用のダウンロードプロキシ `proxy`、現在のプラットフォーム、およびインストール進捗 `state`（`stage` は checking、downloading、verifying、extracting、done、uptodate、failed のいずれか）を返します。`unsupported` が空でない場合、上流が現在のプラットフォーム向けのプログラムを提供していないことを示します。\n\n必要な権限: `cloudflared:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -8653,7 +8857,7 @@
     },
     "/api/cloudflared/reset": {
       "post": {
-        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、File Browser が提供します。リクエストボディは不要です。モジュールのすべてのプロセスを停止し、設定（プログラムのパスとダウンロードプロキシを含む）をデフォルトに戻し、Gately が生成したファイルを削除します：frp の設定ファイル、File Browser 各インスタンスのデータディレクトリ（ユーザー、共有リンク、キャッシュ）、Tailscale のデフォルト状態ディレクトリにあるログイン状態（Gately が管理する tailscaled が動作中なら先にログアウト。カスタム状態ディレクトリと既存のシステム tailscaled は対象外）、NetBird のデフォルト状態ディレクトリにあるログイン状態と鍵（Gately が管理するデーモンが動作中なら先にログアウトし、このマシンはネットワークから削除されます。カスタム状態ディレクトリと既存のシステムの NetBird サービスは対象外）。以前の設定は設定履歴に残り復元できます。インストール済みのプログラムは影響を受けません。アンインストールは `DELETE /api/{module}/install` を使います。\n\n必要な権限: `cloudflared:write`。",
+        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、EasyTier、File Browser で利用でき、リクエストボディは不要です。このモジュールのすべてのプロセスを停止し、設定（プログラムパスとダウンロードプロキシを含む）を既定値に戻し、Gately が生成したファイルを削除します。対象は、frp の設定ファイル、File Browser 各インスタンスのデータディレクトリ（ユーザー、共有リンク、キャッシュ）、Tailscale の既定の状態ディレクトリにあるログイン状態（Gately が管理する tailscaled が実行中なら先にログアウトします。カスタムの状態ディレクトリとシステムの tailscaled は対象外）、NetBird の既定の状態ディレクトリにあるログイン状態とキー（Gately が管理するデーモンが実行中なら先にログアウトし、この端末はネットワークから削除されます。カスタムの状態ディレクトリとシステムの NetBird サービスは対象外）です。古い設定は設定履歴に残り、復元できます。インストール済みのプログラムは影響を受けません。アンインストールには `DELETE /api/{module}/install` を使います。\n\n必要な権限: `cloudflared:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -17096,6 +17300,1867 @@
         "x-token-allowed": true
       }
     },
+    "/api/easytier/install": {
+      "delete": {
+        "description": "設定ディレクトリの bin にインストールしたプログラムと保存されたすべての旧バージョンを削除し、このプログラムを使うプロセスを再起動します。PATH に同名のプログラムがあればそれを使い、なければプロセスは起動できません。モジュール設定は影響を受けません。設定の消去は `POST /api/{module}/reset` を使います。\n\n必要な権限: `easytier:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "管理プログラムをアンインストール",
+        "tags": [
+          "EasyTier ネットワーク"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、EasyTier、File Browser で利用できます。設定ディレクトリの bin にインストール済みのバージョン、保存された旧バージョン（`backups`、最大 3 件）、そのプログラム専用のダウンロードプロキシ `proxy`、現在のプラットフォーム、およびインストール進捗 `state`（`stage` は checking、downloading、verifying、extracting、done、uptodate、failed のいずれか）を返します。`unsupported` が空でない場合、上流が現在のプラットフォーム向けのプログラムを提供していないことを示します。\n\n必要な権限: `easytier:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "管理プログラムのインストール情報と進捗を表示",
+        "tags": [
+          "EasyTier ネットワーク"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "リクエストボディ `{\"version\": \"\", \"proxy\": \"\"}`：`version` が空の場合は最新の正式版をインストールし（すでに最新ならダウンロードせず `stage` は uptodate）、それ以外は指定バージョンをインストールします。`proxy` はダウンロードプロキシ（http、https、socks5）で、次回用に保存されます。空の場合はグローバル設定 `updateProxy` を使います。ダウンロード後に SHA-256 を検証して設定ディレクトリの bin にインストールし、既存のバージョンは旧バージョン一覧に移し、このプログラムを使うプロセスを再起動します。すぐに返り、進捗は `GET /api/{module}/install` で確認します。\n\n必要な権限: `easytier:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "管理プログラムをオンラインでインストールまたは更新",
+        "tags": [
+          "EasyTier ネットワーク"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/install/backups/{id}": {
+      "delete": {
+        "description": "必要な権限: `easytier:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "保存された旧バージョンを削除",
+        "tags": [
+          "EasyTier ネットワーク"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/install/check": {
+      "post": {
+        "description": "リクエストボディは不要です。上流の最新正式版を照会します（プログラムのダウンロードプロキシを使用し、未設定の場合はグローバル設定 `updateProxy` を使用）。ダウンロードやインストール済みプログラムの変更は行いません。戻り値は `GET /api/{module}/install` と同じで、`latest` は `{version, checkedAt, error, hasUpdate}`、`hasUpdate` は最新版が bin にインストールされたバージョンより新しいことを示します。自動更新チェックが有効な場合、Gately はインストール済みの管理プログラムについてもこのチェックを定期的に実行します。別のチェックが実行中の場合は 409 を返します。\n\n必要な権限: `easytier:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "管理プログラムの更新を確認",
+        "tags": [
+          "EasyTier ネットワーク"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/install/rollback": {
+      "post": {
+        "description": "リクエストボディ `{\"id\": \"\u003c旧バージョン ID\u003e\"}`。現在のバージョンは旧バージョンとして保存され、後で切り戻せます。完了後、このプログラムを使うプロセスを再起動します。\n\n必要な権限: `easytier:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "保存された旧バージョンに切り替え",
+        "tags": [
+          "EasyTier ネットワーク"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances": {
+      "get": {
+        "description": "必要な権限: `easytier:read`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/easytier.Instance"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier インスタンス の一覧を取得",
+        "tags": [
+          "EasyTier ネットワーク"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "各インスタンスは独立した `easytier-core` プロセスを実行し、それぞれ別の EasyTier ネットワークに参加できます。リクエストボディのフィールド: `name` 名前（重複不可）、`enable` 有効にするか、`networkName` ネットワーク名（必須、1〜64 文字、英数字と `. _ @ : + -`）と `networkSecret` ネットワークシークレット（名前とシークレットが同じノード同士のみ通信可能。環境変数 `ET_NETWORK_SECRET` 経由でプロセスに渡され、プロセス引数には現れず、ログでも非表示）、`peers` 起動時に接続するノードのアドレス（1 行に 1 つ、例: `tcp://public.easytier.cn:11010`。プロトコルは tcp、udp、ws、wss、quic、wg、faketcp、およびノード探索用の http、https、txt、srv）、`listeners` リッスンアドレス（1 行に 1 つ、`プロトコル://アドレス:ポート` の形式で記述。空の場合はどのポートもリッスンせず、他のノードへ接続するのみ）、`dhcp` 仮想 IP の自動割り当て（無効時は `ipv4` で固定の仮想 IP を指定可能、例: `10.126.126.2/24`。どちらもない場合、このノードはデータの転送のみを行い、ネットワークデバイスを作成しません）、`hostname`、`noTun` ユーザー空間ネットワークを使用し TUN デバイスを作成しない（特権不要）、`devName` デバイス名、`proxyNetworks` ネットワークに共有するローカルのネットワーク（1 行に 1 つ。`192.168.1.0/24-\u003e10.1.0.0/24` のように書くとネットワークをマッピング可能）、`portForwards` ポート転送（1 行に 1 つ、例: `tcp://127.0.0.1:2222/10.126.126.1:22`。バインドアドレスは指定したものが使われるため 127.0.0.1 を推奨）、`enableExitNode` この端末を出口ノードとして許可、`exitNodes` 使用する出口ノード（仮想 IPv4、1 行に 1 つ）、`latencyFirst` 遅延優先の経路選択、`kcpProxy`・`quicProxy` KCP・QUIC で TCP トラフィックをプロキシ、`extraArgs` `easytier-core` の後ろに追加する引数（空白区切り）、`env` プロセスに渡す環境変数（1 行に 1 つ `KEY=VALUE`）。SOCKS5 のオプションはありません。EasyTier の SOCKS5 はすべてのアドレスでリッスンし、認証がないためです。管理ポートは Gately が 127.0.0.1 上でランダムに割り当て、本機からのみアクセスできます。次の場合は 400 を返します: 同時に有効なインスタンスが同じポートをリッスンする（TCP と UDP は別々に判定）、またはポート転送が同じローカルポートにバインドする、同時に有効で TUN を使うインスタンスのデバイス名が同じ、名前が重複している。有効化、一括有効化、コピー時も同じチェックを行います。\n\n必要な権限: `easytier:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/easytier.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.Instance"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier インスタンスを追加",
+        "tags": [
+          "EasyTier ネットワーク"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances-delete": {
+      "post": {
+        "description": "必要な権限: `easytier:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchDeleteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier インスタンス の一括削除",
+        "tags": [
+          "EasyTier ネットワーク"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances-enable": {
+      "put": {
+        "description": "必要な権限: `easytier:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchEnableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier インスタンス の一括有効化・無効化",
+        "tags": [
+          "EasyTier ネットワーク"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances-group": {
+      "put": {
+        "description": "必要な権限: `easytier:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier インスタンス のグループを一括設定",
+        "tags": [
+          "EasyTier ネットワーク"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances-order": {
+      "put": {
+        "description": "必要な権限: `easytier:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.orderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier インスタンス の並び順を変更",
+        "tags": [
+          "EasyTier ネットワーク"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}": {
+      "delete": {
+        "description": "必要な権限: `easytier:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier インスタンス を削除",
+        "tags": [
+          "EasyTier ネットワーク"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "必要な権限: `easytier:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/easytier.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.Instance"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier インスタンス を更新",
+        "tags": [
+          "EasyTier ネットワーク"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/copy": {
+      "post": {
+        "description": "必要な権限: `easytier:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/easytier.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.Instance"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier インスタンス を複製",
+        "tags": [
+          "EasyTier ネットワーク"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/enable": {
+      "put": {
+        "description": "必要な権限: `easytier:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.enableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier インスタンス の有効/無効を切り替え",
+        "tags": [
+          "EasyTier ネットワーク"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/restart": {
+      "post": {
+        "description": "このインスタンスの `easytier-core` プロセスを再起動します。他のインスタンスには影響しません。\n\n必要な権限: `easytier:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier インスタンスを再起動",
+        "tags": [
+          "EasyTier ネットワーク"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/secrets": {
+      "get": {
+        "description": "必要な権限: `easytier:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "シークレットを平文で表示",
+        "tags": [
+          "EasyTier ネットワーク"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/status": {
+      "get": {
+        "description": "`status` は stopped（無効、またはプロセスが未実行）、starting（プロセスは起動済みで管理ポートが未準備）、running のいずれかです。`self` は本機の情報（仮想 IP、実際のリッスンアドレス、STUN で検出した公開アドレスと NAT タイプ）、`peers` はネットワーク内の他のノードです。`cost` は p2p（直接接続）または relay(N)（N ホップのリレー経由）、`direct` は直接接続かどうか、`latencyMs` は遅延、`tunnel` は接続プロトコルを表します。`peersDirect` は直接接続しているノード数です。\n\n必要な権限: `easytier:read`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.StatusView"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier インスタンスの実行状態を表示",
+        "tags": [
+          "EasyTier ネットワーク"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/logs": {
+      "delete": {
+        "description": "ディスク上のログファイル、ローテーション済みファイル、アーカイブ、ソース記録も削除します。\n\n必要な権限: `easytier:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールの実行ログを消去",
+        "tags": [
+          "EasyTier ネットワーク"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "`since` パラメーターで増分取得でき、シーケンス番号がこの値より大きいログを返します。`before` はシーケンス番号がこの値より小さいログを返し、古い記録の読み込みに使います。`limit` はそのうち最新の指定件数だけを返し、メモリ内で足りない場合はログファイルに残っている履歴も検索します。フィルターパラメーター：`level` 最低レベル、`source` ソース、`q` キーワード（スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の `-` で除外）、`ip` クライアントアドレス（完全なアドレス、CIDR またはアドレスの一部、複数はカンマ区切り）、`host` サイト名またはドメイン（部分一致）、`site` サイト名（完全一致、そのサイトのアクセスログのみ返す）、`status` ステータスコード（`404`、`4xx`、`500-599` など）、`from`・`to` 時間範囲（RFC 3339 またはミリ秒タイムスタンプ）。`exclude` は除外語で、いずれかを含むログは返しません。書き方は `q` と同じで、先頭の `-` は省略できます。\n\n必要な権限: `easytier:read`。",
+        "parameters": [
+          {
+            "description": "増分取得：このシーケンス番号より大きいログのみ返します",
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "過去のログを読み込む：シーケンス番号がこの値より小さいログのみを返します",
+            "in": "query",
+            "name": "before",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "返す最大件数。条件に合う最新のものから取ります。0 または省略時は無制限",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "最低レベル：debug、info、warn、error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ソースラベル（大文字小文字を区別しない完全一致）",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "キーワード：スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の - で除外",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "除外キーワード：スペース区切り、二重引用符でフレーズを指定。いずれかを含むと除外。q と同時に適用",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "クライアントアドレス：完全なアドレス、CIDR またはアドレスの一部。複数はカンマ区切り。先頭に ! または - を付けると除外",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名またはドメインの一部",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web サービスのリスナー key（完全一致）。同名のサイトや同名のリスナー（IPv4 と IPv6 を別々に待ち受ける場合など）を区別します",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ステータスコード（404、4xx、500-599 など、複数はカンマ区切り）",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、禁止された送信元のアクセスログを隠します。禁止により拒否されたリクエストと、現在も禁止中の送信元のすべてのリクエスト（禁止のきっかけになったものを含む）が対象です（返却結果にのみ影響し、ログは保存されます）",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、管理画面のログインセッションを持つリクエスト（管理者が Web サービスのサイト経由で管理画面にアクセスして生じたアクセスログ）を非表示にします",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "終了時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールの実行ログを表示",
+        "tags": [
+          "EasyTier ネットワーク"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/logs/export": {
+      "get": {
+        "description": "フィルター条件に一致するすべてのログを添付ファイルとしてストリーミングで返します。古い順で、ディスク上のローテーション済みファイルと圧縮アーカイブも含みます。`format` は `jsonl`（既定、1 行に 1 件の JSON）または `csv`（BOM 付き UTF-8。= + - @ で始まるセルには数式インジェクション防止のため先頭に単一引用符を付けます）。フィルターパラメーターはログ表示 API と同じです。読み取り専用の ID がエクスポートする内容は、表示時と同様に認証情報がマスクされます。`lang` でエクスポート内容の言語（`en` など）を指定します。省略時は Accept-Language に従います。\n\n必要な権限: `easytier:read`。",
+        "parameters": [
+          {
+            "description": "エクスポート形式：jsonl（既定、1 行に 1 件の JSON）または csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "エクスポート内容の言語（例: en）。省略時は Accept-Language に従います",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低レベル：debug、info、warn、error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ソースラベル（大文字小文字を区別しない完全一致）",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "キーワード：スペース区切りはすべてを含む、二重引用符でフレーズ、先頭の - で除外",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "除外キーワード：スペース区切り、二重引用符でフレーズを指定。いずれかを含むと除外。q と同時に適用",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "クライアントアドレス：完全なアドレス、CIDR またはアドレスの一部。複数はカンマ区切り。先頭に ! または - を付けると除外",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名またはドメインの一部",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "サイト名。大文字小文字を区別せず完全一致し、そのサイトのアクセスログのみを返します",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web サービスのリスナー key（完全一致）。同名のサイトや同名のリスナー（IPv4 と IPv6 を別々に待ち受ける場合など）を区別します",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ステータスコード（404、4xx、500-599 など、複数はカンマ区切り）",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、禁止された送信元のアクセスログを隠します。禁止により拒否されたリクエストと、現在も禁止中の送信元のすべてのリクエスト（禁止のきっかけになったものを含む）が対象です（返却結果にのみ影響し、ログは保存されます）",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 のとき、管理画面のログインセッションを持つリクエスト（管理者が Web サービスのサイト経由で管理画面にアクセスして生じたアクセスログ）を非表示にします",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "終了時刻（RFC 3339 またはミリ秒タイムスタンプ）",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログをエクスポート",
+        "tags": [
+          "EasyTier ネットワーク"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/logs/sources": {
+      "get": {
+        "description": "名前順に並べたソースラベルの配列を返します。ログに出現したソース（ディスク保存時は再起動後も保持）と、モジュール設定のソース（Web サービスのすべてのリスナーや IP リストなど）を含み、`source` での絞り込みに使用します。ソースはログと同様にリクエストの言語に翻訳されます。\n\n必要な権限: `easytier:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールログのすべてのソースを一覧表示",
+        "tags": [
+          "EasyTier ネットワーク"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/reset": {
+      "post": {
+        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、EasyTier、File Browser で利用でき、リクエストボディは不要です。このモジュールのすべてのプロセスを停止し、設定（プログラムパスとダウンロードプロキシを含む）を既定値に戻し、Gately が生成したファイルを削除します。対象は、frp の設定ファイル、File Browser 各インスタンスのデータディレクトリ（ユーザー、共有リンク、キャッシュ）、Tailscale の既定の状態ディレクトリにあるログイン状態（Gately が管理する tailscaled が実行中なら先にログアウトします。カスタムの状態ディレクトリとシステムの tailscaled は対象外）、NetBird の既定の状態ディレクトリにあるログイン状態とキー（Gately が管理するデーモンが実行中なら先にログアウトし、この端末はネットワークから削除されます。カスタムの状態ディレクトリとシステムの NetBird サービスは対象外）です。古い設定は設定履歴に残り、復元できます。インストール済みのプログラムは影響を受けません。アンインストールには `DELETE /api/{module}/install` を使います。\n\n必要な権限: `easytier:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "モジュールのデフォルト設定に戻す",
+        "tags": [
+          "EasyTier ネットワーク"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/settings": {
+      "get": {
+        "description": "`settings`（`corePath` とダウンロードプロキシ `installProxy`、全インスタンス共通）と、実際に使用される easytier-core のパス `core` を返します。easytier-cli は easytier-core があるディレクトリで探し、見つからない場合は設定ディレクトリの bin、続いて PATH の順で探します。\n\n必要な権限: `easytier:read`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.SettingsView"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier プログラム設定を読み取る",
+        "tags": [
+          "EasyTier ネットワーク"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "リクエストボディ `{\"corePath\": \"\"}`。空の場合は設定ディレクトリの bin、続いて PATH の順で easytier-core を探します。`installProxy` はインストール用 API からのみ変更されます。パスを変更したら、有効なインスタンスを再起動してください。\n\n必要な権限: `easytier:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/easytier.Settings"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier プログラム設定を保存",
+        "tags": [
+          "EasyTier ネットワーク"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/status": {
+      "get": {
+        "description": "インスタンス一覧と同じ順序の配列を返します。各要素にはインスタンスの `key`、`name` と状態が含まれ、フィールドは `GET /api/easytier/instances/{key}/status` と同じです。無効なインスタンスはプロセスの状態のみ返し、ノードの問い合わせは行いません。\n\n必要な権限: `easytier:read`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/easytier.StatusView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "すべての EasyTier インスタンスの実行状態を表示",
+        "tags": [
+          "EasyTier ネットワーク"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/filebrowser/install": {
       "delete": {
         "description": "設定ディレクトリの bin にインストールしたプログラムと保存されたすべての旧バージョンを削除し、このプログラムを使うプロセスを再起動します。PATH に同名のプログラムがあればそれを使い、なければプロセスは起動できません。モジュール設定は影響を受けません。設定の消去は `POST /api/{module}/reset` を使います。\n\n必要な権限: `filebrowser:write`。",
@@ -17147,7 +19212,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、File Browser が提供します。設定ディレクトリの bin にインストール済みのバージョン、保存された旧バージョン（`backups`、最大 3 個）、このプログラム個別のダウンロードプロキシ `proxy`、現在のプラットフォーム、インストール進捗 `state`（`stage` は checking、downloading、verifying、extracting、done、uptodate、failed のいずれか）を返します。`unsupported` が空でない場合、上流は現在のプラットフォーム用のプログラムを提供していません。\n\n必要な権限: `filebrowser:read`。",
+        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、EasyTier、File Browser で利用できます。設定ディレクトリの bin にインストール済みのバージョン、保存された旧バージョン（`backups`、最大 3 件）、そのプログラム専用のダウンロードプロキシ `proxy`、現在のプラットフォーム、およびインストール進捗 `state`（`stage` は checking、downloading、verifying、extracting、done、uptodate、failed のいずれか）を返します。`unsupported` が空でない場合、上流が現在のプラットフォーム向けのプログラムを提供していないことを示します。\n\n必要な権限: `filebrowser:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -18663,7 +20728,7 @@
     },
     "/api/filebrowser/reset": {
       "post": {
-        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、File Browser が提供します。リクエストボディは不要です。モジュールのすべてのプロセスを停止し、設定（プログラムのパスとダウンロードプロキシを含む）をデフォルトに戻し、Gately が生成したファイルを削除します：frp の設定ファイル、File Browser 各インスタンスのデータディレクトリ（ユーザー、共有リンク、キャッシュ）、Tailscale のデフォルト状態ディレクトリにあるログイン状態（Gately が管理する tailscaled が動作中なら先にログアウト。カスタム状態ディレクトリと既存のシステム tailscaled は対象外）、NetBird のデフォルト状態ディレクトリにあるログイン状態と鍵（Gately が管理するデーモンが動作中なら先にログアウトし、このマシンはネットワークから削除されます。カスタム状態ディレクトリと既存のシステムの NetBird サービスは対象外）。以前の設定は設定履歴に残り復元できます。インストール済みのプログラムは影響を受けません。アンインストールは `DELETE /api/{module}/install` を使います。\n\n必要な権限: `filebrowser:write`。",
+        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、EasyTier、File Browser で利用でき、リクエストボディは不要です。このモジュールのすべてのプロセスを停止し、設定（プログラムパスとダウンロードプロキシを含む）を既定値に戻し、Gately が生成したファイルを削除します。対象は、frp の設定ファイル、File Browser 各インスタンスのデータディレクトリ（ユーザー、共有リンク、キャッシュ）、Tailscale の既定の状態ディレクトリにあるログイン状態（Gately が管理する tailscaled が実行中なら先にログアウトします。カスタムの状態ディレクトリとシステムの tailscaled は対象外）、NetBird の既定の状態ディレクトリにあるログイン状態とキー（Gately が管理するデーモンが実行中なら先にログアウトし、この端末はネットワークから削除されます。カスタムの状態ディレクトリとシステムの NetBird サービスは対象外）です。古い設定は設定履歴に残り、復元できます。インストール済みのプログラムは影響を受けません。アンインストールには `DELETE /api/{module}/install` を使います。\n\n必要な権限: `filebrowser:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -19890,7 +21955,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、File Browser が提供します。設定ディレクトリの bin にインストール済みのバージョン、保存された旧バージョン（`backups`、最大 3 個）、このプログラム個別のダウンロードプロキシ `proxy`、現在のプラットフォーム、インストール進捗 `state`（`stage` は checking、downloading、verifying、extracting、done、uptodate、failed のいずれか）を返します。`unsupported` が空でない場合、上流は現在のプラットフォーム用のプログラムを提供していません。\n\n必要な権限: `frp:read`。",
+        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、EasyTier、File Browser で利用できます。設定ディレクトリの bin にインストール済みのバージョン、保存された旧バージョン（`backups`、最大 3 件）、そのプログラム専用のダウンロードプロキシ `proxy`、現在のプラットフォーム、およびインストール進捗 `state`（`stage` は checking、downloading、verifying、extracting、done、uptodate、failed のいずれか）を返します。`unsupported` が空でない場合、上流が現在のプラットフォーム向けのプログラムを提供していないことを示します。\n\n必要な権限: `frp:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -21345,7 +23410,7 @@
     },
     "/api/frp/reset": {
       "post": {
-        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、File Browser が提供します。リクエストボディは不要です。モジュールのすべてのプロセスを停止し、設定（プログラムのパスとダウンロードプロキシを含む）をデフォルトに戻し、Gately が生成したファイルを削除します：frp の設定ファイル、File Browser 各インスタンスのデータディレクトリ（ユーザー、共有リンク、キャッシュ）、Tailscale のデフォルト状態ディレクトリにあるログイン状態（Gately が管理する tailscaled が動作中なら先にログアウト。カスタム状態ディレクトリと既存のシステム tailscaled は対象外）、NetBird のデフォルト状態ディレクトリにあるログイン状態と鍵（Gately が管理するデーモンが動作中なら先にログアウトし、このマシンはネットワークから削除されます。カスタム状態ディレクトリと既存のシステムの NetBird サービスは対象外）。以前の設定は設定履歴に残り復元できます。インストール済みのプログラムは影響を受けません。アンインストールは `DELETE /api/{module}/install` を使います。\n\n必要な権限: `frp:write`。",
+        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、EasyTier、File Browser で利用でき、リクエストボディは不要です。このモジュールのすべてのプロセスを停止し、設定（プログラムパスとダウンロードプロキシを含む）を既定値に戻し、Gately が生成したファイルを削除します。対象は、frp の設定ファイル、File Browser 各インスタンスのデータディレクトリ（ユーザー、共有リンク、キャッシュ）、Tailscale の既定の状態ディレクトリにあるログイン状態（Gately が管理する tailscaled が実行中なら先にログアウトします。カスタムの状態ディレクトリとシステムの tailscaled は対象外）、NetBird の既定の状態ディレクトリにあるログイン状態とキー（Gately が管理するデーモンが実行中なら先にログアウトし、この端末はネットワークから削除されます。カスタムの状態ディレクトリとシステムの NetBird サービスは対象外）です。古い設定は設定履歴に残り、復元できます。インストール済みのプログラムは影響を受けません。アンインストールには `DELETE /api/{module}/install` を使います。\n\n必要な権限: `frp:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -26872,7 +28937,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、File Browser が提供します。設定ディレクトリの bin にインストール済みのバージョン、保存された旧バージョン（`backups`、最大 3 個）、このプログラム個別のダウンロードプロキシ `proxy`、現在のプラットフォーム、インストール進捗 `state`（`stage` は checking、downloading、verifying、extracting、done、uptodate、failed のいずれか）を返します。`unsupported` が空でない場合、上流は現在のプラットフォーム用のプログラムを提供していません。\n\n必要な権限: `netbird:read`。",
+        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、EasyTier、File Browser で利用できます。設定ディレクトリの bin にインストール済みのバージョン、保存された旧バージョン（`backups`、最大 3 件）、そのプログラム専用のダウンロードプロキシ `proxy`、現在のプラットフォーム、およびインストール進捗 `state`（`stage` は checking、downloading、verifying、extracting、done、uptodate、failed のいずれか）を返します。`unsupported` が空でない場合、上流が現在のプラットフォーム向けのプログラムを提供していないことを示します。\n\n必要な権限: `netbird:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -28517,7 +30582,7 @@
     },
     "/api/netbird/reset": {
       "post": {
-        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、File Browser が提供します。リクエストボディは不要です。モジュールのすべてのプロセスを停止し、設定（プログラムのパスとダウンロードプロキシを含む）をデフォルトに戻し、Gately が生成したファイルを削除します：frp の設定ファイル、File Browser 各インスタンスのデータディレクトリ（ユーザー、共有リンク、キャッシュ）、Tailscale のデフォルト状態ディレクトリにあるログイン状態（Gately が管理する tailscaled が動作中なら先にログアウト。カスタム状態ディレクトリと既存のシステム tailscaled は対象外）、NetBird のデフォルト状態ディレクトリにあるログイン状態と鍵（Gately が管理するデーモンが動作中なら先にログアウトし、このマシンはネットワークから削除されます。カスタム状態ディレクトリと既存のシステムの NetBird サービスは対象外）。以前の設定は設定履歴に残り復元できます。インストール済みのプログラムは影響を受けません。アンインストールは `DELETE /api/{module}/install` を使います。\n\n必要な権限: `netbird:write`。",
+        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、EasyTier、File Browser で利用でき、リクエストボディは不要です。このモジュールのすべてのプロセスを停止し、設定（プログラムパスとダウンロードプロキシを含む）を既定値に戻し、Gately が生成したファイルを削除します。対象は、frp の設定ファイル、File Browser 各インスタンスのデータディレクトリ（ユーザー、共有リンク、キャッシュ）、Tailscale の既定の状態ディレクトリにあるログイン状態（Gately が管理する tailscaled が実行中なら先にログアウトします。カスタムの状態ディレクトリとシステムの tailscaled は対象外）、NetBird の既定の状態ディレクトリにあるログイン状態とキー（Gately が管理するデーモンが実行中なら先にログアウトし、この端末はネットワークから削除されます。カスタムの状態ディレクトリとシステムの NetBird サービスは対象外）です。古い設定は設定履歴に残り、復元できます。インストール済みのプログラムは影響を受けません。アンインストールには `DELETE /api/{module}/install` を使います。\n\n必要な権限: `netbird:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -41775,7 +43840,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、File Browser が提供します。設定ディレクトリの bin にインストール済みのバージョン、保存された旧バージョン（`backups`、最大 3 個）、このプログラム個別のダウンロードプロキシ `proxy`、現在のプラットフォーム、インストール進捗 `state`（`stage` は checking、downloading、verifying、extracting、done、uptodate、failed のいずれか）を返します。`unsupported` が空でない場合、上流は現在のプラットフォーム用のプログラムを提供していません。\n\n必要な権限: `tailscale:read`。",
+        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、EasyTier、File Browser で利用できます。設定ディレクトリの bin にインストール済みのバージョン、保存された旧バージョン（`backups`、最大 3 件）、そのプログラム専用のダウンロードプロキシ `proxy`、現在のプラットフォーム、およびインストール進捗 `state`（`stage` は checking、downloading、verifying、extracting、done、uptodate、failed のいずれか）を返します。`unsupported` が空でない場合、上流が現在のプラットフォーム向けのプログラムを提供していないことを示します。\n\n必要な権限: `tailscale:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -43420,7 +45485,7 @@
     },
     "/api/tailscale/reset": {
       "post": {
-        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、File Browser が提供します。リクエストボディは不要です。モジュールのすべてのプロセスを停止し、設定（プログラムのパスとダウンロードプロキシを含む）をデフォルトに戻し、Gately が生成したファイルを削除します：frp の設定ファイル、File Browser 各インスタンスのデータディレクトリ（ユーザー、共有リンク、キャッシュ）、Tailscale のデフォルト状態ディレクトリにあるログイン状態（Gately が管理する tailscaled が動作中なら先にログアウト。カスタム状態ディレクトリと既存のシステム tailscaled は対象外）、NetBird のデフォルト状態ディレクトリにあるログイン状態と鍵（Gately が管理するデーモンが動作中なら先にログアウトし、このマシンはネットワークから削除されます。カスタム状態ディレクトリと既存のシステムの NetBird サービスは対象外）。以前の設定は設定履歴に残り復元できます。インストール済みのプログラムは影響を受けません。アンインストールは `DELETE /api/{module}/install` を使います。\n\n必要な権限: `tailscale:write`。",
+        "description": "frp、Cloudflare トンネル、Tailscale、NetBird、EasyTier、File Browser で利用でき、リクエストボディは不要です。このモジュールのすべてのプロセスを停止し、設定（プログラムパスとダウンロードプロキシを含む）を既定値に戻し、Gately が生成したファイルを削除します。対象は、frp の設定ファイル、File Browser 各インスタンスのデータディレクトリ（ユーザー、共有リンク、キャッシュ）、Tailscale の既定の状態ディレクトリにあるログイン状態（Gately が管理する tailscaled が実行中なら先にログアウトします。カスタムの状態ディレクトリとシステムの tailscaled は対象外）、NetBird の既定の状態ディレクトリにあるログイン状態とキー（Gately が管理するデーモンが実行中なら先にログアウトし、この端末はネットワークから削除されます。カスタムの状態ディレクトリとシステムの NetBird サービスは対象外）です。古い設定は設定履歴に残り、復元できます。インストール済みのプログラムは影響を受けません。アンインストールには `DELETE /api/{module}/install` を使います。\n\n必要な権限: `tailscale:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -57124,6 +59189,9 @@
       "name": "NetBird ネットワーク"
     },
     {
+      "name": "EasyTier ネットワーク"
+    },
+    {
       "name": "frp イントラネット穿透"
     },
     {
@@ -57206,6 +59274,7 @@
     "stun",
     "tailscale",
     "netbird",
+    "easytier",
     "frp",
     "cloudflared",
     "ssl",

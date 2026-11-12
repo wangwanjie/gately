@@ -444,6 +444,210 @@
         },
         "type": "object"
       },
+      "easytier.Instance": {
+        "properties": {
+          "devName": {
+            "type": "string"
+          },
+          "dhcp": {
+            "type": "boolean"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "enableExitNode": {
+            "type": "boolean"
+          },
+          "env": {
+            "type": "string"
+          },
+          "exitNodes": {
+            "type": "string"
+          },
+          "extraArgs": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "hostname": {
+            "type": "string"
+          },
+          "ipv4": {
+            "type": "string"
+          },
+          "kcpProxy": {
+            "type": "boolean"
+          },
+          "key": {
+            "type": "string"
+          },
+          "latencyFirst": {
+            "type": "boolean"
+          },
+          "listeners": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "networkName": {
+            "type": "string"
+          },
+          "networkSecret": {
+            "type": "string"
+          },
+          "noTun": {
+            "type": "boolean"
+          },
+          "peers": {
+            "type": "string"
+          },
+          "portForwards": {
+            "type": "string"
+          },
+          "proxyNetworks": {
+            "type": "string"
+          },
+          "quicProxy": {
+            "type": "boolean"
+          },
+          "remark": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.PeerView": {
+        "properties": {
+          "cost": {
+            "type": "string"
+          },
+          "direct": {
+            "type": "boolean"
+          },
+          "ip": {
+            "type": "string"
+          },
+          "latencyMs": {
+            "type": "number"
+          },
+          "loss": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nat": {
+            "type": "string"
+          },
+          "rx": {
+            "type": "string"
+          },
+          "tunnel": {
+            "type": "string"
+          },
+          "tx": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.SelfView": {
+        "properties": {
+          "ip": {
+            "type": "string"
+          },
+          "listeners": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nat": {
+            "type": "string"
+          },
+          "publicIps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.Settings": {
+        "properties": {
+          "corePath": {
+            "type": "string"
+          },
+          "installProxy": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.SettingsView": {
+        "properties": {
+          "core": {
+            "type": "string"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/easytier.Settings"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.StatusView": {
+        "properties": {
+          "cli": {
+            "type": "string"
+          },
+          "core": {
+            "type": "string"
+          },
+          "daemon": {
+            "$ref": "#/components/schemas/proc.State"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "peers": {
+            "items": {
+              "$ref": "#/components/schemas/easytier.PeerView"
+            },
+            "type": "array"
+          },
+          "peersDirect": {
+            "type": "integer"
+          },
+          "self": {
+            "$ref": "#/components/schemas/easytier.SelfView"
+          },
+          "status": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "events.TypeInfo": {
         "properties": {
           "level": {
@@ -7918,7 +8122,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Fourni par frp, Tunnel Cloudflare, Tailscale, NetBird et File Browser. Renvoie la version installée dans bin sous le répertoire de configuration, les versions précédentes conservées (`backups`, 3 au plus), le proxy de téléchargement propre à ce programme (`proxy`), la plateforme actuelle et la progression `state` (`stage` vaut checking, downloading, verifying, extracting, done, uptodate ou failed). Un `unsupported` non vide signifie que le projet ne fournit pas de programme pour la plateforme actuelle.\n\nPermission requise : `cloudflared:read`.",
+        "description": "Disponible pour frp, les tunnels Cloudflare, Tailscale, NetBird, EasyTier et File Browser. Renvoie les versions installées dans le dossier bin du répertoire de configuration, les anciennes versions conservées (`backups`, 3 au maximum), le proxy de téléchargement propre au programme `proxy`, la plateforme actuelle et l'avancement de l'installation `state` (`stage` vaut checking, downloading, verifying, extracting, done, uptodate ou failed). Si `unsupported` n'est pas vide, l'amont ne fournit aucun programme pour la plateforme actuelle.\n\nPermission requise : `cloudflared:read`.",
         "responses": {
           "200": {
             "description": "Succès"
@@ -8653,7 +8857,7 @@
     },
     "/api/cloudflared/reset": {
       "post": {
-        "description": "Fourni par frp, Tunnel Cloudflare, Tailscale, NetBird et File Browser ; sans corps. Arrête tous les processus du module, rétablit ses paramètres par défaut (y compris le chemin du programme et le proxy de téléchargement) et supprime les fichiers que Gately a générés pour lui : les fichiers de configuration frp, le répertoire de données de chaque instance File Browser (utilisateurs, liens de partage et caches), l'état de connexion du répertoire d'état Tailscale par défaut (un tailscaled géré par Gately en cours d'exécution se déconnecte d'abord ; les répertoires d'état personnalisés et un tailscaled système existant ne sont pas touchés) et l'état de connexion et les clés du répertoire d'état NetBird par défaut (un démon géré par Gately en cours d'exécution se déconnecte d'abord, ce qui retire cette machine du réseau ; les répertoires d'état personnalisés et un service NetBird système existant ne sont pas touchés). Les anciens paramètres restent dans l'historique de configuration et peuvent être restaurés ; les programmes installés ne sont pas concernés, utilisez `DELETE /api/{module}/install` pour désinstaller.\n\nPermission requise : `cloudflared:write`.",
+        "description": "Disponible pour frp, les tunnels Cloudflare, Tailscale, NetBird, EasyTier et File Browser ; aucun corps de requête n'est nécessaire. Arrête tous les processus du module, rétablit la configuration (y compris le chemin du programme et le proxy de téléchargement) à ses valeurs par défaut et supprime les fichiers générés par Gately : le fichier de configuration de frp, le dossier de données de chaque instance File Browser (utilisateurs, liens de partage et cache), l'état de connexion dans le dossier d'état par défaut de Tailscale (si le tailscaled géré par Gately est en cours d'exécution, il se déconnecte d'abord ; les dossiers d'état personnalisés et un tailscaled du système ne sont pas touchés), ainsi que l'état de connexion et les clés dans le dossier d'état par défaut de NetBird (si le démon géré par Gately est en cours d'exécution, il se déconnecte d'abord et cette machine est retirée du réseau ; les dossiers d'état personnalisés et un service NetBird du système ne sont pas touchés). L'ancienne configuration reste dans l'historique et peut être restaurée ; les programmes installés ne sont pas affectés, et la désinstallation passe par `DELETE /api/{module}/install`.\n\nPermission requise : `cloudflared:write`.",
         "responses": {
           "200": {
             "description": "Succès"
@@ -17096,6 +17300,1867 @@
         "x-token-allowed": true
       }
     },
+    "/api/easytier/install": {
+      "delete": {
+        "description": "Supprime le programme installé dans bin sous le répertoire de configuration et toutes les versions précédentes conservées, puis redémarre les processus qui l'utilisent : un programme du même nom dans le PATH est utilisé s'il existe, sinon les processus ne peuvent pas démarrer. Les paramètres du module ne changent pas ; utilisez `POST /api/{module}/reset` pour les effacer.\n\nPermission requise : `easytier:write`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Désinstaller un programme géré",
+        "tags": [
+          "Réseau EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "Disponible pour frp, les tunnels Cloudflare, Tailscale, NetBird, EasyTier et File Browser. Renvoie les versions installées dans le dossier bin du répertoire de configuration, les anciennes versions conservées (`backups`, 3 au maximum), le proxy de téléchargement propre au programme `proxy`, la plateforme actuelle et l'avancement de l'installation `state` (`stage` vaut checking, downloading, verifying, extracting, done, uptodate ou failed). Si `unsupported` n'est pas vide, l'amont ne fournit aucun programme pour la plateforme actuelle.\n\nPermission requise : `easytier:read`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Voir les informations d'installation et la progression d'un programme géré",
+        "tags": [
+          "Réseau EasyTier"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "Corps `{\"version\": \"\", \"proxy\": \"\"}` : un `version` vide installe la dernière version stable (rien n'est téléchargé si elle est déjà installée, `stage` vaut alors uptodate), sinon la version indiquée ; `proxy` est le proxy de téléchargement (http, https ou socks5), conservé pour la prochaine fois ; vide, le paramètre global `updateProxy` s'applique. Le téléchargement est vérifié par son SHA-256 et installé dans bin sous le répertoire de configuration, la version existante rejoint les versions précédentes et les processus utilisant le programme sont redémarrés. Répond immédiatement ; suivez la progression avec `GET /api/{module}/install`.\n\nPermission requise : `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Installer ou mettre à jour en ligne un programme géré",
+        "tags": [
+          "Réseau EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/install/backups/{id}": {
+      "delete": {
+        "description": "Permission requise : `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Supprimer une version précédente conservée",
+        "tags": [
+          "Réseau EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/install/check": {
+      "post": {
+        "description": "Aucun corps de requête. Interroge la dernière version stable en amont (via le proxy de téléchargement du programme, ou le réglage global `updateProxy` s'il n'y en a pas) sans télécharger ni modifier le programme installé ; renvoie la même chose que `GET /api/{module}/install`, où `latest` vaut `{version, checkedAt, error, hasUpdate}` et `hasUpdate` indique que la dernière version est plus récente que celle installée dans bin. Avec la vérification automatique des mises à jour activée, Gately effectue aussi cette vérification périodiquement pour les programmes gérés installés. Renvoie 409 si une vérification est déjà en cours.\n\nPermission requise : `easytier:write`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Vérifier les mises à jour d'un programme géré",
+        "tags": [
+          "Réseau EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/install/rollback": {
+      "post": {
+        "description": "Corps `{\"id\": \"\u003cID de version précédente\u003e\"}`. La version actuelle est conservée comme version précédente pour pouvoir y revenir ; les processus utilisant le programme sont ensuite redémarrés.\n\nPermission requise : `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Revenir à une version précédente conservée",
+        "tags": [
+          "Réseau EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances": {
+      "get": {
+        "description": "Permission requise : `easytier:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/easytier.Instance"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Lister Instance EasyTier",
+        "tags": [
+          "Réseau EasyTier"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "Chaque instance exécute son propre processus `easytier-core` et peut rejoindre un réseau EasyTier différent. Champs du corps de requête : `name` nom (doit être unique) ; `enable` activation ; `networkName` nom du réseau (obligatoire, 1 à 64 caractères : lettres, chiffres et `. _ @ : + -`) et `networkSecret` secret du réseau (seuls les nœuds ayant le même nom et le même secret peuvent communiquer ; il est transmis au processus par la variable d'environnement `ET_NETWORK_SECRET`, n'apparaît pas dans les arguments du processus et est aussi masqué dans les journaux) ; `peers` adresses des nœuds auxquels se connecter au démarrage, une par ligne, de la forme `tcp://public.easytier.cn:11010` (le protocole peut être tcp, udp, ws, wss, quic, wg, faketcp, ainsi que http, https, txt, srv pour la découverte de nœuds) ; `listeners` adresses d'écoute, une par ligne, à écrire sous la forme `protocole://adresse:port` ; si vide, aucun port n'est écouté et l'instance ne fait que se connecter aux autres nœuds ; `dhcp` attribue automatiquement l'IP virtuelle ; désactivé, `ipv4` permet de fixer une IP virtuelle (par ex. `10.126.126.2/24`) ; si aucun des deux n'est défini, ce nœud ne fait que transférer des données et ne crée pas d'interface réseau ; `hostname` ; `noTun` utilise le réseau en espace utilisateur et ne crée pas d'interface TUN (aucun privilège requis), `devName` nom de l'interface ; `proxyNetworks` réseaux locaux partagés avec le réseau, un par ligne, avec possibilité d'écrire `192.168.1.0/24-\u003e10.1.0.0/24` pour mapper un réseau ; `portForwards` redirections de ports, une par ligne, de la forme `tcp://127.0.0.1:2222/10.126.126.1:22` (vous indiquez l'adresse de liaison ; 127.0.0.1 est recommandé) ; `enableExitNode` autorise cette machine à servir de nœud de sortie, `exitNodes` nœuds de sortie utilisés (IPv4 virtuelles, une par ligne) ; `latencyFirst` privilégie la latence dans le choix des routes ; `kcpProxy` et `quicProxy` font transiter le trafic TCP par KCP et QUIC ; `extraArgs` ajoutés après `easytier-core` (séparés par des espaces), `env` variables d'environnement transmises au processus (une `KEY=VALUE` par ligne). Aucune option SOCKS5 n'est proposée : le SOCKS5 d'EasyTier écoute sur toutes les adresses et n'a pas d'authentification. Le port de gestion est attribué aléatoirement par Gately sur 127.0.0.1 et n'est accessible que depuis cette machine. Un code 400 est renvoyé lorsque : des instances activées simultanément écoutent sur le même port (vérifié séparément pour TCP et UDP) ou que leurs redirections de ports utilisent le même port local, des instances activées simultanément et utilisant TUN ont le même nom d'interface, ou des noms sont en double. Les mêmes vérifications s'appliquent à l'activation, à l'activation par lot et à la copie.\n\nPermission requise : `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/easytier.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.Instance"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ajouter une instance EasyTier",
+        "tags": [
+          "Réseau EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances-delete": {
+      "post": {
+        "description": "Permission requise : `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchDeleteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Supprimer en lot : Instance EasyTier",
+        "tags": [
+          "Réseau EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances-enable": {
+      "put": {
+        "description": "Permission requise : `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchEnableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Activer ou désactiver en lot : Instance EasyTier",
+        "tags": [
+          "Réseau EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances-group": {
+      "put": {
+        "description": "Permission requise : `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Définir le groupe de plusieurs éléments : Instance EasyTier",
+        "tags": [
+          "Réseau EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances-order": {
+      "put": {
+        "description": "Permission requise : `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.orderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Réordonner Instance EasyTier",
+        "tags": [
+          "Réseau EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}": {
+      "delete": {
+        "description": "Permission requise : `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Supprimer Instance EasyTier",
+        "tags": [
+          "Réseau EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Permission requise : `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/easytier.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.Instance"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Modifier Instance EasyTier",
+        "tags": [
+          "Réseau EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/copy": {
+      "post": {
+        "description": "Permission requise : `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/easytier.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.Instance"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Dupliquer Instance EasyTier",
+        "tags": [
+          "Réseau EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/enable": {
+      "put": {
+        "description": "Permission requise : `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.enableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Activer ou désactiver Instance EasyTier",
+        "tags": [
+          "Réseau EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/restart": {
+      "post": {
+        "description": "Redémarre le processus `easytier-core` de cette instance ; les autres instances ne sont pas affectées.\n\nPermission requise : `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Redémarrer une instance EasyTier",
+        "tags": [
+          "Réseau EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/secrets": {
+      "get": {
+        "description": "Permission requise : `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Afficher les secrets en clair",
+        "tags": [
+          "Réseau EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/status": {
+      "get": {
+        "description": "`status` vaut stopped (non activée ou processus non lancé), starting (le processus est démarré mais le port de gestion n'est pas encore prêt) ou running. `self` contient les informations de ce nœud (IP virtuelle, adresses d'écoute réelles, adresse publique et type de NAT détectés par STUN) ; `peers` liste les autres nœuds du réseau : `cost` vaut p2p (direct) ou relay(N) (relayé via N sauts), `direct` indique une connexion directe, `latencyMs` est la latence et `tunnel` le protocole de connexion. `peersDirect` est le nombre de nœuds connectés directement.\n\nPermission requise : `easytier:read`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.StatusView"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Afficher l'état d'exécution d'une instance EasyTier",
+        "tags": [
+          "Réseau EasyTier"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/logs": {
+      "delete": {
+        "description": "Supprime aussi les fichiers journaux sur disque, les fichiers tournés, les archives et la liste des sources.\n\nPermission requise : `easytier:write`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Vider les journaux d'exécution d'un module",
+        "tags": [
+          "Réseau EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "Prend en charge la récupération incrémentale avec le paramètre `since`, qui renvoie les journaux dont le numéro de séquence est supérieur à cette valeur ; `before` renvoie les journaux dont le numéro de séquence est inférieur à cette valeur, pour charger les entrées plus anciennes ; `limit` ne renvoie que les entrées les plus récentes et, si la mémoire n’en contient pas assez, recherche aussi dans l’historique conservé dans les fichiers journaux. Paramètres de filtre : `level` niveau minimal, `source` source, `q` mots-clés (séparés par des espaces, tous doivent correspondre ; les guillemets doubles regroupent une expression ; un `-` initial exclut), `ip` adresse du client (adresse complète, CIDR ou partie d’adresse, séparées par des virgules), `host` nom du site ou domaine (correspondance partielle), `site` nom du site (correspondance exacte, ne renvoie que le journal d'accès de ce site), `status` code d’état (par exemple `404`, `4xx`, `500-599`), `from` et `to` plage horaire (RFC 3339 ou horodatage en millisecondes). `exclude` liste les termes à exclure : les entrées contenant l’un d’eux ne sont pas renvoyées ; même syntaxe que `q`, le `-` initial est facultatif.\n\nPermission requise : `easytier:read`.",
+        "parameters": [
+          {
+            "description": "Récupération incrémentale : ne renvoie que les journaux dont le numéro de séquence est supérieur à cette valeur",
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Charger les journaux plus anciens : ne renvoie que les journaux dont le numéro de séquence est inférieur à cette valeur",
+            "in": "query",
+            "name": "before",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Nombre maximal d'entrées renvoyées, en prenant les plus récentes qui correspondent ; 0 ou absent signifie sans limite",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Niveau minimal : debug, info, warn ou error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Étiquette de source, correspondance exacte sans tenir compte de la casse",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Mots-clés : séparés par des espaces, tous doivent correspondre ; les guillemets doubles regroupent une expression ; un - initial exclut",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Mots-clés exclus : séparés par des espaces, les guillemets doubles regroupent une expression ; une entrée contenant l’un d’eux est exclue ; s’applique avec q",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Adresse du client : adresse complète, CIDR ou partie d'adresse, séparées par des virgules ; le préfixe ! ou - exclut",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Partie du nom du site ou du domaine",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nom du site, correspondance exacte sans tenir compte de la casse ; ne renvoie que les journaux d'accès de ce site",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Clé de l’écouteur des services Web, correspondance exacte ; distingue les sites ou écouteurs de même nom (par exemple des écouteurs IPv4 et IPv6 séparés)",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Code d’état comme 404, 4xx, 500-599, séparés par des virgules",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "À 1, masque les journaux d'accès des sources bannies : les requêtes refusées à cause du bannissement et toutes celles des sources encore bannies, y compris celles qui l'ont déclenché (n'affecte que la réponse ; les journaux sont conservés)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Avec 1, masque les requêtes portant une session de la console d'administration, c'est-à-dire les journaux d'accès produits par les administrateurs qui accèdent à la console via un site du Service Web",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Heure de début, RFC 3339 ou horodatage en millisecondes",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Heure de fin, RFC 3339 ou horodatage en millisecondes",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Consulter les journaux d'exécution d'un module",
+        "tags": [
+          "Réseau EasyTier"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/logs/export": {
+      "get": {
+        "description": "Renvoie en flux, en pièce jointe, tous les journaux correspondant aux filtres, du plus ancien au plus récent, y compris les fichiers tournés et les archives compressées sur disque. `format` vaut `jsonl` (par défaut, un objet JSON par ligne) ou `csv` (UTF-8 avec BOM ; les cellules commençant par = + - @ sont préfixées d’une apostrophe pour empêcher l’injection de formules). Les paramètres de filtre sont les mêmes que pour consulter les journaux. Pour les identités en lecture seule, les identifiants sont masqués dans l’export comme lors de la consultation. `lang` définit la langue du contenu exporté (par exemple `en`) ; par défaut, Accept-Language est utilisé.\n\nPermission requise : `easytier:read`.",
+        "parameters": [
+          {
+            "description": "Format d'export : jsonl (par défaut, un objet JSON par ligne) ou csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Langue du contenu exporté, par exemple en ; par défaut, Accept-Language est utilisé",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Niveau minimal : debug, info, warn ou error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Étiquette de source, correspondance exacte sans tenir compte de la casse",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Mots-clés : séparés par des espaces, tous doivent correspondre ; les guillemets doubles regroupent une expression ; un - initial exclut",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Mots-clés exclus : séparés par des espaces, les guillemets doubles regroupent une expression ; une entrée contenant l’un d’eux est exclue ; s’applique avec q",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Adresse du client : adresse complète, CIDR ou partie d'adresse, séparées par des virgules ; le préfixe ! ou - exclut",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Partie du nom du site ou du domaine",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nom du site, correspondance exacte sans tenir compte de la casse ; ne renvoie que les journaux d'accès de ce site",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Clé de l’écouteur des services Web, correspondance exacte ; distingue les sites ou écouteurs de même nom (par exemple des écouteurs IPv4 et IPv6 séparés)",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Code d’état comme 404, 4xx, 500-599, séparés par des virgules",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "À 1, masque les journaux d'accès des sources bannies : les requêtes refusées à cause du bannissement et toutes celles des sources encore bannies, y compris celles qui l'ont déclenché (n'affecte que la réponse ; les journaux sont conservés)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Avec 1, masque les requêtes portant une session de la console d'administration, c'est-à-dire les journaux d'accès produits par les administrateurs qui accèdent à la console via un site du Service Web",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Heure de début, RFC 3339 ou horodatage en millisecondes",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Heure de fin, RFC 3339 ou horodatage en millisecondes",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Exporter les journaux du module",
+        "tags": [
+          "Réseau EasyTier"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/logs/sources": {
+      "get": {
+        "description": "Renvoie un tableau des libellés de source triés par nom : les sources apparues dans les journaux (conservées après redémarrage lorsqu’ils sont enregistrés sur disque) et celles de la configuration du module (par exemple tous les écouteurs et listes d’IP des Services Web), pour filtrer avec `source`. Les sources sont traduites dans la langue de la requête comme les journaux.\n\nPermission requise : `easytier:read`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Lister toutes les sources des journaux du module",
+        "tags": [
+          "Réseau EasyTier"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/reset": {
+      "post": {
+        "description": "Disponible pour frp, les tunnels Cloudflare, Tailscale, NetBird, EasyTier et File Browser ; aucun corps de requête n'est nécessaire. Arrête tous les processus du module, rétablit la configuration (y compris le chemin du programme et le proxy de téléchargement) à ses valeurs par défaut et supprime les fichiers générés par Gately : le fichier de configuration de frp, le dossier de données de chaque instance File Browser (utilisateurs, liens de partage et cache), l'état de connexion dans le dossier d'état par défaut de Tailscale (si le tailscaled géré par Gately est en cours d'exécution, il se déconnecte d'abord ; les dossiers d'état personnalisés et un tailscaled du système ne sont pas touchés), ainsi que l'état de connexion et les clés dans le dossier d'état par défaut de NetBird (si le démon géré par Gately est en cours d'exécution, il se déconnecte d'abord et cette machine est retirée du réseau ; les dossiers d'état personnalisés et un service NetBird du système ne sont pas touchés). L'ancienne configuration reste dans l'historique et peut être restaurée ; les programmes installés ne sont pas affectés, et la désinstallation passe par `DELETE /api/{module}/install`.\n\nPermission requise : `easytier:write`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Rétablir les paramètres par défaut du module",
+        "tags": [
+          "Réseau EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/settings": {
+      "get": {
+        "description": "Renvoie `settings` (`corePath` et le proxy de téléchargement `installProxy`, communs à toutes les instances) ainsi que le chemin du programme easytier-core réellement utilisé, `core`. easytier-cli est recherché dans le dossier d'easytier-core, puis, à défaut, dans le dossier bin du répertoire de configuration et dans PATH.\n\nPermission requise : `easytier:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.SettingsView"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Lire les paramètres du programme EasyTier",
+        "tags": [
+          "Réseau EasyTier"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Corps de requête `{\"corePath\": \"\"}`. Si vide, easytier-core est recherché dans le dossier bin du répertoire de configuration puis dans PATH ; `installProxy` n'est modifié que par l'API d'installation. Après un changement de chemin, redémarrez les instances activées.\n\nPermission requise : `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/easytier.Settings"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Enregistrer les paramètres du programme EasyTier",
+        "tags": [
+          "Réseau EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/status": {
+      "get": {
+        "description": "Renvoie un tableau dans le même ordre que la liste des instances ; chaque élément contient la `key` et le `name` de l'instance ainsi que son état, avec les mêmes champs que `GET /api/easytier/instances/{key}/status`. Les instances désactivées ne renvoient que l'état du processus et leurs nœuds ne sont pas interrogés.\n\nPermission requise : `easytier:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/easytier.StatusView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Afficher l'état d'exécution de toutes les instances EasyTier",
+        "tags": [
+          "Réseau EasyTier"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/filebrowser/install": {
       "delete": {
         "description": "Supprime le programme installé dans bin sous le répertoire de configuration et toutes les versions précédentes conservées, puis redémarre les processus qui l'utilisent : un programme du même nom dans le PATH est utilisé s'il existe, sinon les processus ne peuvent pas démarrer. Les paramètres du module ne changent pas ; utilisez `POST /api/{module}/reset` pour les effacer.\n\nPermission requise : `filebrowser:write`.",
@@ -17147,7 +19212,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Fourni par frp, Tunnel Cloudflare, Tailscale, NetBird et File Browser. Renvoie la version installée dans bin sous le répertoire de configuration, les versions précédentes conservées (`backups`, 3 au plus), le proxy de téléchargement propre à ce programme (`proxy`), la plateforme actuelle et la progression `state` (`stage` vaut checking, downloading, verifying, extracting, done, uptodate ou failed). Un `unsupported` non vide signifie que le projet ne fournit pas de programme pour la plateforme actuelle.\n\nPermission requise : `filebrowser:read`.",
+        "description": "Disponible pour frp, les tunnels Cloudflare, Tailscale, NetBird, EasyTier et File Browser. Renvoie les versions installées dans le dossier bin du répertoire de configuration, les anciennes versions conservées (`backups`, 3 au maximum), le proxy de téléchargement propre au programme `proxy`, la plateforme actuelle et l'avancement de l'installation `state` (`stage` vaut checking, downloading, verifying, extracting, done, uptodate ou failed). Si `unsupported` n'est pas vide, l'amont ne fournit aucun programme pour la plateforme actuelle.\n\nPermission requise : `filebrowser:read`.",
         "responses": {
           "200": {
             "description": "Succès"
@@ -18663,7 +20728,7 @@
     },
     "/api/filebrowser/reset": {
       "post": {
-        "description": "Fourni par frp, Tunnel Cloudflare, Tailscale, NetBird et File Browser ; sans corps. Arrête tous les processus du module, rétablit ses paramètres par défaut (y compris le chemin du programme et le proxy de téléchargement) et supprime les fichiers que Gately a générés pour lui : les fichiers de configuration frp, le répertoire de données de chaque instance File Browser (utilisateurs, liens de partage et caches), l'état de connexion du répertoire d'état Tailscale par défaut (un tailscaled géré par Gately en cours d'exécution se déconnecte d'abord ; les répertoires d'état personnalisés et un tailscaled système existant ne sont pas touchés) et l'état de connexion et les clés du répertoire d'état NetBird par défaut (un démon géré par Gately en cours d'exécution se déconnecte d'abord, ce qui retire cette machine du réseau ; les répertoires d'état personnalisés et un service NetBird système existant ne sont pas touchés). Les anciens paramètres restent dans l'historique de configuration et peuvent être restaurés ; les programmes installés ne sont pas concernés, utilisez `DELETE /api/{module}/install` pour désinstaller.\n\nPermission requise : `filebrowser:write`.",
+        "description": "Disponible pour frp, les tunnels Cloudflare, Tailscale, NetBird, EasyTier et File Browser ; aucun corps de requête n'est nécessaire. Arrête tous les processus du module, rétablit la configuration (y compris le chemin du programme et le proxy de téléchargement) à ses valeurs par défaut et supprime les fichiers générés par Gately : le fichier de configuration de frp, le dossier de données de chaque instance File Browser (utilisateurs, liens de partage et cache), l'état de connexion dans le dossier d'état par défaut de Tailscale (si le tailscaled géré par Gately est en cours d'exécution, il se déconnecte d'abord ; les dossiers d'état personnalisés et un tailscaled du système ne sont pas touchés), ainsi que l'état de connexion et les clés dans le dossier d'état par défaut de NetBird (si le démon géré par Gately est en cours d'exécution, il se déconnecte d'abord et cette machine est retirée du réseau ; les dossiers d'état personnalisés et un service NetBird du système ne sont pas touchés). L'ancienne configuration reste dans l'historique et peut être restaurée ; les programmes installés ne sont pas affectés, et la désinstallation passe par `DELETE /api/{module}/install`.\n\nPermission requise : `filebrowser:write`.",
         "responses": {
           "200": {
             "description": "Succès"
@@ -19890,7 +21955,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Fourni par frp, Tunnel Cloudflare, Tailscale, NetBird et File Browser. Renvoie la version installée dans bin sous le répertoire de configuration, les versions précédentes conservées (`backups`, 3 au plus), le proxy de téléchargement propre à ce programme (`proxy`), la plateforme actuelle et la progression `state` (`stage` vaut checking, downloading, verifying, extracting, done, uptodate ou failed). Un `unsupported` non vide signifie que le projet ne fournit pas de programme pour la plateforme actuelle.\n\nPermission requise : `frp:read`.",
+        "description": "Disponible pour frp, les tunnels Cloudflare, Tailscale, NetBird, EasyTier et File Browser. Renvoie les versions installées dans le dossier bin du répertoire de configuration, les anciennes versions conservées (`backups`, 3 au maximum), le proxy de téléchargement propre au programme `proxy`, la plateforme actuelle et l'avancement de l'installation `state` (`stage` vaut checking, downloading, verifying, extracting, done, uptodate ou failed). Si `unsupported` n'est pas vide, l'amont ne fournit aucun programme pour la plateforme actuelle.\n\nPermission requise : `frp:read`.",
         "responses": {
           "200": {
             "description": "Succès"
@@ -21345,7 +23410,7 @@
     },
     "/api/frp/reset": {
       "post": {
-        "description": "Fourni par frp, Tunnel Cloudflare, Tailscale, NetBird et File Browser ; sans corps. Arrête tous les processus du module, rétablit ses paramètres par défaut (y compris le chemin du programme et le proxy de téléchargement) et supprime les fichiers que Gately a générés pour lui : les fichiers de configuration frp, le répertoire de données de chaque instance File Browser (utilisateurs, liens de partage et caches), l'état de connexion du répertoire d'état Tailscale par défaut (un tailscaled géré par Gately en cours d'exécution se déconnecte d'abord ; les répertoires d'état personnalisés et un tailscaled système existant ne sont pas touchés) et l'état de connexion et les clés du répertoire d'état NetBird par défaut (un démon géré par Gately en cours d'exécution se déconnecte d'abord, ce qui retire cette machine du réseau ; les répertoires d'état personnalisés et un service NetBird système existant ne sont pas touchés). Les anciens paramètres restent dans l'historique de configuration et peuvent être restaurés ; les programmes installés ne sont pas concernés, utilisez `DELETE /api/{module}/install` pour désinstaller.\n\nPermission requise : `frp:write`.",
+        "description": "Disponible pour frp, les tunnels Cloudflare, Tailscale, NetBird, EasyTier et File Browser ; aucun corps de requête n'est nécessaire. Arrête tous les processus du module, rétablit la configuration (y compris le chemin du programme et le proxy de téléchargement) à ses valeurs par défaut et supprime les fichiers générés par Gately : le fichier de configuration de frp, le dossier de données de chaque instance File Browser (utilisateurs, liens de partage et cache), l'état de connexion dans le dossier d'état par défaut de Tailscale (si le tailscaled géré par Gately est en cours d'exécution, il se déconnecte d'abord ; les dossiers d'état personnalisés et un tailscaled du système ne sont pas touchés), ainsi que l'état de connexion et les clés dans le dossier d'état par défaut de NetBird (si le démon géré par Gately est en cours d'exécution, il se déconnecte d'abord et cette machine est retirée du réseau ; les dossiers d'état personnalisés et un service NetBird du système ne sont pas touchés). L'ancienne configuration reste dans l'historique et peut être restaurée ; les programmes installés ne sont pas affectés, et la désinstallation passe par `DELETE /api/{module}/install`.\n\nPermission requise : `frp:write`.",
         "responses": {
           "200": {
             "description": "Succès"
@@ -26872,7 +28937,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Fourni par frp, Tunnel Cloudflare, Tailscale, NetBird et File Browser. Renvoie la version installée dans bin sous le répertoire de configuration, les versions précédentes conservées (`backups`, 3 au plus), le proxy de téléchargement propre à ce programme (`proxy`), la plateforme actuelle et la progression `state` (`stage` vaut checking, downloading, verifying, extracting, done, uptodate ou failed). Un `unsupported` non vide signifie que le projet ne fournit pas de programme pour la plateforme actuelle.\n\nPermission requise : `netbird:read`.",
+        "description": "Disponible pour frp, les tunnels Cloudflare, Tailscale, NetBird, EasyTier et File Browser. Renvoie les versions installées dans le dossier bin du répertoire de configuration, les anciennes versions conservées (`backups`, 3 au maximum), le proxy de téléchargement propre au programme `proxy`, la plateforme actuelle et l'avancement de l'installation `state` (`stage` vaut checking, downloading, verifying, extracting, done, uptodate ou failed). Si `unsupported` n'est pas vide, l'amont ne fournit aucun programme pour la plateforme actuelle.\n\nPermission requise : `netbird:read`.",
         "responses": {
           "200": {
             "description": "Succès"
@@ -28517,7 +30582,7 @@
     },
     "/api/netbird/reset": {
       "post": {
-        "description": "Fourni par frp, Tunnel Cloudflare, Tailscale, NetBird et File Browser ; sans corps. Arrête tous les processus du module, rétablit ses paramètres par défaut (y compris le chemin du programme et le proxy de téléchargement) et supprime les fichiers que Gately a générés pour lui : les fichiers de configuration frp, le répertoire de données de chaque instance File Browser (utilisateurs, liens de partage et caches), l'état de connexion du répertoire d'état Tailscale par défaut (un tailscaled géré par Gately en cours d'exécution se déconnecte d'abord ; les répertoires d'état personnalisés et un tailscaled système existant ne sont pas touchés) et l'état de connexion et les clés du répertoire d'état NetBird par défaut (un démon géré par Gately en cours d'exécution se déconnecte d'abord, ce qui retire cette machine du réseau ; les répertoires d'état personnalisés et un service NetBird système existant ne sont pas touchés). Les anciens paramètres restent dans l'historique de configuration et peuvent être restaurés ; les programmes installés ne sont pas concernés, utilisez `DELETE /api/{module}/install` pour désinstaller.\n\nPermission requise : `netbird:write`.",
+        "description": "Disponible pour frp, les tunnels Cloudflare, Tailscale, NetBird, EasyTier et File Browser ; aucun corps de requête n'est nécessaire. Arrête tous les processus du module, rétablit la configuration (y compris le chemin du programme et le proxy de téléchargement) à ses valeurs par défaut et supprime les fichiers générés par Gately : le fichier de configuration de frp, le dossier de données de chaque instance File Browser (utilisateurs, liens de partage et cache), l'état de connexion dans le dossier d'état par défaut de Tailscale (si le tailscaled géré par Gately est en cours d'exécution, il se déconnecte d'abord ; les dossiers d'état personnalisés et un tailscaled du système ne sont pas touchés), ainsi que l'état de connexion et les clés dans le dossier d'état par défaut de NetBird (si le démon géré par Gately est en cours d'exécution, il se déconnecte d'abord et cette machine est retirée du réseau ; les dossiers d'état personnalisés et un service NetBird du système ne sont pas touchés). L'ancienne configuration reste dans l'historique et peut être restaurée ; les programmes installés ne sont pas affectés, et la désinstallation passe par `DELETE /api/{module}/install`.\n\nPermission requise : `netbird:write`.",
         "responses": {
           "200": {
             "description": "Succès"
@@ -41775,7 +43840,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Fourni par frp, Tunnel Cloudflare, Tailscale, NetBird et File Browser. Renvoie la version installée dans bin sous le répertoire de configuration, les versions précédentes conservées (`backups`, 3 au plus), le proxy de téléchargement propre à ce programme (`proxy`), la plateforme actuelle et la progression `state` (`stage` vaut checking, downloading, verifying, extracting, done, uptodate ou failed). Un `unsupported` non vide signifie que le projet ne fournit pas de programme pour la plateforme actuelle.\n\nPermission requise : `tailscale:read`.",
+        "description": "Disponible pour frp, les tunnels Cloudflare, Tailscale, NetBird, EasyTier et File Browser. Renvoie les versions installées dans le dossier bin du répertoire de configuration, les anciennes versions conservées (`backups`, 3 au maximum), le proxy de téléchargement propre au programme `proxy`, la plateforme actuelle et l'avancement de l'installation `state` (`stage` vaut checking, downloading, verifying, extracting, done, uptodate ou failed). Si `unsupported` n'est pas vide, l'amont ne fournit aucun programme pour la plateforme actuelle.\n\nPermission requise : `tailscale:read`.",
         "responses": {
           "200": {
             "description": "Succès"
@@ -43420,7 +45485,7 @@
     },
     "/api/tailscale/reset": {
       "post": {
-        "description": "Fourni par frp, Tunnel Cloudflare, Tailscale, NetBird et File Browser ; sans corps. Arrête tous les processus du module, rétablit ses paramètres par défaut (y compris le chemin du programme et le proxy de téléchargement) et supprime les fichiers que Gately a générés pour lui : les fichiers de configuration frp, le répertoire de données de chaque instance File Browser (utilisateurs, liens de partage et caches), l'état de connexion du répertoire d'état Tailscale par défaut (un tailscaled géré par Gately en cours d'exécution se déconnecte d'abord ; les répertoires d'état personnalisés et un tailscaled système existant ne sont pas touchés) et l'état de connexion et les clés du répertoire d'état NetBird par défaut (un démon géré par Gately en cours d'exécution se déconnecte d'abord, ce qui retire cette machine du réseau ; les répertoires d'état personnalisés et un service NetBird système existant ne sont pas touchés). Les anciens paramètres restent dans l'historique de configuration et peuvent être restaurés ; les programmes installés ne sont pas concernés, utilisez `DELETE /api/{module}/install` pour désinstaller.\n\nPermission requise : `tailscale:write`.",
+        "description": "Disponible pour frp, les tunnels Cloudflare, Tailscale, NetBird, EasyTier et File Browser ; aucun corps de requête n'est nécessaire. Arrête tous les processus du module, rétablit la configuration (y compris le chemin du programme et le proxy de téléchargement) à ses valeurs par défaut et supprime les fichiers générés par Gately : le fichier de configuration de frp, le dossier de données de chaque instance File Browser (utilisateurs, liens de partage et cache), l'état de connexion dans le dossier d'état par défaut de Tailscale (si le tailscaled géré par Gately est en cours d'exécution, il se déconnecte d'abord ; les dossiers d'état personnalisés et un tailscaled du système ne sont pas touchés), ainsi que l'état de connexion et les clés dans le dossier d'état par défaut de NetBird (si le démon géré par Gately est en cours d'exécution, il se déconnecte d'abord et cette machine est retirée du réseau ; les dossiers d'état personnalisés et un service NetBird du système ne sont pas touchés). L'ancienne configuration reste dans l'historique et peut être restaurée ; les programmes installés ne sont pas affectés, et la désinstallation passe par `DELETE /api/{module}/install`.\n\nPermission requise : `tailscale:write`.",
         "responses": {
           "200": {
             "description": "Succès"
@@ -57124,6 +59189,9 @@
       "name": "Réseau NetBird"
     },
     {
+      "name": "Réseau EasyTier"
+    },
+    {
       "name": "Traversée de réseau frp"
     },
     {
@@ -57206,6 +59274,7 @@
     "stun",
     "tailscale",
     "netbird",
+    "easytier",
     "frp",
     "cloudflared",
     "ssl",

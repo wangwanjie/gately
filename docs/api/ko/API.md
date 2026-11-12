@@ -37,6 +37,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `stun` | STUN 터널링 | `stun:read`、`stun:write` |
 | `tailscale` | Tailscale 네트워킹 | `tailscale:read`、`tailscale:write` |
 | `netbird` | NetBird 네트워크 | `netbird:read`、`netbird:write` |
+| `easytier` | EasyTier 네트워크 | `easytier:read`、`easytier:write` |
 | `frp` | frp 내부망 터널링 | `frp:read`、`frp:write` |
 | `cloudflared` | Cloudflare 터널 | `cloudflared:read`、`cloudflared:write` |
 | `ssl` | SSL 인증서 | `ssl:read`、`ssl:write` |
@@ -225,6 +226,38 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/netbird/install` | `netbird:write` | 관리 프로그램 제거 |
 | DELETE | `/api/netbird/install/backups/{id}` | `netbird:write` | 저장된 이전 버전 삭제 |
 | POST | `/api/netbird/reset` | `netbird:write` | 모듈 기본 설정 복원 |
+
+## EasyTier 네트워크
+
+| 메서드 | 경로 | 필요 권한 | 설명 |
+| --- | --- | --- | --- |
+| GET | `/api/easytier/logs` | `easytier:read` | 모듈 실행 로그 보기 |
+| GET | `/api/easytier/logs/sources` | `easytier:read` | 모듈 로그의 모든 소스 목록 |
+| GET | `/api/easytier/logs/export` | `easytier:read` | 모듈 로그 내보내기 |
+| DELETE | `/api/easytier/logs` | `easytier:write` | 모듈 실행 로그 비우기 |
+| GET | `/api/easytier/instances` | `easytier:read` | EasyTier 인스턴스 목록 조회 |
+| POST | `/api/easytier/instances` | `easytier:write` | EasyTier 인스턴스 추가 |
+| POST | `/api/easytier/instances/{key}/copy` | `easytier:write` | EasyTier 인스턴스 복제 |
+| PUT | `/api/easytier/instances/{key}` | `easytier:write` | EasyTier 인스턴스 수정 |
+| DELETE | `/api/easytier/instances/{key}` | `easytier:write` | EasyTier 인스턴스 삭제 |
+| PUT | `/api/easytier/instances/{key}/enable` | `easytier:write` | EasyTier 인스턴스 사용 설정/해제 |
+| PUT | `/api/easytier/instances-order` | `easytier:write` | EasyTier 인스턴스 순서 변경 |
+| PUT | `/api/easytier/instances-enable` | `easytier:write` | EasyTier 인스턴스 일괄 사용/사용 안 함 |
+| POST | `/api/easytier/instances-delete` | `easytier:write` | EasyTier 인스턴스 일괄 삭제 |
+| PUT | `/api/easytier/instances-group` | `easytier:write` | EasyTier 인스턴스 그룹 일괄 설정 |
+| GET | `/api/easytier/instances/{key}/secrets` | `easytier:write` | 비밀 값 평문 보기 |
+| GET | `/api/easytier/status` | `easytier:read` | 모든 EasyTier 인스턴스의 실행 상태 보기 |
+| GET | `/api/easytier/instances/{key}/status` | `easytier:read` | EasyTier 인스턴스의 실행 상태 보기 |
+| POST | `/api/easytier/instances/{key}/restart` | `easytier:write` | EasyTier 인스턴스 다시 시작 |
+| GET | `/api/easytier/settings` | `easytier:read` | EasyTier 프로그램 설정 읽기 |
+| PUT | `/api/easytier/settings` | `easytier:write` | EasyTier 프로그램 설정 저장 |
+| GET | `/api/easytier/install` | `easytier:read` | 관리 프로그램의 설치 정보와 진행 상태 보기 |
+| POST | `/api/easytier/install` | `easytier:write` | 관리 프로그램 온라인 설치 또는 업데이트 |
+| POST | `/api/easytier/install/check` | `easytier:write` | 관리 프로그램 업데이트 확인 |
+| POST | `/api/easytier/install/rollback` | `easytier:write` | 저장된 이전 버전으로 전환 |
+| DELETE | `/api/easytier/install` | `easytier:write` | 관리 프로그램 제거 |
+| DELETE | `/api/easytier/install/backups/{id}` | `easytier:write` | 저장된 이전 버전 삭제 |
+| POST | `/api/easytier/reset` | `easytier:write` | 모듈 기본 설정 복원 |
 
 ## frp 내부망 터널링
 
@@ -1176,6 +1209,91 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `extra` | Map of string |
 | `id` | string |
 | `secret` | string |
+
+### easytier.Instance
+
+| 필드 | 타입 |
+| --- | --- |
+| `devName` | string |
+| `dhcp` | boolean |
+| `enable` | boolean |
+| `enableExitNode` | boolean |
+| `env` | string |
+| `exitNodes` | string |
+| `extraArgs` | string |
+| `group` | string |
+| `hostname` | string |
+| `ipv4` | string |
+| `kcpProxy` | boolean |
+| `key` | string |
+| `latencyFirst` | boolean |
+| `listeners` | string |
+| `name` | string |
+| `networkName` | string |
+| `networkSecret` | string |
+| `noTun` | boolean |
+| `peers` | string |
+| `portForwards` | string |
+| `proxyNetworks` | string |
+| `quicProxy` | boolean |
+| `remark` | string |
+
+### easytier.PeerView
+
+| 필드 | 타입 |
+| --- | --- |
+| `cost` | string |
+| `direct` | boolean |
+| `ip` | string |
+| `latencyMs` | number |
+| `loss` | string |
+| `name` | string |
+| `nat` | string |
+| `rx` | string |
+| `tunnel` | string |
+| `tx` | string |
+| `version` | string |
+
+### easytier.SelfView
+
+| 필드 | 타입 |
+| --- | --- |
+| `ip` | string |
+| `listeners` | Array of string |
+| `name` | string |
+| `nat` | string |
+| `publicIps` | Array of string |
+
+### easytier.Settings
+
+| 필드 | 타입 |
+| --- | --- |
+| `corePath` | string |
+| `installProxy` | string |
+
+### easytier.SettingsView
+
+| 필드 | 타입 |
+| --- | --- |
+| `core` | string |
+| `settings` | `easytier.Settings` |
+
+### easytier.StatusView
+
+| 필드 | 타입 |
+| --- | --- |
+| `cli` | string |
+| `core` | string |
+| `daemon` | `proc.State` |
+| `enable` | boolean |
+| `error` | string |
+| `key` | string |
+| `name` | string |
+| `peers` | Array of `easytier.PeerView` |
+| `peersDirect` | integer |
+| `self` | `easytier.SelfView` |
+| `status` | string |
+| `version` | string |
 
 ### events.TypeInfo
 

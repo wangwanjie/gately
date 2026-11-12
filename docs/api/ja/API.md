@@ -37,6 +37,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `stun` | STUN 穿透 | `stun:read`、`stun:write` |
 | `tailscale` | Tailscale ネットワーク | `tailscale:read`、`tailscale:write` |
 | `netbird` | NetBird ネットワーク | `netbird:read`、`netbird:write` |
+| `easytier` | EasyTier ネットワーク | `easytier:read`、`easytier:write` |
 | `frp` | frp イントラネット穿透 | `frp:read`、`frp:write` |
 | `cloudflared` | Cloudflare トンネル | `cloudflared:read`、`cloudflared:write` |
 | `ssl` | SSL 証明書 | `ssl:read`、`ssl:write` |
@@ -225,6 +226,38 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/netbird/install` | `netbird:write` | 管理プログラムをアンインストール |
 | DELETE | `/api/netbird/install/backups/{id}` | `netbird:write` | 保存された旧バージョンを削除 |
 | POST | `/api/netbird/reset` | `netbird:write` | モジュールのデフォルト設定に戻す |
+
+## EasyTier ネットワーク
+
+| メソッド | パス | 必要な権限 | 説明 |
+| --- | --- | --- | --- |
+| GET | `/api/easytier/logs` | `easytier:read` | モジュールの実行ログを表示 |
+| GET | `/api/easytier/logs/sources` | `easytier:read` | モジュールログのすべてのソースを一覧表示 |
+| GET | `/api/easytier/logs/export` | `easytier:read` | モジュールログをエクスポート |
+| DELETE | `/api/easytier/logs` | `easytier:write` | モジュールの実行ログを消去 |
+| GET | `/api/easytier/instances` | `easytier:read` | EasyTier インスタンス の一覧を取得 |
+| POST | `/api/easytier/instances` | `easytier:write` | EasyTier インスタンスを追加 |
+| POST | `/api/easytier/instances/{key}/copy` | `easytier:write` | EasyTier インスタンス を複製 |
+| PUT | `/api/easytier/instances/{key}` | `easytier:write` | EasyTier インスタンス を更新 |
+| DELETE | `/api/easytier/instances/{key}` | `easytier:write` | EasyTier インスタンス を削除 |
+| PUT | `/api/easytier/instances/{key}/enable` | `easytier:write` | EasyTier インスタンス の有効/無効を切り替え |
+| PUT | `/api/easytier/instances-order` | `easytier:write` | EasyTier インスタンス の並び順を変更 |
+| PUT | `/api/easytier/instances-enable` | `easytier:write` | EasyTier インスタンス の一括有効化・無効化 |
+| POST | `/api/easytier/instances-delete` | `easytier:write` | EasyTier インスタンス の一括削除 |
+| PUT | `/api/easytier/instances-group` | `easytier:write` | EasyTier インスタンス のグループを一括設定 |
+| GET | `/api/easytier/instances/{key}/secrets` | `easytier:write` | シークレットを平文で表示 |
+| GET | `/api/easytier/status` | `easytier:read` | すべての EasyTier インスタンスの実行状態を表示 |
+| GET | `/api/easytier/instances/{key}/status` | `easytier:read` | EasyTier インスタンスの実行状態を表示 |
+| POST | `/api/easytier/instances/{key}/restart` | `easytier:write` | EasyTier インスタンスを再起動 |
+| GET | `/api/easytier/settings` | `easytier:read` | EasyTier プログラム設定を読み取る |
+| PUT | `/api/easytier/settings` | `easytier:write` | EasyTier プログラム設定を保存 |
+| GET | `/api/easytier/install` | `easytier:read` | 管理プログラムのインストール情報と進捗を表示 |
+| POST | `/api/easytier/install` | `easytier:write` | 管理プログラムをオンラインでインストールまたは更新 |
+| POST | `/api/easytier/install/check` | `easytier:write` | 管理プログラムの更新を確認 |
+| POST | `/api/easytier/install/rollback` | `easytier:write` | 保存された旧バージョンに切り替え |
+| DELETE | `/api/easytier/install` | `easytier:write` | 管理プログラムをアンインストール |
+| DELETE | `/api/easytier/install/backups/{id}` | `easytier:write` | 保存された旧バージョンを削除 |
+| POST | `/api/easytier/reset` | `easytier:write` | モジュールのデフォルト設定に戻す |
 
 ## frp イントラネット穿透
 
@@ -1176,6 +1209,91 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `extra` | マップ of string |
 | `id` | string |
 | `secret` | string |
+
+### easytier.Instance
+
+| フィールド | 型 |
+| --- | --- |
+| `devName` | string |
+| `dhcp` | boolean |
+| `enable` | boolean |
+| `enableExitNode` | boolean |
+| `env` | string |
+| `exitNodes` | string |
+| `extraArgs` | string |
+| `group` | string |
+| `hostname` | string |
+| `ipv4` | string |
+| `kcpProxy` | boolean |
+| `key` | string |
+| `latencyFirst` | boolean |
+| `listeners` | string |
+| `name` | string |
+| `networkName` | string |
+| `networkSecret` | string |
+| `noTun` | boolean |
+| `peers` | string |
+| `portForwards` | string |
+| `proxyNetworks` | string |
+| `quicProxy` | boolean |
+| `remark` | string |
+
+### easytier.PeerView
+
+| フィールド | 型 |
+| --- | --- |
+| `cost` | string |
+| `direct` | boolean |
+| `ip` | string |
+| `latencyMs` | number |
+| `loss` | string |
+| `name` | string |
+| `nat` | string |
+| `rx` | string |
+| `tunnel` | string |
+| `tx` | string |
+| `version` | string |
+
+### easytier.SelfView
+
+| フィールド | 型 |
+| --- | --- |
+| `ip` | string |
+| `listeners` | 配列 of string |
+| `name` | string |
+| `nat` | string |
+| `publicIps` | 配列 of string |
+
+### easytier.Settings
+
+| フィールド | 型 |
+| --- | --- |
+| `corePath` | string |
+| `installProxy` | string |
+
+### easytier.SettingsView
+
+| フィールド | 型 |
+| --- | --- |
+| `core` | string |
+| `settings` | `easytier.Settings` |
+
+### easytier.StatusView
+
+| フィールド | 型 |
+| --- | --- |
+| `cli` | string |
+| `core` | string |
+| `daemon` | `proc.State` |
+| `enable` | boolean |
+| `error` | string |
+| `key` | string |
+| `name` | string |
+| `peers` | 配列 of `easytier.PeerView` |
+| `peersDirect` | integer |
+| `self` | `easytier.SelfView` |
+| `status` | string |
+| `version` | string |
 
 ### events.TypeInfo
 
