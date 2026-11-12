@@ -44,6 +44,10 @@
       "title": "NetBird",
       "desc": "NetBird ネットワークに参加（クラウドまたはセルフホスト）"
     },
+    "easytier": {
+      "title": "EasyTier",
+      "desc": "EasyTier ネットワークに参加（P2P 優先、自前リレー対応）"
+    },
     "frp": {
       "title": "frp",
       "desc": "frpc / frps による社内サービスの外部公開"

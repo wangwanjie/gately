@@ -44,6 +44,10 @@
       "title": "NetBird",
       "desc": "Einem NetBird-Netzwerk beitreten (Cloud oder selbst gehostet)"
     },
+    "easytier": {
+      "title": "EasyTier",
+      "desc": "Einem EasyTier-Netzwerk beitreten (P2P zuerst, eigene Relays)"
+    },
     "frp": {
       "title": "frp",
       "desc": "frpc- / frps-NAT-Traversal"

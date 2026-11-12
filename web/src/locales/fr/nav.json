@@ -44,6 +44,10 @@
       "title": "NetBird",
       "desc": "Rejoindre un réseau NetBird (cloud ou auto-hébergé)"
     },
+    "easytier": {
+      "title": "EasyTier",
+      "desc": "Rejoindre un réseau EasyTier (P2P d'abord, relais personnels)"
+    },
     "frp": {
       "title": "frp",
       "desc": "Traversée NAT frpc / frps"

@@ -44,6 +44,10 @@
       "title": "NetBird",
       "desc": "加入 NetBird 官方雲或自建組網"
     },
+    "easytier": {
+      "title": "EasyTier",
+      "desc": "加入 EasyTier 組網（P2P 優先，支援自建中繼）"
+    },
     "frp": {
       "title": "frp",
       "desc": "frpc / frps 內網穿透"

@@ -44,6 +44,10 @@
       "title": "NetBird",
       "desc": "NetBird 네트워크에 참여(클라우드 또는 자체 호스팅)"
     },
+    "easytier": {
+      "title": "EasyTier",
+      "desc": "EasyTier 네트워크 참여(P2P 우선, 자체 릴레이 지원)"
+    },
     "frp": {
       "title": "frp",
       "desc": "frpc / frps 내부망 터널링"

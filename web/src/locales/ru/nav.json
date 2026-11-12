@@ -44,6 +44,10 @@
       "title": "NetBird",
       "desc": "Подключиться к сети NetBird (облако или свой сервер)"
     },
+    "easytier": {
+      "title": "EasyTier",
+      "desc": "Подключение к сети EasyTier (сначала P2P, собственные ретрансляторы)"
+    },
     "frp": {
       "title": "frp",
       "desc": "Обход NAT через frpc / frps"
