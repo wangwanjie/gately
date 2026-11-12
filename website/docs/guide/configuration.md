@@ -7,11 +7,15 @@
 | `-c` | 配置目录，也可以用环境变量 `GATELY_CONFIG_DIR` 指定 |
 | `-listen` | 覆盖管理界面监听地址，例如 `:16680` |
 | `-apply` | 声明式配置目录，也可以用环境变量 `GATELY_APPLY_DIR` 指定，见下文 |
+| `-gateway-socket` | 额外在该 Unix Socket 上提供管理界面，用于飞牛 fnOS 统一网关等场景 |
+| `-gateway-prefix` | 经网关访问时使用的路径前缀，例如 `/app/gately` |
+| `-api-docs` | 把接口文档（`openapi.json` 与 `API.md`）导出到指定目录后退出 |
 | `-version` | 输出版本信息 |
 
 | 环境变量 | 说明 |
 | --- | --- |
 | `GATELY_INITIAL_PASSWORD` | 首次启动时的管理员初始密码（至少 8 位），不设置时为默认密码 `gately.cn`；账号已存在时不起作用 |
+| `GATELY_LANG` | 服务端语言为「跟随系统」时优先读取的语言代码，其后依次为 `LC_ALL`、`LC_MESSAGES`、`LANG` |
 
 ## 配置目录
 

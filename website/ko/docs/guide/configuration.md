@@ -7,11 +7,15 @@
 | `-c` | 설정 디렉터리. 환경 변수 `GATELY_CONFIG_DIR`로도 지정할 수 있습니다 |
 | `-listen` | 관리 UI 수신 주소를 덮어씁니다. 예: `:16680` |
 | `-apply` | 선언적 설정 디렉터리. 환경 변수 `GATELY_APPLY_DIR`로도 지정할 수 있습니다. 아래 내용을 참고하세요 |
+| `-gateway-socket` | 이 Unix 소켓에서도 관리 화면을 제공합니다(fnOS 통합 게이트웨이 등에서 사용) |
+| `-gateway-prefix` | 게이트웨이를 통해 접속할 때 쓰는 경로 접두사. 예: `/app/gately` |
+| `-api-docs` | API 문서(`openapi.json`과 `API.md`)를 지정한 디렉터리에 내보내고 종료합니다 |
 | `-version` | 버전 정보를 출력합니다 |
 
 | 환경 변수 | 설명 |
 | --- | --- |
 | `GATELY_INITIAL_PASSWORD` | 최초 실행 시 사용할 관리자 초기 비밀번호(8자 이상). 설정하지 않으면 기본 비밀번호 `gately.cn`을 사용합니다. 계정이 이미 있으면 적용되지 않습니다 |
+| `GATELY_LANG` | 서버 언어가 "시스템 따라가기"일 때 가장 먼저 읽는 언어 코드이며, 이어서 `LC_ALL`, `LC_MESSAGES`, `LANG` 순으로 읽습니다 |
 
 ## 설정 디렉터리
 

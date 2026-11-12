@@ -7,11 +7,15 @@
 | `-c` | Config directory; can also be set with the `GATELY_CONFIG_DIR` environment variable |
 | `-listen` | Override the admin UI listen address, e.g. `:16680` |
 | `-apply` | Declarative config directory; can also be set with the `GATELY_APPLY_DIR` environment variable. See below |
+| `-gateway-socket` | Also serve the admin UI on this Unix socket, for example for the fnOS unified gateway |
+| `-gateway-prefix` | Path prefix used when accessed through the gateway, for example `/app/gately` |
+| `-api-docs` | Export the API docs (`openapi.json` and `API.md`) to the given directory and exit |
 | `-version` | Print version information |
 
 | Environment variable | Description |
 | --- | --- |
 | `GATELY_INITIAL_PASSWORD` | Initial administrator password on first start (at least 8 characters); defaults to `gately.cn` when unset; has no effect once the account exists |
+| `GATELY_LANG` | Language code read first when the server language is "Follow system"; `LC_ALL`, `LC_MESSAGES` and `LANG` follow in that order |
 
 ## Config directory
 
