@@ -14,6 +14,7 @@ import (
 	"slices"
 	"strings"
 	"sync"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -110,7 +111,16 @@ func CheckPassword(stored, given string) bool {
 		return false
 	}
 	if strings.HasPrefix(stored, "$2") {
-		return bcrypt.CompareHashAndPassword([]byte(stored), []byte(given)) == nil
+		now := time.Now()
+		k := verifiedKey(stored, given)
+		if verifiedHit(k, now) {
+			return true
+		}
+		if bcrypt.CompareHashAndPassword([]byte(stored), []byte(given)) != nil {
+			return false
+		}
+		verifiedStore(k, now)
+		return true
 	}
 	return subtle.ConstantTimeCompare([]byte(stored), []byte(given)) == 1
 }
