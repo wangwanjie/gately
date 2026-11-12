@@ -37,6 +37,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `stun` | Проброс STUN | `stun:read`、`stun:write` |
 | `tailscale` | Сеть Tailscale | `tailscale:read`、`tailscale:write` |
 | `netbird` | Сеть NetBird | `netbird:read`、`netbird:write` |
+| `easytier` | Сеть EasyTier | `easytier:read`、`easytier:write` |
 | `frp` | Проброс внутренней сети frp | `frp:read`、`frp:write` |
 | `cloudflared` | Туннель Cloudflare | `cloudflared:read`、`cloudflared:write` |
 | `ssl` | SSL-сертификат | `ssl:read`、`ssl:write` |
@@ -225,6 +226,38 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/netbird/install` | `netbird:write` | Удалить управляемую программу |
 | DELETE | `/api/netbird/install/backups/{id}` | `netbird:write` | Удалить сохранённую предыдущую версию |
 | POST | `/api/netbird/reset` | `netbird:write` | Сбросить настройки модуля по умолчанию |
+
+## Сеть EasyTier
+
+| Метод | Путь | Необходимое право | Описание |
+| --- | --- | --- | --- |
+| GET | `/api/easytier/logs` | `easytier:read` | Просмотр журнала работы модуля |
+| GET | `/api/easytier/logs/sources` | `easytier:read` | Список всех источников журналов модуля |
+| GET | `/api/easytier/logs/export` | `easytier:read` | Экспорт журналов модуля |
+| DELETE | `/api/easytier/logs` | `easytier:write` | Очистить журнал работы модуля |
+| GET | `/api/easytier/instances` | `easytier:read` | Список: Экземпляр EasyTier |
+| POST | `/api/easytier/instances` | `easytier:write` | Добавить экземпляр EasyTier |
+| POST | `/api/easytier/instances/{key}/copy` | `easytier:write` | Дублировать: Экземпляр EasyTier |
+| PUT | `/api/easytier/instances/{key}` | `easytier:write` | Изменить: Экземпляр EasyTier |
+| DELETE | `/api/easytier/instances/{key}` | `easytier:write` | Удалить: Экземпляр EasyTier |
+| PUT | `/api/easytier/instances/{key}/enable` | `easytier:write` | Включить или отключить: Экземпляр EasyTier |
+| PUT | `/api/easytier/instances-order` | `easytier:write` | Изменить порядок: Экземпляр EasyTier |
+| PUT | `/api/easytier/instances-enable` | `easytier:write` | Пакетно включить или отключить: Экземпляр EasyTier |
+| POST | `/api/easytier/instances-delete` | `easytier:write` | Пакетно удалить: Экземпляр EasyTier |
+| PUT | `/api/easytier/instances-group` | `easytier:write` | Задать группу сразу для нескольких: Экземпляр EasyTier |
+| GET | `/api/easytier/instances/{key}/secrets` | `easytier:write` | Показать секреты открытым текстом |
+| GET | `/api/easytier/status` | `easytier:read` | Просмотреть состояние работы всех экземпляров EasyTier |
+| GET | `/api/easytier/instances/{key}/status` | `easytier:read` | Просмотреть состояние работы экземпляра EasyTier |
+| POST | `/api/easytier/instances/{key}/restart` | `easytier:write` | Перезапустить экземпляр EasyTier |
+| GET | `/api/easytier/settings` | `easytier:read` | Прочитать настройки программы EasyTier |
+| PUT | `/api/easytier/settings` | `easytier:write` | Сохранить настройки программы EasyTier |
+| GET | `/api/easytier/install` | `easytier:read` | Просмотр сведений об установке и хода установки управляемой программы |
+| POST | `/api/easytier/install` | `easytier:write` | Установить или обновить управляемую программу онлайн |
+| POST | `/api/easytier/install/check` | `easytier:write` | Проверить обновления управляемой программы |
+| POST | `/api/easytier/install/rollback` | `easytier:write` | Переключиться на сохранённую предыдущую версию |
+| DELETE | `/api/easytier/install` | `easytier:write` | Удалить управляемую программу |
+| DELETE | `/api/easytier/install/backups/{id}` | `easytier:write` | Удалить сохранённую предыдущую версию |
+| POST | `/api/easytier/reset` | `easytier:write` | Сбросить настройки модуля по умолчанию |
 
 ## Проброс внутренней сети frp
 
@@ -1176,6 +1209,91 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `extra` | Словарь из string |
 | `id` | string |
 | `secret` | string |
+
+### easytier.Instance
+
+| Поле | Тип |
+| --- | --- |
+| `devName` | string |
+| `dhcp` | boolean |
+| `enable` | boolean |
+| `enableExitNode` | boolean |
+| `env` | string |
+| `exitNodes` | string |
+| `extraArgs` | string |
+| `group` | string |
+| `hostname` | string |
+| `ipv4` | string |
+| `kcpProxy` | boolean |
+| `key` | string |
+| `latencyFirst` | boolean |
+| `listeners` | string |
+| `name` | string |
+| `networkName` | string |
+| `networkSecret` | string |
+| `noTun` | boolean |
+| `peers` | string |
+| `portForwards` | string |
+| `proxyNetworks` | string |
+| `quicProxy` | boolean |
+| `remark` | string |
+
+### easytier.PeerView
+
+| Поле | Тип |
+| --- | --- |
+| `cost` | string |
+| `direct` | boolean |
+| `ip` | string |
+| `latencyMs` | number |
+| `loss` | string |
+| `name` | string |
+| `nat` | string |
+| `rx` | string |
+| `tunnel` | string |
+| `tx` | string |
+| `version` | string |
+
+### easytier.SelfView
+
+| Поле | Тип |
+| --- | --- |
+| `ip` | string |
+| `listeners` | Массив из string |
+| `name` | string |
+| `nat` | string |
+| `publicIps` | Массив из string |
+
+### easytier.Settings
+
+| Поле | Тип |
+| --- | --- |
+| `corePath` | string |
+| `installProxy` | string |
+
+### easytier.SettingsView
+
+| Поле | Тип |
+| --- | --- |
+| `core` | string |
+| `settings` | `easytier.Settings` |
+
+### easytier.StatusView
+
+| Поле | Тип |
+| --- | --- |
+| `cli` | string |
+| `core` | string |
+| `daemon` | `proc.State` |
+| `enable` | boolean |
+| `error` | string |
+| `key` | string |
+| `name` | string |
+| `peers` | Массив из `easytier.PeerView` |
+| `peersDirect` | integer |
+| `self` | `easytier.SelfView` |
+| `status` | string |
+| `version` | string |
 
 ### events.TypeInfo
 

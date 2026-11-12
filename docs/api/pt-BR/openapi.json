@@ -444,6 +444,210 @@
         },
         "type": "object"
       },
+      "easytier.Instance": {
+        "properties": {
+          "devName": {
+            "type": "string"
+          },
+          "dhcp": {
+            "type": "boolean"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "enableExitNode": {
+            "type": "boolean"
+          },
+          "env": {
+            "type": "string"
+          },
+          "exitNodes": {
+            "type": "string"
+          },
+          "extraArgs": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "hostname": {
+            "type": "string"
+          },
+          "ipv4": {
+            "type": "string"
+          },
+          "kcpProxy": {
+            "type": "boolean"
+          },
+          "key": {
+            "type": "string"
+          },
+          "latencyFirst": {
+            "type": "boolean"
+          },
+          "listeners": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "networkName": {
+            "type": "string"
+          },
+          "networkSecret": {
+            "type": "string"
+          },
+          "noTun": {
+            "type": "boolean"
+          },
+          "peers": {
+            "type": "string"
+          },
+          "portForwards": {
+            "type": "string"
+          },
+          "proxyNetworks": {
+            "type": "string"
+          },
+          "quicProxy": {
+            "type": "boolean"
+          },
+          "remark": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.PeerView": {
+        "properties": {
+          "cost": {
+            "type": "string"
+          },
+          "direct": {
+            "type": "boolean"
+          },
+          "ip": {
+            "type": "string"
+          },
+          "latencyMs": {
+            "type": "number"
+          },
+          "loss": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nat": {
+            "type": "string"
+          },
+          "rx": {
+            "type": "string"
+          },
+          "tunnel": {
+            "type": "string"
+          },
+          "tx": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.SelfView": {
+        "properties": {
+          "ip": {
+            "type": "string"
+          },
+          "listeners": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nat": {
+            "type": "string"
+          },
+          "publicIps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.Settings": {
+        "properties": {
+          "corePath": {
+            "type": "string"
+          },
+          "installProxy": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.SettingsView": {
+        "properties": {
+          "core": {
+            "type": "string"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/easytier.Settings"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.StatusView": {
+        "properties": {
+          "cli": {
+            "type": "string"
+          },
+          "core": {
+            "type": "string"
+          },
+          "daemon": {
+            "$ref": "#/components/schemas/proc.State"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "peers": {
+            "items": {
+              "$ref": "#/components/schemas/easytier.PeerView"
+            },
+            "type": "array"
+          },
+          "peersDirect": {
+            "type": "integer"
+          },
+          "self": {
+            "$ref": "#/components/schemas/easytier.SelfView"
+          },
+          "status": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "events.TypeInfo": {
         "properties": {
           "level": {
@@ -7918,7 +8122,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Disponível em frp, Túnel Cloudflare, Tailscale, NetBird e File Browser. Retorna a versão instalada em bin no diretório de configuração, as versões anteriores salvas (`backups`, no máximo 3), o proxy de download definido para este programa (`proxy`), a plataforma atual e o progresso da instalação `state` (`stage` é checking, downloading, verifying, extracting, done, uptodate ou failed). Um `unsupported` não vazio indica que o projeto não oferece programa para a plataforma atual.\n\nPermissão necessária: `cloudflared:read`.",
+        "description": "Disponível para frp, túneis Cloudflare, Tailscale, NetBird, EasyTier e File Browser. Retorna as versões instaladas em bin no diretório de configuração, as versões anteriores guardadas (`backups`, até 3), o proxy de download próprio do programa `proxy`, a plataforma atual e o progresso da instalação `state` (`stage` é checking, downloading, verifying, extracting, done, uptodate ou failed). Se `unsupported` não estiver vazio, a origem não fornece programa para a plataforma atual.\n\nPermissão necessária: `cloudflared:read`.",
         "responses": {
           "200": {
             "description": "Sucesso"
@@ -8653,7 +8857,7 @@
     },
     "/api/cloudflared/reset": {
       "post": {
-        "description": "Disponível em frp, Túnel Cloudflare, Tailscale, NetBird e File Browser; sem corpo. Para todos os processos do módulo, restaura as configurações padrão (incluindo o caminho do programa e o proxy de download) e exclui os arquivos que o Gately gerou para ele: os arquivos de configuração do frp, o diretório de dados de cada instância do File Browser (usuários, links de compartilhamento e caches), o estado de login no diretório de estado padrão do Tailscale (um tailscaled gerenciado pelo Gately em execução sai da conta antes; diretórios de estado personalizados e um tailscaled do sistema não são tocados) e o estado de login e as chaves no diretório de estado padrão do NetBird (um daemon gerenciado pelo Gately em execução faz logout antes, removendo esta máquina da rede; diretórios de estado personalizados e um serviço NetBird do sistema não são tocados). As configurações antigas ficam no histórico de configuração e podem ser restauradas; os programas instalados não são afetados, para desinstalar use `DELETE /api/{module}/install`.\n\nPermissão necessária: `cloudflared:write`.",
+        "description": "Disponível para frp, túneis Cloudflare, Tailscale, NetBird, EasyTier e File Browser; não precisa de corpo de requisição. Interrompe todos os processos do módulo, restaura a configuração (incluindo o caminho do programa e o proxy de download) para os valores padrão e exclui os arquivos que o Gately gerou para ele: o arquivo de configuração do frp, o diretório de dados de cada instância do File Browser (usuários, links de compartilhamento e cache), o estado de login no diretório de estado padrão do Tailscale (se o tailscaled gerenciado pelo Gately estiver em execução, ele sai da conta primeiro; diretórios de estado personalizados e um tailscaled do sistema não são tocados) e o estado de login e as chaves no diretório de estado padrão do NetBird (se o daemon gerenciado pelo Gately estiver em execução, ele sai da conta primeiro e esta máquina é removida da rede; diretórios de estado personalizados e um serviço NetBird do sistema não são tocados). A configuração antiga fica no histórico de configuração e pode ser restaurada; os programas instalados não são afetados, e a desinstalação usa `DELETE /api/{module}/install`.\n\nPermissão necessária: `cloudflared:write`.",
         "responses": {
           "200": {
             "description": "Sucesso"
@@ -17096,6 +17300,1867 @@
         "x-token-allowed": true
       }
     },
+    "/api/easytier/install": {
+      "delete": {
+        "description": "Exclui o programa instalado em bin no diretório de configuração e todas as versões anteriores salvas, depois reinicia os processos que o usam: se houver um programa com o mesmo nome no PATH ele é usado, senão os processos não iniciam. As configurações do módulo não mudam; para limpá-las use `POST /api/{module}/reset`.\n\nPermissão necessária: `easytier:write`.",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Desinstalar um programa gerenciado",
+        "tags": [
+          "Rede EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "Disponível para frp, túneis Cloudflare, Tailscale, NetBird, EasyTier e File Browser. Retorna as versões instaladas em bin no diretório de configuração, as versões anteriores guardadas (`backups`, até 3), o proxy de download próprio do programa `proxy`, a plataforma atual e o progresso da instalação `state` (`stage` é checking, downloading, verifying, extracting, done, uptodate ou failed). Se `unsupported` não estiver vazio, a origem não fornece programa para a plataforma atual.\n\nPermissão necessária: `easytier:read`.",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ver as informações de instalação e o progresso de um programa gerenciado",
+        "tags": [
+          "Rede EasyTier"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "Corpo `{\"version\": \"\", \"proxy\": \"\"}`: um `version` vazio instala a versão estável mais recente (se já estiver instalada nada é baixado e `stage` é uptodate), caso contrário a versão indicada; `proxy` é o proxy de download (http, https ou socks5), salvo para a próxima vez, e vazio usa a configuração global `updateProxy`. O download é verificado pelo SHA-256 e instalado em bin no diretório de configuração, a versão existente vai para as versões anteriores e os processos que usam o programa são reiniciados. Responde imediatamente; consulte o progresso com `GET /api/{module}/install`.\n\nPermissão necessária: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Instalar ou atualizar online um programa gerenciado",
+        "tags": [
+          "Rede EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/install/backups/{id}": {
+      "delete": {
+        "description": "Permissão necessária: `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Excluir uma versão anterior salva",
+        "tags": [
+          "Rede EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/install/check": {
+      "post": {
+        "description": "Sem corpo de requisição. Consulta a versão estável mais recente no projeto de origem (pelo proxy de download do programa ou, se não houver, pela configuração global `updateProxy`) sem baixar nem alterar o programa instalado; retorna o mesmo que `GET /api/{module}/install`, em que `latest` é `{version, checkedAt, error, hasUpdate}` e `hasUpdate` indica que a versão mais recente é mais nova que a instalada em bin. Com a verificação automática de atualizações ativada, o Gately também executa essa verificação periodicamente para os programas gerenciados instalados. Retorna 409 se já houver uma verificação em andamento.\n\nPermissão necessária: `easytier:write`.",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Verificar atualizações de um programa gerenciado",
+        "tags": [
+          "Rede EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/install/rollback": {
+      "post": {
+        "description": "Corpo `{\"id\": \"\u003cID da versão anterior\u003e\"}`. A versão atual é salva como versão anterior para que você possa voltar; depois os processos que usam o programa são reiniciados.\n\nPermissão necessária: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Mudar para uma versão anterior salva",
+        "tags": [
+          "Rede EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances": {
+      "get": {
+        "description": "Permissão necessária: `easytier:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/easytier.Instance"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Listar Instância do EasyTier",
+        "tags": [
+          "Rede EasyTier"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "Cada instância executa seu próprio processo `easytier-core` e pode ingressar em uma rede EasyTier diferente. Campos do corpo da requisição: `name` nome (não pode se repetir); `enable` se está habilitada; `networkName` nome da rede (obrigatório, 1 a 64 caracteres: letras, dígitos e `. _ @ : + -`) e `networkSecret` chave da rede (só se comunicam nós com o mesmo nome e a mesma chave; ela é passada ao processo pela variável de ambiente `ET_NETWORK_SECRET`, não aparece nos argumentos do processo e também fica oculta nos logs); `peers` endereços dos nós aos quais se conectar na inicialização, um por linha, como `tcp://public.easytier.cn:11010` (o protocolo pode ser tcp, udp, ws, wss, quic, wg, faketcp, além de http, https, txt e srv para descoberta de nós); `listeners` endereços de escuta, um por linha, que devem ser escritos como `protocolo://endereço:porta`; se vazio, nenhuma porta é escutada e a instância apenas se conecta a outros nós; `dhcp` atribui o IP virtual automaticamente e, quando desligado, `ipv4` pode definir um IP virtual fixo (como `10.126.126.2/24`); se nenhum dos dois estiver definido, este nó apenas encaminha dados e não cria interface de rede; `hostname`; `noTun` usa rede em espaço de usuário e não cria interface TUN (sem necessidade de privilégios), `devName` nome da interface; `proxyNetworks` redes locais compartilhadas com a rede, uma por linha, que podem ser escritas como `192.168.1.0/24-\u003e10.1.0.0/24` para mapear redes; `portForwards` encaminhamentos de porta, um por linha, como `tcp://127.0.0.1:2222/10.126.126.1:22` (você define o endereço de vínculo; recomenda-se 127.0.0.1); `enableExitNode` permite que esta máquina atue como nó de saída, `exitNodes` nós de saída usados (IPv4 virtuais, um por linha); `latencyFirst` prioriza rotas de menor latência; `kcpProxy` e `quicProxy` fazem proxy do tráfego TCP via KCP e QUIC; `extraArgs` anexados depois de `easytier-core` (separados por espaço), `env` variáveis de ambiente passadas ao processo (uma `KEY=VALUE` por linha). Não há opção SOCKS5: o SOCKS5 do EasyTier escuta em todos os endereços e não tem autenticação. A porta de gerenciamento é atribuída aleatoriamente pelo Gately em 127.0.0.1 e só é acessível a partir desta máquina. Retorna-se 400 quando: instâncias habilitadas ao mesmo tempo escutam a mesma porta (verificado separadamente para TCP e UDP) ou seus encaminhamentos de porta usam a mesma porta local, instâncias habilitadas ao mesmo tempo e que usam TUN têm o mesmo nome de interface, ou há nomes repetidos. As mesmas verificações valem ao habilitar, habilitar em lote e copiar.\n\nPermissão necessária: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/easytier.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.Instance"
+                }
+              }
+            },
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Adicionar uma instância do EasyTier",
+        "tags": [
+          "Rede EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances-delete": {
+      "post": {
+        "description": "Permissão necessária: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchDeleteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Excluir em lote: Instância do EasyTier",
+        "tags": [
+          "Rede EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances-enable": {
+      "put": {
+        "description": "Permissão necessária: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchEnableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ativar ou desativar em lote: Instância do EasyTier",
+        "tags": [
+          "Rede EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances-group": {
+      "put": {
+        "description": "Permissão necessária: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Definir o grupo de vários itens: Instância do EasyTier",
+        "tags": [
+          "Rede EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances-order": {
+      "put": {
+        "description": "Permissão necessária: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.orderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Reordenar Instância do EasyTier",
+        "tags": [
+          "Rede EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}": {
+      "delete": {
+        "description": "Permissão necessária: `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Excluir Instância do EasyTier",
+        "tags": [
+          "Rede EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Permissão necessária: `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/easytier.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.Instance"
+                }
+              }
+            },
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Modificar Instância do EasyTier",
+        "tags": [
+          "Rede EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/copy": {
+      "post": {
+        "description": "Permissão necessária: `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/easytier.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.Instance"
+                }
+              }
+            },
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Duplicar Instância do EasyTier",
+        "tags": [
+          "Rede EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/enable": {
+      "put": {
+        "description": "Permissão necessária: `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.enableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ativar ou desativar Instância do EasyTier",
+        "tags": [
+          "Rede EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/restart": {
+      "post": {
+        "description": "Reinicia o processo `easytier-core` desta instância; as demais instâncias não são afetadas.\n\nPermissão necessária: `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Reiniciar uma instância do EasyTier",
+        "tags": [
+          "Rede EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/secrets": {
+      "get": {
+        "description": "Permissão necessária: `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ver segredos em texto puro",
+        "tags": [
+          "Rede EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/status": {
+      "get": {
+        "description": "`status` é stopped (não habilitado ou processo não em execução), starting (o processo foi iniciado, mas a porta de gerenciamento ainda não está pronta) ou running. `self` são as informações deste nó (IP virtual, endereços de escuta reais, e endereço público e tipo de NAT detectados por STUN); `peers` são os demais nós da rede: `cost` é p2p (direto) ou relay(N) (retransmitido por N saltos), `direct` indica conexão direta, `latencyMs` é a latência e `tunnel` é o protocolo de conexão. `peersDirect` é o número de nós conectados diretamente.\n\nPermissão necessária: `easytier:read`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.StatusView"
+                }
+              }
+            },
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ver o status de execução de uma instância do EasyTier",
+        "tags": [
+          "Rede EasyTier"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/logs": {
+      "delete": {
+        "description": "Também exclui os arquivos de log em disco, os arquivos rotacionados, os arquivos compactados e a lista de origens.\n\nPermissão necessária: `easytier:write`.",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Limpar logs de execução do módulo",
+        "tags": [
+          "Rede EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "Permite busca incremental com o parâmetro `since`, retornando logs com número de sequência maior que esse valor; `before` retorna logs com número de sequência menor que esse valor, para carregar entradas anteriores; `limit` retorna apenas as entradas mais recentes e, quando a memória não tem o suficiente, também procura no histórico guardado nos arquivos de log. Parâmetros de filtro: `level` nível mínimo, `source` origem, `q` palavras-chave (separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um `-` inicial exclui), `ip` endereço do cliente (endereço completo, CIDR ou parte do endereço, separados por vírgula), `host` nome do site ou domínio (correspondência parcial), `site` nome do site (correspondência exata; retorna só o log de acesso desse site), `status` código de status (como `404`, `4xx`, `500-599`), `from` e `to` intervalo de tempo (RFC 3339 ou carimbo de data/hora em milissegundos). `exclude` lista termos a excluir: entradas que contenham qualquer um deles não são retornadas; escrita igual a `q`, o `-` inicial é opcional.\n\nPermissão necessária: `easytier:read`.",
+        "parameters": [
+          {
+            "description": "Busca incremental: retorna apenas logs com número de sequência maior que este valor",
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Carregar logs anteriores: retorna apenas logs com número de sequência menor que este valor",
+            "in": "query",
+            "name": "before",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Número máximo de entradas retornadas, pegando as mais recentes que correspondem; 0 ou omitido significa sem limite",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Nível mínimo: debug, info, warn ou error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Rótulo de origem, correspondência exata sem diferenciar maiúsculas",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Palavras-chave: separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um - inicial exclui",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Palavras-chave excluídas: separadas por espaço, aspas duplas agrupam uma frase; a entrada que contiver qualquer uma é excluída; aplica-se junto com q",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Endereço do cliente: endereço completo, CIDR ou parte do endereço, separados por vírgula; o prefixo ! ou - exclui",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Parte do nome do site ou do domínio",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nome do site, correspondência exata sem diferenciar maiúsculas; retorna apenas os logs de acesso desse site",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Chave do listener dos Serviços Web, correspondência exata; distingue sites ou listeners com o mesmo nome (por exemplo, listeners IPv4 e IPv6 separados)",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Código de status como 404, 4xx, 500-599, separados por vírgula",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Com 1, oculta os logs de acesso de origens banidas: as requisições rejeitadas pelo banimento e todas as de origens que continuam banidas, incluindo as que causaram o banimento (afeta apenas a resposta; os logs continuam salvos)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Com 1, oculta as requisições que trazem uma sessão do painel de administração, ou seja, os logs de acesso gerados por administradores acessando o painel por um site do Serviço Web",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Hora de início, RFC 3339 ou carimbo de data/hora em milissegundos",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Hora de término, RFC 3339 ou carimbo de data/hora em milissegundos",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ver logs de execução do módulo",
+        "tags": [
+          "Rede EasyTier"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/logs/export": {
+      "get": {
+        "description": "Retorna em streaming como anexo todos os logs que atendem aos filtros, do mais antigo ao mais recente, incluindo arquivos rotacionados e arquivos compactados em disco. `format` é `jsonl` (padrão, um objeto JSON por linha) ou `csv` (UTF-8 com BOM; células que começam com = + - @ recebem um apóstrofo à frente para evitar injeção de fórmulas). Os parâmetros de filtro são os mesmos da visualização de logs. Para identidades somente leitura, as credenciais são ocultadas na exportação assim como na visualização. `lang` define o idioma do conteúdo exportado (por exemplo, `en`); por padrão, usa Accept-Language.\n\nPermissão necessária: `easytier:read`.",
+        "parameters": [
+          {
+            "description": "Formato de exportação: jsonl (padrão, um objeto JSON por linha) ou csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Idioma do conteúdo exportado, por exemplo en; por padrão, usa Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nível mínimo: debug, info, warn ou error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Rótulo de origem, correspondência exata sem diferenciar maiúsculas",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Palavras-chave: separadas por espaço, todas devem corresponder; aspas duplas agrupam uma frase; um - inicial exclui",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Palavras-chave excluídas: separadas por espaço, aspas duplas agrupam uma frase; a entrada que contiver qualquer uma é excluída; aplica-se junto com q",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Endereço do cliente: endereço completo, CIDR ou parte do endereço, separados por vírgula; o prefixo ! ou - exclui",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Parte do nome do site ou do domínio",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nome do site, correspondência exata sem diferenciar maiúsculas; retorna apenas os logs de acesso desse site",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Chave do listener dos Serviços Web, correspondência exata; distingue sites ou listeners com o mesmo nome (por exemplo, listeners IPv4 e IPv6 separados)",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Código de status como 404, 4xx, 500-599, separados por vírgula",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Com 1, oculta os logs de acesso de origens banidas: as requisições rejeitadas pelo banimento e todas as de origens que continuam banidas, incluindo as que causaram o banimento (afeta apenas a resposta; os logs continuam salvos)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Com 1, oculta as requisições que trazem uma sessão do painel de administração, ou seja, os logs de acesso gerados por administradores acessando o painel por um site do Serviço Web",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Hora de início, RFC 3339 ou carimbo de data/hora em milissegundos",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Hora de término, RFC 3339 ou carimbo de data/hora em milissegundos",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Exportar logs do módulo",
+        "tags": [
+          "Rede EasyTier"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/logs/sources": {
+      "get": {
+        "description": "Retorna um array de rótulos de origem ordenados por nome: as origens que apareceram nos logs (mantidas após reinícios quando salvos em disco) e as da configuração do módulo (por exemplo, todos os listeners e listas de IP dos Serviços Web), para filtrar com `source`. As origens são traduzidas para o idioma da requisição assim como os logs.\n\nPermissão necessária: `easytier:read`.",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Listar todas as origens dos logs do módulo",
+        "tags": [
+          "Rede EasyTier"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/reset": {
+      "post": {
+        "description": "Disponível para frp, túneis Cloudflare, Tailscale, NetBird, EasyTier e File Browser; não precisa de corpo de requisição. Interrompe todos os processos do módulo, restaura a configuração (incluindo o caminho do programa e o proxy de download) para os valores padrão e exclui os arquivos que o Gately gerou para ele: o arquivo de configuração do frp, o diretório de dados de cada instância do File Browser (usuários, links de compartilhamento e cache), o estado de login no diretório de estado padrão do Tailscale (se o tailscaled gerenciado pelo Gately estiver em execução, ele sai da conta primeiro; diretórios de estado personalizados e um tailscaled do sistema não são tocados) e o estado de login e as chaves no diretório de estado padrão do NetBird (se o daemon gerenciado pelo Gately estiver em execução, ele sai da conta primeiro e esta máquina é removida da rede; diretórios de estado personalizados e um serviço NetBird do sistema não são tocados). A configuração antiga fica no histórico de configuração e pode ser restaurada; os programas instalados não são afetados, e a desinstalação usa `DELETE /api/{module}/install`.\n\nPermissão necessária: `easytier:write`.",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Restaurar as configurações padrão do módulo",
+        "tags": [
+          "Rede EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/settings": {
+      "get": {
+        "description": "Retorna `settings` (`corePath` e o proxy de download `installProxy`, compartilhados por todas as instâncias) e o caminho do programa easytier-core realmente usado, `core`. easytier-cli é procurado no diretório do easytier-core e, se não for encontrado, no diretório bin da configuração e no PATH.\n\nPermissão necessária: `easytier:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.SettingsView"
+                }
+              }
+            },
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ler as configurações do programa EasyTier",
+        "tags": [
+          "Rede EasyTier"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Corpo da requisição `{\"corePath\": \"\"}`. Se vazio, easytier-core é procurado no diretório bin da configuração e depois no PATH; `installProxy` só é alterado pela API de instalação. Após mudar o caminho, reinicie as instâncias habilitadas.\n\nPermissão necessária: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/easytier.Settings"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Salvar as configurações do programa EasyTier",
+        "tags": [
+          "Rede EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/status": {
+      "get": {
+        "description": "Retorna um array na mesma ordem da lista de instâncias; cada item contém `key` e `name` da instância e seu status, com os mesmos campos de `GET /api/easytier/instances/{key}/status`. Instâncias desabilitadas retornam apenas o status do processo e não têm os nós consultados.\n\nPermissão necessária: `easytier:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/easytier.StatusView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ver o status de execução de todas as instâncias do EasyTier",
+        "tags": [
+          "Rede EasyTier"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/filebrowser/install": {
       "delete": {
         "description": "Exclui o programa instalado em bin no diretório de configuração e todas as versões anteriores salvas, depois reinicia os processos que o usam: se houver um programa com o mesmo nome no PATH ele é usado, senão os processos não iniciam. As configurações do módulo não mudam; para limpá-las use `POST /api/{module}/reset`.\n\nPermissão necessária: `filebrowser:write`.",
@@ -17147,7 +19212,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Disponível em frp, Túnel Cloudflare, Tailscale, NetBird e File Browser. Retorna a versão instalada em bin no diretório de configuração, as versões anteriores salvas (`backups`, no máximo 3), o proxy de download definido para este programa (`proxy`), a plataforma atual e o progresso da instalação `state` (`stage` é checking, downloading, verifying, extracting, done, uptodate ou failed). Um `unsupported` não vazio indica que o projeto não oferece programa para a plataforma atual.\n\nPermissão necessária: `filebrowser:read`.",
+        "description": "Disponível para frp, túneis Cloudflare, Tailscale, NetBird, EasyTier e File Browser. Retorna as versões instaladas em bin no diretório de configuração, as versões anteriores guardadas (`backups`, até 3), o proxy de download próprio do programa `proxy`, a plataforma atual e o progresso da instalação `state` (`stage` é checking, downloading, verifying, extracting, done, uptodate ou failed). Se `unsupported` não estiver vazio, a origem não fornece programa para a plataforma atual.\n\nPermissão necessária: `filebrowser:read`.",
         "responses": {
           "200": {
             "description": "Sucesso"
@@ -18663,7 +20728,7 @@
     },
     "/api/filebrowser/reset": {
       "post": {
-        "description": "Disponível em frp, Túnel Cloudflare, Tailscale, NetBird e File Browser; sem corpo. Para todos os processos do módulo, restaura as configurações padrão (incluindo o caminho do programa e o proxy de download) e exclui os arquivos que o Gately gerou para ele: os arquivos de configuração do frp, o diretório de dados de cada instância do File Browser (usuários, links de compartilhamento e caches), o estado de login no diretório de estado padrão do Tailscale (um tailscaled gerenciado pelo Gately em execução sai da conta antes; diretórios de estado personalizados e um tailscaled do sistema não são tocados) e o estado de login e as chaves no diretório de estado padrão do NetBird (um daemon gerenciado pelo Gately em execução faz logout antes, removendo esta máquina da rede; diretórios de estado personalizados e um serviço NetBird do sistema não são tocados). As configurações antigas ficam no histórico de configuração e podem ser restauradas; os programas instalados não são afetados, para desinstalar use `DELETE /api/{module}/install`.\n\nPermissão necessária: `filebrowser:write`.",
+        "description": "Disponível para frp, túneis Cloudflare, Tailscale, NetBird, EasyTier e File Browser; não precisa de corpo de requisição. Interrompe todos os processos do módulo, restaura a configuração (incluindo o caminho do programa e o proxy de download) para os valores padrão e exclui os arquivos que o Gately gerou para ele: o arquivo de configuração do frp, o diretório de dados de cada instância do File Browser (usuários, links de compartilhamento e cache), o estado de login no diretório de estado padrão do Tailscale (se o tailscaled gerenciado pelo Gately estiver em execução, ele sai da conta primeiro; diretórios de estado personalizados e um tailscaled do sistema não são tocados) e o estado de login e as chaves no diretório de estado padrão do NetBird (se o daemon gerenciado pelo Gately estiver em execução, ele sai da conta primeiro e esta máquina é removida da rede; diretórios de estado personalizados e um serviço NetBird do sistema não são tocados). A configuração antiga fica no histórico de configuração e pode ser restaurada; os programas instalados não são afetados, e a desinstalação usa `DELETE /api/{module}/install`.\n\nPermissão necessária: `filebrowser:write`.",
         "responses": {
           "200": {
             "description": "Sucesso"
@@ -19890,7 +21955,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Disponível em frp, Túnel Cloudflare, Tailscale, NetBird e File Browser. Retorna a versão instalada em bin no diretório de configuração, as versões anteriores salvas (`backups`, no máximo 3), o proxy de download definido para este programa (`proxy`), a plataforma atual e o progresso da instalação `state` (`stage` é checking, downloading, verifying, extracting, done, uptodate ou failed). Um `unsupported` não vazio indica que o projeto não oferece programa para a plataforma atual.\n\nPermissão necessária: `frp:read`.",
+        "description": "Disponível para frp, túneis Cloudflare, Tailscale, NetBird, EasyTier e File Browser. Retorna as versões instaladas em bin no diretório de configuração, as versões anteriores guardadas (`backups`, até 3), o proxy de download próprio do programa `proxy`, a plataforma atual e o progresso da instalação `state` (`stage` é checking, downloading, verifying, extracting, done, uptodate ou failed). Se `unsupported` não estiver vazio, a origem não fornece programa para a plataforma atual.\n\nPermissão necessária: `frp:read`.",
         "responses": {
           "200": {
             "description": "Sucesso"
@@ -21345,7 +23410,7 @@
     },
     "/api/frp/reset": {
       "post": {
-        "description": "Disponível em frp, Túnel Cloudflare, Tailscale, NetBird e File Browser; sem corpo. Para todos os processos do módulo, restaura as configurações padrão (incluindo o caminho do programa e o proxy de download) e exclui os arquivos que o Gately gerou para ele: os arquivos de configuração do frp, o diretório de dados de cada instância do File Browser (usuários, links de compartilhamento e caches), o estado de login no diretório de estado padrão do Tailscale (um tailscaled gerenciado pelo Gately em execução sai da conta antes; diretórios de estado personalizados e um tailscaled do sistema não são tocados) e o estado de login e as chaves no diretório de estado padrão do NetBird (um daemon gerenciado pelo Gately em execução faz logout antes, removendo esta máquina da rede; diretórios de estado personalizados e um serviço NetBird do sistema não são tocados). As configurações antigas ficam no histórico de configuração e podem ser restauradas; os programas instalados não são afetados, para desinstalar use `DELETE /api/{module}/install`.\n\nPermissão necessária: `frp:write`.",
+        "description": "Disponível para frp, túneis Cloudflare, Tailscale, NetBird, EasyTier e File Browser; não precisa de corpo de requisição. Interrompe todos os processos do módulo, restaura a configuração (incluindo o caminho do programa e o proxy de download) para os valores padrão e exclui os arquivos que o Gately gerou para ele: o arquivo de configuração do frp, o diretório de dados de cada instância do File Browser (usuários, links de compartilhamento e cache), o estado de login no diretório de estado padrão do Tailscale (se o tailscaled gerenciado pelo Gately estiver em execução, ele sai da conta primeiro; diretórios de estado personalizados e um tailscaled do sistema não são tocados) e o estado de login e as chaves no diretório de estado padrão do NetBird (se o daemon gerenciado pelo Gately estiver em execução, ele sai da conta primeiro e esta máquina é removida da rede; diretórios de estado personalizados e um serviço NetBird do sistema não são tocados). A configuração antiga fica no histórico de configuração e pode ser restaurada; os programas instalados não são afetados, e a desinstalação usa `DELETE /api/{module}/install`.\n\nPermissão necessária: `frp:write`.",
         "responses": {
           "200": {
             "description": "Sucesso"
@@ -26872,7 +28937,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Disponível em frp, Túnel Cloudflare, Tailscale, NetBird e File Browser. Retorna a versão instalada em bin no diretório de configuração, as versões anteriores salvas (`backups`, no máximo 3), o proxy de download definido para este programa (`proxy`), a plataforma atual e o progresso da instalação `state` (`stage` é checking, downloading, verifying, extracting, done, uptodate ou failed). Um `unsupported` não vazio indica que o projeto não oferece programa para a plataforma atual.\n\nPermissão necessária: `netbird:read`.",
+        "description": "Disponível para frp, túneis Cloudflare, Tailscale, NetBird, EasyTier e File Browser. Retorna as versões instaladas em bin no diretório de configuração, as versões anteriores guardadas (`backups`, até 3), o proxy de download próprio do programa `proxy`, a plataforma atual e o progresso da instalação `state` (`stage` é checking, downloading, verifying, extracting, done, uptodate ou failed). Se `unsupported` não estiver vazio, a origem não fornece programa para a plataforma atual.\n\nPermissão necessária: `netbird:read`.",
         "responses": {
           "200": {
             "description": "Sucesso"
@@ -28517,7 +30582,7 @@
     },
     "/api/netbird/reset": {
       "post": {
-        "description": "Disponível em frp, Túnel Cloudflare, Tailscale, NetBird e File Browser; sem corpo. Para todos os processos do módulo, restaura as configurações padrão (incluindo o caminho do programa e o proxy de download) e exclui os arquivos que o Gately gerou para ele: os arquivos de configuração do frp, o diretório de dados de cada instância do File Browser (usuários, links de compartilhamento e caches), o estado de login no diretório de estado padrão do Tailscale (um tailscaled gerenciado pelo Gately em execução sai da conta antes; diretórios de estado personalizados e um tailscaled do sistema não são tocados) e o estado de login e as chaves no diretório de estado padrão do NetBird (um daemon gerenciado pelo Gately em execução faz logout antes, removendo esta máquina da rede; diretórios de estado personalizados e um serviço NetBird do sistema não são tocados). As configurações antigas ficam no histórico de configuração e podem ser restauradas; os programas instalados não são afetados, para desinstalar use `DELETE /api/{module}/install`.\n\nPermissão necessária: `netbird:write`.",
+        "description": "Disponível para frp, túneis Cloudflare, Tailscale, NetBird, EasyTier e File Browser; não precisa de corpo de requisição. Interrompe todos os processos do módulo, restaura a configuração (incluindo o caminho do programa e o proxy de download) para os valores padrão e exclui os arquivos que o Gately gerou para ele: o arquivo de configuração do frp, o diretório de dados de cada instância do File Browser (usuários, links de compartilhamento e cache), o estado de login no diretório de estado padrão do Tailscale (se o tailscaled gerenciado pelo Gately estiver em execução, ele sai da conta primeiro; diretórios de estado personalizados e um tailscaled do sistema não são tocados) e o estado de login e as chaves no diretório de estado padrão do NetBird (se o daemon gerenciado pelo Gately estiver em execução, ele sai da conta primeiro e esta máquina é removida da rede; diretórios de estado personalizados e um serviço NetBird do sistema não são tocados). A configuração antiga fica no histórico de configuração e pode ser restaurada; os programas instalados não são afetados, e a desinstalação usa `DELETE /api/{module}/install`.\n\nPermissão necessária: `netbird:write`.",
         "responses": {
           "200": {
             "description": "Sucesso"
@@ -41775,7 +43840,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Disponível em frp, Túnel Cloudflare, Tailscale, NetBird e File Browser. Retorna a versão instalada em bin no diretório de configuração, as versões anteriores salvas (`backups`, no máximo 3), o proxy de download definido para este programa (`proxy`), a plataforma atual e o progresso da instalação `state` (`stage` é checking, downloading, verifying, extracting, done, uptodate ou failed). Um `unsupported` não vazio indica que o projeto não oferece programa para a plataforma atual.\n\nPermissão necessária: `tailscale:read`.",
+        "description": "Disponível para frp, túneis Cloudflare, Tailscale, NetBird, EasyTier e File Browser. Retorna as versões instaladas em bin no diretório de configuração, as versões anteriores guardadas (`backups`, até 3), o proxy de download próprio do programa `proxy`, a plataforma atual e o progresso da instalação `state` (`stage` é checking, downloading, verifying, extracting, done, uptodate ou failed). Se `unsupported` não estiver vazio, a origem não fornece programa para a plataforma atual.\n\nPermissão necessária: `tailscale:read`.",
         "responses": {
           "200": {
             "description": "Sucesso"
@@ -43420,7 +45485,7 @@
     },
     "/api/tailscale/reset": {
       "post": {
-        "description": "Disponível em frp, Túnel Cloudflare, Tailscale, NetBird e File Browser; sem corpo. Para todos os processos do módulo, restaura as configurações padrão (incluindo o caminho do programa e o proxy de download) e exclui os arquivos que o Gately gerou para ele: os arquivos de configuração do frp, o diretório de dados de cada instância do File Browser (usuários, links de compartilhamento e caches), o estado de login no diretório de estado padrão do Tailscale (um tailscaled gerenciado pelo Gately em execução sai da conta antes; diretórios de estado personalizados e um tailscaled do sistema não são tocados) e o estado de login e as chaves no diretório de estado padrão do NetBird (um daemon gerenciado pelo Gately em execução faz logout antes, removendo esta máquina da rede; diretórios de estado personalizados e um serviço NetBird do sistema não são tocados). As configurações antigas ficam no histórico de configuração e podem ser restauradas; os programas instalados não são afetados, para desinstalar use `DELETE /api/{module}/install`.\n\nPermissão necessária: `tailscale:write`.",
+        "description": "Disponível para frp, túneis Cloudflare, Tailscale, NetBird, EasyTier e File Browser; não precisa de corpo de requisição. Interrompe todos os processos do módulo, restaura a configuração (incluindo o caminho do programa e o proxy de download) para os valores padrão e exclui os arquivos que o Gately gerou para ele: o arquivo de configuração do frp, o diretório de dados de cada instância do File Browser (usuários, links de compartilhamento e cache), o estado de login no diretório de estado padrão do Tailscale (se o tailscaled gerenciado pelo Gately estiver em execução, ele sai da conta primeiro; diretórios de estado personalizados e um tailscaled do sistema não são tocados) e o estado de login e as chaves no diretório de estado padrão do NetBird (se o daemon gerenciado pelo Gately estiver em execução, ele sai da conta primeiro e esta máquina é removida da rede; diretórios de estado personalizados e um serviço NetBird do sistema não são tocados). A configuração antiga fica no histórico de configuração e pode ser restaurada; os programas instalados não são afetados, e a desinstalação usa `DELETE /api/{module}/install`.\n\nPermissão necessária: `tailscale:write`.",
         "responses": {
           "200": {
             "description": "Sucesso"
@@ -57124,6 +59189,9 @@
       "name": "Rede NetBird"
     },
     {
+      "name": "Rede EasyTier"
+    },
+    {
       "name": "Travessia de rede interna frp"
     },
     {
@@ -57206,6 +59274,7 @@
     "stun",
     "tailscale",
     "netbird",
+    "easytier",
     "frp",
     "cloudflared",
     "ssl",

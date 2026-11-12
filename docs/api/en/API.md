@@ -37,6 +37,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `stun` | STUN traversal | `stun:read`、`stun:write` |
 | `tailscale` | Tailscale networking | `tailscale:read`、`tailscale:write` |
 | `netbird` | NetBird network | `netbird:read`、`netbird:write` |
+| `easytier` | EasyTier networking | `easytier:read`、`easytier:write` |
 | `frp` | frp tunneling | `frp:read`、`frp:write` |
 | `cloudflared` | Cloudflare Tunnel | `cloudflared:read`、`cloudflared:write` |
 | `ssl` | SSL certificate | `ssl:read`、`ssl:write` |
@@ -225,6 +226,38 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | DELETE | `/api/netbird/install` | `netbird:write` | Uninstall a managed program |
 | DELETE | `/api/netbird/install/backups/{id}` | `netbird:write` | Delete a saved previous version |
 | POST | `/api/netbird/reset` | `netbird:write` | Restore the module default settings |
+
+## EasyTier networking
+
+| Method | Path | Required permission | Description |
+| --- | --- | --- | --- |
+| GET | `/api/easytier/logs` | `easytier:read` | View module runtime logs |
+| GET | `/api/easytier/logs/sources` | `easytier:read` | List all sources of module logs |
+| GET | `/api/easytier/logs/export` | `easytier:read` | Export module logs |
+| DELETE | `/api/easytier/logs` | `easytier:write` | Clear module runtime logs |
+| GET | `/api/easytier/instances` | `easytier:read` | List EasyTier instance |
+| POST | `/api/easytier/instances` | `easytier:write` | Add an EasyTier instance |
+| POST | `/api/easytier/instances/{key}/copy` | `easytier:write` | Duplicate EasyTier instance |
+| PUT | `/api/easytier/instances/{key}` | `easytier:write` | Update EasyTier instance |
+| DELETE | `/api/easytier/instances/{key}` | `easytier:write` | Delete EasyTier instance |
+| PUT | `/api/easytier/instances/{key}/enable` | `easytier:write` | Enable or disable EasyTier instance |
+| PUT | `/api/easytier/instances-order` | `easytier:write` | Reorder EasyTier instance |
+| PUT | `/api/easytier/instances-enable` | `easytier:write` | Enable or disable in bulk: EasyTier instance |
+| POST | `/api/easytier/instances-delete` | `easytier:write` | Delete in bulk: EasyTier instance |
+| PUT | `/api/easytier/instances-group` | `easytier:write` | Set group in bulk: EasyTier instance |
+| GET | `/api/easytier/instances/{key}/secrets` | `easytier:write` | View secrets in plain text |
+| GET | `/api/easytier/status` | `easytier:read` | View the running status of all EasyTier instances |
+| GET | `/api/easytier/instances/{key}/status` | `easytier:read` | View the running status of an EasyTier instance |
+| POST | `/api/easytier/instances/{key}/restart` | `easytier:write` | Restart an EasyTier instance |
+| GET | `/api/easytier/settings` | `easytier:read` | Read EasyTier program settings |
+| PUT | `/api/easytier/settings` | `easytier:write` | Save EasyTier program settings |
+| GET | `/api/easytier/install` | `easytier:read` | View the install info and progress of a managed program |
+| POST | `/api/easytier/install` | `easytier:write` | Install or update a managed program online |
+| POST | `/api/easytier/install/check` | `easytier:write` | Check a managed program for updates |
+| POST | `/api/easytier/install/rollback` | `easytier:write` | Switch to a saved previous version |
+| DELETE | `/api/easytier/install` | `easytier:write` | Uninstall a managed program |
+| DELETE | `/api/easytier/install/backups/{id}` | `easytier:write` | Delete a saved previous version |
+| POST | `/api/easytier/reset` | `easytier:write` | Restore the module default settings |
 
 ## frp tunneling
 
@@ -1176,6 +1209,91 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `extra` | Map of string |
 | `id` | string |
 | `secret` | string |
+
+### easytier.Instance
+
+| Field | Type |
+| --- | --- |
+| `devName` | string |
+| `dhcp` | boolean |
+| `enable` | boolean |
+| `enableExitNode` | boolean |
+| `env` | string |
+| `exitNodes` | string |
+| `extraArgs` | string |
+| `group` | string |
+| `hostname` | string |
+| `ipv4` | string |
+| `kcpProxy` | boolean |
+| `key` | string |
+| `latencyFirst` | boolean |
+| `listeners` | string |
+| `name` | string |
+| `networkName` | string |
+| `networkSecret` | string |
+| `noTun` | boolean |
+| `peers` | string |
+| `portForwards` | string |
+| `proxyNetworks` | string |
+| `quicProxy` | boolean |
+| `remark` | string |
+
+### easytier.PeerView
+
+| Field | Type |
+| --- | --- |
+| `cost` | string |
+| `direct` | boolean |
+| `ip` | string |
+| `latencyMs` | number |
+| `loss` | string |
+| `name` | string |
+| `nat` | string |
+| `rx` | string |
+| `tunnel` | string |
+| `tx` | string |
+| `version` | string |
+
+### easytier.SelfView
+
+| Field | Type |
+| --- | --- |
+| `ip` | string |
+| `listeners` | Array of string |
+| `name` | string |
+| `nat` | string |
+| `publicIps` | Array of string |
+
+### easytier.Settings
+
+| Field | Type |
+| --- | --- |
+| `corePath` | string |
+| `installProxy` | string |
+
+### easytier.SettingsView
+
+| Field | Type |
+| --- | --- |
+| `core` | string |
+| `settings` | `easytier.Settings` |
+
+### easytier.StatusView
+
+| Field | Type |
+| --- | --- |
+| `cli` | string |
+| `core` | string |
+| `daemon` | `proc.State` |
+| `enable` | boolean |
+| `error` | string |
+| `key` | string |
+| `name` | string |
+| `peers` | Array of `easytier.PeerView` |
+| `peersDirect` | integer |
+| `self` | `easytier.SelfView` |
+| `status` | string |
+| `version` | string |
 
 ### events.TypeInfo
 

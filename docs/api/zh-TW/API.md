@@ -37,6 +37,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `stun` | STUN 穿透 | `stun:read`、`stun:write` |
 | `tailscale` | Tailscale 組網 | `tailscale:read`、`tailscale:write` |
 | `netbird` | NetBird 組網 | `netbird:read`、`netbird:write` |
+| `easytier` | EasyTier 組網 | `easytier:read`、`easytier:write` |
 | `frp` | frp 內網穿透 | `frp:read`、`frp:write` |
 | `cloudflared` | Cloudflare 通道 | `cloudflared:read`、`cloudflared:write` |
 | `ssl` | SSL 憑證 | `ssl:read`、`ssl:write` |
@@ -225,6 +226,38 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | DELETE | `/api/netbird/install` | `netbird:write` | 解除安裝託管程式 |
 | DELETE | `/api/netbird/install/backups/{id}` | `netbird:write` | 刪除保存的舊版本 |
 | POST | `/api/netbird/reset` | `netbird:write` | 恢復模組預設設定 |
+
+## EasyTier 組網
+
+| 方法 | 路徑 | 所需權限 | 說明 |
+| --- | --- | --- | --- |
+| GET | `/api/easytier/logs` | `easytier:read` | 檢視模組執行日誌 |
+| GET | `/api/easytier/logs/sources` | `easytier:read` | 列出模組日誌的全部來源 |
+| GET | `/api/easytier/logs/export` | `easytier:read` | 匯出模組執行日誌 |
+| DELETE | `/api/easytier/logs` | `easytier:write` | 清空模組執行日誌 |
+| GET | `/api/easytier/instances` | `easytier:read` | 取得EasyTier 執行個體清單 |
+| POST | `/api/easytier/instances` | `easytier:write` | 新增 EasyTier 執行個體 |
+| POST | `/api/easytier/instances/{key}/copy` | `easytier:write` | 複製EasyTier 執行個體 |
+| PUT | `/api/easytier/instances/{key}` | `easytier:write` | 修改EasyTier 執行個體 |
+| DELETE | `/api/easytier/instances/{key}` | `easytier:write` | 刪除EasyTier 執行個體 |
+| PUT | `/api/easytier/instances/{key}/enable` | `easytier:write` | 啟用或停用EasyTier 執行個體 |
+| PUT | `/api/easytier/instances-order` | `easytier:write` | 調整EasyTier 執行個體排序 |
+| PUT | `/api/easytier/instances-enable` | `easytier:write` | 批次啟用或停用EasyTier 執行個體 |
+| POST | `/api/easytier/instances-delete` | `easytier:write` | 批次刪除EasyTier 執行個體 |
+| PUT | `/api/easytier/instances-group` | `easytier:write` | 批次設定EasyTier 執行個體分組 |
+| GET | `/api/easytier/instances/{key}/secrets` | `easytier:write` | 查看金鑰明文 |
+| GET | `/api/easytier/status` | `easytier:read` | 檢視全部 EasyTier 執行個體的執行狀態 |
+| GET | `/api/easytier/instances/{key}/status` | `easytier:read` | 檢視 EasyTier 執行個體的執行狀態 |
+| POST | `/api/easytier/instances/{key}/restart` | `easytier:write` | 重新啟動 EasyTier 執行個體 |
+| GET | `/api/easytier/settings` | `easytier:read` | 讀取 EasyTier 程式設定 |
+| PUT | `/api/easytier/settings` | `easytier:write` | 儲存 EasyTier 程式設定 |
+| GET | `/api/easytier/install` | `easytier:read` | 檢視託管程式的安裝資訊與進度 |
+| POST | `/api/easytier/install` | `easytier:write` | 線上安裝或更新託管程式 |
+| POST | `/api/easytier/install/check` | `easytier:write` | 檢查託管程式的更新 |
+| POST | `/api/easytier/install/rollback` | `easytier:write` | 切換到保存的舊版本 |
+| DELETE | `/api/easytier/install` | `easytier:write` | 解除安裝託管程式 |
+| DELETE | `/api/easytier/install/backups/{id}` | `easytier:write` | 刪除保存的舊版本 |
+| POST | `/api/easytier/reset` | `easytier:write` | 恢復模組預設設定 |
 
 ## frp 內網穿透
 
@@ -1176,6 +1209,91 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `extra` | 對應 of string |
 | `id` | string |
 | `secret` | string |
+
+### easytier.Instance
+
+| 欄位 | 類型 |
+| --- | --- |
+| `devName` | string |
+| `dhcp` | boolean |
+| `enable` | boolean |
+| `enableExitNode` | boolean |
+| `env` | string |
+| `exitNodes` | string |
+| `extraArgs` | string |
+| `group` | string |
+| `hostname` | string |
+| `ipv4` | string |
+| `kcpProxy` | boolean |
+| `key` | string |
+| `latencyFirst` | boolean |
+| `listeners` | string |
+| `name` | string |
+| `networkName` | string |
+| `networkSecret` | string |
+| `noTun` | boolean |
+| `peers` | string |
+| `portForwards` | string |
+| `proxyNetworks` | string |
+| `quicProxy` | boolean |
+| `remark` | string |
+
+### easytier.PeerView
+
+| 欄位 | 類型 |
+| --- | --- |
+| `cost` | string |
+| `direct` | boolean |
+| `ip` | string |
+| `latencyMs` | number |
+| `loss` | string |
+| `name` | string |
+| `nat` | string |
+| `rx` | string |
+| `tunnel` | string |
+| `tx` | string |
+| `version` | string |
+
+### easytier.SelfView
+
+| 欄位 | 類型 |
+| --- | --- |
+| `ip` | string |
+| `listeners` | 陣列 of string |
+| `name` | string |
+| `nat` | string |
+| `publicIps` | 陣列 of string |
+
+### easytier.Settings
+
+| 欄位 | 類型 |
+| --- | --- |
+| `corePath` | string |
+| `installProxy` | string |
+
+### easytier.SettingsView
+
+| 欄位 | 類型 |
+| --- | --- |
+| `core` | string |
+| `settings` | `easytier.Settings` |
+
+### easytier.StatusView
+
+| 欄位 | 類型 |
+| --- | --- |
+| `cli` | string |
+| `core` | string |
+| `daemon` | `proc.State` |
+| `enable` | boolean |
+| `error` | string |
+| `key` | string |
+| `name` | string |
+| `peers` | 陣列 of `easytier.PeerView` |
+| `peersDirect` | integer |
+| `self` | `easytier.SelfView` |
+| `status` | string |
+| `version` | string |
 
 ### events.TypeInfo
 

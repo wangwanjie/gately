@@ -444,6 +444,210 @@
         },
         "type": "object"
       },
+      "easytier.Instance": {
+        "properties": {
+          "devName": {
+            "type": "string"
+          },
+          "dhcp": {
+            "type": "boolean"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "enableExitNode": {
+            "type": "boolean"
+          },
+          "env": {
+            "type": "string"
+          },
+          "exitNodes": {
+            "type": "string"
+          },
+          "extraArgs": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "hostname": {
+            "type": "string"
+          },
+          "ipv4": {
+            "type": "string"
+          },
+          "kcpProxy": {
+            "type": "boolean"
+          },
+          "key": {
+            "type": "string"
+          },
+          "latencyFirst": {
+            "type": "boolean"
+          },
+          "listeners": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "networkName": {
+            "type": "string"
+          },
+          "networkSecret": {
+            "type": "string"
+          },
+          "noTun": {
+            "type": "boolean"
+          },
+          "peers": {
+            "type": "string"
+          },
+          "portForwards": {
+            "type": "string"
+          },
+          "proxyNetworks": {
+            "type": "string"
+          },
+          "quicProxy": {
+            "type": "boolean"
+          },
+          "remark": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.PeerView": {
+        "properties": {
+          "cost": {
+            "type": "string"
+          },
+          "direct": {
+            "type": "boolean"
+          },
+          "ip": {
+            "type": "string"
+          },
+          "latencyMs": {
+            "type": "number"
+          },
+          "loss": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nat": {
+            "type": "string"
+          },
+          "rx": {
+            "type": "string"
+          },
+          "tunnel": {
+            "type": "string"
+          },
+          "tx": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.SelfView": {
+        "properties": {
+          "ip": {
+            "type": "string"
+          },
+          "listeners": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nat": {
+            "type": "string"
+          },
+          "publicIps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.Settings": {
+        "properties": {
+          "corePath": {
+            "type": "string"
+          },
+          "installProxy": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.SettingsView": {
+        "properties": {
+          "core": {
+            "type": "string"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/easytier.Settings"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.StatusView": {
+        "properties": {
+          "cli": {
+            "type": "string"
+          },
+          "core": {
+            "type": "string"
+          },
+          "daemon": {
+            "$ref": "#/components/schemas/proc.State"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "peers": {
+            "items": {
+              "$ref": "#/components/schemas/easytier.PeerView"
+            },
+            "type": "array"
+          },
+          "peersDirect": {
+            "type": "integer"
+          },
+          "self": {
+            "$ref": "#/components/schemas/easytier.SelfView"
+          },
+          "status": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "events.TypeInfo": {
         "properties": {
           "level": {
@@ -7918,7 +8122,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Доступно для frp, туннеля Cloudflare, Tailscale, NetBird и File Browser. Возвращает версию, установленную в bin каталога конфигурации, сохранённые предыдущие версии (`backups`, не более 3), прокси загрузки для этой программы (`proxy`), текущую платформу и ход установки `state` (`stage`: checking, downloading, verifying, extracting, done, uptodate или failed). Непустой `unsupported` означает, что проект не предоставляет программу для текущей платформы.\n\nТребуемое разрешение: `cloudflared:read`.",
+        "description": "Доступно для frp, туннелей Cloudflare, Tailscale, NetBird, EasyTier и File Browser. Возвращает установленные версии в каталоге bin конфигурации, сохранённые прежние версии (`backups`, не более 3), отдельный прокси загрузки программы `proxy`, текущую платформу и ход установки `state` (`stage` — checking, downloading, verifying, extracting, done, uptodate или failed). Непустое `unsupported` означает, что источник не предоставляет программу для текущей платформы.\n\nТребуемое разрешение: `cloudflared:read`.",
         "responses": {
           "200": {
             "description": "Успешно"
@@ -8653,7 +8857,7 @@
     },
     "/api/cloudflared/reset": {
       "post": {
-        "description": "Доступно для frp, туннеля Cloudflare, Tailscale, NetBird и File Browser; тело запроса не нужно. Останавливает все процессы модуля, сбрасывает его настройки (включая путь к программе и прокси загрузки) к значениям по умолчанию и удаляет файлы, созданные Gately для него: файлы конфигурации frp, каталог данных каждого экземпляра File Browser (пользователи, ссылки общего доступа и кеш), состояние входа в каталоге состояния Tailscale по умолчанию (работающий tailscaled под управлением Gately сначала выходит из учётной записи; пользовательские каталоги состояния и существующий системный tailscaled не затрагиваются), а также состояние входа и ключи в каталоге состояния NetBird по умолчанию (работающий демон под управлением Gately сначала выполняет выход, и эта машина удаляется из сети; пользовательские каталоги состояния и существующая системная служба NetBird не затрагиваются). Прежние настройки остаются в истории конфигурации и могут быть восстановлены; установленные программы не затрагиваются, для удаления используйте `DELETE /api/{module}/install`.\n\nТребуемое разрешение: `cloudflared:write`.",
+        "description": "Доступно для frp, туннелей Cloudflare, Tailscale, NetBird, EasyTier и File Browser; тело запроса не требуется. Останавливает все процессы модуля, возвращает конфигурацию (включая путь к программе и прокси загрузки) к значениям по умолчанию и удаляет файлы, созданные Gately: файл конфигурации frp, каталог данных каждого экземпляра File Browser (пользователи, ссылки для доступа и кэш), состояние входа в каталоге состояния Tailscale по умолчанию (если запущен tailscaled под управлением Gately, сначала выполняется выход; пользовательские каталоги состояния и системный tailscaled не затрагиваются), а также состояние входа и ключи в каталоге состояния NetBird по умолчанию (если запущен демон под управлением Gately, сначала выполняется выход, и это устройство удаляется из сети; пользовательские каталоги состояния и системная служба NetBird не затрагиваются). Прежняя конфигурация сохраняется в истории конфигурации и может быть восстановлена; установленные программы не затрагиваются, для удаления используйте `DELETE /api/{module}/install`.\n\nТребуемое разрешение: `cloudflared:write`.",
         "responses": {
           "200": {
             "description": "Успешно"
@@ -17096,6 +17300,1867 @@
         "x-token-allowed": true
       }
     },
+    "/api/easytier/install": {
+      "delete": {
+        "description": "Удаляет программу, установленную в bin каталога конфигурации, и все сохранённые предыдущие версии, затем перезапускает использующие её процессы: если в PATH есть программа с тем же именем, используется она, иначе процессы не смогут запуститься. Настройки модуля не меняются; чтобы их очистить, используйте `POST /api/{module}/reset`.\n\nТребуемое разрешение: `easytier:write`.",
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Удалить управляемую программу",
+        "tags": [
+          "Сеть EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "Доступно для frp, туннелей Cloudflare, Tailscale, NetBird, EasyTier и File Browser. Возвращает установленные версии в каталоге bin конфигурации, сохранённые прежние версии (`backups`, не более 3), отдельный прокси загрузки программы `proxy`, текущую платформу и ход установки `state` (`stage` — checking, downloading, verifying, extracting, done, uptodate или failed). Непустое `unsupported` означает, что источник не предоставляет программу для текущей платформы.\n\nТребуемое разрешение: `easytier:read`.",
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Просмотр сведений об установке и хода установки управляемой программы",
+        "tags": [
+          "Сеть EasyTier"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "Тело запроса `{\"version\": \"\", \"proxy\": \"\"}`: пустой `version` устанавливает последнюю стабильную версию (если она уже установлена, ничего не загружается и `stage` равен uptodate), иначе указанную версию; `proxy` — прокси загрузки (http, https или socks5), сохраняется на следующий раз, при пустом значении используется глобальная настройка `updateProxy`. Загрузка проверяется по SHA-256 и устанавливается в bin каталога конфигурации, прежняя версия переходит в список предыдущих, процессы, использующие программу, перезапускаются. Ответ возвращается сразу; ход установки — через `GET /api/{module}/install`.\n\nТребуемое разрешение: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Установить или обновить управляемую программу онлайн",
+        "tags": [
+          "Сеть EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/install/backups/{id}": {
+      "delete": {
+        "description": "Требуемое разрешение: `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Удалить сохранённую предыдущую версию",
+        "tags": [
+          "Сеть EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/install/check": {
+      "post": {
+        "description": "Тело запроса не требуется. Запрашивает последнюю стабильную версию у первоисточника (через прокси загрузки программы, а если он не задан — через глобальную настройку `updateProxy`), ничего не скачивая и не изменяя установленную программу; возвращает то же, что `GET /api/{module}/install`, где `latest` — `{version, checkedAt, error, hasUpdate}`, а `hasUpdate` означает, что последняя версия новее установленной в bin. При включённой автоматической проверке обновлений Gately также периодически выполняет эту проверку для установленных управляемых программ. Если проверка уже выполняется, возвращает 409.\n\nТребуемое разрешение: `easytier:write`.",
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Проверить обновления управляемой программы",
+        "tags": [
+          "Сеть EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/install/rollback": {
+      "post": {
+        "description": "Тело запроса `{\"id\": \"\u003cID предыдущей версии\u003e\"}`. Текущая версия сохраняется как предыдущая, к ней можно вернуться; затем процессы, использующие программу, перезапускаются.\n\nТребуемое разрешение: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Переключиться на сохранённую предыдущую версию",
+        "tags": [
+          "Сеть EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances": {
+      "get": {
+        "description": "Требуемое разрешение: `easytier:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/easytier.Instance"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Список: Экземпляр EasyTier",
+        "tags": [
+          "Сеть EasyTier"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "Каждый экземпляр запускает отдельный процесс `easytier-core` и может присоединяться к своей сети EasyTier. Поля тела запроса: `name` имя (должно быть уникальным); `enable` включён ли экземпляр; `networkName` имя сети (обязательно, 1-64 символа: буквы, цифры и `. _ @ : + -`) и `networkSecret` ключ сети (обмениваться данными могут только узлы с одинаковыми именем и ключом; он передаётся процессу через переменную окружения `ET_NETWORK_SECRET`, не отображается в аргументах процесса и скрыт в журналах); `peers` адреса узлов, к которым нужно подключаться при запуске, по одному в строке, например `tcp://public.easytier.cn:11010` (протокол может быть tcp, udp, ws, wss, quic, wg, faketcp, а также http, https, txt, srv для обнаружения узлов); `listeners` адреса прослушивания, по одному в строке, в формате `протокол://адрес:порт`; если пусто, ни один порт не прослушивается, а экземпляр только подключается к другим узлам; `dhcp` автоматически назначает виртуальный IP, при выключенном параметре `ipv4` позволяет задать фиксированный виртуальный IP (например, `10.126.126.2/24`); если не задано ни то, ни другое, этот узел только пересылает данные и не создаёт сетевой интерфейс; `hostname`; `noTun` использует сеть в пользовательском пространстве и не создаёт интерфейс TUN (привилегии не нужны), `devName` имя интерфейса; `proxyNetworks` локальные сети, открываемые для сети EasyTier, по одной в строке; для отображения сети можно писать `192.168.1.0/24-\u003e10.1.0.0/24`; `portForwards` проброс портов, по одному в строке, например `tcp://127.0.0.1:2222/10.126.126.1:22` (адрес привязки задаёте вы, рекомендуется 127.0.0.1); `enableExitNode` разрешает этому компьютеру работать выходным узлом, `exitNodes` используемые выходные узлы (виртуальные IPv4, по одному в строке); `latencyFirst` выбирает маршруты с наименьшей задержкой; `kcpProxy` и `quicProxy` проксируют TCP-трафик через KCP и QUIC; `extraArgs` добавляются после `easytier-core` (через пробелы), `env` переменные окружения для процесса (по одной `KEY=VALUE` в строке). Параметра SOCKS5 нет: SOCKS5 в EasyTier слушает все адреса и не имеет аутентификации. Порт управления случайно назначается Gately на 127.0.0.1 и доступен только с этого компьютера. Возвращается 400, если: одновременно включённые экземпляры слушают один и тот же порт (проверяется отдельно для TCP и UDP) или их проброс портов занимает один и тот же локальный порт, одновременно включённые экземпляры с TUN имеют одинаковое имя интерфейса, либо имена повторяются. Те же проверки выполняются при включении, массовом включении и копировании.\n\nТребуемое разрешение: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/easytier.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.Instance"
+                }
+              }
+            },
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Добавить экземпляр EasyTier",
+        "tags": [
+          "Сеть EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances-delete": {
+      "post": {
+        "description": "Требуемое разрешение: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchDeleteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Пакетно удалить: Экземпляр EasyTier",
+        "tags": [
+          "Сеть EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances-enable": {
+      "put": {
+        "description": "Требуемое разрешение: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchEnableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Пакетно включить или отключить: Экземпляр EasyTier",
+        "tags": [
+          "Сеть EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances-group": {
+      "put": {
+        "description": "Требуемое разрешение: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Задать группу сразу для нескольких: Экземпляр EasyTier",
+        "tags": [
+          "Сеть EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances-order": {
+      "put": {
+        "description": "Требуемое разрешение: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.orderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Изменить порядок: Экземпляр EasyTier",
+        "tags": [
+          "Сеть EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}": {
+      "delete": {
+        "description": "Требуемое разрешение: `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Удалить: Экземпляр EasyTier",
+        "tags": [
+          "Сеть EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Требуемое разрешение: `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/easytier.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.Instance"
+                }
+              }
+            },
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Изменить: Экземпляр EasyTier",
+        "tags": [
+          "Сеть EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/copy": {
+      "post": {
+        "description": "Требуемое разрешение: `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/easytier.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.Instance"
+                }
+              }
+            },
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Дублировать: Экземпляр EasyTier",
+        "tags": [
+          "Сеть EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/enable": {
+      "put": {
+        "description": "Требуемое разрешение: `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.enableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Включить или отключить: Экземпляр EasyTier",
+        "tags": [
+          "Сеть EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/restart": {
+      "post": {
+        "description": "Перезапускает процесс `easytier-core` этого экземпляра; остальные экземпляры не затрагиваются.\n\nТребуемое разрешение: `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Перезапустить экземпляр EasyTier",
+        "tags": [
+          "Сеть EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/secrets": {
+      "get": {
+        "description": "Требуемое разрешение: `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Показать секреты открытым текстом",
+        "tags": [
+          "Сеть EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/status": {
+      "get": {
+        "description": "`status` принимает значения stopped (не включён или процесс не запущен), starting (процесс запущен, порт управления ещё не готов) или running. `self` — сведения об этом узле (виртуальный IP, фактические адреса прослушивания, публичный адрес и тип NAT, определённые через STUN); `peers` — остальные узлы сети: `cost` равно p2p (прямое соединение) или relay(N) (через N ретрансляций), `direct` указывает на прямое соединение, `latencyMs` — задержка, `tunnel` — протокол соединения. `peersDirect` — число напрямую подключённых узлов.\n\nТребуемое разрешение: `easytier:read`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.StatusView"
+                }
+              }
+            },
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Просмотреть состояние работы экземпляра EasyTier",
+        "tags": [
+          "Сеть EasyTier"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/logs": {
+      "delete": {
+        "description": "Также удаляет файлы журналов на диске, ротированные файлы, архивы и список источников.\n\nТребуемое разрешение: `easytier:write`.",
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Очистить журнал работы модуля",
+        "tags": [
+          "Сеть EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "Поддерживает инкрементальное получение с параметром `since`, возвращая журналы с порядковым номером больше этого значения; `before` возвращает журналы с порядковым номером меньше этого значения для загрузки более ранних записей; `limit` возвращает только самые новые из них, а если в памяти их недостаточно, поиск продолжается по истории, сохранённой в файлах журнала. Параметры фильтра: `level` минимальный уровень, `source` источник, `q` ключевые слова (через пробел — должны совпасть все, двойные кавычки объединяют фразу, `-` в начале исключает), `ip` адрес клиента (полный адрес, CIDR или часть адреса, несколько через запятую), `host` имя сайта или домен (частичное совпадение), `site` имя сайта (точное совпадение, только журнал доступа этого сайта), `status` код состояния (например, `404`, `4xx`, `500-599`), `from` и `to` диапазон времени (RFC 3339 или метка времени в миллисекундах). `exclude` — исключаемые слова: записи, содержащие любое из них, не возвращаются; запись как у `q`, ведущий `-` необязателен.\n\nТребуемое разрешение: `easytier:read`.",
+        "parameters": [
+          {
+            "description": "Инкрементальная загрузка: возвращаются только записи журнала с номером больше указанного",
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Загрузка более ранних журналов: возвращаются только записи с порядковым номером меньше этого значения",
+            "in": "query",
+            "name": "before",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Максимальное число возвращаемых записей, берутся самые новые из подходящих; 0 или отсутствие параметра — без ограничения",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Минимальный уровень: debug, info, warn или error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Метка источника, точное совпадение без учёта регистра",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Ключевые слова: через пробел — должны совпасть все, двойные кавычки объединяют фразу, - в начале исключает",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Исключаемые ключевые слова: через пробел, двойные кавычки объединяют фразу; запись с любым из них исключается; действует вместе с q",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Адрес клиента: полный адрес, CIDR или часть адреса, несколько через запятую; префикс ! или - исключает",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Часть имени сайта или домена",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Имя сайта, точное совпадение без учёта регистра; возвращаются только журналы доступа этого сайта",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Ключ слушателя веб-служб, точное совпадение; позволяет различать одноимённые сайты или слушатели (например, отдельные слушатели IPv4 и IPv6)",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Код состояния, например 404, 4xx, 500-599, несколько через запятую",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "При 1 скрывает журналы доступа заблокированных источников: запросы, отклонённые из-за блокировки, и все запросы источников, которые всё ещё заблокированы, включая вызвавшие блокировку (влияет только на ответ; журналы сохраняются)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "При значении 1 скрывает запросы с сессией панели управления, то есть журналы доступа, возникающие, когда администраторы открывают панель через сайт веб-сервиса",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Время начала, RFC 3339 или метка времени в миллисекундах",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Время окончания, RFC 3339 или метка времени в миллисекундах",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Просмотр журнала работы модуля",
+        "tags": [
+          "Сеть EasyTier"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/logs/export": {
+      "get": {
+        "description": "Потоково возвращает вложением все журналы, соответствующие фильтрам, от старых к новым, включая ротированные файлы и сжатые архивы на диске. `format` — `jsonl` (по умолчанию, один объект JSON на строку) или `csv` (UTF-8 с BOM; к ячейкам, начинающимся с = + - @, добавляется одинарная кавычка для защиты от внедрения формул). Параметры фильтра те же, что при просмотре журналов. Для учётных записей только для чтения учётные данные в экспорте маскируются так же, как при просмотре. `lang` задаёт язык экспортируемого содержимого (например, `en`); по умолчанию используется Accept-Language.\n\nТребуемое разрешение: `easytier:read`.",
+        "parameters": [
+          {
+            "description": "Формат экспорта: jsonl (по умолчанию, один объект JSON на строку) или csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Язык экспортируемого содержимого, например en; по умолчанию используется Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Минимальный уровень: debug, info, warn или error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Метка источника, точное совпадение без учёта регистра",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Ключевые слова: через пробел — должны совпасть все, двойные кавычки объединяют фразу, - в начале исключает",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Исключаемые ключевые слова: через пробел, двойные кавычки объединяют фразу; запись с любым из них исключается; действует вместе с q",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Адрес клиента: полный адрес, CIDR или часть адреса, несколько через запятую; префикс ! или - исключает",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Часть имени сайта или домена",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Имя сайта, точное совпадение без учёта регистра; возвращаются только журналы доступа этого сайта",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Ключ слушателя веб-служб, точное совпадение; позволяет различать одноимённые сайты или слушатели (например, отдельные слушатели IPv4 и IPv6)",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Код состояния, например 404, 4xx, 500-599, несколько через запятую",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "При 1 скрывает журналы доступа заблокированных источников: запросы, отклонённые из-за блокировки, и все запросы источников, которые всё ещё заблокированы, включая вызвавшие блокировку (влияет только на ответ; журналы сохраняются)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "При значении 1 скрывает запросы с сессией панели управления, то есть журналы доступа, возникающие, когда администраторы открывают панель через сайт веб-сервиса",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Время начала, RFC 3339 или метка времени в миллисекундах",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Время окончания, RFC 3339 или метка времени в миллисекундах",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Экспорт журналов модуля",
+        "tags": [
+          "Сеть EasyTier"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/logs/sources": {
+      "get": {
+        "description": "Возвращает массив меток источников, отсортированный по имени: источники, встречавшиеся в журналах (сохраняются после перезапуска при записи на диск), и источники из конфигурации модуля (например, все слушатели и списки IP веб-сервисов), для фильтрации по `source`. Источники переводятся на язык запроса так же, как журналы.\n\nТребуемое разрешение: `easytier:read`.",
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Список всех источников журналов модуля",
+        "tags": [
+          "Сеть EasyTier"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/reset": {
+      "post": {
+        "description": "Доступно для frp, туннелей Cloudflare, Tailscale, NetBird, EasyTier и File Browser; тело запроса не требуется. Останавливает все процессы модуля, возвращает конфигурацию (включая путь к программе и прокси загрузки) к значениям по умолчанию и удаляет файлы, созданные Gately: файл конфигурации frp, каталог данных каждого экземпляра File Browser (пользователи, ссылки для доступа и кэш), состояние входа в каталоге состояния Tailscale по умолчанию (если запущен tailscaled под управлением Gately, сначала выполняется выход; пользовательские каталоги состояния и системный tailscaled не затрагиваются), а также состояние входа и ключи в каталоге состояния NetBird по умолчанию (если запущен демон под управлением Gately, сначала выполняется выход, и это устройство удаляется из сети; пользовательские каталоги состояния и системная служба NetBird не затрагиваются). Прежняя конфигурация сохраняется в истории конфигурации и может быть восстановлена; установленные программы не затрагиваются, для удаления используйте `DELETE /api/{module}/install`.\n\nТребуемое разрешение: `easytier:write`.",
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Сбросить настройки модуля по умолчанию",
+        "tags": [
+          "Сеть EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/settings": {
+      "get": {
+        "description": "Возвращает `settings` (`corePath` и прокси загрузки `installProxy`, общие для всех экземпляров) и фактически используемый путь к программе easytier-core `core`. easytier-cli ищется в каталоге easytier-core, а если не найден — в каталоге bin конфигурации и в PATH.\n\nТребуемое разрешение: `easytier:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.SettingsView"
+                }
+              }
+            },
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Прочитать настройки программы EasyTier",
+        "tags": [
+          "Сеть EasyTier"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Тело запроса `{\"corePath\": \"\"}`. Если пусто, easytier-core ищется сначала в каталоге bin конфигурации, затем в PATH; `installProxy` изменяется только через API установки. После смены пути перезапустите включённые экземпляры.\n\nТребуемое разрешение: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/easytier.Settings"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Сохранить настройки программы EasyTier",
+        "tags": [
+          "Сеть EasyTier"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/status": {
+      "get": {
+        "description": "Возвращает массив в том же порядке, что и список экземпляров; каждый элемент содержит `key`, `name` экземпляра и его состояние с теми же полями, что и `GET /api/easytier/instances/{key}/status`. Для отключённых экземпляров возвращается только состояние процесса, узлы не запрашиваются.\n\nТребуемое разрешение: `easytier:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/easytier.StatusView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Просмотреть состояние работы всех экземпляров EasyTier",
+        "tags": [
+          "Сеть EasyTier"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/filebrowser/install": {
       "delete": {
         "description": "Удаляет программу, установленную в bin каталога конфигурации, и все сохранённые предыдущие версии, затем перезапускает использующие её процессы: если в PATH есть программа с тем же именем, используется она, иначе процессы не смогут запуститься. Настройки модуля не меняются; чтобы их очистить, используйте `POST /api/{module}/reset`.\n\nТребуемое разрешение: `filebrowser:write`.",
@@ -17147,7 +19212,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Доступно для frp, туннеля Cloudflare, Tailscale, NetBird и File Browser. Возвращает версию, установленную в bin каталога конфигурации, сохранённые предыдущие версии (`backups`, не более 3), прокси загрузки для этой программы (`proxy`), текущую платформу и ход установки `state` (`stage`: checking, downloading, verifying, extracting, done, uptodate или failed). Непустой `unsupported` означает, что проект не предоставляет программу для текущей платформы.\n\nТребуемое разрешение: `filebrowser:read`.",
+        "description": "Доступно для frp, туннелей Cloudflare, Tailscale, NetBird, EasyTier и File Browser. Возвращает установленные версии в каталоге bin конфигурации, сохранённые прежние версии (`backups`, не более 3), отдельный прокси загрузки программы `proxy`, текущую платформу и ход установки `state` (`stage` — checking, downloading, verifying, extracting, done, uptodate или failed). Непустое `unsupported` означает, что источник не предоставляет программу для текущей платформы.\n\nТребуемое разрешение: `filebrowser:read`.",
         "responses": {
           "200": {
             "description": "Успешно"
@@ -18663,7 +20728,7 @@
     },
     "/api/filebrowser/reset": {
       "post": {
-        "description": "Доступно для frp, туннеля Cloudflare, Tailscale, NetBird и File Browser; тело запроса не нужно. Останавливает все процессы модуля, сбрасывает его настройки (включая путь к программе и прокси загрузки) к значениям по умолчанию и удаляет файлы, созданные Gately для него: файлы конфигурации frp, каталог данных каждого экземпляра File Browser (пользователи, ссылки общего доступа и кеш), состояние входа в каталоге состояния Tailscale по умолчанию (работающий tailscaled под управлением Gately сначала выходит из учётной записи; пользовательские каталоги состояния и существующий системный tailscaled не затрагиваются), а также состояние входа и ключи в каталоге состояния NetBird по умолчанию (работающий демон под управлением Gately сначала выполняет выход, и эта машина удаляется из сети; пользовательские каталоги состояния и существующая системная служба NetBird не затрагиваются). Прежние настройки остаются в истории конфигурации и могут быть восстановлены; установленные программы не затрагиваются, для удаления используйте `DELETE /api/{module}/install`.\n\nТребуемое разрешение: `filebrowser:write`.",
+        "description": "Доступно для frp, туннелей Cloudflare, Tailscale, NetBird, EasyTier и File Browser; тело запроса не требуется. Останавливает все процессы модуля, возвращает конфигурацию (включая путь к программе и прокси загрузки) к значениям по умолчанию и удаляет файлы, созданные Gately: файл конфигурации frp, каталог данных каждого экземпляра File Browser (пользователи, ссылки для доступа и кэш), состояние входа в каталоге состояния Tailscale по умолчанию (если запущен tailscaled под управлением Gately, сначала выполняется выход; пользовательские каталоги состояния и системный tailscaled не затрагиваются), а также состояние входа и ключи в каталоге состояния NetBird по умолчанию (если запущен демон под управлением Gately, сначала выполняется выход, и это устройство удаляется из сети; пользовательские каталоги состояния и системная служба NetBird не затрагиваются). Прежняя конфигурация сохраняется в истории конфигурации и может быть восстановлена; установленные программы не затрагиваются, для удаления используйте `DELETE /api/{module}/install`.\n\nТребуемое разрешение: `filebrowser:write`.",
         "responses": {
           "200": {
             "description": "Успешно"
@@ -19890,7 +21955,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Доступно для frp, туннеля Cloudflare, Tailscale, NetBird и File Browser. Возвращает версию, установленную в bin каталога конфигурации, сохранённые предыдущие версии (`backups`, не более 3), прокси загрузки для этой программы (`proxy`), текущую платформу и ход установки `state` (`stage`: checking, downloading, verifying, extracting, done, uptodate или failed). Непустой `unsupported` означает, что проект не предоставляет программу для текущей платформы.\n\nТребуемое разрешение: `frp:read`.",
+        "description": "Доступно для frp, туннелей Cloudflare, Tailscale, NetBird, EasyTier и File Browser. Возвращает установленные версии в каталоге bin конфигурации, сохранённые прежние версии (`backups`, не более 3), отдельный прокси загрузки программы `proxy`, текущую платформу и ход установки `state` (`stage` — checking, downloading, verifying, extracting, done, uptodate или failed). Непустое `unsupported` означает, что источник не предоставляет программу для текущей платформы.\n\nТребуемое разрешение: `frp:read`.",
         "responses": {
           "200": {
             "description": "Успешно"
@@ -21345,7 +23410,7 @@
     },
     "/api/frp/reset": {
       "post": {
-        "description": "Доступно для frp, туннеля Cloudflare, Tailscale, NetBird и File Browser; тело запроса не нужно. Останавливает все процессы модуля, сбрасывает его настройки (включая путь к программе и прокси загрузки) к значениям по умолчанию и удаляет файлы, созданные Gately для него: файлы конфигурации frp, каталог данных каждого экземпляра File Browser (пользователи, ссылки общего доступа и кеш), состояние входа в каталоге состояния Tailscale по умолчанию (работающий tailscaled под управлением Gately сначала выходит из учётной записи; пользовательские каталоги состояния и существующий системный tailscaled не затрагиваются), а также состояние входа и ключи в каталоге состояния NetBird по умолчанию (работающий демон под управлением Gately сначала выполняет выход, и эта машина удаляется из сети; пользовательские каталоги состояния и существующая системная служба NetBird не затрагиваются). Прежние настройки остаются в истории конфигурации и могут быть восстановлены; установленные программы не затрагиваются, для удаления используйте `DELETE /api/{module}/install`.\n\nТребуемое разрешение: `frp:write`.",
+        "description": "Доступно для frp, туннелей Cloudflare, Tailscale, NetBird, EasyTier и File Browser; тело запроса не требуется. Останавливает все процессы модуля, возвращает конфигурацию (включая путь к программе и прокси загрузки) к значениям по умолчанию и удаляет файлы, созданные Gately: файл конфигурации frp, каталог данных каждого экземпляра File Browser (пользователи, ссылки для доступа и кэш), состояние входа в каталоге состояния Tailscale по умолчанию (если запущен tailscaled под управлением Gately, сначала выполняется выход; пользовательские каталоги состояния и системный tailscaled не затрагиваются), а также состояние входа и ключи в каталоге состояния NetBird по умолчанию (если запущен демон под управлением Gately, сначала выполняется выход, и это устройство удаляется из сети; пользовательские каталоги состояния и системная служба NetBird не затрагиваются). Прежняя конфигурация сохраняется в истории конфигурации и может быть восстановлена; установленные программы не затрагиваются, для удаления используйте `DELETE /api/{module}/install`.\n\nТребуемое разрешение: `frp:write`.",
         "responses": {
           "200": {
             "description": "Успешно"
@@ -26872,7 +28937,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Доступно для frp, туннеля Cloudflare, Tailscale, NetBird и File Browser. Возвращает версию, установленную в bin каталога конфигурации, сохранённые предыдущие версии (`backups`, не более 3), прокси загрузки для этой программы (`proxy`), текущую платформу и ход установки `state` (`stage`: checking, downloading, verifying, extracting, done, uptodate или failed). Непустой `unsupported` означает, что проект не предоставляет программу для текущей платформы.\n\nТребуемое разрешение: `netbird:read`.",
+        "description": "Доступно для frp, туннелей Cloudflare, Tailscale, NetBird, EasyTier и File Browser. Возвращает установленные версии в каталоге bin конфигурации, сохранённые прежние версии (`backups`, не более 3), отдельный прокси загрузки программы `proxy`, текущую платформу и ход установки `state` (`stage` — checking, downloading, verifying, extracting, done, uptodate или failed). Непустое `unsupported` означает, что источник не предоставляет программу для текущей платформы.\n\nТребуемое разрешение: `netbird:read`.",
         "responses": {
           "200": {
             "description": "Успешно"
@@ -28517,7 +30582,7 @@
     },
     "/api/netbird/reset": {
       "post": {
-        "description": "Доступно для frp, туннеля Cloudflare, Tailscale, NetBird и File Browser; тело запроса не нужно. Останавливает все процессы модуля, сбрасывает его настройки (включая путь к программе и прокси загрузки) к значениям по умолчанию и удаляет файлы, созданные Gately для него: файлы конфигурации frp, каталог данных каждого экземпляра File Browser (пользователи, ссылки общего доступа и кеш), состояние входа в каталоге состояния Tailscale по умолчанию (работающий tailscaled под управлением Gately сначала выходит из учётной записи; пользовательские каталоги состояния и существующий системный tailscaled не затрагиваются), а также состояние входа и ключи в каталоге состояния NetBird по умолчанию (работающий демон под управлением Gately сначала выполняет выход, и эта машина удаляется из сети; пользовательские каталоги состояния и существующая системная служба NetBird не затрагиваются). Прежние настройки остаются в истории конфигурации и могут быть восстановлены; установленные программы не затрагиваются, для удаления используйте `DELETE /api/{module}/install`.\n\nТребуемое разрешение: `netbird:write`.",
+        "description": "Доступно для frp, туннелей Cloudflare, Tailscale, NetBird, EasyTier и File Browser; тело запроса не требуется. Останавливает все процессы модуля, возвращает конфигурацию (включая путь к программе и прокси загрузки) к значениям по умолчанию и удаляет файлы, созданные Gately: файл конфигурации frp, каталог данных каждого экземпляра File Browser (пользователи, ссылки для доступа и кэш), состояние входа в каталоге состояния Tailscale по умолчанию (если запущен tailscaled под управлением Gately, сначала выполняется выход; пользовательские каталоги состояния и системный tailscaled не затрагиваются), а также состояние входа и ключи в каталоге состояния NetBird по умолчанию (если запущен демон под управлением Gately, сначала выполняется выход, и это устройство удаляется из сети; пользовательские каталоги состояния и системная служба NetBird не затрагиваются). Прежняя конфигурация сохраняется в истории конфигурации и может быть восстановлена; установленные программы не затрагиваются, для удаления используйте `DELETE /api/{module}/install`.\n\nТребуемое разрешение: `netbird:write`.",
         "responses": {
           "200": {
             "description": "Успешно"
@@ -41775,7 +43840,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Доступно для frp, туннеля Cloudflare, Tailscale, NetBird и File Browser. Возвращает версию, установленную в bin каталога конфигурации, сохранённые предыдущие версии (`backups`, не более 3), прокси загрузки для этой программы (`proxy`), текущую платформу и ход установки `state` (`stage`: checking, downloading, verifying, extracting, done, uptodate или failed). Непустой `unsupported` означает, что проект не предоставляет программу для текущей платформы.\n\nТребуемое разрешение: `tailscale:read`.",
+        "description": "Доступно для frp, туннелей Cloudflare, Tailscale, NetBird, EasyTier и File Browser. Возвращает установленные версии в каталоге bin конфигурации, сохранённые прежние версии (`backups`, не более 3), отдельный прокси загрузки программы `proxy`, текущую платформу и ход установки `state` (`stage` — checking, downloading, verifying, extracting, done, uptodate или failed). Непустое `unsupported` означает, что источник не предоставляет программу для текущей платформы.\n\nТребуемое разрешение: `tailscale:read`.",
         "responses": {
           "200": {
             "description": "Успешно"
@@ -43420,7 +45485,7 @@
     },
     "/api/tailscale/reset": {
       "post": {
-        "description": "Доступно для frp, туннеля Cloudflare, Tailscale, NetBird и File Browser; тело запроса не нужно. Останавливает все процессы модуля, сбрасывает его настройки (включая путь к программе и прокси загрузки) к значениям по умолчанию и удаляет файлы, созданные Gately для него: файлы конфигурации frp, каталог данных каждого экземпляра File Browser (пользователи, ссылки общего доступа и кеш), состояние входа в каталоге состояния Tailscale по умолчанию (работающий tailscaled под управлением Gately сначала выходит из учётной записи; пользовательские каталоги состояния и существующий системный tailscaled не затрагиваются), а также состояние входа и ключи в каталоге состояния NetBird по умолчанию (работающий демон под управлением Gately сначала выполняет выход, и эта машина удаляется из сети; пользовательские каталоги состояния и существующая системная служба NetBird не затрагиваются). Прежние настройки остаются в истории конфигурации и могут быть восстановлены; установленные программы не затрагиваются, для удаления используйте `DELETE /api/{module}/install`.\n\nТребуемое разрешение: `tailscale:write`.",
+        "description": "Доступно для frp, туннелей Cloudflare, Tailscale, NetBird, EasyTier и File Browser; тело запроса не требуется. Останавливает все процессы модуля, возвращает конфигурацию (включая путь к программе и прокси загрузки) к значениям по умолчанию и удаляет файлы, созданные Gately: файл конфигурации frp, каталог данных каждого экземпляра File Browser (пользователи, ссылки для доступа и кэш), состояние входа в каталоге состояния Tailscale по умолчанию (если запущен tailscaled под управлением Gately, сначала выполняется выход; пользовательские каталоги состояния и системный tailscaled не затрагиваются), а также состояние входа и ключи в каталоге состояния NetBird по умолчанию (если запущен демон под управлением Gately, сначала выполняется выход, и это устройство удаляется из сети; пользовательские каталоги состояния и системная служба NetBird не затрагиваются). Прежняя конфигурация сохраняется в истории конфигурации и может быть восстановлена; установленные программы не затрагиваются, для удаления используйте `DELETE /api/{module}/install`.\n\nТребуемое разрешение: `tailscale:write`.",
         "responses": {
           "200": {
             "description": "Успешно"
@@ -57124,6 +59189,9 @@
       "name": "Сеть NetBird"
     },
     {
+      "name": "Сеть EasyTier"
+    },
+    {
       "name": "Проброс внутренней сети frp"
     },
     {
@@ -57206,6 +59274,7 @@
     "stun",
     "tailscale",
     "netbird",
+    "easytier",
     "frp",
     "cloudflared",
     "ssl",

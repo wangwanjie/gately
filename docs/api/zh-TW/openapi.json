@@ -444,6 +444,210 @@
         },
         "type": "object"
       },
+      "easytier.Instance": {
+        "properties": {
+          "devName": {
+            "type": "string"
+          },
+          "dhcp": {
+            "type": "boolean"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "enableExitNode": {
+            "type": "boolean"
+          },
+          "env": {
+            "type": "string"
+          },
+          "exitNodes": {
+            "type": "string"
+          },
+          "extraArgs": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "hostname": {
+            "type": "string"
+          },
+          "ipv4": {
+            "type": "string"
+          },
+          "kcpProxy": {
+            "type": "boolean"
+          },
+          "key": {
+            "type": "string"
+          },
+          "latencyFirst": {
+            "type": "boolean"
+          },
+          "listeners": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "networkName": {
+            "type": "string"
+          },
+          "networkSecret": {
+            "type": "string"
+          },
+          "noTun": {
+            "type": "boolean"
+          },
+          "peers": {
+            "type": "string"
+          },
+          "portForwards": {
+            "type": "string"
+          },
+          "proxyNetworks": {
+            "type": "string"
+          },
+          "quicProxy": {
+            "type": "boolean"
+          },
+          "remark": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.PeerView": {
+        "properties": {
+          "cost": {
+            "type": "string"
+          },
+          "direct": {
+            "type": "boolean"
+          },
+          "ip": {
+            "type": "string"
+          },
+          "latencyMs": {
+            "type": "number"
+          },
+          "loss": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nat": {
+            "type": "string"
+          },
+          "rx": {
+            "type": "string"
+          },
+          "tunnel": {
+            "type": "string"
+          },
+          "tx": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.SelfView": {
+        "properties": {
+          "ip": {
+            "type": "string"
+          },
+          "listeners": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nat": {
+            "type": "string"
+          },
+          "publicIps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.Settings": {
+        "properties": {
+          "corePath": {
+            "type": "string"
+          },
+          "installProxy": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.SettingsView": {
+        "properties": {
+          "core": {
+            "type": "string"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/easytier.Settings"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.StatusView": {
+        "properties": {
+          "cli": {
+            "type": "string"
+          },
+          "core": {
+            "type": "string"
+          },
+          "daemon": {
+            "$ref": "#/components/schemas/proc.State"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "peers": {
+            "items": {
+              "$ref": "#/components/schemas/easytier.PeerView"
+            },
+            "type": "array"
+          },
+          "peersDirect": {
+            "type": "integer"
+          },
+          "self": {
+            "$ref": "#/components/schemas/easytier.SelfView"
+          },
+          "status": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "events.TypeInfo": {
         "properties": {
           "level": {
@@ -7918,7 +8122,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "frp、Cloudflare 通道、Tailscale、NetBird 與 File Browser 提供。傳回設定目錄 bin 下已安裝的版本、保存的舊版本（`backups`，最多 3 個）、該程式單獨設定的下載代理 `proxy`、目前平台，以及安裝進度 `state`（`stage` 為 checking、downloading、verifying、extracting、done、uptodate 或 failed）。`unsupported` 非空時表示上游沒有提供目前平台的程式。\n\n所需權限：`cloudflared:read`。",
+        "description": "提供給 frp、Cloudflare 通道、Tailscale、NetBird、EasyTier 與 File Browser。回傳設定目錄 bin 下已安裝的版本、保存的舊版本（`backups`，最多 3 個）、該程式單獨設定的下載代理 `proxy`、目前平台，以及安裝進度 `state`（`stage` 為 checking、downloading、verifying、extracting、done、uptodate 或 failed）。`unsupported` 非空時表示上游未提供目前平台的程式。\n\n所需權限：`cloudflared:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -8653,7 +8857,7 @@
     },
     "/api/cloudflared/reset": {
       "post": {
-        "description": "frp、Cloudflare 通道、Tailscale、NetBird 與 File Browser 提供，無需請求主體。停止該模組的全部程序，把設定（包括程式路徑與下載代理）恢復為預設值，並刪除 Gately 為它產生的檔案：frp 的設定檔、File Browser 各執行個體的資料目錄（使用者、分享連結與快取）、Tailscale 預設狀態目錄中的登入狀態（Gately 託管的 tailscaled 執行中時先登出；自訂狀態目錄與系統已有的 tailscaled 不處理）、NetBird 預設狀態目錄中的登入狀態與金鑰（Gately 託管的常駐程式執行中時先登出，本機會從組網中刪除；自訂狀態目錄與系統已有的 NetBird 服務不處理）。舊設定保存在設定歷史中，可以恢復；安裝的程式不受影響，解除安裝使用 `DELETE /api/{module}/install`。\n\n所需權限：`cloudflared:write`。",
+        "description": "提供給 frp、Cloudflare 通道、Tailscale、NetBird、EasyTier 與 File Browser，無需請求內容。停止該模組的全部程序，把設定（包括程式路徑與下載代理）還原為預設值，並刪除 Gately 為它產生的檔案：frp 的設定檔、File Browser 各執行個體的資料目錄（使用者、分享連結與快取）、Tailscale 預設狀態目錄中的登入狀態（Gately 代管的 tailscaled 執行中時先登出；自訂狀態目錄與系統既有的 tailscaled 不處理）、NetBird 預設狀態目錄中的登入狀態與金鑰（Gately 代管的常駐程式執行中時先登出，本機會從組網中移除；自訂狀態目錄與系統既有的 NetBird 服務不處理）。舊設定保存在設定歷史中，可以還原；已安裝的程式不受影響，解除安裝請使用 `DELETE /api/{module}/install`。\n\n所需權限：`cloudflared:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -17096,6 +17300,1867 @@
         "x-token-allowed": true
       }
     },
+    "/api/easytier/install": {
+      "delete": {
+        "description": "刪除設定目錄 bin 下安裝的程式與全部保存的舊版本，之後重新啟動使用該程式的程序：PATH 中有同名程式時改用它，沒有時程序無法啟動。模組設定不受影響，清除設定使用 `POST /api/{module}/reset`。\n\n所需權限：`easytier:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "解除安裝託管程式",
+        "tags": [
+          "EasyTier 組網"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "提供給 frp、Cloudflare 通道、Tailscale、NetBird、EasyTier 與 File Browser。回傳設定目錄 bin 下已安裝的版本、保存的舊版本（`backups`，最多 3 個）、該程式單獨設定的下載代理 `proxy`、目前平台，以及安裝進度 `state`（`stage` 為 checking、downloading、verifying、extracting、done、uptodate 或 failed）。`unsupported` 非空時表示上游未提供目前平台的程式。\n\n所需權限：`easytier:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "檢視託管程式的安裝資訊與進度",
+        "tags": [
+          "EasyTier 組網"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "請求主體 `{\"version\": \"\", \"proxy\": \"\"}`：`version` 為空時安裝最新正式版（已是最新版時不下載，`stage` 為 uptodate），否則安裝指定版本；`proxy` 為下載代理（http、https 或 socks5），會保存下來供下次使用，為空時沿用全域設定 `updateProxy`。下載後校驗 SHA-256，安裝到設定目錄的 bin 下，原有版本移入舊版本清單，完成後重新啟動使用該程式的程序。立即返回，進度透過 `GET /api/{module}/install` 查詢。\n\n所需權限：`easytier:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "線上安裝或更新託管程式",
+        "tags": [
+          "EasyTier 組網"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/install/backups/{id}": {
+      "delete": {
+        "description": "所需權限：`easytier:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "刪除保存的舊版本",
+        "tags": [
+          "EasyTier 組網"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/install/check": {
+      "post": {
+        "description": "無需請求本文。查詢上游最新正式版（使用該程式的下載代理，未設定時沿用全域設定 `updateProxy`），不下載也不改動已安裝的程式；回傳值同 `GET /api/{module}/install`，其中 `latest` 為 `{version, checkedAt, error, hasUpdate}`，`hasUpdate` 表示最新版比 bin 下安裝的版本新。開啟自動檢查更新時，Gately 也會定期為已安裝的託管程式執行此檢查。已有檢查在進行時回傳 409。\n\n所需權限：`easytier:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "檢查託管程式的更新",
+        "tags": [
+          "EasyTier 組網"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/install/rollback": {
+      "post": {
+        "description": "請求主體 `{\"id\": \"\u003c舊版本 ID\u003e\"}`。目前版本會另存為舊版本，之後仍可切回；完成後重新啟動使用該程式的程序。\n\n所需權限：`easytier:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "切換到保存的舊版本",
+        "tags": [
+          "EasyTier 組網"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances": {
+      "get": {
+        "description": "所需權限：`easytier:read`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/easytier.Instance"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "取得EasyTier 執行個體清單",
+        "tags": [
+          "EasyTier 組網"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "每個執行個體會執行一個獨立的 `easytier-core` 程序，可分別加入不同的 EasyTier 組網。請求內容欄位：`name` 名稱（不可重複）；`enable` 是否啟用；`networkName` 組網名稱（必填，1-64 個字元，字母、數字與 `. _ @ : + -`）與 `networkSecret` 網路金鑰（名稱與金鑰都相同的節點才能互通，經環境變數 `ET_NETWORK_SECRET` 傳給程序，不會出現在程序參數中，日誌裡也已隱藏）；`peers` 啟動時主動連線的節點位址，每行一個，形如 `tcp://public.easytier.cn:11010`（協定可為 tcp、udp、ws、wss、quic、wg、faketcp，以及用於探索節點的 http、https、txt、srv）；`listeners` 監聽位址，每行一個，必須寫成 `協定://位址:連接埠`，留空時不監聽任何連接埠、只主動連線其他節點；`dhcp` 自動分配虛擬 IP，關閉時可用 `ipv4` 指定固定虛擬 IP（如 `10.126.126.2/24`），兩者都沒有時本節點只轉發資料、不建立網卡；`hostname`；`noTun` 使用使用者空間網路、不建立 TUN 網卡（無需特權），`devName` 網卡名；`proxyNetworks` 分享給組網的本機網段，每行一個，可寫成 `192.168.1.0/24-\u003e10.1.0.0/24` 做網段對應；`portForwards` 連接埠轉發，每行一個，形如 `tcp://127.0.0.1:2222/10.126.126.1:22`（綁定位址由你指定，建議 127.0.0.1）；`enableExitNode` 允許本機作為出口節點，`exitNodes` 使用的出口節點（虛擬 IPv4，每行一個）；`latencyFirst` 延遲優先選路；`kcpProxy`、`quicProxy` 以 KCP、QUIC 代理 TCP 流量；`extraArgs` 追加到 `easytier-core` 之後（以空白分隔），`env` 傳給程序的環境變數（每行一個 `KEY=VALUE`）。不提供 SOCKS5 選項：EasyTier 的 SOCKS5 會監聽全部位址且沒有驗證。管理連接埠由 Gately 在 127.0.0.1 上隨機分配，僅本機可存取。以下情況回傳 400：同時啟用的執行個體監聽同一個連接埠（TCP、UDP 分別判斷）或連接埠轉發綁定同一個本機連接埠、同時啟用且使用 TUN 的執行個體網卡名相同、名稱重複。啟用、批次啟用與複製時同樣會檢查。\n\n所需權限：`easytier:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/easytier.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.Instance"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "新增 EasyTier 執行個體",
+        "tags": [
+          "EasyTier 組網"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances-delete": {
+      "post": {
+        "description": "所需權限：`easytier:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchDeleteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "批次刪除EasyTier 執行個體",
+        "tags": [
+          "EasyTier 組網"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances-enable": {
+      "put": {
+        "description": "所需權限：`easytier:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchEnableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "批次啟用或停用EasyTier 執行個體",
+        "tags": [
+          "EasyTier 組網"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances-group": {
+      "put": {
+        "description": "所需權限：`easytier:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "批次設定EasyTier 執行個體分組",
+        "tags": [
+          "EasyTier 組網"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances-order": {
+      "put": {
+        "description": "所需權限：`easytier:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.orderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "調整EasyTier 執行個體排序",
+        "tags": [
+          "EasyTier 組網"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}": {
+      "delete": {
+        "description": "所需權限：`easytier:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "刪除EasyTier 執行個體",
+        "tags": [
+          "EasyTier 組網"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "所需權限：`easytier:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/easytier.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.Instance"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "修改EasyTier 執行個體",
+        "tags": [
+          "EasyTier 組網"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/copy": {
+      "post": {
+        "description": "所需權限：`easytier:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/easytier.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.Instance"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "複製EasyTier 執行個體",
+        "tags": [
+          "EasyTier 組網"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/enable": {
+      "put": {
+        "description": "所需權限：`easytier:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.enableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "啟用或停用EasyTier 執行個體",
+        "tags": [
+          "EasyTier 組網"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/restart": {
+      "post": {
+        "description": "重新啟動該執行個體的 `easytier-core` 程序，其他執行個體不受影響。\n\n所需權限：`easytier:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "重新啟動 EasyTier 執行個體",
+        "tags": [
+          "EasyTier 組網"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/secrets": {
+      "get": {
+        "description": "所需權限：`easytier:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "查看金鑰明文",
+        "tags": [
+          "EasyTier 組網"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/status": {
+      "get": {
+        "description": "`status` 為 stopped（未啟用或程序未執行）、starting（程序已啟動、管理連接埠尚未就緒）或 running。`self` 為本機資訊（虛擬 IP、實際監聽位址、STUN 偵測到的公網位址與 NAT 類型），`peers` 為組網中的其他節點：`cost` 為 p2p（直連）或 relay(N)（經 N 跳中繼），`direct` 表示直連，`latencyMs` 為延遲，`tunnel` 為連線協定。`peersDirect` 為直連的節點數。\n\n所需權限：`easytier:read`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.StatusView"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "檢視 EasyTier 執行個體的執行狀態",
+        "tags": [
+          "EasyTier 組網"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/logs": {
+      "delete": {
+        "description": "同時刪除落盤的日誌檔案、歷史檔案、歸檔與來源記錄。\n\n所需權限：`easytier:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "清空模組執行日誌",
+        "tags": [
+          "EasyTier 組網"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "支援 `since` 參數增量拉取，返回序號大於該值的日誌；`before` 返回序號小於該值的日誌，用於載入更早的記錄；`limit` 只返回其中最新的若干條，記憶體中不夠時繼續查找日誌檔案裡保留的歷史。過濾參數：`level` 最低級別，`source` 來源，`q` 關鍵字（空格分隔表示同時包含，雙引號包住短語，前綴 `-` 表示排除），`ip` 用戶端位址（完整位址、CIDR 或位址片段，多個以逗號分隔），`host` 站點名稱或網域（部分比對），`site` 站點名稱（完整比對，只回傳該站點的存取記錄），`status` 狀態碼（如 `404`、`4xx`、`500-599`），`from`、`to` 時間範圍（RFC 3339 或毫秒時間戳）。`exclude` 為排除詞，包含其中任意一個的日誌不回傳，寫法同 `q`，前綴 `-` 可省略。\n\n所需權限：`easytier:read`。",
+        "parameters": [
+          {
+            "description": "增量拉取：只回傳序號大於該值的日誌",
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "載入更早的日誌：只返回序號小於該值的日誌",
+            "in": "query",
+            "name": "before",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "最多返回的條數，取符合條件的最新幾條；0 或不傳表示不限",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "最低層級：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "來源標籤，不區分大小寫精確比對",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "關鍵字：空格分隔表示同時包含，雙引號包住短語，前綴 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的關鍵字：空格分隔，雙引號包住短語，包含其中任意一個即排除；與 q 同時生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "用戶端位址：完整位址、CIDR 或位址片段，多個以逗號分隔，前綴 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱或網域的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服務監聽器 key，完整比對；用於區分同名站點或同名監聽器（例如分開監聽的 IPv4 與 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "狀態碼，如 404、4xx、500-599，多個以逗號分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏被封鎖來源的存取日誌：封鎖後被拒絕的請求，以及目前仍在封鎖中的來源的全部請求（包括觸發封鎖的請求）；只影響回傳結果，日誌照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏帶管理後台登入狀態的請求，即管理員經 Web 服務站點存取後台產生的存取日誌",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "結束時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "檢視模組執行日誌",
+        "tags": [
+          "EasyTier 組網"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/logs/export": {
+      "get": {
+        "description": "以附件串流返回符合篩選條件的全部日誌，按時間從舊到新，包括落盤的歷史檔案與壓縮歸檔。`format` 為 `jsonl`（預設，每行一條 JSON）或 `csv`（UTF-8 帶 BOM，以 = + - @ 開頭的儲存格加單引號防止公式注入）。篩選參數與查看日誌介面相同。唯讀身分匯出的內容與查看時一樣做憑證遮蔽。`lang` 指定匯出內容的語言（如 `en`），不填時按 Accept-Language。\n\n所需權限：`easytier:read`。",
+        "parameters": [
+          {
+            "description": "匯出格式：jsonl（預設，每行一條 JSON）或 csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "匯出內容的語言，例如 en；不填時按 Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "最低層級：debug、info、warn 或 error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "來源標籤，不區分大小寫精確比對",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "關鍵字：空格分隔表示同時包含，雙引號包住短語，前綴 - 表示排除",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "不包含的關鍵字：空格分隔，雙引號包住短語，包含其中任意一個即排除；與 q 同時生效",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "用戶端位址：完整位址、CIDR 或位址片段，多個以逗號分隔，前綴 ! 或 - 表示排除",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱或網域的一部分",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "站點名稱，不區分大小寫完整比對，只返回該站點的存取日誌",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Web 服務監聽器 key，完整比對；用於區分同名站點或同名監聽器（例如分開監聽的 IPv4 與 IPv6）",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "狀態碼，如 404、4xx、500-599，多個以逗號分隔",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏被封鎖來源的存取日誌：封鎖後被拒絕的請求，以及目前仍在封鎖中的來源的全部請求（包括觸發封鎖的請求）；只影響回傳結果，日誌照常保存",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "為 1 時隱藏帶管理後台登入狀態的請求，即管理員經 Web 服務站點存取後台產生的存取日誌",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "開始時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "結束時間，RFC 3339 格式或毫秒時間戳",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "匯出模組執行日誌",
+        "tags": [
+          "EasyTier 組網"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/logs/sources": {
+      "get": {
+        "description": "返回按名稱排序的來源標籤陣列：日誌中出現過的來源（落盤時跨重啟保留），以及模組設定中的來源（例如 Web 服務的全部監聽器與 IP 清單），用於按 `source` 篩選。來源與日誌一樣按請求語言翻譯。\n\n所需權限：`easytier:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出模組日誌的全部來源",
+        "tags": [
+          "EasyTier 組網"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/reset": {
+      "post": {
+        "description": "提供給 frp、Cloudflare 通道、Tailscale、NetBird、EasyTier 與 File Browser，無需請求內容。停止該模組的全部程序，把設定（包括程式路徑與下載代理）還原為預設值，並刪除 Gately 為它產生的檔案：frp 的設定檔、File Browser 各執行個體的資料目錄（使用者、分享連結與快取）、Tailscale 預設狀態目錄中的登入狀態（Gately 代管的 tailscaled 執行中時先登出；自訂狀態目錄與系統既有的 tailscaled 不處理）、NetBird 預設狀態目錄中的登入狀態與金鑰（Gately 代管的常駐程式執行中時先登出，本機會從組網中移除；自訂狀態目錄與系統既有的 NetBird 服務不處理）。舊設定保存在設定歷史中，可以還原；已安裝的程式不受影響，解除安裝請使用 `DELETE /api/{module}/install`。\n\n所需權限：`easytier:write`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "恢復模組預設設定",
+        "tags": [
+          "EasyTier 組網"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/settings": {
+      "get": {
+        "description": "回傳 `settings`（`corePath` 與下載代理 `installProxy`，所有執行個體共用）與實際使用的 easytier-core 程式路徑 `core`。easytier-cli 在 easytier-core 所在目錄尋找，找不到時依序在設定目錄 bin 與 PATH 下尋找。\n\n所需權限：`easytier:read`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.SettingsView"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "讀取 EasyTier 程式設定",
+        "tags": [
+          "EasyTier 組網"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "請求內容 `{\"corePath\": \"\"}`，留空時依序在設定目錄 bin 與 PATH 下尋找 easytier-core；`installProxy` 只由安裝介面修改。路徑變更後請重新啟動已啟用的執行個體。\n\n所需權限：`easytier:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/easytier.Settings"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "儲存 EasyTier 程式設定",
+        "tags": [
+          "EasyTier 組網"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/status": {
+      "get": {
+        "description": "回傳陣列，順序同執行個體清單，每項含執行個體 `key`、`name` 與該執行個體的狀態，欄位同 `GET /api/easytier/instances/{key}/status`。停用的執行個體只回傳程序狀態，不查詢節點。\n\n所需權限：`easytier:read`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/easytier.StatusView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "檢視全部 EasyTier 執行個體的執行狀態",
+        "tags": [
+          "EasyTier 組網"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/filebrowser/install": {
       "delete": {
         "description": "刪除設定目錄 bin 下安裝的程式與全部保存的舊版本，之後重新啟動使用該程式的程序：PATH 中有同名程式時改用它，沒有時程序無法啟動。模組設定不受影響，清除設定使用 `POST /api/{module}/reset`。\n\n所需權限：`filebrowser:write`。",
@@ -17147,7 +19212,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "frp、Cloudflare 通道、Tailscale、NetBird 與 File Browser 提供。傳回設定目錄 bin 下已安裝的版本、保存的舊版本（`backups`，最多 3 個）、該程式單獨設定的下載代理 `proxy`、目前平台，以及安裝進度 `state`（`stage` 為 checking、downloading、verifying、extracting、done、uptodate 或 failed）。`unsupported` 非空時表示上游沒有提供目前平台的程式。\n\n所需權限：`filebrowser:read`。",
+        "description": "提供給 frp、Cloudflare 通道、Tailscale、NetBird、EasyTier 與 File Browser。回傳設定目錄 bin 下已安裝的版本、保存的舊版本（`backups`，最多 3 個）、該程式單獨設定的下載代理 `proxy`、目前平台，以及安裝進度 `state`（`stage` 為 checking、downloading、verifying、extracting、done、uptodate 或 failed）。`unsupported` 非空時表示上游未提供目前平台的程式。\n\n所需權限：`filebrowser:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -18663,7 +20728,7 @@
     },
     "/api/filebrowser/reset": {
       "post": {
-        "description": "frp、Cloudflare 通道、Tailscale、NetBird 與 File Browser 提供，無需請求主體。停止該模組的全部程序，把設定（包括程式路徑與下載代理）恢復為預設值，並刪除 Gately 為它產生的檔案：frp 的設定檔、File Browser 各執行個體的資料目錄（使用者、分享連結與快取）、Tailscale 預設狀態目錄中的登入狀態（Gately 託管的 tailscaled 執行中時先登出；自訂狀態目錄與系統已有的 tailscaled 不處理）、NetBird 預設狀態目錄中的登入狀態與金鑰（Gately 託管的常駐程式執行中時先登出，本機會從組網中刪除；自訂狀態目錄與系統已有的 NetBird 服務不處理）。舊設定保存在設定歷史中，可以恢復；安裝的程式不受影響，解除安裝使用 `DELETE /api/{module}/install`。\n\n所需權限：`filebrowser:write`。",
+        "description": "提供給 frp、Cloudflare 通道、Tailscale、NetBird、EasyTier 與 File Browser，無需請求內容。停止該模組的全部程序，把設定（包括程式路徑與下載代理）還原為預設值，並刪除 Gately 為它產生的檔案：frp 的設定檔、File Browser 各執行個體的資料目錄（使用者、分享連結與快取）、Tailscale 預設狀態目錄中的登入狀態（Gately 代管的 tailscaled 執行中時先登出；自訂狀態目錄與系統既有的 tailscaled 不處理）、NetBird 預設狀態目錄中的登入狀態與金鑰（Gately 代管的常駐程式執行中時先登出，本機會從組網中移除；自訂狀態目錄與系統既有的 NetBird 服務不處理）。舊設定保存在設定歷史中，可以還原；已安裝的程式不受影響，解除安裝請使用 `DELETE /api/{module}/install`。\n\n所需權限：`filebrowser:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -19890,7 +21955,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "frp、Cloudflare 通道、Tailscale、NetBird 與 File Browser 提供。傳回設定目錄 bin 下已安裝的版本、保存的舊版本（`backups`，最多 3 個）、該程式單獨設定的下載代理 `proxy`、目前平台，以及安裝進度 `state`（`stage` 為 checking、downloading、verifying、extracting、done、uptodate 或 failed）。`unsupported` 非空時表示上游沒有提供目前平台的程式。\n\n所需權限：`frp:read`。",
+        "description": "提供給 frp、Cloudflare 通道、Tailscale、NetBird、EasyTier 與 File Browser。回傳設定目錄 bin 下已安裝的版本、保存的舊版本（`backups`，最多 3 個）、該程式單獨設定的下載代理 `proxy`、目前平台，以及安裝進度 `state`（`stage` 為 checking、downloading、verifying、extracting、done、uptodate 或 failed）。`unsupported` 非空時表示上游未提供目前平台的程式。\n\n所需權限：`frp:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -21345,7 +23410,7 @@
     },
     "/api/frp/reset": {
       "post": {
-        "description": "frp、Cloudflare 通道、Tailscale、NetBird 與 File Browser 提供，無需請求主體。停止該模組的全部程序，把設定（包括程式路徑與下載代理）恢復為預設值，並刪除 Gately 為它產生的檔案：frp 的設定檔、File Browser 各執行個體的資料目錄（使用者、分享連結與快取）、Tailscale 預設狀態目錄中的登入狀態（Gately 託管的 tailscaled 執行中時先登出；自訂狀態目錄與系統已有的 tailscaled 不處理）、NetBird 預設狀態目錄中的登入狀態與金鑰（Gately 託管的常駐程式執行中時先登出，本機會從組網中刪除；自訂狀態目錄與系統已有的 NetBird 服務不處理）。舊設定保存在設定歷史中，可以恢復；安裝的程式不受影響，解除安裝使用 `DELETE /api/{module}/install`。\n\n所需權限：`frp:write`。",
+        "description": "提供給 frp、Cloudflare 通道、Tailscale、NetBird、EasyTier 與 File Browser，無需請求內容。停止該模組的全部程序，把設定（包括程式路徑與下載代理）還原為預設值，並刪除 Gately 為它產生的檔案：frp 的設定檔、File Browser 各執行個體的資料目錄（使用者、分享連結與快取）、Tailscale 預設狀態目錄中的登入狀態（Gately 代管的 tailscaled 執行中時先登出；自訂狀態目錄與系統既有的 tailscaled 不處理）、NetBird 預設狀態目錄中的登入狀態與金鑰（Gately 代管的常駐程式執行中時先登出，本機會從組網中移除；自訂狀態目錄與系統既有的 NetBird 服務不處理）。舊設定保存在設定歷史中，可以還原；已安裝的程式不受影響，解除安裝請使用 `DELETE /api/{module}/install`。\n\n所需權限：`frp:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -26872,7 +28937,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "frp、Cloudflare 通道、Tailscale、NetBird 與 File Browser 提供。傳回設定目錄 bin 下已安裝的版本、保存的舊版本（`backups`，最多 3 個）、該程式單獨設定的下載代理 `proxy`、目前平台，以及安裝進度 `state`（`stage` 為 checking、downloading、verifying、extracting、done、uptodate 或 failed）。`unsupported` 非空時表示上游沒有提供目前平台的程式。\n\n所需權限：`netbird:read`。",
+        "description": "提供給 frp、Cloudflare 通道、Tailscale、NetBird、EasyTier 與 File Browser。回傳設定目錄 bin 下已安裝的版本、保存的舊版本（`backups`，最多 3 個）、該程式單獨設定的下載代理 `proxy`、目前平台，以及安裝進度 `state`（`stage` 為 checking、downloading、verifying、extracting、done、uptodate 或 failed）。`unsupported` 非空時表示上游未提供目前平台的程式。\n\n所需權限：`netbird:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -28517,7 +30582,7 @@
     },
     "/api/netbird/reset": {
       "post": {
-        "description": "frp、Cloudflare 通道、Tailscale、NetBird 與 File Browser 提供，無需請求主體。停止該模組的全部程序，把設定（包括程式路徑與下載代理）恢復為預設值，並刪除 Gately 為它產生的檔案：frp 的設定檔、File Browser 各執行個體的資料目錄（使用者、分享連結與快取）、Tailscale 預設狀態目錄中的登入狀態（Gately 託管的 tailscaled 執行中時先登出；自訂狀態目錄與系統已有的 tailscaled 不處理）、NetBird 預設狀態目錄中的登入狀態與金鑰（Gately 託管的常駐程式執行中時先登出，本機會從組網中刪除；自訂狀態目錄與系統已有的 NetBird 服務不處理）。舊設定保存在設定歷史中，可以恢復；安裝的程式不受影響，解除安裝使用 `DELETE /api/{module}/install`。\n\n所需權限：`netbird:write`。",
+        "description": "提供給 frp、Cloudflare 通道、Tailscale、NetBird、EasyTier 與 File Browser，無需請求內容。停止該模組的全部程序，把設定（包括程式路徑與下載代理）還原為預設值，並刪除 Gately 為它產生的檔案：frp 的設定檔、File Browser 各執行個體的資料目錄（使用者、分享連結與快取）、Tailscale 預設狀態目錄中的登入狀態（Gately 代管的 tailscaled 執行中時先登出；自訂狀態目錄與系統既有的 tailscaled 不處理）、NetBird 預設狀態目錄中的登入狀態與金鑰（Gately 代管的常駐程式執行中時先登出，本機會從組網中移除；自訂狀態目錄與系統既有的 NetBird 服務不處理）。舊設定保存在設定歷史中，可以還原；已安裝的程式不受影響，解除安裝請使用 `DELETE /api/{module}/install`。\n\n所需權限：`netbird:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -41775,7 +43840,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "frp、Cloudflare 通道、Tailscale、NetBird 與 File Browser 提供。傳回設定目錄 bin 下已安裝的版本、保存的舊版本（`backups`，最多 3 個）、該程式單獨設定的下載代理 `proxy`、目前平台，以及安裝進度 `state`（`stage` 為 checking、downloading、verifying、extracting、done、uptodate 或 failed）。`unsupported` 非空時表示上游沒有提供目前平台的程式。\n\n所需權限：`tailscale:read`。",
+        "description": "提供給 frp、Cloudflare 通道、Tailscale、NetBird、EasyTier 與 File Browser。回傳設定目錄 bin 下已安裝的版本、保存的舊版本（`backups`，最多 3 個）、該程式單獨設定的下載代理 `proxy`、目前平台，以及安裝進度 `state`（`stage` 為 checking、downloading、verifying、extracting、done、uptodate 或 failed）。`unsupported` 非空時表示上游未提供目前平台的程式。\n\n所需權限：`tailscale:read`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -43420,7 +45485,7 @@
     },
     "/api/tailscale/reset": {
       "post": {
-        "description": "frp、Cloudflare 通道、Tailscale、NetBird 與 File Browser 提供，無需請求主體。停止該模組的全部程序，把設定（包括程式路徑與下載代理）恢復為預設值，並刪除 Gately 為它產生的檔案：frp 的設定檔、File Browser 各執行個體的資料目錄（使用者、分享連結與快取）、Tailscale 預設狀態目錄中的登入狀態（Gately 託管的 tailscaled 執行中時先登出；自訂狀態目錄與系統已有的 tailscaled 不處理）、NetBird 預設狀態目錄中的登入狀態與金鑰（Gately 託管的常駐程式執行中時先登出，本機會從組網中刪除；自訂狀態目錄與系統已有的 NetBird 服務不處理）。舊設定保存在設定歷史中，可以恢復；安裝的程式不受影響，解除安裝使用 `DELETE /api/{module}/install`。\n\n所需權限：`tailscale:write`。",
+        "description": "提供給 frp、Cloudflare 通道、Tailscale、NetBird、EasyTier 與 File Browser，無需請求內容。停止該模組的全部程序，把設定（包括程式路徑與下載代理）還原為預設值，並刪除 Gately 為它產生的檔案：frp 的設定檔、File Browser 各執行個體的資料目錄（使用者、分享連結與快取）、Tailscale 預設狀態目錄中的登入狀態（Gately 代管的 tailscaled 執行中時先登出；自訂狀態目錄與系統既有的 tailscaled 不處理）、NetBird 預設狀態目錄中的登入狀態與金鑰（Gately 代管的常駐程式執行中時先登出，本機會從組網中移除；自訂狀態目錄與系統既有的 NetBird 服務不處理）。舊設定保存在設定歷史中，可以還原；已安裝的程式不受影響，解除安裝請使用 `DELETE /api/{module}/install`。\n\n所需權限：`tailscale:write`。",
         "responses": {
           "200": {
             "description": "成功"
@@ -57124,6 +59189,9 @@
       "name": "NetBird 組網"
     },
     {
+      "name": "EasyTier 組網"
+    },
+    {
       "name": "frp 內網穿透"
     },
     {
@@ -57206,6 +59274,7 @@
     "stun",
     "tailscale",
     "netbird",
+    "easytier",
     "frp",
     "cloudflared",
     "ssl",

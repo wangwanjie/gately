@@ -444,6 +444,210 @@
         },
         "type": "object"
       },
+      "easytier.Instance": {
+        "properties": {
+          "devName": {
+            "type": "string"
+          },
+          "dhcp": {
+            "type": "boolean"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "enableExitNode": {
+            "type": "boolean"
+          },
+          "env": {
+            "type": "string"
+          },
+          "exitNodes": {
+            "type": "string"
+          },
+          "extraArgs": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "hostname": {
+            "type": "string"
+          },
+          "ipv4": {
+            "type": "string"
+          },
+          "kcpProxy": {
+            "type": "boolean"
+          },
+          "key": {
+            "type": "string"
+          },
+          "latencyFirst": {
+            "type": "boolean"
+          },
+          "listeners": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "networkName": {
+            "type": "string"
+          },
+          "networkSecret": {
+            "type": "string"
+          },
+          "noTun": {
+            "type": "boolean"
+          },
+          "peers": {
+            "type": "string"
+          },
+          "portForwards": {
+            "type": "string"
+          },
+          "proxyNetworks": {
+            "type": "string"
+          },
+          "quicProxy": {
+            "type": "boolean"
+          },
+          "remark": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.PeerView": {
+        "properties": {
+          "cost": {
+            "type": "string"
+          },
+          "direct": {
+            "type": "boolean"
+          },
+          "ip": {
+            "type": "string"
+          },
+          "latencyMs": {
+            "type": "number"
+          },
+          "loss": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nat": {
+            "type": "string"
+          },
+          "rx": {
+            "type": "string"
+          },
+          "tunnel": {
+            "type": "string"
+          },
+          "tx": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.SelfView": {
+        "properties": {
+          "ip": {
+            "type": "string"
+          },
+          "listeners": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nat": {
+            "type": "string"
+          },
+          "publicIps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.Settings": {
+        "properties": {
+          "corePath": {
+            "type": "string"
+          },
+          "installProxy": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.SettingsView": {
+        "properties": {
+          "core": {
+            "type": "string"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/easytier.Settings"
+          }
+        },
+        "type": "object"
+      },
+      "easytier.StatusView": {
+        "properties": {
+          "cli": {
+            "type": "string"
+          },
+          "core": {
+            "type": "string"
+          },
+          "daemon": {
+            "$ref": "#/components/schemas/proc.State"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "peers": {
+            "items": {
+              "$ref": "#/components/schemas/easytier.PeerView"
+            },
+            "type": "array"
+          },
+          "peersDirect": {
+            "type": "integer"
+          },
+          "self": {
+            "$ref": "#/components/schemas/easytier.SelfView"
+          },
+          "status": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "events.TypeInfo": {
         "properties": {
           "level": {
@@ -7918,7 +8122,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Verfügbar für frp, Cloudflare-Tunnel, Tailscale, NetBird und File Browser. Liefert die im bin-Verzeichnis des Konfigurationsverzeichnisses installierte Version, die gespeicherten früheren Versionen (`backups`, höchstens 3), den für dieses Programm gesetzten Download-Proxy (`proxy`), die aktuelle Plattform und den Installationsfortschritt `state` (`stage` ist checking, downloading, verifying, extracting, done, uptodate oder failed). Ein nicht leeres `unsupported` bedeutet, dass das Projekt kein Programm für die aktuelle Plattform anbietet.\n\nErforderliche Berechtigung: `cloudflared:read`.",
+        "description": "Verfügbar für frp, Cloudflare-Tunnel, Tailscale, NetBird, EasyTier und File Browser. Liefert die im bin-Ordner des Konfigurationsverzeichnisses installierten Versionen, die gespeicherten älteren Versionen (`backups`, höchstens 3), den eigenen Download-Proxy des Programms `proxy`, die aktuelle Plattform sowie den Installationsfortschritt `state` (`stage` ist checking, downloading, verifying, extracting, done, uptodate oder failed). Ist `unsupported` nicht leer, stellt der Upstream kein Programm für die aktuelle Plattform bereit.\n\nErforderliche Berechtigung: `cloudflared:read`.",
         "responses": {
           "200": {
             "description": "Erfolgreich"
@@ -8653,7 +8857,7 @@
     },
     "/api/cloudflared/reset": {
       "post": {
-        "description": "Verfügbar für frp, Cloudflare-Tunnel, Tailscale, NetBird und File Browser; ohne Request-Body. Stoppt alle Prozesse des Moduls, setzt seine Einstellungen (einschließlich Programmpfad und Download-Proxy) auf die Standardwerte zurück und löscht die von Gately dafür erzeugten Dateien: die frp-Konfigurationsdateien, das Datenverzeichnis jeder File-Browser-Instanz (Benutzer, Freigabelinks und Caches), den Anmeldestatus im Standard-Statusverzeichnis von Tailscale (ein laufendes, von Gately verwaltetes tailscaled meldet sich zuerst ab; eigene Statusverzeichnisse und ein vorhandenes System-tailscaled bleiben unberührt) sowie Anmeldestatus und Schlüssel im Standard-Statusverzeichnis von NetBird (ein laufender, von Gately verwalteter Daemon meldet sich zuerst ab, wodurch dieser Rechner aus dem Netzwerk entfernt wird; eigene Statusverzeichnisse und ein vorhandener System-NetBird-Dienst bleiben unberührt). Die alten Einstellungen bleiben im Konfigurationsverlauf und lassen sich wiederherstellen; installierte Programme sind nicht betroffen, zum Deinstallieren `DELETE /api/{module}/install` verwenden.\n\nErforderliche Berechtigung: `cloudflared:write`.",
+        "description": "Verfügbar für frp, Cloudflare-Tunnel, Tailscale, NetBird, EasyTier und File Browser; kein Request-Body nötig. Beendet alle Prozesse des Moduls, setzt die Konfiguration (einschließlich Programmpfad und Download-Proxy) auf die Standardwerte zurück und löscht die von Gately dafür erzeugten Dateien: die Konfigurationsdatei von frp, das Datenverzeichnis jeder File-Browser-Instanz (Benutzer, Freigabelinks und Cache), den Anmeldestatus im Standard-Statusverzeichnis von Tailscale (läuft der von Gately verwaltete tailscaled, meldet er sich zuerst ab; benutzerdefinierte Statusverzeichnisse und ein vorhandener System-tailscaled bleiben unberührt) sowie den Anmeldestatus und die Schlüssel im Standard-Statusverzeichnis von NetBird (läuft der von Gately verwaltete Daemon, meldet er sich zuerst ab und dieses Gerät wird aus dem Netzwerk entfernt; benutzerdefinierte Statusverzeichnisse und ein vorhandener System-NetBird-Dienst bleiben unberührt). Die alte Konfiguration bleibt im Konfigurationsverlauf erhalten und kann wiederhergestellt werden; installierte Programme sind nicht betroffen, zum Deinstallieren dient `DELETE /api/{module}/install`.\n\nErforderliche Berechtigung: `cloudflared:write`.",
         "responses": {
           "200": {
             "description": "Erfolgreich"
@@ -17096,6 +17300,1867 @@
         "x-token-allowed": true
       }
     },
+    "/api/easytier/install": {
+      "delete": {
+        "description": "Löscht das in bin im Konfigurationsverzeichnis installierte Programm und alle gespeicherten früheren Versionen und startet die Prozesse neu, die es verwenden: Liegt ein gleichnamiges Programm in PATH, wird es verwendet, sonst können die Prozesse nicht starten. Die Moduleinstellungen bleiben unverändert; zum Zurücksetzen `POST /api/{module}/reset` verwenden.\n\nErforderliche Berechtigung: `easytier:write`.",
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Verwaltetes Programm deinstallieren",
+        "tags": [
+          "EasyTier-Netzwerk"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "Verfügbar für frp, Cloudflare-Tunnel, Tailscale, NetBird, EasyTier und File Browser. Liefert die im bin-Ordner des Konfigurationsverzeichnisses installierten Versionen, die gespeicherten älteren Versionen (`backups`, höchstens 3), den eigenen Download-Proxy des Programms `proxy`, die aktuelle Plattform sowie den Installationsfortschritt `state` (`stage` ist checking, downloading, verifying, extracting, done, uptodate oder failed). Ist `unsupported` nicht leer, stellt der Upstream kein Programm für die aktuelle Plattform bereit.\n\nErforderliche Berechtigung: `easytier:read`.",
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Installationsinfo und Fortschritt eines verwalteten Programms anzeigen",
+        "tags": [
+          "EasyTier-Netzwerk"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "Request-Body `{\"version\": \"\", \"proxy\": \"\"}`: Ein leeres `version` installiert die neueste stabile Version (ist sie bereits installiert, wird nichts heruntergeladen und `stage` ist uptodate), sonst die angegebene Version; `proxy` ist der Download-Proxy (http, https oder socks5), wird für das nächste Mal gespeichert und bei leerem Wert gilt die globale Einstellung `updateProxy`. Der Download wird per SHA-256 geprüft und in bin im Konfigurationsverzeichnis installiert, die bisherige Version wandert zu den früheren Versionen und Prozesse, die das Programm verwenden, werden neu gestartet. Antwortet sofort; den Fortschritt fragen Sie mit `GET /api/{module}/install` ab.\n\nErforderliche Berechtigung: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Verwaltetes Programm online installieren oder aktualisieren",
+        "tags": [
+          "EasyTier-Netzwerk"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/install/backups/{id}": {
+      "delete": {
+        "description": "Erforderliche Berechtigung: `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Gespeicherte frühere Version löschen",
+        "tags": [
+          "EasyTier-Netzwerk"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/install/check": {
+      "post": {
+        "description": "Kein Request-Body. Fragt die neueste stabile Upstream-Version ab (über den Download-Proxy des Programms bzw. die globale Einstellung `updateProxy`, wenn keiner gesetzt ist), ohne das installierte Programm herunterzuladen oder zu ändern; liefert dasselbe wie `GET /api/{module}/install`, wobei `latest` `{version, checkedAt, error, hasUpdate}` ist und `hasUpdate` bedeutet, dass die neueste Version neuer ist als die in bin installierte. Bei aktivierter automatischer Update-Prüfung führt Gately diese Prüfung auch regelmäßig für installierte verwaltete Programme aus. Liefert 409, solange bereits eine Prüfung läuft.\n\nErforderliche Berechtigung: `easytier:write`.",
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Verwaltetes Programm auf Updates prüfen",
+        "tags": [
+          "EasyTier-Netzwerk"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/install/rollback": {
+      "post": {
+        "description": "Request-Body `{\"id\": \"\u003cID der früheren Version\u003e\"}`. Die aktuelle Version wird als frühere Version gespeichert, sodass Sie zurückwechseln können; danach werden die Prozesse, die das Programm verwenden, neu gestartet.\n\nErforderliche Berechtigung: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Zu einer gespeicherten früheren Version wechseln",
+        "tags": [
+          "EasyTier-Netzwerk"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances": {
+      "get": {
+        "description": "Erforderliche Berechtigung: `easytier:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/easytier.Instance"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier-Instanz auflisten",
+        "tags": [
+          "EasyTier-Netzwerk"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "Jede Instanz führt einen eigenen `easytier-core`-Prozess aus und kann einem anderen EasyTier-Netzwerk beitreten. Felder des Request-Body: `name` Name (muss eindeutig sein); `enable` ob aktiviert; `networkName` Netzwerkname (Pflicht, 1-64 Zeichen: Buchstaben, Ziffern und `. _ @ : + -`) und `networkSecret` Netzwerkschlüssel (nur Knoten mit gleichem Namen und gleichem Schlüssel können kommunizieren; er wird über die Umgebungsvariable `ET_NETWORK_SECRET` an den Prozess übergeben, erscheint nicht in den Prozessargumenten und ist auch in den Protokollen ausgeblendet); `peers` Adressen der Knoten, zu denen beim Start verbunden wird, eine pro Zeile, z. B. `tcp://public.easytier.cn:11010` (das Protokoll kann tcp, udp, ws, wss, quic, wg, faketcp sowie http, https, txt, srv zur Knotensuche sein); `listeners` Listen-Adressen, eine pro Zeile, die als `Protokoll://Adresse:Port` geschrieben werden müssen; bleibt das Feld leer, wird kein Port abgehört und es werden nur Verbindungen zu anderen Knoten aufgebaut; `dhcp` weist die virtuelle IP automatisch zu, bei deaktiviertem DHCP kann `ipv4` eine feste virtuelle IP festlegen (z. B. `10.126.126.2/24`); ist beides nicht gesetzt, leitet dieser Knoten nur Daten weiter und erstellt kein Netzwerkgerät; `hostname`; `noTun` verwendet Userspace-Netzwerk und erstellt kein TUN-Gerät (keine Berechtigungen nötig), `devName` Gerätename; `proxyNetworks` lokale Netze, die dem Netzwerk bereitgestellt werden, eines pro Zeile, die für eine Netzabbildung als `192.168.1.0/24-\u003e10.1.0.0/24` geschrieben werden können; `portForwards` Portweiterleitungen, eine pro Zeile, z. B. `tcp://127.0.0.1:2222/10.126.126.1:22` (die Bind-Adresse legen Sie selbst fest, empfohlen wird 127.0.0.1); `enableExitNode` erlaubt diesem Rechner, als Exit-Knoten zu dienen, `exitNodes` verwendete Exit-Knoten (virtuelle IPv4, eine pro Zeile); `latencyFirst` bevorzugt Routen mit geringer Latenz; `kcpProxy` und `quicProxy` leiten TCP-Verkehr über KCP bzw. QUIC; `extraArgs` werden hinter `easytier-core` angehängt (durch Leerraum getrennt), `env` Umgebungsvariablen für den Prozess (je Zeile ein `KEY=VALUE`). Eine SOCKS5-Option gibt es nicht: Das SOCKS5 von EasyTier lauscht auf allen Adressen und hat keine Authentifizierung. Der Verwaltungsport wird von Gately zufällig auf 127.0.0.1 vergeben und ist nur von diesem Rechner aus erreichbar. In folgenden Fällen wird 400 zurückgegeben: gleichzeitig aktivierte Instanzen lauschen auf demselben Port (getrennt nach TCP und UDP geprüft) oder ihre Portweiterleitungen binden denselben lokalen Port, gleichzeitig aktivierte Instanzen mit TUN haben denselben Gerätenamen, oder Namen sind doppelt vergeben. Dieselben Prüfungen gelten beim Aktivieren, beim Massenaktivieren und beim Kopieren.\n\nErforderliche Berechtigung: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/easytier.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.Instance"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier-Instanz hinzufügen",
+        "tags": [
+          "EasyTier-Netzwerk"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances-delete": {
+      "post": {
+        "description": "Erforderliche Berechtigung: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchDeleteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Im Stapel löschen: EasyTier-Instanz",
+        "tags": [
+          "EasyTier-Netzwerk"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances-enable": {
+      "put": {
+        "description": "Erforderliche Berechtigung: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.batchEnableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Im Stapel aktivieren oder deaktivieren: EasyTier-Instanz",
+        "tags": [
+          "EasyTier-Netzwerk"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances-group": {
+      "put": {
+        "description": "Erforderliche Berechtigung: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Gruppe mehrerer Einträge festlegen: EasyTier-Instanz",
+        "tags": [
+          "EasyTier-Netzwerk"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances-order": {
+      "put": {
+        "description": "Erforderliche Berechtigung: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.orderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier-Instanz neu anordnen",
+        "tags": [
+          "EasyTier-Netzwerk"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}": {
+      "delete": {
+        "description": "Erforderliche Berechtigung: `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier-Instanz löschen",
+        "tags": [
+          "EasyTier-Netzwerk"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Erforderliche Berechtigung: `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/easytier.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.Instance"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier-Instanz ändern",
+        "tags": [
+          "EasyTier-Netzwerk"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/copy": {
+      "post": {
+        "description": "Erforderliche Berechtigung: `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/easytier.Instance"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.Instance"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier-Instanz duplizieren",
+        "tags": [
+          "EasyTier-Netzwerk"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/enable": {
+      "put": {
+        "description": "Erforderliche Berechtigung: `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.enableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier-Instanz aktivieren oder deaktivieren",
+        "tags": [
+          "EasyTier-Netzwerk"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/restart": {
+      "post": {
+        "description": "Startet den `easytier-core`-Prozess dieser Instanz neu; andere Instanzen sind nicht betroffen.\n\nErforderliche Berechtigung: `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier-Instanz neu starten",
+        "tags": [
+          "EasyTier-Netzwerk"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/secrets": {
+      "get": {
+        "description": "Erforderliche Berechtigung: `easytier:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Geheimnisse im Klartext anzeigen",
+        "tags": [
+          "EasyTier-Netzwerk"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/instances/{key}/status": {
+      "get": {
+        "description": "`status` ist stopped (nicht aktiviert oder Prozess läuft nicht), starting (Prozess gestartet, Verwaltungsport noch nicht bereit) oder running. `self` enthält die Informationen dieses Knotens (virtuelle IP, tatsächliche Listen-Adressen, per STUN ermittelte öffentliche Adresse und NAT-Typ); `peers` sind die anderen Knoten im Netzwerk: `cost` ist p2p (direkt) oder relay(N) (über N Hops weitergeleitet), `direct` kennzeichnet eine direkte Verbindung, `latencyMs` ist die Latenz und `tunnel` das Verbindungsprotokoll. `peersDirect` ist die Anzahl direkt verbundener Knoten.\n\nErforderliche Berechtigung: `easytier:read`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.StatusView"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Laufstatus einer EasyTier-Instanz anzeigen",
+        "tags": [
+          "EasyTier-Netzwerk"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/logs": {
+      "delete": {
+        "description": "Löscht auch die Protokolldateien auf der Festplatte, rotierte Dateien, Archive und die Quellenliste.\n\nErforderliche Berechtigung: `easytier:write`.",
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Modulprotokolle leeren",
+        "tags": [
+          "EasyTier-Netzwerk"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "Unterstützt inkrementelles Abrufen mit dem Parameter `since` und liefert Logs mit einer Sequenznummer größer als dieser Wert; `before` liefert Logs mit einer Sequenznummer kleiner als dieser Wert, um ältere Einträge zu laden; `limit` liefert nur die neuesten Einträge davon und durchsucht, wenn der Speicher nicht genug enthält, auch den in den Logdateien aufbewahrten Verlauf. Filterparameter: `level` Mindeststufe, `source` Quelle, `q` Suchbegriffe (durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt aus), `ip` Client-Adresse (vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt), `host` Site-Name oder Domain (Teilübereinstimmung), `site` Site-Name (exakte Übereinstimmung, liefert nur das Zugriffsprotokoll dieser Site), `status` Statuscode (z. B. `404`, `4xx`, `500-599`), `from` und `to` Zeitraum (RFC 3339 oder Zeitstempel in Millisekunden). `exclude` enthält auszuschließende Begriffe: Einträge mit einem davon werden nicht zurückgegeben; Schreibweise wie bei `q`, das führende `-` ist optional.\n\nErforderliche Berechtigung: `easytier:read`.",
+        "parameters": [
+          {
+            "description": "Inkrementeller Abruf: gibt nur Protokolle mit einer größeren Sequenznummer zurück",
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Ältere Protokolle laden: gibt nur Protokolle mit einer Sequenznummer kleiner als dieser Wert zurück",
+            "in": "query",
+            "name": "before",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Maximale Anzahl zurückgegebener Einträge, wobei die neuesten passenden genommen werden; 0 oder weggelassen bedeutet unbegrenzt",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Mindeststufe: debug, info, warn oder error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Quellbezeichnung, exakte Übereinstimmung ohne Groß-/Kleinschreibung",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Suchbegriffe: durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes - schließt aus",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Ausgeschlossene Stichwörter: durch Leerzeichen getrennt, doppelte Anführungszeichen bilden eine Phrase; ein Eintrag mit einem davon wird ausgeschlossen; gilt zusammen mit q",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Client-Adresse: vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt; Präfix ! oder - schließt aus",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Teil des Site-Namens oder der Domain",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Site-Name, exakte Übereinstimmung ohne Beachtung der Groß-/Kleinschreibung; liefert nur die Zugriffsprotokolle dieser Site",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Listener-Key der Webdienste, exakte Übereinstimmung; unterscheidet gleichnamige Sites oder Listener (zum Beispiel getrennte IPv4- und IPv6-Listener)",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Statuscode wie 404, 4xx, 500-599, durch Kommas getrennt",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Bei 1 werden Zugriffsprotokolle gesperrter Quellen ausgeblendet: wegen der Sperre abgelehnte Anfragen und alle Anfragen noch gesperrter Quellen, einschließlich derer, die die Sperre ausgelöst haben (betrifft nur die Antwort; Protokolle bleiben erhalten)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Bei 1 werden Anfragen mit einer Sitzung der Verwaltungsoberfläche ausgeblendet, also Zugriffsprotokolle, die entstehen, wenn Administratoren die Oberfläche über eine Web-Service-Site aufrufen",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Startzeit, RFC 3339 oder Zeitstempel in Millisekunden",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Endzeit, RFC 3339 oder Zeitstempel in Millisekunden",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Laufzeitprotokolle eines Moduls anzeigen",
+        "tags": [
+          "EasyTier-Netzwerk"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/logs/export": {
+      "get": {
+        "description": "Liefert alle zu den Filtern passenden Protokolle als Anhang im Stream, älteste zuerst, einschließlich rotierter Dateien und komprimierter Archive auf der Festplatte. `format` ist `jsonl` (Standard, ein JSON-Objekt pro Zeile) oder `csv` (UTF-8 mit BOM; Zellen, die mit = + - @ beginnen, erhalten ein vorangestelltes einfaches Anführungszeichen gegen Formel-Injection). Die Filterparameter sind dieselben wie beim Anzeigen der Protokolle. Für schreibgeschützte Identitäten werden Zugangsdaten im Export wie beim Anzeigen maskiert. `lang` legt die Sprache des exportierten Inhalts fest (etwa `en`); standardmäßig gilt Accept-Language.\n\nErforderliche Berechtigung: `easytier:read`.",
+        "parameters": [
+          {
+            "description": "Exportformat: jsonl (Standard, ein JSON-Objekt pro Zeile) oder csv",
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Sprache des exportierten Inhalts, etwa en; standardmäßig gilt Accept-Language",
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Mindeststufe: debug, info, warn oder error",
+            "in": "query",
+            "name": "level",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Quellbezeichnung, exakte Übereinstimmung ohne Groß-/Kleinschreibung",
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Suchbegriffe: durch Leerzeichen getrennt müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes - schließt aus",
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Ausgeschlossene Stichwörter: durch Leerzeichen getrennt, doppelte Anführungszeichen bilden eine Phrase; ein Eintrag mit einem davon wird ausgeschlossen; gilt zusammen mit q",
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Client-Adresse: vollständige Adresse, CIDR oder Adressteil, mehrere durch Kommas getrennt; Präfix ! oder - schließt aus",
+            "in": "query",
+            "name": "ip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Teil des Site-Namens oder der Domain",
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Site-Name, exakte Übereinstimmung ohne Beachtung der Groß-/Kleinschreibung; liefert nur die Zugriffsprotokolle dieser Site",
+            "in": "query",
+            "name": "site",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Listener-Key der Webdienste, exakte Übereinstimmung; unterscheidet gleichnamige Sites oder Listener (zum Beispiel getrennte IPv4- und IPv6-Listener)",
+            "in": "query",
+            "name": "listener",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Statuscode wie 404, 4xx, 500-599, durch Kommas getrennt",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Bei 1 werden Zugriffsprotokolle gesperrter Quellen ausgeblendet: wegen der Sperre abgelehnte Anfragen und alle Anfragen noch gesperrter Quellen, einschließlich derer, die die Sperre ausgelöst haben (betrifft nur die Antwort; Protokolle bleiben erhalten)",
+            "in": "query",
+            "name": "hideBanned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Bei 1 werden Anfragen mit einer Sitzung der Verwaltungsoberfläche ausgeblendet, also Zugriffsprotokolle, die entstehen, wenn Administratoren die Oberfläche über eine Web-Service-Site aufrufen",
+            "in": "query",
+            "name": "hideAdmin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Startzeit, RFC 3339 oder Zeitstempel in Millisekunden",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Endzeit, RFC 3339 oder Zeitstempel in Millisekunden",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Modulprotokolle exportieren",
+        "tags": [
+          "EasyTier-Netzwerk"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/logs/sources": {
+      "get": {
+        "description": "Liefert ein nach Namen sortiertes Array von Quellbezeichnungen: Quellen, die in den Protokollen vorkamen (bei Speicherung auf der Festplatte über Neustarts erhalten), sowie Quellen aus der Modulkonfiguration (etwa alle Listener und IP-Listen der Webdienste), zum Filtern mit `source`. Quellen werden wie die Protokolle in die Sprache der Anfrage übersetzt.\n\nErforderliche Berechtigung: `easytier:read`.",
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Alle Quellen der Modulprotokolle auflisten",
+        "tags": [
+          "EasyTier-Netzwerk"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/reset": {
+      "post": {
+        "description": "Verfügbar für frp, Cloudflare-Tunnel, Tailscale, NetBird, EasyTier und File Browser; kein Request-Body nötig. Beendet alle Prozesse des Moduls, setzt die Konfiguration (einschließlich Programmpfad und Download-Proxy) auf die Standardwerte zurück und löscht die von Gately dafür erzeugten Dateien: die Konfigurationsdatei von frp, das Datenverzeichnis jeder File-Browser-Instanz (Benutzer, Freigabelinks und Cache), den Anmeldestatus im Standard-Statusverzeichnis von Tailscale (läuft der von Gately verwaltete tailscaled, meldet er sich zuerst ab; benutzerdefinierte Statusverzeichnisse und ein vorhandener System-tailscaled bleiben unberührt) sowie den Anmeldestatus und die Schlüssel im Standard-Statusverzeichnis von NetBird (läuft der von Gately verwaltete Daemon, meldet er sich zuerst ab und dieses Gerät wird aus dem Netzwerk entfernt; benutzerdefinierte Statusverzeichnisse und ein vorhandener System-NetBird-Dienst bleiben unberührt). Die alte Konfiguration bleibt im Konfigurationsverlauf erhalten und kann wiederhergestellt werden; installierte Programme sind nicht betroffen, zum Deinstallieren dient `DELETE /api/{module}/install`.\n\nErforderliche Berechtigung: `easytier:write`.",
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Standardeinstellungen des Moduls wiederherstellen",
+        "tags": [
+          "EasyTier-Netzwerk"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/settings": {
+      "get": {
+        "description": "Liefert `settings` (`corePath` und den Download-Proxy `installProxy`, für alle Instanzen gemeinsam) sowie den tatsächlich verwendeten Pfad des Programms easytier-core, `core`. easytier-cli wird im Verzeichnis von easytier-core gesucht, danach im bin-Ordner des Konfigurationsverzeichnisses und im PATH.\n\nErforderliche Berechtigung: `easytier:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/easytier.SettingsView"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier-Programmeinstellungen lesen",
+        "tags": [
+          "EasyTier-Netzwerk"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Request-Body `{\"corePath\": \"\"}`. Bleibt das Feld leer, wird easytier-core im bin-Ordner des Konfigurationsverzeichnisses und danach im PATH gesucht; `installProxy` wird nur über die Installations-API geändert. Starten Sie nach einer Pfadänderung die aktivierten Instanzen neu.\n\nErforderliche Berechtigung: `easytier:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/easytier.Settings"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "EasyTier-Programmeinstellungen speichern",
+        "tags": [
+          "EasyTier-Netzwerk"
+        ],
+        "x-required-scope": "easytier:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/easytier/status": {
+      "get": {
+        "description": "Liefert ein Array in derselben Reihenfolge wie die Instanzliste; jedes Element enthält `key` und `name` der Instanz sowie ihren Status, mit denselben Feldern wie `GET /api/easytier/instances/{key}/status`. Deaktivierte Instanzen liefern nur den Prozessstatus, ihre Knoten werden nicht abgefragt.\n\nErforderliche Berechtigung: `easytier:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/easytier.StatusView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Laufstatus aller EasyTier-Instanzen anzeigen",
+        "tags": [
+          "EasyTier-Netzwerk"
+        ],
+        "x-required-scope": "easytier:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/filebrowser/install": {
       "delete": {
         "description": "Löscht das in bin im Konfigurationsverzeichnis installierte Programm und alle gespeicherten früheren Versionen und startet die Prozesse neu, die es verwenden: Liegt ein gleichnamiges Programm in PATH, wird es verwendet, sonst können die Prozesse nicht starten. Die Moduleinstellungen bleiben unverändert; zum Zurücksetzen `POST /api/{module}/reset` verwenden.\n\nErforderliche Berechtigung: `filebrowser:write`.",
@@ -17147,7 +19212,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Verfügbar für frp, Cloudflare-Tunnel, Tailscale, NetBird und File Browser. Liefert die im bin-Verzeichnis des Konfigurationsverzeichnisses installierte Version, die gespeicherten früheren Versionen (`backups`, höchstens 3), den für dieses Programm gesetzten Download-Proxy (`proxy`), die aktuelle Plattform und den Installationsfortschritt `state` (`stage` ist checking, downloading, verifying, extracting, done, uptodate oder failed). Ein nicht leeres `unsupported` bedeutet, dass das Projekt kein Programm für die aktuelle Plattform anbietet.\n\nErforderliche Berechtigung: `filebrowser:read`.",
+        "description": "Verfügbar für frp, Cloudflare-Tunnel, Tailscale, NetBird, EasyTier und File Browser. Liefert die im bin-Ordner des Konfigurationsverzeichnisses installierten Versionen, die gespeicherten älteren Versionen (`backups`, höchstens 3), den eigenen Download-Proxy des Programms `proxy`, die aktuelle Plattform sowie den Installationsfortschritt `state` (`stage` ist checking, downloading, verifying, extracting, done, uptodate oder failed). Ist `unsupported` nicht leer, stellt der Upstream kein Programm für die aktuelle Plattform bereit.\n\nErforderliche Berechtigung: `filebrowser:read`.",
         "responses": {
           "200": {
             "description": "Erfolgreich"
@@ -18663,7 +20728,7 @@
     },
     "/api/filebrowser/reset": {
       "post": {
-        "description": "Verfügbar für frp, Cloudflare-Tunnel, Tailscale, NetBird und File Browser; ohne Request-Body. Stoppt alle Prozesse des Moduls, setzt seine Einstellungen (einschließlich Programmpfad und Download-Proxy) auf die Standardwerte zurück und löscht die von Gately dafür erzeugten Dateien: die frp-Konfigurationsdateien, das Datenverzeichnis jeder File-Browser-Instanz (Benutzer, Freigabelinks und Caches), den Anmeldestatus im Standard-Statusverzeichnis von Tailscale (ein laufendes, von Gately verwaltetes tailscaled meldet sich zuerst ab; eigene Statusverzeichnisse und ein vorhandenes System-tailscaled bleiben unberührt) sowie Anmeldestatus und Schlüssel im Standard-Statusverzeichnis von NetBird (ein laufender, von Gately verwalteter Daemon meldet sich zuerst ab, wodurch dieser Rechner aus dem Netzwerk entfernt wird; eigene Statusverzeichnisse und ein vorhandener System-NetBird-Dienst bleiben unberührt). Die alten Einstellungen bleiben im Konfigurationsverlauf und lassen sich wiederherstellen; installierte Programme sind nicht betroffen, zum Deinstallieren `DELETE /api/{module}/install` verwenden.\n\nErforderliche Berechtigung: `filebrowser:write`.",
+        "description": "Verfügbar für frp, Cloudflare-Tunnel, Tailscale, NetBird, EasyTier und File Browser; kein Request-Body nötig. Beendet alle Prozesse des Moduls, setzt die Konfiguration (einschließlich Programmpfad und Download-Proxy) auf die Standardwerte zurück und löscht die von Gately dafür erzeugten Dateien: die Konfigurationsdatei von frp, das Datenverzeichnis jeder File-Browser-Instanz (Benutzer, Freigabelinks und Cache), den Anmeldestatus im Standard-Statusverzeichnis von Tailscale (läuft der von Gately verwaltete tailscaled, meldet er sich zuerst ab; benutzerdefinierte Statusverzeichnisse und ein vorhandener System-tailscaled bleiben unberührt) sowie den Anmeldestatus und die Schlüssel im Standard-Statusverzeichnis von NetBird (läuft der von Gately verwaltete Daemon, meldet er sich zuerst ab und dieses Gerät wird aus dem Netzwerk entfernt; benutzerdefinierte Statusverzeichnisse und ein vorhandener System-NetBird-Dienst bleiben unberührt). Die alte Konfiguration bleibt im Konfigurationsverlauf erhalten und kann wiederhergestellt werden; installierte Programme sind nicht betroffen, zum Deinstallieren dient `DELETE /api/{module}/install`.\n\nErforderliche Berechtigung: `filebrowser:write`.",
         "responses": {
           "200": {
             "description": "Erfolgreich"
@@ -19890,7 +21955,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Verfügbar für frp, Cloudflare-Tunnel, Tailscale, NetBird und File Browser. Liefert die im bin-Verzeichnis des Konfigurationsverzeichnisses installierte Version, die gespeicherten früheren Versionen (`backups`, höchstens 3), den für dieses Programm gesetzten Download-Proxy (`proxy`), die aktuelle Plattform und den Installationsfortschritt `state` (`stage` ist checking, downloading, verifying, extracting, done, uptodate oder failed). Ein nicht leeres `unsupported` bedeutet, dass das Projekt kein Programm für die aktuelle Plattform anbietet.\n\nErforderliche Berechtigung: `frp:read`.",
+        "description": "Verfügbar für frp, Cloudflare-Tunnel, Tailscale, NetBird, EasyTier und File Browser. Liefert die im bin-Ordner des Konfigurationsverzeichnisses installierten Versionen, die gespeicherten älteren Versionen (`backups`, höchstens 3), den eigenen Download-Proxy des Programms `proxy`, die aktuelle Plattform sowie den Installationsfortschritt `state` (`stage` ist checking, downloading, verifying, extracting, done, uptodate oder failed). Ist `unsupported` nicht leer, stellt der Upstream kein Programm für die aktuelle Plattform bereit.\n\nErforderliche Berechtigung: `frp:read`.",
         "responses": {
           "200": {
             "description": "Erfolgreich"
@@ -21345,7 +23410,7 @@
     },
     "/api/frp/reset": {
       "post": {
-        "description": "Verfügbar für frp, Cloudflare-Tunnel, Tailscale, NetBird und File Browser; ohne Request-Body. Stoppt alle Prozesse des Moduls, setzt seine Einstellungen (einschließlich Programmpfad und Download-Proxy) auf die Standardwerte zurück und löscht die von Gately dafür erzeugten Dateien: die frp-Konfigurationsdateien, das Datenverzeichnis jeder File-Browser-Instanz (Benutzer, Freigabelinks und Caches), den Anmeldestatus im Standard-Statusverzeichnis von Tailscale (ein laufendes, von Gately verwaltetes tailscaled meldet sich zuerst ab; eigene Statusverzeichnisse und ein vorhandenes System-tailscaled bleiben unberührt) sowie Anmeldestatus und Schlüssel im Standard-Statusverzeichnis von NetBird (ein laufender, von Gately verwalteter Daemon meldet sich zuerst ab, wodurch dieser Rechner aus dem Netzwerk entfernt wird; eigene Statusverzeichnisse und ein vorhandener System-NetBird-Dienst bleiben unberührt). Die alten Einstellungen bleiben im Konfigurationsverlauf und lassen sich wiederherstellen; installierte Programme sind nicht betroffen, zum Deinstallieren `DELETE /api/{module}/install` verwenden.\n\nErforderliche Berechtigung: `frp:write`.",
+        "description": "Verfügbar für frp, Cloudflare-Tunnel, Tailscale, NetBird, EasyTier und File Browser; kein Request-Body nötig. Beendet alle Prozesse des Moduls, setzt die Konfiguration (einschließlich Programmpfad und Download-Proxy) auf die Standardwerte zurück und löscht die von Gately dafür erzeugten Dateien: die Konfigurationsdatei von frp, das Datenverzeichnis jeder File-Browser-Instanz (Benutzer, Freigabelinks und Cache), den Anmeldestatus im Standard-Statusverzeichnis von Tailscale (läuft der von Gately verwaltete tailscaled, meldet er sich zuerst ab; benutzerdefinierte Statusverzeichnisse und ein vorhandener System-tailscaled bleiben unberührt) sowie den Anmeldestatus und die Schlüssel im Standard-Statusverzeichnis von NetBird (läuft der von Gately verwaltete Daemon, meldet er sich zuerst ab und dieses Gerät wird aus dem Netzwerk entfernt; benutzerdefinierte Statusverzeichnisse und ein vorhandener System-NetBird-Dienst bleiben unberührt). Die alte Konfiguration bleibt im Konfigurationsverlauf erhalten und kann wiederhergestellt werden; installierte Programme sind nicht betroffen, zum Deinstallieren dient `DELETE /api/{module}/install`.\n\nErforderliche Berechtigung: `frp:write`.",
         "responses": {
           "200": {
             "description": "Erfolgreich"
@@ -26872,7 +28937,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Verfügbar für frp, Cloudflare-Tunnel, Tailscale, NetBird und File Browser. Liefert die im bin-Verzeichnis des Konfigurationsverzeichnisses installierte Version, die gespeicherten früheren Versionen (`backups`, höchstens 3), den für dieses Programm gesetzten Download-Proxy (`proxy`), die aktuelle Plattform und den Installationsfortschritt `state` (`stage` ist checking, downloading, verifying, extracting, done, uptodate oder failed). Ein nicht leeres `unsupported` bedeutet, dass das Projekt kein Programm für die aktuelle Plattform anbietet.\n\nErforderliche Berechtigung: `netbird:read`.",
+        "description": "Verfügbar für frp, Cloudflare-Tunnel, Tailscale, NetBird, EasyTier und File Browser. Liefert die im bin-Ordner des Konfigurationsverzeichnisses installierten Versionen, die gespeicherten älteren Versionen (`backups`, höchstens 3), den eigenen Download-Proxy des Programms `proxy`, die aktuelle Plattform sowie den Installationsfortschritt `state` (`stage` ist checking, downloading, verifying, extracting, done, uptodate oder failed). Ist `unsupported` nicht leer, stellt der Upstream kein Programm für die aktuelle Plattform bereit.\n\nErforderliche Berechtigung: `netbird:read`.",
         "responses": {
           "200": {
             "description": "Erfolgreich"
@@ -28517,7 +30582,7 @@
     },
     "/api/netbird/reset": {
       "post": {
-        "description": "Verfügbar für frp, Cloudflare-Tunnel, Tailscale, NetBird und File Browser; ohne Request-Body. Stoppt alle Prozesse des Moduls, setzt seine Einstellungen (einschließlich Programmpfad und Download-Proxy) auf die Standardwerte zurück und löscht die von Gately dafür erzeugten Dateien: die frp-Konfigurationsdateien, das Datenverzeichnis jeder File-Browser-Instanz (Benutzer, Freigabelinks und Caches), den Anmeldestatus im Standard-Statusverzeichnis von Tailscale (ein laufendes, von Gately verwaltetes tailscaled meldet sich zuerst ab; eigene Statusverzeichnisse und ein vorhandenes System-tailscaled bleiben unberührt) sowie Anmeldestatus und Schlüssel im Standard-Statusverzeichnis von NetBird (ein laufender, von Gately verwalteter Daemon meldet sich zuerst ab, wodurch dieser Rechner aus dem Netzwerk entfernt wird; eigene Statusverzeichnisse und ein vorhandener System-NetBird-Dienst bleiben unberührt). Die alten Einstellungen bleiben im Konfigurationsverlauf und lassen sich wiederherstellen; installierte Programme sind nicht betroffen, zum Deinstallieren `DELETE /api/{module}/install` verwenden.\n\nErforderliche Berechtigung: `netbird:write`.",
+        "description": "Verfügbar für frp, Cloudflare-Tunnel, Tailscale, NetBird, EasyTier und File Browser; kein Request-Body nötig. Beendet alle Prozesse des Moduls, setzt die Konfiguration (einschließlich Programmpfad und Download-Proxy) auf die Standardwerte zurück und löscht die von Gately dafür erzeugten Dateien: die Konfigurationsdatei von frp, das Datenverzeichnis jeder File-Browser-Instanz (Benutzer, Freigabelinks und Cache), den Anmeldestatus im Standard-Statusverzeichnis von Tailscale (läuft der von Gately verwaltete tailscaled, meldet er sich zuerst ab; benutzerdefinierte Statusverzeichnisse und ein vorhandener System-tailscaled bleiben unberührt) sowie den Anmeldestatus und die Schlüssel im Standard-Statusverzeichnis von NetBird (läuft der von Gately verwaltete Daemon, meldet er sich zuerst ab und dieses Gerät wird aus dem Netzwerk entfernt; benutzerdefinierte Statusverzeichnisse und ein vorhandener System-NetBird-Dienst bleiben unberührt). Die alte Konfiguration bleibt im Konfigurationsverlauf erhalten und kann wiederhergestellt werden; installierte Programme sind nicht betroffen, zum Deinstallieren dient `DELETE /api/{module}/install`.\n\nErforderliche Berechtigung: `netbird:write`.",
         "responses": {
           "200": {
             "description": "Erfolgreich"
@@ -41775,7 +43840,7 @@
         "x-token-allowed": true
       },
       "get": {
-        "description": "Verfügbar für frp, Cloudflare-Tunnel, Tailscale, NetBird und File Browser. Liefert die im bin-Verzeichnis des Konfigurationsverzeichnisses installierte Version, die gespeicherten früheren Versionen (`backups`, höchstens 3), den für dieses Programm gesetzten Download-Proxy (`proxy`), die aktuelle Plattform und den Installationsfortschritt `state` (`stage` ist checking, downloading, verifying, extracting, done, uptodate oder failed). Ein nicht leeres `unsupported` bedeutet, dass das Projekt kein Programm für die aktuelle Plattform anbietet.\n\nErforderliche Berechtigung: `tailscale:read`.",
+        "description": "Verfügbar für frp, Cloudflare-Tunnel, Tailscale, NetBird, EasyTier und File Browser. Liefert die im bin-Ordner des Konfigurationsverzeichnisses installierten Versionen, die gespeicherten älteren Versionen (`backups`, höchstens 3), den eigenen Download-Proxy des Programms `proxy`, die aktuelle Plattform sowie den Installationsfortschritt `state` (`stage` ist checking, downloading, verifying, extracting, done, uptodate oder failed). Ist `unsupported` nicht leer, stellt der Upstream kein Programm für die aktuelle Plattform bereit.\n\nErforderliche Berechtigung: `tailscale:read`.",
         "responses": {
           "200": {
             "description": "Erfolgreich"
@@ -43420,7 +45485,7 @@
     },
     "/api/tailscale/reset": {
       "post": {
-        "description": "Verfügbar für frp, Cloudflare-Tunnel, Tailscale, NetBird und File Browser; ohne Request-Body. Stoppt alle Prozesse des Moduls, setzt seine Einstellungen (einschließlich Programmpfad und Download-Proxy) auf die Standardwerte zurück und löscht die von Gately dafür erzeugten Dateien: die frp-Konfigurationsdateien, das Datenverzeichnis jeder File-Browser-Instanz (Benutzer, Freigabelinks und Caches), den Anmeldestatus im Standard-Statusverzeichnis von Tailscale (ein laufendes, von Gately verwaltetes tailscaled meldet sich zuerst ab; eigene Statusverzeichnisse und ein vorhandenes System-tailscaled bleiben unberührt) sowie Anmeldestatus und Schlüssel im Standard-Statusverzeichnis von NetBird (ein laufender, von Gately verwalteter Daemon meldet sich zuerst ab, wodurch dieser Rechner aus dem Netzwerk entfernt wird; eigene Statusverzeichnisse und ein vorhandener System-NetBird-Dienst bleiben unberührt). Die alten Einstellungen bleiben im Konfigurationsverlauf und lassen sich wiederherstellen; installierte Programme sind nicht betroffen, zum Deinstallieren `DELETE /api/{module}/install` verwenden.\n\nErforderliche Berechtigung: `tailscale:write`.",
+        "description": "Verfügbar für frp, Cloudflare-Tunnel, Tailscale, NetBird, EasyTier und File Browser; kein Request-Body nötig. Beendet alle Prozesse des Moduls, setzt die Konfiguration (einschließlich Programmpfad und Download-Proxy) auf die Standardwerte zurück und löscht die von Gately dafür erzeugten Dateien: die Konfigurationsdatei von frp, das Datenverzeichnis jeder File-Browser-Instanz (Benutzer, Freigabelinks und Cache), den Anmeldestatus im Standard-Statusverzeichnis von Tailscale (läuft der von Gately verwaltete tailscaled, meldet er sich zuerst ab; benutzerdefinierte Statusverzeichnisse und ein vorhandener System-tailscaled bleiben unberührt) sowie den Anmeldestatus und die Schlüssel im Standard-Statusverzeichnis von NetBird (läuft der von Gately verwaltete Daemon, meldet er sich zuerst ab und dieses Gerät wird aus dem Netzwerk entfernt; benutzerdefinierte Statusverzeichnisse und ein vorhandener System-NetBird-Dienst bleiben unberührt). Die alte Konfiguration bleibt im Konfigurationsverlauf erhalten und kann wiederhergestellt werden; installierte Programme sind nicht betroffen, zum Deinstallieren dient `DELETE /api/{module}/install`.\n\nErforderliche Berechtigung: `tailscale:write`.",
         "responses": {
           "200": {
             "description": "Erfolgreich"
@@ -57124,6 +59189,9 @@
       "name": "NetBird-Netzwerk"
     },
     {
+      "name": "EasyTier-Netzwerk"
+    },
+    {
       "name": "frp-Intranet-Durchleitung"
     },
     {
@@ -57206,6 +59274,7 @@
     "stun",
     "tailscale",
     "netbird",
+    "easytier",
     "frp",
     "cloudflared",
     "ssl",
