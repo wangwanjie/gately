@@ -10,15 +10,15 @@ import (
 
 // 管理端口只设置了 ReadHeaderTimeout，请求头读完后客户端可以任意缓慢地发送请求体（慢速上传攻击）。
 // 这里按请求限制请求体的读取：普通接口的请求体都是小型 JSON，要求在较短时间内读完；
-// 备份恢复、升级包、文件上传等大文件接口放宽时限，但仍有读取间隔、最低平均速率与总时长上限。
+// 备份恢复、升级包、文件上传等大文件接口不限总时长（慢速链路上的大文件也能传完），但仍有读取间隔与最低平均速率。
 // 不使用 http.Server.ReadTimeout：它是整条连接的绝对期限，无法按路径区分。
 var (
 	// 普通接口：两次读取之间的最长间隔，与请求体读取的总时长上限
 	bodyIdleTimeout  = 15 * time.Second
 	bodyTotalTimeout = 60 * time.Second
-	// 大文件接口：读取间隔、总时长上限、宽限期过后的最低平均速率（字节/秒）
+	// 大文件接口：读取间隔、总时长上限（0 表示不限）、宽限期过后的最低平均速率（字节/秒）
 	bulkIdleTimeout  = 30 * time.Second
-	bulkTotalTimeout = 30 * time.Minute
+	bulkTotalTimeout = time.Duration(0)
 	bulkRateGrace    = 30 * time.Second
 	bulkMinRate      = int64(4 << 10)
 	// 处理函数返回后，服务器丢弃未读完请求体的最长时间
@@ -105,15 +105,18 @@ func (b *guardedBody) Read(p []byte) (int, error) {
 	}
 	now := time.Now()
 	elapsed := now.Sub(b.start)
-	if elapsed > b.total {
+	if b.total > 0 && elapsed > b.total {
 		return 0, errBodyTooSlow
 	}
-	if b.minRate > 0 && elapsed > b.grace && b.n*int64(time.Second) < b.minRate*int64(elapsed) {
+	// 按整秒比较平均速率；不能写成 n*1e9，已读超过约 8.6 GiB 时会溢出成负数而被误判为过慢
+	if b.minRate > 0 && elapsed > b.grace && b.n < b.minRate*int64(elapsed/time.Second) {
 		return 0, errBodyTooSlow
 	}
 	deadline := now.Add(b.idle)
-	if limit := b.start.Add(b.total); deadline.After(limit) {
-		deadline = limit
+	if b.total > 0 {
+		if limit := b.start.Add(b.total); deadline.After(limit) {
+			deadline = limit
+		}
 	}
 	_ = b.rc.SetReadDeadline(deadline)
 	n, err := b.ReadCloser.Read(p)
