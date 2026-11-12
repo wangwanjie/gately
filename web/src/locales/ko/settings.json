@@ -269,6 +269,8 @@
     "confirmButton": "복원 후 재시작",
     "inputHint": "「{word}」를 입력하세요",
     "success": "설정 파일 {count}개를 복원했습니다. 기존 설정은 {previous}에 저장되었습니다",
-    "progress": "백업을 적용하고 재시작하는 중…"
+    "progress": "백업을 적용하고 재시작하는 중…",
+    "keepAccount": "현재 관리자 계정 유지",
+    "keepAccountHint": "선택하면 백업의 계정 파일은 무시됩니다. 현재 계정, 비밀번호, 2단계 인증, 읽기 전용 사용자가 그대로 유지되며 백업에 account.json이 없어도 됩니다. 기본 비밀번호를 쓰고 있다면 먼저 변경하세요."
   }
 }

@@ -269,6 +269,8 @@
     "confirmButton": "Restore and restart",
     "inputHint": "Please type \"{word}\"",
     "success": "Restored {count} configuration files; the previous configuration is saved at {previous}",
-    "progress": "Applying backup and restarting…"
+    "progress": "Applying backup and restarting…",
+    "keepAccount": "Keep the current administrator account",
+    "keepAccountHint": "When checked, the account file in the backup is ignored: the current account, password, two-step verification and read-only users stay unchanged, and the backup may omit account.json. Change the default password first if you still use it."
   }
 }

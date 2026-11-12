@@ -269,6 +269,8 @@
     "confirmButton": "還原並重新啟動",
     "inputHint": "請輸入「{word}」",
     "success": "已還原 {count} 個設定檔，原設定儲存在 {previous}",
-    "progress": "正在套用備份並重新啟動…"
+    "progress": "正在套用備份並重新啟動…",
+    "keepAccount": "保留目前管理員帳號",
+    "keepAccountHint": "勾選後不用備份中的帳號檔案覆蓋：目前帳號、密碼、兩步驟驗證與唯讀帳號維持不變，備份也可以不含 account.json。仍使用預設密碼時需先修改密碼。"
   }
 }

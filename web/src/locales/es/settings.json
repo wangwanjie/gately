@@ -269,6 +269,8 @@
     "confirmButton": "Restaurar y reiniciar",
     "inputHint": "Escribe \"{word}\"",
     "success": "Se restauraron {count} archivos de configuración; la configuración anterior se guardó en {previous}",
-    "progress": "Aplicando la copia y reiniciando…"
+    "progress": "Aplicando la copia y reiniciando…",
+    "keepAccount": "Conservar la cuenta de administrador actual",
+    "keepAccountHint": "Si se marca, se ignora el archivo de cuenta de la copia: la cuenta, la contraseña, la verificación en dos pasos y los usuarios de solo lectura no cambian, y la copia puede omitir account.json. Cambie antes la contraseña predeterminada si aún la usa."
   }
 }
