@@ -7,6 +7,10 @@ description: Anuncios y notas de cada versión de Gately.
 
 A continuación se listan los anuncios de las versiones principales. Consulta [GitHub Releases](https://github.com/wangwanjie/gately/releases) para ver todos los cambios y las descargas de cada versión.
 
+## [v0.6.6](/es/news/v0.6.6)
+
+12 de noviembre de 2026 · Refuerzo de seguridad: corregidas las cabeceras de origen falsificadas y los intentos de inicio de sesión ilimitados en servicios de archivos; revocación de sesiones en el servidor con cierre de sesión en todos los dispositivos; límites de solicitudes salientes; los backends por ruta pueden quitar el prefijo de ruta; puerto de origen del visitante enviado al backend; la restauración puede conservar la cuenta de administrador actual; marca de autenticación para Gately de dos niveles.
+
 ## [v0.6.5.5](/es/news/v0.6.5.5)
 
 11 de noviembre de 2026 · Port Knocking; apagado remoto de Wake-on-LAN mediante un agente y peticiones HTTP; confiar en usuarios autenticados en el servicio web; reparto por usuario en más tipos de sitio; las solicitudes de administradores omiten el WAF del sitio; el apk de OpenWrt ya no sustituye el programa por uno de otra arquitectura.

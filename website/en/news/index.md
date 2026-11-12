@@ -7,6 +7,10 @@ description: Release announcements and notes for each Gately version.
 
 Announcements for major releases are listed below. See [GitHub Releases](https://github.com/wangwanjie/gately/releases) for the full changes and downloads of every version.
 
+## [v0.6.6](/en/news/v0.6.6)
+
+November 12, 2026 · Security hardening: forged source headers and unlimited file service login attempts fixed; server-side session revocation with sign out of all devices; outbound request limits; per-path backends can strip the path prefix; visitor source port passed to backends; restore can keep the current administrator account; auth marker for two-tier Gately.
+
 ## [v0.6.5.5](/en/news/v0.6.5.5)
 
 November 11, 2026 · Port Knocking; Wake-on-LAN remote shutdown through an agent and HTTP requests; trust signed-in users in the Web service; route by user for more site types; administrator requests skip the site WAF; OpenWrt apk no longer replaces the binary with one for another architecture.
