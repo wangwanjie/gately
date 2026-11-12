@@ -1280,6 +1280,7 @@
   "备份已加密，需要提供备份口令": "O backup está criptografado; informe a senha do backup",
   "备份当前版本到 %s 失败: %v": "Falha ao fazer backup da versão atual em %s: %v",
   "备份目的地": "Destino do backup",
+  "备份解压后过大": "O backup é grande demais depois de extraído",
   "备份设置": "Configurações de backup",
   "备份：失败": "Backup: falha",
   "备份：完成": "Backup: concluído",

@@ -1280,6 +1280,7 @@
   "备份已加密，需要提供备份口令": "The backup is encrypted; a backup passphrase is required",
   "备份当前版本到 %s 失败: %v": "Failed to back up the current version to %s: %v",
   "备份目的地": "Backup destinations",
+  "备份解压后过大": "The backup is too large once extracted",
   "备份设置": "Backup settings",
   "备份：失败": "Backup: failed",
   "备份：完成": "Backup: completed",

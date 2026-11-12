@@ -1280,6 +1280,7 @@
   "备份已加密，需要提供备份口令": "La sauvegarde est chiffrée, la phrase secrète de sauvegarde est requise",
   "备份当前版本到 %s 失败: %v": "Échec de la sauvegarde de la version actuelle vers %s : %v",
   "备份目的地": "Destination de sauvegarde",
+  "备份解压后过大": "La sauvegarde est trop volumineuse une fois extraite",
   "备份设置": "Paramètres de sauvegarde",
   "备份：失败": "Sauvegarde : échec",
   "备份：完成": "Sauvegarde : terminée",
