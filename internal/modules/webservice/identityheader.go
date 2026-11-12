@@ -49,6 +49,34 @@ func headerVariantKey(name string) string {
 	return strings.ToLower(strings.ReplaceAll(name, "_", "-"))
 }
 
+// headerVariantEqual 判断两个请求头名称是否属于同一变体（ASCII 大小写不敏感，- 与 _ 等价），与比较
+// headerVariantKey 的结果相同，但不分配内存：每个反代请求都要对全部请求头逐个比较。
+func headerVariantEqual(a, b string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := 0; i < len(a); i++ {
+		x, y := a[i], b[i]
+		if x == y {
+			continue
+		}
+		if x == '_' {
+			x = '-'
+		} else if 'A' <= x && x <= 'Z' {
+			x += 'a' - 'A'
+		}
+		if y == '_' {
+			y = '-'
+		} else if 'A' <= y && y <= 'Z' {
+			y += 'a' - 'A'
+		}
+		if x != y {
+			return false
+		}
+	}
+	return true
+}
+
 // identityHeaders 返回站点生效的身份请求头。旧配置的 UserHeader 视为一行“用户名”，保存时并入 IdentityHeaders；
 // 加载配置不经过校验，运行时也要认它，否则升级后未重新保存的站点会停止传递用户名，访客伪造的同名头也不再被删除。
 func (s *Site) identityHeaders() []IdentityHeader {
@@ -143,9 +171,8 @@ func (h *siteHandler) stripIdentityHeaders(r *http.Request) {
 // delHeaderVariants 删除名称与 name 相同的请求头，包括用下划线代替连字符的变体（如 X_Remote_User）：
 // 部分后端（CGI、WSGI、PHP 等）把 - 与 _ 都映射为同一个变量，只删精确同名的头仍可被伪造。
 func delHeaderVariants(h http.Header, name string) {
-	want := headerVariantKey(name)
 	for k := range h {
-		if headerVariantKey(k) == want {
+		if headerVariantEqual(k, name) {
 			delete(h, k)
 		}
 	}
@@ -161,7 +188,7 @@ func delHeaderVariants(h http.Header, name string) {
 		for _, v := range vals {
 			var toks []string
 			for _, tok := range strings.Split(v, ",") {
-				if tt := strings.TrimSpace(tok); tt != "" && headerVariantKey(tt) == want {
+				if tt := strings.TrimSpace(tok); tt != "" && headerVariantEqual(tt, name) {
 					changed = true
 					continue
 				}
