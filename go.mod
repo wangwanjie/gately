@@ -5,7 +5,7 @@ go 1.26.11
 require golang.org/x/crypto v0.58.0
 
 require (
-	github.com/andybalholm/brotli v1.2.6
+	github.com/andybalholm/brotli v1.2.7
 	github.com/cloudsoda/go-smb2 v0.0.0-20261105190815-95be04a983b8
 	github.com/coder/websocket v1.8.15
 	github.com/corazawaf/coraza-coreruleset/v4 v4.25.0
