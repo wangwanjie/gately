@@ -363,6 +363,10 @@ func (a *authenticator) checkUser(w http.ResponseWriter, r *http.Request, s Site
 		return visitor{}, false
 	}
 	if name, pass, ok := r.BasicAuth(); ok {
+		// 近期验证通过的凭据直接放行，不再逐个请求做 bcrypt
+		if v, hit := a.cachedBasic(s, name, pass); hit {
+			return v, true
+		}
 		key := limitKey(ip)
 		if !a.reserve(key) {
 			http.Error(w, "429 Too Many Requests", http.StatusTooManyRequests)
