@@ -211,7 +211,7 @@ func newSiteHandler(s Site, log *logbuf.Logger, auth *authenticator, waf WAFProv
 		if h.pool, err = newPool(s, log); err != nil {
 			return nil, err
 		}
-		h.handler = h.newProxy(s, h.pool)
+		h.handler = h.newProxy(s, h.pool, "")
 		if len(s.Locations) > 0 {
 			if err := h.buildLocations(); err != nil {
 				return nil, err
@@ -483,7 +483,8 @@ func (rt *upstreamRoundTripper) RoundTrip(req *http.Request) (*http.Response, er
 }
 
 // newProxy 创建反向代理处理器，s 为生效的站点配置（分路径规则会传入合并后的配置），p 为其后端集合。
-func (h *siteHandler) newProxy(s Site, p *pool) http.Handler {
+// strip 非空时在转发前去掉该路径前缀（分路径后端的 stripPrefix）。
+func (h *siteHandler) newProxy(s Site, p *pool, strip string) http.Handler {
 	// target 把发往后端的请求指向 up：URL 改为后端地址，按设置保留访客的 Host，按设置用访问域名作 SNI
 	target := func(pr *httputil.ProxyRequest, up *upstream) {
 		pr.SetURL(up.url)
@@ -512,6 +513,8 @@ func (h *siteHandler) newProxy(s Site, p *pool) http.Handler {
 		Transport:  rt,
 		BufferPool: sharedBufferPool,
 		Rewrite: func(pr *httputil.ProxyRequest) {
+			// 先去前缀再拼后端路径，后端地址自带的路径接在去掉前缀后的路径前面
+			stripLocationPrefix(pr.Out.URL, strip)
 			target(pr, attemptFrom(pr.In.Context()).current())
 			// 客户端自带的 X-Real-IP、X-Forwarded-* 与源端口头不可信（含下划线写法的变体），只在开启转发头时由 Gately 写入
 			stripForwardedHeaders(pr.Out.Header)

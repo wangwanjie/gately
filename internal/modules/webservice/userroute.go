@@ -101,7 +101,7 @@ func (h *siteHandler) buildUserRoutes() error {
 		}
 		p.site = siteLabel(h.site) + " @" + strings.Join(ur.Users, ",")
 		p.scope, p.match = scopeUser, strings.Join(ur.Users, ",")
-		handler := h.newProxy(s, p)
+		handler := h.newProxy(s, p, "")
 		if len(h.locations) > 0 {
 			locs := make([]*locationHandler, 0, len(h.locations))
 			for _, l := range h.locations {
@@ -111,7 +111,7 @@ func (h *siteHandler) buildUserRoutes() error {
 				}
 				ls := s
 				ls.RequestHeaders = append(append([]string{}, h.site.RequestHeaders...), l.headers...)
-				locs = append(locs, &locationHandler{prefix: l.prefix, headers: l.headers, handler: h.newProxy(ls, p)})
+				locs = append(locs, &locationHandler{prefix: l.prefix, stripPrefix: l.stripPrefix, headers: l.headers, handler: h.newProxy(ls, p, stripPrefixIf(l))})
 			}
 			handler = h.dispatchLocations(locs, handler)
 		}
@@ -196,4 +196,12 @@ func (f *forwardAuther) forwardIdentity(r *http.Request) visitor {
 		return visitor{}
 	}
 	return v
+}
+
+// stripPrefixIf 返回已编译分路径规则需要去掉的前缀。
+func stripPrefixIf(l *locationHandler) string {
+	if !l.stripPrefix {
+		return ""
+	}
+	return l.prefix
 }
