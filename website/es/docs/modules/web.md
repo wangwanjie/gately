@@ -197,7 +197,7 @@ Delega la autenticación en un servicio externo, como `auth_request` de nginx o 
 
 Cómo funciona:
 
-- Cada petición va primero a `url` como un GET sin cuerpo, con las cabeceras del visitante (cookies, `Authorization`, etc.) más `X-Original-Method`, `X-Original-URL`, `X-Forwarded-Method`, `X-Forwarded-Proto`, `X-Forwarded-Host`, `X-Forwarded-Uri`, `X-Forwarded-For` y `X-Real-Ip`. El tiempo de espera es de 10 segundos;
+- Cada petición va primero a `url` como un GET sin cuerpo, con las cabeceras del visitante (cookies, `Authorization`, etc.) más `X-Original-Method`, `X-Original-URL`, `X-Original-URI`, `X-Forwarded-Method`, `X-Forwarded-Proto`, `X-Forwarded-Host`, `X-Forwarded-Uri`, `X-Forwarded-For` y `X-Real-Ip`. El tiempo de espera es de 10 segundos;
 - Una respuesta 2xx deja pasar la petición, con las cabeceras de identidad añadidas; un 401 redirige a `loginUrl` (estado 302); otras respuestas, como 403 o una redirección, se devuelven al visitante; un servicio inalcanzable produce 502;
 - Las cabeceras de identidad enviadas por los visitantes se eliminan siempre, por lo que no se pueden falsificar;
 - Funciona con las reglas por ruta y el «Ámbito de autenticación», de modo que solo algunas rutas (por ejemplo `/admin`) requieran inicio de sesión, y con los enlaces temporales para compartir.

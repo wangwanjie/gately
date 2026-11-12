@@ -197,7 +197,7 @@ Hand authentication to an external service, like nginx `auth_request` or Traefik
 
 How it works:
 
-- Every request first goes to `url` as a GET without a body, carrying the visitor's headers (cookies, `Authorization` and so on) plus `X-Original-Method`, `X-Original-URL`, `X-Forwarded-Method`, `X-Forwarded-Proto`, `X-Forwarded-Host`, `X-Forwarded-Uri`, `X-Forwarded-For` and `X-Real-Ip`. The timeout is 10 seconds;
+- Every request first goes to `url` as a GET without a body, carrying the visitor's headers (cookies, `Authorization` and so on) plus `X-Original-Method`, `X-Original-URL`, `X-Original-URI`, `X-Forwarded-Method`, `X-Forwarded-Proto`, `X-Forwarded-Host`, `X-Forwarded-Uri`, `X-Forwarded-For` and `X-Real-Ip`. The timeout is 10 seconds;
 - A 2xx answer lets the request through, with the identity headers added; a 401 redirects to `loginUrl` (status 302); other answers such as 403 or a redirect are returned to the visitor; an unreachable service gives 502;
 - Identity headers sent by visitors are always removed, so they cannot be forged;
 - It works with path rules and "Authentication scope", so only some paths (for example `/admin`) need a login, and with temporary share links.

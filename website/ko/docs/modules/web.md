@@ -197,7 +197,7 @@ https://auth.example.com/__gately_auth/oauth/callback
 
 동작 방식은 다음과 같습니다.
 
-- 모든 요청은 먼저 `url`로 본문 없는 GET으로 전송됩니다. 방문자의 헤더(쿠키, `Authorization` 등)에 더해 `X-Original-Method`, `X-Original-URL`, `X-Forwarded-Method`, `X-Forwarded-Proto`, `X-Forwarded-Host`, `X-Forwarded-Uri`, `X-Forwarded-For`, `X-Real-Ip`가 붙습니다. 타임아웃은 10초입니다.
+- 모든 요청은 먼저 `url`로 본문 없는 GET으로 전송됩니다. 방문자의 헤더(쿠키, `Authorization` 등)에 더해 `X-Original-Method`, `X-Original-URL`, `X-Original-URI`, `X-Forwarded-Method`, `X-Forwarded-Proto`, `X-Forwarded-Host`, `X-Forwarded-Uri`, `X-Forwarded-For`, `X-Real-Ip`가 붙습니다. 타임아웃은 10초입니다.
 - 2xx 응답이면 요청을 통과시키고 신원 헤더를 추가합니다. 401은 `loginUrl`로 리다이렉트합니다(상태 코드 302). 403이나 리다이렉트 같은 다른 응답은 방문자에게 그대로 반환하며, 서비스에 연결할 수 없으면 502가 됩니다.
 - 방문자가 보낸 신원 헤더는 항상 제거되므로 위조할 수 없습니다.
 - 경로 규칙과 「인증 범위」를 지원하므로 일부 경로(예: `/admin`)에서만 로그인을 요구할 수 있으며, 임시 공유 링크와도 함께 쓸 수 있습니다.

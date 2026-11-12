@@ -197,7 +197,7 @@ https://auth.example.com/__gately_auth/oauth/callback
 
 仕組み：
 
-- すべてのリクエストは、まず `url` に本文なしの GET として送られます。訪問者のヘッダー（Cookie、`Authorization` など）に加えて、`X-Original-Method`、`X-Original-URL`、`X-Forwarded-Method`、`X-Forwarded-Proto`、`X-Forwarded-Host`、`X-Forwarded-Uri`、`X-Forwarded-For`、`X-Real-Ip` が付きます。タイムアウトは 10 秒です。
+- すべてのリクエストは、まず `url` に本文なしの GET として送られます。訪問者のヘッダー（Cookie、`Authorization` など）に加えて、`X-Original-Method`、`X-Original-URL`、`X-Original-URI`、`X-Forwarded-Method`、`X-Forwarded-Proto`、`X-Forwarded-Host`、`X-Forwarded-Uri`、`X-Forwarded-For`、`X-Real-Ip` が付きます。タイムアウトは 10 秒です。
 - 2xx の応答ならリクエストを通し、ID ヘッダーを付与します。401 は `loginUrl` へリダイレクトします（ステータス 302）。403 やリダイレクトなどそれ以外の応答は訪問者にそのまま返し、サービスに到達できない場合は 502 になります。
 - 訪問者が送った ID ヘッダーは常に削除されるため、偽装できません。
 - パスルールと「認証の対象範囲」に対応しているため、一部のパス（例：`/admin`）だけログインを必須にできます。一時共有リンクとも併用できます。
