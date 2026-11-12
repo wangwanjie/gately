@@ -41193,7 +41193,7 @@
     },
     "/api/system/restore": {
       "post": {
-        "description": "Upload as multipart/form-data in the field `file`; encrypted backups also need `password`. `keepAccount=1` keeps the current administrator account (account.json in the backup is ignored and may be omitted). Rejected while the default password is still in use; change the administrator password first.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "description": "Upload as multipart/form-data with the field `file`; encrypted backups also need `password`; `keepAccount=1` keeps the current administrator account and credentials (account.json, tokens.json and the third-party login entries of the system settings in the backup are ignored, and the backup may omit account.json). When the account file is restored, a new session secret is used, so all sign-in sessions issued before the restore stop working. Refused while the default password is in use; change the administrator password first.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
         "responses": {
           "200": {
             "description": "Success"

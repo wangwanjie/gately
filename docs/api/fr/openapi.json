@@ -41193,7 +41193,7 @@
     },
     "/api/system/restore": {
       "post": {
-        "description": "Envoyer en multipart/form-data dans le champ `file` ; une sauvegarde chiffrée nécessite aussi `password`. `keepAccount=1` conserve le compte administrateur actuel (account.json de la sauvegarde est ignoré et peut être absent). Refusé tant que le mot de passe par défaut est utilisé ; changez d'abord le mot de passe administrateur.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "description": "Envoi en multipart/form-data avec le champ `file` ; les sauvegardes chiffrées nécessitent aussi `password` ; `keepAccount=1` conserve le compte administrateur et les identifiants actuels (account.json, tokens.json et la connexion tierce des réglages système de la sauvegarde sont ignorés, et la sauvegarde peut omettre account.json). Lorsque le fichier de compte est restauré, un nouveau secret de session est utilisé : toutes les sessions émises avant la restauration cessent de fonctionner. Refusé tant que le mot de passe par défaut est utilisé ; changez d'abord le mot de passe administrateur.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
         "responses": {
           "200": {
             "description": "Succès"
