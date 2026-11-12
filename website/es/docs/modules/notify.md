@@ -127,6 +127,7 @@ Al crear una regla, puedes pulsar una plantilla para rellenar los eventos, el ni
 | `stun.changed` | STUN: dirección de traversal modificada | Info | Cambió la dirección de traversal de una regla STUN |
 | `ssl.expiring` | Certificado: caduca pronto | Advertencia | Quedan menos de 7 días de validez; cada certificado se recuerda como máximo una vez cada 24 horas |
 | `ssl.renew_failed` | Certificado: fallo de renovación | Error | Falló la emisión o la renovación de un certificado |
+| `ssl.deploy_failed` | Certificado: fallo de despliegue | Error | Falló el despliegue de un certificado en uno de sus destinos (directorio, SSH o comando local); Gately lo reintenta más tarde |
 | `waf.blocked` | WAF: petición bloqueada | Advertencia | El WAF bloqueó una petición, con los campos `ip`, `host` y `path` |
 | `upstream.down` | Proxy inverso: backend caído | Error | Un backend de un servicio web se consideró no disponible |
 | `upstream.up` | Proxy inverso: backend recuperado | Info | Un backend no disponible se recuperó |
@@ -136,6 +137,7 @@ Al crear una regla, puedes pulsar una plantilla para rellenar los eventos, el ni
 | `backup.failed` | Copia de seguridad: fallida | Error | Falló el empaquetado de la copia o la escritura en algún destino |
 | `auth.failed` | Autenticación: fallos repetidos | Advertencia | Falló un inicio de sesión en la interfaz de administración, con el campo `ip` |
 | `auth.banned` | Autenticación: IP bloqueada | Advertencia | Los fallos repetidos de autenticación de un servicio web activaron un bloqueo automático |
+| `guard.banned` | Prevención de intrusiones: IP bloqueada | Advertencia | Una regla de registros, un puerto trampa o la detección de escaneos de puertos bloqueó una IP o una red, con los campos `ip` y `reason` (y `count` cuando se bloquean varias direcciones a la vez) |
 | `knock.opened` | Port knocking: knock correcto | Info | Un knock superó la autenticación y se permitió la dirección de origen, con los campos `ip`, `rule` y `ports`; consulta [Port Knocking](/es/docs/modules/knock) |
 | `knock.failed` | Port knocking: knock rechazado | Advertencia | Un toque fue rechazado: un paquete UDP pasó la autenticación HMAC pero la regla lo rechazó (repetición, marca de tiempo caducada, puerto no permitido, usuario incorrecto, etc.), o un paquete enviado por una conexión TCP del enrutamiento de protocolos no superó la autenticación o las comprobaciones. Incluye los campos `ip`, `reason` y `via` (`udp` o `tcp`); se registra como máximo una vez cada 5 segundos por origen y la prevención de intrusiones puede contarlo para bloquear. Las direcciones de origen UDP se pueden falsificar, así que los paquetes UDP que no superan la autenticación HMAC solo se cuentan y no publican este evento |
 | `login.success` | Interfaz de administración: inicio de sesión correcto | Info | Un inicio de sesión en la interfaz de administración se realizó correctamente, con los campos `ip` y `user` |
