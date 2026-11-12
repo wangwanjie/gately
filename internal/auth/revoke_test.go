@@ -121,3 +121,44 @@ func TestRevokeListBounded(t *testing.T) {
 		t.Fatalf("过期记录应被清理，剩余 %d", n)
 	}
 }
+
+// 只读账号反复登录、登出不能填满吊销列表而触发提升纪元，管理员会话不受影响。
+func TestReadonlyRevokeCannotEvictAdmins(t *testing.T) {
+	m, pass := newTestManager(t)
+	admin, _, err := m.Login("1.1.1.1", "admin", pass)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := m.AddUser("viewer", "viewer-pass-123"); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err := m.Login("2.2.2.2", "viewer", "viewer-pass-123"); err != nil {
+		t.Fatal(err)
+	}
+	// 直接签发只读令牌，省去上千次 bcrypt 登录
+	var viewerHash string
+	for _, u := range m.acc.Users {
+		if u.Username == "viewer" {
+			viewerHash = u.PasswordHash
+		}
+	}
+	for i := 0; i < maxRevoked+10; i++ {
+		tk := m.sign(m.acc, time.Now().Add(time.Hour), "viewer", RoleReadonly, viewerHash)
+		if err := m.Revoke(tk); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, ok := m.Verify(admin); !ok {
+		t.Fatal("只读账号登出不应让管理员会话失效")
+	}
+	if n := len(m.acc.Revoked); n > maxRevoked/2 {
+		t.Fatalf("只读账号的吊销记录不应超过一半容量: %d", n)
+	}
+	// 管理员登出照常记录
+	if err := m.Revoke(admin); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := m.Verify(admin); ok {
+		t.Fatal("管理员登出后令牌应失效")
+	}
+}
