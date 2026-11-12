@@ -280,7 +280,7 @@ var apiCatalog = map[string]epDoc{
 	"POST /api/system/onboarding/dismiss":                {Summary: "完成或跳过首次启动引导", Desc: "仅登录会话可用。"},
 	"GET /api/system/backup":                             {Summary: "下载配置备份", Desc: "备份含全部密钥。"},
 	"GET /api/system/diagnostics":                        {Summary: "导出脱敏诊断包", Desc: "`logs=0` 不含日志，`preview=1` 返回各文件内容的 JSON。"},
-	"POST /api/system/restore":                           {Summary: "从备份恢复配置"},
+	"POST /api/system/restore":                           {Summary: "从备份恢复配置", Desc: "以 multipart/form-data 上传，字段名 `file`；加密备份需同时提交 `password`；`keepAccount=1` 保留当前管理员账号（忽略备份中的 account.json，备份可不含该文件）。仍使用默认密码时拒绝，需先修改管理员密码。"},
 	"POST /api/system/restart":                           {Summary: "重启 Gately"},
 	"GET /api/openapi.json":                              {Summary: "获取本 API 的 OpenAPI 描述"},
 	"POST /api/import/lucky":                             {Summary: "导入 Lucky 配置", Desc: "以 multipart/form-data 上传，字段名 `files`；`dryRun=1` 仅预览，`enable=1` 保留启用状态。"},

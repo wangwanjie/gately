@@ -420,6 +420,73 @@ func TestBackupRestore(t *testing.T) {
 	}
 }
 
+// restoreWithFields 以 multipart 上传备份并附带额外表单字段。
+func restoreWithFields(t *testing.T, c *http.Client, url string, data []byte, fields map[string]string) (int, []byte) {
+	t.Helper()
+	var buf bytes.Buffer
+	mw := multipart.NewWriter(&buf)
+	fw, _ := mw.CreateFormFile("file", "b.zip")
+	_, _ = fw.Write(data)
+	for k, v := range fields {
+		_ = mw.WriteField(k, v)
+	}
+	_ = mw.Close()
+	req, _ := http.NewRequest("POST", url, &buf)
+	req.Header.Set("Content-Type", mw.FormDataContentType())
+	resp, err := c.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+	body, _ := io.ReadAll(resp.Body)
+	return resp.StatusCode, body
+}
+
+// keepAccount=1 时不用备份中的 account.json 覆盖当前账号，备份也可以不含该文件。
+func TestRestoreKeepAccount(t *testing.T) {
+	a, srv, c := loginApp(t)
+	accPath := filepath.Join(a.opts.ConfigDir, "account.json")
+	before, err := os.ReadFile(accPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	other := `{"username":"intruder","passwordHash":"x"}`
+	// 无 keepAccount：缺 account.json 被拒绝，且不写入任何文件
+	noAcc := zipOf(t, map[string]string{"portforward.json": `{"rules":[]}`})
+	if code, body := restoreWithFields(t, c, srv.URL+"/api/system/restore", noAcc, nil); code != 400 {
+		t.Fatalf("缺少账号文件应被拒绝，实际 %d %s", code, body)
+	}
+	// keepAccount=1：备份不含 account.json 也能恢复
+	if code, body := restoreWithFields(t, c, srv.URL+"/api/system/restore", noAcc, map[string]string{"keepAccount": "1"}); code != 200 {
+		t.Fatalf("保留账号恢复失败 %d %s", code, body)
+	}
+	select {
+	case <-a.restartCh:
+	case <-time.After(3 * time.Second):
+		t.Fatal("恢复后应请求重启")
+	}
+	// keepAccount=1：备份含 account.json 时被忽略，当前账号文件保持不变
+	withAcc := zipOf(t, map[string]string{"account.json": other, "portforward.json": `{"rules":[]}`})
+	if code, body := restoreWithFields(t, c, srv.URL+"/api/system/restore", withAcc, map[string]string{"keepAccount": "1"}); code != 200 || !bytes.Contains(body, []byte(`"restored":1`)) {
+		t.Fatalf("保留账号恢复失败 %d %s", code, body)
+	}
+	after, _ := os.ReadFile(accPath)
+	if !bytes.Equal(before, after) {
+		t.Fatalf("账号文件不应被覆盖: %s", after)
+	}
+	// keepAccount=1 但备份里只有账号文件：没有可恢复内容，被拒绝
+	if code, _ := restoreWithFields(t, c, srv.URL+"/api/system/restore", zipOf(t, map[string]string{"account.json": other}), map[string]string{"keepAccount": "1"}); code != 400 {
+		t.Fatalf("仅含账号文件应被拒绝，实际 %d", code)
+	}
+	// 不带 keepAccount 仍按原行为覆盖账号
+	if code, _ := restoreWithFields(t, c, srv.URL+"/api/system/restore", withAcc, nil); code != 200 {
+		t.Fatalf("完整恢复失败 %d", code)
+	}
+	if after, _ = os.ReadFile(accPath); !bytes.Contains(after, []byte("intruder")) {
+		t.Fatalf("未勾选时应覆盖账号文件: %s", after)
+	}
+}
+
 func TestIsPrivate(t *testing.T) {
 	for ip, want := range map[string]bool{"192.168.1.2": true, "10.0.0.1": true, "100.64.0.3": true, "127.0.0.1": true, "fd00::1": true, "8.8.8.8": false, "2408:8000::1": false} {
 		if isPrivate(ip) != want {
