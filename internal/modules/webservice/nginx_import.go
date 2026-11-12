@@ -1416,7 +1416,7 @@ func (c *nginxConverter) convertLocation(d *ngDirective) {
 			} else {
 				loc.StripPrefix = true
 				switch {
-				case mod == "=":
+				case mod == "=" && uri != "/":
 					// 精确匹配时 nginx 把整个路径换成 proxy_pass 的路径；Gately 按前缀去掉后再拼接，后端收到的路径会多出结尾的 /
 					c.warn("精确匹配 location = %s 的 proxy_pass 路径 %s 按去掉前缀导入，后端收到的路径为 %s/，请确认后端能处理", p, uri, strings.TrimRight(uri, "/"))
 				case !strings.HasSuffix(uri, "/") && strings.HasSuffix(p, "/"):
