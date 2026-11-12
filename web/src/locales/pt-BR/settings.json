@@ -271,6 +271,6 @@
     "success": "{count} arquivos de configuração restaurados; a configuração anterior foi salva em {previous}",
     "progress": "Aplicando o backup e reiniciando…",
     "keepAccount": "Manter a conta de administrador atual",
-    "keepAccountHint": "Quando marcada, o arquivo de conta do backup é ignorado: conta, senha, verificação em duas etapas e usuários somente leitura permanecem inalterados, e o backup pode não conter account.json. Altere antes a senha padrão se ainda a usar."
+    "keepAccountHint": "Quando marcada, a conta, os tokens de API e as configurações de login de terceiros do backup são ignorados: conta, senha, verificação em duas etapas, usuários somente leitura, tokens de API e o login de terceiros na interface de administração permanecem inalterados, e o backup pode não conter account.json. Altere antes a senha padrão se ainda a usar."
   }
 }

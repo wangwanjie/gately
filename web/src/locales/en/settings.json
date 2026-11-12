@@ -271,6 +271,6 @@
     "success": "Restored {count} configuration files; the previous configuration is saved at {previous}",
     "progress": "Applying backup and restarting…",
     "keepAccount": "Keep the current administrator account",
-    "keepAccountHint": "When checked, the account file in the backup is ignored: the current account, password, two-step verification and read-only users stay unchanged, and the backup may omit account.json. Change the default password first if you still use it."
+    "keepAccountHint": "When checked, the account, API tokens and third-party login settings in the backup are ignored: the current account, password, two-step verification, read-only users, API tokens and third-party login to the admin UI stay unchanged, and the backup may omit account.json. Change the default password first if you still use it."
   }
 }

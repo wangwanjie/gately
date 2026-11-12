@@ -271,6 +271,6 @@
     "success": "{count} Konfigurationsdateien wiederhergestellt; die vorherige Konfiguration liegt unter {previous}",
     "progress": "Sicherung wird angewendet und Neustart läuft…",
     "keepAccount": "Aktuelles Administratorkonto beibehalten",
-    "keepAccountHint": "Wenn aktiviert, wird die Kontodatei der Sicherung ignoriert: Konto, Passwort, Zwei-Faktor-Authentifizierung und Nur-Lese-Benutzer bleiben unverändert, und die Sicherung darf account.json weglassen. Ändern Sie zuvor das Standardpasswort, falls es noch verwendet wird."
+    "keepAccountHint": "Wenn aktiviert, werden Konto, API-Token und Einstellungen der Drittanbieter-Anmeldung aus der Sicherung ignoriert: Konto, Passwort, Zwei-Faktor-Authentifizierung, Nur-Lese-Benutzer, API-Token und die Drittanbieter-Anmeldung an der Verwaltungsoberfläche bleiben unverändert, und die Sicherung darf account.json weglassen. Ändern Sie zuvor das Standardpasswort, falls es noch verwendet wird."
   }
 }
