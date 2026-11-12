@@ -41193,7 +41193,7 @@
     },
     "/api/system/restore": {
       "post": {
-        "description": "**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "description": "Upload als multipart/form-data im Feld `file`; verschlüsselte Sicherungen benötigen zusätzlich `password`. `keepAccount=1` behält das aktuelle Administratorkonto bei (account.json der Sicherung wird ignoriert und darf fehlen). Wird abgelehnt, solange das Standardpasswort verwendet wird; ändern Sie zuerst das Administratorpasswort.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
         "responses": {
           "200": {
             "description": "Erfolgreich"

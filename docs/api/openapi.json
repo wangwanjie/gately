@@ -41193,7 +41193,7 @@
     },
     "/api/system/restore": {
       "post": {
-        "description": "**仅登录会话可用，API 令牌无法访问此接口。**",
+        "description": "以 multipart/form-data 上传，字段名 `file`；加密备份需同时提交 `password`；`keepAccount=1` 保留当前管理员账号（忽略备份中的 account.json，备份可不含该文件）。仍使用默认密码时拒绝，需先修改管理员密码。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
         "responses": {
           "200": {
             "description": "成功"
