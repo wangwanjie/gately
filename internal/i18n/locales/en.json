@@ -2467,7 +2467,7 @@
   "管理界面 HTTPS": "Admin UI HTTPS",
   "管理界面监听 ": "Admin UI listening on ",
   "管理界面监听地址，覆盖配置文件，例如 :16680": "admin UI listen address, overrides the config file, e.g. :16680",
-  "管理端口（Lucky 为 %d）": "Admin port (%d in Lucky)",
+  "管理端口（原配置为 %d）": "Admin port (%d in the imported configuration)",
   "类型不匹配": "Type mismatch",
   "精确匹配 location = %s 的后端按前缀导入": "The backend of exact-match location = %s was imported as a prefix",
   "精确匹配 location = %s 的访问控制按前缀导入": "Access control of exact-match location = %s was imported as a prefix",

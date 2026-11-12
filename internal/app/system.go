@@ -256,7 +256,7 @@ func (a *App) importLuckyBase(doc luckyimport.Document, opts luckyimport.Options
 	a.mergeLuckyThirdLogin(&s, lb, opts, rep)
 	var notes []string
 	if lb.AdminWebListenPort > 0 {
-		notes = append(notes, fmt.Sprintf("管理端口（Lucky 为 %d）", lb.AdminWebListenPort))
+		notes = append(notes, fmt.Sprintf("管理端口（原配置为 %d）", lb.AdminWebListenPort))
 	}
 	if lb.SafeURL != "" {
 		notes = append(notes, "安全入口")
