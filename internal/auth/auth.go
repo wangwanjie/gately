@@ -698,6 +698,11 @@ func (m *Manager) verifyAccountPassword(password string) error {
 	return nil
 }
 
+// NewSessionSecret 生成新的会话签名密钥。恢复备份时用它替换备份中的密钥，让恢复前签发的令牌全部失效。
+func NewSessionSecret() string {
+	return randomString(32)
+}
+
 func randomString(n int) string {
 	b := make([]byte, n)
 	if _, err := rand.Read(b); err != nil {
