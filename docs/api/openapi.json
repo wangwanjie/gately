@@ -5781,6 +5781,52 @@
         "x-token-allowed": false
       }
     },
+    "/api/account/sessions/revoke": {
+      "post": {
+        "description": "使所有管理界面登录会话（密码、Passkey、第三方登录与飞牛网关签发的）立即失效，包含当前会话，需要重新登录；API 令牌不受影响。登出（`POST /api/logout`）只吊销当前会话，吊销记录持久化，重启后仍然有效。仅管理员登录会话可用。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "summary": "退出所有设备",
+        "tags": [
+          "账号"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/account/totp": {
       "get": {
         "description": "**仅登录会话可用，API 令牌无法访问此接口。**",
@@ -41236,7 +41282,7 @@
     },
     "/api/system/settings": {
       "get": {
-        "description": "仅登录会话可用。只读字段 `modules` 列出全部功能模块及依赖关系，`gatewayAvailable` 表示以飞牛统一网关方式运行。`updateProxy` 为检查更新与在线升级访问 GitHub 时使用的代理。`denyMode` 为未授权访问（被封禁、仅内网时的外网访问、未经过安全入口）的响应方式：空为默认提示页，`notfound` 纯 404，`blank` 空白页，`close` 断开连接，`drop` 不响应直到超时，`custom` 自定义页面；`denyStatus` 为自定义页面的状态码（200、403、404、410、500、502、503），`denyPage` 为自定义页面 HTML（上限 64 KB，在禁止脚本与外部资源的沙箱 CSP 下显示）。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
+        "description": "仅登录会话可用。只读字段 `modules` 列出全部功能模块及依赖关系，`gatewayAvailable` 表示以飞牛统一网关方式运行。`updateProxy` 为检查更新与在线升级访问 GitHub 时使用的代理。`restrictOutbound` 为 true 时（默认 false），管理员配置的出站请求（Webhook、通知、IP 列表订阅、DDNS 回调与 IP 查询地址、更新检查与程序下载、第三方登录等）在连接时拒绝回环、私网、链路本地（含云厂商元数据地址 169.254.169.254）与 ULA 等地址，对域名解析结果和重定向同样生效，保存后立即生效；反向代理上游、网络唤醒、存储挂载等面向内网的功能不受影响。`denyMode` 为未授权访问（被封禁、仅内网时的外网访问、未经过安全入口）的响应方式：空为默认提示页，`notfound` 纯 404，`blank` 空白页，`close` 断开连接，`drop` 不响应直到超时，`custom` 自定义页面；`denyStatus` 为自定义页面的状态码（200、403、404、410、500、502、503），`denyPage` 为自定义页面 HTML（上限 64 KB，在禁止脚本与外部资源的沙箱 CSP 下显示）。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
         "responses": {
           "200": {
             "description": "成功"

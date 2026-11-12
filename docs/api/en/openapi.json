@@ -5781,6 +5781,52 @@
         "x-token-allowed": false
       }
     },
+    "/api/account/sessions/revoke": {
+      "post": {
+        "description": "Invalidates every admin sign-in session (issued by password, Passkey, third-party sign-in and the fnOS gateway) immediately, including the current one, so you need to sign in again; API tokens are not affected. Signing out (`POST /api/logout`) revokes only the current session. Revocation records are persisted and stay in effect after a restart. Administrator sessions only.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "summary": "Sign out of all devices",
+        "tags": [
+          "Account"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/account/totp": {
       "get": {
         "description": "**Available only to login sessions; API tokens cannot access this endpoint.**",
@@ -41236,7 +41282,7 @@
     },
     "/api/system/settings": {
       "get": {
-        "description": "Session only. The read-only field `modules` lists all feature modules and their dependencies; `gatewayAvailable` means Gately runs behind the fnOS unified gateway. `updateProxy` is the proxy used to reach GitHub when checking for updates and upgrading online. `denyMode` is how unauthorized access (banned clients, access from outside while LAN only is on, or requests that skip the security entrance) is answered: empty for the default notice page, `notfound` for a plain 404, `blank` for a blank page, `close` to close the connection, `drop` to not respond until timeout, `custom` for a custom page. `denyStatus` is the status code of the custom page (200, 403, 404, 410, 500, 502, 503), and `denyPage` is the custom page HTML (up to 64 KB, shown under a sandboxed CSP that blocks scripts and external resources).\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "description": "Session only. The read-only field `modules` lists all feature modules and their dependencies; `gatewayAvailable` means Gately runs behind the fnOS unified gateway. `updateProxy` is the proxy used to reach GitHub when checking for updates and upgrading online. `restrictOutbound`, when true (default false), makes outbound requests configured by administrators (webhooks, notifications, IP list subscriptions, DDNS callbacks and IP lookup URLs, update checks and program downloads, third-party sign-in) refuse to connect to loopback, private, link-local (including the cloud metadata address 169.254.169.254) and ULA addresses; it also covers resolved domain names and redirects and takes effect as soon as it is saved. Reverse proxy upstreams, Wake-on-LAN, storage mounts and other features that target the internal network are not affected. `denyMode` is how unauthorized access (banned clients, access from outside while LAN only is on, or requests that skip the security entrance) is answered: empty for the default notice page, `notfound` for a plain 404, `blank` for a blank page, `close` to close the connection, `drop` to not respond until timeout, `custom` for a custom page. `denyStatus` is the status code of the custom page (200, 403, 404, 410, 500, 502, 503), and `denyPage` is the custom page HTML (up to 64 KB, shown under a sandboxed CSP that blocks scripts and external resources).\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
         "responses": {
           "200": {
             "description": "Success"

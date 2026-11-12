@@ -5781,6 +5781,52 @@
         "x-token-allowed": false
       }
     },
+    "/api/account/sessions/revoke": {
+      "post": {
+        "description": "Macht sofort alle Admin-Anmeldesitzungen ungültig (per Passwort, Passkey, Drittanbieter-Anmeldung und fnOS-Gateway ausgestellt), auch die aktuelle, sodass eine erneute Anmeldung nötig ist; API-Token bleiben unberührt. Das Abmelden (`POST /api/logout`) widerruft nur die aktuelle Sitzung. Widerrufseinträge werden gespeichert und gelten auch nach einem Neustart. Nur für Admin-Anmeldesitzungen.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "summary": "Von allen Geräten abmelden",
+        "tags": [
+          "Konto"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/account/totp": {
       "get": {
         "description": "**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
@@ -41236,7 +41282,7 @@
     },
     "/api/system/settings": {
       "get": {
-        "description": "Nur mit Sitzung. Das schreibgeschützte Feld `modules` listet alle Funktionsmodule und ihre Abhängigkeiten; `gatewayAvailable` bedeutet, dass Gately hinter dem einheitlichen fnOS-Gateway läuft. `updateProxy` ist der Proxy für den Zugriff auf GitHub bei Update-Prüfung und Online-Upgrade. `denyMode` legt fest, wie auf unbefugten Zugriff (gesperrte Clients, Zugriff von außen bei „nur LAN“, Zugriff ohne den sicheren Einstiegspunkt) geantwortet wird: leer für die Standard-Hinweisseite, `notfound` für ein einfaches 404, `blank` für eine leere Seite, `close` zum Schließen der Verbindung, `drop` für keine Antwort bis zum Timeout, `custom` für eine eigene Seite. `denyStatus` ist der Statuscode der eigenen Seite (200, 403, 404, 410, 500, 502, 503), `denyPage` das HTML der eigenen Seite (höchstens 64 KB, angezeigt unter einer Sandbox-CSP, die Skripte und externe Ressourcen blockiert).\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "description": "Nur mit Sitzung. Das schreibgeschützte Feld `modules` listet alle Funktionsmodule und ihre Abhängigkeiten; `gatewayAvailable` bedeutet, dass Gately hinter dem einheitlichen fnOS-Gateway läuft. `updateProxy` ist der Proxy für den Zugriff auf GitHub bei Update-Prüfung und Online-Upgrade. `restrictOutbound` sorgt bei true (Standard false) dafür, dass vom Administrator konfigurierte ausgehende Anfragen (Webhooks, Benachrichtigungen, IP-Listen-Abonnements, DDNS-Callbacks und IP-Abfrage-URLs, Update-Prüfung und Programm-Downloads, Anmeldung über Drittanbieter) die Verbindung zu Loopback-, privaten, Link-Local- (einschließlich der Cloud-Metadatenadresse 169.254.169.254) und ULA-Adressen verweigern; das gilt auch für aufgelöste Domainnamen und Weiterleitungen und wirkt sofort nach dem Speichern. Reverse-Proxy-Upstreams, Wake-on-LAN, Speicher-Mounts und andere auf das interne Netz ausgerichtete Funktionen bleiben unberührt. `denyMode` legt fest, wie auf unbefugten Zugriff (gesperrte Clients, Zugriff von außen bei „nur LAN“, Zugriff ohne den sicheren Einstiegspunkt) geantwortet wird: leer für die Standard-Hinweisseite, `notfound` für ein einfaches 404, `blank` für eine leere Seite, `close` zum Schließen der Verbindung, `drop` für keine Antwort bis zum Timeout, `custom` für eine eigene Seite. `denyStatus` ist der Statuscode der eigenen Seite (200, 403, 404, 410, 500, 502, 503), `denyPage` das HTML der eigenen Seite (höchstens 64 KB, angezeigt unter einer Sandbox-CSP, die Skripte und externe Ressourcen blockiert).\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
         "responses": {
           "200": {
             "description": "Erfolgreich"

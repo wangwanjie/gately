@@ -956,6 +956,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Método | Ruta | Permiso requerido | Descripción |
 | --- | --- | --- | --- |
 | PUT | `/api/account` | Solo sesión iniciada | Modificar el usuario y la contraseña del administrador |
+| POST | `/api/account/sessions/revoke` | Solo sesión iniciada | Cerrar sesión en todos los dispositivos |
 | PUT | `/api/account/ui-language` | Solo sesión iniciada | Registrar el idioma de la consola de administración |
 | GET | `/api/account/passkeys` | Solo sesión iniciada | Listar las Passkeys registradas |
 | POST | `/api/account/passkeys/begin` | Solo sesión iniciada | Iniciar el registro de una Passkey |
