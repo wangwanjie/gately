@@ -293,6 +293,7 @@ var apiCatalog = map[string]epDoc{
 	"POST /api/tokens/{id}/regenerate":                   {Summary: "重新生成令牌明文", Desc: "旧明文立即失效。"},
 	"DELETE /api/tokens/{id}":                            {Summary: "删除 API 令牌"},
 	"PUT /api/account":                                   {Summary: "修改管理员用户名与密码", Body: true},
+	"POST /api/account/sessions/revoke":                  {Summary: "退出所有设备", Desc: "使所有管理界面登录会话（密码、Passkey、第三方登录与飞牛网关签发的）立即失效，包含当前会话，需要重新登录；API 令牌不受影响。登出（`POST /api/logout`）只吊销当前会话，吊销记录持久化，重启后仍然有效。仅管理员登录会话可用。"},
 	"PUT /api/account/ui-language":                       {Summary: "记录管理界面语言", Desc: "请求体 `{\"language\": \"zh-CN\"}`。管理界面在管理员登录状态下切换语言时调用；服务端语言为「跟随系统」且环境变量未指定语言时，日志与通知按该语言输出。仅管理员登录会话可用。", Body: true},
 	"GET /api/account/totp":                              {Summary: "查看两步验证状态"},
 	"POST /api/account/totp/setup":                       {Summary: "生成两步验证密钥"},

@@ -63,7 +63,20 @@ type Account struct {
 	OnboardingPending bool `json:"onboardingPending,omitempty"`
 	// UsingDefaultPassword 表示主账号仍在使用默认密码 DefaultPassword，修改密码后清除
 	UsingDefaultPassword bool `json:"usingDefaultPassword,omitempty"`
+	// SessionEpoch 是会话纪元：令牌内记录签发时的纪元，“退出所有设备”使其加一，旧纪元的令牌全部失效
+	SessionEpoch int64 `json:"sessionEpoch,omitempty"`
+	// Revoked 是已吊销（已登出）的会话令牌，条目随令牌过期清理，数量有上限
+	Revoked []RevokedToken `json:"revoked,omitempty"`
 }
+
+// RevokedToken 是一条已吊销的会话令牌记录：ID 取自令牌签名，Exp 为令牌过期时间（Unix 秒）。
+type RevokedToken struct {
+	ID  string `json:"id"`
+	Exp int64  `json:"e"`
+}
+
+// maxRevoked 是吊销列表的容量上限。超出时提升会话纪元，让全部旧令牌一并失效，列表即可清空。
+const maxRevoked = 1024
 
 // 角色
 const (
@@ -127,6 +140,16 @@ type Manager struct {
 	lockDur time.Duration
 	// bootstrapPassword 非空时，首次启动用它作为初始密码而不是默认密码
 	bootstrapPassword string
+	// revoked 是 acc.Revoked 的集合形式，便于每次校验时快速查找
+	revoked map[string]struct{}
+}
+
+// rebuildRevoked 按账号中的吊销列表重建查找集合，调用时须持有写锁或尚未并发使用。
+func (m *Manager) rebuildRevoked() {
+	m.revoked = make(map[string]struct{}, len(m.acc.Revoked))
+	for _, r := range m.acc.Revoked {
+		m.revoked[r.ID] = struct{}{}
+	}
 }
 
 // SetBootstrapPassword 指定首次启动时的初始密码（用于自动化部署）。账号已存在时不起作用。
@@ -181,7 +204,9 @@ func (m *Manager) SetTokenTTL(hours int) error {
 
 // NewManager 用已加载的账号创建管理器，save 用于持久化账号变更。
 func NewManager(acc Account, save func(Account) error) *Manager {
-	return &Manager{acc: acc, save: save, fails: map[string]*failState{}, now: time.Now, maxFail: maxFailures, lockDur: lockDuration}
+	m := &Manager{acc: acc, save: save, fails: map[string]*failState{}, now: time.Now, maxFail: maxFailures, lockDur: lockDuration}
+	m.rebuildRevoked()
+	return m
 }
 
 // EnsureInitialized 在首次启动时创建 admin 账号：未指定初始密码时使用默认密码 DefaultPassword。
@@ -369,6 +394,10 @@ type payload struct {
 	Role string `json:"r,omitempty"`
 	// Ver 是账号密码哈希的摘要，修改密码或删除账号后旧令牌随之失效
 	Ver string `json:"v,omitempty"`
+	// Epoch 是签发时的会话纪元，与账号当前纪元不同的令牌无效
+	Epoch int64 `json:"n,omitempty"`
+	// ID 是随机令牌编号，保证同一秒签发的令牌互不相同，吊销其一不会误伤其他
+	ID string `json:"j,omitempty"`
 }
 
 // hashVersion 返回密码哈希的短摘要，用于把令牌绑定到账号当前的密码。
@@ -378,7 +407,7 @@ func hashVersion(hash string) string {
 }
 
 func (m *Manager) sign(acc Account, exp time.Time, user, role, hash string) string {
-	pl := payload{User: user, Exp: exp.Unix(), Ver: hashVersion(hash)}
+	pl := payload{User: user, Exp: exp.Unix(), Ver: hashVersion(hash), Epoch: acc.SessionEpoch, ID: randomString(12)}
 	if role != RoleAdmin {
 		pl.Role = role
 	}
@@ -426,6 +455,16 @@ func (m *Manager) Identify(token string) (Identity, bool) {
 	if m.now().Unix() > pl.Exp {
 		return Identity{}, false
 	}
+	// 纪元不符（已退出所有设备）或令牌已被吊销（已登出）
+	if pl.Epoch != acc.SessionEpoch {
+		return Identity{}, false
+	}
+	m.mu.RLock()
+	_, gone := m.revoked[tokenID(sig)]
+	m.mu.RUnlock()
+	if gone {
+		return Identity{}, false
+	}
 	if pl.Role == "" {
 		// 管理员令牌：用户名须与主账号一致；带版本号的令牌还须与当前密码匹配
 		if pl.User != acc.Username || (pl.Ver != "" && pl.Ver != hashVersion(acc.PasswordHash)) {
@@ -439,6 +478,70 @@ func (m *Manager) Identify(token string) (Identity, bool) {
 		}
 	}
 	return Identity{}, false
+}
+
+// tokenID 返回令牌的吊销编号：取签名的前 22 个字符（约 132 位），签名由 HMAC 产生，无法被碰撞伪造。
+func tokenID(sig string) string {
+	if len(sig) > 22 {
+		return sig[:22]
+	}
+	return sig
+}
+
+// Revoke 吊销一个会话令牌（登出），令牌无效或已过期时不做任何事。
+// 吊销记录持久化，重启后仍然有效；记录在令牌过期后清理，数量达到上限时改为提升会话纪元。
+func (m *Manager) Revoke(token string) error {
+	if _, ok := m.Identify(token); !ok {
+		return nil
+	}
+	p, sig, _ := strings.Cut(token, ".")
+	raw, err := base64.RawURLEncoding.DecodeString(p)
+	if err != nil {
+		return nil
+	}
+	var pl payload
+	if err := json.Unmarshal(raw, &pl); err != nil {
+		return nil
+	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	next := m.acc
+	now := m.now().Unix()
+	kept := make([]RevokedToken, 0, len(m.acc.Revoked)+1)
+	for _, r := range m.acc.Revoked {
+		if r.Exp >= now {
+			kept = append(kept, r)
+		}
+	}
+	if len(kept) >= maxRevoked {
+		// 列表已满：让全部旧令牌失效，比丢弃记录更安全
+		next.SessionEpoch++
+		kept = nil
+	} else {
+		kept = append(kept, RevokedToken{ID: tokenID(sig), Exp: pl.Exp})
+	}
+	next.Revoked = kept
+	if err := m.save(next); err != nil {
+		return err
+	}
+	m.acc = next
+	m.rebuildRevoked()
+	return nil
+}
+
+// RevokeAll 使此前签发的全部会话令牌失效（退出所有设备），API 令牌等其他凭据不受影响。
+func (m *Manager) RevokeAll() error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	next := m.acc
+	next.SessionEpoch++
+	next.Revoked = nil
+	if err := m.save(next); err != nil {
+		return err
+	}
+	m.acc = next
+	m.rebuildRevoked()
+	return nil
 }
 
 // TokenFromRequest 从 Authorization 头或 Cookie 中取令牌。
