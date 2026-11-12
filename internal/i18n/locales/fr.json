@@ -2419,6 +2419,7 @@
   "第 %d 行的引号没有闭合": "Guillemet non fermé à la ligne %d",
   "第 %d 行的指令 %s 没有以 ; 或 {} 结束": "La directive %[2]s ligne %[1]d ne se termine pas par ; ou {}",
   "第 %d 行的指令 %s 缺少 ;": "Il manque ; à la directive %[2]s ligne %[1]d",
+  "第 %d 行的配置块嵌套超过 %d 层": "Le bloc à la ligne %d est imbriqué sur plus de %d niveaux",
   "第三方登录": "Connexion tierce",
   "第三方登录 %s 的 Issuer 需为 https 地址": "L'Issuer de la connexion tierce %s doit être une adresse https",
   "第三方登录 %s 的代理地址需为 http://、https:// 或 socks5:// 开头的地址，例如 http://127.0.0.1:7890": "L'adresse du proxy de la connexion tierce %s doit commencer par http://, https:// ou socks5://, par ex. http://127.0.0.1:7890",
