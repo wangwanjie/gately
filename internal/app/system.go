@@ -88,6 +88,18 @@ func (a *App) handleRestore(w http.ResponseWriter, r *http.Request) {
 	keepAccount := r.FormValue("keepAccount") == "1"
 	if keepAccount {
 		delete(restored, accountName+".json")
+		// 管理员凭据不止账号文件：API 令牌与系统设置中的第三方登录（允许登录管理界面的身份）同样保持当前值，
+		// 否则恢复另一台实例的备份会让对方的令牌与第三方身份在本机生效
+		delete(restored, "tokens.json")
+		if b, ok := restored[settingsName+".json"]; ok {
+			cur, _ := os.ReadFile(filepath.Join(a.opts.ConfigDir, settingsName+".json"))
+			nb, err := keepAdminSettings(b, cur)
+			if err != nil {
+				httpx.Error(w, http.StatusBadRequest, "%s.json 格式错误: %v", settingsName, err)
+				return
+			}
+			restored[settingsName+".json"] = nb
+		}
 		if len(restored) == 0 {
 			httpx.Error(w, http.StatusBadRequest, "备份中没有可恢复的配置文件，不像是 Gately 的配置备份")
 			return
@@ -126,6 +138,30 @@ func (a *App) handleRestore(w http.ResponseWriter, r *http.Request) {
 	a.sysLogs.Add(logbuf.LevelWarn, "system", fmt.Sprintf("已从备份恢复 %d 个配置文件，原配置保存在 %s", len(restored), dir))
 	httpx.OK(w, map[string]any{"restored": len(restored), "previous": dir})
 	a.scheduleRestart()
+}
+
+// adminSettingKeys 是系统设置中属于管理员登录凭据的字段：第三方登录配置与旧版单一 API 令牌（启动时迁移为令牌）。
+var adminSettingKeys = []string{"thirdLogin", "apiToken"}
+
+// keepAdminSettings 用当前系统设置 cur 中的管理员登录字段替换备份 b 中的同名字段（当前没有的字段从备份中去掉），其余字段取备份。
+func keepAdminSettings(b, cur []byte) ([]byte, error) {
+	var m map[string]json.RawMessage
+	if err := json.Unmarshal(b, &m); err != nil {
+		return nil, err
+	}
+	var c map[string]json.RawMessage
+	if len(cur) > 0 {
+		// 当前文件损坏时按“当前没有这些字段”处理，备份中的同名字段同样去掉
+		_ = json.Unmarshal(cur, &c)
+	}
+	for _, k := range adminSettingKeys {
+		if v, ok := c[k]; ok {
+			m[k] = v
+		} else {
+			delete(m, k)
+		}
+	}
+	return json.MarshalIndent(m, "", "  ")
 }
 
 // rotateSessionSecret 把账号文件中的会话密钥换成新值，并去掉会话纪元与吊销列表；其余字段原样保留。

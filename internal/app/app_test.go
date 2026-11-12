@@ -474,6 +474,26 @@ func TestRestoreKeepAccount(t *testing.T) {
 	if !bytes.Equal(before, after) {
 		t.Fatalf("账号文件不应被覆盖: %s", after)
 	}
+	// keepAccount=1：API 令牌与系统设置中的第三方登录、旧版 API 令牌同样保持当前值，其余设置取备份
+	tokPath := filepath.Join(a.opts.ConfigDir, "tokens.json")
+	setPath := filepath.Join(a.opts.ConfigDir, "gately.json")
+	_ = os.WriteFile(tokPath, []byte(`{"tokens":[{"name":"mine"}]}`), 0o600)
+	_ = os.WriteFile(setPath, []byte(`{"thirdLogin":{"enable":true,"allowed":["github:me"]},"tokenTTLHours":1}`), 0o600)
+	cred := zipOf(t, map[string]string{
+		"tokens.json":      `{"tokens":[{"name":"theirs"}]}`,
+		"gately.json":      `{"thirdLogin":{"enable":true,"allowed":["github:intruder"]},"apiToken":"leaked","tokenTTLHours":9}`,
+		"portforward.json": `{"rules":[]}`,
+	})
+	if code, body := restoreWithFields(t, c, srv.URL+"/api/system/restore", cred, map[string]string{"keepAccount": "1"}); code != 200 {
+		t.Fatalf("保留账号恢复失败 %d %s", code, body)
+	}
+	if tok, _ := os.ReadFile(tokPath); !bytes.Contains(tok, []byte("mine")) {
+		t.Fatalf("API 令牌不应被覆盖: %s", tok)
+	}
+	set, _ := os.ReadFile(setPath)
+	if !bytes.Contains(set, []byte("github:me")) || bytes.Contains(set, []byte("intruder")) || bytes.Contains(set, []byte("leaked")) || !bytes.Contains(set, []byte(`"tokenTTLHours": 9`)) {
+		t.Fatalf("系统设置应保留当前的第三方登录、去掉备份的旧版令牌，其余取备份: %s", set)
+	}
 	// keepAccount=1 但备份里只有账号文件：没有可恢复内容，被拒绝
 	if code, _ := restoreWithFields(t, c, srv.URL+"/api/system/restore", zipOf(t, map[string]string{"account.json": other}), map[string]string{"keepAccount": "1"}); code != 400 {
 		t.Fatalf("仅含账号文件应被拒绝，实际 %d", code)
