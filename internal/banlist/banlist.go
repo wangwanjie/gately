@@ -89,7 +89,9 @@ type Store struct {
 	mu      sync.RWMutex
 	entries map[string]Entry
 	// nets 为不是单个地址键的网段（手动填写的 CIDR），查询时逐个比对
-	nets     []netip.Prefix
+	nets []netip.Prefix
+	// netKeys 为 entries 中网段键的集合，增删网段时据此重建 nets，不必遍历并解析全部记录
+	netKeys  map[string]netip.Prefix
 	offenses map[string]Offense
 	ignore   func(netip.Prefix) bool
 
@@ -100,7 +102,7 @@ type Store struct {
 
 // New 创建空的封禁表。
 func New() *Store {
-	return &Store{entries: map[string]Entry{}, offenses: map[string]Offense{}, hooks: map[int]func(Change){}}
+	return &Store{entries: map[string]Entry{}, netKeys: map[string]netip.Prefix{}, offenses: map[string]Offense{}, hooks: map[int]func(Change){}}
 }
 
 // Default 是进程级封禁表。
@@ -306,7 +308,7 @@ func (s *Store) Ban(key string, o Options) (e Entry, added bool, err error) {
 	}
 	s.entries[key] = e
 	s.offenses[key] = Offense{Count: count, Last: now}
-	s.rebuildNetsLocked()
+	s.trackNetLocked(key)
 	s.mu.Unlock()
 	s.notify(Change{Added: []Entry{e}})
 	return e, true, nil
@@ -318,7 +320,7 @@ func (s *Store) Unban(key string) bool {
 	e, ok := s.entries[key]
 	if ok {
 		delete(s.entries, key)
-		s.rebuildNetsLocked()
+		s.untrackNetLocked(key)
 	}
 	s.mu.Unlock()
 	if ok {
@@ -347,15 +349,13 @@ func (s *Store) Prune() []Entry {
 		if e.Expired(now) {
 			removed = append(removed, e)
 			delete(s.entries, k)
+			s.untrackNetLocked(k)
 		}
 	}
 	for k, o := range s.offenses {
 		if _, banned := s.entries[k]; !banned && now.Sub(o.Last) > offenseTTL {
 			delete(s.offenses, k)
 		}
-	}
-	if len(removed) > 0 {
-		s.rebuildNetsLocked()
 	}
 	s.mu.Unlock()
 	s.notify(Change{Removed: removed, Expired: true})
@@ -428,6 +428,7 @@ func (s *Store) Import(entries []Entry, offenses map[string]Offense) {
 			continue
 		}
 		s.entries[e.Key] = e
+		s.trackNetLocked(e.Key)
 		added = append(added, e)
 	}
 	for k, o := range offenses {
@@ -435,21 +436,36 @@ func (s *Store) Import(entries []Entry, offenses map[string]Offense) {
 			s.offenses[k] = o
 		}
 	}
-	s.rebuildNetsLocked()
 	s.mu.Unlock()
 	s.notify(Change{Added: added})
 }
 
-// rebuildNetsLocked 重建网段列表，调用方需持有写锁。
+// trackNetLocked 登记新增的封禁键：网段键加入 netKeys 并重建 nets，单地址键什么也不做。调用方需持有写锁。
+func (s *Store) trackNetLocked(key string) {
+	if IsSingle(key) {
+		return
+	}
+	if p, ok := KeyPrefix(key); ok {
+		if _, had := s.netKeys[key]; !had {
+			s.netKeys[key] = p
+			s.rebuildNetsLocked()
+		}
+	}
+}
+
+// untrackNetLocked 登记移除的封禁键，是网段键时重建 nets。调用方需持有写锁。
+func (s *Store) untrackNetLocked(key string) {
+	if _, ok := s.netKeys[key]; ok {
+		delete(s.netKeys, key)
+		s.rebuildNetsLocked()
+	}
+}
+
+// rebuildNetsLocked 由 netKeys 重建网段列表，只遍历网段键（通常寥寥数条）。调用方需持有写锁。
 func (s *Store) rebuildNetsLocked() {
 	s.nets = s.nets[:0]
-	for k := range s.entries {
-		if IsSingle(k) {
-			continue
-		}
-		if p, ok := KeyPrefix(k); ok {
-			s.nets = append(s.nets, p)
-		}
+	for _, p := range s.netKeys {
+		s.nets = append(s.nets, p)
 	}
 }
 
