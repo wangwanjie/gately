@@ -392,6 +392,7 @@ func TestImportNginxLocationStripPrefix(t *testing.T) {
 	location /site/ { proxy_pass http://10.0.0.1:80/; }
 	location /cat/ { proxy_pass http://10.0.0.6:85/v1; }
 	location = /f { proxy_pass http://10.0.0.7:86/x.php; }
+	location = /e { proxy_pass http://10.0.0.8:87/; }
 }`
 	rep, err := importNginx(conf, nil, nameCerts{})
 	if err != nil {
@@ -424,6 +425,10 @@ func TestImportNginxLocationStripPrefix(t *testing.T) {
 	}
 	if l := got["/f"]; !l.StripPrefix || !strings.Contains(warns, "location = /f 的 proxy_pass") {
 		t.Errorf("精确匹配带 URI 时应导入并提示: %+v %v", l, pl.Warnings)
+	}
+	// 精确匹配且 URI 为 / 时两边都发往 /，不提示
+	if strings.Contains(warns, "location = /e 的 proxy_pass") {
+		t.Errorf("URI 为 / 的精确匹配不应提示: %v", pl.Warnings)
 	}
 	// 与站点后端相同、仅需去前缀的路径仍要保留规则
 	if l, ok := got["/site/"]; !ok || !l.StripPrefix || len(l.Targets) != 0 {
