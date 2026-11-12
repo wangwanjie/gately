@@ -33,8 +33,8 @@ var restricted atomic.Bool
 // SetRestricted 设置全局开关，立即对新建立的连接生效。开启时关闭本包客户端已有的空闲长连接，
 // 避免开启前连到内网目标的空闲连接在开启后继续被复用；正在进行的请求不受影响。
 func SetRestricted(on bool) {
-	restricted.Store(on)
-	if on {
+	// 只在从关闭变为开启时关闭空闲连接：保存设置时开关保持开启不应打断已有的长连接
+	if was := restricted.Swap(on); on && !was {
 		closeIdle()
 	}
 }
