@@ -643,6 +643,7 @@
   "不支持的转发模式 %q": "modo de encaminhamento não suportado %q",
   "不支持的边缘 IP 版本 %q": "Versão de IP de borda %q não suportada",
   "不是 FileBrowser Quantum": "não é o FileBrowser Quantum",
+  "不是 JSON 对象": "não é um objeto JSON",
   "不是 STUN 消息": "Não é uma mensagem STUN",
   "不是 TLS 握手": "não é um handshake TLS",
   "不是普通文件": "Não é um arquivo comum",

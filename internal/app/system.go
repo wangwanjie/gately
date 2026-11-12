@@ -149,6 +149,10 @@ func keepAdminSettings(b, cur []byte) ([]byte, error) {
 	if err := json.Unmarshal(b, &m); err != nil {
 		return nil, err
 	}
+	if m == nil {
+		// 内容为 null 时 Unmarshal 不报错，但不是有效的设置对象
+		return nil, errors.New("不是 JSON 对象")
+	}
 	var c map[string]json.RawMessage
 	if len(cur) > 0 {
 		// 当前文件损坏时按“当前没有这些字段”处理，备份中的同名字段同样去掉
@@ -169,6 +173,9 @@ func rotateSessionSecret(b []byte) ([]byte, error) {
 	var m map[string]json.RawMessage
 	if err := json.Unmarshal(b, &m); err != nil {
 		return nil, err
+	}
+	if m == nil {
+		return nil, errors.New("不是 JSON 对象")
 	}
 	secret, _ := json.Marshal(auth.NewSessionSecret())
 	m["sessionSecret"] = secret
