@@ -96,12 +96,35 @@ type siteTable struct {
 	deflt *siteHandler
 	// exact 为精确域名到站点的索引，站点很多时避免逐个比较
 	exact map[string]*siteHandler
+	// wild 为含通配符的域名（按站点顺序），wildReady 为 true 时表示 exact 已包含全部精确域名，
+	// 精确索引未命中后只需比对 wild；站点表由 buildSiteTable 构建时置位，其它构造方式回退到逐个比对全部域名
+	wild      []wildDomain
+	wildReady bool
 	// cancel 停止这一批站点的后台任务（健康检查）
 	cancel context.CancelFunc
 	// missPage 为没有任何站点匹配时输出 404 所用的错误页设置，取自默认站点（默认站点停用时同样生效）
 	missPage *errorPager
 	// httpsPort 为额外 HTTP 端口跳转时使用的 HTTPS 端口（访问端口或监听端口），修改访问地址时随站点表热更新
 	httpsPort int
+}
+
+// wildDomain 是一个含通配符的站点域名。
+type wildDomain struct {
+	h      *siteHandler
+	domain string
+}
+
+// indexDomains 把站点的域名登记到精确索引与通配列表。同一域名出现在多个站点时以先出现的为准，与逐个比较时的结果一致。
+func (t *siteTable) indexDomains(h *siteHandler) {
+	for _, d := range h.site.Domains {
+		if !strings.Contains(d, "*") {
+			if _, dup := t.exact[d]; !dup {
+				t.exact[d] = h
+			}
+		} else {
+			t.wild = append(t.wild, wildDomain{h: h, domain: d})
+		}
+	}
 }
 
 // current 返回当前生效的站点表，监听器尚未构建时返回空表。
@@ -131,14 +154,24 @@ func (l *listenerRunner) route(host string) *siteHandler {
 	}
 	var best *siteHandler
 	bestScore, bestLen := 0, 0
-	for _, s := range t.sites {
-		for _, d := range s.site.Domains {
-			score := matchDomain(d, host)
-			if score == 0 {
-				continue
-			}
-			if score > bestScore || (score == bestScore && len(d) > bestLen) {
-				best, bestScore, bestLen = s, score, len(d)
+	consider := func(s *siteHandler, d string) {
+		score := matchDomain(d, host)
+		if score == 0 {
+			return
+		}
+		if score > bestScore || (score == bestScore && len(d) > bestLen) {
+			best, bestScore, bestLen = s, score, len(d)
+		}
+	}
+	if t.wildReady {
+		// 精确域名都在索引里且已未命中，只有通配域名可能匹配；站点很多时不必逐个比对全部域名
+		for _, w := range t.wild {
+			consider(w.h, w.domain)
+		}
+	} else {
+		for _, s := range t.sites {
+			for _, d := range s.site.Domains {
+				consider(s, d)
 			}
 		}
 	}
@@ -275,15 +308,9 @@ func buildSiteTable(cfg Listener, log *logbuf.Logger, auth *authenticator, waf W
 			return nil, err
 		}
 		t.sites = append(t.sites, h)
-		for _, d := range h.site.Domains {
-			// 同一域名出现在多个站点时以先出现的为准，与逐个比较时的结果一致
-			if !strings.Contains(d, "*") {
-				if _, dup := t.exact[d]; !dup {
-					t.exact[d] = h
-				}
-			}
-		}
+		t.indexDomains(h)
 	}
+	t.wildReady = true
 	if cfg.Default.Enable {
 		h, err := build(cfg.Default)
 		if err != nil {
