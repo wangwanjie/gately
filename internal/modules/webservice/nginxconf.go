@@ -239,7 +239,13 @@ type ngParser struct {
 	toks []ngToken
 	pos  int
 	file string
+	// depth 为当前块的嵌套层数
+	depth int
 }
+
+// maxNginxDepth 是 nginx 配置块的最大嵌套层数，正常配置不超过十层。
+// 解析是递归的，不限制时数 MB 的 "a{a{a{…" 会耗尽栈导致整个进程崩溃（Go 的栈溢出无法恢复）。
+const maxNginxDepth = 64
 
 // parseBlock 解析指令序列，inBlock 为 true 时遇到 } 结束。
 func (p *ngParser) parseBlock(inBlock bool) ([]*ngDirective, error) {
@@ -278,7 +284,12 @@ func (p *ngParser) parseBlock(inBlock bool) ([]*ngDirective, error) {
 			}
 			if nt.typ == "{" {
 				p.pos++
+				if p.depth >= maxNginxDepth {
+					return nil, fmt.Errorf("第 %d 行的配置块嵌套超过 %d 层", nt.line, maxNginxDepth)
+				}
+				p.depth++
 				block, err := p.parseBlock(true)
+				p.depth--
 				if err != nil {
 					return nil, err
 				}

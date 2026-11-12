@@ -16,7 +16,10 @@ import (
 	"testing"
 	"time"
 
+	ftpserver "github.com/fclairamb/ftpserverlib"
+
 	"github.com/wangwanjie/gately/internal/config"
+	"github.com/wangwanjie/gately/internal/fileusers"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
 	"github.com/wangwanjie/gately/internal/mountfs"
@@ -88,6 +91,37 @@ func TestFTPLogin(t *testing.T) {
 	if c := login("rw", "bad"); c != 530 {
 		t.Fatalf("错误密码应返回 530，实际 %d", c)
 	}
+}
+
+// 同一来源连续猜错密码达到上限后，即使随后给出正确密码也被拒绝，防止暴力猜测。
+func TestFTPLoginThrottle(t *testing.T) {
+	d := &driver{s: Settings{}, users: map[string]User{"rw": {Name: "rw", Password: "p1", Root: t.TempDir()}}, logs: logbuf.New(20, log.New(io.Discard, "", 0))}
+	cc := &fakeClient{}
+	for i := 0; i < fileusers.ThrottleMaxFailures; i++ {
+		if _, err := d.AuthUser(cc, "rw", "bad"); err == nil {
+			t.Fatal("错误密码应失败")
+		}
+	}
+	if _, err := d.AuthUser(cc, "rw", "p1"); err == nil {
+		t.Fatal("失败次数达到上限后，正确密码也应被拒绝")
+	}
+	other := &fakeClient{addr: &net.TCPAddr{IP: net.ParseIP("203.0.113.77"), Port: 4000}}
+	if _, err := d.AuthUser(other, "rw", "p1"); err != nil {
+		t.Fatalf("其他来源不应受影响: %v", err)
+	}
+}
+
+// fakeClient 只实现 AuthUser 用到的 RemoteAddr。
+type fakeClient struct {
+	ftpserver.ClientContext
+	addr net.Addr
+}
+
+func (f *fakeClient) RemoteAddr() net.Addr {
+	if f.addr != nil {
+		return f.addr
+	}
+	return &net.TCPAddr{IP: net.ParseIP("198.51.100.5"), Port: 3000}
 }
 
 // waitClientsGone 等服务端处理完已断开的会话：ftpserverlib 在认证失败时自行断开连接，

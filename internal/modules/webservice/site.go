@@ -120,6 +120,20 @@ func clientAddr(r *http.Request) netip.AddrPort {
 // 两者取值相同，后端按自己的约定读取其一。X-Forwarded-Port 表示访客连接 Gately 的端口（监听端口），与它们不同。
 var clientPortHeaders = []string{"X-Real-Port", "X-Forwarded-For-Port"}
 
+// forwardedHeaders 是表示访客来源与访问方式的请求头，只应由 Gately 写入。
+var forwardedHeaders = []string{
+	"X-Real-Ip", "X-Forwarded-For", "X-Forwarded-Host", "X-Forwarded-Proto", "X-Forwarded-Port",
+	"X-Forwarded-Ssl", "X-Forwarded-Scheme", "X-Forwarded-Server", "Forwarded",
+}
+
+// stripForwardedHeaders 删除访客自带的来源类请求头，连同 X_Forwarded_For 等写法变体：
+// 部分后端（PHP、WSGI、CGI 一类）把 - 与 _ 映射为同一个变量，访客自带的变体会冒充或覆盖 Gately 写入的值。
+func stripForwardedHeaders(h http.Header) {
+	for _, k := range forwardedHeaders {
+		delHeaderVariants(h, k)
+	}
+}
+
 // stripClientPort 删除源端口头，连同 X_Real_Port 等写法变体：部分后端把 - 与 _ 映射为同一个变量，
 // 访客自带的变体同样可能被当成源端口。
 func stripClientPort(h http.Header) {
@@ -499,8 +513,8 @@ func (h *siteHandler) newProxy(s Site, p *pool) http.Handler {
 		BufferPool: sharedBufferPool,
 		Rewrite: func(pr *httputil.ProxyRequest) {
 			target(pr, attemptFrom(pr.In.Context()).current())
-			// 客户端自带的 X-Real-IP 与源端口头不可信，只在开启转发头时由 Gately 写入
-			pr.Out.Header.Del("X-Real-Ip")
+			// 客户端自带的 X-Real-IP、X-Forwarded-* 与源端口头不可信（含下划线写法的变体），只在开启转发头时由 Gately 写入
+			stripForwardedHeaders(pr.Out.Header)
 			stripClientPort(pr.Out.Header)
 			if s.ForwardedHeaders {
 				pr.SetXForwarded()

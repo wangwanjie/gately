@@ -14,6 +14,7 @@ import (
 	"testing"
 
 	"github.com/wangwanjie/gately/internal/config"
+	"github.com/wangwanjie/gately/internal/fileusers"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
 	"github.com/wangwanjie/gately/internal/mountfs"
@@ -153,5 +154,30 @@ func TestWebDAVImmediateRestart(t *testing.T) {
 		if m.err != "" {
 			t.Fatalf("第 %d 次重启失败: %s", i+1, m.err)
 		}
+	}
+}
+
+// 同一来源连续猜错密码达到上限后，即使随后给出正确密码也返回 429，其他来源不受影响。
+func TestServeThrottle(t *testing.T) {
+	m := &Module{handlers: map[string]*userHandler{}, logs: logbuf.New(20, log.New(io.Discard, "", 0))}
+	m.handlers["u"] = newUserHandler(User{Name: "u", Password: "good", Root: t.TempDir()})
+	do := func(remote, pass string) int {
+		req := httptest.NewRequest("GET", "/", nil)
+		req.RemoteAddr = remote
+		req.SetBasicAuth("u", pass)
+		w := httptest.NewRecorder()
+		m.serve(w, req)
+		return w.Code
+	}
+	for i := 0; i < fileusers.ThrottleMaxFailures; i++ {
+		if c := do("198.51.100.5:1000", "bad"); c != 401 {
+			t.Fatalf("错误密码应 401: %d", c)
+		}
+	}
+	if c := do("198.51.100.5:1001", "good"); c != 429 {
+		t.Fatalf("失败次数达到上限后应 429: %d", c)
+	}
+	if c := do("198.51.100.6:1000", "good"); c == 401 || c == 429 {
+		t.Fatalf("其他来源不应受影响: %d", c)
 	}
 }
