@@ -87,3 +87,5 @@ La hauteur de la zone des journaux est réglable : faites glisser la barre situ�
 ## Sauvegarde et restauration
 
 « Paramètres » propose la sauvegarde et la restauration de la configuration, et sert aussi de point d'entrée pour importer des configurations Lucky.
+
+Lors d'une restauration, vous pouvez cocher « Conserver le compte administrateur actuel » (paramètre d'API `keepAccount=1`) : le fichier `account.json` de la sauvegarde est ignoré, le compte, le mot de passe, la validation en deux étapes et les utilisateurs en lecture seule actuels restent inchangés, et une sauvegarde sans `account.json` peut aussi être restaurée, ce qui convient pour reprendre la configuration d'une autre instance. La restauration est refusée tant que le mot de passe par défaut est utilisé ; changez d'abord le mot de passe.

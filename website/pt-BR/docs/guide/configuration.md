@@ -87,3 +87,5 @@ A altura da área de logs pode ser ajustada: arraste a barra abaixo dela (em tel
 ## Backup e restauração
 
 Em "Configurações" você encontra o backup e a restauração da configuração, que também é o ponto de entrada para importar configurações do Lucky.
+
+Ao restaurar, você pode marcar "Manter a conta de administrador atual" (parâmetro de API `keepAccount=1`): o `account.json` do backup é ignorado, a conta, a senha, a verificação em duas etapas e os usuários somente leitura atuais permanecem inalterados, e um backup sem `account.json` também pode ser restaurado, o que serve para trazer a configuração de outra instância. A restauração é recusada enquanto a senha padrão estiver em uso; altere a senha antes.
