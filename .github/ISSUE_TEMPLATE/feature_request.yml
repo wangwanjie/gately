@@ -44,7 +44,7 @@ body:
         - Certificates / 证书
         - Dynamic DNS
         - STUN
-        - frp / Tailscale / Cloudflare Tunnel / NetBird
+        - frp / Tailscale / Cloudflare Tunnel / NetBird / EasyTier
         - Intrusion prevention, WAF / 入侵防护、WAF
         - File services (WebDAV / SMB / FTP / File Browser) / 文件服务
         - Authentication, OIDC / 认证、OIDC

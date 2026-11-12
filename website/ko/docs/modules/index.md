@@ -22,7 +22,7 @@ Gately의 각 기능은 독립된 모듈이며 따로 켜고 끄고 설정할 �
 | WAF 방화벽 | Coraza + OWASP CRS v4 | [보기](/ko/docs/modules/waf) |
 | 침입 방지 | 로그 규칙(fail2ban 방식), 미끼 포트, 포트 스캔 탐지, 차단을 nftables에 동기화 | [보기](/ko/docs/modules/guard) |
 | 포트 노킹 | fwknop 호환 단일 패킷 노킹(SPA), SSH 등의 포트를 방화벽에서 차단하고 포트 포워딩, 프로토콜 라우팅, STUN은 노크에 따라 허용 | [보기](/ko/docs/modules/knock) |
-| Tailscale / NetBird / frp / cloudflared | 공식 바이너리를 관리하는 네트워킹 및 NAT 통과 | [보기](/ko/docs/modules/tunnels) |
+| Tailscale / NetBird / EasyTier / frp / cloudflared | 공식 바이너리를 관리하는 네트워킹 및 NAT 통과 | [보기](/ko/docs/modules/tunnels) |
 | Docker 관리 | 컨테이너 생성과 편집, 로그와 터미널, Compose, 이미지 업데이트와 업그레이드, 네트워크와 볼륨 | [보기](/ko/docs/modules/docker) |
 | 웹 터미널 | SSH, Telnet, 로컬 셸, SFTP 파일 관리, 영구 세션 | [보기](/ko/docs/modules/terminal) |
 | 네트워크 진단 | Ping, 경로 추적, 포트 점검, DNS 조회, 속도 측정, LAN 스캔 | [보기](/ko/docs/modules/nettools) |

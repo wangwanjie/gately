@@ -1,10 +1,10 @@
-# Tailscale / NetBird / frp / cloudflared
+# Tailscale / NetBird / EasyTier / frp / cloudflared
 
-四个模块以进程托管方式集成官方程序：自动重启、日志汇总到界面、配置在界面中完成。Gately 本体不内置这些程序，可以在页面中在线安装、更新与回滚。
+五个模块以进程托管方式集成官方程序：自动重启、日志汇总到界面、配置在界面中完成。Gately 本体不内置这些程序，可以在页面中在线安装、更新与回滚。
 
 ## 在线安装、更新与回滚 {#install}
 
-frp、Cloudflare 隧道、Tailscale、NetBird 与 [File Browser](/docs/modules/tools#filebrowser) 页面下方都有「在线安装」卡片：
+frp、Cloudflare 隧道、Tailscale、NetBird、EasyTier 与 [File Browser](/docs/modules/tools#filebrowser) 页面下方都有「在线安装」卡片：
 
 - **下载安装 / 更新到最新版**：从上游下载最新正式版，按上游记录的 SHA-256 校验，确认能在本机运行后安装到配置目录的 `bin/`，完成后自动重启使用该程序的进程。已经是最新版时不会重复下载；
 - **检查更新**：只查询上游最新正式版，不下载；有新版本时卡片标题旁显示「新版本」。开启[自动检查更新](/docs/guide/install#update-check)时，Gately 每 12 小时为已安装的程序检查一次，发现新版本时发布 `program.update` 通知；
@@ -19,6 +19,7 @@ frp、Cloudflare 隧道、Tailscale、NetBird 与 [File Browser](/docs/modules/t
 | cloudflared | GitHub cloudflare/cloudflared | `cloudflared` |
 | Tailscale | pkgs.tailscale.com 静态包，仅 Linux | `tailscale`、`tailscaled` |
 | NetBird | GitHub netbirdio/netbird，Linux、macOS、Windows | `netbird` |
+| EasyTier | GitHub EasyTier/EasyTier，Linux（amd64、arm64、armv7、armhf、arm、mips、mipsel、riscv64、loongarch64）、macOS、Windows、FreeBSD | `easytier-core`、`easytier-cli`（发布包里的 zip，安装 SHA-256 取自 GitHub 记录的摘要） |
 | FileBrowser Quantum | GitHub gtsteffaniak/filebrowser | `filebrowser` |
 
 Tailscale 在 macOS 与 Windows 上没有可直接运行的程序包，请使用官方安装程序，再在设置中填写路径。卡片会提示当前平台不支持的情况。
@@ -33,6 +34,7 @@ Tailscale 在 macOS 与 Windows 上没有可直接运行的程序包，请使用
 | Cloudflare 隧道 | 全部隧道与程序设置 |
 | Tailscale | 全部实例与程序设置，默认状态目录中的登录状态；使用默认状态目录的托管 tailscaled 运行中时先退出登录。自定义的状态目录与系统已有的 tailscaled 不处理 |
 | NetBird | 全部实例与程序设置，默认状态目录中的登录状态与密钥；使用默认状态目录的托管守护进程运行中时先退出登录，本机从组网中删除。自定义的状态目录与系统已有的 NetBird 服务不处理 |
+| EasyTier | 全部实例与程序设置（含网络密钥）；EasyTier 不在配置目录保存其他状态 |
 | File Browser | 全部实例与程序设置，各实例的用户、分享链接与缓存；共享目录中的文件不受影响 |
 
 旧配置保存在 [配置历史](/docs/guide/audit) 中，误操作时可以恢复。要彻底移除，先卸载程序，再恢复默认配置。接口为 `DELETE /api/{module}/install`（卸载）与 `POST /api/{module}/reset`（恢复默认配置）。
@@ -94,6 +96,26 @@ Tailscale 在 macOS 与 Windows 上没有可直接运行的程序包，请使用
 - `netbird` 程序约 41 MB，运行时内存约 60 MB，在线安装还会在 `bin/.versions/` 保留最多 3 个旧版本。闪存较小的路由器请留意剩余空间，可在安装卡片中删除旧版本，或把程序放在外部存储上并在设置中填写路径；
 - 恢复默认配置与 `POST /api/netbird/instances/{key}/logout` 会从管理服务注销本机，节点从组网中删除，再次加入需要重新认证。
 
+## EasyTier
+
+支持多个实例：每个实例运行一个独立的 `easytier-core` 进程，可以把同一台机器分别加入不同的组网。组网名称与网络密钥相同的节点互通；优先 P2P 打洞，打不通时经公共节点或自建节点中继，连接协议支持 tcp / udp / ws / wss / quic / wg 等。
+
+- **网络密钥**：通过环境变量 `ET_NETWORK_SECRET` 传给进程，不出现在命令行，日志中也会打码；界面里是带「显示 / 隐藏」的密码框，列表与接口返回的是脱敏值；
+- **节点地址（peers）**：每行一个，例如 `tcp://public.easytier.cn:11010`；
+- **监听地址（listeners）**：必须写成 `协议://地址:端口`，留空则不监听任何端口，只主动连接。作为中继或公网节点时，需要自行在防火墙放行这些端口；
+- **虚拟 IP**：自动分配（DHCP）或填写固定 IPv4；两者都没有时只转发数据，不创建网卡；
+- **运行方式**：TUN 网卡需要 root 与 `/dev/net/tun`，Docker 需要 `NET_ADMIN` 与 `/dev/net/tun`；创建失败时实例会显示原因，进程不会退出。「用户态网络」无需特权，适合容器，通过「端口转发」访问组网内的服务；
+- **不提供 SOCKS5 选项**：EasyTier 的 SOCKS5 监听全部地址且没有认证。端口转发的绑定地址由你填写，建议 `127.0.0.1`；绑定到非回环地址时界面会提示（转发入口没有认证）；
+- **其他选项**：子网代理（`proxyNetworks`，可写 `192.168.1.0/24->10.1.0.0/24` 映射）、出口节点（作为出口 / 使用出口）、延迟优先、KCP / QUIC 代理（在 UDP 丢包的网络上降低延迟）、网卡名，以及额外参数与环境变量（`ET_` 开头的选项见 EasyTier 文档）；
+- **管理端口**：Gately 在 `127.0.0.1` 上为每个实例随机分配并限定本机访问，状态（本机虚拟 IP、NAT 类型、公网地址、监听地址、节点的直连 / 中继、延迟、丢包、流量）通过 `easytier-cli` 读取；`easytier-core` 与 `easytier-cli` 一起安装；
+- **冲突检查**：同时启用的实例不能监听同一个端口（TCP 与 UDP 分别判断），不能绑定同一个本机转发端口，使用 TUN 时网卡名不能相同；实例名称不能重复。保存、启用与复制时都会检查；
+- 修改某个实例只重启它自己；只改分组或备注不重启；
+- **OpenWrt / iStoreOS / ImmortalWrt**：EasyTier 的 TUN 网卡（默认名 `tun0`，可用“网卡名”固定）不属于任何防火墙区域，fw4 的 input 默认丢弃，其他节点主动访问本机的虚拟 IP 会不通（本机访问别人没问题）。需要把网卡加入 lan 区域：`uci add_list firewall.@zone[0].device='tun0'`、`uci commit firewall`、`/etc/init.d/firewall reload`（`@zone[0]` 通常是 lan，请按实际区域调整；网卡名改过时用改后的名字）。已在 iStoreOS 24.10 与 ImmortalWrt 25.12 上验证加入后三台互通。另外 ImmortalWrt 等精简固件默认没有 `/dev/net/tun`，需要先安装 `kmod-tun`（`apk add kmod-tun` 或 `opkg install kmod-tun`），否则 `easytier-core` 会启动失败并被反复重启，实例上会显示原因；也可以改用“用户态网络”；
+- **Windows**：在线安装会把 `easytier-core.exe`、`easytier-cli.exe` 与同目录依赖的 `wintun.dll`、`Packet.dll`、`WinDivert64.sys` 一并安装（缺少这些 DLL 程序无法启动）；使用 TUN 网卡需要以管理员身份运行 Gately（作为服务运行时即为 SYSTEM）；
+- 程序体积随平台不同：Linux x86_64 上 `easytier-core` 约 7.5 MB、`easytier-cli` 约 3 MB，macOS arm64 上分别约 21 MB 与 9 MB；Windows x86_64 的完整发布包（含依赖库）约 32 MB。
+
+在 UDP 打洞困难（NAT 类型严格、与中继之间 UDP 丢包高）的网络里，可以对比 EasyTier 与 Tailscale 的直连效果；EasyTier 的中继节点可自选，包括国内节点。
+
 ## frp
 
 - **frpc 客户端**：可添加多个 frpc 实例，每个实例连接一台 frps，独立运行、单独启停与重启；代理归属某个实例，支持 tcp / udp / http / https / stcp / xtcp，增删改后只重启所属实例；
@@ -126,6 +148,7 @@ Tailscale 在 macOS 与 Windows 上没有可直接运行的程序包，请使用
 | --- | --- |
 | 在多台设备之间组成私有网络 | Tailscale |
 | 组网，并希望客户端与管理端都开源、可以自建 | NetBird |
+| 在 UDP 打洞困难或需要自选中继节点的网络里组网 | EasyTier |
 | 自己有公网服务器，把内网服务映射出去 | frp |
 | 没有公网 IP 也没有服务器，快速暴露 Web 服务 | Cloudflare 隧道 |
 | 运营商给了可打洞的 NAT | [STUN 穿透](/docs/modules/stun) |

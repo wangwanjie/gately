@@ -22,7 +22,7 @@ Pour les modules non compilés dans une version personnalisée : leurs fichiers 
 | Pare-feu WAF | Coraza + OWASP CRS v4 | [Consulter](/fr/docs/modules/waf) |
 | Prévention d'intrusion | Règles de journaux (à la fail2ban), ports pièges et détection de scan, bannissements synchronisés dans nftables | [Consulter](/fr/docs/modules/guard) |
 | Port Knocking | Single Packet Authorization compatible avec fwknop : blocage par le pare-feu de SSH et d'autres ports ; redirection de ports, routage par protocole et STUN autorisés par knock | [Consulter](/fr/docs/modules/knock) |
-| Tailscale / NetBird / frp / cloudflared | Réseau et traversée NAT avec des binaires officiels gérés | [Consulter](/fr/docs/modules/tunnels) |
+| Tailscale / NetBird / EasyTier / frp / cloudflared | Réseau et traversée NAT avec des binaires officiels gérés | [Consulter](/fr/docs/modules/tunnels) |
 | Docker | Création et édition de conteneurs, journaux et terminal, Compose, mises à jour et montées de version d'images, réseaux et volumes | [Consulter](/fr/docs/modules/docker) |
 | Terminal Web | SSH, Telnet, shell local, gestionnaire de fichiers SFTP, sessions persistantes | [Consulter](/fr/docs/modules/terminal) |
 | Diagnostic réseau | Ping, traceroute, test de port, résolution DNS, test de débit, scan du réseau local | [Consulter](/fr/docs/modules/nettools) |

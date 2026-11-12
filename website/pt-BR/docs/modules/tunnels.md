@@ -1,10 +1,10 @@
-# Tailscale / NetBird / frp / cloudflared
+# Tailscale / NetBird / EasyTier / frp / cloudflared
 
-Estes quatro módulos integram os programas oficiais como processos gerenciados: reinício automático, logs reunidos na interface e configuração feita na interface. O Gately não embute esses programas; eles podem ser instalados, atualizados e revertidos online pela página.
+Estes cinco módulos integram os programas oficiais como processos gerenciados: reinício automático, logs reunidos na interface e configuração feita na interface. O Gately não embute esses programas; eles podem ser instalados, atualizados e revertidos online pela página.
 
 ## Instalação, atualização e reversão online {#install}
 
-As páginas de frp, Cloudflare Tunnel, Tailscale, NetBird e [File Browser](/pt-BR/docs/modules/tools#filebrowser) têm, no fim, um cartão "Instalação online":
+As páginas de frp, Cloudflare Tunnel, Tailscale, NetBird, EasyTier e [File Browser](/pt-BR/docs/modules/tools#filebrowser) têm, no fim, um cartão "Instalação online":
 
 - **Baixar e instalar / Atualizar para a mais recente**: baixa a versão estável mais recente do projeto original, verifica pelo SHA-256 registrado por ele, confirma que roda nesta máquina, instala em `bin/` no diretório de configuração e depois reinicia os processos que usam o programa. Se a versão mais recente já estiver instalada, nada é baixado de novo;
 - **Verificar atualizações**: apenas consulta a versão estável mais recente no projeto de origem, sem baixar; se houver uma nova, aparece "Nova versão" ao lado do título do cartão. Com a [verificação automática de atualizações](/pt-BR/docs/guide/install#update-check) ativada, o Gately verifica os programas instalados a cada 12 horas e publica uma notificação `program.update` quando há versão nova;
@@ -19,6 +19,7 @@ As páginas de frp, Cloudflare Tunnel, Tailscale, NetBird e [File Browser](/pt-B
 | cloudflared | GitHub cloudflare/cloudflared | `cloudflared` |
 | Tailscale | pacotes estáticos de pkgs.tailscale.com, só Linux | `tailscale`, `tailscaled` |
 | NetBird | GitHub netbirdio/netbird, Linux, macOS e Windows | `netbird` |
+| EasyTier | GitHub EasyTier/EasyTier, Linux (amd64, arm64, armv7, armhf, arm, mips, mipsel, riscv64, loongarch64), macOS, Windows e FreeBSD | `easytier-core`, `easytier-cli` (o zip da versão publicada; o SHA-256 de verificação é o resumo registrado pelo GitHub) |
 | FileBrowser Quantum | GitHub gtsteffaniak/filebrowser | `filebrowser` |
 
 No macOS e no Windows o Tailscale não tem pacotes prontos para executar: use o instalador oficial e informe o caminho nas configurações. O cartão avisa quando a plataforma atual não é suportada.
@@ -33,6 +34,7 @@ O botão "Restaurar padrões" no cabeçalho da página é separado da desinstala
 | Cloudflare Tunnel | Todos os túneis e as configurações do programa |
 | Tailscale | Todas as instâncias e as configurações dos programas, e o estado de login dos diretórios de estado padrão; um tailscaled gerenciado pelo Gately em execução que usa o diretório de estado padrão sai do login primeiro. Diretórios de estado personalizados e um tailscaled do sistema existente não são alterados |
 | NetBird | Todas as instâncias e configurações do programa, e o estado de login e as chaves nos diretórios de estado padrão; se um daemon gerenciado pelo Gately que usa o diretório de estado padrão estiver em execução, ele faz logout antes e esta máquina é removida da rede. Diretórios de estado personalizados e o serviço NetBird já existente no sistema não são tocados |
+| EasyTier | Todas as instâncias e configurações do programa, incluindo as chaves de rede; o EasyTier não guarda outro estado no diretório de configuração |
 | File Browser | Todas as instâncias e as configurações do programa, os usuários, links de compartilhamento e caches de cada instância; os arquivos nos diretórios compartilhados ficam intactos |
 
 A configuração antiga fica guardada no [histórico de configuração](/pt-BR/docs/guide/audit) e pode ser restaurada em caso de engano. Para remover tudo, desinstale primeiro o programa e depois restaure os padrões. Os endpoints da API são `DELETE /api/{module}/install` (desinstalar) e `POST /api/{module}/reset` (restaurar padrões).
@@ -94,6 +96,26 @@ Cada instância oferece:
 - O programa `netbird` tem cerca de 41 MB e usa cerca de 60 MB de memória, e a instalação online guarda até 3 versões antigas em `bin/.versions/`. Em roteadores com pouca flash, fique de olho no espaço livre: exclua versões antigas no cartão de instalação ou coloque o programa em um armazenamento externo e informe o caminho nas configurações;
 - Restaurar o padrão e `POST /api/netbird/instances/{key}/logout` cancelam o registro desta máquina no servidor de gerenciamento e a removem da rede; para entrar de novo é preciso autenticar novamente.
 
+## EasyTier
+
+Há suporte a várias instâncias: cada instância executa seu próprio processo `easytier-core`, de modo que a mesma máquina pode entrar em redes diferentes. Nós com o mesmo nome de rede e a mesma chave de rede se comunicam entre si. O hole punching P2P é tentado primeiro; se falhar, o tráfego passa por um nó público ou auto-hospedado como retransmissor. Os protocolos de conexão incluem tcp / udp / ws / wss / quic / wg.
+
+- **Chave de rede**: passada ao processo pela variável de ambiente `ET_NETWORK_SECRET`, portanto não aparece na linha de comando e é mascarada nos logs. A interface mostra um campo de senha com "mostrar / ocultar", e as listas e a API devolvem um valor mascarado;
+- **Nós (peers)**: um endereço por linha, por exemplo `tcp://public.easytier.cn:11010`;
+- **Endereços de escuta (listeners)**: devem ser escritos como `protocolo://endereço:porta`. Se ficarem vazios, a instância não escuta em nenhuma porta e apenas se conecta para fora. Ao atuar como nó de retransmissão ou público, libere você mesmo essas portas no firewall;
+- **IP virtual**: atribuição automática (DHCP) ou um IPv4 fixo. Sem nenhum dos dois, o nó apenas encaminha dados e não cria interface de rede;
+- **Modo de execução**: uma interface TUN exige root e `/dev/net/tun`; no Docker, `NET_ADMIN` e `/dev/net/tun`. Se a criação falhar, a instância mostra o motivo e o processo não encerra. A "rede em espaço de usuário" não exige privilégios e serve para contêineres; os serviços da rede são acessados pelo "redirecionamento de portas";
+- **Sem opção SOCKS5**: o SOCKS5 do EasyTier escuta em todos os endereços e não tem autenticação. O endereço de vínculo de um redirecionamento de portas é você quem preenche, e `127.0.0.1` é o recomendado; ao vincular a um endereço que não seja de loopback, a interface mostra um aviso (a entrada do redirecionamento não tem autenticação);
+- **Outras opções**: proxy de sub-rede (`proxyNetworks`, aceita mapeamentos como `192.168.1.0/24->10.1.0.0/24`), nós de saída (atuar como saída / usar uma saída), prioridade de latência, proxy KCP / QUIC (reduz a latência em redes com perda de pacotes UDP), nome da interface e argumentos extras e variáveis de ambiente (para as opções `ET_`, veja a documentação do EasyTier);
+- **Porta de gerenciamento**: o Gately escolhe uma porta aleatória em `127.0.0.1` para cada instância e a limita ao acesso local. O estado (IP virtual local, tipo de NAT, endereços públicos, endereços de escuta, nós diretos / retransmitidos, latência, perda de pacotes, tráfego) é lido por meio do `easytier-cli`; `easytier-core` e `easytier-cli` são instalados juntos;
+- **Verificação de conflitos**: instâncias habilitadas ao mesmo tempo não podem escutar na mesma porta (TCP e UDP são avaliados separadamente), vincular a mesma porta de redirecionamento local nem usar o mesmo nome de interface com TUN; os nomes das instâncias não podem se repetir. A verificação ocorre ao salvar, habilitar e copiar;
+- Alterar uma instância reinicia apenas essa instância; mudar só o grupo ou a observação não reinicia;
+- **OpenWrt / iStoreOS / ImmortalWrt**: a interface TUN do EasyTier (nome padrão `tun0`, pode ser fixado com o nome da interface) não pertence a nenhuma zona do firewall e a política input do fw4 descarta por padrão, então os outros nós não conseguem acessar o IP virtual desta máquina (desta máquina para os outros funciona). Adicione a interface à zona lan: `uci add_list firewall.@zone[0].device='tun0'`, `uci commit firewall`, `/etc/init.d/firewall reload` (`@zone[0]` costuma ser lan, ajuste conforme a zona real; se o nome da interface foi alterado, use o novo). Verificado no iStoreOS 24.10 e no ImmortalWrt 25.12: depois de adicionar, os três nós se comunicam entre si. Além disso, firmwares enxutos como o ImmortalWrt não têm `/dev/net/tun` por padrão; instale antes o `kmod-tun` (`apk add kmod-tun` ou `opkg install kmod-tun`), caso contrário o `easytier-core` falha ao iniciar e é reiniciado repetidamente, com o motivo exibido na instância; também é possível usar a «rede em espaço de usuário»;
+- **Windows**: a instalação online instala `easytier-core.exe` e `easytier-cli.exe` junto com as dependências do mesmo diretório, `wintun.dll`, `Packet.dll` e `WinDivert64.sys` (sem essas DLLs o programa não inicia); usar uma interface TUN exige executar o Gately como administrador (SYSTEM quando executado como serviço);
+- O tamanho do programa depende da plataforma: no Linux x86_64, o `easytier-core` tem cerca de 7,5 MB e o `easytier-cli` cerca de 3 MB; no macOS arm64, cerca de 21 MB e 9 MB respectivamente; o pacote de lançamento completo para Windows x86_64 (com as bibliotecas) tem cerca de 32 MB.
+
+Em redes em que o hole punching UDP é difícil (tipo de NAT restrito ou alta perda de pacotes UDP até o retransmissor), compare os resultados de conexão direta do EasyTier e do Tailscale; os nós de retransmissão do EasyTier podem ser escolhidos livremente, inclusive nós na China continental.
+
 ## frp
 
 - **Cliente frpc**: adicione quantas instâncias do frpc precisar; cada uma se conecta a um frps e roda, ativa, para e reinicia de forma independente. Os proxies pertencem a uma instância e suportam tcp / udp / http / https / stcp / xtcp; alterar um proxy reinicia apenas a instância dele;
@@ -126,6 +148,7 @@ Os hostnames públicos e os serviços de origem (rotas) de um túnel com token f
 | --- | --- |
 | Criar uma rede privada entre vários dispositivos | Tailscale |
 | Uma rede privada em que o cliente e o servidor de gerenciamento são de código aberto e auto-hospedáveis | NetBird |
+| Uma rede em que o hole punching UDP é difícil ou em que você quer escolher seus próprios nós de retransmissão | EasyTier |
 | Você tem um servidor público e quer expor serviços internos por ele | frp |
 | Sem IP público e sem servidor, e você quer expor rapidamente um serviço web | Cloudflare Tunnel |
 | Sua operadora oferece um NAT que permite hole punching | [Travessia STUN](/pt-BR/docs/modules/stun) |

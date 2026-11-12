@@ -22,7 +22,7 @@ Gately の各機能は独立したモジュールで、個別に有効化・無�
 | WAF ファイアウォール | Coraza + OWASP CRS v4 | [開く](/ja/docs/modules/waf) |
 | 侵入防御 | ログルール（fail2ban 風）、おとりポート、ポートスキャン検出。ブロックは nftables に同期 | [開く](/ja/docs/modules/guard) |
 | ポートノッキング | fwknop 互換のシングルパケット認可（SPA）。SSH などのポートをファイアウォールでブロックし、ポート転送・プロトコル振り分け・STUN もノックで許可 | [開く](/ja/docs/modules/knock) |
-| Tailscale / NetBird / frp / cloudflared | 公式バイナリを管理するネットワーク接続と NAT 越え | [開く](/ja/docs/modules/tunnels) |
+| Tailscale / NetBird / EasyTier / frp / cloudflared | 公式バイナリを管理するネットワーク接続と NAT 越え | [開く](/ja/docs/modules/tunnels) |
 | Docker 管理 | コンテナの作成と編集、ログとターミナル、Compose、イメージの更新とアップグレード、ネットワークとボリューム | [開く](/ja/docs/modules/docker) |
 | Web ターミナル | SSH、Telnet、ローカルシェル、SFTP ファイル管理、永続セッション | [開く](/ja/docs/modules/terminal) |
 | ネットワーク診断 | Ping、トレースルート、ポート検査、DNS 照会、速度測定、LAN スキャン | [開く](/ja/docs/modules/nettools) |

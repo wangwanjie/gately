@@ -39,7 +39,7 @@
       "modules/waf": "WAF Firewall",
       "modules/guard": "Intrusion Prevention",
       "modules/knock": "Port Knocking",
-      "modules/tunnels": "Tailscale / NetBird / frp / cloudflared",
+      "modules/tunnels": "Tailscale / NetBird / EasyTier / frp / cloudflared",
       "modules/docker": "Docker Management",
       "modules/terminal": "Web Terminal",
       "modules/nettools": "Network Diagnostics",

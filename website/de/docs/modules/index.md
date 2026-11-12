@@ -22,7 +22,7 @@ Für Module, die nicht in den benutzerdefinierten Build einkompiliert sind, gilt
 | WAF-Firewall | Coraza + OWASP CRS v4 | [Ansehen](/de/docs/modules/waf) |
 | Einbruchschutz | Protokollregeln (wie fail2ban), Köderports und Portscan-Erkennung, Sperren werden in nftables übertragen | [Ansehen](/de/docs/modules/guard) |
 | Port-Knocking | Single Packet Authorization (SPA), kompatibel mit fwknop; Firewall-Blockierung für SSH und andere Ports, Portweiterleitung, Protokollrouting und STUN lassen nur nach dem Knock durch | [Ansehen](/de/docs/modules/knock) |
-| Tailscale / NetBird / frp / cloudflared | Vernetzung und NAT-Traversal mit verwalteten offiziellen Binärdateien | [Ansehen](/de/docs/modules/tunnels) |
+| Tailscale / NetBird / EasyTier / frp / cloudflared | Vernetzung und NAT-Traversal mit verwalteten offiziellen Binärdateien | [Ansehen](/de/docs/modules/tunnels) |
 | Docker | Container erstellen und bearbeiten, Logs und Terminal, Compose, Image-Updates und Upgrades, Netzwerke und Volumes | [Ansehen](/de/docs/modules/docker) |
 | Web-Terminal | SSH, Telnet, lokale Shell, SFTP-Dateimanager, persistente Sitzungen | [Ansehen](/de/docs/modules/terminal) |
 | Netzwerkdiagnose | Ping, Traceroute, Portprüfung, DNS-Abfrage, Geschwindigkeitstest, LAN-Scan | [Ansehen](/de/docs/modules/nettools) |

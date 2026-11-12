@@ -1,10 +1,10 @@
-# Tailscale / NetBird / frp / cloudflared
+# Tailscale / NetBird / EasyTier / frp / cloudflared
 
-네 모듈은 공식 프로그램을 프로세스로 관리하는 방식으로 통합되어 있습니다. 자동 재시작, 로그의 UI 집계, UI에서의 설정을 지원합니다. Gately 본체에는 이 프로그램들이 내장되어 있지 않으며, 페이지에서 온라인으로 설치, 업데이트, 롤백할 수 있습니다.
+다섯 모듈은 공식 프로그램을 프로세스로 관리하는 방식으로 통합되어 있습니다. 자동 재시작, 로그의 UI 집계, UI에서의 설정을 지원합니다. Gately 본체에는 이 프로그램들이 내장되어 있지 않으며, 페이지에서 온라인으로 설치, 업데이트, 롤백할 수 있습니다.
 
 ## 온라인 설치, 업데이트, 롤백 {#install}
 
-frp, Cloudflare 터널, Tailscale, NetBird, [File Browser](/ko/docs/modules/tools#filebrowser) 페이지 하단에는 모두 「온라인 설치」 카드가 있습니다.
+frp, Cloudflare 터널, Tailscale, NetBird, EasyTier, [File Browser](/ko/docs/modules/tools#filebrowser) 페이지 하단에는 모두 「온라인 설치」 카드가 있습니다.
 
 - **다운로드 및 설치 / 최신 버전으로 업데이트**: 업스트림에서 최신 안정 버전을 내려받아 업스트림에 기록된 SHA-256으로 검증하고, 이 기기에서 실행되는지 확인한 뒤 설정 디렉터리의 `bin/`에 설치합니다. 완료되면 해당 프로그램을 사용하는 프로세스를 자동으로 다시 시작합니다. 이미 최신 버전이면 다시 내려받지 않습니다.
 - **업데이트 확인**: 업스트림의 최신 정식 버전만 조회하며 다운로드하지 않습니다. 새 버전이 있으면 카드 제목 옆에 "새 버전"이 표시됩니다. [자동 업데이트 확인](/ko/docs/guide/install#update-check)이 켜져 있으면 Gately 가 설치된 프로그램을 12시간마다 확인하고 새 버전이 있으면 `program.update` 알림을 보냅니다;
@@ -19,6 +19,7 @@ frp, Cloudflare 터널, Tailscale, NetBird, [File Browser](/ko/docs/modules/tool
 | cloudflared | GitHub cloudflare/cloudflared | `cloudflared` |
 | Tailscale | pkgs.tailscale.com 정적 패키지, Linux 전용 | `tailscale`, `tailscaled` |
 | NetBird | GitHub netbirdio/netbird, Linux·macOS·Windows | `netbird` |
+| EasyTier | GitHub EasyTier/EasyTier, Linux(amd64, arm64, armv7, armhf, arm, mips, mipsel, riscv64, loongarch64)·macOS·Windows·FreeBSD | `easytier-core`, `easytier-cli` (릴리스의 zip, 설치 SHA-256은 GitHub가 기록한 다이제스트 사용) |
 | FileBrowser Quantum | GitHub gtsteffaniak/filebrowser | `filebrowser` |
 
 Tailscale은 macOS와 Windows용으로 바로 실행 가능한 패키지가 없으므로 공식 설치 프로그램을 사용한 뒤 설정에 경로를 입력하세요. 현재 플랫폼이 지원되지 않으면 카드에 안내가 표시됩니다.
@@ -33,6 +34,7 @@ Tailscale은 macOS와 Windows용으로 바로 실행 가능한 패키지가 없�
 | Cloudflare 터널 | 모든 터널과 프로그램 설정 |
 | Tailscale | 모든 인스턴스와 프로그램 설정, 기본 상태 디렉터리의 로그인 상태. 기본 상태 디렉터리를 쓰는 Gately 관리 tailscaled가 실행 중이면 먼저 로그아웃합니다. 사용자 지정 상태 디렉터리와 시스템의 기존 tailscaled는 그대로 둡니다 |
 | NetBird | 모든 인스턴스와 프로그램 설정, 기본 상태 디렉터리의 로그인 상태와 키. 기본 상태 디렉터리를 사용하는 관리 데몬이 실행 중이면 먼저 로그아웃하며 이 기기는 네트워크에서 삭제됩니다. 사용자 지정 상태 디렉터리와 시스템에 이미 있는 NetBird 서비스는 그대로 둡니다 |
+| EasyTier | 모든 인스턴스와 프로그램 설정(네트워크 시크릿 포함). EasyTier는 설정 디렉터리에 다른 상태를 저장하지 않습니다 |
 | File Browser | 모든 인스턴스와 프로그램 설정, 각 인스턴스의 사용자, 공유 링크, 캐시. 공유 디렉터리의 파일은 그대로 유지됩니다 |
 
 이전 설정은 [설정 기록](/ko/docs/guide/audit)에 보관되므로 실수로 초기화했을 때 복원할 수 있습니다. 완전히 정리하려면 먼저 프로그램을 제거한 뒤 기본 설정을 복원하세요. API는 `DELETE /api/{module}/install`(제거)과 `POST /api/{module}/reset`(기본 설정 복원)입니다.
@@ -94,6 +96,26 @@ Tailscale은 macOS와 Windows용으로 바로 실행 가능한 패키지가 없�
 - `netbird` 프로그램은 약 41 MB, 실행 메모리는 약 60 MB이며, 온라인 설치는 `bin/.versions/`에 이전 버전을 최대 3개 보관합니다. 플래시가 작은 라우터에서는 남은 공간에 유의하고, 설치 카드에서 이전 버전을 삭제하거나 프로그램을 외부 저장소에 두고 설정에 경로를 입력하세요.
 - 기본 설정 복원과 `POST /api/netbird/instances/{key}/logout`은 관리 서버에서 이 기기의 등록을 해제하고 네트워크에서 삭제합니다. 다시 참여하려면 다시 인증해야 합니다.
 
+## EasyTier
+
+여러 인스턴스를 지원합니다. 인스턴스마다 독립된 `easytier-core` 프로세스를 실행하므로 한 기기를 서로 다른 네트워크에 각각 참여시킬 수 있습니다. 네트워크 이름과 네트워크 시크릿이 같은 노드끼리 서로 통신합니다. P2P 홀 펀칭을 먼저 시도하고, 연결되지 않으면 공용 노드나 직접 운영하는 노드를 통해 중계합니다. 연결 프로토콜은 tcp / udp / ws / wss / quic / wg 등을 지원합니다.
+
+- **네트워크 시크릿**: 환경 변수 `ET_NETWORK_SECRET`으로 프로세스에 전달하므로 명령줄에 나타나지 않으며 로그에서도 가려집니다. UI에서는 「표시 / 숨기기」가 있는 비밀번호 입력란이고, 목록과 API는 가려진 값을 반환합니다.
+- **피어 주소(peers)**: 한 줄에 하나씩, 예: `tcp://public.easytier.cn:11010`.
+- **수신 주소(listeners)**: `프로토콜://주소:포트` 형식으로 써야 합니다. 비워 두면 어떤 포트도 수신하지 않고 밖으로만 연결합니다. 릴레이나 공용 노드로 쓸 때는 방화벽에서 해당 포트를 직접 열어야 합니다.
+- **가상 IP**: 자동 할당(DHCP) 또는 고정 IPv4. 둘 다 없으면 데이터 전달만 하고 네트워크 인터페이스는 만들지 않습니다.
+- **실행 방식**: TUN 인터페이스에는 root와 `/dev/net/tun`이 필요하며, Docker에서는 `NET_ADMIN`과 `/dev/net/tun`이 필요합니다. 생성에 실패하면 인스턴스에 원인이 표시되고 프로세스는 종료되지 않습니다. 「유저스페이스 네트워킹」은 권한이 필요 없어 컨테이너에 적합하며, 네트워크 안의 서비스는 「포트 포워딩」으로 접근합니다.
+- **SOCKS5 옵션은 제공하지 않습니다**: EasyTier의 SOCKS5는 모든 주소에서 수신하며 인증이 없습니다. 포트 포워딩의 바인드 주소는 직접 입력하며 `127.0.0.1`을 권장합니다. 루프백이 아닌 주소에 바인드하면 UI에 경고가 표시됩니다(포워딩 입구에는 인증이 없습니다).
+- **기타 옵션**: 서브넷 프록시(`proxyNetworks`, `192.168.1.0/24->10.1.0.0/24` 같은 매핑 가능), 출구 노드(출구로 동작 / 출구 사용), 지연 우선, KCP / QUIC 프록시(UDP 패킷 손실이 있는 네트워크에서 지연 감소), 인터페이스 이름, 추가 인수와 환경 변수(`ET_`로 시작하는 옵션은 EasyTier 문서 참고).
+- **관리 포트**: Gately는 인스턴스마다 `127.0.0.1`의 임의 포트를 할당하고 로컬 접근만 허용합니다. 상태(로컬 가상 IP, NAT 유형, 공인 주소, 수신 주소, 피어의 직접 / 릴레이, 지연, 패킷 손실, 트래픽)는 `easytier-cli`로 읽습니다. `easytier-core`와 `easytier-cli`는 함께 설치됩니다.
+- **충돌 검사**: 동시에 활성화된 인스턴스는 같은 포트를 수신할 수 없고(TCP와 UDP는 각각 판단), 같은 로컬 포워딩 포트에 바인드할 수 없으며, TUN 사용 시 인터페이스 이름도 같을 수 없습니다. 인스턴스 이름도 중복될 수 없습니다. 저장, 활성화, 복사할 때 검사합니다.
+- 한 인스턴스를 수정하면 그 인스턴스만 재시작됩니다. 그룹이나 메모만 바꾸면 재시작하지 않습니다.
+- **OpenWrt / iStoreOS / ImmortalWrt**: EasyTier의 TUN 인터페이스(기본 이름 `tun0`, '인터페이스 이름'으로 고정 가능)는 어떤 방화벽 영역에도 속하지 않고 fw4의 input 기본 정책이 차단이므로, 다른 노드가 이 장치의 가상 IP에 접속하면 연결되지 않습니다(이 장치에서 다른 노드로의 접속은 정상). 인터페이스를 lan 영역에 추가하세요: `uci add_list firewall.@zone[0].device='tun0'`, `uci commit firewall`, `/etc/init.d/firewall reload`(`@zone[0]`은 보통 lan이며 실제 영역에 맞게 조정하고, 인터페이스 이름을 바꿨다면 바뀐 이름을 사용). iStoreOS 24.10과 ImmortalWrt 25.12에서 추가 후 세 대가 서로 통신하는 것을 확인했습니다. 또한 ImmortalWrt 같은 경량 펌웨어에는 기본적으로 `/dev/net/tun`이 없으므로 먼저 `kmod-tun`을 설치해야 합니다(`apk add kmod-tun` 또는 `opkg install kmod-tun`). 설치하지 않으면 `easytier-core`가 시작에 실패해 반복 재시작되며 인스턴스에 원인이 표시됩니다. '사용자 공간 네트워크'로 대신할 수도 있습니다;
+- **Windows**: 온라인 설치는 `easytier-core.exe`, `easytier-cli.exe`와 같은 디렉터리에 두는 의존 파일 `wintun.dll`, `Packet.dll`, `WinDivert64.sys`를 함께 설치합니다(이 DLL이 없으면 프로그램이 시작되지 않음). TUN 인터페이스를 사용하려면 관리자 권한으로 Gately를 실행해야 합니다(서비스로 실행하면 SYSTEM);
+- 프로그램 크기는 플랫폼마다 다릅니다. Linux x86_64에서 `easytier-core`는 약 7.5 MB, `easytier-cli`는 약 3 MB이고, macOS arm64에서는 각각 약 21 MB와 9 MB입니다. Windows x86_64의 전체 릴리스 패키지(의존 라이브러리 포함)는 약 32 MB입니다.
+
+UDP 홀 펀칭이 어려운 네트워크(엄격한 NAT 유형, 릴레이와의 UDP 패킷 손실이 높은 경우)에서는 EasyTier와 Tailscale의 직접 연결 결과를 비교해 볼 수 있습니다. EasyTier의 릴레이 노드는 중국 본토 노드를 포함해 직접 고를 수 있습니다.
+
 ## frp
 
 - **frpc 클라이언트**: frpc 인스턴스를 여러 개 추가할 수 있으며, 각 인스턴스는 frps 한 대에 연결되어 독립적으로 실행되고 따로 켜고 끄거나 재시작할 수 있습니다. 프록시는 인스턴스에 속하며 tcp / udp / http / https / stcp / xtcp를 지원하고, 프록시를 바꾸면 해당 인스턴스만 재시작됩니다
@@ -126,6 +148,7 @@ Tailscale은 macOS와 Windows용으로 바로 실행 가능한 패키지가 없�
 | --- | --- |
 | 여러 기기 사이에 프라이빗 네트워크를 구성 | Tailscale |
 | 클라이언트와 관리 서버가 모두 오픈 소스이고 직접 호스팅할 수 있는 프라이빗 네트워크 | NetBird |
+| UDP 홀 펀칭이 어렵거나 릴레이 노드를 직접 고르고 싶은 네트워크에서 연결 | EasyTier |
 | 공인 서버가 있고 내부 서비스를 외부로 매핑 | frp |
 | 공인 IP도 서버도 없이 웹 서비스를 빠르게 공개 | Cloudflare 터널 |
 | 통신사가 홀 펀칭 가능한 NAT를 제공 | [STUN 통과](/ko/docs/modules/stun) |
