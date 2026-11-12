@@ -18,6 +18,8 @@ Jeder Benutzer kann auf ein Verzeichnis abgebildet werden oder mehrere Verzeichn
 - **Einzelnes Verzeichnis**: `root` und `readOnly` setzen. Nach der Anmeldung ist das Wurzelverzeichnis dieses Verzeichnis.
 - **Mehrere Verzeichnisse**: Klicken Sie in der Oberfläche auf „Mehrere Verzeichnisse einbinden“ oder tragen Sie mehrere Einträge in `mounts` ein. Jeder Eintrag hat `name` (Anzeigename, darf kein `/` enthalten und muss pro Benutzer eindeutig sein), `path` (einen absoluten Pfad) und `readOnly`. Nach der Anmeldung listet das Wurzelverzeichnis die Verzeichnisse nach Namen auf. Das Wurzelverzeichnis selbst ist nicht beschreibbar, und Dateien lassen sich nicht zwischen verschiedenen Verzeichnissen verschieben.
 
+**Anmeldebegrenzung**: WebDAV und FTP begrenzen falsche Passwörter pro Quelladresse. Nach 10 Fehlversuchen innerhalb von 15 Minuten wird jede Anmeldung von dieser Quelle bis zum Ende des Zeitfensters abgelehnt (WebDAV antwortet mit `429`, FTP mit einem Anmeldefehler), auch mit dem richtigen Passwort. Eine erfolgreiche Anmeldung setzt den Zähler nicht zurück; IPv6-Quellen werden pro /64 gezählt. Läuft WebDAV hinter einem lokalen Reverse-Proxy wie dem Gately-Webdienst, gilt die vom Proxy übergebene Besucheradresse.
+
 ## FTP
 
 Konfiguration unter „FTP-Dienst“ in der Gruppe „Dateidienste“. FTP und FTPS werden unterstützt.

@@ -18,6 +18,8 @@ Cada usuario puede apuntar a un directorio o montar varios directorios:
 - **Un solo directorio**: define `root` y `readOnly`. Tras iniciar sesión, la raíz es ese directorio.
 - **Varios directorios**: pulsa «Montar varios directorios» en la interfaz, o rellena varias entradas en `mounts`. Cada entrada tiene `name` (nombre visible, no puede contener `/` y es único dentro de un mismo usuario), `path` (una ruta absoluta) y `readOnly`. Tras iniciar sesión, la raíz lista los directorios por nombre. La propia raíz no admite escritura y los archivos no se pueden mover entre directorios distintos.
 
+**Limitación de inicios de sesión**: WebDAV y FTP limitan las contraseñas erróneas por dirección de origen. Tras 10 fallos en 15 minutos, todos los inicios de sesión de ese origen se rechazan hasta que termine la ventana (WebDAV devuelve `429`, FTP devuelve un fallo de inicio de sesión), incluso con la contraseña correcta. Un inicio de sesión correcto no reinicia el contador y los orígenes IPv6 se cuentan por /64. Si WebDAV está detrás de un proxy inverso local como el servicio web de Gately, se usa la dirección del visitante que transmite el proxy.
+
 ## FTP
 
 Se configura en «Servicio FTP», dentro del grupo «Servicios de archivos». Se admiten FTP y FTPS.

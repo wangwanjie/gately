@@ -18,6 +18,8 @@ Each user can map to one directory, or mount several directories:
 - **Single directory**: set `root` and `readOnly`. After login, the root is that directory.
 - **Multiple directories**: click "Mount multiple directories" in the UI, or fill in several entries in `mounts`. Each entry has `name` (display name, cannot contain `/`, unique within one user), `path` (an absolute path) and `readOnly`. After login, the root lists the directories by name. The root itself is not writable, and files cannot be moved between different directories.
 
+**Login throttling**: WebDAV and FTP limit wrong passwords per source address. After 10 failures within 15 minutes, every login from that source is refused until the window ends (WebDAV returns `429`, FTP returns a login failure), even with the correct password. A successful login does not reset the count, and IPv6 sources are counted per /64. When WebDAV sits behind a local reverse proxy such as the Gately web service, the visitor address passed by the proxy is used.
+
 ## FTP
 
 Configure it under "FTP Service" in the "File Services" group. FTP and FTPS are supported.
