@@ -13,7 +13,7 @@ Gately 可以直接读取 Lucky 的 `.lkcf` 配置文件或 Lucky「备份配置
 1. 找到 Lucky 的配置目录：Docker 部署通常是映射到容器 `/app/conf` 的宿主机目录，里面有 `lucky_base.lkcf`、`lucky_ddns.lkcf` 等文件。
 2. 部署 Gately（见 README）。建议：
    - 使用 `--network host`，直接监听宿主机端口；
-   - 管理端口默认 16680，与 Lucky 的 16601 不冲突；
+   - 管理端口默认 16680，可用 `-listen` 修改；
    - 如果 Lucky 的脚本或证书映射用到了容器内路径（例如 `/etc/lucky/custom_scripts`、`/data/nginx/...`），在 Gately 容器中挂载到**相同路径**，导入后无需修改。
 
 ## 2. 导入
@@ -49,7 +49,7 @@ Lucky 的计划任务、IP 过滤、Docker 设置在常见配置中为空，暂�
 
 建议按模块逐个切换，每切一个验证一个：
 
-1. **证书**：在 Gately 中启用证书。启用后会把证书写入映射目录并执行变化脚本（与 Lucky 相同的文件名），确认目录可写。
+1. **证书**：在 Gately 中启用证书。启用后会把证书写入映射目录并执行变化脚本，确认目录可写。
 2. **DDNS**：在 Lucky 中停用任务 → 在 Gately 中启用对应任务 → 点「强制同步」确认记录已更新。
 3. **端口转发 / STUN**：先在 Lucky 中停用规则（释放端口和 UPnP 映射），再在 Gately 中启用。STUN 规则启用后公网端口可能变化，脚本与 Webhook 会自动通知。
 4. **Web 服务**：停用 Lucky 的监听规则 → 在 Gately 中启用。HTTPS 站点需要证书模块中已有覆盖该域名的启用证书。
@@ -81,7 +81,7 @@ Gately 镜像内置 `sh`、`bash` 与 `curl`，常见的通知脚本可以直接
 - **ZeroSSL 证书**：沿用 Lucky 中的 EAB 凭据注册新的 ACME 账户；若 ZeroSSL 拒绝，在 ZeroSSL 后台重新生成 EAB。
 - **frp 实例**：Gately 只有一个 frpc 与一个 frps，Lucky 中多余的实例会在报告中列出，请改用其他机器或合并到同一实例；Gately 中已配置连接其他服务端的 frpc、或已启用的 frps 不会被覆盖。frps 控制台的账号由 Lucky 管理，迁移后如需控制台请重新设置端口与密码。
 - **存储引用**：Lucky 的 FTP / WebDAV 用户可以挂载「存储管理」中的存储。导入时请同时选择 `lucky_storagemanagement.lkcf`（或直接导入整站 zip），本地存储会解析为对应目录；WebDAV、阿里云盘存储与 rclone 挂载暂不支持，会在报告中提示。
-- **尚未实现的 Lucky 功能**：DLNA、rclone 网盘挂载、阿里云盘、IP 库（`lucky_ipdb.lkcf`）等暂未迁移，导入时会跳过。
+- **未迁移的内容**：DLNA、rclone 网盘挂载、阿里云盘、IP 库（`lucky_ipdb.lkcf`）等不在迁移范围内，导入时会跳过。
 - **Lucky 官方服务器**：Gately 不会连接 `66666.host`、`lucky666.cn` 等地址，迁移后公网 IP 查询使用第三方公共服务（可在 DDNS 任务中修改）。
 
 ## 6. 回退

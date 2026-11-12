@@ -13,7 +13,7 @@ Este guia trata da migração a partir do Lucky. Sites existentes do nginx podem
 1. Localize o diretório de configuração do Lucky: em implantações com Docker, costuma ser o diretório do host mapeado para `/app/conf` no contêiner, com arquivos como `lucky_base.lkcf` e `lucky_ddns.lkcf`.
 2. Implante o Gately (veja o README). Recomendações:
    - use `--network host`, escutando diretamente nas portas do host;
-   - a porta de administração padrão é a 16680, sem conflito com a 16601 do Lucky;
+   - a porta de administração padrão é a 16680 e pode ser alterada com `-listen`;
    - se os scripts ou mapeamentos de certificados do Lucky usam caminhos internos do contêiner (por exemplo `/etc/lucky/custom_scripts`, `/data/nginx/...`), monte-os no contêiner do Gately no **mesmo caminho**, e nada precisará ser alterado após a importação.
 
 ## 2. Importação
@@ -81,7 +81,7 @@ A imagem do Gately inclui `sh`, `bash` e `curl`, então os scripts de notificaç
 - **Certificados ZeroSSL**: usam as credenciais EAB do Lucky para registrar uma nova conta ACME; se o ZeroSSL recusar, gere novamente as EAB no painel do ZeroSSL.
 - **Instâncias frp**: o Gately tem apenas um frpc e um frps; as instâncias excedentes do Lucky são listadas no relatório, então use outra máquina ou mescle em uma única instância. Um frpc já configurado no Gately para outro servidor, ou um frps já ativado, não é sobrescrito. A conta do console do frps é gerenciada pelo Lucky; se precisar do console após a migração, defina novamente a porta e a senha.
 - **Referências de armazenamento**: usuários de FTP / WebDAV do Lucky podem montar o armazenamento do "Gerenciamento de armazenamento". Na importação, selecione também `lucky_storagemanagement.lkcf` (ou importe diretamente o zip do site inteiro); o armazenamento local é resolvido para o diretório correspondente, enquanto armazenamento WebDAV, Aliyun Drive e montagens rclone ainda não são compatíveis e aparecem como aviso no relatório.
-- **Recursos do Lucky ainda não implementados**: DLNA, montagem de armazenamento em nuvem com rclone, Aliyun Drive, banco de dados de IP (`lucky_ipdb.lkcf`) e outros ainda não são migrados e são ignorados na importação.
+- **Conteúdo que não é migrado**: DLNA, montagem de armazenamento em nuvem com rclone, Aliyun Drive, banco de dados de IP (`lucky_ipdb.lkcf`) e similares ficam fora da importação e são ignorados.
 - **Servidores oficiais do Lucky**: o Gately nunca se conecta a endereços como `66666.host` e `lucky666.cn`; depois da migração, a consulta do IP público usa serviços públicos de terceiros (que podem ser alterados na tarefa de DDNS).
 
 ## 6. Rollback
