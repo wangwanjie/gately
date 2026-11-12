@@ -2419,6 +2419,7 @@
   "第 %d 行的引号没有闭合": "Aspas não fechadas na linha %d",
   "第 %d 行的指令 %s 没有以 ; 或 {} 结束": "A diretiva %[2]s na linha %[1]d não termina com ; ou {}",
   "第 %d 行的指令 %s 缺少 ;": "Falta ; na diretiva %[2]s da linha %[1]d",
+  "第 %d 行的配置块嵌套超过 %d 层": "O bloco na linha %d está aninhado em mais de %d níveis",
   "第三方登录": "Login de terceiros",
   "第三方登录 %s 的 Issuer 需为 https 地址": "O Issuer do login de terceiros %s deve ser um endereço https",
   "第三方登录 %s 的代理地址需为 http://、https:// 或 socks5:// 开头的地址，例如 http://127.0.0.1:7890": "O endereço do proxy do login de terceiros %s deve começar com http://, https:// ou socks5://, por exemplo http://127.0.0.1:7890",

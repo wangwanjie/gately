@@ -2419,6 +2419,7 @@
   "第 %d 行的引号没有闭合": "Nicht geschlossenes Anführungszeichen in Zeile %d",
   "第 %d 行的指令 %s 没有以 ; 或 {} 结束": "Direktive %[2]s in Zeile %[1]d endet nicht mit ; oder {}",
   "第 %d 行的指令 %s 缺少 ;": "Direktive %[2]s in Zeile %[1]d fehlt ;",
+  "第 %d 行的配置块嵌套超过 %d 层": "Der Block in Zeile %d ist mehr als %d Ebenen tief verschachtelt",
   "第三方登录": "Drittanbieter-Anmeldung",
   "第三方登录 %s 的 Issuer 需为 https 地址": "Der Issuer der Drittanbieter-Anmeldung %s muss eine https-Adresse sein",
   "第三方登录 %s 的代理地址需为 http://、https:// 或 socks5:// 开头的地址，例如 http://127.0.0.1:7890": "Die Proxy-Adresse der Drittanbieter-Anmeldung %s muss mit http://, https:// oder socks5:// beginnen, z. B. http://127.0.0.1:7890",
