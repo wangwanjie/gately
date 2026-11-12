@@ -88,6 +88,9 @@ type ConnOptions struct {
 	// uid/gid. Returning a non-nil error tears down the connection. Default
 	// (nil) is a no-op — the standard in-process serving path is unchanged.
 	OnAuthenticated func(sess *Session) error
+
+	// AuthLimiter 为 Gately 新增：按来源地址限制认证失败次数，为空时不限流。
+	AuthLimiter AuthLimiter
 }
 
 // Bounds on per-connection concurrency.
@@ -395,6 +398,8 @@ func ServeConn(ctx context.Context, c net.Conn, log *slog.Logger, maxFrame uint3
 		RequireEncryption: opts.RequireEncryption,
 		Index:             index,
 		Host:              host,
+		Limiter:           opts.AuthLimiter,
+		RemoteIP:          remoteIPOf(c.RemoteAddr()),
 	}
 	dispatcher = &Dispatcher{
 		Conn:              conn,
@@ -563,4 +568,19 @@ func ServeConn(ctx context.Context, c net.Conn, log *slog.Logger, maxFrame uint3
 			}
 		})
 	}
+}
+
+// remoteIPOf 返回对端地址的 IP 部分，无法解析时返回原字符串。
+func remoteIPOf(a net.Addr) string {
+	if a == nil {
+		return ""
+	}
+	if ta, ok := a.(*net.TCPAddr); ok {
+		return ta.IP.String()
+	}
+	host, _, err := net.SplitHostPort(a.String())
+	if err != nil {
+		return a.String()
+	}
+	return host
 }

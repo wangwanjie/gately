@@ -17,6 +17,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/wangwanjie/gately/internal/banlist"
+	"github.com/wangwanjie/gately/internal/fileusers"
 	"github.com/wangwanjie/gately/internal/gosamba/config"
 	"github.com/wangwanjie/gately/internal/gosamba/discovery"
 	"github.com/wangwanjie/gately/internal/gosamba/parent"
@@ -105,6 +106,9 @@ func startServer(s Settings, accounts []account, logs *logbuf.Buffer) (*server, 
 		// 全局共享为空：每个用户只能看到并连接自己的共享
 		Shares:         []config.ShareConfig{},
 		DurableTimeout: durableTimeout,
+		// 按来源地址限制认证失败次数（与 WebDAV、FTP 相同：15 分钟内失败 10 次后拒绝），
+		// 限流状态随一次启动的服务保存，重启后清空
+		AuthLimiter: &fileusers.Throttle{},
 	}
 
 	ln, err := net.Listen("tcp", net.JoinHostPort(s.ListenIP, strconv.Itoa(s.Port)))
@@ -218,6 +222,9 @@ func (s *server) Status() (running bool, err error) {
 	}
 }
 
+// tooManyFailures 是 gosamba 因来源认证失败过多而拒绝登录时的错误前缀。
+const tooManyFailures = "too many failed logins"
+
 // failedUser 匹配 gosamba 认证失败错误中的用户名。
 var failedUser = regexp.MustCompile(`user ("(?:[^"\\]|\\.)*")`)
 
@@ -268,6 +275,17 @@ func (h *logHandler) Handle(_ context.Context, r slog.Record) error {
 		h.logs.Add(logbuf.LevelInfo, "", fmt.Sprintf("%s 登录（用户 %q）", remote, attrs["smb_user"]))
 		return nil
 	case "auth failed":
+		// 来源失败次数过多被限流：不再校验密码，直接拒绝
+		if strings.HasPrefix(attrs["err"], tooManyFailures) {
+			if m := failedUser.FindStringSubmatch(attrs["err"]); m != nil {
+				if name, err := strconv.Unquote(m[1]); err == nil {
+					h.logs.Add(logbuf.LevelWarn, "", fmt.Sprintf("%s 登录失败次数过多，已拒绝（用户 %q）", remote, name))
+					return nil
+				}
+			}
+			h.logs.Add(logbuf.LevelWarn, "", fmt.Sprintf("%s 登录失败次数过多，已拒绝", remote))
+			return nil
+		}
 		// 错误形如 unknown user "x" 或 user "x": ...，取出用户名，与 FTP 的认证失败记录格式一致
 		if m := failedUser.FindStringSubmatch(attrs["err"]); m != nil {
 			if name, err := strconv.Unquote(m[1]); err == nil {
@@ -279,7 +297,7 @@ func (h *logHandler) Handle(_ context.Context, r slog.Record) error {
 		return nil
 	case "session-setup error":
 		// 认证失败已由 auth failed 记录，这里只是同一错误的重复
-		if strings.Contains(attrs["err"], "authentication failed") || strings.Contains(attrs["err"], "unknown user") {
+		if strings.Contains(attrs["err"], "authentication failed") || strings.Contains(attrs["err"], "unknown user") || strings.HasPrefix(attrs["err"], tooManyFailures) {
 			return nil
 		}
 	case "delete-on-close failed":

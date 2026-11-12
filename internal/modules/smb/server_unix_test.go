@@ -23,6 +23,7 @@ import (
 
 	"github.com/wangwanjie/gately/internal/banlist"
 	"github.com/wangwanjie/gately/internal/config"
+	"github.com/wangwanjie/gately/internal/fileusers"
 	"github.com/wangwanjie/gately/internal/gosamba/parent"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
@@ -311,6 +312,8 @@ func TestLogHandlerFilters(t *testing.T) {
 	lg.Warn("session-setup error", "err", `user "a": ntlm: authentication failed`)
 	lg.Warn("delete-on-close failed", "path", "/x/t", "err", "remove /x/t: directory not empty")
 	lg.Warn("auth failed", "err", `unknown user "x\"y"`)
+	lg.Warn("auth failed", "err", `too many failed logins (user "z")`)
+	lg.Warn("session-setup error", "err", `too many failed logins (user "z")`)
 	lg.Info("session authenticated", "smb_user", "alice")
 	lg.Warn("tree-connect: unknown share", "share_name", "media")
 	var got []string
@@ -319,11 +322,37 @@ func TestLogHandlerFilters(t *testing.T) {
 	}
 	want := []string{
 		`warn 1.2.3.4:5 认证失败（用户 "x\"y"）`,
+		`warn 1.2.3.4:5 登录失败次数过多，已拒绝（用户 "z"）`,
 		`info 1.2.3.4:5 登录（用户 "alice"）`,
 		`warn 1.2.3.4:5 tree-connect: unknown share share_name=media`,
 	}
 	if !slices.Equal(got, want) {
 		t.Fatalf("日志转换不正确:\n%q\n期望\n%q", got, want)
+	}
+}
+
+// TestAuthThrottle 验证同一来源认证失败 10 次后被拒绝（即使密码正确）并写入日志，
+// 重启服务后清空计数。
+func TestAuthThrottle(t *testing.T) {
+	root := t.TempDir()
+	m, port := startTestModule(t, Settings{Users: []User{{Name: "alice", Password: "p1", Root: root}}})
+	for i := 0; i < fileusers.ThrottleMaxFailures; i++ {
+		if _, err := dial(t, port, "alice", "wrong"); err == nil {
+			t.Fatal("错误密码应登录失败")
+		}
+	}
+	if _, err := dial(t, port, "alice", "p1"); err == nil {
+		t.Fatal("失败次数过多的来源应被拒绝")
+	}
+	if !hasLog(m, `登录失败次数过多，已拒绝（用户 "alice"）`) {
+		t.Fatal("拒绝应写入运行日志")
+	}
+
+	m.mu.Lock()
+	m.restartLocked()
+	m.mu.Unlock()
+	if _, err := dial(t, port, "alice", "p1"); err != nil {
+		t.Fatalf("重启后限流应清空: %v", err)
 	}
 }
 
