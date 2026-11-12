@@ -7,11 +7,15 @@
 | `-c` | Konfigurationsverzeichnis; lässt sich auch über die Umgebungsvariable `GATELY_CONFIG_DIR` setzen |
 | `-listen` | Überschreibt die Listen-Adresse der Verwaltungsoberfläche, z. B. `:16680` |
 | `-apply` | Verzeichnis für deklarative Konfiguration; lässt sich auch über die Umgebungsvariable `GATELY_APPLY_DIR` setzen, siehe unten |
+| `-gateway-socket` | Stellt die Verwaltungsoberfläche zusätzlich auf diesem Unix-Socket bereit, zum Beispiel für das einheitliche fnOS-Gateway |
+| `-gateway-prefix` | Pfadpräfix beim Zugriff über das Gateway, zum Beispiel `/app/gately` |
+| `-api-docs` | Exportiert die API-Dokumentation (`openapi.json` und `API.md`) in das angegebene Verzeichnis und beendet das Programm |
 | `-version` | Gibt die Versionsinformationen aus |
 
 | Umgebungsvariable | Beschreibung |
 | --- | --- |
 | `GATELY_INITIAL_PASSWORD` | Initialpasswort des Administrators beim ersten Start (mindestens 8 Zeichen), ohne Angabe gilt das Standardpasswort `gately.cn`; ohne Wirkung, wenn das Konto bereits existiert |
+| `GATELY_LANG` | Sprachcode, der zuerst gelesen wird, wenn die Serversprache auf „System folgen“ steht; danach folgen `LC_ALL`, `LC_MESSAGES` und `LANG` in dieser Reihenfolge |
 
 ## Konfigurationsverzeichnis
 

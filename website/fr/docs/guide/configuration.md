@@ -7,11 +7,15 @@
 | `-c` | Dossier de configuration ; peut aussi être défini avec la variable d'environnement `GATELY_CONFIG_DIR` |
 | `-listen` | Remplace l'adresse d'écoute de l'interface d'administration, p. ex. `:16680` |
 | `-apply` | Dossier de configuration déclarative ; peut aussi être défini avec la variable d'environnement `GATELY_APPLY_DIR`, voir ci-dessous |
+| `-gateway-socket` | Sert aussi l'interface d'administration sur ce socket Unix, par exemple pour la passerelle unifiée de fnOS |
+| `-gateway-prefix` | Préfixe de chemin utilisé lors d'un accès via la passerelle, par exemple `/app/gately` |
+| `-api-docs` | Exporte la documentation de l'API (`openapi.json` et `API.md`) dans le dossier indiqué, puis quitte |
 | `-version` | Affiche les informations de version |
 
 | Variable d'environnement | Description |
 | --- | --- |
 | `GATELY_INITIAL_PASSWORD` | Mot de passe administrateur initial au premier démarrage (8 caractères minimum) ; à défaut, le mot de passe par défaut `gately.cn` est utilisé. Sans effet si le compte existe déjà |
+| `GATELY_LANG` | Code de langue lu en premier lorsque la langue du serveur est « Suivre le système » ; `LC_ALL`, `LC_MESSAGES` et `LANG` viennent ensuite, dans cet ordre |
 
 ## Dossier de configuration
 
