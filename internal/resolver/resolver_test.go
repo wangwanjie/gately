@@ -90,3 +90,44 @@ func TestRealDoH(t *testing.T) {
 	}
 	t.Log(ips)
 }
+
+// Dialer 返回的副本带上当前解析器：与保存 DNS 设置（Install）并发拨号时不读 net.DefaultResolver，race 检测下无数据竞争。
+func TestDialerNoRace(t *testing.T) {
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer ln.Close()
+	go func() {
+		for {
+			c, err := ln.Accept()
+			if err != nil {
+				return
+			}
+			c.Close()
+		}
+	}()
+	t.Cleanup(func() { _ = Install(nil) })
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		for i := 0; i < 200; i++ {
+			_ = Install(nil)
+		}
+	}()
+	base := &net.Dialer{Timeout: time.Second}
+	for i := 0; i < 200; i++ {
+		d := Dialer(base)
+		if d == base || d.Resolver == nil {
+			t.Fatal("应返回带解析器的副本")
+		}
+		c, err := d.DialContext(context.Background(), "tcp", ln.Addr().String())
+		if err == nil {
+			c.Close()
+		}
+	}
+	<-done
+	if base.Resolver != nil {
+		t.Fatal("原拨号器不应被修改")
+	}
+}
