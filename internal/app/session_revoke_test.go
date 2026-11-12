@@ -1,12 +1,17 @@
 package app
 
 import (
+	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/wangwanjie/gately/internal/auth"
+	"github.com/wangwanjie/gately/internal/backup"
 )
 
 // cookieToken 取出客户端当前保存的会话令牌。
@@ -64,5 +69,46 @@ func TestLogoutRevokesTokenAndRevokeAll(t *testing.T) {
 	// API 令牌不能调用该接口
 	if code, _ := tokenRequest(t, srv.URL, "POST", "/api/account/sessions/revoke", apiSecret, nil); code != 403 {
 		t.Fatalf("API 令牌不应能退出所有设备，实际 %d", code)
+	}
+}
+
+// 恢复账号文件时换新的会话密钥：恢复旧备份不会让此后吊销的会话（纪元与吊销列表回退）重新生效。
+func TestRestoreRotatesSessionSecret(t *testing.T) {
+	a, srv, c := loginApp(t)
+	resp, err := c.Get(srv.URL + "/api/system/backup")
+	if err != nil {
+		t.Fatal(err)
+	}
+	bk, _ := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	parsed, err := backup.Parse(bk, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var old auth.Account
+	if err := json.Unmarshal(parsed["account.json"], &old); err != nil || old.SessionSecret == "" {
+		t.Fatalf("备份中的账号文件异常: %v", err)
+	}
+	if code, _ := doJSON(t, c, "POST", srv.URL+"/api/account/sessions/revoke", nil); code != 200 {
+		t.Fatalf("退出所有设备失败 %d", code)
+	}
+	jar, _ := cookiejar.New(nil)
+	c2 := &http.Client{Jar: jar}
+	if code, _ := doJSON(t, c2, "POST", srv.URL+"/api/login", map[string]string{"username": "admin", "password": "test-password"}); code != 200 {
+		t.Fatal("重新登录失败")
+	}
+	if code, body := restoreWithFields(t, c2, srv.URL+"/api/system/restore", bk, nil); code != 200 {
+		t.Fatalf("恢复失败 %d %s", code, body)
+	}
+	raw, _ := os.ReadFile(filepath.Join(a.opts.ConfigDir, "account.json"))
+	var now auth.Account
+	if err := json.Unmarshal(raw, &now); err != nil {
+		t.Fatal(err)
+	}
+	if now.SessionSecret == "" || now.SessionSecret == old.SessionSecret {
+		t.Fatal("恢复后应换新的会话密钥")
+	}
+	if now.SessionEpoch != 0 || len(now.Revoked) != 0 || now.Username != old.Username || now.PasswordHash != old.PasswordHash {
+		t.Fatalf("其余字段应按备份恢复，纪元与吊销列表清空: %+v", now)
 	}
 }

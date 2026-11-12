@@ -15,6 +15,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/wangwanjie/gately/internal/auth"
 	"github.com/wangwanjie/gately/internal/backup"
 	"github.com/wangwanjie/gately/internal/fsperm"
 	"github.com/wangwanjie/gately/internal/httpx"
@@ -95,6 +96,16 @@ func (a *App) handleRestore(w http.ResponseWriter, r *http.Request) {
 		httpx.Error(w, http.StatusBadRequest, "备份中缺少 %s.json，不像是 Gately 的配置备份", accountName)
 		return
 	}
+	if b, ok := restored[accountName+".json"]; ok {
+		// 备份里的会话密钥、会话纪元与吊销列表停留在备份时：原样写回会让此后“退出所有设备”或登出吊销的令牌重新生效。
+		// 换一个新的会话密钥，恢复前签发的令牌（含泄露的）一律失效，纪元与吊销列表随之清空
+		nb, err := rotateSessionSecret(b)
+		if err != nil {
+			httpx.Error(w, http.StatusBadRequest, "%s.json 格式错误: %v", accountName, err)
+			return
+		}
+		restored[accountName+".json"] = nb
+	}
 	dir := filepath.Join(a.opts.ConfigDir, "backup-"+time.Now().Format("20060102-150405"))
 	if err := fsperm.MkdirAll(dir, 0o700); err != nil {
 		httpx.Error(w, http.StatusInternalServerError, "%v", err)
@@ -115,6 +126,19 @@ func (a *App) handleRestore(w http.ResponseWriter, r *http.Request) {
 	a.sysLogs.Add(logbuf.LevelWarn, "system", fmt.Sprintf("已从备份恢复 %d 个配置文件，原配置保存在 %s", len(restored), dir))
 	httpx.OK(w, map[string]any{"restored": len(restored), "previous": dir})
 	a.scheduleRestart()
+}
+
+// rotateSessionSecret 把账号文件中的会话密钥换成新值，并去掉会话纪元与吊销列表；其余字段原样保留。
+func rotateSessionSecret(b []byte) ([]byte, error) {
+	var m map[string]json.RawMessage
+	if err := json.Unmarshal(b, &m); err != nil {
+		return nil, err
+	}
+	secret, _ := json.Marshal(auth.NewSessionSecret())
+	m["sessionSecret"] = secret
+	delete(m, "sessionEpoch")
+	delete(m, "revoked")
+	return json.MarshalIndent(m, "", "  ")
 }
 
 // ---- 重启 ----
