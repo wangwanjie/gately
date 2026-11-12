@@ -491,7 +491,8 @@ func tokenID(sig string) string {
 // Revoke 吊销一个会话令牌（登出），令牌无效或已过期时不做任何事。
 // 吊销记录持久化，重启后仍然有效；记录在令牌过期后清理，数量达到上限时改为提升会话纪元。
 func (m *Manager) Revoke(token string) error {
-	if _, ok := m.Identify(token); !ok {
+	ident, ok := m.Identify(token)
+	if !ok {
 		return nil
 	}
 	p, sig, _ := strings.Cut(token, ".")
@@ -512,6 +513,11 @@ func (m *Manager) Revoke(token string) error {
 		if r.Exp >= now {
 			kept = append(kept, r)
 		}
+	}
+	if ident.Role != RoleAdmin && len(kept) >= maxRevoked/2 {
+		// 只读账号登出只占用一半容量：否则只读账号反复登录、登出即可填满列表，触发下面的提升纪元把管理员全部踢下线。
+		// 超出时不记录，该只读令牌照常到期失效
+		return nil
 	}
 	if len(kept) >= maxRevoked {
 		// 列表已满：让全部旧令牌失效，比丢弃记录更安全
