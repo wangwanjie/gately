@@ -956,6 +956,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Méthode | Chemin | Permission requise | Description |
 | --- | --- | --- | --- |
 | PUT | `/api/account` | Session connectée uniquement | Modifier le nom d'utilisateur et le mot de passe de l'administrateur |
+| POST | `/api/account/sessions/revoke` | Session connectée uniquement | Se déconnecter de tous les appareils |
 | PUT | `/api/account/ui-language` | Session connectée uniquement | Enregistrer la langue de la console d'administration |
 | GET | `/api/account/passkeys` | Session connectée uniquement | Lister les Passkeys enregistrées |
 | POST | `/api/account/passkeys/begin` | Session connectée uniquement | Commencer l'enregistrement d'une Passkey |

@@ -5781,6 +5781,52 @@
         "x-token-allowed": false
       }
     },
+    "/api/account/sessions/revoke": {
+      "post": {
+        "description": "讓所有管理介面登入工作階段（密碼、Passkey、第三方登入與飛牛閘道簽發的）立即失效，包含目前的工作階段，需要重新登入；API 權杖不受影響。登出（`POST /api/logout`）只撤銷目前的工作階段，撤銷紀錄會持久化，重新啟動後仍然有效。僅管理員登入工作階段可用。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "summary": "登出所有裝置",
+        "tags": [
+          "帳號"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/account/totp": {
       "get": {
         "description": "**僅限登入工作階段使用，API 權杖無法存取此介面。**",
@@ -41236,7 +41282,7 @@
     },
     "/api/system/settings": {
       "get": {
-        "description": "僅登入工作階段可用。唯讀欄位 `modules` 列出全部功能模組及相依關係，`gatewayAvailable` 表示以飛牛統一閘道方式執行。`updateProxy` 為檢查更新與線上升級存取 GitHub 時使用的代理。`denyMode` 為未授權存取（被封鎖、僅內網時的外網存取、未經過安全入口）的回應方式：空為預設提示頁，`notfound` 純 404，`blank` 空白頁，`close` 中斷連線，`drop` 不回應直到逾時，`custom` 自訂頁面；`denyStatus` 為自訂頁面的狀態碼（200、403、404、410、500、502、503），`denyPage` 為自訂頁面 HTML（上限 64 KB，在禁止指令碼與外部資源的沙箱 CSP 下顯示）。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
+        "description": "僅登入工作階段可用。唯讀欄位 `modules` 列出全部功能模組及相依關係，`gatewayAvailable` 表示以飛牛統一閘道方式執行。`updateProxy` 為檢查更新與線上升級存取 GitHub 時使用的代理。`restrictOutbound` 為 true 時（預設 false），管理員設定的對外請求（Webhook、通知、IP 清單訂閱、DDNS 回呼與 IP 查詢位址、更新檢查與程式下載、第三方登入等）會在連線時拒絕迴環、私有網路、連結本機（含雲端供應商中繼資料位址 169.254.169.254）與 ULA 等位址，對網域解析結果和重新導向同樣有效，儲存後立即生效；反向代理上游、網路喚醒、儲存掛載等面向內網的功能不受影響。`denyMode` 為未授權存取（被封鎖、僅內網時的外網存取、未經過安全入口）的回應方式：空為預設提示頁，`notfound` 純 404，`blank` 空白頁，`close` 中斷連線，`drop` 不回應直到逾時，`custom` 自訂頁面；`denyStatus` 為自訂頁面的狀態碼（200、403、404、410、500、502、503），`denyPage` 為自訂頁面 HTML（上限 64 KB，在禁止指令碼與外部資源的沙箱 CSP 下顯示）。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
         "responses": {
           "200": {
             "description": "成功"
