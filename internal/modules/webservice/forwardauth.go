@@ -141,6 +141,11 @@ func (f *forwardAuther) check(w http.ResponseWriter, r *http.Request, h *siteHan
 		}
 		req.Header[k] = vs
 	}
+	// 访客自带的来源类与原始请求类头（含下划线写法的变体）不可信，下面由 Gately 重新写入
+	stripForwardedHeaders(req.Header)
+	for _, k := range []string{"X-Original-Method", "X-Original-URL", "X-Forwarded-Method", "X-Forwarded-Uri"} {
+		delHeaderVariants(req.Header, k)
+	}
 	clientAP := clientAddr(r)
 	client := clientAP.Addr().String()
 	orig := originalURL(r)
