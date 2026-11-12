@@ -159,7 +159,15 @@ func (l *listenerRunner) redirectable(r *http.Request) bool {
 	return !(s.deflt && s.site.Type == TypeClose)
 }
 
+// maxHostLen 是 Host 请求头的最大长度：域名最长 253 个字符，加上端口与 IPv6 方括号留有余量。
+const maxHostLen = 300
+
 func (l *listenerRunner) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// 过长的 Host 不可能是有效域名，却会被写进访问日志、错误页与跳转地址，请求头上限可达 1 MB
+	if len(r.Host) > maxHostLen {
+		http.Error(w, "400 Bad Request", http.StatusBadRequest)
+		return
+	}
 	// 先确定访客真实地址（对端为可信代理时采信其请求头），后续所有处理都使用改写后的客户端地址
 	r = l.realIP.apply(r)
 	// 通过 TCP 访问时告知浏览器可改用 HTTP/3；HTTP/3 请求本身无需再通告

@@ -142,6 +142,8 @@ type driver struct {
 	users map[string]User
 	certs CertSource
 	logs  *logbuf.Buffer
+	// throttle 按来源地址限制密码校验失败的次数，防止暴力猜测密码
+	throttle fileusers.Throttle
 
 	// clients 为已连接的客户端。ftpserverlib 的 Stop 只关闭监听，已登录的会话会继续使用旧的目录与权限，
 	// 因此停止或重启服务时由 closeClients 逐个断开
@@ -200,6 +202,31 @@ func (d *driver) ClientDisconnected(cc ftpserver.ClientContext) {
 }
 
 func (d *driver) AuthUser(cc ftpserver.ClientContext, user, pass string) (ftpserver.ClientDriver, error) {
+	ip := remoteIP(cc.RemoteAddr())
+	if !d.throttle.Reserve(ip) {
+		return nil, errors.New("登录失败次数过多，请稍后再试")
+	}
+	fileUser, err := d.authUser(cc, user, pass)
+	d.throttle.Done(ip, err == nil)
+	return fileUser, err
+}
+
+// remoteIP 返回连接对端的 IP。
+func remoteIP(a net.Addr) string {
+	if ta, ok := a.(*net.TCPAddr); ok {
+		return ta.IP.String()
+	}
+	if a == nil {
+		return ""
+	}
+	host, _, err := net.SplitHostPort(a.String())
+	if err != nil {
+		return a.String()
+	}
+	return host
+}
+
+func (d *driver) authUser(cc ftpserver.ClientContext, user, pass string) (ftpserver.ClientDriver, error) {
 	u, ok := d.users[user]
 	shared := false
 	// 没有同名本地用户且开启了共享用户时按共享用户校验；共享用户在登录时读取，修改后无需重启服务
@@ -211,9 +238,9 @@ func (d *driver) AuthUser(cc ftpserver.ClientContext, user, pass string) (ftpser
 	}
 	if !ok || !fileusers.CheckPassword(u.Password, pass) {
 		if shared {
-			d.logs.Add(logbuf.LevelWarn, "", fmt.Sprintf("%s 认证失败（共享用户 %q）", cc.RemoteAddr(), user))
+			d.logs.Add(logbuf.LevelWarn, "", fmt.Sprintf("%s 认证失败（共享用户 %q）", cc.RemoteAddr(), fileusers.ClipName(user)))
 		} else {
-			d.logs.Add(logbuf.LevelWarn, "", fmt.Sprintf("%s 认证失败（用户 %q）", cc.RemoteAddr(), user))
+			d.logs.Add(logbuf.LevelWarn, "", fmt.Sprintf("%s 认证失败（用户 %q）", cc.RemoteAddr(), fileusers.ClipName(user)))
 		}
 		return nil, errors.New("用户名或密码错误")
 	}
