@@ -128,7 +128,8 @@ func requestCredHashes(r *http.Request) []string {
 // backendTrust 记录外层站点上得到后端认证标记的凭据：键为 站点作用域 + 凭据哈希，值为过期时间（Unix 秒）。
 // 按站点作用域隔离：一个站点的后端认可的凭据，不能在后端不同的另一个站点上跳过 WAF
 type backendTrust struct {
-	mu sync.Mutex
+	// 每个请求都要查询（valid），写入只发生在收到有效标记时，用读写锁避免并发请求互相等待
+	mu sync.RWMutex
 	m  map[string]int64
 }
 
@@ -159,8 +160,8 @@ func (b *backendTrust) reset() {
 }
 
 func (b *backendTrust) valid(key string, now int64) bool {
-	b.mu.Lock()
-	defer b.mu.Unlock()
+	b.mu.RLock()
+	defer b.mu.RUnlock()
 	exp, ok := b.m[key]
 	return ok && exp > now
 }
