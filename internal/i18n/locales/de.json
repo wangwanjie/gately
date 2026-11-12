@@ -2467,7 +2467,7 @@
   "管理界面 HTTPS": "HTTPS der Verwaltungsoberfläche",
   "管理界面监听 ": "Verwaltungsoberfläche lauscht auf ",
   "管理界面监听地址，覆盖配置文件，例如 :16680": "Listen-Adresse der Verwaltungsoberfläche, überschreibt die Konfigurationsdatei, z. B. :16680",
-  "管理端口（Lucky 为 %d）": "Verwaltungsport (bei Lucky %d)",
+  "管理端口（原配置为 %d）": "Verwaltungsport (ursprünglich %d)",
   "类型不匹配": "Typ stimmt nicht überein",
   "精确匹配 location = %s 的后端按前缀导入": "Backend der exakten location = %s wurde als Präfix übernommen",
   "精确匹配 location = %s 的访问控制按前缀导入": "Zugriffskontrolle der exakten location = %s wurde als Präfix übernommen",

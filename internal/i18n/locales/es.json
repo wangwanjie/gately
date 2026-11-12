@@ -2467,7 +2467,7 @@
   "管理界面 HTTPS": "HTTPS de la interfaz de administración",
   "管理界面监听 ": "Interfaz de administración escuchando en ",
   "管理界面监听地址，覆盖配置文件，例如 :16680": "dirección de escucha de la interfaz de administración, sustituye al archivo de configuración, p. ej. :16680",
-  "管理端口（Lucky 为 %d）": "Puerto de administración (en Lucky es %d)",
+  "管理端口（原配置为 %d）": "Puerto de administración (originalmente %d)",
   "类型不匹配": "El tipo no coincide",
   "精确匹配 location = %s 的后端按前缀导入": "El backend de la location exacta = %s se importó como prefijo",
   "精确匹配 location = %s 的访问控制按前缀导入": "El control de acceso de la location exacta = %s se importó como prefijo",
