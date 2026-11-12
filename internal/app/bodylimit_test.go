@@ -249,3 +249,27 @@ func TestReadAfterEOFKeepsContext(t *testing.T) {
 		t.Fatalf("读完后再读一次导致请求被打断: %q", body)
 	}
 }
+
+// 大文件接口不限总时长；已读字节很多时平均速率的计算不能溢出（旧写法超过约 8.6 GiB 即误判为过慢）。
+func TestBulkRateNoOverflow(t *testing.T) {
+	gb := &guardedBody{
+		ReadCloser: io.NopCloser(strings.NewReader("x")),
+		rc:         http.NewResponseController(httptest.NewRecorder()),
+		start:      time.Now().Add(-2 * time.Hour),
+		idle:       bulkIdleTimeout, total: bulkTotalTimeout, grace: bulkRateGrace, minRate: bulkMinRate,
+		n: 10 << 30, length: -1,
+	}
+	if _, err := gb.Read(make([]byte, 8)); err != nil {
+		t.Fatalf("2 小时读了 10 GiB 不应判为过慢: %v", err)
+	}
+	slow := &guardedBody{
+		ReadCloser: io.NopCloser(strings.NewReader("x")),
+		rc:         http.NewResponseController(httptest.NewRecorder()),
+		start:      time.Now().Add(-time.Hour),
+		idle:       bulkIdleTimeout, total: bulkTotalTimeout, grace: bulkRateGrace, minRate: bulkMinRate,
+		n: 1 << 20, length: -1,
+	}
+	if _, err := slow.Read(make([]byte, 8)); err != errBodyTooSlow {
+		t.Fatalf("1 小时只读 1 MiB 应判为过慢，实际 %v", err)
+	}
+}
