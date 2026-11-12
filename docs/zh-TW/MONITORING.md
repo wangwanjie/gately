@@ -50,6 +50,15 @@ scrape_configs:
 | `gately_host_cpu_usage_percent` / `gately_host_memory_used_percent` / `gately_host_disk_used_percent` / `gately_host_load1` | gauge | 最近一次取樣的主機 CPU、記憶體、設定目錄所在分割區的使用率與 1 分鐘負載（效能監控模組開啟時匯出，取不到的項目不匯出） |
 | `gately_process_cpu_usage_percent` / `gately_process_resident_memory_bytes` / `gately_process_open_fds` | gauge | 最近一次取樣的 Gately 程序 CPU（佔整機算力的比例）、常駐記憶體與開啟的檔案描述元數（效能監控模組開啟時匯出） |
 | `gately_perf_alerts_firing{rule}` | gauge | 各條已啟用的效能告警規則目前處於告警中的對象數 |
+| `gately_guard_banned` | gauge | 目前處於封鎖中的 IP 位址或網段 |
+| `gately_guard_firewall_active` | gauge | 入侵防護的防火牆規則（nftables 或 iptables）是否已生效（1 為已生效） |
+| `gately_guard_dropped_packets_total{rule}` | counter | 防火牆規則丟棄的封包數，依規則統計 |
+| `gately_guard_jail_matches_total{jail}` | counter | 各條日誌規則比對到的日誌行數 |
+| `gately_guard_jail_bans_total{jail}` | counter | 各條日誌規則觸發的封鎖次數 |
+| `gately_knock_packets_total{result}` | counter | 依結果統計的敲門封包（`accepted`、`rejected`、`ignored`） |
+| `gately_knock_grants` | gauge | 目前持有敲門授權的來源位址數 |
+| `gately_knock_firewall_active` | gauge | 連接埠敲門的防火牆攔截規則是否已生效（1 為已生效） |
+| `gately_knock_firewall_dropped_total` | counter | 被防火牆丟棄的、指向受保護連接埠的新連線數 |
 
 ## 告警範例
 

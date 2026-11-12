@@ -50,6 +50,15 @@ scrape_configs:
 | `gately_host_cpu_usage_percent` / `gately_host_memory_used_percent` / `gately_host_disk_used_percent` / `gately_host_load1` | gauge | Uso de CPU, memoria y partición del directorio de configuración del host y carga de 1 minuto de la última muestra (se exportan con el módulo Rendimiento activado; los valores que no se pueden leer se omiten) |
 | `gately_process_cpu_usage_percent` / `gately_process_resident_memory_bytes` / `gately_process_open_fds` | gauge | CPU del proceso de Gately (proporción de toda la máquina), memoria residente y descriptores de archivo abiertos de la última muestra (se exportan con el módulo Rendimiento activado) |
 | `gately_perf_alerts_firing{rule}` | gauge | Número de objetos en alerta para cada regla de alerta de rendimiento habilitada |
+| `gately_guard_banned` | gauge | Direcciones IP o redes actualmente en la lista de bloqueo |
+| `gately_guard_firewall_active` | gauge | Si las reglas del cortafuegos de la prevención de intrusiones (nftables o iptables) están aplicadas (1) o no (0) |
+| `gately_guard_dropped_packets_total{rule}` | counter | Paquetes descartados por las reglas del cortafuegos, por regla |
+| `gately_guard_jail_matches_total{jail}` | counter | Líneas de registro coincidentes con cada regla de registros |
+| `gately_guard_jail_bans_total{jail}` | counter | Bloqueos activados por cada regla de registros |
+| `gately_knock_packets_total{result}` | counter | Paquetes de knock por resultado (`accepted`, `rejected`, `ignored`) |
+| `gately_knock_grants` | gauge | Direcciones de origen que tienen ahora una autorización de knock |
+| `gately_knock_firewall_active` | gauge | Si las reglas de bloqueo del cortafuegos del port knocking están aplicadas (1) o no (0) |
+| `gately_knock_firewall_dropped_total` | counter | Conexiones nuevas a puertos protegidos descartadas por el cortafuegos |
 
 ## Ejemplos de alertas
 

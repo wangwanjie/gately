@@ -50,6 +50,15 @@ scrape_configs:
 | `gately_host_cpu_usage_percent` / `gately_host_memory_used_percent` / `gately_host_disk_used_percent` / `gately_host_load1` | gauge | 최근 수집한 호스트 CPU, 메모리, 설정 디렉터리 파티션 사용률과 1분 부하(성능 모니터링 모듈이 켜져 있을 때 내보내며, 읽을 수 없는 항목은 생략) |
 | `gately_process_cpu_usage_percent` / `gately_process_resident_memory_bytes` / `gately_process_open_fds` | gauge | 최근 수집한 Gately 프로세스 CPU(머신 전체 대비 비율), 상주 메모리, 열린 파일 디스크립터 수(성능 모니터링 모듈이 켜져 있을 때 내보냄) |
 | `gately_perf_alerts_firing{rule}` | gauge | 활성화된 각 성능 경보 규칙에서 현재 경보 중인 대상 수 |
+| `gately_guard_banned` | gauge | 현재 차단 중인 IP 주소 또는 네트워크 |
+| `gately_guard_firewall_active` | gauge | 침입 방지 방화벽 규칙(nftables 또는 iptables)이 적용되어 있는지 여부(1이면 적용됨) |
+| `gately_guard_dropped_packets_total{rule}` | counter | 방화벽 규칙이 버린 패킷 수(규칙별) |
+| `gately_guard_jail_matches_total{jail}` | counter | 각 로그 규칙에 일치한 로그 줄 수 |
+| `gately_guard_jail_bans_total{jail}` | counter | 각 로그 규칙이 발동한 차단 수 |
+| `gately_knock_packets_total{result}` | counter | 결과별 노크 패킷 수(`accepted`, `rejected`, `ignored`) |
+| `gately_knock_grants` | gauge | 현재 노크 허가를 가진 소스 주소 수 |
+| `gately_knock_firewall_active` | gauge | 포트 노킹의 방화벽 차단 규칙이 적용되어 있는지 여부(1이면 적용됨) |
+| `gately_knock_firewall_dropped_total` | counter | 방화벽이 버린, 보호 대상 포트로의 새 연결 수 |
 
 ## 알림 예시
 

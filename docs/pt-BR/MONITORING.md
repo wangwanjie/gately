@@ -50,6 +50,15 @@ scrape_configs:
 | `gately_host_cpu_usage_percent` / `gately_host_memory_used_percent` / `gately_host_disk_used_percent` / `gately_host_load1` | gauge | Uso de CPU, memória e partição do diretório de configuração do host e carga de 1 minuto da última amostra (exportados com o módulo Desempenho ligado; valores que não podem ser lidos são omitidos) |
 | `gately_process_cpu_usage_percent` / `gately_process_resident_memory_bytes` / `gately_process_open_fds` | gauge | CPU do processo do Gately (parte da máquina inteira), memória residente e descritores de arquivo abertos da última amostra (exportados com o módulo Desempenho ligado) |
 | `gately_perf_alerts_firing{rule}` | gauge | Número de objetos em alerta para cada regra de alerta de desempenho habilitada |
+| `gately_guard_banned` | gauge | Endereços IP ou redes atualmente na lista de bloqueio |
+| `gately_guard_firewall_active` | gauge | Se as regras de firewall da prevenção de intrusão (nftables ou iptables) estão aplicadas (1) ou não (0) |
+| `gately_guard_dropped_packets_total{rule}` | counter | Pacotes descartados pelas regras do firewall, por regra |
+| `gately_guard_jail_matches_total{jail}` | counter | Linhas de log que casaram com cada regra de logs |
+| `gately_guard_jail_bans_total{jail}` | counter | Bloqueios disparados por cada regra de logs |
+| `gately_knock_packets_total{result}` | counter | Pacotes de knock por resultado (`accepted`, `rejected`, `ignored`) |
+| `gately_knock_grants` | gauge | Endereços de origem que têm atualmente uma autorização de knock |
+| `gately_knock_firewall_active` | gauge | Se as regras de bloqueio do firewall do port knocking estão aplicadas (1) ou não (0) |
+| `gately_knock_firewall_dropped_total` | counter | Novas conexões a portas protegidas descartadas pelo firewall |
 
 ## Exemplos de alertas
 
