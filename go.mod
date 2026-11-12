@@ -12,7 +12,7 @@ require (
 	github.com/creack/pty v1.1.24
 	github.com/fclairamb/ftpserverlib v0.32.4
 	github.com/hirochachacha/go-smb2 v1.1.0
-	github.com/klauspost/compress v1.18.7
+	github.com/klauspost/compress v1.20.4
 	github.com/maxmind/mmdbwriter v1.2.0
 	github.com/oschwald/maxminddb-golang/v2 v2.8.0
 	github.com/pires/go-proxyproto v0.15.0
@@ -51,7 +51,7 @@ require (
 	github.com/go-jose/go-jose/v4 v4.1.7
 	github.com/miekg/dns v1.1.72
 	golang.org/x/mod v0.41.0 // indirect
-	golang.org/x/net v0.61.0
+	golang.org/x/net v0.62.0
 	golang.org/x/sync v0.24.0 // indirect
 	golang.org/x/text v0.43.0
 	golang.org/x/tools v0.51.0 // indirect
