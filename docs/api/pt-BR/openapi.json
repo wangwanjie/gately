@@ -3660,6 +3660,9 @@
             },
             "type": "array"
           },
+          "stripPrefix": {
+            "type": "boolean"
+          },
           "targets": {
             "items": {
               "type": "string"

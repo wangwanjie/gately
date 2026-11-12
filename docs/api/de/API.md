@@ -2517,6 +2517,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | --- | --- |
 | `prefix` | string |
 | `requestHeaders` | Array von string |
+| `stripPrefix` | boolean |
 | `targets` | Array von string |
 
 ### webservice.OIDCClient

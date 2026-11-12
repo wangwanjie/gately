@@ -331,8 +331,10 @@ https://auth.example.com/__gately_auth/oauth/callback
 | `prefix` | 路徑前綴，如 `/api/`。依路徑段邊界比對：`/api` 與 `/api/` 都符合 `/api` 和 `/api/x`，不符合 `/apix` |
 | `targets` | 該路徑的後端，寫法與站台後端相同；留空時使用站台後端，只追加下面的請求標頭 |
 | `requestHeaders` | 該路徑追加的請求標頭，每行 `Key: Value`；在站台請求標頭之後套用，同名時以路徑的為準 |
+| `stripPrefix` | 開啟後轉發時去掉路徑前綴：`/api/zyqd/abc` 發往後端為 `/abc`，相當於 nginx 的 `proxy_pass http://後端/;`。後端位址自帶的路徑會接在去掉前綴後的路徑前面；查詢字串原樣保留。預設關閉 |
 
-- 最長前綴優先，路徑原樣轉發（不會去掉前綴）；
+- 最長前綴優先；預設路徑原樣轉發，開啟 `stripPrefix` 後去掉前綴再轉發（路徑先依 `//`、`.`、`..` 正規化再去前綴，無法藉由點段越過前綴）；
+- 匯入 nginx 時，`location /api/ { proxy_pass http://後端/; }` 這類帶 URI 的 `proxy_pass` 會轉換為開啟 `stripPrefix` 的規則，URI 與前綴相同或沒有 URI 時保持原樣轉發；
 - 站台的其他設定，如 Host 選項、憑證驗證、轉發標頭、PROXY 協定、負載平衡策略與健康檢查，對每個路徑後端同樣生效；
 - 壓縮、限流、快取與改寫作用於整個站台。
 

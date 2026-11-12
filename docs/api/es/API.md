@@ -2517,6 +2517,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | --- | --- |
 | `prefix` | string |
 | `requestHeaders` | Lista de string |
+| `stripPrefix` | boolean |
 | `targets` | Lista de string |
 
 ### webservice.OIDCClient

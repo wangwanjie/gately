@@ -331,8 +331,10 @@ Para um site de proxy reverso, envie as requisições sob um prefixo de caminho 
 | `prefix` | Um prefixo de caminho como `/api/`. A correspondência respeita os limites de segmento de caminho: `/api` e `/api/` correspondem ambos a `/api` e `/api/x`, mas não a `/apix` |
 | `targets` | Os backends deste caminho, escritos como os backends do site. Quando vazio, os backends do site são usados e apenas os cabeçalhos abaixo são adicionados |
 | `requestHeaders` | Cabeçalhos de requisição adicionados para este caminho, um `Key: Value` por linha. São aplicados depois dos cabeçalhos do site, e um cabeçalho com o mesmo nome substitui o do site |
+| `stripPrefix` | Quando ativo, o prefixo do caminho é removido antes de encaminhar: `/api/zyqd/abc` chega ao backend como `/abc`, igual ao nginx `proxy_pass http://backend/;`. O caminho do endereço do backend é colocado antes do caminho restante; a query é mantida. Desativado por padrão |
 
-- O prefixo mais longo vence e o caminho é repassado sem alteração (o prefixo não é removido);
+- O prefixo mais longo vence. Por padrão o caminho é repassado sem alteração; com `stripPrefix` o prefixo é removido antes (o caminho é normalizado para `//`, `.` e `..` antes de remover o prefixo, então segmentos com ponto não escapam do prefixo);
+- Ao importar nginx, um `proxy_pass` com URI como `location /api/ { proxy_pass http://backend/; }` vira uma regra com `stripPrefix` ativo; se o URI for igual ao prefixo ou não existir, o caminho é repassado sem alteração;
 - As demais configurações do site, como a opção de Host, as verificações de certificado, os cabeçalhos encaminhados, o protocolo PROXY, a política de balanceamento de carga e as verificações de integridade, valem para todos os backends por caminho;
 - Compressão, limitação de taxa, cache e reescritas valem para o site inteiro.
 
