@@ -719,6 +719,19 @@ func (h *SessionSetupHandler) handleType1(rw io.ReadWriter, hdr smb2.Header, typ
 	return nil, nil
 }
 
+// isAnonymous 判断登录名是否为匿名或来宾：为空或 GUEST，且没有同名的真实用户（存在名为 guest 的用户时照常校验密码与限流）。
+func (h *SessionSetupHandler) isAnonymous(name string) bool {
+	if name != "" && !strings.EqualFold(name, "GUEST") {
+		return false
+	}
+	for i := range h.Users {
+		if strings.EqualFold(h.Users[i].Name, name) {
+			return false
+		}
+	}
+	return true
+}
+
 // handleType3 在认证前向限流器占位：来源失败过多时直接拒绝并写日志，否则按结果记录成功或失败。
 func (h *SessionSetupHandler) handleType3(rw io.ReadWriter, hdr smb2.Header, type3, requestFrame []byte, prevSessionID uint64, raw bool) (*Session, error) {
 	if h.Limiter == nil {
@@ -728,7 +741,7 @@ func (h *SessionSetupHandler) handleType3(rw io.ReadWriter, hdr smb2.Header, typ
 	if auth, err := ntlm.DecodeAuthenticate(type3); err == nil {
 		name = auth.UserName
 	}
-	if name == "" || strings.EqualFold(name, "GUEST") {
+	if h.isAnonymous(name) {
 		// 匿名与来宾登录没有密码可猜，不计入失败次数：Windows 资源管理器常先匿名试探，失败后才弹出密码框
 		return h.verifyType3(rw, hdr, type3, requestFrame, prevSessionID, raw)
 	}
