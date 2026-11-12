@@ -143,7 +143,9 @@ func (f *forwardAuther) check(w http.ResponseWriter, r *http.Request, h *siteHan
 	}
 	// 访客自带的来源类与原始请求类头（含下划线写法的变体）不可信，下面由 Gately 重新写入
 	stripForwardedHeaders(req.Header)
-	for _, k := range []string{"X-Original-Method", "X-Original-URL", "X-Forwarded-Method", "X-Forwarded-Uri"} {
+	// X-Original-URI 是 nginx auth_request 的常见写法（$request_uri），认证服务常据此按路径放行；X-Original-Host、
+	// X-Forwarded-Prefix 同样描述原始请求，访客自带的一律不可信
+	for _, k := range []string{"X-Original-Method", "X-Original-URL", "X-Original-URI", "X-Original-Host", "X-Forwarded-Method", "X-Forwarded-Uri", "X-Forwarded-Prefix"} {
 		delHeaderVariants(req.Header, k)
 	}
 	clientAP := clientAddr(r)
@@ -156,6 +158,7 @@ func (f *forwardAuther) check(w http.ResponseWriter, r *http.Request, h *siteHan
 	// 同时提供 nginx（X-Original-*）与 Traefik / Caddy（X-Forwarded-*）两种约定，兼容各认证服务的不同接口
 	req.Header.Set("X-Original-Method", r.Method)
 	req.Header.Set("X-Original-URL", orig)
+	req.Header.Set("X-Original-URI", r.URL.RequestURI())
 	req.Header.Set("X-Forwarded-Method", r.Method)
 	req.Header.Set("X-Forwarded-Proto", scheme)
 	req.Header.Set("X-Forwarded-Host", r.Host)

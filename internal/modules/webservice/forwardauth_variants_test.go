@@ -18,6 +18,10 @@ func TestForwardAuthStripsForwardedVariants(t *testing.T) {
 				bad = append(bad, k)
 			}
 		}
+		// Gately 自己写入 X-Original-URI（访客请求的路径与查询串）
+		if v := r.Header.Get("X-Original-URI"); v != "/p?q=1" {
+			bad = append(bad, "X-Original-URI="+v)
+		}
 		sort.Strings(bad)
 		got <- strings.Join(bad, ",")
 		w.WriteHeader(http.StatusOK)
@@ -28,8 +32,9 @@ func TestForwardAuthStripsForwardedVariants(t *testing.T) {
 		ForwardAuth: ForwardAuth{URL: authz.URL},
 	}}}
 	addr, _ := startRunner(t, l, nil, []string{"127.0.0.1"})
-	q, _ := http.NewRequest("GET", "http://fa.test/", nil)
-	for _, k := range []string{"X_Forwarded_For", "X_Real_IP", "X_Forwarded_Host", "X_Original_URL", "X_Forwarded_Uri", "X-Forwarded-Ssl"} {
+	q, _ := http.NewRequest("GET", "http://fa.test/p?q=1", nil)
+	for _, k := range []string{"X_Forwarded_For", "X_Real_IP", "X_Forwarded_Host", "X_Original_URL", "X_Forwarded_Uri", "X-Forwarded-Ssl",
+		"X-Original-URI", "X_Original_URI", "X-Original-Host", "X-Forwarded-Prefix"} {
 		q.Header[k] = []string{"9.9.9.9"}
 	}
 	sendDirect(t, addr, q)
