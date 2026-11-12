@@ -1,6 +1,7 @@
 package fileusers
 
 import (
+	"fmt"
 	"testing"
 	"time"
 )
@@ -61,5 +62,26 @@ func TestThrottleConcurrentAndKeys(t *testing.T) {
 	}
 	if th3.Reserve("2001:db8:1:2:ffff::7") {
 		t.Fatal("同一 /64 应共享限流")
+	}
+}
+
+// 窗口内的来源数量超过上限时淘汰最早的一条，记录表不会无限增长。
+func TestThrottleBounded(t *testing.T) {
+	now := time.Now()
+	th := &Throttle{now: func() time.Time { return now }}
+	for i := 0; i < throttleMaxKeys+500; i++ {
+		ip := fmt.Sprintf("2001:db8:%x:%x::1", i>>16, i&0xffff)
+		now = now.Add(time.Millisecond)
+		if !th.Reserve(ip) {
+			t.Fatalf("第 %d 个来源不应被拒绝", i)
+		}
+		th.Done(ip, false)
+	}
+	if len(th.m) > throttleMaxKeys {
+		t.Fatalf("记录数 %d 超过上限 %d", len(th.m), throttleMaxKeys)
+	}
+	// 最新的来源仍在表中
+	if th.m[throttleKey(fmt.Sprintf("2001:db8:%x:%x::1", (throttleMaxKeys+499)>>16, (throttleMaxKeys+499)&0xffff))] == nil {
+		t.Fatal("最新的来源应保留")
 	}
 }

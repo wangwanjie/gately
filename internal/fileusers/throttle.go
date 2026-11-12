@@ -14,7 +14,7 @@ const (
 	ThrottleMaxFailures = 10
 	// ThrottleWindow 为失败次数的统计窗口，也是达到上限后的拒绝时长
 	ThrottleWindow = 15 * time.Minute
-	// throttleMaxKeys 为记录的来源数量上限，超过时先清理过期项
+	// throttleMaxKeys 为记录的来源数量上限，达到时先清理过期项，仍满则淘汰最早的一条
 	throttleMaxKeys = 8192
 )
 
@@ -62,14 +62,29 @@ func (t *Throttle) Reserve(ip string) bool {
 	if t.m == nil {
 		t.m = map[string]*throttleEntry{}
 	}
-	if len(t.m) > throttleMaxKeys {
-		for k, e := range t.m {
-			if e.inflight == 0 && now.Sub(e.first) > ThrottleWindow {
+	e := t.m[key]
+	if e == nil && len(t.m) >= throttleMaxKeys {
+		for k, old := range t.m {
+			if old.inflight == 0 && now.Sub(old.first) > ThrottleWindow {
 				delete(t.m, k)
 			}
 		}
+		// 窗口内的来源仍然太多（如攻击者轮换大量 IPv6 /64）时淘汰最早的一条，保证内存有上限
+		if len(t.m) >= throttleMaxKeys {
+			var oldest string
+			var at time.Time
+			for k, old := range t.m {
+				if old.inflight == 0 && (oldest == "" || old.first.Before(at)) {
+					oldest, at = k, old.first
+				}
+			}
+			if oldest == "" {
+				// 全部条目都有进行中的校验：拒绝新来源，等已有校验结束
+				return false
+			}
+			delete(t.m, oldest)
+		}
 	}
-	e := t.m[key]
 	if e == nil || (e.inflight == 0 && now.Sub(e.first) > ThrottleWindow) {
 		e = &throttleEntry{first: now}
 		t.m[key] = e
