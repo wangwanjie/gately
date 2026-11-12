@@ -304,7 +304,7 @@ func (m *Module) lookupLocked(name string) (uh *userHandler, shared bool) {
 func (m *Module) serve(w http.ResponseWriter, r *http.Request) {
 	name, pass, ok := r.BasicAuth()
 	ip := httpx.ClientIP(r)
-	// 失败次数已达上限的来源一律拒绝，包括凭据正确的请求，避免被拒绝的来源借响应判断密码是否猜中
+	// 失败次数（含进行中的校验）已达上限的来源一律拒绝，包括凭据正确的请求，避免被拒绝的来源借响应判断密码是否猜中
 	if ok && m.throttle.Blocked(ip) {
 		http.Error(w, "429 Too Many Requests", http.StatusTooManyRequests)
 		return
