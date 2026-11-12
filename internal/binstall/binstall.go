@@ -22,6 +22,7 @@ import (
 
 	"github.com/wangwanjie/gately/internal/fsperm"
 	"github.com/wangwanjie/gately/internal/logbuf"
+	"github.com/wangwanjie/gately/internal/outbound"
 	"github.com/wangwanjie/gately/internal/proc"
 )
 
@@ -360,15 +361,13 @@ func (in *Installer) client(proxy string) (*http.Client, error) {
 		if in.opt.Client != nil {
 			return in.opt.Client(), nil
 		}
-		return http.DefaultClient, nil
+		return outbound.DefaultClient(), nil
 	}
 	if err := ValidateProxy(proxy); err != nil {
 		return nil, err
 	}
 	u, _ := url.Parse(proxy)
-	tr := http.DefaultTransport.(*http.Transport).Clone()
-	tr.Proxy = http.ProxyURL(u)
-	return &http.Client{Transport: tr}, nil
+	return &http.Client{Transport: outbound.ProxyTransport(u)}, nil
 }
 
 // ValidateProxy 校验下载代理地址，支持 http、https 与 socks5。

@@ -303,6 +303,7 @@ func (a *App) Handler() http.Handler {
 	rec.add("GET /api/session", a.handleSession, "")
 	rec.add("GET /api/status", a.handleStatus, "")
 	rec.add("PUT /api/account", a.handleAccount, "")
+	rec.add("POST /api/account/sessions/revoke", a.handleRevokeSessions, "")
 	rec.add("PUT /api/account/ui-language", a.handleUILanguage, "")
 	rec.add("GET /api/account/passkeys", a.handlePasskeyList, "")
 	rec.add("POST /api/account/passkeys/begin", a.handlePasskeyBegin, "")
@@ -388,7 +389,8 @@ func (a *App) Handler() http.Handler {
 	mux.Handle("/api/", a.requireAuth(a.roleGuard(a.defaultPasswordGuard(a.redactReadOnly(a.audit.Middleware(protected))))))
 	mux.Handle("/", a.staticHandler())
 	// 压缩放在翻译之外，压缩的是翻译后的最终内容；已预压缩的静态资源自带 Content-Encoding，不会重复压缩
-	return securityHeaders(httpcompress.Handler(i18n.Middleware(a.accessControl(httpx.SameOrigin(mux)))))
+	// 最外层限制请求体读取速度，登录等未认证接口同样受限
+	return limitBodyRead(securityHeaders(httpcompress.Handler(i18n.Middleware(a.accessControl(httpx.SameOrigin(mux))))))
 }
 
 // Run 启动所有模块和管理服务，阻塞直到 ctx 取消。收到重启请求时停止全部服务后重新执行自身。
@@ -596,9 +598,26 @@ func (a *App) handleLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) handleLogout(w http.ResponseWriter, r *http.Request) {
-	if user, ok := a.auth.Verify(auth.TokenFromRequest(r)); ok {
+	token := auth.TokenFromRequest(r)
+	if user, ok := a.auth.Verify(token); ok {
+		// 服务端吊销该令牌，泄露的令牌在登出后立即失效
+		if err := a.auth.Revoke(token); err != nil {
+			a.logger.Printf("吊销会话令牌失败: %v", err)
+		}
 		a.audit.Record(audit.Entry{Actor: user, IP: httpx.ClientIP(r), Via: audit.Via(r), Category: audit.CategoryLogin, Method: "POST", Path: "/api/logout", Status: http.StatusOK, Detail: "退出登录"})
 	}
+	http.SetCookie(w, &http.Cookie{Name: auth.CookieName, Value: "", Path: "/", MaxAge: -1, HttpOnly: true, SameSite: http.SameSiteStrictMode})
+	httpx.OK(w, map[string]bool{"ok": true})
+}
+
+// handleRevokeSessions 使所有已登录的管理界面会话失效（退出所有设备），包含当前会话；API 令牌不受影响。
+func (a *App) handleRevokeSessions(w http.ResponseWriter, r *http.Request) {
+	if err := a.auth.RevokeAll(); err != nil {
+		httpx.Error(w, http.StatusInternalServerError, "%v", err)
+		return
+	}
+	user := auth.UserFromContext(r.Context())
+	a.sysLogs.Add(logbuf.LevelWarn, "auth", fmt.Sprintf("%s 从 %s 退出了所有设备，全部管理界面会话已失效", user, httpx.ClientIP(r)))
 	http.SetCookie(w, &http.Cookie{Name: auth.CookieName, Value: "", Path: "/", MaxAge: -1, HttpOnly: true, SameSite: http.SameSiteStrictMode})
 	httpx.OK(w, map[string]bool{"ok": true})
 }

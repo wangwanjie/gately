@@ -956,6 +956,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 메서드 | 경로 | 필요 권한 | 설명 |
 | --- | --- | --- | --- |
 | PUT | `/api/account` | 로그인 세션 전용 | 관리자 사용자 이름과 비밀번호 수정 |
+| POST | `/api/account/sessions/revoke` | 로그인 세션 전용 | 모든 기기에서 로그아웃 |
 | PUT | `/api/account/ui-language` | 로그인 세션 전용 | 관리 화면 언어 기록 |
 | GET | `/api/account/passkeys` | 로그인 세션 전용 | 등록된 Passkey 목록 조회 |
 | POST | `/api/account/passkeys/begin` | 로그인 세션 전용 | Passkey 등록 시작 |

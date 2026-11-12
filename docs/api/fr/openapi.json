@@ -5781,6 +5781,52 @@
         "x-token-allowed": false
       }
     },
+    "/api/account/sessions/revoke": {
+      "post": {
+        "description": "Invalide immédiatement toutes les sessions de connexion à l'administration (émises par mot de passe, Passkey, connexion tierce et passerelle fnOS), y compris la session en cours ; il faut alors se reconnecter. Les jetons API ne sont pas affectés. La déconnexion (`POST /api/logout`) ne révoque que la session en cours. Les révocations sont conservées et restent valables après un redémarrage. Réservé aux sessions d'administrateur.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "summary": "Se déconnecter de tous les appareils",
+        "tags": [
+          "Compte"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/account/totp": {
       "get": {
         "description": "**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
@@ -41236,7 +41282,7 @@
     },
     "/api/system/settings": {
       "get": {
-        "description": "Session uniquement. Le champ en lecture seule `modules` liste tous les modules et leurs dépendances ; `gatewayAvailable` indique que Gately fonctionne derrière la passerelle unifiée de fnOS. `updateProxy` est le proxy utilisé pour joindre GitHub lors de la recherche de mises à jour et de la mise à niveau en ligne. `denyMode` est la façon de répondre aux accès non autorisés (clients bannis, accès depuis l’extérieur en mode réseau local uniquement, accès sans passer par le point d’entrée sécurisé) : vide pour la page d’avertissement par défaut, `notfound` pour un simple 404, `blank` pour une page vierge, `close` pour fermer la connexion, `drop` pour ne pas répondre jusqu’au délai d’expiration, `custom` pour une page personnalisée. `denyStatus` est le code d’état de la page personnalisée (200, 403, 404, 410, 500, 502, 503) et `denyPage` le HTML de la page personnalisée (64 Ko maximum, affiché sous une CSP en bac à sable qui bloque les scripts et les ressources externes).\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "description": "Session uniquement. Le champ en lecture seule `modules` liste tous les modules et leurs dépendances ; `gatewayAvailable` indique que Gately fonctionne derrière la passerelle unifiée de fnOS. `updateProxy` est le proxy utilisé pour joindre GitHub lors de la recherche de mises à jour et de la mise à niveau en ligne. `restrictOutbound`, à true (false par défaut), fait refuser aux requêtes sortantes configurées par l'administrateur (webhooks, notifications, abonnements aux listes d'IP, rappels DDNS et URL de détection d'IP, vérification des mises à jour et téléchargements de programmes, connexion via un tiers) de se connecter aux adresses de bouclage, privées, link-local (dont l'adresse de métadonnées cloud 169.254.169.254) et ULA ; cela couvre aussi les noms de domaine résolus et les redirections, et prend effet dès l'enregistrement. Les amonts de proxy inverse, Wake-on-LAN, les montages de stockage et les autres fonctions destinées au réseau interne ne sont pas concernés. `denyMode` est la façon de répondre aux accès non autorisés (clients bannis, accès depuis l’extérieur en mode réseau local uniquement, accès sans passer par le point d’entrée sécurisé) : vide pour la page d’avertissement par défaut, `notfound` pour un simple 404, `blank` pour une page vierge, `close` pour fermer la connexion, `drop` pour ne pas répondre jusqu’au délai d’expiration, `custom` pour une page personnalisée. `denyStatus` est le code d’état de la page personnalisée (200, 403, 404, 410, 500, 502, 503) et `denyPage` le HTML de la page personnalisée (64 Ko maximum, affiché sous une CSP en bac à sable qui bloque les scripts et les ressources externes).\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
         "responses": {
           "200": {
             "description": "Succès"

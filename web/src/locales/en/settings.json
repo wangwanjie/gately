@@ -46,6 +46,13 @@
     "verifying": "Verifying…",
     "autoHint": "Submitted automatically once the password and all 6 digits are entered"
   },
+  "sessions": {
+    "title": "Sign-in sessions",
+    "desc": "Immediately invalidates every admin sign-in session on all devices, including this one. API tokens are not affected. Use it when a token may have leaked.",
+    "button": "Sign out of all devices",
+    "confirm": "Sign out of all devices? Every signed-in session, including this one, stops working and you will need to sign in again.",
+    "done": "Signed out of all devices. Please sign in again"
+  },
   "loginProtect": {
     "title": "Login protection",
     "sessionHours": "Session lifetime",
@@ -143,6 +150,9 @@
     "updateProxy": "Update proxy",
     "updateProxyPlaceholder": "Empty for direct, e.g. http://127.0.0.1:7890",
     "updateProxyHelp": "Used to reach GitHub when checking for updates and upgrading online. Supports http://, https:// and socks5://; when empty, the HTTPS_PROXY environment variable is honored.",
+    "restrictOutbound": "Outbound request limits",
+    "restrictOutboundSwitch": "Block internal and link-local addresses",
+    "restrictOutboundHelp": "When enabled, outbound requests configured by administrators (webhooks, notifications, IP list subscriptions, DDNS callbacks and IP lookup URLs, update checks and program downloads, third-party sign-in) refuse to connect to loopback, private, link-local (including the cloud metadata address 169.254.169.254) and ULA addresses. The check applies to resolved domain names and redirects, which reduces the risk of probing the internal network. Off by default; keep it off if these features must reach internal services such as an internal notification gateway or a self-hosted DNS service. Reverse proxy upstreams, Wake-on-LAN, storage mounts and other features that target the internal network are not affected.",
     "timeZone": "Time zone",
     "timeZonePlaceholder": "Follow system",
     "timeZoneHelp": "Time zone used for logs, scheduled tasks and more. Any IANA time zone name is accepted. Currently in effect: {zone}",

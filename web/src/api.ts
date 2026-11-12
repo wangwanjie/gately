@@ -200,6 +200,8 @@ export interface SystemSettings {
   dnsServers: string[] | null
   // 检查更新与在线升级访问 GitHub 时使用的代理，为空直连
   updateProxy: string
+  // 为 true 时，管理员配置的出站请求拒绝访问内网与链路本地地址
+  restrictOutbound: boolean
   // 为 true 时不再定期检查更新与安全公告，只在点击“检查更新”时访问 GitHub
   disableUpdateCheck: boolean
   logLines: number

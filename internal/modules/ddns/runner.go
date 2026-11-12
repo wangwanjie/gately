@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"maps"
-	"net/http"
 	"net/netip"
 	"strings"
 	"sync"
@@ -15,6 +14,7 @@ import (
 	"github.com/wangwanjie/gately/internal/events"
 	"github.com/wangwanjie/gately/internal/ipsource"
 	"github.com/wangwanjie/gately/internal/logbuf"
+	"github.com/wangwanjie/gately/internal/outbound"
 	"github.com/wangwanjie/gately/internal/stunaddr"
 	"github.com/wangwanjie/gately/internal/webhook"
 )
@@ -222,7 +222,7 @@ func (r *runner) syncOnce(ctx context.Context, force bool) {
 	}
 	r.mu.Unlock()
 
-	provider, err := providerFactory(t.Provider, t.Credentials, &http.Client{Timeout: timeout})
+	provider, err := providerFactory(t.Provider, t.Credentials, outbound.NewClient(timeout))
 	if err != nil {
 		r.log.Errorf("创建服务商客户端失败: %v", err)
 		return

@@ -46,6 +46,13 @@
     "verifying": "正在验证…",
     "autoHint": "输入密码后填满 6 位验证码将自动提交"
   },
+  "sessions": {
+    "title": "登录会话",
+    "desc": "使所有设备上的管理界面登录会话立即失效，包括当前设备。API 令牌不受影响。怀疑令牌泄露时使用。",
+    "button": "退出所有设备",
+    "confirm": "确定退出所有设备吗？所有已登录的会话（包括当前这个）都会失效，需要重新登录。",
+    "done": "已退出所有设备，请重新登录"
+  },
   "loginProtect": {
     "title": "登录保护",
     "sessionHours": "会话有效期",
@@ -143,6 +150,9 @@
     "updateProxy": "更新代理",
     "updateProxyPlaceholder": "留空直连，例如 http://127.0.0.1:7890",
     "updateProxyHelp": "检查更新与在线升级访问 GitHub 时使用，支持 http://、https:// 与 socks5://；留空时遵循 HTTPS_PROXY 环境变量。",
+    "restrictOutbound": "出站请求限制",
+    "restrictOutboundSwitch": "禁止访问内网与链路本地地址",
+    "restrictOutboundHelp": "开启后，Webhook、通知、IP 列表订阅、DDNS 回调与 IP 查询地址、更新检查与程序下载、第三方登录等由管理员配置的出站请求，会在连接时拒绝回环、私网、链路本地（含云厂商元数据地址 169.254.169.254）和 ULA 等地址，对域名解析结果与重定向同样生效，可降低被用来探测内网的风险。默认关闭；如果上述功能需要访问内网服务（例如内网的通知网关或自建 DNS 服务），请保持关闭。反向代理上游、网络唤醒、存储挂载等面向内网的功能不受影响。",
     "timeZone": "时区",
     "timeZonePlaceholder": "跟随系统",
     "timeZoneHelp": "日志、计划任务等使用的时区，可输入任意 IANA 时区名；当前生效：{zone}",

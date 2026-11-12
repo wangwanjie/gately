@@ -956,6 +956,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 方法 | 路徑 | 所需權限 | 說明 |
 | --- | --- | --- | --- |
 | PUT | `/api/account` | 僅登入工作階段 | 修改管理員使用者名稱與密碼 |
+| POST | `/api/account/sessions/revoke` | 僅登入工作階段 | 登出所有裝置 |
 | PUT | `/api/account/ui-language` | 僅登入工作階段 | 記錄管理介面語言 |
 | GET | `/api/account/passkeys` | 僅登入工作階段 | 列出已註冊的 Passkey |
 | POST | `/api/account/passkeys/begin` | 僅登入工作階段 | 開始註冊 Passkey |

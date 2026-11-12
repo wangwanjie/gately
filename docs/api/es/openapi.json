@@ -5781,6 +5781,52 @@
         "x-token-allowed": false
       }
     },
+    "/api/account/sessions/revoke": {
+      "post": {
+        "description": "Invalida de inmediato todas las sesiones de administración (emitidas por contraseña, Passkey, inicio de sesión de terceros y la pasarela de fnOS), incluida la actual, por lo que hay que volver a iniciar sesión; los tokens de API no se ven afectados. Cerrar sesión (`POST /api/logout`) solo revoca la sesión actual. Los registros de revocación se conservan y siguen vigentes tras un reinicio. Solo para sesiones de administrador.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "summary": "Cerrar sesión en todos los dispositivos",
+        "tags": [
+          "Cuenta"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/account/totp": {
       "get": {
         "description": "**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
@@ -41236,7 +41282,7 @@
     },
     "/api/system/settings": {
       "get": {
-        "description": "Solo sesión. El campo de solo lectura `modules` lista todos los módulos y sus dependencias; `gatewayAvailable` indica que Gately se ejecuta tras la pasarela unificada de fnOS. `updateProxy` es el proxy usado para acceder a GitHub al buscar actualizaciones y actualizar en línea. `denyMode` es la forma de responder al acceso no autorizado (clientes bloqueados, acceso desde fuera con solo red local activado o sin pasar por la entrada segura): vacío para la página de aviso predeterminada, `notfound` para un 404 simple, `blank` para una página en blanco, `close` para cerrar la conexión, `drop` para no responder hasta que expire, `custom` para una página personalizada. `denyStatus` es el código de estado de la página personalizada (200, 403, 404, 410, 500, 502, 503) y `denyPage` es el HTML de la página personalizada (hasta 64 KB, mostrado bajo una CSP de sandbox que bloquea scripts y recursos externos).\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
+        "description": "Solo sesión. El campo de solo lectura `modules` lista todos los módulos y sus dependencias; `gatewayAvailable` indica que Gately se ejecuta tras la pasarela unificada de fnOS. `updateProxy` es el proxy usado para acceder a GitHub al buscar actualizaciones y actualizar en línea. `restrictOutbound`, cuando es true (por defecto false), hace que las solicitudes salientes configuradas por el administrador (webhooks, notificaciones, suscripciones a listas de IP, callbacks de DDNS y URL de consulta de IP, comprobación de actualizaciones y descargas de programas, inicio de sesión de terceros) rechacen conectar con direcciones de bucle invertido, privadas, de enlace local (incluida la dirección de metadatos de la nube 169.254.169.254) y ULA; también cubre nombres de dominio resueltos y redirecciones, y surte efecto al guardar. Los upstreams del proxy inverso, Wake-on-LAN, los montajes de almacenamiento y otras funciones dirigidas a la red interna no se ven afectados. `denyMode` es la forma de responder al acceso no autorizado (clientes bloqueados, acceso desde fuera con solo red local activado o sin pasar por la entrada segura): vacío para la página de aviso predeterminada, `notfound` para un 404 simple, `blank` para una página en blanco, `close` para cerrar la conexión, `drop` para no responder hasta que expire, `custom` para una página personalizada. `denyStatus` es el código de estado de la página personalizada (200, 403, 404, 410, 500, 502, 503) y `denyPage` es el HTML de la página personalizada (hasta 64 KB, mostrado bajo una CSP de sandbox que bloquea scripts y recursos externos).\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
         "responses": {
           "200": {
             "description": "Correcto"

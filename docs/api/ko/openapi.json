@@ -5781,6 +5781,52 @@
         "x-token-allowed": false
       }
     },
+    "/api/account/sessions/revoke": {
+      "post": {
+        "description": "모든 관리 화면 로그인 세션(비밀번호, Passkey, 서드파티 로그인, fnOS 게이트웨이가 발급한 세션)을 현재 세션을 포함해 즉시 무효화하므로 다시 로그인해야 합니다. API 토큰은 영향받지 않습니다. 로그아웃(`POST /api/logout`)은 현재 세션만 폐기합니다. 폐기 기록은 영구 저장되어 재시작 후에도 유지됩니다. 관리자 로그인 세션만 사용할 수 있습니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "summary": "모든 기기에서 로그아웃",
+        "tags": [
+          "계정"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/account/totp": {
       "get": {
         "description": "**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
@@ -41236,7 +41282,7 @@
     },
     "/api/system/settings": {
       "get": {
-        "description": "로그인 세션에서만 사용할 수 있습니다. 읽기 전용 필드 `modules`는 모든 기능 모듈과 의존 관계를 나열하며, `gatewayAvailable`은 fnOS 통합 게이트웨이 방식으로 실행 중임을 뜻합니다. `updateProxy`는 업데이트 확인과 온라인 업그레이드 시 GitHub 접속에 쓰는 프록시입니다. `denyMode`는 미승인 접근(차단된 경우, 내부망 전용일 때의 외부 접근, 보안 진입점을 거치지 않은 접근)에 대한 응답 방식입니다. 비어 있으면 기본 안내 페이지, `notfound`는 단순 404, `blank`는 빈 페이지, `close`는 연결 끊기, `drop`은 시간 초과까지 응답하지 않음, `custom`은 사용자 지정 페이지입니다. `denyStatus`는 사용자 지정 페이지의 상태 코드(200, 403, 404, 410, 500, 502, 503)이고, `denyPage`는 사용자 지정 페이지 HTML(최대 64 KB, 스크립트와 외부 리소스를 금지하는 샌드박스 CSP 아래에서 표시)입니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "description": "로그인 세션에서만 사용할 수 있습니다. 읽기 전용 필드 `modules`는 모든 기능 모듈과 의존 관계를 나열하며, `gatewayAvailable`은 fnOS 통합 게이트웨이 방식으로 실행 중임을 뜻합니다. `updateProxy`는 업데이트 확인과 온라인 업그레이드 시 GitHub 접속에 쓰는 프록시입니다. `restrictOutbound` 가 true(기본값 false)이면 관리자가 설정한 외부 요청(웹훅, 알림, IP 목록 구독, DDNS 콜백 및 IP 조회 주소, 업데이트 확인과 프로그램 다운로드, 서드파티 로그인 등)이 루프백, 사설망, 링크 로컬(클라우드 메타데이터 주소 169.254.169.254 포함), ULA 주소로 연결하지 못하도록 거부합니다. 도메인 해석 결과와 리디렉션에도 적용되며 저장 즉시 적용됩니다. 리버스 프록시 업스트림, Wake-on-LAN, 스토리지 마운트 등 내부망 대상 기능에는 영향이 없습니다.`denyMode`는 미승인 접근(차단된 경우, 내부망 전용일 때의 외부 접근, 보안 진입점을 거치지 않은 접근)에 대한 응답 방식입니다. 비어 있으면 기본 안내 페이지, `notfound`는 단순 404, `blank`는 빈 페이지, `close`는 연결 끊기, `drop`은 시간 초과까지 응답하지 않음, `custom`은 사용자 지정 페이지입니다. `denyStatus`는 사용자 지정 페이지의 상태 코드(200, 403, 404, 410, 500, 502, 503)이고, `denyPage`는 사용자 지정 페이지 HTML(최대 64 KB, 스크립트와 외부 리소스를 금지하는 샌드박스 CSP 아래에서 표시)입니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
         "responses": {
           "200": {
             "description": "성공"
