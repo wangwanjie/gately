@@ -41193,7 +41193,7 @@
     },
     "/api/system/restore": {
       "post": {
-        "description": "**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "description": "multipart/form-data로 필드명 `file`에 업로드합니다. 암호화된 백업은 `password`도 함께 보내야 합니다. `keepAccount=1`은 현재 관리자 계정을 유지합니다(백업의 account.json은 무시되며 없어도 됩니다). 기본 비밀번호를 사용 중이면 거부되므로 먼저 관리자 비밀번호를 변경하세요.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
         "responses": {
           "200": {
             "description": "성공"

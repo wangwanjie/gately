@@ -41193,7 +41193,7 @@
     },
     "/api/system/restore": {
       "post": {
-        "description": "**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "description": "Upload as multipart/form-data in the field `file`; encrypted backups also need `password`. `keepAccount=1` keeps the current administrator account (account.json in the backup is ignored and may be omitted). Rejected while the default password is still in use; change the administrator password first.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
         "responses": {
           "200": {
             "description": "Success"

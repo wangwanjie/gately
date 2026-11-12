@@ -41193,7 +41193,7 @@
     },
     "/api/system/restore": {
       "post": {
-        "description": "**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
+        "description": "Envie como multipart/form-data no campo `file`; backups criptografados também exigem `password`. `keepAccount=1` mantém a conta de administrador atual (o account.json do backup é ignorado e pode ser omitido). Recusado enquanto a senha padrão estiver em uso; altere antes a senha do administrador.\n\n**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
         "responses": {
           "200": {
             "description": "Sucesso"

@@ -41193,7 +41193,7 @@
     },
     "/api/system/restore": {
       "post": {
-        "description": "**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
+        "description": "Se sube como multipart/form-data en el campo `file`; las copias cifradas también necesitan `password`. `keepAccount=1` conserva la cuenta de administrador actual (se ignora account.json de la copia y puede omitirse). Se rechaza mientras se use la contraseña predeterminada; cambie antes la contraseña del administrador.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
         "responses": {
           "200": {
             "description": "Correcto"

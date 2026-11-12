@@ -41193,7 +41193,7 @@
     },
     "/api/system/restore": {
       "post": {
-        "description": "**僅限登入工作階段使用，API 權杖無法存取此介面。**",
+        "description": "以 multipart/form-data 上傳，欄位名 `file`；加密備份需同時提交 `password`；`keepAccount=1` 保留目前管理員帳號（忽略備份中的 account.json，備份可不含該檔案）。仍使用預設密碼時拒絕，需先修改管理員密碼。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
         "responses": {
           "200": {
             "description": "成功"
