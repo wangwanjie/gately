@@ -99,6 +99,10 @@ type guardedBody struct {
 }
 
 func (b *guardedBody) Read(p []byte) (int, error) {
+	if b.done {
+		// 已读完并清除了读取期限：再读一次（处理函数确认 EOF）不能重新设置期限，否则到点会取消请求上下文
+		return b.ReadCloser.Read(p)
+	}
 	now := time.Now()
 	elapsed := now.Sub(b.start)
 	if elapsed > b.total {
