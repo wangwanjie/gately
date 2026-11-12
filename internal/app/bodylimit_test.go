@@ -224,3 +224,28 @@ func TestIsBulkUpload(t *testing.T) {
 		}
 	}
 }
+
+// 读完请求体后处理函数再读一次（确认 EOF）不能重新设置读取期限，否则到点会取消请求上下文。
+func TestReadAfterEOFKeepsContext(t *testing.T) {
+	shrinkBodyLimits(t)
+	srv := httptest.NewServer(limitBodyRead(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = io.ReadAll(r.Body)
+		_, _ = r.Body.Read(make([]byte, 1))
+		select {
+		case <-time.After(time.Second):
+			_, _ = io.WriteString(w, "done")
+		case <-r.Context().Done():
+			http.Error(w, "canceled", http.StatusInternalServerError)
+		}
+	})))
+	defer srv.Close()
+	resp, err := http.Post(srv.URL+"/api/ddns/tasks", "application/json", strings.NewReader(`{"a":1}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, _ := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	if string(body) != "done" {
+		t.Fatalf("读完后再读一次导致请求被打断: %q", body)
+	}
+}
