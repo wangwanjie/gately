@@ -81,6 +81,7 @@ import { api } from '../api'
 import Sparkline from './Sparkline.vue'
 import StatusBadge from './StatusBadge.vue'
 import { useFormLayout } from '../composables/useIsMobile'
+import { usePolling } from '../composables/usePolling'
 
 interface View {
   // p50、p95 为每分钟首字节延迟的估算分位数（毫秒）
@@ -101,7 +102,8 @@ const title = ref('')
 const minutes = ref(60)
 const data = ref<View>()
 let target = { listener: '', site: '' }
-let timer: number | undefined
+// 定时刷新：标签页在后台时暂停，上一次请求未结束时跳过本轮
+const { start: startPolling, stop: stopPolling } = usePolling(() => load(), 10000)
 
 const total = computed(() => (data.value?.series ?? []).reduce((n, p) => n + p.requests, 0))
 // 拦截原因的展示顺序
@@ -145,7 +147,7 @@ async function load() {
 }
 
 function stop() {
-  window.clearInterval(timer)
+  stopPolling()
 }
 
 // 对话框开着时离开页面组件直接卸载，停止定时刷新
@@ -158,7 +160,7 @@ function open(listener: string, site: string, name: string) {
   visible.value = true
   load()
   stop()
-  timer = window.setInterval(load, 10000)
+  startPolling()
 }
 
 defineExpose({ open })

@@ -36,6 +36,8 @@ type authenticator struct {
 	secret []byte
 	mu     sync.Mutex
 	fails  map[string]*failCount
+	// lastFailSweep 为最近一次清理过期失败记录的时间
+	lastFailSweep time.Time
 	// used 记录已使用的一次性令牌（OAuth state 与票据）及其过期时间
 	used map[string]int64
 	// oauth 为第三方登录配置，设置变更时整体替换
@@ -139,8 +141,10 @@ func (a *authenticator) reserve(key string) bool {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	now := time.Now()
-	// 表过大时清理过期项，防止大量来源地址撑大内存
-	if len(a.fails) > 4096 {
+	// 表过大时清理过期项，防止大量来源地址撑大内存；最多每秒清理一次，
+	// 否则来源很多时每次密码校验都要遍历整张表（上万项时单次约 0.2 毫秒，且持有认证器的锁）
+	if len(a.fails) > 4096 && now.Sub(a.lastFailSweep) >= time.Second {
+		a.lastFailSweep = now
 		for k, f := range a.fails {
 			if f.inflight == 0 && now.Sub(f.first) > failureReset {
 				delete(a.fails, k)
@@ -359,6 +363,10 @@ func (a *authenticator) checkUser(w http.ResponseWriter, r *http.Request, s Site
 		return visitor{}, false
 	}
 	if name, pass, ok := r.BasicAuth(); ok {
+		// 近期验证通过的凭据直接放行，不再逐个请求做 bcrypt
+		if v, hit := a.cachedBasic(s, name, pass); hit {
+			return v, true
+		}
 		key := limitKey(ip)
 		if !a.reserve(key) {
 			http.Error(w, "429 Too Many Requests", http.StatusTooManyRequests)

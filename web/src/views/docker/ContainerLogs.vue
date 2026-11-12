@@ -18,12 +18,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { ArrowDownToLine, Copy, RefreshCw, Search } from 'lucide-vue-next'
 import { api } from '../../api'
 import { copyText } from '../../composables/useClipboard'
+import { usePolling } from '../../composables/usePolling'
 
 const { t } = useI18n()
 
@@ -36,7 +37,8 @@ const keyword = ref('')
 const logs = ref('')
 const loading = ref(false)
 const box = ref<HTMLElement>()
-let timer: number | undefined
+// 自动刷新：标签页在后台时暂停，上一次请求未结束时跳过本轮，组件卸载时自动停止
+const { start: startPolling, stop: stopPolling } = usePolling(() => load(), 3000)
 
 const shown = computed(() => {
   const k = keyword.value.trim().toLowerCase()
@@ -82,19 +84,17 @@ function copy() {
 }
 
 function stop() {
-  window.clearInterval(timer)
-  timer = undefined
+  stopPolling()
 }
 
 watch(auto, (v) => {
   stop()
   if (v) {
-    timer = window.setInterval(load, 3000)
+    startPolling()
   }
 })
 
 onMounted(load)
-onBeforeUnmount(stop)
 </script>
 
 <style scoped>
