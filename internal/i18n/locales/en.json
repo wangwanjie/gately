@@ -106,6 +106,8 @@
   "%s 查到的权威区域 %s 不可用，按域名推断主域名": "The authoritative zone %[2]s found for %[1]s is unusable, inferring the zone from the domain name",
   "%s 没有有效的敲门授权，已断开": "%s has no valid knock grant, disconnected",
   "%s 没有解析结果": "%s has no resolution results",
+  "%s 登录失败次数过多，已拒绝": "%s too many failed logins, refused",
+  "%s 登录失败次数过多，已拒绝（用户 %q）": "%s too many failed logins, refused (user %q)",
   "%s 登录（共享用户 %q）": "%s signed in (shared user %q)",
   "%s 登录（用户 %q）": "%s signed in (user %q)",
   "%s 的 CNAME（指向 %s）来自泛解析记录 *.%s，不跟随，验证记录直接写在 %s": "The CNAME of %s (pointing to %s) comes from the wildcard record *.%s and is not followed; the record is written at %s",

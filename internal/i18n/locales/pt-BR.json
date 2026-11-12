@@ -106,6 +106,8 @@
   "%s 查到的权威区域 %s 不可用，按域名推断主域名": "A zona autoritativa %[2]s encontrada para %[1]s não pode ser usada; a zona será deduzida do nome de domínio",
   "%s 没有有效的敲门授权，已断开": "%s não tem autorização de knock válida, desconectado",
   "%s 没有解析结果": "%s sem resultados de resolução",
+  "%s 登录失败次数过多，已拒绝": "%s muitas falhas de login, recusado",
+  "%s 登录失败次数过多，已拒绝（用户 %q）": "%s muitas falhas de login, recusado (usuário %q)",
   "%s 登录（共享用户 %q）": "%s entrou (usuário compartilhado %q)",
   "%s 登录（用户 %q）": "%s login (usuário %q)",
   "%s 的 CNAME（指向 %s）来自泛解析记录 *.%s，不跟随，验证记录直接写在 %s": "O CNAME de %s (apontando para %s) vem do registro curinga *.%s e não é seguido; o registro é gravado em %s",

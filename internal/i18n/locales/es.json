@@ -106,6 +106,8 @@
   "%s 查到的权威区域 %s 不可用，按域名推断主域名": "La zona autoritativa %[2]s encontrada para %[1]s no es utilizable; se deduce la zona a partir del nombre de dominio",
   "%s 没有有效的敲门授权，已断开": "%s no tiene una autorización de knock válida, desconectado",
   "%s 没有解析结果": "%s sin resultados de resolución",
+  "%s 登录失败次数过多，已拒绝": "%s demasiados inicios de sesión fallidos, rechazado",
+  "%s 登录失败次数过多，已拒绝（用户 %q）": "%s demasiados inicios de sesión fallidos, rechazado (usuario %q)",
   "%s 登录（共享用户 %q）": "%s inició sesión (usuario compartido %q)",
   "%s 登录（用户 %q）": "%s inicio de sesión (usuario %q)",
   "%s 的 CNAME（指向 %s）来自泛解析记录 *.%s，不跟随，验证记录直接写在 %s": "El CNAME de %s (que apunta a %s) proviene del registro comodín *.%s y no se sigue; el registro se escribe en %s",
