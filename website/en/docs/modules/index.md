@@ -17,7 +17,7 @@ For modules not compiled into a custom build, the configuration files stay untou
 | Port Forwarding | TCP / UDP, IPv4 / IPv6, port ranges, multi-target failover, connection limits, traffic statistics | [View](/en/docs/modules/portforward) |
 | Protocol Routing | Several services share one port: TLS by SNI and ALPN, HTTP by Host, Minecraft by server address, plus SSH, RDP, SOCKS, OpenVPN, RTSP, SIP, XMPP, MQTT, AMQP, PostgreSQL, Redis, SMB, Git, IRC, ADB, BitTorrent, and a wait-timeout route for VNC and similar | [View](/en/docs/modules/protoroute) |
 | SSL Certificates | Automatic ACME DNS-01 issuance and renewal, upload, mapping to a directory with scripts | [View](/en/docs/modules/ssl) |
-| Web Services | Reverse proxy, redirects, static files, HTTPS, authentication, access control, load balancing and health checks, caching and rate limiting, access statistics | [View](/en/docs/modules/web) |
+| Web Services | Reverse proxy, redirects, static files, HTTPS, authentication, access control, load balancing and health checks, caching and rate limiting, access statistics, navigation panels, visitor audit, network topology | [View](/en/docs/modules/web) |
 | OIDC single sign-on | Offers the shared users to Gitea, OpenList, Grafana and other apps over OpenID Connect, replacing Authelia's OIDC provider | [View](/en/docs/modules/oidc) |
 | WAF Firewall | Coraza + OWASP CRS v4 | [View](/en/docs/modules/waf) |
 | Intrusion Prevention | Log jails (fail2ban-style), trap ports and port-scan detection, with bans synced to nftables | [View](/en/docs/modules/guard) |

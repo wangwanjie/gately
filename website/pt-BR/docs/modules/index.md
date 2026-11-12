@@ -17,7 +17,7 @@ Módulos que não entraram em um build personalizado: os arquivos de configuraç
 | Redirecionamento de portas | TCP / UDP, IPv4 / IPv6, intervalos de portas, failover entre vários destinos, limite de conexões, estatísticas de tráfego | [Ver](/pt-BR/docs/modules/portforward) |
 | Roteamento por protocolo | Vários serviços compartilham uma porta: TLS por SNI e ALPN, HTTP por Host, Minecraft por endereço do servidor, além de SSH, RDP, SOCKS, OpenVPN, RTSP, SIP, XMPP, MQTT, AMQP, PostgreSQL, Redis, SMB, Git, IRC, ADB, BitTorrent e uma rota de tempo de espera para VNC e semelhantes | [Ver](/pt-BR/docs/modules/protoroute) |
 | Certificados SSL | Emissão e renovação automáticas via ACME DNS-01, upload, mapeamento para um diretório com execução de scripts | [Ver](/pt-BR/docs/modules/ssl) |
-| Serviços Web | Proxy reverso, redirecionamentos, arquivos estáticos, HTTPS, autenticação, controle de acesso, balanceamento de carga e health checks, cache e limitação de taxa, estatísticas de acesso | [Ver](/pt-BR/docs/modules/web) |
+| Serviços Web | Proxy reverso, redirecionamentos, arquivos estáticos, HTTPS, autenticação, controle de acesso, balanceamento de carga e health checks, cache e limitação de taxa, estatísticas de acesso, painéis de navegação, auditoria de visitantes, topologia de rede | [Ver](/pt-BR/docs/modules/web) |
 | Login único OIDC | Oferece os usuários compartilhados a Gitea, OpenList, Grafana e outros apps via OpenID Connect, substituindo o OIDC do Authelia | [Ver](/pt-BR/docs/modules/oidc) |
 | Firewall WAF | Coraza + OWASP CRS v4 | [Ver](/pt-BR/docs/modules/waf) |
 | Prevenção de intrusão | Regras de logs (estilo fail2ban), portas armadilha e detecção de varredura, com bloqueios sincronizados no nftables | [Ver](/pt-BR/docs/modules/guard) |

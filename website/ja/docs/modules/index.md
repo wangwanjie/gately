@@ -17,7 +17,7 @@ Gately の各機能は独立したモジュールで、個別に有効化・無�
 | ポート転送 | TCP / UDP、IPv4 / IPv6、ポート範囲、複数ターゲットのフェイルオーバー、接続数制限、トラフィック統計 | [開く](/ja/docs/modules/portforward) |
 | プロトコル振り分け | 複数のサービスで 1 つのポートを共用：TLS は SNI と ALPN、HTTP は Host、Minecraft はサーバーアドレスで振り分け、SSH、RDP、SOCKS、OpenVPN、RTSP、SIP、XMPP、MQTT、AMQP、PostgreSQL、Redis、SMB、Git、IRC、ADB、BitTorrent も判別、VNC などは待機タイムアウトのルートへ | [開く](/ja/docs/modules/protoroute) |
 | SSL 証明書 | ACME DNS-01 による自動発行・更新、アップロード、ディレクトリへのマッピングとスクリプト実行 | [開く](/ja/docs/modules/ssl) |
-| Web サービス | リバースプロキシ、リダイレクト、静的ファイル、HTTPS、認証、アクセス制御、負荷分散とヘルスチェック、キャッシュとレート制限、アクセス統計 | [開く](/ja/docs/modules/web) |
+| Web サービス | リバースプロキシ、リダイレクト、静的ファイル、HTTPS、認証、アクセス制御、負荷分散とヘルスチェック、キャッシュとレート制限、アクセス統計、ナビゲーションパネル、訪問者監査、ネットワークトポロジー | [開く](/ja/docs/modules/web) |
 | OIDC シングルサインオン | 共有ユーザーを OpenID Connect で Gitea、OpenList、Grafana などのアプリに提供し、Authelia の OIDC の代わりになる | [開く](/ja/docs/modules/oidc) |
 | WAF ファイアウォール | Coraza + OWASP CRS v4 | [開く](/ja/docs/modules/waf) |
 | 侵入防御 | ログルール（fail2ban 風）、おとりポート、ポートスキャン検出。ブロックは nftables に同期 | [開く](/ja/docs/modules/guard) |
