@@ -170,6 +170,8 @@
   "locationHeadersPlaceholder": "Extra request headers, one Key: Value per line",
   "addLocation": "Add path",
   "locationsHelp": "Send requests under a path prefix to other backends. Longest prefix wins; the path is forwarded unchanged. Same as nginx location /api/ + proxy_pass",
+  "locationStrip": "Strip path prefix when forwarding",
+  "locationStripHelp": "With \"Strip path prefix\" on, /api/zyqd/abc reaches the backend as /abc, and any path in the backend address is placed in front; same as nginx proxy_pass with a URI (proxy_pass http://x:9999/;). When off, the path is forwarded unchanged",
   "redirectHostHelp": "Use {'{host}'} for the visitor's domain, e.g. https://{'{host}'} with “Keep path” to send all HTTP to HTTPS",
   "redirectVarsHelp": "Also available: {'{path}'}{'{args}'} (original path and query; when used, “Keep path” no longer appends them), {'{port}'}, {'{1}'} (the part matched by * in a site domain like *.example.com), {'{STUN_rule name_PORT}'}, {'{STUN_rule name_IP}'}, {'{STUN_rule name_ADDR}'} (the STUN rule's current public address). E.g. https://{'{1}'}.v4.example.com:{'{STUN_web_PORT}'}{'{path}'}{'{args}'}",
   "cleanUrls": "Clean URLs",

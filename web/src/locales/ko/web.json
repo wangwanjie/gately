@@ -170,6 +170,8 @@
   "locationHeadersPlaceholder": "추가 요청 헤더, 한 줄에 Key: Value 하나",
   "addLocation": "경로 추가",
   "locationsHelp": "경로 접두사별로 다른 백엔드로 보냅니다. 가장 긴 접두사가 우선이며 경로는 그대로 전달됩니다. nginx의 location /api/ + proxy_pass와 같습니다",
+  "locationStrip": "전달 시 경로 접두사 제거",
+  "locationStripHelp": "「경로 접두사 제거」를 켜면 /api/zyqd/abc 가 백엔드에는 /abc 로 전달되고, 백엔드 주소에 포함된 경로가 앞에 붙습니다. nginx의 URI가 있는 proxy_pass(proxy_pass http://x:9999/;)와 같습니다. 끄면 경로를 그대로 전달합니다",
   "redirectHostHelp": "{'{host}'}는 방문자 도메인을 뜻합니다. 예: https://{'{host}'}와 \"경로 유지\"로 HTTP를 모두 HTTPS로 리디렉션",
   "redirectVarsHelp": "{'{path}'}{'{args}'}(원래 경로와 쿼리, 사용하면 \"경로 유지\"로 다시 붙이지 않음), {'{port}'}, {'{1}'}(사이트 도메인 *.example.com에서 *에 일치한 부분), {'{STUN_규칙이름_PORT}'}, {'{STUN_규칙이름_IP}'}, {'{STUN_규칙이름_ADDR}'}(STUN 규칙의 현재 공인 주소)도 쓸 수 있습니다. 예: https://{'{1}'}.v4.example.com:{'{STUN_web_PORT}'}{'{path}'}{'{args}'}",
   "cleanUrls": "확장자 없는 URL",

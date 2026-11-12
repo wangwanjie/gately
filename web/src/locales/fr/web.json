@@ -170,6 +170,8 @@
   "locationHeadersPlaceholder": "En-têtes supplémentaires, un Key: Value par ligne",
   "addLocation": "Ajouter un chemin",
   "locationsHelp": "Envoie les requêtes d'un préfixe de chemin vers d'autres backends. Le préfixe le plus long l'emporte et le chemin est transmis tel quel. Équivaut à location /api/ + proxy_pass de nginx",
+  "locationStrip": "Retirer le préfixe de chemin à la transmission",
+  "locationStripHelp": "Avec « Retirer le préfixe de chemin », /api/zyqd/abc arrive au backend sous la forme /abc et le chemin de l'adresse du backend est placé devant. Équivaut à proxy_pass de nginx avec URI (proxy_pass http://x:9999/;). Désactivé, le chemin est transmis tel quel",
   "redirectHostHelp": "{'{host}'} représente le domaine du visiteur, ex. https://{'{host}'} avec « Conserver le chemin » pour renvoyer tout HTTP vers HTTPS",
   "redirectVarsHelp": "Également : {'{path}'}{'{args}'} (chemin et requête d'origine ; s'ils sont utilisés, « Conserver le chemin » ne les ajoute plus), {'{port}'}, {'{1}'} (la partie couverte par * dans un domaine comme *.example.com), {'{STUN_nom de règle_PORT}'}, {'{STUN_nom de règle_IP}'}, {'{STUN_nom de règle_ADDR}'} (adresse publique actuelle de la règle STUN). Ex. https://{'{1}'}.v4.example.com:{'{STUN_web_PORT}'}{'{path}'}{'{args}'}",
   "cleanUrls": "URL sans extension",

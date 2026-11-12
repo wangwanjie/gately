@@ -170,6 +170,8 @@
   "locationHeadersPlaceholder": "追加リクエストヘッダー（1 行に 1 つ Key: Value）",
   "addLocation": "パスを追加",
   "locationsHelp": "パスのプレフィックスごとに別のバックエンドへ送ります。最長一致が優先で、パスはそのまま転送します。nginx の location /api/ + proxy_pass に相当します",
+  "locationStrip": "転送時にパスのプレフィックスを除去",
+  "locationStripHelp": "「パスのプレフィックスを除去」をオンにすると、/api/zyqd/abc はバックエンドへ /abc として送られ、バックエンドのアドレスに含まれるパスが前に付きます。nginx の URI 付き proxy_pass（proxy_pass http://x:9999/;）に相当します。オフではパスをそのまま転送します",
   "redirectHostHelp": "{'{host}'} は訪問者のドメインを表します。例：https://{'{host}'} と「パスを保持」で HTTP を HTTPS にまとめてリダイレクト",
   "redirectVarsHelp": "ほかに {'{path}'}{'{args}'}（元のパスとクエリ。書いた場合「パスを保持」では追加しません）、{'{port}'}、{'{1}'}（サイトドメイン *.example.com の * に一致した部分）、{'{STUN_ルール名_PORT}'}、{'{STUN_ルール名_IP}'}、{'{STUN_ルール名_ADDR}'}（STUN ルールの現在のパブリックアドレス）も使えます。例：https://{'{1}'}.v4.example.com:{'{STUN_web_PORT}'}{'{path}'}{'{args}'}",
   "cleanUrls": "拡張子なし URL",
