@@ -31,6 +31,7 @@ import (
 	xproxy "golang.org/x/net/proxy"
 
 	"github.com/wangwanjie/gately/internal/outbound"
+	"github.com/wangwanjie/gately/internal/resolver"
 )
 
 // 特殊取值
@@ -200,11 +201,12 @@ func Client(setting string, timeout time.Duration, insecure bool) *http.Client {
 // Dial 按代理设置建立到 addr 的 TCP 连接：http、https 代理使用 CONNECT 隧道，socks5 代理由代理解析域名。
 // 未设置代理（含 update 而更新代理为空）时直连，不读取环境变量，与此前 SMTP 等直连行为保持一致。
 func Dial(ctx context.Context, setting, addr string, timeout time.Duration) (net.Conn, error) {
-	d := &net.Dialer{Timeout: timeout, KeepAlive: 30 * time.Second}
+	// 拨号器都取带当前解析器的副本，避免与保存 DNS 设置竞争（见 resolver.Dialer）
+	d := resolver.Dialer(&net.Dialer{Timeout: timeout, KeepAlive: 30 * time.Second})
 	u, _ := Resolve(setting)
 	if u == nil {
 		// 直连时在拨号层校验解析后的真实 IP（开关关闭时无影响）
-		guarded := outbound.NewDialer(timeout)
+		guarded := resolver.Dialer(outbound.NewDialer(timeout))
 		return guarded.DialContext(ctx, "tcp", addr)
 	}
 	// 经代理时连接由代理建立，本机拨号层看不到真实目标，开关开启时先检查目标主机

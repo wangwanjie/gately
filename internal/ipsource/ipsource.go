@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/wangwanjie/gately/internal/outbound"
+	"github.com/wangwanjie/gately/internal/resolver"
 	"github.com/wangwanjie/gately/internal/script"
 )
 
@@ -244,7 +245,8 @@ func httpClientFor(fam Family) *http.Client {
 	dialer := outbound.NewDialer(10 * time.Second)
 	tr := &http.Transport{
 		DialContext: func(ctx context.Context, _, addr string) (net.Conn, error) {
-			return dialer.DialContext(ctx, network, addr)
+			// 每次拨号取带当前解析器的副本，避免与保存 DNS 设置竞争
+			return resolver.Dialer(dialer).DialContext(ctx, network, addr)
 		},
 		TLSHandshakeTimeout: 10 * time.Second,
 	}

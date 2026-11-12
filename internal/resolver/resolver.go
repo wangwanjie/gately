@@ -85,6 +85,16 @@ func Current() *net.Resolver {
 	return net.DefaultResolver
 }
 
+// Dialer 返回 d 的副本，其 Resolver 为空时填入当前解析器。net.Dialer 在 Resolver 为空时会在拨号时直接读
+// net.DefaultResolver，与保存 DNS 设置时 Install 的写入构成数据竞争；需要拨号的代码应在每次拨号时调用它取副本。
+func Dialer(d *net.Dialer) *net.Dialer {
+	c := *d
+	if c.Resolver == nil {
+		c.Resolver = Current()
+	}
+	return &c
+}
+
 // Install 设置全局解析器；list 为空时恢复系统默认。无效项被忽略并返回错误。
 func Install(list []string) error {
 	var (

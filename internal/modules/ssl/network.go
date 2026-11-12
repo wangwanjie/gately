@@ -16,6 +16,7 @@ import (
 	"github.com/miekg/dns"
 
 	"github.com/wangwanjie/gately/internal/outbound"
+	"github.com/wangwanjie/gately/internal/resolver"
 )
 
 // 本文件实现签发证书时限定 IPv4 / IPv6 出站（ACMEConfig.Network）。
@@ -58,9 +59,10 @@ func forceNetwork(c *http.Client, network string) *http.Client {
 	plain := &net.Dialer{Timeout: 30 * time.Second, KeepAlive: 30 * time.Second}
 	tr.DialContext = func(ctx context.Context, _, addr string) (net.Conn, error) {
 		if _, ok := proxies.Load(addr); ok {
-			return plain.DialContext(ctx, "tcp", addr)
+			return resolver.Dialer(plain).DialContext(ctx, "tcp", addr)
 		}
-		return d.DialContext(ctx, network, addr)
+		// 每次拨号取带当前解析器的副本，避免与保存 DNS 设置竞争
+		return resolver.Dialer(d).DialContext(ctx, network, addr)
 	}
 	out.Transport = tr
 	return out

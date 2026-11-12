@@ -25,6 +25,7 @@ import (
 	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/iplist"
 	"github.com/wangwanjie/gately/internal/logbuf"
+	"github.com/wangwanjie/gately/internal/resolver"
 	"github.com/wangwanjie/gately/internal/webpage"
 	"github.com/wangwanjie/gately/internal/webprobe"
 )
@@ -418,7 +419,8 @@ func newTransport(s Site, up *upstream) *http.Transport {
 		// 发送 PROXY 头时每个连接只对应一个客户端，必须禁用连接复用
 		DisableKeepAlives: s.DisableKeepAlives || s.SendProxyProtocol,
 		DialContext: func(ctx context.Context, network, _ string) (net.Conn, error) {
-			c, err := dialer.DialContext(ctx, network, target)
+			// 每次拨号取带当前解析器的副本：后端写域名时会解析，避免与保存 DNS 设置竞争
+			c, err := resolver.Dialer(dialer).DialContext(ctx, network, target)
 			if err != nil || !s.SendProxyProtocol {
 				return c, err
 			}
