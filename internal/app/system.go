@@ -82,7 +82,16 @@ func (a *App) handleRestore(w http.ResponseWriter, r *http.Request) {
 		httpx.Error(w, status, "%v", err)
 		return
 	}
-	if _, ok := restored[accountName+".json"]; !ok {
+	// keepAccount=1：保留当前管理员账号，不用备份中的 account.json 覆盖（账号、密码、两步验证与只读账号均不变），
+	// 适合把别处的备份迁到已改过密码的新实例。此时备份无需包含 account.json。
+	keepAccount := r.FormValue("keepAccount") == "1"
+	if keepAccount {
+		delete(restored, accountName+".json")
+		if len(restored) == 0 {
+			httpx.Error(w, http.StatusBadRequest, "备份中没有可恢复的配置文件，不像是 Gately 的配置备份")
+			return
+		}
+	} else if _, ok := restored[accountName+".json"]; !ok {
 		httpx.Error(w, http.StatusBadRequest, "备份中缺少 %s.json，不像是 Gately 的配置备份", accountName)
 		return
 	}
