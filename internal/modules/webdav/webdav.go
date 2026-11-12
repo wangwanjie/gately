@@ -115,6 +115,8 @@ type Module struct {
 	ln       net.Listener
 	err      string
 	handlers map[string]*userHandler
+	// throttle 按来源地址限制密码校验失败的次数，防止暴力猜测密码
+	throttle fileusers.Throttle
 	// shared 为共享用户的处理器，按用户名缓存；共享用户被修改后清空，下次请求按新的目录配置重建
 	shared map[string]*userHandler
 }
@@ -301,10 +303,20 @@ func (m *Module) lookupLocked(name string) (uh *userHandler, shared bool) {
 
 func (m *Module) serve(w http.ResponseWriter, r *http.Request) {
 	name, pass, ok := r.BasicAuth()
+	// 带凭据的请求先占位：来源地址的失败次数达到上限后直接拒绝，不再校验密码
+	ip := httpx.ClientIP(r)
+	if ok && !m.throttle.Reserve(ip) {
+		http.Error(w, "429 Too Many Requests", http.StatusTooManyRequests)
+		return
+	}
 	m.mu.Lock()
 	uh, shared := m.lookupLocked(name)
 	m.mu.Unlock()
-	if !ok || uh == nil || !fileusers.CheckPassword(uh.user.Password, pass) {
+	authed := ok && uh != nil && fileusers.CheckPassword(uh.user.Password, pass)
+	if ok {
+		m.throttle.Done(ip, authed)
+	}
+	if !authed {
 		if ok && shared {
 			m.logs.Add(logbuf.LevelWarn, "", fmt.Sprintf("%s 认证失败（共享用户 %q）", r.RemoteAddr, name))
 		} else if ok {
