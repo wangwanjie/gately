@@ -13,7 +13,7 @@ Esta guía trata la migración desde Lucky. Los sitios de nginx existentes se pu
 1. Localiza el directorio de configuración de Lucky: en un despliegue con Docker suele ser el directorio del host asignado a `/app/conf` en el contenedor, que contiene archivos como `lucky_base.lkcf` y `lucky_ddns.lkcf`.
 2. Despliega Gately (consulta el README). Recomendaciones:
    - Usa `--network host`, para que escuche directamente en los puertos del host;
-   - El puerto de administración es por defecto el 16680, que no entra en conflicto con el 16601 de Lucky;
+   - El puerto de administración es por defecto el 16680 y se cambia con `-listen`;
    - Si los scripts o los mapeos de certificados de Lucky usan rutas internas del contenedor (por ejemplo `/etc/lucky/custom_scripts` o `/data/nginx/...`), móntalas en el contenedor de Gately en la **misma ruta**, y no tendrás que modificar nada tras importar.
 
 ## 2. Importación
@@ -49,7 +49,7 @@ Las tareas programadas, el filtrado de IP y los ajustes de Docker de Lucky está
 
 Se recomienda cambiar módulo a módulo y verificar cada uno antes de pasar al siguiente:
 
-1. **Certificados**: activa el certificado en Gately. Al activarlo, escribe el certificado en el directorio de mapeo y ejecuta el script de cambio (con los mismos nombres de archivo que Lucky); comprueba que el directorio tenga permisos de escritura.
+1. **Certificados**: activa el certificado en Gately. Al activarlo, escribe el certificado en el directorio de mapeo y ejecuta el script de cambio; comprueba que el directorio tenga permisos de escritura.
 2. **DDNS**: desactiva la tarea en Lucky → activa la tarea correspondiente en Gately → pulsa «Forzar sincronización» para confirmar que el registro se ha actualizado.
 3. **Reenvío de puertos / STUN**: desactiva primero la regla en Lucky (para liberar el puerto y el mapeo UPnP) y después actívala en Gately. Al activar una regla STUN el puerto público puede cambiar, y los scripts y webhooks avisan automáticamente.
 4. **Servicios web**: desactiva la regla de escucha de Lucky → actívala en Gately. Los sitios HTTPS necesitan que el módulo de certificados tenga un certificado activo que cubra el dominio.
@@ -81,7 +81,7 @@ La imagen de Gately incluye `sh`, `bash` y `curl`, así que los scripts de notif
 - **Certificados de ZeroSSL**: se registra una nueva cuenta ACME con las credenciales EAB de Lucky; si ZeroSSL las rechaza, genera de nuevo la EAB en el panel de ZeroSSL.
 - **Instancias de frp**: Gately solo tiene un frpc y un frps; las instancias sobrantes de Lucky aparecen en el informe, así que muévelas a otra máquina o fusiónalas en una sola instancia. Un frpc de Gately ya configurado para conectarse a otros servidores, o un frps ya activado, no se sobrescribe. La cuenta del panel de frps la gestiona Lucky; si necesitas el panel tras migrar, vuelve a definir el puerto y la contraseña.
 - **Referencias a almacenamiento**: los usuarios de FTP / WebDAV de Lucky pueden montar almacenamientos de la «gestión de almacenamiento». Al importar, selecciona también `lucky_storagemanagement.lkcf` (o importa directamente el zip del sitio completo); los almacenamientos locales se resuelven a los directorios correspondientes. WebDAV, Alibaba Cloud Drive y los montajes de rclone aún no son compatibles y se indican en el informe.
-- **Funciones de Lucky aún no implementadas**: DLNA, montaje de unidades en la nube con rclone, Alibaba Cloud Drive, la base de datos de IP (`lucky_ipdb.lkcf`) y otras aún no se migran y se omiten al importar.
+- **Contenido que no se migra**: DLNA, montaje de unidades en la nube con rclone, Alibaba Cloud Drive, la base de datos de IP (`lucky_ipdb.lkcf`) y similares quedan fuera de la importación y se omiten.
 - **Servidores oficiales de Lucky**: Gately no se conecta a direcciones como `66666.host` o `lucky666.cn`; tras migrar, la consulta de IP pública usa servicios públicos de terceros (se puede cambiar en las tareas DDNS).
 
 ## 6. Volver atrás

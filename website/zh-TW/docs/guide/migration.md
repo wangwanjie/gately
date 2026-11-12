@@ -13,7 +13,7 @@ Gately 可以直接讀取 Lucky 的 `.lkcf` 設定檔，或 Lucky「備份設定
 1. 找到 Lucky 的設定目錄：Docker 部署通常是對應到容器 `/app/conf` 的主機目錄，裡面有 `lucky_base.lkcf`、`lucky_ddns.lkcf` 等檔案。
 2. 部署 Gately（見 README）。建議：
    - 使用 `--network host`，直接監聽主機的連接埠；
-   - 管理連接埠預設為 16680，與 Lucky 的 16601 不衝突；
+   - 管理連接埠預設為 16680，可用 `-listen` 修改；
    - 如果 Lucky 的指令碼或憑證對應用到了容器內路徑（例如 `/etc/lucky/custom_scripts`、`/data/nginx/...`），在 Gately 容器中掛載到**相同路徑**，匯入後無需修改。
 
 ## 2. 匯入
@@ -81,7 +81,7 @@ Gately 映像檔內建 `sh`、`bash` 與 `curl`，常見的通知指令碼可以
 - **ZeroSSL 憑證**：沿用 Lucky 中的 EAB 憑據註冊新的 ACME 帳號；若 ZeroSSL 拒絕，請在 ZeroSSL 後台重新產生 EAB。
 - **frp 實例**：Gately 只有一個 frpc 與一個 frps，Lucky 中多餘的實例會在報告中列出，請改用其他機器或合併到同一實例；Gately 中已設定連線其他伺服器端的 frpc、或已啟用的 frps 不會被覆蓋。frps 控制台的帳號由 Lucky 管理，遷移後如需控制台請重新設定連接埠與密碼。
 - **儲存引用**：Lucky 的 FTP / WebDAV 使用者可以掛載「儲存管理」中的儲存。匯入時請同時選擇 `lucky_storagemanagement.lkcf`（或直接匯入整站 zip），本機儲存會解析為對應目錄；WebDAV、阿里雲盤儲存與 rclone 掛載暫不支援，會在報告中提示。
-- **尚未實作的 Lucky 功能**：DLNA、rclone 網路硬碟掛載、阿里雲盤、IP 庫（`lucky_ipdb.lkcf`）等暫未遷移，匯入時會略過。
+- **未遷移的內容**：DLNA、rclone 網路硬碟掛載、阿里雲盤、IP 庫（`lucky_ipdb.lkcf`）等不在遷移範圍內，匯入時會略過。
 - **Lucky 官方伺服器**：Gately 不會連線 `66666.host`、`lucky666.cn` 等位址，遷移後公網 IP 查詢使用第三方公共服務（可在 DDNS 工作中修改）。
 
 ## 6. 退回
