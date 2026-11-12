@@ -50,6 +50,15 @@ scrape_configs:
 | `gately_host_cpu_usage_percent` / `gately_host_memory_used_percent` / `gately_host_disk_used_percent` / `gately_host_load1` | gauge | Загрузка ЦП, памяти и раздела с каталогом конфигурации хоста и нагрузка за 1 минуту по последнему замеру (экспортируются при включённом модуле «Производительность»; недоступные значения пропускаются) |
 | `gately_process_cpu_usage_percent` / `gately_process_resident_memory_bytes` / `gately_process_open_fds` | gauge | ЦП процесса Gately (доля всей машины), резидентная память и число открытых файловых дескрипторов по последнему замеру (экспортируются при включённом модуле «Производительность») |
 | `gately_perf_alerts_firing{rule}` | gauge | Число объектов, по которым сейчас сработало каждое включённое правило оповещений о производительности |
+| `gately_guard_banned` | gauge | IP-адреса или сети, которые сейчас в списке блокировок |
+| `gately_guard_firewall_active` | gauge | Применены ли правила брандмауэра защиты от вторжений (nftables или iptables): 1 — да, 0 — нет |
+| `gately_guard_dropped_packets_total{rule}` | counter | Пакеты, отброшенные правилами брандмауэра, по правилам |
+| `gately_guard_jail_matches_total{jail}` | counter | Строки журнала, совпавшие с каждым правилом журналов |
+| `gately_guard_jail_bans_total{jail}` | counter | Блокировки, вызванные каждым правилом журналов |
+| `gately_knock_packets_total{result}` | counter | Пакеты knock по результату (`accepted`, `rejected`, `ignored`) |
+| `gately_knock_grants` | gauge | Исходные адреса, которые сейчас имеют разрешение по knock |
+| `gately_knock_firewall_active` | gauge | Применены ли правила блокировки брандмауэра для port knocking: 1 — да, 0 — нет |
+| `gately_knock_firewall_dropped_total` | counter | Новые соединения с защищёнными портами, отброшенные брандмауэром |
 
 ## Примеры оповещений
 

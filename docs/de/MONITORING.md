@@ -50,6 +50,15 @@ scrape_configs:
 | `gately_host_cpu_usage_percent` / `gately_host_memory_used_percent` / `gately_host_disk_used_percent` / `gately_host_load1` | gauge | Auslastung von Host-CPU, Speicher und der Partition mit dem Konfigurationsverzeichnis sowie 1-Minuten-Last aus der letzten Messung (exportiert, solange das Modul Leistung aktiv ist; nicht lesbare Werte fehlen) |
 | `gately_process_cpu_usage_percent` / `gately_process_resident_memory_bytes` / `gately_process_open_fds` | gauge | CPU des Gately-Prozesses (Anteil am gesamten Rechner), residenter Speicher und offene Dateideskriptoren aus der letzten Messung (exportiert, solange das Modul Leistung aktiv ist) |
 | `gately_perf_alerts_firing{rule}` | gauge | Anzahl der Objekte, die je aktivierter Leistungs-Warnregel gerade ausgelöst sind |
+| `gately_guard_banned` | gauge | IP-Adressen oder Netze, die aktuell in der Sperrliste stehen |
+| `gately_guard_firewall_active` | gauge | Ob die Firewall-Regeln des Einbruchschutzes (nftables oder iptables) aktiv sind (1) oder nicht (0) |
+| `gately_guard_dropped_packets_total{rule}` | counter | Von den Firewall-Regeln verworfene Pakete, pro Regel |
+| `gately_guard_jail_matches_total{jail}` | counter | Von jeder Protokollregel erkannte Protokollzeilen |
+| `gately_guard_jail_bans_total{jail}` | counter | Von jeder Protokollregel ausgelöste Sperren |
+| `gately_knock_packets_total{result}` | counter | Knock-Pakete nach Ergebnis (`accepted`, `rejected`, `ignored`) |
+| `gately_knock_grants` | gauge | Quelladressen, die aktuell eine Knock-Freigabe besitzen |
+| `gately_knock_firewall_active` | gauge | Ob die Sperrregeln der Firewall für Port Knocking aktiv sind (1) oder nicht (0) |
+| `gately_knock_firewall_dropped_total` | counter | Von der Firewall verworfene neue Verbindungen zu geschützten Ports |
 
 ## Beispiele für Alarme
 

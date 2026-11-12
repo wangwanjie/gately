@@ -50,6 +50,15 @@ scrape_configs:
 | `gately_host_cpu_usage_percent` / `gately_host_memory_used_percent` / `gately_host_disk_used_percent` / `gately_host_load1` | gauge | Utilisation CPU, mémoire et partition du répertoire de configuration de l'hôte et charge sur 1 minute du dernier échantillon (exportés quand le module Performances est actif ; les valeurs illisibles sont omises) |
 | `gately_process_cpu_usage_percent` / `gately_process_resident_memory_bytes` / `gately_process_open_fds` | gauge | CPU du processus Gately (part de la machine entière), mémoire résidente et descripteurs de fichiers ouverts du dernier échantillon (exportés quand le module Performances est actif) |
 | `gately_perf_alerts_firing{rule}` | gauge | Nombre d'objets en alerte pour chaque règle d'alerte de performances activée |
+| `gately_guard_banned` | gauge | Adresses IP ou réseaux actuellement dans la liste de bannissement |
+| `gately_guard_firewall_active` | gauge | Indique si les règles de pare-feu de la prévention d'intrusion (nftables ou iptables) sont en place (1) ou non (0) |
+| `gately_guard_dropped_packets_total{rule}` | counter | Paquets abandonnés par les règles du pare-feu, par règle |
+| `gately_guard_jail_matches_total{jail}` | counter | Lignes de journal correspondant à chaque règle de journaux |
+| `gately_guard_jail_bans_total{jail}` | counter | Bannissements déclenchés par chaque règle de journaux |
+| `gately_knock_packets_total{result}` | counter | Paquets de knock par résultat (`accepted`, `rejected`, `ignored`) |
+| `gately_knock_grants` | gauge | Adresses sources détenant actuellement une autorisation de knock |
+| `gately_knock_firewall_active` | gauge | Indique si les règles de blocage du pare-feu du port knocking sont en place (1) ou non (0) |
+| `gately_knock_firewall_dropped_total` | counter | Nouvelles connexions vers des ports protégés abandonnées par le pare-feu |
 
 ## Exemples d'alertes
 

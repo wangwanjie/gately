@@ -50,6 +50,15 @@ scrape_configs:
 | `gately_host_cpu_usage_percent` / `gately_host_memory_used_percent` / `gately_host_disk_used_percent` / `gately_host_load1` | gauge | Host CPU, memory and config-directory partition usage and 1 minute load from the latest sample (exported while the Performance module is on; values that cannot be read are omitted) |
 | `gately_process_cpu_usage_percent` / `gately_process_resident_memory_bytes` / `gately_process_open_fds` | gauge | CPU of the Gately process (share of the whole machine), resident memory and open file descriptors from the latest sample (exported while the Performance module is on) |
 | `gately_perf_alerts_firing{rule}` | gauge | Number of objects currently firing for each enabled performance alert rule |
+| `gately_guard_banned` | gauge | IP addresses or networks currently in the ban list |
+| `gately_guard_firewall_active` | gauge | Whether the intrusion prevention firewall rules (nftables or iptables) are in place (1) or not (0) |
+| `gately_guard_dropped_packets_total{rule}` | counter | Packets dropped by the firewall rules, per rule |
+| `gately_guard_jail_matches_total{jail}` | counter | Log lines matched by each log rule |
+| `gately_guard_jail_bans_total{jail}` | counter | Bans triggered by each log rule |
+| `gately_knock_packets_total{result}` | counter | Knock packets by result (`accepted`, `rejected`, `ignored`) |
+| `gately_knock_grants` | gauge | Source addresses currently holding a knock grant |
+| `gately_knock_firewall_active` | gauge | Whether the port knocking firewall blocking rules are in place (1) or not (0) |
+| `gately_knock_firewall_dropped_total` | counter | New connections to protected ports dropped by the firewall |
 
 ## Alert examples
 

@@ -50,6 +50,15 @@ scrape_configs:
 | `gately_host_cpu_usage_percent` / `gately_host_memory_used_percent` / `gately_host_disk_used_percent` / `gately_host_load1` | gauge | 直近のサンプルのホスト CPU、メモリ、設定ディレクトリのパーティションの使用率と 1 分間の負荷（パフォーマンス監視モジュールがオンのときに出力、取得できない項目は出力しない） |
 | `gately_process_cpu_usage_percent` / `gately_process_resident_memory_bytes` / `gately_process_open_fds` | gauge | 直近のサンプルの Gately プロセスの CPU（マシン全体に占める割合）、常駐メモリ、オープン中のファイルディスクリプタ数（パフォーマンス監視モジュールがオンのときに出力） |
 | `gately_perf_alerts_firing{rule}` | gauge | 有効な各パフォーマンスアラートルールで現在発報中の対象数 |
+| `gately_guard_banned` | gauge | 現在ブロック中の IP アドレスまたはネットワーク |
+| `gately_guard_firewall_active` | gauge | 侵入防御のファイアウォールルール（nftables または iptables）が有効か（1 で有効） |
+| `gately_guard_dropped_packets_total{rule}` | counter | ファイアウォールルールが破棄したパケット数（ルール別） |
+| `gately_guard_jail_matches_total{jail}` | counter | 各ログルールに一致したログ行数 |
+| `gately_guard_jail_bans_total{jail}` | counter | 各ログルールが発動したブロック数 |
+| `gately_knock_packets_total{result}` | counter | 結果別のノックパケット数（`accepted`、`rejected`、`ignored`） |
+| `gately_knock_grants` | gauge | 現在ノックによる許可を持つ送信元アドレス数 |
+| `gately_knock_firewall_active` | gauge | ポートノッキングのファイアウォール遮断ルールが有効か（1 で有効） |
+| `gately_knock_firewall_dropped_total` | counter | ファイアウォールが破棄した、保護対象ポートへの新規接続数 |
 
 ## アラートの例
 
