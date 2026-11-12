@@ -494,6 +494,13 @@ func TestRestoreKeepAccount(t *testing.T) {
 	if !bytes.Contains(set, []byte("github:me")) || bytes.Contains(set, []byte("intruder")) || bytes.Contains(set, []byte("leaked")) || !bytes.Contains(set, []byte(`"tokenTTLHours": 9`)) {
 		t.Fatalf("系统设置应保留当前的第三方登录、去掉备份的旧版令牌，其余取备份: %s", set)
 	}
+	// 内容为 null 的账号或设置文件返回格式错误，不能让处理函数崩溃
+	if code, body := restoreWithFields(t, c, srv.URL+"/api/system/restore", zipOf(t, map[string]string{"account.json": "null"}), nil); code != 400 {
+		t.Fatalf("null 账号文件应返回 400，实际 %d %s", code, body)
+	}
+	if code, body := restoreWithFields(t, c, srv.URL+"/api/system/restore", zipOf(t, map[string]string{"gately.json": "null", "portforward.json": `{"rules":[]}`}), map[string]string{"keepAccount": "1"}); code != 400 {
+		t.Fatalf("null 设置文件应返回 400，实际 %d %s", code, body)
+	}
 	// keepAccount=1 但备份里只有账号文件：没有可恢复内容，被拒绝
 	if code, _ := restoreWithFields(t, c, srv.URL+"/api/system/restore", zipOf(t, map[string]string{"account.json": other}), map[string]string{"keepAccount": "1"}); code != 400 {
 		t.Fatalf("仅含账号文件应被拒绝，实际 %d", code)

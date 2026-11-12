@@ -643,6 +643,7 @@
   "不支持的转发模式 %q": "不支援的轉發模式 %q",
   "不支持的边缘 IP 版本 %q": "不支援的邊緣 IP 版本 %q",
   "不是 FileBrowser Quantum": "不是 FileBrowser Quantum",
+  "不是 JSON 对象": "不是 JSON 物件",
   "不是 STUN 消息": "不是 STUN 訊息",
   "不是 TLS 握手": "不是 TLS 握手",
   "不是普通文件": "不是一般檔案",
