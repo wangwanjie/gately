@@ -19,7 +19,7 @@ import (
 	"testing"
 	"time"
 
-	smb2 "github.com/hirochachacha/go-smb2"
+	smb2 "github.com/cloudsoda/go-smb2"
 
 	"github.com/wangwanjie/gately/internal/banlist"
 	"github.com/wangwanjie/gately/internal/config"
@@ -68,7 +68,7 @@ func dial(t *testing.T, port int, user, pass string) (*smb2.Session, error) {
 	}
 	_ = conn.SetDeadline(time.Now().Add(10 * time.Second))
 	d := &smb2.Dialer{Initiator: &smb2.NTLMInitiator{User: user, Password: pass}}
-	sess, err := d.Dial(conn)
+	sess, err := d.DialConn(context.Background(), conn, "127.0.0.1:"+strconv.Itoa(port))
 	if err != nil {
 		conn.Close()
 		return nil, err

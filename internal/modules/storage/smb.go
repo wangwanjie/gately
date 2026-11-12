@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hirochachacha/go-smb2"
+	"github.com/cloudsoda/go-smb2"
 )
 
 // smbDialTimeout 限制建立 TCP 连接与完成认证的时间，避免地址不可达时请求长时间挂起。
@@ -84,7 +84,7 @@ func (s *smbBackend) get() (*smb2.Share, error) {
 		user = "guest"
 	}
 	dialer := &smb2.Dialer{Initiator: &smb2.NTLMInitiator{User: user, Password: s.password, Domain: s.domain}}
-	sess, err := dialer.DialContext(ctx, conn)
+	sess, err := dialer.DialConn(ctx, conn, s.addr)
 	if err != nil {
 		conn.Close()
 		return nil, smbErr(err)
