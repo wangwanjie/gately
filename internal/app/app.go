@@ -389,7 +389,8 @@ func (a *App) Handler() http.Handler {
 	mux.Handle("/api/", a.requireAuth(a.roleGuard(a.defaultPasswordGuard(a.redactReadOnly(a.audit.Middleware(protected))))))
 	mux.Handle("/", a.staticHandler())
 	// 压缩放在翻译之外，压缩的是翻译后的最终内容；已预压缩的静态资源自带 Content-Encoding，不会重复压缩
-	return securityHeaders(httpcompress.Handler(i18n.Middleware(a.accessControl(httpx.SameOrigin(mux)))))
+	// 最外层限制请求体读取速度，登录等未认证接口同样受限
+	return limitBodyRead(securityHeaders(httpcompress.Handler(i18n.Middleware(a.accessControl(httpx.SameOrigin(mux))))))
 }
 
 // Run 启动所有模块和管理服务，阻塞直到 ctx 取消。收到重启请求时停止全部服务后重新执行自身。
