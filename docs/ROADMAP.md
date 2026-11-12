@@ -60,6 +60,7 @@ web/                   前端工程，构建产物由 web/embed.go 嵌入
 | ✅ M8.5 安装与升级 | 飞牛 fnOS 原生应用（.fpk，接入统一网关与飞牛登录态）；Linux 二进制在线升级；OpenWrt 安装包（24.10 及以前的 .ipk、25.12 起的 .apk） | fpk 在飞牛虚拟机实测；OpenWrt 安装包在 24.10 / 25.12 官方 rootfs 容器与 iStoreOS 实测，CI 冒烟测试覆盖安装与卸载 |
 | ✅ M8.6 迁移与运维 | 导入 nginx 配置（`nginx -T`，含 include 展开、upstream、Authelia 的 `auth_request`）；证书自动部署（经 SSH 推送并执行命令、重启 Docker 容器）；WAF 请求体检查上限、超限只检查前段与按路径跳过；订阅 IP 列表（定时刷新、站点与路径规则引用）；自检增加 HTTPS 站点证书覆盖与 frp 代理冲突；在线升级支持四段版本号 | nginx 导入用真实生产配置（77 个站点、Authelia、upstream）验证；SSH 推送用 SFTP 测试服务端端到端测试；WAF 用 2 MB 请求体验证拒绝、只检查前段与跳过路径 |
 | ✅ M8.7 入侵防护 | 类 fail2ban 的日志规则（日志文件、systemd 日志、命令输出、Docker 容器日志、管理后台登录失败、WAF 拦截）与常见服务模板；诱饵端口与端口扫描检测；统一封禁表（合并 Web 服务的认证失败封禁，持久化、递增时长、手动网段与永久封禁、白名单）；端口转发、Web 服务、STUN、WebDAV、FTP 与管理后台都拒绝被封禁的地址；封禁同步到 nftables（独立的 `inet gately` 表）在内核层丢弃 | 在 fnOS（nftables 1.0.6）与 iStoreOS 24.10（nftables 1.1.1）的独立网络命名空间中验证诱饵端口、扫描检测（IPv4/IPv6）、四种日志来源、持久化与规则自愈；Docker 容器验证权限检测与用户态诱饵端口回退 |
+| ✅ M8.8 访问控制与可见性 | 端口敲门（兼容 fwknop 的 SPA，nftables 与 iptables 防火墙拦截，端口转发、协议分流与 STUN 可要求先敲门）；内核没有 nf_tables（如群晖 DSM）时用 iptables + ipset 同步封禁与自动放行端口；Web 服务的导航面板、访客审计、拓扑回放、按路径缓存规则、信任已登录用户与双层 Gately；网络唤醒经客户端程序、SSH 或 HTTP 远程关机，以及巴法云语音控制 | 单元测试与端到端测试，端口敲门使用真实 fwknop 客户端验证；iptables 后端在群晖 DSM 虚拟机中验证 |
 | M9 待定 | 多管理员与细粒度角色 | 视社区需求排期 |
 
 ## 设计取舍
