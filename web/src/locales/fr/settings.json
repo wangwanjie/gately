@@ -271,6 +271,6 @@
     "success": "{count} fichiers de configuration restaurés ; la configuration précédente est enregistrée dans {previous}",
     "progress": "Application de la sauvegarde et redémarrage…",
     "keepAccount": "Conserver le compte administrateur actuel",
-    "keepAccountHint": "Si cochée, le fichier de compte de la sauvegarde est ignoré : le compte, le mot de passe, la validation en deux étapes et les utilisateurs en lecture seule restent inchangés, et la sauvegarde peut omettre account.json. Changez d'abord le mot de passe par défaut s'il est encore utilisé."
+    "keepAccountHint": "Si cochée, le compte, les jetons d'API et les réglages de connexion tierce de la sauvegarde sont ignorés : le compte, le mot de passe, la validation en deux étapes, les utilisateurs en lecture seule, les jetons d'API et la connexion tierce à l'interface d'administration restent inchangés, et la sauvegarde peut omettre account.json. Changez d'abord le mot de passe par défaut s'il est encore utilisé."
   }
 }
