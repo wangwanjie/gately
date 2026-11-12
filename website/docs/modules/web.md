@@ -197,7 +197,7 @@ https://auth.example.com/__gately_auth/oauth/callback
 
 工作方式：
 
-- 每个请求先以不带请求体的 GET 发到 `url`，带上访客的请求头（Cookie、`Authorization` 等），以及 `X-Original-Method`、`X-Original-URL`、`X-Forwarded-Method`、`X-Forwarded-Proto`、`X-Forwarded-Host`、`X-Forwarded-Uri`、`X-Forwarded-For` 与 `X-Real-Ip`，超时 10 秒；
+- 每个请求先以不带请求体的 GET 发到 `url`，带上访客的请求头（Cookie、`Authorization` 等），以及 `X-Original-Method`、`X-Original-URL`、`X-Original-URI`、`X-Forwarded-Method`、`X-Forwarded-Proto`、`X-Forwarded-Host`、`X-Forwarded-Uri`、`X-Forwarded-For` 与 `X-Real-Ip`，超时 10 秒；
 - 返回 2xx 即放行，并带上身份头；返回 401 时跳转到 `loginUrl`（状态码 302）；其他结果（如 403 或跳转）原样返回给访客；接口无法连接时返回 502；
 - 访客自带的身份头一律删除，无法伪造；
 - 可与路径规则和「认证范围」配合，只让部分路径（如 `/admin`）需要登录，也可与临时分享链接配合。

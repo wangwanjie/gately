@@ -197,7 +197,7 @@ Die Anmeldung über Drittanbieter für die Verwaltungsoberfläche selbst wird se
 
 So funktioniert es:
 
-- Jede Anfrage geht zuerst als GET ohne Body an `url`, mit den Headern des Besuchers (Cookies, `Authorization` usw.) plus `X-Original-Method`, `X-Original-URL`, `X-Forwarded-Method`, `X-Forwarded-Proto`, `X-Forwarded-Host`, `X-Forwarded-Uri`, `X-Forwarded-For` und `X-Real-Ip`. Das Timeout beträgt 10 Sekunden;
+- Jede Anfrage geht zuerst als GET ohne Body an `url`, mit den Headern des Besuchers (Cookies, `Authorization` usw.) plus `X-Original-Method`, `X-Original-URL`, `X-Original-URI`, `X-Forwarded-Method`, `X-Forwarded-Proto`, `X-Forwarded-Host`, `X-Forwarded-Uri`, `X-Forwarded-For` und `X-Real-Ip`. Das Timeout beträgt 10 Sekunden;
 - Eine 2xx-Antwort lässt die Anfrage mit den hinzugefügten Identitäts-Headern durch; ein 401 leitet auf `loginUrl` um (Status 302); andere Antworten wie 403 oder eine Weiterleitung gehen an den Besucher zurück; ein nicht erreichbarer Dienst ergibt 502;
 - Von Besuchern gesendete Identitäts-Header werden immer entfernt, sie lassen sich also nicht fälschen;
 - Es funktioniert mit Pfadregeln und dem „Authentifizierungsbereich“, sodass nur manche Pfade (zum Beispiel `/admin`) eine Anmeldung brauchen, sowie mit temporären Freigabelinks.

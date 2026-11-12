@@ -197,7 +197,7 @@ https://auth.example.com/__gately_auth/oauth/callback
 
 Как это работает:
 
-- каждый запрос сначала отправляется на `url` как GET без тела, с заголовками посетителя (cookie, `Authorization` и т. д.) плюс `X-Original-Method`, `X-Original-URL`, `X-Forwarded-Method`, `X-Forwarded-Proto`, `X-Forwarded-Host`, `X-Forwarded-Uri`, `X-Forwarded-For` и `X-Real-Ip`. Таймаут — 10 секунд;
+- каждый запрос сначала отправляется на `url` как GET без тела, с заголовками посетителя (cookie, `Authorization` и т. д.) плюс `X-Original-Method`, `X-Original-URL`, `X-Original-URI`, `X-Forwarded-Method`, `X-Forwarded-Proto`, `X-Forwarded-Host`, `X-Forwarded-Uri`, `X-Forwarded-For` и `X-Real-Ip`. Таймаут — 10 секунд;
 - ответ 2xx пропускает запрос, добавляя заголовки личности; ответ 401 перенаправляет на `loginUrl` (код 302); другие ответы, например 403 или редирект, возвращаются посетителю; если сервис недоступен, возвращается 502;
 - заголовки личности, присланные посетителями, всегда удаляются, поэтому их нельзя подделать;
 - работает с правилами путей и «Областью аутентификации», так что вход требуется только для части путей (например, `/admin`), а также с временными ссылками для доступа.

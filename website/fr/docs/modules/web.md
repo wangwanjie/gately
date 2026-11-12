@@ -197,7 +197,7 @@ Confiez l'authentification à un service externe, comme `auth_request` de nginx 
 
 Fonctionnement :
 
-- Chaque requête est d'abord envoyée à `url` en GET sans corps, avec les en-têtes du visiteur (cookies, `Authorization`, etc.) plus `X-Original-Method`, `X-Original-URL`, `X-Forwarded-Method`, `X-Forwarded-Proto`, `X-Forwarded-Host`, `X-Forwarded-Uri`, `X-Forwarded-For` et `X-Real-Ip`. Le délai d'attente est de 10 secondes ;
+- Chaque requête est d'abord envoyée à `url` en GET sans corps, avec les en-têtes du visiteur (cookies, `Authorization`, etc.) plus `X-Original-Method`, `X-Original-URL`, `X-Original-URI`, `X-Forwarded-Method`, `X-Forwarded-Proto`, `X-Forwarded-Host`, `X-Forwarded-Uri`, `X-Forwarded-For` et `X-Real-Ip`. Le délai d'attente est de 10 secondes ;
 - Une réponse 2xx laisse passer la requête, avec les en-têtes d'identité ajoutés ; un 401 redirige vers `loginUrl` (statut 302) ; les autres réponses, comme 403 ou une redirection, sont renvoyées au visiteur ; un service injoignable donne 502 ;
 - Les en-têtes d'identité envoyés par les visiteurs sont toujours supprimés, ils ne peuvent donc pas être falsifiés ;
 - Elle fonctionne avec les règles de chemin et le « Périmètre d'authentification », de sorte que seuls certains chemins (par exemple `/admin`) exigent une connexion, ainsi qu'avec les liens de partage temporaires.

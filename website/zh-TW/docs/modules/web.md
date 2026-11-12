@@ -197,7 +197,7 @@ https://auth.example.com/__gately_auth/oauth/callback
 
 運作方式：
 
-- 每個請求先以不帶請求本文的 GET 送到 `url`，帶上訪客的請求標頭（Cookie、`Authorization` 等），以及 `X-Original-Method`、`X-Original-URL`、`X-Forwarded-Method`、`X-Forwarded-Proto`、`X-Forwarded-Host`、`X-Forwarded-Uri`、`X-Forwarded-For` 與 `X-Real-Ip`，逾時 10 秒；
+- 每個請求先以不帶請求本文的 GET 送到 `url`，帶上訪客的請求標頭（Cookie、`Authorization` 等），以及 `X-Original-Method`、`X-Original-URL`、`X-Original-URI`、`X-Forwarded-Method`、`X-Forwarded-Proto`、`X-Forwarded-Host`、`X-Forwarded-Uri`、`X-Forwarded-For` 與 `X-Real-Ip`，逾時 10 秒；
 - 回傳 2xx 即放行，並帶上身分標頭；回傳 401 時跳轉到 `loginUrl`（狀態碼 302）；其他結果（如 403 或跳轉）原樣回傳給訪客；介面無法連線時回傳 502；
 - 訪客自帶的身分標頭一律刪除，無法偽造；
 - 可與路徑規則和「驗證範圍」搭配，只讓部分路徑（如 `/admin`）需要登入，也可與臨時分享連結搭配。
