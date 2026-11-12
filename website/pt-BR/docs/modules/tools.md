@@ -18,6 +18,8 @@ Cada usuário pode ser mapeado para um diretório ou montar vários diretórios:
 - **Diretório único**: defina `root` e `readOnly`. Após o login, a raiz é esse diretório.
 - **Vários diretórios**: clique em "Montar vários diretórios" na interface ou preencha várias entradas em `mounts`. Cada entrada tem `name` (nome de exibição, não pode conter `/` e é único para cada usuário), `path` (um caminho absoluto) e `readOnly`. Após o login, a raiz lista os diretórios pelo nome. A própria raiz não é gravável, e arquivos não podem ser movidos entre diretórios diferentes.
 
+**Limitação de logins**: WebDAV e FTP limitam senhas incorretas por endereço de origem. Após 10 falhas em 15 minutos, todo login dessa origem é recusado até o fim da janela (o WebDAV retorna `429` e o FTP retorna falha de login), mesmo com a senha correta. Um login bem-sucedido não zera a contagem, e origens IPv6 são contadas por /64. Quando o WebDAV está atrás de um proxy reverso local, como o serviço web do Gately, usa-se o endereço do visitante repassado pelo proxy.
+
 ## FTP
 
 Configure em "Serviço FTP", no grupo "Serviços de arquivos". FTP e FTPS são compatíveis.

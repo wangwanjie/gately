@@ -18,6 +18,8 @@ Chaque utilisateur peut être associé à un seul répertoire, ou monter plusieu
 - **Répertoire unique** : définissez `root` et `readOnly`. Après la connexion, la racine est ce répertoire.
 - **Plusieurs répertoires** : cliquez sur « Monter plusieurs répertoires » dans l'interface, ou renseignez plusieurs entrées dans `mounts`. Chaque entrée comporte `name` (nom affiché, ne peut pas contenir `/`, unique pour un même utilisateur), `path` (un chemin absolu) et `readOnly`. Après la connexion, la racine liste les répertoires par nom. La racine elle-même n'est pas modifiable, et les fichiers ne peuvent pas être déplacés d'un répertoire à un autre.
 
+**Limitation des connexions** : WebDAV et FTP limitent les mots de passe erronés par adresse source. Après 10 échecs en 15 minutes, toute connexion de cette source est refusée jusqu'à la fin de la fenêtre (WebDAV renvoie `429`, FTP renvoie un échec de connexion), même avec le bon mot de passe. Une connexion réussie ne remet pas le compteur à zéro et les sources IPv6 sont comptées par /64. Lorsque WebDAV se trouve derrière un reverse proxy local comme le service web de Gately, l'adresse du visiteur transmise par le proxy est utilisée.
+
 ## FTP
 
 Configurez-le dans « Service FTP » du groupe « Services de fichiers ». FTP et FTPS sont pris en charge.
