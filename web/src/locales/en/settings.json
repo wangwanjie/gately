@@ -46,6 +46,13 @@
     "verifying": "Verifying…",
     "autoHint": "Submitted automatically once the password and all 6 digits are entered"
   },
+  "sessions": {
+    "title": "Sign-in sessions",
+    "desc": "Immediately invalidates every admin sign-in session on all devices, including this one. API tokens are not affected. Use it when a token may have leaked.",
+    "button": "Sign out of all devices",
+    "confirm": "Sign out of all devices? Every signed-in session, including this one, stops working and you will need to sign in again.",
+    "done": "Signed out of all devices. Please sign in again"
+  },
   "loginProtect": {
     "title": "Login protection",
     "sessionHours": "Session lifetime",

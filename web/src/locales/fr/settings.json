@@ -46,6 +46,13 @@
     "verifying": "Vérification…",
     "autoHint": "Envoi automatique une fois le mot de passe et les 6 chiffres saisis"
   },
+  "sessions": {
+    "title": "Sessions de connexion",
+    "desc": "Invalide immédiatement toutes les sessions de connexion à l'administration sur tous les appareils, y compris celui-ci. Les jetons API ne sont pas affectés. À utiliser si un jeton a pu fuiter.",
+    "button": "Se déconnecter de tous les appareils",
+    "confirm": "Se déconnecter de tous les appareils ? Toutes les sessions ouvertes, y compris celle-ci, cesseront de fonctionner et vous devrez vous reconnecter.",
+    "done": "Déconnecté de tous les appareils. Veuillez vous reconnecter"
+  },
   "loginProtect": {
     "title": "Protection de la connexion",
     "sessionHours": "Durée de session",
