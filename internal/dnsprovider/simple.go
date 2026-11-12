@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -255,18 +256,40 @@ func (d *dynv6) do(ctx context.Context, method, path string, body any, out any) 
 	return nil
 }
 
-func (d *dynv6) Upsert(ctx context.Context, r Record) (string, error) {
-	var zone struct {
-		ID int64 `json:"id"`
-	}
-	if err := d.do(ctx, http.MethodGet, "/zones/by-name/"+r.Zone, nil, &zone); err != nil {
-		return "", err
-	}
-	name := r.Sub
+// resolveZone 返回 zone 的记录路径与记录名（根记录为空串）。
+// dynv6 的 zone 是用户自己的完整域名（如 my.dynv6.net）。主域名填成 dynv6.net、子域名填 my 时
+// zone 查询会 404，此时把子域名最右侧的标签逐级并入 zone 重试。
+func (d *dynv6) resolveZone(ctx context.Context, zoneName, sub string) (string, string, error) {
+	name := sub
 	if name == "@" {
 		name = ""
 	}
-	zpath := "/zones/" + strconv.FormatInt(zone.ID, 10) + "/records"
+	var firstErr error
+	for {
+		zp, err := d.zonePath(ctx, zoneName)
+		if err == nil {
+			return zp, name, nil
+		}
+		if firstErr == nil {
+			firstErr = err
+		}
+		var he *HTTPError
+		if !errors.As(err, &he) || he.Status != http.StatusNotFound || name == "" {
+			return "", "", firstErr
+		}
+		if i := strings.LastIndex(name, "."); i >= 0 {
+			zoneName, name = name[i+1:]+"."+zoneName, name[:i]
+		} else {
+			zoneName, name = name+"."+zoneName, ""
+		}
+	}
+}
+
+func (d *dynv6) Upsert(ctx context.Context, r Record) (string, error) {
+	zpath, name, err := d.resolveZone(ctx, r.Zone, r.Sub)
+	if err != nil {
+		return "", err
+	}
 	var recs []struct {
 		ID   int64  `json:"id"`
 		Name string `json:"name"`

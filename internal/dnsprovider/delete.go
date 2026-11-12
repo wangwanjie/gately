@@ -340,17 +340,13 @@ func (p *porkbun) removeRecord(ctx context.Context, r Record, rec remoteRecord) 
 // ---- dynv6 ----
 
 func (d *dynv6) findRecords(ctx context.Context, r Record) ([]remoteRecord, error) {
-	zp, err := d.zonePath(ctx, r.Zone)
+	zp, name, err := d.resolveZone(ctx, r.Zone, r.RR())
 	if err != nil {
 		return nil, err
 	}
 	var recs []dynv6Record
 	if err := d.do(ctx, http.MethodGet, zp, nil, &recs); err != nil {
 		return nil, err
-	}
-	name := r.RR()
-	if name == "@" {
-		name = ""
 	}
 	var out []remoteRecord
 	for _, rec := range recs {

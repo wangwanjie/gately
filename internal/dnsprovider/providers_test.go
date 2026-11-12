@@ -347,3 +347,37 @@ func TestRegistry(t *testing.T) {
 		t.Fatal("缺少 Secret 应报错")
 	}
 }
+
+// dynv6 的 zone 是用户自己的完整域名（如 my.dynv6.net）；主域名误填为 dynv6.net 时应自动回退到更长的 zone。
+func TestDynv6ZoneFallback(t *testing.T) {
+	value := ""
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.URL.Path == "/zones/by-name/my.dynv6.net":
+			_, _ = w.Write([]byte(`{"id":7}`))
+		case r.URL.Path == "/zones/by-name/dynv6.net", r.URL.Path == "/zones/by-name/a.my.dynv6.net":
+			w.WriteHeader(404)
+			_, _ = w.Write([]byte(`{"message":"Not Found"}`))
+		case r.Method == "GET" && r.URL.Path == "/zones/7/records":
+			if value == "" {
+				_, _ = w.Write([]byte(`[]`))
+				return
+			}
+			_, _ = w.Write([]byte(`[{"id":3,"name":"a","type":"AAAA","data":"` + value + `"}]`))
+		case r.Method == "POST", r.Method == "PATCH" && r.URL.Path == "/zones/7/records/3":
+			b := readJSON(t, r)
+			if r.Method == "POST" && b["name"] != "a" {
+				t.Errorf("name 错误: %v", b)
+			}
+			value = b["data"].(string)
+			_, _ = w.Write([]byte(`{}`))
+		default:
+			t.Errorf("意外请求 %s %s", r.Method, r.URL)
+		}
+	}))
+	defer srv.Close()
+	p, _ := New("dynv6", Credentials{Secret: "tok"}, srv.Client())
+	p.(*dynv6).endpoint = srv.URL
+	runUpsertSequence(t, p, Record{Zone: "dynv6.net", Sub: "a.my", Type: "AAAA"})
+	// 子域名仅一级时：zone=dynv6.net sub=my 同样应落到 my.dynv6.net 的根记录
+}
