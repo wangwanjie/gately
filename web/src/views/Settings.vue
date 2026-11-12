@@ -510,6 +510,8 @@
                 <el-input v-if="restoreFile?.name.endsWith('.enc')" v-model="restorePassword" show-password :placeholder="t('settings.restore.passwordPlaceholder')" style="width: 160px" />
                 <el-button type="danger" :icon="ArchiveRestore" :disabled="!restoreFile" :loading="restoring" @click="confirmRestore">{{ t('settings.restore.button') }}</el-button>
               </div>
+              <el-checkbox v-model="restoreKeepAccount" class="restore-keep">{{ t('settings.restore.keepAccount') }}</el-checkbox>
+              <p class="desc restore-keep-hint">{{ t('settings.restore.keepAccountHint') }}</p>
             </div>
           </div>
         </div>
@@ -1161,6 +1163,8 @@ async function confirmImport() {
 const downloading = ref(false)
 const restoreFile = ref<File>()
 const restorePassword = ref('')
+// 恢复时保留当前管理员账号（不用备份中的 account.json 覆盖）
+const restoreKeepAccount = ref(false)
 const restoring = ref(false)
 
 async function downloadBackup() {
@@ -1226,6 +1230,9 @@ async function confirmRestore() {
   fd.append('file', restoreFile.value, restoreFile.value.name)
   if (restorePassword.value) {
     fd.append('password', restorePassword.value)
+  }
+  if (restoreKeepAccount.value) {
+    fd.append('keepAccount', '1')
   }
   restoring.value = true
   try {
@@ -1322,6 +1329,7 @@ onMounted(async () => {
   align-items: start;
 }
 .grid-2 + .g-card,
+.grid-2 + .bk,
 .g-card + .grid-2 {
   margin-top: 16px;
 }
@@ -1565,6 +1573,15 @@ div.warns {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+}
+.restore-keep {
+  margin-top: 10px;
+  height: auto;
+  white-space: normal;
+}
+.restore-keep-hint {
+  margin: 2px 0 0 24px;
+  font-size: 12px;
 }
 .file-btn {
   flex: 1;
