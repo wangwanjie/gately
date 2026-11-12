@@ -181,6 +181,7 @@
     "cloudflared": "This stops and deletes all tunnels and clears the program path and the download proxy.",
     "tailscale": "This stops all Tailscale instances (a Gately-managed tailscaled using the default state directory logs out first), deletes all instances and program settings, and deletes the login state in the default state directories; custom state directories are kept.",
     "netbird": "This stops all NetBird instances (a daemon managed by Gately that uses the default state directory logs out first, removing this machine from the network), deletes all instances and program settings, and deletes the login state and keys in the default state directories; custom state directories are kept.",
+    "easytier": "This stops all EasyTier instances, deletes all instances and program settings (network secrets included). EasyTier keeps no other state in the config directory.",
     "filebrowser": "This stops and deletes all instances together with their users, share links and caches (files in the shared directories are not touched), and clears the program path and the download proxy."
   },
   "secretInput": {

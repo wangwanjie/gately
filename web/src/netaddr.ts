@@ -23,6 +23,23 @@ export function listensBeyondLocal(addr: string): boolean {
   return true
 }
 
+// forwardsBeyondLocal 判断多行端口转发规则（协议://绑定地址:端口/目标地址:端口）中是否有绑定到本机以外的地址：
+// 转发入口没有认证，绑定到非回环地址时同网络里的设备都能经它进入组网。空行与 # 注释行忽略。
+export function forwardsBeyondLocal(text: string): boolean {
+  for (const raw of text.split('\n')) {
+    const line = raw.trim()
+    if (!line || line.startsWith('#')) {
+      continue
+    }
+    const rest = line.includes('://') ? line.slice(line.indexOf('://') + 3) : line
+    const bind = rest.split('/')[0]
+    if (listensBeyondLocal(bind)) {
+      return true
+    }
+  }
+  return false
+}
+
 // maskProxyPassword 把代理地址 “协议://用户名:密码@主机:端口” 中的密码换成 ***，没有密码时原样返回。
 // 代理地址不带路径，按最后一个 @ 划分用户信息，密码里含未编码的 @、/、: 时也能整体隐藏
 export function maskProxyPassword(p: string): string {

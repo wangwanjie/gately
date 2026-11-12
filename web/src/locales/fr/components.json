@@ -181,6 +181,7 @@
     "cloudflared": "Tous les tunnels sont arrêtés et supprimés, le chemin du programme et le proxy de téléchargement sont effacés.",
     "tailscale": "Arrête toutes les instances Tailscale (un tailscaled géré par Gately utilisant le répertoire d'état par défaut se déconnecte d'abord), supprime toutes les instances et les paramètres des programmes, et efface l'état de connexion des répertoires d'état par défaut ; les répertoires d'état personnalisés sont conservés.",
     "netbird": "Toutes les instances NetBird sont arrêtées (un démon géré par Gately qui utilise le répertoire d’état par défaut se déconnecte d’abord, ce qui retire cette machine du réseau), toutes les instances et les paramètres du programme sont supprimés, ainsi que l’état de connexion et les clés des répertoires d’état par défaut ; les répertoires d’état personnalisés sont conservés.",
+    "easytier": "Cela arrête toutes les instances EasyTier et supprime toutes les instances ainsi que les réglages du programme (secrets de réseau compris). EasyTier ne conserve aucun autre état dans le dossier de configuration.",
     "filebrowser": "Toutes les instances sont arrêtées et supprimées avec leurs utilisateurs, liens de partage et caches (les fichiers des répertoires partagés ne sont pas touchés), et le chemin du programme et le proxy de téléchargement sont effacés."
   },
   "secretInput": {

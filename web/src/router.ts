@@ -19,6 +19,7 @@ const router = createRouter({
         { path: 'stun', name: 'stun', component: () => import('./views/STUN.vue'), meta: { titleKey: 'nav.items.stun.title' } },
         { path: 'tailscale', name: 'tailscale', component: () => import('./views/Tailscale.vue'), meta: { titleKey: 'nav.items.tailscale.title' } },
         { path: 'netbird', name: 'netbird', component: () => import('./views/NetBird.vue'), meta: { titleKey: 'nav.items.netbird.title' } },
+        { path: 'easytier', name: 'easytier', component: () => import('./views/EasyTier.vue'), meta: { titleKey: 'nav.items.easytier.title' } },
         { path: 'frp', name: 'frp', component: () => import('./views/Frp.vue'), meta: { titleKey: 'nav.items.frp.title' } },
         { path: 'cloudflared', name: 'cloudflared', component: () => import('./views/Cloudflared.vue'), meta: { titleKey: 'nav.items.cloudflared.title' } },
         { path: 'ssl', name: 'ssl', component: () => import('./views/SSL.vue'), meta: { titleKey: 'nav.items.ssl.title' } },

@@ -181,6 +181,7 @@
     "cloudflared": "Alle Tunnel werden gestoppt und gelöscht, Programmpfad und Download-Proxy werden geleert.",
     "tailscale": "Stoppt alle Tailscale-Instanzen (ein von Gately verwalteter tailscaled mit Standard-Statusverzeichnis meldet sich zuerst ab), löscht alle Instanzen und Programmeinstellungen sowie den Anmeldestatus in den Standard-Statusverzeichnissen; benutzerdefinierte Statusverzeichnisse bleiben erhalten.",
     "netbird": "Alle NetBird-Instanzen werden gestoppt (ein von Gately verwalteter Daemon mit dem Standard-Statusverzeichnis meldet sich zuerst ab, wodurch dieser Rechner aus dem Netzwerk entfernt wird), alle Instanzen und Programmeinstellungen werden gelöscht, ebenso Anmeldestatus und Schlüssel in den Standard-Statusverzeichnissen; benutzerdefinierte Statusverzeichnisse bleiben erhalten.",
+    "easytier": "Dadurch werden alle EasyTier-Instanzen gestoppt sowie alle Instanzen und Programmeinstellungen (einschließlich Netzwerkgeheimnisse) gelöscht. EasyTier speichert keinen weiteren Zustand im Konfigurationsverzeichnis.",
     "filebrowser": "Alle Instanzen werden gestoppt und mit ihren Benutzern, Freigabelinks und Caches gelöscht (Dateien in den freigegebenen Verzeichnissen bleiben unberührt); Programmpfad und Download-Proxy werden geleert."
   },
   "secretInput": {
