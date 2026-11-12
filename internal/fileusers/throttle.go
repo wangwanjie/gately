@@ -81,6 +81,16 @@ func (t *Throttle) Reserve(ip string) bool {
 	return true
 }
 
+// Blocked 判断来源是否已因失败次数达到上限而被拒绝（不含进行中的尝试）。
+// 调用方在跳过 Reserve 之前（如凭据近期已验证通过）必须先检查它，否则被拒绝的来源仍能借此判断密码是否正确。
+func (t *Throttle) Blocked(ip string) bool {
+	key := throttleKey(ip)
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	e := t.m[key]
+	return e != nil && e.n >= ThrottleMaxFailures && t.clock().Sub(e.first) <= ThrottleWindow
+}
+
 // Done 结束一次 Reserve 占用的尝试并记录结果。成功不清零已有的失败次数，
 // 避免攻击者用自己的有效账号交替登录来重置计数。
 func (t *Throttle) Done(ip string, ok bool) {
