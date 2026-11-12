@@ -39,6 +39,9 @@ const (
 	nonceLen = 12
 	// maxFileSize 限制单个配置文件解压后的大小
 	maxFileSize = 32 << 20
+	// maxTotalSize 限制全部配置文件解压后的总大小，maxFiles 限制文件数量，防止小体积压缩包解压后耗尽内存
+	maxTotalSize = 128 << 20
+	maxFiles     = 256
 )
 
 // ErrPasswordRequired 表示备份已加密但未提供口令。
@@ -201,6 +204,7 @@ func Parse(data []byte, password string) (map[string][]byte, error) {
 		return nil, errors.New("不是有效的 zip 文件")
 	}
 	out := map[string][]byte{}
+	total := 0
 	for _, f := range zr.File {
 		name := path.Base(f.Name)
 		if f.FileInfo().IsDir() || !strings.HasSuffix(name, ".json") || strings.HasPrefix(name, ".") || name != f.Name {
@@ -214,6 +218,9 @@ func Parse(data []byte, password string) (map[string][]byte, error) {
 		rc.Close()
 		if err != nil || !json.Valid(b) {
 			return nil, fmt.Errorf("%s 不是有效的 JSON", name)
+		}
+		if total += len(b); total > maxTotalSize || len(out) >= maxFiles {
+			return nil, errors.New("备份解压后过大")
 		}
 		out[name] = b
 	}

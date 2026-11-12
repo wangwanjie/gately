@@ -1,12 +1,41 @@
 package backup
 
 import (
+	"archive/zip"
+	"bytes"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
+
+// 体积很小的压缩包解压后可能占用大量内存：总大小超过上限时必须拒绝。
+func TestParseRejectsZipBomb(t *testing.T) {
+	var buf bytes.Buffer
+	zw := zip.NewWriter(&buf)
+	filler := []byte("1" + strings.Repeat(" ", 30<<20))
+	for i := 0; i < 5; i++ {
+		fw, err := zw.CreateHeader(&zip.FileHeader{Name: fmt.Sprintf("f%d.json", i), Method: zip.Deflate})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := fw.Write(filler); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if buf.Len() > 1<<20 {
+		t.Fatalf("测试压缩包过大: %d", buf.Len())
+	}
+	if _, err := Parse(buf.Bytes(), ""); err == nil {
+		t.Fatal("解压后总大小超过上限的备份应被拒绝")
+	}
+}
 
 func writeFiles(t *testing.T, dir string, files map[string]string) {
 	t.Helper()

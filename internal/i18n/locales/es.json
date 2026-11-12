@@ -1280,6 +1280,7 @@
   "备份已加密，需要提供备份口令": "La copia de seguridad está cifrada; se requiere la contraseña de la copia",
   "备份当前版本到 %s 失败: %v": "Error al respaldar la versión actual en %s: %v",
   "备份目的地": "Destino de copia de seguridad",
+  "备份解压后过大": "La copia de seguridad es demasiado grande al descomprimirla",
   "备份设置": "Ajustes de copia de seguridad",
   "备份：失败": "Copia de seguridad: fallida",
   "备份：完成": "Copia de seguridad: completada",
