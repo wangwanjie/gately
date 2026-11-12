@@ -377,3 +377,46 @@ server {
 		t.Fatalf("未配置 error_page 497 时不应开启: %+v", p)
 	}
 }
+
+// proxy_pass 带 URI 时 nginx 把匹配的前缀替换为该路径：转换为去前缀的分路径后端，URI 路径并入后端地址。
+func TestImportNginxLocationStripPrefix(t *testing.T) {
+	conf := `server {
+	listen 8080;
+	server_name s.example.com;
+	location / { proxy_pass http://10.0.0.1:80; }
+	location /api/zyqd/ { proxy_pass http://192.168.105.1:9999/; }
+	location /v1/ { proxy_pass http://10.0.0.2:81/inner/; }
+	location /same/ { proxy_pass http://10.0.0.3:82/same/; }
+	location /keep/ { proxy_pass http://10.0.0.4:83; }
+	location /q/ { proxy_pass http://10.0.0.5:84/x?a=1; }
+	location /site/ { proxy_pass http://10.0.0.1:80/; }
+}`
+	rep, err := importNginx(conf, nil, nameCerts{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, pl, s := findSite(rep, "s.example.com")
+	got := map[string]Location{}
+	for _, l := range s.Locations {
+		got[l.Prefix] = l
+	}
+	if l := got["/api/zyqd/"]; !l.StripPrefix || len(l.Targets) != 1 || l.Targets[0] != "http://192.168.105.1:9999" {
+		t.Errorf("根路径 URI 应去前缀: %+v", l)
+	}
+	if l := got["/v1/"]; !l.StripPrefix || len(l.Targets) != 1 || l.Targets[0] != "http://10.0.0.2:81/inner/" {
+		t.Errorf("带路径 URI 应去前缀并拼接: %+v", l)
+	}
+	if l := got["/same/"]; l.StripPrefix {
+		t.Errorf("URI 与前缀相同等价于原样转发: %+v", l)
+	}
+	if l := got["/keep/"]; l.StripPrefix {
+		t.Errorf("没有 URI 时原样转发: %+v", l)
+	}
+	if l := got["/q/"]; l.StripPrefix || !strings.Contains(strings.Join(pl.Warnings, "\n"), "/q/") {
+		t.Errorf("带查询串的 URI 应提示: %+v %v", l, pl.Warnings)
+	}
+	// 与站点后端相同、仅需去前缀的路径仍要保留规则
+	if l, ok := got["/site/"]; !ok || !l.StripPrefix || len(l.Targets) != 0 {
+		t.Errorf("沿用站点后端的去前缀规则丢失: %+v", l)
+	}
+}
