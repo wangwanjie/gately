@@ -46,6 +46,13 @@
     "verifying": "Verificando…",
     "autoHint": "Enviado automaticamente após digitar a senha e os 6 dígitos"
   },
+  "sessions": {
+    "title": "Sessões de login",
+    "desc": "Invalida imediatamente todas as sessões de login da administração em todos os dispositivos, inclusive este. Os tokens de API não são afetados. Use quando um token puder ter vazado.",
+    "button": "Sair de todos os dispositivos",
+    "confirm": "Sair de todos os dispositivos? Todas as sessões iniciadas, inclusive esta, deixam de funcionar e será preciso entrar novamente.",
+    "done": "Saiu de todos os dispositivos. Entre novamente"
+  },
   "loginProtect": {
     "title": "Proteção de login",
     "sessionHours": "Duração da sessão",

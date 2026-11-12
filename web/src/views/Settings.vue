@@ -103,6 +103,17 @@
               <template v-else>{{ t('settings.totp.autoHint') }}</template>
             </div>
           </el-dialog>
+
+          <!-- 退出所有设备：使全部管理界面会话失效，API 令牌不受影响 -->
+          <div class="g-card">
+            <div class="g-card-head">
+              <div class="g-card-title"><LogOut :size="16" />{{ t('settings.sessions.title') }}</div>
+            </div>
+            <div class="g-card-body">
+              <p class="desc">{{ t('settings.sessions.desc') }}</p>
+              <el-button type="danger" plain :icon="LogOut" :loading="sessionsRevoking" @click="revokeAllSessions">{{ t('settings.sessions.button') }}</el-button>
+            </div>
+          </div>
         </div>
 
         <PasskeyManager />
@@ -548,6 +559,7 @@ import {
   Import,
   KeyRound,
   LockKeyhole,
+  LogOut,
   Network,
   RotateCw,
   Settings2,
@@ -959,6 +971,27 @@ async function saveAccount() {
     ElMessage.error((e as Error).message)
   } finally {
     accountSaving.value = false
+  }
+}
+
+// ---------- 退出所有设备 ----------
+const sessionsRevoking = ref(false)
+
+async function revokeAllSessions() {
+  try {
+    await ElMessageBox.confirm(t('settings.sessions.confirm'), t('settings.sessions.button'), { type: 'warning' })
+  } catch {
+    return
+  }
+  sessionsRevoking.value = true
+  try {
+    await api.post('/api/account/sessions/revoke')
+    ElMessage.success(t('settings.sessions.done'))
+    router.replace({ name: 'login' })
+  } catch (e) {
+    ElMessage.error((e as Error).message)
+  } finally {
+    sessionsRevoking.value = false
   }
 }
 

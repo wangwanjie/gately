@@ -46,6 +46,13 @@
     "verifying": "Verificando…",
     "autoHint": "Se envía automáticamente al introducir la contraseña y los 6 dígitos"
   },
+  "sessions": {
+    "title": "Sesiones de inicio de sesión",
+    "desc": "Invalida de inmediato todas las sesiones de administración en todos los dispositivos, incluido este. Los tokens de API no se ven afectados. Úsalo si un token pudo filtrarse.",
+    "button": "Cerrar sesión en todos los dispositivos",
+    "confirm": "¿Cerrar sesión en todos los dispositivos? Todas las sesiones iniciadas, incluida esta, dejarán de funcionar y tendrás que volver a iniciar sesión.",
+    "done": "Sesión cerrada en todos los dispositivos. Vuelve a iniciar sesión"
+  },
   "loginProtect": {
     "title": "Protección de inicio de sesión",
     "sessionHours": "Duración de la sesión",

@@ -46,6 +46,13 @@
     "verifying": "Wird überprüft…",
     "autoHint": "Wird nach Eingabe des Passworts und aller 6 Ziffern automatisch gesendet"
   },
+  "sessions": {
+    "title": "Anmeldesitzungen",
+    "desc": "Macht sofort alle Admin-Anmeldesitzungen auf allen Geräten ungültig, auch dieses. API-Token bleiben unberührt. Nutzen Sie dies, wenn ein Token durchgesickert sein könnte.",
+    "button": "Von allen Geräten abmelden",
+    "confirm": "Von allen Geräten abmelden? Alle angemeldeten Sitzungen, auch diese, werden ungültig, und Sie müssen sich neu anmelden.",
+    "done": "Von allen Geräten abgemeldet. Bitte erneut anmelden"
+  },
   "loginProtect": {
     "title": "Anmeldeschutz",
     "sessionHours": "Sitzungsdauer",
