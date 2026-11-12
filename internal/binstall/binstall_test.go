@@ -564,3 +564,17 @@ func TestBusyExclusive(t *testing.T) {
 		t.Errorf("释放后应可卸载: %v", err)
 	}
 }
+
+// TestExeNameKeepsExtension 验证已带扩展名的依赖文件（如 wintun.dll）在 Windows 下不会被追加 .exe。
+func TestExeNameKeepsExtension(t *testing.T) {
+	if got := ExeName("wintun.dll"); got != "wintun.dll" {
+		t.Errorf("ExeName(wintun.dll) = %q", got)
+	}
+	want := "tool"
+	if runtime.GOOS == "windows" {
+		want = "tool.exe"
+	}
+	if got := ExeName("tool"); got != want {
+		t.Errorf("ExeName(tool) = %q，期望 %q", got, want)
+	}
+}
