@@ -179,3 +179,20 @@ func TestParseLegacyIPv4(t *testing.T) {
 		}
 	}
 }
+
+// 开启开关时关闭已有的空闲长连接：开启前连到回环地址的空闲连接不能在开启后继续复用。
+func TestSetRestrictedClosesIdle(t *testing.T) {
+	srv := okServer(t)
+	client := NewClient(5 * time.Second)
+	withRestricted(t, false)
+	resp, err := client.Get(srv.URL)
+	if err != nil {
+		t.Fatalf("开关关闭时应放行: %v", err)
+	}
+	_, _ = io.Copy(io.Discard, resp.Body)
+	resp.Body.Close()
+	SetRestricted(true)
+	if _, err := client.Get(srv.URL); !errors.Is(err, ErrBlocked) {
+		t.Fatalf("开启后不应复用开启前的空闲连接，实际: %v", err)
+	}
+}

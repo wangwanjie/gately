@@ -24,14 +24,59 @@ import (
 	"sync/atomic"
 	"syscall"
 	"time"
+	"weak"
 )
 
 // restricted 为全局开关：true 表示禁止出站请求访问内网与链路本地地址。
 var restricted atomic.Bool
 
-// SetRestricted 设置全局开关，立即对新建立的连接生效（已建立的连接保持不变）。
+// SetRestricted 设置全局开关，立即对新建立的连接生效。开启时关闭本包客户端已有的空闲长连接，
+// 避免开启前连到内网目标的空闲连接在开启后继续被复用；正在进行的请求不受影响。
 func SetRestricted(on bool) {
 	restricted.Store(on)
+	if on {
+		closeIdle()
+	}
+}
+
+// guardedTransports 记录经 Guard 改造的 Transport（弱引用，不阻止回收），开关开启时用来关闭空闲连接。
+var (
+	guardedMu         sync.Mutex
+	guardedTransports []weak.Pointer[http.Transport]
+)
+
+// track 登记一个 Transport；列表超过一定长度时顺带清掉已被回收的条目，避免无限增长。
+func track(tr *http.Transport) {
+	guardedMu.Lock()
+	defer guardedMu.Unlock()
+	if len(guardedTransports) >= 256 {
+		live := guardedTransports[:0]
+		for _, w := range guardedTransports {
+			if w.Value() != nil {
+				live = append(live, w)
+			}
+		}
+		guardedTransports = live
+	}
+	guardedTransports = append(guardedTransports, weak.Make(tr))
+}
+
+// closeIdle 关闭所有仍存活的受限 Transport 的空闲连接，并清掉已被回收的条目。
+func closeIdle() {
+	guardedMu.Lock()
+	live := guardedTransports[:0]
+	var trs []*http.Transport
+	for _, w := range guardedTransports {
+		if tr := w.Value(); tr != nil {
+			live = append(live, w)
+			trs = append(trs, tr)
+		}
+	}
+	guardedTransports = live
+	guardedMu.Unlock()
+	for _, tr := range trs {
+		tr.CloseIdleConnections()
+	}
 }
 
 // Restricted 返回全局开关当前是否开启。
@@ -239,6 +284,7 @@ func Guard(tr *http.Transport) *http.Transport {
 		d.Resolver = r
 		return d.DialContext(ctx, network, addr)
 	}
+	track(tr)
 	return tr
 }
 
