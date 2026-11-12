@@ -1410,14 +1410,26 @@ func (c *nginxConverter) convertLocation(d *ngDirective) {
 			c.warn("精确匹配 location = %s 的后端按前缀导入", p)
 		}
 		if uri != "" && strings.TrimRight(uri, "/") != strings.TrimRight(p, "/") {
-			c.warn("location %s 的 proxy_pass 带路径 %s：nginx 会把前缀替换为该路径，Gately 原样转发请求路径，请确认后端路径", p, uri)
+			// nginx 把匹配的前缀替换为 proxy_pass 的路径：去掉前缀，路径部分作为后端地址的路径
+			if strings.Contains(uri, "?") {
+				c.warn("location %s 的 proxy_pass 路径 %s 带查询串，无法转换，请确认后端路径", p, uri)
+			} else {
+				loc.StripPrefix = true
+				if uri != "/" {
+					for i := range targets {
+						base, params, _ := strings.Cut(targets[i], " ")
+						targets[i] = strings.TrimSpace(strings.TrimRight(base, "/") + strings.TrimRight(uri, "/") + "/ " + params)
+					}
+					loc.Targets = targets
+				}
+			}
 		}
 		if !slices.Equal(targets, s.Targets) {
 			loc.Targets = targets
 		}
 		c.applyProxyOptions(d.Block, &loc.RequestHeaders, false)
 		c.warnLocationTimeouts(p, d.Block)
-		if len(loc.Targets) > 0 || len(loc.RequestHeaders) > 0 {
+		if len(loc.Targets) > 0 || len(loc.RequestHeaders) > 0 || loc.StripPrefix {
 			s.Locations = append(s.Locations, loc)
 		}
 		handled = true
