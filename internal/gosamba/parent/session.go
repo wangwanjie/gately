@@ -520,6 +520,31 @@ type SessionSetupHandler struct {
 	// SessionId must be invalidated, and the dispatcher that owns the resume
 	// keys, notify registrations and durable entries of anything released.
 	Host *sessionHost
+
+	// Gately 新增：按来源地址限制认证失败次数。Limiter 为空时不限流；RemoteIP 为对端 IP。
+	Limiter  AuthLimiter
+	RemoteIP string
+}
+
+// AuthLimiter 是按来源地址的认证失败限流器（fileusers.Throttle 满足该接口）。
+// Reserve 在校验密码前调用，返回 false 表示该来源失败过多，应直接拒绝；
+// 返回 true 后必须调用 Done 报告结果。
+type AuthLimiter interface {
+	Reserve(ip string) bool
+	Done(ip string, ok bool)
+}
+
+// clipUserName 截断写入日志的用户名：用户名来自未认证的 NTLM 消息，长度只受帧大小限制。
+func clipUserName(s string) string {
+	const max = 64
+	if len(s) <= max {
+		return s
+	}
+	r := []rune(s)
+	if len(r) <= max {
+		return s
+	}
+	return string(r[:max]) + "…"
 }
 
 // hasGuestShare reports whether any configured share allows anonymous access.
@@ -694,7 +719,24 @@ func (h *SessionSetupHandler) handleType1(rw io.ReadWriter, hdr smb2.Header, typ
 	return nil, nil
 }
 
+// handleType3 在认证前向限流器占位：来源失败过多时直接拒绝并写日志，否则按结果记录成功或失败。
 func (h *SessionSetupHandler) handleType3(rw io.ReadWriter, hdr smb2.Header, type3, requestFrame []byte, prevSessionID uint64, raw bool) (*Session, error) {
+	if h.Limiter == nil {
+		return h.verifyType3(rw, hdr, type3, requestFrame, prevSessionID, raw)
+	}
+	if !h.Limiter.Reserve(h.RemoteIP) {
+		name := ""
+		if auth, err := ntlm.DecodeAuthenticate(type3); err == nil {
+			name = auth.UserName
+		}
+		return nil, h.failAuth(rw, hdr, fmt.Errorf("too many failed logins (user %q)", clipUserName(name)))
+	}
+	sess, err := h.verifyType3(rw, hdr, type3, requestFrame, prevSessionID, raw)
+	h.Limiter.Done(h.RemoteIP, err == nil && sess != nil)
+	return sess, err
+}
+
+func (h *SessionSetupHandler) verifyType3(rw io.ReadWriter, hdr smb2.Header, type3, requestFrame []byte, prevSessionID uint64, raw bool) (*Session, error) {
 	sess := h.Sessions.Get(hdr.SessionID)
 	if sess == nil {
 		return nil, fmt.Errorf("unknown session id %d", hdr.SessionID)
@@ -720,7 +762,7 @@ func (h *SessionSetupHandler) handleType3(rw io.ReadWriter, hdr smb2.Header, typ
 			user = &gu
 			isGuest = true
 		} else {
-			return nil, h.failAuth(rw, hdr, fmt.Errorf("unknown user %q", auth.UserName))
+			return nil, h.failAuth(rw, hdr, fmt.Errorf("unknown user %q", clipUserName(auth.UserName)))
 		}
 	}
 
@@ -739,7 +781,7 @@ func (h *SessionSetupHandler) handleType3(rw io.ReadWriter, hdr smb2.Header, typ
 	if !isGuest {
 		sbk, err := ntlm.VerifyNTLMv2(user.NTHash, auth.UserName, auth.DomainName, sess.pendingChallenge, auth.NtResponse)
 		if err != nil {
-			return nil, h.failAuth(rw, hdr, fmt.Errorf("user %q: %w", auth.UserName, err))
+			return nil, h.failAuth(rw, hdr, fmt.Errorf("user %q: %w", clipUserName(auth.UserName), err))
 		}
 
 		// For NTLMv2 with NegotiateKeyExch, KeyExchangeKey = SessionBaseKey.
@@ -751,7 +793,7 @@ func (h *SessionSetupHandler) handleType3(rw io.ReadWriter, hdr smb2.Header, typ
 		// sessionKey is now ExportedSessionKey, which is what the MIC is keyed
 		// with, so the MIC can be checked before it is used to derive anything.
 		if err := h.verifyMIC(sess, auth, type3, sessionKey); err != nil {
-			return nil, h.failAuth(rw, hdr, fmt.Errorf("user %q: %w", auth.UserName, err))
+			return nil, h.failAuth(rw, hdr, fmt.Errorf("user %q: %w", clipUserName(auth.UserName), err))
 		}
 
 		// 签名密钥先算到局部变量，最后在锁内一次写入：同一会话可能被其他连接（会话绑定、断线重连）并发读取
