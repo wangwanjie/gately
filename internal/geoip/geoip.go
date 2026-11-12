@@ -14,6 +14,8 @@ import (
 	"time"
 
 	"github.com/oschwald/maxminddb-golang/v2"
+
+	"github.com/wangwanjie/gately/internal/outbound"
 )
 
 // maxDBSize 限制下载或上传的数据库大小，城市库约 70MB。
@@ -153,7 +155,7 @@ func Save(path string, r io.Reader) (int64, error) {
 // Download 用 client 从 url 下载数据库到 path；client 为 nil 时使用 5 分钟超时的默认客户端。
 func Download(client *http.Client, url, path string) (int64, error) {
 	if client == nil {
-		client = &http.Client{Timeout: 5 * time.Minute}
+		client = outbound.NewClient(5 * time.Minute)
 	}
 	resp, err := client.Get(url)
 	if err != nil {

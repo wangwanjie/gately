@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/wangwanjie/gately/internal/outbound"
 	"github.com/wangwanjie/gately/internal/script"
 )
 
@@ -239,7 +240,8 @@ func httpClientFor(fam Family) *http.Client {
 	if fam == IPv6 {
 		network = "tcp6"
 	}
-	dialer := &net.Dialer{Timeout: 10 * time.Second}
+	// 拨号层校验解析后的真实 IP，全局开关开启时拒绝内网与链路本地地址
+	dialer := outbound.NewDialer(10 * time.Second)
 	tr := &http.Transport{
 		DialContext: func(ctx context.Context, _, addr string) (net.Conn, error) {
 			return dialer.DialContext(ctx, network, addr)

@@ -11,6 +11,7 @@ import (
 	"github.com/wangwanjie/gately/internal/crud"
 	"github.com/wangwanjie/gately/internal/dnsprovider"
 	"github.com/wangwanjie/gately/internal/httpx"
+	"github.com/wangwanjie/gately/internal/outbound"
 )
 
 // resumeDelay 为从服务商删除解析后恢复任务运行前的等待时间。管理界面随后会删除本地记录或任务，
@@ -150,7 +151,7 @@ func (m *Module) deleteRemote(ctx context.Context, t Task, targets []remoteTarge
 		timeout = defaultTimeout * time.Second
 	}
 	results := make([]RemoteDeleteResult, 0, len(targets))
-	provider, err := providerFactory(t.Provider, t.Credentials, &http.Client{Timeout: timeout})
+	provider, err := providerFactory(t.Provider, t.Credentials, outbound.NewClient(timeout))
 	for _, tg := range targets {
 		rec := dnsprovider.Record{Zone: tg.rec.Zone, Sub: tg.rec.Sub, Type: tg.rec.Type, Value: tg.value, Line: tg.rec.Line}
 		res := RemoteDeleteResult{Key: tg.rec.Key, Domain: rec.FQDN(), Type: rec.Type}
