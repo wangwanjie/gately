@@ -22,7 +22,7 @@ For modules not compiled into a custom build, the configuration files stay untou
 | WAF Firewall | Coraza + OWASP CRS v4 | [View](/en/docs/modules/waf) |
 | Intrusion Prevention | Log jails (fail2ban-style), trap ports and port-scan detection, with bans synced to nftables | [View](/en/docs/modules/guard) |
 | Port Knocking | fwknop-compatible single packet authorization (SPA): firewall blocking of ports such as SSH, with Port Forwarding, Protocol Routing and STUN opening by knock | [View](/en/docs/modules/knock) |
-| Tailscale / NetBird / frp / cloudflared | Networking and NAT traversal with managed official binaries | [View](/en/docs/modules/tunnels) |
+| Tailscale / NetBird / EasyTier / frp / cloudflared | Networking and NAT traversal with managed official binaries | [View](/en/docs/modules/tunnels) |
 | Docker | Container creation and editing, logs and terminal, Compose, image updates and upgrades, networks and volumes | [View](/en/docs/modules/docker) |
 | Web Terminal | SSH, Telnet, local shell, SFTP file manager, persistent sessions | [View](/en/docs/modules/terminal) |
 | Network Diagnostics | Ping, traceroute, port probe, DNS lookup, speed test, LAN scan | [View](/en/docs/modules/nettools) |

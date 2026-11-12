@@ -122,9 +122,9 @@ curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns/tasks
 </details>
 
 <details>
-<summary><b>Tailscale、NetBird、frp、cloudflared</b></summary>
+<summary><b>Tailscale、NetBird、EasyTier、frp、cloudflared</b></summary>
 
-這四個模組託管官方的外部程式（自動重啟、日誌彙整到介面），Gately 本體不內建它們。各模組頁面的「線上安裝」卡片從上游下載最新正式版或指定版本，校驗 SHA-256 後安裝到設定目錄的 `bin/`，並重啟使用它的處理程序；可以為每個程式單獨設定下載代理，留空時使用設定中的更新代理。替換下來的版本保留最近 3 個，新版本有問題時可一鍵回滾；不再需要時可以解除安裝程式。頁首的「恢復預設設定」與解除安裝分開，會停止處理程序、清空模組設定並刪除 Gately 為它產生的檔案（frp 設定檔、File Browser 實例資料、Tailscale 與 NetBird 登入狀態），舊設定可在設定歷史中還原。Tailscale 官方只為 Linux 提供可直接執行的程式套件，其他系統請用官方安裝程式並填寫路徑。程式依下列順序尋找：模組設定中填寫的路徑、設定目錄下的 `bin/`、`PATH`。也可以自行把二進位檔放進設定目錄，Docker 部署時例如 `./gately-data/bin/frpc`；Tailscale 需要同時提供 `tailscale` 與 `tailscaled`。設定檔中的權杖與金鑰以 0600 權限儲存，cloudflared 的權杖透過環境變數傳遞，不會出現在處理程序清單中。
+這五個模組託管官方的外部程式（自動重啟、日誌彙整到介面），Gately 本體不內建它們。各模組頁面的「線上安裝」卡片從上游下載最新正式版或指定版本，校驗 SHA-256 後安裝到設定目錄的 `bin/`，並重啟使用它的處理程序；可以為每個程式單獨設定下載代理，留空時使用設定中的更新代理。替換下來的版本保留最近 3 個，新版本有問題時可一鍵回滾；不再需要時可以解除安裝程式。頁首的「恢復預設設定」與解除安裝分開，會停止處理程序、清空模組設定並刪除 Gately 為它產生的檔案（frp 設定檔、File Browser 實例資料、Tailscale 與 NetBird 登入狀態），舊設定可在設定歷史中還原。Tailscale 官方只為 Linux 提供可直接執行的程式套件，其他系統請用官方安裝程式並填寫路徑。程式依下列順序尋找：模組設定中填寫的路徑、設定目錄下的 `bin/`、`PATH`。也可以自行把二進位檔放進設定目錄，Docker 部署時例如 `./gately-data/bin/frpc`；Tailscale 需要同時提供 `tailscale` 與 `tailscaled`。設定檔中的權杖與金鑰以 0600 權限儲存，cloudflared 的權杖透過環境變數傳遞，不會出現在處理程序清單中。
 
 File Browser 模組託管 [FileBrowser Quantum](https://github.com/gtsteffaniak/filebrowser)（原版 filebrowser 已封存、不再修復安全問題），尋找順序與線上安裝、更新、回滾同上，安裝位置為 `bin/filebrowser`。管理員密碼透過環境變數傳遞，不寫入設定檔。
 
@@ -232,6 +232,7 @@ Cloudflare、阿里雲、DNSPod、Route 53 等都能用。支援 IPv4 與 IPv6�
 | SSL 憑證 | ACME 自動簽發與續期，支援 DNS-01（萬用字元；委派子網域依 SOA 自動識別 DNS 區域）與 HTTP-01（無需 DNS 服務商）、短期憑證與公網 IP 位址憑證（Let's Encrypt shortlived 設定檔）、EAB、上傳、讀取檔案、對應到目錄並執行腳本；憑證更新後經 SSH 推送到其他主機並執行指令，或重新啟動使用憑證的 Docker 容器 |
 | Tailscale | 託管 tailscaled（使用者空間網路，容器友善）或接入系統既有的常駐程式；驗證金鑰／登入連結、Headscale、子網路由、出口節點、節點清單與 SOCKS5 代理、固定連接埠、tailscaled 額外參數與環境變數；Linux 上可線上安裝、更新、回滾與解除安裝，可恢復預設設定 |
 | NetBird | 加入 NetBird 官方雲或自建管理服務的組網；託管 netbird 常駐程式（使用者態網路，容器友善，可讓其他節點存取本機服務）或接入系統既有服務；設定金鑰/登入連結、接受路由、作為路由節點、接受 DNS、拒絕入站、節點清單（直連/中繼、延遲）與 SOCKS5 代理、固定連接埠、額外參數與環境變數；Linux、macOS、Windows 線上安裝、更新、回滾與解除安裝；恢復預設設定 |
+| EasyTier | 加入 EasyTier 組網；託管 easytier-core，優先 P2P 打洞，支援自建或選擇中繼節點，使用者態網路、連接埠轉發、子網代理、出口節點、KCP/QUIC 代理；線上安裝、更新、回滾與解除安裝；還原預設設定 |
 | frp | 可同時執行多個 frpc 與 frps 實例；frpc 用戶端（tcp/udp/http/https/stcp/xtcp 代理，新增刪除即時生效）與 frps 伺服器端（連接埠白名單、子網域、主控台），可一鍵匯入舊版 ini／新版 toml 設定；線上安裝、更新、回滾與解除安裝，可恢復預設設定；frps 依來源 IP 限制 frpc 登入；frpc 代理存取位址（可點擊、複製） |
 | Cloudflare 通道 | cloudflared 權杖通道與 trycloudflare 臨時通道，多通道、自動重啟、公開位址顯示；線上安裝、更新、回滾與解除安裝，可恢復預設設定；權杖通道可透過 Cloudflare API 編輯路由規則並建立 DNS 記錄 |
 | Web 服務 | 依網域反向代理／重新導向／靜態檔案／固定文字／中斷連線（相當於 nginx return 444）；HTTPS 與 HTTP/3（QUIC）、HTTP 與 HTTPS 共用同一埠（跳轉或直接服務）；監聽可附加 HTTP 埠（如 443 再開 80，跳轉或直接服務）；WebSocket；PROXY 協定收發；基本驗證、網頁驗證、GitHub/Google/QQ/OIDC 登入、支援 TOTP 二次驗證並可跨子網域單一登入的共用使用者、內建 OIDC 身分提供者（讓 Gitea、Grafana 等應用程式以共用使用者登入）、轉發認證到 Authelia 等外部服務、公網 Gately 可把登入 Cookie 轉發給內網 Gately；IP 黑白名單與定時重新整理的訂閱 IP 清單（如省市 IP 段）、路徑規則、臨時分享連結、驗證失敗自動封鎖、GeoIP 國家過濾；依路徑分流後端、依登入使用者分流到不同後端（類似 nginx map $remote_user，也適用於重新導向／靜態檔案／導覽面板／固定文字站點）、HTTPS 後端依造訪網域傳送 SNI、後端權重／備援／負載平衡策略、主動與被動健康檢查、壓縮、限流、回應快取、路徑改寫；靜態站台支援無副檔名網址與自訂 404 頁面；404 與 5xx 錯誤頁可選 10 種內建風格或自己的 HTML（上傳或伺服器檔案，經安全檢查並在沙箱中顯示），可攔截後端回傳的錯誤頁（類似 nginx proxy_intercept_errors）；修改站台不會中斷既有連線；站台分組、排序與搜尋；分鐘級存取統計與 Prometheus 指標；共用使用者可自助修改密碼；存取被拒絕時站點可直接中斷連線，不回傳 403；從可信代理（CDN、WAF）的請求標頭取得訪客真實 IP；依站點查看即時連線，可中斷或封鎖；網域可點擊、複製完整網址；拓撲視圖即時顯示監聽 → 站點 → 後端的 QPS、流量與活動 IP，可依 IP 醒目提示鏈路、遮蔽位址；後端連線、TLS 交握與回應標頭逾時，建立連線失敗自動重試下一個後端；訪客讀寫閒置逾時；向後端傳遞登入使用者的使用者名稱、電子郵件、顯示名稱與群組請求標頭；監聽自動放行本機防火牆連接埠；存取記錄依天壓縮封存與匯出；拓撲「聚焦活動」；依路徑快取規則（不快取/單獨時長/強制快取）與清空快取；導覽面板（以站點提供的連結頁，內網訪客看到內網位址，內建圖示，其他存取方式，與管理介面相同的換膚）；依位址的訪客稽核（站點、路徑、身分、被攔截占比、保留期限）；拓撲回放（快照依容量保留在記憶體中，預設關閉）；信任已登入使用者（略過 WAF 與路徑探測） |

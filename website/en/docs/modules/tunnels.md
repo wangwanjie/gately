@@ -1,10 +1,10 @@
-# Tailscale / NetBird / frp / cloudflared
+# Tailscale / NetBird / EasyTier / frp / cloudflared
 
-These four modules integrate the official programs as managed processes: automatic restart, logs collected in the UI, and configuration done in the UI. Gately does not bundle these programs; you can install, update and roll them back online from the page.
+These five modules integrate the official programs as managed processes: automatic restart, logs collected in the UI, and configuration done in the UI. Gately does not bundle these programs; you can install, update and roll them back online from the page.
 
 ## Online install, update and rollback {#install}
 
-The frp, Cloudflare Tunnel, Tailscale, NetBird and [File Browser](/en/docs/modules/tools#filebrowser) pages each have an "online install" card at the bottom:
+The frp, Cloudflare Tunnel, Tailscale, NetBird, EasyTier and [File Browser](/en/docs/modules/tools#filebrowser) pages each have an "online install" card at the bottom:
 
 - **Download and install / Update to latest**: downloads the latest stable release from upstream, verifies it against the SHA-256 recorded upstream, checks that it runs on this machine, installs it into `bin/` under the configuration directory and then restarts the processes that use the program. Nothing is downloaded again when the latest version is already installed;
 - **Check for updates**: only queries the latest stable upstream release without downloading; a "New version" tag appears next to the card title when one exists. With [automatic update checks](/en/docs/guide/install#update-check) on, Gately checks installed programs every 12 hours and publishes a `program.update` notification for a new version;
@@ -19,6 +19,7 @@ The frp, Cloudflare Tunnel, Tailscale, NetBird and [File Browser](/en/docs/modul
 | cloudflared | GitHub cloudflare/cloudflared | `cloudflared` |
 | Tailscale | pkgs.tailscale.com static packages, Linux only | `tailscale`, `tailscaled` |
 | NetBird | GitHub netbirdio/netbird, Linux, macOS and Windows | `netbird` |
+| EasyTier | GitHub EasyTier/EasyTier, Linux (amd64, arm64, armv7, armhf, arm, mips, mipsel, riscv64, loongarch64), macOS, Windows and FreeBSD | `easytier-core`, `easytier-cli` (the zip from the release; the SHA-256 used for verification is the digest GitHub records) |
 | FileBrowser Quantum | GitHub gtsteffaniak/filebrowser | `filebrowser` |
 
 Tailscale has no ready-to-run packages for macOS and Windows; use the official installer and enter its path in the settings. The card tells you when the current platform is unsupported.
@@ -33,6 +34,7 @@ Tailscale has no ready-to-run packages for macOS and Windows; use the official i
 | Cloudflare Tunnel | All tunnels and program settings |
 | Tailscale | All instances and program settings, and the login state in the default state directories; a running Gately-managed tailscaled that uses the default state directory logs out first. Custom state directories and an existing system tailscaled are left alone |
 | NetBird | All instances and program settings, and the login state and keys in the default state directories; a running Gately-managed daemon that uses the default state directory logs out first, which removes this machine from the network. Custom state directories and an existing system NetBird service are left alone |
+| EasyTier | All instances and program settings, including network secrets; EasyTier keeps no other state in the config directory |
 | File Browser | All instances and program settings, plus each instance's users, share links and caches; files in the shared directories stay untouched |
 
 The old settings are kept in the [config history](/en/docs/guide/audit), so you can restore them after a mistake. To remove a module completely, uninstall the program first, then restore defaults. The API endpoints are `DELETE /api/{module}/install` (uninstall) and `POST /api/{module}/reset` (restore defaults).
@@ -94,6 +96,26 @@ Each instance supports:
 - The `netbird` program is about 41 MB and uses about 60 MB of memory, and online install keeps up to 3 old versions in `bin/.versions/`. On routers with little flash, watch the free space: delete old versions in the install card, or put the program on external storage and enter its path in the settings;
 - Restore defaults and `POST /api/netbird/instances/{key}/logout` deregister this machine from the management server and remove it from the network; joining again requires authenticating again.
 
+## EasyTier
+
+Multiple instances are supported: each instance runs its own `easytier-core` process, so one machine can join several different networks. Nodes with the same network name and network secret can reach each other. P2P hole punching is tried first; when it fails, traffic goes through a public node or a self-hosted node as relay. Connection protocols include tcp / udp / ws / wss / quic / wg.
+
+- **Network secret**: passed to the process through the `ET_NETWORK_SECRET` environment variable, so it never appears on the command line and is masked in logs. The UI shows a password box with "show / hide", and lists and API responses return a masked value;
+- **Peers**: one address per line, for example `tcp://public.easytier.cn:11010`;
+- **Listeners**: must be written as `protocol://address:port`. Left empty, the instance listens on no port and only connects outward. When it acts as a relay or public node, open those ports in your firewall yourself;
+- **Virtual IP**: automatic assignment (DHCP) or a fixed IPv4 address. With neither, the node only forwards traffic and creates no network interface;
+- **Running mode**: a TUN interface needs root and `/dev/net/tun`; in Docker it needs `NET_ADMIN` and `/dev/net/tun`. If creating it fails, the instance shows the reason and the process keeps running. "Userspace networking" needs no privileges and suits containers; services inside the network are reached through "port forwarding";
+- **No SOCKS5 option**: EasyTier's SOCKS5 listens on all addresses and has no authentication. The bind address of a port forward is yours to fill in, and `127.0.0.1` is recommended; binding to a non-loopback address shows a warning in the UI (the forward entry has no authentication);
+- **Other options**: subnet proxy (`proxyNetworks`, mappings such as `192.168.1.0/24->10.1.0.0/24` are allowed), exit nodes (act as an exit / use an exit), latency first, KCP / QUIC proxy (lower latency on networks with UDP packet loss), interface name, and extra arguments and environment variables (for `ET_` options see the EasyTier documentation);
+- **Management port**: Gately picks a random port on `127.0.0.1` for each instance and restricts it to local access. Status (local virtual IP, NAT type, public addresses, listeners, direct / relayed peers, latency, packet loss, traffic) is read through `easytier-cli`; `easytier-core` and `easytier-cli` are installed together;
+- **Conflict checks**: instances that are enabled at the same time cannot listen on the same port (TCP and UDP are judged separately), cannot bind the same local forward port, and cannot share an interface name when using TUN; instance names must be unique. The checks run on save, enable and copy;
+- Changing an instance restarts only that instance; changing only the group or the remark does not restart it;
+- **OpenWrt / iStoreOS / ImmortalWrt**: the EasyTier TUN interface (default name `tun0`, can be pinned with the interface name option) belongs to no firewall zone, and the fw4 input policy drops by default, so other nodes cannot reach this machine's virtual IP (this machine reaching others works). Add the interface to the lan zone: `uci add_list firewall.@zone[0].device='tun0'`, `uci commit firewall`, `/etc/init.d/firewall reload` (`@zone[0]` is usually lan, adjust to the actual zone; use the new name if the interface name was changed). Verified on iStoreOS 24.10 and ImmortalWrt 25.12: after adding it, all three nodes reach each other. Stripped-down firmware such as ImmortalWrt also has no `/dev/net/tun` by default; install `kmod-tun` first (`apk add kmod-tun` or `opkg install kmod-tun`), otherwise `easytier-core` fails to start and is restarted repeatedly, with the reason shown on the instance; userspace networking is an alternative;
+- **Windows**: online installation installs `easytier-core.exe` and `easytier-cli.exe` together with the dependencies in the same directory, `wintun.dll`, `Packet.dll` and `WinDivert64.sys` (the program cannot start without these DLLs); using a TUN interface requires running Gately as administrator (SYSTEM when running as a service);
+- The program size depends on the platform: on Linux x86_64 `easytier-core` is about 7.5 MB and `easytier-cli` about 3 MB, on macOS arm64 about 21 MB and 9 MB respectively; the full Windows x86_64 release package (with dependency libraries) is about 32 MB.
+
+On networks where UDP hole punching is difficult (a strict NAT type, or high UDP packet loss to the relay), compare the direct-connection results of EasyTier and Tailscale; EasyTier relay nodes can be chosen freely, including nodes in mainland China.
+
 ## frp
 
 - **frpc client**: add as many frpc instances as you need; each connects to one frps and runs, starts, stops and restarts on its own. Proxies belong to an instance and support tcp / udp / http / https / stcp / xtcp; changing a proxy restarts only its instance;
@@ -126,6 +148,7 @@ The public hostnames and origin services (routes) of a token tunnel are stored o
 | --- | --- |
 | Build a private network across multiple devices | Tailscale |
 | A private network where both the client and the management server are open source and self-hostable | NetBird |
+| A network where UDP hole punching is difficult, or where you want to pick your own relay nodes | EasyTier |
 | You own a public server and want to map internal services out through it | frp |
 | No public IP and no server, and you want to expose a web service quickly | Cloudflare Tunnel |
 | Your ISP provides a NAT that allows hole punching | [STUN Traversal](/en/docs/modules/stun) |
