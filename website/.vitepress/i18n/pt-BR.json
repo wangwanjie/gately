@@ -84,8 +84,8 @@
   "home": {
     "pill": "Gratuito e de código aberto · Apache-2.0",
     "announce": {
-      "text": "v0.6.5.5: Port Knocking, desligamento do Wake-on-LAN por agente, confiar em usuários autenticados para pular o WAF e correção do pacote OpenWrt →",
-      "link": "/pt-BR/news/v0.6.5.5"
+      "text": "v0.6.6: reforço de segurança, sair de todos os dispositivos, limites para requisições de saída, remoção do prefixo de caminho e porta de origem do visitante →",
+      "link": "/pt-BR/news/v0.6.6"
     },
     "titleLine1": "O gateway de rede tudo em um",
     "titleLine2": "Código aberto e pronto para usar",

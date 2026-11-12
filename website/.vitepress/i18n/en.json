@@ -84,8 +84,8 @@
   "home": {
     "pill": "Free and open source · Apache-2.0",
     "announce": {
-      "text": "v0.6.5.5: Port Knocking, Wake-on-LAN shutdown through an agent, trusting signed-in users to skip the WAF and an OpenWrt package fix →",
-      "link": "/en/news/v0.6.5.5"
+      "text": "v0.6.6: security hardening, sign out of all devices, outbound request limits, path prefix stripping and visitor source port →",
+      "link": "/en/news/v0.6.6"
     },
     "titleLine1": "The all-in-one network gateway",
     "titleLine2": "Open source, ready out of the box",
