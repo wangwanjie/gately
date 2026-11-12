@@ -390,6 +390,8 @@ func TestImportNginxLocationStripPrefix(t *testing.T) {
 	location /keep/ { proxy_pass http://10.0.0.4:83; }
 	location /q/ { proxy_pass http://10.0.0.5:84/x?a=1; }
 	location /site/ { proxy_pass http://10.0.0.1:80/; }
+	location /cat/ { proxy_pass http://10.0.0.6:85/v1; }
+	location = /f { proxy_pass http://10.0.0.7:86/x.php; }
 }`
 	rep, err := importNginx(conf, nil, nameCerts{})
 	if err != nil {
@@ -414,6 +416,14 @@ func TestImportNginxLocationStripPrefix(t *testing.T) {
 	}
 	if l := got["/q/"]; l.StripPrefix || !strings.Contains(strings.Join(pl.Warnings, "\n"), "/q/") {
 		t.Errorf("带查询串的 URI 应提示: %+v %v", l, pl.Warnings)
+	}
+	// 语义与 nginx 不完全一致的两种写法：照常导入并提示
+	warns := strings.Join(pl.Warnings, "\n")
+	if l := got["/cat/"]; !l.StripPrefix || !strings.Contains(warns, "/cat/") {
+		t.Errorf("URI 不以 / 结尾时应导入并提示: %+v %v", l, pl.Warnings)
+	}
+	if l := got["/f"]; !l.StripPrefix || !strings.Contains(warns, "location = /f 的 proxy_pass") {
+		t.Errorf("精确匹配带 URI 时应导入并提示: %+v %v", l, pl.Warnings)
 	}
 	// 与站点后端相同、仅需去前缀的路径仍要保留规则
 	if l, ok := got["/site/"]; !ok || !l.StripPrefix || len(l.Targets) != 0 {

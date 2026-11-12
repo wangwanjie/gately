@@ -1415,6 +1415,14 @@ func (c *nginxConverter) convertLocation(d *ngDirective) {
 				c.warn("location %s 的 proxy_pass 路径 %s 带查询串，无法转换，请确认后端路径", p, uri)
 			} else {
 				loc.StripPrefix = true
+				switch {
+				case mod == "=":
+					// 精确匹配时 nginx 把整个路径换成 proxy_pass 的路径；Gately 按前缀去掉后再拼接，后端收到的路径会多出结尾的 /
+					c.warn("精确匹配 location = %s 的 proxy_pass 路径 %s 按去掉前缀导入，后端收到的路径为 %s/，请确认后端能处理", p, uri, strings.TrimRight(uri, "/"))
+				case !strings.HasSuffix(uri, "/") && strings.HasSuffix(p, "/"):
+					// nginx 直接拼接：location /api/ + proxy_pass http://b/v1 时 /api/x 发往 /v1x；Gately 拼接时补上 /，发往 /v1/x
+					c.warn("location %s 的 proxy_pass 路径 %s 不以 / 结尾，nginx 会直接拼接（如 %sx），导入后按 %s/x 转发，请确认后端路径", p, uri, uri, uri)
+				}
 				if uri != "/" {
 					for i := range targets {
 						base, params, _ := strings.Cut(targets[i], " ")
