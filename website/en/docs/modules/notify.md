@@ -127,6 +127,7 @@ When creating a rule, click a template to prefill the events, level and silence 
 | `stun.changed` | STUN: traversal address changed | Info | The traversal address of a STUN rule changed |
 | `ssl.expiring` | Certificate: expiring soon | Warning | Less than 7 days of validity left; each certificate is reminded at most once every 24 hours |
 | `ssl.renew_failed` | Certificate: renewal failed | Error | Certificate issuance or renewal failed |
+| `ssl.deploy_failed` | Certificate: deployment failed | Error | Deploying a certificate to one of its targets (directory, SSH or local command) failed; Gately retries later |
 | `waf.blocked` | WAF: request blocked | Warning | The WAF blocked a request, with the fields `ip`, `host` and `path` |
 | `upstream.down` | Reverse proxy: upstream down | Error | A backend of a Web service was judged unavailable |
 | `upstream.up` | Reverse proxy: upstream recovered | Info | An unavailable backend recovered |
@@ -136,6 +137,7 @@ When creating a rule, click a template to prefill the events, level and silence 
 | `backup.failed` | Backup: failed | Error | Backup packaging failed, or writing to any destination failed |
 | `auth.failed` | Authentication: repeated failures | Warning | A management UI login failed, with the `ip` field |
 | `auth.banned` | Authentication: IP banned | Warning | Repeated Web service authentication failures triggered an automatic ban |
+| `guard.banned` | Intrusion prevention: IP banned | Warning | A log rule, trap port or port-scan detection banned an IP address or network, with the `ip` and `reason` fields (and `count` when several addresses were banned together) |
 | `knock.opened` | Port knocking: knock succeeded | Info | A knock passed authentication and the source address was let through, with the fields `ip`, `rule` and `ports`; see [Port Knocking](/en/docs/modules/knock) |
 | `knock.failed` | Port knocking: knock rejected | Warning | A knock was refused: a UDP knock packet passed HMAC authentication but was refused by the rule (replay, expired timestamp, port not allowed, wrong user, etc.), or a knock packet submitted over a Protocol Routing TCP connection failed authentication or checks. Carries the fields `ip`, `reason` and `via` (`udp` or `tcp`); recorded at most once every 5 seconds per source, and intrusion prevention can count it towards a ban. UDP source addresses can be forged, so UDP packets that fail HMAC authentication are only counted and publish no event |
 | `login.success` | Management UI: login succeeded | Info | A management UI login succeeded, with the `ip` and `user` fields |

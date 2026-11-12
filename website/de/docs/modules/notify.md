@@ -127,6 +127,7 @@ Beim Anlegen einer Regel können Sie eine Vorlage anklicken, die Ereignisse, Stu
 | `stun.changed` | STUN: Traversal-Adresse geändert | Info | Die Traversal-Adresse einer STUN-Regel hat sich geändert |
 | `ssl.expiring` | Zertifikat: läuft bald ab | Warnung | Weniger als 7 Tage Gültigkeit übrig; pro Zertifikat wird höchstens alle 24 Stunden erinnert |
 | `ssl.renew_failed` | Zertifikat: Erneuerung fehlgeschlagen | Fehler | Ausstellung oder Erneuerung des Zertifikats ist fehlgeschlagen |
+| `ssl.deploy_failed` | Zertifikat: Bereitstellung fehlgeschlagen | Fehler | Die Bereitstellung eines Zertifikats an eines seiner Ziele (Verzeichnis, SSH oder lokaler Befehl) ist fehlgeschlagen; Gately versucht es später erneut |
 | `waf.blocked` | WAF: Anfrage blockiert | Warnung | Die WAF hat eine Anfrage blockiert, mit den Feldern `ip`, `host` und `path` |
 | `upstream.down` | Reverse Proxy: Upstream ausgefallen | Fehler | Ein Backend eines Web-Dienstes wurde als nicht verfügbar eingestuft |
 | `upstream.up` | Reverse Proxy: Upstream wiederhergestellt | Info | Ein nicht verfügbares Backend ist wieder erreichbar |
@@ -136,6 +137,7 @@ Beim Anlegen einer Regel können Sie eine Vorlage anklicken, die Ereignisse, Stu
 | `backup.failed` | Sicherung: fehlgeschlagen | Fehler | Das Packen der Sicherung oder das Schreiben auf irgendein Ziel ist fehlgeschlagen |
 | `auth.failed` | Authentifizierung: wiederholte Fehlschläge | Warnung | Eine Anmeldung an der Verwaltungsoberfläche ist fehlgeschlagen, mit dem Feld `ip` |
 | `auth.banned` | Authentifizierung: IP gesperrt | Warnung | Wiederholte Authentifizierungsfehler bei Web-Diensten haben eine automatische Sperre ausgelöst |
+| `guard.banned` | Einbruchschutz: IP gesperrt | Warnung | Eine Protokollregel, ein Köderport oder die Portscan-Erkennung hat eine IP-Adresse oder ein Netz gesperrt, mit den Feldern `ip` und `reason` (und `count`, wenn mehrere Adressen zusammen gesperrt wurden) |
 | `knock.opened` | Port-Knocking: Knock erfolgreich | Info | Ein Knock wurde authentifiziert und die Quelladresse freigegeben, mit den Feldern `ip`, `rule` und `ports`; siehe [Port-Knocking](/de/docs/modules/knock) |
 | `knock.failed` | Port-Knocking: Knock abgelehnt | Warnung | Ein Klopfen wurde abgelehnt: ein UDP-Klopfpaket hat die HMAC-Authentifizierung bestanden, wurde aber von der Regel abgelehnt (Wiederholung, abgelaufener Zeitstempel, nicht erlaubter Port, falscher Benutzer usw.), oder ein über eine TCP-Verbindung des Protokoll-Routings eingereichtes Klopfpaket hat Authentifizierung oder Prüfung nicht bestanden. Mit den Feldern `ip`, `reason` und `via` (`udp` oder `tcp`); je Quelle höchstens alle 5 Sekunden erfasst, der Einbruchschutz kann es für Sperren zählen. UDP-Absenderadressen lassen sich fälschen, daher werden UDP-Pakete, die die HMAC-Authentifizierung nicht bestehen, nur gezählt und lösen dieses Ereignis nicht aus |
 | `login.success` | Verwaltungsoberfläche: Anmeldung erfolgreich | Info | Eine Anmeldung an der Verwaltungsoberfläche war erfolgreich, mit den Feldern `ip` und `user` |

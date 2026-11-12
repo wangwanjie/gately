@@ -127,6 +127,7 @@ Lors de la création d'une règle, cliquez sur un modèle pour préremplir les �
 | `stun.changed` | STUN : adresse de traversée modifiée | Info | L'adresse de traversée d'une règle STUN a changé |
 | `ssl.expiring` | Certificat : expire bientôt | Avertissement | Moins de 7 jours de validité restants ; chaque certificat est rappelé au plus une fois toutes les 24 heures |
 | `ssl.renew_failed` | Certificat : échec du renouvellement | Erreur | L'émission ou le renouvellement du certificat a échoué |
+| `ssl.deploy_failed` | Certificat : échec du déploiement | Erreur | Le déploiement d'un certificat vers l'une de ses cibles (dossier, SSH ou commande locale) a échoué ; Gately réessaie plus tard |
 | `waf.blocked` | WAF : requête bloquée | Avertissement | Le WAF a bloqué une requête, avec les champs `ip`, `host` et `path` |
 | `upstream.down` | Proxy inverse : amont hors service | Erreur | Un backend d'un service Web a été jugé indisponible |
 | `upstream.up` | Proxy inverse : amont rétabli | Info | Un backend indisponible est de nouveau disponible |
@@ -136,6 +137,7 @@ Lors de la création d'une règle, cliquez sur un modèle pour préremplir les �
 | `backup.failed` | Sauvegarde : échec | Erreur | L'empaquetage de la sauvegarde a échoué, ou l'écriture vers une destination a échoué |
 | `auth.failed` | Authentification : échecs répétés | Avertissement | Une connexion à l'interface d'administration a échoué, avec le champ `ip` |
 | `auth.banned` | Authentification : IP bannie | Avertissement | Des échecs d'authentification répétés sur un service Web ont déclenché un bannissement automatique |
+| `guard.banned` | Prévention d'intrusion : IP bannie | Avertissement | Une règle de journaux, un port piège ou la détection de scans de ports a banni une IP ou un réseau, avec les champs `ip` et `reason` (et `count` lorsque plusieurs adresses sont bannies ensemble) |
 | `knock.opened` | Port knocking : knock réussi | Info | Un knock a été authentifié et l'adresse source autorisée, avec les champs `ip`, `rule` et `ports` ; voir [Port Knocking](/fr/docs/modules/knock) |
 | `knock.failed` | Port knocking : knock refusé | Avertissement | Un toc a été refusé : un paquet UDP a passé l'authentification HMAC mais a été refusé par la règle (rejeu, horodatage expiré, port non autorisé, mauvais utilisateur, etc.), ou un paquet transmis par une connexion TCP du routage de protocoles a échoué à l'authentification ou aux vérifications. Champs `ip`, `reason` et `via` (`udp` ou `tcp`) ; enregistré au plus une fois toutes les 5 secondes par source, et la prévention d'intrusion peut le compter pour bannir. Les adresses source UDP pouvant être usurpées, les paquets UDP qui échouent à l'authentification HMAC sont seulement comptés et ne publient pas cet événement |
 | `login.success` | Interface d'administration : connexion réussie | Info | Une connexion à l'interface d'administration a réussi, avec les champs `ip` et `user` |

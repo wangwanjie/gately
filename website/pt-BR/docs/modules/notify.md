@@ -127,6 +127,7 @@ Ao criar uma regra, clique em um modelo para preencher eventos, nível e tempo d
 | `stun.changed` | STUN: endereço de travessia alterado | Info | O endereço de travessia de uma regra STUN mudou |
 | `ssl.expiring` | Certificado: expira em breve | Aviso | Restam menos de 7 dias de validade; cada certificado é lembrado no máximo uma vez a cada 24 horas |
 | `ssl.renew_failed` | Certificado: falha na renovação | Erro | A emissão ou renovação do certificado falhou |
+| `ssl.deploy_failed` | Certificado: falha na implantação | Erro | Falhou a implantação de um certificado em um de seus destinos (diretório, SSH ou comando local); o Gately tenta de novo mais tarde |
 | `waf.blocked` | WAF: requisição bloqueada | Aviso | O WAF bloqueou uma requisição, com os campos `ip`, `host` e `path` |
 | `upstream.down` | Proxy reverso: upstream fora do ar | Erro | Um backend de um serviço Web foi considerado indisponível |
 | `upstream.up` | Proxy reverso: upstream recuperado | Info | Um backend indisponível se recuperou |
@@ -136,6 +137,7 @@ Ao criar uma regra, clique em um modelo para preencher eventos, nível e tempo d
 | `backup.failed` | Backup: falhou | Erro | O empacotamento do backup falhou, ou a gravação em algum destino falhou |
 | `auth.failed` | Autenticação: falhas repetidas | Aviso | Um login na interface de administração falhou, com o campo `ip` |
 | `auth.banned` | Autenticação: IP banido | Aviso | Falhas repetidas de autenticação em serviços Web dispararam um banimento automático |
+| `guard.banned` | Prevenção de intrusão: IP banido | Aviso | Uma regra de logs, uma porta armadilha ou a detecção de varredura de portas baniu um IP ou uma rede, com os campos `ip` e `reason` (e `count` quando vários endereços são banidos juntos) |
 | `knock.opened` | Port knocking: knock bem-sucedido | Info | Um knock foi autenticado e o endereço de origem liberado, com os campos `ip`, `rule` e `ports`; veja [Port Knocking](/pt-BR/docs/modules/knock) |
 | `knock.failed` | Port knocking: knock recusado | Aviso | Uma batida foi recusada: um pacote UDP passou na autenticação HMAC mas foi recusado pela regra (repetição, carimbo de tempo expirado, porta não permitida, usuário incorreto etc.), ou um pacote enviado por uma conexão TCP do roteamento de protocolos falhou na autenticação ou nas verificações. Traz os campos `ip`, `reason` e `via` (`udp` ou `tcp`); registrado no máximo uma vez a cada 5 segundos por origem, e a prevenção de intrusão pode contá-lo para banir. Endereços de origem UDP podem ser forjados, então pacotes UDP que falham na autenticação HMAC são apenas contados e não publicam este evento |
 | `login.success` | Interface de administração: login bem-sucedido | Info | Um login na interface de administração foi bem-sucedido, com os campos `ip` e `user` |
