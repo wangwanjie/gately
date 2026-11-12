@@ -41193,7 +41193,7 @@
     },
     "/api/system/restore": {
       "post": {
-        "description": "multipart/form-data로 필드명 `file`에 업로드합니다. 암호화된 백업은 `password`도 함께 보내야 합니다. `keepAccount=1`은 현재 관리자 계정을 유지합니다(백업의 account.json은 무시되며 없어도 됩니다). 기본 비밀번호를 사용 중이면 거부되므로 먼저 관리자 비밀번호를 변경하세요.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "description": "multipart/form-data로 업로드하며 필드 이름은 `file`입니다. 암호화된 백업은 `password`도 함께 보내야 합니다. `keepAccount=1`은 현재 관리자 계정과 자격 증명을 유지합니다(백업의 account.json, tokens.json과 시스템 설정의 서드파티 로그인은 무시되며 백업에 account.json이 없어도 됨). 계정 파일을 복원하면 새 세션 키로 바뀌어 복원 전에 발급된 로그인 세션은 모두 무효가 됩니다. 기본 비밀번호를 사용하는 동안에는 거부되므로 먼저 관리자 비밀번호를 변경하세요.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
         "responses": {
           "200": {
             "description": "성공"
