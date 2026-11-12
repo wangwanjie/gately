@@ -534,6 +534,22 @@ type loginRequest struct {
 	Code string `json:"code"`
 }
 
+// maxActorRunes 是审计记录中未认证请求带来的用户名的最大长度。
+const maxActorRunes = 64
+
+// clipActor 截断来自未认证请求的用户名再写入审计记录：登录接口无需登录即可访问，
+// 请求体最大数 MB，不截断会让每次失败的登录都向审计文件写入同样大小的内容。
+func clipActor(s string) string {
+	if len(s) <= maxActorRunes {
+		return s
+	}
+	r := []rune(s)
+	if len(r) <= maxActorRunes {
+		return s
+	}
+	return string(r[:maxActorRunes]) + "…"
+}
+
 func (a *App) handleLogin(w http.ResponseWriter, r *http.Request) {
 	var req loginRequest
 	if err := httpx.ReadJSON(r, &req); err != nil {
@@ -549,7 +565,7 @@ func (a *App) handleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		a.sysLogs.Add(logbuf.LevelWarn, "auth", fmt.Sprintf("来自 %s 的登录失败: %v", ip, err))
-		a.audit.Record(audit.Entry{Actor: req.Username, IP: ip, Via: audit.Via(r), Category: audit.CategoryLogin, Method: "POST", Path: "/api/login", Status: http.StatusUnauthorized, Detail: err.Error()})
+		a.audit.Record(audit.Entry{Actor: clipActor(req.Username), IP: ip, Via: audit.Via(r), Category: audit.CategoryLogin, Method: "POST", Path: "/api/login", Status: http.StatusUnauthorized, Detail: err.Error()})
 		events.Publish(events.Event{Type: events.AuthFailed, Source: "管理后台", Level: events.LevelWarn,
 			Title: "管理后台登录失败", Message: fmt.Sprintf("来自 %s 的登录失败：%v", ip, err), Fields: map[string]string{"ip": ip}})
 		status := http.StatusUnauthorized
