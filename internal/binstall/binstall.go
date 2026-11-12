@@ -114,9 +114,9 @@ func (p Platform) String() string {
 	return p.OS + "/" + p.Arch
 }
 
-// ExeName 在 Windows 下为可执行文件名加上 .exe。
+// ExeName 在 Windows 下为可执行文件名加上 .exe；已带扩展名的文件（如 wintun.dll 这样与程序放在一起的依赖库）原样返回。
 func ExeName(name string) string {
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS == "windows" && filepath.Ext(name) == "" {
 		return name + ".exe"
 	}
 	return name
