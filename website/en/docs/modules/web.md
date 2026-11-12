@@ -331,8 +331,10 @@ For a reverse proxy site, send requests under a path prefix to other backends, l
 | `prefix` | A path prefix such as `/api/`. Matching follows path segment boundaries: `/api` and `/api/` both match `/api` and `/api/x`, but not `/apix` |
 | `targets` | The backends for this path, written like the site's backends. When empty, the site's backends are used and only the headers below are added |
 | `requestHeaders` | Request headers added for this path, one `Key: Value` per line. They are applied after the site's headers, and a header with the same name overrides the site's |
+| `stripPrefix` | When on, the path prefix is removed before forwarding: `/api/zyqd/abc` reaches the backend as `/abc`, the same as nginx `proxy_pass http://backend/;`. A path in the backend address is placed in front of the remaining path; the query string is kept. Off by default |
 
-- The longest prefix wins, and the path is forwarded unchanged (the prefix is not stripped);
+- The longest prefix wins. The path is forwarded unchanged by default; with `stripPrefix` on, the prefix is removed first (the path is normalized for `//`, `.` and `..` before the prefix is removed, so dot segments cannot escape the prefix);
+- When importing nginx, a `proxy_pass` with a URI such as `location /api/ { proxy_pass http://backend/; }` becomes a rule with `stripPrefix` on; the path is forwarded unchanged when the URI equals the prefix or there is no URI;
 - Other settings of the site, such as the Host option, certificate checks, forwarded headers, the PROXY protocol, the load-balancing policy and health checks, apply to every path backend;
 - Compression, rate limiting, caching and rewrites apply to the whole site.
 

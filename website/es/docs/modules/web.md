@@ -331,8 +331,10 @@ Para un sitio de proxy inverso, envía las peticiones bajo un prefijo de ruta a 
 | `prefix` | Un prefijo de ruta como `/api/`. La coincidencia respeta los límites de segmento de ruta: `/api` y `/api/` coinciden ambos con `/api` y `/api/x`, pero no con `/apix` |
 | `targets` | Los backends de esta ruta, escritos como los backends del sitio. Si está vacío, se usan los del sitio y solo se añaden las cabeceras siguientes |
 | `requestHeaders` | Cabeceras de petición añadidas para esta ruta, una `Clave: Valor` por línea. Se aplican después de las del sitio, y una cabecera con el mismo nombre sustituye a la del sitio |
+| `stripPrefix` | Si está activo, el prefijo de la ruta se elimina antes de reenviar: `/api/zyqd/abc` llega al backend como `/abc`, igual que nginx `proxy_pass http://backend/;`. La ruta de la dirección del backend se antepone a la ruta restante; la query se conserva. Desactivado por defecto |
 
-- Gana el prefijo más largo y la ruta se reenvía sin cambios (el prefijo no se elimina);
+- Gana el prefijo más largo. Por defecto la ruta se reenvía sin cambios; con `stripPrefix` se elimina antes el prefijo (la ruta se normaliza para `//`, `.` y `..` antes de quitar el prefijo, por lo que los segmentos con punto no pueden saltarse el prefijo);
+- Al importar nginx, un `proxy_pass` con URI como `location /api/ { proxy_pass http://backend/; }` se convierte en una regla con `stripPrefix` activo; si el URI coincide con el prefijo o no hay URI, la ruta se reenvía sin cambios;
 - Los demás ajustes del sitio, como la opción de Host, las comprobaciones de certificado, las cabeceras reenviadas, el protocolo PROXY, la política de balanceo de carga y las comprobaciones de estado, se aplican a todos los backends por ruta;
 - La compresión, el límite de peticiones, la caché y las reescrituras se aplican a todo el sitio.
 

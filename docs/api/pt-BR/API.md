@@ -2517,6 +2517,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | --- | --- |
 | `prefix` | string |
 | `requestHeaders` | Array de string |
+| `stripPrefix` | boolean |
 | `targets` | Array de string |
 
 ### webservice.OIDCClient

@@ -331,8 +331,10 @@ Leiten Sie bei einer Reverse-Proxy-Site Anfragen unter einem Pfadpräfix an ande
 | `prefix` | Ein Pfadpräfix wie `/api/`. Die Zuordnung folgt den Grenzen von Pfadsegmenten: `/api` und `/api/` treffen beide `/api` und `/api/x`, aber nicht `/apix` |
 | `targets` | Die Backends für diesen Pfad, in derselben Schreibweise wie die Backends der Site. Ist das Feld leer, werden die Backends der Site verwendet und nur die folgenden Header hinzugefügt |
 | `requestHeaders` | Für diesen Pfad hinzugefügte Request-Header, je Zeile ein `Key: Value`. Sie werden nach den Headern der Site angewendet, und ein Header mit gleichem Namen überschreibt den der Site |
+| `stripPrefix` | Wenn aktiv, wird das Pfadpräfix vor dem Weiterleiten entfernt: `/api/zyqd/abc` erreicht das Backend als `/abc`, wie bei nginx `proxy_pass http://backend/;`. Ein Pfad in der Backend-Adresse wird vor den verbleibenden Pfad gesetzt; die Query bleibt erhalten. Standardmäßig aus |
 
-- Das längste Präfix gewinnt, und der Pfad wird unverändert weitergeleitet (das Präfix wird nicht entfernt);
+- Das längste Präfix gewinnt. Standardmäßig wird der Pfad unverändert weitergeleitet; mit `stripPrefix` wird das Präfix zuvor entfernt (der Pfad wird für `//`, `.` und `..` normalisiert, bevor das Präfix entfernt wird, Punktsegmente können das Präfix also nicht umgehen);
+- Beim nginx-Import wird ein `proxy_pass` mit URI wie `location /api/ { proxy_pass http://backend/; }` zu einer Regel mit aktivem `stripPrefix`; ist der URI gleich dem Präfix oder fehlt er, bleibt der Pfad unverändert;
 - Die übrigen Einstellungen der Site, etwa die Host-Option, Zertifikatsprüfung, Forwarded-Header, das PROXY-Protokoll, die Lastverteilungsstrategie und Health-Checks, gelten für jedes Pfad-Backend;
 - Kompression, Ratenbegrenzung, Cache und Umschreibungen gelten für die ganze Site.
 

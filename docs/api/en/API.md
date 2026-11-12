@@ -2517,6 +2517,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | --- | --- |
 | `prefix` | string |
 | `requestHeaders` | Array of string |
+| `stripPrefix` | boolean |
 | `targets` | Array of string |
 
 ### webservice.OIDCClient

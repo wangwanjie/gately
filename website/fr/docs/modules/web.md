@@ -331,8 +331,10 @@ Pour un site en proxy inverse, envoyez les requêtes sous un préfixe de chemin 
 | `prefix` | Un préfixe de chemin comme `/api/`. La correspondance respecte les frontières de segments de chemin : `/api` et `/api/` correspondent tous deux à `/api` et `/api/x`, mais pas à `/apix` |
 | `targets` | Les backends de ce chemin, écrits comme les backends du site. Lorsque le champ est vide, les backends du site sont utilisés et seuls les en-têtes ci-dessous sont ajoutés |
 | `requestHeaders` | En-têtes de requête ajoutés pour ce chemin, un `Key: Value` par ligne. Ils sont appliqués après ceux du site, et un en-tête du même nom remplace celui du site |
+| `stripPrefix` | Si activé, le préfixe du chemin est retiré avant la transmission : `/api/zyqd/abc` arrive au backend sous la forme `/abc`, comme nginx `proxy_pass http://backend/;`. Le chemin de l'adresse du backend est placé devant le chemin restant ; la query est conservée. Désactivé par défaut |
 
-- Le préfixe le plus long l'emporte, et le chemin est transmis tel quel (le préfixe n'est pas retiré) ;
+- Le préfixe le plus long l'emporte. Par défaut le chemin est transmis tel quel ; avec `stripPrefix`, le préfixe est d'abord retiré (le chemin est normalisé pour `//`, `.` et `..` avant le retrait, les segments point ne peuvent donc pas contourner le préfixe) ;
+- À l'import nginx, un `proxy_pass` avec URI comme `location /api/ { proxy_pass http://backend/; }` devient une règle avec `stripPrefix` activé ; si l'URI est identique au préfixe ou absent, le chemin est transmis tel quel ;
 - Les autres réglages du site, comme l'option Host, la vérification du certificat, les en-têtes transmis, le protocole PROXY, la politique de répartition de charge et les vérifications d'état, s'appliquent à chaque backend par chemin ;
 - La compression, la limitation de débit, le cache et les réécritures s'appliquent à l'ensemble du site.
 

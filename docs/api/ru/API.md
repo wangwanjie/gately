@@ -2517,6 +2517,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `prefix` | string |
 | `requestHeaders` | Массив из string |
+| `stripPrefix` | boolean |
 | `targets` | Массив из string |
 
 ### webservice.OIDCClient

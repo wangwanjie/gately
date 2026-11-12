@@ -2517,6 +2517,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | --- | --- |
 | `prefix` | string |
 | `requestHeaders` | Tableau de string |
+| `stripPrefix` | boolean |
 | `targets` | Tableau de string |
 
 ### webservice.OIDCClient
