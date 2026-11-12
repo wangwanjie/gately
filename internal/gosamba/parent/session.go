@@ -724,11 +724,15 @@ func (h *SessionSetupHandler) handleType3(rw io.ReadWriter, hdr smb2.Header, typ
 	if h.Limiter == nil {
 		return h.verifyType3(rw, hdr, type3, requestFrame, prevSessionID, raw)
 	}
+	name := ""
+	if auth, err := ntlm.DecodeAuthenticate(type3); err == nil {
+		name = auth.UserName
+	}
+	if name == "" || strings.EqualFold(name, "GUEST") {
+		// 匿名与来宾登录没有密码可猜，不计入失败次数：Windows 资源管理器常先匿名试探，失败后才弹出密码框
+		return h.verifyType3(rw, hdr, type3, requestFrame, prevSessionID, raw)
+	}
 	if !h.Limiter.Reserve(h.RemoteIP) {
-		name := ""
-		if auth, err := ntlm.DecodeAuthenticate(type3); err == nil {
-			name = auth.UserName
-		}
 		return nil, h.failAuth(rw, hdr, fmt.Errorf("too many failed logins (user %q)", clipUserName(name)))
 	}
 	sess, err := h.verifyType3(rw, hdr, type3, requestFrame, prevSessionID, raw)
