@@ -60,6 +60,20 @@ func mustPrefixes(list ...string) []netip.Prefix {
 // nat64 是 NAT64 前缀，末 4 字节内嵌 IPv4 地址，需按内嵌地址判断。
 var nat64 = netip.MustParsePrefix("64:ff9b::/96")
 
+// sixToFour 是 6to4 前缀，第 2~5 字节内嵌 IPv4 地址，需按内嵌地址判断。
+var sixToFour = netip.MustParsePrefix("2002::/16")
+
+// 整段拒绝的 IPv6 网段：本地 NAT64、Teredo（内嵌地址经过混淆，无法可靠判断）、已废弃的站点本地地址、
+// IPv4 兼容地址、丢弃前缀与文档前缀
+var extraBlocked6 = mustPrefixes(
+	"64:ff9b:1::/48",
+	"2001::/32",
+	"fec0::/10",
+	"::/96",
+	"100::/64",
+	"2001:db8::/32",
+)
+
 // IsBlocked 判断 IP 是否属于被禁止的范围：回环、私网、链路本地、唯一本地地址（ULA）、
 // 多播、未指定地址与上面列出的特殊网段；IPv4 映射地址与 NAT64 内嵌地址按其 IPv4 判断。
 func IsBlocked(ip netip.Addr) bool {
@@ -70,6 +84,17 @@ func IsBlocked(ip netip.Addr) bool {
 	if nat64.Contains(ip) {
 		b := ip.As16()
 		return IsBlocked(netip.AddrFrom4([4]byte{b[12], b[13], b[14], b[15]}))
+	}
+	if sixToFour.Contains(ip) {
+		b := ip.As16()
+		return IsBlocked(netip.AddrFrom4([4]byte{b[2], b[3], b[4], b[5]}))
+	}
+	if ip.Is6() {
+		for _, p := range extraBlocked6 {
+			if p.Contains(ip) {
+				return true
+			}
+		}
 	}
 	if ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() ||
 		ip.IsInterfaceLocalMulticast() || ip.IsMulticast() || ip.IsUnspecified() {
