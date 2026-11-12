@@ -61,11 +61,9 @@ func (a *authenticator) sharedBasicCred(s Site, name string) string {
 	return "sh|" + a.sharedCred(u)
 }
 
-// rememberBasic 在基本认证验证通过后记下凭据（仅开启了信任已认证用户的站点）。shared 表示按共享用户通过。
+// rememberBasic 在基本认证验证通过后记下凭据：之后同一凭据的请求跳过 bcrypt（见 cachedBasic），
+// 开启信任已认证用户的站点还据此在 WAF 之前识别已认证用户（见 trustedBasic）。shared 表示按共享用户通过。
 func (a *authenticator) rememberBasic(s Site, name, pass string, shared bool) {
-	if !s.TrustAuthUsers {
-		return
-	}
 	cred := a.credVersion(s.Users, name)
 	if shared {
 		cred = a.sharedBasicCred(s, name)
@@ -94,8 +92,34 @@ func (a *authenticator) rememberBasic(s Site, name, pass string, shared bool) {
 	a.trustBasic.m[k] = basicTrustEntry{exp: now + int64(trustBasicTTL/time.Second), cred: cred}
 }
 
+// cachedBasic 判断基本认证凭据是否在近期验证通过且用户凭据此后没有变化，是则返回访客身份，调用方可跳过 bcrypt。
+// 浏览器与 WebDAV 等客户端每个请求都带凭据，bcrypt（默认成本约 85 毫秒 CPU）逐个请求验证会让站点吞吐骤降。
+// 缓存键是站点作用域、用户名与密码的 HMAC，只有验证通过的凭据才会写入；错误密码、修改密码、删除用户都不会命中。
+func (a *authenticator) cachedBasic(s Site, name, pass string) (visitor, bool) {
+	k := a.basicTrustKey(s, name, pass)
+	a.trustBasic.mu.Lock()
+	e, ok := a.trustBasic.m[k]
+	a.trustBasic.mu.Unlock()
+	if !ok || e.exp <= time.Now().Unix() {
+		return visitor{}, false
+	}
+	// 站点用户优先（与 checkUser 一致），其次是共享用户
+	if c := a.credVersion(s.Users, name); c != "" && hmac.Equal([]byte(c), []byte(e.cred)) {
+		return visitor{names: []string{name}}, true
+	}
+	c := a.sharedBasicCred(s, name)
+	if c == "" || !hmac.Equal([]byte(c), []byte(e.cred)) {
+		return visitor{}, false
+	}
+	return sharedVisitor(a.shared.get().users[name]), true
+}
+
 // trustedBasic 判断请求携带的基本认证凭据是否在近期验证通过，且用户凭据此后没有变化。只做一次 HMAC 与查表。
 func (a *authenticator) trustedBasic(r *http.Request, s Site) bool {
+	// 验证结果缓存对所有站点生效，但只有开启了信任已认证用户的站点才据此跳过 WAF
+	if !s.TrustAuthUsers {
+		return false
+	}
 	name, pass, ok := r.BasicAuth()
 	if !ok {
 		return false
