@@ -318,9 +318,9 @@ func (m *Module) serve(w http.ResponseWriter, r *http.Request) {
 	}
 	if !authed {
 		if ok && shared {
-			m.logs.Add(logbuf.LevelWarn, "", fmt.Sprintf("%s 认证失败（共享用户 %q）", r.RemoteAddr, name))
+			m.logs.Add(logbuf.LevelWarn, "", fmt.Sprintf("%s 认证失败（共享用户 %q）", r.RemoteAddr, fileusers.ClipName(name)))
 		} else if ok {
-			m.logs.Add(logbuf.LevelWarn, "", fmt.Sprintf("%s 认证失败（用户 %q）", r.RemoteAddr, name))
+			m.logs.Add(logbuf.LevelWarn, "", fmt.Sprintf("%s 认证失败（用户 %q）", r.RemoteAddr, fileusers.ClipName(name)))
 		}
 		w.Header().Set("WWW-Authenticate", `Basic realm="Gately WebDAV"`)
 		http.Error(w, "401 Unauthorized", http.StatusUnauthorized)

@@ -238,9 +238,9 @@ func (d *driver) authUser(cc ftpserver.ClientContext, user, pass string) (ftpser
 	}
 	if !ok || !fileusers.CheckPassword(u.Password, pass) {
 		if shared {
-			d.logs.Add(logbuf.LevelWarn, "", fmt.Sprintf("%s 认证失败（共享用户 %q）", cc.RemoteAddr(), user))
+			d.logs.Add(logbuf.LevelWarn, "", fmt.Sprintf("%s 认证失败（共享用户 %q）", cc.RemoteAddr(), fileusers.ClipName(user)))
 		} else {
-			d.logs.Add(logbuf.LevelWarn, "", fmt.Sprintf("%s 认证失败（用户 %q）", cc.RemoteAddr(), user))
+			d.logs.Add(logbuf.LevelWarn, "", fmt.Sprintf("%s 认证失败（用户 %q）", cc.RemoteAddr(), fileusers.ClipName(user)))
 		}
 		return nil, errors.New("用户名或密码错误")
 	}

@@ -98,3 +98,17 @@ func (t *Throttle) Done(ip string, ok bool) {
 		e.n++
 	}
 }
+
+// ClipName 截断登录时提交的用户名再写入日志：用户名来自未认证的请求，
+// 不截断时每次失败的登录都能向日志缓冲写入接近请求头上限的内容。
+func ClipName(s string) string {
+	const max = 64
+	if len(s) <= max {
+		return s
+	}
+	r := []rune(s)
+	if len(r) <= max {
+		return s
+	}
+	return string(r[:max]) + "…"
+}
