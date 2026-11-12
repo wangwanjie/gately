@@ -14,6 +14,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/wangwanjie/gately/internal/outbound"
 )
 
 // 提供方类型
@@ -116,16 +118,14 @@ func (p Provider) DisplayName() string {
 // client 返回访问提供方使用的 HTTP 客户端：配置了代理时走代理，否则沿用默认客户端。
 func (p Provider) client() *http.Client {
 	if p.Proxy == "" {
-		return http.DefaultClient
+		return outbound.DefaultClient()
 	}
 	u, err := url.Parse(p.Proxy)
 	if err != nil {
 		// Validate 已校验过地址，这里仅防御异常配置
-		return http.DefaultClient
+		return outbound.DefaultClient()
 	}
-	tr := http.DefaultTransport.(*http.Transport).Clone()
-	tr.Proxy = http.ProxyURL(u)
-	return &http.Client{Transport: tr}
+	return &http.Client{Transport: outbound.ProxyTransport(u)}
 }
 
 func (p Provider) isOIDC() bool {

@@ -18,6 +18,7 @@ import (
 	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
+	"github.com/wangwanjie/gately/internal/outbound"
 	"github.com/wangwanjie/gately/internal/proc"
 )
 
@@ -176,7 +177,7 @@ type Module struct {
 
 // New 创建模块。
 func New() *Module {
-	return &Module{runs: map[string]*runtime{}, httpClient: func() *http.Client { return http.DefaultClient }}
+	return &Module{runs: map[string]*runtime{}, httpClient: func() *http.Client { return outbound.DefaultClient() }}
 }
 
 // SetHTTPClient 实现 module.HTTPClientAware。

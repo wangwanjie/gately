@@ -46,6 +46,13 @@
     "verifying": "Verificando…",
     "autoHint": "Enviado automaticamente após digitar a senha e os 6 dígitos"
   },
+  "sessions": {
+    "title": "Sessões de login",
+    "desc": "Invalida imediatamente todas as sessões de login da administração em todos os dispositivos, inclusive este. Os tokens de API não são afetados. Use quando um token puder ter vazado.",
+    "button": "Sair de todos os dispositivos",
+    "confirm": "Sair de todos os dispositivos? Todas as sessões iniciadas, inclusive esta, deixam de funcionar e será preciso entrar novamente.",
+    "done": "Saiu de todos os dispositivos. Entre novamente"
+  },
   "loginProtect": {
     "title": "Proteção de login",
     "sessionHours": "Duração da sessão",
@@ -143,6 +150,9 @@
     "updateProxy": "Proxy de atualização",
     "updateProxyPlaceholder": "Vazio para conexão direta, ex.: http://127.0.0.1:7890",
     "updateProxyHelp": "Usado para acessar o GitHub ao verificar atualizações e atualizar online. Suporta http://, https:// e socks5://; vazio, vale a variável de ambiente HTTPS_PROXY.",
+    "restrictOutbound": "Limites de requisições de saída",
+    "restrictOutboundSwitch": "Bloquear endereços internos e link-local",
+    "restrictOutboundHelp": "Quando ativado, as requisições de saída configuradas pelo administrador (webhooks, notificações, assinaturas de listas de IP, callbacks de DDNS e URLs de consulta de IP, verificação de atualizações e downloads de programas, login de terceiros) recusam conexões com endereços de loopback, privados, link-local (incluindo o endereço de metadados da nuvem 169.254.169.254) e ULA. A verificação também vale para nomes de domínio resolvidos e redirecionamentos, reduzindo o risco de varredura da rede interna. Desativado por padrão; mantenha-o desativado se esses recursos precisarem acessar serviços internos, como um gateway de notificações interno ou um serviço DNS próprio. Upstreams de proxy reverso, Wake-on-LAN, montagens de armazenamento e outros recursos voltados à rede interna não são afetados.",
     "timeZone": "Fuso horário",
     "timeZonePlaceholder": "Seguir o sistema",
     "timeZoneHelp": "Fuso horário usado em logs, tarefas agendadas e mais. Qualquer nome de fuso horário IANA é aceito. Em vigor no momento: {zone}",

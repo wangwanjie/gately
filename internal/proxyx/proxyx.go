@@ -29,6 +29,8 @@ import (
 	"time"
 
 	xproxy "golang.org/x/net/proxy"
+
+	"github.com/wangwanjie/gately/internal/outbound"
 )
 
 // 特殊取值
@@ -180,6 +182,8 @@ func transportFor(u *url.URL, direct, insecure bool) *http.Transport {
 	if insecure {
 		tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	}
+	// 全局开关开启时拒绝访问内网与链路本地地址；开关在每次建立连接时读取，缓存的 Transport 也随之生效
+	outbound.Guard(tr)
 	transports[key] = tr
 	return tr
 }
@@ -199,7 +203,15 @@ func Dial(ctx context.Context, setting, addr string, timeout time.Duration) (net
 	d := &net.Dialer{Timeout: timeout, KeepAlive: 30 * time.Second}
 	u, _ := Resolve(setting)
 	if u == nil {
-		return d.DialContext(ctx, "tcp", addr)
+		// 直连时在拨号层校验解析后的真实 IP（开关关闭时无影响）
+		guarded := outbound.NewDialer(timeout)
+		return guarded.DialContext(ctx, "tcp", addr)
+	}
+	// 经代理时连接由代理建立，本机拨号层看不到真实目标，开关开启时先检查目标主机
+	if host, _, err := net.SplitHostPort(addr); err == nil {
+		if err := outbound.CheckHost(ctx, host); err != nil {
+			return nil, err
+		}
 	}
 	if timeout > 0 {
 		var cancel context.CancelFunc

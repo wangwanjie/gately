@@ -24,6 +24,7 @@ import (
 	"golang.org/x/net/ipv4"
 	"golang.org/x/net/ipv6"
 
+	"github.com/wangwanjie/gately/internal/outbound"
 	"github.com/wangwanjie/gately/internal/resolver"
 )
 
@@ -487,7 +488,7 @@ loop:
 }
 
 // speedClient 不跟随重定向，避免被引导到禁止探测的地址。
-var speedClient = &http.Client{CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
+var speedClient = &http.Client{Transport: outbound.NewTransport(), CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
 
 type countWriter struct{ n *atomic.Int64 }
 

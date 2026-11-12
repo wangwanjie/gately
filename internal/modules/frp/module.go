@@ -20,6 +20,7 @@ import (
 	"github.com/wangwanjie/gately/internal/iplist"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
+	"github.com/wangwanjie/gately/internal/outbound"
 	"github.com/wangwanjie/gately/internal/proc"
 )
 
@@ -71,7 +72,7 @@ func New() *Module {
 		clients:    map[string]*instRuntime{},
 		servers:    map[string]*instRuntime{},
 		bins:       map[string]*binInfo{binClient: {}, binServer: {}},
-		httpClient: func() *http.Client { return http.DefaultClient },
+		httpClient: func() *http.Client { return outbound.DefaultClient() },
 	}
 }
 

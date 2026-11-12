@@ -30,6 +30,7 @@ import (
 	"github.com/wangwanjie/gately/internal/acmehttp"
 	"github.com/wangwanjie/gately/internal/dnsprovider"
 	"github.com/wangwanjie/gately/internal/logbuf"
+	"github.com/wangwanjie/gately/internal/outbound"
 )
 
 // acmeUser 实现 lego 的 registration.User。
@@ -286,6 +287,8 @@ func obtain(cfg ACMEConfig, acc *Account, log *logbuf.Logger) (*obtainResult, er
 	if acmeHTTPClient != nil {
 		lc.HTTPClient = acmeHTTPClient()
 	}
+	// 访问 ACME 服务同样受出站地址限制（全局开关开启时拒绝内网与链路本地地址）
+	lc.HTTPClient = outbound.Wrap(lc.HTTPClient)
 	if cfg.Network != "" {
 		// 限定 ACME 接口只走 IPv4 或 IPv6
 		lc.HTTPClient = forceNetwork(lc.HTTPClient, cfg.Network)
@@ -361,7 +364,7 @@ var systemNameservers = sync.OnceValue(func() []string {
 
 // setupDNS01 为客户端配置 DNS-01 验证。
 func setupDNS01(client *lego.Client, cfg ACMEConfig, log *logbuf.Logger) error {
-	hc := &http.Client{Timeout: 30 * time.Second}
+	hc := outbound.NewClient(30 * time.Second)
 	if cfg.Network != "" {
 		hc = forceNetwork(hc, cfg.Network)
 	}
