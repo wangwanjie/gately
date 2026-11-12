@@ -160,6 +160,24 @@
       "sizeKB": 64
     },
     {
+      "id": "easytier",
+      "group": "tunnel",
+      "core": false,
+      "tag": "no_easytier",
+      "title": {
+        "zh-CN": "EasyTier",
+        "zh-TW": "EasyTier",
+        "en": "EasyTier"
+      },
+      "desc": {
+        "zh-CN": "加入 EasyTier 组网，P2P 打洞优先，支持自建中继",
+        "zh-TW": "加入 EasyTier 組網，P2P 打洞優先，支援自建中繼",
+        "en": "Join an EasyTier mesh network (P2P first, self-hosted relays)"
+      },
+      "requires": [],
+      "sizeKB": 64
+    },
+    {
       "id": "frp",
       "group": "tunnel",
       "core": false,

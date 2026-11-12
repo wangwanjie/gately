@@ -14,6 +14,7 @@ var Catalog = []Info{
 	{ID: "stun", Title: "STUN 穿透"},
 	{ID: "tailscale", Title: "Tailscale 组网"},
 	{ID: "netbird", Title: "NetBird 组网"},
+	{ID: "easytier", Title: "EasyTier 组网"},
 	{ID: "frp", Title: "frp 内网穿透"},
 	{ID: "cloudflared", Title: "Cloudflare 隧道"},
 	{ID: "ssl", Title: "SSL 证书"},
