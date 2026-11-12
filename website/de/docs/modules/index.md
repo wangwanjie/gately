@@ -17,7 +17,7 @@ Für Module, die nicht in den benutzerdefinierten Build einkompiliert sind, gilt
 | Portweiterleitung | TCP / UDP, IPv4 / IPv6, Portbereiche, Failover über mehrere Ziele, Verbindungslimits, Traffic-Statistiken | [Ansehen](/de/docs/modules/portforward) |
 | Protokoll-Routing | Mehrere Dienste teilen sich einen Port: TLS nach SNI und ALPN, HTTP nach Host, Minecraft nach Serveradresse, außerdem SSH, RDP, SOCKS, OpenVPN, RTSP, SIP, XMPP, MQTT, AMQP, PostgreSQL, Redis, SMB, Git, IRC, ADB, BitTorrent sowie eine Warte-Timeout-Route für VNC und Ähnliches | [Ansehen](/de/docs/modules/protoroute) |
 | SSL-Zertifikate | Automatische ACME-DNS-01-Ausstellung und -Erneuerung, Upload, Zuordnung zu einem Verzeichnis mit Skripten | [Ansehen](/de/docs/modules/ssl) |
-| Web-Dienste | Reverse Proxy, Weiterleitungen, statische Dateien, HTTPS, Authentifizierung, Zugriffskontrolle, Lastverteilung und Health-Checks, Caching und Ratenbegrenzung, Zugriffsstatistiken | [Ansehen](/de/docs/modules/web) |
+| Web-Dienste | Reverse Proxy, Weiterleitungen, statische Dateien, HTTPS, Authentifizierung, Zugriffskontrolle, Lastverteilung und Health-Checks, Caching und Ratenbegrenzung, Zugriffsstatistiken, Navigationspanels, Besucherprüfung, Netzwerktopologie | [Ansehen](/de/docs/modules/web) |
 | OIDC-Single-Sign-on | Stellt die gemeinsamen Benutzer Gitea, OpenList, Grafana und anderen Apps per OpenID Connect bereit; ersetzt das OIDC von Authelia | [Ansehen](/de/docs/modules/oidc) |
 | WAF-Firewall | Coraza + OWASP CRS v4 | [Ansehen](/de/docs/modules/waf) |
 | Einbruchschutz | Protokollregeln (wie fail2ban), Köderports und Portscan-Erkennung, Sperren werden in nftables übertragen | [Ansehen](/de/docs/modules/guard) |
