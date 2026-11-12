@@ -202,14 +202,40 @@ func TestServeThrottleKnownGood(t *testing.T) {
 	if c := do("good"); c == 401 || c == 429 {
 		t.Fatalf("首次正确密码应通过: %d", c)
 	}
-	// 模拟同一来源有大量并发的校验正在进行
-	for i := 0; i < fileusers.ThrottleMaxFailures; i++ {
+	// 模拟同一来源有多个并发的校验正在进行，只剩一个名额
+	for i := 0; i < fileusers.ThrottleMaxFailures-1; i++ {
 		m.throttle.Reserve("198.51.100.7")
 	}
-	if c := do("good"); c == 401 || c == 429 {
-		t.Fatalf("近期验证通过的凭据不应被进行中的校验挡住: %d", c)
+	for i := 0; i < 3; i++ {
+		if c := do("good"); c == 401 || c == 429 {
+			t.Fatalf("近期验证通过的凭据不应占用名额: %d", c)
+		}
 	}
-	if c := do("bad"); c != 429 {
-		t.Fatalf("未缓存的凭据仍按名额限流: %d", c)
+	// 未缓存的凭据仍按名额限流：用掉最后一个名额并记一次失败
+	if c := do("bad"); c != 401 {
+		t.Fatalf("还有名额时错误密码应 401: %d", c)
+	}
+	if c := do("good"); c != 429 {
+		t.Fatalf("名额占满后凭据正确也应 429: %d", c)
+	}
+}
+
+// 进行中的校验占满名额时，凭据正确与错误的请求得到同样的 429，被限流的来源无法借此判断密码是否猜中。
+func TestServeThrottleNoOracle(t *testing.T) {
+	m := &Module{handlers: map[string]*userHandler{}, logs: logbuf.New(20, log.New(io.Discard, "", 0))}
+	m.handlers["u"] = newUserHandler(User{Name: "u", Password: "good", Root: t.TempDir()})
+	do := func(pass string) int {
+		req := httptest.NewRequest("GET", "/", nil)
+		req.RemoteAddr = "198.51.100.8:1000"
+		req.SetBasicAuth("u", pass)
+		w := httptest.NewRecorder()
+		m.serve(w, req)
+		return w.Code
+	}
+	for i := 0; i < fileusers.ThrottleMaxFailures; i++ {
+		m.throttle.Reserve("198.51.100.8")
+	}
+	if good, bad := do("good"), do("bad"); good != 429 || bad != 429 {
+		t.Fatalf("名额占满时应一律 429: 正确 %d 错误 %d", good, bad)
 	}
 }
