@@ -116,3 +116,20 @@ func TestConcurrent(t *testing.T) {
 	}
 	wg.Wait()
 }
+
+// 已知地址隔了较久再次登录时把最近时间写盘，重启后淘汰顺序仍按真实的最近时间计算
+func TestLastSavedAfterGap(t *testing.T) {
+	var saved []Entry
+	saves := 0
+	tr := New(nil, func(e []Entry) error { saves++; saved = e; return nil })
+	tr.Observe("1.1.1.1", t0)
+	tr.Observe("1.1.1.1", t0.Add(time.Hour))
+	if saves != 1 {
+		t.Fatalf("短时间内重复登录不应写盘: %d", saves)
+	}
+	later := t0.Add(time.Hour + lastSaveGap)
+	tr.Observe("1.1.1.1", later)
+	if saves != 2 || len(saved) != 1 || !saved[0].Last.Equal(later) {
+		t.Fatalf("超过间隔后应写入最近时间: saves=%d %+v", saves, saved)
+	}
+}
