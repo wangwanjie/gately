@@ -379,6 +379,38 @@ func (s *Options) listenPorts() map[string]bool {
 	return out
 }
 
+// tcpOpenPorts 返回实例会对外监听的 TCP 端口：走 TCP 传输的监听地址，以及绑定到非回环地址的 TCP 端口转发。
+// 入侵防护的扫描检测据此把这些端口视为开放端口，进程刚启动、监听尚未出现在系统监听表里时其他节点的连接不会被当成端口扫描。
+func (s *Options) tcpOpenPorts() []int {
+	var out []int
+	add := func(host, port string) {
+		n, err := strconv.Atoi(port)
+		if err != nil || n <= 0 || n > 65535 {
+			return
+		}
+		if ip := net.ParseIP(strings.Trim(host, "[]")); ip != nil && ip.IsLoopback() {
+			return
+		}
+		out = append(out, n)
+	}
+	for _, l := range lines(s.Listeners) {
+		if u, err := url.Parse(l); err == nil && transport(strings.ToLower(u.Scheme)) == "tcp" {
+			add(u.Hostname(), u.Port())
+		}
+	}
+	for _, l := range lines(s.PortForwards) {
+		proto, rest, _ := strings.Cut(l, "://")
+		if strings.ToLower(proto) != "tcp" {
+			continue
+		}
+		bind, _, _ := strings.Cut(rest, "/")
+		if host, port, err := net.SplitHostPort(bind); err == nil {
+			add(host, port)
+		}
+	}
+	return out
+}
+
 // forwardBinds 返回端口转发的本机绑定端口集合，形如 tcp:2222。
 func (s *Options) forwardBinds() map[string]bool {
 	out := map[string]bool{}

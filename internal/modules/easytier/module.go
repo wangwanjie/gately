@@ -24,6 +24,7 @@ import (
 	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
+	"github.com/wangwanjie/gately/internal/openports"
 	"github.com/wangwanjie/gately/internal/outbound"
 	"github.com/wangwanjie/gately/internal/proc"
 )
@@ -146,6 +147,7 @@ func (m *Module) Stop() error {
 	for key, rt := range m.runs {
 		rt.daemon.Stop()
 		delete(m.runs, key)
+		openports.Clear(openOwner(key))
 	}
 	m.mu.Unlock()
 	return nil
@@ -159,6 +161,9 @@ func (m *Module) findInstance(key string) *Instance {
 	}
 	return nil
 }
+
+// openOwner 是实例在 openports 中的登记名。
+func openOwner(key string) string { return "easytier:" + key }
 
 // logSource 返回实例的日志来源，例如 easytier:家里。
 func logSource(name string) string { return "easytier:" + name }
@@ -204,6 +209,7 @@ func (m *Module) syncLocked(force func(key string) bool) {
 		if !keep[key] {
 			rt.daemon.Stop()
 			delete(m.runs, key)
+			openports.Clear(openOwner(key))
 		}
 	}
 }
@@ -266,6 +272,8 @@ func (m *Module) runInstanceLocked(in *Instance, sig, conflict string) {
 	// 名称可能被修改，重建托管器以使用新的日志来源
 	rt := &instRuntime{daemon: proc.New(m.logs.Logger(logSource(in.Name))), sig: sig, conflict: conflict, inst: *in}
 	m.runs[in.Key] = rt
+	// 进程停止或重建时先撤销开放端口登记，启动成功后按新参数重新登记
+	openports.Clear(openOwner(in.Key))
 	if sig == "" {
 		return
 	}
@@ -289,6 +297,7 @@ func (m *Module) runInstanceLocked(in *Instance, sig, conflict string) {
 		return
 	}
 	rt.rpcAddr = "127.0.0.1:" + strconv.Itoa(port)
+	openports.SetPorts(openOwner(in.Key), in.tcpOpenPorts())
 	rt.daemon.Start(proc.Spec{
 		Path: core, Args: in.Args(rt.rpcAddr), Env: in.EnvList(), LogLine: maskLine,
 		Module: ID, Name: in.Name,
