@@ -336,3 +336,29 @@ func TestExpectAndWebDAV(t *testing.T) {
 		t.Fatalf("WebDAV 兼容模式仍应拦截注入攻击: %d", c)
 	}
 }
+
+// OAuth/OIDC 回调的 scope 参数（如 "email profile openid"）会命中 CRS 930120（OS 文件访问），
+// 用自定义规则组只对该回调路径排除 ARGS:scope，其余检查与其他路径保持不变。
+func TestOAuthScopeExclusionByCustomRule(t *testing.T) {
+	cb := "/oauth_google_callback.php?state=abc&iss=https://accounts.google.com&code=4%2F0Ab&scope=email+profile+https://www.googleapis.com/auth/userinfo.email+https://www.googleapis.com/auth/userinfo.profile+openid&authuser=2&prompt=none"
+	crs := RuleSet{Enable: true, Type: RuleCRS}
+	exclude := RuleSet{Enable: true, Type: RuleCustom,
+		Param: `SecRule REQUEST_FILENAME "@streq /oauth_google_callback.php" "id:10100,phase:1,pass,nolog,ctl:ruleRemoveTargetById=930120;ARGS:scope"`}
+	m := newModule(t,
+		Instance{Key: "plain", Name: "plain", Enable: true, Mode: ModeBlock, RuleSets: []RuleSet{crs}},
+		Instance{Key: "excl", Name: "excl", Enable: true, Mode: ModeBlock, RuleSets: []RuleSet{exclude, crs}},
+	)
+	if c := status(t, m.Middleware("plain", ok), cb); c != 403 {
+		t.Fatalf("未排除时应复现误报: %d", c)
+	}
+	h := m.Middleware("excl", ok)
+	if c := status(t, h, cb); c != 200 {
+		t.Fatalf("排除后回调应放行: %d", c)
+	}
+	if c := status(t, h, "/x.php?scope="+url.QueryEscape("../../etc/passwd")); c != 403 {
+		t.Fatalf("其他路径仍应拦截: %d", c)
+	}
+	if c := status(t, h, "/oauth_google_callback.php?code="+url.QueryEscape("../../etc/passwd")); c != 403 {
+		t.Fatalf("回调路径的其他参数仍应拦截: %d", c)
+	}
+}
