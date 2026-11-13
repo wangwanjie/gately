@@ -492,7 +492,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | POST | `/api/guard/jails-delete` | `guard:write` | Eliminar en lote: regla de prevención de intrusiones |
 | PUT | `/api/guard/jails-group` | `guard:write` | Asignar grupo a varios elementos: regla de prevención de intrusiones |
 | GET | `/api/guard/presets` | `guard:read` | Plantillas de reglas para servicios habituales |
-| POST | `/api/guard/jails/test` | `guard:write` | Probar filtros con líneas de registro de ejemplo |
+| POST | `/api/guard/jails/test` | `guard:write` | Probar una regla de registro con ejemplos |
 | GET | `/api/guard/status` | `guard:read` | Estado de sincronización del cortafuegos y entorno |
 | GET | `/api/guard/settings` | `guard:read` | Ajustes globales |
 | PUT | `/api/guard/settings` | `guard:write` | Modificar la configuración global |

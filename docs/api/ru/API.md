@@ -492,7 +492,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/guard/jails-delete` | `guard:write` | Пакетно удалить: правило защиты от вторжений |
 | PUT | `/api/guard/jails-group` | `guard:write` | Задать группу сразу для нескольких: правило защиты от вторжений |
 | GET | `/api/guard/presets` | `guard:read` | Шаблоны правил для распространённых сервисов |
-| POST | `/api/guard/jails/test` | `guard:write` | Проверить фильтры на примерах строк журнала |
+| POST | `/api/guard/jails/test` | `guard:write` | Проверить правило журнала на примерах |
 | GET | `/api/guard/status` | `guard:read` | Состояние синхронизации с брандмауэром и окружение |
 | GET | `/api/guard/settings` | `guard:read` | Глобальные настройки |
 | PUT | `/api/guard/settings` | `guard:write` | Изменить общие настройки |

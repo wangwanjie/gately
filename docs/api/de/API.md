@@ -492,7 +492,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | POST | `/api/guard/jails-delete` | `guard:write` | Im Stapel löschen: Einbruchschutz-Regel |
 | PUT | `/api/guard/jails-group` | `guard:write` | Gruppe mehrerer Einträge festlegen: Einbruchschutz-Regel |
 | GET | `/api/guard/presets` | `guard:read` | Regelvorlagen für gängige Dienste |
-| POST | `/api/guard/jails/test` | `guard:write` | Filter mit Beispielzeilen testen |
+| POST | `/api/guard/jails/test` | `guard:write` | Protokollregel mit Beispielen testen |
 | GET | `/api/guard/status` | `guard:read` | Status der Firewall-Synchronisierung und Umgebung |
 | GET | `/api/guard/settings` | `guard:read` | Globale Einstellungen |
 | PUT | `/api/guard/settings` | `guard:write` | Globale Einstellungen ändern |

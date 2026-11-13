@@ -492,7 +492,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | POST | `/api/guard/jails-delete` | `guard:write` | Supprimer en lot : règle de prévention des intrusions |
 | PUT | `/api/guard/jails-group` | `guard:write` | Définir le groupe de plusieurs éléments : règle de prévention des intrusions |
 | GET | `/api/guard/presets` | `guard:read` | Modèles de règles pour les services courants |
-| POST | `/api/guard/jails/test` | `guard:write` | Tester les filtres sur des lignes de journal |
+| POST | `/api/guard/jails/test` | `guard:write` | Tester une règle de journal avec des exemples |
 | GET | `/api/guard/status` | `guard:read` | État de la synchronisation du pare-feu et environnement |
 | GET | `/api/guard/settings` | `guard:read` | Paramètres globaux |
 | PUT | `/api/guard/settings` | `guard:write` | Modifier les paramètres globaux |

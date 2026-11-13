@@ -492,7 +492,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/guard/jails-delete` | `guard:write` | 침입 방지 규칙 일괄 삭제 |
 | PUT | `/api/guard/jails-group` | `guard:write` | 침입 방지 규칙 그룹 일괄 설정 |
 | GET | `/api/guard/presets` | `guard:read` | 일반 서비스용 규칙 템플릿 |
-| POST | `/api/guard/jails/test` | `guard:write` | 로그 샘플로 필터 테스트 |
+| POST | `/api/guard/jails/test` | `guard:write` | 샘플로 로그 규칙 테스트 |
 | GET | `/api/guard/status` | `guard:read` | 방화벽 동기화 상태와 실행 환경 |
 | GET | `/api/guard/settings` | `guard:read` | 전역 설정 |
 | PUT | `/api/guard/settings` | `guard:write` | 전역 설정 변경 |

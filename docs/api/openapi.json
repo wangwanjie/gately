@@ -17694,7 +17694,7 @@
         "x-token-allowed": true
       },
       "post": {
-        "description": "每个实例运行一个独立的 `easytier-core` 进程，可分别加入不同的 EasyTier 组网。请求体字段：`name` 名称（不能重复）；`enable` 是否启用；`networkName` 组网名称（必填，1-64 个字符，字母、数字与 `. _ @ : + -`）与 `networkSecret` 网络密钥（名称与密钥都相同的节点才能互通，经环境变量 `ET_NETWORK_SECRET` 传给进程，不出现在进程参数中，日志里也已隐藏）；`peers` 启动时主动连接的节点地址，每行一个，形如 `tcp://public.easytier.cn:11010`（协议可为 tcp、udp、ws、wss、quic、wg、faketcp，以及用于发现节点的 http、https、txt、srv）；`listeners` 监听地址，每行一个，必须写成 `协议://地址:端口`，留空时不监听任何端口、只主动连接其他节点；`dhcp` 自动分配虚拟 IP，关闭时可用 `ipv4` 指定固定虚拟 IP（如 `10.126.126.2/24`），两者都没有时本节点只转发数据、不创建网卡；`hostname`；`noTun` 使用用户态网络、不创建 TUN 网卡（无需特权），`devName` 网卡名；`proxyNetworks` 共享给组网的本地网段，每行一个，可写成 `192.168.1.0/24-\u003e10.1.0.0/24` 做网段映射；`portForwards` 端口转发，每行一个，形如 `tcp://127.0.0.1:2222/10.126.126.1:22`（绑定地址由你指定，建议 127.0.0.1）；`enableExitNode` 允许本机作为出口节点，`exitNodes` 使用的出口节点（虚拟 IPv4，每行一个）；`latencyFirst` 延迟优先选路；`kcpProxy`、`quicProxy` 用 KCP、QUIC 代理 TCP 流量；`extraArgs` 追加到 `easytier-core` 之后（以空白分隔），`env` 传给进程的环境变量（每行一个 `KEY=VALUE`）。不提供 SOCKS5 选项：EasyTier 的 SOCKS5 监听全部地址且没有认证。管理端口由 Gately 在 127.0.0.1 上随机分配，仅本机可访问。以下情况返回 400：同时启用的实例监听同一个端口（按 TCP、UDP 分别判断）或端口转发绑定同一个本机端口、同时启用且使用 TUN 的实例网卡名相同、名称重复。启用、批量启用与复制时同样检查。\n\n所需权限：`easytier:write`。",
+        "description": "每个实例运行一个独立的 `easytier-core` 进程，可分别加入不同的 EasyTier 组网。请求体字段：`name` 名称（不能重复）；`enable` 是否启用；`networkName` 组网名称（必填，1-64 个字符，字母、数字与 `. _ @ : + -`）与 `networkSecret` 网络密钥（名称与密钥都相同的节点才能互通，经环境变量 `ET_NETWORK_SECRET` 传给进程，不出现在进程参数中，日志里也已隐藏）；`peers` 启动时主动连接的节点地址，每行一个，形如 `tcp://public.easytier.cn:11010`（协议可为 tcp、udp、ws、wss、quic、wg、faketcp，以及用于发现节点的 http、https、txt、srv）；`listeners` 监听地址，每行一个，必须写成 `协议://地址:端口`，留空时不监听任何端口、只主动连接其他节点；`dhcp` 自动分配虚拟 IP，关闭时可用 `ipv4` 指定固定虚拟 IP（如 `10.126.126.2/24`），两者都没有时本节点只转发数据、不创建网卡；`hostname`；`noTun` 使用用户态网络、不创建 TUN 网卡（无需特权），`devName` 网卡名；`proxyNetworks` 共享给组网的本地网段，每行一个，可写成 `192.168.1.0/24-\u003e10.1.0.0/24` 做网段映射；`portForwards` 端口转发，每行一个，形如 `tcp://127.0.0.1:2222/10.126.126.1:22`（绑定地址由你指定，建议 127.0.0.1）；`enableExitNode` 允许本机作为出口节点，`exitNodes` 使用的出口节点（虚拟 IPv4，每行一个）；`latencyFirst` 延迟优先选路；`kcpProxy`、`quicProxy` 用 KCP、QUIC 代理 TCP 流量；`extraArgs` 追加到 `easytier-core` 之后（以空白分隔），`env` 传给进程的环境变量（每行一个 `KEY=VALUE`）。不提供 SOCKS5 选项：EasyTier 的 SOCKS5 监听全部地址且没有认证。管理端口由 Gately 在 127.0.0.1 上随机分配，仅本机可访问。以下情况返回 400：同时启用的实例监听同一个端口（按 TCP、UDP 分别判断）或端口转发绑定同一个本机端口、同时启用且使用 TUN 的实例网卡名相同、名称重复。启用、批量启用与复制时同样检查。网络密钥为空时不能设置 `proxyNetworks` 或开启 `enableExitNode`（否则知道组网名称的人就能访问共享的网段）；`extraArgs` 中不能写 `--network-secret`（会出现在进程命令行中）。只读身份读取时 `env` 只保留变量名、`extraArgs` 整体隐藏。\n\n所需权限：`easytier:write`。",
         "requestBody": {
           "content": {
             "application/json": {
@@ -25695,7 +25695,7 @@
     },
     "/api/guard/jails/test": {
       "post": {
-        "description": "所需权限：`guard:write`。",
+        "description": "请求体 `source` 为规则来源：留空按日志规则解析，`filter` 为正则、`lines` 为日志行，返回每行是否命中及提取的地址；`web` 时 `filter`、`ignore` 按路径规则解析，`lines` 为请求路径；`tls` 时 `filter` 为握手失败类型（每行一个：eof、reset、timeout、protocol、negotiation、nocert、alert、other），`lines` 为握手失败原因（日志中「TLS 握手失败」之后的部分），返回每行所属的类型 `kind` 与是否在所选类型中。\n\n所需权限：`guard:write`。",
         "requestBody": {
           "content": {
             "application/json": {
@@ -25755,7 +25755,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "用日志样例测试过滤规则",
+        "summary": "用样例测试日志规则",
         "tags": [
           "入侵防护"
         ],
