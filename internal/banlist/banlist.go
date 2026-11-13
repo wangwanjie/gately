@@ -13,6 +13,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/wangwanjie/gately/internal/openports"
 )
 
 // 封禁来源
@@ -471,12 +473,20 @@ func (s *Store) rebuildNetsLocked() {
 
 // Listener 包装监听器：被封禁地址的连接在 Accept 时直接关闭，不交给上层处理。
 func (s *Store) Listener(ln net.Listener) net.Listener {
-	return &listener{Listener: ln, s: s}
+	return &listener{Listener: ln, s: s, release: openports.Hold(ln.Addr())}
 }
 
 type listener struct {
 	net.Listener
 	s *Store
+	// release 撤销监听端口在 openports 中的登记，关闭监听时调用
+	release func()
+}
+
+// Close 关闭监听并撤销端口登记。
+func (l *listener) Close() error {
+	l.release()
+	return l.Listener.Close()
 }
 
 func (l *listener) Accept() (net.Conn, error) {

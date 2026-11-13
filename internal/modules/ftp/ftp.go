@@ -277,7 +277,9 @@ type Module struct {
 	settings Settings
 	srv      *ftpserver.FtpServer
 	drv      *driver
-	err      string
+	// releaseListen 撤销控制端口在 openports 中的登记
+	releaseListen func()
+	err           string
 }
 
 // New 创建模块。
@@ -351,6 +353,10 @@ func (m *Module) Stop() error {
 
 func (m *Module) stopLocked() {
 	openports.Clear(ID)
+	if m.releaseListen != nil {
+		m.releaseListen()
+		m.releaseListen = nil
+	}
 	if m.srv != nil {
 		_ = m.srv.Stop()
 		m.srv = nil
@@ -382,6 +388,10 @@ func (m *Module) restartLocked() {
 		return
 	}
 	m.srv, m.drv = srv, d
+	// 控制端口监听成功后立即视为开放端口，客户端随即连接时不会被扫描检测当成未开放端口
+	if addr, err := net.ResolveTCPAddr("tcp", srv.Addr()); err == nil {
+		m.releaseListen = openports.Hold(addr)
+	}
 	// 被动模式的数据端口只在传输时短暂监听，登记给入侵防护，避免 IPv6 严格模式把数据连接当成端口扫描
 	if m.settings.PassiveStart != 0 {
 		openports.Set(ID, openports.Entry{Ranges: []openports.Range{{Lo: m.settings.PassiveStart, Hi: m.settings.PassiveEnd}}})

@@ -19,6 +19,7 @@ import (
 
 	"github.com/wangwanjie/gately/internal/acmehttp"
 	"github.com/wangwanjie/gately/internal/logbuf"
+	"github.com/wangwanjie/gately/internal/openports"
 	"github.com/wangwanjie/gately/internal/visitors"
 	"github.com/wangwanjie/gately/internal/webprobe"
 )
@@ -49,6 +50,8 @@ type listenerRunner struct {
 	srv     *http.Server
 	// ln 为交给 srv 的监听（含各层包装），停止时由 stop 同步关闭，见 stop 中的说明
 	ln net.Listener
+	// releases 撤销监听端口在 openports 中的登记（监听成功后立即视为开放端口，见 openports.Hold）
+	releases []func()
 	// h3 为 HTTP/3（QUIC）服务，仅在监听器开启 HTTP3 时存在；h3pc 为它的 UDP 监听
 	h3   *http3.Server
 	h3pc net.PacketConn
@@ -406,7 +409,7 @@ func (l *listenerRunner) reload(cfg Listener, waf WAFProvider) error {
 }
 
 // start 开始监听。trusted 为可信的 PROXY 协议来源。
-func (l *listenerRunner) start(certs CertSource, trusted []string) error {
+func (l *listenerRunner) start(certs CertSource, trusted []string) (err error) {
 	addr := net.JoinHostPort(l.cfg.ListenIP, strconv.Itoa(l.cfg.Port))
 	ln, err := net.Listen(l.cfg.Network, addr)
 	if err != nil {
@@ -415,6 +418,13 @@ func (l *listenerRunner) start(certs CertSource, trusted []string) error {
 	if ln, err = l.wrapProxyProtocol(ln, trusted); err != nil {
 		return err
 	}
+	// 监听成功后立即登记为开放端口，启动失败时撤销；停止时由 stop 撤销
+	l.releases = append(l.releases, openports.Hold(ln.Addr()))
+	defer func() {
+		if err != nil {
+			l.releaseHolds()
+		}
+	}()
 	baseCtx, cancel := context.WithCancel(context.Background())
 	l.cancel = cancel
 	l.baseCtx = baseCtx
@@ -480,6 +490,7 @@ func (l *listenerRunner) start(certs CertSource, trusted []string) error {
 		} else {
 			httpLn = hl
 			l.httpLn = hl
+			l.releases = append(l.releases, openports.Hold(hl.Addr()))
 		}
 	}
 	l.startAt = time.Now()
@@ -609,6 +620,7 @@ func (l *listenerRunner) stop() {
 	if l.srv == nil {
 		return
 	}
+	defer l.releaseHolds()
 	if l.h3 != nil {
 		_ = l.h3.Close()
 		_ = l.h3pc.Close()
@@ -654,4 +666,12 @@ func viaTrustedProxy(r *http.Request) bool {
 		}
 	}
 	return false
+}
+
+// releaseHolds 撤销本监听登记的开放端口。
+func (l *listenerRunner) releaseHolds() {
+	for _, release := range l.releases {
+		release()
+	}
+	l.releases = nil
 }

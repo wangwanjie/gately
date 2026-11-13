@@ -5,6 +5,8 @@ import (
 	"net/netip"
 	"testing"
 	"time"
+
+	"github.com/wangwanjie/gately/internal/openports"
 )
 
 func TestParseKey(t *testing.T) {
@@ -222,4 +224,31 @@ func TestListener(t *testing.T) {
 	case <-time.After(2 * time.Second):
 		t.Fatal("解除封禁后应能建立连接")
 	}
+}
+
+// 包装监听时把端口登记为开放端口，关闭监听后撤销（登记在 Close 时释放，重复关闭不出错）
+func TestListenerHoldsOpenPort(t *testing.T) {
+	ln, err := net.Listen("tcp", "0.0.0.0:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	port := ln.Addr().(*net.TCPAddr).Port
+	wrapped := New().Listener(ln)
+	held := func() bool {
+		ranges, _ := openports.All()
+		for _, r := range ranges {
+			if r.Lo <= port && port <= r.Hi {
+				return true
+			}
+		}
+		return false
+	}
+	if !held() {
+		t.Fatalf("包装后端口 %d 应登记为开放端口", port)
+	}
+	_ = wrapped.Close()
+	if held() {
+		t.Fatalf("关闭后端口 %d 应撤销登记", port)
+	}
+	_ = wrapped.Close()
 }
