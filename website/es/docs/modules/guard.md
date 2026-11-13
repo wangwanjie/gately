@@ -119,7 +119,7 @@ Con el origen «Fallos de handshake TLS», la regla cuenta los fallos de handsha
 | Cliente abortó (alerta TLS) | El otro extremo aborta con una alerta TLS, p. ej. no confía en el certificado. Suele ser su propia configuración; no se recomienda bloquear por esto |
 | Otro | Fallos que no encajan en ningún tipo anterior |
 
-Cada fallo de handshake cuenta, sin verse afectado por la limitación del registro. La dirección de origen ya se restaura mediante proxies de confianza y el protocolo PROXY, las direcciones de la lista de permitidos no cuentan y las ya bloqueadas dejan de acumular. En el editor de la regla, pega un motivo de fallo (el motivo en inglés tras «Fallo de handshake TLS» en el registro) para ver en qué tipo cae.
+Cada fallo de handshake cuenta, sin verse afectado por la limitación del registro. La dirección de origen ya se restaura mediante el protocolo PROXY; durante el handshake todavía no hay cabeceras de petición, por lo que las direcciones de los «proxies de confianza» del servicio web (nodos de recuperación de origen del CDN) no cuentan, para evitar que alguien use un CDN para provocar fallos de handshake y que esos nodos sean bloqueados; las direcciones de la lista de permitidos no cuentan y las ya bloqueadas dejan de acumular. En el editor de la regla, pega un motivo de fallo (el motivo en inglés tras «Fallo de handshake TLS» en el registro) para ver en qué tipo cae.
 
 Hay dos plantillas incluidas:
 
@@ -130,17 +130,19 @@ Hay dos plantillas incluidas:
 
 ## Compromisos de la detección de escaneos
 
-La detección cuenta las conexiones nuevas a puertos **en los que este equipo no escucha**. Los puertos TCP en escucha se actualizan cada 10 segundos y se consideran abiertos; los puertos que otras reglas del cortafuegos reenvían no pasan por la cadena `input` y no se cuentan. El umbral predeterminado es 12 por minuto. Un cliente normal reintenta un puerto cerrado unas 5 veces por minuto, así que no conviene bajar de 10.
+La detección cuenta las conexiones nuevas a puertos **en los que este equipo no escucha**. Los puertos TCP en escucha se consideran abiertos: los de los módulos de Gately se registran en cuanto la escucha tiene éxito y surten efecto en 300 milisegundos, y los de otros programas se actualizan cada 10 segundos; los puertos que otras reglas del cortafuegos reenvían no pasan por la cadena `input` y no se cuentan. El umbral predeterminado es 12 por minuto. Un cliente normal reintenta un puerto cerrado unas 5 veces por minuto, así que no conviene bajar de 10.
 
 Los puertos trampa que están en uso se excluyen automáticamente para no bloquear a visitantes legítimos.
+
+Se registran automáticamente como abiertos: las escuchas del servicio web (incluido el puerto HTTP adicional), el reenvío de puertos, el enrutamiento por protocolo, SMB, WebDAV, el puerto de control de FTP con su rango de puertos pasivos y los puertos TCP de STUN; de frps, el puerto de enlace, los puertos vhost, el puerto del dashboard expuesto al exterior y los rangos allowPorts de hasta 1024 puertos, además de los puertos remotos TCP que frpc solicita tras iniciar sesión (hasta 4096 por instancia, que se borran al detener la instancia); las escuchas TCP de las instancias de EasyTier y los reenvíos de puertos TCP enlazados a direcciones que no son de loopback; los puertos SOCKS5 que Tailscale y NetBird escuchan hacia el exterior.
 
 ## Modo estricto IPv6
 
 IPv6 no tiene NAT, cada dispositivo tiene una dirección pública y, cuando esa dirección aparece en el DNS o en los registros de transparencia de certificados, los escáneres pueden conectarse a ella directamente. La opción «Modo estricto IPv6» de la detección de escaneo de puertos pasa IPv6 a una lista de permitidos: los orígenes IPv6 solo pueden conectarse a puertos abiertos (puertos en escucha más «Puertos abiertos adicionales») y la primera conexión a cualquier otro puerto provoca el bloqueo, sin contar umbral. IPv4 sigue usando el umbral.
 
 - El bloqueo se aplica a todo el /64, así que los demás dispositivos del mismo /64 también quedan bloqueados. Las direcciones de la lista blanca y las cubiertas por «Ignorar direcciones privadas» no se ven afectadas.
-- Un puerto que empieza a escuchar se considera abierto en unos 10 segundos, y el modo surte efecto unos 15 segundos después de activarlo o de reiniciar; hasta entonces se aplica el umbral. El umbral también se aplica cuando no se pueden leer los puertos en escucha.
-- Un puerto que deja de escuchar sigue contando como abierto durante 30 segundos, para que no se bloquee a los visitantes que reintentan mientras frps se reconecta o se reinicia un programa o una escucha. Si el servicio FTP tiene un rango de puertos pasivos, todo el rango cuenta como abierto; si el sistema asigna los puertos pasivos al azar, no se pueden listar de antemano, las conexiones de datos IPv6 se bloquearían como escaneos y el registro de ejecución lo avisa: configure un rango de puertos pasivos en el servicio FTP.
+- Un puerto en el que empieza a escuchar un módulo de Gately se considera abierto de inmediato, y uno de otro programa en unos 10 segundos, y el modo surte efecto unos 15 segundos después de activarlo o de reiniciar; hasta entonces se aplica el umbral. El umbral también se aplica cuando no se pueden leer los puertos en escucha.
+- Un puerto que deja de escuchar sigue contando como abierto durante 10 minutos, para que no se bloquee a los visitantes que reintentan mientras frps se reconecta, frpc vuelve a iniciar sesión tras una caída o se reinicia un programa o una escucha. Si el servicio FTP tiene un rango de puertos pasivos, todo el rango cuenta como abierto; si el sistema asigna los puertos pasivos al azar, no se pueden listar de antemano, las conexiones de datos IPv6 se bloquearían como escaneos y el registro de ejecución lo avisa: configure un rango de puertos pasivos en el servicio FTP.
 - Los puertos que otros programas usan mediante reglas del cortafuegos deben añadirse antes a «Puertos abiertos adicionales»; de lo contrario, los orígenes que se conecten a ellos serán bloqueados.
 - Solo se cuentan las conexiones TCP nuevas. La sincronización con el cortafuegos debe estar activa y la detección de escaneo de puertos habilitada.
 
