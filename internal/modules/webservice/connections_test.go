@@ -265,7 +265,12 @@ func TestConnsWebSocket(t *testing.T) {
 			t.Fatalf("转发失败: %q", line)
 		}
 	}
+	// 流量在写完之后才累加，访客读到最后一行时计数可能还没更新，等计数到位再检查
 	v := activeOne(t, h)
+	for deadline := time.Now().Add(3 * time.Second); (v.Up < 18 || v.Down < 33) && time.Now().Before(deadline); {
+		time.Sleep(20 * time.Millisecond)
+		v = activeOne(t, h)
+	}
 	if !v.WebSocket || v.Up < 18 || v.Down < 33 {
 		t.Fatalf("WebSocket 标记或流量错误: %+v", v)
 	}
