@@ -218,9 +218,17 @@ func TestMetricsLatencyHistogram(t *testing.T) {
 	for i := 0; i < 5; i++ {
 		get(t, http.DefaultClient, addr, "s.test", "/", nil)
 	}
-	rec := httptest.NewRecorder()
-	m.handleMetrics(rec, httptest.NewRequest("GET", "/metrics", nil))
-	body := rec.Body.String()
+	// 延迟在响应发给客户端之后才记录，最后一个请求的计数可能稍晚写入，等计数到齐再检查
+	var body string
+	for deadline := time.Now().Add(3 * time.Second); ; {
+		rec := httptest.NewRecorder()
+		m.handleMetrics(rec, httptest.NewRequest("GET", "/metrics", nil))
+		body = rec.Body.String()
+		if histogramCount(body) == "5" || time.Now().After(deadline) {
+			break
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
 	if strings.Count(body, "# TYPE gately_site_request_duration_seconds histogram") != 1 {
 		t.Fatalf("直方图应有且仅有一组 TYPE:\n%s", body)
 	}
@@ -340,4 +348,14 @@ func parseFloat(t *testing.T, s string) float64 {
 		t.Fatalf("无法解析数值 %q", s)
 	}
 	return f
+}
+
+// histogramCount 返回请求延迟直方图 _count 行的值，没有时为空串。
+func histogramCount(body string) string {
+	for _, line := range strings.Split(body, "\n") {
+		if strings.HasPrefix(line, "gately_site_request_duration_seconds_count{") {
+			return line[strings.LastIndex(line, " ")+1:]
+		}
+	}
+	return ""
 }
