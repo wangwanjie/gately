@@ -102,3 +102,25 @@ func TestRedactWOLAgent(t *testing.T) {
 		}
 	}
 }
+
+// EasyTier 等托管程序的环境变量与附加参数常带密钥：只读身份只能看到变量名
+func TestRedactEnvAndExtraArgs(t *testing.T) {
+	in := map[string]any{
+		"name":      "et1",
+		"extraArgs": "--network-secret=s3cret --no-tun",
+		"env":       "ET_NETWORK_SECRET=abc\nRUST_LOG=info\n\nNOEQUALS",
+		"nested":    map[string]any{"env": map[string]any{"TOKEN": "t0k", "EMPTY": ""}},
+	}
+	out, _ := json.Marshal(redactJSON(in))
+	s := string(out)
+	for _, leak := range []string{"s3cret", "abc", "info", "t0k", "NOEQUALS"} {
+		if strings.Contains(s, leak) {
+			t.Errorf("脱敏后仍含明文 %q: %s", leak, s)
+		}
+	}
+	for _, keep := range []string{"ET_NETWORK_SECRET=********", "RUST_LOG=********", `"TOKEN":"********"`, `"EMPTY":""`, `"name":"et1"`} {
+		if !strings.Contains(s, keep) {
+			t.Errorf("应保留 %q: %s", keep, s)
+		}
+	}
+}
