@@ -7,6 +7,7 @@ Einbruchschutz im Stil von fail2ban: Gately erkennt Brute-Force-Versuche in Prot
 - **Protokollregeln**: lesen Protokolldateien, das systemd-Journal, Befehlsausgaben (etwa `logread -f` unter OpenWrt) oder Docker-Container-Protokolle, finden Fehlschläge per regulärem Ausdruck und sperren eine IP, die die Anzahl im Zeitfenster erreicht. Vorlagen gibt es für SSH, Dropbear, Nginx, Vaultwarden, Home Assistant, Proxmox VE und weitere; im Editor lassen sich Beispielzeilen einfügen, um die Filter zu testen;
 - **Gately-Ereignisse**: fehlgeschlagene Anmeldungen an der Oberfläche und WAF-Blockierungen und abgelehnte [Port-Knocking](/de/docs/modules/knock)-Knocks können ebenfalls eine Regel speisen, ganz ohne regulären Ausdruck;
 - **Web-Pfadsondierung**: zählt direkt die vom Webdienst verarbeiteten Anfragen nach Listener, Pfad und Statuscode, ganz ohne Protokolle; Quellen, die Köderpfade wie `/.env` oder `/.git` abfragen oder immer wieder unbekannte Domains scannen, werden gesperrt;
+- **TLS-Handshake-Fehler**: zählt Handshake-Fehler auf den HTTPS-Listenern des Webdienstes nach Fehlertyp (Abbruch mitten im Handshake, Zurücksetzen, Zeitüberschreitung, kein TLS oder Protokollfehler, nicht aushandelbar, unbekannte Domain u. a.), Listener und Anzahl; fängt Scans ab, die im Handshake abbrechen und nie eine HTTP-Anfrage senden;
 - **Köderports**: Köder auf Ports, die dieser Host nicht nutzt (standardmäßig 23, 135, 1433, 3389, 5900, 6379 und weitere). Jede Quelle, die sich verbindet, wird gesperrt;
 - **Portscan-Erkennung**: Eine Quelle, die sich öfter als der Schwellenwert pro Minute zu geschlossenen Ports dieses Hosts verbindet, wird gesperrt;
 - **Eine Sperrliste**: Manuelle Sperren (auch CIDR-Netze und dauerhafte Sperren) und die automatischen Sperren des Webdienstes nach fehlgeschlagener Authentifizierung werden hier verwaltet. Manuelle Sperren dürfen keine Loopback-Adressen umfassen, da über diesen Rechner weitergeleitete Verbindungen alle mit dieser Adresse erscheinen. Sperren werden gespeichert und nach einem Neustart wiederhergestellt;
@@ -59,6 +60,7 @@ Ohne diese Berechtigung gelten Sperren weiterhin für Gatelys eigene Dienste. Um
 | Docker-Container | Containername | Gelesen über die Docker-Verbindung des Docker-Moduls |
 | Gately-Ereignis | Fehlgeschlagene Anmeldung / WAF-Blockierung / abgelehnter Knock | Ereignisse enthalten die Quell-IP, kein Filter nötig |
 | Web-Pfadsondierung | Listener (optional) und Pfadregeln | Zählt Anfragen des Webdienstes, siehe unten |
+| TLS-Handshake-Fehler | Listener (optional) und Fehlertypen | Zählt Handshake-Fehler auf den HTTPS-Listenern des Webdienstes, siehe unten |
 
 Filter sind reguläre Ausdrücke in Go (RE2-Syntax), einer pro Zeile; `<HOST>` steht für die Quelladresse, zum Beispiel:
 
@@ -98,6 +100,33 @@ Egal welcher Listener auslöst: Die Sperre landet in derselben Sperrliste und gi
 :::
 
 Die Quelladresse ist dieselbe wie im Zugriffsprotokoll und wird nur über das PROXY-Protokoll wiederhergestellt. Bei Sites hinter einem CDN, das die echte IP in einem Header übergibt, würde der CDN-Knoten gesperrt – auf solchen Listenern keine Pfadsondierung verwenden. Sitzt Gately hinter einem anderen Reverse Proxy auf demselben Host, ist die Quelle eine Loopback-Adresse: Mit „LAN-Adressen ignorieren“ wird sie nie gesperrt, und die Regel bleibt wirkungslos.
+
+## TLS-Handshake-Fehler
+
+Mit der Quelle „TLS-Handshake-Fehler“ zählt eine Regel TLS-Handshake-Fehler auf den HTTPS-Listenern des Webdienstes. Sonden, die mitten im Handshake abbrechen, senden nie eine HTTP-Anfrage; die „Web-Pfaderkennung“ sieht sie nicht, diese Quelle übernimmt sie:
+
+- **Listener**: einen oder mehrere wählen; leer bedeutet alle.
+- **Fehlertypen**: mindestens einen wählen; nur angehakte Typen werden gezählt:
+
+| Typ | Bedeutung |
+| --- | --- |
+| Abbruch mitten im Handshake (EOF) | Die Gegenseite verbindet sich und schließt, oder bricht mitten im Handshake ab. Häufig bei Port-Scans; auch Browser-Preconnects |
+| Verbindung zurückgesetzt | Die Gegenseite hat die Verbindung zurückgesetzt (connection reset, broken pipe) |
+| Handshake-Zeitüberschreitung | Die Gegenseite verbindet sich, schließt den Handshake aber nie ab |
+| Kein TLS / Protokollfehler | Die Gegenseite sendet unverschlüsseltes HTTP, SSLv2, Datenmüll oder eine zu alte Protokollversion. Normale Browser tun das nie |
+| Parameter nicht aushandelbar | Keine gemeinsame Cipher-Suite, kein gemeinsamer Schlüsselaustausch, keine Kurve oder kein Anwendungsprotokoll |
+| Unbekannte Domain (kein Zertifikat) | Die angefragte Domain gehört zu keiner Site. Eine Site mit eingetragener Domain, aber ohne Zertifikat ist ein Konfigurationsproblem und wird nicht gezählt |
+| Client abgebrochen (TLS-Alert) | Die Gegenseite bricht mit einem TLS-Alert ab, z. B. weil sie dem Zertifikat nicht vertraut. Meist deren eigene Einstellung; zum Sperren nicht empfohlen |
+| Sonstige | Fehler, die zu keinem der obigen Typen passen |
+
+Jeder Handshake-Fehler zählt, unabhängig von der Protokoll-Drosselung. Die Quelladresse ist bereits über vertrauenswürdige Proxys und das PROXY-Protokoll wiederhergestellt, Adressen der Zulassungsliste werden nicht gezählt und bereits gesperrte Adressen sammeln nichts mehr an. Im Regeleditor lässt sich ein Handshake-Fehlergrund (der englische Grund nach „TLS-Handshake fehlgeschlagen“ im Protokoll) einfügen, um den zugehörigen Typ zu prüfen.
+
+Zwei Vorlagen sind eingebaut:
+
+| Vorlage | Bedingung | Hinweise |
+| --- | --- | --- |
+| TLS-Handshake ungewöhnlich | Kein TLS / Protokollfehler, nicht aushandelbar, 5 Mal in 1 Minute | Sperrt 1 Tag. Normale Browser verursachen diese Fehler nie |
+| TLS-Handshake abgebrochen | Abbruch mitten im Handshake, Zurücksetzen, Zeitüberschreitung, 20 Mal in 1 Minute | Verwendet die Standard-Sperrdauer. Browser-Preconnects und instabile Netze verursachen das ebenfalls; die Anzahl nicht senken |
 
 ## Abwägungen bei der Portscan-Erkennung
 
