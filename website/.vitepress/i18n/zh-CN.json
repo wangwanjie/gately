@@ -84,8 +84,8 @@
   "home": {
     "pill": "开源免费 · Apache-2.0",
     "announce": {
-      "text": "v0.6.6 发布：安全加固、退出所有设备、出站请求限制、分路径去掉前缀与访客源端口 →",
-      "link": "/news/v0.6.6"
+      "text": "v0.6.6.2 发布：EasyTier 组网、TLS 握手失败封禁、新地址登录提醒 →",
+      "link": "/news/v0.6.6.2"
     },
     "titleLine1": "一站式网络网关",
     "titleLine2": "开源透明，开箱即用",
