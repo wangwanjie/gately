@@ -112,3 +112,36 @@ func TestServerErrorLogKeepsFields(t *testing.T) {
 		}
 	}
 }
+
+func TestParseTLSFailure(t *testing.T) {
+	for msg, want := range map[string][3]string{
+		"http: TLS handshake error from 1.2.3.4:5678: EOF":                                                           {"1.2.3.4:5678", "EOF", "ok"},
+		"http: TLS handshake error from [2001:db8::1]:443: tls: no cipher suite supported by both client and server": {"[2001:db8::1]:443", "tls: no cipher suite supported by both client and server", "ok"},
+		"http: TLS handshake error from 1.2.3.4:5: read tcp 10.0.0.1:443->1.2.3.4:5: i/o timeout":                    {"1.2.3.4:5", "read tcp 10.0.0.1:443->1.2.3.4:5: i/o timeout", "ok"},
+		"http: Accept error: too many open files":                                                                    {"", "", ""},
+		"http: TLS handshake error from nocolon":                                                                     {"", "", ""},
+	} {
+		addr, reason, ok := parseTLSFailure(msg)
+		got := [3]string{addr, reason, ""}
+		if ok {
+			got[2] = "ok"
+		}
+		if got != want {
+			t.Errorf("%q 解析为 %v，期望 %v", msg, got, want)
+		}
+	}
+}
+
+// TestServerErrorLogHook 验证每次握手失败都调用回调（不受节流影响），其他错误日志不调用。
+func TestServerErrorLogHook(t *testing.T) {
+	buf := New(100, nil)
+	var calls []string
+	lg := buf.Logger("t").ServerErrorLogHook(nil, func(addr, reason string) { calls = append(calls, addr+"|"+reason) })
+	for i := 0; i < 5; i++ {
+		lg.Printf("http: TLS handshake error from %s: %v", "1.2.3.4:9", "EOF")
+	}
+	lg.Printf("http: Accept error: boom")
+	if len(calls) != 5 || calls[0] != "1.2.3.4:9|EOF" {
+		t.Fatalf("回调次数或内容不符: %v", calls)
+	}
+}

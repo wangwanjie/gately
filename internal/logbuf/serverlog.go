@@ -24,7 +24,13 @@ func (l *Logger) ServerErrorLog() *log.Logger {
 // ServerErrorLogWith 与 ServerErrorLog 相同，另由 isNoise 判断某个 TLS 握手失败原因是否只是访客侧噪声
 // （例如扫描器用不属于任何站点的域名握手），返回 true 时按调试级别记录。isNoise 可为 nil。
 func (l *Logger) ServerErrorLogWith(isNoise func(reason string) bool) *log.Logger {
-	return log.New(&serverLogWriter{l: l, seen: map[string]*throttleState{}, isNoise: isNoise}, "", 0)
+	return l.ServerErrorLogHook(isNoise, nil)
+}
+
+// ServerErrorLogHook 与 ServerErrorLogWith 相同，另在每次 TLS 握手失败时调用 onTLS（addr 为 net/http 日志中的
+// 来源地址，reason 为失败原因）。回调在记录日志之前、不受节流影响地同步调用，每次失败一次，须尽快返回。onTLS 可为 nil。
+func (l *Logger) ServerErrorLogHook(isNoise func(reason string) bool, onTLS func(addr, reason string)) *log.Logger {
+	return log.New(&serverLogWriter{l: l, seen: map[string]*throttleState{}, isNoise: isNoise, onTLS: onTLS}, "", 0)
 }
 
 type throttleState struct {
@@ -38,10 +44,17 @@ type serverLogWriter struct {
 	seen map[string]*throttleState
 	// isNoise 为调用方提供的额外噪声判断，见 ServerErrorLogWith
 	isNoise func(reason string) bool
+	// onTLS 为 TLS 握手失败的回调，见 ServerErrorLogHook
+	onTLS func(addr, reason string)
 }
 
 func (w *serverLogWriter) Write(p []byte) (int, error) {
 	msg := strings.TrimSpace(string(p))
+	if w.onTLS != nil {
+		if addr, reason, ok := parseTLSFailure(msg); ok {
+			w.onTLS(addr, reason)
+		}
+	}
 	level, text, key := classifyServerLog(msg)
 	if level == LevelWarn && w.isNoise != nil && strings.HasPrefix(key, "tls:") && w.isNoise(strings.TrimPrefix(key, "tls:")) {
 		// 调用方判定的噪声（如不属于任何站点的 SNI）原因各不相同，统一按一个键节流，避免随机域名撑满节流表
@@ -74,6 +87,20 @@ func (w *serverLogWriter) Write(p []byte) (int, error) {
 	w.mu.Unlock()
 	w.l.buf.AddFields(level, w.l.source, text, w.l.fields)
 	return len(p), nil
+}
+
+// parseTLSFailure 取出 net/http 握手失败日志中的来源地址与原因，不是握手失败日志时 ok 为 false。
+func parseTLSFailure(msg string) (addr, reason string, ok bool) {
+	rest, ok := strings.CutPrefix(msg, "http: TLS handshake error from ")
+	if !ok {
+		return "", "", false
+	}
+	// 格式为 "<地址>: <原因>"，IPv6 地址带方括号，按第一个 ": " 切分即可
+	addr, reason, ok = strings.Cut(rest, ": ")
+	if !ok {
+		return "", "", false
+	}
+	return addr, reason, true
 }
 
 // classifyServerLog 解析 net/http 的错误日志，返回级别、展示文本与节流键。
