@@ -106,7 +106,8 @@ func (m *Module) handleLogin(w http.ResponseWriter, r *http.Request, key string)
 		}
 	case "NewProxy":
 		// 只记录 TCP 代理申请的远程端口，不改变也不拒绝代理；登录已通过令牌与来源检查
-		if req.Content.ProxyType == "tcp" && m.hasServer(key) {
+		// 只有运行中的实例会学习（见 learnProxyPort），已删除或伪造的实例 key 找不到学习状态
+		if req.Content.ProxyType == "tcp" {
 			m.learnProxyPort(key, req.Content.RemotePort)
 		}
 	}
@@ -214,5 +215,5 @@ type accessState struct {
 	rejected sync.Map
 	// learned 为各实例 frpc 申请过的 TCP 代理远程端口（实例 key -> 端口集合），由 learnMu 保护，见 learnProxyPort
 	learnMu sync.Mutex
-	learned map[string]map[int]bool
+	learned map[string]*learnState
 }

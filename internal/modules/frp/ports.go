@@ -47,60 +47,97 @@ func serverOpenRanges(s ServerSettings) []openports.Range {
 	return out
 }
 
+// learnState 为运行中的 frps 实例学习代理端口所需的状态。
+type learnState struct {
+	// allow 为实例的 allowPorts 范围，为空表示 frps 不限制远程端口
+	allow []PortRange
+	// ports 为 frpc 申请过的 TCP 代理远程端口
+	ports map[int]bool
+}
+
+// allows 判断端口是否在 allowPorts 范围内。frps 在校验 allowPorts 之前调用插件，
+// 范围外的申请随后会被 frps 拒绝，不能登记，否则持有令牌的客户端可以让扫描检测对任意端口失效。
+func (st *learnState) allows(port int) bool {
+	if len(st.allow) == 0 {
+		return true
+	}
+	for _, r := range st.allow {
+		if r.Start <= port && port <= r.End {
+			return true
+		}
+	}
+	return false
+}
+
 // publishServerPorts 在 frps 实例运行时登记它的固定端口，停用时撤销登记。
 func (m *Module) publishServerPorts(key string, s ServerSettings, running bool) {
 	if !running {
 		m.clearServerPorts(key)
 		return
 	}
+	m.armLearn(key, s)
 	openports.Set(serverOwner(key), openports.Entry{Ranges: serverOpenRanges(s)})
 }
 
+// armLearn 允许实例 key 学习代理端口，在启动 frps 之前调用，避免 frpc 抢在登记之前申请的端口被漏掉。
+// 实例已在学习时只更新 allowPorts，并忘记不再允许的端口。
+func (m *Module) armLearn(key string, s ServerSettings) {
+	allow, _ := ParseAllowPorts(s.AllowPorts)
+	m.learnMu.Lock()
+	defer m.learnMu.Unlock()
+	if m.learned == nil {
+		m.learned = map[string]*learnState{}
+	}
+	st := m.learned[key]
+	if st == nil {
+		m.learned[key] = &learnState{allow: allow, ports: map[int]bool{}}
+		return
+	}
+	st.allow = allow
+	changed := false
+	for p := range st.ports {
+		if !st.allows(p) {
+			delete(st.ports, p)
+			changed = true
+		}
+	}
+	if changed {
+		openports.SetPorts(proxyOwner(key), sortedPorts(st.ports))
+	}
+}
+
 // clearServerPorts 撤销 frps 实例登记的全部端口，并忘记它的代理端口。
+// 在 learnMu 内删除状态并撤销登记：停止时仍在处理的 NewProxy 请求拿到锁后找不到状态，不会把端口重新登记回去。
 func (m *Module) clearServerPorts(key string) {
 	openports.Clear(serverOwner(key))
 	m.learnMu.Lock()
 	delete(m.learned, key)
-	m.learnMu.Unlock()
 	openports.Clear(proxyOwner(key))
+	m.learnMu.Unlock()
 }
 
 // learnProxyPort 记住 frpc 在实例 key 上申请的 TCP 代理远程端口，并立即登记为开放端口。
 // 端口随 frpc 的登录与断线反复开关：登记后即使 frpc 掉线、frps 暂时关闭监听，
-// 家里客户端重连这些端口时不会被扫描检测当成未开放端口。实例停止或删除时忘记。
+// 家里客户端重连这些端口时不会被扫描检测当成未开放端口。只有运行中的实例会学习，实例停止或删除时忘记。
 func (m *Module) learnProxyPort(key string, port int) {
 	if !validPort(port) {
 		return
 	}
 	m.learnMu.Lock()
-	set := m.learned[key]
-	if set == nil {
-		if m.learned == nil {
-			m.learned = map[string]map[int]bool{}
-		}
-		set = map[int]bool{}
-		m.learned[key] = set
-	}
-	if set[port] || len(set) >= maxLearnedPorts {
-		m.learnMu.Unlock()
+	defer m.learnMu.Unlock()
+	st := m.learned[key]
+	if st == nil || st.ports[port] || len(st.ports) >= maxLearnedPorts || !st.allows(port) {
 		return
 	}
-	set[port] = true
+	st.ports[port] = true
+	openports.SetPorts(proxyOwner(key), sortedPorts(st.ports))
+}
+
+func sortedPorts(set map[int]bool) []int {
 	list := make([]int, 0, len(set))
 	for p := range set {
 		list = append(list, p)
 	}
-	m.learnMu.Unlock()
 	sort.Ints(list)
-	openports.SetPorts(proxyOwner(key), list)
-}
-
-// hasServer 判断 key 是否为当前存在的 frps 实例（读访问控制快照，不获取模块锁）。
-func (m *Module) hasServer(key string) bool {
-	rules := m.access.Load()
-	if rules == nil {
-		return false
-	}
-	_, ok := (*rules)[key]
-	return ok
+	return list
 }
