@@ -75,7 +75,8 @@
     "command": "Befehlsausgabe",
     "docker": "Docker-Container",
     "event": "Gately-Ereignis",
-    "web": "Web-Pfadsondierung"
+    "web": "Web-Pfadsondierung",
+    "tls": "TLS-Handshake-Fehler"
   },
   "target": {
     "file": "Dateipfad",
@@ -83,7 +84,8 @@
     "command": "Befehl",
     "docker": "Container",
     "event": "Ereignis",
-    "web": "Listener"
+    "web": "Listener",
+    "tls": "Listener"
   },
   "event": {
     "authFailed": "Fehlgeschlagene Anmeldung an der Oberfläche",
@@ -98,7 +100,8 @@
     "command": "Führt einen Befehl aus, der fortlaufend Protokollzeilen ausgibt, und liest seine Ausgabe, z. B. logread -f unter OpenWrt. Der Befehl wird nach dem Beenden neu gestartet.",
     "docker": "Liest das Protokoll des Containers. Das Docker-Modul muss Docker erreichen können.",
     "event": "Zählt Gatelys eigene Ereignisse, die die Quell-IP enthalten. Kein Filter nötig.",
-    "web": "Zählt die vom Webdienst verarbeiteten Anfragen nach Listener, Pfad und Statuscode, ganz ohne Protokolle zu lesen. Egal welcher Listener auslöst: Die Sperre gilt für alle Sites und die Systemfirewall."
+    "web": "Zählt die vom Webdienst verarbeiteten Anfragen nach Listener, Pfad und Statuscode, ganz ohne Protokolle zu lesen. Egal welcher Listener auslöst: Die Sperre gilt für alle Sites und die Systemfirewall.",
+    "tls": "Zählt TLS-Handshake-Fehler auf den HTTPS-Listenern des Webdienstes nach Fehlertyp, Listener und Anzahl. Sonden, die mitten im Handshake abbrechen, senden nie eine HTTP-Anfrage; die Pfaderkennung sieht sie nicht. Die Sperre gilt für alle Sites und die System-Firewall."
   },
   "jail": {
     "intro": "Findet Fehlschläge in Protokollen. Eine IP, die die Anzahl im Zeitfenster erreicht, wird gesperrt.",
@@ -152,7 +155,12 @@
     "morePaths": "{n} weitere",
     "testPaths": "Anfragepfade",
     "testPathsPlaceholder": "Ein Pfad pro Zeile, etwa /.env. Getestet werden nur die Pfadregeln",
-    "testHit": "Treffer"
+    "testHit": "Treffer",
+    "tlsKinds": "Fehlertypen",
+    "tlsKindsHelp": "Die zu zählenden Fehlertypen auswählen, mindestens einen. Auch Browser-Preconnects und Mobilfunk-Wechsel verursachen „Abbruch mitten im Handshake“, daher die Anzahl großzügig wählen.",
+    "withinTls": "Handshake-Fehler innerhalb",
+    "testReasons": "Fehlergründe",
+    "testReasonsPlaceholder": "Ein Handshake-Fehlergrund pro Zeile, z. B. EOF oder tls: first record does not look like a TLS handshake; getestet wird nur der Typ"
   },
   "trap": {
     "title": "Köderports",
@@ -245,6 +253,34 @@
     "web-404": {
       "name": "Web-404-Sondierung",
       "desc": "Sperrt nach 10 Anfragen an nicht vorhandene Pfade (404 oder 444) innerhalb 1 Minute; gängige Pfade wie favicon und robots.txt sind ausgenommen"
+    },
+    "tls-probe": {
+      "name": "TLS-Handshake ungewöhnlich",
+      "desc": "Quellen, die unverschlüsseltes HTTP, eine zu alte Protokollversion oder nicht aushandelbare Parameter senden, werden nach 5 Mal in 1 Minute gesperrt. Normale Browser verursachen das nie"
+    },
+    "tls-abort": {
+      "name": "TLS-Handshake abgebrochen",
+      "desc": "Abgebrochene, zurückgesetzte oder zeitüberschrittene Handshakes werden nach 20 Mal in 1 Minute gesperrt. Browser-Preconnects und instabile Netze verursachen das ebenfalls; die Anzahl nicht senken"
     }
+  },
+  "tlsKind": {
+    "eof": "Abbruch mitten im Handshake (EOF)",
+    "reset": "Verbindung zurückgesetzt",
+    "timeout": "Handshake-Zeitüberschreitung",
+    "protocol": "Kein TLS / Protokollfehler",
+    "negotiation": "Parameter nicht aushandelbar",
+    "nocert": "Unbekannte Domain (kein Zertifikat)",
+    "alert": "Client abgebrochen (TLS-Alert)",
+    "other": "Sonstige"
+  },
+  "tlsKindHelp": {
+    "eof": "Die Gegenseite verbindet sich und schließt, oder bricht mitten im Handshake ab. Häufig bei Port-Scans; auch Browser-Preconnects.",
+    "reset": "Die Gegenseite hat die Verbindung zurückgesetzt (connection reset, broken pipe).",
+    "timeout": "Die Gegenseite verbindet sich, schließt den Handshake aber nie ab.",
+    "protocol": "Die Gegenseite sendet unverschlüsseltes HTTP, SSLv2, Datenmüll oder eine zu alte Protokollversion. Normale Browser tun das nie.",
+    "negotiation": "Keine gemeinsame Cipher-Suite, kein gemeinsamer Schlüsselaustausch, keine Kurve oder kein Anwendungsprotokoll.",
+    "nocert": "Die angefragte Domain gehört zu keiner Site (kein Zertifikat). Eine Site mit eingetragener Domain, aber ohne Zertifikat ist ein Konfigurationsproblem und wird nicht gezählt.",
+    "alert": "Die Gegenseite bricht mit einem TLS-Alert ab, z. B. weil sie dem Zertifikat nicht vertraut. Meist deren eigene Einstellung; zum Sperren nicht empfohlen.",
+    "other": "Fehler, die zu keinem der obigen Typen passen."
   }
 }

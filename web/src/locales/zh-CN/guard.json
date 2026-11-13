@@ -75,7 +75,8 @@
     "command": "命令输出",
     "docker": "Docker 容器",
     "event": "Gately 事件",
-    "web": "Web 路径探测"
+    "web": "Web 路径探测",
+    "tls": "TLS 握手失败"
   },
   "target": {
     "file": "文件路径",
@@ -83,7 +84,8 @@
     "command": "命令",
     "docker": "容器名",
     "event": "事件",
-    "web": "监听"
+    "web": "监听",
+    "tls": "监听"
   },
   "event": {
     "authFailed": "管理后台登录失败",
@@ -98,7 +100,8 @@
     "command": "运行一条持续输出日志的命令并读取其输出，例如 OpenWrt 的 logread -f；命令退出后自动重启。",
     "docker": "读取指定容器的日志，需要 Docker 管理模块能连接 Docker。",
     "event": "统计 Gately 自身的事件，事件中带有来源 IP，不需要填写过滤规则。",
-    "web": "统计 Web 服务处理的请求，按监听、路径与状态码计数，不需要读取日志。无论哪个监听触发，封禁都对全部站点与系统防火墙生效。"
+    "web": "统计 Web 服务处理的请求，按监听、路径与状态码计数，不需要读取日志。无论哪个监听触发，封禁都对全部站点与系统防火墙生效。",
+    "tls": "统计 Web 服务 HTTPS 监听上的 TLS 握手失败，按失败类型、监听与次数封禁。握手阶段就断开的探测不会产生 HTTP 请求，路径探测统计不到。封禁对全部站点与系统防火墙生效。"
   },
   "jail": {
     "intro": "从日志中识别失败记录，同一 IP 在统计窗口内达到次数即被封禁。",
@@ -152,7 +155,12 @@
     "morePaths": "另外 {n} 条",
     "testPaths": "请求路径",
     "testPathsPlaceholder": "每行一个路径，例如 /.env；只测试路径规则",
-    "testHit": "命中"
+    "testHit": "命中",
+    "tlsKinds": "握手失败类型",
+    "tlsKindsHelp": "勾选要统计的失败类型，至少选一种。浏览器预连接、手机网络切换也会产生「握手中途断开」，这类规则的次数宜设得宽松。",
+    "withinTls": "内握手失败",
+    "testReasons": "失败原因",
+    "testReasonsPlaceholder": "每行一条握手失败原因，例如 EOF、tls: first record does not look like a TLS handshake；只测试类型"
   },
   "trap": {
     "title": "诱饵端口",
@@ -245,6 +253,34 @@
     "web-404": {
       "name": "Web 404 探测",
       "desc": "1 分钟内 10 次访问不存在的路径（404 或 444）即封禁，已排除 favicon、robots.txt 等常见路径"
+    },
+    "tls-probe": {
+      "name": "TLS 异常握手",
+      "desc": "发送明文 HTTP、过低协议版本或无法协商参数的来源，1 分钟内 5 次即封禁，正常浏览器不会产生这类失败"
+    },
+    "tls-abort": {
+      "name": "TLS 握手中断",
+      "desc": "握手中途断开、被重置或超时，1 分钟内 20 次即封禁；浏览器预连接与不稳定的网络也会产生这类失败，次数不宜调低"
     }
+  },
+  "tlsKind": {
+    "eof": "握手中途断开（EOF）",
+    "reset": "连接被重置",
+    "timeout": "握手超时",
+    "protocol": "非 TLS 或协议错误",
+    "negotiation": "无法协商参数",
+    "nocert": "未知域名（无证书）",
+    "alert": "客户端中止（TLS 警报）",
+    "other": "其他"
+  },
+  "tlsKindHelp": {
+    "eof": "对端连上后直接关闭或握手中途断开，端口探测常见；浏览器预连接也会出现。",
+    "reset": "对端重置了连接（connection reset、broken pipe）。",
+    "timeout": "对端连上后迟迟不完成握手。",
+    "protocol": "对端发来明文 HTTP、SSLv2、乱码或过低的协议版本，正常浏览器不会出现。",
+    "negotiation": "双方没有共同的加密套件、密钥交换、曲线或应用层协议。",
+    "nocert": "请求的域名不属于任何站点（没有证书）。站点里明确填写了域名却缺证书属于配置问题，不会计入。",
+    "alert": "对端发来 TLS 警报后中止，例如不信任本机证书；多半是客户端自身设置，不建议用来封禁。",
+    "other": "不属于以上任何类别的失败。"
   }
 }
