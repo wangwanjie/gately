@@ -299,6 +299,16 @@ func (s *Options) Validate() error {
 	if _, err := parseEnv(s.Env); err != nil {
 		return err
 	}
+	for _, a := range strings.Fields(s.ExtraArgs) {
+		// 写在附加参数里的密钥会出现在进程命令行中，本机任何用户都能用 ps 看到
+		if a == "--network-secret" || strings.HasPrefix(a, "--network-secret=") {
+			return errors.New("网络密钥请填写在「网络密钥」中，不要写在附加参数里")
+		}
+	}
+	// 没有密钥时，知道组网名称的人就能加入组网；共享本地网段或作为出口节点会把局域网与本机出口交给他们
+	if s.NetworkSecret == "" && (s.ProxyNetworks != "" || s.EnableExitNode) {
+		return errors.New("共享本地网段或允许作为出口节点时必须设置网络密钥")
+	}
 	return nil
 }
 
