@@ -18,6 +18,7 @@ import (
 	"github.com/wangwanjie/gately/internal/config"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
+	"github.com/wangwanjie/gately/internal/openports"
 )
 
 type testRouter struct{ mux *http.ServeMux }
@@ -410,12 +411,19 @@ func TestAPI(t *testing.T) {
 	if cs["networkSecret"] != "s3cret" {
 		t.Errorf("复制应沿用密钥: %v", cs)
 	}
+	if !coversPort(11010) {
+		t.Error("运行中的实例应登记 TCP 监听端口")
+	}
 	// 删除只停止被删的实例
 	pb = pidOf(m, vb.Key)
 	if code := doJSON(t, "DELETE", base+"/"+va.Key, nil, nil); code != 200 {
 		t.Fatalf("删除失败: %d", code)
 	}
 	waitFor(t, "a 停止", func() bool { return runOf(m, va.Key) == nil })
+	// 删除后撤销 a 登记的开放端口（11010），b 没有监听不受影响
+	if coversPort(11010) {
+		t.Error("删除实例后应撤销开放端口登记")
+	}
 	if pidOf(m, vb.Key) != pb {
 		t.Error("删除 a 不应重启 b")
 	}
@@ -565,4 +573,15 @@ func TestExitedShown(t *testing.T) {
 	if v := m.queryStatus("a"); !strings.Contains(v.Error, "exit status 2") || v.Status != "stopped" {
 		t.Errorf("状态应带退出原因: %+v", v)
 	}
+}
+
+// coversPort 判断端口是否已登记为开放端口
+func coversPort(port int) bool {
+	all, _ := openports.All()
+	for _, r := range all {
+		if r.Lo <= port && port <= r.Hi {
+			return true
+		}
+	}
+	return false
 }
