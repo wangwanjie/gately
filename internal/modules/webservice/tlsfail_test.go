@@ -114,3 +114,27 @@ func TestTLSFailureNoHandler(t *testing.T) {
 	}
 	waitLog(t, logs, "HTTP request to an HTTPS server")
 }
+
+// TestTLSFailureSkipsTrustedProxy 验证对端为可信代理（CDN 回源节点）时握手失败不上报，
+// 避免别人借 CDN 制造握手失败把代理封掉；其他来源照常上报。
+func TestTLSFailureSkipsTrustedProxy(t *testing.T) {
+	rec := &tlsFailRecorder{}
+	webprobe.SetTLSHandler(rec.add)
+	defer webprobe.SetTLSHandler(nil)
+
+	src := &realIPSource{}
+	src.set([]string{"203.0.113.0/24"}, nil, "")
+	l := &listenerRunner{key: "web1", realIP: src}
+	l.reportTLSFail("203.0.113.7:4433", "EOF")
+	l.reportTLSFail("[::ffff:203.0.113.8]:4433", "EOF")
+	l.reportTLSFail("198.51.100.9:4433", "EOF")
+	if len(rec.got) != 1 || rec.got[0].Addr.String() != "198.51.100.9" || rec.got[0].Listener != "web1" {
+		t.Fatalf("可信代理不应上报，其他来源应上报一次: %+v", rec.got)
+	}
+	// 未启用可信代理时全部上报
+	l.realIP = &realIPSource{}
+	l.reportTLSFail("203.0.113.7:4433", "EOF")
+	if len(rec.got) != 2 {
+		t.Fatalf("未启用可信代理时应照常上报: %+v", rec.got)
+	}
+}

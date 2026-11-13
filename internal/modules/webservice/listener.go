@@ -334,6 +334,11 @@ func (l *listenerRunner) reportTLSFail(addr, reason string) {
 	if err != nil {
 		return
 	}
+	// 对端是可信代理（CDN / WAF 回源节点）时，握手阶段拿不到访客的真实地址，计数只会落到代理身上。
+	// 别人可以把自己的 CDN 指向本机并制造握手失败，借此封掉代理、让经它访问的站点全部中断，所以不上报
+	if l.realIP.trustsPeer(ap.Addr().Unmap()) {
+		return
+	}
 	kind := webprobe.ClassifyTLS(reason)
 	if _, ok := parseNoCert(reason); ok {
 		// 站点明确填写了该域名却没有证书是配置问题，不能算访客的错
