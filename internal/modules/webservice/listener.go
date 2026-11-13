@@ -325,15 +325,44 @@ func buildSiteTable(cfg Listener, log *logbuf.Logger, auth *authenticator, waf W
 	return t, nil
 }
 
+// reportTLSFail 把一次 TLS 握手失败交给入侵防护。没有规则时只有一次原子读取的开销。
+func (l *listenerRunner) reportTLSFail(addr, reason string) {
+	if !webprobe.TLSEnabled() {
+		return
+	}
+	ap, err := netip.ParseAddrPort(addr)
+	if err != nil {
+		return
+	}
+	kind := webprobe.ClassifyTLS(reason)
+	if _, ok := parseNoCert(reason); ok {
+		// 站点明确填写了该域名却没有证书是配置问题，不能算访客的错
+		kind = webprobe.TLSOther
+		if l.isUnservedCertError(reason) {
+			kind = webprobe.TLSNoCert
+		}
+	}
+	webprobe.ReportTLS(webprobe.TLSFail{Addr: ap.Addr().Unmap(), Listener: l.key, Kind: kind, Reason: reason})
+}
+
+// noCertFormat 是证书模块缺少证书的错误格式，见 internal/modules/ssl/module.go 的 GetCertificate。
+// 直接复用它的格式串，不会引入新的待翻译片段。
+const noCertFormat = "没有匹配 %q 的证书"
+
+// parseNoCert 解析缺少证书的错误句并返回请求的域名；按同一格式拼回比对，确保整句完全一致（不接受前后多出内容）。
+func parseNoCert(reason string) (name string, ok bool) {
+	if _, err := fmt.Sscanf(reason, noCertFormat, &name); err != nil || fmt.Sprintf(noCertFormat, name) != reason {
+		return "", false
+	}
+	return name, true
+}
+
 // isUnservedCertError 判断握手失败原因是否为访客请求了本监听器不提供的域名而缺少证书。
 // 证书模块的错误格式为「没有匹配 %q 的证书」（见 internal/modules/ssl/module.go 的 GetCertificate）。
 // 不带 SNI、用 IP 或别人的域名握手多为公网扫描，与配置无关；站点中填写了该域名却没有证书时仍是配置问题，返回 false。
 func (l *listenerRunner) isUnservedCertError(reason string) bool {
-	// 直接复用证书模块的格式串解析，它已是翻译键，不会引入新的待翻译片段；
-	// 再按同一格式拼回比对，确保整句完全一致（不接受前后多出内容）
-	const noCertFormat = "没有匹配 %q 的证书"
-	var name string
-	if _, err := fmt.Sscanf(reason, noCertFormat, &name); err != nil || fmt.Sprintf(noCertFormat, name) != reason {
+	name, ok := parseNoCert(reason)
+	if !ok {
 		return false
 	}
 	return !l.current().servesSNI(name)
@@ -452,7 +481,8 @@ func (l *listenerRunner) start(certs CertSource, trusted []string) (err error) {
 		},
 		// net/http 内部错误（TLS 握手失败、缺少证书等）写入本监听器的运行日志；
 		// 扫描器用不属于任何站点的域名握手导致的缺少证书只记调试级别，见 isUnservedCertError
-		ErrorLog: l.log.ServerErrorLogWith(l.isUnservedCertError),
+		// 每次握手失败另交给入侵防护按原因类别计数封禁
+		ErrorLog: l.log.ServerErrorLogHook(l.isUnservedCertError, l.reportTLSFail),
 	}
 	if l.cfg.TLS {
 		if certs == nil {
