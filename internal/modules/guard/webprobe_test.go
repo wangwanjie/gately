@@ -1,6 +1,9 @@
 package guard
 
 import (
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"net/netip"
 	"strings"
 	"testing"
@@ -193,4 +196,173 @@ func TestWebJailBans(t *testing.T) {
 	if banlist.Default.Banned(netip.MustParseAddr("198.51.100.5")) {
 		t.Fatal("模块停止后不应再计数")
 	}
+}
+
+func TestTLSJailValidate(t *testing.T) {
+	j := Jail{Name: "tls", Source: SourceTLS, Target: " l1 \n", Filter: "reset\neof\nreset", Ignore: "x", AnyStatus: true}
+	if err := j.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	// 类别去重并按固定顺序保存，不使用的字段被清空
+	if j.Filter != "eof\nreset" || j.Target != "l1" || j.Ignore != "" || j.AnyStatus || j.MaxRetry != defaultMaxRetry {
+		t.Fatalf("未规范化: %+v", j)
+	}
+	if err := (&Jail{Name: "none", Source: SourceTLS}).Validate(); err == nil {
+		t.Fatal("没有选择类型应校验失败，否则会把所有握手失败都算进去")
+	}
+	if err := (&Jail{Name: "bad", Source: SourceTLS, Filter: "nope"}).Validate(); err == nil {
+		t.Fatal("未知类型应校验失败")
+	}
+	if err := (&Jail{Name: "bad", Source: SourceTLS, Filter: "eof", Target: "a b"}).Validate(); err == nil {
+		t.Fatal("监听 key 含空格应校验失败")
+	}
+	if err := (&Jail{Name: "bad", Source: SourceTLS, Filter: "eof", MaxRetry: 2000}).Validate(); err == nil {
+		t.Fatal("次数超限应校验失败")
+	}
+}
+
+func TestTLSPresets(t *testing.T) {
+	for _, id := range []string{"tls-probe", "tls-abort"} {
+		found := false
+		for _, p := range Presets {
+			if p.Preset != id {
+				continue
+			}
+			found = true
+			j := p
+			if err := j.Validate(); err != nil {
+				t.Errorf("预设 %s 无法通过校验: %v", id, err)
+			}
+			tm, err := newTLSMatcher(j)
+			if err != nil {
+				t.Fatal(err)
+			}
+			hit := func(reason string) bool {
+				return tm.match(webprobe.TLSFail{Kind: webprobe.ClassifyTLS(reason), Reason: reason})
+			}
+			if id == "tls-probe" {
+				// 明文打 HTTPS、SSLv2、无法协商会计数；中途断开与客户端不信任证书不计数
+				if !hit("client sent an HTTP request to an HTTPS server") || !hit("tls: no cipher suite supported by both client and server") {
+					t.Error("异常握手预设应命中协议错误与协商失败")
+				}
+				if hit("EOF") || hit("remote error: tls: bad certificate") {
+					t.Error("异常握手预设不应命中断开与证书警报")
+				}
+			} else {
+				if !hit("EOF") || !hit("read tcp 1.1.1.1:443->2.2.2.2:5: read: connection reset by peer") {
+					t.Error("握手中断预设应命中 EOF 与重置")
+				}
+				if hit("client sent an HTTP request to an HTTPS server") {
+					t.Error("握手中断预设不应命中协议错误")
+				}
+			}
+		}
+		if !found {
+			t.Errorf("缺少预设 %s", id)
+		}
+	}
+}
+
+func TestTLSJailBans(t *testing.T) {
+	m := newTestModule(t)
+	add := func(j Jail) {
+		t.Helper()
+		if err := j.Validate(); err != nil {
+			t.Fatal(err)
+		}
+		m.mu.Lock()
+		m.cfg.Jails = append(m.cfg.Jails, j)
+		m.startJailLocked(j)
+		m.mu.Unlock()
+	}
+	add(Jail{Key: "t1", Name: "tls", Enable: true, Source: SourceTLS, Target: "l1", Filter: "eof\nreset", MaxRetry: 3, FindTime: 60})
+	fail := func(ip, listener, kind string) {
+		webprobe.ReportTLS(webprobe.TLSFail{Addr: netip.MustParseAddr(ip), Listener: listener, Kind: kind, Reason: "reason " + kind})
+	}
+	a := netip.MustParseAddr("203.0.113.20")
+	// 其他监听、未选择的类别都不计数
+	for i := 0; i < 6; i++ {
+		fail("203.0.113.20", "l2", webprobe.TLSEOF)
+		fail("203.0.113.20", "l1", webprobe.TLSProtocol)
+		fail("203.0.113.20", "l1", webprobe.TLSAlert)
+	}
+	if banlist.Default.Banned(a) {
+		t.Fatal("不符合条件的握手失败不应计数")
+	}
+	fail("203.0.113.20", "l1", webprobe.TLSEOF)
+	fail("::ffff:203.0.113.20", "l1", webprobe.TLSReset)
+	if banlist.Default.Banned(a) {
+		t.Fatal("未达到次数不应封禁")
+	}
+	fail("203.0.113.20", "l1", webprobe.TLSEOF)
+	e, ok := banlist.Default.Get("203.0.113.20")
+	if !ok || e.Source != banlist.SourceJailPrefix+"t1" || !strings.Contains(e.Reason, "TLS 握手失败") {
+		t.Fatalf("应由 TLS 规则封禁: %+v %v", e, ok)
+	}
+	// 其他地址互不影响；白名单地址不计数
+	for i := 0; i < 5; i++ {
+		fail("192.168.1.9", "l1", webprobe.TLSEOF)
+	}
+	if banlist.Default.Banned(netip.MustParseAddr("192.168.1.9")) {
+		t.Fatal("白名单地址不应被封禁")
+	}
+	// 控制字符被转义，不会伪造日志行与通知内容
+	add(Jail{Key: "t2", Name: "tls2", Enable: true, Source: SourceTLS, Filter: "nocert", MaxRetry: 1, FindTime: 60})
+	webprobe.ReportTLS(webprobe.TLSFail{Addr: netip.MustParseAddr("198.51.100.8"), Kind: webprobe.TLSNoCert, Reason: "x\nfake"})
+	e, ok = banlist.Default.Get("198.51.100.8")
+	if !ok || strings.Contains(e.Reason, "\n") {
+		t.Fatalf("原因应转义换行: %+v %v", e, ok)
+	}
+
+	// 停用后不再计数；删除后快照为空
+	m.mu.Lock()
+	m.cfg.Jails[0].Enable = false
+	m.startJailLocked(m.cfg.Jails[0])
+	m.mu.Unlock()
+	for i := 0; i < 5; i++ {
+		fail("198.51.100.3", "l1", webprobe.TLSEOF)
+	}
+	if banlist.Default.Banned(netip.MustParseAddr("198.51.100.3")) {
+		t.Fatal("停用的规则不应计数")
+	}
+	m.mu.Lock()
+	m.jailRemovedLocked("t1")
+	m.jailRemovedLocked("t2")
+	m.mu.Unlock()
+	if p := m.tlsJails.Load(); p == nil || len(*p) != 0 {
+		t.Fatal("删除规则后快照应为空")
+	}
+	// 模块停止后取消注册
+	_ = m.Stop()
+	if webprobe.TLSEnabled() {
+		t.Fatal("模块停止后应取消注册")
+	}
+}
+
+// TestTLSTestEndpoint 验证规则测试接口按类别判断握手失败原因。
+func TestTLSTestEndpoint(t *testing.T) {
+	m := newTestModule(t)
+	body, _ := json.Marshal(testRequest{Source: SourceTLS, Filter: "eof\nprotocol", Lines: "EOF\nclient sent an HTTP request to an HTTPS server\nremote error: tls: bad certificate"})
+	rec := httptest.NewRecorder()
+	m.handleTest(rec, jsonReq(body))
+	var resp []TestResult
+	if err := json.Unmarshal(rec.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("%v: %s", err, rec.Body.String())
+	}
+	if len(resp) != 3 || !resp[0].Matched || !resp[1].Matched || resp[2].Matched || resp[2].Kind != webprobe.TLSAlert {
+		t.Fatalf("测试结果不符: %+v", resp)
+	}
+	// 未知类型报 400
+	bad, _ := json.Marshal(testRequest{Source: SourceTLS, Filter: "nope", Lines: "EOF"})
+	rec = httptest.NewRecorder()
+	m.handleTest(rec, jsonReq(bad))
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("未知类型应返回 400，实际 %d", rec.Code)
+	}
+}
+
+func jsonReq(body []byte) *http.Request {
+	r := httptest.NewRequest(http.MethodPost, "/jails/test", strings.NewReader(string(body)))
+	r.Header.Set("Content-Type", "application/json")
+	return r
 }

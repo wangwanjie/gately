@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"path"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/wangwanjie/gately/internal/webprobe"
@@ -163,6 +164,7 @@ func (m *Module) refreshWebLocked() {
 		}
 	}
 	m.webJails.Store(&list)
+	m.refreshTLSLocked()
 }
 
 // onWebHit 由 Web 服务在每个请求结束时同步调用，命中路径探测规则时计数。
@@ -176,6 +178,84 @@ func (m *Module) onWebHit(h webprobe.Hit) {
 		if r.match.web.match(h) {
 			// 主机名与路径由访客控制，%q 转义换行等控制字符，避免伪造日志行与通知内容
 			r.record(a, fmt.Sprintf("%s %q %d", h.Method, h.Host+h.Path, h.Status))
+		}
+	}
+}
+
+// tlsMatcher 是编译后的 TLS 握手失败规则。
+type tlsMatcher struct {
+	// listeners 为限定的监听 key，为空表示全部监听
+	listeners map[string]bool
+	kinds     map[string]bool
+}
+
+// parseTLSKinds 解析每行一个的原因类别，未知类别报错，去重。
+func parseTLSKinds(text string) (map[string]bool, error) {
+	out := map[string]bool{}
+	for _, l := range splitLines(text) {
+		if !slices.Contains(webprobe.TLSKinds, l) {
+			return nil, fmt.Errorf("未知的握手失败类型 %q", l)
+		}
+		out[l] = true
+	}
+	return out, nil
+}
+
+// sortedKinds 按 webprobe.TLSKinds 的顺序返回已选类别，保证保存结果稳定。
+func sortedKinds(m map[string]bool) []string {
+	var out []string
+	for _, k := range webprobe.TLSKinds {
+		if m[k] {
+			out = append(out, k)
+		}
+	}
+	return out
+}
+
+func newTLSMatcher(j Jail) (*tlsMatcher, error) {
+	kinds, err := parseTLSKinds(j.Filter)
+	if err != nil {
+		return nil, err
+	}
+	t := &tlsMatcher{kinds: kinds}
+	if ls := splitLines(j.Target); len(ls) > 0 {
+		t.listeners = map[string]bool{}
+		for _, l := range ls {
+			t.listeners[l] = true
+		}
+	}
+	return t, nil
+}
+
+func (t *tlsMatcher) match(f webprobe.TLSFail) bool {
+	if t.listeners != nil && !t.listeners[f.Listener] {
+		return false
+	}
+	return t.kinds[f.Kind]
+}
+
+// refreshTLSLocked 重建 TLS 握手失败规则的快照，调用方需持有 m.mu。
+func (m *Module) refreshTLSLocked() {
+	var list []*jailRunner
+	for _, r := range m.jails {
+		if r.m != nil && r.jail.Source == SourceTLS && r.match != nil && r.match.tls != nil {
+			list = append(list, r)
+		}
+	}
+	m.tlsJails.Store(&list)
+}
+
+// onTLSFail 由 Web 服务在每次 TLS 握手失败时同步调用，命中规则时计数。
+func (m *Module) onTLSFail(f webprobe.TLSFail) {
+	p := m.tlsJails.Load()
+	if p == nil || len(*p) == 0 || !f.Addr.IsValid() {
+		return
+	}
+	a := f.Addr.Unmap()
+	for _, r := range *p {
+		if r.match.tls.match(f) {
+			// 原因文本来自对端（如 SNI 名称），%q 转义控制字符
+			r.record(a, fmt.Sprintf("%s %q", f.Kind, f.Reason))
 		}
 	}
 }

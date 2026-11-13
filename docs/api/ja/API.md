@@ -1584,6 +1584,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `host` | string |
 | `ignored` | boolean |
+| `kind` | string |
 | `line` | string |
 | `matched` | boolean |
 

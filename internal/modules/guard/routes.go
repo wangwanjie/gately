@@ -3,6 +3,7 @@ package guard
 import (
 	"context"
 	"errors"
+	"github.com/wangwanjie/gately/internal/webprobe"
 	"net/http"
 	"net/netip"
 	"os"
@@ -53,7 +54,8 @@ type banRequest struct {
 }
 
 type testRequest struct {
-	// Source 为规则来源，为 web 时 Filter、Ignore 按路径规则解析，Lines 为待测试的请求路径
+	// Source 为规则来源，为 web 时 Filter、Ignore 按路径规则解析，Lines 为待测试的请求路径；
+	// 为 tls 时 Filter 为原因类别，Lines 为握手失败原因（net/http 日志中冒号之后的部分）
 	Source string `json:"source,omitempty"`
 	Filter string `json:"filter"`
 	Ignore string `json:"ignore"`
@@ -66,6 +68,8 @@ type TestResult struct {
 	Line    string `json:"line"`
 	Matched bool   `json:"matched"`
 	Host    string `json:"host,omitempty"`
+	// Kind 为 TLS 握手失败规则测试时该原因所属的类别
+	Kind string `json:"kind,omitempty"`
 	// Ignored 为 true 表示地址在白名单中，不会计数
 	Ignored bool `json:"ignored,omitempty"`
 }
@@ -132,6 +136,10 @@ func (m *Module) handleTest(w http.ResponseWriter, r *http.Request) {
 	}
 	if req.Source == SourceWeb {
 		m.testWeb(w, req)
+		return
+	}
+	if req.Source == SourceTLS {
+		m.testTLS(w, req)
 		return
 	}
 	mt, err := newMatcher(Jail{Filter: req.Filter, Ignore: req.Ignore})
@@ -320,6 +328,25 @@ func (m *Module) testWeb(w http.ResponseWriter, req testRequest) {
 	out := make([]TestResult, 0, len(lines))
 	for _, l := range lines {
 		out = append(out, TestResult{Line: l, Matched: wm.pathMatched(l)})
+	}
+	httpx.OK(w, out)
+}
+
+// testTLS 用握手失败原因测试所选的原因类别，只比较类别，不考虑监听条件。
+func (m *Module) testTLS(w http.ResponseWriter, req testRequest) {
+	tm, err := newTLSMatcher(Jail{Filter: req.Filter})
+	if err != nil {
+		httpx.Error(w, http.StatusBadRequest, "%v", err)
+		return
+	}
+	lines := splitLines(req.Lines)
+	if len(lines) > 1000 {
+		lines = lines[:1000]
+	}
+	out := make([]TestResult, 0, len(lines))
+	for _, l := range lines {
+		kind := webprobe.ClassifyTLS(l)
+		out = append(out, TestResult{Line: l, Kind: kind, Matched: tm.kinds[kind]})
 	}
 	httpx.OK(w, out)
 }

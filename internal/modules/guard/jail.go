@@ -33,6 +33,9 @@ const (
 	// SourceWeb 统计 Web 服务的请求（路径探测），Target 为限定的监听 key，每行一个，留空表示全部监听；
 	// Filter、Ignore 为路径规则，见 compilePaths
 	SourceWeb = "web"
+	// SourceTLS 统计 Web 服务的 TLS 握手失败，Target 为限定的监听 key，每行一个，留空表示全部监听；
+	// Filter 为要统计的原因类别（webprobe.TLSKinds），每行一个，Ignore 不使用
+	SourceTLS = "tls"
 )
 
 // eventSources 是可作为规则来源的内部事件，事件中必须带有来源 IP。
@@ -149,6 +152,8 @@ func (j *Jail) Validate() error {
 		}
 	case SourceWeb:
 		return j.validateWeb()
+	case SourceTLS:
+		return j.validateTLS()
 	default:
 		return fmt.Errorf("未知的日志来源 %q", j.Source)
 	}
@@ -191,13 +196,21 @@ func (j *Jail) validateCount() error {
 	return nil
 }
 
-// validateWeb 校验 Web 路径探测规则：Target 为监听 key，Filter、Ignore 为路径规则（都可留空）。
-func (j *Jail) validateWeb() error {
+// validateListeners 规范化 Target 中的监听 key 列表（可留空表示全部监听）。
+func (j *Jail) validateListeners() error {
 	j.Target = strings.Join(splitLines(j.Target), "\n")
 	for _, l := range splitLines(j.Target) {
 		if strings.ContainsAny(l, " \t") {
 			return fmt.Errorf("监听 %q 无效", l)
 		}
+	}
+	return nil
+}
+
+// validateWeb 校验 Web 路径探测规则：Target 为监听 key，Filter、Ignore 为路径规则（都可留空）。
+func (j *Jail) validateWeb() error {
+	if err := j.validateListeners(); err != nil {
+		return err
 	}
 	if _, err := compilePaths(j.Filter); err != nil {
 		return err
@@ -214,12 +227,32 @@ func (j *Jail) validateWeb() error {
 	return j.validateCount()
 }
 
+// validateTLS 校验 TLS 握手失败规则：Target 为监听 key（可留空），Filter 为原因类别，至少选一类。
+func (j *Jail) validateTLS() error {
+	if err := j.validateListeners(); err != nil {
+		return err
+	}
+	kinds, err := parseTLSKinds(j.Filter)
+	if err != nil {
+		return err
+	}
+	if len(kinds) == 0 {
+		return errors.New("请至少选择一种握手失败类型")
+	}
+	j.Filter = strings.Join(sortedKinds(kinds), "\n")
+	// 该来源不使用排除规则与状态码、域名条件
+	j.Ignore, j.AnyStatus, j.UnknownHost = "", false, false
+	return j.validateCount()
+}
+
 // matcher 是编译后的过滤规则。
 type matcher struct {
 	filters []*regexp.Regexp
 	ignores []*regexp.Regexp
 	// web 为 Web 路径探测规则，其他来源为 nil
 	web *webMatcher
+	// tls 为 TLS 握手失败规则，其他来源为 nil
+	tls *tlsMatcher
 }
 
 func newMatcher(j Jail) (*matcher, error) {
@@ -229,6 +262,13 @@ func newMatcher(j Jail) (*matcher, error) {
 			return nil, err
 		}
 		return &matcher{web: w}, nil
+	}
+	if j.Source == SourceTLS {
+		t, err := newTLSMatcher(j)
+		if err != nil {
+			return nil, err
+		}
+		return &matcher{tls: t}, nil
 	}
 	f, err := compileFilters(j.Filter, true)
 	if err != nil {
@@ -319,6 +359,9 @@ func (r *jailRunner) record(a netip.Addr, line string) {
 	r.mu.Unlock()
 	r.stats.bans.Add(1)
 	reason := fmt.Sprintf("%d 秒内失败 %d 次", r.jail.FindTime, len(list))
+	if r.jail.Source == SourceTLS {
+		reason = fmt.Sprintf("%d 秒内 TLS 握手失败 %d 次，最近一次：%s", r.jail.FindTime, len(list), clipText(line, 200))
+	}
 	if r.jail.Source == SourceWeb {
 		// 带上最后一次请求，便于判断是否误封；路径由访客控制，截断后再写入
 		reason = fmt.Sprintf("%d 秒内路径探测 %d 次，最近一次：%s", r.jail.FindTime, len(list), clipText(line, 200))
@@ -452,8 +495,8 @@ func (r *jailRunner) run(ctx context.Context) {
 			return
 		}
 		followDocker(ctx, follow, r.jail.Target, r.line, func(msg string) { r.setErr("", msg) })
-	case SourceEvent, SourceWeb:
-		// 由 Module.onEvent、Module.onWebHit 推送，这里只等待停止
+	case SourceEvent, SourceWeb, SourceTLS:
+		// 由 Module.onEvent、Module.onWebHit、Module.onTLSFail 推送，这里只等待停止
 		<-ctx.Done()
 	}
 }
