@@ -113,7 +113,7 @@ Ao criar uma regra, clique em um modelo para preencher eventos, nível e tempo d
 | Expiração de certificados | Certificado prestes a expirar, falha na renovação (silêncio de 24 horas) |
 | Mudanças de endereço | Registro DDNS atualizado, endereço STUN alterado |
 | Saúde dos serviços | Upstream indisponível e recuperado, contêiner encerrado, subprocesso encerrado |
-| Segurança e logins | Falha de login, IP banido, login bem-sucedido, acesso a conteúdo sensível |
+| Segurança e logins | Falha de login, IP banido, login bem-sucedido, login de um novo endereço, acesso a conteúdo sensível |
 | Alertas de desempenho | Disparo e recuperação de alertas de desempenho (sem silêncio) |
 | Alterações de configuração | Cada alteração de configuração na interface de administração |
 | Atualizações | Atualizações de segurança e novas versões do Gately, novas versões de programas gerenciados e imagens de contêiner (sem silêncio) |
@@ -141,6 +141,7 @@ Ao criar uma regra, clique em um modelo para preencher eventos, nível e tempo d
 | `knock.opened` | Port knocking: knock bem-sucedido | Info | Um knock foi autenticado e o endereço de origem liberado, com os campos `ip`, `rule` e `ports`; veja [Port Knocking](/pt-BR/docs/modules/knock) |
 | `knock.failed` | Port knocking: knock recusado | Aviso | Uma batida foi recusada: um pacote UDP passou na autenticação HMAC mas foi recusado pela regra (repetição, carimbo de tempo expirado, porta não permitida, usuário incorreto etc.), ou um pacote enviado por uma conexão TCP do roteamento de protocolos falhou na autenticação ou nas verificações. Traz os campos `ip`, `reason` e `via` (`udp` ou `tcp`); registrado no máximo uma vez a cada 5 segundos por origem, e a prevenção de intrusão pode contá-lo para banir. Endereços de origem UDP podem ser forjados, então pacotes UDP que falham na autenticação HMAC são apenas contados e não publicam este evento |
 | `login.success` | Interface de administração: login bem-sucedido | Info | Um login na interface de administração foi bem-sucedido, com os campos `ip` e `user` |
+| `login.newip` | Interface de administração: login de um novo endereço | Aviso | Um login na interface de administração foi bem-sucedido a partir de um endereço de origem que nunca tinha feito login com sucesso, com os campos `ip` e `user`. Logins por senha, Passkey, terceiros e gateway unificado do fnOS são todos verificados; o primeiro login apenas cria a referência e não notifica; endereços IPv6 são agrupados por /64; no máximo 200 origens são registradas e, ao exceder, a que não aparece há mais tempo é removida |
 | `audit.change` | Interface de administração: alteração de configuração | Info | Qualquer operação de alteração na interface de administração, com os campos `actor`, `ip`, `method` e `path`; veja [Auditoria e histórico de configuração](/pt-BR/docs/guide/audit) |
 | `audit.access` | Interface de administração: acesso a conteúdo sensível | Aviso | Download de backup, pacote de diagnóstico ou chave privada de certificado, abertura de terminal etc.; mesmos campos |
 | `perf.alert` | Desempenho: alerta disparado | Aviso ou erro | A condição de uma regra de alerta de desempenho se manteve pela duração definida; o nível vem da regra, com os campos `rule`, `metric`, `target`, `value` e `condition`; veja [Desempenho](/pt-BR/docs/modules/perf) |

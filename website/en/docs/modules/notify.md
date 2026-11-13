@@ -113,7 +113,7 @@ When creating a rule, click a template to prefill the events, level and silence 
 | Certificate expiry | Certificate expiring soon, renewal failed (24-hour silence) |
 | Address changes | DDNS record updated, STUN address changed |
 | Service health | Upstream down and recovered, container exited, child process exited |
-| Security & sign-ins | Login failures, IP bans, successful logins, access to sensitive content |
+| Security & sign-ins | Login failures, IP bans, successful logins, sign-ins from new addresses, access to sensitive content |
 | Performance alerts | Performance alert firing and recovery (no silence) |
 | Configuration changes | Every configuration change made in the management UI |
 | Updates | Gately security updates and new versions, new versions of managed programs and container images (no silence) |
@@ -141,6 +141,7 @@ When creating a rule, click a template to prefill the events, level and silence 
 | `knock.opened` | Port knocking: knock succeeded | Info | A knock passed authentication and the source address was let through, with the fields `ip`, `rule` and `ports`; see [Port Knocking](/en/docs/modules/knock) |
 | `knock.failed` | Port knocking: knock rejected | Warning | A knock was refused: a UDP knock packet passed HMAC authentication but was refused by the rule (replay, expired timestamp, port not allowed, wrong user, etc.), or a knock packet submitted over a Protocol Routing TCP connection failed authentication or checks. Carries the fields `ip`, `reason` and `via` (`udp` or `tcp`); recorded at most once every 5 seconds per source, and intrusion prevention can count it towards a ban. UDP source addresses can be forged, so UDP packets that fail HMAC authentication are only counted and publish no event |
 | `login.success` | Management UI: login succeeded | Info | A management UI login succeeded, with the `ip` and `user` fields |
+| `login.newip` | Management UI: login from a new address | Warning | A management UI login succeeded from a source address that has never logged in successfully before, with the `ip` and `user` fields. Password, Passkey, third-party and fnOS unified gateway logins are all checked; the first login only builds the baseline and sends no notification; IPv6 addresses are merged per /64; at most 200 sources are recorded, and the one not seen for the longest time is evicted when the limit is exceeded |
 | `audit.change` | Management UI: configuration changed | Info | Any change made in the management UI, with the `actor`, `ip`, `method` and `path` fields; see [Audit Log & Config History](/en/docs/guide/audit) |
 | `audit.access` | Management UI: sensitive content accessed | Warning | Downloading a backup, diagnostics bundle or certificate private key, opening a terminal, and similar; same fields as above |
 | `perf.alert` | Performance: alert firing | Warning or Error | A performance alert rule's condition has held for its duration; the level comes from the rule, with the `rule`, `metric`, `target`, `value` and `condition` fields; see [Performance](/en/docs/modules/perf) |

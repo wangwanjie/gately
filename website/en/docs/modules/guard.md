@@ -119,7 +119,7 @@ With the source "TLS handshake failures", a jail counts TLS handshake failures o
 | Client aborted (TLS alert) | The peer aborts with a TLS alert, e.g. it does not trust the certificate. Usually the client's own setup; not recommended for banning |
 | Other | Failures that fit none of the types above |
 
-Every handshake failure counts, unaffected by log throttling. The source address is already restored through trusted proxies and the PROXY protocol, allowlisted addresses are not counted and addresses that are already banned stop accumulating. In the jail editor, paste a handshake failure reason (the English reason after "TLS handshake failed" in the log) to see which type it falls into.
+Every handshake failure counts, unaffected by log throttling. The source address is already restored through the PROXY protocol; there are no request headers yet during the handshake, so addresses listed under the web service's "trusted proxies" (CDN origin-pull nodes) are not counted, which keeps others from using a CDN to cause handshake failures and get those nodes banned; allowlisted addresses are not counted and addresses that are already banned stop accumulating. In the jail editor, paste a handshake failure reason (the English reason after "TLS handshake failed" in the log) to see which type it falls into.
 
 Two templates are built in:
 
@@ -130,17 +130,19 @@ Two templates are built in:
 
 ## Port-scan detection trade-offs
 
-Scan detection counts new connections to ports **this host is not listening on**. Listening TCP ports are refreshed every 10 seconds and treated as open; ports forwarded elsewhere by other firewall rules never pass through the `input` chain and are not counted. The default threshold is 12 per minute. A normal client retrying a closed port does so about 5 times a minute, so do not go below 10.
+Scan detection counts new connections to ports **this host is not listening on**. Listening TCP ports are treated as open: ports of Gately's own modules are registered as soon as listening succeeds and take effect within 300 milliseconds, while ports of other programs are refreshed every 10 seconds; ports forwarded elsewhere by other firewall rules never pass through the `input` chain and are not counted. The default threshold is 12 per minute. A normal client retrying a closed port does so about 5 times a minute, so do not go below 10.
 
 Trap ports that are in use are excluded automatically so legitimate visitors are not banned.
+
+Ports registered as open automatically: Web service listeners (including the extra HTTP port), port forwarding, protocol routing, SMB, WebDAV, the FTP control port with its passive port range, and the TCP ports of STUN; for frps, the bind port, vhost ports, the externally reachable dashboard port and allowPorts ranges of up to 1024 ports, plus the TCP remote ports frpc requests after login (up to 4096 per instance, cleared when the instance stops); TCP listeners of EasyTier instances and TCP port forwards bound to non-loopback addresses; the SOCKS5 ports that Tailscale and NetBird listen on externally.
 
 ## IPv6 strict mode
 
 IPv6 has no NAT, so every device has a public address, and once that address shows up in DNS or certificate transparency logs, scanners can connect to it directly. The "IPv6 strict mode" option of port scan detection switches IPv6 to an allowlist: IPv6 sources may only connect to open ports (listening ports plus "Extra open ports"), and the first connection to any other port gets them banned, with no threshold counting. IPv4 still uses the threshold.
 
 - Bans apply to the whole /64, so other devices in the same /64 are banned too. Whitelisted addresses and the addresses covered by "Ignore private addresses" are not affected.
-- A port that starts listening counts as open within about 10 seconds, and the mode takes effect about 15 seconds after being turned on or after a restart; until then the threshold applies. The threshold also applies when the listening ports cannot be read.
-- A port that stops listening still counts as open for 30 seconds, so visitors retrying while frps reconnects or a program or listener restarts are not banned. When the FTP service has a passive port range, the whole range counts as open; with passive ports assigned at random by the system they cannot be listed in advance, IPv6 data connections would be banned as scans, and the run log says so: set a passive port range in the FTP service.
+- A port a Gately module starts listening on counts as open immediately, a port another program starts listening on within about 10 seconds, and the mode takes effect about 15 seconds after being turned on or after a restart; until then the threshold applies. The threshold also applies when the listening ports cannot be read.
+- A port that stops listening still counts as open for 10 minutes, so visitors retrying while frps reconnects, frpc logs in again after a drop, or a program or listener restarts are not banned. When the FTP service has a passive port range, the whole range counts as open; with passive ports assigned at random by the system they cannot be listed in advance, IPv6 data connections would be banned as scans, and the run log says so: set a passive port range in the FTP service.
 - Ports used by other programs through firewall rules must be added to "Extra open ports" first, or sources connecting to them will be banned.
 - Only new TCP connections are counted. Firewall sync must be active and port scan detection must be enabled.
 

@@ -119,7 +119,7 @@ Com a origem «Falhas de handshake TLS», a regra conta as falhas de handshake T
 | Cliente abortou (alerta TLS) | O outro lado aborta com um alerta TLS, p. ex. não confia no certificado. Em geral é a configuração dele; não recomendado para banir |
 | Outro | Falhas que não se encaixam em nenhum tipo acima |
 
-Toda falha de handshake conta, sem ser afetada pela limitação do registro. O endereço de origem já é restaurado por proxies confiáveis e pelo protocolo PROXY, endereços da lista de permitidos não contam e endereços já banidos deixam de acumular. No editor da regra, cole um motivo de falha (o motivo em inglês após «Falha de handshake TLS» no registro) para ver em qual tipo ele cai.
+Toda falha de handshake conta, sem ser afetada pela limitação do registro. O endereço de origem já é restaurado pelo protocolo PROXY; durante o handshake ainda não há cabeçalhos de requisição, então endereços dos «proxies confiáveis» do serviço web (nós de busca de origem da CDN) não contam, evitando que alguém use uma CDN para causar falhas de handshake e fazer esses nós serem banidos; endereços da lista de permitidos não contam e endereços já banidos deixam de acumular. No editor da regra, cole um motivo de falha (o motivo em inglês após «Falha de handshake TLS» no registro) para ver em qual tipo ele cai.
 
 Há dois modelos incluídos:
 
@@ -130,17 +130,19 @@ Há dois modelos incluídos:
 
 ## Escolhas da detecção de varredura
 
-A detecção conta conexões novas a portas **em que este host não está escutando**. As portas TCP em escuta são atualizadas a cada 10 segundos e contam como abertas; portas encaminhadas por outras regras de firewall não passam pela cadeia `input` e não são contadas. O limite padrão é 12 por minuto. Um cliente normal tenta de novo uma porta fechada cerca de 5 vezes por minuto, então não use menos de 10.
+A detecção conta conexões novas a portas **em que este host não está escutando**. As portas TCP em escuta contam como abertas: as dos módulos do Gately são registradas assim que a escuta tem sucesso e valem em 300 milissegundos, e as de outros programas são atualizadas a cada 10 segundos; portas encaminhadas por outras regras de firewall não passam pela cadeia `input` e não são contadas. O limite padrão é 12 por minuto. Um cliente normal tenta de novo uma porta fechada cerca de 5 vezes por minuto, então não use menos de 10.
 
 Portas armadilha em uso são excluídas automaticamente para não bloquear visitantes legítimos.
+
+São registradas automaticamente como abertas: as escutas do serviço web (incluindo a porta HTTP adicional), o redirecionamento de portas, o roteamento por protocolo, SMB, WebDAV, a porta de controle do FTP com o intervalo de portas passivas e as portas TCP do STUN; do frps, a porta de ligação, as portas vhost, a porta do dashboard exposta externamente e os intervalos allowPorts de até 1024 portas, além das portas remotas TCP que o frpc solicita após o login (até 4096 por instância, removidas quando a instância para); as escutas TCP das instâncias do EasyTier e os redirecionamentos de portas TCP ligados a endereços que não são de loopback; as portas SOCKS5 que Tailscale e NetBird escutam externamente.
 
 ## Modo estrito IPv6
 
 O IPv6 não tem NAT, cada dispositivo tem um endereço público e, quando esse endereço aparece no DNS ou nos logs de transparência de certificados, scanners podem se conectar a ele diretamente. A opção «Modo estrito IPv6» da detecção de varredura de portas muda o IPv6 para uma lista de permissões: origens IPv6 só podem se conectar a portas abertas (portas em escuta mais «Portas abertas adicionais») e a primeira conexão a qualquer outra porta resulta em banimento, sem contagem de limite. O IPv4 continua usando o limite.
 
 - O banimento vale para todo o /64, então outros dispositivos do mesmo /64 também são banidos. Endereços da lista branca e os cobertos por «Ignorar endereços privados» não são afetados.
-- Uma porta que começa a escutar é considerada aberta em cerca de 10 segundos, e o modo entra em vigor cerca de 15 segundos após ser ativado ou após uma reinicialização; até lá vale o limite. O limite também vale quando as portas em escuta não podem ser lidas.
-- Uma porta que para de escutar ainda conta como aberta por 30 segundos, para que visitantes que tentam de novo enquanto o frps se reconecta ou um programa ou listener reinicia não sejam banidos. Quando o serviço FTP tem um intervalo de portas passivas, o intervalo inteiro conta como aberto; se o sistema atribui as portas passivas aleatoriamente, elas não podem ser listadas antes, as conexões de dados IPv6 seriam banidas como varreduras e o log de execução avisa: defina um intervalo de portas passivas no serviço FTP.
+- Uma porta em que um módulo do Gately começa a escutar é considerada aberta imediatamente, e a de outro programa em cerca de 10 segundos, e o modo entra em vigor cerca de 15 segundos após ser ativado ou após uma reinicialização; até lá vale o limite. O limite também vale quando as portas em escuta não podem ser lidas.
+- Uma porta que para de escutar ainda conta como aberta por 10 minutos, para que visitantes que tentam de novo enquanto o frps se reconecta, o frpc faz login de novo após uma queda ou um programa ou listener reinicia não sejam banidos. Quando o serviço FTP tem um intervalo de portas passivas, o intervalo inteiro conta como aberto; se o sistema atribui as portas passivas aleatoriamente, elas não podem ser listadas antes, as conexões de dados IPv6 seriam banidas como varreduras e o log de execução avisa: defina um intervalo de portas passivas no serviço FTP.
 - Portas usadas por outros programas por meio de regras de firewall devem ser adicionadas antes às «Portas abertas adicionais», ou as origens que se conectarem a elas serão banidas.
 - Apenas novas conexões TCP são contadas. A sincronização com o firewall deve estar ativa e a detecção de varredura de portas habilitada.
 

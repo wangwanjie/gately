@@ -119,7 +119,7 @@ Mit der Quelle „TLS-Handshake-Fehler“ zählt eine Regel TLS-Handshake-Fehler
 | Client abgebrochen (TLS-Alert) | Die Gegenseite bricht mit einem TLS-Alert ab, z. B. weil sie dem Zertifikat nicht vertraut. Meist deren eigene Einstellung; zum Sperren nicht empfohlen |
 | Sonstige | Fehler, die zu keinem der obigen Typen passen |
 
-Jeder Handshake-Fehler zählt, unabhängig von der Protokoll-Drosselung. Die Quelladresse ist bereits über vertrauenswürdige Proxys und das PROXY-Protokoll wiederhergestellt, Adressen der Zulassungsliste werden nicht gezählt und bereits gesperrte Adressen sammeln nichts mehr an. Im Regeleditor lässt sich ein Handshake-Fehlergrund (der englische Grund nach „TLS-Handshake fehlgeschlagen“ im Protokoll) einfügen, um den zugehörigen Typ zu prüfen.
+Jeder Handshake-Fehler zählt, unabhängig von der Protokoll-Drosselung. Die Quelladresse ist bereits über das PROXY-Protokoll wiederhergestellt; während des Handshakes gibt es noch keine Request-Header, daher werden Adressen aus den „vertrauenswürdigen Proxys“ des Webdienstes (CDN-Origin-Pull-Knoten) nicht gezählt, damit niemand über ein CDN Handshake-Fehler erzeugen und diese Knoten sperren lassen kann; Adressen der Zulassungsliste werden nicht gezählt und bereits gesperrte Adressen sammeln nichts mehr an. Im Regeleditor lässt sich ein Handshake-Fehlergrund (der englische Grund nach „TLS-Handshake fehlgeschlagen“ im Protokoll) einfügen, um den zugehörigen Typ zu prüfen.
 
 Zwei Vorlagen sind eingebaut:
 
@@ -130,17 +130,19 @@ Zwei Vorlagen sind eingebaut:
 
 ## Abwägungen bei der Portscan-Erkennung
 
-Die Erkennung zählt neue Verbindungen zu Ports, **auf denen dieser Host nicht lauscht**. Lauschende TCP-Ports werden alle 10 Sekunden aktualisiert und gelten als offen; Ports, die andere Firewall-Regeln weiterleiten, laufen nicht durch die Kette `input` und werden nicht gezählt. Der Standardschwellenwert liegt bei 12 pro Minute. Ein normaler Client versucht einen geschlossenen Port etwa 5-mal pro Minute erneut, daher nicht unter 10 gehen.
+Die Erkennung zählt neue Verbindungen zu Ports, **auf denen dieser Host nicht lauscht**. Lauschende TCP-Ports gelten als offen: Ports von Gatelys eigenen Modulen werden direkt nach erfolgreichem Lauschen eingetragen und wirken innerhalb von 300 Millisekunden, die lauschenden Ports anderer Programme werden alle 10 Sekunden aktualisiert; Ports, die andere Firewall-Regeln weiterleiten, laufen nicht durch die Kette `input` und werden nicht gezählt. Der Standardschwellenwert liegt bei 12 pro Minute. Ein normaler Client versucht einen geschlossenen Port etwa 5-mal pro Minute erneut, daher nicht unter 10 gehen.
 
 Belegte Köderports werden automatisch ausgenommen, damit keine legitimen Besucher gesperrt werden.
+
+Automatisch als offen eingetragen werden: Web-Dienst-Listener (einschließlich des zusätzlichen HTTP-Ports), Portweiterleitung, Protokoll-Routing, SMB, WebDAV, der FTP-Steuerport samt passivem Portbereich und die TCP-Ports von STUN; bei frps der Bind-Port, die vhost-Ports, der nach außen erreichbare Dashboard-Port und allowPorts-Bereiche mit höchstens 1024 Ports, dazu die TCP-Remote-Ports, die frpc nach der Anmeldung anfordert (höchstens 4096 je Instanz, nach dem Stopp der Instanz entfernt); TCP-Listener von EasyTier-Instanzen und TCP-Portweiterleitungen, die an Nicht-Loopback-Adressen gebunden sind; die nach außen lauschenden SOCKS5-Ports von Tailscale und NetBird.
 
 ## IPv6-Strikt-Modus
 
 IPv6 hat kein NAT, jedes Gerät besitzt eine öffentliche Adresse, und sobald sie in DNS oder Certificate-Transparency-Logs auftaucht, können Scanner sie direkt erreichen. Die Option „IPv6-Strikt-Modus“ der Portscan-Erkennung stellt IPv6 auf eine Allowlist um: IPv6-Quellen dürfen nur offene Ports erreichen (lauschende Ports plus „Zusätzliche offene Ports“), schon die erste Verbindung zu einem anderen Port führt zur Sperre, ohne Schwellenwert. IPv4 nutzt weiterhin den Schwellenwert.
 
 - Die Sperre gilt für das gesamte /64, andere Geräte im selben /64 werden mitgesperrt. Adressen der Whitelist und die von „Private Adressen ignorieren“ erfassten Adressen sind ausgenommen.
-- Ein neu lauschender Port gilt nach etwa 10 Sekunden als offen, der Modus wirkt etwa 15 Sekunden nach dem Einschalten oder einem Neustart; bis dahin gilt der Schwellenwert. Der Schwellenwert gilt auch, wenn die lauschenden Ports nicht gelesen werden können.
-- Ein Port, der nicht mehr lauscht, gilt noch 30 Sekunden als offen, damit Besucher, die während eines frps-Neuverbindens oder eines Neustarts eines Programms oder Listeners erneut verbinden, nicht gesperrt werden. Hat der FTP-Dienst einen passiven Portbereich, zählt der ganze Bereich als offen; vergibt das System die passiven Ports zufällig, lassen sie sich nicht vorab auflisten, IPv6-Datenverbindungen würden als Scan gesperrt, und das Laufprotokoll weist darauf hin: Legen Sie im FTP-Dienst einen passiven Portbereich fest.
+- Ein Port, auf dem ein Gately-Modul neu lauscht, gilt sofort als offen, ein Port, auf dem ein anderes Programm neu lauscht, nach etwa 10 Sekunden, der Modus wirkt etwa 15 Sekunden nach dem Einschalten oder einem Neustart; bis dahin gilt der Schwellenwert. Der Schwellenwert gilt auch, wenn die lauschenden Ports nicht gelesen werden können.
+- Ein Port, der nicht mehr lauscht, gilt noch 10 Minuten als offen, damit Besucher, die während eines frps-Neuverbindens, einer erneuten frpc-Anmeldung nach einem Verbindungsabbruch oder eines Neustarts eines Programms oder Listeners erneut verbinden, nicht gesperrt werden. Hat der FTP-Dienst einen passiven Portbereich, zählt der ganze Bereich als offen; vergibt das System die passiven Ports zufällig, lassen sie sich nicht vorab auflisten, IPv6-Datenverbindungen würden als Scan gesperrt, und das Laufprotokoll weist darauf hin: Legen Sie im FTP-Dienst einen passiven Portbereich fest.
 - Ports, die andere Programme über Firewall-Regeln nutzen, müssen zuerst zu „Zusätzliche offene Ports“ hinzugefügt werden, sonst werden Quellen, die sie nutzen, gesperrt.
 - Gezählt werden nur neue TCP-Verbindungen. Die Firewall-Synchronisierung muss aktiv und die Portscan-Erkennung eingeschaltet sein.
 
