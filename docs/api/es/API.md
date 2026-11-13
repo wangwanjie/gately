@@ -1584,6 +1584,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | --- | --- |
 | `host` | string |
 | `ignored` | boolean |
+| `kind` | string |
 | `line` | string |
 | `matched` | boolean |
 

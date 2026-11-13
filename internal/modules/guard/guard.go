@@ -277,6 +277,8 @@ type Module struct {
 	jails map[string]*jailRunner
 	// webJails 为启用中的 Web 路径探测规则快照，每个请求都会读取，不能经过 m.mu
 	webJails atomic.Pointer[[]*jailRunner]
+	// tlsJails 为启用中的 TLS 握手失败规则快照，每次握手失败都会读取，不能经过 m.mu
+	tlsJails atomic.Pointer[[]*jailRunner]
 	fw       *firewall
 	trap     *userTrap
 	unsub    []func()
@@ -401,6 +403,8 @@ func (m *Module) Start(ctx context.Context) error {
 	m.unsub = append(m.unsub, events.Subscribe(m.onEvent))
 	webprobe.SetHandler(m.onWebHit)
 	m.unsub = append(m.unsub, func() { webprobe.SetHandler(nil) })
+	webprobe.SetTLSHandler(m.onTLSFail)
+	m.unsub = append(m.unsub, func() { webprobe.SetTLSHandler(nil) })
 	m.fw.start(m.ctx, s, m.local, m.importKernelBans, m.onFirewallActive)
 	m.applyTrapLocked()
 	for _, j := range m.cfg.Jails {

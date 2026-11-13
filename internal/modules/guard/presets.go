@@ -81,6 +81,18 @@ Invalid TOTP code! Server time: .* IP: <HOST>\s*$`,
 		Ignore:   "/favicon.ico\n/apple-touch-icon*\n/robots.txt\n*.map",
 		MaxRetry: 10, FindTime: 60,
 	},
+	{
+		// 浏览器与正常客户端不会发出明文、过低版本或无法协商的握手；扫描器与探测脚本常见
+		Preset: "tls-probe", Name: "TLS 异常握手", Source: SourceTLS,
+		Filter:   "protocol\nnegotiation",
+		MaxRetry: 5, FindTime: 60, BanTime: 86400,
+	},
+	{
+		// 握手中途断开、重置或超时也可能是用户网络不稳或浏览器预连接，次数设得宽松
+		Preset: "tls-abort", Name: "TLS 握手中断", Source: SourceTLS,
+		Filter:   "eof\nreset\ntimeout",
+		MaxRetry: 20, FindTime: 60,
+	},
 }
 
 // decoyPaths 是扫描器常探测、正常站点几乎不会有的路径。站点本身是 WordPress、phpMyAdmin 等程序时，

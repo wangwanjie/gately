@@ -100,7 +100,7 @@ func TestPresetsMatch(t *testing.T) {
 		if err := j.Validate(); err != nil {
 			t.Fatalf("预设 %s 无效: %v", p.Preset, err)
 		}
-		if p.Source == SourceEvent || p.Source == SourceWeb {
+		if p.Source == SourceEvent || p.Source == SourceWeb || p.Source == SourceTLS {
 			continue
 		}
 		s, ok := samples[p.Preset]
