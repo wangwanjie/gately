@@ -745,6 +745,8 @@ func (m *Module) removeLocked(key string) {
 		rt.daemon.Stop()
 		delete(m.runs, key)
 	}
+	// 运行时已从 m.runs 删除，syncLocked 不会再处理该实例，在这里撤销它登记的开放端口
+	openports.Clear(openOwner(key))
 	m.syncLocked(func(string) bool { return false })
 }
 
