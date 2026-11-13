@@ -75,7 +75,8 @@
     "command": "Saída de comando",
     "docker": "Contêiner Docker",
     "event": "Evento do Gately",
-    "web": "Sondagem de caminhos web"
+    "web": "Sondagem de caminhos web",
+    "tls": "Falhas de handshake TLS"
   },
   "target": {
     "file": "Caminho do arquivo",
@@ -83,7 +84,8 @@
     "command": "Comando",
     "docker": "Contêiner",
     "event": "Evento",
-    "web": "Listeners"
+    "web": "Listeners",
+    "tls": "Listeners"
   },
   "event": {
     "authFailed": "Falha de login no painel",
@@ -98,7 +100,8 @@
     "command": "Executa um comando que imprime logs continuamente e lê a saída, ex.: logread -f no OpenWrt. O comando é reiniciado quando termina.",
     "docker": "Lê o log do contêiner. O módulo Docker precisa conseguir acessar o Docker.",
     "event": "Conta eventos do próprio Gately que trazem o IP de origem. Não precisa de filtro.",
-    "web": "Conta as requisições tratadas pelo serviço web por listener, caminho e código de status, sem ler nenhum log. Seja qual for o listener que disparar, o bloqueio vale para todos os sites e para o firewall do sistema."
+    "web": "Conta as requisições tratadas pelo serviço web por listener, caminho e código de status, sem ler nenhum log. Seja qual for o listener que disparar, o bloqueio vale para todos os sites e para o firewall do sistema.",
+    "tls": "Conta as falhas de handshake TLS nos listeners HTTPS do serviço Web por tipo de falha, listener e número de vezes. Sondagens que cortam durante o handshake nunca enviam uma requisição HTTP, então a detecção por caminho não as vê. O banimento vale para todos os sites e o firewall do sistema."
   },
   "jail": {
     "intro": "Encontra falhas nos logs. Um IP que atinge o número de falhas dentro da janela de tempo é bloqueado.",
@@ -152,7 +155,12 @@
     "morePaths": "mais {n}",
     "testPaths": "Caminhos de requisição",
     "testPathsPlaceholder": "Um caminho por linha, como /.env. Só as regras de caminho são testadas",
-    "testHit": "Corresponde"
+    "testHit": "Corresponde",
+    "tlsKinds": "Tipos de falha",
+    "tlsKindsHelp": "Marque os tipos de falha a contar, pelo menos um. Pré-conexões do navegador e trocas de rede do celular também causam «corte no meio do handshake»; use um número folgado.",
+    "withinTls": "falhas de handshake em",
+    "testReasons": "Motivos da falha",
+    "testReasonsPlaceholder": "Um motivo de falha de handshake por linha, p. ex. EOF ou tls: first record does not look like a TLS handshake; apenas o tipo é testado"
   },
   "trap": {
     "title": "Portas armadilha",
@@ -245,6 +253,34 @@
     "web-404": {
       "name": "Sondagem web 404",
       "desc": "Bloqueia após 10 requisições a caminhos inexistentes (404 ou 444) em 1 minuto; caminhos comuns como favicon e robots.txt ficam de fora"
+    },
+    "tls-probe": {
+      "name": "Handshake TLS anômalo",
+      "desc": "Origens que enviam HTTP em texto puro, versão de protocolo antiga demais ou parâmetros impossíveis de negociar são banidas após 5 vezes em 1 minuto. Navegadores normais nunca causam isso"
+    },
+    "tls-abort": {
+      "name": "Handshake TLS interrompido",
+      "desc": "Handshakes cortados, reiniciados ou com tempo esgotado são banidos após 20 vezes em 1 minuto. Pré-conexões do navegador e redes instáveis também causam isso; não reduza o número"
     }
+  },
+  "tlsKind": {
+    "eof": "Corte no meio do handshake (EOF)",
+    "reset": "Conexão reiniciada",
+    "timeout": "Tempo do handshake esgotado",
+    "protocol": "Não é TLS / erro de protocolo",
+    "negotiation": "Não é possível negociar parâmetros",
+    "nocert": "Domínio desconhecido (sem certificado)",
+    "alert": "Cliente abortou (alerta TLS)",
+    "other": "Outro"
+  },
+  "tlsKindHelp": {
+    "eof": "O outro lado conecta e fecha, ou corta no meio do handshake. Comum em varreduras de portas; pré-conexões do navegador também.",
+    "reset": "O outro lado reiniciou a conexão (connection reset, broken pipe).",
+    "timeout": "O outro lado conecta mas nunca conclui o handshake.",
+    "protocol": "Envia HTTP em texto puro, SSLv2, lixo ou uma versão de protocolo antiga demais. Navegadores normais nunca fazem isso.",
+    "negotiation": "Não há suíte de cifras, troca de chaves, curva ou protocolo de aplicação em comum.",
+    "nocert": "O domínio solicitado não pertence a nenhum site (sem certificado). Um site com o domínio preenchido mas sem certificado é problema de configuração e não é contado.",
+    "alert": "O outro lado aborta com um alerta TLS, p. ex. não confia no certificado. Em geral é a configuração dele; não recomendado para banir.",
+    "other": "Falhas que não se encaixam em nenhum tipo acima."
   }
 }

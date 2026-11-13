@@ -75,7 +75,8 @@
     "command": "Sortie de commande",
     "docker": "Conteneur Docker",
     "event": "Événement Gately",
-    "web": "Sondage de chemins web"
+    "web": "Sondage de chemins web",
+    "tls": "Échecs de handshake TLS"
   },
   "target": {
     "file": "Chemin du fichier",
@@ -83,7 +84,8 @@
     "command": "Commande",
     "docker": "Conteneur",
     "event": "Événement",
-    "web": "Écouteurs"
+    "web": "Écouteurs",
+    "tls": "Écouteurs"
   },
   "event": {
     "authFailed": "Échec de connexion à la console",
@@ -98,7 +100,8 @@
     "command": "Exécute une commande qui affiche des journaux en continu et lit sa sortie, par ex. logread -f sur OpenWrt. La commande est relancée si elle s'arrête.",
     "docker": "Lit le journal du conteneur. Le module Docker doit pouvoir joindre Docker.",
     "event": "Compte les événements de Gately qui contiennent l'IP source. Aucun filtre n'est nécessaire.",
-    "web": "Compte les requêtes traitées par le service web par écouteur, chemin et code d’état, sans lire de journal. Quel que soit l’écouteur déclencheur, le bannissement s’applique à tous les sites et au pare-feu du système."
+    "web": "Compte les requêtes traitées par le service web par écouteur, chemin et code d’état, sans lire de journal. Quel que soit l’écouteur déclencheur, le bannissement s’applique à tous les sites et au pare-feu du système.",
+    "tls": "Compte les échecs de handshake TLS sur les écouteurs HTTPS du service Web par type d'échec, écouteur et nombre de fois. Les sondes qui coupent pendant le handshake n'envoient jamais de requête HTTP : la détection par chemin ne les voit pas. Le bannissement s'applique à tous les sites et au pare-feu du système."
   },
   "jail": {
     "intro": "Repère les échecs dans les journaux. Une IP qui atteint le nombre d'échecs dans la fenêtre de temps est bannie.",
@@ -152,7 +155,12 @@
     "morePaths": "{n} de plus",
     "testPaths": "Chemins de requête",
     "testPathsPlaceholder": "Un chemin par ligne, comme /.env. Seules les règles de chemin sont testées",
-    "testHit": "Correspond"
+    "testHit": "Correspond",
+    "tlsKinds": "Types d'échec",
+    "tlsKindsHelp": "Cochez les types d'échec à compter, au moins un. Les préconnexions du navigateur et les changements de réseau mobile provoquent aussi des « coupures en plein handshake » : prévoyez un nombre généreux.",
+    "withinTls": "échecs de handshake en",
+    "testReasons": "Motifs d'échec",
+    "testReasonsPlaceholder": "Un motif d'échec de handshake par ligne, par ex. EOF ou tls: first record does not look like a TLS handshake ; seul le type est testé"
   },
   "trap": {
     "title": "Ports pièges",
@@ -245,6 +253,34 @@
     "web-404": {
       "name": "Sondage web 404",
       "desc": "Bannit après 10 requêtes vers des chemins inexistants (404 ou 444) en 1 minute ; les chemins courants comme favicon et robots.txt sont exclus"
+    },
+    "tls-probe": {
+      "name": "Handshake TLS anormal",
+      "desc": "Les sources qui envoient du HTTP en clair, une version de protocole trop ancienne ou des paramètres non négociables sont bannies après 5 fois en 1 minute. Un navigateur normal n'en provoque jamais"
+    },
+    "tls-abort": {
+      "name": "Handshake TLS interrompu",
+      "desc": "Les handshakes coupés, réinitialisés ou expirés sont bannis après 20 fois en 1 minute. Les préconnexions du navigateur et les réseaux instables en provoquent aussi : ne baissez pas le nombre"
     }
+  },
+  "tlsKind": {
+    "eof": "Coupure en plein handshake (EOF)",
+    "reset": "Connexion réinitialisée",
+    "timeout": "Délai de handshake dépassé",
+    "protocol": "Pas du TLS / erreur de protocole",
+    "negotiation": "Paramètres non négociables",
+    "nocert": "Domaine inconnu (sans certificat)",
+    "alert": "Client interrompu (alerte TLS)",
+    "other": "Autre"
+  },
+  "tlsKindHelp": {
+    "eof": "Le pair se connecte puis ferme, ou coupe en plein handshake. Fréquent dans les scans de ports ; les préconnexions du navigateur aussi.",
+    "reset": "Le pair a réinitialisé la connexion (connection reset, broken pipe).",
+    "timeout": "Le pair se connecte mais ne termine jamais le handshake.",
+    "protocol": "Le pair envoie du HTTP en clair, du SSLv2, du charabia ou une version de protocole trop ancienne. Un navigateur normal ne le fait jamais.",
+    "negotiation": "Aucune suite de chiffrement, échange de clés, courbe ou protocole d'application en commun.",
+    "nocert": "Le domaine demandé n'appartient à aucun site (pas de certificat). Un site dont le domaine est renseigné mais sans certificat est un problème de configuration et n'est pas compté.",
+    "alert": "Le pair interrompt avec une alerte TLS, par ex. il ne fait pas confiance au certificat. Souvent sa propre configuration ; déconseillé pour bannir.",
+    "other": "Échecs qui ne correspondent à aucun type ci-dessus."
   }
 }

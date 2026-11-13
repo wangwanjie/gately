@@ -75,7 +75,8 @@
     "command": "Command output",
     "docker": "Docker container",
     "event": "Gately event",
-    "web": "Web path probing"
+    "web": "Web path probing",
+    "tls": "TLS handshake failures"
   },
   "target": {
     "file": "File path",
@@ -83,7 +84,8 @@
     "command": "Command",
     "docker": "Container",
     "event": "Event",
-    "web": "Listeners"
+    "web": "Listeners",
+    "tls": "Listeners"
   },
   "event": {
     "authFailed": "Admin console login failed",
@@ -98,7 +100,8 @@
     "command": "Runs a command that keeps printing log lines and reads its output, e.g. logread -f on OpenWrt. The command is restarted when it exits.",
     "docker": "Reads the container's log. The Docker module must be able to reach Docker.",
     "event": "Counts Gately's own events, which carry the source IP. No filter is needed.",
-    "web": "Counts requests handled by the Web service by listener, path and status code, without reading any log. Whichever listener triggers it, the ban applies to all sites and the system firewall."
+    "web": "Counts requests handled by the Web service by listener, path and status code, without reading any log. Whichever listener triggers it, the ban applies to all sites and the system firewall.",
+    "tls": "Counts TLS handshake failures on the Web service HTTPS listeners by failure type, listener and number of times. Probes that drop during the handshake never send an HTTP request, so path probing cannot see them. A ban applies to all sites and the system firewall."
   },
   "jail": {
     "intro": "Finds failures in logs. An IP that reaches the count within the time window is banned.",
@@ -152,7 +155,12 @@
     "morePaths": "{n} more",
     "testPaths": "Request paths",
     "testPathsPlaceholder": "One path per line, such as /.env. Only the path rules are tested",
-    "testHit": "Match"
+    "testHit": "Match",
+    "tlsKinds": "Failure types",
+    "tlsKindsHelp": "Tick the failure types to count, at least one. Browser preconnects and phone network switches also cause \"dropped mid-handshake\", so set a generous count for those.",
+    "withinTls": "handshake failures within",
+    "testReasons": "Failure reasons",
+    "testReasonsPlaceholder": "One handshake failure reason per line, e.g. EOF or tls: first record does not look like a TLS handshake; only the type is tested"
   },
   "trap": {
     "title": "Trap ports",
@@ -245,6 +253,34 @@
     "web-404": {
       "name": "Web 404 probing",
       "desc": "Bans after 10 requests for missing paths (404 or 444) within 1 minute; common paths such as favicon and robots.txt are excluded"
+    },
+    "tls-probe": {
+      "name": "TLS abnormal handshake",
+      "desc": "Sources sending plain HTTP, a too-old protocol version or unnegotiable parameters are banned after 5 times in 1 minute. Normal browsers never cause these"
+    },
+    "tls-abort": {
+      "name": "TLS handshake aborted",
+      "desc": "Handshakes dropped, reset or timed out are banned after 20 times in 1 minute. Browser preconnects and unstable networks cause these too, so do not lower the count"
     }
+  },
+  "tlsKind": {
+    "eof": "Dropped mid-handshake (EOF)",
+    "reset": "Connection reset",
+    "timeout": "Handshake timeout",
+    "protocol": "Not TLS / protocol error",
+    "negotiation": "Cannot negotiate parameters",
+    "nocert": "Unknown domain (no certificate)",
+    "alert": "Client aborted (TLS alert)",
+    "other": "Other"
+  },
+  "tlsKindHelp": {
+    "eof": "The peer connects then closes, or drops mid-handshake. Common in port probes; browser preconnects also do this.",
+    "reset": "The peer reset the connection (connection reset, broken pipe).",
+    "timeout": "The peer connects but never completes the handshake.",
+    "protocol": "The peer sends plain HTTP, SSLv2, garbage or a too-old protocol version. Normal browsers never do.",
+    "negotiation": "No shared cipher suite, key exchange, curve or application protocol.",
+    "nocert": "The requested domain belongs to no site (no certificate). A site with the domain filled in but no certificate is a configuration problem and is not counted.",
+    "alert": "The peer aborts with a TLS alert, e.g. it does not trust the certificate. Usually the client's own setup; not recommended for banning.",
+    "other": "Failures that fit none of the types above."
   }
 }

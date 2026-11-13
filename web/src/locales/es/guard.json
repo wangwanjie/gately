@@ -75,7 +75,8 @@
     "command": "Salida de un comando",
     "docker": "Contenedor Docker",
     "event": "Evento de Gately",
-    "web": "Sondeo de rutas web"
+    "web": "Sondeo de rutas web",
+    "tls": "Fallos de handshake TLS"
   },
   "target": {
     "file": "Ruta del archivo",
@@ -83,7 +84,8 @@
     "command": "Comando",
     "docker": "Contenedor",
     "event": "Evento",
-    "web": "Escuchas"
+    "web": "Escuchas",
+    "tls": "Listeners"
   },
   "event": {
     "authFailed": "Inicio de sesión fallido en el panel",
@@ -98,7 +100,8 @@
     "command": "Ejecuta un comando que imprime registros de forma continua y lee su salida, p. ej. logread -f en OpenWrt. El comando se reinicia si termina.",
     "docker": "Lee el registro del contenedor. El módulo Docker debe poder conectarse a Docker.",
     "event": "Cuenta eventos propios de Gately que incluyen la IP de origen. No hace falta filtro.",
-    "web": "Cuenta las solicitudes que atiende el servicio web por escucha, ruta y código de estado, sin leer ningún registro. Sea cual sea la escucha que lo active, el bloqueo se aplica a todos los sitios y al cortafuegos del sistema."
+    "web": "Cuenta las solicitudes que atiende el servicio web por escucha, ruta y código de estado, sin leer ningún registro. Sea cual sea la escucha que lo active, el bloqueo se aplica a todos los sitios y al cortafuegos del sistema.",
+    "tls": "Cuenta los fallos de handshake TLS en los listeners HTTPS del servicio Web por tipo de fallo, listener y número de veces. Los sondeos que cortan durante el handshake nunca envían una petición HTTP, por lo que el sondeo de rutas no los ve. El bloqueo se aplica a todos los sitios y al firewall del sistema."
   },
   "jail": {
     "intro": "Busca fallos en los registros. Una IP que alcanza el número de fallos dentro de la ventana de tiempo queda bloqueada.",
@@ -152,7 +155,12 @@
     "morePaths": "{n} más",
     "testPaths": "Rutas de solicitud",
     "testPathsPlaceholder": "Una ruta por línea, como /.env. Solo se prueban las reglas de ruta",
-    "testHit": "Coincide"
+    "testHit": "Coincide",
+    "tlsKinds": "Tipos de fallo",
+    "tlsKindsHelp": "Marca los tipos de fallo que se cuentan, al menos uno. Las preconexiones del navegador y los cambios de red del móvil también causan «corte a mitad del handshake», así que usa un número generoso.",
+    "withinTls": "fallos de handshake en",
+    "testReasons": "Motivos del fallo",
+    "testReasonsPlaceholder": "Un motivo de fallo de handshake por línea, p. ej. EOF o tls: first record does not look like a TLS handshake; solo se prueba el tipo"
   },
   "trap": {
     "title": "Puertos trampa",
@@ -245,6 +253,34 @@
     "web-404": {
       "name": "Sondeo web 404",
       "desc": "Bloquea tras 10 solicitudes a rutas inexistentes (404 o 444) en 1 minuto; se excluyen rutas habituales como favicon y robots.txt"
+    },
+    "tls-probe": {
+      "name": "Handshake TLS anómalo",
+      "desc": "Orígenes que envían HTTP en claro, una versión de protocolo demasiado antigua o parámetros imposibles de negociar se bloquean tras 5 veces en 1 minuto. Un navegador normal nunca los causa"
+    },
+    "tls-abort": {
+      "name": "Handshake TLS interrumpido",
+      "desc": "Handshakes cortados, reiniciados o con tiempo agotado se bloquean tras 20 veces en 1 minuto. Las preconexiones del navegador y las redes inestables también los causan; no bajes el número"
     }
+  },
+  "tlsKind": {
+    "eof": "Corte a mitad del handshake (EOF)",
+    "reset": "Conexión reiniciada",
+    "timeout": "Tiempo de handshake agotado",
+    "protocol": "No es TLS / error de protocolo",
+    "negotiation": "No se pueden negociar parámetros",
+    "nocert": "Dominio desconocido (sin certificado)",
+    "alert": "Cliente abortó (alerta TLS)",
+    "other": "Otro"
+  },
+  "tlsKindHelp": {
+    "eof": "El otro extremo se conecta y cierra, o corta a mitad del handshake. Común en sondeos de puertos; las preconexiones del navegador también.",
+    "reset": "El otro extremo reinició la conexión (connection reset, broken pipe).",
+    "timeout": "El otro extremo se conecta pero nunca completa el handshake.",
+    "protocol": "Envía HTTP en claro, SSLv2, basura o una versión de protocolo demasiado antigua. Un navegador normal nunca lo hace.",
+    "negotiation": "No hay suite de cifrado, intercambio de claves, curva ni protocolo de aplicación en común.",
+    "nocert": "El dominio solicitado no pertenece a ningún sitio (sin certificado). Un sitio con el dominio indicado pero sin certificado es un problema de configuración y no se cuenta.",
+    "alert": "El otro extremo aborta con una alerta TLS, p. ej. no confía en el certificado. Suele ser su propia configuración; no se recomienda bloquear por esto.",
+    "other": "Fallos que no encajan en ningún tipo anterior."
   }
 }

@@ -121,6 +121,9 @@
                 <div v-for="line in pathLines(j)" :key="line" class="target-line">{{ line }}</div>
               </Field>
               <Field v-if="j.source === 'web'" :label="t('guard.jail.webCount')">{{ webScopeText(j) }}</Field>
+              <Field v-if="j.source === 'tls'" :label="t('guard.jail.tlsKinds')" wide>
+                <div v-for="k in tlsKindsOf(j)" :key="k" class="target-line">{{ t(`guard.tlsKind.${k}`) }}</div>
+              </Field>
               <Field :label="t('guard.jail.condition')">{{ t('guard.jail.conditionValue', { window: humanDuration(j.findTime), count: j.maxRetry }) }}</Field>
               <Field :label="t('guard.jail.banTime')">{{ banTimeText(j.banTime) }}</Field>
               <Field :label="t('guard.jail.matches')">{{ j.matches }}</Field>
@@ -284,7 +287,7 @@
           <el-select v-if="editing.source === 'event'" v-model="editing.target" class="w-420">
             <el-option v-for="e in eventTypes" :key="e" :label="t(`guard.event.${eventKey(e)}`)" :value="e" />
           </el-select>
-          <template v-else-if="editing.source === 'web'">
+          <template v-else-if="editing.source === 'web' || editing.source === 'tls'">
             <el-select v-model="webListeners" multiple clearable class="w-420" :placeholder="t('guard.jail.allListeners')">
               <el-option v-for="l in listeners" :key="l.key" :label="listenerLabel(l)" :value="l.key" />
             </el-select>
@@ -299,14 +302,23 @@
             :placeholder="targetPlaceholder"
           />
         </el-form-item>
-        <el-form-item v-if="editing.source === 'web' && !editing.key" :label="t('guard.jail.webPreset')">
+        <el-form-item v-if="(editing.source === 'web' || editing.source === 'tls') && !editing.key" :label="t('guard.jail.webPreset')">
           <el-select :model-value="editing.preset ?? ''" class="w-420" @update:model-value="applyWebPreset" :empty-values="[null, undefined]">
             <el-option :label="t('guard.jail.webPresetNone')" value="" />
-            <el-option v-for="p in webPresets" :key="p.preset" :label="presetName(p)" :value="p.preset!" />
+            <el-option v-for="p in sourcePresets" :key="p.preset" :label="presetName(p)" :value="p.preset!" />
           </el-select>
           <div v-if="editing.preset" class="form-help block">{{ t(`guard.presets.${editing.preset}.desc`) }}</div>
         </el-form-item>
-        <template v-if="editing.source === 'web'">
+        <template v-if="editing.source === 'tls'">
+          <el-form-item :label="t('guard.jail.tlsKinds')">
+            <el-checkbox-group v-model="tlsKinds" class="tls-kinds">
+              <el-checkbox v-for="k in tlsKindList" :key="k" :value="k" border>{{ t(`guard.tlsKind.${k}`) }}</el-checkbox>
+            </el-checkbox-group>
+            <div class="form-help block">{{ t('guard.jail.tlsKindsHelp') }}</div>
+            <div v-for="k in tlsKinds" :key="k" class="form-help block">{{ t(`guard.tlsKind.${k}`) }}：{{ t(`guard.tlsKindHelp.${k}`) }}</div>
+          </el-form-item>
+        </template>
+        <template v-else-if="editing.source === 'web'">
           <el-form-item :label="t('guard.jail.paths')">
             <el-input v-model="editing.filter" type="textarea" :rows="4" class="mono" :placeholder="t('guard.jail.pathsPlaceholder')" />
             <div class="form-help block">{{ t('guard.jail.pathsHelp') }}</div>
@@ -337,7 +349,7 @@
         <el-form-item :label="t('guard.jail.condition')">
           <div class="cond">
             <DurationInput v-model="editing.findTime" :max="7 * 86400" />
-            <span>{{ editing.source === 'web' ? t('guard.jail.withinWeb') : t('guard.jail.within') }}</span>
+            <span>{{ editing.source === 'web' ? t('guard.jail.withinWeb') : editing.source === 'tls' ? t('guard.jail.withinTls') : t('guard.jail.within') }}</span>
             <el-input-number v-model="editing.maxRetry" :min="1" :max="1000" />
             <span>{{ t('guard.jail.timesThenBan') }}</span>
           </div>
@@ -349,8 +361,8 @@
         <el-form-item :label="t('common.enable')"><el-switch v-model="editing.enable" /></el-form-item>
 
         <el-divider content-position="left">{{ t('guard.jail.testTitle') }}</el-divider>
-        <el-form-item :label="editing.source === 'web' ? t('guard.jail.testPaths') : t('guard.jail.testLines')">
-          <el-input v-model="testLines" type="textarea" :rows="4" class="mono" :placeholder="editing.source === 'web' ? t('guard.jail.testPathsPlaceholder') : t('guard.jail.testPlaceholder')" />
+        <el-form-item :label="testLabel">
+          <el-input v-model="testLines" type="textarea" :rows="4" class="mono" :placeholder="testPlaceholder" />
           <div class="test-actions">
             <el-button size="small" :icon="FlaskConical" :loading="testing" :disabled="!testLines.trim() || (editing.source !== 'web' && !editing.filter.trim())" @click="runTest">{{ t('common.test') }}</el-button>
             <span v-if="testResults" class="help">{{ t('guard.jail.testSummary', { matched: testResults.filter((r) => r.matched).length, total: testResults.length }) }}</span>
@@ -360,6 +372,7 @@
               <el-tag size="small" :type="r.matched ? (r.ignored ? 'info' : 'danger') : 'info'" effect="plain">
                 {{ r.matched ? (r.ignored ? t('guard.jail.testIgnored', { host: r.host }) : r.host || t('guard.jail.testHit')) : t('guard.jail.testNoMatch') }}
               </el-tag>
+              <el-tag v-if="r.kind" size="small" type="info" effect="plain">{{ t(`guard.tlsKind.${r.kind}`) }}</el-tag>
               <span class="mono line">{{ r.line }}</span>
             </div>
           </div>
@@ -492,6 +505,8 @@ interface TestResult {
   line: string
   matched: boolean
   host?: string
+  // TLS 握手失败规则测试时该原因所属的类别
+  kind?: string
   ignored?: boolean
 }
 
@@ -500,7 +515,9 @@ const route = useRoute()
 const router = useRouter()
 const { isMobile, labelPosition } = useFormLayout()
 
-const sources = ['file', 'journal', 'command', 'docker', 'event', 'web']
+const sources = ['file', 'journal', 'command', 'docker', 'event', 'web', 'tls']
+// TLS 握手失败的原因类别，与后端 webprobe.TLSKinds 一致
+const tlsKindList = ['eof', 'reset', 'timeout', 'protocol', 'negotiation', 'nocert', 'alert', 'other']
 const eventTypes = ['auth.failed', 'waf.blocked', 'knock.failed']
 const defaultTrapPorts = '23,135,1433,1521,3389,5900,6379,11211'
 
@@ -657,6 +674,43 @@ const webListeners = computed({
 })
 
 const webPresets = computed(() => presets.value.filter((p) => p.source === 'web'))
+// sourcePresets 为当前来源（Web 路径探测或 TLS 握手失败）可套用的模板
+const sourcePresets = computed(() => presets.value.filter((p) => p.source === editing.value.source))
+
+// tlsKinds 把以换行分隔的原因类别映射为多选框的值
+const tlsKinds = computed({
+  get: () => editing.value.filter.split('\n').filter(Boolean),
+  set: (v: string[]) => {
+    // 按固定顺序保存，与后端一致
+    editing.value.filter = tlsKindList.filter((k) => v.includes(k)).join('\n')
+  },
+})
+
+function tlsKindsOf(j: Jail) {
+  return tlsKindList.filter((k) => j.filter.split('\n').includes(k))
+}
+
+const testLabel = computed(() => {
+  switch (editing.value.source) {
+    case 'web':
+      return t('guard.jail.testPaths')
+    case 'tls':
+      return t('guard.jail.testReasons')
+    default:
+      return t('guard.jail.testLines')
+  }
+})
+
+const testPlaceholder = computed(() => {
+  switch (editing.value.source) {
+    case 'web':
+      return t('guard.jail.testPathsPlaceholder')
+    case 'tls':
+      return t('guard.jail.testReasonsPlaceholder')
+    default:
+      return t('guard.jail.testPlaceholder')
+  }
+})
 
 function listenerLabel(l: WebListener) {
   return `${l.name || t('web.unnamedListener')} (:${l.port})`
@@ -685,9 +739,14 @@ function webScopeText(j: Jail) {
 function setSource(v: string | number | boolean | undefined) {
   const next = String(v)
   const prev = editing.value.source
-  if (prev !== next && [prev, next].some((s) => s === 'web' || s === 'event')) {
+  if (prev !== next && [prev, next].some((s) => s === 'web' || s === 'tls' || s === 'event')) {
     editing.value.target = next === 'event' ? eventTypes[0] : ''
     editing.value.preset = undefined
+    // 路径规则、日志正则与原因类别互不通用，切换来源时清空
+    if (prev === 'tls' || next === 'tls') {
+      editing.value.filter = ''
+      editing.value.ignore = ''
+    }
   }
   editing.value.source = next
 }
@@ -695,9 +754,10 @@ function setSource(v: string | number | boolean | undefined) {
 // applyWebPreset 套用 Web 路径探测模板，保留已选的监听
 function applyWebPreset(id: string) {
   const target = editing.value.target
-  const p = webPresets.value.find((x) => x.preset === id)
+  const source = editing.value.source === 'tls' ? 'tls' : 'web'
+  const p = sourcePresets.value.find((x) => x.preset === id) ?? webPresets.value.find((x) => x.preset === id)
   if (!p) {
-    editing.value = { ...emptyJail(), source: 'web', target, name: editing.value.name, remark: editing.value.remark }
+    editing.value = { ...emptyJail(), source, target, name: editing.value.name, remark: editing.value.remark }
     return
   }
   editing.value = { ...emptyJail(), ...JSON.parse(JSON.stringify(p)), target, name: presetName(p), enable: true, remark: editing.value.remark }
@@ -718,7 +778,7 @@ function targetLines(j: Jail) {
   if (j.source === 'event') {
     return [t(`guard.event.${eventKey(j.target)}`)]
   }
-  if (j.source === 'web') {
+  if (j.source === 'web' || j.source === 'tls') {
     const keys = j.target.split('\n').filter(Boolean)
     return keys.length ? keys.map(listenerName) : [t('guard.jail.allListeners')]
   }
@@ -752,6 +812,8 @@ const sourceHelp = computed(() => {
       return t('guard.sourceHelp.docker')
     case 'web':
       return t('guard.sourceHelp.web')
+    case 'tls':
+      return t('guard.sourceHelp.tls')
     default:
       return t('guard.sourceHelp.event')
   }
@@ -1057,6 +1119,14 @@ onMounted(async () => {
 .w-420 {
   width: 420px;
   max-width: 100%;
+}
+.tls-kinds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tls-kinds .el-checkbox {
+  margin-right: 0;
 }
 .cond {
   display: flex;

@@ -75,7 +75,8 @@
     "command": "命令輸出",
     "docker": "Docker 容器",
     "event": "Gately 事件",
-    "web": "Web 路徑探測"
+    "web": "Web 路徑探測",
+    "tls": "TLS 握手失敗"
   },
   "target": {
     "file": "檔案路徑",
@@ -83,7 +84,8 @@
     "command": "命令",
     "docker": "容器名稱",
     "event": "事件",
-    "web": "監聽"
+    "web": "監聽",
+    "tls": "監聽"
   },
   "event": {
     "authFailed": "管理後台登入失敗",
@@ -98,7 +100,8 @@
     "command": "執行一條持續輸出日誌的命令並讀取其輸出，例如 OpenWrt 的 logread -f；命令結束後自動重新啟動。",
     "docker": "讀取指定容器的日誌，需要 Docker 管理模組能連線到 Docker。",
     "event": "統計 Gately 自身的事件，事件中帶有來源 IP，不需要填寫過濾規則。",
-    "web": "統計 Web 服務處理的請求，依監聽、路徑與狀態碼計數，不需要讀取日誌。無論哪個監聽觸發，封鎖都對全部站點與系統防火牆生效。"
+    "web": "統計 Web 服務處理的請求，依監聽、路徑與狀態碼計數，不需要讀取日誌。無論哪個監聽觸發，封鎖都對全部站點與系統防火牆生效。",
+    "tls": "統計 Web 服務 HTTPS 監聽上的 TLS 握手失敗，依失敗類型、監聽與次數封鎖。在握手階段就中斷的探測不會產生 HTTP 請求，路徑探測統計不到。封鎖對全部站點與系統防火牆生效。"
   },
   "jail": {
     "intro": "從日誌中辨識失敗記錄，同一 IP 在統計視窗內達到次數即被封鎖。",
@@ -152,7 +155,12 @@
     "morePaths": "另外 {n} 條",
     "testPaths": "請求路徑",
     "testPathsPlaceholder": "每行一個路徑，例如 /.env；只測試路徑規則",
-    "testHit": "命中"
+    "testHit": "命中",
+    "tlsKinds": "握手失敗類型",
+    "tlsKindsHelp": "勾選要統計的失敗類型，至少選一種。瀏覽器預連線、手機網路切換也會產生「握手中途中斷」，此類規則的次數宜設得寬鬆。",
+    "withinTls": "內握手失敗",
+    "testReasons": "失敗原因",
+    "testReasonsPlaceholder": "每行一條握手失敗原因，例如 EOF、tls: first record does not look like a TLS handshake；只測試類型"
   },
   "trap": {
     "title": "誘餌連接埠",
@@ -245,6 +253,34 @@
     "web-404": {
       "name": "Web 404 探測",
       "desc": "1 分鐘內 10 次存取不存在的路徑（404 或 444）即封鎖，已排除 favicon、robots.txt 等常見路徑"
+    },
+    "tls-probe": {
+      "name": "TLS 異常握手",
+      "desc": "傳送明文 HTTP、過低協定版本或無法協商參數的來源，1 分鐘內 5 次即封鎖，正常瀏覽器不會產生這類失敗"
+    },
+    "tls-abort": {
+      "name": "TLS 握手中斷",
+      "desc": "握手中途中斷、被重設或逾時，1 分鐘內 20 次即封鎖；瀏覽器預連線與不穩定的網路也會產生這類失敗，次數不宜調低"
     }
+  },
+  "tlsKind": {
+    "eof": "握手中途中斷（EOF）",
+    "reset": "連線被重設",
+    "timeout": "握手逾時",
+    "protocol": "非 TLS 或協定錯誤",
+    "negotiation": "無法協商參數",
+    "nocert": "未知網域（無憑證）",
+    "alert": "客戶端中止（TLS 警示）",
+    "other": "其他"
+  },
+  "tlsKindHelp": {
+    "eof": "對端連上後直接關閉或握手中途中斷，連接埠探測常見；瀏覽器預連線也會出現。",
+    "reset": "對端重設了連線（connection reset、broken pipe）。",
+    "timeout": "對端連上後遲遲不完成握手。",
+    "protocol": "對端送來明文 HTTP、SSLv2、亂碼或過低的協定版本，正常瀏覽器不會出現。",
+    "negotiation": "雙方沒有共同的加密套件、金鑰交換、曲線或應用層協定。",
+    "nocert": "請求的網域不屬於任何站點（沒有憑證）。站點明確填寫了網域卻缺憑證屬於設定問題，不會計入。",
+    "alert": "對端送來 TLS 警示後中止，例如不信任本機憑證；多半是客戶端自身設定，不建議用來封鎖。",
+    "other": "不屬於以上任何類別的失敗。"
   }
 }
