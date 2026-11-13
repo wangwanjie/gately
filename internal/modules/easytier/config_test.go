@@ -109,14 +109,18 @@ func TestValidate(t *testing.T) {
 		"子网代理映射掩码不同": func(o *Options) {
 			o.ProxyNetworks = "192.168.1.0/24->10.0.0.0/16"
 		},
-		"子网代理IPv6": func(o *Options) { o.ProxyNetworks = "fd00::/64" },
-		"端口转发缺目标":  func(o *Options) { o.PortForwards = "tcp://127.0.0.1:2222" },
-		"端口转发协议错":  func(o *Options) { o.PortForwards = "http://127.0.0.1:2222/10.0.0.1:22" },
-		"端口转发主机名":  func(o *Options) { o.PortForwards = "tcp://localhost:2222/10.0.0.1:22" },
-		"端口转发端口0":  func(o *Options) { o.PortForwards = "tcp://127.0.0.1:0/10.0.0.1:22" },
-		"出口节点非IP":  func(o *Options) { o.ExitNodes = "nas" },
-		"环境变量格式":   func(o *Options) { o.Env = "BAD LINE" },
-		"环境变量名含横线": func(o *Options) { o.Env = "A-B=1" },
+		"子网代理IPv6":  func(o *Options) { o.ProxyNetworks = "fd00::/64" },
+		"端口转发缺目标":   func(o *Options) { o.PortForwards = "tcp://127.0.0.1:2222" },
+		"端口转发协议错":   func(o *Options) { o.PortForwards = "http://127.0.0.1:2222/10.0.0.1:22" },
+		"端口转发主机名":   func(o *Options) { o.PortForwards = "tcp://localhost:2222/10.0.0.1:22" },
+		"端口转发端口0":   func(o *Options) { o.PortForwards = "tcp://127.0.0.1:0/10.0.0.1:22" },
+		"出口节点非IP":   func(o *Options) { o.ExitNodes = "nas" },
+		"环境变量格式":    func(o *Options) { o.Env = "BAD LINE" },
+		"环境变量名含横线":  func(o *Options) { o.Env = "A-B=1" },
+		"附加参数写密钥":   func(o *Options) { o.ExtraArgs = "--no-tun --network-secret=abc" },
+		"附加参数写密钥分开": func(o *Options) { o.ExtraArgs = "--network-secret abc" },
+		"无密钥共享网段":   func(o *Options) { o.NetworkSecret, o.ProxyNetworks = "", "192.168.1.0/24" },
+		"无密钥作出口节点":  func(o *Options) { o.NetworkSecret, o.EnableExitNode = "", true },
 		"节点地址过多": func(o *Options) {
 			o.Peers = strings.Repeat("tcp://1.2.3.4:1\n", maxLines+1)
 		},
