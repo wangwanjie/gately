@@ -376,6 +376,10 @@ func (m *Module) serverContent(s *Server) (string, error) {
 // runServerLocked 按配置启停 frps 实例，内容无法生成时停止实例并记录原因。调用方持有 mu。
 func (m *Module) runServerLocked(s *Server, force bool) {
 	content, err := m.serverContent(s)
+	if content != "" && err == nil {
+		// 启动前就允许学习代理端口，frpc 抢在 publishServerPorts 之前申请的端口也能登记
+		m.armLearn(s.Key, s.ServerSettings)
+	}
 	m.runInstance(m.servers, binServer, s.Key, s.Name, content, force)
 	if err != nil {
 		m.servers[s.Key].err = err.Error()

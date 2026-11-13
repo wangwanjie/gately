@@ -47,6 +47,7 @@ func newProxyBody(typ string, port int) map[string]any {
 func TestNewProxyLearnsTCPPort(t *testing.T) {
 	m := newAccessModule(Server{Key: "k1", Name: "k1"})
 	t.Cleanup(func() { m.clearServerPorts("k1") })
+	m.armLearn("k1", ServerSettings{})
 	rec := postPlugin(t, m, "k1", newProxyBody("tcp", 6029))
 	var resp loginResponse
 	if err := json.Unmarshal(rec.Body.Bytes(), &resp); err != nil || resp.Reject || !resp.Unchange {
@@ -81,14 +82,24 @@ func TestNewProxyUnknownServerIgnored(t *testing.T) {
 func TestClearServerPortsForgets(t *testing.T) {
 	m := newAccessModule(Server{Key: "k2", Name: "k2"})
 	t.Cleanup(func() { m.clearServerPorts("k2") })
+	// 实例运行前（未开始学习）的申请不登记
+	postPlugin(t, m, "k2", newProxyBody("tcp", 6062))
+	if covers(6062) {
+		t.Fatal("实例未运行时不应学习端口")
+	}
+	m.publishServerPorts("k2", ServerSettings{BindPort: 7000, AllowPorts: "6100-6110,6061"}, true)
 	postPlugin(t, m, "k2", newProxyBody("tcp", 6061))
-	m.publishServerPorts("k2", ServerSettings{BindPort: 7000, AllowPorts: "6100-6110"}, true)
 	if !covers(6061) || !covers(7000) || !covers(6105) {
 		t.Fatal("运行中应登记控制端口、允许范围与学到的代理端口")
 	}
 	m.publishServerPorts("k2", ServerSettings{BindPort: 7000}, false)
 	if covers(6061) || covers(7000) || covers(6105) {
 		t.Fatal("停用后应撤销全部登记")
+	}
+	// 停止时仍在处理的 NewProxy 请求不会把端口重新登记回去
+	m.learnProxyPort("k2", 6061)
+	if covers(6061) {
+		t.Fatal("实例停止后不应再学习端口")
 	}
 	// 重新运行后学到的端口已被忘记，需要 frpc 重新申请
 	m.publishServerPorts("k2", ServerSettings{BindPort: 7000}, true)
@@ -101,14 +112,36 @@ func TestClearServerPortsForgets(t *testing.T) {
 func TestLearnedPortsCapped(t *testing.T) {
 	m := newAccessModule(Server{Key: "k3", Name: "k3"})
 	t.Cleanup(func() { m.clearServerPorts("k3") })
+	m.armLearn("k3", ServerSettings{})
 	for p := 1; p <= maxLearnedPorts+500; p++ {
 		m.learnProxyPort("k3", p)
 	}
 	m.learnMu.Lock()
-	n := len(m.learned["k3"])
+	n := len(m.learned["k3"].ports)
 	m.learnMu.Unlock()
 	if n != maxLearnedPorts {
 		t.Fatalf("记住的端口数应封顶 %d，得到 %d", maxLearnedPorts, n)
+	}
+}
+
+// 设置了 allowPorts 时只学习范围内的端口：frps 在校验 allowPorts 之前调用插件，范围外的申请会被 frps 拒绝。
+// 修改 allowPorts 后忘记不再允许的端口
+func TestLearnRespectsAllowPorts(t *testing.T) {
+	m := newAccessModule(Server{Key: "k4", Name: "k4"})
+	t.Cleanup(func() { m.clearServerPorts("k4") })
+	m.publishServerPorts("k4", ServerSettings{BindPort: 7004, AllowPorts: "1-65535"}, true)
+	postPlugin(t, m, "k4", newProxyBody("tcp", 6071))
+	postPlugin(t, m, "k4", newProxyBody("tcp", 6200))
+	if !covers(6071) || !covers(6200) {
+		t.Fatal("范围内的端口应学习")
+	}
+	m.publishServerPorts("k4", ServerSettings{BindPort: 7004, AllowPorts: "6000-6100"}, true)
+	if !covers(6071) || covers(6200) {
+		t.Fatal("缩小 allowPorts 后应忘记范围外的端口")
+	}
+	postPlugin(t, m, "k4", newProxyBody("tcp", 6300))
+	if covers(6300) {
+		t.Fatal("allowPorts 范围外的申请不应登记")
 	}
 }
 
@@ -185,6 +218,7 @@ func TestRealFrpsLearnsProxyPort(t *testing.T) {
 		t.Cleanup(func() { _ = cmd.Process.Kill(); _ = cmd.Wait() })
 		return cmd
 	}
+	m.armLearn("real", ServerSettings{BindPort: bind})
 	start(frps, "s.toml")
 	time.Sleep(500 * time.Millisecond)
 	start(frpc, "c.toml")
