@@ -178,6 +178,7 @@ func (a *App) handleThirdCallback(w http.ResponseWriter, r *http.Request) {
 	// 整页跳转带的是浏览器自身的语言，不代表界面语言，不在这里记录；进入管理界面后由前端上报
 	a.sysLogs.Add(logbuf.LevelInfo, "auth", "通过第三方登录 "+id.String()+" 从 "+ip+" 登录")
 	a.audit.Record(audit.Entry{Actor: id.String(), IP: ip, Via: audit.Via(r), Category: audit.CategoryLogin, Method: "GET", Path: thirdauth.CallbackPath, Status: http.StatusFound, Detail: "第三方登录"})
+	a.noteLoginIP(ip, id.String(), "第三方登录")
 	http.SetCookie(w, &http.Cookie{
 		Name: auth.CookieName, Value: token, Path: "/", Expires: exp,
 		HttpOnly: true, SameSite: http.SameSiteStrictMode, Secure: r.TLS != nil || strings.HasPrefix(cfg.CallbackBase, "https://"),

@@ -94,7 +94,7 @@
     },
     "security": {
       "name": "Seguridad e inicios de sesión",
-      "desc": "Inicios de sesión correctos y fallidos, bloqueos y acceso a contenido sensible"
+      "desc": "Inicios de sesión correctos y fallidos, inicios desde direcciones nuevas, bloqueos y acceso a contenido sensible"
     },
     "perf": {
       "name": "Alertas de rendimiento",

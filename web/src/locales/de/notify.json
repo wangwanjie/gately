@@ -94,7 +94,7 @@
     },
     "security": {
       "name": "Sicherheit & Anmeldungen",
-      "desc": "Erfolgreiche und fehlgeschlagene Anmeldungen, Sperren und Zugriff auf sensible Inhalte"
+      "desc": "Erfolgreiche und fehlgeschlagene Anmeldungen, Anmeldungen von neuen Adressen, Sperren und Zugriff auf sensible Inhalte"
     },
     "perf": {
       "name": "Leistungswarnungen",

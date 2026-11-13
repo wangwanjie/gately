@@ -94,7 +94,7 @@
     },
     "security": {
       "name": "Segurança e logins",
-      "desc": "Logins bem-sucedidos e com falha, bloqueios e acesso a conteúdo sensível"
+      "desc": "Logins bem-sucedidos e com falha, logins de novos endereços, bloqueios e acesso a conteúdo sensível"
     },
     "perf": {
       "name": "Alertas de desempenho",

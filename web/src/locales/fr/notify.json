@@ -94,7 +94,7 @@
     },
     "security": {
       "name": "Sécurité et connexions",
-      "desc": "Connexions réussies et échouées, bannissements et accès à des contenus sensibles"
+      "desc": "Connexions réussies et échouées, connexions depuis de nouvelles adresses, bannissements et accès à des contenus sensibles"
     },
     "perf": {
       "name": "Alertes de performances",

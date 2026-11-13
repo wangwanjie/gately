@@ -220,6 +220,7 @@ func (a *App) handlePasskeyLoginFinish(w http.ResponseWriter, r *http.Request) {
 	a.audit.Record(audit.Entry{Actor: user, IP: ip, Via: audit.Via(r), Category: audit.CategoryLogin, Method: "POST", Path: "/api/login/passkey/finish", Status: http.StatusOK, Detail: "Passkey 登录"})
 	events.Publish(events.Event{Type: events.LoginSuccessful, Source: "管理后台", Level: events.LevelInfo,
 		Title: "管理后台登录成功", Message: fmt.Sprintf("%s 从 %s 登录", user, ip), Fields: map[string]string{"ip": ip, "user": user}})
+	a.noteLoginIP(ip, user, "Passkey")
 	http.SetCookie(w, &http.Cookie{
 		Name: auth.CookieName, Value: token, Path: "/", Expires: exp,
 		HttpOnly: true, SameSite: http.SameSiteStrictMode, Secure: r.TLS != nil,

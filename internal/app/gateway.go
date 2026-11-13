@@ -300,5 +300,6 @@ func (a *App) issueGatewaySession(w http.ResponseWriter, r *http.Request, user s
 	a.audit.Record(audit.Entry{Actor: "fnOS:" + user, IP: ip, Via: audit.Via(r), Category: audit.CategoryLogin, Method: r.Method, Path: r.URL.Path, Status: http.StatusOK, Detail: "飞牛登录态自动登录"})
 	events.Publish(events.Event{Type: events.LoginSuccessful, Source: "管理后台", Level: events.LevelInfo,
 		Title: "管理后台登录成功", Message: fmt.Sprintf("飞牛用户 %s 从 %s 经统一网关自动登录", user, ip), Fields: map[string]string{"ip": ip, "user": "fnOS:" + user}})
+	a.noteLoginIP(ip, "fnOS:"+user, "统一网关")
 	return exp
 }

@@ -38,6 +38,7 @@ const (
 	NotifyTest      = "notify.test"
 	STUNChanged     = "stun.changed"
 	LoginSuccessful = "login.success"
+	LoginNewIP      = "login.newip" // 管理后台从未登录过的来源地址登录成功
 	AuditChange     = "audit.change"
 	AuditAccess     = "audit.access"
 	PerfAlert       = "perf.alert"
@@ -91,6 +92,7 @@ var Catalog = []TypeInfo{
 	{KnockOpened, "端口敲门：敲门成功", LevelInfo},
 	{KnockFailed, "端口敲门：敲门被拒绝", LevelWarn},
 	{LoginSuccessful, "管理后台：登录成功", LevelInfo},
+	{LoginNewIP, "管理后台：新地址登录", LevelWarn},
 	{AuditChange, "管理后台：配置变更", LevelInfo},
 	{AuditAccess, "管理后台：访问敏感内容", LevelWarn},
 	{PerfAlert, "性能监控：触发告警", LevelWarn},
