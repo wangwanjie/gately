@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -155,6 +156,7 @@ exec sleep 30
 	cli := `#!/bin/sh
 D="` + dir + `"
 echo "$@" >> "$D/cli.calls"
+if [ -f "$D/cli-slow" ]; then sleep 0.5; fi
 if [ -f "$D/cli-fail" ]; then
   echo "Error: failed to get manage client" >&2
   echo "Caused by:" >&2
@@ -584,4 +586,35 @@ func coversPort(port int) bool {
 		}
 	}
 	return false
+}
+
+// TestStatusQueriesCoalesced 验证同一实例同时发起的状态查询只执行一次 easytier-cli，
+// 管理端口响应慢时总览页与状态页同时轮询不会叠加启动多个进程。
+func TestStatusQueriesCoalesced(t *testing.T) {
+	m, dir := newTestModule(t)
+	installFakes(t, dir)
+	m.cfg.Instances = []Instance{{Key: "a", Name: "home", Enable: true, Options: validOptions()}}
+	if err := m.Start(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	defer m.Stop()
+	waitFor(t, "core 启动", func() bool { return pidOf(m, "a") != 0 })
+	if err := os.WriteFile(filepath.Join(dir, "cli-slow"), nil, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	_ = os.Remove(filepath.Join(dir, "cli.calls"))
+	var wg sync.WaitGroup
+	for i := 0; i < 6; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			if v, ok := m.status("a"); !ok || v.Status != "running" {
+				t.Errorf("状态错误: %+v", v)
+			}
+		}()
+	}
+	wg.Wait()
+	if n := strings.Count(readFile(dir, "cli.calls"), " peer"); n != 1 {
+		t.Fatalf("并发查询应合并为一次 peer 调用，实际 %d 次:\n%s", n, readFile(dir, "cli.calls"))
+	}
 }
