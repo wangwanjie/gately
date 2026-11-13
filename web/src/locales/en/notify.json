@@ -94,7 +94,7 @@
     },
     "security": {
       "name": "Security & sign-ins",
-      "desc": "Failed and successful sign-ins, bans and access to sensitive content"
+      "desc": "Failed and successful sign-ins, sign-ins from new addresses, bans and access to sensitive content"
     },
     "perf": {
       "name": "Performance alerts",

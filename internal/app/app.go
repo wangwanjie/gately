@@ -32,6 +32,7 @@ import (
 	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/i18n"
 	"github.com/wangwanjie/gately/internal/logbuf"
+	"github.com/wangwanjie/gately/internal/loginips"
 	"github.com/wangwanjie/gately/internal/luckyimport"
 	"github.com/wangwanjie/gately/internal/module"
 	"github.com/wangwanjie/gately/internal/proxyx"
@@ -91,6 +92,8 @@ type App struct {
 	store      *config.Store
 	settingsMu sync.RWMutex
 	settings   Settings
+	// loginIPs 记录登录管理后台成功过的来源，用于新地址登录告警
+	loginIPs *loginips.Tracker
 	// fileListen 为配置文件中的监听地址（命令行 -listen 覆盖时用于回写）
 	fileListen string
 	// restartPending 表示有设置需要重启后生效；httpsReady 表示 HTTPS 管理服务已启动
@@ -202,6 +205,7 @@ func New(opts Options) (_ *App, err error) {
 	if n := tightenConfigDir(opts.ConfigDir); n > 0 {
 		a.sysLogs.Add(logbuf.LevelInfo, "", fmt.Sprintf("已收紧配置目录中 %d 个文件或目录的权限", n))
 	}
+	a.initLoginIPs()
 	a.fileListen = a.settings.Listen
 	if opts.Listen != "" {
 		a.settings.Listen = opts.Listen
@@ -585,6 +589,7 @@ func (a *App) handleLogin(w http.ResponseWriter, r *http.Request) {
 	a.audit.Record(audit.Entry{Actor: req.Username, IP: ip, Via: audit.Via(r), Category: audit.CategoryLogin, Method: "POST", Path: "/api/login", Status: http.StatusOK, Detail: "密码登录"})
 	events.Publish(events.Event{Type: events.LoginSuccessful, Source: "管理后台", Level: events.LevelInfo,
 		Title: "管理后台登录成功", Message: fmt.Sprintf("%s 从 %s 登录", req.Username, ip), Fields: map[string]string{"ip": ip, "user": req.Username}})
+	a.noteLoginIP(ip, req.Username, "密码")
 	http.SetCookie(w, &http.Cookie{
 		Name:     auth.CookieName,
 		Value:    token,
