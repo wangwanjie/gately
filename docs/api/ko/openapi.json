@@ -17694,7 +17694,7 @@
         "x-token-allowed": true
       },
       "post": {
-        "description": "각 인스턴스는 독립된 `easytier-core` 프로세스를 실행하며 서로 다른 EasyTier 네트워크에 참여할 수 있습니다. 요청 본문 필드: `name` 이름(중복 불가), `enable` 활성화 여부, `networkName` 네트워크 이름(필수, 1-64자, 영문자·숫자와 `. _ @ : + -`)과 `networkSecret` 네트워크 비밀키(이름과 비밀키가 모두 같은 노드끼리만 통신 가능하며, 환경 변수 `ET_NETWORK_SECRET`로 프로세스에 전달되어 프로세스 인자에 나타나지 않고 로그에서도 숨겨짐), `peers` 시작 시 연결할 노드 주소(한 줄에 하나, 예: `tcp://public.easytier.cn:11010`, 프로토콜은 tcp, udp, ws, wss, quic, wg, faketcp와 노드 탐색용 http, https, txt, srv), `listeners` 수신 주소(한 줄에 하나, 반드시 `프로토콜://주소:포트` 형식으로 작성하며, 비워 두면 어떤 포트도 수신하지 않고 다른 노드에만 연결), `dhcp` 가상 IP 자동 할당(끄면 `ipv4`로 고정 가상 IP 지정 가능, 예: `10.126.126.2/24`, 둘 다 없으면 이 노드는 데이터 전달만 하고 네트워크 장치를 만들지 않음), `hostname`, `noTun` 사용자 공간 네트워킹을 사용하고 TUN 장치를 만들지 않음(권한 불필요), `devName` 장치 이름, `proxyNetworks` 네트워크에 공유할 로컬 네트워크(한 줄에 하나, `192.168.1.0/24-\u003e10.1.0.0/24`처럼 써서 네트워크 매핑 가능), `portForwards` 포트 포워딩(한 줄에 하나, 예: `tcp://127.0.0.1:2222/10.126.126.1:22`, 바인드 주소는 직접 지정하며 127.0.0.1 권장), `enableExitNode` 이 기기를 출구 노드로 허용, `exitNodes` 사용할 출구 노드(가상 IPv4, 한 줄에 하나), `latencyFirst` 지연 시간 우선 경로 선택, `kcpProxy`·`quicProxy` KCP·QUIC로 TCP 트래픽 프록시, `extraArgs` `easytier-core` 뒤에 추가할 인자(공백으로 구분), `env` 프로세스에 전달할 환경 변수(한 줄에 `KEY=VALUE` 하나). SOCKS5 옵션은 제공하지 않습니다. EasyTier의 SOCKS5는 모든 주소에서 수신하며 인증이 없기 때문입니다. 관리 포트는 Gately가 127.0.0.1에서 무작위로 할당하며 이 기기에서만 접근할 수 있습니다. 다음 경우 400을 반환합니다. 동시에 활성화된 인스턴스가 같은 포트를 수신하는 경우(TCP와 UDP는 따로 판단) 또는 포트 포워딩이 같은 로컬 포트에 바인드되는 경우, 동시에 활성화되어 TUN을 쓰는 인스턴스의 장치 이름이 같은 경우, 이름이 중복된 경우. 활성화, 일괄 활성화, 복사 시에도 같은 검사를 합니다.\n\n필요한 권한: `easytier:write`.",
+        "description": "각 인스턴스는 독립된 `easytier-core` 프로세스를 실행하며 서로 다른 EasyTier 네트워크에 참여할 수 있습니다. 요청 본문 필드: `name` 이름(중복 불가), `enable` 활성화 여부, `networkName` 네트워크 이름(필수, 1-64자, 영문자·숫자와 `. _ @ : + -`)과 `networkSecret` 네트워크 비밀키(이름과 비밀키가 모두 같은 노드끼리만 통신 가능하며, 환경 변수 `ET_NETWORK_SECRET`로 프로세스에 전달되어 프로세스 인자에 나타나지 않고 로그에서도 숨겨짐), `peers` 시작 시 연결할 노드 주소(한 줄에 하나, 예: `tcp://public.easytier.cn:11010`, 프로토콜은 tcp, udp, ws, wss, quic, wg, faketcp와 노드 탐색용 http, https, txt, srv), `listeners` 수신 주소(한 줄에 하나, 반드시 `프로토콜://주소:포트` 형식으로 작성하며, 비워 두면 어떤 포트도 수신하지 않고 다른 노드에만 연결), `dhcp` 가상 IP 자동 할당(끄면 `ipv4`로 고정 가상 IP 지정 가능, 예: `10.126.126.2/24`, 둘 다 없으면 이 노드는 데이터 전달만 하고 네트워크 장치를 만들지 않음), `hostname`, `noTun` 사용자 공간 네트워킹을 사용하고 TUN 장치를 만들지 않음(권한 불필요), `devName` 장치 이름, `proxyNetworks` 네트워크에 공유할 로컬 네트워크(한 줄에 하나, `192.168.1.0/24-\u003e10.1.0.0/24`처럼 써서 네트워크 매핑 가능), `portForwards` 포트 포워딩(한 줄에 하나, 예: `tcp://127.0.0.1:2222/10.126.126.1:22`, 바인드 주소는 직접 지정하며 127.0.0.1 권장), `enableExitNode` 이 기기를 출구 노드로 허용, `exitNodes` 사용할 출구 노드(가상 IPv4, 한 줄에 하나), `latencyFirst` 지연 시간 우선 경로 선택, `kcpProxy`·`quicProxy` KCP·QUIC로 TCP 트래픽 프록시, `extraArgs` `easytier-core` 뒤에 추가할 인자(공백으로 구분), `env` 프로세스에 전달할 환경 변수(한 줄에 `KEY=VALUE` 하나). SOCKS5 옵션은 제공하지 않습니다. EasyTier의 SOCKS5는 모든 주소에서 수신하며 인증이 없기 때문입니다. 관리 포트는 Gately가 127.0.0.1에서 무작위로 할당하며 이 기기에서만 접근할 수 있습니다. 다음 경우 400을 반환합니다. 동시에 활성화된 인스턴스가 같은 포트를 수신하는 경우(TCP와 UDP는 따로 판단) 또는 포트 포워딩이 같은 로컬 포트에 바인드되는 경우, 동시에 활성화되어 TUN을 쓰는 인스턴스의 장치 이름이 같은 경우, 이름이 중복된 경우. 활성화, 일괄 활성화, 복사 시에도 같은 검사를 합니다. 네트워크 비밀 키가 비어 있으면 `proxyNetworks`를 설정하거나 `enableExitNode`를 켤 수 없습니다(네트워크 이름을 아는 사람이 공유 서브넷에 접근할 수 있기 때문). `extraArgs`에는 `--network-secret`을 쓸 수 없습니다(프로세스 명령줄에 노출됨). 읽기 전용 신원으로 읽으면 `env`는 변수 이름만 남고 `extraArgs`는 전체가 숨겨집니다.\n\n필요한 권한: `easytier:write`.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -25695,7 +25695,7 @@
     },
     "/api/guard/jails/test": {
       "post": {
-        "description": "필요한 권한: `guard:write`.",
+        "description": "요청 본문의 `source`는 규칙 소스입니다. 비우면 로그 규칙으로 해석하며 `filter`는 정규식, `lines`는 로그 줄이고 각 줄의 일치 여부와 추출한 주소를 반환합니다. `web`이면 `filter`, `ignore`를 경로 규칙으로 해석하고 `lines`는 요청 경로입니다. `tls`이면 `filter`는 핸드셰이크 실패 유형(한 줄에 하나: eof, reset, timeout, protocol, negotiation, nocert, alert, other), `lines`는 핸드셰이크 실패 원인(로그에서 「TLS 핸드셰이크 실패」 뒤의 부분)이며, 각 줄의 유형 `kind`와 선택한 유형에 포함되는지를 반환합니다.\n\n필요한 권한: `guard:write`.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -25755,7 +25755,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "로그 샘플로 필터 테스트",
+        "summary": "샘플로 로그 규칙 테스트",
         "tags": [
           "침입 방지"
         ],

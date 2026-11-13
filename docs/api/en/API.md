@@ -492,7 +492,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | POST | `/api/guard/jails-delete` | `guard:write` | Delete in bulk: intrusion prevention rule |
 | PUT | `/api/guard/jails-group` | `guard:write` | Set group in bulk: intrusion prevention rule |
 | GET | `/api/guard/presets` | `guard:read` | Jail templates for common services |
-| POST | `/api/guard/jails/test` | `guard:write` | Test filters against sample log lines |
+| POST | `/api/guard/jails/test` | `guard:write` | Test a jail with samples |
 | GET | `/api/guard/status` | `guard:read` | Firewall sync status and environment |
 | GET | `/api/guard/settings` | `guard:read` | Global settings |
 | PUT | `/api/guard/settings` | `guard:write` | Update global settings |

@@ -492,7 +492,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | POST | `/api/guard/jails-delete` | `guard:write` | Excluir em lote: regra de prevenção de intrusões |
 | PUT | `/api/guard/jails-group` | `guard:write` | Definir o grupo de vários itens: regra de prevenção de intrusões |
 | GET | `/api/guard/presets` | `guard:read` | Modelos de regras para serviços comuns |
-| POST | `/api/guard/jails/test` | `guard:write` | Testar filtros com linhas de log de exemplo |
+| POST | `/api/guard/jails/test` | `guard:write` | Testar uma regra de log com exemplos |
 | GET | `/api/guard/status` | `guard:read` | Status da sincronização do firewall e ambiente |
 | GET | `/api/guard/settings` | `guard:read` | Configurações globais |
 | PUT | `/api/guard/settings` | `guard:write` | Alterar configurações globais |
