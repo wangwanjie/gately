@@ -136,6 +136,18 @@ func (s *realIPSource) apply(r *http.Request) *http.Request {
 }
 
 // trusts 判断地址是否在可信代理列表中。
+// trustsPeer 判断地址是否在当前生效的可信代理列表中；未启用可信代理时返回 false。
+func (s *realIPSource) trustsPeer(a netip.Addr) bool {
+	if s == nil {
+		return false
+	}
+	p := s.p.Load()
+	if p == nil {
+		return false
+	}
+	return p.trusts(a)
+}
+
 func (p *realIPPolicy) trusts(a netip.Addr) bool {
 	if !a.IsValid() {
 		return false
