@@ -49,6 +49,15 @@ func redactJSON(v any) any {
 				t[k] = redactJSON(val)
 			case headerKeys[lk]:
 				t[k] = redactHeaders(val)
+			case lk == "extraargs":
+				// 附加启动参数常写有密钥（如 --network-secret=…），整段脱敏
+				if str, ok := val.(string); ok && str != "" {
+					t[k] = crud.SecretMask
+					continue
+				}
+				t[k] = redactJSON(val)
+			case lk == "env":
+				t[k] = redactEnv(val)
 			case lk == "users":
 				t[k] = redactUsers(val)
 			case lk == "shutdownhttp":
@@ -281,4 +290,33 @@ func (w *redactWriter) finish() {
 	w.Header().Set("Content-Length", strconv.Itoa(len(body)))
 	w.ResponseWriter.WriteHeader(w.status)
 	_, _ = w.ResponseWriter.Write(body)
+}
+
+// redactEnv 脱敏环境变量：保留变量名，隐藏非空的值。支持每行一个 KEY=VALUE 的文本与名称到值的映射。
+func redactEnv(v any) any {
+	switch t := v.(type) {
+	case string:
+		if t == "" {
+			return t
+		}
+		lines := strings.Split(t, "\n")
+		for i, line := range lines {
+			name, val, ok := strings.Cut(line, "=")
+			if ok && strings.TrimSpace(val) != "" {
+				lines[i] = name + "=" + crud.SecretMask
+			} else if !ok && strings.TrimSpace(line) != "" {
+				// 没有等号的行无法区分名称与值，整行隐藏
+				lines[i] = crud.SecretMask
+			}
+		}
+		return strings.Join(lines, "\n")
+	case map[string]any:
+		for k, val := range t {
+			if s, ok := val.(string); ok && s != "" {
+				t[k] = crud.SecretMask
+			}
+		}
+		return t
+	}
+	return redactJSON(v)
 }
