@@ -7,6 +7,7 @@ Prévention d'intrusion à la fail2ban : Gately repère les attaques par force b
 - **Règles de journaux** : lisent des fichiers journaux, le journal systemd, la sortie d'une commande (comme `logread -f` sur OpenWrt) ou les journaux d'un conteneur Docker, repèrent les échecs avec des expressions régulières et bannissent l'IP qui atteint le nombre d'échecs dans la fenêtre de temps. Des modèles sont fournis pour SSH, Dropbear, Nginx, Vaultwarden, Home Assistant, Proxmox VE et d'autres, et l'éditeur permet de coller des lignes d'exemple pour tester les filtres ;
 - **Événements Gately** : les échecs de connexion à la console, les blocages du WAF et les knocks refusés du [Port Knocking](/fr/docs/modules/knock) peuvent aussi alimenter une règle, sans expression régulière ;
 - **Sondage de chemins web** : compte directement les requêtes traitées par le service web par écouteur, chemin et code d’état, sans lire de journal ; les sources qui demandent des chemins leurres comme `/.env` ou `/.git`, ou qui scannent sans cesse des domaines inconnus, sont bannies ;
+- **Échecs de handshake TLS** : compte les échecs de handshake sur les écouteurs HTTPS du service web par type d'échec (coupure en plein handshake, réinitialisation, délai dépassé, pas du TLS ou erreur de protocole, non négociable, domaine inconnu, etc.), écouteur et nombre de fois ; bloque les scans qui coupent pendant le handshake sans jamais envoyer de requête HTTP ;
 - **Ports pièges** : pièges sur des ports que cet hôte n'utilise pas (23, 135, 1433, 3389, 5900, 6379 et d'autres par défaut). Toute source qui s'y connecte est bannie ;
 - **Détection de scan de ports** : une source qui se connecte à des ports fermés de cet hôte plus souvent que le seuil par minute est bannie ;
 - **Une seule liste de bannissement** : les bannissements manuels (réseaux CIDR et bannissements permanents compris) et ceux déclenchés par les échecs d'authentification du service web sont gérés ici. Un bannissement manuel ne peut pas couvrir les adresses de bouclage, car toutes les connexions relayées par cette machine apparaissent avec cette adresse. Les bannissements sont enregistrés et restaurés après un redémarrage ;
@@ -59,6 +60,7 @@ Sans cela, les bannissements s'appliquent toujours aux services de Gately. Pour 
 | Conteneur Docker | Nom du conteneur | Lu via la connexion Docker du module Docker |
 | Événement Gately | Échec de connexion / blocage WAF / knock refusé | Les événements contiennent l'IP source, aucun filtre n'est nécessaire |
 | Sondage de chemins web | Écouteurs (facultatif) et règles de chemin | Compte les requêtes du service web, voir plus bas |
+| Échecs de handshake TLS | Écouteurs (facultatif) et types d'échec | Compte les échecs de handshake sur les écouteurs HTTPS du service web, voir ci-dessous |
 
 Les filtres sont des expressions régulières Go (syntaxe RE2), une par ligne, où `<HOST>` représente l'adresse source, par exemple :
 
@@ -98,6 +100,33 @@ Quel que soit l’écouteur déclencheur, le bannissement entre dans la même li
 :::
 
 L’adresse source est la même que dans le journal d’accès et n’est restaurée que par le protocole PROXY. Pour les sites derrière un CDN qui transmet l’IP réelle dans un en-tête, c’est le nœud du CDN qui serait banni : n’utilisez pas le sondage de chemins sur ces écouteurs. Si Gately est derrière un autre proxy inverse sur la même machine, la source est une adresse de bouclage : avec « Ignorer les adresses du LAN », elle n’est jamais bannie, et la règle reste sans effet.
+
+## Échecs de handshake TLS
+
+Avec la source « Échecs de handshake TLS », la règle compte les échecs de handshake TLS sur les écouteurs HTTPS du service web. Les sondes qui coupent pendant le handshake n'envoient jamais de requête HTTP : la « Détection de chemins web » ne les voit pas, cette source s'en charge :
+
+- **Écouteurs** : un ou plusieurs ; vide signifie tous.
+- **Types d'échec** : au moins un ; seuls les types cochés sont comptés :
+
+| Type | Signification |
+| --- | --- |
+| Coupure en plein handshake (EOF) | Le pair se connecte puis ferme, ou coupe en plein handshake. Fréquent dans les scans de ports ; les préconnexions du navigateur aussi |
+| Connexion réinitialisée | Le pair a réinitialisé la connexion (connection reset, broken pipe) |
+| Délai de handshake dépassé | Le pair se connecte mais ne termine jamais le handshake |
+| Pas du TLS / erreur de protocole | Le pair envoie du HTTP en clair, du SSLv2, du charabia ou une version de protocole trop ancienne. Un navigateur normal ne le fait jamais |
+| Paramètres non négociables | Aucune suite de chiffrement, échange de clés, courbe ou protocole d'application en commun |
+| Domaine inconnu (sans certificat) | Le domaine demandé n'appartient à aucun site. Un site dont le domaine est renseigné mais sans certificat est un problème de configuration et n'est pas compté |
+| Client interrompu (alerte TLS) | Le pair interrompt avec une alerte TLS, par ex. il ne fait pas confiance au certificat. Souvent sa propre configuration ; déconseillé pour bannir |
+| Autre | Échecs qui ne correspondent à aucun type ci-dessus |
+
+Chaque échec de handshake est compté, sans être limité par la réduction du journal. L'adresse source est déjà restaurée via les proxys de confiance et le protocole PROXY, les adresses de la liste d'autorisation ne sont pas comptées et les adresses déjà bannies n'accumulent plus. Dans l'éditeur de règle, collez un motif d'échec (le motif en anglais après « Échec du handshake TLS » dans le journal) pour voir dans quel type il tombe.
+
+Deux modèles sont fournis :
+
+| Modèle | Condition | Remarques |
+| --- | --- | --- |
+| Handshake TLS anormal | Pas du TLS / erreur de protocole, non négociable, 5 fois en 1 minute | Bannit 1 jour. Un navigateur normal ne provoque jamais ces échecs |
+| Handshake TLS interrompu | Coupure, réinitialisation, délai dépassé, 20 fois en 1 minute | Utilise la durée de bannissement par défaut. Les préconnexions du navigateur et les réseaux instables en provoquent aussi : ne baissez pas le nombre |
 
 ## Compromis de la détection de scan
 

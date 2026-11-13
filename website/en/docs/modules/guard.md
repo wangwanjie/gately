@@ -7,6 +7,7 @@ fail2ban-style intrusion prevention: Gately finds brute-force attempts in logs, 
 - **Log jails**: read log files, the systemd journal, command output (such as `logread -f` on OpenWrt) or Docker container logs, find failures with regular expressions and ban an IP that reaches the count within the time window. Templates are included for SSH, Dropbear, Nginx, Vaultwarden, Home Assistant, Proxmox VE and more, and you can paste sample lines into the editor to test the filters;
 - **Gately events**: failed admin console logins, WAF blocks and rejected [port knocks](/en/docs/modules/knock) can also feed a jail, no regular expression needed;
 - **Web path probing**: counts requests handled by the web service by listener, path and status code, without reading logs; sources that request decoy paths such as `/.env` or `/.git`, or keep scanning unknown domains, are banned;
+- **TLS handshake failures**: counts handshake failures on the web service HTTPS listeners by failure type (dropped mid-handshake, reset, timeout, not TLS or protocol error, cannot negotiate, unknown domain and more), listener and number of times, catching scans that drop during the handshake and never send an HTTP request;
 - **Trap ports**: traps on ports this host does not use (23, 135, 1433, 3389, 5900, 6379 and others by default). Any source that connects is banned;
 - **Port-scan detection**: a source that connects to closed ports on this host more often than the threshold per minute is banned;
 - **One ban list**: manual bans (CIDR networks and permanent bans included) and the web service's authentication-failure bans are managed here. Manual bans cannot cover loopback addresses, since connections forwarded through this machine all show that address. Bans are persisted and restored after a restart;
@@ -59,6 +60,7 @@ Without it, bans still apply to Gately's own services. To read host logs, mount 
 | Docker container | Container name | Read through the Docker connection of the Docker module |
 | Gately event | Admin login failure / WAF block / port knock rejected | Events carry the source IP, no filter needed |
 | Web path probing | Listeners (optional) and path rules | Counts web service requests, see below |
+| TLS handshake failures | Listeners (optional) and failure types | Counts handshake failures on web service HTTPS listeners, see below |
 
 Filters are Go regular expressions (RE2 syntax), one per line, with `<HOST>` standing for the source address, for example:
 
@@ -98,6 +100,33 @@ Whichever listener triggers it, the ban goes into the same ban list and applies 
 :::
 
 The source address is the same as in the access log and is only restored through the PROXY protocol. For sites behind a CDN that passes the real IP in a request header, the CDN node would be banned, so do not use path probing on such listeners. When Gately sits behind another reverse proxy on the same host, the source is a loopback address: with "Ignore LAN addresses" on it is never banned, and the jail has no effect.
+
+## TLS handshake failures
+
+With the source "TLS handshake failures", a jail counts TLS handshake failures on the web service HTTPS listeners. Probes that drop during the handshake never send an HTTP request, so "Web path probing" cannot see them; this source handles them:
+
+- **Listeners**: pick one or more, leave empty for all listeners;
+- **Failure types**: pick at least one; only the ticked types count:
+
+| Type | Meaning |
+| --- | --- |
+| Dropped mid-handshake (EOF) | The peer connects then closes, or drops mid-handshake. Common in port probes; browser preconnects also do this |
+| Connection reset | The peer reset the connection (connection reset, broken pipe) |
+| Handshake timeout | The peer connects but never completes the handshake |
+| Not TLS / protocol error | The peer sends plain HTTP, SSLv2, garbage or a too-old protocol version. Normal browsers never do |
+| Cannot negotiate parameters | No shared cipher suite, key exchange, curve or application protocol |
+| Unknown domain (no certificate) | The requested domain belongs to no site. A site with the domain filled in but no certificate is a configuration problem and is not counted |
+| Client aborted (TLS alert) | The peer aborts with a TLS alert, e.g. it does not trust the certificate. Usually the client's own setup; not recommended for banning |
+| Other | Failures that fit none of the types above |
+
+Every handshake failure counts, unaffected by log throttling. The source address is already restored through trusted proxies and the PROXY protocol, allowlisted addresses are not counted and addresses that are already banned stop accumulating. In the jail editor, paste a handshake failure reason (the English reason after "TLS handshake failed" in the log) to see which type it falls into.
+
+Two templates are built in:
+
+| Template | Condition | Notes |
+| --- | --- | --- |
+| TLS abnormal handshake | Not TLS / protocol error, cannot negotiate parameters, 5 times in 1 minute | Bans for 1 day. Normal browsers never cause these failures |
+| TLS handshake aborted | Dropped mid-handshake, reset, timeout, 20 times in 1 minute | Uses the default ban duration. Browser preconnects and unstable networks cause these too, so do not lower the count |
 
 ## Port-scan detection trade-offs
 

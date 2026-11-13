@@ -7,6 +7,7 @@ Prevención de intrusiones al estilo de fail2ban: Gately detecta ataques de fuer
 - **Reglas de registros**: leen archivos de registro, el diario de systemd, la salida de un comando (como `logread -f` en OpenWrt) o los registros de un contenedor Docker, buscan fallos con expresiones regulares y bloquean la IP que alcanza el número de fallos en la ventana de tiempo. Incluye plantillas para SSH, Dropbear, Nginx, Vaultwarden, Home Assistant, Proxmox VE y otros, y en el editor puedes pegar líneas de ejemplo para probar los filtros;
 - **Eventos de Gately**: los inicios de sesión fallidos en el panel y los bloqueos del WAF y las llamadas rechazadas de [Port Knocking](/es/docs/modules/knock) también pueden alimentar una regla, sin expresiones regulares;
 - **Sondeo de rutas web**: cuenta directamente las solicitudes que atiende el servicio web por escucha, ruta y código de estado, sin leer registros; se bloquean los orígenes que piden rutas señuelo como `/.env` o `/.git`, o que escanean una y otra vez dominios desconocidos;
+- **Fallos de handshake TLS**: cuenta los fallos de handshake en los listeners HTTPS del servicio web por tipo de fallo (corte a mitad, reinicio, tiempo agotado, no es TLS o error de protocolo, no negociable, dominio desconocido y más), listener y número de veces; detiene escaneos que cortan durante el handshake y nunca envían una petición HTTP;
 - **Puertos trampa**: trampas en puertos que este equipo no usa (por defecto 23, 135, 1433, 3389, 5900, 6379 y otros). Cualquier origen que se conecte queda bloqueado;
 - **Detección de escaneos**: se bloquea el origen que se conecta a puertos cerrados de este equipo más veces por minuto que el umbral;
 - **Una sola lista de bloqueos**: aquí se gestionan los bloqueos manuales (incluidas redes CIDR y bloqueos permanentes) y los bloqueos automáticos por fallos de autenticación del servicio web. Los bloqueos manuales no pueden incluir direcciones de loopback, porque todas las conexiones reenviadas a través de esta máquina aparecen con esa dirección. Los bloqueos se guardan y se restauran tras reiniciar;
@@ -59,6 +60,7 @@ Sin ello, los bloqueos siguen aplicándose a los servicios de Gately. Para leer 
 | Contenedor Docker | Nombre del contenedor | Se lee a través de la conexión a Docker del módulo Docker |
 | Evento de Gately | Inicio de sesión fallido / bloqueo del WAF / llamada de Port Knocking rechazada | Los eventos incluyen la IP de origen; no hace falta filtro |
 | Sondeo de rutas web | Escuchas (opcional) y reglas de ruta | Cuenta las solicitudes del servicio web, ver más abajo |
+| Fallos de handshake TLS | Listeners (opcional) y tipos de fallo | Cuenta los fallos de handshake en los listeners HTTPS del servicio web, ver abajo |
 
 Los filtros son expresiones regulares de Go (sintaxis RE2), una por línea, y `<HOST>` representa la dirección de origen, por ejemplo:
 
@@ -98,6 +100,33 @@ Sea cual sea la escucha que lo active, el bloqueo entra en la misma lista y se a
 :::
 
 La dirección de origen es la misma del registro de acceso y solo se restaura mediante el protocolo PROXY. En sitios detrás de una CDN que pasa la IP real en una cabecera, se bloquearía el nodo de la CDN, así que no use el sondeo de rutas en esas escuchas. Si Gately está detrás de otro proxy inverso en el mismo equipo, el origen es una dirección de bucle local: con «Ignorar direcciones de la LAN» nunca se bloquea, y la regla no tiene efecto.
+
+## Fallos de handshake TLS
+
+Con el origen «Fallos de handshake TLS», la regla cuenta los fallos de handshake TLS en los listeners HTTPS del servicio web. Los sondeos que cortan durante el handshake nunca envían una petición HTTP, así que el «Sondeo de rutas web» no los ve; este origen se encarga de ellos:
+
+- **Listeners**: elige uno o varios; vacío significa todos.
+- **Tipos de fallo**: elige al menos uno; solo cuentan los marcados:
+
+| Tipo | Significado |
+| --- | --- |
+| Corte a mitad del handshake (EOF) | El otro extremo se conecta y cierra, o corta a mitad del handshake. Común en sondeos de puertos; las preconexiones del navegador también |
+| Conexión reiniciada | El otro extremo reinició la conexión (connection reset, broken pipe) |
+| Tiempo de handshake agotado | El otro extremo se conecta pero nunca completa el handshake |
+| No es TLS / error de protocolo | Envía HTTP en claro, SSLv2, basura o una versión de protocolo demasiado antigua. Un navegador normal nunca lo hace |
+| No se pueden negociar parámetros | No hay suite de cifrado, intercambio de claves, curva ni protocolo de aplicación en común |
+| Dominio desconocido (sin certificado) | El dominio solicitado no pertenece a ningún sitio. Un sitio con el dominio indicado pero sin certificado es un problema de configuración y no se cuenta |
+| Cliente abortó (alerta TLS) | El otro extremo aborta con una alerta TLS, p. ej. no confía en el certificado. Suele ser su propia configuración; no se recomienda bloquear por esto |
+| Otro | Fallos que no encajan en ningún tipo anterior |
+
+Cada fallo de handshake cuenta, sin verse afectado por la limitación del registro. La dirección de origen ya se restaura mediante proxies de confianza y el protocolo PROXY, las direcciones de la lista de permitidos no cuentan y las ya bloqueadas dejan de acumular. En el editor de la regla, pega un motivo de fallo (el motivo en inglés tras «Fallo de handshake TLS» en el registro) para ver en qué tipo cae.
+
+Hay dos plantillas incluidas:
+
+| Plantilla | Condición | Notas |
+| --- | --- | --- |
+| Handshake TLS anómalo | No es TLS / error de protocolo, no negociable, 5 veces en 1 minuto | Bloquea 1 día. Un navegador normal nunca causa estos fallos |
+| Handshake TLS interrumpido | Corte a mitad, reinicio, tiempo agotado, 20 veces en 1 minuto | Usa la duración de bloqueo por defecto. Las preconexiones del navegador y las redes inestables también los causan; no bajes el número |
 
 ## Compromisos de la detección de escaneos
 
