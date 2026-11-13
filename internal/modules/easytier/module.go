@@ -27,6 +27,7 @@ import (
 	"github.com/wangwanjie/gately/internal/openports"
 	"github.com/wangwanjie/gately/internal/outbound"
 	"github.com/wangwanjie/gately/internal/proc"
+	"golang.org/x/sync/singleflight"
 )
 
 // ID 是模块标识。
@@ -88,6 +89,9 @@ type Module struct {
 	// httpClient 返回下载程序使用的 HTTP 客户端，由框架按“更新代理”设置注入
 	httpClient func() *http.Client
 	install    *binstall.Installer
+	// queries 合并同一实例同时发起的状态查询：管理端口未就绪时一次查询最多阻塞数秒，
+	// 总览页与状态页同时轮询不会叠加启动多个 easytier-cli 进程
+	queries singleflight.Group
 }
 
 // New 创建模块。
@@ -457,14 +461,17 @@ func (m *Module) status(key string) (v StatusView, ok bool) {
 		return v, true
 	}
 	m.mu.Unlock()
-	v = m.queryStatus(key)
-	m.mu.Lock()
-	// 查询期间实例可能被重启（运行时被替换），缓存写到当前的运行时上
-	if rt := m.runs[key]; rt != nil {
-		rt.cache, rt.cacheAt = v, time.Now()
-	}
-	m.mu.Unlock()
-	return v, true
+	r, _, _ := m.queries.Do(key, func() (any, error) {
+		v := m.queryStatus(key)
+		m.mu.Lock()
+		// 查询期间实例可能被重启（运行时被替换），缓存写到当前的运行时上
+		if rt := m.runs[key]; rt != nil {
+			rt.cache, rt.cacheAt = v, time.Now()
+		}
+		m.mu.Unlock()
+		return v, nil
+	})
+	return r.(StatusView), true
 }
 
 // statusAll 并行查询全部实例的状态，顺序同实例列表。
