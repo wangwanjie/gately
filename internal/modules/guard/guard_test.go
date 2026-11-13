@@ -1138,3 +1138,78 @@ func TestKnockFailedJail(t *testing.T) {
 		t.Fatal("应提供端口敲门失败的模板")
 	}
 }
+
+// 模块登记新端口（监听刚启动、frps 收到新代理）后，开放端口集合在合并延迟内立即刷新，不等 10 秒一次的轮询；
+// 多次登记合并为一次写入；撤销登记同样即时生效
+func TestFirewallRefreshOnOpenPortsChange(t *testing.T) {
+	cleanDefault(t)
+	old := listeningPortsFn
+	defer func() { listeningPortsFn = old }()
+	listeningPortsFn = func() (map[int]bool, error) {
+		return map[int]bool{443: true}, nil
+	}
+	t.Cleanup(func() {
+		openports.Clear("t-open")
+	})
+	fake := &fakeNFT{output: `{"nftables": []}`}
+	fw := activeFirewall(t, fake)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	s := defaultSettings()
+	s.Scan = ScanSettings{Enable: true, Threshold: 10}
+	fw.apply(ctx, s)
+	openOf := func() string {
+		fw.mu.Lock()
+		defer fw.mu.Unlock()
+		return fw.open
+	}
+	waitOpen := func(want string) {
+		t.Helper()
+		deadline := time.Now().Add(3 * time.Second)
+		for time.Now().Before(deadline) {
+			if openOf() == want {
+				return
+			}
+			time.Sleep(10 * time.Millisecond)
+		}
+		t.Fatalf("开放端口应变为 %q，得到 %q", want, openOf())
+	}
+	if got := openOf(); got != "443" {
+		t.Fatalf("初始开放端口应为 443，得到 %q", got)
+	}
+	go fw.loop(ctx)
+	// 先让循环里 3 秒后的首次轮询不干扰：本测试只看登记变化引起的刷新，3 秒内必须完成
+	before := len(fake.calls)
+	for p := 6029; p <= 6033; p++ {
+		openports.SetPorts("t-open", []int{6029, p})
+	}
+	waitOpen("443,6029,6033")
+	fake.mu.Lock()
+	writes := len(fake.calls) - before
+	fake.mu.Unlock()
+	if writes > 2 {
+		t.Fatalf("连续登记应合并写入，实际写入 %d 次", writes)
+	}
+	openports.Clear("t-open")
+	waitOpen("443")
+}
+
+// 防火墙未生效时登记变化不写入任何规则
+func TestFirewallRefreshOpenInactive(t *testing.T) {
+	cleanDefault(t)
+	fake := &fakeNFT{output: `{"nftables": []}`}
+	fw := activeFirewall(t, fake)
+	fw.status.Active = false
+	fw.refreshOpen(context.Background())
+	if len(fake.calls) != 0 {
+		t.Fatalf("规则未生效时不应写入: %v", fake.calls)
+	}
+}
+
+// 端口停止监听后的宽限期为 portGrace：被封禁而掉线的 frpc 重新登录前端口会关闭一段时间，
+// 这段时间内家里客户端重连到这些端口不应被当成扫描
+func TestPortGraceCoversFrpcReconnect(t *testing.T) {
+	if portGrace < 5*time.Minute {
+		t.Fatalf("宽限期 %v 过短，覆盖不了 frps 心跳超时与 frpc 重连退避", portGrace)
+	}
+}
