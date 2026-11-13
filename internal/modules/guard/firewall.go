@@ -437,8 +437,9 @@ func (f *firewall) applyLocked(ctx context.Context, s Settings) {
 	}
 }
 
-// portGrace 为端口停止监听后仍视为开放的时间，覆盖两到三次轮询（每 10 秒一次）
-const portGrace = 30 * time.Second
+// portGrace 为端口停止监听后仍视为开放的时间。frps 重连、监听器重启、被封禁的 frpc 掉线后重新登录都会让端口空档一段时间，
+// 期间家里的客户端重试连接这些端口不应被当成端口扫描；端口只在最近监听过时才享受宽限，对扫描检测的削弱很有限
+const portGrace = 10 * time.Minute
 
 // listeningLocked 读取正在监听的端口，并加上 portGrace 内监听过的端口。调用方持有 f.mu。
 func (f *firewall) listeningLocked() (map[int]bool, error) {
@@ -728,10 +729,29 @@ func (f *firewall) loop(ctx context.Context) {
 	early := time.NewTimer(3 * time.Second)
 	defer early.Stop()
 	tick := 0
+	// 模块登记的端口变化（监听器刚启动、frps 刚收到代理）后稍作合并，立即刷新开放端口集合，不等下一次轮询
+	var openWake <-chan time.Time
+	var openTimer *time.Timer
+	defer func() {
+		if openTimer != nil {
+			openTimer.Stop()
+		}
+	}()
 	for {
 		select {
 		case <-ctx.Done():
 			return
+		case <-openports.Notify():
+			if openTimer == nil {
+				openTimer = time.NewTimer(openRefreshDelay)
+				openWake = openTimer.C
+			} else if openWake == nil {
+				openTimer.Reset(openRefreshDelay)
+				openWake = openTimer.C
+			}
+		case <-openWake:
+			openWake = nil
+			f.refreshOpen(ctx)
 		case <-early.C:
 			f.poll(ctx)
 		case <-f.kick:
@@ -745,6 +765,19 @@ func (f *firewall) loop(ctx context.Context) {
 			f.poll(ctx)
 		}
 	}
+}
+
+// openRefreshDelay 为收到端口登记变化后合并后续变化的时间
+const openRefreshDelay = 300 * time.Millisecond
+
+// refreshOpen 在规则生效时立即按当前监听与模块登记的端口刷新开放端口与诱饵端口集合。
+func (f *firewall) refreshOpen(ctx context.Context) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if !f.status.Active {
+		return
+	}
+	f.refreshPortsLocked(ctx)
 }
 
 // retry 在规则未生效、且原因可能自行消失（写入出错、稍后才安装 nft）时重新写入。
