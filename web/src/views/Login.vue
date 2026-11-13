@@ -223,6 +223,15 @@ async function submit() {
   if (loading.value) {
     return
   }
+  // 用户名或密码为空时直接在前端提示，不向后端发起登录请求
+  if (form.username.trim() === '') {
+    ElMessage.warning(t('login.usernameRequired'))
+    return
+  }
+  if (form.password === '') {
+    ElMessage.warning(t('login.passwordRequired'))
+    return
+  }
   loading.value = true
   try {
     await api.post('/api/login', form)

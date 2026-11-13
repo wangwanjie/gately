@@ -9,6 +9,8 @@
   "subtitle": "Введите имя и пароль администратора",
   "username": "Имя пользователя",
   "usernamePlaceholder": "Введите имя пользователя",
+  "usernameRequired": "Введите имя пользователя",
+  "passwordRequired": "Введите пароль",
   "password": "Пароль",
   "passwordPlaceholder": "Введите пароль",
   "submit": "Войти",

@@ -9,6 +9,8 @@
   "subtitle": "Administrator-Benutzername und Passwort eingeben",
   "username": "Benutzername",
   "usernamePlaceholder": "Benutzernamen eingeben",
+  "usernameRequired": "Bitte Benutzernamen eingeben",
+  "passwordRequired": "Bitte Passwort eingeben",
   "password": "Passwort",
   "passwordPlaceholder": "Passwort eingeben",
   "submit": "Anmelden",

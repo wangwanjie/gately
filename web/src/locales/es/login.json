@@ -9,6 +9,8 @@
   "subtitle": "Introduce tu usuario y contraseña de administrador",
   "username": "Usuario",
   "usernamePlaceholder": "Introduce el nombre de usuario",
+  "usernameRequired": "Introduce el nombre de usuario",
+  "passwordRequired": "Introduce la contraseña",
   "password": "Contraseña",
   "passwordPlaceholder": "Introduce la contraseña",
   "submit": "Iniciar sesión",
