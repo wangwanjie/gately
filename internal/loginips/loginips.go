@@ -15,6 +15,9 @@ import (
 // MaxEntries 是最多保留的来源数。
 const MaxEntries = 200
 
+// lastSaveGap 是已知来源再次登录时，最近时间需要写盘的最小间隔。
+const lastSaveGap = 12 * time.Hour
+
 // Entry 是一个已知来源。
 type Entry struct {
 	// Key 为归并后的地址：IPv4 原样，IPv6 为 /64 前缀
@@ -73,8 +76,13 @@ func (t *Tracker) Observe(ip string, now time.Time) bool {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 	if e, ok := t.entries[key]; ok {
-		// 已知来源只更新内存里的最近时间，不为此写盘
+		// 已知来源的最近时间决定淘汰顺序，重启后也要有效；每次登录都写盘没有必要，
+		// 距上次保存的时间超过 lastSaveGap 时才写，常用地址不会因为重启后时间陈旧而被误淘汰
+		stale := now.Sub(e.Last) >= lastSaveGap
 		e.Last = now
+		if stale && t.save != nil {
+			_ = t.save(t.snapshotLocked())
+		}
 		return false
 	}
 	baseline := len(t.entries) == 0
