@@ -232,12 +232,19 @@ func (m *Module) Stop() error {
 	for _, rt := range m.servers {
 		runs = append(runs, rt)
 	}
+	serverKeys := make([]string, 0, len(m.servers))
+	for key := range m.servers {
+		serverKeys = append(serverKeys, key)
+	}
 	m.clients, m.servers = map[string]*instRuntime{}, map[string]*instRuntime{}
 	gate := m.gate
 	m.gate = nil
 	m.mu.Unlock()
 	for _, rt := range runs {
 		rt.sup.Stop()
+	}
+	for _, key := range serverKeys {
+		m.clearServerPorts(key)
 	}
 	// frps 全部停止后再关闭登录检查端点
 	if gate != nil {
@@ -374,6 +381,8 @@ func (m *Module) runServerLocked(s *Server, force bool) {
 		m.servers[s.Key].err = err.Error()
 		m.logs.Logger(logSource(binServer, s.Name)).Errorf("%v", err)
 	}
+	// frps 运行期间把它的端口登记为开放端口，停用或启动失败时撤销
+	m.publishServerPorts(s.Key, s.ServerSettings, content != "" && m.servers[s.Key].err == "")
 }
 
 // applyClientLocked 重启指定 frpc 实例；实例已删除时停止并清理。调用方持有 mu。
@@ -457,6 +466,9 @@ func (m *Module) dropLocked(runs map[string]*instRuntime, bin, key string) {
 	if rt := runs[key]; rt != nil {
 		rt.sup.Stop()
 		delete(runs, key)
+	}
+	if bin == binServer {
+		m.clearServerPorts(key)
 	}
 	m.removeConfigFile(bin, key)
 }

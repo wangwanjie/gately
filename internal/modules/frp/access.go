@@ -66,7 +66,7 @@ func (g *loginGate) close() {
 
 // pluginTOML 返回追加到 frps 配置末尾的登录插件段。
 func (g *loginGate) pluginTOML(key string) string {
-	return fmt.Sprintf("\n[[httpPlugins]]\nname = %s\naddr = %s\npath = %s\nops = [\"Login\"]\n",
+	return fmt.Sprintf("\n[[httpPlugins]]\nname = %s\naddr = %s\npath = %s\nops = [\"Login\", \"NewProxy\"]\n",
 		quote(loginPluginName), quote(g.ln.Addr().String()), quote("/frps/"+g.token+"/"+key))
 }
 
@@ -74,7 +74,11 @@ func (g *loginGate) pluginTOML(key string) string {
 type loginRequest struct {
 	Op      string `json:"op"`
 	Content struct {
+		// ClientAddress 为 Login 操作的来源地址
 		ClientAddress string `json:"client_address"`
+		// ProxyType 与 RemotePort 为 NewProxy 操作中代理的类型与申请的远程端口
+		ProxyType  string `json:"proxy_type"`
+		RemotePort int    `json:"remote_port"`
 	} `json:"content"`
 }
 
@@ -94,11 +98,16 @@ func (m *Module) handleLogin(w http.ResponseWriter, r *http.Request, key string)
 		return
 	}
 	resp := loginResponse{Unchange: true}
-	// 只配置了 Login 操作；收到其它操作时直接放行
-	if req.Op == "Login" {
+	switch req.Op {
+	case "Login":
 		if reason := m.checkLogin(key, req.Content.ClientAddress); reason != "" {
 			resp = loginResponse{Reject: true, RejectReason: reason}
 			m.rejectedCounter(key).Add(1)
+		}
+	case "NewProxy":
+		// 只记录 TCP 代理申请的远程端口，不改变也不拒绝代理；登录已通过令牌与来源检查
+		if req.Content.ProxyType == "tcp" && m.hasServer(key) {
+			m.learnProxyPort(key, req.Content.RemotePort)
 		}
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -203,4 +212,7 @@ type accessState struct {
 	access atomic.Pointer[map[string]*serverAccess]
 	// rejected 为各实例被拒绝的登录次数，实例 key -> *atomic.Uint64
 	rejected sync.Map
+	// learned 为各实例 frpc 申请过的 TCP 代理远程端口（实例 key -> 端口集合），由 learnMu 保护，见 learnProxyPort
+	learnMu sync.Mutex
+	learned map[string]map[int]bool
 }
