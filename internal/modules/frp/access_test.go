@@ -123,7 +123,7 @@ func TestLoginGateHTTP(t *testing.T) {
 
 	// 写入 frps 配置的插件段指向该端点
 	toml := g.pluginTOML("wl")
-	for _, want := range []string{"[[httpPlugins]]", `addr = "` + g.ln.Addr().String() + `"`, `path = "` + path + `"`, `ops = ["Login"]`} {
+	for _, want := range []string{"[[httpPlugins]]", `addr = "` + g.ln.Addr().String() + `"`, `path = "` + path + `"`, `ops = ["Login", "NewProxy"]`} {
 		if !strings.Contains(toml, want) {
 			t.Errorf("插件配置缺少 %q:\n%s", want, toml)
 		}
