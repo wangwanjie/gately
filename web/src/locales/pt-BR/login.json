@@ -9,6 +9,8 @@
   "subtitle": "Informe o usuário e a senha de administrador",
   "username": "Nome de usuário",
   "usernamePlaceholder": "Digite o nome de usuário",
+  "usernameRequired": "Digite o nome de usuário",
+  "passwordRequired": "Digite a senha",
   "password": "Senha",
   "passwordPlaceholder": "Digite a senha",
   "submit": "Entrar",

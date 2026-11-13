@@ -9,6 +9,8 @@
   "subtitle": "Enter your administrator username and password",
   "username": "Username",
   "usernamePlaceholder": "Enter username",
+  "usernameRequired": "Please enter your username",
+  "passwordRequired": "Please enter your password",
   "password": "Password",
   "passwordPlaceholder": "Enter password",
   "submit": "Sign in",

@@ -9,6 +9,8 @@
   "subtitle": "请输入管理员账号与密码",
   "username": "用户名",
   "usernamePlaceholder": "请输入用户名",
+  "usernameRequired": "请输入用户名",
+  "passwordRequired": "请输入密码",
   "password": "密码",
   "passwordPlaceholder": "请输入密码",
   "submit": "登录",

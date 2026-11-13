@@ -9,6 +9,8 @@
   "subtitle": "관리자 계정과 비밀번호를 입력하세요",
   "username": "사용자 이름",
   "usernamePlaceholder": "사용자 이름을 입력하세요",
+  "usernameRequired": "사용자 이름을 입력하세요",
+  "passwordRequired": "비밀번호를 입력하세요",
   "password": "비밀번호",
   "passwordPlaceholder": "비밀번호를 입력하세요",
   "submit": "로그인",

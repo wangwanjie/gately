@@ -9,6 +9,8 @@
   "subtitle": "Saisissez le nom d'utilisateur et le mot de passe de l'administrateur",
   "username": "Nom d'utilisateur",
   "usernamePlaceholder": "Saisissez le nom d'utilisateur",
+  "usernameRequired": "Veuillez saisir le nom d'utilisateur",
+  "passwordRequired": "Veuillez saisir le mot de passe",
   "password": "Mot de passe",
   "passwordPlaceholder": "Saisissez le mot de passe",
   "submit": "Se connecter",
