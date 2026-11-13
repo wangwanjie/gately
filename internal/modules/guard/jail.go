@@ -327,7 +327,9 @@ type jailRunner struct {
 }
 
 // record 记录一次失败，达到次数后封禁。
-func (r *jailRunner) record(a netip.Addr, line string) {
+// record 记录一次命中。line 只在触发封禁时才调用，用于生成封禁原因：
+// 扫描洪泛时大部分命中来自已封禁或忽略的地址，不必为它们拼接文本。
+func (r *jailRunner) record(a netip.Addr, line func() string) {
 	r.stats.matches.Add(1)
 	if banlist.Default.Ignored(a) {
 		return
@@ -360,11 +362,11 @@ func (r *jailRunner) record(a netip.Addr, line string) {
 	r.stats.bans.Add(1)
 	reason := fmt.Sprintf("%d 秒内失败 %d 次", r.jail.FindTime, len(list))
 	if r.jail.Source == SourceTLS {
-		reason = fmt.Sprintf("%d 秒内 TLS 握手失败 %d 次，最近一次：%s", r.jail.FindTime, len(list), clipText(line, 200))
+		reason = fmt.Sprintf("%d 秒内 TLS 握手失败 %d 次，最近一次：%s", r.jail.FindTime, len(list), clipText(line(), 200))
 	}
 	if r.jail.Source == SourceWeb {
 		// 带上最后一次请求，便于判断是否误封；路径由访客控制，截断后再写入
-		reason = fmt.Sprintf("%d 秒内路径探测 %d 次，最近一次：%s", r.jail.FindTime, len(list), clipText(line, 200))
+		reason = fmt.Sprintf("%d 秒内路径探测 %d 次，最近一次：%s", r.jail.FindTime, len(list), clipText(line(), 200))
 	}
 	r.m.ban(a, r.jail.BanTime, reason, banlist.SourceJailPrefix+r.jail.Key, r.jail.Name)
 }
@@ -384,7 +386,7 @@ func (r *jailRunner) pruneLocked(now time.Time, window time.Duration) {
 // line 处理一行日志。
 func (r *jailRunner) line(text string) {
 	if a, ok := r.match.match(text); ok {
-		r.record(a, text)
+		r.record(a, func() string { return text })
 	}
 }
 

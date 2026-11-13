@@ -403,7 +403,7 @@ func (m *Module) Start(ctx context.Context) error {
 	m.unsub = append(m.unsub, events.Subscribe(m.onEvent))
 	webprobe.SetHandler(m.onWebHit)
 	m.unsub = append(m.unsub, func() { webprobe.SetHandler(nil) })
-	webprobe.SetTLSHandler(m.onTLSFail)
+	// TLS 握手失败处理函数只在有规则时注册（见 refreshTLSLocked），没有规则时 Web 服务连分类都不做
 	m.unsub = append(m.unsub, func() { webprobe.SetTLSHandler(nil) })
 	m.fw.start(m.ctx, s, m.local, m.importKernelBans, m.onFirewallActive)
 	m.applyTrapLocked()
@@ -611,7 +611,7 @@ func (m *Module) onEvent(e events.Event) {
 	}
 	m.mu.Unlock()
 	for _, j := range hit {
-		j.record(a, e.Message)
+		j.record(a, func() string { return e.Message })
 	}
 }
 

@@ -177,7 +177,7 @@ func (m *Module) onWebHit(h webprobe.Hit) {
 	for _, r := range *p {
 		if r.match.web.match(h) {
 			// 主机名与路径由访客控制，%q 转义换行等控制字符，避免伪造日志行与通知内容
-			r.record(a, fmt.Sprintf("%s %q %d", h.Method, h.Host+h.Path, h.Status))
+			r.record(a, func() string { return fmt.Sprintf("%s %q %d", h.Method, h.Host+h.Path, h.Status) })
 		}
 	}
 }
@@ -243,6 +243,12 @@ func (m *Module) refreshTLSLocked() {
 		}
 	}
 	m.tlsJails.Store(&list)
+	// 没有启用的规则时注销处理函数，Web 服务每次握手失败只剩一次原子读取；模块停止后不再注册
+	if m.started && len(list) > 0 {
+		webprobe.SetTLSHandler(m.onTLSFail)
+	} else {
+		webprobe.SetTLSHandler(nil)
+	}
 }
 
 // onTLSFail 由 Web 服务在每次 TLS 握手失败时同步调用，命中规则时计数。
@@ -255,7 +261,7 @@ func (m *Module) onTLSFail(f webprobe.TLSFail) {
 	for _, r := range *p {
 		if r.match.tls.match(f) {
 			// 原因文本来自对端（如 SNI 名称），%q 转义控制字符
-			r.record(a, fmt.Sprintf("%s %q", f.Kind, f.Reason))
+			r.record(a, func() string { return fmt.Sprintf("%s %q", f.Kind, f.Reason) })
 		}
 	}
 }
