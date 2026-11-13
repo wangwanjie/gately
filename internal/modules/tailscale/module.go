@@ -25,6 +25,7 @@ import (
 	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
+	"github.com/wangwanjie/gately/internal/openports"
 	"github.com/wangwanjie/gately/internal/outbound"
 	"github.com/wangwanjie/gately/internal/proc"
 )
@@ -47,6 +48,8 @@ type instRuntime struct {
 	conflict string
 	// inst 是最近一次应用的实例配置，删除实例时据此退出登录与清理状态目录
 	inst Instance
+	// releasePorts 撤销托管 tailscaled 的 SOCKS5 监听端口在 openports 中的登记
+	releasePorts func()
 	// upCancel 取消正在进行的 tailscale up
 	upCancel context.CancelFunc
 	upDone   chan struct{}
@@ -184,6 +187,10 @@ func stopRuntime(rt *instRuntime) {
 		rt.upCancel, rt.upDone = nil, nil
 	}
 	rt.daemon.Stop()
+	if rt.releasePorts != nil {
+		rt.releasePorts()
+		rt.releasePorts = nil
+	}
 }
 
 func (m *Module) findInstance(key string) *Instance {
@@ -306,6 +313,10 @@ func (m *Module) runInstanceLocked(in *Instance, sig, conflict string) {
 		if err := mkdir(in.stateDir(dir), 0o700); err != nil {
 			fail("创建状态目录失败: " + err.Error())
 			return
+		}
+		// SOCKS5 监听对外开放时立即登记为开放端口，进程刚启动、监听尚未出现在系统监听表里时访问不会被扫描检测误判
+		if in.Socks5 != "" && rt.releasePorts == nil {
+			rt.releasePorts = openports.HoldHostPort(in.Socks5)
 		}
 		rt.daemon.Start(proc.Spec{Path: daemon, Args: in.DaemonArgs(dir), Env: in.DaemonEnvList(), Module: ID, Name: in.Name})
 	}

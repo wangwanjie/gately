@@ -27,6 +27,7 @@ import (
 	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
+	"github.com/wangwanjie/gately/internal/openports"
 	"github.com/wangwanjie/gately/internal/outbound"
 	"github.com/wangwanjie/gately/internal/proc"
 )
@@ -58,6 +59,8 @@ type instRuntime struct {
 	conflict string
 	// inst 是最近一次应用的实例配置，删除实例时据此退出登录与清理状态目录
 	inst Instance
+	// releasePorts 撤销托管守护进程的 SOCKS5 监听端口在 openports 中的登记
+	releasePorts func()
 	// upCancel 取消正在进行的 netbird up
 	upCancel context.CancelFunc
 	upDone   chan struct{}
@@ -217,6 +220,10 @@ func stopRuntime(rt *instRuntime) {
 		rt.upCancel, rt.upDone = nil, nil
 	}
 	rt.daemon.Stop()
+	if rt.releasePorts != nil {
+		rt.releasePorts()
+		rt.releasePorts = nil
+	}
 	rt.setAuth("", "")
 }
 
@@ -353,6 +360,10 @@ func (m *Module) runInstanceLocked(in *Instance, sig, conflict string) {
 	var targets []externalTarget
 	if inst.kernel() {
 		targets = m.externalTargetsLocked(&inst)
+	}
+	// 用户态网络下 SOCKS5 监听对外开放时立即登记为开放端口，守护进程刚启动、监听尚未出现在系统监听表里时访问不会被扫描检测误判
+	if inst.ManageDaemon && inst.Userspace && rt.releasePorts == nil {
+		rt.releasePorts = openports.HoldHostPort(inst.socks5Addr())
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan struct{})
