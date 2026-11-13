@@ -236,3 +236,20 @@ func TestMaskLine(t *testing.T) {
 		t.Errorf("密钥未隐藏: %s", got)
 	}
 }
+
+// 对外监听的 TCP 端口与非回环地址的 TCP 端口转发登记为开放端口；UDP 传输与回环地址不登记
+func TestTCPOpenPorts(t *testing.T) {
+	o := Options{
+		Listeners:    "tcp://0.0.0.0:11010\nudp://0.0.0.0:11010\nws://0.0.0.0:11011\nwss://[::]:11012\nquic://0.0.0.0:11013\nwg://0.0.0.0:11014\ntcp://127.0.0.1:11015\nfaketcp://0.0.0.0:11016",
+		PortForwards: "tcp://0.0.0.0:2222/10.126.126.2:22\nudp://0.0.0.0:5353/10.126.126.2:53\ntcp://127.0.0.1:3333/10.126.126.2:22\ntcp://[::]:4444/10.126.126.2:22",
+	}
+	got := o.tcpOpenPorts()
+	slices.Sort(got)
+	want := []int{2222, 4444, 11010, 11011, 11012, 11016}
+	if !slices.Equal(got, want) {
+		t.Fatalf("得到 %v，期望 %v", got, want)
+	}
+	if got := (&Options{}).tcpOpenPorts(); len(got) != 0 {
+		t.Fatalf("没有监听时应为空: %v", got)
+	}
+}
