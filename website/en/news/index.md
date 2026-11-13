@@ -7,6 +7,10 @@ description: Release announcements and notes for each Gately version.
 
 Announcements for major releases are listed below. See [GitHub Releases](https://github.com/wangwanjie/gately/releases) for the full changes and downloads of every version.
 
+## [v0.6.6.2](/en/news/v0.6.6.2)
+
+November 14, 2026 · Managed EasyTier networking; intrusion prevention gets a TLS handshake failure source and port scan detection recognizes the open ports of every module; alert for admin logins from a new address.
+
 ## [v0.6.6](/en/news/v0.6.6)
 
 November 12, 2026 · Security hardening: forged source headers and unlimited file service login attempts fixed; server-side session revocation with sign out of all devices; outbound request limits; per-path backends can strip the path prefix; visitor source port passed to backends; restore can keep the current administrator account; auth marker for two-tier Gately.

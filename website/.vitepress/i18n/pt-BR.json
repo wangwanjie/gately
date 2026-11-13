@@ -84,8 +84,8 @@
   "home": {
     "pill": "Gratuito e de código aberto · Apache-2.0",
     "announce": {
-      "text": "v0.6.6: reforço de segurança, sair de todos os dispositivos, limites para requisições de saída, remoção do prefixo de caminho e porta de origem do visitante →",
-      "link": "/pt-BR/news/v0.6.6"
+      "text": "v0.6.6.2: rede EasyTier, banimento por falhas de handshake TLS, aviso de login de um novo endereço →",
+      "link": "/pt-BR/news/v0.6.6.2"
     },
     "titleLine1": "O gateway de rede tudo em um",
     "titleLine2": "Código aberto e pronto para usar",

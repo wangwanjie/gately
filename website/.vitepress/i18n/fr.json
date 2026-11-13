@@ -84,8 +84,8 @@
   "home": {
     "pill": "Gratuit et open source · Apache-2.0",
     "announce": {
-      "text": "v0.6.6 : renforcement de la sécurité, déconnexion de tous les appareils, limites des requêtes sortantes, retrait du préfixe de chemin et port source du visiteur →",
-      "link": "/fr/news/v0.6.6"
+      "text": "v0.6.6.2 : réseau EasyTier, bannissement sur échecs de handshake TLS, alerte de connexion depuis une nouvelle adresse →",
+      "link": "/fr/news/v0.6.6.2"
     },
     "titleLine1": "La passerelle réseau tout-en-un",
     "titleLine2": "Open source, prête à l'emploi",

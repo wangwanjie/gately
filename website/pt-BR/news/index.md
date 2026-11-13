@@ -7,6 +7,10 @@ description: Anúncios e notas de cada versão do Gately.
 
 Abaixo estão os anúncios das versões principais. Veja as [GitHub Releases](https://github.com/wangwanjie/gately/releases) para as mudanças completas e os downloads de cada versão.
 
+## [v0.6.6.2](/pt-BR/news/v0.6.6.2)
+
+14 de novembro de 2026 · Gerenciamento da rede EasyTier; a prevenção de intrusão ganha a regra de falhas de handshake TLS e a detecção de varredura de portas reconhece as portas abertas de cada módulo; aviso de login de um novo endereço.
+
 ## [v0.6.6](/pt-BR/news/v0.6.6)
 
 12 de novembro de 2026 · Reforço de segurança: corrigidos os cabeçalhos de origem forjados e as tentativas de login ilimitadas nos serviços de arquivos; revogação de sessões no servidor com saída de todos os dispositivos; limites para requisições de saída; backends por caminho podem remover o prefixo do caminho; porta de origem do visitante enviada ao backend; a restauração pode manter a conta de administrador atual; marca de autenticação para Gately em duas camadas.

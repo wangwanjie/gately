@@ -84,8 +84,8 @@
   "home": {
     "pill": "Free and open source · Apache-2.0",
     "announce": {
-      "text": "v0.6.6: security hardening, sign out of all devices, outbound request limits, path prefix stripping and visitor source port →",
-      "link": "/en/news/v0.6.6"
+      "text": "v0.6.6.2 released: EasyTier networking, TLS handshake failure bans, new-address login alerts →",
+      "link": "/en/news/v0.6.6.2"
     },
     "titleLine1": "The all-in-one network gateway",
     "titleLine2": "Open source, ready out of the box",
