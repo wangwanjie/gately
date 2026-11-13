@@ -275,7 +275,14 @@ func TestTLSJailBans(t *testing.T) {
 		m.startJailLocked(j)
 		m.mu.Unlock()
 	}
+	// 没有 TLS 规则时不注册处理函数，Web 服务跳过分类
+	if webprobe.TLSEnabled() {
+		t.Fatal("没有 TLS 规则时不应注册处理函数")
+	}
 	add(Jail{Key: "t1", Name: "tls", Enable: true, Source: SourceTLS, Target: "l1", Filter: "eof\nreset", MaxRetry: 3, FindTime: 60})
+	if !webprobe.TLSEnabled() {
+		t.Fatal("启用 TLS 规则后应注册处理函数")
+	}
 	fail := func(ip, listener, kind string) {
 		webprobe.ReportTLS(webprobe.TLSFail{Addr: netip.MustParseAddr(ip), Listener: listener, Kind: kind, Reason: "reason " + kind})
 	}
@@ -331,6 +338,9 @@ func TestTLSJailBans(t *testing.T) {
 	m.mu.Unlock()
 	if p := m.tlsJails.Load(); p == nil || len(*p) != 0 {
 		t.Fatal("删除规则后快照应为空")
+	}
+	if webprobe.TLSEnabled() {
+		t.Fatal("删除全部 TLS 规则后应注销处理函数")
 	}
 	// 模块停止后取消注册
 	_ = m.Stop()
