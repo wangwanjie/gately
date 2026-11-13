@@ -312,8 +312,14 @@ func sshHandshake(ctx context.Context, s *SSHConfig, algos []string) (client *ss
 	}
 	if err != nil {
 		nc.Close()
-		if ctx.Err() != nil {
-			return nil, hostKeyInfo{}, fmt.Errorf("%w: %v", ctx.Err(), err)
+		cerr := ctx.Err()
+		// 连接期限与 ctx 截止时间相同，连接读写超时可能先于 ctx 的计时器触发，此时 ctx.Err() 仍为 nil。
+		// 已过截止时间就按 ctx 超时处理，调用方据此判断是调用期限到了
+		if d, ok := ctx.Deadline(); cerr == nil && ok && !time.Now().Before(d) {
+			cerr = context.DeadlineExceeded
+		}
+		if cerr != nil {
+			return nil, hostKeyInfo{}, fmt.Errorf("%w: %v", cerr, err)
 		}
 		return nil, hostKeyInfo{}, err
 	}
