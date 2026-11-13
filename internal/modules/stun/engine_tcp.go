@@ -16,6 +16,7 @@ import (
 	"github.com/wangwanjie/gately/internal/banlist"
 	"github.com/wangwanjie/gately/internal/iplist"
 	"github.com/wangwanjie/gately/internal/netpipe"
+	"github.com/wangwanjie/gately/internal/openports"
 	"github.com/wangwanjie/gately/internal/reuseport"
 	stunproto "github.com/wangwanjie/gately/internal/stun"
 )
@@ -48,6 +49,8 @@ func (r *runner) sessionTCP(ctx context.Context) error {
 		}
 		defer ln.Close()
 		r.port = ln.Addr().(*net.TCPAddr).Port
+		// 通道端口监听成功后立即视为开放端口，访客随即连接时不会被扫描检测当成未开放端口
+		defer openports.Hold(ln.Addr())()
 	}
 	local := localTCPAddr(bindIP, r.port)
 	r.mu.Lock()
