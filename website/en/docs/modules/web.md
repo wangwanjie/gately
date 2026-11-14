@@ -240,6 +240,8 @@ Turn on Self-service password change on the Auth users page and shared users can
 
 "IP access control" on the site's "Security" page can be off, allowlist or blocklist. The list takes one IP or subnet per line (such as `192.168.1.0/24`), and can also reference subscribed IP lists.
 
+The "Always-deny list" (`ipDenyList` / `ipDenySets`) on the site's "Security" page works independently of the access mode: a matching source is always rejected, checked before the allowlist and blocklist, and path rules cannot override it; an address that is also on the allowlist is rejected too. For deny-first setups, put a subscribed malicious-IP list in the always-deny list and let your own subnets in with the allowlist.
+
 ### When denied
 
 **When denied** on the site's Security tab decides how requests rejected by a ban, IP access control (including path rules) or the country filter are handled: **Return 403** by default; **Close connection** sends nothing and drops the request, logged as 444, the same as a Close connection site. Combined with an allowlist this lets your own IPs in and drops everyone else. Rate limiting (429) and WAF blocks are not affected.

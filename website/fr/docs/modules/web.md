@@ -240,6 +240,8 @@ Activez Changement de mot de passe en libre-service sur la page Utilisateurs d'a
 
 Le « Contrôle d'accès par IP » de la page « Sécurité » du site peut être désactivé, en liste d'autorisation ou en liste de blocage. La liste accepte une IP ou un sous-réseau par ligne (comme `192.168.1.0/24`), et peut aussi référencer des listes d'IP abonnées.
 
+La « Liste de refus prioritaire » (`ipDenyList` / `ipDenySets`) de la page « Sécurité » du site fonctionne indépendamment du mode d'accès : une source qui correspond est toujours refusée, avant la liste d'autorisation et la liste de blocage, et les règles de chemin ne peuvent pas la contourner ; une adresse également présente dans la liste d'autorisation est refusée aussi. Pour refuser d'abord, placez une liste abonnée d'IP malveillantes dans la liste de refus prioritaire et laissez passer vos propres sous-réseaux avec la liste d'autorisation.
+
 ### En cas de refus
 
 **En cas de refus**, dans l'onglet Sécurité du site, détermine le traitement des requêtes rejetées par un bannissement, le contrôle d'accès par IP (règles de chemin comprises) ou le filtre par pays : **Renvoyer 403** par défaut ; **Fermer la connexion** n'envoie rien et coupe la requête, journalisée en 444, comme un site Fermer la connexion. Associé à une liste d'autorisation, cela laisse passer vos propres IP et coupe toutes les autres. La limitation de débit (429) et les blocages du WAF ne changent pas.

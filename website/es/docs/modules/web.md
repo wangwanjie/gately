@@ -240,6 +240,8 @@ Activa Cambio de contraseña por el usuario en la página Usuarios de autenticac
 
 El «Control de acceso por IP» de la página «Seguridad» del sitio puede estar desactivado, en modo lista de permitidas o en modo lista de bloqueadas. La lista admite una IP o subred por línea (como `192.168.1.0/24`) y además puede hacer referencia a listas de IP suscritas.
 
+La «Lista de denegación prioritaria» (`ipDenyList` / `ipDenySets`) de la página «Seguridad» del sitio funciona con independencia del modo de acceso: un origen que coincide se rechaza siempre, se comprueba antes de la lista de permitidos y de bloqueados, y las reglas de ruta no pueden anularla; una dirección que también esté en la lista de permitidos se rechaza igualmente. Para denegar primero, pon una lista suscrita de IP maliciosas en la lista de denegación prioritaria y deja pasar tus propias subredes con la lista de permitidos.
+
 ### Al denegar
 
 **Al denegar**, en la pestaña Seguridad del sitio, decide qué pasa con las solicitudes rechazadas por un bloqueo, el control de acceso por IP (incluidas las reglas de ruta) o el filtro de países: por defecto **Devolver 403**; **Cerrar conexión** no envía nada y corta la solicitud, registrada como 444, igual que un sitio Cerrar conexión. Con una lista de permitidos deja pasar tus propias IP y corta al resto. La limitación de tasa (429) y los bloqueos del WAF no cambian.
