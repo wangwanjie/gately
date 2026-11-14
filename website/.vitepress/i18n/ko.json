@@ -84,8 +84,8 @@
   "home": {
     "pill": "무료 오픈소스 · Apache-2.0",
     "announce": {
-      "text": "v0.6.6.2 출시: EasyTier 네트워크, TLS 핸드셰이크 실패 차단, 새 주소 로그인 알림 →",
-      "link": "/ko/news/v0.6.6.2"
+      "text": "v0.6.6.4 출시: 로그인 보안 강화, 우선 차단 목록, 노크 입장 제한과 로그인 후 허용, 사이트 Passkey →",
+      "link": "/ko/news/v0.6.6.4"
     },
     "titleLine1": "올인원 네트워크 게이트웨이",
     "titleLine2": "오픈소스, 설치 즉시 사용",

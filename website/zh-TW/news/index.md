@@ -7,6 +7,10 @@ description: Gately 各版本的發布公告與更新說明。
 
 重要版本的發布公告如下，每個版本的完整變更與下載檔案見 [GitHub Releases](https://github.com/wangwanjie/gately/releases)。
 
+## [v0.6.6.4](/zh-TW/news/v0.6.6.4)
+
+2026 年 11 月 14 日 · 管理後台登入安全加固與安全評分；IP 存取控制優先拒絕名單；Web 站點敲門准入與登入後放行、後台登入免認證、共用使用者 Passkey、明文 HTTP/2 後端；封鎖原因帶命中連接埠。
+
 ## [v0.6.6.2](/zh-TW/news/v0.6.6.2)
 
 2026 年 11 月 14 日 · EasyTier 組網託管；入侵防護新增 TLS 握手失敗規則，連接埠掃描偵測自動識別各模組的開放連接埠；管理後台新位址登入提醒。
