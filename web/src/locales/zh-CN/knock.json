@@ -25,7 +25,8 @@
     "accepted": "敲门成功",
     "rejected": "敲门被拒绝",
     "dropped": "拦截的新连接",
-    "allowed": "敲门后建立的连接"
+    "allowed": "敲门后建立的连接",
+    "webOnly": "启用的规则只经网页登录放行，不需要监听"
   },
   "reason": {
     "os": {
@@ -64,7 +65,7 @@
     "namePlaceholder": "例如 SSH",
     "confirmDelete": "确定删除这条敲门规则？",
     "ports": "端口",
-    "portsHelp": "客户端可以请求放行的端口，如 tcp/22、udp/51820，多个以逗号分隔，只写端口号时按 TCP 处理。客户端 -A 参数中的端口必须全部在此列表中。",
+    "portsHelp": "客户端可以请求放行的端口，如 tcp/22、udp/51820，多个以逗号分隔，只写端口号时按 TCP 处理。客户端 -A 参数中的端口必须全部在此列表中。不开启防火墙拦截时可以留空，规则只经 Web 站点的「登录后放行」取得授权。",
     "firewall": "防火墙拦截",
     "firewallTag": "防火墙拦截",
     "firewallHelp": "开启后在系统防火墙中拦截这些端口，只放行敲门成功的地址，用于保护本机的 sshd 等服务（仅 Linux）。关闭时不改动防火墙，只供端口转发、协议分流与 STUN 的“需要敲门”使用。",
@@ -89,7 +90,8 @@
     "knocks": "敲门",
     "knockStats": "成功 {ok} 次，拒绝 {bad} 次",
     "lastKnock": "最近：{addr}，{time}",
-    "usedBy": "被引用"
+    "usedBy": "被引用",
+    "webOnly": "未填写（只经网页登录放行）"
   },
   "settings": {
     "button": "全局设置",

@@ -25,7 +25,8 @@
     "accepted": "Klopfen akzeptiert",
     "rejected": "Klopfen abgelehnt",
     "dropped": "Blockierte neue Verbindungen",
-    "allowed": "Verbindungen nach dem Klopfen"
+    "allowed": "Verbindungen nach dem Klopfen",
+    "webOnly": "Aktive Regeln werden nur per Web-Anmeldung freigegeben, kein Lauschen nötig"
   },
   "reason": {
     "os": {
@@ -64,7 +65,7 @@
     "namePlaceholder": "Zum Beispiel SSH",
     "confirmDelete": "Diese Klopf-Regel löschen?",
     "ports": "Ports",
-    "portsHelp": "Ports, deren Öffnung ein Client anfordern darf, etwa tcp/22 oder udp/51820, durch Kommas getrennt. Eine bloße Portnummer gilt als TCP. Alle Ports der -A-Option des Clients müssen in dieser Liste stehen.",
+    "portsHelp": "Ports, deren Öffnung ein Client anfordern darf, etwa tcp/22 oder udp/51820, durch Kommas getrennt. Eine bloße Portnummer gilt als TCP. Alle Ports der -A-Option des Clients müssen in dieser Liste stehen. Kann leer bleiben, wenn die Firewall-Sperre aus ist; die Regel erhält Freigaben dann nur über „Nach Anmeldung freigeben“ einer Webseite.",
     "firewall": "Firewall-Sperre",
     "firewallTag": "Firewall-Sperre",
     "firewallHelp": "Wenn aktiv, werden diese Ports in der System-Firewall blockiert und nur Adressen durchgelassen, die erfolgreich geklopft haben. Das schützt Dienste wie den sshd dieses Hosts (nur Linux). Wenn aus, bleibt die Firewall unverändert und die Regel dient nur „Klopfen erforderlich“ bei Portweiterleitung, Protokoll-Routing und STUN.",
@@ -89,7 +90,8 @@
     "knocks": "Klopfen",
     "knockStats": "{ok} akzeptiert, {bad} abgelehnt",
     "lastKnock": "Zuletzt: {addr}, {time}",
-    "usedBy": "Verwendet von"
+    "usedBy": "Verwendet von",
+    "webOnly": "Keine (nur per Web-Anmeldung freigegeben)"
   },
   "settings": {
     "button": "Globale Einstellungen",

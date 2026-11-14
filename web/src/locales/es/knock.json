@@ -25,7 +25,8 @@
     "accepted": "Llamadas aceptadas",
     "rejected": "Llamadas rechazadas",
     "dropped": "Conexiones nuevas bloqueadas",
-    "allowed": "Conexiones tras llamar"
+    "allowed": "Conexiones tras llamar",
+    "webOnly": "Las reglas activas solo se permiten por inicio de sesión web; no hace falta escuchar"
   },
   "reason": {
     "os": {
@@ -64,7 +65,7 @@
     "namePlaceholder": "Por ejemplo SSH",
     "confirmDelete": "¿Eliminar esta regla de llamada?",
     "ports": "Puertos",
-    "portsHelp": "Puertos que un cliente puede pedir que se abran, como tcp/22 o udp/51820, separados por comas. Un número de puerto solo se trata como TCP. Todos los puertos de la opción -A del cliente deben estar en esta lista.",
+    "portsHelp": "Puertos que un cliente puede pedir que se abran, como tcp/22 o udp/51820, separados por comas. Un número de puerto solo se trata como TCP. Todos los puertos de la opción -A del cliente deben estar en esta lista. Puede quedar vacío si el bloqueo en el firewall está desactivado; la regla solo obtiene permisos con «Permitir tras iniciar sesión» de un sitio web.",
     "firewall": "Bloqueo en cortafuegos",
     "firewallTag": "Bloqueo en cortafuegos",
     "firewallHelp": "Si se activa, estos puertos se bloquean en el cortafuegos del sistema y solo pasan las direcciones que han llamado con éxito, lo que protege servicios como el sshd de este equipo (solo Linux). Si se desactiva, el cortafuegos no se modifica y la regla solo sirve para «Requiere llamada» en reenvío de puertos, enrutamiento por protocolo y STUN.",
@@ -89,7 +90,8 @@
     "knocks": "Llamadas",
     "knockStats": "{ok} aceptadas, {bad} rechazadas",
     "lastKnock": "Última: {addr}, {time}",
-    "usedBy": "Usada por"
+    "usedBy": "Usada por",
+    "webOnly": "Ninguno (solo se permite por inicio de sesión web)"
   },
   "settings": {
     "button": "Ajustes globales",

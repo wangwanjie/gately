@@ -605,7 +605,8 @@ func TestValidate(t *testing.T) {
 	}
 	bad := []Rule{
 		{Name: "", Ports: []string{"tcp/22"}},
-		{Name: "x"},
+		// 开启防火墙拦截时必须填写端口；不开启时可以留空（只经网页登录放行），见 TestPortlessRule
+		{Name: "x", Firewall: true},
 		{Name: "x", Ports: []string{"icmp/1"}},
 		{Name: "x", Ports: []string{"tcp/22"}, Timeout: 1},
 		{Name: "x", Ports: []string{"tcp/22"}, Timeout: 60, MaxTimeout: 30},
