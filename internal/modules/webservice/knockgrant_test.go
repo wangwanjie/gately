@@ -488,3 +488,17 @@ func BenchmarkKnockAdmission(b *testing.B) {
 		h.knockAdmitted(a)
 	}
 }
+
+// 运营商级 NAT 段（Tailscale、NetBird 等组网使用）与内网、回环一样不能放行：经它们转发时所有访客都显示为同一地址。
+func TestKnockGrantableExcludesCGNAT(t *testing.T) {
+	for _, ip := range []string{"100.64.0.1", "100.100.1.2", "100.127.255.254", "10.0.0.1", "127.0.0.1", "::1", "fe80::1"} {
+		if knockGrantable(netip.MustParseAddr(ip)) {
+			t.Fatalf("%s 不应放行", ip)
+		}
+	}
+	for _, ip := range []string{"100.63.255.255", "100.128.0.1", "203.0.113.9", "2001:db8::1"} {
+		if !knockGrantable(netip.MustParseAddr(ip)) {
+			t.Fatalf("%s 应可放行", ip)
+		}
+	}
+}
