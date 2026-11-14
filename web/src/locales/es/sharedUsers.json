@@ -31,7 +31,7 @@
   "passkeyNone": "No hay Passkeys registradas",
   "passkeyCreated": "Registrada {time}",
   "passkeyLastUsed": "Último uso {time}",
-  "passkeyHelp": "Las Passkeys solo las registra el propio usuario en el sitio; aquí solo se pueden eliminar (por ejemplo, tras perder un dispositivo). La eliminación se aplica de inmediato sin pulsar Guardar.",
+  "passkeyHelp": "Las Passkeys solo las registra el propio usuario en el sitio; aquí solo se pueden eliminar (por ejemplo, tras perder un dispositivo). La eliminación se aplica de inmediato sin pulsar Guardar. Si cambia la contraseña o el secreto TOTP de este usuario y guarda, también se eliminan todas sus Passkeys.",
   "passkeyDeleteTitle": "Eliminar Passkey",
   "passkeyDeleteConfirm": "¿Eliminar la Passkey \"{name}\" del usuario {user}? Ya no podrá usarse para iniciar sesión.",
   "passkeyDeleted": "Passkey eliminada"

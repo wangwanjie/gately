@@ -316,6 +316,11 @@ func normalizeAuthUsers(users []AuthUser, old []AuthUser) ([]AuthUser, error) {
 		if u.TOTPSecret != "" && !auth.ValidTOTPSecret(u.TOTPSecret) {
 			return nil, fmt.Errorf("共享用户 %s 的 TOTP 密钥无效", u.Name)
 		}
+		// 管理员修改了密码或 TOTP 密钥（通常是账号泄露后的处置）：同时删除该用户的 Passkey，
+		// 否则攻击者先前借泄露的密码注册的 Passkey 仍可免验证码登录
+		if len(u.Passkeys) > 0 && (u.Password != o.Password || u.TOTPSecret != o.TOTPSecret) {
+			u.Passkeys = nil
+		}
 		u.Remark = strings.TrimSpace(u.Remark)
 		u.Email = strings.TrimSpace(u.Email)
 		if u.Email != "" && (!strings.Contains(u.Email, "@") || strings.ContainsAny(u.Email, " \t<>")) {
