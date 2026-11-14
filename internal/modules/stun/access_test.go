@@ -306,3 +306,31 @@ func TestOnlyAccessChangedDeny(t *testing.T) {
 		t.Fatal("只改优先拒绝名单应视为只有访问控制变化")
 	}
 }
+
+// 优先拒绝名单（#95）：内置转发中白名单命中也先拒绝，只改名单原地替换不重新打洞，改回后放行。
+func TestTCPAccessDenyFirst(t *testing.T) {
+	e := newTestEnv(t)
+	rule := Rule{
+		Key: "k", Name: "ssh", Enable: true, Protocol: ProtoTCP4, Bind: Bind{Mode: BindIP, IP: "127.0.0.1"}, UseGlobalServers: true,
+		TargetAddresses: []string{"127.0.0.1"}, TargetPort: e.tcpEcho.Addr().(*net.TCPAddr).Port,
+		HeartbeatInterval: 500, StunTimeout: 2000, RetryInterval: 500, AutoRetry: true,
+		Access: iplist.Access{IPMode: iplist.ModeWhitelist, IPList: []string{"127.0.0.0/8"}},
+	}
+	m := startAccessModule(t, rule, e.settings())
+	r := m.runners["k"]
+	pub := r.snapshot().PublicAddr
+	if !tcpPings(t, pub) {
+		t.Fatal("白名单内的来源应放行")
+	}
+	setAccess(m, "k", iplist.Access{IPMode: iplist.ModeWhitelist, IPList: []string{"127.0.0.0/8"}, IPDenyList: []string{"127.0.0.1"}})
+	if m.runners["k"] != r || r.snapshot().PublicAddr != pub {
+		t.Fatal("只修改名单时不应重启穿透")
+	}
+	if tcpPings(t, pub) {
+		t.Fatal("命中优先拒绝名单的来源应被拒绝，即使在白名单中")
+	}
+	setAccess(m, "k", iplist.Access{IPMode: iplist.ModeWhitelist, IPList: []string{"127.0.0.0/8"}})
+	if !tcpPings(t, pub) {
+		t.Fatal("移出拒绝名单后应放行")
+	}
+}

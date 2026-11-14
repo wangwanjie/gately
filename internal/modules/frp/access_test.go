@@ -278,3 +278,43 @@ func TestCheckLoginDenyFirst(t *testing.T) {
 		t.Error("列表清空后应放行")
 	}
 }
+
+// 只设置优先拒绝名单（模式关闭）的实例同样要求登录检查端点：端点不可用时不启动，避免名单失效后放行所有来源。
+func TestServerContentDenyOnlyNeedsGate(t *testing.T) {
+	m := newAccessModule()
+	m.started = true
+	s := &Server{Key: "k", Name: "frps", Enable: true, ServerSettings: ServerSettings{BindPort: 7000, IPDenyList: []string{"10.0.0.0/8"}}}
+	if c, err := m.serverContent(s); err == nil || c != "" {
+		t.Errorf("端点不可用时应返回错误，实际 %q %v", c, err)
+	}
+}
+
+// 经登录插件端点：命中优先拒绝名单的登录被拒绝并计数。
+func TestLoginGateHTTPDeny(t *testing.T) {
+	m := newAccessModule(Server{Key: "d", Name: "d", ServerSettings: ServerSettings{IPMode: iplist.ModeWhitelist, IPList: []string{"203.0.113.0/24"}, IPDenyList: []string{"203.0.113.9"}}})
+	g, err := startLoginGate(m)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer g.close()
+	post := func(addr string) loginResponse {
+		body, _ := json.Marshal(map[string]any{"op": "Login", "content": map[string]any{"client_address": addr}})
+		resp, err := http.Post("http://"+g.ln.Addr().String()+"/frps/"+g.token+"/d", "application/json", bytes.NewReader(body))
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer resp.Body.Close()
+		var out loginResponse
+		_ = json.NewDecoder(resp.Body).Decode(&out)
+		return out
+	}
+	if r := post("203.0.113.5:1"); r.Reject {
+		t.Errorf("白名单内且不在拒绝名单应放行: %+v", r)
+	}
+	if r := post("203.0.113.9:1"); !r.Reject || !strings.Contains(r.RejectReason, "deny list") {
+		t.Errorf("命中拒绝名单应被拒绝: %+v", r)
+	}
+	if n := m.rejectedCount("d"); n != 1 {
+		t.Errorf("拒绝次数 = %d，期望 1", n)
+	}
+}
