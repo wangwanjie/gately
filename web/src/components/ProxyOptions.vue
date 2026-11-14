@@ -11,9 +11,11 @@
     <el-checkbox v-model="site.forwardedHeaders">{{ t('web.optForwarded') }}</el-checkbox>
     <el-checkbox v-model="site.sendProxyProtocol">{{ t('web.optSendProxy') }}</el-checkbox>
     <el-checkbox v-model="site.upstreamSniFromHost">{{ t('web.optSniFromHost') }}</el-checkbox>
+    <el-checkbox v-model="site.upstreamH2c" data-test="opt-h2c">{{ t('web.optH2C') }}</el-checkbox>
     <!-- 认证交给后端 Gately 时才能转发登录 Cookie，本站点开了认证就不可勾选 -->
     <el-checkbox v-model="site.passAuthCookies" :disabled="authOn && !site.passAuthCookies">{{ t('web.optPassAuthCookies') }}</el-checkbox>
     <div class="form-help">{{ t('web.optSniFromHostHelp') }}</div>
+    <div class="form-help" data-test="opt-h2c-help">{{ t('web.optH2CHelp') }}</div>
     <div v-if="site.passAuthCookies" class="form-help">{{ t('web.optPassAuthCookiesHelp') }}</div>
     <div v-if="site.type !== 'proxy'" class="form-help">{{ t('web.optUserRoutesOnly') }}</div>
   </el-form-item>
@@ -32,6 +34,7 @@ export interface ProxyFields {
   forwardedHeaders: boolean
   sendProxyProtocol: boolean
   upstreamSniFromHost: boolean
+  upstreamH2c: boolean
   passAuthCookies: boolean
 }
 

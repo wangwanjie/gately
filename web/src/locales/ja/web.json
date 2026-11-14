@@ -167,6 +167,8 @@
   "httpPortServeTag": "HTTP :{port}",
   "optSniFromHost": "アクセス先ドメインを SNI に使う",
   "optSniFromHostHelp": "HTTPS バックエンドのみ：ハンドシェイクで訪問者のドメインを送り、そのドメインで証明書を検証します。バックエンドが SNI で振り分ける場合（frp の vhost_https など）に必要で、nginx の proxy_ssl_server_name on に相当します",
+  "optH2C": "http:// バックエンドで平文 HTTP/2（h2c）を使う",
+  "optH2CHelp": "gRPC サービス（NetBird の管理・シグナルなど）のように h2c のみ対応のバックエンド向けです。バックエンドが h2c に対応していないとリクエストは失敗し、その接続では WebSocket アップグレードなど HTTP/1.1 の機能は使えません。HTTPS バックエンドは HTTP/2 が自動的にネゴシエートされるため不要です。",
   "optPassAuthCookies": "Gately のログイン Cookie を転送",
   "optPassAuthCookiesHelp": "ログインはバックエンドの Gately が担当します。このサイトでは認証を行わず、バックエンドの Gately が発行したシングルサインオンとセッションの Cookie をそのまま渡します。バックエンドが自分の Gately の場合のみ有効にしてください",
   "locations": "パス別バックエンド",

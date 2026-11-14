@@ -167,6 +167,8 @@
   "httpPortServeTag": "HTTP :{port}",
   "optSniFromHost": "Aufgerufene Domain als SNI verwenden",
   "optSniFromHostHelp": "Nur HTTPS-Backends: sendet die Domain des Besuchers im Handshake und prüft das Zertifikat dagegen. Nötig, wenn das Backend nach SNI routet (z. B. frp vhost_https); entspricht nginx proxy_ssl_server_name on",
+  "optH2C": "Unverschlüsseltes HTTP/2 (h2c) für http://-Backends",
+  "optH2CHelp": "Für Backends, die nur h2c sprechen, etwa gRPC-Dienste (z. B. NetBird Management und Signal). Das Backend muss h2c unterstützen, sonst schlagen Anfragen fehl; HTTP/1.1-Funktionen wie WebSocket-Upgrade sind auf diesen Verbindungen nicht verfügbar. HTTPS-Backends handeln HTTP/2 automatisch aus.",
   "optPassAuthCookies": "Gately-Anmelde-Cookies weiterleiten",
   "optPassAuthCookiesHelp": "Die Anmeldung übernimmt das Backend-Gately: Diese Site authentifiziert nicht selbst und reicht die vom Backend-Gately ausgestellten Single-Sign-on- und Sitzungs-Cookies unverändert durch. Nur aktivieren, wenn das Backend Ihr eigenes Gately ist",
   "locations": "Backends pro Pfad",

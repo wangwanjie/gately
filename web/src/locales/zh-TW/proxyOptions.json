@@ -7,5 +7,6 @@
   "forwarded": "把訪客的真實 IP 與來源連接埠、原始協定（http / https）、網域和存取連接埠告訴後端（X-Real-IP、X-Real-Port、X-Forwarded-*）。後端要記錄真實 IP 與連接埠，或需要知道外部是 HTTPS 來產生正確連結時開啟，多數應用建議開啟。",
   "sendProxy": "在連線開頭附帶 PROXY 協定標頭傳遞真實 IP，適合不看 HTTP 標頭的後端，如另一層 Gately、haproxy 或開啟 proxy_protocol 的 nginx。後端未設定接收時會直接報錯，不確定時保持關閉。開啟後每個請求都新建連線，也不再用 HTTP/2 連線後端。後端是 Gately 時，需在其監聽上開啟接收 PROXY 協定，並把本機加入可信 PROXY 來源。",
   "sniFromHost": "僅對 HTTPS 後端生效：交握時傳送訪客使用的網域，並據此驗證憑證。後端在同一連接埠按網域區分憑證或分流時開啟，如 frp 的 vhost_https、託管多個 HTTPS 站點的 nginx。",
+  "h2c": "僅對 http:// 後端生效。Gately 以未加密的 HTTP/2（h2c，prior knowledge）連線後端，gRPC 服務在明文連接埠上需要這種方式，如 NetBird 管理／信令服務、只開 gRPC 的 xray。多位訪客的請求共用同一條後端連線。後端支援 h2c 時才開啟，否則請求回傳 502；h2c 連線上 WebSocket 升級無法使用。訪客透過 HTTPS（HTTP/2）存取 Gately，gRPC 的串流傳輸與尾部中繼資料會原樣透傳。HTTPS 後端無需此選項，會自動協商 HTTP/2。健康檢查同樣使用 h2c，gRPC 後端建議選 TCP 模式。",
   "passAuthCookies": "預設會去掉 Gately 自己的登入 Cookie（單一登入、站點工作階段、第三方登入），避免把登入憑據交給後端程式。後端是另一台負責認證的 Gately 時開啟，例如公網 Gately 只做 WAF 與存取控制、內網 Gately 負責登入。本站點啟用認證時不能開啟；只對後端是自己的 Gately 時使用，一般應用拿到這些 Cookie 就能冒用訪客的登入狀態。"
 }
