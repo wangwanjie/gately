@@ -562,7 +562,8 @@ func (h *siteHandler) revokeKnock(a netip.Addr, user string, all bool) int {
 }
 
 // revokeKnockOnLogout 撤销用户在入口站点 s 为地址 a 所在网段登记的放行（退出登录时调用）。
-// 登录页处理时不知道站点所在的监听，按用户、规则与网段匹配。
+// 登录页处理时不知道站点所在的监听，按用户、规则、网段与站点 key 匹配（站点标识为 监听key/站点key），
+// 其他入口站点上同名用户（可能是不同的用户库）的放行不受影响。
 func (a *authenticator) revokeKnockOnLogout(s Site, addr netip.Addr, user string) {
 	g := s.KnockGrant
 	p, ok := g.prefix(addr)
@@ -570,7 +571,8 @@ func (a *authenticator) revokeKnockOnLogout(s Site, addr netip.Addr, user string
 		return
 	}
 	knockgate.Default.RevokeFunc(func(x knockgate.Grant) bool {
-		return x.Source == knockgate.SourceWeb && x.Rule == g.Rule && x.User == user && x.Prefix == p
+		return x.Source == knockgate.SourceWeb && x.Rule == g.Rule && x.User == user && x.Prefix == p &&
+			strings.HasSuffix(x.Site, "/"+s.Key)
 	})
 }
 

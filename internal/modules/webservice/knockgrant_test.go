@@ -460,15 +460,19 @@ func TestKnockSync(t *testing.T) {
 func TestKnockLogoutRevokes(t *testing.T) {
 	withKnockRules(t, knockgate.Rule{Key: "k", Name: "nas", Enable: true})
 	a := newAuthenticator("secret")
-	s := Site{KnockGrant: KnockGrant{Rule: "k", V6Prefix: 64}}
+	s := Site{Key: "e1", KnockGrant: KnockGrant{Rule: "k", V6Prefix: 64}}
 	until := time.Now().Add(time.Hour)
-	_ = knockgate.Default.AllowWeb(netip.MustParsePrefix("2001:db8:1:2::/64"), "k", until, knockgate.Owner{User: "alice"}, netip.Addr{})
-	_ = knockgate.Default.AllowWeb(netip.MustParsePrefix("2001:db8:1:3::/64"), "k", until, knockgate.Owner{User: "alice"}, netip.Addr{})
-	_ = knockgate.Default.AllowWeb(netip.MustParsePrefix("2001:db8:1:4::/64"), "k", until, knockgate.Owner{User: "bob"}, netip.Addr{})
+	own := knockgate.Owner{User: "alice", Site: "l1/e1"}
+	_ = knockgate.Default.AllowWeb(netip.MustParsePrefix("2001:db8:1:2::/64"), "k", until, own, netip.Addr{})
+	_ = knockgate.Default.AllowWeb(netip.MustParsePrefix("2001:db8:1:3::/64"), "k", until, own, netip.Addr{})
+	_ = knockgate.Default.AllowWeb(netip.MustParsePrefix("2001:db8:1:4::/64"), "k", until, knockgate.Owner{User: "bob", Site: "l1/e1"}, netip.Addr{})
+	// 另一个入口站点上同名的 alice（可能是不同的用户库）在同一网段登记的放行
+	_ = knockgate.Default.AllowWeb(netip.MustParsePrefix("2001:db8:1:5::/64"), "k", until, knockgate.Owner{User: "alice", Site: "l1/e2"}, netip.Addr{})
 	a.revokeKnockOnLogout(s, netip.MustParseAddr("2001:db8:1:2::77"), "alice")
 	a.revokeKnockOnLogout(s, netip.MustParseAddr("2001:db8:1:4::1"), "alice")
-	if n := len(knockgate.Default.List()); n != 2 {
-		t.Fatalf("只撤销本人当前网段: %d", n)
+	a.revokeKnockOnLogout(s, netip.MustParseAddr("2001:db8:1:5::1"), "alice")
+	if n := len(knockgate.Default.List()); n != 3 {
+		t.Fatalf("只撤销本人在本入口的当前网段: %d", n)
 	}
 }
 
