@@ -1,6 +1,7 @@
 package frp
 
 import (
+	"crypto/md5"
 	"crypto/rand"
 	"crypto/subtle"
 	"encoding/hex"
@@ -10,6 +11,7 @@ import (
 	"net/http"
 	"net/netip"
 	"slices"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -29,6 +31,8 @@ type serverAccess struct {
 	// denyPrefixes 与 denySets 为优先拒绝名单
 	denyPrefixes []netip.Prefix
 	denySets     []string
+	// token 为实例的认证令牌，用于确认登录请求携带的令牌签名是否正确
+	token string
 }
 
 // loginGate 是本机回环地址上的 frps 登录插件端点：frpc 每次登录（frps 校验令牌之前）时，
@@ -80,6 +84,9 @@ type loginRequest struct {
 	Content struct {
 		// ClientAddress 为 Login 操作的来源地址
 		ClientAddress string `json:"client_address"`
+		// PrivilegeKey 与 Timestamp 为 Login 操作中 frpc 按令牌计算的签名及其时间戳
+		PrivilegeKey string `json:"privilege_key"`
+		Timestamp    int64  `json:"timestamp"`
 		// ProxyType 与 RemotePort 为 NewProxy 操作中代理的类型与申请的远程端口
 		ProxyType  string `json:"proxy_type"`
 		RemotePort int    `json:"remote_port"`
@@ -107,6 +114,12 @@ func (m *Module) handleLogin(w http.ResponseWriter, r *http.Request, key string)
 		if reason := m.checkLogin(key, req.Content.ClientAddress); reason != "" {
 			resp = loginResponse{Reject: true, RejectReason: reason}
 			m.rejectedCounter(key).Add(1)
+		} else if m.tokenValid(key, req.Content.PrivilegeKey, req.Content.Timestamp) {
+			// 插件在 frps 校验令牌之前调用，这里自行核对签名：只有持有令牌的 frpc 的来源地址才登记为可信，
+			// 入侵防护的扫描检测不再统计它，避免同一出口地址上其他设备的打洞流量把 frpc 一起封掉
+			if a, ok := parseClientAddr(req.Content.ClientAddress); ok {
+				m.trustClient(key, a)
+			}
 		}
 	case "NewProxy":
 		// 只记录 TCP 代理申请的远程端口，不改变也不拒绝代理；登录已通过令牌与来源检查
@@ -153,6 +166,20 @@ func (m *Module) checkLogin(key, clientAddr string) string {
 	return ""
 }
 
+// tokenValid 判断登录请求的签名是否由实例 key 的令牌生成，算法与 frps 的令牌认证相同：md5(令牌 + 十进制时间戳)。
+// 实例未设置令牌时任何人都能登录，不视为确认过身份。
+func (m *Module) tokenValid(key, privilegeKey string, timestamp int64) bool {
+	var acc *serverAccess
+	if rules := m.access.Load(); rules != nil {
+		acc = (*rules)[key]
+	}
+	if acc == nil || acc.token == "" || privilegeKey == "" {
+		return false
+	}
+	sum := md5.Sum([]byte(acc.token + strconv.FormatInt(timestamp, 10)))
+	return subtle.ConstantTimeCompare([]byte(hex.EncodeToString(sum[:])), []byte(privilegeKey)) == 1
+}
+
 // parseClientAddr 解析 frps 传来的 host:port 形式的来源地址。
 func parseClientAddr(s string) (netip.Addr, bool) {
 	if ap, err := netip.ParseAddrPort(s); err == nil {
@@ -188,7 +215,7 @@ func (m *Module) publishAccessLocked() {
 		// 配置已校验过，这里解析失败只可能来自手改的配置文件，按空名单处理
 		prefixes, _ := iplist.ParsePrefixes(s.IPList)
 		denyPrefixes, _ := iplist.ParsePrefixes(s.IPDenyList)
-		rules[s.Key] = &serverAccess{mode: s.IPMode, prefixes: prefixes, sets: s.IPSets, denyPrefixes: denyPrefixes, denySets: s.IPDenySets}
+		rules[s.Key] = &serverAccess{mode: s.IPMode, prefixes: prefixes, sets: s.IPSets, denyPrefixes: denyPrefixes, denySets: s.IPDenySets, token: s.Token}
 		// 名单模式关闭时只登记优先拒绝名单的引用
 		if s.IPMode != iplist.ModeOff {
 			for _, k := range s.IPSets {
