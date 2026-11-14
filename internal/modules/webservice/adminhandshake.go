@@ -174,6 +174,11 @@ func siteOrigin(r *http.Request, s Site) (string, bool) {
 		if !validPort(p) {
 			return "", false
 		}
+		// Host 头里的端口由访客决定：只认请求实际到达的端口（经 PROXY 协议转入时为原始目的端口）。
+		// 否则攻击者可以带上同一域名的其他端口（例如同机 frps 开给别人的远程端口）发起握手，票据会被送到那个端口上
+		if p != localPort(r) {
+			return "", false
+		}
 		origin += ":" + p
 	}
 	return origin, true
