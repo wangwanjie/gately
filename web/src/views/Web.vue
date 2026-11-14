@@ -544,6 +544,12 @@
                 <el-option v-if="site.waf && !wafInstances.some((w) => w.key === site.waf)" :label="site.waf + t('web.wafMissingSuffix')" :value="site.waf" />
               </el-select>
             </el-form-item>
+            <!-- 后台登录免认证：已登录 Gately 后台的管理员访问本站点不再认证，需要单点登录域（在认证用户页设置） -->
+            <el-form-item v-if="site.webAuth || site.basicAuth" :label="t('web.adminPass')" data-test="admin-pass">
+              <el-checkbox v-model="site.adminPass">{{ t('web.adminPassLabel') }}</el-checkbox>
+              <div class="form-help">{{ t('web.adminPassHelp') }}</div>
+              <el-alert v-if="site.adminPass && !ssoDomainSet" type="warning" :closable="false" show-icon style="margin-top: 8px" data-test="admin-pass-sso-warn" :title="t('web.adminPassNoSSO')" />
+            </el-form-item>
             <!-- 信任已认证用户（#81）：只认 Gately 自己的基本认证与网页认证，转发认证由外部服务判断身份，不显示 -->
             <el-form-item v-if="site.webAuth || site.basicAuth" :label="t('web.trustAuthUsers')" data-test="trust-auth-users">
               <el-checkbox v-model="site.trustAuthUsers">{{ t('web.trustAuthUsersLabel') }}</el-checkbox>
@@ -804,6 +810,8 @@ interface Site {
   waf: string
   remark: string
   authOptional: boolean
+  // adminPass 为 true 时已登录 Gately 后台的管理员免认证（需单点登录域），需启用基本认证或网页认证
+  adminPass?: boolean
   // trustAuthUsers 为 true 时通过本站点 Gately 认证的访客跳过 WAF 与路径探测计数（#81），需启用基本认证或网页认证
   trustAuthUsers?: boolean
   // trustBackendAuth 为 true 时按后端 Gately 签发的认证标记放行已登录用户（双层 Gately，#81），仅不自己认证的反向代理站点
@@ -991,6 +999,8 @@ interface WebSettings {
   authMarkerKey?: string
 }
 const settings = ref<WebSettings>()
+// ssoDomainSet 表示全局设置中已配置单点登录域，站点的「后台登录免认证」依赖它；打开站点编辑时刷新（读取失败时不提示）
+const ssoDomainSet = ref(true)
 // 定时刷新，标签页在后台时暂停
 const polling = usePolling(load, 5000)
 
@@ -1152,6 +1162,7 @@ function emptySite(): Site {
     waf: '',
     remark: '',
     authOptional: false,
+    adminPass: false,
     trustAuthUsers: false,
     trustBackendAuth: false,
     forwardAuth: { url: '', loginUrl: '', loginFromLocation: false, copyHeaders: [] },
@@ -1859,6 +1870,13 @@ function openSite(l: ListenerView, row?: SiteRow, copy = false) {
   site.value = draft
   siteTab.value = 'basic'
   siteVisible.value = true
+  fetchSettings()
+    .then((s) => {
+      ssoDomainSet.value = !!s.ssoDomain
+    })
+    .catch(() => {
+      ssoDomainSet.value = true
+    })
 }
 
 // 切换站点类型后当前页签可能不再显示（如改成断开连接或固定文本），回到基本设置
@@ -1931,6 +1949,10 @@ async function saveSite() {
   // 非反向代理站点没有分流规则时身份信息无处可传，同样清空
   if (site.value.type === 'close' || !localAuthOn.value) {
     site.value.userRoutes = []
+  }
+  // 后台登录免认证与信任已认证用户一样只对基本认证与网页认证生效（后端保存时同样会关闭）
+  if (!site.value.webAuth && !site.value.basicAuth) {
+    site.value.adminPass = false
   }
   // 信任已认证用户只对基本认证与网页认证生效，关闭这两种认证后一并关闭（后端保存时同样会关闭）
   if (!site.value.webAuth && !site.value.basicAuth) {
