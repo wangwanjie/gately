@@ -2639,6 +2639,16 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `field` | string |
 | `header` | string |
 
+### webservice.KnockGrant
+
+| Champ | Type |
+| --- | --- |
+| `minutes` | integer |
+| `probeV4` | string |
+| `probeV6` | string |
+| `rule` | string |
+| `v6Prefix` | integer |
+
 ### webservice.Listener
 
 | Champ | Type |
@@ -2924,6 +2934,9 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `ipSets` | Tableau de string |
 | `keepPath` | boolean |
 | `key` | string |
+| `knock` | string |
+| `knockGrant` | `webservice.KnockGrant` |
+| `knockLan` | boolean |
 | `lbPolicy` | string |
 | `listDir` | boolean |
 | `locations` | Tableau de `webservice.Location` |

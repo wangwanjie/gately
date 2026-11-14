@@ -70,7 +70,7 @@
     "portsHelp": "Puertos que un cliente puede pedir que se abran, como tcp/22 o udp/51820, separados por comas. Un número de puerto solo se trata como TCP. Todos los puertos de la opción -A del cliente deben estar en esta lista. Puede quedar vacío si el bloqueo en el firewall está desactivado; la regla solo obtiene permisos con «Permitir tras iniciar sesión» de un sitio web.",
     "firewall": "Bloqueo en cortafuegos",
     "firewallTag": "Bloqueo en cortafuegos",
-    "firewallHelp": "Si se activa, estos puertos se bloquean en el cortafuegos del sistema y solo pasan las direcciones que han llamado con éxito, lo que protege servicios como el sshd de este equipo (solo Linux). Si se desactiva, el cortafuegos no se modifica y la regla solo sirve para «Requiere llamada» en reenvío de puertos, enrutamiento por protocolo y STUN.",
+    "firewallHelp": "Si se activa, estos puertos se bloquean en el cortafuegos del sistema y solo pasan las direcciones que han llamado con éxito, lo que protege servicios como el sshd de este equipo (solo Linux). Si se desactiva, el cortafuegos no se modifica y la regla solo sirve para «Requiere llamada» en sitios web, reenvío de puertos, enrutamiento por protocolo y STUN.",
     "firewallWarn": "Antes de activarlo, comprueba que puedes entrar en este equipo desde la red local (exenta de llamada por defecto en los ajustes globales) o por otra vía: si Gately se cierra a la fuerza, las reglas de bloqueo se mantienen hasta que Gately vuelva a iniciarse. Las conexiones ya establecidas no se ven afectadas.",
     "encKey": "Clave de cifrado",
     "hmacKey": "Clave HMAC",

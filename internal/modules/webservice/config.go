@@ -125,6 +125,13 @@ type Site struct {
 	CountryMode string `json:"countryMode"`
 	// Countries 为两位 ISO 国家代码，如 CN、US
 	Countries []string `json:"countries"`
+	// Knock 为准入的敲门规则 key：非空时来源地址必须持有该规则的有效授权（端口敲门报文，或在放行入口站点登录取得）
+	// 才能访问本站点，其余访客按 IP 访问控制拒绝（见 knockgrant.go）。准入不代替认证，留空不要求
+	Knock string `json:"knock,omitempty"`
+	// KnockLAN 为 true 时局域网地址（私有地址、链路本地地址，不含回环）无需放行即可访问
+	KnockLAN bool `json:"knockLan,omitempty"`
+	// KnockGrant 为放行入口：访客通过本站点的 Gately 认证后为其来源地址登记敲门授权，见 KnockGrant
+	KnockGrant KnockGrant `json:"knockGrant"`
 	// DenyClose 为 true 时，被封禁、IP 访问控制（含路径规则）或国家过滤拒绝的请求不返回 403，
 	// 而是像断开连接站点一样不写响应直接断开（访问日志记为 444），用于“自家 IP 放行、其余断开”
 	DenyClose bool `json:"denyClose"`
@@ -600,6 +607,9 @@ func (s *Site) validate(isDefault bool) error {
 		return err
 	}
 	if err := s.ErrorPage.validate(); err != nil {
+		return err
+	}
+	if err := s.validateKnock(isDefault); err != nil {
 		return err
 	}
 	return s.validateAccess()

@@ -630,6 +630,12 @@ func (a *authenticator) handleLogin(w http.ResponseWriter, r *http.Request, s Si
 		data["Passkey"], data["PasskeyBase"] = true, base+passkeyPath
 	}
 	if r.URL.Path == base+"/logout" {
+		// 放行入口：退出登录时一并撤销该用户为当前地址登记的放行
+		if s.KnockGrant.Rule != "" {
+			if v := a.sessionIdentity(r, s); len(v.names) > 0 {
+				a.revokeKnockOnLogout(s, clientAddr(r).Addr(), v.names[0])
+			}
+		}
 		http.SetCookie(w, &http.Cookie{Name: cookieName(s), Value: "", Path: "/", MaxAge: -1})
 		if domain := a.shared.get().ssoFor(host); domain != "" && s.SharedUsers {
 			// 单点登录的会话写在父域，退出时一并清除

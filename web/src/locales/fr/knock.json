@@ -70,7 +70,7 @@
     "portsHelp": "Ports qu'un client peut demander d'ouvrir, comme tcp/22 ou udp/51820, séparés par des virgules. Un simple numéro de port est traité comme TCP. Tous les ports de l'option -A du client doivent figurer dans cette liste. Peut rester vide si le blocage par pare-feu est désactivé ; la règle n'obtient alors des autorisations que via « Autoriser après connexion » d'un site web.",
     "firewall": "Blocage par pare-feu",
     "firewallTag": "Blocage par pare-feu",
-    "firewallHelp": "Activé, ces ports sont bloqués dans le pare-feu du système et seules les adresses ayant frappé avec succès passent, ce qui protège des services comme le sshd de cet hôte (Linux uniquement). Désactivé, le pare-feu n'est pas modifié et la règle ne sert qu'à « Frappe requise » dans la redirection de ports, le routage par protocole et STUN.",
+    "firewallHelp": "Activé, ces ports sont bloqués dans le pare-feu du système et seules les adresses ayant frappé avec succès passent, ce qui protège des services comme le sshd de cet hôte (Linux uniquement). Désactivé, le pare-feu n'est pas modifié et la règle ne sert qu'à « Frappe requise » dans les sites web, la redirection de ports, le routage par protocole et STUN.",
     "firewallWarn": "Avant de l'activer, vérifiez que vous pouvez vous connecter à cet hôte depuis le réseau local (exempté de frappe par défaut dans les paramètres globaux) ou autrement : si Gately est arrêté de force, les règles de blocage restent jusqu'au redémarrage de Gately. Les connexions déjà établies ne sont pas affectées.",
     "encKey": "Clé de chiffrement",
     "hmacKey": "Clé HMAC",

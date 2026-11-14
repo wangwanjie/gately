@@ -2639,6 +2639,16 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `field` | string |
 | `header` | string |
 
+### webservice.KnockGrant
+
+| Campo | Tipo |
+| --- | --- |
+| `minutes` | integer |
+| `probeV4` | string |
+| `probeV6` | string |
+| `rule` | string |
+| `v6Prefix` | integer |
+
 ### webservice.Listener
 
 | Campo | Tipo |
@@ -2924,6 +2934,9 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `ipSets` | Lista de string |
 | `keepPath` | boolean |
 | `key` | string |
+| `knock` | string |
+| `knockGrant` | `webservice.KnockGrant` |
+| `knockLan` | boolean |
 | `lbPolicy` | string |
 | `listDir` | boolean |
 | `locations` | Lista de `webservice.Location` |

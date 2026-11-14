@@ -2639,6 +2639,16 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `field` | string |
 | `header` | string |
 
+### webservice.KnockGrant
+
+| Campo | Tipo |
+| --- | --- |
+| `minutes` | integer |
+| `probeV4` | string |
+| `probeV6` | string |
+| `rule` | string |
+| `v6Prefix` | integer |
+
 ### webservice.Listener
 
 | Campo | Tipo |
@@ -2924,6 +2934,9 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `ipSets` | Array de string |
 | `keepPath` | boolean |
 | `key` | string |
+| `knock` | string |
+| `knockGrant` | `webservice.KnockGrant` |
+| `knockLan` | boolean |
 | `lbPolicy` | string |
 | `listDir` | boolean |
 | `locations` | Array de `webservice.Location` |

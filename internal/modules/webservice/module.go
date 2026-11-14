@@ -175,6 +175,8 @@ func (m *Module) Init(env module.Env) error {
 	m.auth.panels.warn = errLog.Warnf
 	m.auth.panels.set(m.cfg.Panels)
 	m.initVisitors()
+	// 登记站点对敲门规则的引用：敲门页面据此显示引用方，并阻止删除仍被引用的规则
+	m.syncKnockLocked()
 	return nil
 }
 
@@ -369,6 +371,7 @@ func (m *Module) restartLocked(key string) {
 func (m *Module) saveLocked() error {
 	err := m.store.Save(ID, m.cfg)
 	m.refreshAdminPass()
+	m.syncKnockLocked()
 	return err
 }
 

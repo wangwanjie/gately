@@ -977,6 +977,13 @@ func (h *siteHandler) accessCheck(w http.ResponseWriter, r *http.Request) (relea
 		h.deny(w)
 		return noop, false
 	}
+	// 敲门准入：来源地址没有所选规则的有效授权时按访问控制拒绝（计入 IP 访问控制的拦截次数）
+	if h.site.Knock != "" && !h.knockAdmitted(client.Addr()) {
+		h.block(w, blockIP)
+		h.reqLog(r).Warnf("拒绝 %s 访问 %s（未放行）", client.Addr(), r.Host)
+		h.deny(w)
+		return noop, false
+	}
 	if !h.countryAllowed(client.Addr()) {
 		h.block(w, blockCountry)
 		h.reqLog(r).Warnf("拒绝 %s 访问 %s（国家过滤：%s）", client.Addr(), r.Host, geoip.Default.Country(client.Addr()))
@@ -1052,6 +1059,10 @@ func (h *siteHandler) serveInner(rec http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+	// 放行入口的页面与探测地址（站点开启了放行入口时）
+	if h.handleKnock(rec, r) {
+		return
+	}
 	// 登录页等认证保留路径始终交给认证器处理，其余路径按规则决定是否需要认证
 	if h.site.WebAuth && strings.HasPrefix(r.URL.Path, authPath) {
 		h.auth.check(rec, r, h.site)
@@ -1083,6 +1094,10 @@ func (h *siteHandler) serveInner(rec http.ResponseWriter, r *http.Request) {
 				var ok bool
 				if id, ok = h.auth.checkUser(rec, r, h.site); !ok {
 					return
+				}
+				// 放行入口：通过认证的访客为来源地址登记（续期）敲门授权，地址不能放行时忽略，见放行页面的说明
+				if h.site.KnockGrant.Rule != "" {
+					_, _, _ = h.grantKnock(r, id)
 				}
 				// 经 Gately 认证通过：开启信任已认证用户时，受信任的凭据（首次带基本认证凭据的请求在 checkUser 中
 				// 刚记下，这里已能识别）不计入路径探测，并给外层 Gately 签发认证标记（见 ServeHTTP）。
