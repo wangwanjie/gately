@@ -120,3 +120,75 @@ func TestParsePrefixesUnmap(t *testing.T) {
 		}
 	}
 }
+
+// 优先拒绝名单（#95）：先于白名单、黑名单判断，与模式无关，订阅列表实时生效。
+func TestFilterDenyFirst(t *testing.T) {
+	set, _, _ := Parse(strings.NewReader("198.51.100.0/24\n"))
+	Default.Store("t-deny", set)
+	t.Cleanup(func() { Default.Store("t-deny", nil) })
+
+	addr := func(s string) net.Addr { return &net.TCPAddr{IP: net.ParseIP(s), Port: 1} }
+	// 白名单与拒绝名单同时命中：拒绝优先；拒绝名单未命中的白名单成员放行
+	wl := (&Access{IPMode: ModeWhitelist, IPList: []string{"203.0.113.0/24", "198.51.100.0/24"}, IPDenyList: []string{"203.0.113.9"}, IPDenySets: []string{"t-deny"}}).Compile()
+	// 模式关闭时拒绝名单同样生效，且会生成过滤器
+	off := (&Access{IPDenyList: []string{"10.0.0.0/8"}}).Compile()
+	// 黑名单模式叠加拒绝名单
+	bl := (&Access{IPMode: ModeBlacklist, IPList: []string{"192.0.2.1"}, IPDenyList: []string{"10.0.0.0/8"}}).Compile()
+	cases := []struct {
+		name string
+		f    *Filter
+		ip   string
+		want bool
+	}{
+		{"白名单成员", wl, "203.0.113.5", true},
+		{"白名单成员同时在拒绝名单", wl, "203.0.113.9", false},
+		{"拒绝订阅列表命中", wl, "198.51.100.7", false},
+		{"关闭模式命中拒绝名单", off, "10.1.2.3", false},
+		{"关闭模式未命中", off, "8.8.8.8", true},
+		{"黑名单命中拒绝名单", bl, "10.9.9.9", false},
+		{"黑名单命中黑名单", bl, "192.0.2.1", false},
+		{"黑名单均未命中", bl, "8.8.8.8", true},
+	}
+	for _, c := range cases {
+		if got := c.f.Allows(addr(c.ip)); got != c.want {
+			t.Errorf("%s: %s 期望 %v", c.name, c.ip, c.want)
+		}
+	}
+	// 订阅列表清空后立即放行
+	Default.Store("t-deny", nil)
+	if !wl.Allows(addr("198.51.100.7")) {
+		t.Error("订阅列表清空后应按未命中处理")
+	}
+	// 无法解析来源的地址不会命中拒绝名单
+	if !off.Allows(nil) {
+		t.Error("关闭模式下未知来源应放行")
+	}
+
+	bad := Access{IPDenyList: []string{"nope"}}
+	if err := bad.Normalize(); err == nil {
+		t.Error("无效的拒绝名单条目应报错")
+	}
+	ok := Access{IPDenyList: []string{" 1.2.3.4 ", ""}, IPDenySets: []string{"x", " x ", ""}}
+	if err := ok.Normalize(); err != nil || len(ok.IPDenyList) != 1 || len(ok.IPDenySets) != 1 {
+		t.Errorf("规范化: %v %+v", err, ok)
+	}
+}
+
+// 优先拒绝名单引用的订阅列表：模式关闭时也要登记引用方并校验存在。
+func TestDenySetsReferencedWithoutMode(t *testing.T) {
+	Default.SetCatalog([]Info{{Key: "t-exists", Name: "存在"}})
+	t.Cleanup(func() { Default.SetCatalog(nil) })
+	a := Access{IPDenySets: []string{"t-exists"}}
+	users := map[string][]string{}
+	a.AddUsers(users, "r1")
+	if len(users["t-exists"]) != 1 {
+		t.Fatalf("模式关闭也应登记拒绝名单引用: %v", users)
+	}
+	if err := a.CheckSets(); err != nil {
+		t.Fatal(err)
+	}
+	missing := Access{IPDenySets: []string{"t-gone"}}
+	if err := missing.CheckSets(); err == nil {
+		t.Fatal("引用不存在的订阅列表应报错")
+	}
+}
