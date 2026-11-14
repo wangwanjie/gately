@@ -67,6 +67,9 @@ type ServerSettings struct {
 	IPList []string `json:"ipList"`
 	// IPSets 为引用的订阅 IP 列表 key（在 Web 服务的 IP 列表中维护），与 IPList 一起参与判断
 	IPSets []string `json:"ipSets"`
+	// IPDenyList 与 IPDenySets 是优先拒绝名单：与访问控制模式无关，命中的来源一律拒绝，先于白名单、黑名单判断
+	IPDenyList []string `json:"ipDenyList"`
+	IPDenySets []string `json:"ipDenySets"`
 }
 
 // Client 是一个 frpc 实例：连接一台 frps，运行一个独立的 frpc 进程，代理通过 Proxy.Client 归属到实例。
@@ -290,6 +293,10 @@ func (s *ServerSettings) validateAccess() error {
 		}
 	}
 	s.IPSets = sets
+	var err error
+	if s.IPDenyList, s.IPDenySets, err = iplist.CleanDeny(s.IPDenyList, s.IPDenySets); err != nil {
+		return err
+	}
 	if s.IPMode == iplist.ModeWhitelist && len(s.IPList) == 0 && len(s.IPSets) == 0 {
 		return errors.New("白名单模式需要填写 IP / 网段或选择订阅列表")
 	}

@@ -226,3 +226,55 @@ func TestParseClientAddr(t *testing.T) {
 		t.Error("无效地址应解析失败")
 	}
 }
+
+// 优先拒绝名单（#95）：先于白名单、黑名单判断，与访问控制模式无关，订阅列表实时生效，并登记引用方。
+func TestCheckLoginDenyFirst(t *testing.T) {
+	set, _, _ := iplist.Parse(strings.NewReader("198.51.100.0/24\n"))
+	iplist.Default.Store("t-deny", set)
+	iplist.Default.SetCatalog([]iplist.Info{{Key: "t-deny", Name: "情报"}})
+	t.Cleanup(func() {
+		iplist.Default.Store("t-deny", nil)
+		iplist.Default.SetCatalog(nil)
+		iplist.Default.SetUsers(ID, nil)
+	})
+	m := newAccessModule(
+		Server{Key: "wl", Name: "wl", ServerSettings: ServerSettings{IPMode: iplist.ModeWhitelist, IPList: []string{"203.0.113.0/24", "198.51.100.0/24"}, IPDenyList: []string{"203.0.113.9"}, IPDenySets: []string{"t-deny"}}},
+		Server{Key: "off", Name: "off", ServerSettings: ServerSettings{IPDenyList: []string{"10.0.0.0/8"}}},
+	)
+	cases := []struct {
+		key, addr string
+		allow     bool
+	}{
+		{"wl", "203.0.113.5:1", true},
+		{"wl", "203.0.113.9:1", false},
+		{"wl", "198.51.100.7:1", false},
+		{"off", "10.1.1.1:1", false},
+		{"off", "8.8.8.8:1", true},
+	}
+	for _, c := range cases {
+		if got := m.checkLogin(c.key, c.addr) == ""; got != c.allow {
+			t.Errorf("%s %s: 放行=%v，期望 %v", c.key, c.addr, got, c.allow)
+		}
+	}
+	if r := m.checkLogin("wl", "203.0.113.9:1"); !strings.Contains(r, "deny list") {
+		t.Errorf("拒绝原因应说明命中拒绝名单: %q", r)
+	}
+	// 模式关闭的实例也登记订阅列表引用，并校验引用存在
+	m.cfg.Servers[1].IPDenySets = []string{"t-deny"}
+	m.publishAccessLocked()
+	if users := iplist.Default.Users("t-deny"); len(users) != 2 {
+		t.Errorf("引用方 = %v", users)
+	}
+	if err := checkIPSets(&m.cfg.Servers[1]); err != nil {
+		t.Error(err)
+	}
+	m.cfg.Servers[1].IPDenySets = []string{"t-gone"}
+	if checkIPSets(&m.cfg.Servers[1]) == nil {
+		t.Error("引用不存在的订阅列表应报错")
+	}
+	// 订阅列表清空后放行
+	iplist.Default.Store("t-deny", nil)
+	if m.checkLogin("wl", "198.51.100.7:1") != "" {
+		t.Error("列表清空后应放行")
+	}
+}
