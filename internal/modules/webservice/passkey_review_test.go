@@ -1,6 +1,7 @@
 package webservice
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/wangwanjie/gately/internal/auth"
 	"github.com/wangwanjie/gately/internal/webauthn"
+	"github.com/wangwanjie/gately/internal/webauthn/webauthntest"
 )
 
 // Passkey 只在站点的精确域名上提供：通配域名站点与默认站点会接住任意子域名，
@@ -67,5 +69,21 @@ func TestPasskeyDroppedOnAdminCredentialChange(t *testing.T) {
 	totp, _ := normalizeAuthUsers([]AuthUser{{ID: id, Name: "alice", TOTPSecret: auth.NewTOTPSecret()}}, old)
 	if len(totp[0].Passkeys) != 0 {
 		t.Fatal("设置 TOTP 后应删除 Passkey")
+	}
+}
+
+// 签名计数没能保存（写盘失败、Passkey 在此期间被删除）时拒绝登录：新计数没有保存，克隆的凭据可以重放。
+func TestPasskeyLoginRejectedWhenNotPersisted(t *testing.T) {
+	e := newPKEnv(t, []AuthUser{pkAlice}, "")
+	key := webauthntest.New()
+	tok := e.token("a.test", "alice", "alice-password", "")
+	if resp, out := e.register("a.test", tok, "k", key); resp.StatusCode != 200 {
+		t.Fatalf("注册失败: %d %v", resp.StatusCode, out)
+	}
+	e.a.savePasskeys = func(string, func([]AuthUser, int) ([]webauthn.Credential, error)) error {
+		return errors.New("磁盘已满")
+	}
+	if resp, _ := e.login("a.test", key); resp.StatusCode != http.StatusUnauthorized {
+		t.Fatalf("保存失败时应拒绝登录: %d", resp.StatusCode)
 	}
 }
