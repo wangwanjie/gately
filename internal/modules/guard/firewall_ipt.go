@@ -92,6 +92,8 @@ type iptBackend struct {
 	fams    []iptFamily
 	ipset   string
 	version string
+	// portLogErr 为最近一次重建时创建命中端口集合失败的原因（内核缺少 hash:ip,port 模块等），为空表示正常或未启用
+	portLogErr error
 }
 
 // findIPTFn 查找可用的 iptables（legacy）与 ipset，可在测试中替换
@@ -249,7 +251,15 @@ func (b *iptBackend) createSets() string {
 				fmt.Fprintf(&sb, "create %s hash:ip family inet timeout 0 maxelem %d\n", iptSet(kind, false), iptMaxElem)
 			}
 		}
-		// 记录最近命中诱饵端口或未开放端口的 (来源地址, 端口)，供写入封禁原因；满了以后新的组合不再记录
+	}
+	return sb.String()
+}
+
+// createPortSets 返回创建命中端口集合的语句：记录最近命中诱饵端口或未开放端口的 (来源地址, 端口)，供写入封禁原因；
+// 满了以后新的组合不再记录。与其他集合分开创建：精简固件的内核可能缺少 hash:ip,port，失败时只放弃记录端口。
+func (b *iptBackend) createPortSets() string {
+	var sb strings.Builder
+	for _, f := range b.fams {
 		family := "inet"
 		if f.v6 {
 			family = "inet6"
@@ -331,7 +341,8 @@ func multiportChunks(list []portRange) []string {
 
 // iptRules 生成一个地址族在 mangle 表中各自有链的规则（不含表头与链声明）。
 // s 为生效的设置（严格模式未就绪时 IPv6Strict 为 false），allow 为白名单，deny 为网段与永久封禁。
-func iptRules(s Settings, v6 bool, allow, deny []netip.Prefix, open, trap []portRange) map[string][]string {
+// portLog 为 false 时不写记录命中端口的规则（未创建端口集合）。
+func iptRules(s Settings, v6 bool, allow, deny []netip.Prefix, open, trap []portRange, portLog bool) map[string][]string {
 	rules := map[string][]string{}
 	add := func(chain, rule string) {
 		rules[chain] = append(rules[chain], "-A "+chain+" "+rule)
@@ -366,7 +377,9 @@ func iptRules(s Settings, v6 bool, allow, deny []netip.Prefix, open, trap []port
 		for _, c := range multiportChunks(trap) {
 			add(iptIn, "-p tcp --syn -m multiport --dports "+c+" -j "+iptTrap)
 		}
-		add(iptTrap, fmt.Sprintf("-j SET --add-set %s src,dst --exist --timeout %d", iptSet("port", v6), iptPortLogSeconds))
+		if portLog {
+			add(iptTrap, fmt.Sprintf("-j SET --add-set %s src,dst --exist --timeout %d", iptSet("port", v6), iptPortLogSeconds))
+		}
 		add(iptTrap, fmt.Sprintf("-j SET --add-set %s src --exist --timeout %d", iptSet("trap", v6), iptSetTimeout(banSeconds(s, s.Trap.BanSeconds))))
 		add(iptTrap, "-j DROP")
 	}
@@ -376,7 +389,9 @@ func iptRules(s Settings, v6 bool, allow, deny []netip.Prefix, open, trap []port
 			add(iptScan, "-p tcp -m multiport --dports "+c+" -j RETURN")
 		}
 		// 走到这里的都是未开放端口的新连接，记录来源与端口
-		add(iptScan, fmt.Sprintf("-j SET --add-set %s src,dst --exist --timeout %d", iptSet("port", v6), iptPortLogSeconds))
+		if portLog {
+			add(iptScan, fmt.Sprintf("-j SET --add-set %s src,dst --exist --timeout %d", iptSet("port", v6), iptPortLogSeconds))
+		}
 		if v6 && s.Scan.IPv6Strict {
 			// 严格模式：IPv6 来源第一次连接开放端口以外的端口即封禁（按 /64）
 			add(iptScan, "-j "+iptScanHit)
@@ -411,12 +426,14 @@ func renderRestore(chains []string, rules map[string][]string) string {
 type iptPlan struct {
 	allow, deny []netip.Prefix
 	open, trap  []portRange
+	// portLog 表示命中端口集合已创建，规则中记录命中的端口
+	portLog bool
 }
 
 // restoreChains 用 iptables-restore --noflush 重写各地址族中指定的链。
 func (b *iptBackend) restoreChains(ctx context.Context, s Settings, plan iptPlan, chains []string) error {
 	for _, f := range b.fams {
-		rules := iptRules(s, f.v6, plan.allow, plan.deny, plan.open, plan.trap)
+		rules := iptRules(s, f.v6, plan.allow, plan.deny, plan.open, plan.trap, plan.portLog)
 		if _, err := b.run(ctx, renderRestore(chains, rules), f.restore, f.restoreArgs()...); err != nil {
 			return err
 		}
@@ -468,6 +485,16 @@ func (b *iptBackend) rebuild(ctx context.Context, s Settings, plan iptPlan, entr
 	}
 	if _, err := b.run(ctx, sb.String(), b.ipset, "restore", "-exist"); err != nil {
 		return nil, nil, err
+	}
+	// 只在诱饵端口或扫描检测开启时创建命中端口集合；创建失败（内核缺少 hash:ip,port）时放弃记录端口，
+	// 其余规则照常写入。每次重建都重新尝试，偶发错误不会永久关闭端口记录
+	plan.portLog, b.portLogErr = false, nil
+	if s.Trap.Enable || s.Scan.Enable {
+		if _, err := b.run(ctx, b.createPortSets(), b.ipset, "restore", "-exist"); err != nil {
+			b.portLogErr = err
+		} else {
+			plan.portLog = true
+		}
 	}
 	if err := b.restoreChains(ctx, s, plan, iptChains); err != nil {
 		return nil, nil, err
