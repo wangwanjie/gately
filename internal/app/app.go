@@ -246,6 +246,21 @@ func New(opts Options) (_ *App, err error) {
 		}
 		return id.User
 	})
+	// 后台登录桥接：只有管理员会话（不含只读账号）才能签发，凭据绑定签发它的会话，登出或改密码后随之失效
+	httpx.SetAdminBridge(func(r *http.Request) (string, time.Time) {
+		c, err := r.Cookie(auth.CookieName)
+		if err != nil || c.Value == "" {
+			return "", time.Time{}
+		}
+		v, exp, ok := a.auth.IssueBridge(c.Value)
+		if !ok {
+			return "", time.Time{}
+		}
+		return v, exp
+	}, func(value string) string {
+		user, _ := a.auth.VerifyBridge(value)
+		return user
+	})
 
 	// 文件服务共享用户由 WebDAV、FTP、SMB 共用，接口 /api/fileusers 属于应用本身，三个模块都关闭时也能读写
 	if err := fileusers.Default.Init(store); err != nil {

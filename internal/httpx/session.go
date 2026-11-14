@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"sync/atomic"
+	"time"
 )
 
 // 管理后台常经本机的 Web 服务站点反向代理访问，站点访问日志会记下管理员自己的请求，
@@ -48,4 +49,43 @@ func MarkWAFBlocked(r *http.Request) {
 	if flag, ok := r.Context().Value(wafFlagKey{}).(*atomic.Bool); ok {
 		flag.Store(true)
 	}
+}
+
+// 后台登录桥接：管理员登录后台后，Web 服务经由这里向单点登录域签发“后台已登录”凭据，
+// 其他站点开启“后台登录免认证”时凭它放行。凭据由管理后台签发与校验（见 auth 包），Web 服务只负责携带。
+
+// bridgeHooks 为桥接凭据的签发与校验函数。
+type bridgeHooks struct {
+	issue  func(r *http.Request) (string, time.Time)
+	verify func(value string) string
+}
+
+var bridge atomic.Pointer[bridgeHooks]
+
+// SetAdminBridge 注册桥接凭据的签发与校验函数：issue 根据请求所带的后台登录态返回凭据与过期时间（没有有效的管理员登录态时返回空串），
+// verify 校验凭据并返回管理员用户名（无效时返回空串）。传入 nil 取消注册。
+func SetAdminBridge(issue func(r *http.Request) (string, time.Time), verify func(value string) string) {
+	if issue == nil || verify == nil {
+		bridge.Store(nil)
+		return
+	}
+	bridge.Store(&bridgeHooks{issue: issue, verify: verify})
+}
+
+// IssueAdminBridge 为带有效管理员后台登录态的请求签发桥接凭据；没有登录态或未注册时返回空串。
+func IssueAdminBridge(r *http.Request) (string, time.Time) {
+	h := bridge.Load()
+	if h == nil {
+		return "", time.Time{}
+	}
+	return h.issue(r)
+}
+
+// VerifyAdminBridge 校验桥接凭据，有效时返回管理员用户名，否则返回空串。
+func VerifyAdminBridge(value string) string {
+	h := bridge.Load()
+	if h == nil {
+		return ""
+	}
+	return h.verify(value)
 }
