@@ -394,7 +394,7 @@ func TestFirewallIPTPoll(t *testing.T) {
 	}
 	fw, buf := iptFirewall(t, ipt)
 	var imported []string
-	fw.importFn = func(source string, addrs []netip.Addr) {
+	fw.importFn = func(source string, addrs []netip.Addr, _ portHits) {
 		for _, a := range addrs {
 			imported = append(imported, source+":"+a.String())
 			banlist.Default.Ban(a.String(), banlist.Options{Duration: time.Hour, Source: source})

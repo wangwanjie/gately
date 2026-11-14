@@ -112,7 +112,9 @@ type firewall struct {
 	dynWarned string
 	// dirty 表示封禁表有变化，等待轮询协程对账写入
 	dirty    bool
-	importFn func(source string, addrs []netip.Addr)
+	importFn func(source string, addrs []netip.Addr, ports portHits)
+	// noPortLog 表示内核不支持记录命中端口用的连接集合（地址 . 端口），之后写入规则时不再带上
+	noPortLog bool
 	// onActive 在轮询协程中发现规则生效状态变化（重试成功或重写失败）时调用，调用时不持有 f.mu
 	onActive func()
 	// local 为本机网卡所在的 IPv6 网段，忽略内网地址时加入白名单
@@ -209,7 +211,7 @@ func (f *firewall) probeKernelLocked(ctx context.Context) string {
 }
 
 // start 按设置写入规则并开始轮询；importFn 接收内核规则直接封禁的地址，onActive 见 firewall.onActive。
-func (f *firewall) start(ctx context.Context, s Settings, local []netip.Prefix, importFn func(string, []netip.Addr), onActive func()) {
+func (f *firewall) start(ctx context.Context, s Settings, local []netip.Prefix, importFn func(string, []netip.Addr, portHits), onActive func()) {
 	f.mu.Lock()
 	f.importFn, f.onActive, f.local = importFn, onActive, local
 	f.mu.Unlock()
@@ -375,8 +377,16 @@ func (f *firewall) applyLocked(ctx context.Context, s Settings) {
 		deny = iptDenyText(entries)
 	} else {
 		var script string
-		script, members, deny = buildScript(ss, f.local, entries, open, trap, time.Now())
+		script, members, deny = buildScriptWith(!f.noPortLog, ss, f.local, entries, open, trap, time.Now())
 		_, err = f.run(ctx, script, "-f", "-")
+		if err != nil && !f.noPortLog && (ss.Trap.Enable || ss.Scan.Enable) {
+			// 较旧的 nft 或内核不支持 (地址 . 端口) 连接集合时，放弃记录命中端口，其余规则照常写入
+			script, members, deny = buildScriptWith(false, ss, f.local, entries, open, trap, time.Now())
+			if _, err2 := f.run(ctx, script, "-f", "-"); err2 == nil {
+				f.noPortLog, err = true, nil
+				f.log.Warnf("当前 nftables 不支持记录命中端口的连接集合，封禁原因将不包含端口")
+			}
+		}
 	}
 	if err != nil {
 		if f.ipt != nil {
@@ -508,6 +518,11 @@ const v6Mask = "ffff:ffff:ffff:ffff::"
 
 // buildScript 生成重建整张表的 nft 脚本。先声明再删除表，保证表不存在时脚本也能执行，且整个替换是原子的。
 func buildScript(s Settings, local []netip.Prefix, entries []banlist.Entry, open, trap []portRange, now time.Time) (script string, members map[string]time.Time, deny string) {
+	return buildScriptWith(true, s, local, entries, open, trap, now)
+}
+
+// buildScriptWith 同 buildScript，portLog 为 true 时额外记录命中的端口。
+func buildScriptWith(portLog bool, s Settings, local []netip.Prefix, entries []banlist.Entry, open, trap []portRange, now time.Time) (script string, members map[string]time.Time, deny string) {
 	var b strings.Builder
 	fmt.Fprintf(&b, "table inet %s {}\ndelete table inet %s\ntable inet %s {\n", tableName, tableName, tableName)
 	for _, set := range []string{"ban4", "trap4", "scan4"} {
@@ -523,6 +538,11 @@ func buildScript(s Settings, local []netip.Prefix, entries []banlist.Entry, open
 	writeIntervalSet(&b, "allow6", "ipv6_addr", allow6)
 	writePortSet(&b, "open", open)
 	writePortSet(&b, "trap", trap)
+	if portLog {
+		// 记录最近命中诱饵端口或未开放端口的 (来源地址 . 目的端口)，供写入封禁原因；满了以后新的组合不再记录
+		b.WriteString("\tset port4 {\n\t\ttype ipv4_addr . inet_service\n\t\tsize 16384\n\t\tflags dynamic,timeout\n\t\ttimeout 5m\n\t}\n")
+		b.WriteString("\tset port6 {\n\t\ttype ipv6_addr . inet_service\n\t\tsize 16384\n\t\tflags dynamic,timeout\n\t\ttimeout 5m\n\t}\n")
+	}
 	b.WriteString("\tset meter4 {\n\t\ttype ipv4_addr\n\t\tsize 65535\n\t\tflags dynamic,timeout\n\t\ttimeout 1m\n\t}\n")
 	b.WriteString("\tset meter6 {\n\t\ttype ipv6_addr\n\t\tsize 65535\n\t\tflags dynamic,timeout\n\t\ttimeout 1m\n\t}\n")
 
@@ -547,11 +567,19 @@ func buildScript(s Settings, local []netip.Prefix, entries []banlist.Entry, open
 		syn := "tcp flags & (fin|syn|rst|ack) == syn"
 		// 诱饵端口集合为空时规则不匹配任何连接，之后端口不再被监听时由轮询补上
 		if s.Trap.Enable {
+			if portLog {
+				fmt.Fprintf(&b, "\t\tmeta nfproto ipv4 %s tcp dport @trap add @port4 { ip saddr . tcp dport }\n", syn)
+				fmt.Fprintf(&b, "\t\tmeta nfproto ipv6 %s tcp dport @trap add @port6 { ip6 saddr . tcp dport }\n", syn)
+			}
 			sec := banSeconds(s, s.Trap.BanSeconds)
 			fmt.Fprintf(&b, "\t\tmeta nfproto ipv4 %s tcp dport @trap add @trap4 { ip saddr timeout %ds } counter drop comment \"trap-hit\"\n", syn, sec)
 			fmt.Fprintf(&b, "\t\tmeta nfproto ipv6 %s tcp dport @trap add @trap6 { ip6 saddr & %s timeout %ds } counter drop comment \"trap-hit\"\n", syn, v6Mask, sec)
 		}
 		if s.Scan.Enable {
+			if portLog {
+				fmt.Fprintf(&b, "\t\tmeta nfproto ipv4 %s tcp dport != @open add @port4 { ip saddr . tcp dport }\n", syn)
+				fmt.Fprintf(&b, "\t\tmeta nfproto ipv6 %s tcp dport != @open add @port6 { ip6 saddr . tcp dport }\n", syn)
+			}
 			sec := banSeconds(s, s.Scan.BanSeconds)
 			n := s.Scan.Threshold
 			fmt.Fprintf(&b, "\t\tmeta nfproto ipv4 %s tcp dport != @open add @meter4 { ip saddr limit rate over %d/minute burst %d packets } add @scan4 { ip saddr timeout %ds } counter drop comment \"scan-hit\"\n", syn, n, n, sec)
@@ -989,6 +1017,54 @@ func elemAddr(raw json.RawMessage) (netip.Addr, bool) {
 	return a, err == nil
 }
 
+// portHits 记录各来源（封禁表的键：IPv4 地址或 IPv6 /64）最近命中的目的端口，已去重并升序。
+type portHits map[string][]int
+
+func newPortHits() portHits { return portHits{} }
+
+// add 记录一次命中。
+func (h portHits) add(a netip.Addr, port int) {
+	key := banlist.KeyFor(a)
+	ps := h[key]
+	i := sort.SearchInts(ps, port)
+	if i < len(ps) && ps[i] == port {
+		return
+	}
+	ps = append(ps, 0)
+	copy(ps[i+1:], ps[i:])
+	ps[i] = port
+	h[key] = ps
+}
+
+// elemAddrPort 解析 (地址 . 端口) 连接集合的元素，元素可能带超时信息。
+func elemAddrPort(raw json.RawMessage) (netip.Addr, int, bool) {
+	var obj struct {
+		Elem struct {
+			Val struct {
+				Concat []json.RawMessage `json:"concat"`
+			} `json:"val"`
+		} `json:"elem"`
+		Concat []json.RawMessage `json:"concat"`
+	}
+	if json.Unmarshal(raw, &obj) != nil {
+		return netip.Addr{}, 0, false
+	}
+	parts := obj.Concat
+	if len(parts) == 0 {
+		parts = obj.Elem.Val.Concat
+	}
+	if len(parts) != 2 {
+		return netip.Addr{}, 0, false
+	}
+	var as string
+	var port int
+	if json.Unmarshal(parts[0], &as) != nil || json.Unmarshal(parts[1], &port) != nil {
+		return netip.Addr{}, 0, false
+	}
+	a, err := netip.ParseAddr(as)
+	return a.Unmap(), port, err == nil
+}
+
 // ruleCounter 返回规则表达式中计数器的包数。
 func ruleCounter(expr []json.RawMessage) (uint64, bool) {
 	for _, e := range expr {
@@ -1041,9 +1117,16 @@ func (f *firewall) poll(ctx context.Context) {
 	}
 	f.status.Error = ""
 	inbox := map[string][]netip.Addr{}
+	hits := newPortHits()
 	for _, item := range doc.Nftables {
 		if item.Set != nil {
 			switch item.Set.Name {
+			case "port4", "port6":
+				for _, raw := range item.Set.Elem {
+					if a, port, ok := elemAddrPort(raw); ok {
+						hits.add(a, port)
+					}
+				}
 			case "trap4", "trap6", "scan4", "scan6":
 				for _, raw := range item.Set.Elem {
 					if a, ok := elemAddr(raw); ok {
@@ -1053,8 +1136,8 @@ func (f *firewall) poll(ctx context.Context) {
 			}
 		}
 	}
-	dropped, hits := doc.counters()
-	f.status.Dropped, f.status.Hits = addCounts(f.baseDropped, dropped), addCounts(f.baseHits, hits)
+	dropped, hitCounts := doc.counters()
+	f.status.Dropped, f.status.Hits = addCounts(f.baseDropped, dropped), addCounts(f.baseHits, hitCounts)
 	f.status.CheckedAt = time.Now()
 	portsOK := f.refreshPortsLocked(ctx)
 	if portsOK && f.cfg.Scan.Enable && f.cfg.Scan.IPv6Strict && !f.strictReady && !f.strictAt.IsZero() && !time.Now().Before(f.strictAt) {
@@ -1074,7 +1157,7 @@ func (f *firewall) poll(ctx context.Context) {
 			source = banlist.SourceScan
 		}
 		if importFn != nil {
-			importFn(source, addrs)
+			importFn(source, addrs, hits)
 		}
 	}
 	if len(inbox) > 0 {

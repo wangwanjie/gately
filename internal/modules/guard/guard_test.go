@@ -528,7 +528,7 @@ func TestFirewallPollImports(t *testing.T) {
 	unsub := banlist.Default.Subscribe(fw.change)
 	defer unsub()
 	got := map[string][]netip.Addr{}
-	fw.importFn = func(source string, addrs []netip.Addr) {
+	fw.importFn = func(source string, addrs []netip.Addr, _ portHits) {
 		got[source] = append(got[source], addrs...)
 		for _, a := range addrs {
 			banlist.Default.Ban(banlist.KeyFor(a), banlist.Options{Duration: time.Hour, Source: source})

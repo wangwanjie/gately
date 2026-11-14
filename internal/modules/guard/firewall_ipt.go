@@ -51,6 +51,9 @@ const (
 	iptRefresh = 24 * time.Hour
 	// iptMaxElem 为每个集合最多容纳的元素数（ipset 默认 65536，长期封禁累计超过时写入会失败）
 	iptMaxElem = 1048576
+	// iptPortLogSeconds / iptPortLogMax 为命中端口记录的保留时间与容量
+	iptPortLogSeconds = 300
+	iptPortLogMax     = 16384
 )
 
 // iptChains 为全部自有链；iptInChains 为随设置、白名单与端口变化而重写的 input 部分
@@ -228,7 +231,7 @@ func (b *iptBackend) hasV6() bool {
 func (b *iptBackend) setNames() []string {
 	var out []string
 	for _, f := range b.fams {
-		for _, kind := range []string{"ban", "trap", "scan"} {
+		for _, kind := range []string{"ban", "trap", "scan", "port"} {
 			out = append(out, iptSet(kind, f.v6))
 		}
 	}
@@ -246,6 +249,12 @@ func (b *iptBackend) createSets() string {
 				fmt.Fprintf(&sb, "create %s hash:ip family inet timeout 0 maxelem %d\n", iptSet(kind, false), iptMaxElem)
 			}
 		}
+		// 记录最近命中诱饵端口或未开放端口的 (来源地址, 端口)，供写入封禁原因；满了以后新的组合不再记录
+		family := "inet"
+		if f.v6 {
+			family = "inet6"
+		}
+		fmt.Fprintf(&sb, "create %s hash:ip,port family %s timeout %d maxelem %d\n", iptSet("port", f.v6), family, iptPortLogSeconds, iptPortLogMax)
 	}
 	return sb.String()
 }
@@ -357,6 +366,7 @@ func iptRules(s Settings, v6 bool, allow, deny []netip.Prefix, open, trap []port
 		for _, c := range multiportChunks(trap) {
 			add(iptIn, "-p tcp --syn -m multiport --dports "+c+" -j "+iptTrap)
 		}
+		add(iptTrap, fmt.Sprintf("-j SET --add-set %s src,dst --exist --timeout %d", iptSet("port", v6), iptPortLogSeconds))
 		add(iptTrap, fmt.Sprintf("-j SET --add-set %s src --exist --timeout %d", iptSet("trap", v6), iptSetTimeout(banSeconds(s, s.Trap.BanSeconds))))
 		add(iptTrap, "-j DROP")
 	}
@@ -365,6 +375,8 @@ func iptRules(s Settings, v6 bool, allow, deny []netip.Prefix, open, trap []port
 		for _, c := range multiportChunks(open) {
 			add(iptScan, "-p tcp -m multiport --dports "+c+" -j RETURN")
 		}
+		// 走到这里的都是未开放端口的新连接，记录来源与端口
+		add(iptScan, fmt.Sprintf("-j SET --add-set %s src,dst --exist --timeout %d", iptSet("port", v6), iptPortLogSeconds))
 		if v6 && s.Scan.IPv6Strict {
 			// 严格模式：IPv6 来源第一次连接开放端口以外的端口即封禁（按 /64）
 			add(iptScan, "-j "+iptScanHit)
@@ -663,14 +675,19 @@ func (b *iptBackend) writeDeny(ctx context.Context, deny []netip.Prefix) error {
 }
 
 // kernelBans 读取诱饵端口与扫描检测集合中由内核加入的来源，键为集合名。
-func (b *iptBackend) kernelBans(ctx context.Context) (map[string][]netip.Addr, error) {
+func (b *iptBackend) kernelBans(ctx context.Context) (map[string][]netip.Addr, portHits, error) {
 	out := map[string][]netip.Addr{}
+	hits := newPortHits()
 	for _, f := range b.fams {
+		// 命中端口记录读不到时只影响封禁原因，不影响封禁本身
+		if text, err := b.run(ctx, "", b.ipset, "save", iptSet("port", f.v6)); err == nil {
+			parsePortSave(text, hits)
+		}
 		for _, kind := range []string{"trap", "scan"} {
 			name := iptSet(kind, f.v6)
 			text, err := b.run(ctx, "", b.ipset, "save", name)
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 			for _, line := range strings.Split(text, "\n") {
 				fs := strings.Fields(line)
@@ -682,7 +699,31 @@ func (b *iptBackend) kernelBans(ctx context.Context) (map[string][]netip.Addr, e
 			}
 		}
 	}
-	return out, nil
+	return out, hits, nil
+}
+
+// parsePortSave 解析 ipset save 输出的命中端口记录，行形如 add gately_port4 1.2.3.4,tcp:22 timeout 290。
+func parsePortSave(text string, hits portHits) {
+	for _, line := range strings.Split(text, "\n") {
+		fs := strings.Fields(line)
+		if len(fs) < 3 || fs[0] != "add" {
+			continue
+		}
+		addr, rest, ok := strings.Cut(fs[2], ",")
+		if !ok {
+			continue
+		}
+		_, portText, ok := strings.Cut(rest, ":")
+		if !ok {
+			continue
+		}
+		port, err := strconv.Atoi(portText)
+		a, aerr := netip.ParseAddr(addr)
+		if err != nil || aerr != nil {
+			continue
+		}
+		hits.add(a.Unmap(), port)
+	}
 }
 
 // remove 删除跳转、自有链与集合，停止或关闭同步时调用。
@@ -917,7 +958,7 @@ func (f *firewall) pollIPTLocked(ctx context.Context) {
 		}
 	}
 	importFn, ipt := f.importFn, f.ipt
-	inbox, kerr := ipt.kernelBans(ctx)
+	inbox, portLog, kerr := ipt.kernelBans(ctx)
 	f.mu.Unlock()
 	if kerr != nil || len(inbox) == 0 {
 		return
@@ -930,7 +971,7 @@ func (f *firewall) pollIPTLocked(ctx context.Context) {
 			source = banlist.SourceScan
 		}
 		if importFn != nil {
-			importFn(source, addrs)
+			importFn(source, addrs, portLog)
 		}
 		for _, a := range addrs {
 			stmts = append(stmts, fmt.Sprintf("del %s %s", name, a))
