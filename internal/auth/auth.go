@@ -1111,13 +1111,14 @@ func (m *Manager) RemovePasskey(password, id string) error {
 // LoginPasskey 使用 Passkey 登录。verify 校验断言并返回新的签名计数；
 // 失败与密码登录一样计入 IP 限流。Passkey 登录强制用户验证，因此无需再输入两步验证码。
 func (m *Manager) LoginPasskey(ip, credID string, verify func(webauthn.Credential) (uint32, error)) (string, time.Time, error) {
-	key := limitKey(ip)
-	global := m.isUnknown(ip)
-	if err := m.reserve(key, global, global); err != nil {
+	// Passkey 使用独立的限流记录，也不受陌生来源全局预算约束：断言无法猜测，密码失败（尤其是关闭密码登录后
+	// 必然失败的密码尝试）不能把唯一的登录方式一起锁住
+	key := "pk|" + limitKey(ip)
+	if err := m.reserve(key, m.isUnknown(ip), false); err != nil {
 		return "", time.Time{}, err
 	}
 	ok := false
-	defer func() { m.release(key, ok, global) }()
+	defer func() { m.release(key, ok, false) }()
 
 	m.mu.RLock()
 	var cred *webauthn.Credential

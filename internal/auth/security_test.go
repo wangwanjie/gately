@@ -451,15 +451,30 @@ func TestGlobalBudgetConcurrent(t *testing.T) {
 	}
 }
 
-func TestGlobalBudgetAppliesToPasskey(t *testing.T) {
+// Passkey 登录不受陌生来源全局预算约束，也不受密码失败的锁定影响（断言无法猜测；关闭密码登录后，
+// 必然失败的密码尝试不能把唯一的登录方式一起锁住）；Passkey 自身的失败仍按来源限流。
+func TestPasskeyIndependentOfPasswordLimits(t *testing.T) {
 	m := newStrongManager(t)
 	useClock(m)
 	m.SetGlobalLimit(2, knownSet(), nil)
-	verify := func(webauthn.Credential) (uint32, error) { return 0, errors.New("断言无效") }
-	_, _, _ = m.LoginPasskey("24.0.0.1", "nope", verify)
-	_, _, _ = m.LoginPasskey("24.0.0.2", "nope", verify)
-	if _, _, err := m.LoginPasskey("24.0.0.3", "nope", verify); !errors.Is(err, ErrBusy) {
-		t.Fatalf("Passkey 登录同样受全局预算限制: %v", err)
+	// 耗尽全局预算，并让 24.0.0.9 因密码失败被锁定
+	failN(m, "24.0.0.1", 2)
+	failN(m, "24.0.0.9", 6)
+	if _, _, err := m.Login("24.0.0.9", "admin", strongPass); err == nil {
+		t.Fatal("前提：密码登录应被拒绝")
+	}
+	bad := func(webauthn.Credential) (uint32, error) { return 0, errors.New("断言无效") }
+	for _, ip := range []string{"24.0.0.3", "24.0.0.9"} {
+		if _, _, err := m.LoginPasskey(ip, "nope", bad); errors.Is(err, ErrBusy) || errors.Is(err, ErrLocked) {
+			t.Fatalf("%s 的 Passkey 登录不应被密码限流挡住: %v", ip, err)
+		}
+	}
+	// Passkey 自身连续失败仍会被锁定
+	for i := 0; i < 10; i++ {
+		_, _, _ = m.LoginPasskey("24.0.0.4", "nope", bad)
+	}
+	if _, _, err := m.LoginPasskey("24.0.0.4", "nope", bad); !errors.Is(err, ErrLocked) {
+		t.Fatalf("Passkey 连续失败应被锁定: %v", err)
 	}
 }
 
