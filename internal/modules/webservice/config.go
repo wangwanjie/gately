@@ -112,6 +112,10 @@ type Site struct {
 	IPList []string `json:"ipList"`
 	// IPSets 为引用的订阅 IP 列表 key，与 IPList 一起参与黑白名单判断
 	IPSets []string `json:"ipSets"`
+	// IPDenyList 与 IPDenySets 是优先拒绝名单：无论访问控制模式与路径规则如何，命中的来源一律拒绝，
+	// 在白名单、黑名单之前判断，因此同时在白名单中的地址也会被拒绝（先黑后白）
+	IPDenyList []string `json:"ipDenyList"`
+	IPDenySets []string `json:"ipDenySets"`
 
 	// CountryMode 为 ""（不限）、allow（仅允许列出的国家）、deny（拒绝列出的国家），需先在设置中导入 GeoIP 数据库
 	CountryMode string `json:"countryMode"`
@@ -566,6 +570,11 @@ func (s *Site) validate(isDefault bool) error {
 		return err
 	}
 	s.IPSets = uniqueList(s.IPSets)
+	s.IPDenyList = cleanList(s.IPDenyList)
+	if _, err := parsePrefixes(s.IPDenyList); err != nil {
+		return err
+	}
+	s.IPDenySets = uniqueList(s.IPDenySets)
 	if err := validateHeaderLines(append(append([]string{}, s.RequestHeaders...), s.ResponseHeaders...)); err != nil {
 		return err
 	}

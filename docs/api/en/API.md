@@ -2881,6 +2881,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `health` | `webservice.HealthCheck` |
 | `identityHeaders` | Array of `webservice.IdentityHeader` |
 | `insecureSkipVerify` | boolean |
+| `ipDenyList` | Array of string |
+| `ipDenySets` | Array of string |
 | `ipList` | Array of string |
 | `ipMode` | string |
 | `ipSets` | Array of string |

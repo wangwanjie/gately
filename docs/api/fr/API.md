@@ -2881,6 +2881,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `health` | `webservice.HealthCheck` |
 | `identityHeaders` | Tableau de `webservice.IdentityHeader` |
 | `insecureSkipVerify` | boolean |
+| `ipDenyList` | Tableau de string |
+| `ipDenySets` | Tableau de string |
 | `ipList` | Tableau de string |
 | `ipMode` | string |
 | `ipSets` | Tableau de string |

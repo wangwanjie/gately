@@ -2881,6 +2881,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `health` | `webservice.HealthCheck` |
 | `identityHeaders` | Array von `webservice.IdentityHeader` |
 | `insecureSkipVerify` | boolean |
+| `ipDenyList` | Array von string |
+| `ipDenySets` | Array von string |
 | `ipList` | Array von string |
 | `ipMode` | string |
 | `ipSets` | Array von string |
