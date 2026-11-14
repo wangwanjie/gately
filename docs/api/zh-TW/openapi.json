@@ -4435,6 +4435,9 @@
           "accessLog": {
             "type": "boolean"
           },
+          "adminPass": {
+            "type": "boolean"
+          },
           "authOptional": {
             "type": "boolean"
           },
