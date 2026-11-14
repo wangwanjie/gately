@@ -47,6 +47,7 @@
             <div class="meta">↑ {{ formatBytes(r.state.stats.bytesIn) }} · ↓ {{ formatBytes(r.state.stats.bytesOut) }}</div>
           </Field>
           <Field v-if="r.ipMode && !r.disableForward" :label="t('ipAccessEditor.title')">{{ r.ipMode === 'whitelist' ? t('ipAccessEditor.whitelist') : t('ipAccessEditor.blacklist') }}</Field>
+          <Field v-if="r.ipDenyList?.length || r.ipDenySets?.length" :label="t('ipAccessEditor.ipDeny')" mono>{{ (r.ipDenyList?.length ?? 0) + (r.ipDenySets?.length ?? 0) }}</Field>
           <Field v-if="r.knock && !r.disableForward" :label="t('ipAccessEditor.knock')">{{ knockRuleName(r.knock) }}</Field>
           <Field v-if="r.state.stats.denied" :label="t('ipAccessEditor.denied')" mono>{{ r.state.stats.denied }}</Field>
           <template v-if="!sorting && (r.enable && !moduleOff && (r.state.error || r.state.mapping || r.state.firewall))" #extra>
@@ -105,7 +106,7 @@
               <el-form-item :label="t('stun.targetPort')" required>
                 <el-input-number v-model="editing.targetPort" :min="1" :max="65535" />
               </el-form-item>
-              <IPAccessEditor v-model:mode="editing.ipMode" v-model:list="editing.ipList" v-model:sets="editing.ipSets" v-model:knock="editing.knock" :note="t('stun.ipAccessNote')" />
+              <IPAccessEditor v-model:mode="editing.ipMode" v-model:list="editing.ipList" v-model:sets="editing.ipSets" v-model:deny-list="editing.ipDenyList" v-model:deny-sets="editing.ipDenySets" v-model:knock="editing.knock" :note="t('stun.ipAccessNote')" />
             </template>
             <el-form-item :label="t('common.remark')"><el-input v-model="editing.remark" /></el-form-item>
             <el-form-item :label="t('common.enable')"><el-switch v-model="editing.enable" /></el-form-item>
@@ -288,6 +289,9 @@ interface Rule {
   ipMode: string
   ipList: string[]
   ipSets: string[]
+  // 优先拒绝名单：先于白名单、黑名单判断，与模式无关
+  ipDenyList?: string[]
+  ipDenySets?: string[]
   // knock 为端口敲门规则 key，非空时来源地址还必须敲门成功
   knock?: string
   remark: string
@@ -410,6 +414,8 @@ function emptyRule(): Rule {
     ipMode: '',
     ipList: [],
     ipSets: [],
+    ipDenyList: [],
+    ipDenySets: [],
     knock: '',
     remark: '',
   }
@@ -460,6 +466,8 @@ function openEditor(row?: RuleView, copy = false) {
     editing.value.ipMode = editing.value.ipMode ?? ''
     editing.value.ipList = editing.value.ipList ?? []
     editing.value.ipSets = editing.value.ipSets ?? []
+    editing.value.ipDenyList = editing.value.ipDenyList ?? []
+    editing.value.ipDenySets = editing.value.ipDenySets ?? []
     editing.value.knock = editing.value.knock ?? ''
     if (copy) {
       copyFrom.value = { key: row.key ?? '', name: row.name }
