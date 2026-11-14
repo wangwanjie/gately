@@ -188,3 +188,28 @@ func BenchmarkAllowedPrefix(b *testing.B) {
 		}
 	}
 }
+
+// Lookup 报告剩余时长、地址是否已记录、地址记录是否已满（调用方据此对轮换地址节流写入）。
+func TestLookupFull(t *testing.T) {
+	now := time.Unix(1000, 0)
+	r := newWebRegistry(&now)
+	p := netip.MustParsePrefix("2001:db8:7::/64")
+	until := now.Add(time.Hour)
+	if rem, known, full := r.Lookup(p, "k", netip.MustParseAddr("2001:db8:7::1")); rem != 0 || known || full {
+		t.Fatal("没有授权时应全部为零值")
+	}
+	for i := 1; i <= MaxWebAddrs; i++ {
+		a := netip.AddrFrom16([16]byte{0x20, 0x01, 0x0d, 0xb8, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, byte(i)})
+		if err := r.AllowWeb(p, "k", until, Owner{User: "u"}, a); err != nil {
+			t.Fatal(err)
+		}
+		_, known, full := r.Lookup(p, "k", a)
+		if !known || full != (i == MaxWebAddrs) {
+			t.Fatalf("第 %d 个地址: known=%v full=%v", i, known, full)
+		}
+	}
+	rem, known, full := r.Lookup(p, "k", netip.MustParseAddr("2001:db8:7::ff"))
+	if rem != time.Hour || known || !full {
+		t.Fatalf("新地址应未记录且记录已满: %v %v %v", rem, known, full)
+	}
+}

@@ -382,18 +382,18 @@ func (r *Registry) Remaining(p netip.Prefix, rule string) time.Duration {
 	return max(info.until.Sub(r.now()), 0)
 }
 
-// Lookup 返回 p 持有 rule 的授权的剩余时长，以及单个地址 seen 是否已记录在该授权上（见 Grant.Addrs）；
-// 没有有效授权时剩余时长为 0。
-func (r *Registry) Lookup(p netip.Prefix, rule string, seen netip.Addr) (time.Duration, bool) {
+// Lookup 返回 p 持有 rule 的授权的剩余时长、单个地址 seen 是否已记录在该授权上（见 Grant.Addrs），
+// 以及记录的地址是否已达上限 MaxWebAddrs；没有有效授权时剩余时长为 0。
+func (r *Registry) Lookup(p netip.Prefix, rule string, seen netip.Addr) (rem time.Duration, known, full bool) {
 	p = normPrefix(p)
 	seen = seen.Unmap()
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	info, ok := r.grants[grantKey{p, rule}]
 	if !ok {
-		return 0, false
+		return 0, false, false
 	}
-	return max(info.until.Sub(r.now()), 0), slices.Contains(info.addrs, seen)
+	return max(info.until.Sub(r.now()), 0), slices.Contains(info.addrs, seen), len(info.addrs) >= MaxWebAddrs
 }
 
 // Revoke 撤销 addr 持有的 rule 授权；rule 为空时撤销该地址的全部授权。返回撤销的数量。
