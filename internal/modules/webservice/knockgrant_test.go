@@ -502,3 +502,17 @@ func TestKnockGrantableExcludesCGNAT(t *testing.T) {
 		}
 	}
 }
+
+// 管理员身份的授权在站点关闭“后台登录免认证”后失效。
+func TestKnockHolderAdmin(t *testing.T) {
+	a := newAuthenticator("secret")
+	s := Site{AdminPass: true}
+	adm := knockgate.Owner{User: adminVisitorPrefix + "admin", Cred: a.knockCred(s, nil, adminVisitorPrefix+"admin")}
+	if !a.knockHolderValid(s, nil, adm) {
+		t.Fatal("开启后台登录免认证时管理员身份的授权应有效")
+	}
+	s.AdminPass = false
+	if a.knockHolderValid(s, nil, adm) {
+		t.Fatal("关闭后台登录免认证后管理员身份的授权应失效")
+	}
+}
