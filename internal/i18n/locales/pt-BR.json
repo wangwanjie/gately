@@ -1195,6 +1195,7 @@
   "名称不能超过 %d 个字符": "O nome não pode ter mais de %d caracteres",
   "名称不能超过 64 个字符": "O nome não pode exceder 64 caracteres",
   "名称过长": "Nome longo demais",
+  "后台入口地址需为 http(s)://域名[:端口] 的形式，不带路径": "A URL de entrada da administração deve ter a forma http(s)://domínio[:porta], sem caminho",
   "后端 %s 不可用：%s": "Backend %s indisponível: %s",
   "后端 %s 已恢复": "Backend %s restaurado",
   "后端 TLS 握手超时需在 1 到 %d 秒之间（0 为默认 10 秒）": "O tempo limite do handshake TLS com o backend deve estar entre 1 e %d segundos (0 para o padrão de 10 segundos)",

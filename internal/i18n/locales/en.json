@@ -1195,6 +1195,7 @@
   "名称不能超过 %d 个字符": "Name must not exceed %d characters",
   "名称不能超过 64 个字符": "The name cannot exceed 64 characters",
   "名称过长": "name is too long",
+  "后台入口地址需为 http(s)://域名[:端口] 的形式，不带路径": "The admin entry URL must look like http(s)://domain[:port], without a path",
   "后端 %s 不可用：%s": "Backend %s unavailable: %s",
   "后端 %s 已恢复": "Backend %s recovered",
   "后端 TLS 握手超时需在 1 到 %d 秒之间（0 为默认 10 秒）": "The backend TLS handshake timeout must be 1 to %d seconds (0 for the default of 10 seconds)",

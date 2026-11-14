@@ -552,7 +552,7 @@ func (h *siteHandler) newProxy(s Site, p *pool, strip string) http.Handler {
 			}
 			// 站点会话 Cookie 只用于 Gately 自身认证，不转发给后端；后端是负责认证的另一台 Gately 时按站点设置原样转发
 			if !s.PassAuthCookies {
-				stripCookie(pr.Out, cookieName(s), oauthNonceCookie, ssoCookie, adminBridgeCookie)
+				stripCookie(pr.Out, cookieName(s), oauthNonceCookie, ssoCookie, adminBridgeCookie, adminHSCookie)
 			}
 			applyHeaders(pr.Out.Header, s.RequestHeaders)
 		},
@@ -1033,6 +1033,10 @@ func adminTag(admin, deny string) string {
 func (h *siteHandler) serveInner(rec http.ResponseWriter, r *http.Request) {
 	// 管理员经本站点访问后台时，向单点登录域签发后台登录免认证的桥接凭据（见 adminpass.go）
 	h.auth.issueAdminBridge(rec, r)
+	// 后台登录免认证的跳转握手：后台入口域名签发票据，站点兑换票据（见 adminhandshake.go）
+	if h.auth.serveAdminTicket(rec, r) || h.auth.serveAdminLogin(rec, r, h.site) {
+		return
+	}
 	if h.site.CORS {
 		if origin := r.Header.Get("Origin"); origin != "" && h.corsAllowed(origin) {
 			rec.Header().Set("Access-Control-Allow-Origin", origin)

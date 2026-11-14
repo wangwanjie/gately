@@ -76,6 +76,8 @@ type authenticator struct {
 	trustBasic basicTrust
 	// adminPass 表示配置中有站点开启了后台登录免认证，为 true 时站点才会向单点登录域签发桥接凭据，见 adminpass.go
 	adminPass atomic.Bool
+	// hs 为后台登录免认证的跳转握手数据（后台入口、站点域名、一次性票据），见 adminhandshake.go
+	hs adminHandshake
 	// marker 为认证标记密钥，backends 记录得到后端 Gately 认证标记的凭据，见 authmarker.go
 	marker   markerKey
 	backends backendTrust
@@ -360,6 +362,10 @@ func (a *authenticator) checkUser(w http.ResponseWriter, r *http.Request, s Site
 			}
 		}
 		if isBrowser(r) {
+			// 站点与后台不在同一单点登录域时，先经后台入口握手取得免认证凭据（见 adminhandshake.go）
+			if s.AdminPass && a.startAdminHandshake(w, r, s) {
+				return visitor{}, false
+			}
 			target := authPath + "/login?next=" + url.QueryEscape(r.URL.RequestURI())
 			http.Redirect(w, r, target, http.StatusFound)
 			return visitor{}, false
@@ -398,6 +404,10 @@ func (a *authenticator) checkUser(w http.ResponseWriter, r *http.Request, s Site
 			a.rememberBasic(s, name, pass, shared)
 			return v, true
 		}
+	}
+	// 没有提供凭据的浏览器页面请求：先尝试经后台入口握手，取得免认证凭据后无需弹出认证框
+	if s.AdminPass && r.Header.Get("Authorization") == "" && a.startAdminHandshake(w, r, s) {
+		return visitor{}, false
 	}
 	w.Header().Set("WWW-Authenticate", `Basic realm="Gately", charset="UTF-8"`)
 	http.Error(w, "401 Unauthorized", http.StatusUnauthorized)
