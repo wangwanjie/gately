@@ -129,10 +129,10 @@ func TestReadonlyRevokeCannotEvictAdmins(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := m.AddUser("viewer", "viewer-pass-123"); err != nil {
+	if err := m.AddUser("viewer", "tide-Lamp-47-oak"); err != nil {
 		t.Fatal(err)
 	}
-	if _, _, err := m.Login("2.2.2.2", "viewer", "viewer-pass-123"); err != nil {
+	if _, _, err := m.Login("2.2.2.2", "viewer", "tide-Lamp-47-oak"); err != nil {
 		t.Fatal(err)
 	}
 	// 直接签发只读令牌，省去上千次 bcrypt 登录
