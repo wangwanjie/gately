@@ -290,3 +290,21 @@ func TestRuleEditKeepsWebGrants(t *testing.T) {
 		t.Fatal("停用规则后网页登录授权应撤销")
 	}
 }
+
+// 按单个地址撤销（管理端）不能删掉同一地址所在 IPv6 网段的网页登录授权写入的防火墙放行。
+func TestRevokeAddrKeepsPrefixWebGrant(t *testing.T) {
+	env := newEnv(t, sshRule("ssh"))
+	waitFor(t, "防火墙生效", func() bool { return env.m.fw.active() })
+	until := env.clock.now().Add(time.Hour)
+	a := netip.MustParseAddr("2001:db8:8:9::5")
+	if err := knockgate.Default.AllowWeb(netip.MustParsePrefix("2001:db8:8:9::/64"), "r-ssh", until, knockgate.Owner{User: "alice", Site: "L/s1"}, a); err != nil {
+		t.Fatal(err)
+	}
+	ssh22 := spa.Access{Proto: "tcp", Port: 22}
+	waitFor(t, "写入", func() bool { return env.be.inSet(a.String(), ssh22) })
+	env.m.revoke(a, "")
+	time.Sleep(100 * time.Millisecond)
+	if !knockgate.Default.Allowed(a, "r-ssh") || !env.be.inSet(a.String(), ssh22) {
+		t.Fatal("网段授权仍有效，防火墙放行应保留")
+	}
+}
