@@ -28,7 +28,7 @@ This option applies to TCP only; UDP forwarding is unaffected.
 
 ## Source IP access control
 
-Each rule can use an allowlist or a blocklist that decides by source IP whether traffic is forwarded. The list is built from IPs / subnets typed in by hand and the subscribed IP lists of Web Services; matching any of them counts as being on the list. Subscribed lists are downloaded on schedule by the Web Services module, a refresh takes effect at once, and a list counts as empty until its first download succeeds.
+Each rule can use an allowlist or a blocklist that decides by source IP whether traffic is forwarded. The list is built from IPs / subnets typed in by hand and the subscribed IP lists of Web Services; matching any of them counts as being on the list. Subscribed lists are downloaded on schedule by the Web Services module, a refresh takes effect at once, and a list counts as empty until its first download succeeds. Each rule can also set an **Always-deny list** (`ipDenyList` / `ipDenySets`) that works independently of the allowlist or blocklist mode: a matching source is always rejected, checked before the allowlist and blocklist, and an address that is also on the allowlist is rejected too. It takes manual IPs or subnets and subscribed lists, for deny-first setups such as subscribing to a malicious-IP feed while only your own subnets are admitted.
 
 - The check runs before the target is dialed: a TCP connection that fails it is closed, and UDP is checked per packet, so packets that fail are dropped and the upstream packets of existing sessions follow a changed list at once;
 - Intrusion Prevention bans come first: a banned address is refused even inside an allowlisted subnet;
