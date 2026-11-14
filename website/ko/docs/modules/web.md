@@ -99,6 +99,7 @@
 | X-Forwarded-* 추가 | `X-Forwarded-For` / `X-Forwarded-Proto` / `X-Forwarded-Host` / `X-Forwarded-Port`와 `X-Real-IP`를 기록해 방문자의 실제 IP, 원래 프로토콜, 도메인, 포트를 백엔드에 알립니다. 방문자의 출발 포트는 `X-Real-Port`와 `X-Forwarded-For-Port`에 기록합니다(`X-Forwarded-Port`는 방문자가 Gately에 접속할 때 사용한 포트) | 백엔드가 실제 IP를 기록하거나, 외부가 HTTPS임을 알아야 올바른 링크를 만들 수 있는 경우(그렇지 않으면 http로 되돌아가거나 로그인 후 무한 이동). 대부분의 앱에 권장합니다 |
 | 백엔드에 PROXY v2 전송 | TCP 연결 앞에 PROXY 프로토콜 v2 헤더를 붙여 실제 클라이언트 IP를 전달합니다. 켜면 요청마다 새 연결을 만들고 백엔드에 HTTP/2를 쓰지 않습니다. 백엔드가 Gately라면 해당 리스너에서 PROXY 프로토콜 수신을 켜고 이 호스트를 신뢰할 PROXY 출처에 추가하세요. | HTTP 헤더는 읽지 않지만 PROXY 프로토콜을 지원하는 백엔드(다른 Gately, haproxy, `proxy_protocol`을 켠 nginx 등). 백엔드에 수신 설정이 없으면 모든 요청이 실패하므로 확실하지 않으면 끄세요 |
 | 접속 도메인을 SNI로 사용 | HTTPS 백엔드에만 적용: 핸드셰이크 때 방문자가 쓴 도메인을 보내고 그 도메인으로 인증서를 검증합니다. nginx의 `proxy_ssl_server_name on; proxy_ssl_name $host`와 같습니다 | 같은 포트에서 도메인별로 인증서나 분기를 하는 백엔드(frp `vhost_https`, 여러 HTTPS 사이트를 둔 nginx 등). 백엔드마다 별도 연결 풀을 쓰므로 도메인 간에 연결이 재사용되지 않습니다 |
+| http:// 백엔드에 평문 HTTP/2(h2c) 사용 | http:// 백엔드 전용: 암호화 없는 HTTP/2(h2c)로 백엔드에 연결하며 gRPC 스트리밍과 트레일러는 그대로 전달됩니다. 여러 방문자가 하나의 백엔드 연결을 공유합니다. HTTPS 백엔드는 HTTP/2가 자동 협상되어 필요 없고 상태 점검도 h2c를 사용합니다 | 백엔드가 h2c만 지원하는 gRPC 서비스(NetBird 관리·시그널, gRPC 전용 xray 등)일 때. h2c를 지원하지 않으면 502가 반환되고 해당 연결에서는 WebSocket 업그레이드를 쓸 수 없습니다 |
 | Gately 로그인 쿠키 전달 | Gately 자체 로그인 쿠키(싱글 사인온 `gately_sso`, 사이트 세션, 외부 로그인 nonce)를 그대로 백엔드에 넘깁니다. 끄면(기본값) 이 쿠키를 백엔드에 보내지 않아 로그인 자격 증명이 새지 않습니다 | 백엔드가 인증을 담당하는 다른 Gately이고 이 사이트는 인증을 하지 않을 때. 예: 공인 Gately는 WAF와 접근 제어만 하고 내부망 Gately로 프록시하며, 내부망 Gately가 웹 인증과 싱글 사인온을 담당하는 구성. 이 사이트에서 인증을 켠 상태에서는 쓸 수 없으며, 백엔드가 직접 운영하는 Gately일 때만 사용하세요 |
 
 자주 쓰는 조합:
@@ -107,6 +108,7 @@
 - 백엔드가 자체 서명 인증서의 https 주소: "백엔드 인증서 검증 건너뛰기"도 켭니다.
 - 공개 웹사이트나 외부 서비스 프록시: "Host에 백엔드 주소 사용"를 켭니다.
 - 백엔드 앞에 SNI로 분기하는 서비스가 있음(예: frp `vhost_https`): "접속 도메인을 SNI로 사용"를 켭니다.
+- 백엔드가 평문 포트의 gRPC 서비스(NetBird 등)일 때: "http:// 백엔드에 평문 HTTP/2(h2c) 사용"을 켜고 상태 점검은 TCP 모드를 사용하세요.
 - 공인 Gately는 WAF만, 내부망 Gately가 로그인 담당: 공인 사이트는 인증을 끄고 "Gately 로그인 쿠키 전달"을 켭니다. 실제 IP가 필요하면 "백엔드에 PROXY v2 전송"도 켜고, 내부망 Gately에서 PROXY 프로토콜 수신을 켠 뒤 공인 Gately를 신뢰할 수 있는 출처에 추가합니다.
 
 ### 요청 헤더와 응답 헤더 {#headers}
