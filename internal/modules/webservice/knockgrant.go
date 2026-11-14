@@ -261,8 +261,9 @@ func (h *siteHandler) grantKnockPrefix(r *http.Request, p netip.Prefix, names []
 	// 剩余时长足够、且这个地址已记录在授权上时不重复写入；同一 IPv6 网段换了临时地址时要立即记录，
 	// 系统防火墙按记录的单个地址放行
 	seen := clientAddr(r).Addr()
-	rem, known := knockgate.Default.Lookup(p, g.Rule, seen)
-	if known && rem > dur-knockRenewEvery {
+	// 地址记录已满时同样按续期间隔节流：同一网段轮换超过上限个地址时，不必每个请求都改写授权并同步防火墙
+	rem, known, full := knockgate.Default.Lookup(p, g.Rule, seen)
+	if (known || full) && rem > dur-knockRenewEvery {
 		return p, false, nil
 	}
 	o := knockgate.Owner{User: user, Site: h.knockSiteID(), SiteName: siteLabel(h.site),
