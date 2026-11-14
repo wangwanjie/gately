@@ -98,7 +98,10 @@
             <el-tag v-if="r.firewall" size="small" type="warning" effect="plain">{{ t('knock.rule.firewallTag') }}</el-tag>
           </template>
           <template v-if="r.remark" #sub>{{ r.remark }}</template>
-          <Field :label="t('knock.rule.ports')" mono>{{ r.ports.join(', ') }}</Field>
+          <Field :label="t('knock.rule.ports')" :mono="r.ports.length > 0">
+            <span v-if="r.ports.length">{{ r.ports.join(', ') }}</span>
+            <span v-else class="muted" data-test="rule-web-only">{{ t('knock.rule.webOnly') }}</span>
+          </Field>
           <Field :label="t('knock.rule.timeout')">{{ timeoutText(r) }}</Field>
           <Field v-if="r.user" :label="t('knock.rule.user')" mono>{{ r.user }}</Field>
           <Field :label="t('knock.rule.knocks')">
@@ -119,7 +122,8 @@
                 <el-button text size="small" type="danger" :icon="Trash2">{{ t('common.delete') }}</el-button>
               </template>
             </el-popconfirm>
-            <el-button type="primary" size="small" :icon="Terminal" class="client-btn" @click="openClient(r)">{{ t('knock.client.button') }}</el-button>
+            <!-- 没有端口的规则只经网页登录放行，不接受敲门报文，没有客户端命令 -->
+            <el-button v-if="r.ports.length" type="primary" size="small" :icon="Terminal" class="client-btn" @click="openClient(r)">{{ t('knock.client.button') }}</el-button>
           </template>
         </EntityCard>
       </template>
@@ -463,6 +467,10 @@ const listenBadge = computed((): { type: StatusType; text: string } => {
   }
   if (!s.port) {
     return { type: 'info', text: t('knock.status.udpOff') }
+  }
+  // 启用的规则都没有端口（只经网页登录放行）时不需要接收敲门报文
+  if (rules.value.some((r) => r.enable)) {
+    return { type: 'info', text: t('knock.status.webOnly') }
   }
   return { type: 'off', text: t('knock.status.noRules') }
 })

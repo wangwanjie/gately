@@ -112,7 +112,8 @@ type Rule struct {
 	// Group 为列表中的分组名称，只影响展示
 	Group  string `json:"group,omitempty"`
 	Enable bool   `json:"enable"`
-	// Ports 为敲门可以请求放行的端口（如 tcp/22），客户端 -A 参数中的端口必须全部在此列表中
+	// Ports 为敲门可以请求放行的端口（如 tcp/22），客户端 -A 参数中的端口必须全部在此列表中。
+	// 留空时规则不接受敲门报文，只能在 Web 站点的放行入口登录取得授权（不开启防火墙拦截时才能留空）
 	Ports []string `json:"ports"`
 	// Firewall 为 true 时在系统防火墙中拦截这些端口，只放行敲门成功的地址；
 	// 为 false 时不改动防火墙，只供协议分流路由、端口转发规则按敲门结果放行
@@ -150,8 +151,8 @@ func (r *Rule) Validate() error {
 	if err != nil {
 		return err
 	}
-	if len(ports) == 0 {
-		return errors.New("请至少填写一个端口，如 tcp/22")
+	if len(ports) == 0 && r.Firewall {
+		return errors.New("开启防火墙拦截时请至少填写一个端口，如 tcp/22")
 	}
 	r.Ports = formatPorts(ports)
 	if r.HMACType == "" {
@@ -580,10 +581,13 @@ func (m *Module) applyLocked() {
 	}
 	s := m.cfg.Settings
 	snap := m.snap.Load()
-	// 没有启用的规则时不监听，避免无意义地暴露端口
+	// 没有接受敲门报文的启用规则时不监听，避免无意义地暴露端口：没有端口的规则只能经网页登录放行
 	wantPort := 0
-	if len(snap.rules) > 0 {
-		wantPort = s.Port
+	for _, r := range snap.rules {
+		if len(r.ports) > 0 {
+			wantPort = s.Port
+			break
+		}
 	}
 	if wantPort != m.connPort || (wantPort != 0 && m.conn == nil) {
 		m.closeListenerLocked()
@@ -851,6 +855,9 @@ func (m *Module) check(r *compiledRule, msg *spa.Message, s Settings, now time.T
 	}
 	if r.rule.RequireAddr && (!msg.Addr.IsValid() || msg.Addr.IsUnspecified()) {
 		return "规则要求报文写明放行地址（fwknop -a 或 -R），拒绝 -s 报文"
+	}
+	if len(r.ports) == 0 {
+		return "规则没有填写端口，只接受 Web 站点放行入口的登录，不接受敲门报文"
 	}
 	for _, a := range msg.Access {
 		if !slices.Contains(r.ports, a) {

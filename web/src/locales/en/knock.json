@@ -25,7 +25,8 @@
     "accepted": "Knocks accepted",
     "rejected": "Knocks rejected",
     "dropped": "New connections blocked",
-    "allowed": "Connections made after knocking"
+    "allowed": "Connections made after knocking",
+    "webOnly": "Enabled rules are released by web login only, no need to listen"
   },
   "reason": {
     "os": {
@@ -64,7 +65,7 @@
     "namePlaceholder": "For example SSH",
     "confirmDelete": "Delete this knock rule?",
     "ports": "Ports",
-    "portsHelp": "Ports a client may ask to open, such as tcp/22 or udp/51820, separated by commas. A bare port number means TCP. Every port in the client's -A option must be in this list.",
+    "portsHelp": "Ports a client may ask to open, such as tcp/22 or udp/51820, separated by commas. A bare port number means TCP. Every port in the client's -A option must be in this list. Can be left empty when firewall blocking is off; the rule then only gets grants from a Web site's Release after login.",
     "firewall": "Firewall blocking",
     "firewallTag": "Firewall blocking",
     "firewallHelp": "When on, these ports are blocked in the system firewall and only addresses that knocked successfully are let through, which protects services such as this host's sshd (Linux only). When off, the firewall is left alone and the rule only serves \"Require knock\" in Port Forwarding, Protocol Routing and STUN.",
@@ -89,7 +90,8 @@
     "knocks": "Knocks",
     "knockStats": "{ok} accepted, {bad} rejected",
     "lastKnock": "Latest: {addr}, {time}",
-    "usedBy": "Used by"
+    "usedBy": "Used by",
+    "webOnly": "None (released by web login only)"
   },
   "settings": {
     "button": "Global settings",

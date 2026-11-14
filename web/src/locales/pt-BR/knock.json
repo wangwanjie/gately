@@ -25,7 +25,8 @@
     "accepted": "Batidas aceitas",
     "rejected": "Batidas recusadas",
     "dropped": "Novas conexões bloqueadas",
-    "allowed": "Conexões após a batida"
+    "allowed": "Conexões após a batida",
+    "webOnly": "As regras ativas são liberadas apenas por login web; não é preciso escutar"
   },
   "reason": {
     "os": {
@@ -64,7 +65,7 @@
     "namePlaceholder": "Por exemplo SSH",
     "confirmDelete": "Excluir esta regra de batida?",
     "ports": "Portas",
-    "portsHelp": "Portas que um cliente pode pedir para abrir, como tcp/22 ou udp/51820, separadas por vírgulas. Apenas o número da porta é tratado como TCP. Todas as portas da opção -A do cliente precisam estar nesta lista.",
+    "portsHelp": "Portas que um cliente pode pedir para abrir, como tcp/22 ou udp/51820, separadas por vírgulas. Apenas o número da porta é tratado como TCP. Todas as portas da opção -A do cliente precisam estar nesta lista. Pode ficar vazio quando o bloqueio no firewall estiver desligado; a regra então só recebe liberações pelo \"Liberar após login\" de um site web.",
     "firewall": "Bloqueio no firewall",
     "firewallTag": "Bloqueio no firewall",
     "firewallHelp": "Ativado, essas portas são bloqueadas no firewall do sistema e só passam os endereços que bateram com sucesso, protegendo serviços como o sshd deste host (somente Linux). Desativado, o firewall não é alterado e a regra serve apenas para \"Exigir batida\" no redirecionamento de portas, no roteamento por protocolo e no STUN.",
@@ -89,7 +90,8 @@
     "knocks": "Batidas",
     "knockStats": "{ok} aceitas, {bad} recusadas",
     "lastKnock": "Última: {addr}, {time}",
-    "usedBy": "Usada por"
+    "usedBy": "Usada por",
+    "webOnly": "Nenhuma (liberado apenas por login web)"
   },
   "settings": {
     "button": "Configurações globais",

@@ -25,7 +25,8 @@
     "accepted": "敲門成功",
     "rejected": "敲門被拒絕",
     "dropped": "攔截的新連線",
-    "allowed": "敲門後建立的連線"
+    "allowed": "敲門後建立的連線",
+    "webOnly": "啟用的規則只經網頁登入放行，不需要監聽"
   },
   "reason": {
     "os": {
@@ -64,7 +65,7 @@
     "namePlaceholder": "例如 SSH",
     "confirmDelete": "確定刪除這條敲門規則？",
     "ports": "連接埠",
-    "portsHelp": "用戶端可以請求放行的連接埠，如 tcp/22、udp/51820，多個以逗號分隔，只寫連接埠號時視為 TCP。用戶端 -A 參數中的連接埠必須全部在此清單中。",
+    "portsHelp": "用戶端可以請求放行的連接埠，如 tcp/22、udp/51820，多個以逗號分隔，只寫連接埠號時視為 TCP。用戶端 -A 參數中的連接埠必須全部在此清單中。不開啟防火牆攔截時可以留空，規則只經 Web 站台的「登入後放行」取得授權。",
     "firewall": "防火牆攔截",
     "firewallTag": "防火牆攔截",
     "firewallHelp": "開啟後在系統防火牆中攔截這些連接埠，只放行敲門成功的位址，用於保護本機的 sshd 等服務（僅 Linux）。關閉時不改動防火牆，只供連接埠轉發、協定分流與 STUN 的「需要敲門」使用。",
@@ -89,7 +90,8 @@
     "knocks": "敲門",
     "knockStats": "成功 {ok} 次，拒絕 {bad} 次",
     "lastKnock": "最近：{addr}，{time}",
-    "usedBy": "被引用"
+    "usedBy": "被引用",
+    "webOnly": "未填寫（只經網頁登入放行）"
   },
   "settings": {
     "button": "全域設定",
