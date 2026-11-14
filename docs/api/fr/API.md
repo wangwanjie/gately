@@ -2870,6 +2870,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Champ | Type |
 | --- | --- |
 | `accessLog` | boolean |
+| `adminPass` | boolean |
 | `authOptional` | boolean |
 | `basicAuth` | boolean |
 | `cache` | `webservice.CacheConfig` |

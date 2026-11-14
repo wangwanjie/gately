@@ -2870,6 +2870,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Campo | Tipo |
 | --- | --- |
 | `accessLog` | boolean |
+| `adminPass` | boolean |
 | `authOptional` | boolean |
 | `basicAuth` | boolean |
 | `cache` | `webservice.CacheConfig` |

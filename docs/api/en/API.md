@@ -2870,6 +2870,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Field | Type |
 | --- | --- |
 | `accessLog` | boolean |
+| `adminPass` | boolean |
 | `authOptional` | boolean |
 | `basicAuth` | boolean |
 | `cache` | `webservice.CacheConfig` |
