@@ -36,8 +36,11 @@ func NewPasswordReset(password string) (ResetRequest, error) {
 	if password == "" {
 		password = DefaultPassword
 	}
-	if len(password) < 8 {
-		return ResetRequest{}, errors.New("新密码至少 8 位")
+	// 重置为默认密码是明确的恢复手段，保留；自定义密码须满足强度要求
+	if password != DefaultPassword {
+		if err := CheckPasswordStrength("", password); err != nil {
+			return ResetRequest{}, err
+		}
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -127,6 +130,9 @@ func (m *Manager) ApplyReset(req ResetRequest) error {
 	if req.PasswordHash != "" {
 		next.PasswordHash = req.PasswordHash
 		next.UsingDefaultPassword = req.DefaultPassword
+		next.WeakPassword = false
+		// 命令行重置密码同时重新开启密码登录：这是丢失 Passkey 设备后找回访问权限的途径
+		next.PasswordLoginOff = false
 	}
 	if req.DisableTOTP {
 		next.TOTPSecret = ""

@@ -96,6 +96,18 @@ func (t *Tracker) Observe(ip string, now time.Time) bool {
 	return !baseline
 }
 
+// IsKnown 返回来源地址是否曾成功登录过。只读判断，不改变任何记录；无法解析的地址视为未知。
+func (t *Tracker) IsKnown(ip string) bool {
+	key := Normalize(ip)
+	if key == "" {
+		return false
+	}
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	_, ok := t.entries[key]
+	return ok
+}
+
 // Known 返回当前已知来源，按最近出现时间从新到旧。
 func (t *Tracker) Known() []Entry {
 	t.mu.Lock()

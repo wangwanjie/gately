@@ -70,10 +70,10 @@ func TestBridgeRejectsInvalid(t *testing.T) {
 // 只读账号的会话不能签发凭据：只读账号不应获得站点的免认证权限。
 func TestBridgeNotForReadOnly(t *testing.T) {
 	m, pass := newTestManager(t)
-	if err := m.AddUser("viewer", "viewer-pass-1"); err != nil {
+	if err := m.AddUser("viewer", "tide-Lamp-47-oak"); err != nil {
 		t.Fatal(err)
 	}
-	token, _, err := m.Login("1.1.1.2", "viewer", "viewer-pass-1")
+	token, _, err := m.Login("1.1.1.2", "viewer", "tide-Lamp-47-oak")
 	if err != nil {
 		t.Fatal(err)
 	}
