@@ -236,3 +236,57 @@ func TestWebGrantFirewall(t *testing.T) {
 		return true
 	})
 }
+
+// 修改仍启用的规则（例如改名称或端口）只撤销敲门报文取得的授权，网页登录取得的授权保留并按新端口写回防火墙；
+// 停用规则时全部撤销。
+func TestRuleEditKeepsWebGrants(t *testing.T) {
+	env := newEnv(t, sshRule("ssh"))
+	waitFor(t, "防火墙生效", func() bool { return env.m.fw.active() })
+	until := env.clock.now().Add(time.Hour)
+	web := netip.MustParseAddr("203.0.113.50")
+	if err := knockgate.Default.AllowWeb(netip.PrefixFrom(web, 32), "r-ssh", until, knockgate.Owner{User: "alice", Site: "L/s1"}, web); err != nil {
+		t.Fatal(err)
+	}
+	src := netip.MustParseAddr("198.51.100.9")
+	if err := env.m.handle(env.packet(t, env.rule("r-ssh"), spa.Message{}), src, transportUDP, "UDP"); err != nil {
+		t.Fatal(err)
+	}
+	ssh22 := spa.Access{Proto: "tcp", Port: 22}
+	ssh2222 := spa.Access{Proto: "tcp", Port: 2222}
+	waitFor(t, "写入网页登录放行", func() bool { return env.be.inSet(web.String(), ssh22) })
+	// 改名称并把端口换成 2222
+	env.m.mu.Lock()
+	for i := range env.m.cfg.Rules {
+		if env.m.cfg.Rules[i].Key == "r-ssh" {
+			env.m.cfg.Rules[i].Name = "renamed"
+			env.m.cfg.Rules[i].Ports = []string{"tcp/2222"}
+			_ = env.m.cfg.Rules[i].Validate()
+		}
+	}
+	env.m.ruleEditedLocked("r-ssh")
+	env.m.mu.Unlock()
+	if !knockgate.Default.Allowed(web, "r-ssh") {
+		t.Fatal("改规则后网页登录授权应保留")
+	}
+	if knockgate.Default.Allowed(src, "r-ssh") {
+		t.Fatal("改规则后敲门报文授权应撤销（密钥可能已变）")
+	}
+	waitFor(t, "按新端口写回防火墙", func() bool {
+		env.m.stateMu.Lock()
+		defer env.m.stateMu.Unlock()
+		_, ok := env.m.fwGrants[fwGrantKey{addr: web, access: ssh2222, rule: "r-ssh", web: true}]
+		return ok
+	})
+	// 停用规则：全部撤销
+	env.m.mu.Lock()
+	for i := range env.m.cfg.Rules {
+		if env.m.cfg.Rules[i].Key == "r-ssh" {
+			env.m.cfg.Rules[i].Enable = false
+		}
+	}
+	env.m.ruleEditedLocked("r-ssh")
+	env.m.mu.Unlock()
+	if knockgate.Default.Allowed(web, "r-ssh") {
+		t.Fatal("停用规则后网页登录授权应撤销")
+	}
+}
