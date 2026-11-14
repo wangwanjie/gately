@@ -6,7 +6,7 @@
   "lanLabel": "Les adresses LAN n'ont pas besoin d'autorisation",
   "lanHelp": "Les adresses privées et de lien local passent directement (sauf le loopback). Laissez désactivé si le trafic arrive via frp, un tunnel ou un autre relais sans l'IP réelle : tous les visiteurs apparaissent alors comme des adresses internes.",
   "grant": "Autoriser après connexion",
-  "grantHelp": "Lorsqu'un visiteur réussit l'authentification de ce site, Gately enregistre une autorisation de la règle de port knocking choisie pour son IP source ; les sites, redirections de ports et autres entrées qui utilisent cette règle laissent alors passer cette IP. Les adresses internes et locales ne sont jamais autorisées.",
+  "grantHelp": "Lorsqu'un visiteur réussit l'authentification de ce site, Gately enregistre une autorisation de la règle de port knocking choisie pour son IP source ; les sites, redirections de ports et autres entrées qui utilisent cette règle laissent alors passer cette IP. Les adresses internes et locales ne sont jamais autorisées. Si la règle bloque dans le pare-feu, les ports de la règle (comme SSH) sont aussi ouverts dans le pare-feu du système pour l'adresse qui s'est réellement connectée.",
   "sameRule": "Une entrée d'autorisation ne peut pas exiger l'admission par la même règle, sinon les visiteurs pas encore autorisés ne pourraient pas se connecter",
   "minutes": "Durée",
   "minutesUnit": "minutes",

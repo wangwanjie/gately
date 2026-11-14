@@ -1215,6 +1215,7 @@
   "同时删除落盘的日志文件、历史文件、归档与来源记录。": "Também exclui os arquivos de log em disco, os arquivos rotacionados, os arquivos compactados e a lista de origens.",
   "同时运行的任务已达上限 %d，请稍后再试": "O limite de %d tarefas simultâneas foi atingido, tente novamente mais tarde",
   "同步失败": "Falha na sincronização",
+  "同步网页登录放行：写入 %d 项，删除 %d 项": "Liberações por login web sincronizadas: %d gravadas, %d removidas",
   "名称": "Nome",
   "名称不能为空": "O nome não pode ficar vazio",
   "名称不能超过 %d 个字符": "O nome não pode ter mais de %d caracteres",

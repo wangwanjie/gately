@@ -1215,6 +1215,7 @@
   "同时删除落盘的日志文件、历史文件、归档与来源记录。": "Also deletes the log files on disk, rotated files, archives and the source list.",
   "同时运行的任务已达上限 %d，请稍后再试": "The limit of %d concurrent tasks has been reached, try again later",
   "同步失败": "Sync failed",
+  "同步网页登录放行：写入 %d 项，删除 %d 项": "Synced web login grants: wrote %d, removed %d",
   "名称": "Name",
   "名称不能为空": "Name cannot be empty",
   "名称不能超过 %d 个字符": "Name must not exceed %d characters",

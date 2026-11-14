@@ -6,7 +6,7 @@
   "lanLabel": "Las direcciones LAN no necesitan permiso",
   "lanHelp": "Las direcciones privadas y de enlace local pasan directamente (excepto loopback). No lo actives si el tráfico llega por frp, un túnel u otro reenvío sin la IP real, porque entonces todos los visitantes parecen direcciones internas.",
   "grant": "Permitir tras iniciar sesión",
-  "grantHelp": "Cuando un visitante supera la autenticación de este sitio, Gately registra un permiso de la regla de port knocking seleccionada para su IP de origen, y los sitios, reenvíos de puertos y demás entradas que usan esa regla dejan pasar esa IP. Las direcciones internas y locales nunca se permiten.",
+  "grantHelp": "Cuando un visitante supera la autenticación de este sitio, Gately registra un permiso de la regla de port knocking seleccionada para su IP de origen, y los sitios, reenvíos de puertos y demás entradas que usan esa regla dejan pasar esa IP. Las direcciones internas y locales nunca se permiten. Si la regla tiene activado el bloqueo en el cortafuegos, también se abren en el cortafuegos del sistema los puertos de la regla (como SSH) para la dirección que inició sesión.",
   "sameRule": "Una entrada de permiso no puede exigir admisión por la misma regla; si no, los visitantes aún no permitidos no podrían iniciar sesión",
   "minutes": "Duración",
   "minutesUnit": "minutos",

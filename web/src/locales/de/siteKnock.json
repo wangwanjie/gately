@@ -6,7 +6,7 @@
   "lanLabel": "LAN-Adressen brauchen keine Freigabe",
   "lanHelp": "Private und Link-Local-Adressen werden direkt durchgelassen (Loopback ausgenommen). Nicht aktivieren, wenn der Verkehr über frp, einen Tunnel oder eine andere Weiterleitung ohne echte Client-IP ankommt, da dann alle Besucher als interne Adressen erscheinen.",
   "grant": "Nach Anmeldung freigeben",
-  "grantHelp": "Hat ein Besucher die Authentifizierung dieser Seite bestanden, trägt Gately für seine Quell-IP eine Freigabe der gewählten Port-Knocking-Regel ein; Seiten, Portweiterleitungen und andere Eingänge mit dieser Regel lassen die IP dann durch. Interne und lokale Adressen werden nie freigegeben.",
+  "grantHelp": "Hat ein Besucher die Authentifizierung dieser Seite bestanden, trägt Gately für seine Quell-IP eine Freigabe der gewählten Port-Knocking-Regel ein; Seiten, Portweiterleitungen und andere Eingänge mit dieser Regel lassen die IP dann durch. Interne und lokale Adressen werden nie freigegeben. Ist bei der Regel die Firewall-Sperre aktiv, werden die Ports der Regel (etwa SSH) auch in der System-Firewall für die Adresse geöffnet, die sich tatsächlich angemeldet hat.",
   "sameRule": "Ein Freigabe-Eingang kann keinen Zugang über dieselbe Regel verlangen, sonst könnten sich noch nicht freigegebene Besucher nicht anmelden",
   "minutes": "Dauer",
   "minutesUnit": "Minuten",

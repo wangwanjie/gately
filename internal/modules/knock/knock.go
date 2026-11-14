@@ -392,6 +392,8 @@ type fwGrantKey struct {
 	addr   netip.Addr
 	access spa.Access
 	rule   string
+	// web 为网页登录授权同步来的放行（见 syncWebFirewall），与同一地址的敲门报文放行分开记录，撤销一方不影响另一方
+	web bool
 }
 
 // Module 是端口敲门模块。
@@ -434,6 +436,9 @@ type Module struct {
 	// invalid 汇总 HMAC 认证失败的报文，按时间窗记一条日志
 	invalid invalidStats
 
+	// webKick 在网页登录授权变化后通知 loop 同步防火墙放行（见 syncWebFirewall）
+	webKick chan struct{}
+
 	// now 可在测试中替换
 	now func() time.Time
 }
@@ -457,7 +462,7 @@ type Counters struct {
 
 // New 创建模块。
 func New() *Module {
-	return &Module{now: time.Now, stats: map[string]*ruleStats{}, fwGrants: map[fwGrantKey]time.Time{},
+	return &Module{now: time.Now, stats: map[string]*ruleStats{}, fwGrants: map[fwGrantKey]time.Time{}, webKick: make(chan struct{}, 1),
 		replay: map[string]time.Time{}, failSeen: map[netip.Addr]time.Time{}, bucket: tokenBucket{rate: 200, burst: 400},
 		perSrc: newSrcLimiter()}
 }
@@ -524,7 +529,9 @@ func (m *Module) Start(ctx context.Context) error {
 	m.fw.start(m.ctx, m.onFirewallActive)
 	m.applyLocked()
 	knockgate.Default.SetSubmitter(m.submit)
+	knockgate.Default.SetOnChange(m.kickWeb)
 	go m.loop(m.ctx)
+	m.kickWeb()
 	return nil
 }
 
@@ -537,6 +544,7 @@ func (m *Module) Stop() error {
 	}
 	m.started = false
 	knockgate.Default.SetSubmitter(nil)
+	knockgate.Default.SetOnChange(nil)
 	m.closeListenerLocked()
 	m.cancel()
 	m.mu.Unlock()
@@ -598,6 +606,8 @@ func (m *Module) applyLocked() {
 	m.spaPorts = knockgate.Default.SPAPorts()
 	m.fw.apply(m.ctx, m.planLocked(), m.liveFWGrants)
 	m.updateOpenLocked()
+	// 规则的端口、防火墙拦截开关可能变化：重新同步网页登录授权的防火墙放行
+	m.kickWeb()
 }
 
 // planLocked 计算防火墙规则：开启防火墙拦截的启用规则的端口与免敲门网段（放行由 liveFWGrants 在写入时取快照）。
@@ -1019,6 +1029,9 @@ func (m *Module) loop(ctx context.Context) {
 		select {
 		case <-ctx.Done():
 			return
+		case <-m.webKick:
+			m.syncWebFirewall()
+			continue
 		case <-t.C:
 		}
 		now := m.now()
@@ -1105,6 +1118,81 @@ func (m *Module) revoke(addr netip.Addr, rule string) int {
 	m.stateMu.Unlock()
 	m.fw.revoke(keep)
 	return n
+}
+
+// kickWeb 通知 loop 同步网页登录授权的防火墙放行；已有待处理的通知时直接返回，不阻塞调用方（授权登记表的回调）。
+func (m *Module) kickWeb() {
+	select {
+	case m.webKick <- struct{}{}:
+	default:
+	}
+}
+
+// syncWebFirewall 把网页登录（Web 站点的放行入口）取得的授权同步到系统防火墙：规则开启了防火墙拦截时，
+// 为授权上记录的每个实际地址放行规则的全部端口，到期时间与授权相同；授权撤销或到期后删除对应放行。
+//
+// 只写入实际登录、探测过的单个地址：进程内按网段（默认 IPv6 /64）判断，系统防火墙的放行集合只存单个地址
+// （nftables 拼接集合、ipset hash:ip 在各系统上都支持，群晖只有 hash:ip）。IPv6 临时地址轮换后重新打开放行页面即可。
+func (m *Module) syncWebFirewall() {
+	fwRules := map[string][]spa.Access{}
+	for _, r := range m.snap.Load().rules {
+		if r.rule.Firewall && len(r.ports) > 0 {
+			fwRules[r.rule.Key] = r.ports
+		}
+	}
+	now := m.now()
+	want := map[fwGrantKey]time.Time{}
+	for _, g := range knockgate.Default.List() {
+		ports := fwRules[g.Rule]
+		if g.Source != knockgate.SourceWeb || len(ports) == 0 || !now.Before(g.Until) {
+			continue
+		}
+		for _, a := range g.Addrs {
+			for _, p := range ports {
+				k := fwGrantKey{addr: a, access: p, rule: g.Rule, web: true}
+				if g.Until.After(want[k]) {
+					want[k] = g.Until
+				}
+			}
+		}
+	}
+	var add, del []fwGrant
+	m.stateMu.Lock()
+	for k := range m.fwGrants {
+		if !k.web {
+			continue
+		}
+		if _, ok := want[k]; ok {
+			continue
+		}
+		delete(m.fwGrants, k)
+		// 同一地址、端口仍有其他放行（敲门报文或其他规则）时，按剩下的最晚到期时间重新写入：
+		// 直接保留会沿用撤销前更长的到期时间
+		var keep time.Time
+		for o, until := range m.fwGrants {
+			if o.addr == k.addr && o.access == k.access && until.After(keep) {
+				keep = until
+			}
+		}
+		del = append(del, fwGrant{Addr: k.addr, Access: k.access})
+		if !keep.IsZero() {
+			add = append(add, fwGrant{Addr: k.addr, Access: k.access, Until: keep})
+		}
+	}
+	for k, until := range want {
+		if old, ok := m.fwGrants[k]; ok && !until.After(old) {
+			continue
+		}
+		m.fwGrants[k] = until
+		add = append(add, fwGrant{Addr: k.addr, Access: k.access, Until: until})
+	}
+	m.stateMu.Unlock()
+	// 防火墙后台协程先删后加：先撤销再按剩余到期时间写回的放行不会被删掉
+	m.fw.revoke(del)
+	m.fw.grant(add)
+	if len(add) > 0 || len(del) > 0 {
+		m.logs.Logger("防火墙").Debugf("同步网页登录放行：写入 %d 项，删除 %d 项", len(add), len(del))
+	}
 }
 
 // revokeRuleLocked 在规则删除、停用或修改后撤销它产生的全部授权：密钥可能已更换，旧授权不应继续有效。
