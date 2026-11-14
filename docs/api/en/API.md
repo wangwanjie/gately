@@ -524,7 +524,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | GET | `/api/knock/settings` | `knock:read` | Global settings |
 | PUT | `/api/knock/settings` | `knock:write` | Update global settings |
 | GET | `/api/knock/status` | `knock:read` | Listening, firewall blocking status and currently valid grants |
-| DELETE | `/api/knock/grants` | `knock:write` | Revoke grants (body is {"addr": address, "rule": rule key}; leave rule empty to revoke all grants of the address) |
+| DELETE | `/api/knock/grants` | `knock:write` | Revoke a grant (body is {"addr": address, "rule": rule key}; leave rule empty to revoke all grants of that address; write a network grant's address as address/prefix length) |
 | GET | `/api/knock/firewall/rules` | `knock:read` | Block rules Gately wrote to the system firewall (text) |
 
 ## Wake-on-LAN
@@ -1665,7 +1665,11 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `ports` | Array of string |
 | `rule` | string |
 | `ruleName` | string |
+| `site` | string |
+| `siteName` | string |
+| `source` | string |
 | `until` | Time (RFC 3339) |
+| `user` | string |
 
 ### knock.Rule
 

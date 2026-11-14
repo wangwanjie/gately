@@ -524,7 +524,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | GET | `/api/knock/settings` | `knock:read` | Paramètres globaux |
 | PUT | `/api/knock/settings` | `knock:write` | Modifier les paramètres globaux |
 | GET | `/api/knock/status` | `knock:read` | Écoute, état du blocage par pare-feu et autorisations actuellement valides |
-| DELETE | `/api/knock/grants` | `knock:write` | Révoquer des autorisations (body = {"addr": adresse, "rule": clé de règle} ; laissez rule vide pour révoquer toutes les autorisations de l'adresse) |
+| DELETE | `/api/knock/grants` | `knock:write` | Révoquer une autorisation (body est {"addr": adresse, "rule": clé de la règle} ; laissez rule vide pour révoquer toutes les autorisations de cette adresse ; écrivez l'adresse d'une autorisation de réseau sous la forme adresse/longueur du préfixe) |
 | GET | `/api/knock/firewall/rules` | `knock:read` | Règles de blocage écrites par Gately dans le pare-feu du système (texte) |
 
 ## Wake-on-LAN
@@ -1665,7 +1665,11 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `ports` | Tableau de string |
 | `rule` | string |
 | `ruleName` | string |
+| `site` | string |
+| `siteName` | string |
+| `source` | string |
 | `until` | Heure (RFC 3339) |
+| `user` | string |
 
 ### knock.Rule
 

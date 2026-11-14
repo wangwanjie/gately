@@ -1511,8 +1511,20 @@
           "ruleName": {
             "type": "string"
           },
+          "site": {
+            "type": "string"
+          },
+          "siteName": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
           "until": {
             "format": "date-time",
+            "type": "string"
+          },
+          "user": {
             "type": "string"
           }
         },
@@ -27351,7 +27363,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "허가 취소(body 는 {\"addr\": 주소, \"rule\": 규칙 key}, rule 을 비우면 해당 주소의 모든 허가를 취소)",
+        "summary": "허용 철회(body 는 {\"addr\": 주소, \"rule\": 규칙 key} 이며, rule 을 비우면 해당 주소의 모든 허용을 철회합니다. 네트워크 대역 허용의 주소는 주소/접두사 길이 로 씁니다)",
         "tags": [
           "포트 노킹"
         ],

@@ -70,7 +70,9 @@
             <div class="grant-main">
               <span class="mono grant-addr">{{ g.addr }}</span>
               <el-tag size="small" effect="plain">{{ g.ruleName || g.rule }}</el-tag>
+              <el-tag v-if="g.source === 'web'" size="small" type="success" effect="plain" data-test="grant-web">{{ t('knock.grants.web') }}</el-tag>
             </div>
+            <div v-if="g.source === 'web'" class="grant-who muted" data-test="grant-who">{{ t('knock.grants.webWho', { user: g.user || '-', site: g.siteName || g.site || '-' }) }}</div>
             <div class="grant-meta">
               <span v-if="g.ports.length" class="mono">{{ g.ports.join(', ') }}</span>
               <span v-else class="muted">{{ t('knock.grants.gatelyOnly') }}</span>
@@ -348,6 +350,12 @@ interface Grant {
   until: string
   // ports 为写入防火墙的端口，只用于 Gately 自身入口的授权为空
   ports: string[]
+  // source 为授权来源：spa（敲门报文）、web（在 Web 站点的放行入口登录）；addr 为网段时带前缀长度
+  source?: string
+  // user、siteName 为网页登录放行的用户与入口站点
+  user?: string
+  site?: string
+  siteName?: string
 }
 
 interface Status {

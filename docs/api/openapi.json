@@ -1511,8 +1511,20 @@
           "ruleName": {
             "type": "string"
           },
+          "site": {
+            "type": "string"
+          },
+          "siteName": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
           "until": {
             "format": "date-time",
+            "type": "string"
+          },
+          "user": {
             "type": "string"
           }
         },
@@ -27351,7 +27363,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "撤销授权（body 为 {\"addr\": 地址, \"rule\": 规则 key}，rule 留空撤销该地址的全部授权）",
+        "summary": "撤销授权（body 为 {\"addr\": 地址, \"rule\": 规则 key}，rule 留空撤销该地址的全部授权；网段授权的地址写成 地址/前缀长度）",
         "tags": [
           "端口敲门"
         ],

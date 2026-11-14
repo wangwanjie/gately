@@ -524,7 +524,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | GET | `/api/knock/settings` | `knock:read` | Globale Einstellungen |
 | PUT | `/api/knock/settings` | `knock:write` | Globale Einstellungen ändern |
 | GET | `/api/knock/status` | `knock:read` | Lauschen, Firewall-Sperrstatus und aktuell gültige Berechtigungen |
-| DELETE | `/api/knock/grants` | `knock:write` | Berechtigungen widerrufen (body ist {"addr": Adresse, "rule": Regel-key}; rule leer lassen, um alle Berechtigungen der Adresse zu widerrufen) |
+| DELETE | `/api/knock/grants` | `knock:write` | Freigabe widerrufen (body ist {"addr": Adresse, "rule": Regel-Key}; bei leerem rule werden alle Freigaben dieser Adresse widerrufen; die Adresse einer Netzfreigabe wird als Adresse/Präfixlänge angegeben) |
 | GET | `/api/knock/firewall/rules` | `knock:read` | Von Gately in die System-Firewall geschriebene Sperrregeln (Text) |
 
 ## Wake-on-LAN
@@ -1665,7 +1665,11 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `ports` | Array von string |
 | `rule` | string |
 | `ruleName` | string |
+| `site` | string |
+| `siteName` | string |
+| `source` | string |
 | `until` | Zeit (RFC 3339) |
+| `user` | string |
 
 ### knock.Rule
 

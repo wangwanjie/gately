@@ -524,7 +524,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | GET | `/api/knock/settings` | `knock:read` | Configurações globais |
 | PUT | `/api/knock/settings` | `knock:write` | Alterar configurações globais |
 | GET | `/api/knock/status` | `knock:read` | Escuta, estado do bloqueio por firewall e autorizações atualmente válidas |
-| DELETE | `/api/knock/grants` | `knock:write` | Revogar autorizações (body é {"addr": endereço, "rule": key da regra}; deixe rule vazio para revogar todas as autorizações do endereço) |
+| DELETE | `/api/knock/grants` | `knock:write` | Revogar liberação (body é {"addr": endereço, "rule": chave da regra}; deixe rule vazio para revogar todas as liberações desse endereço; escreva o endereço de uma liberação de rede como endereço/comprimento do prefixo) |
 | GET | `/api/knock/firewall/rules` | `knock:read` | Regras de bloqueio que o Gately gravou no firewall do sistema (texto) |
 
 ## Wake-on-LAN
@@ -1665,7 +1665,11 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `ports` | Array de string |
 | `rule` | string |
 | `ruleName` | string |
+| `site` | string |
+| `siteName` | string |
+| `source` | string |
 | `until` | Hora (RFC 3339) |
+| `user` | string |
 
 ### knock.Rule
 

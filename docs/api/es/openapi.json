@@ -1511,8 +1511,20 @@
           "ruleName": {
             "type": "string"
           },
+          "site": {
+            "type": "string"
+          },
+          "siteName": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
           "until": {
             "format": "date-time",
+            "type": "string"
+          },
+          "user": {
             "type": "string"
           }
         },
@@ -27351,7 +27363,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Revocar autorizaciones (el body es {\"addr\": dirección, \"rule\": clave de regla}; deje rule vacío para revocar todas las autorizaciones de la dirección)",
+        "summary": "Revocar permiso (body es {\"addr\": dirección, \"rule\": clave de la regla}; deje rule vacío para revocar todos los permisos de esa dirección; escriba la dirección de un permiso de red como dirección/longitud de prefijo)",
         "tags": [
           "Port knocking"
         ],

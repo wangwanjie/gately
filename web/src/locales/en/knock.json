@@ -53,10 +53,12 @@
   "grants": {
     "title": "Active grants ({count})",
     "empty": "No address has knocked successfully and is still within its access duration",
-    "gatelyOnly": "Only for Port Forwarding, Protocol Routing and STUN",
+    "gatelyOnly": "Checked inside Gately only (Web sites, Port Forwarding, Protocol Routing, STUN)",
     "remain": "{t} left",
     "revoke": "Revoke",
-    "revokeConfirm": "After revoking, this address has to knock again. Established connections are not affected. Revoke it?"
+    "revokeConfirm": "After revoking, this address has to knock again. Established connections are not affected. Revoke it?",
+    "web": "Web login",
+    "webWho": "{user} · {site}"
   },
   "rule": {
     "add": "Add rule",

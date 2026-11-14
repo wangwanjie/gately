@@ -524,7 +524,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/knock/settings` | `knock:read` | グローバル設定 |
 | PUT | `/api/knock/settings` | `knock:write` | 全体設定を変更 |
 | GET | `/api/knock/status` | `knock:read` | 待ち受け、ファイアウォールのブロック状態、現在有効な許可 |
-| DELETE | `/api/knock/grants` | `knock:write` | 許可を取り消す（body は {"addr": アドレス, "rule": ルール key}。rule を空にするとそのアドレスの全許可を取り消します） |
+| DELETE | `/api/knock/grants` | `knock:write` | 許可を取り消します（body は {"addr": アドレス, "rule": ルール key}。rule を空にするとそのアドレスのすべての許可を取り消します。ネットワーク範囲の許可は アドレス/プレフィックス長 の形式で指定します） |
 | GET | `/api/knock/firewall/rules` | `knock:read` | Gately がシステムファイアウォールに書き込んだブロックルール（テキスト） |
 
 ## Wake-on-LAN
@@ -1665,7 +1665,11 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `ports` | 配列 of string |
 | `rule` | string |
 | `ruleName` | string |
+| `site` | string |
+| `siteName` | string |
+| `source` | string |
 | `until` | 時刻 (RFC 3339) |
+| `user` | string |
 
 ### knock.Rule
 

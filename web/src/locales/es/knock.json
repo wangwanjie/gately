@@ -53,10 +53,12 @@
   "grants": {
     "title": "Autorizaciones activas ({count})",
     "empty": "Ninguna dirección ha llamado con éxito y sigue dentro de su tiempo de acceso",
-    "gatelyOnly": "Solo para reenvío de puertos, enrutamiento por protocolo y STUN",
+    "gatelyOnly": "Solo se comprueba dentro de Gately (sitios web, reenvío de puertos, enrutamiento por protocolo, STUN)",
     "remain": "Quedan {t}",
     "revoke": "Revocar",
-    "revokeConfirm": "Tras revocar, esta dirección tendrá que volver a llamar. Las conexiones ya establecidas no se ven afectadas. ¿Revocar?"
+    "revokeConfirm": "Tras revocar, esta dirección tendrá que volver a llamar. Las conexiones ya establecidas no se ven afectadas. ¿Revocar?",
+    "web": "Inicio de sesión web",
+    "webWho": "{user} · {site}"
   },
   "rule": {
     "add": "Añadir regla",

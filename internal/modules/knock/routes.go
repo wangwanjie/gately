@@ -27,12 +27,19 @@ type RuleView struct {
 
 // GrantView 是一个有效授权。
 type GrantView struct {
+	// Addr 为放行的地址；网页登录按设置放行整个 IPv6 网段时带前缀长度（如 2001:db8:1:2::/64）
 	Addr     string    `json:"addr"`
 	Rule     string    `json:"rule"`
 	RuleName string    `json:"ruleName"`
 	Until    time.Time `json:"until"`
-	// Ports 为写入防火墙的放行端口；只用于协议分流、端口转发的授权为空
+	// Ports 为写入防火墙的放行端口；只用于协议分流、端口转发、Web 站点的授权为空
 	Ports []string `json:"ports"`
+	// Source 为授权来源：spa（敲门报文）、web（在 Web 站点的放行入口登录）
+	Source string `json:"source"`
+	// User、Site、SiteName 为网页登录放行的用户与入口站点
+	User     string `json:"user,omitempty"`
+	Site     string `json:"site,omitempty"`
+	SiteName string `json:"siteName,omitempty"`
 }
 
 // Status 是模块运行状态。
@@ -52,7 +59,7 @@ type Status struct {
 }
 
 type revokeRequest struct {
-	// Addr 为要撤销授权的地址
+	// Addr 为要撤销授权的地址；网段授权写成 地址/前缀长度（与状态中授权的 addr 相同）
 	Addr string `json:"addr"`
 	// Rule 为规则 key，留空表示撤销该地址的全部授权
 	Rule string `json:"rule"`
@@ -108,7 +115,7 @@ func (m *Module) Routes(r module.Router) {
 	module.DocOf(r, "GET /settings", module.Doc{Summary: "全局设置", Resp: &Settings{}})
 	module.DocOf(r, "PUT /settings", module.Doc{Summary: "修改全局设置", Req: &Settings{}, Resp: &Settings{}})
 	module.DocOf(r, "GET /status", module.Doc{Summary: "监听、防火墙拦截状态与当前有效的授权", Resp: &Status{}})
-	module.DocOf(r, "DELETE /grants", module.Doc{Summary: "撤销授权（body 为 {\"addr\": 地址, \"rule\": 规则 key}，rule 留空撤销该地址的全部授权）", Req: &revokeRequest{}})
+	module.DocOf(r, "DELETE /grants", module.Doc{Summary: "撤销授权（body 为 {\"addr\": 地址, \"rule\": 规则 key}，rule 留空撤销该地址的全部授权；网段授权的地址写成 地址/前缀长度）", Req: &revokeRequest{}})
 	module.DocOf(r, "GET /firewall/rules", module.Doc{Summary: "Gately 写入系统防火墙的拦截规则（文本）"})
 }
 
@@ -217,12 +224,15 @@ func (m *Module) handleStatus(w http.ResponseWriter, _ *http.Request) {
 	m.stateMu.Unlock()
 	st.Grants = []GrantView{}
 	for _, g := range knockgate.Default.List() {
-		id := [2]string{g.Addr.String(), g.Rule}
-		ports := fwPorts[id]
+		var ports []string
+		if g.Single() {
+			ports = fwPorts[[2]string{g.Addr().String(), g.Rule}]
+		}
 		if ports == nil {
 			ports = []string{}
 		}
-		st.Grants = append(st.Grants, GrantView{Addr: g.Addr.String(), Rule: g.Rule, RuleName: names[g.Rule], Until: g.Until, Ports: ports})
+		st.Grants = append(st.Grants, GrantView{Addr: g.String(), Rule: g.Rule, RuleName: names[g.Rule], Until: g.Until, Ports: ports,
+			Source: g.Source, User: g.User, Site: g.Site, SiteName: g.SiteName})
 	}
 	httpx.OK(w, st)
 }
@@ -233,14 +243,26 @@ func (m *Module) handleRevoke(w http.ResponseWriter, r *http.Request) {
 		httpx.Error(w, http.StatusBadRequest, "%v", err)
 		return
 	}
-	a, err := netip.ParseAddr(strings.TrimSpace(req.Addr))
-	if err != nil {
-		httpx.Error(w, http.StatusBadRequest, "地址无效")
-		return
+	addr := strings.TrimSpace(req.Addr)
+	var n int
+	if strings.Contains(addr, "/") {
+		// 网页登录放行的 IPv6 网段：只在进程内判断，没有写入防火墙的放行
+		p, err := netip.ParsePrefix(addr)
+		if err != nil {
+			httpx.Error(w, http.StatusBadRequest, "地址无效")
+			return
+		}
+		n = knockgate.Default.RevokePrefix(p, strings.TrimSpace(req.Rule))
+	} else {
+		a, err := netip.ParseAddr(addr)
+		if err != nil {
+			httpx.Error(w, http.StatusBadRequest, "地址无效")
+			return
+		}
+		addr = a.Unmap().String()
+		n = m.revoke(a.Unmap(), strings.TrimSpace(req.Rule))
 	}
-	a = a.Unmap()
-	n := m.revoke(a, strings.TrimSpace(req.Rule))
-	m.logs.Logger("").Infof("撤销 %s 的 %d 个授权", a, n)
+	m.logs.Logger("").Infof("撤销 %s 的 %d 个授权", addr, n)
 	httpx.OK(w, map[string]int{"revoked": n})
 }
 

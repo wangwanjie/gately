@@ -53,10 +53,12 @@
   "grants": {
     "title": "Autorisations actives ({count})",
     "empty": "Aucune adresse n'a frappé avec succès et reste dans sa durée d'accès",
-    "gatelyOnly": "Uniquement pour la redirection de ports, le routage par protocole et STUN",
+    "gatelyOnly": "Vérifié uniquement dans Gately (sites web, redirection de ports, routage par protocole, STUN)",
     "remain": "{t} restantes",
     "revoke": "Révoquer",
-    "revokeConfirm": "Après révocation, cette adresse devra frapper à nouveau. Les connexions déjà établies ne sont pas affectées. Révoquer ?"
+    "revokeConfirm": "Après révocation, cette adresse devra frapper à nouveau. Les connexions déjà établies ne sont pas affectées. Révoquer ?",
+    "web": "Connexion web",
+    "webWho": "{user} · {site}"
   },
   "rule": {
     "add": "Ajouter une règle",

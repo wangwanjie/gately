@@ -524,7 +524,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/knock/settings` | `knock:read` | 전역 설정 |
 | PUT | `/api/knock/settings` | `knock:write` | 전역 설정 변경 |
 | GET | `/api/knock/status` | `knock:read` | 수신 대기, 방화벽 차단 상태 및 현재 유효한 허가 |
-| DELETE | `/api/knock/grants` | `knock:write` | 허가 취소(body 는 {"addr": 주소, "rule": 규칙 key}, rule 을 비우면 해당 주소의 모든 허가를 취소) |
+| DELETE | `/api/knock/grants` | `knock:write` | 허용 철회(body 는 {"addr": 주소, "rule": 규칙 key} 이며, rule 을 비우면 해당 주소의 모든 허용을 철회합니다. 네트워크 대역 허용의 주소는 주소/접두사 길이 로 씁니다) |
 | GET | `/api/knock/firewall/rules` | `knock:read` | Gately 가 시스템 방화벽에 기록한 차단 규칙(텍스트) |
 
 ## Wake-on-LAN
@@ -1665,7 +1665,11 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `ports` | Array of string |
 | `rule` | string |
 | `ruleName` | string |
+| `site` | string |
+| `siteName` | string |
+| `source` | string |
 | `until` | 시간 (RFC 3339) |
+| `user` | string |
 
 ### knock.Rule
 

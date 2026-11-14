@@ -1511,8 +1511,20 @@
           "ruleName": {
             "type": "string"
           },
+          "site": {
+            "type": "string"
+          },
+          "siteName": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
           "until": {
             "format": "date-time",
+            "type": "string"
+          },
+          "user": {
             "type": "string"
           }
         },
@@ -27351,7 +27363,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Отзыв разрешений (body: {\"addr\": адрес, \"rule\": key правила}; пустой rule отзывает все разрешения адреса)",
+        "summary": "Отзыв разрешения (body — {\"addr\": адрес, \"rule\": ключ правила}; если rule пуст, отзываются все разрешения этого адреса; адрес разрешения для подсети записывается как адрес/длина префикса)",
         "tags": [
           "Стук по портам"
         ],
