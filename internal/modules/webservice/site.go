@@ -453,7 +453,10 @@ func newTransport(s Site, up *upstream) *http.Transport {
 
 // upstreamRoundTripper 按请求选中的后端使用对应的连接池；与后端建连失败时换下一个后端重试（见 proxyAttempt）。
 type upstreamRoundTripper struct {
-	trs  map[*upstream]*http.Transport
+	trs map[*upstream]*http.Transport
+	// h1 为开启明文 HTTP/2 的后端另备的 HTTP/1.1 连接池：协议升级（WebSocket）只能走 HTTP/1.1，
+	// h2 Transport 遇到 Upgrade 请求直接报错，访客会收到 502
+	h1   map[*upstream]*http.Transport
 	pool *pool
 	// target 把请求改写为发往指定后端（去路径前缀、URL、Host 与 SNI），重试换后端时使用
 	target func(pr *httputil.ProxyRequest, up *upstream)
@@ -476,7 +479,11 @@ func (rt *upstreamRoundTripper) RoundTrip(req *http.Request) (*http.Response, er
 	}
 	for {
 		up := att.current()
-		resp, err := rt.trs[up].RoundTrip(out)
+		tr := rt.trs[up]
+		if h1 := rt.h1[up]; h1 != nil && out.Header.Get("Upgrade") != "" {
+			tr = h1
+		}
+		resp, err := tr.RoundTrip(out)
 		if err == nil || !dialFailed(err) || req.Context().Err() != nil || (body != nil && body.read.Load()) {
 			return resp, err
 		}
@@ -529,6 +536,17 @@ func (h *siteHandler) newProxy(s Site, p *pool, strip string) http.Handler {
 		tr := newTransport(s, up)
 		rt.trs[up] = tr
 		h.idleClosers = append(h.idleClosers, tr.CloseIdleConnections)
+		if tr.Protocols != nil && !tr.Protocols.HTTP1() {
+			// 明文 HTTP/2 后端：协议升级请求另用 HTTP/1.1 连接（同一端口通常两种协议都接受，如 gRPC 服务旁的 WebSocket）
+			s1 := s
+			s1.UpstreamH2C = false
+			h1 := newTransport(s1, up)
+			if rt.h1 == nil {
+				rt.h1 = map[*upstream]*http.Transport{}
+			}
+			rt.h1[up] = h1
+			h.idleClosers = append(h.idleClosers, h1.CloseIdleConnections)
+		}
 	}
 	rp := &httputil.ReverseProxy{
 		Transport:  rt,
