@@ -97,3 +97,26 @@ func TestIPDenySetReferences(t *testing.T) {
 		t.Fatal("引用不存在的订阅列表应报错")
 	}
 }
+
+// 默认站点引用的订阅列表（拒绝名单、白/黑名单、路径规则）同样计入使用方并检查存在性：
+// 漏算时列表可以被直接删除，默认站点的名单随之悄悄失效。
+func TestIPSetReferencesOfDefaultSite(t *testing.T) {
+	for name, def := range map[string]Site{
+		"拒绝名单": {IPDenySets: []string{"k1"}},
+		"白黑名单": {IPSets: []string{"k1"}},
+		"路径规则": {Rules: []PathRule{{IPSets: []string{"k1"}}}},
+	} {
+		m := &Module{}
+		m.cfg.Listeners = []Listener{{Name: "L", Default: def}}
+		if users := m.ipListUsersLocked("k1"); len(users) != 1 || users[0] != "L / 默认站点" {
+			t.Fatalf("%s：默认站点的引用应计入使用方: %v", name, users)
+		}
+		if err := m.checkIPSetsLocked(&m.cfg.Listeners[0]); err == nil {
+			t.Fatalf("%s：默认站点引用不存在的订阅列表应报错", name)
+		}
+		m.cfg.IPLists = []IPList{{Key: "k1"}}
+		if err := m.checkIPSetsLocked(&m.cfg.Listeners[0]); err != nil {
+			t.Fatalf("%s：列表存在时不应报错: %v", name, err)
+		}
+	}
+}

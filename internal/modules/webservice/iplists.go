@@ -261,18 +261,27 @@ func (m *Module) downloadIPList(ctx context.Context, l IPList) (*iplist.Set, int
 	return set, set.Len(), nil
 }
 
-// ipListUsersLocked 返回引用列表的站点名称，以及其它模块登记的引用方（如 frps 实例）。
+// siteIPSetRefs 返回站点引用的全部 IP 列表：白名单/黑名单、优先拒绝名单与路径规则中的列表。
+func siteIPSetRefs(s *Site) []string {
+	refs := append(append([]string{}, s.IPSets...), s.IPDenySets...)
+	for _, r := range s.Rules {
+		refs = append(refs, r.IPSets...)
+	}
+	return refs
+}
+
+// ipListUsersLocked 返回引用列表的站点名称（含各监听的默认站点），以及其它模块登记的引用方（如 frps 实例）。
+// 默认站点同样可以引用列表：漏算会让被它引用的列表可以直接删除，删除后名单按空列表处理，悄悄失效。
 func (m *Module) ipListUsersLocked(key string) []string {
 	var out []string
 	for _, l := range m.cfg.Listeners {
 		for _, s := range l.Sites {
-			used := slices.Contains(s.IPSets, key) || slices.Contains(s.IPDenySets, key)
-			for _, r := range s.Rules {
-				used = used || slices.Contains(r.IPSets, key)
-			}
-			if used {
+			if slices.Contains(siteIPSetRefs(&s), key) {
 				out = append(out, listenerSiteLabel(&l, &s))
 			}
+		}
+		if slices.Contains(siteIPSetRefs(&l.Default), key) {
+			out = append(out, defaultSiteLabel(&l, "默认站点"))
 		}
 	}
 	return append(out, iplist.Default.Users(key)...)
@@ -286,24 +295,26 @@ func listenerSiteLabel(l *Listener, s *Site) string {
 	return siteLabel(*s)
 }
 
-// checkIPSetsLocked 检查监听器中引用的 IP 列表都存在。
+// checkIPSetsLocked 检查监听器中引用的 IP 列表（含默认站点）都存在。
 func (m *Module) checkIPSetsLocked(l *Listener) error {
 	known := map[string]bool{}
 	for _, x := range m.cfg.IPLists {
 		known[x.Key] = true
 	}
-	for _, s := range l.Sites {
-		refs := append(append([]string{}, s.IPSets...), s.IPDenySets...)
-		for _, r := range s.Rules {
-			refs = append(refs, r.IPSets...)
-		}
-		for _, k := range refs {
+	check := func(s *Site, label string) error {
+		for _, k := range siteIPSetRefs(s) {
 			if !known[k] {
-				return fmt.Errorf("站点 %s 引用的 IP 列表 %q 不存在", listenerSiteLabel(l, &s), k)
+				return fmt.Errorf("站点 %s 引用的 IP 列表 %q 不存在", label, k)
 			}
 		}
+		return nil
 	}
-	return nil
+	for _, s := range l.Sites {
+		if err := check(&s, listenerSiteLabel(l, &s)); err != nil {
+			return err
+		}
+	}
+	return check(&l.Default, defaultSiteLabel(l, "默认站点"))
 }
 
 func (m *Module) viewIPListLocked(l *IPList) any {
