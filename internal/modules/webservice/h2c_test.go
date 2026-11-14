@@ -249,3 +249,51 @@ func TestH2CHealthProbe(t *testing.T) {
 }
 
 var _ = http2.ErrNoCachedConn
+
+// 开启明文 HTTP/2 的站点上，WebSocket 等协议升级请求改用 HTTP/1.1 连接（h2 Transport 不支持 Upgrade，会返回 502），
+// 普通请求仍走 h2c。后端与 NetBird 等服务一样在同一端口同时接受两种协议。
+func TestH2CBackendWebSocketUpgrade(t *testing.T) {
+	var protos http.Protocols
+	protos.SetHTTP1(true)
+	protos.SetUnencryptedHTTP2(true)
+	srv := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Upgrade") != "websocket" {
+			w.Header().Set("X-Backend-Proto", fmt.Sprint(r.ProtoMajor))
+			return
+		}
+		conn, brw, err := http.NewResponseController(w).Hijack()
+		if err != nil {
+			return
+		}
+		defer conn.Close()
+		_, _ = brw.WriteString("HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n\r\n")
+		_ = brw.Flush()
+		line, _ := brw.ReadString('\n')
+		_, _ = brw.WriteString("echo:" + line)
+		_ = brw.Flush()
+	}))
+	srv.Config.Protocols = &protos
+	srv.Start()
+	defer srv.Close()
+	addr, _ := startRunner(t, Listener{Sites: []Site{{Enable: true, Domains: []string{"ws.test"}, Targets: []string{srv.URL}, UpstreamH2C: true}}}, nil, nil)
+
+	if resp, _ := get(t, noRedirect(), addr, "ws.test", "/", nil); resp.StatusCode != 200 || resp.Header.Get("X-Backend-Proto") != "2" {
+		t.Fatalf("普通请求应经 h2c 转发: %d proto=%s", resp.StatusCode, resp.Header.Get("X-Backend-Proto"))
+	}
+	c, err := net.Dial("tcp", addr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Close()
+	_, _ = c.Write([]byte("GET /ws HTTP/1.1\r\nHost: ws.test\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n\r\n"))
+	br := bufio.NewReader(c)
+	resp, err := http.ReadResponse(br, nil)
+	if err != nil || resp.StatusCode != 101 {
+		t.Fatalf("协议升级应改走 HTTP/1.1: %v %v", resp, err)
+	}
+	_, _ = c.Write([]byte("hi\n"))
+	_ = c.SetReadDeadline(time.Now().Add(3 * time.Second))
+	if line, _ := br.ReadString('\n'); line != "echo:hi\n" {
+		t.Fatalf("升级后数据转发失败: %q", line)
+	}
+}
